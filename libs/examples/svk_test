@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+#
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+#
+#   after valgrind 3.2, --error-exitcode flag ensures code to signify errror, otherwise returns job status
+#   
+
+
+$bin_dir = "./Linux_x86_64";
+$bin_dir = "./Linux_x86_64_debug";
+$data_dir = "./data";
+$log_file = "svk_test.log";
+
+@test_cases = (
+
+    #   New/Del svkImageData hierarchy;
+    "${bin_dir}/test_svkImageData", 
+
+    #       IDF Reader
+    "${bin_dir}/test_svkImageReaderFactory ${data_dir}/fixed_only_ac_1.int2",
+    "${bin_dir}/test_svkImageReaderFactory ${data_dir}/mc_3T_phantomcomb_1_cor_sum_corrh01.real",
+    "${bin_dir}/test_svkImageReaderFactory ${data_dir}/fixed_only_ac_1.idf"
+
+    #   ImageReader Factory 
+    #       DDF Reader
+    "${bin_dir}/test_svkImageReaderFactory ${data_dir}/t3148_1_cor.ddf",
+
+);
+
+
+
+foreach $test (@test_cases) {
+    $cmd = "valgrind --log-file=${log_file} --leak-check=full ${test}";
+    print "$cmd\n";
+    system($cmd);
+    if ($?) {
+        print "\n\n";
+        print "===============================================================================\n\n";
+        print "ERROR in:  $cmd\n\n";
+        print "===============================================================================\n";
+        print "\n\n";
+        exit(1);
+    }
+}
+
+print "\n\n";
+print "===============================================================================\n\n";
+print "SUCCESS:  No Errors Detected\n\n";
+print "note:     Review log file for mem leaks \n\n";
+print "===============================================================================\n";
+print "\n\n";

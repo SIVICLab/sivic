@@ -1,0 +1,388 @@
+#
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+#
+
+cmake_minimum_required(VERSION 2.6)
+
+
+PROJECT(testing)
+
+FIND_PACKAGE(KWWidgets REQUIRED)
+INCLUDE(${KWWidgets_USE_FILE})
+
+SET(CMAKE_EXE_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+SET(CMAKE_MODULE_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+
+
+
+#SET(VTK_DIR /Users/bolson/Library/vtk-5.2/VTK/bin)
+SET(VTK_DIR /Users/bolson/Library/slicer3/Slicer3-lib/VTK-build)
+#SET(FLTK_DIR /netopt/lib)
+
+#
+#   Set build dir:
+#
+IF (CMAKE_SYSTEM_NAME MATCHES Linux)
+    IF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
+        SET(EXECUTABLE_OUTPUT_PATH ../Linux_i686)
+        SET(LIBRARY_OUTPUT_PATH ../Linux_i686)
+    ELSE (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
+        SET(EXECUTABLE_OUTPUT_PATH ../Linux_x86_64)
+        SET(LIBRARY_OUTPUT_PATH ../Linux_x86_64)
+    ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
+ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
+    IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+        SET(EXECUTABLE_OUTPUT_PATH ../Darwin_i386)
+        SET(LIBRARY_OUTPUT_PATH ../Darwin_i386)
+    ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+        SET(EXECUTABLE_OUTPUT_PATH ../SunOS_sparc)
+        SET(LIBRARY_OUTPUT_PATH ../SunOS_sparc)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
+
+IF (CMAKE_BUILD_TYPE MATCHES Debug)
+    SET(EXECUTABLE_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}_debug)
+    SET(LIBRARY_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH}_debug)
+ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
+
+
+INCLUDE(${CMAKE_ROOT}/Modules/FindFLTK.cmake)
+INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
+INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
+IF (USE_VTK_FILE)
+    INCLUDE(${USE_VTK_FILE})
+ENDIF (USE_VTK_FILE)
+
+
+ADD_DEFINITIONS(-DHAVE_CONFIG_H) 
+
+
+
+LINK_DIRECTORIES(
+    ${LIBRARY_OUTPUT_PATH}
+    ../../${LIBRARY_OUTPUT_PATH}
+    ../${LIBRARY_OUTPUT_PATH}
+    /Users/bolson/Library/slicer3/Slicer3-lib/VTK-build/bin
+    /usr/local/lib/local/dev
+    /usr/local/lib/local
+    /usr/local/lib
+    /usr/local/dicom/lib
+)
+
+
+INCLUDE_DIRECTORIES(
+    ./
+    ../src
+    ../../src
+    /Users/bolson/Library/slicer3/Slicer3-lib
+    /usr/local/share/include
+    /usr/local/share/include/csi
+    /usr/local/share/include/mrsc
+    /usr/local/share/include/util
+    /usr/local/share/include/mrsc/internal
+    /usr/local/share/include/dicom/dev 
+    /usr/include/dcmtk/dcmdata
+    /netopt/dicom/include/dcmtk/ofstd
+)
+
+SET(MRK_LIBS
+    vtkRendering.5.2
+    vtkGraphics
+    vtkHybrid
+    vtkImaging
+    vtkIO
+    vtkFiltering
+    vtkCommon
+    vtkVolumeRendering
+    mrkadapt 
+    mrk 
+    mrkadapt 
+    dicom
+    dcmdata
+    ofstd 
+    csi
+    mrsc
+    util
+    gnumath
+    z
+
+)
+
+
+
+ADD_EXECUTABLE(
+    test_read_write 
+    test_read_write.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_read_write 
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mvc
+    test_mvc.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mvc
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_new_del
+    test_new_del.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_new_del
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkImageData
+    test_mrkImageData.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkImageData
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkImageReaderFactory
+    test_mrkImageReaderFactory.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkImageReaderFactory
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkPlotGridView 
+    test_mrkPlotGridView.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_mrkPlotGridView 
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkOverlayView 
+    test_mrkOverlayView.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_mrkOverlayView 
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkBoxPlot 
+    test_mrkBoxPlot.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_mrkBoxPlot 
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkImageTopologyGenerator 
+    test_mrkImageTopologyGenerator.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_mrkImageTopologyGenerator 
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_grid_topo_order
+    test_grid_topo_order.cc 
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_grid_topo_order
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkMultiWindowToImageFilter
+    test_mrkMultiWindowToImageFilter.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_mrkMultiWindowToImageFilter
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_vtkRenderLoop
+    test_vtkRenderLoop.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_vtkRenderLoop
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_actorSizeRectGrid
+    test_actorSizeRectGrid.cc
+    ${RC_FILENAME}
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_actorSizeRectGrid
+	${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_actorSizeIndividual
+    test_actorSizeIndividual.cc
+    ${RC_FILENAME}
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_actorSizeIndividual
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_rectilnearGrid
+    test_rectilnearGrid.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_rectilnearGrid
+	${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkDICOMMRSWriter
+    test_mrkDICOMMRSWriter.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkDICOMMRSWriter
+    ${MRK_LIBS}
+)
+
+#ADD_EXECUTABLE(
+    #test_unstructuredImageViewer
+    #test_unstructuredImageViewer.cc
+#)
+#
+#TARGET_LINK_LIBRARIES(
+    #test_unstructuredImageViewer
+    #${MRK_LIBS}
+#)
+
+ADD_EXECUTABLE(
+    test_mrkOrientedImageData
+    test_mrkOrientedImageData.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkOrientedImageData
+    ${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkImageViewer2
+    test_mrkImageViewer2.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkImageViewer2
+    ${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkOrientedImageActor
+    test_mrkOrientedImageActor.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkOrientedImageActor
+    ${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkPhase
+    test_mrkPhase.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkPhase
+    ${MRK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
+    test_mrkIdfWriter
+    test_mrkIdfWriter.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkIdfWriter
+    ${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkSpectraPhaserWidget
+    test_mrkSpectraPhaserWidget.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkSpectraPhaserWidget
+    ${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkSinglePlotExtraction
+    test_mrkSinglePlotExtraction.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkSinglePlotExtraction
+    ${MRK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_mrkFormatConverter
+    test_mrkFormatConverter.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_mrkFormatConverter
+    ${MRK_LIBS}
+)
