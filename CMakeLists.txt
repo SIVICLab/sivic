@@ -28,9 +28,9 @@
 
 cmake_minimum_required(VERSION 2.4)
 option( BUILD_LIBRARY "Build library." TRUE )
-option( BUILD_SIVIC "Build stand-alone application." FALSE )
-option( BUILD_EXAMPLES "Build examples." TRUE )
-option( BUILD_APPS "Build mini-applications." TRUE )
+option( BUILD_SIVIC "Build stand-alone application." TRUE )
+option( BUILD_EXAMPLES "Build examples." FALSE )
+option( BUILD_APPS "Build mini-applications." FALSE )
 
 if( BUILD_LIBRARY )
     add_subdirectory (libs/src)
