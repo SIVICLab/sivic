@@ -60,6 +60,7 @@ svkPlotGridView::svkPlotGridView()
     // Setting layers is key for solaris rendering
 
     this->slice = 0;
+    this->channel = 0;
     this->rwi = NULL;
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);
