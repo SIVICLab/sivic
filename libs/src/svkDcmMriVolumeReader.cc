@@ -179,8 +179,9 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     );
     tmp->Delete(); 
 
-
-    this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
+    if (this->GetDebug()) {
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
+    }
     
     globFileNames->Delete();
     sortFileNames->Delete();
