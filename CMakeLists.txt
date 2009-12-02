@@ -31,6 +31,12 @@ option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
 option( BUILD_APPS "Build mini-applications." FALSE )
+option( BUILD_OSIRIX "Build OsiriX Plugin." FALSE )
+
+if( BUILD_OSIRIX)
+#    ADD_DEFINITIONS(-DCMAKE_UNIVERSAL=TRUE)
+    SET (CMAKE_UNIVERSAL TRUE)
+endif (BUILD_OSIRIX)
 
 if( BUILD_LIBRARY )
     add_subdirectory (libs/src)
@@ -47,3 +53,4 @@ endif ( BUILD_APPS )
 if( BUILD_EXAMPLES )
     add_subdirectory (libs/examples)
 endif ( BUILD_EXAMPLES )
+
