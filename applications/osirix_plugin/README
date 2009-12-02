@@ -1,0 +1,34 @@
+create pkg for OsiriX plugin
+
+1.  build sivic libs and sivic_app
+
+cd sivic/trunk
+ccmake ./
+
+ BUILD_APPS                       OFF                                                                                                          
+ BUILD_EXAMPLES                   OFF                                                                                                          
+ BUILD_LIBRARY                    ON                                                                                                           
+ BUILD_OSIRIX                     ON                                                                                                           
+ BUILD_SIVIC                      ON                                                                                                           
+ CMAKE_BACKWARDS_COMPATIBILITY    2.4                                                                                                          
+ CMAKE_BUILD_TYPE                 Release                                                                                                      
+ CMAKE_INSTALL_PREFIX             /usr/local                                                                                                   
+ CMAKE_OSX_ARCHITECTURES          i386                                                                                                         
+ CMAKE_OSX_SYSROOT                /Developer/SDKs/MacOSX10.5.sdk                                                                               
+ DCMTK_DIR                        /usr/local/dicom                                                                                             
+ EXECUTABLE_OUTPUT_PATH                                                                                                                        
+ KWWidgets_DIR                    /usr/local/lib/KWWidgets                                                                                     
+ LIBRARY_OUTPUT_PATH                                                                                                                           
+ VTK_DIR                          /usr/local/lib/vtk-5.4                                                                                       
+
+
+2.  build plugin in XCode:
+cd sivic/trunk/applications/osirix_plugin
+build "Deployment" release from xcode
+
+3.  pre packaging dependencies:
+create_modified_libs_for_plugin.sh
+
+4.  create package:
+start packagemaker, load pmdoc and "build"    
+

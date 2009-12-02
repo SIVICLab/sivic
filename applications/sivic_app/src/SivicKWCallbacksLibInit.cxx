@@ -4,7 +4,7 @@
 #define VTK_TCL_TO_STRING0(x) #x
 extern "C"
 {
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 4) && (TCL_RELEASE_LEVEL >= TCL_FINAL_RELEASE)
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 4)
   typedef int (*vtkTclCommandType)(ClientData, Tcl_Interp *,int, CONST84 char *[]);
 #else
   typedef int (*vtkTclCommandType)(ClientData, Tcl_Interp *,int, char *[]);
@@ -38,7 +38,7 @@ int VTK_EXPORT Sivickwcallbackslib_SafeInit(Tcl_Interp *interp)
 int VTK_EXPORT Sivickwcallbackslib_Init(Tcl_Interp *interp)
 {
 
-  vtkTclCreateNew(interp,(char *)("vtkSivicController"), vtkSivicControllerNewCommand,
+  vtkTclCreateNew(interp,const_cast<char *>("vtkSivicController"), vtkSivicControllerNewCommand,
                   vtkSivicControllerCommand);
   char pkgName[]="SivicKWCallbacksLib";
   char pkgVers[]=VTK_TCL_TO_STRING(VTK_MAJOR_VERSION) "." VTK_TCL_TO_STRING(VTK_MINOR_VERSION);
