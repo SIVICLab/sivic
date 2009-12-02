@@ -36,7 +36,7 @@
 #include <vtksys/CommandLineArguments.hxx>
 
 #define MAJOR_VERSION 0
-#define MINOR_VERSION 3
+#define MINOR_VERSION 4
 #define WINDOW_SIZE_X 900
 #define WINDOW_SIZE_Y 700
 

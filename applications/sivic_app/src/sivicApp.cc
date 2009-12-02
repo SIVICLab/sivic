@@ -250,23 +250,25 @@ int sivicApp::Build( int argc, char* argv[] )
             1, "&Save Data", this->sivicController, "SaveData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             2, "&Save Secondary Capture", this->sivicController, "SaveSecondaryCapture");
+/*
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             3, "&Print Current Slice", this->sivicController, "Print 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             4, "&Print All Slices", this->sivicController, "Print 0");
+*/
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Save Session", this->sivicController, "SaveSession");
+            3, "&Save Session", this->sivicController, "SaveSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            6, "&Restore Session", this->sivicController, "RestoreSession");
+            4, "&Restore Session", this->sivicController, "RestoreSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            7, "&Close All", this->sivicController, "ResetApplication");
+            5, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            0, "&Release Notes", this->sivicController, "DisplayReleaseNotes");
+            0, "&Sivic Resources", this->sivicController, "DisplayInfo");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");
 #endif
-    this->sivicKWApp->SetHelpDialogStartingPage("https://intrarad.ucsf.edu/trac/rad_software/wiki/release_notes_0.3");
+    this->sivicKWApp->SetHelpDialogStartingPage("https://sivic.sourceforge.com");
     this->sivicWindow->Display();
 }
 
