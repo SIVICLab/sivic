@@ -878,24 +878,38 @@ void svkDcmtkAdapter::CopyDcmHeader(svkDcmHeader* headerCopy)
 /*!
  *  Test for existence of a particular element. 
  */
-bool svkDcmtkAdapter::ElementExists(const char* elementName)
+bool svkDcmtkAdapter::ElementExists(const char* elementName, const char* parentSeqName)
 {
     DcmItem* dataset = this->dcmFile->getDataset();
+    bool elementExists = 0;
+    DcmElement* tmpElement;
 
-    DcmElement *tmpElement;
+    if( parentSeqName == NULL ) {
+        if ( dataset->findAndGetElement( GetDcmTagKey(elementName), tmpElement, OFTrue) == EC_Normal ) {
 
-    if ( dataset->findAndGetElement( GetDcmTagKey(elementName), tmpElement, OFTrue) == EC_Normal ) {
+            elementExists = 1;
 
-        return true; 
-
+        }
     } else {
 
-        if (this->GetDebug()) {
-            vtkWarningWithObjectMacro(this, "could not find element: " << elementName ); 
-        }
+        DcmStack* searchStack = new DcmStack();
+        DcmSequenceOfItems* sequence;  
+        
+        if( dataset->findAndGetSequence( GetDcmTagKey(parentSeqName), sequence, OFTrue ) == EC_Normal ) {
+            DcmTagKey elementTag(GetDcmTagKey(elementName));
+            if( sequence->search( elementTag, *searchStack, ESM_fromHere, OFTrue ) == EC_Normal ) {
+                elementExists = 1;
+            }
 
-        return false; 
+        }
     }
+    if (this->GetDebug() && !elementExists) {
+
+        vtkWarningWithObjectMacro(this, "could not find element: " << elementName ); 
+
+    }
+        
+    return elementExists;
 }
 
 

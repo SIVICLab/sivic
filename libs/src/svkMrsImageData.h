@@ -81,6 +81,7 @@ class svkMrsImageData: public svkImageData
         void           GetSelectionBoxDimensions( float* dims );
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );
+        bool           SliceInSelectionBox( int slice );
 
 
     protected:

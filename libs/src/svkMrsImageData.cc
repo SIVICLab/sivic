@@ -323,3 +323,68 @@ void svkMrsImageData::UpdateRange()
     this->SetDataRange( imagRange, svkImageData::IMAGINARY );
     this->SetDataRange( magRange, svkImageData::MAGNITUDE );
 }
+
+
+/*!
+ *  Method determines of the current slice is within the selection box.
+ *
+ *  \return true if the slice is within the selection box, other wise false is returned
+ */
+bool svkMrsImageData::SliceInSelectionBox( int slice )
+{
+    int voxelIndex[3];
+    voxelIndex[0] = 0;
+    voxelIndex[1] = 0;
+    voxelIndex[2] = slice;
+    double dcos[3][3];
+    this->GetDcos( dcos );
+    double wVec[3];
+    wVec[0] = dcos[2][0];
+    wVec[1] = dcos[2][1];
+    wVec[2] = dcos[2][2];
+
+    vtkGenericCell* sliceCell = vtkGenericCell::New();
+    this->GetCell( this->ComputeCellId(voxelIndex), sliceCell );
+    vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::New();
+    this->GenerateSelectionBox( uGrid );
+    vtkPoints* selBoxPoints = uGrid->GetPoints();
+    double projectedSelBoxRange[2]; 
+    projectedSelBoxRange[0] = VTK_DOUBLE_MAX;
+    projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
+    double projectedDistance;
+    for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
+        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), wVec ); 
+        if( projectedDistance < projectedSelBoxRange[0]) {
+            projectedSelBoxRange[0] = projectedDistance; 
+        }
+        if( projectedDistance > projectedSelBoxRange[1]) {
+            projectedSelBoxRange[1] = projectedDistance; 
+        }
+    }
+
+    double projectedSliceRange[2]; 
+    projectedSliceRange[0] = VTK_DOUBLE_MAX;
+    projectedSliceRange[1] = -VTK_DOUBLE_MAX;
+    for( int i = 0; i < sliceCell->GetPoints()->GetNumberOfPoints(); i++) {
+        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), wVec ); 
+        if( projectedDistance < projectedSliceRange[0]) {
+            projectedSliceRange[0] = projectedDistance; 
+        }
+        if( projectedDistance > projectedSliceRange[1]) {
+            projectedSliceRange[1] = projectedDistance; 
+        }
+    }
+    sliceCell->Delete();
+    double selBoxCenter = projectedSelBoxRange[0] +  (projectedSelBoxRange[1] - projectedSelBoxRange[0])/2;
+    double sliceCenter = projectedSliceRange[0] + (projectedSliceRange[1] - projectedSliceRange[0])/2;
+    bool inSlice = 0;
+    if( ( projectedSelBoxRange[0] > projectedSliceRange[0] && projectedSelBoxRange[0] < sliceCenter 
+ )   || ( projectedSelBoxRange[1] > sliceCenter && projectedSelBoxRange[1] < projectedSliceRange[1]
+ )   || ( sliceCenter > projectedSelBoxRange[0] && sliceCenter < projectedSelBoxRange[1]
+ ) ){
+        inSlice = 1;
+    }
+    uGrid->Delete();
+    return inSlice;
+    
+}

@@ -423,7 +423,7 @@ class svkDcmHeader: public vtkObject
         /*!
          *  Check whether an element exists in the DICOM header object. 
          */
-        virtual bool        ElementExists(const char* elementName) = 0;
+        virtual bool        ElementExists(const char* elementName, const char* parentSeqName = NULL) = 0;
 
 
         /*!

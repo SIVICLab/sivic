@@ -201,7 +201,6 @@ class svkPlotGrid : public vtkObject
         void                        GenerateActors();
         void                        GenerateSelectionBox();
         void                        HighlightSelectionVoxels();
-        bool                        SliceInSelectionBox();
 
 };
 

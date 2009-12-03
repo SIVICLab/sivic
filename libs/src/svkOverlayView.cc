@@ -386,7 +386,7 @@ void svkOverlayView::SetSlice(int slice)
             this->slice = slice;
             GenerateClippingPlanes();
             // If it is make it visible, otherwise hide it
-            if( SliceInSelectionBox() && isPropOn[VOL_SELECTION] ) {
+            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice ) && isPropOn[VOL_SELECTION] ) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
             } else {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
@@ -969,66 +969,6 @@ void svkOverlayView::GenerateClippingPlanes()
     }
 }
 
-/*!
- *  Returns whether or not the current slice is within the selection box.
- *
- *  \return 1 if the current slice is within the selection box, otherwise 0. 
- */
-bool svkOverlayView::SliceInSelectionBox( )
-{
-    int voxelIndex[3];
-    voxelIndex[0] = 0;
-    voxelIndex[1] = 0;
-    voxelIndex[2] = slice;
-    double dcos[3][3];
-    this->dataVector[MRS]->GetDcos( dcos );
-    double wVec[3];
-    wVec[0] = dcos[2][0];
-    wVec[1] = dcos[2][1];
-    wVec[2] = dcos[2][2];
-
-    vtkGenericCell* sliceCell = vtkGenericCell::New();
-    this->dataVector[MRS]->GetCell(this->dataVector[MRS]->
-                                      ComputeCellId(voxelIndex), sliceCell );
-    vtkPoints* cellBoxPoints = vtkPointSet::SafeDownCast( vtkActor::SafeDownCast( this->GetProp( svkOverlayView::VOL_SELECTION )
-                                      )->GetMapper()->GetInput())->GetPoints();
-    // We need to project all points onto the vector perpendicular to the slice
-    // then we can compare their locations. 
-    double projectedSelBoxRange[2]; 
-    projectedSelBoxRange[0] = VTK_DOUBLE_MAX;
-    projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
-    double projectedDistance;
-    for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++) {
-
-        projectedDistance = vtkMath::Dot( cellBoxPoints->GetPoint(i), wVec ); 
-        if( projectedDistance < projectedSelBoxRange[0]) {
-            projectedSelBoxRange[0] = projectedDistance; 
-        }
-        if( projectedDistance > projectedSelBoxRange[1]) {
-            projectedSelBoxRange[1] = projectedDistance; 
-        }
-    }
-
-    double projectedSliceRange[2]; 
-    projectedSliceRange[0] = VTK_DOUBLE_MAX;
-    projectedSliceRange[1] = -VTK_DOUBLE_MAX;
-    for( int i = 0; i < sliceCell->GetPoints()->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), wVec ); 
-        if( projectedDistance < projectedSliceRange[0]) {
-            projectedSliceRange[0] = projectedDistance; 
-        }
-        if( projectedDistance > projectedSliceRange[1]) {
-            projectedSliceRange[1] = projectedDistance; 
-        }
-    }
-    sliceCell->Delete();
-    if( projectedSliceRange[0] < projectedSelBoxRange[0] || 
-        projectedSliceRange[1] > projectedSelBoxRange[1] ) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
 
 /*!
  *  Method sets the slice of the overlay to the closests slice of the spectra.

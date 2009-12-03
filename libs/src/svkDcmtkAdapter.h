@@ -188,7 +188,7 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    CopyDcmHeader(svkDcmHeader* headerCopy);
 
-        virtual bool    ElementExists(const char* elementName); 
+        virtual bool    ElementExists(const char* elementName, const char* parentSeqName); 
 
         virtual void    ReplaceOldElements( bool replaceElements );
 

@@ -225,7 +225,7 @@ void svkPlotGrid::SetSlice(int slice)
         int* extent = data->GetExtent();
         if( slice < extent[5] && slice >= extent[4] ) { 
             this->UpdateDataArrays( this->voxelIndexTLC, this->voxelIndexBRC);
-            if( this->SliceInSelectionBox()  ) {
+            if( this->data->SliceInSelectionBox( slice )  ) {
                 this->projectedSelBoxActor->SetVisibility(1);
                 this->projectedSelBoxActor->SetPickable(0);
             } else {
@@ -814,61 +814,6 @@ void svkPlotGrid::HighlightSelectionVoxels()
             AlignCamera();
         } 
     } 
-}
-
-/*!
- *  Method determines of the current slice is within the selection box.
- *
- *  \return true if the slice is within the selection box, other wise false is returned
- */
-bool svkPlotGrid::SliceInSelectionBox( )
-{
-    int voxelIndex[3];
-    voxelIndex[0] = 0;
-    voxelIndex[1] = 0;
-    voxelIndex[2] = slice;
-    double dcos[3][3];
-    this->data->GetDcos( dcos );
-    double wVec[3];
-    wVec[0] = dcos[2][0];
-    wVec[1] = dcos[2][1];
-    wVec[2] = dcos[2][2];
-
-    vtkGenericCell* sliceCell = vtkGenericCell::New();
-    this->data->GetCell( this->data->ComputeCellId(voxelIndex), sliceCell );
-    vtkPoints* selBoxPoints = vtkPointSet::SafeDownCast(this->selectionBoxActor->GetMapper()->GetInput())->GetPoints();
-    double projectedSelBoxRange[2]; 
-    projectedSelBoxRange[0] = VTK_DOUBLE_MAX;
-    projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
-    double projectedDistance;
-    for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), wVec ); 
-        if( projectedDistance < projectedSelBoxRange[0]) {
-            projectedSelBoxRange[0] = projectedDistance; 
-        }
-        if( projectedDistance > projectedSelBoxRange[1]) {
-            projectedSelBoxRange[1] = projectedDistance; 
-        }
-    }
-
-    double projectedSliceRange[2]; 
-    projectedSliceRange[0] = VTK_DOUBLE_MAX;
-    projectedSliceRange[1] = -VTK_DOUBLE_MAX;
-    for( int i = 0; i < sliceCell->GetPoints()->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), wVec ); 
-        if( projectedDistance < projectedSliceRange[0]) {
-            projectedSliceRange[0] = projectedDistance; 
-        }
-        if( projectedDistance > projectedSliceRange[1]) {
-            projectedSliceRange[1] = projectedDistance; 
-        }
-    }
-    sliceCell->Delete();
-    if( projectedSliceRange[0] < projectedSelBoxRange[0] || projectedSliceRange[1] > projectedSelBoxRange[1] ) {
-        return 0;
-    } else {
-        return 1;
-    }
 }
 
 

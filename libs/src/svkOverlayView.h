@@ -188,7 +188,6 @@ class svkOverlayView : public svkDataView
         void                            SelectActors( int* tlcBrc );
         int*                            HighlightSelectionVoxels();
         void                            GenerateClippingPlanes();
-        bool                            SliceInSelectionBox( );
         void                            SetupOverlay();
         void                            SetInterpolationType( int interpolationType );
         void                            SetLUT( svkLookupTable::svkLookupTableType type );

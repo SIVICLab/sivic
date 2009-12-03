@@ -418,6 +418,10 @@ void svkDcmHeader::UpdatePixelSize()
 
     istringstream* iss = new istringstream();
     string sizeString;
+    string parentSequence("SharedFunctionalGroupsSequence");
+    if( !this->ElementExists( "PixelSpacing", parentSequence.c_str()) ) {
+        parentSequence = "PerFrameFunctionalGroupsSequence";
+    }
 
     for (int i = 0; i < 2; i++ ) {
         sizeString = this->GetStringSequenceItemElement(
@@ -425,7 +429,7 @@ void svkDcmHeader::UpdatePixelSize()
             0,
             "PixelSpacing",
             i,
-            "SharedFunctionalGroupsSequence",
+            parentSequence.c_str(),
             0
         );
         iss->str(sizeString);
@@ -433,13 +437,18 @@ void svkDcmHeader::UpdatePixelSize()
         iss->clear();
     }
 
-    pixelSize[2] = this->GetDoubleSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        "SharedFunctionalGroupsSequence",
-        0
-    );
+    if( this->ElementExists( "SliceThickness", parentSequence.c_str()) ) {
+        pixelSize[2] = this->GetDoubleSequenceItemElement(
+            "PixelMeasuresSequence",
+            0,
+            "SliceThickness",
+            parentSequence.c_str(),
+            0
+        );
+    } else {
+        pixelSize[2] = 0;
+        
+    }
 
     delete iss;
 }
