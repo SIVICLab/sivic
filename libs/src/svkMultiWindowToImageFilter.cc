@@ -60,6 +60,7 @@ svkMultiWindowToImageFilter::svkMultiWindowToImageFilter()
 #endif
 
     this->SetNumberOfOutputPorts(1);
+    this->padConstant = 0;
 }
 
 
@@ -184,6 +185,7 @@ int svkMultiWindowToImageFilter::RequestData(vtkInformation* request, vtkInforma
         colAppend->SetAppendAxis(0);
         for (int x = 0; x < vtkRenderWindowArray[y].size(); x++) {
             pad = vtkImageConstantPad::New();
+            pad->SetConstant(padConstant);
             if (vtkRenderWindowArray[y][x] != NULL) {
                 vtkWindowToImageFilter* w2if = vtkWindowToImageFilter::New();
                 vtkRenderLargeImage* largeImageRenderer = vtkRenderLargeImage::New();
@@ -354,3 +356,11 @@ vtkImageData* svkMultiWindowToImageFilter::GetOutput()
 }
 
 
+/*!
+ *  Sets the constant value used for padding.
+ */
+void svkMultiWindowToImageFilter::SetPadConstant( int padConstant)
+{
+    this->padConstant = padConstant;
+
+}

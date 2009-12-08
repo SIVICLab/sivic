@@ -85,6 +85,7 @@ class svkMultiWindowToImageFilter: public vtkAlgorithm
         //  Methods
         virtual void            SetInput(vtkRenderWindow* data, int indX = 0, int indY = 0, int magnification = 1 );
         virtual vtkImageData*   GetOutput();
+        void                    SetPadConstant( int );
 
 
 
@@ -118,6 +119,7 @@ class svkMultiWindowToImageFilter: public vtkAlgorithm
         vector <int>                            colWidthVector; 
         vector <int>                            rowHeightVector; 
         vector < vector <int> >                 magnificationVector;
+        double                                  padConstant;
         
 
 };
