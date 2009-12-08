@@ -992,9 +992,9 @@ void svkDdfVolumeReader::InitPixelMeasuresMacro()
     );
 
     //  get the spacing for the specified index:
-    float colSpacing = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing1"); 
-    float rowSpacing = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing2"); 
-    float sliceThickness = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing3"); 
+    float colSpacing = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing1"); 
+    float rowSpacing = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
+    float sliceThickness = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
     string pixelSpacing;
     ostringstream oss;
