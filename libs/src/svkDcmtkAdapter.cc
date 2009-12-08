@@ -422,7 +422,9 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     if (value == "EMPTY_ELEMENT") {
@@ -455,7 +457,9 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     svkDcmtkUtils::setValue(
@@ -486,7 +490,9 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     DcmItem* newItem = this->GetDcmItem(dataset, seqName, seqItemPosition); 
@@ -560,7 +566,9 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     svkDcmtkUtils::setValue(
@@ -588,7 +596,9 @@ int svkDcmtkAdapter::GetIntSequenceItemElement(const char* seqName, int seqItemP
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     return svkDcmtkUtils::getIntValue(
@@ -615,7 +625,9 @@ float svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqI
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     return svkDcmtkUtils::getFloatValue(
@@ -640,7 +652,9 @@ double svkDcmtkAdapter::GetDoubleSequenceItemElement(const char* seqName, int se
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     return svkDcmtkUtils::getDoubleValue(
@@ -665,7 +679,9 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
 
     if (parentSeqName != NULL) {
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
 
     return svkDcmtkUtils::getStringValue(
@@ -693,7 +709,9 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
     if (parentSeqName != NULL) {
         dataset == NULL; 
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
-        dataset = seq->getItem(parentSeqItemPosition);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
     }
     if (dataset != NULL) {
         return svkDcmtkUtils::getStringValue(
@@ -755,10 +773,9 @@ DcmSequenceOfItems* svkDcmtkAdapter::GetDcmSequence(const char* seqName)
 {
 
     DcmSequenceOfItems* sequence = NULL; 
-    this->dcmFile->getDataset()->findAndGetSequence( GetDcmTagKey(seqName), sequence, true ); 
-    if ( sequence == NULL) {
+    OFCondition status = this->dcmFile->getDataset()->findAndGetSequence( GetDcmTagKey(seqName), sequence, true ); 
+    if ( sequence == NULL || status != EC_Normal ) {
         cout << "Sequence Not Found" << seqName << endl;
-        exit(1);    
     }
     
     return sequence; 
@@ -797,11 +814,17 @@ int svkDcmtkAdapter::GetNumberOfElements(const char* elementName)
 int svkDcmtkAdapter::GetNumberOfItemsInSequence( const char* seqName) 
 {
 
-    DcmSequenceOfItems* sequence = this->GetDcmSequence( seqName ); 
     int itemCount = 0; 
-    while( sequence->getItem(itemCount) != NULL) {   
-        itemCount++; 
+
+    DcmSequenceOfItems* sequence = this->GetDcmSequence( seqName ); 
+
+    if (sequence != NULL ) {
+    
+        while( sequence->getItem(itemCount) != NULL) {   
+            itemCount++; 
+        }
     }
+
     return itemCount; 
 
 }
