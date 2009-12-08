@@ -27,7 +27,6 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
     this->xSpecRange = NULL;
     this->ySpecRange = NULL;
     this->specViewFrame = NULL;
-    this->it = vtkTextActor::New();
 
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->detailedPlotWindow = NULL;
@@ -51,10 +50,6 @@ sivicSpectraViewWidget::~sivicSpectraViewWidget()
         this->detailedPlotButton = NULL;
     }
 
-    if( this->it != NULL ) {
-        this->it->Delete();
-        this->it = NULL;
-    }
 
     if( this->xSpecRange != NULL ) {
         this->xSpecRange->Delete();

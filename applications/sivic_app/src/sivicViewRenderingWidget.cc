@@ -204,13 +204,12 @@ void sivicViewRenderingWidget::ResetInfoText()
     
     if( model->DataExists( "AnatomicalData" ) ) {
         // Patient Code??
-        //infoSS << "Patient Code:  " << endl;
+        infoSS << "Patient Code:  " << endl;
 
         // Study Date
         string studyDate = model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->GetStringValue("StudyDate");
 
         // Temporarily removing study date just in case for phi while making screenshots
-        /*
         if( studyDate.size() > 0) {
             infoSS << "Scan Date:  " << studyDate.substr( studyDate.size()-4, 2) << "/" 
                                  << studyDate.substr( studyDate.size()-2, 2) << "/"
@@ -219,8 +218,6 @@ void sivicViewRenderingWidget::ResetInfoText()
             infoSS << "Scan Date:  " << "?" << endl;
 
         }
-        */
-            infoSS << "Scan Date:  " << "?" << endl;
 
         // Image Name
         pos = currentImageName.find_last_of("/"); 
@@ -253,7 +250,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         infoSS << "Image Coil:  " << imageCoil << endl << endl;
 
     } else {
-        //infoSS << "Patient Code:  " << endl;
+        infoSS << "Patient Code:  " << endl;
         infoSS << "Scan Date:  " << endl; 
         infoSS << "Image File:  " << endl;
         infoSS << "Image Series:  " << endl;

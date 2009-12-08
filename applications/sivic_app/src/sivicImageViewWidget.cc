@@ -41,9 +41,6 @@ sivicImageViewWidget::sivicImageViewWidget()
     this->orthoViewFrame = NULL;
     this->overlayViewFrame = NULL;
 
-    this->it = vtkTextActor::New();
-
-
 }
 
 
@@ -52,11 +49,6 @@ sivicImageViewWidget::sivicImageViewWidget()
  */
 sivicImageViewWidget::~sivicImageViewWidget()
 {
-
-    if( this->it != NULL ) {
-        this->it->Delete();
-        this->it = NULL;
-    }
 
     if( this->sliceSlider != NULL ) {
         this->sliceSlider->Delete();

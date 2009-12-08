@@ -131,8 +131,6 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
         svkDetailedPlotViewController*  detailedPlotController;
         svkSpecPoint*               point;
 
-        vtkTextActor*               it;
-
         const char*             GetMetaboliteName( string fileName );
 
         sivicSpectraViewWidget(const sivicSpectraViewWidget&);   // Not implemented.

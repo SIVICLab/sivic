@@ -644,10 +644,10 @@ cout << "PATH: " << fileName << endl;
 
     writerFactory->Delete();
 
-    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOn();
-    this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOn();
-    this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOn();
-    this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOn();
+    //this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOn();
+    //this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOn();
+    //this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOn();
+    //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOn();
     int currentSlice = this->plotController->GetSlice(); 
 
     int numberOfFrames = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
@@ -720,12 +720,18 @@ cout << "PATH: " << fileName << endl;
 
         // First lets concatenate the image, and the text
         svkMultiWindowToImageFilter* mw2ifprep = svkMultiWindowToImageFilter::New();
+        if( print ) {
+            mw2ifprep->SetPadConstant( 255 );
+        }
         mw2ifprep->SetInput(     this->viewRenderingWidget->viewerWidget->GetRenderWindow(), 0, 0, 1 );
         mw2ifprep->SetInput(       this->viewRenderingWidget->infoWidget->GetRenderWindow(), 1, 0, 1 );
         mw2ifprep->Update();
 
         // Now lets use the multiwindow to get the image of the spectroscopy
         svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
+        if( print ) {
+            mw2if->SetPadConstant( 255 );
+        }
         //  starts index at bottom left corner of window
         //mw2if->SetInput(     viewerWidget->GetRenderWindow(), 0, 0, 1 );
         mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, 2 );
@@ -742,7 +748,8 @@ cout << "PATH: " << fileName << endl;
         int* prepImageExtent =  mw2ifprep->GetOutput()->GetExtent();
         int* specImageExtent =  mw2if->GetOutput()->GetExtent();
         newExtent[0] = specImageExtent[0];
-        newExtent[1] = specImageExtent[1];
+        // This guarantees no clipping at the edge
+        newExtent[1] = specImageExtent[1]-1;
         newExtent[2] = prepImageExtent[2];
         newExtent[3] = prepImageExtent[3];
         newExtent[4] = prepImageExtent[4];
@@ -791,10 +798,10 @@ cout << "PATH: " << fileName << endl;
 
     this->SetSlice(currentSlice);
 
-    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOff();
-    this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOff();
-    this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOff();
-    this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOff();
 
     if (flipper != NULL) {
         flipper->Delete();
@@ -812,6 +819,9 @@ cout << "PATH: " << fileName << endl;
         ToggleColorsForPrinting( sivicImageViewWidget::LIGHT_ON_DARK );
     }
     writer->Delete();
+    this->overlayController->GetView()->Refresh();    
+    this->plotController->GetView()->Refresh();    
+    this->viewRenderingWidget->infoWidget->Render();    
 }
 
 

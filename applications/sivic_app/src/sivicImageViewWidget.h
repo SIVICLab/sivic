@@ -151,7 +151,6 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
 
     private:
 
-        vtkTextActor*               it;
 
         sivicImageViewWidget(const sivicImageViewWidget&);   // Not implemented.
         void operator=(const sivicImageViewWidget&);  // Not implemented.
