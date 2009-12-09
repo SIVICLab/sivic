@@ -1120,9 +1120,9 @@ void svkDdfVolumeReader::InitPlanePositionMacro()
         dcos[2][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos22"); 
     
         float pixelSize[3];
-        pixelSize[0] = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing1"); 
-        pixelSize[1] = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing2"); 
-        pixelSize[2] = this->GetHeaderValueAsInt(ddfMap, "pixelSpacing3"); 
+        pixelSize[0] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing1"); 
+        pixelSize[1] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
+        pixelSize[2] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
