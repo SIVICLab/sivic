@@ -389,6 +389,16 @@ void vtkSivicController::OpenFile( char* openType, const char* startPath )
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
 
+    /* The following line is a catch for what appears to be a KWWidgets bug. If we try
+     * to get the last path from the registry, or even check to see if the last path
+     * exists in the registry and the registry does not exist, the application returns 
+     * from this function before finishing. Saving a dummy value into the registry 
+     * guarantees that it exists before we try to get
+     * the last path.
+     */
+    this->app->SetRegistryValue( 0, "DONOTUSE", "REGISTRYEXISTS","1");
+
+
     string openTypeString( openType ); 
     size_t pos;
     vtkKWLoadSaveDialog *dlg = NULL; 
@@ -405,7 +415,10 @@ void vtkSivicController::OpenFile( char* openType, const char* startPath )
             dlg->SetLastPath( startPath );
         } else {
             dlg->RetrieveLastPathFromRegistry("lastPath");
-            string lastPathString(dlg->GetLastPath());
+            string lastPathString("./");
+            if( this->app->HasRegistryValue (0, "RunTime", "lastPath") ) {
+                lastPathString = dlg->GetLastPath();
+            } 
             size_t found;
             found = lastPathString.find_last_of("/");
             if( strcmp( openType, "image" ) == 0 || strcmp( openType, "overlay" ) == 0){

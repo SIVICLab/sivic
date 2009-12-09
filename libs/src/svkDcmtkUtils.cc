@@ -54,7 +54,7 @@ using namespace svk;
  *      @throws svkTagNotFound
  *      @throws svkIncompatibleVR
  */
-void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const int value, int pos)
+void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const int value, const int pos)
     throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
 

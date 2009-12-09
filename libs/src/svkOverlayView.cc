@@ -1035,14 +1035,19 @@ void svkOverlayView::SetSliceOverlay() {
                              )->SetUserTransform( transformBack );
         transform->Delete();
         transformBack->Delete();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
+        if( overlaySlice >= overlayExtent[4] && overlaySlice <= overlayExtent[5]) {
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
                                    )->SetDisplayExtent( overlayExtent[0], overlayExtent[1], 
                                                         overlayExtent[2], overlayExtent[3], 
                                                         overlaySlice, overlaySlice );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
                                    )->SetDisplayExtent( overlayExtent[0], overlayExtent[1], 
                                                         overlayExtent[2], overlayExtent[3], 
                                                         overlaySlice, overlaySlice );
+        } else {
+            this->TurnPropOff( svkOverlayView::OVERLAY_IMAGE );
+            this->TurnPropOff( svkOverlayView::OVERLAY_IMAGE_BACK );
+        }
     }  
 }
 
@@ -1132,6 +1137,8 @@ void svkOverlayView::SetupOverlay()
 
     this->SetProp( svkOverlayView::COLOR_BAR, this->GetProp( svkOverlayView::COLOR_BAR) );
     this->TurnPropOn( svkOverlayView::COLOR_BAR);
+    this->GetProp( svkOverlayView::COLOR_BAR)->Modified();
+    this->GetRenderer( svkOverlayView::PRIMARY)->Render();
 
     // Now lets make sure we are looking at the appropriate slice.
     this->SetSliceOverlay();
