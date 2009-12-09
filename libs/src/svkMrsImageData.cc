@@ -97,37 +97,6 @@ void svkMrsImageData::GetNumberOfVoxels(int numVoxels[3])
 
  
 /*!
- *  Compute LPS coordinate for a given x,y,z index
- *
- *  \param x
- *  \param y
- *  \param z
- *
- *  \return the L,P,S coordinate of the center of the voxel at
- *  that xyz index.
- */
-void svkMrsImageData::GetPositionFromIndex(int* index, float* posLPS)
-{
-
-    double origin[3];
-    this->GetDcmHeader()->GetOrigin(origin);
-    double pixelSpacing[3];
-    this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-
-    double dcos[3][3];
-    this->GetDcos(dcos);
-
-    for (int i = 0; i < 3; i++) {
-        posLPS[i] = origin[i];
-        for (int j = 0; j < 3; j++) {
-            // This is cell data so we need to move the center by half a voxel
-            posLPS[i] += ((pixelSpacing[i]) * (index[j]+0.5)) * dcos[j][i];
-        }
-    }
-}
-
-
-/*!
  *
  */
 void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGrid )
@@ -236,6 +205,26 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
 
 
     }
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageData::GetSelectionBoxCenter( float* selBoxCenter )
+{
+    vtkUnstructuredGrid* selBox = vtkUnstructuredGrid::New(); 
+    this->GenerateSelectionBox( selBox );
+    vtkPoints* selBoxPoints = selBox->GetPoints();
+    int numPoints = selBoxPoints->GetNumberOfPoints();
+    for( int i = 0; i < 3; i++ ) {
+        selBoxCenter[i] = 0;
+        for( int j = 0; j < numPoints; j++ ) {
+            selBoxCenter[i] += selBoxPoints->GetPoint(j)[i];
+        }
+        selBoxCenter[i] /= numPoints;
+    } 
+
 }
 
 

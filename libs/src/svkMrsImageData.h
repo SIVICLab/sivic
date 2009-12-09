@@ -76,8 +76,8 @@ class svkMrsImageData: public svkImageData
 
         virtual void   GetNumberOfVoxels(int numVoxels[3]);
 
-        void           GetPositionFromIndex(int* index, float* posLPS);
         void           GenerateSelectionBox( vtkUnstructuredGrid* selectionBox );
+        void           GetSelectionBoxCenter( float* selBoxCenter );
         void           GetSelectionBoxDimensions( float* dims );
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );

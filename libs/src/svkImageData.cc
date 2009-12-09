@@ -1217,13 +1217,17 @@ void svkImageData::GetImageCenter( float* posLPS)
     this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
     float index[3];
     int* extent = this->GetExtent(); 
-    index[0] = (extent[1] - extent[0])/2.0;
-    index[1] = (extent[3] - extent[2])/2.0;
-    index[2] = (extent[5] - extent[4])/2.0;
+
+    int numVoxels[3];
+    numVoxels[0] = this->GetDcmHeader()->GetIntValue("Columns");
+    numVoxels[1] = this->GetDcmHeader()->GetIntValue("Rows");
+    numVoxels[2] = this->GetDcmHeader()->GetIntValue( "NumberOfFrames" ) / this->GetDcmHeader()->GetNumberOfCoils(); 
+
     double dcos[3][3];
     this->GetDcos(dcos);
 
     for (int i = 0; i < 3; i++) {
+        index[i] = (numVoxels[i]-1)/2.0;
         posLPS[i] = origin[i];  
         for (int j = 0; j < 3; j++) { 
             posLPS[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
