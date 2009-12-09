@@ -298,11 +298,12 @@ void sivicViewRenderingWidget::ResetInfoText()
 
         // Center
         float center[3]; 
-        model->GetDataObject( "SpectroscopicData" )->GetImageCenter( center );
+        svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
         infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl << endl;
         double* spacing = model->GetDataObject( "SpectroscopicData" )->GetSpacing();
         infoSS << "CSI Resolution:" << spacing[0] * spacing[1] * spacing[2] / 1000.0 << "cc" <<  endl;
         infoSS << "Size RAS: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << "mm" <<  endl;
+        model->GetDataObject( "SpectroscopicData" )->GetImageCenter( center );
         infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << " mm"<< endl << endl;
     } else {
         infoSS << "CSI File: " << endl;
