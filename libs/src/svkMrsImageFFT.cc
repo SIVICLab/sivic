@@ -147,7 +147,7 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
   
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numChannels  = data->GetNumberOfChannels();
+    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
 
     vtkImageFourierFilter* vtkFTFilter = vtkImageFFT::New();
 

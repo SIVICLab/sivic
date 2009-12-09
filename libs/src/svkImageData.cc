@@ -1233,37 +1233,6 @@ void svkImageData::GetImageCenter( float* posLPS)
 
 
 /*!
- *  Get the number of data channels (receiver coils) from the DcmHeader. 
- */
-int svkImageData::GetNumberOfChannels()
-{
-    int numCoils = 1;
-    int numberOfFrames = this->GetDcmHeader()->GetIntValue("NumberOfFrames");
-
-    int numDims = this->GetDcmHeader()->GetNumberOfItemsInSequence("DimensionIndexSequence");
-
-    if (numDims > 1) {
-        set <int> coils;
-        for (int i = 0; i < numberOfFrames; i++ ) {
-
-            //get number of coils and divide numberof frames by it to get number of slices
-            int value = this->GetDcmHeader()->GetIntSequenceItemElement(
-                "FrameContentSequence",
-                0, //frame number
-                "DimensionIndexValues",
-                "PerFrameFunctionalGroupsSequence",
-                i,
-                1
-            );
-            coils.insert(value);
-        }
-        numCoils = coils.size();
-    }
-    return numCoils;
-}
-
-
-/*!
  *  Get the number of time points from the DcmHeader.       
  */
 int svkImageData::GetNumberOfTimepoints()

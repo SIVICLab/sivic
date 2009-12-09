@@ -234,7 +234,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             spectraData = static_cast<vtkImageData*>(newData );
             int* extent = newData->GetExtent();
             if( tlcBrc == NULL ) {
-                int channels = svkMrsImageData::SafeDownCast( newData )->GetNumberOfChannels();
+                int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
                 this->imageViewWidget->sliceSlider->SetRange( extent[4]+1, extent[5]); 
                 int centerSlice = (extent[5] - extent[4] ) / 2;
                 this->imageViewWidget->sliceSlider->SetValue( centerSlice + 1);
@@ -651,7 +651,7 @@ cout << "PATH: " << fileName << endl;
     int currentSlice = this->plotController->GetSlice(); 
 
     int numberOfFrames = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
-    int numberOfChannels = this->model->GetDataObject("SpectroscopicData")->GetNumberOfChannels();
+    int numberOfChannels = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfCoils();
     int numberOfSlices = numberOfFrames/numberOfChannels; 
 
     svkImageData* outputImage = NULL;
@@ -1298,7 +1298,7 @@ void vtkSivicController::EnableWidgets()
 
     if ( model->DataExists("SpectroscopicData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
-        int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetNumberOfChannels();
+        int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 

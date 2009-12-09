@@ -153,16 +153,16 @@ int svkDcmHeader::GetPixelDataType()
 /*!
  *  Get the origin of the data set. 
  */
-int svkDcmHeader::GetOrigin(double origin[3], int frameNumber)
+int svkDcmHeader::GetOrigin(double origin[3], int sliceNumber)
 {
 
     int status = 0; 
 
-    if ( frameNumber == 0 && this->WasModified() ) {
+    if ( sliceNumber == 0 && this->WasModified() ) {
         this->UpdateSpatialParams();
     }
 
-    if (frameNumber == 0) {
+    if (sliceNumber == 0) {
 
         origin[0] = this->origin0[0]; 
         origin[1] = this->origin0[1]; 
@@ -183,7 +183,7 @@ int svkDcmHeader::GetOrigin(double origin[3], int frameNumber)
                     "ImagePositionPatient",
                     i, 
                     "PerFrameFunctionalGroupsSequence",
-                    frameNumber
+                    sliceNumber
                 );
                 iss->str(originString);
                 *iss >> origin[i];
@@ -273,18 +273,18 @@ void svkDcmHeader::GetNormalVector(double normal[3])
     double orientation[2][3]; 
     this->GetOrientation( orientation );
 
-    double rowVector[3];
-    rowVector[0] = orientation[0][0];
-    rowVector[1] = orientation[0][1];
-    rowVector[2] = orientation[0][2];
-
     double colVector[3];
-    colVector[0] = orientation[1][0];
-    colVector[1] = orientation[1][1];
-    colVector[2] = orientation[1][2];
+    colVector[0] = orientation[0][0];
+    colVector[1] = orientation[0][1];
+    colVector[2] = orientation[0][2];
+
+    double rowVector[3];
+    rowVector[0] = orientation[1][0];
+    rowVector[1] = orientation[1][1];
+    rowVector[2] = orientation[1][2];
 
     vtkMath* math = vtkMath::New();
-    math->Cross(rowVector, colVector, normal);
+    math->Cross(colVector, rowVector, normal);
     math->Delete();
 }
 
@@ -465,7 +465,8 @@ void svkDcmHeader::UpdatePixelSpacing()
         this->pixelSpacing[i] = size[i];
     }
 
-    if (this->GetIntValue( "NumberOfFrames" ) >=2) {
+    int numSlices = this->GetIntValue( "NumberOfFrames" ) / this->GetNumberOfCoils(); 
+    if (numSlices >= 2) {
 
         //  If can't get origins, then return pixelSize as slice spacing
         double origin0[3];
@@ -530,4 +531,33 @@ void svkDcmHeader::UpdateOrigin0()
     }
 }
 
+
+/*!
+ *
+ */
+int svkDcmHeader::GetNumberOfCoils()
+{
+    int numCoils = 1;
+    int numberOfFrames = this->GetIntValue("NumberOfFrames");
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+
+    if (numDims > 1) {
+        set <int> coils;
+        for (int i = 0; i < numberOfFrames; i++ ) {
+
+            //get number of coils and divide numberof frames by it to get number of slices
+            int value = this->GetIntSequenceItemElement(
+                "FrameContentSequence",
+                0, //frame number
+                "DimensionIndexValues",
+                "PerFrameFunctionalGroupsSequence",
+                i,
+                1
+            );
+            coils.insert(value);
+        }
+        numCoils = coils.size();
+    }
+    return numCoils;
+}
 

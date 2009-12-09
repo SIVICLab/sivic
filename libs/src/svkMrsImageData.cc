@@ -199,6 +199,8 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
             selectionBoxPoints->InsertPoint(i, vertices[i*numDims], 
                                                vertices[i*numDims + 1], 
                                                vertices[i*numDims + 2]   );
+cout << "VERTEX: " << vertices[i*numDims] << " " <<  vertices[i*numDims + 1] << " " <<  vertices[i*numDims + 2] << endl; 
+                                              
         }
         // And now lets use a Hexahedron to represent them.
         // The point ID's must be in a specific order for this to work, 
@@ -288,7 +290,7 @@ void svkMrsImageData::UpdateRange()
     double realRange[2];
     double imagRange[2];
     double magRange[2];
-    int numChannels = this->GetNumberOfChannels();
+    int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
      for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {

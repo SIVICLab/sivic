@@ -51,6 +51,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <set>
 
 
 namespace svk {
@@ -447,6 +448,7 @@ class svkDcmHeader: public vtkObject
                                 DcmDataOrderingDirection dataSliceOrder = SLICE_ORDER_UNDEFINED 
                             );
         void                SetSliceOrder( DcmDataOrderingDirection sliceOrderVal );
+        int                 GetNumberOfCoils(); 
 
 
     protected:

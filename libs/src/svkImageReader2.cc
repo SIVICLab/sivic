@@ -191,6 +191,21 @@ void svkImageReader2::SetupOutputInformation()
     //  ============================
     double origin[3];
     dcmHdr->GetOrigin(origin);
+
+    if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
+        double pixelSize[3];
+        dcmHdr->GetPixelSize(pixelSize);
+
+        double dcos[3][3];
+        dcmHdr->GetDataDcos(dcos); 
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                origin[i] -= (pixelSize[j]/2) * dcos[j][i];
+            }
+        }
+    }
+
     this->SetDataOrigin( origin );
 
     this->SetupOutputScalarData(); 
@@ -210,27 +225,8 @@ void svkImageReader2::SetupOutputExtent()
     int numberOfFrames = this->GetOutput()->GetDcmHeader()->GetIntValue("NumberOfFrames");
     numVoxels[2] = numberOfFrames; 
 
-    int numDims = this->GetOutput()->GetDcmHeader()->GetNumberOfItemsInSequence("DimensionIndexSequence");
-
-    if (numDims > 1) {
-        set <int> coils;  
-        for (int i = 0; i < numberOfFrames; i++ ) {
-
-            //get number od coils and divide numberof frames by it to get number of slices
-            int value = this->GetOutput()->GetDcmHeader()->GetIntSequenceItemElement(
-                "FrameContentSequence", 
-                0, //frame number 
-                "DimensionIndexValues", 
-                "PerFrameFunctionalGroupsSequence", 
-                i, 
-                1
-            ); 
-            coils.insert(value); 
-        }
-        int numCoils = coils.size(); 
-        numVoxels[2] /= numCoils;  
-    }
-    
+    int numCoils =  this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
+    numVoxels[2] /= numCoils;  
 
     if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
         this->SetDataExtent(

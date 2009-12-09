@@ -150,7 +150,7 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     vtkCellData* cellData = data->GetCellData();   
     int numFrequencyPoints = cellData->GetNumberOfTuples();
     int numComponents = cellData->GetNumberOfComponents();
-    int numChannels  = data->GetNumberOfChannels();
+    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
 
     float re;
     float im;

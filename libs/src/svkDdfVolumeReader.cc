@@ -235,7 +235,6 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
     }
 
     double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
     this->GetOutput()->SetDcos(dcos);
 
@@ -1124,12 +1123,6 @@ void svkDdfVolumeReader::InitPlanePositionMacro()
         pixelSize[1] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
         pixelSize[2] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                toplc[i] -= (pixelSize[j]/2) * dcos[j][i];
-            }
-        }
-
 
         float displacement[3]; 
         float frameLPSPosition[3]; 
@@ -1157,7 +1150,7 @@ void svkDdfVolumeReader::InitPlanePositionMacro()
                 oss << frameLPSPosition[j];
                 imagePositionPatient += oss.str();
                 if (j < 2) {
-                imagePositionPatient += '\\';
+                    imagePositionPatient += '\\';
                 }
             }
 
@@ -1235,6 +1228,7 @@ void svkDdfVolumeReader::InitPlaneOrientationMacro()
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
+    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     math->Delete();
 
 }
@@ -2288,10 +2282,10 @@ bool svkDdfVolumeReader::IsMultiCoil()
 {
     bool isMultiCoil = false; 
 
-    if ( ddfMap["coilName"].find("8HRBRAIN") != string::npos || ddfMap["coilName"].find("HDBreastRight") != string::npos )  { 
+    //if ( ddfMap["coilName"].find("8HRBRAIN") != string::npos || ddfMap["coilName"].find("HDBreastRight") != string::npos )  { 
         if (this->GetFileNames()->GetNumberOfValues() > 1 ) { 
             isMultiCoil = true; 
         }
-    } 
+    //} 
     return isMultiCoil; 
 }

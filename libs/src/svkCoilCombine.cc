@@ -87,7 +87,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
 
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numChannels  = data->GetNumberOfChannels();
+    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
 
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 

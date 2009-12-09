@@ -659,66 +659,37 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         // Calculate plane origin
         if( static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS] != NULL ) {
             static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetDcos( dcos );
-            // We need to extract the vectors of the dcos for the projection
-            wVec[0] = dcos[2][0];
-            wVec[1] = dcos[2][1];
-            wVec[2] = dcos[2][2];
-            xVec[0] = dcos[0][0];
-            xVec[1] = dcos[1][0];
-            xVec[2] = dcos[2][0];
-            yVec[0] = dcos[0][1];
-            yVec[1] = dcos[1][1];
-            yVec[2] = dcos[2][1];
-            zVec[0] = dcos[0][2];
-            zVec[1] = dcos[1][2];
-            zVec[2] = dcos[2][2];
-            origin = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetOrigin( );
-            spacing = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetSpacing( );
             slice = static_cast<svkOverlayView*>(dvController->GetView())->slice; 
-            planeOrigin[0] = origin[0] + vtkMath::Dot( spacing, xVec ) * (slice+0.5);
-            planeOrigin[1] = origin[1] + vtkMath::Dot( spacing, yVec ) * (slice+0.5);
-            planeOrigin[2] = origin[2] + vtkMath::Dot( spacing, zVec ) * (slice+0.5);
+            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetDcmHeader()->GetOrigin(
+                planeOrigin, slice
+            ); 
         } else {
             static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetDcos( dcos );
-            // We need to extract the vectors of the dcos for the projection
-            wVec[0] = dcos[2][0];
-            wVec[1] = dcos[2][1];
-            wVec[2] = dcos[2][2];
-            xVec[0] = dcos[0][0];
-            xVec[1] = dcos[1][0];
-            xVec[2] = dcos[2][0];
-            yVec[0] = dcos[0][1];
-            yVec[1] = dcos[1][1];
-            yVec[2] = dcos[2][1];
-            zVec[0] = dcos[0][2];
-            zVec[1] = dcos[1][2];
-            zVec[2] = dcos[2][2];
-            origin = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetOrigin( );
-            spacing = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetSpacing( );
             slice = static_cast<svkOverlayView*>(dvController->GetView())->imageViewer->GetSlice(); 
-            planeOrigin[0] = origin[0] + vtkMath::Dot( spacing, xVec ) * slice;
-            planeOrigin[1] = origin[1] + vtkMath::Dot( spacing, yVec ) * slice;
-            planeOrigin[2] = origin[2] + vtkMath::Dot( spacing, zVec ) * slice;
-
+            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetDcmHeader()->GetOrigin(
+                planeOrigin, slice
+            ); 
         }
         mousePosition->SetCoordinateSystemToDisplay();
         mousePosition->SetValue( pos[0], pos[1], 0); 
         imageCords = mousePosition->GetComputedWorldValue( viewerRenderer );
         // Project selection point onto the image
+
+        // We need to extract the vectors of the dcos for the projection
+        wVec[0] = dcos[2][0];
+        wVec[1] = dcos[2][1];
+        wVec[2] = dcos[2][2];
+        xVec[0] = dcos[0][0];
+        xVec[1] = dcos[1][0];
+        xVec[2] = dcos[2][0];
+        yVec[0] = dcos[0][1];
+        yVec[1] = dcos[1][1];
+        yVec[2] = dcos[2][1];
+        zVec[0] = dcos[0][2];
+        zVec[1] = dcos[1][2];
+        zVec[2] = dcos[2][2];
+
         vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, wVec, projection );
-        /*
-        double t, xo[3];
-
-        xo[0] = imageCords[0] - planeOrigin[0];
-        xo[1] = imageCords[1] - planeOrigin[1];
-        xo[2] = imageCords[2] - planeOrigin[2];
-
-        t = vtkMath::Dot(wVec,xo);
-
-        projection[0] = imageCords[0] - t * wVec[0];
-        projection[1] = imageCords[1] - t * wVec[1];
-        projection[2] = imageCords[2] - t * wVec[2];
-        */ 
 
         out.setf(ios::fixed,ios::floatfield); 
         out.precision(1);

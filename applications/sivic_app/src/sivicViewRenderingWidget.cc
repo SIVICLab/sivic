@@ -275,7 +275,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         float sliceLocation[3];
 
         // Slice Position:
-        int sliceIndex[3] = {0,0,this->plotController->GetSlice() +1};
+        int sliceIndex[3] = {0, 0, this->plotController->GetSlice() };
         model->GetDataObject( "SpectroscopicData" )->GetPositionFromIndex( sliceIndex, sliceLocation );
         infoSS << "CSI Slice Pos:  " << sliceLocation[2] << endl;
         

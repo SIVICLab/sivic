@@ -201,7 +201,6 @@ class svkImageData: public vtkImageData
         virtual void       GetImageCenter( float* center );
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
-        int                GetNumberOfChannels();
         int                GetNumberOfTimepoints();
 
     // REQUIRED?

@@ -253,7 +253,6 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
      * registered twice to the same reader which would cause the reader to never delete.
      */
     double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
     this->GetOutput()->SetDcos(dcos); 
 
@@ -739,6 +738,7 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
+    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     math->Delete();
 
 }

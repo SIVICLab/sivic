@@ -252,7 +252,6 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
      * registered twice to the same reader which would cause the reader to never delete.
      */
     double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
     this->GetOutput()->SetDcos(dcos);
 
