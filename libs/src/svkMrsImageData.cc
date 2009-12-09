@@ -199,8 +199,6 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
             selectionBoxPoints->InsertPoint(i, vertices[i*numDims], 
                                                vertices[i*numDims + 1], 
                                                vertices[i*numDims + 2]   );
-cout << "VERTEX: " << vertices[i*numDims] << " " <<  vertices[i*numDims + 1] << " " <<  vertices[i*numDims + 2] << endl; 
-                                              
         }
         // And now lets use a Hexahedron to represent them.
         // The point ID's must be in a specific order for this to work, 

@@ -259,7 +259,6 @@ void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
         for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
             for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
                 for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
-cout <<  "WOWZERS " << x << " " << y << " "  << z << endl;
                     SetCellSpectrum(data, x, y, z, coilNum);
                 }
             }
