@@ -277,6 +277,12 @@ void svkMrsImageData::UpdateRange()
     double realRange[2];
     double imagRange[2];
     double magRange[2];
+    realRange[0] = VTK_DOUBLE_MAX;
+    realRange[1] = VTK_DOUBLE_MIN;
+    imagRange[0] = VTK_DOUBLE_MAX;
+    imagRange[1] = VTK_DOUBLE_MIN;
+    magRange[0] = VTK_DOUBLE_MAX;
+    magRange[1] = VTK_DOUBLE_MIN;
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
      for (int z = extent[4]; z <= extent[5]-1; z++) {

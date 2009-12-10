@@ -1259,6 +1259,8 @@ void vtkSivicController::ResetRange( bool useFullRange )
             data->GetDataRange( range, svkImageData::IMAGINARY  );
         } else if( this->plotController->GetComponent() == svkBoxPlot::MAGNITUDE ) {
             data->GetDataRange( range, svkImageData::MAGNITUDE  );
+        } else {
+            cout << "UNKNOWN COMPONENT: " << this->plotController->GetComponent() << endl; 
         }
         this->spectraViewWidget->ySpecRange->SetWholeRange( range[0], range[1] );
         if ( useFullRange || domain == "TIME" ) {
