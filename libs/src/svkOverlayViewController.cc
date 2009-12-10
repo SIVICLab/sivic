@@ -693,14 +693,14 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
 
         out.setf(ios::fixed,ios::floatfield); 
         out.precision(1);
-        out << "x: " << projection[0] << endl;
-        out << "y: " << projection[1] << endl;    
-        out << "z: " << projection[2];    
+        out << "L: " << projection[0] << endl;
+        out << "P: " << projection[1] << endl;    
+        out << "S: " << projection[2];    
         static_cast<vtkTextActor*>(dvController->view->GetProp(svkOverlayView::COORDINATES))->SetInput((out.str()).c_str());
     } else { 
-        out<<"x: "<<endl;
-        out<<"y: "<<endl;    
-        out<<"z: ";    
+        out<<"L: "<<endl;
+        out<<"P: "<<endl;    
+        out<<"S: ";    
         static_cast<vtkTextActor*>(dvController->view->GetProp(svkOverlayView::COORDINATES))->SetInput((out.str()).c_str());
     }
     mousePosition->Delete();

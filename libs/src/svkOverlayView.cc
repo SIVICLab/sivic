@@ -216,6 +216,9 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     // Now we need to grab the selection box
     vtkActorCollection* selectionTopo = dataVector[MRS]->GetTopoActorCollection( 1 );
     selectionTopo->InitTraversal();
+    if( this->GetRenderer( svkOverlayView::PRIMARY)->HasProp( this->GetProp( svkOverlayView::VOL_SELECTION) ) ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->RemoveActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+    }
     this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::PLOT_GRID ) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );

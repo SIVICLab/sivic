@@ -94,6 +94,44 @@ void svkDcmVolumeReader::ExecuteInformation()
         }
 
         this->InitDcmHeader();
+        this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
+        if (this->numFrames > 1) {
+            double origin0[3];
+            this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
+            double origin1[3];
+            this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, this->numFrames);
+
+            //  Determine whether the data is ordered with or against the slice normal direction.
+            double normal[3];
+            this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
+       
+            //  Get vector from first to last image and get the dot product of that vector with the normal:
+            double dcosSliceOrder[3];
+            for (int j = 0; j < 3; j++) {
+                dcosSliceOrder[j] =  origin1[j] - origin0[j];
+            }
+       
+            //  Use the scalar product to determine whether the data in the .cmplx
+            //  file is ordered along the slice normal or antiparalle to it.
+            vtkMath* math = vtkMath::New();
+            if (math->Dot(normal, dcosSliceOrder) > 0 ) {
+                this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+            } else {
+                this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
+            }
+        } else {
+            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+        }
+
+        double dcos[3][3];
+        this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
+
+        this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
+        this->GetOutput()->SetDcos(dcos);
+
+        //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
+        //  been allocated. but that requires the number of components to be specified.
+        this->GetOutput()->GetIncrements();
         this->SetupOutputInformation();
 
     }
@@ -124,44 +162,6 @@ void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
 
     this->LoadData(data);
 
-    this->numFrames = data->GetDcmHeader()->GetIntValue( "NumberOfFrames");
-    if (this->numFrames > 1) {
-        double origin0[3];
-        this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
-        double origin1[3];
-        this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, this->numFrames);
-
-        //  Determine whether the data is ordered with or against the slice normal direction.
-        double normal[3];
-        this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
-   
-        //  Get vector from first to last image and get the dot product of that vector with the normal:
-        double dcosSliceOrder[3];
-        for (int j = 0; j < 3; j++) {
-            dcosSliceOrder[j] =  origin1[j] - origin0[j];
-        }
-   
-        //  Use the scalar product to determine whether the data in the .cmplx
-        //  file is ordered along the slice normal or antiparalle to it.
-        vtkMath* math = vtkMath::New();
-        if (math->Dot(normal, dcosSliceOrder) > 0 ) {
-            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
-        } else {
-            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
-        }
-    } else {
-        this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
-    }
-
-    double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
-
-    this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
-    this->GetOutput()->SetDcos(dcos);
-
-    //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
-    //  been allocated. but that requires the number of components to be specified.
-    this->GetOutput()->GetIncrements();
 }
 
 
