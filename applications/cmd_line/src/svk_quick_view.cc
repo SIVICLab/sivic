@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <getopt.h>
 #include <string.h>
 #include <svkDataModel.h>
 #include <vtkInteractorStyleTrackballCamera.h>
@@ -46,8 +45,6 @@ static void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisOb
 struct globalArgs_t {
 } globalArgs;
 
-static const struct option longOpts[] = {
-};
 static const char *optString = "h";
 
 vtkTextActor* infoActor;
@@ -56,9 +53,8 @@ vtkTextActor* infoActor;
 int main ( int argc, char** argv )
 {
     int opt = 0;
-    int longIndex;
 
-    opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
+    opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
         switch( opt ) {
             case 'h':
@@ -69,7 +65,7 @@ int main ( int argc, char** argv )
                 DisplayUsage();
             break;
         }
-        opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
+        opt = getopt( argc, argv, optString );
     }
     if( argc < 2 ) {
         DisplayUsage();
@@ -171,8 +167,6 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
 {
     svkDataViewController* dvController = static_cast<svkDataViewController*>(thisObject);
     stringstream text;
-    text<< "USE + AND - TO CHANGE SLICE. CURRENT SLICE:" << dvController->GetSlice() + 1;
-    infoActor->SetInput( (text.str()).c_str() );
     char keyPressed;
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
@@ -182,6 +176,8 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     } else if ( keyPressed == '-' ) {
         dvController->SetSlice( dvController->GetSlice() - 1 );
     }
+    text<< "USE + AND - TO CHANGE SLICE. CURRENT SLICE:" << dvController->GetSlice() + 1;
+    infoActor->SetInput( (text.str()).c_str() );
     dvController->GetView()->Refresh();
 }
 
