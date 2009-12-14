@@ -517,7 +517,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     if (status.bad()) {
         cerr << "Error: could not insert element(" << status.text() << ")" << endl;
     }
-
+    delete[] inputArray;
     this->Modified();
 }
 
@@ -925,6 +925,7 @@ bool svkDcmtkAdapter::ElementExists(const char* elementName, const char* parentS
             }
 
         }
+        delete searchStack;
     }
     if (this->GetDebug() && !elementExists) {
 

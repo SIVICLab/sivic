@@ -147,7 +147,6 @@ void MemoryTest()
     plotController->SetSlice(1);
     plotController->HighlightSelectionVoxels();
     plotController->SetInput( firstOverlay, 1 );
-    plotController->SetInput( secondOverlay, 1 );
     window->Render();
     
     
@@ -169,6 +168,7 @@ void MemoryTest()
     plotController->SetRWInteractor( rwi );
     window->Render();
     plotController->SetInput( secondSpectra  );
+    plotController->SetInput( secondOverlay, 1 );
     window->Render();
     plotController->SetSlice( 1 );
     window->Render();

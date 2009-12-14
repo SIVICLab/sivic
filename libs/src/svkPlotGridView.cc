@@ -81,6 +81,7 @@ svkPlotGridView::svkPlotGridView()
 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetLayer(0);
     this->plotGrid->SetRenderer( this->GetRenderer( svkPlotGridView::PRIMARY) );
+    this->metActor = NULL;
 
 }
 
@@ -95,6 +96,10 @@ svkPlotGridView::~svkPlotGridView()
     if( plotGrid != NULL ) {
         plotGrid->Delete();
         plotGrid = NULL;
+    }
+    if( this->metActor != NULL ) {
+        this->metActor->Delete();
+        this->metActor = NULL;
     }
    
     // NOTE: The data is destroyed in the superclass 
@@ -306,7 +311,9 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         projectedData->SetExtent( extent );
         projectedData->SetSpacing( spacing[0], spacing[1], spacing[2] );
         projectedData->GetPointData()->SetScalars( data->GetPointData()->GetScalars() );
-        vtkActor2D* metActor = vtkActor2D::New();
+        if( this->metActor == NULL ) {
+            this->metActor = vtkActor2D::New();
+        }
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         vtkImageClip* metTextClipper = vtkImageClip::New();
         metTextClipper->SetInput( projectedData );
@@ -338,14 +345,13 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         metMapper->SetTransform(optimus);
         optimus->Delete();
-        metActor->SetMapper( metMapper );  
+        this->metActor->SetMapper( metMapper );  
         metMapper->Delete();
 
         // If it has not been added, add it
-        if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( metActor ) ) {
-            this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( metActor );
+        if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->metActor ) ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( this->metActor );
         }
-        metActor->Delete();
         UpdateMetaboliteText( plotGrid->GetCurrentTlcBrc() );
 
    } 

@@ -134,6 +134,7 @@ class svkPlotGridView : public svkDataView
         int                    slice;
         svkPlotGrid*           plotGrid; 
         vector<vtkImageClip*>  metClippers;
+        vtkActor2D*            metActor;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
         void                   SetSelection( int* selectionArea );
