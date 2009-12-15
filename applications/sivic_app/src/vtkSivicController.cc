@@ -1341,6 +1341,9 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->imageSlider->EnabledOn();
     }
 
+    if ( model->DataExists("MetaboliteData")) {
+        this->spectraViewWidget->overlayImageCheck->EnabledOn();
+    } 
     if ( model->DataExists("OverlayData") ||  model->DataExists("MetaboliteData")) {
         this->imageViewWidget->interpolationBox->EnabledOn();
         this->imageViewWidget->lutBox->EnabledOn();
@@ -1362,6 +1365,7 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->imageSlider->EnabledOff();
     this->imageViewWidget->orthoXSlider->EnabledOff();
     this->imageViewWidget->orthoYSlider->EnabledOff();
+    this->spectraViewWidget->overlayImageCheck->EnabledOff();
     this->spectraViewWidget->unitSelectBox->EnabledOff();
     this->spectraViewWidget->componentSelectBox->EnabledOff();
     this->spectraViewWidget->xSpecRange->EnabledOff();
