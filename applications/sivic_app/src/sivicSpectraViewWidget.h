@@ -109,6 +109,7 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
 
         vtkKWRenderWidget*              detailedPlotWidget;
         vtkKWCheckButton*               overlayImageCheck;
+        vtkKWCheckButton*               overlayTextCheck;
         vtkKWRange*                     xSpecRange;
         vtkKWRange*                     ySpecRange;
         vtkKWMenuButtonWithLabel*       unitSelectBox;

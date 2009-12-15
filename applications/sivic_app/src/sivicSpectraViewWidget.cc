@@ -28,6 +28,7 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
     this->ySpecRange = NULL;
     this->specViewFrame = NULL;
     this->overlayImageCheck = NULL;
+    this->overlayTextCheck = NULL;
 
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->detailedPlotWindow = NULL;
@@ -49,6 +50,11 @@ sivicSpectraViewWidget::~sivicSpectraViewWidget()
     if( this->overlayImageCheck != NULL ) {
         this->overlayImageCheck->Delete();
         this->overlayImageCheck = NULL;
+    }
+
+    if( this->overlayTextCheck != NULL ) {
+        this->overlayTextCheck->Delete();
+        this->overlayTextCheck = NULL;
     }
 
     if( this->detailedPlotButton != NULL ) {
@@ -128,6 +134,14 @@ void sivicSpectraViewWidget::CreateWidget()
     this->overlayImageCheck->SetPadX(2);
     this->overlayImageCheck->SetText("Overlay Image");
     this->overlayImageCheck->SelectedStateOff();
+
+    this->overlayTextCheck = vtkKWCheckButton::New();
+    this->overlayTextCheck->SetParent(this);
+    this->overlayTextCheck->Create();
+    this->overlayTextCheck->EnabledOff();
+    this->overlayTextCheck->SetPadX(2);
+    this->overlayTextCheck->SetText("Overlay Text");
+    this->overlayTextCheck->SelectedStateOn();
 
     // Create the x range widget 
     this->xSpecRange = vtkKWRange::New(); 
@@ -257,6 +271,8 @@ void sivicSpectraViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -rowspan 7 -columnspan 2 -sticky wnse -pady 5 ", this->specViewFrame->GetWidgetName(), row); 
         this->Script("grid %s -in %s -row 0 -column 0 -sticky ew -padx 12 -pady 5", 
                     this->overlayImageCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
+        this->Script("grid %s -in %s -row 0 -column 1 -sticky ew -padx 12 -pady 5", 
+                    this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
         this->Script("grid %s -in %s -row 1 -column 0 -sticky ew -padx 12 -pady 5", 
                     this->xSpecRange->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
         this->Script("grid %s -in %s -row 1 -column 1 -sticky sw", 
@@ -283,6 +299,9 @@ void sivicSpectraViewWidget::CreateWidget()
     // Here we will add callbacks 
     this->AddCallbackCommandObserver(
         this->overlayImageCheck, vtkKWCheckButton::SelectedStateChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->overlayTextCheck, vtkKWCheckButton::SelectedStateChangedEvent );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -350,6 +369,13 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
             this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
         } else {
             this->plotController->TurnPropOff( svkPlotGridView::OVERLAY_IMAGE );
+        }
+        this->plotController->GetView()->Refresh();
+    } else if( caller == this->overlayTextCheck && event == vtkKWCheckButton::SelectedStateChangedEvent) {
+        if ( this->overlayTextCheck->GetSelectedState() ) {
+            this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
+        } else {
+            this->plotController->TurnPropOff( svkPlotGridView::OVERLAY_TEXT );
         }
         this->plotController->GetView()->Refresh();
     // Respond to a change in the x range (frequency)
