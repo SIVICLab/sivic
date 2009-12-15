@@ -49,14 +49,19 @@
 #include <vtkLabeledDataMapper.h>
 #include <vtkSelectVisiblePoints.h>
 #include <vtkImageClip.h>
+#include <vtkImageActor.h>
+#include <svkOpenGLOrientedImageActor.h>
 #include <vtkTextProperty.h>
 #include <vtkDoubleArray.h>
+#include <svkImageMapToColors.h>
 
 #include <svkDataView.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGrid.h>
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
+#include <svkLookupTable.h>
+#include <svkImageClip.h>
 
 #include <vector>
 
@@ -102,6 +107,7 @@ class svkPlotGridView : public svkDataView
         //! Enum represents objects in the scene
         typedef enum {
             VOL_SELECTION = 0, 
+            OVERLAY_IMAGE,
             SAT_BANDS,
             LAST_PROP = SAT_BANDS 
         } ActorType;
@@ -135,6 +141,7 @@ class svkPlotGridView : public svkDataView
         svkPlotGrid*           plotGrid; 
         vector<vtkImageClip*>  metClippers;
         vtkActor2D*            metActor;
+        vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
         void                   SetSelection( int* selectionArea );

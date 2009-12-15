@@ -720,6 +720,8 @@ void svkPlotGrid::AlignCamera( bool invertView )
         double zoom;
         double viewWidth = viewBounds[1] - viewBounds[0];
         double viewHeight = viewBounds[3] - viewBounds[2];
+        viewBounds[4] = renderer->ComputeVisiblePropBounds()[4];
+        viewBounds[5] = renderer->ComputeVisiblePropBounds()[5];
         double viewDepth = viewBounds[5] - viewBounds[4];
         double diagonal = sqrt( pow(viewWidth,2) + pow(viewHeight,2) + pow(viewDepth,2) );
         renderer->DrawOff();
@@ -894,13 +896,25 @@ void svkPlotGrid::UpdateDataArrays( int* tlcRange, int* brcRange)
     int ID;
     if( data != NULL ) { 
         int* extent = data->GetExtent();
+        double* spacing = data->GetSpacing();
+        double plotAreaBounds[6];
+        string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( slice < extent[5] && slice >= extent[4] ) { 
             for (int yInd = tlcRange[1]; yInd <= brcRange[1]; yInd++) {
                 for (int xInd = tlcRange[0]; xInd <= brcRange[0]; xInd++) {
                     ID = this->data->GetIDFromIndex(xInd, yInd, this->slice) - 
                         (this->slice * this->maxPlotsX * this->maxPlotsY );
                     tmpXYPlot = static_cast<svkBoxPlot*>( xyPlots->GetItemAsObject(ID) ); 
+                    plotAreaBounds[0] = xInd*spacing[0]; 
+                    plotAreaBounds[1] = (xInd+1)*spacing[0]; 
+                    plotAreaBounds[2] = yInd*spacing[1]; 
+                    plotAreaBounds[3] = (yInd+1)*spacing[1]; 
+                    plotAreaBounds[4] = (slice-0.5)*spacing[2]; 
+                    plotAreaBounds[5] = (slice-0.5)*spacing[2]; 
                     tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(this->data->GetSpectrum(xInd, yInd, this->slice, 0, this->channel)));
+                    if( acquisitionType != "SINGLE VOXEL" ) {
+                        tmpXYPlot->SetPlotAreaBounds( plotAreaBounds );   
+                    }
                 }
             }
         }

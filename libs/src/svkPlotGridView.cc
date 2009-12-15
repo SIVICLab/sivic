@@ -83,6 +83,11 @@ svkPlotGridView::svkPlotGridView()
     this->plotGrid->SetRenderer( this->GetRenderer( svkPlotGridView::PRIMARY) );
     this->metActor = NULL;
 
+    svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
+    overlayActor->Delete();
+    
+    
 }
 
 
@@ -158,10 +163,15 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
 void svkPlotGridView::SetSlice(int slice)
 {
     this->slice = slice;
+    this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
     this->plotGrid->SetSlice(slice);
     if( dataVector.size() > MET && dataVector[MET] != NULL ) {
         UpdateMetaboliteText(plotGrid->GetCurrentTlcBrc());
+        int* extent = dataVector[MET]->GetExtent();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], slice, slice);
+        this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
     }
+    this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
 }
 
 
@@ -305,9 +315,10 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         // Since the svkPlotGrid maintains the coordinate system of the image
         // it is necessary to drop the dcos. We are simply putting the view 
         // into the reference from of the oblique data.
-
-        vtkImageData* projectedData = vtkImageData::New(); 
+        double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+        svkMriImageData* projectedData = svkMriImageData::New(); 
         projectedData->SetOrigin(0,0,0);
+        projectedData->SetDcos(dcos);
         projectedData->SetExtent( extent );
         projectedData->SetSpacing( spacing[0], spacing[1], spacing[2] );
         projectedData->GetPointData()->SetScalars( data->GetPointData()->GetScalars() );
@@ -317,11 +328,15 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         vtkImageClip* metTextClipper = vtkImageClip::New();
         metTextClipper->SetInput( projectedData );
-        projectedData->Delete();
         metMapper->SetInput( metTextClipper->GetOutput() );
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
-        metMapper->SetLabelFormat("%0.1e");
+        double *range = dataVector[MET]->GetScalarRange();
+        if( range[1] < 100000 ) {
+            metMapper->SetLabelFormat("%1.0f");
+        } else {
+           metMapper->SetLabelFormat("%0.1e");
+        }
         metMapper->GetLabelTextProperty()->ShadowOff();
         metMapper->GetLabelTextProperty()->ItalicOff();
         metMapper->GetLabelTextProperty()->BoldOff();
@@ -352,7 +367,45 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->metActor ) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( this->metActor );
         }
+        //overlayTextActors.push_back( metActor );
         UpdateMetaboliteText( plotGrid->GetCurrentTlcBrc() );
+
+        vtkTransform* optimusPrime = vtkTransform::New();
+        optimusPrime->Translate(spacing[0]/2.0, spacing[1]/2.0, 0);
+
+        svkImageMapToColors* windowLevel = svkImageMapToColors::New();
+        metTextClipper->Update();
+        windowLevel->SetInput( projectedData );
+
+        svkLookupTable* colorTransfer = svkLookupTable::New();
+
+        double window = range[1] - range[0];
+        double level = 0.1*(range[1] + range[0]);
+        colorTransfer->SetRange( level - window/2.0, level + window/2.0);
+
+        colorTransfer->SetLUTType( svkLookupTable::COLOR );
+        colorTransfer->SetAlphaThreshold( 0.0 );
+
+        windowLevel->SetLookupTable( colorTransfer );
+        windowLevel->SetOutputFormatToRGBA( );
+        windowLevel->Update( );
+
+
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetUserTransform(optimusPrime);
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(windowLevel->GetOutput());
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], slice, slice);
+        vtkImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( 0.5 );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->InterpolateOff();
+        if( this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) ) ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->RemoveActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
+        }
+        this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
+        this->TurnPropOff( svkPlotGridView::OVERLAY_IMAGE );
+        this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
+        this->GetRenderer( svkPlotGridView::PRIMARY)->Render();
+        this->plotGrid->AlignCamera();
+        this->Refresh();
+        projectedData->Delete();
 
    } 
 }
@@ -377,7 +430,7 @@ void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc)
             (*iter)->SetOutputWholeExtent(tlcIndexX, brcIndexX, tlcIndexY, brcIndexY, slice,slice); 
             (*iter)->ClipDataOn();
         }
-        Refresh();
+        this->Refresh();
     }
 }
 

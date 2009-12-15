@@ -54,6 +54,7 @@
 #include <vtkCallbackCommand.h>
 #include <vtkAreaPicker.h>
 #include <vtkCollectionIterator.h>
+#include <vtkTransform.h>
 
 #include <svkAreaPicker.h>
 #include <svkImageData.h>
