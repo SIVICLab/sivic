@@ -81,10 +81,10 @@ svkPlotGridView::svkPlotGridView()
 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetLayer(0);
     this->plotGrid->SetRenderer( this->GetRenderer( svkPlotGridView::PRIMARY) );
-    this->metActor = NULL;
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
+    this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
     overlayActor->Delete();
     
     
@@ -101,10 +101,6 @@ svkPlotGridView::~svkPlotGridView()
     if( plotGrid != NULL ) {
         plotGrid->Delete();
         plotGrid = NULL;
-    }
-    if( this->metActor != NULL ) {
-        this->metActor->Delete();
-        this->metActor = NULL;
     }
    
     // NOTE: The data is destroyed in the superclass 
@@ -322,8 +318,10 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         projectedData->SetExtent( extent );
         projectedData->SetSpacing( spacing[0], spacing[1], spacing[2] );
         projectedData->GetPointData()->SetScalars( data->GetPointData()->GetScalars() );
-        if( this->metActor == NULL ) {
-            this->metActor = vtkActor2D::New();
+        if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) == NULL ) {
+            vtkActor2D* metActor = vtkActor2D::New();
+            this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
+            metActor->Delete();
         }
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         vtkImageClip* metTextClipper = vtkImageClip::New();
@@ -360,14 +358,13 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         metMapper->SetTransform(optimus);
         optimus->Delete();
-        this->metActor->SetMapper( metMapper );  
+        vtkActor2D::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->SetMapper( metMapper );  
         metMapper->Delete();
 
         // If it has not been added, add it
-        if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->metActor ) ) {
-            this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( this->metActor );
+        if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT )) ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT ));
         }
-        //overlayTextActors.push_back( metActor );
         UpdateMetaboliteText( plotGrid->GetCurrentTlcBrc() );
 
         vtkTransform* optimusPrime = vtkTransform::New();

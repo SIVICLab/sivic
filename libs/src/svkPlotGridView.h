@@ -108,6 +108,7 @@ class svkPlotGridView : public svkDataView
         typedef enum {
             VOL_SELECTION = 0, 
             OVERLAY_IMAGE,
+            OVERLAY_TEXT,
             SAT_BANDS,
             LAST_PROP = SAT_BANDS 
         } ActorType;
@@ -140,7 +141,6 @@ class svkPlotGridView : public svkDataView
         int                    slice;
         svkPlotGrid*           plotGrid; 
         vector<vtkImageClip*>  metClippers;
-        vtkActor2D*            metActor;
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
