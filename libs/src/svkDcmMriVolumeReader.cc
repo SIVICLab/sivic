@@ -92,18 +92,25 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
             svkImageData* tmp = svkMriImageData::New(); 
             tmp->GetDcmHeader()->ReadDcmFile( fname ); 
             string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
-            tmp->Delete(); 
+            bool isDcmMri = false; 
 
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
+            //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
+            if ( this->ContainsProprietaryContent( tmp ) == 0 ) {
 
-                cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
-
-                SetFileName(fname);
-
-                return 1;
+                if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
+                    SetFileName(fname);
+                    isDcmMri = true; 
+                }
+    
             }
 
-        }
+            tmp->Delete(); 
+            if ( isDcmMri ) {
+                cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
+                return 1;
+            }
+    
+        } 
 
     } 
 
@@ -111,6 +118,25 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 
     return 0;
 }
+
+
+/*!
+ *
+ */
+int svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
+{
+
+    // Check if it contains GE spectroscopy content:
+    string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
+    string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+
+    if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
+        return 1; 
+    } else {
+        return 0; 
+    }
+}
+
 
 /*!
  *
