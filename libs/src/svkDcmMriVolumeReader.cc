@@ -90,18 +90,21 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
         )  {
 
             svkImageData* tmp = svkMriImageData::New(); 
-            tmp->GetDcmHeader()->ReadDcmFile( fname ); 
-            string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
             bool isDcmMri = false; 
 
-            //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
-            if ( this->ContainsProprietaryContent( tmp ) == 0 ) {
+            if ( tmp->GetDcmHeader()->ReadDcmFile( fname ) == 0 ) {
 
-                if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
-                    SetFileName(fname);
-                    isDcmMri = true; 
+                string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+
+                //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
+                if ( this->ContainsProprietaryContent( tmp ) == false ) {
+
+                    if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
+                        SetFileName(fname);
+                        isDcmMri = true; 
+                    }
+        
                 }
-    
             }
 
             tmp->Delete(); 
@@ -123,18 +126,22 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 /*!
  *
  */
-int svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
+bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
 {
 
     // Check if it contains GE spectroscopy content:
-    string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
-    string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+    bool containsProprietaryContent = false; 
 
-    if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
-        return 1; 
-    } else {
-        return 0; 
+    if ( data->GetDcmHeader()->ElementExists("Manufacturer") == true && data->GetDcmHeader()->ElementExists("ImagedNucleus") == true ) {
+        string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
+        string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+
+        if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
+            containsProprietaryContent = true; 
+        } 
     }
+
+    return containsProprietaryContent; 
 }
 
 
