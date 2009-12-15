@@ -396,8 +396,10 @@ class svkDcmHeader: public vtkObject
          *  Read the DICOM file of the specified file name  
          *
          *  \param fileName  name of the output file root (no extension). 
+         * 
+         *  Returns 0 for success, 1 for failure.  
          */
-        virtual void  ReadDcmFile(string fileName, int max_length = 0) = 0;
+        virtual int   ReadDcmFile(string fileName, int max_length = 0) = 0;
 
 
         /*! 
