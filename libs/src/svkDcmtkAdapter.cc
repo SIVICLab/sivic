@@ -852,7 +852,7 @@ void  svkDcmtkAdapter::WriteDcmFile(string fileName)
  *
  *   \param fileName  name of the output file root (no extension).
  */
-void  svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength) 
+int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength) 
 {
 
     if (maxLength == 0) { 
@@ -868,9 +868,11 @@ void  svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
 
     if (status.bad()) {
         cerr << "Error: cannot read DICOM file (" << status.text() << ")" << endl;
+        return 1; 
     }
 
     this->Modified();
+    return 0; 
 }
 
 

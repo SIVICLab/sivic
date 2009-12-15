@@ -184,7 +184,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual int     GetNumberOfItemsInSequence( const char* seqName ); 
 
         virtual void    WriteDcmFile(string fileName);
-        virtual void    ReadDcmFile(string fileName, int maxLength );
+        virtual int     ReadDcmFile(string fileName, int maxLength );
 
         virtual void    CopyDcmHeader(svkDcmHeader* headerCopy);
 
