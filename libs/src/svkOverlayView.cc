@@ -1086,6 +1086,7 @@ void svkOverlayView::SetupOverlay()
    
     this->windowLeveler->SetInput( dataVector[OVERLAY] );
     this->windowLeveler->SetOutputFormatToRGBA();
+    this->windowLeveler->Update();
 
     svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
                                    )->SetInput( this->windowLeveler->GetOutput() );
