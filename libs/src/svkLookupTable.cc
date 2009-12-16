@@ -80,6 +80,13 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
 
+    } else if ( type == svkLookupTable::GREY_SCALE ) {
+        this->SetNumberOfColors(NUM_COLORS);
+        this->SetNumberOfTableValues(NUM_COLORS);
+        this->SetValueRange(0,1);
+        this->SetHueRange(0,0);
+        this->SetSaturationRange(0,0);
+        this->SetAlphaRange(1.,1.);
     } else if ( type == svkLookupTable::HURD ) {
 
         this->SetNumberOfColors(256);

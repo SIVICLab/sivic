@@ -65,6 +65,7 @@ class svkLookupTable : public vtkLookupTable
 
         enum svkLookupTableType {
             COLOR = 0, 
+            GREY_SCALE, 
             HURD, 
             CYAN_HOT
         };

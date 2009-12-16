@@ -380,8 +380,8 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         double level = 0.1*(range[1] + range[0]);
         colorTransfer->SetRange( level - window/2.0, level + window/2.0);
 
-        colorTransfer->SetLUTType( svkLookupTable::COLOR );
-        colorTransfer->SetAlphaThreshold( 0.0 );
+        colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
+        colorTransfer->SetAlphaThreshold( 0.9 );
 
         windowLevel->SetLookupTable( colorTransfer );
         windowLevel->SetOutputFormatToRGBA( );
