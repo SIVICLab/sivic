@@ -338,7 +338,6 @@ void vtkSivicController::OpenExam( )
     struct stat st;
     char cwd[MAXPATHLEN];
     char lastPath[MAXPATHLEN];
-    bool usingImagesFolder = 0;
     getcwd(cwd, MAXPATHLEN);
     string imagePathName(cwd);
 
@@ -365,7 +364,6 @@ void vtkSivicController::OpenExam( )
 
     // Lets check to see if an images folder was used
     if( lastPathString.substr(found+1) == "images" ) {
-        usingImagesFolder = 1;
         string spectraPathName;
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
@@ -377,6 +375,20 @@ void vtkSivicController::OpenExam( )
         }
     } else { 
         this->OpenFile( "spectra", lastPathString.c_str() ); 
+    }
+
+    if( lastPathString.substr(found+1) == "images" ) {
+        string spectraPathName;
+        spectraPathName = lastPathString.substr(0,found); 
+        spectraPathName += "/spectra";
+        if( stat(spectraPathName.c_str(),&st) == 0 ) {
+            this->OpenFile( "overlay", spectraPathName.c_str() ); 
+        } else {
+            // If an images folder was used, but there is no corresponding spectra folder
+            this->OpenFile( "overlay", lastPathString.substr(0,found).c_str() ); 
+        }
+    } else { 
+        this->OpenFile( "overlay", lastPathString.c_str() ); 
     }
 
 }
