@@ -151,11 +151,15 @@ class svkPlotGridView : public svkDataView
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetChannel( int channel );
         int                    GetChannel( );
+        void                   SetOverlayOpacity( double opacity );
+        void                   SetOverlayThreshold( double threshold );
+
 
 
     private: 
         void                ResliceImage(svkImageData* input, svkImageData* target); 
         int                 channel;
+        svkLookupTable*     colorTransfer;
 
 
 };

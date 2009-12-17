@@ -311,3 +311,22 @@ int svkPlotGridViewController::GetChannel( )
 {
     return svkPlotGridView::SafeDownCast( this->view )->GetChannel();
 }
+
+
+/*!
+ *
+ */
+void svkPlotGridViewController::SetOverlayOpacity(double opacity)
+{
+    static_cast<svkPlotGridView*>( view )->SetOverlayOpacity( opacity );
+}
+
+
+/*!
+ *
+ */
+void svkPlotGridViewController::SetOverlayThreshold(double threshold)
+{
+    static_cast<svkPlotGridView*>( view )->SetOverlayThreshold( threshold );
+}
+

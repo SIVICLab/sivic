@@ -251,6 +251,7 @@ void svkPlotGrid::SetSlice(int slice)
             this->freqRangeChangeThisSlice = 0;
             this->ampRangeChangeThisSlice = 0;
             this->componentChangeThisSlice = 0;
+            this->AlignCamera();
         }
     }
 }

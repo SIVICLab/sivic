@@ -86,6 +86,7 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
     this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
     overlayActor->Delete();
+    this->colorTransfer = NULL;
     
     
 }
@@ -94,13 +95,17 @@ svkPlotGridView::svkPlotGridView()
 //! Destructor
 svkPlotGridView::~svkPlotGridView()
 {
-    if( rwi != NULL ) {
-        rwi->Delete();
-        rwi = NULL;
+    if( this->rwi != NULL ) {
+        this->rwi->Delete();
+        this->rwi = NULL;
     }
-    if( plotGrid != NULL ) {
-        plotGrid->Delete();
-        plotGrid = NULL;
+    if( this->plotGrid != NULL ) {
+        this->plotGrid->Delete();
+        this->plotGrid = NULL;
+    }
+    if( this->colorTransfer != NULL ) {
+        this->colorTransfer->Delete();
+        this->colorTransfer = NULL;
     }
    
     // NOTE: The data is destroyed in the superclass 
@@ -373,17 +378,18 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         svkImageMapToColors* windowLevel = svkImageMapToColors::New();
         metTextClipper->Update();
         windowLevel->SetInput( projectedData );
-
-        svkLookupTable* colorTransfer = svkLookupTable::New();
+        if( this->colorTransfer == NULL ) {
+           this->colorTransfer = svkLookupTable::New();
+        }
 
         double window = range[1] - range[0];
         double level = 0.1*(range[1] + range[0]);
-        colorTransfer->SetRange( level - window/2.0, level + window/2.0);
+        this->colorTransfer->SetRange( level - window/2.0, level + window/2.0);
 
-        colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
-        colorTransfer->SetAlphaThreshold( 0.9 );
+        this->colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
+        this->colorTransfer->SetAlphaThreshold( 0.9 );
 
-        windowLevel->SetLookupTable( colorTransfer );
+        windowLevel->SetLookupTable( this->colorTransfer );
         windowLevel->SetOutputFormatToRGBA( );
         windowLevel->Update( );
 
@@ -599,3 +605,30 @@ int svkPlotGridView::GetChannel( )
     return this->channel;
 
 }
+
+
+/*!
+ *  Sets the opacity of the image overlay.
+ *
+ *   \param opacity the new opacity you wish the image overlay to have. 
+ */
+void svkPlotGridView::SetOverlayOpacity( double opacity )
+{
+    if( this->GetProp( svkPlotGridView::OVERLAY_IMAGE ) != NULL ) {
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( opacity );
+    }
+}
+
+
+/*!
+ *  Sets the threshold of the image overlay.
+ *
+ *   \param threshold the new threshold you wish the image overlay to have. 
+ */
+void svkPlotGridView::SetOverlayThreshold( double threshold )
+{
+    if( this->GetProp( svkPlotGridView::OVERLAY_IMAGE ) != NULL ) {
+        this->colorTransfer->SetAlphaThreshold(threshold);
+    }
+}
+
