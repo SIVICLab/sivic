@@ -578,6 +578,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->overlayOpacitySlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
 
         this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
+        this->plotController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
         stringstream increment;
         increment << "SetValue " << this->overlayOpacitySlider->GetValue() + 1;
         stringstream decrement;
@@ -588,10 +589,12 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayOpacitySlider->AddBinding( "<Right>", this->overlayOpacitySlider, increment.str().c_str() );
         this->overlayOpacitySlider->Focus(); 
         this->overlayController->GetView()->Refresh();
+        this->plotController->GetView()->Refresh();
 
     } else if( caller == this->overlayThresholdSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
 
         this->overlayController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue()/100.0 );
+        this->plotController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue()/100.0 );
         stringstream increment;
         increment << "SetValue " << this->overlayThresholdSlider->GetValue() + 1;
         stringstream decrement;
@@ -602,6 +605,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
         this->overlayThresholdSlider->Focus(); 
         this->overlayController->GetView()->Refresh();
+        this->plotController->GetView()->Refresh();
 
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
