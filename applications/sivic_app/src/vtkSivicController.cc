@@ -587,7 +587,7 @@ void vtkSivicController::SaveData( char* fileName )
 
 
 //! Saves a secondary capture.
-void vtkSivicController::SaveSecondaryCapture()
+void vtkSivicController::SaveSecondaryCapture( char* captureType )
 {
     if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
         PopupMessage( "NO SPECTRA LOADED!" );
@@ -613,7 +613,7 @@ void vtkSivicController::SaveSecondaryCapture()
         string filename = dlg->GetFileName(); 
         char* cStrFilename = new char [filename.size()+1];
         strcpy (cStrFilename, filename.c_str());
-        this->SaveSecondaryCapture( cStrFilename, seriesNumber );
+        this->SaveSecondaryCapture( cStrFilename, seriesNumber, captureType );
     } 
     dlg->Delete();
 }
@@ -623,19 +623,18 @@ void vtkSivicController::SaveSecondaryCapture()
 void vtkSivicController::SaveSecondaryCaptureOsiriX()
 {
     string fname( this->GetOsiriXInDir() + "sc.dcm" );
-    this->SaveSecondaryCapture( const_cast<char*>( fname.c_str() ), 77);
+    this->SaveSecondaryCapture( const_cast<char*>( fname.c_str() ), 77, "SPECTRA_CAPTURE");
 }
 
 
 /*! 
  *  Writes a screen capture from a render window to a .dcm file
  */   
-void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber, int outputOption, bool print )
+void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType, int outputOption, bool print )
 {
 cout << "PATH: " << fileName << endl;
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     vtkImageWriter* writer = NULL;
-    vtkImageFlip* flipper = vtkImageFlip::New();
     string printerName = "";
     bool wasCursorLocationOn = 0;
     if( this->overlayController != NULL ) {
@@ -651,17 +650,14 @@ cout << "PATH: " << fileName << endl;
         static_cast<svkImageWriter*>(writer)->SetSeriesNumber(seriesNumber);
     } else if( strcmp( fileNameString.substr(pos).c_str(), ".ps" ) == 0 ) {
         writer = writerFactory->CreateImageWriter( svkImageWriterFactory::PS );
-        flipper->SetFilteredAxis( 1 );
     } else if( strcmp( fileNameString.substr(pos).c_str(), ".tiff" ) == 0 ) {
         writer = writerFactory->CreateImageWriter( svkImageWriterFactory::TIFF );
         vtkTIFFWriter* tmp = vtkTIFFWriter::SafeDownCast( writer );
         tmp->SetCompression(0);
-        flipper->SetFilteredAxis( 1 );
     } else if( strcmp( fileNameString.substr(pos).c_str(), ".jpeg" ) == 0 ) {
         writer = writerFactory->CreateImageWriter( svkImageWriterFactory::JPEG );
         vtkJPEGWriter* tmp = vtkJPEGWriter::SafeDownCast( writer );
         tmp->SetQuality(100);
-        flipper->SetFilteredAxis( 1 );
     } else {
         this->PopupMessage("Error: Extension not supported-- FILE NOT WRITTEN!!");
         return;
@@ -675,9 +671,18 @@ cout << "PATH: " << fileName << endl;
     //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOn();
     int currentSlice = this->plotController->GetSlice(); 
 
-    int numberOfFrames = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
-    int numberOfChannels = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfCoils();
-    int numberOfSlices = numberOfFrames/numberOfChannels; 
+    
+
+    int firstFrame = 0;
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame + 1;
+    }
+    
+    if( print ) {
+        this->ToggleColorsForPrinting( sivicImageViewWidget::DARK_ON_LIGHT );
+    }
 
     svkImageData* outputImage = NULL;
 
@@ -692,26 +697,61 @@ cout << "PATH: " << fileName << endl;
 
     }
     
+    if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
+        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
+    } else if( strcmp(captureType,"IMAGE_CAPTURE") == 0 ) {
+        this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print);
+    }
+
+
+    this->SetSlice(currentSlice);
+
+    //this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOff();
+    //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOff();
+
+    if (outputImage != NULL) {
+        outputImage->Delete();
+        outputImage = NULL; 
+    }
+    if( wasCursorLocationOn && this->overlayController != NULL ) {
+        this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
+    }
+
+    if( print ){
+        ToggleColorsForPrinting( sivicImageViewWidget::LIGHT_ON_DARK );
+    }
+    writer->Delete();
+    this->overlayController->GetView()->Refresh();    
+    this->plotController->GetView()->Refresh();    
+    this->viewRenderingWidget->infoWidget->Render();    
+}
+
+
+/*!
+ *
+ */
+void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+{
 
     int firstFrame = 0;
-    int lastFrame = numberOfSlices;
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
     if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
-    
-    if( print ){
-        this->ToggleColorsForPrinting( sivicImageViewWidget::DARK_ON_LIGHT );
-        printerName = this->GetPrinterName();
-    }
-    for (int m = firstFrame; m < lastFrame; m++) {
 
+    for (int m = firstFrame; m < lastFrame; m++) {
+        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
+            continue;
+        }
         string fileNameStringTmp = fileNameString; 
 
         ostringstream frameNum;
         frameNum << m;
 
-        SetSlice(m);
+        this->SetSlice(m);
 
         //  Replace * with slice number in output file name: 
         size_t pos = fileNameStringTmp.find_last_of("*");
@@ -802,51 +842,125 @@ cout << "PATH: " << fileName << endl;
             outputImage->CopyVtkImage( appender->GetOutput(), dcos );
             static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
         } else {
+            vtkImageFlip* flipper = vtkImageFlip::New();
+            flipper->SetFilteredAxis( 1 );
             flipper->SetInput( appender->GetOutput() );
             writer->SetInput( flipper->GetOutput() );
+            flipper->Delete();
+            flipper = NULL;
         }
 
         writer->Write();
 
+        mw2if->Delete();
         if( print ) {
-
             stringstream printCommand;
-            printCommand << "lpr -h -P " << printerName.c_str() <<" "<< fileNameStringTmp.c_str(); 
+            printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
             cout<< printCommand.str().c_str() << endl;
             system( printCommand.str().c_str() ); 
             stringstream removeCommand;
             removeCommand << "rm " << fileNameStringTmp.c_str(); 
             system( removeCommand.str().c_str() ); 
         }
-        mw2if->Delete();
     }
+}
 
-    this->SetSlice(currentSlice);
 
-    //this->viewRenderingWidget->viewerWidget->GetRenderWindow()->OffScreenRenderingOff();
-    //this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->OffScreenRenderingOff();
-    //this->viewRenderingWidget->titleWidget->GetRenderWindow()->OffScreenRenderingOff();
-    //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOff();
+/*!
+ *
+ */
+void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+{
+    int firstFrame = 0;
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    int i = firstFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) && i <= lastFrame) {
+        i++;
+    }
+    firstFrame = i; 
+    i = lastFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i)  && i >= lastFrame) {
+        i--;
+    }
+    lastFrame = i; 
+    svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
+    string fileNameStringTmp = fileNameString; 
 
-    if (flipper != NULL) {
+    vtkDataSetCollection* allImages = vtkDataSetCollection::New();
+    vtkImageAppend* rowAppender[(lastFrame-firstFrame)/2+1];
+    vtkImageAppend* colAppender = vtkImageAppend::New();
+    colAppender->SetAppendAxis(1);
+
+    for (int m = firstFrame; m < lastFrame; m++) {
+        vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
+        this->SetSlice(m);
+        vtkImageData* data = vtkImageData::New();
+        allImages->AddItem( data );
+        //  Replace * with slice number in output file name: 
+        size_t pos = fileNameStringTmp.find_last_of("*");
+        if ( pos != string::npos) {
+            fileNameStringTmp.replace(pos, 1, ""); 
+        } 
+
+        cout << "FN: " << fileNameStringTmp.c_str() << endl;
+
+        writer->SetFileName( fileNameStringTmp.c_str() );
+    
+        // Now lets use the multiwindow to get the image of the spectroscopy
+        rendererToImage->SetInput( this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer() );
+        rendererToImage->SetMagnification(1);
+        rendererToImage->Update();
+        data->DeepCopy( rendererToImage->GetOutput() );
+        data->Update();
+        mw2if->SetInput( this->viewRenderingWidget->viewerWidget->GetRenderWindow(), m/2, m%2, 1 );
+        if( (m - firstFrame) % 2 == 0 ) {
+            rowAppender[(m-firstFrame)/2] = vtkImageAppend::New();
+            rowAppender[(m-firstFrame)/2]->SetInput( 0, data );
+            if( m == lastFrame - 1 ) {
+                colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
+            }
+        } else {
+            rowAppender[(m-firstFrame)/2]->SetInput( 1, data );
+            rowAppender[(m-firstFrame)/2]->Update();
+            colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
+            rowAppender[(m-firstFrame)/2]->Delete();
+        }
+        //data->Delete();
+        //colAppender->SetInput(m-firstFrame, data );
+        rendererToImage->Delete();
+
+    }
+    colAppender->Update();
+    mw2if->Update();
+
+    if( writer->IsA("svkImageWriter") ) {  
+        static_cast<svkImageWriter*>(writer)->SetInstanceNumber( 1 );
+        double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+        //outputImage->CopyVtkImage( mw2if->GetOutput(), dcos );
+        vtkImageFlip* flipper = vtkImageFlip::New();
+        flipper->SetFilteredAxis( 1 );
+        flipper->SetInput( colAppender->GetOutput() );
+        flipper->Update();
+        outputImage->CopyVtkImage( flipper->GetOutput(), dcos );
+        static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
         flipper->Delete();
-        flipper = NULL; 
-    }
-    if (outputImage != NULL) {
-        outputImage->Delete();
-        outputImage = NULL; 
-    }
-    if( wasCursorLocationOn && this->overlayController != NULL ) {
-        this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
+        flipper = NULL;
+    } else {
+        writer->SetInput( colAppender->GetOutput() );
     }
 
-    if( print ){
-        ToggleColorsForPrinting( sivicImageViewWidget::LIGHT_ON_DARK );
+    writer->Write();
+    //mw2if->Delete();
+
+    if( print ) {
+        stringstream printCommand;
+        printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
+        cout<< printCommand.str().c_str() << endl;
+        system( printCommand.str().c_str() ); 
+        stringstream removeCommand;
+        removeCommand << "rm " << fileNameStringTmp.c_str(); 
+        system( removeCommand.str().c_str() ); 
     }
-    writer->Delete();
-    this->overlayController->GetView()->Refresh();    
-    this->plotController->GetView()->Refresh();    
-    this->viewRenderingWidget->infoWidget->Render();    
 }
 
 
@@ -1160,10 +1274,13 @@ void vtkSivicController::Print( int outputOption )
         model->GetDataObject( "SpectroscopicData" ) ,
         &defaultNamePattern
     );
-    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, outputOption, 1 );
+    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, "SPECTRA_CAPTURE", outputOption, 1 );
 }
 
 
+/*!
+ *
+ */
 void vtkSivicController::PopupMessage( string message ) 
 {
     vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
@@ -1176,6 +1293,9 @@ void vtkSivicController::PopupMessage( string message )
 }
 
 
+/*!
+ *
+ */
 string vtkSivicController::GetPrinterName( )
 {
     // Once we have the printer dialog working we can change this.
@@ -1367,6 +1487,10 @@ void vtkSivicController::EnableWidgets()
     }
 }
 
+
+/*!
+ *
+ */
 void vtkSivicController::DisableWidgets()
 {
     this->imageViewWidget->volSelButton->EnabledOff();

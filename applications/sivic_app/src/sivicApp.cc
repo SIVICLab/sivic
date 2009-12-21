@@ -277,17 +277,19 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             1, "&Save Data", this->sivicController, "SaveData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            2, "&Save Secondary Capture", this->sivicController, "SaveSecondaryCapture");
+            2, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            3, "&Print Current Slice", this->sivicController, "Print 1");
+            3, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            4, "&Print All Slices", this->sivicController, "Print 0");
+            4, "&Print Current Slice", this->sivicController, "Print 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Save Session", this->sivicController, "SaveSession");
+            5, "&Print All Slices", this->sivicController, "Print 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            6, "&Restore Session", this->sivicController, "RestoreSession");
+            6, "&Save Session", this->sivicController, "SaveSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            7, "&Close All", this->sivicController, "ResetApplication");
+            7, "&Restore Session", this->sivicController, "RestoreSession");
+    this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
+            8, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             0, "&Sivic Resources", this->sivicController, "DisplayInfo");
 #if defined(DEBUG_BUILD)
@@ -354,7 +356,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     scButton->SetParent( toolbar->GetFrame() );
     scButton->Create();
     scButton->SetImageToPredefinedIcon( vtkKWIcon::IconCamera ); 
-    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture");
+    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
     scButton->SetBalloonHelpString( "Take a secondary capture." );
     toolbar->AddWidget( scButton );
 

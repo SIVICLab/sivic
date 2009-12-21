@@ -49,6 +49,8 @@
 #include <vtkSivicController.h>
 #include <vtkRenderer.h>
 #include <vtkRendererCollection.h>
+#include <vtkRenderLargeImage.h>
+#include <vtkDataSetCollection.h>
 #include <vtkKWRenderWidget.h>
 #include <vtkKWApplication.h>
 #include <vtkKWWindowBase.h>
@@ -95,6 +97,8 @@ class vtkSivicController : public vtkObject
 
         vtkSivicController();
         ~vtkSivicController();
+
+
         void                       SetApplication( vtkKWApplication* app );
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
@@ -110,13 +114,15 @@ class vtkSivicController : public vtkObject
         void                       OpenOverlay( const char* fileName );
         void                       SaveData();    
         void                       SaveData( char* fileName );    
-        void                       SaveSecondaryCapture();    
+        void                       SaveSecondaryCapture( char* captureType );    
         string                     GetUserName();
         string                     GetOsiriXInDir(); 
         void                       SaveSecondaryCaptureOsiriX();    
         void                       SaveDataOsiriX(); 
-        void                       SaveSecondaryCapture( char* fileName, int seriesNumber, 
+        void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
                                                          int outputOption = 0, bool print = 0 );
+        void                       WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
         void                       ToggleColorsForPrinting( bool colorSchema );
         void                       ResetApplication();    
         void                       UseWindowLevelStyle();

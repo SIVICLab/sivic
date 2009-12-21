@@ -112,6 +112,12 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
             DARK_ON_LIGHT 
         } ColorSchema;
 
+        enum {
+            SPECTRA_CAPTURE = 0,
+            IMAGE_CAPTURE
+        } CaptureType;
+
+
 
 
     protected:
