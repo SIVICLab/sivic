@@ -561,3 +561,13 @@ int svkDcmHeader::GetNumberOfCoils()
     return numCoils;
 }
 
+
+/*!
+ *
+ */
+int svkDcmHeader::GetNumberOfSlices()
+{
+    int numberOfFrames = this->GetIntValue( "NumberOfFrames" );
+    int numberOfChannels = this->GetNumberOfCoils();
+    return numberOfFrames/numberOfChannels;
+}

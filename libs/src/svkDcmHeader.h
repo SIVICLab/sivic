@@ -451,6 +451,7 @@ class svkDcmHeader: public vtkObject
                             );
         void                SetSliceOrder( DcmDataOrderingDirection sliceOrderVal );
         int                 GetNumberOfCoils(); 
+        int                 GetNumberOfSlices(); 
 
 
     protected:

@@ -103,26 +103,6 @@ int svkDdfVolumeReader::CanReadFile(const char* fname)
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
         
-        //  ============================================
-        //  Temporary for Raw File kludge:
-        //  ============================================
-        //RawData* raw = NULL;
-        try {
-            //raw = RawData::create( string(fname)); 
-            if ( 1 ) {
-                string cmd = "signa_csi_v6.dev --n_time_pts=1 " + string(fname); 
-                if (this->GetDebug()) {
-                    cout << "CHECK raw " << cmd << endl;
-                }
-                if ( system(cmd.c_str()) == 0 ) {    
-                    return 1; 
-                }
-            }
-        } catch (exception &ex) {
-            cerr<<"Error: "<<ex.what()<<endl;
-        }
-        //  ============================================
-
         
         if ( 
             fileToCheck.substr( fileToCheck.size() - 6 ) == ".cmplx" || 
