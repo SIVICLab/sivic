@@ -122,7 +122,7 @@ class vtkSivicController : public vtkObject
         void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
                                                          int outputOption = 0, bool print = 0 );
         void                       WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
         void                       ToggleColorsForPrinting( bool colorSchema );
         void                       ResetApplication();    
         void                       UseWindowLevelStyle();

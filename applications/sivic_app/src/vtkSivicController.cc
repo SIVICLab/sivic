@@ -589,8 +589,8 @@ void vtkSivicController::SaveData( char* fileName )
 //! Saves a secondary capture.
 void vtkSivicController::SaveSecondaryCapture( char* captureType )
 {
-    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
-        PopupMessage( "NO SPECTRA LOADED!" );
+    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
+        PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
         return; 
     }
     vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
@@ -619,7 +619,9 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
 }
 
 
-
+/*!
+ *
+ */
 void vtkSivicController::SaveSecondaryCaptureOsiriX()
 {
     string fname( this->GetOsiriXInDir() + "sc.dcm" );
@@ -632,7 +634,7 @@ void vtkSivicController::SaveSecondaryCaptureOsiriX()
  */   
 void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType, int outputOption, bool print )
 {
-cout << "PATH: " << fileName << endl;
+    cout << "PATH: " << fileName << endl;
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     vtkImageWriter* writer = NULL;
     string printerName = "";
@@ -692,15 +694,22 @@ cout << "PATH: " << fileName << endl;
      */
     if( writer->IsA("svkImageWriter") ) {  
         outputImage = svkMrsImageData::New();
-        outputImage->SetDcmHeader( this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
-        this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->Register(this);
-
+        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+        
     }
     
     if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"IMAGE_CAPTURE") == 0 ) {
         this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print);
+    } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
+        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
+        if( writer->IsA("svkDICOMSCWriter") ) {  
+            svkDICOMSCWriter::SafeDownCast(writer)->SetCreateNewSeries( 0 );
+        }
+        this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
+                     outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
     }
 
 
@@ -741,15 +750,15 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
-
-    for (int m = firstFrame; m < lastFrame; m++) {
+    int instanceNumber = 1;
+    for (int m = firstFrame; m <= lastFrame; m++) {
         if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
             continue;
         }
         string fileNameStringTmp = fileNameString; 
 
         ostringstream frameNum;
-        frameNum << m;
+        frameNum <<  instanceNumber;
 
         this->SetSlice(m);
 
@@ -813,10 +822,12 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
         int* prepImageExtent =  mw2ifprep->GetOutput()->GetExtent();
         int* specImageExtent =  mw2if->GetOutput()->GetExtent();
         newExtent[0] = specImageExtent[0];
-        // This guarantees no clipping at the edge
-        newExtent[1] = specImageExtent[1]-1;
+        
+        // The +1 -1 here is to get the resolution of the image and spectra secondary capture to match exactly.
+        // TODO: Find a less manual way of making the resolution match.
+        newExtent[1] = specImageExtent[1]+1;
         newExtent[2] = prepImageExtent[2];
-        newExtent[3] = prepImageExtent[3];
+        newExtent[3] = prepImageExtent[3]-1;
         newExtent[4] = prepImageExtent[4];
         newExtent[5] = prepImageExtent[5];
         padder->SetOutputWholeExtent( newExtent );
@@ -837,7 +848,9 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
         */
 
         if( writer->IsA("svkImageWriter") ) {  
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( m + 1 );
+            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
+            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
+            instanceNumber++;
             double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
             outputImage->CopyVtkImage( appender->GetOutput(), dcos );
             static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
@@ -851,7 +864,7 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
         }
 
         writer->Write();
-
+        
         mw2if->Delete();
         if( print ) {
             stringstream printCommand;
@@ -869,20 +882,32 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
 /*!
  *
  */
-void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber ) 
 {
-    int firstFrame = 0;
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) && i <= lastFrame) {
+    vtkTextActor* sliceLocation = vtkTextActor::New();
+    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->AddActor( sliceLocation );
+    int* winSize = this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetSize();
+    sliceLocation->SetPosition(10,winSize[1]-25);
+    
+    // Lets start by determining the first frame we want to show.
+    int i = 0;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) 
+           && i <= this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices() - 1 ) {
         i++;
     }
-    firstFrame = i; 
-    i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i)  && i >= lastFrame) {
+
+    // We want to to start two frames before the start. This is the convention for mr.dev
+    int firstFrame = i-2; 
+    firstFrame = firstFrame < 0 ? 0 : firstFrame;
+    i = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i)  
+           && i >= firstFrame ) {
+        //if( static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) ) {
+        //} else {
+        //}
         i--;
     }
-    lastFrame = i; 
+    int lastFrame = i; 
     svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
     string fileNameStringTmp = fileNameString; 
 
@@ -890,16 +915,27 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
     vtkImageAppend* rowAppender[(lastFrame-firstFrame)/2+1];
     vtkImageAppend* colAppender = vtkImageAppend::New();
     colAppender->SetAppendAxis(1);
-
-    for (int m = firstFrame; m < lastFrame; m++) {
+    for (int m = firstFrame; m <= lastFrame; m++) {
         vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
-        this->SetSlice(m);
+        double origin[3];
+        model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetOrigin(origin, lastFrame+firstFrame-m );
+        // We need to reverse the slice order because of the direction of the appender.
+        ostringstream position;
+        position << "Slice: " << lastFrame+firstFrame-m+1 << "Pos(mm): " << origin[2];
+        sliceLocation->SetInput( position.str().c_str() );
+        this->SetSlice(lastFrame + firstFrame - m);
         vtkImageData* data = vtkImageData::New();
         allImages->AddItem( data );
         //  Replace * with slice number in output file name: 
+        ostringstream frameNum;
+        if( instanceNumber == 0 ) {
+            frameNum << 1;
+        } else {
+            frameNum << instanceNumber;
+        }
         size_t pos = fileNameStringTmp.find_last_of("*");
         if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, ""); 
+            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
         } 
 
         cout << "FN: " << fileNameStringTmp.c_str() << endl;
@@ -915,12 +951,12 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
         mw2if->SetInput( this->viewRenderingWidget->viewerWidget->GetRenderWindow(), m/2, m%2, 1 );
         if( (m - firstFrame) % 2 == 0 ) {
             rowAppender[(m-firstFrame)/2] = vtkImageAppend::New();
-            rowAppender[(m-firstFrame)/2]->SetInput( 0, data );
+            rowAppender[(m-firstFrame)/2]->SetInput( 1, data );
             if( m == lastFrame - 1 ) {
                 colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
             }
         } else {
-            rowAppender[(m-firstFrame)/2]->SetInput( 1, data );
+            rowAppender[(m-firstFrame)/2]->SetInput( 0, data );
             rowAppender[(m-firstFrame)/2]->Update();
             colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
             rowAppender[(m-firstFrame)/2]->Delete();
@@ -934,7 +970,11 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
     mw2if->Update();
 
     if( writer->IsA("svkImageWriter") ) {  
-        static_cast<svkImageWriter*>(writer)->SetInstanceNumber( 1 );
+        if( instanceNumber == 0 ) {
+            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( 1 );
+        } else {
+            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
+        }
         double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
         //outputImage->CopyVtkImage( mw2if->GetOutput(), dcos );
         vtkImageFlip* flipper = vtkImageFlip::New();
@@ -951,6 +991,7 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
 
     writer->Write();
     //mw2if->Delete();
+    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->AddActor( sliceLocation );
 
     if( print ) {
         stringstream printCommand;
