@@ -185,12 +185,18 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
 
+    string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+     
     //  Now override elements with Multi-Frame sequences and default details:
     svkIOD* iod = svkMRIIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->SetReplaceOldElements(false); 
     iod->InitDcmHeader();
     iod->Delete();
+
+
+    this->GetOutput()->GetDcmHeader()->SetValue( "StudyInstanceUID", studyInstanceUID.c_str() );
+
 
     //  Now move info from original MRImageStorage header elements to flesh out enhanced
     //  SOP class elements (often this is just a matter of coping elements from the top 

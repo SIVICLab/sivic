@@ -75,6 +75,7 @@ class svkImageReader2 : public vtkImageReader2
         //  Methods:
         svkImageData*          GetOutput();
         svkImageData*          GetOutput(int);
+        svkDcmHeader*          GetDcmHeader( const char* fileName );
 
 
     protected:

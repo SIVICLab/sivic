@@ -343,3 +343,12 @@ string svkImageReader2::RemoveSlashesFromDate(string* volumeDate)
         return year+month+day;
 }
 
+
+/*!
+ *
+ */
+svkDcmHeader* svkImageReader2::GetDcmHeader( const char* fileName)
+{
+    this->SetFileName( fileName );
+    return this->GetOutput()->GetDcmHeader();
+}

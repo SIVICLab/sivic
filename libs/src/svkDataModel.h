@@ -104,6 +104,7 @@ class svkDataModel : public vtkObject
 
         // File loaders 
         virtual svkImageData*   LoadFile( string fileName );
+        svkDcmHeader*           GetDcmHeader( string fileName );
         virtual svkImageData*   AddFileToModel(string objectName, string fileName);
        
         // File writers 
@@ -139,6 +140,8 @@ class svkDataModel : public vtkObject
          */
         map<string, void*> modelState;
         svkImageReader2* reader;
+
+        svkImageData* data;
 
 };
 

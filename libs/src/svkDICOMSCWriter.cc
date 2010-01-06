@@ -65,6 +65,7 @@ svkDICOMSCWriter::svkDICOMSCWriter()
 
     this->seriesNumber = 0; 
     this->instanceNumber = 1; 
+    bool createNewSeries = 1;
 
 }
 
@@ -284,6 +285,19 @@ void svkDICOMSCWriter::InitDcmHeader()
         this->dcmHeaderTemplate->GetStringValue("StudyInstanceUID") 
     );
 
+    this->dcmHeader->SetValue(
+        "AccessionNumber",
+        this->dcmHeaderTemplate->GetStringValue("StudyInstanceUID") 
+    );
+
+    if( !this->createNewSeries ) {
+        this->dcmHeader->SetValue(
+            "SeriesInstanceUID",
+            this->dcmHeaderTemplate->GetStringValue("SeriesInstanceUID") 
+    );
+
+    }
+
     /*  
      *  Hardcode for unsigned integer representation:
      */
@@ -345,3 +359,10 @@ svkImageData* svkDICOMSCWriter::GetImageDataInput(int port)
 }
 
 
+/*!
+ *
+ */
+void svkDICOMSCWriter::SetCreateNewSeries( bool createNewSeries ) 
+{
+    this->createNewSeries = createNewSeries;
+}

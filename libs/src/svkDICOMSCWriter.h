@@ -90,6 +90,7 @@ class svkDICOMSCWriter : public svkImageWriter
 
         //  Return the default file name pattern
         static string   GetFilePattern( svkImageData* imageData ); 
+        void            SetCreateNewSeries( bool createNewSeries );
 
 
     protected:
@@ -107,6 +108,8 @@ class svkDICOMSCWriter : public svkImageWriter
         //  Members:
         svkDcmHeader*   dcmHeader;
         svkDcmHeader*   dcmHeaderTemplate;
+        bool createNewSeries;
+        
 
 };
 

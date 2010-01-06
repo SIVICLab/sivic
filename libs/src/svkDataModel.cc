@@ -76,6 +76,7 @@ svkDataModel::~svkDataModel()
     }
 }
 
+
 /*! 
  *  Adds a data object to the data hash. If the object already exists,
  *  it will return 0 and will not modify the hash.
@@ -196,6 +197,7 @@ svkImageData* svkDataModel::GetDataObject( string objectName )
 
 
 /*!
+ *
  */  
 bool svkDataModel::SetDataFileName(string objectName, string fileName)
 {
@@ -207,6 +209,10 @@ bool svkDataModel::SetDataFileName(string objectName, string fileName)
     }
 }
 
+
+/*!
+ *
+ */  
 string svkDataModel::GetDataFileName(string objectName)
 {
     if( !DataExists( objectName ) ) {
@@ -215,6 +221,7 @@ string svkDataModel::GetDataFileName(string objectName)
         return allDataFileNamesByKeyName[objectName];
     }
 }
+
 
 /*!
  *  Loads a file into an svkImageData object and returns a pointer to it.
@@ -271,6 +278,15 @@ svkImageData* svkDataModel::LoadFile( string fileName )
     }
     
     return myData;
+}
+
+
+/*!
+ *  Utility method for getting tags the header of a specific file.
+ */
+svkDcmHeader* svkDataModel::GetDcmHeader( string fileName )
+{
+    return this->LoadFile( fileName )->GetDcmHeader();
 }
 
 

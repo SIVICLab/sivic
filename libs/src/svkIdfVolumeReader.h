@@ -52,8 +52,10 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkDebugLeaks.h>
+#include <vtkStringArray.h>
 
 #include <svkImageReader2.h>
+#include <svkDcmMriVolumeReader.h>
 #include <svkIOD.h>
 #include <svkMRIIOD.h>
 #include <svkByteSwap.h>
@@ -120,6 +122,7 @@ class svkIdfVolumeReader : public svkImageReader2
         void            InitPixelMeasuresMacro();
         void            InitPlaneOrientationMacro();
         void            InitMRReceiveCoilMacro();
+        void            InitNonIdfTags();
         void            ReadVolumeFile();
         int             GetNumPixelsInVol();
         int             GetNumSlices();
