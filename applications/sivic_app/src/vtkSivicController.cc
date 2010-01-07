@@ -707,9 +707,11 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
         if( writer->IsA("svkDICOMSCWriter") ) {  
             svkDICOMSCWriter::SafeDownCast(writer)->SetCreateNewSeries( 0 );
-        }
         this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
                      outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
+        } else {
+            this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print );
+        }
     }
 
 
@@ -850,7 +852,6 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
         if( writer->IsA("svkImageWriter") ) {  
             static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
             outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
-            instanceNumber++;
             double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
             outputImage->CopyVtkImage( appender->GetOutput(), dcos );
             static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
@@ -862,6 +863,7 @@ void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fil
             flipper->Delete();
             flipper = NULL;
         }
+        instanceNumber++;
 
         writer->Write();
         
@@ -902,9 +904,6 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
     i = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
     while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i)  
            && i >= firstFrame ) {
-        //if( static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) ) {
-        //} else {
-        //}
         i--;
     }
     int lastFrame = i; 
@@ -929,7 +928,7 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
         //  Replace * with slice number in output file name: 
         ostringstream frameNum;
         if( instanceNumber == 0 ) {
-            frameNum << 1;
+            frameNum << 0;
         } else {
             frameNum << instanceNumber;
         }
@@ -991,7 +990,7 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
 
     writer->Write();
     //mw2if->Delete();
-    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->AddActor( sliceLocation );
+    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->RemoveViewProp( sliceLocation );
 
     if( print ) {
         stringstream printCommand;
