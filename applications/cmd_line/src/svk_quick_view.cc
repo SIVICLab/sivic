@@ -34,7 +34,7 @@
 #include <svkDataModel.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkDataObjectTypes.h>
-#include <vtkTextActor.h>
+#include <vtkCornerAnnotation.h>
 
 using namespace svk;
 
@@ -47,12 +47,20 @@ struct globalArgs_t {
 
 static const char *optString = "h";
 
-vtkTextActor* infoActor;
+vtkCornerAnnotation* annotation;
+svkImageData* data; 
+int slice;
 
 
 int main ( int argc, char** argv )
 {
     int opt = 0;
+    annotation = vtkCornerAnnotation::New();
+    annotation->GetTextProperty()->SetColor(1,0,1);
+    annotation->GetTextProperty()->BoldOn();
+    annotation->GetTextProperty()->SetFontSize(20);
+    data = NULL; 
+    slice = 0;
 
     opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
@@ -73,7 +81,10 @@ int main ( int argc, char** argv )
         QuickView( argv[1] );    
     }
 
-
+    if( annotation != NULL ) {
+        annotation->Delete();
+        annotation = NULL;
+    }
     return 0;
   
 }
@@ -84,7 +95,6 @@ void QuickView( const char* filename)
 
     svkDataModel* model = svkDataModel::New();
     
-    svkImageData* data = NULL; 
     data = model->LoadFile(filename );
     data->Register(NULL);
     data->Update();
@@ -110,25 +120,18 @@ void QuickView( const char* filename)
 
     // Lets add a text actor with some info in it.
     dataViewer->SetInput( data, 0  );
-    dataViewer->SetSlice( (extent[5]-extent[4])/2 );
-    infoActor = vtkTextActor::New();
+    slice = (extent[5]-extent[4])/2;
+    dataViewer->SetSlice( slice );
     stringstream text;
-    text<< "USE + AND - TO CHANGE SLICE. CURRENT SLICE:" << dataViewer->GetSlice() + 1;
-    infoActor->SetInput( (text.str()).c_str() );
-    infoActor->GetTextProperty()->SetFontSize(20);
-    infoActor->GetTextProperty()->SetColor(1,0,1);
-    infoActor->SetPosition( 15, 475 );
-    window->GetRenderers()->GetFirstRenderer()->AddViewProp( infoActor );
-    infoActor->Delete();
+    text<< "USE + AND - TO CHANGE SLICE";
 
-    // Lets add a text actor with the name of the loaded file
-    vtkTextActor* fileName = vtkTextActor::New();
-    fileName->SetInput( filename );
-    fileName->GetTextProperty()->SetFontSize(20);
-    fileName->GetTextProperty()->SetColor(1,0,1);
-    fileName->SetPosition( 15, 15 );
-    window->GetRenderers()->GetFirstRenderer()->AddViewProp( fileName );
-    fileName->Delete();
+    annotation->SetText(0, text.str().c_str() ); 
+    text.str("");
+    text<< "SLICE: " << slice + 1 << "/" << data->GetDcmHeader()->GetNumberOfSlices();
+    annotation->SetText(1, text.str().c_str() ); 
+    annotation->SetText(2, filename ); 
+
+    window->GetRenderers()->GetFirstRenderer()->AddViewProp( annotation );
 
     if( data->IsA("svkMriImageData")) {
         svkOverlayViewController::SafeDownCast(dataViewer)->UseWindowLevelStyle();
@@ -168,16 +171,22 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     svkDataViewController* dvController = static_cast<svkDataViewController*>(thisObject);
     stringstream text;
     char keyPressed;
+    int newSlice;
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
     keyPressed = rwi->GetKeyCode();
+
     if ( keyPressed == '+' ) {
-        dvController->SetSlice( dvController->GetSlice() + 1 );
+        newSlice = slice+1;
     } else if ( keyPressed == '-' ) {
-        dvController->SetSlice( dvController->GetSlice() - 1 );
+        newSlice = slice-1;
     }
-    text<< "USE + AND - TO CHANGE SLICE. CURRENT SLICE:" << dvController->GetSlice() + 1;
-    infoActor->SetInput( (text.str()).c_str() );
-    dvController->GetView()->Refresh();
+    if( newSlice >= 0 && newSlice < data->GetDcmHeader()->GetNumberOfSlices() ) {
+        slice = newSlice;
+        text<< "SLICE: " << slice + 1 << "/" << data->GetDcmHeader()->GetNumberOfSlices();
+        annotation->SetText(1, text.str().c_str() ); 
+        dvController->SetSlice( slice );
+        dvController->GetView()->Refresh();
+    }
 }
 
