@@ -267,9 +267,23 @@ void sivicImageViewWidget::CreateWidget()
     this->lutBox->SetPadY(10);
     this->lutBox->EnabledOff();
     vtkKWMenu* lutMenu = this->lutBox->GetWidget()->GetMenu();
-    lutMenu->AddRadioButton("color", this->sivicController, "SetLUTCallback 0");
-    lutMenu->AddRadioButton("hurd", this->sivicController, "SetLUTCallback 1");
-    lutMenu->AddRadioButton("cyan", this->sivicController, "SetLUTCallback 2");
+
+    stringstream invocation;
+    invocation << "SetLUTCallback " << svkLookupTable::COLOR << endl;
+    lutMenu->AddRadioButton("color", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::GREY_SCALE << endl;
+    lutMenu->AddRadioButton("grey ", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::HURD << endl;
+    lutMenu->AddRadioButton("hurd ", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::CYAN_HOT << endl;
+    lutMenu->AddRadioButton("cyan ", this->sivicController, invocation.str().c_str());
+
     this->lutBox->GetWidget()->SetValue( "color" );
 
     this->imageSlider = vtkKWScaleWithEntry::New();

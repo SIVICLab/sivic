@@ -1291,6 +1291,8 @@ void vtkSivicController::SetLUTCallback( int type )
 {
     if ( type == svkLookupTable::COLOR) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::COLOR );
+    } else if ( type == svkLookupTable::GREY_SCALE) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREY_SCALE );
     } else if ( type == svkLookupTable::HURD) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::HURD );
     } else if ( type == svkLookupTable::CYAN_HOT ) {
