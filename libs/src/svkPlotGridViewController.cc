@@ -256,6 +256,7 @@ void svkPlotGridViewController::UpdateSelection(vtkObject* subject, unsigned lon
     selectionArea[2] = thisDragSelect->GetEndX();
     selectionArea[3] = thisDragSelect->GetEndY();
     view->SetSelection( selectionArea );
+    view->Refresh();
     delete[] selectionArea;
     
     // Now lets notify anyone watching the rwi that we have changed its selection
