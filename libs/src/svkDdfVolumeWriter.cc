@@ -77,8 +77,7 @@ svkDdfVolumeWriter::~svkDdfVolumeWriter()
 
 
 /*!
- *  Write the DICOM MR Spectroscopy multi-frame file.   Also initializes the 
- *  DICOM SpectroscopyData element from the svkImageData object. 
+ *  Write the UCSF DDF spectroscopy file.  Should support multiple coils (files) and multi-time point data 
  */
 void svkDdfVolumeWriter::Write()
 {
@@ -143,22 +142,9 @@ void svkDdfVolumeWriter::WriteData()
     int numSlices = hdr->GetIntValue( "NumberOfFrames" );
 
     int dataWordSize = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "BitsAllocated" );
-    string extension; 
-    int numBytesPerPixel; 
-    void* pixels; 
-    if ( dataWordSize == 8 ) {
-        extension = ".byt"; 
-        numBytesPerPixel = 1; 
-        pixels = static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if ( dataWordSize == 16 ) {
-        extension = ".int2"; 
-        numBytesPerPixel = 2; 
-        pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if ( dataWordSize == 32) {
-        extension = ".real"; 
-        numBytesPerPixel = 4; 
-        pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    }
+    string extension = ".cmplx"; 
+    int numBytesPerPixel = 4; 
+    void* pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
 
     ofstream pixels_out( (this->InternalFileName + extension).c_str(), ios::binary);
     if(!pixels_out) {
@@ -167,16 +153,7 @@ void svkDdfVolumeWriter::WriteData()
 
 
 #if defined (linux) || defined (Darwin)
-    //This works for int2, but cast to type for others:
-    if (numBytesPerPixel == 2) {
-cout << "UKY " << numPixelsPerSlice << " " << pixels << endl; 
-cout << "UKY " << numSlices << endl; 
-cout << "UKY " << ((short*)pixels)[0] << endl; 
-        svkByteSwap::SwapBufferEndianness((short*)pixels, numPixelsPerSlice * numSlices);
-cout << "UKY 2" << endl; 
-    } else if (numBytesPerPixel == 4) {
-        svkByteSwap::SwapBufferEndianness((float*)pixels, numPixelsPerSlice * numSlices);
-    }
+    svkByteSwap::SwapBufferEndianness((float*)pixels, numPixelsPerSlice * numSlices);
 #endif
 
     pixels_out.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
@@ -462,29 +439,6 @@ int svkDdfVolumeWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInfor
     info->Set(svkDdfVolumeWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     return 1;
 }
-
-
-/*!
- *
- */
-//void svkDdfVolumeWriter::SetInput( vtkDataObject* input )
-//{
-    //this->SetInput(0, input);
-//}
-
-
-/*!
- *
- */
-//void svkDdfVolumeWriter::SetInput(int index, vtkDataObject* input)
-//{
-    //if(input) {
-        //this->SetInputConnection(index, input->GetProducerPort());
-    //} else {
-        //// Setting a NULL input removes the connection.
-        //this->SetInputConnection(index, 0);
-    //}
-//}
 
 
 /*!

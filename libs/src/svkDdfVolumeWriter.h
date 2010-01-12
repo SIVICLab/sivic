@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009 The Regents of the University of California.
+ *  Copyright © 2009-2010 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -77,8 +77,6 @@ class svkDdfVolumeWriter : public svkImageWriter
         vtkTypeRevisionMacro( svkDdfVolumeWriter, svkImageWriter);
 
         //  Methods:
-        //void            SetInput( vtkDataObject* input ); 
-        //void            SetInput(int index, vtkDataObject* input); 
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
