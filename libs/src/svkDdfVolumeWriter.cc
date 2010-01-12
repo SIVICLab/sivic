@@ -75,7 +75,6 @@ svkDdfVolumeWriter::~svkDdfVolumeWriter()
 }
 
 
-
 /*!
  *  Write the UCSF DDF spectroscopy file.  Should support multiple coils (files) and multi-time point data 
  */
@@ -102,6 +101,7 @@ void svkDdfVolumeWriter::Write()
     this->FilesDeleted = 0;
     this->UpdateProgress(0.0);
 
+// based on number of coils of data:
     this->MaximumFileNumber = this->FileNumber;
 
     // determine the name
@@ -436,7 +436,7 @@ string svkDdfVolumeWriter::GetDDFPatientsName(string patientsName)
  */
 int svkDdfVolumeWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set(svkDdfVolumeWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+    info->Set(svkDdfVolumeWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
     return 1;
 }
 
