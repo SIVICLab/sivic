@@ -171,16 +171,17 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     svkDataViewController* dvController = static_cast<svkDataViewController*>(thisObject);
     stringstream text;
     char keyPressed;
-    int newSlice;
+    int newSlice = -1;
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
     keyPressed = rwi->GetKeyCode();
-
+            
     if ( keyPressed == '+' ) {
         newSlice = slice+1;
     } else if ( keyPressed == '-' ) {
         newSlice = slice-1;
     }
+
     if( newSlice >= 0 && newSlice < data->GetDcmHeader()->GetNumberOfSlices() ) {
         slice = newSlice;
         text<< "SLICE: " << slice + 1 << "/" << data->GetDcmHeader()->GetNumberOfSlices();
