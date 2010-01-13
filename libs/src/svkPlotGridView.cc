@@ -338,14 +338,15 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         if( range[1] <= 1 ) {
             metMapper->SetLabelFormat("%1.0f");
         } else if( range[1] < 100000 ) {
-            metMapper->SetLabelFormat("%1.2f");
+            metMapper->SetLabelFormat("%0.2f");
         } else {
-           metMapper->SetLabelFormat("%0.1e");
+           metMapper->SetLabelFormat("%0.2g");
         }
         metMapper->GetLabelTextProperty()->ShadowOff();
         metMapper->GetLabelTextProperty()->ItalicOff();
         metMapper->GetLabelTextProperty()->BoldOff();
-        metMapper->GetLabelTextProperty()->SetFontSize(10);
+        metMapper->GetLabelTextProperty()->SetFontFamilyToArial();
+        metMapper->GetLabelTextProperty()->SetFontSize(12);
         metMapper->GetLabelTextProperty()->SetColor(0,1,1);
         if( metClippers.size() == 0 ) {
             metClippers.push_back( metTextClipper ); 
