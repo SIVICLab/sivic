@@ -181,8 +181,6 @@ void sivicImageViewWidget::CreateWidget()
     this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
     this->sliceSlider->SetRange( 1, 1 );
     this->sliceSlider->EnabledOff();
-    this->sliceSlider->SetEntryPositionToTop();
-    this->sliceSlider->SetLabelPositionToTop();
 
     //  =======================================================
     //  Image View Widgets

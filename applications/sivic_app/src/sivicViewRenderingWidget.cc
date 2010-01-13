@@ -28,7 +28,6 @@ sivicViewRenderingWidget::sivicViewRenderingWidget()
     this->specViewerWidget = NULL;
 
     this->it = vtkTextActor::New();
-    this->it->SetTextScaleModeToProp();
     this->it->SetPosition(0.05,0.05);
     this->it->SetPosition2(1,1);
 
@@ -203,8 +202,6 @@ void sivicViewRenderingWidget::ResetInfoText()
     //infoSS << "SIVIC: Research Software \n\n" << endl;
     
     if( model->DataExists( "AnatomicalData" ) ) {
-        // Patient Code??
-        infoSS << "Patient Code:  " << endl;
 
         // Study Date
         string studyDate = model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->GetStringValue("StudyDate");
@@ -226,7 +223,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         } else if( pos+1 < currentImageName.npos) {
             pos++;
         }
-        infoSS << "Image File:  " << currentImageName.substr(pos) << endl;
+        infoSS << "Image File:  " << endl << " " <<  currentImageName.substr(pos) << endl;
 
         // Image Series
         if( model->GetDataObject( "AnatomicalData" ) ) {
@@ -250,7 +247,6 @@ void sivicViewRenderingWidget::ResetInfoText()
         infoSS << "Image Coil:  " << imageCoil << endl << endl;
 
     } else {
-        infoSS << "Patient Code:  " << endl;
         infoSS << "Scan Date:  " << endl; 
         infoSS << "Image File:  " << endl;
         infoSS << "Image Series:  " << endl;
@@ -268,7 +264,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         } else if( pos+1 < currentSpectraName.npos) {
             pos++;
         }
-        infoSS << "CSI File: " << currentSpectraName.substr(pos) << endl;
+        infoSS << "CSI FILE: " << endl << " " << currentSpectraName.substr(pos) << endl;
 
         // Slice
         infoSS << "CSI Slice No:  " << this->plotController->GetSlice() + 1 << endl;
@@ -299,7 +295,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         // Center
         float center[3]; 
         svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
-        infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl << endl;
+        infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
         double* spacing = model->GetDataObject( "SpectroscopicData" )->GetSpacing();
         infoSS << "CSI Resolution:" << spacing[0] * spacing[1] * spacing[2] / 1000.0 << "cc" <<  endl;
         infoSS << "Size RAS: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << "mm" <<  endl;
@@ -327,7 +323,7 @@ void sivicViewRenderingWidget::ResetInfoText()
     } else if( pos+1 < currentOverlayName.npos) {
         pos++;
     }
-    infoSS << "Overlay: " << currentOverlayName.substr(pos) << endl;
+    infoSS << "Overlay File: " << endl << " " << currentOverlayName.substr(pos) << endl;
 
     pos = currentMetaboliteName.find_last_of("/"); 
     if( pos == currentMetaboliteName.npos ) {
@@ -336,13 +332,12 @@ void sivicViewRenderingWidget::ResetInfoText()
         pos++;
     }
     infoSS << "Metabolites: " << GetMetaboliteName( currentMetaboliteName ) << endl;
-    infoSS << "Metabolites File: " <<  currentMetaboliteName.substr(pos) << endl; 
+    infoSS << "Metabolites File: " << endl << " " <<  currentMetaboliteName.substr(pos) << endl; 
 
 
     it->SetInput( infoSS.str().c_str() ) ;
-    it->GetTextProperty()->SetFontSize( 12 );
-    it->GetTextProperty()->SetFontFamilyToTimes();
-    it->GetTextProperty()->BoldOn();
+    it->GetTextProperty()->SetFontSize( 13 );
+    it->GetTextProperty()->SetFontFamilyToArial();
     it->SetPosition(3,3);
     if( !this->infoWidget->GetRenderer()->HasViewProp( it ) ){
         this->infoWidget->GetRenderer()->AddActor( it );

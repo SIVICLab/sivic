@@ -246,9 +246,9 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
 
-    this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 60 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 90 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 40 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 10 -minsize 250 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 40 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 60 -uniform 1", this->sivicWindow->GetViewFrame()->GetWidgetName() );
