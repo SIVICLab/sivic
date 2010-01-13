@@ -685,6 +685,9 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     if( print ) {
         this->ToggleColorsForPrinting( sivicImageViewWidget::DARK_ON_LIGHT );
     }
+    vtkLabeledDataMapper::SafeDownCast(
+          vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())->GetLabelTextProperty()->SetFontSize(18);
+    this->viewRenderingWidget->it->GetTextProperty()->SetFontSize(35);
 
     svkImageData* outputImage = NULL;
 
@@ -729,6 +732,10 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     if( wasCursorLocationOn && this->overlayController != NULL ) {
         this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
     }
+
+    vtkLabeledDataMapper::SafeDownCast(
+          vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())->GetLabelTextProperty()->SetFontSize(12);
+    this->viewRenderingWidget->it->GetTextProperty()->SetFontSize(13);
 
     if( print ){
         ToggleColorsForPrinting( sivicImageViewWidget::LIGHT_ON_DARK );
