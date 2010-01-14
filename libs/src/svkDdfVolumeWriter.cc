@@ -163,6 +163,7 @@ void svkDdfVolumeWriter::WriteData()
 
 /*!
  *  Write the DDF header.
+
  */
 void svkDdfVolumeWriter::WriteHeader()
 {
@@ -175,11 +176,26 @@ void svkDdfVolumeWriter::WriteHeader()
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
-    out << "IMAGE DESCRIPTOR FILE version 5" << endl;
-    out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
-    out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
-    out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
-    out << "position: ";
+    out << "DATA DESCRIPTOR FILE" << endl;
+    out << "version: 6.1" << endl;
+    out << "object type: MR Spectroscopy" << endl;
+    out << "patient id: " << setw(7) << hdr->GetStringValue( "PatientID" ) << endl;
+    out << "patient name: " << setw(7) << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
+    out << "patient code: " << setw(7) <<  endl;
+    out << "date of birth: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "sex: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "study id: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "study code: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "study date: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "accession number: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "root name: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "series number: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "series description: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+    out << "comment: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
+
+//  The following could be in a base class of UCSF file format utils (getorientation, position, patient entry, etc. ):
+
+    out << "patient entry: ";
     string position_string = hdr->GetStringValue( "PatientPosition" );
     if ( position_string.substr(0,2) == string( "HF" ) ){
         out << "Head First, ";
@@ -188,7 +204,9 @@ void svkDdfVolumeWriter::WriteHeader()
     } else {
         out << "UNKNOWN, ";
     }
+    out << endl;
 
+    out << "patient position: ";
     if ( position_string.substr(2) == string( "S" ) ) {
         out << "Supine" << endl;
     } else if ( position_string.substr(2) == string( "P" ) ) {
@@ -200,6 +218,25 @@ void svkDdfVolumeWriter::WriteHeader()
     } else {
         out << "UNKNOWN" << endl;;
     }
+    out << endl;
+
+//orientation: axial
+//data type: floating point
+//number of components: 2
+//source description:
+//number of dimensions: 4
+//dimension 1: type: frequency npoints: 512
+//dimension 2: type: space npoints: 12 pixel spacing(mm): 10.000000
+//dimension 3: type: space npoints: 12 pixel spacing(mm): 10.000000
+//dimension 4: type: space npoints: 8 pixel spacing(mm): 10.000000
+//center(lps, mm):       16.39050     -28.51190      52.09760
+//toplc(lps, mm):       -38.60950     -83.51190      87.09760
+//dcos0:        1.00000       0.00000       0.00000
+//dcos1:        0.00000       1.00000       0.00000
+//dcos2:        0.00000       0.00000      -1.00000
+
+    out << "===================================================" << endl; 
+    out << "MR Parameters<< endl; 
 
     string coilName = hdr->GetStringSequenceItemElement(
         "MRReceiveCoilSequence",
@@ -209,9 +246,7 @@ void svkDdfVolumeWriter::WriteHeader()
         0
     );
 
-    out << "coil: " << coilName << endl; 
-
-    out << "orientation: ";
+    out << "coil name: " << coilName << endl; 
 
     float orientation[6];
     this->GetDDFOrientation( orientation );    
@@ -245,9 +280,6 @@ void svkDdfVolumeWriter::WriteHeader()
         y_type = 0;
         z_type = 0;
     }
-
-    out << "echo/time/met index:     1     value:       1.00" << endl;
-    out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 ) << endl;
 
 
     string date = hdr->GetStringValue( "StudyDate" );
