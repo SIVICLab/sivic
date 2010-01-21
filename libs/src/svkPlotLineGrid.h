@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkPlotLineGrid.h $
- *  $Rev: 35 $
- *  $Author: beckn8tor $
- *  $Date: 2009-12-15 14:53:33 -0800 (Tue, 15 Dec 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

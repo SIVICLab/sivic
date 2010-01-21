@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://intrarad.ucsf.edu/svn/rad_software/surbeck/brain/sivic/trunk/libs/src/svkDdfVolumeWriter.cc $
- *  $Rev: 15561 $
- *  $Author: jasonc@RADIOLOGY.UCSF.EDU $
- *  $Date: 2009-11-05 10:52:19 -0800 (Thu, 05 Nov 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDdfVolumeWriter, "$Rev: 15561 $");
+vtkCxxRevisionMacro(svkDdfVolumeWriter, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeWriter);
 
 

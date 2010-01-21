@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL:$
- *  $Rev: $
- *  $Author:$
- *  $Date:$
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkPlotLine, "$Rev: 1 $");
+vtkCxxRevisionMacro(svkPlotLine, "$Rev$");
 vtkStandardNewMacro(svkPlotLine);
 
 

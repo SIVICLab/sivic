@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkPlotLineGrid.cc $
- *  $Rev: 43 $
- *  $Author: beckn8tor $
- *  $Date: 2009-12-16 16:17:53 -0800 (Wed, 16 Dec 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -49,7 +49,7 @@ using namespace svk;
 using namespace std;
 
 
-vtkCxxRevisionMacro(svkPlotLineGrid, "$Rev: 43 $");
+vtkCxxRevisionMacro(svkPlotLineGrid, "$Rev$");
 vtkStandardNewMacro(svkPlotLineGrid);
 
 //! Constructor 
