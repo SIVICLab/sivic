@@ -161,7 +161,7 @@ void svkPlotGridViewController::SetSlice(int slice)
 //! Returns the current top left/ bottom right corners of the plotGrid
 int* svkPlotGridViewController::GetTlcBrc()
 {
-    return static_cast<svkPlotGridView*>(this->view)->plotGrid->GetCurrentTlcBrc();
+    return static_cast<svkPlotGridView*>(this->view)->tlcBrc;
 }
 
 
@@ -194,7 +194,7 @@ void svkPlotGridViewController::SetWindowLevelRange( double lower, double upper,
 /*!
  *  SetWindowLevel for spectral view;  index 0 is frequency, index 1 is intensity
  */
-void svkPlotGridViewController::SetComponent( svkBoxPlot::PlotComponent component)
+void svkPlotGridViewController::SetComponent( svkPlotLine::PlotComponent component)
 {
     (static_cast<svkPlotGridView*>(this->view))->SetComponent( component );
 }
@@ -245,6 +245,7 @@ void svkPlotGridViewController::SetRWInteractor( vtkRenderWindowInteractor* rwi 
  */
 void svkPlotGridViewController::UpdateSelection(vtkObject* subject, unsigned long eid, void* thisObject, void *callData)
 {
+/*
     int* selectionArea = new int[4];
 
     svkPlotGridViewController* thisController = static_cast<svkPlotGridViewController*>(thisObject);
@@ -261,6 +262,24 @@ void svkPlotGridViewController::UpdateSelection(vtkObject* subject, unsigned lon
     
     // Now lets notify anyone watching the rwi that we have changed its selection
     thisController->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
+*/
+    svkPlotGridViewController* dvController = static_cast<svkPlotGridViewController*>(thisObject);
+    svkSpecGridSelector* myRubberband = dvController->dragSelect;
+
+    vtkRenderWindowInteractor *rwi =
+            vtkRenderWindowInteractor::SafeDownCast( subject );
+    double* selectionArea = new double[4];
+    if( DEBUG ) {
+        cout<<"start position ="<<myRubberband->GetStartX()<<","<<myRubberband->GetStartY()<<endl;
+        cout<<"end position ="<<myRubberband->GetEndX()<<","<<myRubberband->GetEndY()<<endl;
+    }    
+    selectionArea[0] = static_cast<double>(myRubberband->GetStartX());
+    selectionArea[1] = static_cast<double>(myRubberband->GetStartY());
+    selectionArea[2] = static_cast<double>(myRubberband->GetEndX());
+    selectionArea[3] = static_cast<double>(myRubberband->GetEndY()),
+    static_cast<svkPlotGridView*>(dvController->GetView())->SetSelection( selectionArea);
+    rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
+    delete[] selectionArea;
 }
 
 

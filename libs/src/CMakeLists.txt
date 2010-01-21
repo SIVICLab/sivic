@@ -124,7 +124,9 @@ ADD_LIBRARY(
     svkSatBandSet.cc
     svkAreaPicker.cc
     svkBoxPlot.cc
+    svkPlotLine.cc
     svkPlotGrid.cc
+    svkPlotLineGrid.cc
     svkSpecGridSelector.cc
     svkPlotGridView.cc
     svkPlotGridViewController.cc

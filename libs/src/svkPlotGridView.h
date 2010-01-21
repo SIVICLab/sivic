@@ -53,11 +53,12 @@
 #include <svkOpenGLOrientedImageActor.h>
 #include <vtkTextProperty.h>
 #include <vtkDoubleArray.h>
+#include <vtkExtractEdges.h>
 #include <svkImageMapToColors.h>
-
 #include <svkDataView.h>
 #include <svkPlotGridViewController.h>
-#include <svkPlotGrid.h>
+#include <svkPlotLine.h>
+#include <svkPlotLineGrid.h>
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
 #include <svkLookupTable.h>
@@ -68,6 +69,7 @@
 
 namespace svk {
 
+#define CLIP_TOLERANCE 0.001
 
 using namespace std;
 
@@ -100,15 +102,18 @@ class svkPlotGridView : public svkDataView
         virtual void                SetSlice( int slice );
         virtual void                SetTlcBrc( int tlcID, int brcID );
         virtual void                SetWindowLevelRange( double lower, double upper, int index );
-        void                        SetComponent( svkBoxPlot::PlotComponent component );
+        void                        SetComponent( svkPlotLine::PlotComponent component );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                Refresh();
+        void                        GeneratePlotGridActor();  
+        void                        GenerateClippingPlanes();
 
         //! Enum represents objects in the scene
         typedef enum {
             VOL_SELECTION = 0, 
             OVERLAY_IMAGE,
             OVERLAY_TEXT,
+            PLOT_GRID,
             SAT_BANDS,
             LAST_PROP = SAT_BANDS 
         } ActorType;
@@ -139,13 +144,13 @@ class svkPlotGridView : public svkDataView
 
         //  Members:
         int                    slice;
-        svkPlotGrid*           plotGrid; 
+        svkPlotLineGrid*       plotGrid; 
         vector<vtkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
-        void                   SetSelection( int* selectionArea );
-        void                   HighlightSelectionVoxels();
+        void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
+        int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                
         int                    GetSlice();
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
@@ -153,8 +158,7 @@ class svkPlotGridView : public svkDataView
         int                    GetChannel( );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
-
-
+        int                    tlcBrc[2];
 
     private: 
         void                ResliceImage(svkImageData* input, svkImageData* target); 

@@ -55,7 +55,7 @@ vtkStandardNewMacro(svkPlotGridView);
 //! Constructor 
 svkPlotGridView::svkPlotGridView()
 {
-    this->plotGrid = svkPlotGrid::New();
+    this->plotGrid = svkPlotLineGrid::New();
 
     // Setting layers is key for solaris rendering
 
@@ -72,8 +72,13 @@ svkPlotGridView::svkPlotGridView()
     vtkRenderer* nullRenderer = NULL;
     this->renCollection.assign(svkPlotGridView::LAST_RENDERER+1, nullRenderer);     //Is the actor in the views FOV?
 
+
     vtkProp* nullProp = NULL;
     this->propCollection.assign(svkPlotGridView::LAST_PROP+1, nullProp);     //Is the actor in the views FOV?
+   
+    vtkActor* entirePlotGrid = vtkActor::New();
+    this->SetProp( svkPlotGridView::PLOT_GRID, entirePlotGrid );
+    entirePlotGrid->Delete();
 
     vtkRenderer* ren = vtkRenderer::New();
     this->SetRenderer( svkPlotGridView::PRIMARY, ren ); 
@@ -87,6 +92,8 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
     overlayActor->Delete();
     this->colorTransfer = NULL;
+    this->tlcBrc[0] = -1; 
+    this->tlcBrc[1] = -1; 
     
     
 }
@@ -139,9 +146,18 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             data->Register( this );
             dataVector[MRS] = data;
             int* extent = data->GetExtent();
-
+            bool toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+            if( toggleDraw ) {
+                this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+            }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
             plotGrid->AlignCamera(); 
+            this->GeneratePlotGridActor();
+            this->HighlightSelectionVoxels();
+            this->SetSlice( slice );
+            if( toggleDraw ) {
+                this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
+            }
 
         } else if( index == MET ) {
             if( dataVector[MET] != NULL  ) {
@@ -163,16 +179,31 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
  */
 void svkPlotGridView::SetSlice(int slice)
 {
+    int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
+    }
+    if( tlcBrc[0] >= 0 && tlcBrc[1] >= 0 ) {
+        int* extent = dataVector[MRS]->GetExtent();
+        tlcBrc[0] += (slice-this->slice)*extent[1]*extent[3];
+        tlcBrc[1] += (slice-this->slice)*extent[1]*extent[3];
+    }
     this->slice = slice;
-    this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
     this->plotGrid->SetSlice(slice);
+    this->plotGrid->SetPlotVoxels(tlcBrc[0], tlcBrc[1]);
+    this->plotGrid->Update();
+    this->plotGrid->AlignCamera();
     if( dataVector.size() > MET && dataVector[MET] != NULL ) {
-        UpdateMetaboliteText(plotGrid->GetCurrentTlcBrc());
+        UpdateMetaboliteText(tlcBrc);
         int* extent = dataVector[MET]->GetExtent();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], slice, slice);
         this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
     }
-    this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
+    this->GenerateClippingPlanes();
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
+    }
+    this->Refresh();
 }
 
 
@@ -188,9 +219,11 @@ void svkPlotGridView::SetSlice(int slice)
  */
 void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
 {
+    this->tlcBrc[0] = tlcID;
+    this->tlcBrc[1] = brcID;
     plotGrid->SetPlotVoxels(tlcID, brcID);
     plotGrid->Update();
-    UpdateMetaboliteText(plotGrid->GetCurrentTlcBrc());
+    UpdateMetaboliteText(tlcBrc);
     plotGrid->AlignCamera(); 
     this->Refresh();
 }
@@ -259,7 +292,7 @@ void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index
  *
  *  \param component the compent you wish to display, REAL, IMAGINARY, MAGNITUDE
  */
-void svkPlotGridView::SetComponent( svkBoxPlot::PlotComponent component)
+void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component)
 {
     this->plotGrid->SetComponent( component ); 
     this->Refresh();
@@ -267,17 +300,131 @@ void svkPlotGridView::SetComponent( svkBoxPlot::PlotComponent component)
 
 
 /*!
- *  Gets the tlc and brc of a set of actors from the plot grid
- *  which has a dictionary of cells to actors.
+ *  Sets desired the current selection in Display (pixels) coordinates
+ *  and highlights the intersected voxels.
  *
- *  \param selectionArea the area you wish to select [xmin,xmax,ymin,ymax] 
- */
-void svkPlotGridView::SetSelection(int* selectionArea)
+ *  \param selectionArea the area you wish to select voxels within [xmin, xmax, ymin, ymax]
+ */ 
+void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
 {
-    this->plotGrid->SetSelection( selectionArea );
-    if( dataVector[MET] != NULL ) {
-        UpdateMetaboliteText(plotGrid->GetCurrentTlcBrc());
-    }
+    if( selectionArea != NULL && dataVector[MRS] != NULL) {
+        double worldStart[3]; 
+        double worldEnd[3]; 
+        if( !isWorldCords ) {
+            vtkCoordinate* coordStart = vtkCoordinate::New();
+            vtkCoordinate* coordEnd = vtkCoordinate::New();
+            coordStart->SetCoordinateSystemToDisplay();
+            coordEnd->SetCoordinateSystemToDisplay();
+            coordStart->SetValue(selectionArea[0], selectionArea[1], 0);
+            coordEnd->SetValue(selectionArea[2], selectionArea[3], 0);
+            worldStart[0] = *coordStart->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)); 
+            worldStart[1] = *(coordStart->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)) + 1); 
+            worldStart[2] = *(coordStart->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)) + 2); 
+            worldEnd[0] = *coordEnd->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)); 
+            worldEnd[1] = *(coordEnd->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)) + 1); 
+            worldEnd[2] = *(coordEnd->GetComputedWorldValue(this->GetRenderer( svkPlotGridView::PRIMARY)) + 2); 
+            coordStart->Delete();
+            coordEnd->Delete();
+        } else {
+            worldStart[0] = selectionArea[0]; 
+            worldStart[1] = selectionArea[2]; 
+            worldStart[2] = selectionArea[4]; 
+            worldEnd[0] = selectionArea[1]; 
+            worldEnd[1] = selectionArea[3]; 
+            worldEnd[2] = selectionArea[5]; 
+        }
+        double* origin  = dataVector[MRS]->GetOrigin();
+        double* spacing = dataVector[MRS]->GetSpacing();
+        double dcos[3][3];
+        dataVector[MRS]->GetDcos( dcos );
+        double xVec[3];
+        xVec[0] = dcos[0][0];
+        xVec[1] = dcos[1][0];
+        xVec[2] = dcos[2][0];
+        double yVec[3];
+        yVec[0] = dcos[0][1];
+        yVec[1] = dcos[1][1];
+        yVec[2] = dcos[2][1];
+        double uVec[3];
+        uVec[0] = dcos[0][0];
+        uVec[1] = dcos[0][1];
+        uVec[2] = dcos[0][2];
+        double vVec[3];
+        vVec[0] = dcos[1][0];
+        vVec[1] = dcos[1][1];
+        vVec[2] = dcos[1][2];
+        int* extent = dataVector[MRS]->GetExtent();
+        int indexRangeX[2];
+        int indexRangeY[2];
+        double tmp;
+        // Make Sure worldStart is less than worldEnd
+        double originProjection[2];
+        originProjection[0] = vtkMath::Dot( origin, uVec );
+        originProjection[1] = vtkMath::Dot( origin, vVec );
+        double worldStartProjection[2];
+        worldStartProjection[0] = vtkMath::Dot( worldStart, uVec );
+        worldStartProjection[1] = vtkMath::Dot( worldStart, vVec );
+        double worldEndProjection[2];
+        worldEndProjection[0] = vtkMath::Dot( worldEnd, uVec );
+        worldEndProjection[1] = vtkMath::Dot( worldEnd, vVec );
+        if( worldStartProjection[0] > worldEndProjection[0] ) {
+            tmp = worldStartProjection[0]; 
+            worldStartProjection[0] = worldEndProjection[0]; 
+            worldEndProjection[0] = tmp; 
+        }
+        if( worldStartProjection[1] > worldEndProjection[1] ) {
+            tmp = worldStartProjection[1]; 
+            worldStartProjection[1] = worldEndProjection[1]; 
+            worldEndProjection[1] = tmp; 
+        }
+
+        indexRangeX[0] = (int)( floor( ((worldStartProjection[0] - originProjection[0])/spacing[0] ) ));
+        indexRangeX[1] = (int)( ceil( ((worldEndProjection[0] - originProjection[0] )/spacing[0] ) ));
+        if( indexRangeX[0] < extent[0] ) {
+            indexRangeX[0] = extent[0];
+        }
+        if( indexRangeX[0] >= extent[1] ) {
+            indexRangeX[0] = -1;
+        }
+        if( indexRangeX[1] >= extent[1] ) {
+            indexRangeX[1] = extent[1];
+        }
+        if( indexRangeX[1] <= extent[0] ) {
+            indexRangeX[1] = -1;
+        }
+
+        indexRangeY[0] = (int)( floor( ((worldStartProjection[1] - originProjection[1])/spacing[1] ) ));
+        indexRangeY[1] = (int)( ceil( ((worldEndProjection[1] - originProjection[1] )/spacing[1] ) ));
+
+        if( indexRangeY[0] < extent[2] ) {
+            indexRangeY[0] = extent[2];
+        }
+        if( indexRangeY[0] >= extent[3] ) {
+            indexRangeY[0] = -1;
+        }
+        if( indexRangeY[1] >= extent[3] ) {
+            indexRangeY[1] = extent[3];
+        }
+        if( indexRangeY[1] <= extent[2] ) {
+            indexRangeY[1] = -1;
+        }
+        
+        if( indexRangeX[0] >= 0 && indexRangeX[1] >= 0 && indexRangeY[0] >= 0 && indexRangeY[1] >= 0 ) {
+            tlcBrc[0] = slice*extent[3] * extent[1] + indexRangeY[0]*extent[1] + indexRangeX[0]; 
+            tlcBrc[1] = slice*extent[3] * extent[1] + (indexRangeY[1]-1)*extent[1] + (indexRangeX[1]-1); 
+            this->plotGrid->SetPlotVoxels(tlcBrc[0], tlcBrc[1]);
+            GenerateClippingPlanes(); 
+        } 
+        if( dataVector[MET] != NULL ) {
+            UpdateMetaboliteText(tlcBrc);
+        }
+
+
+    } else if( dataVector[MRS] != NULL ) {
+
+        //What should we do when the mri data is null, but the mrs is not....
+    } 
+    rwi->Render();
 }
 
 
@@ -288,16 +435,104 @@ void svkPlotGridView::Refresh()
         cout << "svkPlotGridView::Refresh calls plotGrid->Update() first " << endl; 
     }
 
-    this->plotGrid->Update();
     this->svkDataView::Refresh(); 
 }
 
 
-//! Selects all voxels within the selection box
-void svkPlotGridView::HighlightSelectionVoxels()
+/*! 
+ *  Method highlights voxels within the selection box
+ *
+ *  \return tlcBrc the cell id's of the desired top left, bottom right corners
+ */
+int* svkPlotGridView::HighlightSelectionVoxels()
 {
-    this->plotGrid->HighlightSelectionVoxels();
-    this->UpdateMetaboliteText( plotGrid->GetCurrentTlcBrc());
+    if( dataVector[MRS] != NULL ) { 
+        double tolerance = 0.99;
+        double* spacing = dataVector[MRS]->GetSpacing();
+        double* corner;
+        double projectedCorner[6];
+        double thresholdBounds[6]; 
+
+        double dcos[3][3];
+        dataVector[MRS]->GetDcos( dcos );
+        double xVec[3];
+        xVec[0] = dcos[0][0];
+        xVec[1] = dcos[1][0];
+        xVec[2] = dcos[2][0];
+        double yVec[3];
+        yVec[0] = dcos[0][1];
+        yVec[1] = dcos[1][1];
+        yVec[2] = dcos[2][1];
+        double zVec[3];
+        zVec[0] = dcos[0][2];
+        zVec[1] = dcos[1][2];
+        zVec[2] = dcos[2][2];
+        double uVec[3];
+        uVec[0] = dcos[0][0];
+        uVec[1] = dcos[0][1];
+        uVec[2] = dcos[0][2];
+        double vVec[3];
+        vVec[0] = dcos[1][0];
+        vVec[1] = dcos[1][1];
+        vVec[2] = dcos[1][2];
+        double wVec[3];
+        wVec[0] = dcos[2][0];
+        wVec[1] = dcos[2][1];
+        wVec[2] = dcos[2][2];
+        vtkPoints* cellBoxPoints = vtkPointSet::SafeDownCast(
+                                   plotGrid->selectionBoxActor->GetMapper()->GetInput())->GetPoints();
+
+        projectedCorner[0] = VTK_DOUBLE_MAX; 
+        projectedCorner[1] = -VTK_DOUBLE_MAX; 
+        projectedCorner[2] = VTK_DOUBLE_MAX;
+        projectedCorner[3] = -VTK_DOUBLE_MAX;
+        projectedCorner[4] = VTK_DOUBLE_MAX;
+        projectedCorner[5] = -VTK_DOUBLE_MAX;
+        int minCornerIndex;
+        int maxCornerIndex;
+
+        for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
+            corner = cellBoxPoints->GetPoint(i); 
+            if( i == 0 ) {
+                projectedCorner[4] = vtkMath::Dot( corner, wVec);
+                minCornerIndex = i;
+                maxCornerIndex = i;
+            }
+            if( vtkMath::Dot( corner, uVec ) <= projectedCorner[0]   && 
+                  vtkMath::Dot( corner, vVec ) <= projectedCorner[2] && 
+                  (int)(vtkMath::Dot( corner, wVec )*10) == (int)(projectedCorner[4]*10) ) {
+
+                projectedCorner[0] = vtkMath::Dot( corner, uVec);
+                projectedCorner[2] = vtkMath::Dot( corner, vVec);
+                minCornerIndex = i;
+            } 
+            if( vtkMath::Dot( corner, uVec ) >= projectedCorner[1] && 
+                  vtkMath::Dot( corner, vVec ) >= projectedCorner[3] && 
+                  (int)(vtkMath::Dot( corner, wVec )*10) == (int)(projectedCorner[4]*10) ) {
+
+                projectedCorner[1] = vtkMath::Dot( corner, uVec);
+                projectedCorner[3] = vtkMath::Dot( corner, vVec);
+                maxCornerIndex = i;
+            } 
+        }
+        thresholdBounds[0] =(cellBoxPoints->GetPoint(minCornerIndex))[0] 
+                                             + vtkMath::Dot(spacing, xVec)*tolerance;
+        thresholdBounds[1] =(cellBoxPoints->GetPoint(maxCornerIndex))[0] 
+                                             - vtkMath::Dot(spacing, xVec)*tolerance;
+        thresholdBounds[2] =(cellBoxPoints->GetPoint(minCornerIndex))[1] 
+                                             + vtkMath::Dot(spacing, yVec)*tolerance;
+        thresholdBounds[3] =(cellBoxPoints->GetPoint(maxCornerIndex))[1] 
+                                             - vtkMath::Dot(spacing, yVec)*tolerance;
+        thresholdBounds[4] =(cellBoxPoints->GetPoint(minCornerIndex))[2] 
+                                             + vtkMath::Dot(spacing, zVec)*tolerance;
+        thresholdBounds[5] =(cellBoxPoints->GetPoint(maxCornerIndex))[2] 
+                                             - vtkMath::Dot(spacing, zVec)*tolerance;
+
+        this->SetSelection( thresholdBounds, 1 );
+        return tlcBrc;
+    } else {
+        return NULL; 
+    }
 }
 
 
@@ -305,6 +540,8 @@ void svkPlotGridView::HighlightSelectionVoxels()
  *  Creates the svkOrientedImageActor for rendering an overlay.
  *
  *  \param data the data to be rendered as an overlay
+ *
+ *  TODO: Implement changes for multiple overlays
  */
 void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 {
@@ -312,17 +549,6 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         int* extent = data->GetExtent();
         double* spacing = data->GetSpacing();
 
-        // We are going to need to make a "projected" svkImageData objects
-        // Since the svkPlotGrid maintains the coordinate system of the image
-        // it is necessary to drop the dcos. We are simply putting the view 
-        // into the reference from of the oblique data.
-        double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
-        svkMriImageData* projectedData = svkMriImageData::New(); 
-        projectedData->SetOrigin(0,0,0);
-        projectedData->SetDcos(dcos);
-        projectedData->SetExtent( extent );
-        projectedData->SetSpacing( spacing[0], spacing[1], spacing[2] );
-        projectedData->GetPointData()->SetScalars( data->GetPointData()->GetScalars() );
         if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) == NULL ) {
             vtkActor2D* metActor = vtkActor2D::New();
             this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
@@ -330,7 +556,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         vtkImageClip* metTextClipper = vtkImageClip::New();
-        metTextClipper->SetInput( projectedData );
+        metTextClipper->SetInput( dataVector[MET] );
         metMapper->SetInput( metTextClipper->GetOutput() );
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
@@ -338,16 +564,17 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         if( range[1] <= 1 ) {
             metMapper->SetLabelFormat("%1.0f");
         } else if( range[1] < 100000 ) {
-            metMapper->SetLabelFormat("%0.2f");
+            metMapper->SetLabelFormat("%1.2f");
         } else {
-           metMapper->SetLabelFormat("%0.2g");
+           metMapper->SetLabelFormat("%0.1e");
         }
         metMapper->GetLabelTextProperty()->ShadowOff();
         metMapper->GetLabelTextProperty()->ItalicOff();
         metMapper->GetLabelTextProperty()->BoldOff();
-        metMapper->GetLabelTextProperty()->SetFontFamilyToArial();
-        metMapper->GetLabelTextProperty()->SetFontSize(12);
+        metMapper->GetLabelTextProperty()->SetFontSize(10);
         metMapper->GetLabelTextProperty()->SetColor(0,1,1);
+
+        // Met clippers is an array so that we could potentially add multiple metabolites
         if( metClippers.size() == 0 ) {
             metClippers.push_back( metTextClipper ); 
         } else {
@@ -359,11 +586,16 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 
         // Sets up to transform text relative position to the corner of the voxel
         vtkTransform* optimus = vtkTransform::New();
-        if( metClippers.size() < 5 ) {
-            optimus->Translate(spacing[0]/25, spacing[1]/5 + (spacing[1]/4)*(metClippers.size()-1), 0);
-        } else {
-            optimus->Translate(spacing[0]/2, -spacing[1]/5 + (spacing[1]/4)*(metClippers.size()-5), 0);
+        double displacement[3] = {0,0,0};
+        double dU = -spacing[0]/2.1;
+        double dV = -spacing[1]/3.2;
+        double dcos[3][3];
+        this->dataVector[MET]->GetDcos( dcos );
+        for ( int i = 0; i < 3; i++ ) {
+            displacement[i] =  (dU) * dcos[0][i] + (dV) * dcos[1][i] + (spacing[2]/2.0) * dcos[2][i];
         }
+        optimus->Translate( displacement );
+
         metMapper->SetTransform(optimus);
         optimus->Delete();
         vtkActor2D::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->SetMapper( metMapper );  
@@ -373,14 +605,11 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT )) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY )->AddViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT ));
         }
-        UpdateMetaboliteText( plotGrid->GetCurrentTlcBrc() );
-
-        vtkTransform* optimusPrime = vtkTransform::New();
-        optimusPrime->Translate(spacing[0]/2.0, spacing[1]/2.0, 0);
+        UpdateMetaboliteText( tlcBrc );
 
         svkImageMapToColors* windowLevel = svkImageMapToColors::New();
         metTextClipper->Update();
-        windowLevel->SetInput( projectedData );
+        windowLevel->SetInput( dataVector[MET] );
         if( this->colorTransfer == NULL ) {
            this->colorTransfer = svkLookupTable::New();
         }
@@ -397,7 +626,6 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         windowLevel->Update( );
 
 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetUserTransform(optimusPrime);
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(windowLevel->GetOutput());
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], slice, slice);
         vtkImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( 0.5 );
@@ -411,7 +639,6 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->GetRenderer( svkPlotGridView::PRIMARY)->Render();
         this->plotGrid->AlignCamera();
         this->Refresh();
-        projectedData->Delete();
 
    } 
 }
@@ -489,7 +716,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
     while( !iterator->IsDoneWithTraversal() ) {
         if( iterator->GetCurrentObject() != NULL && iterator->GetCurrentObject()->IsA("vtkActor") ) {
             currentActor = vtkActor::SafeDownCast( iterator->GetCurrentObject() );
-            if( currentActor->IsA("svkBoxPlot") ) {
+            if( currentActor->IsA("vtkActor") ) {
                 currentActor->GetProperty()->SetAmbientColor( foregroundColor );
                 currentActor->Modified();
             }
@@ -635,3 +862,176 @@ void svkPlotGridView::SetOverlayThreshold( double threshold )
     }
 }
 
+
+/*!
+ *  Creates the actor that outlines the voxels
+ */
+void svkPlotGridView::GeneratePlotGridActor( ) 
+{
+    int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
+    }
+    vtkPolyDataMapper* entireGridMapper = vtkPolyDataMapper::New();
+    entireGridMapper->ScalarVisibilityOff( );
+    entireGridMapper->InterpolateScalarsBeforeMappingOff();
+    entireGridMapper->ReleaseDataFlagOn();
+    entireGridMapper->ImmediateModeRenderingOn();
+
+    // We need a filter to pull out the edges of the data cells (voxels)
+    vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();
+    double dcos[3][3];
+
+    // Here we are making a copy of the image for the grid.
+    // For some reason valgrind reports massive read errors
+    // if the data arrays are present when passed to
+    // vtkExtractEdges. 
+
+    svkImageData* geometryData = svkMrsImageData::New();
+    geometryData->SetOrigin( dataVector[MRS]->GetOrigin() );
+    geometryData->SetSpacing( dataVector[MRS]->GetSpacing() );
+    geometryData->SetExtent( dataVector[MRS]->GetExtent() );
+    dataVector[MRS]->GetDcos(dcos);
+    geometryData->SetDcos(dcos);
+    //edgeExtractor->SetInput( dataVector[MRS] );
+    edgeExtractor->SetInput( geometryData );
+    geometryData->Delete();
+
+    // Pipe the edges into the mapper 
+    entireGridMapper->SetInput( edgeExtractor->GetOutput() );
+    edgeExtractor->Delete();
+    vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID))->SetMapper( entireGridMapper );
+    entireGridMapper->Delete();
+    vtkActor::SafeDownCast( GetProp( svkPlotGridView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );
+    this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_GRID ) );
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
+    }
+
+}
+
+/*!
+ * Generates the clipping planes for the mMMapper. This is how the boundries
+ * set are enforced, after the data is scaled, it is clipped so that data
+ * outside the plot range is simply not shown.
+ */
+void svkPlotGridView::GenerateClippingPlanes()
+{
+    // We need to leave a little room around the edges, so the border does not get cut off
+    if( dataVector[MRS] != NULL ) {
+        vtkPlane* clipperPlane0 = vtkPlane::New();
+        vtkPlane* clipperPlane1 = vtkPlane::New();
+        vtkPlane* clipperPlane2 = vtkPlane::New();
+        vtkPlane* clipperPlane3 = vtkPlane::New();
+        vtkPlane* clipperPlane4 = vtkPlane::New();
+        vtkPlane* clipperPlane5 = vtkPlane::New();
+
+        double dcos[3][3];
+        dataVector[MRS]->GetDcos( dcos );
+        double* spacing = dataVector[MRS]->GetSpacing();
+        double* origin = dataVector[MRS]->GetOrigin();
+        int* extent = dataVector[MRS]->GetExtent();
+        int uIndexRange[2];
+        int vIndexRange[2];
+        if( tlcBrc [0] >= 0 && tlcBrc[1] >= 0 ) {
+            uIndexRange[0] = (tlcBrc[0] - slice*extent[1]*extent[3] ) % extent[1];
+            uIndexRange[1] = (tlcBrc[1] - slice*extent[1]*extent[3] ) % extent[1];
+            vIndexRange[0] = (tlcBrc[0] - slice*extent[1]*extent[3] ) / extent[1];
+            vIndexRange[1] = (tlcBrc[1] - slice*extent[1]*extent[3] ) / extent[1];
+        } else {
+            uIndexRange[0] = extent[0];
+            uIndexRange[1] = extent[1];
+            vIndexRange[0] = extent[2];
+            vIndexRange[1] = extent[3];
+        }
+        double uVec[3];
+        uVec[0] = dcos[0][0];  
+        uVec[1] = dcos[0][1];  
+        uVec[2] = dcos[0][2];  
+        double vVec[3];
+        vVec[0] = dcos[1][0];  
+        vVec[1] = dcos[1][1];  
+        vVec[2] = dcos[1][2];  
+        double wVec[3];
+        wVec[0] = dcos[2][0];  
+        wVec[1] = dcos[2][1];  
+        wVec[2] = dcos[2][2];  
+        double xVec[3];
+        xVec[0] = dcos[0][0];  
+        xVec[1] = dcos[1][0];  
+        xVec[2] = dcos[2][0];  
+        double yVec[3];
+        yVec[0] = dcos[0][1];  
+        yVec[1] = dcos[1][1];  
+        yVec[2] = dcos[2][1];  
+        double zVec[3];
+        zVec[0] = dcos[0][2];  
+        zVec[1] = dcos[1][2];  
+        zVec[2] = dcos[2][2];  
+        double deltaX = vtkMath::Dot( spacing, xVec );
+        double deltaY = vtkMath::Dot( spacing, yVec );
+        double deltaZ = vtkMath::Dot( spacing, zVec );
+
+        clipperPlane0->SetNormal( uVec[0], uVec[1], uVec[2] );
+        clipperPlane0->SetOrigin( origin[0] + deltaX*(uIndexRange[0] - CLIP_TOLERANCE),
+                                  origin[1] + deltaY*(uIndexRange[0] - CLIP_TOLERANCE), 
+                                  origin[2] + deltaZ*(uIndexRange[0] - CLIP_TOLERANCE) );
+
+        clipperPlane1->SetNormal( -uVec[0], -uVec[1], -uVec[2] );
+        clipperPlane1->SetOrigin( origin[0] + deltaX * (uIndexRange[1] + 1 + CLIP_TOLERANCE),
+                                  origin[1] + deltaY * (uIndexRange[1] + 1 + CLIP_TOLERANCE), 
+                                  origin[2] + deltaZ * (uIndexRange[1] + 1 + CLIP_TOLERANCE) );
+
+
+        clipperPlane2->SetNormal( vVec[0], vVec[1], vVec[2] );
+        clipperPlane2->SetOrigin( origin[0] + deltaX*(vIndexRange[0] - CLIP_TOLERANCE),
+                                  origin[1] + deltaY*(vIndexRange[0] - CLIP_TOLERANCE), 
+                                  origin[2] + deltaZ*(vIndexRange[0] - CLIP_TOLERANCE) );
+
+        clipperPlane3->SetNormal( -vVec[0], -vVec[1], -vVec[2] );
+        clipperPlane3->SetOrigin( origin[0] + deltaX*(vIndexRange[1] + 1 + CLIP_TOLERANCE),
+                                  origin[1] + deltaY*(vIndexRange[1] + 1 + CLIP_TOLERANCE), 
+                                  origin[2] + deltaZ*(vIndexRange[1] + 1 + CLIP_TOLERANCE) );
+
+        clipperPlane4->SetNormal( wVec[0], wVec[1], wVec[2] );
+        clipperPlane4->SetOrigin( origin[0] + deltaX * ( slice - CLIP_TOLERANCE), 
+                                  origin[1] + deltaY * ( slice - CLIP_TOLERANCE), 
+                                  origin[2] + deltaZ * ( slice - CLIP_TOLERANCE) );
+
+        clipperPlane5->SetNormal( -wVec[0], -wVec[1], -wVec[2] );
+        clipperPlane5->SetOrigin( origin[0] + deltaX * ( slice + 1 + CLIP_TOLERANCE ), 
+                                  origin[1] + deltaY * ( slice + 1 + CLIP_TOLERANCE ), 
+                                  origin[2] + deltaZ * ( slice + 1 + CLIP_TOLERANCE ) );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->RemoveAllClippingPlanes();
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane0 );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane1 );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane2 );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane3 );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane4 );
+        vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
+                                 )->GetMapper()->AddClippingPlane( clipperPlane5 );
+        plotGrid->plotGridActor->GetMapper()->RemoveAllClippingPlanes();
+
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane0 );
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane1 );
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane2 );
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane3 );
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane4 );
+        plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane5 );
+
+        clipperPlane0->Delete();
+        clipperPlane1->Delete();
+        clipperPlane2->Delete();
+        clipperPlane3->Delete();
+        clipperPlane4->Delete();
+        clipperPlane5->Delete();
+    } else {
+        cerr<<"INPUT HAS NOT BEEN SET!!"<<endl;
+    }
+}

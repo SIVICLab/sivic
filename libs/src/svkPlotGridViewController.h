@@ -55,7 +55,7 @@
 
 #include <svkSpecGridSelector.h>
 #include <svkPlotGridView.h>
-#include <svkBoxPlot.h>
+#include <svkPlotLine.h>
 
 
 namespace svk {
@@ -88,7 +88,7 @@ class svkPlotGridViewController : public svkDataViewController
         virtual int*                    GetTlcBrc();
         virtual void                    SetTlcBrc( int* tlcBrc );
         virtual void                    SetWindowLevelRange( double lower, double upper, int index);
-                void                    SetComponent( svkBoxPlot::PlotComponent component);
+                void                    SetComponent( svkPlotLine::PlotComponent component);
                 int                     GetComponent( );
         virtual void                    SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                    TurnPropOn(int propIndex);
