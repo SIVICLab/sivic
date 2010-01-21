@@ -85,8 +85,8 @@ void vtkSivicController::SetSlice( int slice )
 {
     this->plotController->SetSlice(slice);
     this->overlayController->SetSlice(slice);
-    this->plotController->GetView()->Refresh();
-    this->overlayController->GetView()->Refresh();
+    //this->plotController->GetView()->Refresh();
+    //this->overlayController->GetView()->Refresh();
     this->viewRenderingWidget->ResetInfoText();
     if( this->model->DataExists("AnatomicalData")) {
        this->imageViewWidget->imageSlider->SetValue( this->overlayController->GetImageSlice()+1 ); 
@@ -210,6 +210,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
     } else {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
 
         string resultInfo;
         string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
@@ -244,6 +246,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 this->overlayController->SetSlice( centerSlice ); 
             }
             this->plotController->SetInput( newData ); 
+
             this->spectraViewWidget->detailedPlotController->SetInput( newData ); 
             this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
     
@@ -252,7 +255,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     
             this->spectraViewWidget->point->SetDataHdr( newData->GetDcmHeader() );
    
-            this->ResetRange( );
             if( tlcBrc == NULL ) {
                 this->plotController->HighlightSelectionVoxels();
                 this->overlayController->HighlightSelectionVoxels();
@@ -260,6 +262,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 this->plotController->SetTlcBrc( tlcBrc ); 
                 this->overlayController->SetTlcBrc( tlcBrc ); 
             }
+            this->ResetRange( );
             this->viewRenderingWidget->ResetInfoText();
         } else {
             resultInfo = "ERROR: Dataset is not compatible!\n"; 
@@ -268,8 +271,13 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             resultInfo += overlayViewResultInfo;
             this->PopupMessage( resultInfo ); 
         }
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->overlayController->GetView()->Refresh( );
+        this->plotController->GetView()->Refresh( );
 
     }
+//this->plotController->GetRWInteractor()->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New());
 
 }
 
@@ -1259,12 +1267,12 @@ void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 void vtkSivicController::SetComponentCallback( int targetComponent)
 {
     string acquisitionType;
-    if ( targetComponent == svkBoxPlot::REAL) {
-        this->plotController->SetComponent(svkBoxPlot::REAL);
-    } else if ( targetComponent == svkBoxPlot::IMAGINARY) {
-        this->plotController->SetComponent(svkBoxPlot::IMAGINARY);
-    } else if ( targetComponent == svkBoxPlot::MAGNITUDE) {
-        this->plotController->SetComponent(svkBoxPlot::MAGNITUDE);
+    if ( targetComponent == svkPlotLine::REAL) {
+        this->plotController->SetComponent(svkPlotLine::REAL);
+    } else if ( targetComponent == svkPlotLine::IMAGINARY) {
+        this->plotController->SetComponent(svkPlotLine::IMAGINARY);
+    } else if ( targetComponent == svkPlotLine::MAGNITUDE) {
+        this->plotController->SetComponent(svkPlotLine::MAGNITUDE);
     }
     if( model->DataExists( "SpectroscopicData" ) ) {
         acquisitionType = model->GetDataObject( "SpectroscopicData" )->

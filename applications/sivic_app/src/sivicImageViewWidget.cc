@@ -573,7 +573,6 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
         this->sliceSlider->Focus(); 
         //this->SetPhaseUpdateExtent();
-        this->plotController->GetView()->Refresh();
         // viewer widget renders automatically when you set its slice
     } else if( caller == this->imageSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
         this->overlayController->SetSlice( static_cast<int>(this->imageSlider->GetValue()) - 1, 0); 

@@ -129,6 +129,7 @@ void sivicViewRenderingWidget::CreateWidget()
 
     overlayController->SetRWInteractor(this->viewerWidget->GetRenderWindowInteractor());
     plotController->SetRWInteractor(this->specViewerWidget->GetRenderWindowInteractor());
+    //this->specViewerWidget->GetRenderWindowInteractor()->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New());
     
 
     int row = 0; 
