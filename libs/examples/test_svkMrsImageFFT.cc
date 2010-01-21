@@ -74,7 +74,7 @@ int main (int argc, char** argv)
     //cout << "Printing output data: " << *outputData << endl;
 
     cout << "Now lets visualize the output." << endl;
-    plotGridInput->SetComponent(svkBoxPlot::MAGNITUDE);
+    plotGridInput->SetComponent(svkPlotLine::MAGNITUDE);
     //plotGridInput->SetWindowLevelRange(0, 8000000000, svkPlotGridView::AMPLITUDE);
     window->GetInteractor()->Start();
     

@@ -50,11 +50,14 @@ int main (int argc, char** argv)
     cout<<"id reference count = "<<id->GetReferenceCount()<<endl;
     reader = NULL;
     cout<<"tmpImage: "<<*tmpImage<<endl;
-    id->Delete(); 
-    id = NULL;
-
+    cout<<"Header: "<<*static_cast<svkImageData*>(tmpImage)->GetDcmHeader()<<endl;
+    vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::New();
+    static_cast<svkMrsImageData*>(tmpImage)->GenerateSelectionBox( uGrid );
+    cout << *uGrid << endl;
     cout<<"GOODBYE TEST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
     cout << "MAGNITUDE RANGE IS: " << magRange[0] << " " << magRange[1] << endl;
+    id->Delete(); 
+    id = NULL;
     
     return 0; 
 }

@@ -205,6 +205,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    test_svkPlotLine 
+    test_svkPlotLine.cc
+)
+
+
+TARGET_LINK_LIBRARIES(
+    test_svkPlotLine 
+	${SVK_LIBS}
+)
+
 
 ADD_EXECUTABLE(
     test_svkImageTopologyGenerator 
@@ -251,6 +262,17 @@ TARGET_LINK_LIBRARIES(
     test_vtkRenderLoop
 	${SVK_LIBS}
 )
+
+#ADD_EXECUTABLE(
+#    test_vtkGL2PSExporter
+#    test_vtkGL2PSExporter.cc
+#)
+
+
+#TARGET_LINK_LIBRARIES(
+#    test_vtkGL2PSExporter
+#	${SVK_LIBS}
+#)
 
 ADD_EXECUTABLE(
     test_actorSizeRectGrid

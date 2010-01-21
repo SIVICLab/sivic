@@ -19,6 +19,7 @@
 #include <svkMultiCoilPhase.h>
 #include <svkPlotGridView.h>
 #include <vtkRenderWindow.h>
+#include <svkPlotLine.h>
 
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
@@ -58,7 +59,7 @@ int main (int argc, char** argv)
 
     plotGridInput->SetInput( data, svkPlotGridView::MRS);
     plotGridInput->SetSlice(3);
-    plotGridInput->SetComponent(svkBoxPlot::MAGNITUDE);
+    plotGridInput->SetComponent(svkPlotLine::MAGNITUDE);
     plotGridInput->SetWindowLevelRange(0, 2400000000, svkPlotGridView::AMPLITUDE);
     window->GetInteractor()->Start();
 

@@ -23,6 +23,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkInteractorStyleTrackballCamera.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGridView.h>
 #include <svkPlotGrid.h>
@@ -144,7 +145,7 @@ void MemoryTest()
     plotController->SetRWInteractor( rwi );
 
     plotController->SetInput( firstSpectra, 0  );
-    plotController->SetSlice(1);
+    plotController->SetSlice(0);
     plotController->HighlightSelectionVoxels();
     plotController->SetInput( firstOverlay, 1 );
     window->Render();
@@ -220,11 +221,12 @@ void DefaultTest()
     svkPlotGridViewController* plotController = svkPlotGridViewController::New();
 
     plotController->SetRWInteractor( rwi );
+    rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New() );
 
     window->SetSize(600,600);
 
-    plotController->SetInput( spectra, 0  );
-    plotController->SetSlice(0);
+    plotController->SetInput( spectra  );
+    plotController->SetSlice(4);
     plotController->HighlightSelectionVoxels();
     //plotController->SetChannel(1);
     plotController->SetWindowLevelRange(-100000000,100000000,1);
@@ -233,6 +235,14 @@ void DefaultTest()
     }
     window->Render();
     rwi->Start();
+    for( int j = 0; j < 3; j++) {
+        for( int i = 0; i < 8; i++) {
+            cout << "Setting slice to: " << i << endl;
+            plotController->SetSlice(i);
+            window->Render();
+            
+        }
+    }
 
     spectra->Delete();    
     if( overlay != NULL ) {
