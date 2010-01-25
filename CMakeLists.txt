@@ -1,5 +1,5 @@
 # 
-#   Copyright © 2009 The Regents of the University of California.
+#   Copyright © 2009-2010 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,10 @@ option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
 option( BUILD_APPS "Build mini-applications." FALSE )
 option( BUILD_OSIRIX "Build OsiriX Plugin." FALSE )
+
+ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.4.3\"' )
+ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
+ADD_DEFINITIONS( -DSVK_MINOR_VERSION='4' )
 
 if( BUILD_OSIRIX)
 #    ADD_DEFINITIONS(-DCMAKE_UNIVERSAL=TRUE)
