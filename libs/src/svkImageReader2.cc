@@ -161,7 +161,7 @@ string svkImageReader2::StripWhite(string in)
 
 
 /*!
- *  Use svkDcmHeader content to set up Output Informatin about the
+ *  Use svkDcmHeader content to set up Output Information about the
  *  target svkImageData object.
  */
 void svkImageReader2::SetupOutputInformation()
@@ -256,6 +256,7 @@ void svkImageReader2::SetupOutputExtent()
 void svkImageReader2::SetupOutputScalarData()
 {
 
+    //  only MRI data has scalar data
     if ( strcmp(this->GetOutput()->GetClassName(), "svkMriImageData") == 0 ) {
 
         //  ============================
