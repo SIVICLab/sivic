@@ -169,11 +169,7 @@ void svkIdfVolumeWriter::WriteData()
 #if defined (linux) || defined (Darwin)
     //This works for int2, but cast to type for others:
     if (numBytesPerPixel == 2) {
-cout << "UKY " << numPixelsPerSlice << " " << pixels << endl; 
-cout << "UKY " << numSlices << endl; 
-cout << "UKY " << ((short*)pixels)[0] << endl; 
         svkByteSwap::SwapBufferEndianness((short*)pixels, numPixelsPerSlice * numSlices);
-cout << "UKY 2" << endl; 
     } else if (numBytesPerPixel == 4) {
         svkByteSwap::SwapBufferEndianness((float*)pixels, numPixelsPerSlice * numSlices);
     }
@@ -274,6 +270,10 @@ void svkIdfVolumeWriter::WriteHeader()
 
 
     string date = hdr->GetStringValue( "StudyDate" );
+    if ( date.length() == 0 ) { 
+        date.assign("        ");                
+    }
+
     out << "comment: " << this->GetIDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << "- "
         << hdr->GetStringValue( "SeriesDescription" ) << " - "
         << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
