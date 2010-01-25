@@ -68,7 +68,7 @@ svkFdfVolumeReader::svkFdfVolumeReader()
     this->fdfFile = NULL;
     this->procparFile = NULL;
     this->fileSize = 0;
-    this->scaleTo16Bit = false;
+    this->scaleTo16Bit = true;
 }
 
 
@@ -228,6 +228,7 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
             tmpArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
             this->MapFloatValuesTo16Bit( tmpArray, static_cast<vtkUnsignedShortArray*>(this->dataArray) );
             tmpArray->Delete();
+            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
         }  else {
             this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
         }
@@ -1188,9 +1189,11 @@ void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkUnsig
     double deltaRange = inputRange[1] - inputRange[0]; 
 
     //  Map to full dynamic range of target type:
-    int maxShort =  static_cast<int>( shortArray->GetDataTypeMax() );
+    vtkUnsignedShortArray* usArray = vtkUnsignedShortArray::New();
+    int maxShort =  static_cast<int>( usArray->GetDataTypeMax() );
+    int minShort =  static_cast<int>( usArray->GetDataTypeMin() );
+    usArray->Delete(); 
     shortArray->SetNumberOfValues( fltArray->GetNumberOfTuples() ); 
-
 
     //  Map values to range between 0 and 1, then scale to type max. 
     double rgb[3]; 
