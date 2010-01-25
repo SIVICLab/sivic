@@ -223,9 +223,11 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
         this->ReadFdfFiles();
 
         //  If input is float, convert to short int (16 bit depth):     
-        if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 && this->scaleTo16Bit) {
+        if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 && this->scaleTo16Bit ) {
             vtkFloatArray* tmpArray = vtkFloatArray::New();
             tmpArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
+            this->dataArray->Delete();     
+            this->dataArray = vtkUnsignedShortArray::New();
             this->MapFloatValuesTo16Bit( tmpArray, static_cast<vtkUnsignedShortArray*>(this->dataArray) );
             tmpArray->Delete();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
@@ -260,6 +262,11 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
     this->GetOutput()->Update();
+
+    if (this->GetDebug()) {
+        cout << "FDF READER HEADER " << endl;
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    }
 
 }
 
@@ -912,11 +919,16 @@ void svkFdfVolumeReader::ParseFdf()
         if (GetHeaderValueAsInt("rank") == 2) {
             this->AddDimensionTo2DData();
         }
-        this->PrintKeyValuePairs(); 
+
+        if (this->GetDebug()) {
+            this->PrintKeyValuePairs(); 
+        }
 
         this->ParseProcpar(fdfFilePath);
 
-        this->PrintProcparKeyValuePairs();
+        if (this->GetDebug()) {
+            this->PrintProcparKeyValuePairs();
+        }
 
     } catch (const exception& e) {
         cerr << "ERROR opening or reading Varian fdf file (" << fdfFileName << "): " << e.what() << endl;
