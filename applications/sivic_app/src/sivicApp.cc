@@ -175,8 +175,9 @@ int sivicApp::Build( int argc, char* argv[] )
 
     // Create Application
     this->sivicKWApp->SetName("SIVIC");
-    this->sivicKWApp->SetMajorVersion( MAJOR_VERSION );
-    this->sivicKWApp->SetMinorVersion( MINOR_VERSION );
+    this->sivicKWApp->SetMajorVersion( SVK_MAJOR_VERSION );
+    this->sivicKWApp->SetMinorVersion( SVK_MINOR_VERSION );
+    this->sivicKWApp->SetVersionName( SVK_RELEASE_VERSION );
 
     // Add a Window to the application
     this->sivicWindow = vtkKWWindowBase::New();
