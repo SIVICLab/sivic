@@ -926,7 +926,8 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
     string fileNameStringTmp = fileNameString; 
 
     vtkDataSetCollection* allImages = vtkDataSetCollection::New();
-    vtkImageAppend* rowAppender[(lastFrame-firstFrame)/2+1];
+    vector <vtkImageAppend*> rowAppender; 
+    rowAppender.reserve( (lastFrame-firstFrame)/2+1 ); 
     vtkImageAppend* colAppender = vtkImageAppend::New();
     colAppender->SetAppendAxis(1);
     for (int m = firstFrame; m <= lastFrame; m++) {
