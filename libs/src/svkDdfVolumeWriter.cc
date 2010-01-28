@@ -220,15 +220,46 @@ void svkDdfVolumeWriter::WriteHeader()
     }
     out << endl;
 
-//orientation: axial
-//data type: floating point
-//number of components: 2
-//source description:
-//number of dimensions: 4
-//dimension 1: type: frequency npoints: 512
-//dimension 2: type: space npoints: 12 pixel spacing(mm): 10.000000
-//dimension 3: type: space npoints: 12 pixel spacing(mm): 10.000000
-//dimension 4: type: space npoints: 8 pixel spacing(mm): 10.000000
+    out << "orientation: " << endl;
+    out << "data type: floating point" << endl;
+   
+    int numComponents = 0;      
+    if ( hdr->GetStringValue("DataRepresentation").compare("COMPLEX") == 0 ) {
+        numComponents = 2;     
+    }
+    out << "number of components: " << setw(2) << numComponents << endl; 
+
+    out << "source description: " << endl;
+
+    int numDims = 3; 
+    if ( this->GetImageDataInput(0)->GetNumberOfTimePoints()  > 1 ) { 
+        numDims = 4; 
+    }
+    out << "number of dimensions: " << numDims << endl; 
+
+    string specDomain;  
+    string sigDomain = hdr->GetStringValue( "SignalDomainColumns" );
+    if ( sigDomain.compare( "FREQUENCY" ) == 0 ) {
+        specDomain.assign( "frequency" ); 
+    } else if (sigDomain.compare( "TIME" ) == 0 ) {
+        specDomain.assign( "time" ); 
+    }
+   
+    int numVoxels[3];  
+    numVoxels[0] = hdr->GetIntValue( "Columns" ); 
+    numVoxels[1] = hdr->GetIntValue( "Rows" ); 
+    numVoxels[2] = hdr->GetNumberOfSlices(); 
+    
+    double voxelSpacing[3]; 
+    hdr->GetPixelSpacing( voxelSpacing );  
+    out << "dimension 1: type: " << specDomain << " npoints: " << hdr->GetIntValue( "DataPointColumns" ) << endl;
+    out << "dimension 2: type: " << "space     "<< " npoints: " << numVoxels[0] << " pixel spacing(mm): " << voxelSpacing[0] << endl;
+    out << "dimension 3: type: " << "space     "<< " npoints: " << numVoxels[1] << " pixel spacing(mm): " << voxelSpacing[1] << endl;
+    out << "dimension 4: type: " << "space     "<< " npoints: " << numVoxels[2] << " pixel spacing(mm): " << voxelSpacing[2] << endl;
+    if ( numDims = 4 ) {    
+        out << "dimension 5: type: TIME" << endl ; 
+    }
+
 //center(lps, mm):       16.39050     -28.51190      52.09760
 //toplc(lps, mm):       -38.60950     -83.51190      87.09760
 //dcos0:        1.00000       0.00000       0.00000
@@ -236,7 +267,7 @@ void svkDdfVolumeWriter::WriteHeader()
 //dcos2:        0.00000       0.00000      -1.00000
 
     out << "===================================================" << endl; 
-    out << "MR Parameters<< endl; 
+    out << "MR Parameters" << endl; 
 
     string coilName = hdr->GetStringSequenceItemElement(
         "MRReceiveCoilSequence",

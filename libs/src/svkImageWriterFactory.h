@@ -54,6 +54,7 @@
 #include <svkDICOMSCWriter.h>
 #include <svkDICOMMRSWriter.h>
 #include <svkIdfVolumeWriter.h>
+#include <svkDdfVolumeWriter.h>
 
 
 namespace svk {

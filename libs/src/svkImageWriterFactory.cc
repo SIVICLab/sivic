@@ -87,13 +87,13 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
         return svkDICOMMRSWriter::New();
     } else if ( writerType == svkImageWriterFactory::IDF ) {
         return svkIdfVolumeWriter::New();
+    } else if ( writerType == svkImageWriterFactory::DDF ) {
+        return svkDdfVolumeWriter::New();
     } else {
         return NULL;  
     }
 
 /*
-    } else if ( writerType == DDF ) {
-        return svkDDFVolumeWriter::New();
     } else if ( writerType == DICOM_MR ) {
         return svkDICOMMRWriter::New();
 */

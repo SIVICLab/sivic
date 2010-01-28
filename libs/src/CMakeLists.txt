@@ -100,6 +100,7 @@ ADD_LIBRARY(
     svkProvenance.cc
     svkImageWriter.cc
     svkIdfVolumeWriter.cc
+    svkDdfVolumeWriter.cc
     svkDICOMSCWriter.cc
     svkDICOMMRSWriter.cc
     svkImageWriterFactory.cc
