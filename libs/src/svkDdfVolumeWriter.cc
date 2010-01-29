@@ -382,11 +382,23 @@ void svkDdfVolumeWriter::WriteHeader()
 
         selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
             "VolumeLocalizationSequence",
-            i,
-            "MidSlabPosition"
+            0,
+            "MidSlabPosition", 
+            NULL,      
+            i 
         );
 
     }
+    out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
+                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
+                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
+                                         << endl;  
+
+    out << "selection size(mm): " << fixed << setw(14) << setprecision(5) << selBoxSize[0] 
+                                  << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
+                                  << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
+                                  << endl;  
+
 
     float selBoxOrientation[3][3]; 
     float tmpSelBoxOrientation[6]; 
@@ -396,6 +408,7 @@ void svkDdfVolumeWriter::WriteHeader()
             "VolumeLocalizationSequence",
             0,
             "SlabOrientation",
+            NULL, 
             i 
         );
     }
@@ -406,16 +419,6 @@ void svkDdfVolumeWriter::WriteHeader()
     selBoxOrientation[1][0] = tmpSelBoxOrientation[3]; 
     selBoxOrientation[1][1] = tmpSelBoxOrientation[4]; 
     selBoxOrientation[1][2] = tmpSelBoxOrientation[5]; 
-
-    out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
-                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
-                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
-                                         << endl;  
-
-    out << "selection size(mm): " << fixed << setw(14) << setprecision(5) << selBoxSize[0] 
-                                  << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
-                                  << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
-                                  << endl;  
 
     out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
