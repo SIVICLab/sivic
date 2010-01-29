@@ -232,37 +232,39 @@ void svkIdfVolumeWriter::WriteHeader()
 
     out << "orientation: ";
 
-    float orientation[6];
-    this->GetIDFOrientation( orientation );    
+    double orientation[2][3];
+    hdr->GetOrientation(orientation);
 
-    int x_type, y_type, z_type;
+    int xType; 
+    int yType; 
+    int zType;
 
-    if ( (fabs(orientation[0])==1 && fabs(orientation[4])==1) || 
-         (fabs(orientation[1])==1 && fabs(orientation[3])==1) )
+    if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) || 
+         ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) )
     {
         out << setw(3) << 13 << "     axial normal"<<endl;
-        x_type = 1;
-        y_type = 2;
-        z_type = 3;
-    } else if ( (fabs(orientation[1])==1 && fabs(orientation[5])==1) || 
-        (fabs(orientation[2])==1 && fabs(orientation[4])==1) )
+        xType = 1;
+        yType = 2;
+        zType = 3;
+    } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) || 
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) )
     {
         out << setw(3) << 11 << "     sagittal normal" << endl;
-        x_type = 2;
-        y_type = 3;
-        z_type = 1;
-    } else if ( (fabs(orientation[0])==1 && fabs(orientation[5])==1) || 
-        (fabs(orientation[2])==1 && fabs(orientation[3])==1) )
+        xType = 2;
+        yType = 3;
+        zType = 1;
+    } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) || 
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) )
     {
         out << setw(3) << 12 << "     coronal normal" << endl;
-        x_type = 1;
-        y_type = 3;
-        z_type = 2;
+        xType = 1;
+        yType = 3;
+        zType = 2;
     } else {
         out << setw(3) << 9 << "     Oblique Plane" << endl;
-        x_type = 0;
-        y_type = 0;
-        z_type = 0;
+        xType = 0;
+        yType = 0;
+        zType = 0;
     }
 
     out << "echo/time/met index:     1     value:       1.00" << endl;
@@ -295,25 +297,25 @@ void svkIdfVolumeWriter::WriteHeader()
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
     
     center[2] *= -1;
-    out << "dimension:  1     columns     itype: " << setw(2) << x_type<< endl;
+    out << "dimension:  1     columns     itype: " << setw(2) << xType<< endl;
     out << "npix: " << setw(5) << hdr->GetIntValue( "Columns" )
         << "   fov(mm): "<< fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Columns") * pixelSpacing[0] 
-        << "  center(mm): " << setw(7) << ( (x_type == 0) ? 0:center[x_type-1])
+        << "  center(mm): " << setw(7) << ( (xType == 0) ? 0:center[xType-1])
         << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[0] << endl;
 
-    out << "dimension:  2     rows        itype: " << setw(2) << y_type << endl;
+    out << "dimension:  2     rows        itype: " << setw(2) << yType << endl;
     out << "npix: " << setw(5) << hdr->GetIntValue( "Rows" )
         << "   fov(mm): " << fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Rows") * pixelSpacing[1] 
-        << "  center(mm): " << setw(7) << ( (y_type==0)?0:center[y_type-1] )
+        << "  center(mm): " << setw(7) << ( (yType==0)?0:center[yType-1] )
         << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[1] << endl;
 
     //zfov must take into account that slice could be skipped
     
-    out << "dimension:  3     slices      itype: " << setw(2) << z_type << endl;
+    out << "dimension:  3     slices      itype: " << setw(2) << zType << endl;
     out << "npix: " << setw(5) << hdr->GetIntValue("NumberOfFrames")
         << "   fov(mm): " << fixed << setw(7) << setprecision(2)
         << pixelSpacing[2] * hdr->GetFloatValue("NumberOfFrames")
-        << "  center(mm): " << setw(7) << ((z_type==0)?0:center[z_type-1])
+        << "  center(mm): " << setw(7) << ((zType==0)?0:center[zType-1])
         << "  pixelsize(mm): " << setw(10) << setprecision(5)  
         << pixelSpacing[2] << endl;
 
@@ -356,32 +358,6 @@ cout << "HISTO INPUT: " << *(this->GetImageDataInput(0) ) << endl;
     out << "dcos3:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
         << dcos[2][1] << setw(14) << dcos[2][2] << endl;
 
-}
-
-
-/*!
- *   
- */
-void svkIdfVolumeWriter::GetIDFOrientation(float orientation[6])
-{
-
-    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-
-    for(int j=0; j<6; j++) {
-        istringstream* iss = new istringstream();
-        iss->str( 
-            hdr->GetStringSequenceItemElement( 
-                "PlaneOrientationSequence",
-                0,
-                "ImageOrientationPatient",
-                j,
-                "SharedFunctionalGroupsSequence",
-                0
-            ) 
-        );
-        *iss >> orientation[j];
-        delete iss; 
-    }
 }
 
 

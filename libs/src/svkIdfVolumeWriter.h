@@ -98,7 +98,6 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            WriteData();
         void            WriteHeader();
         void            GetIDFCenter(float center[3]);
-        void            GetIDFOrientation(float orientation[6]);
         string          GetIDFPatientsName(string patientsName);
 
 };

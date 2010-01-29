@@ -116,7 +116,7 @@ void svkDdfVolumeWriter::Write()
         }
     }
 
-    this->WriteData();
+    //this->WriteData();
     this->WriteHeader();
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
@@ -182,18 +182,16 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "patient id: " << setw(7) << hdr->GetStringValue( "PatientID" ) << endl;
     out << "patient name: " << setw(7) << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
     out << "patient code: " << setw(7) <<  endl;
-    out << "date of birth: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "sex: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "study id: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "study code: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "study date: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "accession number: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "root name: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "series number: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "series description: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-    out << "comment: " << setw(7) << hdr->GetStringValue( "DateOfBirth" ) <<  endl;
-
-//  The following could be in a base class of UCSF file format utils (getorientation, position, patient entry, etc. ):
+    out << "date of birth: " << setw(7) << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
+    out << "sex: " << setw(7) << hdr->GetStringValue( "PatientsSex" ) <<  endl;
+    out << "study id: " << setw(7) << hdr->GetStringValue( "StudyID" ) <<  endl;
+    out << "study code: " << setw(7) << "" <<  endl;
+    out << "study date: " << setw(7) << hdr->GetStringValue( "StudyDate" ) <<  endl;
+    out << "accession number: " << setw(7) << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
+    out << "root name: " << setw(7) << "FILENAME" <<  endl;
+    out << "series number: " << setw(7) << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
+    out << "series description: " << setw(7) << hdr->GetStringValue( "SeriesDescription" ) <<  endl;
+    out << "comment: " << setw(7) << "Comment" <<  endl;
 
     out << "patient entry: ";
     string position_string = hdr->GetStringValue( "PatientPosition" );
@@ -218,9 +216,25 @@ void svkDdfVolumeWriter::WriteHeader()
     } else {
         out << "UNKNOWN" << endl;;
     }
-    out << endl;
 
-    out << "orientation: " << endl;
+    double orientation[2][3];
+    hdr->GetOrientation(orientation);
+    string orientationString; 
+
+    if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) ||
+         ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) ) {
+        orientationString.assign( "axial" ); 
+    } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) ||
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) ) {
+        orientationString.assign( "sagittal" ); 
+    } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) ||
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) ) {
+        orientationString.assign( "coronal" ); 
+    } else {
+        orientationString.assign( "oblique" ); 
+    }
+
+    out << "orientation: " << orientationString << endl;
     out << "data type: floating point" << endl;
    
     int numComponents = 0;      
@@ -231,9 +245,9 @@ void svkDdfVolumeWriter::WriteHeader()
 
     out << "source description: " << endl;
 
-    int numDims = 3; 
+    int numDims = 4; 
     if ( this->GetImageDataInput(0)->GetNumberOfTimePoints()  > 1 ) { 
-        numDims = 4; 
+        numDims = 5; 
     }
     out << "number of dimensions: " << numDims << endl; 
 
@@ -253,18 +267,33 @@ void svkDdfVolumeWriter::WriteHeader()
     double voxelSpacing[3]; 
     hdr->GetPixelSpacing( voxelSpacing );  
     out << "dimension 1: type: " << specDomain << " npoints: " << hdr->GetIntValue( "DataPointColumns" ) << endl;
-    out << "dimension 2: type: " << "space     "<< " npoints: " << numVoxels[0] << " pixel spacing(mm): " << voxelSpacing[0] << endl;
-    out << "dimension 3: type: " << "space     "<< " npoints: " << numVoxels[1] << " pixel spacing(mm): " << voxelSpacing[1] << endl;
-    out << "dimension 4: type: " << "space     "<< " npoints: " << numVoxels[2] << " pixel spacing(mm): " << voxelSpacing[2] << endl;
-    if ( numDims = 4 ) {    
-        out << "dimension 5: type: TIME" << endl ; 
+    out << "dimension 2: type: " << "space "<< " npoints: " << numVoxels[0] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[0] << endl;
+    out << "dimension 3: type: " << "space "<< " npoints: " << numVoxels[1] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[1] << endl;
+    out << "dimension 4: type: " << "space "<< " npoints: " << numVoxels[2] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[2] << endl;
+    if ( numDims == 5 ) {    
+        out << "dimension 5: type: time" << endl ; 
     }
 
-//center(lps, mm):       16.39050     -28.51190      52.09760
-//toplc(lps, mm):       -38.60950     -83.51190      87.09760
-//dcos0:        1.00000       0.00000       0.00000
-//dcos1:        0.00000       1.00000       0.00000
-//dcos2:        0.00000       0.00000      -1.00000
+    float center[3];
+    this->GetDDFCenter( center );
+    out << "center(lps, mm):" << fixed<<setw(14) << setprecision(5) << center[0]
+        << setw(14) << center[1] << setw(14) << center[2] << endl;
+
+    double positionFirst[3]; 
+    hdr->GetOrigin(positionFirst, 0);
+    out << "toplc(lps, mm):  " << fixed << setw(14) << setprecision(5)
+        << positionFirst[0]
+        << setw(14) << positionFirst[1]
+        << setw(14) << positionFirst[2] <<endl;
+
+    double dcos[3][3];
+    this->GetImageDataInput(0)->GetDcos(dcos);
+    out << "dcos0:  " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
+        << setw(14) << dcos[0][2] << endl;
+    out << "dcos1:  " << fixed << setw(14) << setprecision(5) << dcos[1][0]
+        << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
+    out << "dcos2:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
+        << dcos[2][1] << setw(14) << dcos[2][2] << endl;
 
     out << "===================================================" << endl; 
     out << "MR Parameters" << endl; 
@@ -276,152 +305,153 @@ void svkDdfVolumeWriter::WriteHeader()
         "SharedFunctionalGroupsSequence",
         0
     );
-
     out << "coil name: " << coilName << endl; 
 
-    float orientation[6];
-    this->GetDDFOrientation( orientation );    
+    out << "slice gap(mm): " << endl;
 
-    int x_type, y_type, z_type;
+    float TE = hdr->GetFloatSequenceItemElement(
+        "MREchoSequence",
+        0,
+        "EffectiveEchoTime",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    out << "echo time(ms): " << TE << endl; 
 
-    if ( (fabs(orientation[0])==1 && fabs(orientation[4])==1) || 
-         (fabs(orientation[1])==1 && fabs(orientation[3])==1) )
-    {
-        out << setw(3) << 13 << "     axial normal"<<endl;
-        x_type = 1;
-        y_type = 2;
-        z_type = 3;
-    } else if ( (fabs(orientation[1])==1 && fabs(orientation[5])==1) || 
-        (fabs(orientation[2])==1 && fabs(orientation[4])==1) )
-    {
-        out << setw(3) << 11 << "     sagittal normal" << endl;
-        x_type = 2;
-        y_type = 3;
-        z_type = 1;
-    } else if ( (fabs(orientation[0])==1 && fabs(orientation[5])==1) || 
-        (fabs(orientation[2])==1 && fabs(orientation[3])==1) )
-    {
-        out << setw(3) << 12 << "     coronal normal" << endl;
-        x_type = 1;
-        y_type = 3;
-        z_type = 2;
-    } else {
-        out << setw(3) << 9 << "     Oblique Plane" << endl;
-        x_type = 0;
-        y_type = 0;
-        z_type = 0;
-    }
+    float TR = hdr->GetFloatSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RepetitionTime",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    out << "repetition time(ms): " << TR << endl;
 
-
-    string date = hdr->GetStringValue( "StudyDate" );
-    out << "comment: " << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << "- "
-        << hdr->GetStringValue( "SeriesDescription" ) << " - "
-        << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
-        << endl;
+    out << "inversion time(ms): " << endl; 
     
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType();
-    if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
-        out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
-        out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
-        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
-    }
+    float flipAngle =  hdr->GetFloatSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "FlipAngle",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    out << "flip angle: " << flipAngle << endl;
 
-    
-    float center[3];
-    this->GetDDFCenter(center);
-    double pixelSpacing[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-    
-    center[2] *= -1;
-    out << "dimension:  1     columns     itype: " << setw(2) << x_type<< endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue( "Columns" )
-        << "   fov(mm): "<< fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Columns") * pixelSpacing[0] 
-        << "  center(mm): " << setw(7) << ( (x_type == 0) ? 0:center[x_type-1])
-        << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[0] << endl;
+    out << "pulse sequence name: " << hdr->GetStringValue( "PulseSequenceName" ) << endl;
+    out << "transmitter frequency(MHz): " << hdr->GetFloatValue( "TransmitterFrequency" ) << endl; 
+    out << "isotope: " << hdr->GetStringValue( "ResonantNucleus" ) << endl;
+    out << "field strength(T): " <<  hdr->GetFloatValue( "MagneticFieldStrength" ) << endl; 
+    out << "number of sat bands: " << endl;
 
-    out << "dimension:  2     rows        itype: " << setw(2) << y_type << endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue( "Rows" )
-        << "   fov(mm): " << fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Rows") * pixelSpacing[1] 
-        << "  center(mm): " << setw(7) << ( (y_type==0)?0:center[y_type-1] )
-        << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[1] << endl;
+    out << "===================================================" << endl; 
+    out << "Spectroscopy Parameters" << endl; 
 
-    //zfov must take into account that slice could be skipped
-    
-    out << "dimension:  3     slices      itype: " << setw(2) << z_type << endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue("NumberOfFrames")
-        << "   fov(mm): " << fixed << setw(7) << setprecision(2)
-        << pixelSpacing[2] * hdr->GetFloatValue("NumberOfFrames")
-        << "  center(mm): " << setw(7) << ((z_type==0)?0:center[z_type-1])
-        << "  pixelsize(mm): " << setw(10) << setprecision(5)  
-        << pixelSpacing[2] << endl;
+    out << "localization type: " << hdr->GetStringValue( "VolumeLocalizationTechnique" ) << endl;
+    out << "center frequency(MHz): " << 127.718941 << endl;
+    out << "ppm reference: " << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
+    out << "sweepwidth(Hz): " << hdr->GetFloatValue( "SpectralWidth") << endl;
+    out << "dwelltime(ms): " << endl;
+    out << "frequency offset(Hz): " << endl;
+    out << "centered on water: " << endl;
+    out << "suppression technique: " << endl;
+    out << "residual water:" << endl;
+    out << "number of acquisitions: " << endl;
+    out << "chop: " << endl;
+    out << "even symmetry: " << endl;
+    out << "data reordered: " << endl;
 
-    center[2] *= -1;
-    
-    double pixelSize[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSize(pixelSize);
-    out << "slice thickness (mm): " << setw(14) << setprecision(5) << pixelSize[2] << endl;
+    out << "acq. toplc(lps, mm): " << endl;
+    out << "acq. spacing(mm): " << endl;
+    out << "acq. number of data points: " << endl;
+    out << "acq. number of points: " << endl;
+    out << "acq. dcos1: " << endl;
+    out << "acq. dcos2: " << endl;
+    out << "acq. dcos3: " << endl;
 
-    vtkImageAccumulate* histo = vtkImageAccumulate::New();
-cout << "HISTO INPUT: " << *(this->GetImageDataInput(0) ) << endl;
-    histo->SetInput( this->GetImageDataInput(0) );
-    histo->Update();
+    float selBoxSize[3]; 
+    float selBoxCenter[3]; 
 
-    out << "minimum: " << scientific << setw(12) << setprecision(4) << (histo->GetMin())[0]
-    << "     maximum: " << scientific << setw(12) << setprecision(4) << (histo->GetMax())[0] << endl;
-    histo->Delete();
+    for (int i = 0; i < 3; i++) {
 
-    out << "scale:     1.000" << endl;
-    out << "first slice read: " << setw(4) << 1 
-        << "   last slice read: " << setw(4) << hdr->GetIntValue("NumberOfFrames")
-        << "   sliceskip:    " << 1 << endl;
-    out << "LOCATION DATA IN LPS COORDINATES" << endl;
-    out << "center: " << fixed<<setw(14) << setprecision(5) << center[0]
-        << setw(14) << center[1] << setw(14) << center[2] << endl;
-
-    double positionFirst[3]; 
-    hdr->GetOrigin(positionFirst, 0);
-    out << "toplc:  " << fixed << setw(14) << setprecision(5)
-        << positionFirst[0]
-        << setw(14) << positionFirst[1]
-        << setw(14) << positionFirst[2] <<endl;
-
-    double dcos[3][3];
-    this->GetImageDataInput(0)->GetDcos(dcos);
-    out << "dcos1:  " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
-        << setw(14) << dcos[0][2] << endl;
-    out << "dcos2:  " << fixed << setw(14) << setprecision(5) << dcos[1][0]
-        << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
-    out << "dcos3:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
-        << dcos[2][1] << setw(14) << dcos[2][2] << endl;
-
-}
-
-
-/*!
- *   
- */
-void svkDdfVolumeWriter::GetDDFOrientation(float orientation[6])
-{
-
-    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-
-    for(int j=0; j<6; j++) {
-        istringstream* iss = new istringstream();
-        iss->str( 
-            hdr->GetStringSequenceItemElement( 
-                "PlaneOrientationSequence",
-                0,
-                "ImageOrientationPatient",
-                j,
-                "SharedFunctionalGroupsSequence",
-                0
-            ) 
+        selBoxSize[i] = hdr->GetFloatSequenceItemElement(
+            "VolumeLocalizationSequence",
+            i,
+            "SlabThickness"
         );
-        *iss >> orientation[j];
-        delete iss; 
+
+        selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
+            "VolumeLocalizationSequence",
+            i,
+            "MidSlabPosition"
+        );
+
     }
+
+    float selBoxOrientation[3][3]; 
+    float tmpSelBoxOrientation[6]; 
+    for (int i = 0; i < 6; i++) {
+
+        tmpSelBoxOrientation[i] = hdr->GetFloatSequenceItemElement(
+            "VolumeLocalizationSequence",
+            0,
+            "SlabOrientation",
+            i 
+        );
+    }
+
+    selBoxOrientation[0][0] = tmpSelBoxOrientation[0]; 
+    selBoxOrientation[0][1] = tmpSelBoxOrientation[1]; 
+    selBoxOrientation[0][2] = tmpSelBoxOrientation[2]; 
+    selBoxOrientation[1][0] = tmpSelBoxOrientation[3]; 
+    selBoxOrientation[1][1] = tmpSelBoxOrientation[4]; 
+    selBoxOrientation[1][2] = tmpSelBoxOrientation[5]; 
+
+    out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
+                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
+                                         << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
+                                         << endl;  
+
+    out << "selection size(mm): " << fixed << setw(14) << setprecision(5) << selBoxSize[0] 
+                                  << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
+                                  << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
+                                  << endl;  
+
+    out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][2] 
+                               << endl;  
+
+    out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+                               << endl;  
+
+    out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+                               << endl;  
+
+    out << "reordered toplc(lps, mm): " << endl;
+    out << "reordered center(lps, mm): " << endl;
+    out << "reordered spacing(mm): " << endl;
+    out << "reordered number of points: " << endl; 
+
+    out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][2] 
+                               << endl;  
+
+    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+                               << endl;  
+
+    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+                               << endl;  
+
 }
 
 
@@ -434,6 +464,7 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3])
     float centerFirst[3];
     float centerLast[3];
     double pixelSpacing[3];
+
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -441,7 +472,7 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3])
     double slicePositionFirst[3];
     hdr->GetOrigin(slicePositionFirst, 0);
     double slicePositionLast[3];
-    hdr->GetOrigin(slicePositionLast, hdr->GetIntValue("NumberOfFrames") - 1  );
+    hdr->GetOrigin(slicePositionLast, hdr->GetNumberOfSlices() - 1  );
 
     double dcos[3][3];
     this->GetImageDataInput(0)->GetDcos(dcos);
@@ -449,7 +480,7 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3])
     float numPix[3]; 
     numPix[0] =  hdr->GetFloatValue("Columns");
     numPix[1] =  hdr->GetFloatValue("Rows");
-    numPix[2] =  hdr->GetFloatValue("NumberOfFrames");
+    numPix[2] =  hdr->GetNumberOfSlices();
 
     float fov[3]; 
     for(int i = 0; i < 3; i++) {
