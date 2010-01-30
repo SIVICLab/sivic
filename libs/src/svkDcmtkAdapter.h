@@ -155,7 +155,8 @@ class svkDcmtkAdapter: public svkDcmHeader
                             int seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int parentSeqItemPosition = 0, 
+                            int pos = 0    
                         );
         virtual double  GetDoubleSequenceItemElement(
                             const char* seqName, 
