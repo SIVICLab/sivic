@@ -139,9 +139,8 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
     vtkDebugMacro(<<"svkDICOMSCWRiter::WriteSlice()");
     int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
-    int numFrames = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "NumberOfFrames" ); 
     int slices = (this->GetImageDataInput(0)->GetExtent() ) [5]; 
-    int numCoils = numFrames/slices; 
+    int numCoils = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfCoils(); 
     int specPts = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
     string representation = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
 
