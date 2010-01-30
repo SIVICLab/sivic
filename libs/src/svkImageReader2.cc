@@ -279,7 +279,17 @@ void svkImageReader2::SetupOutputScalarData()
         }
 
         this->SetNumberOfScalarComponents(1);
+
+    } else if ( strcmp(this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
+
+        if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
+            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_4 );
+        } else {
+            vtkErrorWithObjectMacro( this, "Unsupported MRS data type: " << this->GetFileType() );
+        }
+
     }
+
 }
 
 
