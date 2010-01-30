@@ -101,7 +101,7 @@ void svkDdfVolumeWriter::Write()
     this->FilesDeleted = 0;
     this->UpdateProgress(0.0);
 
-// based on number of coils of data:
+    // based on number of coils of data:
     this->MaximumFileNumber = this->FileNumber;
 
     // determine the name
@@ -116,7 +116,7 @@ void svkDdfVolumeWriter::Write()
         }
     }
 
-    //this->WriteData();
+    this->WriteData();
     this->WriteHeader();
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
@@ -131,32 +131,76 @@ void svkDdfVolumeWriter::Write()
 
 
 /*!
- *  Write the image data pixels to the DDF data file (.int2, .real, .byt).       
+ *  Write the image data pixels to the DDF data file (.cmplx)
  */
 void svkDdfVolumeWriter::WriteData()
 {
     vtkDebugMacro( << this->GetClassName() << "::WriteData()" );
 
-    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-    int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
-    int numSlices = hdr->GetIntValue( "NumberOfFrames" );
-
-    int dataWordSize = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "BitsAllocated" );
     string extension = ".cmplx"; 
-    int numBytesPerPixel = 4; 
-    void* pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
 
-    ofstream pixels_out( (this->InternalFileName + extension).c_str(), ios::binary);
-    if(!pixels_out) {
-        throw runtime_error("Cannot open .int2 file for writing");
+    string fileRoot = string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
+
+    ofstream cmplxOut( ( fileRoot + extension ).c_str(), ios::binary);
+    if( !cmplxOut ) {
+        throw runtime_error("Cannot open .cmplx file for writing");
     }
 
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+    int dataWordSize = hdr->GetIntValue( "BitsAllocated" ) / 8;
+    int cols     = hdr->GetIntValue( "Columns" );
+    int rows     = hdr->GetIntValue( "Rows" );
+    int slices   = hdr->GetNumberOfSlices();  
+    int numCoils = hdr->GetNumberOfCoils();
+    //  int numTimePts;  
+    int specPts  = hdr->GetIntValue( "DataPointColumns" );
+    string representation = hdr->GetStringValue( "DataRepresentation" );
 
+    int numComponents = 1;
+    if (representation.compare("COMPLEX") == 0) {
+        numComponents = 2;
+    }
+
+    vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
+
+    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents;
+    int dataLength = dataLengthPerCoil * numCoils;
+    int coilOffset = cols * rows * slices ;
+
+    // write out one coil per ddf file
+    float* specData = new float [ dataLengthPerCoil ];
+
+    vtkFloatArray* fa;
+    float* dataTuple = new float[numComponents];
+
+    for (int coil = 0; coil < numCoils; coil ++) {
+        for (int z = 0; z < slices; z++) {
+            for (int y = 0; y < rows; y++) {
+                for (int x = 0; x < cols; x++) {
+
+                    int offset = (cols * rows * z) + (cols * y) + x + (coil * coilOffset);
+                    fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+
+                    for (int i = 0; i < specPts; i++) {
+
+                        fa->GetTupleValue(i, dataTuple);
+
+                        for (int j = 0; j < numComponents; j++) {
+                            specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    delete [] dataTuple;
+
+    //  cmplx files are by definition big endian:
 #if defined (linux) || defined (Darwin)
-    svkByteSwap::SwapBufferEndianness((float*)pixels, numPixelsPerSlice * numSlices);
+    svkByteSwap::SwapBufferEndianness( (float*)specData, dataLengthPerCoil );
 #endif
 
-    pixels_out.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
+    cmplxOut.write( (char *)specData, dataLengthPerCoil * dataWordSize);
 
 }
 
@@ -169,7 +213,9 @@ void svkDdfVolumeWriter::WriteHeader()
 {
 
     //write the ddf file
-    ofstream out( (this->InternalFileName+string(".ddf")).c_str());
+    string fileRoot = string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
+
+    ofstream out( (  fileRoot + string(".ddf") ).c_str() );
     if(!out) {
         throw runtime_error("Cannot open .ddf file for writing");
     }
@@ -385,6 +431,7 @@ void svkDdfVolumeWriter::WriteHeader()
             0,
             "MidSlabPosition", 
             NULL,      
+            0,
             i 
         );
 
@@ -401,24 +448,19 @@ void svkDdfVolumeWriter::WriteHeader()
 
 
     float selBoxOrientation[3][3]; 
-    float tmpSelBoxOrientation[6]; 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
 
-        tmpSelBoxOrientation[i] = hdr->GetFloatSequenceItemElement(
-            "VolumeLocalizationSequence",
-            0,
-            "SlabOrientation",
-            NULL, 
-            i 
-        );
+            selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
+                "VolumeLocalizationSequence",
+                i,
+                "SlabOrientation",
+                NULL, 
+                0,    
+                j 
+            );
+        }
     }
-
-    selBoxOrientation[0][0] = tmpSelBoxOrientation[0]; 
-    selBoxOrientation[0][1] = tmpSelBoxOrientation[1]; 
-    selBoxOrientation[0][2] = tmpSelBoxOrientation[2]; 
-    selBoxOrientation[1][0] = tmpSelBoxOrientation[3]; 
-    selBoxOrientation[1][1] = tmpSelBoxOrientation[4]; 
-    selBoxOrientation[1][2] = tmpSelBoxOrientation[5]; 
 
     out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
@@ -430,9 +472,9 @@ void svkDdfVolumeWriter::WriteHeader()
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
                                << endl;  
 
-    out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+    out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
                                << endl;  
 
     out << "reordered toplc(lps, mm): " << endl;
@@ -450,10 +492,12 @@ void svkDdfVolumeWriter::WriteHeader()
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
                                << endl;  
 
-    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
+                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
                                << endl;  
+
+    out << "===================================================" << endl; 
 
 }
 
