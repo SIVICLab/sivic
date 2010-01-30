@@ -618,7 +618,7 @@ int svkDcmtkAdapter::GetIntSequenceItemElement(const char* seqName, int seqItemP
  *
  *  \return float value of the item element 
  */
-float svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, const char* parentSeqName, int parentSeqItemPosition)
+float svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, const char* parentSeqName, int parentSeqItemPosition, int pos)
 {
 
     DcmItem* dataset = this->dcmFile->getDataset(); 
@@ -632,7 +632,8 @@ float svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqI
 
     return svkDcmtkUtils::getFloatValue(
         this->GetDcmItem(dataset, seqName, seqItemPosition),
-        GetDcmTagKey(elementName) 
+        GetDcmTagKey(elementName), 
+        pos
     );
 }
 

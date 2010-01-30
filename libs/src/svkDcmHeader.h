@@ -329,7 +329,8 @@ class svkDcmHeader: public vtkObject
                             int seqItemPosition,
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int parentSeqItemPosition = 0, 
+                            int pos = 0
                         ) = 0;
 
         /*! 
