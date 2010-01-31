@@ -206,7 +206,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         DcmSequenceOfItems* GetDcmSequence(const char* seqName); 
 
         OFBool              replaceOldElements;
-
+        DcmDataDictionary*  privateDic;
 
 };
 

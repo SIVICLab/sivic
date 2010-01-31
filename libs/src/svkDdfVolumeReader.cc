@@ -1920,6 +1920,11 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_FIELD",
+        12345
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference", 
         this->GetHeaderValueAsFloat(ddfMap, "ppmReference")
     );
