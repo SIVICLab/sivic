@@ -148,6 +148,9 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
         this->data = NULL;
     }
     this->data = data;
+    double range[2]; 
+    // Getting the range modifies the object, so we get it before attaching callback
+    this->data->GetDataRange( range, 0 );
     this->data->Register(this);
     this->data->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
 
@@ -186,8 +189,8 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     //  Get these from data or our subclass of vtkImageData tbd:
     this->plotRangeX1 = 0;
     this->plotRangeX2 = numFrequencyPoints;
-    this->plotRangeY1 = -60000000;
-    this->plotRangeY2 = 350000000;
+    this->plotRangeY1 = range[0];
+    this->plotRangeY2 = range[1];
     if( this->xyPlots != NULL ) {
         this->xyPlots->Delete();
         this->xyPlots = NULL;
@@ -317,6 +320,12 @@ void svkPlotLineGrid::Update()
     int ID;
     double* cellBounds;
     double* tmpViewBounds = new double[6];
+    tmpViewBounds[0] = VTK_DOUBLE_MAX;
+    tmpViewBounds[1] = -VTK_DOUBLE_MAX;
+    tmpViewBounds[2] = VTK_DOUBLE_MAX;
+    tmpViewBounds[3] = -VTK_DOUBLE_MAX;
+    tmpViewBounds[4] = VTK_DOUBLE_MAX;
+    tmpViewBounds[5] = -VTK_DOUBLE_MAX;
     svkPlotLine* tmpXYPlot;
 
     for (int yInd = voxelIndexTLC[1]; yInd <= voxelIndexBRC[1]; yInd++) {
@@ -334,6 +343,25 @@ void svkPlotLineGrid::Update()
             }
 
             // We use the cellbounds to reset the camera's fov        
+            if( tmpXYPlot->plotAreaBounds[0] < tmpViewBounds[0] ) {
+                tmpViewBounds[0] = tmpXYPlot->plotAreaBounds[0];
+            }
+            if( tmpXYPlot->plotAreaBounds[1] > tmpViewBounds[1] ) {
+                tmpViewBounds[1] = tmpXYPlot->plotAreaBounds[1];
+            }
+            if( tmpXYPlot->plotAreaBounds[2] < tmpViewBounds[2] ) {
+                tmpViewBounds[2] = tmpXYPlot->plotAreaBounds[2];
+            }
+            if( tmpXYPlot->plotAreaBounds[3] > tmpViewBounds[3] ) {
+                tmpViewBounds[3] = tmpXYPlot->plotAreaBounds[3];
+            }
+            if( tmpXYPlot->plotAreaBounds[4] < tmpViewBounds[4] ) {
+                tmpViewBounds[4] = tmpXYPlot->plotAreaBounds[4];
+            }
+            if( tmpXYPlot->plotAreaBounds[5] > tmpViewBounds[5] ) {
+                tmpViewBounds[5] = tmpXYPlot->plotAreaBounds[5];
+            }
+/*
             if (yInd == voxelIndexTLC[1] && xInd == voxelIndexTLC[0]) {
                 cellBounds = tmpXYPlot->plotAreaBounds;   
                 tmpViewBounds[0] = cellBounds[0];
@@ -347,6 +375,7 @@ void svkPlotLineGrid::Update()
                 tmpViewBounds[4] = cellBounds[4];
                 tmpViewBounds[5] = cellBounds[5];
             } 
+*/
         }
     }
 
@@ -394,8 +423,14 @@ void svkPlotLineGrid::GenerateActor()
     //  Note that 2D selection range is defined from tlc to brc of rubber band with y 
     //  increasing in negative direction.
     this->AllocateXYPlots();
-    double* origin = this->data->GetOrigin();
-    double* spacing = this->data->GetSpacing();
+    double origin[3] = { this->data->GetOrigin()[0],this->data->GetOrigin()[1],this->data->GetOrigin()[2] };
+    double spacing[3] = { this->data->GetSpacing()[0],this->data->GetSpacing()[1],this->data->GetSpacing()[2] };
+
+    // TODO: Generalize for oblique single voxel
+    if( acquisitionType == "SINGLE VOXEL" ) {
+        this->data->GetSelectionBoxSpacing( spacing );
+        this->data->GetSelectionBoxOrigin( origin );
+    } 
     int arrayLength = this->data->GetCellData()->GetArray(0)->GetNumberOfTuples();
     int* extent = this->data->GetExtent();
     double dcos[3][3];
@@ -456,12 +491,11 @@ void svkPlotLineGrid::GenerateActor()
 
                 tmpXYPlot->SetOrigin( plotOrigin );   
 
-                if( acquisitionType == "SINGLE VOXEL" ) {
-                    //tmpXYPlot->SetPlotAreaBounds( this->selectionBoxActor->GetBounds() );   
-                    cout << "Single voxel NOT SUPPORTED!!!!" << endl;
-                } 
                 tmpXYPlot->SetPointRange(plotRangeX1, plotRangeX2);
                 tmpXYPlot->SetValueRange(plotRangeY1, plotRangeY2);
+                if( acquisitionType == "SINGLE VOXEL" ) {
+                    tmpXYPlot->SetInvertPlots( false );
+                }
 
 
             }
@@ -596,6 +630,7 @@ void svkPlotLineGrid::RegeneratePlots()
 void svkPlotLineGrid::AlignCamera( bool invertView ) 
 {  
     if( this->renderer != NULL && viewBounds != NULL ) {
+        string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         double zoom;
         double viewWidth = viewBounds[1] - viewBounds[0];
         double viewHeight = viewBounds[3] - viewBounds[2];
@@ -610,10 +645,8 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
         this->renderer->ResetCamera( viewBounds );
         double dcos[3][3];
         data->GetDcos( dcos );
-        double wVec[3];
-        wVec[0] = dcos[0][2];
-        wVec[1] = dcos[1][2];
-        wVec[2] = dcos[2][2];
+        double sliceNormal[3];
+        this->data->GetDataBasis( sliceNormal, svkImageData::SLICE );
         // if the data set is not axial, move the camera
         double* focalPoint = this->renderer->GetActiveCamera()->GetFocalPoint();
         double* cameraPosition = this->renderer->GetActiveCamera()->GetPosition();
@@ -622,20 +655,24 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
                 pow( focalPoint[2] - cameraPosition[2], 2 ) );
         double newCameraPosition[3];
 
-        if( pow( wVec[2], 2) < pow( wVec[1], 2 ) || pow( wVec[2], 2) < pow( wVec[0], 2 ) ) {
-            newCameraPosition[0] = focalPoint[0] - distance*wVec[0]; 
-            newCameraPosition[1] = focalPoint[1] - distance*wVec[1];
-            newCameraPosition[2] = focalPoint[2] - distance*wVec[2];
+        if( pow( sliceNormal[2], 2) < pow( sliceNormal[1], 2 ) || pow( sliceNormal[2], 2) < pow( sliceNormal[0], 2 ) 
+                                                 || acquisitionType == "SINGLE VOXEL" ) {
+            newCameraPosition[0] = focalPoint[0] - distance*sliceNormal[0]; 
+            newCameraPosition[1] = focalPoint[1] - distance*sliceNormal[1];
+            newCameraPosition[2] = focalPoint[2] - distance*sliceNormal[2];
         } else {
-            newCameraPosition[0] = focalPoint[0] + distance*wVec[0]; 
-            newCameraPosition[1] = focalPoint[1] + distance*wVec[1];
-            newCameraPosition[2] = focalPoint[2] + distance*wVec[2];
+            newCameraPosition[0] = focalPoint[0] + distance*sliceNormal[0]; 
+            newCameraPosition[1] = focalPoint[1] + distance*sliceNormal[1];
+            newCameraPosition[2] = focalPoint[2] + distance*sliceNormal[2];
 
         }
         this->renderer->GetActiveCamera()->SetPosition( newCameraPosition );
 
-        // Default for axial, above if block makes it work for all
-        //this->renderer->GetActiveCamera()->SetViewUp( 0, -1, 0 );
+        double columnNormal[3];
+        this->data->GetDataBasis( columnNormal, svkImageData::COLUMN );
+        if(acquisitionType == "SINGLE VOXEL" ) {
+            this->renderer->GetActiveCamera()->SetViewUp( columnNormal[0], columnNormal[1], columnNormal[2] );
+        }
         this->renderer->ResetCamera( viewBounds );
 
         if( viewWidth >= viewHeight ) {
@@ -643,7 +680,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
         } else {
             zoom = diagonal/viewHeight;        
         }
-        // We'll back off the zoom to 90% to leave some edges
+        // We'll back off the zoom to 95% to leave some edges
         this->renderer->GetActiveCamera()->Zoom(0.95*zoom);
         if( toggleDraw ) {
             this->renderer->DrawOn();

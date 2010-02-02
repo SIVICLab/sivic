@@ -264,6 +264,31 @@ void svkDcmHeader::GetOrientation(double orientation[2][3])
 
 
 /*!
+ * Determine if the data set is coronal/sagital/axial
+ */
+svkDcmHeader::Orientation svkDcmHeader::GetOrientationType( )
+{
+    double dcos[3][3];
+    Orientation orientation = AXIAL;
+    this->GetDataDcos( dcos );
+    double wVec[3];
+    wVec[0] = dcos[2][0];
+    wVec[1] = dcos[2][1];
+    wVec[2] = dcos[2][2];
+
+   if( pow( wVec[2], 2) >= pow( wVec[1], 2 ) && pow( wVec[2], 2) >= pow( wVec[0], 2 ) ) {
+        orientation = AXIAL;
+    } else if( pow( wVec[1], 2) >= pow( wVec[0], 2 ) && pow( wVec[1], 2) >= pow( wVec[2], 2 ) ) {
+        orientation = CORONAL;
+    } else {
+        orientation = SAGITTAL;
+    }
+    return orientation;
+ 
+}
+
+
+/*!
  *  Returns the right handed normal vector to the slice defined by DICOM imageOrientationPatient. 
  *  from the DICOM header. 
  */

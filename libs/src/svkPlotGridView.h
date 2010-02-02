@@ -107,6 +107,8 @@ class svkPlotGridView : public svkDataView
         virtual void                Refresh();
         void                        GeneratePlotGridActor();  
         void                        GenerateClippingPlanes();
+        virtual void                SetOrientation( svkDcmHeader::Orientation orientation );
+        int                         GetSlice();
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -152,7 +154,6 @@ class svkPlotGridView : public svkDataView
         void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
         int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                
-        int                    GetSlice();
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetChannel( int channel );
         int                    GetChannel( );

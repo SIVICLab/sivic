@@ -120,6 +120,15 @@ class svkImageData: public vtkImageData
             MAGNITUDE
         };
 
+        typedef enum {
+            ROW = 0,
+            COLUMN,
+            SLICE,
+            LR,
+            PA,
+            SI
+        } DataBasis;
+
 
         // Copy and Cast Methods
         virtual void       DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED );
@@ -196,9 +205,18 @@ class svkImageData: public vtkImageData
         virtual void       GetNumberOfVoxels(int numVoxels[3]) = 0;
         void               GetIndexFromID(int voxelID, int* indexX, int* indexY, int* indexZ);
         void               GetIndexFromID(int voxelID, int* index);
-        void               GetIndexFromPosition(float* posLPS, int* index);
+        void               GetIndexFromPosition(double posLPS[3], int* index);
         virtual void       GetPositionFromIndex(int* index, float* posLPS);
+        virtual void       GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual void       GetSliceNormal(float* normal, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual int        GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual int        GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual int        GetFirstSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual int        GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual void       GetDataBasis( double basisVector[3], DataBasis basis );
+        virtual int        GetOrientationIndex( svkDcmHeader::Orientation orientation );
         virtual void       GetImageCenter( float* center );
+        virtual double     GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
         int                GetNumberOfTimePoints();

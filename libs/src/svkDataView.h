@@ -131,6 +131,9 @@ class svkDataView : public vtkObject
         virtual vtkProp*        GetProp(int index);
         virtual void            SetProp(int index, vtkProp* prop);
 
+        virtual void            SetOrientation( svkDcmHeader::Orientation orientation );
+        virtual svkDcmHeader::Orientation  GetOrientation( );
+
 
     protected:
 
@@ -141,6 +144,7 @@ class svkDataView : public vtkObject
         vector <svkImageData*>          dataVector;
         svkDataViewController*          controller;  
         vtkCallbackCommand*             dataModifiedCallback;
+        svkDcmHeader::Orientation       orientation;
 
         vector < bool >                 isPropOn;          //Is the actor turned on or off?
         vector < bool >                 isRendererOn;       //Is the renderer turned on or off?
@@ -154,7 +158,7 @@ class svkDataView : public vtkObject
          *  Stub to be implemented later.
          */
         virtual void                    UpdateProps() {;};
-        
+              
         //  Methods:
         void                            ObserveData( svkImageData* data );
         static void                     UpdateView(

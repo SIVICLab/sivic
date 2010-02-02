@@ -64,6 +64,7 @@ svkDataView::svkDataView()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     dataModifiedCallback = vtkCallbackCommand::New();
+    this->orientation = svkDcmHeader::AXIAL;
 }
 
 
@@ -324,4 +325,22 @@ void svkDataView::SetProp(int index, vtkProp* prop)
         prop->Register(this);
     }
     this->propCollection[index] = prop; 
+}
+
+
+/*!
+ *
+ */
+void svkDataView::SetOrientation( svkDcmHeader::Orientation orientation ) 
+{
+    this->orientation = orientation;
+}
+
+
+/*!
+ *
+ */
+svkDcmHeader::Orientation svkDataView::GetOrientation( )
+{
+    return this->orientation;
 }

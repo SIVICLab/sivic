@@ -65,8 +65,6 @@ svkPlotLine::svkPlotLine()
     this->plotAreaBounds[5] = 0;
     this->scale[0]  = 1;
     this->scale[1]  = 1;
-    this->adjustedXYOrigin[0]  = 0;
-    this->adjustedXYOrigin[1]  = 0;
     this->startPt   = 0;
     this->endPt     = 1;
     this->minValue  = 0; 
@@ -180,46 +178,61 @@ void svkPlotLine::SetValueRange( double minValue, double maxValue )
  */
 void svkPlotLine::GeneratePolyData()
 {
+    double dRow;
+    double dColumn;
+    double columnValue;
+    double rowValue;
     float posLPS[3];
-    double dU;
-    double dV;
-    double value;
+    float initialPos[3];
+
+    // We are going to precalculate the start + the distance in the slice dimension for speed
+    initialPos[0] = this->origin[0] + (spacing[2]/2.0) * dcos[2][0];
+    initialPos[1] = this->origin[1] + (spacing[2]/2.0) * dcos[2][1];
+    initialPos[2] = this->origin[2] + (spacing[2]/2.0) * dcos[2][2];
     if( this->plotData != NULL && this->polyLinePoints != NULL ) {
+
+        // The offset is the starting point in the vtkPoints object used by ALL plotLines
         int offset = this->GetPointIds()->GetId(0);
+
+        // Loop over all points.
+        // NOTE: this loop could be broken into 0-startPt, startPt-endPt, endPt-numPoints for speed
         for( int i = 0; i < numPoints; i++ ) {
+
+            // Which component are we using...
             if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-                value = (plotData->GetTuple(i))[this->plotComponent];
+                columnValue = (plotData->GetTuple(i))[this->plotComponent];
             } else {
-                value = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
-                        (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5) ;
+                columnValue = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
+                        (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5);
             }
-            dU = i*this->scale[0];     
+
+            // If the value is outside the max/min
+            if( columnValue > this->maxValue ) {
+                columnValue = this->maxValue;
+            } else if ( columnValue < this->minValue ) {
+                columnValue = this->minValue;
+            }
+
+            // Often negative is up in LPS, so if this is true we invert 
             if( this->invertPlots ) {
-                dV = -(value)*this->scale[1];
+                dColumn = (this->maxValue - columnValue)*this->scale[1];
             } else {
-                dV = (value)*this->scale[1];
+                dColumn = (columnValue - this->minValue)*this->scale[1];
             }
-            posLPS[0] = adjustedXYOrigin[0] + (dU) * dcos[0][0] + (dV) * dcos[1][0] + (spacing[2]/2.0) * dcos[2][0];
 
-            posLPS[1] = adjustedXYOrigin[1] + (dU) * dcos[0][1] + (dV) * dcos[1][1] + (spacing[2]/2.0) * dcos[2][1];
+            // If the point is outside the start/end
+            if( i > this->endPt ) {
+                dRow = (this->endPt - this->startPt)*this->scale[0];
+            } else if( i < this->startPt ) {
+                dRow = 0;
+            } else {
+                dRow = (i - this->startPt) * this->scale[0]; 
+            }
 
-            posLPS[2] = origin[2] + (dU) * dcos[0][2] + (dV) * dcos[1][2] + (spacing[2]/2.0) * dcos[2][2];
-
-            if( posLPS[0] > plotAreaBounds[1] ) {
-                posLPS[0] = plotAreaBounds[1];
-            } else if ( posLPS[0] < plotAreaBounds[0] ) {
-                posLPS[0] = plotAreaBounds[0];
-            }
-            if( posLPS[1] > plotAreaBounds[3] ) {
-                posLPS[1] = plotAreaBounds[3];
-            } else if( posLPS[1] < plotAreaBounds[2] ) {
-                posLPS[1] = plotAreaBounds[2];
-            }
-            if( posLPS[2] > plotAreaBounds[5] ) {
-                posLPS[2] = plotAreaBounds[5];
-            } else if( posLPS[2] < plotAreaBounds[4] ) {
-                posLPS[2] = plotAreaBounds[4];
-            }
+            // NOTE: This could be moved into the above if blocks for speed
+            posLPS[0] = initialPos[0] + (dRow) * dcos[0][0] + (dColumn) * dcos[1][0];
+            posLPS[1] = initialPos[1] + (dRow) * dcos[0][1] + (dColumn) * dcos[1][1];
+            posLPS[2] = initialPos[2] + (dRow) * dcos[0][2] + (dColumn) * dcos[1][2];
 
             this->polyLinePoints->SetPoint(i+offset, posLPS[0], posLPS[1], posLPS[2] );
         }
@@ -262,7 +275,6 @@ void svkPlotLine::SetOrigin( double* origin )
 {
     memcpy( this->origin, origin, sizeof(double) * 3 );
     this->RecalculatePlotAreaBounds();
-    this->RecalculateAdjustedOrigin();
 }
 
 
@@ -312,7 +324,6 @@ void svkPlotLine::RecalculateScale()
 {
     this->scale[0] = ( spacing[0] )/((float)( this->endPt - this->startPt ));
     this->scale[1] = ( spacing[1] )/((float)( this->maxValue - this->minValue ));
-    this->RecalculateAdjustedOrigin();
 }
 
 
@@ -362,14 +373,9 @@ void svkPlotLine::RecalculatePlotAreaBounds()
 
 
 /*!
- *  Recalculates the translated origin that is used to take into account the startPt and min/maxValue
+ *
  */
-void svkPlotLine::RecalculateAdjustedOrigin()
+void svkPlotLine::SetInvertPlots( bool invertPlots ) 
 {
-    this->adjustedXYOrigin[0] = origin[0] - this->scale[0]*(startPt);
-    if( this->invertPlots ) {
-        this->adjustedXYOrigin[1] = origin[1] + this->scale[1]*(maxValue);
-    } else {
-        this->adjustedXYOrigin[1] = origin[1] - this->scale[1]*(minValue);
-    }
+    this->invertPlots = invertPlots;
 }

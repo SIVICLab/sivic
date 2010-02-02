@@ -1074,15 +1074,16 @@ void svkImageData::GetIndexFromID(int voxelID, int* indexX, int* indexY, int* in
 
 
 /*!
- *  Compute the x, y, z index for a given LPS coordinate
+ *  Compute the row, column, slice index for a given LPS coordinate
  *
  *  \param L
  *  \param P
  *  \param S
  *
- *  \return the x,y,z index of the voxel at that LPS position.
+ *  \return the x,y,z index of the voxel at that LPS position. If the position
+ *          is outside the dataset, the closests voxel will be selected.
  */
-void svkImageData::GetIndexFromPosition(float* posLPS, int* index)
+void svkImageData::GetIndexFromPosition(double posLPS[3], int* index)
 {
 
     double origin[3];
@@ -1090,9 +1091,6 @@ void svkImageData::GetIndexFromPosition(float* posLPS, int* index)
 
     double pixelSpacing[3];
     this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-
-    double dcos[3][3];
-    this->GetDcos(dcos);
 
     // Origin is center of tlc voxel, so to calculate the actual oblique distance
     // to the target position it's necessary to back off by 1/2 voxel:
@@ -1102,23 +1100,22 @@ void svkImageData::GetIndexFromPosition(float* posLPS, int* index)
         }
     }
 
-    //  Get the LPS position vector of ROI wrt the origin:
-    double distanceFromOrigin[3];  //along oriented coordinate system defined by dcos;
-    for (int i = 0; i < 3; i++) {
-        distanceFromOrigin[i] = posLPS[i] - origin[i];
-    }
+    double rowNormal[3];
+    this->GetDataBasis(rowNormal, svkImageData::ROW );
+    double columnNormal[3];
+    this->GetDataBasis(columnNormal, svkImageData::COLUMN );
+    double sliceNormal[3];
+    this->GetDataBasis(sliceNormal, svkImageData::SLICE );
 
-    //  Now project this vector onto the oriented coordinate system and get the
-    //  integer number of voxels along each direction:
-
-    double distanceFromOriginOriented[3];  //along oriented coordinate system defined by dcos;
+    index[0] = (int)floor((vtkMath::Dot(posLPS, rowNormal)  - vtkMath::Dot(origin, rowNormal))/pixelSpacing[0]);
+    index[1] = (int)floor((vtkMath::Dot(posLPS, columnNormal) - vtkMath::Dot(origin, columnNormal))/pixelSpacing[1]);
+    index[2] = (int)floor((vtkMath::Dot(posLPS, sliceNormal) - vtkMath::Dot(origin, sliceNormal) )/pixelSpacing[2]);
     for (int i = 0; i < 3; i++) { 
-        distanceFromOriginOriented[i] = 0.; 
-        for (int j = 0; j < 3; j++) {
-            distanceFromOriginOriented[i] += distanceFromOrigin[j] * dcos[j][i];
+        if( index[i] >= this->GetDimensions()[i] ) {
+            index[i] = this->GetDimensions()[i]-1;
+        } else if ( index[i] < 0 ) {
+            index[i] = 0;
         }
-        distanceFromOrigin[i] = fabs(distanceFromOrigin[i]);
-        index[i] = (int)(distanceFromOrigin[i]/pixelSpacing[i]);
     }
 }
 
@@ -1199,6 +1196,370 @@ void svkImageData::GetPositionFromIndex(int* index, float* posLPS)
             posLPS[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
         }
     }
+}
+
+
+/*!
+ *  This method will get the origin of a given slice, for a given orientation. Default uses the data's 
+ *  orientation.
+ */
+void svkImageData::GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    float normal[3];
+    this->GetSliceNormal( normal, sliceOrientation );
+    sliceOrigin[0] = this->GetOrigin()[0] + normal[0]*this->GetSpacing()[0]*slice;
+    sliceOrigin[1] = this->GetOrigin()[1] + normal[1]*this->GetSpacing()[1]*slice;
+    sliceOrigin[2] = this->GetOrigin()[2] + normal[2]*this->GetSpacing()[2]*slice;
+
+}
+
+
+/*!
+ * Gets the normal vector to a given orientation.
+ */
+void svkImageData::GetSliceNormal(float* normal, svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+
+    switch ( this->GetDcmHeader()->GetOrientationType() ) {
+        case svkDcmHeader::AXIAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    normal[0] = dcos[2][0];  
+                    normal[1] = dcos[2][1];  
+                    normal[2] = dcos[2][2];  
+                    break;
+                case svkDcmHeader::CORONAL:
+                    normal[0] = dcos[1][0];  
+                    normal[1] = dcos[1][1];  
+                    normal[2] = dcos[1][2];  
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    normal[0] = dcos[0][0];  
+                    normal[1] = dcos[0][1];  
+                    normal[2] = dcos[0][2];  
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    normal[0] = dcos[1][0];  
+                    normal[1] = dcos[1][1];  
+                    normal[2] = dcos[1][2];  
+                    break;
+                case svkDcmHeader::CORONAL:
+                    normal[0] = dcos[2][0];  
+                    normal[1] = dcos[2][1];  
+                    normal[2] = dcos[2][2];  
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    normal[0] = dcos[0][0];  
+                    normal[1] = dcos[0][1];  
+                    normal[2] = dcos[0][2];  
+                    break;
+            }
+            break;
+    } 
+
+}
+
+
+/*!
+ *
+ */
+int svkImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    float normal[3];
+    this->GetSliceNormal( normal, sliceOrientation );
+    double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
+    double imageCenter = vtkMath::Dot( posLPS, normal ); 
+    double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
+    int slice = (int) floor( idealCenter );
+    return slice; 
+}
+
+int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    int numSlices;
+    switch ( this->GetDcmHeader()->GetOrientationType()) {
+        case svkDcmHeader::AXIAL:
+            switch ( this->GetDcmHeader()->GetOrientationType()) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[2];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[1];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[0];
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( this->GetDcmHeader()->GetOrientationType()) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[1];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[2];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[0];
+                    break;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            switch ( this->GetDcmHeader()->GetOrientationType()) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[1];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[0];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[2];
+                    break;
+            }
+            break;
+    }
+}
+
+int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    int firstSlice;
+    switch ( this->GetDcmHeader()->GetOrientationType()) {
+        case svkDcmHeader::AXIAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    firstSlice = this->GetExtent()[4];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    firstSlice = this->GetExtent()[2];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    firstSlice = this->GetExtent()[0];
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    firstSlice = this->GetExtent()[2];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    firstSlice = this->GetExtent()[4];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    firstSlice = this->GetExtent()[0];
+                    break;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    firstSlice = this->GetExtent()[2];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    firstSlice = this->GetExtent()[0];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    firstSlice = this->GetExtent()[4];
+                    break;
+            }
+            break;
+    }
+    return firstSlice;
+}
+
+int svkImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation)
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    int lastSlice;
+    switch ( this->GetDcmHeader()->GetOrientationType()) {
+        case svkDcmHeader::AXIAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    lastSlice = this->GetExtent()[5];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    lastSlice = this->GetExtent()[3];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    lastSlice = this->GetExtent()[1];
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    lastSlice = this->GetExtent()[3];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    lastSlice = this->GetExtent()[5];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    lastSlice = this->GetExtent()[1];
+                    break;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    lastSlice = this->GetExtent()[3];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    lastSlice = this->GetExtent()[1];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    lastSlice = this->GetExtent()[5];
+                    break;
+            }
+            break;
+    }
+    return lastSlice;
+}
+
+
+/*!
+ *
+ */
+void svkImageData::GetDataBasis( double basisVector[3], DataBasis basis )
+{
+    switch( basis ) {
+        case ROW:
+            basisVector[0] = dcos[0][0];
+            basisVector[1] = dcos[0][1];
+            basisVector[2] = dcos[0][2];
+            break;
+        case COLUMN:
+            basisVector[0] = dcos[1][0];
+            basisVector[1] = dcos[1][1];
+            basisVector[2] = dcos[1][2];
+            break;
+        case SLICE:
+            basisVector[0] = dcos[2][0];
+            basisVector[1] = dcos[2][1];
+            basisVector[2] = dcos[2][2];
+            break;
+        case LR:
+            basisVector[0] = dcos[0][0];
+            basisVector[1] = dcos[1][0];
+            basisVector[2] = dcos[2][0];
+            break;
+        case PA:
+            basisVector[0] = dcos[0][1];
+            basisVector[1] = dcos[1][1];
+            basisVector[2] = dcos[2][1];
+            break;
+        case SI:
+            basisVector[0] = dcos[0][2];
+            basisVector[1] = dcos[1][2];
+            basisVector[2] = dcos[2][2];
+            break;
+
+    }
+}
+
+
+/*!
+ *
+ */
+int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
+{
+    int index;
+    switch( this->GetDcmHeader()->GetOrientationType() ) {
+        case svkDcmHeader::AXIAL:
+            switch( orientation ) {
+                case svkDcmHeader::AXIAL:
+                    index = 2;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    index = 1;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    index = 0;
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch( orientation ) {
+                case svkDcmHeader::AXIAL:
+                    index = 1;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    index = 2;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    index = 0;
+                    break;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            switch( orientation ) {
+                case svkDcmHeader::AXIAL:
+                    index = 0;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    index = 1;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    index = 2;
+                    break;
+            }
+            break;
+    }
+    return index;
+    
+}
+
+/*!
+ *
+ */
+double svkImageData::GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+
+    switch ( this->GetDcmHeader()->GetOrientationType() ) {
+        case svkDcmHeader::AXIAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    return this->GetSpacing()[2];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    return this->GetSpacing()[1];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    return this->GetSpacing()[0];
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    return this->GetSpacing()[1];
+                    break;
+                case svkDcmHeader::CORONAL:
+                    return this->GetSpacing()[2];
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    return this->GetSpacing()[0];
+                    break;
+            }
+            break;
+    }
+
 }
 
 

@@ -88,6 +88,7 @@ class svkPlotLine : public vtkPolyLine
         void                SetSpacing( double* spacing );
         void                GetDcos( double dcos[3][3] );
         void                SetDcos( double dcos[3][3] );
+        void                SetInvertPlots( bool invertPlots );
 
 
     protected:
@@ -129,9 +130,6 @@ class svkPlotLine : public vtkPolyLine
         //! the scale 
         float scale[2]; 
 
-        //! the data origin accounting for bounds
-        double adjustedXYOrigin[2];
-
         //! Which component should we plot? 
         PlotComponent   plotComponent; 
 
@@ -146,7 +144,6 @@ class svkPlotLine : public vtkPolyLine
 
         void RecalculateScale();
         void RecalculatePlotAreaBounds();
-        void RecalculateAdjustedOrigin();
 
 };
 

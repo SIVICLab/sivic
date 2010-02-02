@@ -94,6 +94,15 @@ class svkDcmHeader: public vtkObject
             SIGNED_FLOAT_4 
         } DcmPixelDataFormat;
 
+        typedef enum {
+            UNKNOWN = -1,
+            AXIAL      = 0,
+            CORONAL, 
+            SAGITTAL 
+        } Orientation;
+
+        
+
         typedef enum{
             SLICE_ORDER_UNDEFINED = -1,
             INCREMENT_ALONG_POS_NORMAL = 0,
@@ -112,9 +121,9 @@ class svkDcmHeader: public vtkObject
          *  Factory method with specific imlementation in adapter sub-class. 
          *  create the implementation specific adaptee type (e.g. DcmFileFormat for DCMTK).  
          */
-        virtual void    CreateIOD(DcmIodType iodType) = 0;
-        virtual void    SetSOPClassUID(DcmIodType iodType) = 0;
-        virtual void    PrintDcmHeader() = 0;
+        virtual void        CreateIOD(DcmIodType iodType) = 0;
+        virtual void        SetSOPClassUID(DcmIodType iodType) = 0;
+        virtual void        PrintDcmHeader() = 0;
 
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 
@@ -329,7 +338,7 @@ class svkDcmHeader: public vtkObject
                             int seqItemPosition,
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0, 
+                            int parentSeqItemPosition = 0,
                             int pos = 0
                         ) = 0;
 
@@ -445,6 +454,7 @@ class svkDcmHeader: public vtkObject
         void                GetPixelSpacing(double spacing[3]);
         void                GetPixelSize(double size[3]);
         void                GetOrientation(double orientation[2][3]);
+        svkDcmHeader::Orientation         GetOrientationType();
         void                GetNormalVector(double normal[3]);
         void                GetDataDcos(
                                 double dcos[3][3], 

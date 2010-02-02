@@ -150,6 +150,11 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
             }
+            if( slice > data->GetLastSlice() ) {
+                slice = data->GetLastSlice();
+            } else if ( slice < data->GetFirstSlice() ) {
+                slice = data->GetFirstSlice(); 
+            }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
             plotGrid->AlignCamera(); 
             this->GeneratePlotGridActor();
@@ -182,6 +187,13 @@ void svkPlotGridView::SetSlice(int slice)
     int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
     if( toggleDraw ) {
         this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
+    }
+    if( this->dataVector[MRS] != NULL ) {
+        if( slice > this->dataVector[MRS]->GetLastSlice() ) {
+            slice = this->dataVector[MRS]->GetLastSlice();
+        } else if ( slice < this->dataVector[MRS]->GetFirstSlice() ) {
+            slice = this->dataVector[MRS]->GetFirstSlice(); 
+        }
     }
     if( tlcBrc[0] >= 0 && tlcBrc[1] >= 0 ) {
         int* extent = dataVector[MRS]->GetExtent();
@@ -219,12 +231,20 @@ void svkPlotGridView::SetSlice(int slice)
  */
 void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
 {
+    int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
+    }
     this->tlcBrc[0] = tlcID;
     this->tlcBrc[1] = brcID;
     plotGrid->SetPlotVoxels(tlcID, brcID);
     plotGrid->Update();
     UpdateMetaboliteText(tlcBrc);
+    this->GenerateClippingPlanes();
     plotGrid->AlignCamera(); 
+    if( toggleDraw ) {
+        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
+    }
     this->Refresh();
 }
 
@@ -676,7 +696,7 @@ void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc)
  */
 int  svkPlotGridView::GetSlice() 
 {
-    return slice;
+    return this->slice;
 }
 
 
@@ -992,7 +1012,6 @@ void svkPlotGridView::GenerateClippingPlanes()
         clipperPlane3->SetOrigin( origin[0] + deltaX*(vIndexRange[1] + 1 + CLIP_TOLERANCE),
                                   origin[1] + deltaY*(vIndexRange[1] + 1 + CLIP_TOLERANCE), 
                                   origin[2] + deltaZ*(vIndexRange[1] + 1 + CLIP_TOLERANCE) );
-
         clipperPlane4->SetNormal( wVec[0], wVec[1], wVec[2] );
         clipperPlane4->SetOrigin( origin[0] + deltaX * ( slice - CLIP_TOLERANCE), 
                                   origin[1] + deltaY * ( slice - CLIP_TOLERANCE), 
@@ -1017,7 +1036,7 @@ void svkPlotGridView::GenerateClippingPlanes()
         vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID )
                                  )->GetMapper()->AddClippingPlane( clipperPlane5 );
         plotGrid->plotGridActor->GetMapper()->RemoveAllClippingPlanes();
-
+        
         plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane0 );
         plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane1 );
         plotGrid->plotGridActor->GetMapper()->AddClippingPlane( clipperPlane2 );
@@ -1035,3 +1054,14 @@ void svkPlotGridView::GenerateClippingPlanes()
         cerr<<"INPUT HAS NOT BEEN SET!!"<<endl;
     }
 }
+
+
+/*!
+ *
+ */
+void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation ) 
+{
+    this->orientation = orientation;
+    this->GenerateClippingPlanes();
+}
+

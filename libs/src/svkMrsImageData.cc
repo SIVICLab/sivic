@@ -325,18 +325,17 @@ void svkMrsImageData::UpdateRange()
  *
  *  \return true if the slice is within the selection box, other wise false is returned
  */
-bool svkMrsImageData::SliceInSelectionBox( int slice )
+bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation )
 {
-    int voxelIndex[3];
-    voxelIndex[0] = 0;
-    voxelIndex[1] = 0;
-    voxelIndex[2] = slice;
-    double dcos[3][3];
-    this->GetDcos( dcos );
-    double wVec[3];
-    wVec[0] = dcos[2][0];
-    wVec[1] = dcos[2][1];
-    wVec[2] = dcos[2][2];
+    orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+                                this->GetDcmHeader()->GetOrientationType() : orientation;
+
+    int voxelIndex[3] = {0,0,0};
+
+    float normal[3];
+    this->GetSliceNormal( normal, orientation );
+    double sliceNormal[3] = { normal[0], normal[1], normal[2] };
+    voxelIndex[ this->GetOrientationIndex( orientation ) ] = slice;
 
     vtkGenericCell* sliceCell = vtkGenericCell::New();
     this->GetCell( this->ComputeCellId(voxelIndex), sliceCell );
@@ -348,7 +347,7 @@ bool svkMrsImageData::SliceInSelectionBox( int slice )
     projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
     double projectedDistance;
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), wVec ); 
+        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal ); 
         if( projectedDistance < projectedSelBoxRange[0]) {
             projectedSelBoxRange[0] = projectedDistance; 
         }
@@ -361,7 +360,7 @@ bool svkMrsImageData::SliceInSelectionBox( int slice )
     projectedSliceRange[0] = VTK_DOUBLE_MAX;
     projectedSliceRange[1] = -VTK_DOUBLE_MAX;
     for( int i = 0; i < sliceCell->GetPoints()->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), wVec ); 
+        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), sliceNormal ); 
         if( projectedDistance < projectedSliceRange[0]) {
             projectedSliceRange[0] = projectedDistance; 
         }
@@ -382,4 +381,79 @@ bool svkMrsImageData::SliceInSelectionBox( int slice )
     uGrid->Delete();
     return inSlice;
     
+}
+
+
+/*!
+ *
+ */
+int svkMrsImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
+{
+    return this->Superclass::GetLastSlice( sliceOrientation ) - 1;
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
+{
+    spacing[0] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 0, "SlabThickness" );
+    spacing[1] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 1, "SlabThickness" );
+    spacing[2] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 2, "SlabThickness" );
+    
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
+{
+
+    vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::New();
+    this->GenerateSelectionBox( uGrid );
+
+    double rowNormal[3]; 
+    this->GetDataBasis( rowNormal, svkImageData::ROW );
+    double columnNormal[3]; 
+    this->GetDataBasis( columnNormal, svkImageData::COLUMN );
+    double sliceNormal[3]; 
+    this->GetDataBasis( sliceNormal, svkImageData::SLICE );
+
+    vtkPoints* selBoxPoints = uGrid->GetPoints();
+    int originIndex;
+    double summedDistance;
+    double deltaRowMin;
+    double deltaColumnMin;
+    double deltaSliceMin;
+    double deltaRow;
+    double deltaColumn;
+    double deltaSlice;
+
+    for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
+        if( i == 1 ) {
+            originIndex = 1;
+            deltaRowMin = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
+            deltaColumnMin = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
+            deltaSliceMin = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
+        } else { 
+
+            // Calculate the distance in the three directions of the dcos
+            deltaRow = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
+            deltaColumn = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
+            deltaSlice = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
+
+            // If it is the minimum then that is the origin
+            if( deltaRow <= deltaRowMin && deltaColumn <= deltaColumnMin && deltaSlice <= deltaSliceMin ) {
+                originIndex = i;
+            }
+       }
+
+    }
+    origin[0] = selBoxPoints->GetPoint(originIndex)[0];
+    origin[1] = selBoxPoints->GetPoint(originIndex)[1];
+    origin[2] = selBoxPoints->GetPoint(originIndex)[2];
+
+
 }

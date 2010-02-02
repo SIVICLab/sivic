@@ -81,7 +81,12 @@ class svkMrsImageData: public svkImageData
         void           GetSelectionBoxDimensions( float* dims );
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );
-        bool           SliceInSelectionBox( int slice );
+        bool           SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN );
+        virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        void           GetSelectionBoxSpacing( double spacing[3] );
+        void           GetSelectionBoxOrigin(  double origin[3] );
+
+
 
 
     protected:
