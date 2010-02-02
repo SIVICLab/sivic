@@ -1330,6 +1330,7 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
             }
             break;
     }
+    return numSlices;
 }
 
 int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
