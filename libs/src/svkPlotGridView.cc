@@ -647,6 +647,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 
 
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(windowLevel->GetOutput());
+        windowLevel->Delete();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], slice, slice);
         vtkImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( 0.5 );
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->InterpolateOff();

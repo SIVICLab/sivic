@@ -175,6 +175,8 @@ class svkPlotLineGrid : public vtkObject
         //! Component to display (e.g. REAL, IMAG..)
         svkPlotLine::PlotComponent   plotComponent;
 
+        vtkPoints*                  points;
+
         //  Methods:
         void                        RegeneratePlots();
         static void                 UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);

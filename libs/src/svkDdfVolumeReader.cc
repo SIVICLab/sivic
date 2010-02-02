@@ -1918,11 +1918,12 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
         "SpectralWidth", 
         this->GetHeaderValueAsFloat(ddfMap, "sweepwidth")
     );
-
+/*
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_FIELD",
         12345
     );
+*/
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference", 

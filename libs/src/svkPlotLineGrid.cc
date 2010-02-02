@@ -94,6 +94,7 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->plotRangeY1 = 0;
     this->plotRangeY2 = 0;
     this->plotComponent = svkPlotLine::REAL; 
+    this->points = NULL;
 
 }
 
@@ -107,6 +108,11 @@ svkPlotLineGrid::~svkPlotLineGrid()
         selectionBoxActor = NULL;
     }
 
+    if( this->plotGridActor != NULL ) {
+        this->plotGridActor->Delete();
+        this->plotGridActor = NULL;
+    }
+
     if( data != NULL ) {
         data->Delete();
         data = NULL;
@@ -116,14 +122,19 @@ svkPlotLineGrid::~svkPlotLineGrid()
         dataModifiedCB->Delete();
         dataModifiedCB = NULL;
     }
-    if( xyPlots != NULL ) {
-        xyPlots->Delete();
-        xyPlots = NULL;
+    if( this->xyPlots != NULL ) {
+        this->xyPlots->Delete();
+        this->xyPlots = NULL;
     }
 
     if( this->renderer != NULL ) {
         this->renderer->Delete();
         this->renderer= NULL;
+    }
+
+    if( this->points != NULL ) {
+        this->points->Delete();
+        this->points = NULL;
     }
     
     delete[] viewBounds;
@@ -437,7 +448,10 @@ void svkPlotLineGrid::GenerateActor()
     this->data->GetDcos( dcos );
     vtkPolyData* boxPlot = vtkPolyData::New();
     boxPlot->Allocate(1,1);
-    vtkPoints* points = vtkPoints::New();
+    if( this->points != NULL ) {
+        this->points->Delete();
+    }
+    this->points = vtkPoints::New();
     points->SetNumberOfPoints((extent[5]-extent[4])*(extent[3]-extent[2])*(extent[1]-extent[0])*arrayLength );
     boxPlot->SetPoints( points );
     for (int zInd = extent[4]; zInd < extent[5]; zInd++) {
@@ -503,7 +517,7 @@ void svkPlotLineGrid::GenerateActor()
     }
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( boxPlot );
-                boxPlot->Delete();
+    boxPlot->Delete();
 
     if( this->plotGridActor != NULL) {
         this->renderer->RemoveViewProp( plotGridActor );

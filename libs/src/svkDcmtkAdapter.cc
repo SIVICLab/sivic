@@ -65,6 +65,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     this->replaceOldElements = OFFalse; 
 
 //  Maybe better to get existing dictionary and append entries to it:
+/*
     privateDic = new DcmDataDictionary(false, false);
     DcmDictEntry* priv1 = new DcmDictEntry(
         static_cast<Uint16>(2345), static_cast<Uint16>(0001), DcmVR("UL"), "SVK_FIELD", 0, 1, NULL, true, NULL
@@ -75,7 +76,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     dic->wrlock().addEntry(priv1);
     dic->unlock();
     //delete dic; 
-
+*/
 }
 
 
@@ -748,7 +749,10 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
  */
 DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name) 
 {
-
+    DcmTag tag;  
+    DcmTag::findTagFromName(name, tag); 
+    return tag.getXTag();
+/*
    DcmTag tag;
     OFCondition status = DcmTag::findTagFromName(name, tag);
     if ( status != EC_Normal ) {
@@ -760,6 +764,7 @@ DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name)
         //}
     }
     return tag.getXTag();
+*/
 
 }
 

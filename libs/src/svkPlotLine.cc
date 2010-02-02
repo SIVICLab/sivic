@@ -86,6 +86,10 @@ svkPlotLine::~svkPlotLine()
         this->plotData->Delete();
         this->plotData = NULL;
     }
+    if( this->pointData != NULL ) {
+        this->pointData->Delete();
+        this->pointData = NULL;
+    }
 }
 
 
