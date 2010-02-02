@@ -64,19 +64,46 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     this->dcmFile = new svkDcmtkIod();
     this->replaceOldElements = OFFalse; 
 
-//  Maybe better to get existing dictionary and append entries to it:
-/*
-    privateDic = new DcmDataDictionary(false, false);
-    DcmDictEntry* priv1 = new DcmDictEntry(
-        static_cast<Uint16>(2345), static_cast<Uint16>(0001), DcmVR("UL"), "SVK_FIELD", 0, 1, NULL, true, NULL
-    );
-    privateDic->addEntry( priv1 );
+    //  get existing dictionary and append entries to it:
+    GlobalDcmDataDictionary* globalDict = new GlobalDcmDataDictionary(true, true); 
+    this->privateDic = &( globalDict->wrlock() );
 
-    GlobalDcmDataDictionary* dic = new GlobalDcmDataDictionary(true, true); 
-    dic->wrlock().addEntry(priv1);
-    dic->unlock();
-    //delete dic; 
-*/
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x0010, DcmVR("LO"), "SVK_PRIVATE_TAG", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1000, DcmVR("CS"), "SVK_ColsDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1001, DcmVR("CS"), "SVK_RowsDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1002, DcmVR("CS"), "SVK_SliceDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1003, EVR_DS, "SVK_FrequencyOffset", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    globalDict->unlock();
+
+//ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');   -> nex?
+//ddfMap["chop"] = this->ReadLineValue(iss, ':'); -> can be derived from nex
+//ddfMap["evenSymmetry"] = this->ReadLineValue(iss, ':'); ->user15
+//ddfMap["dataReordered"] = this->ReadLineValue(iss, ':'); -> derived (swap, flip_kx, flip_ky)
+//data reordered: yes
+
+//  when do these differ from the primary or reordered values?
+//acq. toplc(lps, mm):      -71.34420     -90.90105      12.93635
+//acq. spacing(mm):          10.00000      10.00000      10.00000
+//acq. dcos1:        1.00000       0.00000       0.00000
+//acq. dcos2:        0.00000       1.00000       0.00000
+//acq. dcos3:        0.00000       0.00000      -1.00000
+
 }
 
 
@@ -157,7 +184,7 @@ void svkDcmtkAdapter::PrintDcmHeader()
  */
 void svkDcmtkAdapter::InsertEmptyElement(const char* name)
 {
-    this->dcmFile->getDataset()->insertEmptyElement( GetDcmTagKey(name), this->replaceOldElements ); 
+    this->dcmFile->getDataset()->insertEmptyElement( GetDcmTag(name), this->replaceOldElements ); 
     this->Modified();
 }
 
@@ -172,7 +199,7 @@ void svkDcmtkAdapter::InsertUniqueUID(const char* name)
 {
     char uid[100];
     this->dcmFile->setValue( 
-        GetDcmTagKey(name), 
+        GetDcmTag(name), 
         dcmGenerateUniqueIdentifier(uid, SITE_INSTANCE_UID_ROOT)
     ); 
     this->Modified();
@@ -188,7 +215,7 @@ void svkDcmtkAdapter::InsertUniqueUID(const char* name)
  */
 void svkDcmtkAdapter::SetValue(const char* name, int value)
 {
-    this->dcmFile->setValue( GetDcmTagKey(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value ); 
     this->Modified();
 }
 
@@ -202,7 +229,7 @@ void svkDcmtkAdapter::SetValue(const char* name, int value)
  */
 void svkDcmtkAdapter::SetValue(const char* name, float value)
 {
-    this->dcmFile->setValue( GetDcmTagKey(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value ); 
     this->Modified();
 }
 
@@ -216,7 +243,7 @@ void svkDcmtkAdapter::SetValue(const char* name, float value)
  */
 void svkDcmtkAdapter::SetValue(const char* name, double value)
 {
-    this->dcmFile->setValue( GetDcmTagKey(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value ); 
     this->Modified();
 }
 
@@ -230,7 +257,7 @@ void svkDcmtkAdapter::SetValue(const char* name, double value)
  */
 void svkDcmtkAdapter::SetValue(const char* name, string value)
 {
-    this->dcmFile->setValue( GetDcmTagKey(name), value ); 
+    this->dcmFile->setValue( GetDcmTag(name), value ); 
     this->Modified();
 }
 
@@ -247,7 +274,7 @@ void svkDcmtkAdapter::SetValue(const char* name, string value)
 void svkDcmtkAdapter::SetValue(const char* name, unsigned short* values, int numValues)
 {
     this->dcmFile->getDataset()->putAndInsertUint16Array(
-        GetDcmTagKey(name), 
+        GetDcmTag(name), 
         values,
         numValues
     );
@@ -413,7 +440,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* parentSeqName, int pare
         seq->insert(item, parentSeqItemPosition);
     }
 
-    item->insertEmptyElement( GetDcmTagKey(elementName), this->replaceOldElements ); 
+    item->insertEmptyElement( GetDcmTag(elementName), this->replaceOldElements ); 
     this->Modified();
     return ;
 }
@@ -442,11 +469,11 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     }
 
     if (value == "EMPTY_ELEMENT") {
-        this->GetDcmItem(dataset, seqName, seqItemPosition)->insertEmptyElement( GetDcmTagKey(elementName), this->replaceOldElements );    
+        this->GetDcmItem(dataset, seqName, seqItemPosition)->insertEmptyElement( GetDcmTag(elementName), this->replaceOldElements );    
     } else {
         svkDcmtkUtils::setValue(
             this->GetDcmItem(dataset, seqName, seqItemPosition),    
-            GetDcmTagKey(elementName), 
+            GetDcmTag(elementName), 
             value
         );
     }
@@ -478,7 +505,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     svkDcmtkUtils::setValue(
         this->GetDcmItem(dataset, seqName, seqItemPosition),    
-        GetDcmTagKey(elementName), 
+        GetDcmTag(elementName), 
         value 
     );
 
@@ -514,7 +541,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     //  Insert a dummy val. This was the only way I was able to get this to work
     //  for inserting multiple vals.  I'm probably missing something, but it works. 
     Uint32 dummyVal = 99; 
-    newItem->putAndInsertUint32( GetDcmTagKey( elementName), dummyVal) ;
+    newItem->putAndInsertUint32( GetDcmTag( elementName), dummyVal) ;
 
     //  Now get the element and add the array to it:    
     DcmElement* element;
@@ -587,7 +614,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     svkDcmtkUtils::setValue(
         this->GetDcmItem(dataset, seqName, seqItemPosition),    
-        GetDcmTagKey(elementName), 
+        GetDcmTag(elementName), 
         value
     );
     this->Modified();
@@ -746,26 +773,49 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
  *  \param name the name of the DcmTagKey you wish to get
  *
  *  \return the DcmTagKey of the input name
+ *  Note, this doesn't preserve downstream VR lookups via
+ *  private dictionary elements if DcmTag objects are 
+ *  initialized form this DcmTagKey return value.  To
+ *  obtain the DcmTag with VR for downstreaming value 
+ *  setting checks use GetDcmTag instead.  
  */
 DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name) 
 {
-    DcmTag tag;  
-    DcmTag::findTagFromName(name, tag); 
-    return tag.getXTag();
-/*
-   DcmTag tag;
-    OFCondition status = DcmTag::findTagFromName(name, tag);
-    if ( status != EC_Normal ) {
-        const DcmDictEntry *dicent = privateDic->findEntry( name );
-        if (dicent != NULL) {
-            tag.set( dicent->getKey() );
-        } //else {
-           // result = EC_TagNotFound;
-        //}
-    }
-    return tag.getXTag();
-*/
 
+    DcmTag tag;
+
+    const DcmDictEntry *dicEnt = privateDic->findEntry( name );
+    if (dicEnt != NULL) {
+        tag.set( dicEnt->getKey() );
+    } else {
+       cout << "TAG KEY NOT FOUND " << name << endl;
+    }
+
+    return tag.getXTag();
+}
+
+
+/*!
+ *  Gets the DcmTag for a given character string
+ *
+ *  \param name the name of the DcmTagKey you wish to get
+ *
+ *  \return the DcmTag (initialized with VR) of the input name
+ */
+DcmTag svkDcmtkAdapter::GetDcmTag(const char* name) 
+{
+
+    DcmTag tag;
+
+    const DcmDictEntry *dicEnt = this->privateDic->findEntry( name );
+
+    if (dicEnt != NULL) {
+        tag.set( dicEnt->getKey() );
+        tag.setVR( dicEnt->getVR() ); 
+    } else {
+        cout << "TAG NOT FOUND " << name << endl;
+    }
+    return tag; 
 }
 
 

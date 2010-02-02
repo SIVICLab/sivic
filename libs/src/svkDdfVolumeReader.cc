@@ -69,6 +69,7 @@ svkDdfVolumeReader::svkDdfVolumeReader()
     this->specData = NULL; 
     this->ddfHdr = NULL; 
     this->numCoils = 1; 
+    this->numTimePts = 1; 
 }
 
 
@@ -563,7 +564,6 @@ void svkDdfVolumeReader::ParseDdf()
 
         }
 
-
         //Spectroscopy Parameters 
         this->ReadLine(iss);
         this->ReadLine(iss);
@@ -826,6 +826,16 @@ void svkDdfVolumeReader::InitPatientModule()
         "PatientID", 
         ddfMap["patientId"] 
     );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "PatientsBirthDate", 
+        ddfMap["dateOfBirth"] 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "PatientsSex", 
+        ddfMap["sex"] 
+    );
 }
 
 
@@ -842,6 +852,11 @@ void svkDdfVolumeReader::InitGeneralStudyModule()
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyID", 
         ddfMap["studyId"]
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "AccessionNumber", 
+        ddfMap["accessionNumber"]
     );
 }
 
@@ -916,11 +931,15 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     );
 
     int numVoxels[3];
-    this->numSlices = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints3"); 
+    this->numSlices = this->GetHeaderValueAsInt( ddfMap, "dimensionNumberOfPoints3" ); 
+
+    if ( this->GetHeaderValueAsInt( ddfMap, "numberOfDimensions" ) == 5 ) {
+        this->numTimePts = this->GetHeaderValueAsInt( ddfMap, "dimensionNumberOfPoints4" ); 
+    }
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
-        this->numSlices * this->numCoils
+        this->numSlices * this->numCoils * this->numTimePts
     );
 
     InitPerFrameFunctionalGroupMacros();
@@ -1412,19 +1431,10 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
     );
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence",   
-        0,                                    
-        "InPlanePhaseEncodingDirection",     
-        string("COLUMN"),
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence", 
         0,                                  
-        "MRAcquisitionFrequencyEncodingSteps", 
-        1,
+        "SpectroscopyAcquisitionDataColumns", 
+        this->GetHeaderValueAsInt( ddfMap, "acqNumberOfDataPoints"),
         "SharedFunctionalGroupsSequence",      
         0
     );
@@ -1432,8 +1442,8 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                      
-        "MRAcquisitionPhaseEncodingStepsInPlane",
-        1,
+        "SpectroscopyAcquisitionPhaseColumns",
+        this->GetHeaderValueAsInt( ddfMap, "acqNumberOfPoints0"),
         "SharedFunctionalGroupsSequence",    
         0
     );
@@ -1441,8 +1451,17 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                      
-        "MRAcquisitionPhaseEncodingStepsOutOfPlane",
-        1,
+        "SpectroscopyAcquisitionPhaseRows",
+        this->GetHeaderValueAsInt( ddfMap, "acqNumberOfPoints1"),
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
+        this->GetHeaderValueAsInt( ddfMap, "acqNumberOfPoints2"),
         "SharedFunctionalGroupsSequence",    
         0
     );
@@ -1501,11 +1520,25 @@ void svkDdfVolumeReader::InitMRModifierMacro()
         "MRModifierSequence"
     );
 
+    string invRecov = "NO"; 
+    float inversionTime = this->GetHeaderValueAsFloat( ddfMap, "inversionTime");
+    if ( inversionTime >= 0 ) { 
+        invRecov.assign("YES"); 
+        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "MRModifierSequence",
+            0,                        
+            "InversionTimes",       
+            inversionTime,
+            "SharedFunctionalGroupsSequence",    
+            0                      
+        );
+    } 
+
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRModifierSequence",
         0,                        
         "InversionRecovery",       
-        string("NO"),
+        invRecov,
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -1918,16 +1951,16 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
         "SpectralWidth", 
         this->GetHeaderValueAsFloat(ddfMap, "sweepwidth")
     );
-/*
+
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "SVK_FIELD",
-        12345
+        "SVK_FrequencyOffset",
+        this->GetHeaderValueAsFloat( ddfMap, "frequencyOffset" )
     );
-*/
+
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference", 
-        this->GetHeaderValueAsFloat(ddfMap, "ppmReference")
+        this->GetHeaderValueAsFloat( ddfMap, "ppmReference" )
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -2028,7 +2061,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyPulseSequenceModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SpectrallySelectedSuppression", 
-        "WATER" 
+        ddfMap["suppressionTechnique"]
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -2088,7 +2121,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyDataModule()
     int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
     string representation; 
     if (numComponents == 1) {
-        representation = "";
+        representation = "REAL";
     } else if (numComponents == 2) {
         representation = "COMPLEX";
     }
@@ -2107,6 +2140,23 @@ void svkDdfVolumeReader::InitMRSpectroscopyDataModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SignalDomainColumns", 
+        signalDomain 
+    );
+
+
+    //  Private Attributes for spatial domain encoding:
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_ColsDomain", 
+        signalDomain 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_RowsDomain", 
+        signalDomain 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_SliceDomain", 
         signalDomain 
     );
 }

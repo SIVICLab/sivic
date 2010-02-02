@@ -151,6 +151,7 @@ class svkDdfVolumeReader : public svkImageReader2
         int                                     numFrames;
         int                                     numSlices;
         int                                     numCoils;
+        int                                     numTimePts;
         static const string                     MFG_STRING;
         double                                  dcos[3][3];
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
