@@ -1957,7 +1957,6 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
         this->GetHeaderValueAsFloat( ddfMap, "frequencyOffset" )
     );
 
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference", 
         this->GetHeaderValueAsFloat( ddfMap, "ppmReference" )
@@ -2131,34 +2130,28 @@ void svkDdfVolumeReader::InitMRSpectroscopyDataModule()
         representation 
     );
 
-    string signalDomain; 
-    if ( strcmp(ddfMap["dimensionType0"].c_str(), "time") == 0)  { 
-        signalDomain.assign("TIME"); 
-    } else if ( strcmp(ddfMap["dimensionType0"].c_str(), "frequency") == 0)  { 
-        signalDomain.assign("FREQUENCY"); 
-    }
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SignalDomainColumns", 
-        signalDomain 
+        this->GetDimensionDomain( ddfMap["dimensionType0"] )
     );
 
 
     //  Private Attributes for spatial domain encoding:
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_ColsDomain", 
-        signalDomain 
+        this->GetDimensionDomain( ddfMap["dimensionType1"] )
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_RowsDomain", 
-        signalDomain 
+        this->GetDimensionDomain( ddfMap["dimensionType2"] )
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_SliceDomain", 
-        signalDomain 
+        this->GetDimensionDomain( ddfMap["dimensionType3"] )
     );
+
 }
 
 
@@ -2171,6 +2164,23 @@ svkDcmHeader::DcmPixelDataFormat svkDdfVolumeReader::GetFileType()
 }
 
 
+/*! 
+ *  Converts the ddf dimension type to a string for DICOM domain tags: 
+ */
+string svkDdfVolumeReader::GetDimensionDomain( string ddfDomainString )
+{
+    string domain;  
+    if ( ddfDomainString.compare("time") == 0 )  { 
+        domain.assign("TIME"); 
+    } else if ( ddfDomainString.compare("frequency") == 0 )  { 
+        domain.assign("FREQUENCY"); 
+    } else if ( ddfDomainString.compare("space") == 0 )  { 
+        domain.assign("SPACE"); 
+    } else if ( ddfDomainString.compare("kspace") == 0 )  { 
+        domain.assign("KSPACE"); 
+    }
+    return domain; 
+}
 
 
 /*!

@@ -65,8 +65,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     this->replaceOldElements = OFFalse; 
 
     //  get existing dictionary and append entries to it:
-    GlobalDcmDataDictionary* globalDict = new GlobalDcmDataDictionary(true, true); 
-    this->privateDic = &( globalDict->wrlock() );
+    this->privateDic = &( dcmDataDict.wrlock() );
 
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x0010, DcmVR("LO"), "SVK_PRIVATE_TAG", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
@@ -89,7 +88,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
         )
     );
 
-    globalDict->unlock();
+    dcmDataDict.unlock();
 
 //ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');   -> nex?
 //ddfMap["chop"] = this->ReadLineValue(iss, ':'); -> can be derived from nex
@@ -788,10 +787,11 @@ DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name)
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
     } else {
-       cout << "TAG KEY NOT FOUND " << name << endl;
+       cout << "GetDcmTagKey: TAG KEY NOT FOUND " << name << endl;
     }
 
     return tag.getXTag();
+
 }
 
 
@@ -811,10 +811,11 @@ DcmTag svkDcmtkAdapter::GetDcmTag(const char* name)
 
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
-        tag.setVR( dicEnt->getVR() ); 
+        tag.setVR( dicEnt->getVR() );
     } else {
-        cout << "TAG NOT FOUND " << name << endl;
+        cout << "GetDcmTag: TAG NOT FOUND " << name << endl;
     }
+
     return tag; 
 }
 

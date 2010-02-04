@@ -144,6 +144,7 @@ class svkDdfVolumeReader : public svkImageReader2
         float           GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
+        string          GetDimensionDomain( string ddfDomainString ); 
 
 
         //  Members:
