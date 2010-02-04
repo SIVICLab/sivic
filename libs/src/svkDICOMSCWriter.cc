@@ -208,15 +208,19 @@ void svkDICOMSCWriter::WriteSlice()
 
     } else {
 
-        unsigned short* pixelsRGB = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        unsigned short* pixelsRGB = 
+            static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
 
         int numRGBComponents = 3; 
         this->dcmHeader->SetValue(
             "PixelData",
             pixelsRGB, 
-            numRGBComponents * (this->GetImageDataInput(0)->GetDimensions())[0] * (this->GetImageDataInput(0)->GetDimensions())[1]  
+            numRGBComponents 
+            * (this->GetImageDataInput(0)->GetDimensions())[0] * (this->GetImageDataInput(0)->GetDimensions())[1]  
         );
- 
+
+        this->dcmHeader->WriteDcmFile(this->InternalFileName); 
+
     }
 
 }
