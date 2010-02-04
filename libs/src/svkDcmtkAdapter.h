@@ -88,6 +88,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    SetValue(const char* name, float value);
         virtual void    SetValue(const char* name, double value);
         virtual void    SetValue(const char* name, string value);
+        virtual void    SetValue(const char* name, unsigned char* values, int numValues);
         virtual void    SetValue(const char* name, unsigned short* values, int numValues);
         virtual void    SetValue(const char* name, float* values, int numValues);
 

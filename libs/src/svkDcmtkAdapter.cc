@@ -270,6 +270,26 @@ void svkDcmtkAdapter::SetValue(const char* name, string value)
  *
  * \param numValues the number of elements in the array of values
  */
+void svkDcmtkAdapter::SetValue(const char* name, unsigned char* values, int numValues)
+{
+    this->dcmFile->getDataset()->putAndInsertUint8Array(
+        GetDcmTag(name), 
+        values,
+        numValues
+    );
+    this->Modified();
+}
+
+
+/*!
+ * Sets the array of value for a given tag.
+ *
+ * \param name the name of the tag whose value you wish to set
+ *
+ * \param values the pointer to the array of values you wish the tag to have 
+ *
+ * \param numValues the number of elements in the array of values
+ */
 void svkDcmtkAdapter::SetValue(const char* name, unsigned short* values, int numValues)
 {
     this->dcmFile->getDataset()->putAndInsertUint16Array(
@@ -787,7 +807,9 @@ DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name)
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
     } else {
-       cout << "GetDcmTagKey: TAG KEY NOT FOUND " << name << endl;
+        if ( this->GetDebug() ) {
+            cout << "GetDcmTagKey: TAG KEY NOT FOUND " << name << endl;
+        }
     }
 
     return tag.getXTag();
@@ -813,7 +835,9 @@ DcmTag svkDcmtkAdapter::GetDcmTag(const char* name)
         tag.set( dicEnt->getKey() );
         tag.setVR( dicEnt->getVR() );
     } else {
-        cout << "GetDcmTag: TAG NOT FOUND " << name << endl;
+        if ( this->GetDebug() ) {
+            cout << "GetDcmTag: TAG NOT FOUND " << name << endl;
+        }
     }
 
     return tag; 

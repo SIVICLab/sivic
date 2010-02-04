@@ -61,7 +61,7 @@ svkDICOMSCWriter::svkDICOMSCWriter()
     this->DebugOn();
 #endif
 
-    vtkDebugMacro(<< "svkDICOMSCWriter::svkDICOMSCWriter");
+    vtkDebugMacro( <<  this->GetClassName() << "::" << this->GetClassName() << "()");
 
     this->seriesNumber = 0; 
     this->instanceNumber = 1; 
@@ -168,7 +168,7 @@ void svkDICOMSCWriter::Write()
 void svkDICOMSCWriter::WriteSlice()
 {
 
-    vtkDebugMacro(<<"svkDICOMSCWRiter::WriteSlice()");
+    vtkDebugMacro( <<  this->GetClassName() << "::WriteSlice()" );
 
     this->InitDcmHeader();
 
@@ -208,8 +208,8 @@ void svkDICOMSCWriter::WriteSlice()
 
     } else {
 
-        unsigned short* pixelsRGB = 
-            static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        unsigned char* pixelsRGB = 
+            static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
 
         int numRGBComponents = 3; 
         this->dcmHeader->SetValue(
@@ -341,6 +341,9 @@ void svkDICOMSCWriter::InitDcmHeader()
             0 
         );
 
+        this->dcmHeader->SetValue( "BitsAllocated", 8 );
+        this->dcmHeader->SetValue( "BitsStored", 8 );
+        this->dcmHeader->SetValue( "HighBit", 7 );
     }
       
     /*  

@@ -162,6 +162,16 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    SetValue(const char *name, string value) = 0;
 
+        /*!
+        *   Sets the array of value for a given tag.
+        *
+        *   \param name the name of the tag whose value you wish to set
+        *
+        *   \param values the pointer to the array of values you wish the tag to have 
+        *
+        *   \param numValues the number of elements in the array of values 
+        */
+        virtual void    SetValue(const char* name, unsigned char* values, int numValues) = 0;
 
         /*!
         *   Sets the array of value for a given tag.
