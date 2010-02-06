@@ -64,44 +64,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     this->dcmFile = new svkDcmtkIod();
     this->replaceOldElements = OFFalse; 
 
-    //  get existing dictionary and append entries to it:
-    this->privateDic = &( dcmDataDict.wrlock() );
-
-    privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x0010, DcmVR("LO"), "SVK_PRIVATE_TAG", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
-        )
-    );
-    privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1000, DcmVR("CS"), "SVK_ColsDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
-        )
-    );
-    privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1001, DcmVR("CS"), "SVK_RowsDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
-        )
-    );
-    privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1002, DcmVR("CS"), "SVK_SliceDomain", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
-        )
-    );
-    privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1003, EVR_DS, "SVK_FrequencyOffset", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
-        )
-    );
-
-    dcmDataDict.unlock();
-
-//ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');   -> nex?
-//ddfMap["chop"] = this->ReadLineValue(iss, ':'); -> can be derived from nex
-//ddfMap["evenSymmetry"] = this->ReadLineValue(iss, ':'); ->user15
-//ddfMap["dataReordered"] = this->ReadLineValue(iss, ':'); -> derived (swap, flip_kx, flip_ky)
-//data reordered: yes
-
-//  when do these differ from the primary or reordered values?
-//acq. toplc(lps, mm):      -71.34420     -90.90105      12.93635
-//acq. spacing(mm):          10.00000      10.00000      10.00000
-//acq. dcos1:        1.00000       0.00000       0.00000
-//acq. dcos2:        0.00000       1.00000       0.00000
-//acq. dcos3:        0.00000       0.00000      -1.00000
+    this->SetPrivateDictionaryElements(); 
 
 }
 
@@ -119,6 +82,156 @@ svkDcmtkAdapter::~svkDcmtkAdapter()
         this->dcmFile = NULL;
     }
 
+}
+
+
+/*!
+ *  Gets the global DICOM dictionary and appends SIVIC private  
+ *  elements to it. 
+ */
+void svkDcmtkAdapter::SetPrivateDictionaryElements()
+{
+
+    // ===================================================
+    //  get existing dictionary and append private entries to it:
+    // ===================================================
+    this->privateDic = &( dcmDataDict.wrlock() );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x0010, DcmVR("LO"), "SVK_PRIVATE_TAG", 1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    // ===================================================
+    //  Private Additions to:  
+    //  MR Spectroscopy Module
+    //
+    //  If the center frequence and therefore chemical shift 
+    //  reference are offset from center. 
+    // ===================================================
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1000, EVR_DS, 
+            "SVK_FrequencyOffset", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+
+    // ===================================================
+    //  Private Additions to:  
+    //  MR Spectroscopy Data Module  
+    //  (DICOM PT 3: C.8.14.3)
+    //  
+    //  Current data Domain indicators for spatial 
+    //  coordinates (SPACE, KSPACE, ETC.)
+    // ===================================================
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1001, EVR_CS, 
+            "SVK_ColsDomain", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1002, EVR_CS, 
+            "SVK_RowsDomain", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1003, EVR_CS, 
+            "SVK_SliceDomain", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+
+    // ===================================================
+    //  Private Additions to:  
+    //  MR Spectroscopy FOV/Geometry Macro Attributes 
+    //  (DICOM PT 3: C.8.14.3.2)
+    //
+    //  Attributes that describe the acquisition or any data
+    //  reordering required for acquisition interpretation
+    // ===================================================
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1004, EVR_DS, 
+            "SVK_SpectroscopyAcquisitionTLC", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1005, EVR_DS, 
+            "SVK_SpectroscopyAcquisitionPixelSpacing", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1006, EVR_DS, 
+            "SVK_SpectroscopyAcquisitionSliceThickness", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1007, EVR_DS,
+            "SVK_SpectroscopyAcquisitionOrientation", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1008, EVR_UL, 
+            "SVK_SpectroscopyAcqReorderedDataColumns", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1009, EVR_UL, 
+            "SVK_SpectroscopyAcqReorderedPhaseRows", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1010, EVR_UL, 
+            "SVK_SpectroscopyAcqReorderedPhaseColumns", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1011, EVR_UL, 
+            "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1012, EVR_DS, 
+            "SVK_SpectroscopyAcqReorderedTLC", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1013, EVR_DS, 
+            "SVK_SpectroscopyAcqReorderedPixelSpacing", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1014, EVR_DS, 
+            "SVK_SpectroscopyAcqReorderedSliceThickness", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1015, EVR_DS, 
+            "SVK_SpectroscopyAcqReorderedOrientation", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    //ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');   -> nex?
+    //ddfMap["chop"] = this->ReadLineValue(iss, ':'); -> can be derived from nex
+    //ddfMap["evenSymmetry"] = this->ReadLineValue(iss, ':'); ->user15
+    //ddfMap["dataReordered"] = this->ReadLineValue(iss, ':'); -> derived (swap, flip_kx, flip_ky)
+    
+    dcmDataDict.unlock();
 }
 
 
