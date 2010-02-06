@@ -197,16 +197,15 @@ class svkDcmtkAdapter: public svkDcmHeader
 
     private:
 
-        //  Members:
-        svkDcmtkIod*        dcmFile; 
-
-
         //  Methods:
         DcmTag              GetDcmTag(const char* name);
         DcmTagKey           GetDcmTagKey(const char* name);
         DcmItem*            GetDcmItem(DcmItem* dataset, const char* seqName, int itemPosition);
         DcmSequenceOfItems* GetDcmSequence(const char* seqName); 
+        void                SetPrivateDictionaryElements(); 
 
+        //  Members:
+        svkDcmtkIod*        dcmFile; 
         OFBool              replaceOldElements;
         DcmDataDictionary*  privateDic;
 
