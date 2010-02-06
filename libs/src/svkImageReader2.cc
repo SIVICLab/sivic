@@ -145,13 +145,13 @@ string svkImageReader2::StripWhite(string in)
     size_t lastWhite;
 
     //  Remove leading spaces:
-    firstNonWhite = in.find_first_not_of(' ');
+    firstNonWhite = in.find_first_not_of(" \t");
     if (firstNonWhite != string::npos) {
         stripped_leading.assign( in.substr(firstNonWhite) );
     }
 
     //  Remove trailing spaces:
-    while (lastWhite = stripped_leading.find_last_of(' ') != string::npos && (lastWhite = stripped_leading.find_last_of(' ')) == stripped.length() ) {
+    while (lastWhite = stripped_leading.find_last_of(" \t") != string::npos && (lastWhite = stripped_leading.find_last_of(" \t")) == stripped.length() ) {
         stripped_leading.assign( stripped_leading.substr(0, lastWhite) );
     }
     stripped = stripped_leading;
