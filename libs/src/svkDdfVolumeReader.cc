@@ -258,10 +258,12 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 #endif
 
     
-        for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
-            for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
-                for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
-                    SetCellSpectrum(data, x, y, z, coilNum);
+        for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
+            for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
+                for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
+                    for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
+                        SetCellSpectrum(data, x, y, z, timePt, coilNum);
+                    }
                 }
             }
         }
@@ -290,7 +292,7 @@ int svkDdfVolumeReader::GetNumPixelsInVol()
 /*!
  *
  */
-void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int coilNum, int timepoint)
+void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
 {
 
     //  Set XY points to plot - 2 components per tuble for complex data sets:
@@ -302,7 +304,7 @@ void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z
     dataArray->SetNumberOfTuples(numPts);
     char arrayName[30];
 
-    sprintf(arrayName, "%d %d %d 0 %d", x, y, z, coilNum);
+    sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
     dataArray->SetName(arrayName);
 
     //  preallocate float array for spectrum and use to iniitialize the vtkDataArray:
@@ -443,7 +445,7 @@ void svkDdfVolumeReader::ParseDdf()
         ddfMap["accessionNumber"] = this->ReadLineValue(iss, ':');
         ddfMap["rootName"] = this->ReadLineValue(iss, ':');
         ddfMap["seriesNumber"] = this->ReadLineValue(iss, ':');
-        ddfMap["seriesDescription"] = this->ReadLineValue(iss, ':');
+        ddfMap["seriesDescription"] = this->StripWhite( this->ReadLineValue(iss, ':') );
         ddfMap["comment"] = this->ReadLineValue(iss, ':');
         ddfMap["patientEntry"] = this->ReadLineValue(iss, ':');
         ddfMap["patientPosition"] = this->ReadLineValue(iss, ':');
@@ -604,7 +606,7 @@ void svkDdfVolumeReader::ParseDdf()
         ddfMap["acqNumberOfDataPoints"] = this->ReadLineValue(iss, ':');
 
         //  Acq Num Data Pts:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( iss, 's' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -624,7 +626,7 @@ void svkDdfVolumeReader::ParseDdf()
                 ossIndexJ << j;
                 string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("acaDcos" + indexStringI + indexStringJ)];
+                *iss >> ddfMap[string("acqDcos" + indexStringI + indexStringJ)];
             }
         }
 
@@ -694,7 +696,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Reordered:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( iss, 's' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -1027,63 +1029,70 @@ void svkDdfVolumeReader::InitPixelMeasuresMacro()
 void svkDdfVolumeReader::InitFrameContentMacro()
 {
 
-    unsigned int* indexValues = new unsigned int[2]; 
+    int numFrameIndices = svkDcmHeader::GetNumberOfDimensionIndices( this->numTimePts, this->numCoils ) ;
+
+    unsigned int* indexValues = new unsigned int[numFrameIndices]; 
 
     int frame = 0; 
 
-    for (int j = 0; j < this->numCoils; j++) {
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
 
-        for (int i = 0; i < this->numSlices; i++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
 
-            indexValues[0] = i; 
-            indexValues[1] = j; 
+            for (int sliceNum = 0; sliceNum < numSlices; sliceNum++) {
 
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-                "PerFrameFunctionalGroupsSequence",
-                frame, 
-                "FrameContentSequence"
-            );
+                svkDcmHeader::SetDimensionIndices(
+                    indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils
+                );
 
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "FrameContentSequence",
-                0,
-                "DimensionIndexValues", 
-                indexValues,        //  array of vals
-                2,                  // num values in array
-                "PerFrameFunctionalGroupsSequence",
-                frame
-            );
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
+                    "PerFrameFunctionalGroupsSequence",
+                    frame, 
+                    "FrameContentSequence"
+                );
 
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "FrameContentSequence",
-                0,
-                "FrameAcquisitionDateTime",
-                "EMPTY_ELEMENT",
-                "PerFrameFunctionalGroupsSequence",
-                frame 
-            );
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "DimensionIndexValues", 
+                    indexValues,        //  array of vals
+                    2,                  // num values in array
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
         
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "FrameContentSequence",
-                0,
-                "FrameReferenceDateTime",
-                "EMPTY_ELEMENT",
-                "PerFrameFunctionalGroupsSequence",
-                frame 
-            );
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameReferenceDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
     
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "FrameContentSequence",
-                0,
-                "FrameAcquisitionDuration",
-                "-1",
-                "PerFrameFunctionalGroupsSequence",
-                frame 
-            );
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDuration",
+                    "-1",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
 
-            frame++; 
+                frame++; 
+            }
         }
     }
+
     delete[] indexValues;
 
 }
@@ -1095,74 +1104,77 @@ void svkDdfVolumeReader::InitFrameContentMacro()
 void svkDdfVolumeReader::InitPlanePositionMacro()
 {
 
+
+    //  Get toplc float array from ddfMap and use that to generate
+    //  frame locations.  This position is off by 1/2 voxel, fixed below:
+    float toplc[3];
+    toplc[0] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS0"); 
+    toplc[1] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS1"); 
+    toplc[2] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS2"); 
+        
+    float dcos[3][3];
+    dcos[0][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos00"); 
+    dcos[0][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos01"); 
+    dcos[0][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos02"); 
+    dcos[1][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos10"); 
+    dcos[1][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos11"); 
+    dcos[1][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos12"); 
+    dcos[2][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos20"); 
+    dcos[2][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos21"); 
+    dcos[2][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos22"); 
+    
+    float pixelSize[3];
+    pixelSize[0] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing1"); 
+    pixelSize[1] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
+    pixelSize[2] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
+
+    float displacement[3]; 
+    float frameLPSPosition[3]; 
+
     int frame = 0; 
 
     for (int coilNum = 0; coilNum < this->numCoils; coilNum++) {
 
-        //  Get toplc float array from ddfMap and use that to generate
-        //  frame locations.  This position is off by 1/2 voxel, fixed below:
-        float toplc[3];
-        toplc[0] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS0"); 
-        toplc[1] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS1"); 
-        toplc[2] = this->GetHeaderValueAsFloat(ddfMap, "toplcLPS2"); 
-        
-        float dcos[3][3];
-        dcos[0][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos00"); 
-        dcos[0][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos01"); 
-        dcos[0][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos02"); 
-        dcos[1][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos10"); 
-        dcos[1][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos11"); 
-        dcos[1][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos12"); 
-        dcos[2][0] = this->GetHeaderValueAsFloat(ddfMap, "dcos20"); 
-        dcos[2][1] = this->GetHeaderValueAsFloat(ddfMap, "dcos21"); 
-        dcos[2][2] = this->GetHeaderValueAsFloat(ddfMap, "dcos22"); 
+        for (int timePt = 0; timePt < this->numTimePts; timePt++) {
     
-        float pixelSize[3];
-        pixelSize[0] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing1"); 
-        pixelSize[1] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
-        pixelSize[2] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
-
-
-        float displacement[3]; 
-        float frameLPSPosition[3]; 
+            for (int sliceNum = 0; sliceNum < this->numSlices; sliceNum++) {
     
-        for (int i = 0; i < this->numSlices; i++) {
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
+                    "PerFrameFunctionalGroupsSequence",
+                    sliceNum, 
+                    "PlanePositionSequence"
+                );
     
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-                "PerFrameFunctionalGroupsSequence",
-                i, 
-                "PlanePositionSequence"
-            );
-    
-            //add displacement along normal vector:
-            for (int j = 0; j < 3; j++) {
-                displacement[j] = dcos[2][j] * pixelSize[2] * i;
-            }
-            for(int j = 0; j < 3; j++) { //L, P, S
-                frameLPSPosition[j] = toplc[j] +  displacement[j] ;
-            }
-
-            string imagePositionPatient;
-            for (int j = 0; j < 3; j++) {
-                ostringstream oss;
-                oss.precision(8);
-                oss << frameLPSPosition[j];
-                imagePositionPatient += oss.str();
-                if (j < 2) {
-                    imagePositionPatient += '\\';
+                //add displacement along normal vector:
+                for (int j = 0; j < 3; j++) {
+                    displacement[j] = dcos[2][j] * pixelSize[2] * sliceNum;
                 }
+                for(int j = 0; j < 3; j++) { //L, P, S
+                    frameLPSPosition[j] = toplc[j] +  displacement[j] ;
+                }
+    
+                string imagePositionPatient;
+                for (int j = 0; j < 3; j++) {
+                    ostringstream oss;
+                    oss.precision(8);
+                    oss << frameLPSPosition[j];
+                    imagePositionPatient += oss.str();
+                    if (j < 2) {
+                        imagePositionPatient += '\\';
+                    }
+                }
+    
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "PlanePositionSequence",            
+                    0,                                 
+                    "ImagePositionPatient",           
+                    imagePositionPatient,               
+                    "PerFrameFunctionalGroupsSequence", 
+                    frame 
+                );
+            
+                frame++;     
             }
-
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "PlanePositionSequence",            
-                0,                                 
-                "ImagePositionPatient",           
-                imagePositionPatient,               
-                "PerFrameFunctionalGroupsSequence", 
-                frame 
-            );
-        
-            frame++;     
         }
     }
 }
@@ -1462,6 +1474,113 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
         0,                                      
         "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
         this->GetHeaderValueAsInt( ddfMap, "acqNumberOfPoints2"),
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcquisitionTLC",
+        ddfMap["acqToplcLPS0"] + '\\' + ddfMap["acqToplcLPS1"] + '\\' + ddfMap["acqToplcLPS2"],
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcquisitionPixelSpacing",
+        ddfMap["acqSpacing0"] + '\\' + ddfMap["acqSpacing1"], 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcquisitionSliceThickness",
+        ddfMap["acqSpacing2"], 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcquisitionOrientation",
+        ddfMap["acqDcos00"] + '\\' + ddfMap["acqDcos01"] + '\\' + ddfMap["acqDcos02"] + '\\' + 
+        ddfMap["acqDcos10"] + '\\' + ddfMap["acqDcos11"] + '\\' + ddfMap["acqDcos12"] + '\\' + 
+        ddfMap["acqDcos20"] + '\\' + ddfMap["acqDcos21"] + '\\' + ddfMap["acqDcos22"], 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+
+    // ==================================================
+    //  Reordered Params
+    // ==================================================
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedPhaseRows",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints0" ), 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints1" ), 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints2"), 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedTLC",
+        ddfMap["reorderedToplcLPS0"] + '\\' + ddfMap["reorderedToplcLPS1"] + '\\' + ddfMap["reorderedToplcLPS2"],
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedPixelSpacing",
+        ddfMap["reorderedSpacing0"] + '\\' + ddfMap["reorderedSpacing1"],
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedSliceThickness",
+        ddfMap["reorderedSpacing2"], 
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                                      
+        "SVK_SpectroscopyAcqReorderedOrientation",
+        ddfMap["reorderedDcos00"] + '\\' + ddfMap["reorderedDcos01"] + '\\' + ddfMap["reorderedDcos02"] + '\\' + 
+        ddfMap["reorderedDcos10"] + '\\' + ddfMap["reorderedDcos11"] + '\\' + ddfMap["reorderedDcos12"] + '\\' + 
+        ddfMap["reorderedDcos20"] + '\\' + ddfMap["reorderedDcos21"] + '\\' + ddfMap["reorderedDcos22"], 
         "SharedFunctionalGroupsSequence",    
         0
     );
@@ -1821,18 +1940,30 @@ void svkDdfVolumeReader::InitMRSpatialVelocityEncodingMacro()
  */
 void svkDdfVolumeReader::InitMultiFrameDimensionModule()
 {
+
+    int indexCount = 0;
+
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "DimensionIndexSequence",
-        0,
+        indexCount,
         "DimensionDescriptionLabel",
         "Slice"
     );
 
+    if (this->numTimePts > 1) {
+        indexCount++;
+        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            indexCount,
+            "DimensionDescriptionLabel",
+            "Time Point"
+        );
+    }
 
     if (this->numCoils > 1) {
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "DimensionIndexSequence",
-            1,
+            indexCount,
             "DimensionDescriptionLabel",
             "Coil Number"
         );

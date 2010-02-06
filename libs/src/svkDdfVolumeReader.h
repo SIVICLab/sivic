@@ -133,7 +133,7 @@ class svkDdfVolumeReader : public svkImageReader2
         void            ReadComplexFile( vtkImageData* data );
         int             GetNumVoxelsInVol();
         int             GetNumSlices();
-        void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int channel = 0, int timepoint = 0 );
+        void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseDdf();
         string          ReadLineSubstr(istringstream* iss, int start, int stop);
         string          ReadLineValue(istringstream* iss, char delim);

@@ -147,12 +147,12 @@ void svkDdfVolumeWriter::WriteData()
     }
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-    int dataWordSize = hdr->GetIntValue( "BitsAllocated" ) / 8;
+    int dataWordSize = 4; 
     int cols     = hdr->GetIntValue( "Columns" );
     int rows     = hdr->GetIntValue( "Rows" );
     int slices   = hdr->GetNumberOfSlices();  
     int numCoils = hdr->GetNumberOfCoils();
-    //  int numTimePts;  
+    int numTimePts = this->GetImageDataInput(0)->GetNumberOfTimePoints();  
     int specPts  = hdr->GetIntValue( "DataPointColumns" );
     string representation = hdr->GetStringValue( "DataRepresentation" );
 
@@ -173,20 +173,22 @@ void svkDdfVolumeWriter::WriteData()
     vtkFloatArray* fa;
     float* dataTuple = new float[numComponents];
 
-    for (int coil = 0; coil < numCoils; coil ++) {
-        for (int z = 0; z < slices; z++) {
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
+    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+            for (int z = 0; z < slices; z++) {
+                for (int y = 0; y < rows; y++) {
+                    for (int x = 0; x < cols; x++) {
 
-                    int offset = (cols * rows * z) + (cols * y) + x + (coil * coilOffset);
-                    fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+                        int offset = (cols * rows * z) + (cols * y) + x + (coilNum * coilOffset);
+                        fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
 
-                    for (int i = 0; i < specPts; i++) {
+                        for (int i = 0; i < specPts; i++) {
 
-                        fa->GetTupleValue(i, dataTuple);
+                            fa->GetTupleValue(i, dataTuple);
 
-                        for (int j = 0; j < numComponents; j++) {
-                            specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                            for (int j = 0; j < numComponents; j++) {
+                                specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                            }
                         }
                     }
                 }
