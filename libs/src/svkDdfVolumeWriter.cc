@@ -390,8 +390,47 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "transmitter frequency(MHz): " << hdr->GetFloatValue( "TransmitterFrequency" ) << endl; 
     out << "isotope: " << hdr->GetStringValue( "ResonantNucleus" ) << endl;
     out << "field strength(T): " <<  hdr->GetFloatValue( "MagneticFieldStrength" ) << endl; 
-    out << "number of sat bands: " << endl;
+    int numSatBands = hdr->GetNumberOfItemsInSequence("MRSpatialSaturationSequence");
+    out << "number of sat bands: " << numSatBands << endl;
+    for ( int satBand = 0; satBand < numSatBands; satBand++ ) {
 
+        float thickness = hdr->GetFloatSequenceItemElement( 
+            "MRSpatialSaturationSequence", satBand, "SlabThickness", "SharedFunctionalGroupsSequence"
+        );
+              
+        float pos0 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 0
+        );
+        float pos1 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 1
+        );
+        float pos2 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 2
+        );
+
+        float norm0 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 0
+        );
+        float norm1 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 1
+        );
+        float norm2 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 2
+        );
+
+        out << "sat band " << satBand << " thickness(mm): " << thickness << endl; 
+        out << "sat band " << satBand << " orientation: " << fixed << setw(20) << setprecision(5) << norm0 
+                                                          << fixed << setw(14) << setprecision(5) << norm1 
+                                                          << fixed << setw(14) << setprecision(5) << norm2 
+                                                          << endl;  
+
+        out << "sat band " << satBand << " position(lps, mm): " << fixed << setw(14) << setprecision(5) << pos0 
+                                                                << fixed << setw(14) << setprecision(5) << pos1 
+                                                                << fixed << setw(14) << setprecision(5) << pos2 
+                                                                << endl;  
+
+    }
+                                       
     out << "===================================================" << endl; 
     out << "Spectroscopy Parameters" << endl; 
 
@@ -474,7 +513,7 @@ void svkDdfVolumeWriter::WriteHeader()
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
                                << endl;  
 
-    out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
+    out << "selection dcos3: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
                                << endl;  
@@ -494,7 +533,7 @@ void svkDdfVolumeWriter::WriteHeader()
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
                                << endl;  
 
-    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
+    out << "reordered dcos3: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
                                << endl;  
