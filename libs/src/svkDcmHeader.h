@@ -473,6 +473,16 @@ class svkDcmHeader: public vtkObject
         void                SetSliceOrder( DcmDataOrderingDirection sliceOrderVal );
         int                 GetNumberOfCoils(); 
         int                 GetNumberOfSlices(); 
+        static int          GetNumberOfDimensionIndices(int numTimePts, int numCoils); 
+        static void         SetDimensionIndices(
+                                unsigned int* indexValues, 
+                                int numFrameIndices, 
+                                int sliceNum, 
+                                int timePt, 
+                                int coilNum, 
+                                int numTimePts, 
+                                int numCoils
+                            ); 
 
 
     protected:

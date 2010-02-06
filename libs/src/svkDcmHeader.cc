@@ -596,3 +596,45 @@ int svkDcmHeader::GetNumberOfSlices()
     int numberOfChannels = this->GetNumberOfCoils();
     return numberOfFrames/numberOfChannels;
 }
+
+
+/*!
+ *  Get the number of Dimension indices requred 
+ *  for specifying the frame's slice, time, coil. 
+ *  See FrameContentSequence DimensionIndexValues
+ */
+int svkDcmHeader::GetNumberOfDimensionIndices(int numTimePts, int numCoils)
+{
+    //  retain order slice, time, coil
+    int numDimensionIndices = 1;    //Default is slice only 
+    if ( numTimePts > 1 ) {
+        numDimensionIndices++;
+    }
+    if ( numCoils > 1 ) {
+        numDimensionIndices++;
+    }
+    return numDimensionIndices;
+
+}
+
+
+/*!
+ *  Get the Dimension Indices for a given slice, timePt and Coil
+ */
+void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIndices, int sliceNum, int timePt, int coilNum, int numTimePts, int numCoils)
+{
+    indexValues[0] = sliceNum;
+    if ( numFrameIndices >= 2 ) {
+        if ( numTimePts > 1 ) {
+            indexValues[1] = timePt;
+        } else if (numTimePts == 1 && numCoils > 1) {
+            indexValues[1] = coilNum;
+        }
+    }
+    if ( numFrameIndices == 3 ) {
+        if ( numCoils > 1 ) {
+            indexValues[2] = coilNum;
+        }
+    }
+}
+
