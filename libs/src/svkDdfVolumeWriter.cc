@@ -452,13 +452,71 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "even symmetry: " << endl;
     out << "data reordered: " << endl;
 
-    out << "acq. toplc(lps, mm): " << endl;
-    out << "acq. spacing(mm): " << endl;
-    out << "acq. number of data points: " << endl;
-    out << "acq. number of points: " << endl;
-    out << "acq. dcos1: " << endl;
-    out << "acq. dcos2: " << endl;
-    out << "acq. dcos3: " << endl;
+    float acqTLC[3];
+    for (int i = 0; i < 3; i++) {
+        acqTLC[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionTLC", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    out << "acq. toplc(lps, mm):  " << fixed << right << setw(13) << setprecision(5)
+        << acqTLC[0]
+        << setw(14) << acqTLC[1]
+        << setw(14) << acqTLC[2] << endl;
+
+    float acqSpacing[3];
+    for (int i = 0; i < 2; i++) {
+        acqSpacing[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionPixelSpacing", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+    acqSpacing[2] = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
+        "SharedFunctionalGroupsSequence", 0
+    );
+
+    out << "acq. spacing(mm):  " << fixed << right << setw(16) << setprecision(5)
+        << acqSpacing[0]
+        << setw(14) << acqSpacing[1]
+        << setw(14) << acqSpacing[2] << endl;
+
+    out << "acq. number of data points: " << 
+        hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionDataColumns", 
+            "SharedFunctionalGroupsSequence", 0 
+        )
+    << endl;
+
+    int acqPts1 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseColumns", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    int acqPts2 = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseRows", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    int acqPts3 = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionOutOfPlanePhaseSteps", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    out << "acq. number of points: " << acqPts1 << " " << acqPts2 << " " << acqPts3 << endl;
+
+    float acqDcos[9]; 
+    for (int i = 0; i < 9; i++) {
+        acqDcos[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionOrientation", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    out << "acq. dcos1: " << fixed << setw(14) << setprecision(5) << acqDcos[0] << setw(14) << acqDcos[1]
+        << setw(14) << acqDcos[2] << endl;
+    out << "acq. dcos2: " << fixed << setw(14) << setprecision(5) << acqDcos[3]
+        << setw(14) << acqDcos[4] << setw(14) << acqDcos[5] << endl;
+    out << "acq. dcos3: " << fixed << setw(14) << setprecision(5) << acqDcos[6] << setw(14)
+        << acqDcos[7] << setw(14) << acqDcos[8] << endl;
 
     float selBoxSize[3]; 
     float selBoxCenter[3]; 
@@ -486,7 +544,7 @@ void svkDdfVolumeWriter::WriteHeader()
                                          << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
                                          << endl;  
 
-    out << "selection size(mm): " << fixed << setw(14) << setprecision(5) << selBoxSize[0] 
+    out << "selection size(mm): " << fixed << setw(21) << setprecision(5) << selBoxSize[0] 
                                   << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
                                   << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
                                   << endl;  
@@ -522,25 +580,66 @@ void svkDdfVolumeWriter::WriteHeader()
                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
                                << endl;  
 
-    out << "reordered toplc(lps, mm): " << endl;
+    float reorderedTLC[3];
+    for (int i = 0; i < 3; i++) {
+        reorderedTLC[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedTLC",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    out << "reordered toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
+        << reorderedTLC[0]
+        << setw(14) << reorderedTLC[1]
+        << setw(14) << reorderedTLC[2] << endl;
+
     out << "reordered center(lps, mm): " << endl;
-    out << "reordered spacing(mm): " << endl;
-    out << "reordered number of points: " << endl; 
 
-    out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][2] 
-                               << endl;  
+    float reorderedSpacing[3];
+    for (int i = 0; i < 2; i++) {
+        reorderedSpacing[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPixelSpacing",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+    reorderedSpacing[2] = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
+        "SharedFunctionalGroupsSequence", 0
+    );
 
-    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
-                               << endl;  
+    out << "reordered spacing(mm):  " << fixed << right << setw(17) << setprecision(5)
+        << reorderedSpacing[0]
+        << setw(14) << reorderedSpacing[1]
+        << setw(14) << reorderedSpacing[2] << endl;
 
-    out << "reordered dcos3: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
-                               << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
-                               << endl;  
+    int reorderedPts1 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    int reorderedPts2 = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    int reorderedPts3 = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    out << "reordered number of points: " << reorderedPts1 << " " << reorderedPts2 << " " << reorderedPts3 << endl;
+
+    float reorderedDcos[9];
+    for (int i = 0; i < 9; i++) {
+        reorderedDcos[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOrientation",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << reorderedDcos[0] << setw(14) << reorderedDcos[1]
+        << setw(14) << reorderedDcos[2] << endl;
+    out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << reorderedDcos[3]
+        << setw(14) << reorderedDcos[4] << setw(14) << reorderedDcos[5] << endl;
+    out << "reordered dcos3: " << fixed << setw(14) << setprecision(5) << reorderedDcos[6] << setw(14)
+        << reorderedDcos[7] << setw(14) << reorderedDcos[8] << endl;
 
     out << "===================================================" << endl; 
 
