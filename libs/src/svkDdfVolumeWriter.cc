@@ -227,42 +227,42 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "DATA DESCRIPTOR FILE" << endl;
     out << "version: 6.1" << endl;
     out << "object type: MR Spectroscopy" << endl;
-    out << "patient id: " << setw(7) << hdr->GetStringValue( "PatientID" ) << endl;
-    out << "patient name: " << setw(7) << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
-    out << "patient code: " << setw(7) <<  endl;
-    out << "date of birth: " << setw(7) << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
-    out << "sex: " << setw(7) << hdr->GetStringValue( "PatientsSex" ) <<  endl;
-    out << "study id: " << setw(7) << hdr->GetStringValue( "StudyID" ) <<  endl;
-    out << "study code: " << setw(7) << "" <<  endl;
-    out << "study date: " << setw(7) << hdr->GetStringValue( "StudyDate" ) <<  endl;
-    out << "accession number: " << setw(7) << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
-    out << "root name: " << setw(7) << "FILENAME" <<  endl;
-    out << "series number: " << setw(7) << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
-    out << "series description: " << setw(7) << hdr->GetStringValue( "SeriesDescription" ) <<  endl;
-    out << "comment: " << setw(7) << "Comment" <<  endl;
+    out << "patient id: " << setw(19) << left << hdr->GetStringValue( "PatientID" ) << endl;
+    out << "patient name: " << setw(63) << left << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
+    out << "patient code: " << endl;
+    out << "date of birth: " << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
+    out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
+    out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
+    out << "study code: " << "" <<  endl;
+    out << "study date: " << hdr->GetStringValue( "StudyDate" ) <<  endl;
+    out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
+    out << "root name: " << setw(7) << fileRoot <<  endl;
+    out << "series number: " << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
+    out << "series description: " << hdr->GetStringValue( "SeriesDescription" ) <<  endl;
+    out << "comment: " << " " << endl;
 
     out << "patient entry: ";
     string position_string = hdr->GetStringValue( "PatientPosition" );
     if ( position_string.substr(0,2) == string( "HF" ) ){
-        out << "Head First, ";
+        out << "head first";
     } else if ( position_string.substr(0,2) == string( "FF" ) ) {
-        out << "Feet First, ";
+        out << "feet first";
     } else {
-        out << "UNKNOWN, ";
+        out << "UNKNOWN";
     }
     out << endl;
 
     out << "patient position: ";
     if ( position_string.substr(2) == string( "S" ) ) {
-        out << "Supine" << endl;
+        out << "supine" << endl;
     } else if ( position_string.substr(2) == string( "P" ) ) {
-        out << "Prone" << endl;
+        out << "prone" << endl;
     } else if ( position_string.substr(2) == string( "DL" ) ) {
-        out << "Decubitus Left" << endl;
+        out << "decubitus left" << endl;
     } else if ( position_string.substr(2) == string( "DR" ) ) {
-        out << "Decubitus Right" << endl;
+        out << "decubitus right" << endl;
     } else {
-        out << "UNKNOWN" << endl;;
+        out << "UNKNOWN" << endl;
     }
 
     double orientation[2][3];
@@ -289,7 +289,7 @@ void svkDdfVolumeWriter::WriteHeader()
     if ( hdr->GetStringValue("DataRepresentation").compare("COMPLEX") == 0 ) {
         numComponents = 2;     
     }
-    out << "number of components: " << setw(2) << numComponents << endl; 
+    out << "number of components: " << numComponents << endl; 
 
     out << "source description: " << endl;
 
@@ -314,33 +314,33 @@ void svkDdfVolumeWriter::WriteHeader()
     
     double voxelSpacing[3]; 
     hdr->GetPixelSpacing( voxelSpacing );  
-    out << "dimension 1: type: " << specDomain << " npoints: " << hdr->GetIntValue( "DataPointColumns" ) << endl;
-    out << "dimension 2: type: " << "space "<< " npoints: " << numVoxels[0] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[0] << endl;
-    out << "dimension 3: type: " << "space "<< " npoints: " << numVoxels[1] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[1] << endl;
-    out << "dimension 4: type: " << "space "<< " npoints: " << numVoxels[2] << " pixel spacing(mm): " <<  setw(10) << setprecision(5) << voxelSpacing[2] << endl;
+    out << "dimension 1: type: " << specDomain << " npoints: " << setw(4) << left << hdr->GetIntValue( "DataPointColumns" ) << endl;
+    out << "dimension 2: type: " << "space "<< "npoints: " << numVoxels[0] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[0] << endl;
+    out << "dimension 3: type: " << "space "<< "npoints: " << numVoxels[1] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[1] << endl;
+    out << "dimension 4: type: " << "space "<< "npoints: " << numVoxels[2] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[2] << endl;
     if ( numDims == 5 ) {    
         out << "dimension 5: type: time" << endl ; 
     }
 
     float center[3];
     this->GetDDFCenter( center );
-    out << "center(lps, mm):" << fixed<<setw(14) << setprecision(5) << center[0]
+    out << "center(lps, mm): " << fixed << right << setw(14) << setprecision(5) << center[0]
         << setw(14) << center[1] << setw(14) << center[2] << endl;
 
     double positionFirst[3]; 
     hdr->GetOrigin(positionFirst, 0);
-    out << "toplc(lps, mm):  " << fixed << setw(14) << setprecision(5)
+    out << "toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
         << positionFirst[0]
         << setw(14) << positionFirst[1]
         << setw(14) << positionFirst[2] <<endl;
 
     double dcos[3][3];
     this->GetImageDataInput(0)->GetDcos(dcos);
-    out << "dcos0:  " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
+    out << "dcos0: " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
         << setw(14) << dcos[0][2] << endl;
-    out << "dcos1:  " << fixed << setw(14) << setprecision(5) << dcos[1][0]
+    out << "dcos1: " << fixed << setw(14) << setprecision(5) << dcos[1][0]
         << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
-    out << "dcos2:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
+    out << "dcos2: " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
         << dcos[2][1] << setw(14) << dcos[2][2] << endl;
 
     out << "===================================================" << endl; 
@@ -353,7 +353,7 @@ void svkDdfVolumeWriter::WriteHeader()
         "SharedFunctionalGroupsSequence",
         0
     );
-    out << "coil name: " << coilName << endl; 
+    out << "coil name: " << fixed << left << setw(15) << coilName << endl; 
 
     out << "slice gap(mm): " << endl;
 
@@ -364,7 +364,7 @@ void svkDdfVolumeWriter::WriteHeader()
         "SharedFunctionalGroupsSequence",
         0
     );
-    out << "echo time(ms): " << TE << endl; 
+    out << "echo time(ms): " << fixed << setprecision(6) << TE << endl; 
 
     float TR = hdr->GetFloatSequenceItemElement(
         "MRTimingAndRelatedParametersSequence",
@@ -373,9 +373,9 @@ void svkDdfVolumeWriter::WriteHeader()
         "SharedFunctionalGroupsSequence",
         0
     );
-    out << "repetition time(ms): " << TR << endl;
+    out << "repetition time(ms): " << fixed << setprecision(6) << TR << endl;
 
-    out << "inversion time(ms): " << endl; 
+    out << "inversion time(ms): " << fixed << setprecision(6) << endl; 
     
     float flipAngle =  hdr->GetFloatSequenceItemElement(
         "MRTimingAndRelatedParametersSequence",
@@ -384,9 +384,9 @@ void svkDdfVolumeWriter::WriteHeader()
         "SharedFunctionalGroupsSequence",
         0
     );
-    out << "flip angle: " << flipAngle << endl;
+    out << "flip angle: " << fixed << setprecision(6) << flipAngle << endl;
 
-    out << "pulse sequence name: " << hdr->GetStringValue( "PulseSequenceName" ) << endl;
+    out << "pulse sequence name: " << fixed << setw(15) << hdr->GetStringValue( "PulseSequenceName" ) << endl;
     out << "transmitter frequency(MHz): " << hdr->GetFloatValue( "TransmitterFrequency" ) << endl; 
     out << "isotope: " << hdr->GetStringValue( "ResonantNucleus" ) << endl;
     out << "field strength(T): " <<  hdr->GetFloatValue( "MagneticFieldStrength" ) << endl; 
@@ -418,16 +418,16 @@ void svkDdfVolumeWriter::WriteHeader()
             "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 2
         );
 
-        out << "sat band " << satBand << " thickness(mm): " << thickness << endl; 
-        out << "sat band " << satBand << " orientation: " << fixed << setw(20) << setprecision(5) << norm0 
-                                                          << fixed << setw(14) << setprecision(5) << norm1 
-                                                          << fixed << setw(14) << setprecision(5) << norm2 
-                                                          << endl;  
+        out << "sat band " << satBand + 1 << " thickness(mm): " << fixed << setprecision(6) << thickness << endl; 
+        out << "sat band " << satBand + 1 << " orientation: " << fixed << right << setw(21) << setprecision(5) << norm0 
+                                                              << fixed << right << setw(14) << setprecision(5) << norm1 
+                                                              << fixed << right << setw(14) << setprecision(5) << norm2 
+                                                              << endl;  
 
-        out << "sat band " << satBand << " position(lps, mm): " << fixed << setw(14) << setprecision(5) << pos0 
-                                                                << fixed << setw(14) << setprecision(5) << pos1 
-                                                                << fixed << setw(14) << setprecision(5) << pos2 
-                                                                << endl;  
+        out << "sat band " << satBand + 1 << " position(lps, mm): " << fixed << right << setw(15) << setprecision(5) << pos0 
+                                                                    << fixed << right << setw(14) << setprecision(5) << pos1 
+                                                                    << fixed << right << setw(14) << setprecision(5) << pos2 
+                                                                    << endl;  
 
     }
                                        
@@ -435,12 +435,16 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "Spectroscopy Parameters" << endl; 
 
     out << "localization type: " << hdr->GetStringValue( "VolumeLocalizationTechnique" ) << endl;
-    out << "center frequency(MHz): " << 127.718941 << endl;
-    out << "ppm reference: " << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
-    out << "sweepwidth(Hz): " << hdr->GetFloatValue( "SpectralWidth") << endl;
-    out << "dwelltime(ms): " << endl;
-    out << "frequency offset(Hz): " << endl;
-    out << "centered on water: " << endl;
+    out << "center frequency(MHz): " << fixed << setprecision(6) << hdr->GetFloatValue( "TransmitterFrequency" ) << endl;
+    out << "ppm reference: " << fixed << setprecision(6) << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
+    out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
+    out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
+    out << "frequency offset(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SVK_FrequencyOffset" ) << endl;
+    string onH20 = "yes"; 
+    if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
+        onH20.assign( "no" ); 
+    }
+    out << "centered on water: " << onH20 << endl;
     out << "suppression technique: " << endl;
     out << "residual water:" << endl;
     out << "number of acquisitions: " << endl;
