@@ -75,6 +75,7 @@
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicGlobalWidget.h>
 
 // Used for determining the default range, as a percentage of whole range
 // for plotting spectra.
@@ -105,6 +106,7 @@ class vtkSivicController : public vtkObject
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
+        void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
         void                       SetSlice( int slice );
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
@@ -143,6 +145,7 @@ class vtkSivicController : public vtkObject
         void                       RestoreSession( );
         void                       ResetRange( bool useFullRange = 0);
         string                     GetPrinterName( );
+        void                       SetOrientation( const char* );
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();
@@ -162,7 +165,7 @@ class vtkSivicController : public vtkObject
          
     private:
     
-    
+        string                     orientation; 
         svkDataModel*              model; 
         vtkKWApplication*          app;
         vtkImageData*              spectraData;
@@ -170,6 +173,7 @@ class vtkSivicController : public vtkObject
         sivicProcessingWidget*       processingWidget;
         sivicImageViewWidget*      imageViewWidget;
         sivicSpectraViewWidget*    spectraViewWidget;
+        sivicGlobalWidget*         globalWidget;
         svkPlotGridViewController* plotController;
         svkOverlayViewController*  overlayController;
 

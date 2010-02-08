@@ -83,14 +83,31 @@ vtkSivicController::~vtkSivicController()
 //! Set the slice of all Controllers
 void vtkSivicController::SetSlice( int slice )
 {
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
     this->plotController->SetSlice(slice);
     this->overlayController->SetSlice(slice);
     //this->plotController->GetView()->Refresh();
     //this->overlayController->GetView()->Refresh();
     this->viewRenderingWidget->ResetInfoText();
     if( this->model->DataExists("AnatomicalData")) {
-       this->imageViewWidget->imageSlider->SetValue( this->overlayController->GetImageSlice()+1 ); 
+        if( this->orientation == "AXIAL" ) {
+            this->imageViewWidget->axialSlider->SetValue( this->overlayController->GetImageSlice( svkDcmHeader::AXIAL )+1 ); 
+        } else if ( this->orientation == "CORONAL" ) {
+            this->imageViewWidget->coronalSlider->SetValue( this->overlayController->GetImageSlice( svkDcmHeader::CORONAL )+1 ); 
+        } else if ( this->orientation == "SAGITTAL" ) {
+            this->imageViewWidget->sagittalSlider->SetValue( this->overlayController->GetImageSlice( svkDcmHeader::SAGITTAL )+1 ); 
+        }
     }
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+    this->overlayController->GetView()->Refresh();
+    this->plotController->GetView()->Refresh();
 }
 
 
@@ -130,6 +147,14 @@ void vtkSivicController::SetSpectraViewWidget( sivicSpectraViewWidget* spectraVi
 {
     this->spectraViewWidget = spectraViewWidget;
     this->spectraViewWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetGlobalWidget( sivicGlobalWidget* globalWidget )
+{
+    this->globalWidget = globalWidget;
+    this->globalWidget->SetModel(this->model);
 }
 
 
@@ -181,16 +206,38 @@ void vtkSivicController::OpenImage( const char* fileName )
             }
             int* extent = newData->GetExtent();
             if( !model->DataExists("SpectroscopicData") ) {
-                this->imageViewWidget->sliceSlider->SetRange( extent[4] + 1, extent[5] + 1); 
-                this->imageViewWidget->sliceSlider->SetValue( ( extent[5] - extent[4] ) / 2);
-                this->imageViewWidget->orthoXSlider->SetRange( extent[0] + 1, extent[1] + 1 );
-                this->imageViewWidget->orthoXSlider->SetValue( ( extent[1] - extent[0] ) / 2);
-                this->imageViewWidget->orthoYSlider->SetRange( extent[2] + 1, extent[3] + 1 );
-                this->imageViewWidget->orthoYSlider->SetValue( ( extent[3] - extent[2] ) / 2);
+                int firstSlice;
+                int lastSlice;
+                firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
+                lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
+                this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+                firstSlice = newData->GetFirstSlice( svkDcmHeader::CORONAL );
+                lastSlice = newData->GetLastSlice( svkDcmHeader::CORONAL );
+                this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+                firstSlice = newData->GetFirstSlice( svkDcmHeader::SAGITTAL );
+                lastSlice = newData->GetLastSlice( svkDcmHeader::SAGITTAL );
+                this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+
             } else {
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
             }
-            this->imageViewWidget->imageSlider->SetRange( extent[4] + 1, extent[5] + 1); 
+            //int firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
+            //int lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
+            //this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                case svkDcmHeader::AXIAL:
+                    this->SetOrientation( "AXIAL" );
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->SetOrientation( "CORONAL" );
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->SetOrientation( "SAGITTAL" );
+                    break;
+            }
             this->viewRenderingWidget->ResetInfoText();
         } else {
             string message = "ERROR: Dataset is not compatible and will not be loaded!\nInfo:\n"; 
@@ -210,8 +257,11 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
     } else {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+            this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        }
 
         string resultInfo;
         string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
@@ -263,6 +313,17 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 this->overlayController->SetTlcBrc( tlcBrc ); 
             }
             this->ResetRange( );
+            switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                case svkDcmHeader::AXIAL:
+                    this->SetOrientation( "AXIAL" );
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->SetOrientation( "CORONAL" );
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->SetOrientation( "SAGITTAL" );
+                    break;
+            }
             this->viewRenderingWidget->ResetInfoText();
         } else {
             resultInfo = "ERROR: Dataset is not compatible!\n"; 
@@ -271,8 +332,10 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             resultInfo += overlayViewResultInfo;
             this->PopupMessage( resultInfo ); 
         }
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+            this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        }
         this->overlayController->GetView()->Refresh( );
         this->plotController->GetView()->Refresh( );
 
@@ -1146,12 +1209,80 @@ void vtkSivicController::UseColorOverlayStyle()
 //! Changes to the drag selection mouse interactor.
 void vtkSivicController::UseSelectionStyle() 
 {
+    if( model->DataExists( "SpectroscopicData" ) ) {
+        svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
+        double* viewPlaneNormal =  this->overlayController->GetView()->
+                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewPlaneNormal();
+        double* cameraPosition =  this->overlayController->GetView()->
+                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetPosition();
+        double* cameraFocalPoint =  this->overlayController->GetView()->
+                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetFocalPoint();
+        float viewNormal[3] = { viewPlaneNormal[0], viewPlaneNormal[1], viewPlaneNormal[2] };
+        float axialNormal[3];
+        data->GetSliceNormal( axialNormal, svkDcmHeader::AXIAL );
+        float coronalNormal[3];
+        data->GetSliceNormal( coronalNormal, svkDcmHeader::CORONAL );
+        float sagittalNormal[3];
+        data->GetSliceNormal( sagittalNormal, svkDcmHeader::SAGITTAL );
+        svkDcmHeader::Orientation closestOrientation = this->overlayController->GetView()->GetOrientation();
+        float* closestNormal;
+        switch ( closestOrientation ) {
+            case svkDcmHeader::AXIAL:
+                closestNormal = axialNormal;
+                this->orientation = "AXIAL";
+                break;
+            case svkDcmHeader::CORONAL:
+                closestNormal = coronalNormal;
+                this->orientation = "CORONAL";
+                break;
+            case svkDcmHeader::SAGITTAL:
+                closestNormal = sagittalNormal;
+                this->orientation = "SAGITTAL";
+                break;
+        }
+        if( fabs(vtkMath::Dot( axialNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
+            closestNormal = axialNormal;
+            closestOrientation = svkDcmHeader::AXIAL;
+            this->orientation = "AXIAL";
+        }  
+        if( fabs(vtkMath::Dot( coronalNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
+            closestNormal = coronalNormal;
+            closestOrientation = svkDcmHeader::CORONAL;
+            this->orientation = "CORONAL";
+        }  
+        if( fabs(vtkMath::Dot( sagittalNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
+            closestNormal = sagittalNormal;
+            closestOrientation = svkDcmHeader::SAGITTAL;
+            this->orientation = "SAGITTAL";
+        }
+        this->SetOrientation( this->orientation.c_str() );
+   /* 
+        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem(this->orientation.c_str());
+        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
+            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
+        }
+        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+            this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        }
+        this->overlayController->GetView()->SetOrientation( closestOrientation );
+        this->plotController->GetView()->SetOrientation( closestOrientation );
+        this->plotController->SetSlice( this->overlayController->GetSlice() );
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+            this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        }
+*/
+    }
     this->overlayController->UseSelectionStyle();
     this->viewRenderingWidget->specViewerWidget->Render();
     this->viewRenderingWidget->viewerWidget->Render();
-    this->imageViewWidget->orthoXSlider->EnabledOff();
-    this->imageViewWidget->orthoYSlider->EnabledOff();
+    this->EnableWidgets();
     this->imageViewWidget->orthImagesButton->EnabledOff();
+
+    
+
 }
 
 
@@ -1165,15 +1296,19 @@ void vtkSivicController::UseRotationStyle()
     if ( model->GetDataObject("AnatomicalData") ) {
 
         this->imageViewWidget->orthImagesButton->EnabledOn();
-        this->imageViewWidget->orthoXSlider->EnabledOn();
-        this->imageViewWidget->orthoYSlider->EnabledOn();
+        this->imageViewWidget->axialSlider->EnabledOn();
+        this->imageViewWidget->coronalSlider->EnabledOn();
+        this->imageViewWidget->sagittalSlider->EnabledOn();
 
-        svkImageData* data = this->model->GetDataObject( "AnatomicalData" );
-        int* extent = data->GetExtent();
-        this->imageViewWidget->orthoXSlider->SetRange( extent[0] + 1, extent[1] + 1); 
-        this->imageViewWidget->orthoXSlider->SetValue( ( extent[1] - extent[0] ) / 2);
-        this->imageViewWidget->orthoYSlider->SetRange( extent[2] + 1, extent[3] + 1); 
-        this->imageViewWidget->orthoYSlider->SetValue( ( extent[3] - extent[2] ) / 2);
+        //svkImageData* data = this->model->GetDataObject( "AnatomicalData" );
+        //int firstSlice = data->GetFirstSlice( svkDcmHeader::CORONAL );
+        //int lastSlice = data->GetLastSlice( svkDcmHeader::CORONAL );
+        //this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+        //this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+        //firstSlice = data->GetFirstSlice( svkDcmHeader::SAGITTAL );
+        //lastSlice = data->GetLastSlice( svkDcmHeader::SAGITTAL );
+        //this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+        //this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
     }
 }
 
@@ -1369,6 +1504,74 @@ string vtkSivicController::GetPrinterName( )
 
 }
 
+/*!
+ *
+ */
+void vtkSivicController::SetOrientation( const char* orientation ) 
+{
+    this->orientation = orientation;
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+    int firstSlice;
+    int lastSlice;
+    if( this->orientation == "AXIAL" ) {
+        this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+        this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+        if( this->model->DataExists("SpectroscopicData") ) {
+            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::AXIAL );
+            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::AXIAL );
+        } else if( this->model->DataExists("AnatomicalData") ) {
+            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::AXIAL );
+            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::AXIAL );
+        }
+        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("AXIAL");
+        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
+            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
+        }
+    } else if ( this->orientation == "CORONAL" ) {
+        this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+        this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+        if( this->model->DataExists("SpectroscopicData") ) {
+            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::CORONAL );
+            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::CORONAL );
+        } else if( this->model->DataExists("AnatomicalData") ) {
+            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::CORONAL );
+            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::CORONAL );
+        }
+        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("CORONAL");
+        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
+            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
+        }
+    } else if ( this->orientation == "SAGITTAL" ) {
+        this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+        this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+        if( this->model->DataExists("SpectroscopicData") ) {
+            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::SAGITTAL );
+            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::SAGITTAL );
+        } else if( this->model->DataExists("AnatomicalData") ) {
+            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::SAGITTAL );
+            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::SAGITTAL );
+        }
+        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("SAGITTAL");
+        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
+            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
+        }
+    }
+    this->SetSlice( this->overlayController->GetSlice() );
+    this->imageViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+    this->imageViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+    this->EnableWidgets();
+    this->plotController->GetView()->Refresh();
+    this->overlayController->GetView()->Refresh();
+}
+
 
 void vtkSivicController::SaveSession( )
 {
@@ -1490,6 +1693,7 @@ void vtkSivicController::ResetRange( bool useFullRange )
  */
 void vtkSivicController::EnableWidgets()
 {
+    this->DisableWidgets();
     if ( model->DataExists("SpectroscopicData") && model->DataExists("AnatomicalData") ) {
         string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
@@ -1499,8 +1703,6 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->plotGridButton->EnabledOn();
         }
         this->imageViewWidget->volSelButton->EnabledOn();
-        this->imageViewWidget->satBandButton->EnabledOn();
-        this->imageViewWidget->satBandOutlineButton->EnabledOn();
     }
 
     if ( model->DataExists("SpectroscopicData") || model->DataExists("AnatomicalData") ) {
@@ -1521,6 +1723,8 @@ void vtkSivicController::EnableWidgets()
                 this->processingWidget->combineButton->EnabledOn();
             }
         }
+        this->imageViewWidget->satBandButton->EnabledOn();
+        this->imageViewWidget->satBandOutlineButton->EnabledOn();
         this->processingWidget->phaseSlider->EnabledOn(); 
         this->spectraViewWidget->xSpecRange->EnabledOn();
         this->spectraViewWidget->ySpecRange->EnabledOn();
@@ -1534,7 +1738,19 @@ void vtkSivicController::EnableWidgets()
     }
 
     if ( model->DataExists("AnatomicalData") ) {
-        this->imageViewWidget->imageSlider->EnabledOn();
+        if( this->orientation == "AXIAL" ) {
+            this->imageViewWidget->axialSlider->EnabledOn();
+            this->imageViewWidget->coronalSlider->EnabledOff();
+            this->imageViewWidget->sagittalSlider->EnabledOff();
+        } else if ( this->orientation == "CORONAL" ) {
+            this->imageViewWidget->axialSlider->EnabledOff();
+            this->imageViewWidget->coronalSlider->EnabledOn();
+            this->imageViewWidget->sagittalSlider->EnabledOff();
+        } else if ( this->orientation == "SAGITTAL" ) {
+            this->imageViewWidget->axialSlider->EnabledOff();
+            this->imageViewWidget->coronalSlider->EnabledOff();
+            this->imageViewWidget->sagittalSlider->EnabledOn();
+        }
     }
 
     if ( model->DataExists("MetaboliteData")) {
@@ -1563,9 +1779,9 @@ void vtkSivicController::DisableWidgets()
     this->spectraViewWidget->detailedPlotButton->EnabledOff();
     this->imageViewWidget->sliceSlider->EnabledOff();
     this->processingWidget->channelSlider->EnabledOff();
-    this->imageViewWidget->imageSlider->EnabledOff();
-    this->imageViewWidget->orthoXSlider->EnabledOff();
-    this->imageViewWidget->orthoYSlider->EnabledOff();
+    this->imageViewWidget->axialSlider->EnabledOff();
+    this->imageViewWidget->coronalSlider->EnabledOff();
+    this->imageViewWidget->sagittalSlider->EnabledOff();
     this->spectraViewWidget->overlayImageCheck->EnabledOff();
     this->spectraViewWidget->overlayTextCheck->EnabledOff();
     this->spectraViewWidget->unitSelectBox->EnabledOff();

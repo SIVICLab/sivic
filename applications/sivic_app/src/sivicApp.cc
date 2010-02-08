@@ -54,6 +54,7 @@ sivicApp::sivicApp()
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
     this->viewRenderingWidget = sivicViewRenderingWidget::New();
+    this->globalWidget        = sivicGlobalWidget::New();
     this->tabbedPanel = vtkKWNotebook::New();
 }
 
@@ -91,6 +92,11 @@ sivicApp::~sivicApp()
     if( this->imageViewWidget != NULL ) {
         this->imageViewWidget->Delete();
         this->imageViewWidget = NULL;
+    }
+
+    if( this->globalWidget != NULL ) {
+        this->globalWidget->Delete();
+        this->globalWidget = NULL;
     }
 
     if( this->spectraViewWidget != NULL ) {
@@ -214,11 +220,18 @@ int sivicApp::Build( int argc, char* argv[] )
     this->spectraViewWidget->SetSivicController(this->sivicController);
     this->spectraViewWidget->Create();
 
+    this->globalWidget->SetParent(this->sivicWindow->GetViewFrame());
+    this->globalWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->globalWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->globalWidget->SetSivicController(this->sivicController);
+    this->globalWidget->Create();
+
 
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
+    this->sivicController->SetGlobalWidget( globalWidget );
 
     this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
     vtkKWWidget* interactorPanel = tabbedPanel->GetFrame("Inspecting");
@@ -236,11 +249,12 @@ int sivicApp::Build( int argc, char* argv[] )
     separatorVert->Create();
     separatorVert->SetThickness(3);
 
-    this->sivicKWApp->Script("grid %s -row 0 -column 0 -columnspan 3 -sticky nsew", viewRenderingWidget->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 1 -column 0 -columnspan 3 -sticky nsew", separator->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 0 -sticky wnse", imageViewWidget->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 1 -sticky nsew", separatorVert->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 2 -sticky ensw -padx 2 -pady 2", tabbedPanel->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 0 -column 0 -columnspan 4 -sticky nsew", viewRenderingWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 1 -column 0 -columnspan 4 -sticky nsew", separator->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 0 -sticky wnse", imageViewWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 1 -sticky nsew", separatorVert->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky ensw -padx 2 -pady 2", tabbedPanel->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 3 -sticky nsew -padx 2 -pady 2", globalWidget->GetWidgetName());
 
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->spectraViewWidget->GetWidgetName(), interactorPanel->GetWidgetName());
@@ -249,10 +263,12 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 90 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 10 -minsize 250 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 10 -minsize 10 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 10 -minsize 250 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 40 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 60 -uniform 1", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid columnconfigure %s 3 -weight 0 -uniform 1 -minsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     separator->Delete();
     separatorVert->Delete();
 

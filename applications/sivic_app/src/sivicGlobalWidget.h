@@ -26,14 +26,14 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: $
+ *  $Rev: $
+ *  $Author: $
+ *  $Date: $
  */
 
-#ifndef SVK_IMAGE_VIEW_WIDGET_H 
-#define SVK_IMAGE_VIEW_WIDGET_H 
+#ifndef SIVIC_GLOBAL_WIDGET_H 
+#define SIVIC_GLOBAL_WIDGET_H 
 
 #include <vtkKWScale.h>
 #include <vtkKWScaleWithEntry.h>
@@ -92,60 +92,23 @@
 
 using namespace svk; 
 
-class sivicImageViewWidget : public sivicKWCompositeWidget
+class sivicGlobalWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicImageViewWidget *New();
-        vtkTypeRevisionMacro(sivicImageViewWidget,sivicKWCompositeWidget);
+        static sivicGlobalWidget *New();
+        vtkTypeRevisionMacro(sivicGlobalWidget,sivicKWCompositeWidget);
         
-        enum {
-            ALL_SLICES = 0,
-            CURRENT_SLICE
-        } OutputOption;
-
-        enum {
-            LIGHT_ON_DARK = 0,
-            DARK_ON_LIGHT 
-        } ColorSchema;
-
-        enum {
-            SPECTRA_CAPTURE = 0,
-            IMAGE_CAPTURE
-        } CaptureType;
-
-
-
-
     protected:
 
-        sivicImageViewWidget();
-        ~sivicImageViewWidget();
+        sivicGlobalWidget();
+        ~sivicGlobalWidget();
 
-        vtkKWScaleWithEntry*            sliceSlider;
-        vtkKWScaleWithEntry*            coronalSlider;
-        vtkKWScaleWithEntry*            sagittalSlider;
-        vtkKWScaleWithEntry*            axialSlider;
-        vtkKWScaleWithEntry*            overlayOpacitySlider;
-        vtkKWScaleWithEntry*            overlayThresholdSlider;
-        vtkKWCheckButton*               satBandButton;
-        vtkKWCheckButton*               satBandOutlineButton;
-        vtkKWCheckButton*               volSelButton;
-        vtkKWCheckButton*               plotGridButton;
-        vtkKWCheckButton*               overlayButton;
-        vtkKWCheckButton*               colorBarButton;
-        vtkKWCheckButton*               orthImagesButton;
-        vtkKWProgressGauge*             progressGauge;
-        vtkKWLabel*                     loadingLabel;
-        vtkKWMenuButtonWithLabel*       interpolationBox;
-        vtkKWMenuButtonWithLabel*       lutBox;
-        vtkKWFrame*                     imageViewFrame;
-        vtkKWFrame*                     orthoViewFrame;
-        vtkKWFrame*                     overlayViewFrame;
-
+        vtkKWMenuButtonWithLabel*    orientationSelect;
+        vtkKWFrame*                   specViewFrame;   
 
         
         // Description:
@@ -153,14 +116,11 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
 
-
-
     private:
 
-
-        sivicImageViewWidget(const sivicImageViewWidget&);   // Not implemented.
-        void operator=(const sivicImageViewWidget&);  // Not implemented.
+        sivicGlobalWidget(const sivicGlobalWidget&);   // Not implemented.
+        void operator=(const sivicGlobalWidget&);  // Not implemented.
         
 };
 
-#endif //SVK_IMAGE_VIEW_WIDGET_H 
+#endif //SIVIC_GLOBAL_WIDGET_H 

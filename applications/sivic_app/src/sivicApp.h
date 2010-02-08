@@ -59,6 +59,7 @@
 #include <sivicViewRenderingWidget.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicGlobalWidget.h>
 
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/CommandLineArguments.hxx>
@@ -98,6 +99,7 @@ class sivicApp
         sivicProcessingWidget*     processingWidget;
         sivicImageViewWidget*    imageViewWidget;
         sivicSpectraViewWidget*  spectraViewWidget;
+        sivicGlobalWidget*       globalWidget;
         vtkKWUserInterfacePanel* uiPanel;
         vtkKWNotebook*           tabbedPanel;
         svkDataModel*            model;

@@ -149,6 +149,7 @@ ADD_LIBRARY(
     sivicGUI
 
     sivicApp.cc
+    sivicGlobalWidget.cc
     sivicImageViewWidget.cc
     sivicSpectraViewWidget.cc
     sivicViewRenderingWidget.cc

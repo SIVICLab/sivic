@@ -25,9 +25,9 @@ sivicImageViewWidget::sivicImageViewWidget()
     this->sliceSlider = NULL;
     this->overlayOpacitySlider = NULL;
     this->overlayThresholdSlider = NULL;
-    this->imageSlider = NULL;
-    this->orthoXSlider = NULL;
-    this->orthoYSlider = NULL;
+    this->axialSlider = NULL;
+    this->coronalSlider = NULL;
+    this->sagittalSlider = NULL;
     this->volSelButton = NULL;
     this->plotGridButton = NULL;
     this->satBandButton = NULL;
@@ -55,19 +55,19 @@ sivicImageViewWidget::~sivicImageViewWidget()
         this->sliceSlider = NULL;
     }
 
-    if( this->imageSlider != NULL ) {
-        this->imageSlider->Delete();
-        this->imageSlider= NULL;
+    if( this->axialSlider != NULL ) {
+        this->axialSlider->Delete();
+        this->axialSlider= NULL;
     }
 
-    if( this->orthoXSlider != NULL ) {
-        this->orthoXSlider->Delete();
-        this->orthoXSlider= NULL;
+    if( this->coronalSlider != NULL ) {
+        this->coronalSlider->Delete();
+        this->coronalSlider= NULL;
     }
 
-    if( this->orthoYSlider != NULL ) {
-        this->orthoYSlider->Delete();
-        this->orthoYSlider= NULL;
+    if( this->sagittalSlider != NULL ) {
+        this->sagittalSlider->Delete();
+        this->sagittalSlider= NULL;
     }
 
     if( this->overlayOpacitySlider != NULL ) {
@@ -284,44 +284,44 @@ void sivicImageViewWidget::CreateWidget()
 
     this->lutBox->GetWidget()->SetValue( "color" );
 
-    this->imageSlider = vtkKWScaleWithEntry::New();
-    this->imageSlider->SetParent(this);
-    this->imageSlider->Create();
-    this->imageSlider->SetEntryWidth( 3 );
-    this->imageSlider->SetOrientationToHorizontal();
-    this->imageSlider->SetLabelText("Image Slice  ");
-    this->imageSlider->SetValue(1);
-    this->imageSlider->SetRange( 1, 1);
-    this->imageSlider->SetBalloonHelpString("Adjusts image slice.");
-    this->imageSlider->EnabledOff();
-    this->imageSlider->SetLabelPositionToLeft();
-    this->imageSlider->SetEntryPositionToRight();
+    this->axialSlider = vtkKWScaleWithEntry::New();
+    this->axialSlider->SetParent(this);
+    this->axialSlider->Create();
+    this->axialSlider->SetEntryWidth( 3 );
+    this->axialSlider->SetOrientationToHorizontal();
+    this->axialSlider->SetLabelText("Axial Slice    ");
+    this->axialSlider->SetValue(1);
+    this->axialSlider->SetRange( 1, 1);
+    this->axialSlider->SetBalloonHelpString("Adjusts image slice.");
+    this->axialSlider->EnabledOff();
+    this->axialSlider->SetLabelPositionToLeft();
+    this->axialSlider->SetEntryPositionToRight();
 
-    this->orthoXSlider = vtkKWScaleWithEntry::New();
-    this->orthoXSlider->SetParent(this);
-    this->orthoXSlider->Create();
-    this->orthoXSlider->SetEntryWidth( 3 );
-    this->orthoXSlider->SetOrientationToHorizontal();
-    this->orthoXSlider->SetLabelText("Ortho X Slice");
-    this->orthoXSlider->SetValue(1);
-    this->orthoXSlider->SetRange( 1, 1);
-    this->orthoXSlider->SetBalloonHelpString("Adjusts the ortho view x slice.");
-    this->orthoXSlider->EnabledOff();
-    this->orthoXSlider->SetLabelPositionToLeft();
-    this->orthoXSlider->SetEntryPositionToRight();
+    this->coronalSlider = vtkKWScaleWithEntry::New();
+    this->coronalSlider->SetParent(this);
+    this->coronalSlider->Create();
+    this->coronalSlider->SetEntryWidth( 3 );
+    this->coronalSlider->SetOrientationToHorizontal();
+    this->coronalSlider->SetLabelText("Coronal Slice");
+    this->coronalSlider->SetValue(1);
+    this->coronalSlider->SetRange( 1, 1);
+    this->coronalSlider->SetBalloonHelpString("Adjusts the ortho view x slice.");
+    this->coronalSlider->EnabledOff();
+    this->coronalSlider->SetLabelPositionToLeft();
+    this->coronalSlider->SetEntryPositionToRight();
 
-    this->orthoYSlider = vtkKWScaleWithEntry::New();
-    this->orthoYSlider->SetParent(this);
-    this->orthoYSlider->Create();
-    this->orthoYSlider->SetEntryWidth( 3 );
-    this->orthoYSlider->SetOrientationToHorizontal();
-    this->orthoYSlider->SetLabelText("Ortho Y Slice");
-    this->orthoYSlider->SetValue(1);
-    this->orthoYSlider->SetRange( 1, 1);
-    this->orthoYSlider->SetBalloonHelpString("Adjusts the ortho view y slice.");
-    this->orthoYSlider->EnabledOff();
-    this->orthoYSlider->SetLabelPositionToLeft();
-    this->orthoYSlider->SetEntryPositionToRight();
+    this->sagittalSlider = vtkKWScaleWithEntry::New();
+    this->sagittalSlider->SetParent(this);
+    this->sagittalSlider->Create();
+    this->sagittalSlider->SetEntryWidth( 3 );
+    this->sagittalSlider->SetOrientationToHorizontal();
+    this->sagittalSlider->SetLabelText("Sagittal Slice");
+    this->sagittalSlider->SetValue(1);
+    this->sagittalSlider->SetRange( 1, 1);
+    this->sagittalSlider->SetBalloonHelpString("Adjusts the ortho view y slice.");
+    this->sagittalSlider->EnabledOff();
+    this->sagittalSlider->SetLabelPositionToLeft();
+    this->sagittalSlider->SetEntryPositionToRight();
 
     this->overlayOpacitySlider = vtkKWScaleWithEntry::New();
     this->overlayOpacitySlider->SetParent(this);
@@ -445,12 +445,12 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 10", this->orthoViewFrame->GetWidgetName(), row);
         this->Script("grid %s -in %s -row 0 -column 0 -sticky w", 
                 this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        //this->Script("grid %s -in %s -row 1 -column 0  -columnspan 2 -sticky ew ", 
-        //        this->imageSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
         this->Script("grid %s -in %s -row 1 -column 0  -columnspan 2 -sticky ew ", 
-                this->orthoXSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 2 -column 0 -columnspan 2 -sticky ew ", 
-                this->orthoYSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+                this->axialSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid %s -in %s -row 2 -column 0  -columnspan 2 -sticky ew ", 
+                this->coronalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid %s -in %s -row 3 -column 0 -columnspan 2 -sticky ew ", 
+                this->sagittalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
 
         this->Script("grid columnconfigure %s 0 -weight 10 ", this->orthoViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 1 -weight 90 ",  this->orthoViewFrame->GetWidgetName() );
@@ -508,13 +508,13 @@ void sivicImageViewWidget::CreateWidget()
         this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
-        this->imageSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+        this->axialSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
-        this->orthoXSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+        this->coronalSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
-        this->orthoYSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+        this->sagittalSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
         this->overlayOpacitySlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -574,16 +574,16 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->sliceSlider->Focus(); 
         //this->SetPhaseUpdateExtent();
         // viewer widget renders automatically when you set its slice
-    } else if( caller == this->imageSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->imageSlider->GetValue()) - 1, 0); 
+    } else if( caller == this->axialSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        this->overlayController->SetSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, svkDcmHeader::AXIAL); 
         this->overlayController->GetView()->Refresh();
 
-    } else if( caller == this->orthoXSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->orthoXSlider->GetValue()) - 1, 1); 
+    } else if( caller == this->coronalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        this->overlayController->SetSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, svkDcmHeader::CORONAL); 
         this->overlayController->GetView()->Refresh();
 
-    } else if( caller == this->orthoYSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->orthoYSlider->GetValue()) - 1, 2); 
+    } else if( caller == this->sagittalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        this->overlayController->SetSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, svkDcmHeader::SAGITTAL); 
         this->overlayController->GetView()->Refresh();
 
     } else if( caller == this->overlayOpacitySlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
@@ -639,11 +639,19 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->overlayButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
 
         if ( this->overlayButton->GetSelectedState() ) {
-            this->overlayController->TurnPropOn( svkOverlayView::OVERLAY_IMAGE);
-            this->overlayController->TurnPropOn( svkOverlayView::OVERLAY_IMAGE_BACK);
+            this->overlayController->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_BACK);
+            this->overlayController->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_BACK);
+            this->overlayController->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_BACK);
         } else {
-            this->overlayController->TurnPropOff( svkOverlayView::OVERLAY_IMAGE);
-            this->overlayController->TurnPropOff( svkOverlayView::OVERLAY_IMAGE_BACK);
+            this->overlayController->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_BACK);
+            this->overlayController->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_BACK);
+            this->overlayController->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_FRONT);
+            this->overlayController->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_BACK);
         }
         this->overlayController->GetView()->Refresh();
 
@@ -657,28 +665,54 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayController->GetView()->Refresh();
     } else if( caller == this->satBandButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->satBandButton->GetSelectedState() ) {
-            this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS);
+            switch( this->overlayController->GetView()->GetOrientation() ) {
+                case svkDcmHeader::AXIAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL);
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL);
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL);
+                    break;
+            }
+            this->plotController->TurnPropOn( svkPlotGridView::SAT_BANDS);
             if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
-                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP1);
-                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP2);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL);
             }
         } else {
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS);
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_PERP1);
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_PERP2);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL);
+            this->plotController->TurnPropOff( svkPlotGridView::SAT_BANDS);
         }
         this->overlayController->GetView()->Refresh();
     } else if( caller == this->satBandOutlineButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->satBandOutlineButton->GetSelectedState() ) {
-            this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_OUTLINE);
+            switch( this->overlayController->GetView()->GetOrientation() ) {
+                case svkDcmHeader::AXIAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                    break;
+            }
+            this->plotController->TurnPropOn( svkPlotGridView::SAT_BANDS_OUTLINE);
             if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
-                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP1_OUTLINE);
-                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP2_OUTLINE);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                this->overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
             }
         } else {
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_OUTLINE);
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_PERP1_OUTLINE);
-            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_PERP2_OUTLINE);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+            this->overlayController->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+            this->plotController->TurnPropOff( svkPlotGridView::SAT_BANDS_OUTLINE);
         }
         this->overlayController->GetView()->Refresh();
     } else if( caller == this->orthImagesButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
