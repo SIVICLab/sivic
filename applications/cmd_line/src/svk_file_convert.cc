@@ -70,7 +70,8 @@ int main (int argc, char** argv)
     usemsg += "   -i input_file_name      name of file to convert. \n"; 
     usemsg += "   -o output_file_name     name of outputfile. \n";  
     usemsg += "   -t output_data_type     target data type: \n";  
-    usemsg += "                               3 = IDF           \n";  
+    usemsg += "                               2 = UCSF DDF      \n";  
+    usemsg += "                               3 = UCSF IDF      \n";  
     usemsg += "                               4 = DICOM_MRS     \n";  
     usemsg += "   -h                      print help mesage. \n";  
     usemsg += " \n";  
