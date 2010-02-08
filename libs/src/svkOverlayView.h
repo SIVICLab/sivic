@@ -103,12 +103,13 @@ class svkOverlayView : public svkDataView
         // Methods:
         virtual void        SetInput( svkImageData* data, int index = 0);
         virtual void        SetSlice(int slice);
-        virtual void        SetSlice(int slice, int imageNum);
+        virtual void        SetSlice(int slice, svkDcmHeader::Orientation orientation);
         virtual void        SetRWInteractor( vtkRenderWindowInteractor* );    
         virtual void        Refresh();
               string        GetDataCompatibility( svkImageData* data, int targetIndex );
         void                TurnOrthogonalImagesOn();
         void                TurnOrthogonalImagesOff();
+        void                SetOrientation( svkDcmHeader::Orientation orientation );
 
 
         //! Enum represents input indecies
@@ -121,15 +122,19 @@ class svkOverlayView : public svkDataView
         //! Enum represents objects in the scene
         enum PropType {
             VOL_SELECTION = 0, 
-            SAT_BANDS,
-            SAT_BANDS_OUTLINE,
-            SAT_BANDS_PERP1,
-            SAT_BANDS_PERP2,
-            SAT_BANDS_PERP1_OUTLINE,
-            SAT_BANDS_PERP2_OUTLINE,
+            SAT_BANDS_AXIAL,
+            SAT_BANDS_AXIAL_OUTLINE,
+            SAT_BANDS_CORONAL,
+            SAT_BANDS_SAGITTAL,
+            SAT_BANDS_CORONAL_OUTLINE,
+            SAT_BANDS_SAGITTAL_OUTLINE,
             PLOT_GRID,
-            OVERLAY_IMAGE,
-            OVERLAY_IMAGE_BACK,
+            AXIAL_OVERLAY_FRONT,
+            AXIAL_OVERLAY_BACK,
+            CORONAL_OVERLAY_FRONT,
+            CORONAL_OVERLAY_BACK,
+            SAGITTAL_OVERLAY_FRONT,
+            SAGITTAL_OVERLAY_BACK,
             COORDINATES,
             COLOR_BAR,
             LAST_PROP = COLOR_BAR
@@ -163,7 +168,7 @@ class svkOverlayView : public svkDataView
         svkImageViewer2*                imageViewer;   
 
         //! the top left, bottom right corners of the current view 
-        int*                            tlcBrc;
+        //int*                            tlcBrc;
 
         //! the slice of the current view
         int                             slice;
@@ -172,7 +177,9 @@ class svkOverlayView : public svkDataView
         vtkRenderWindow*                myRenderWindow;
 
         //! Object used to window livel the overlay 
-        svkImageMapToColors* windowLeveler;
+        svkImageMapToColors* windowLevelerAxial;
+        svkImageMapToColors* windowLevelerCoronal;
+        svkImageMapToColors* windowLevelerSagittal;
 
         // Transfer function for rendering overlays
         svkLookupTable*                 colorTransfer;
@@ -185,15 +192,19 @@ class svkOverlayView : public svkDataView
         void                            SetSelection( double* selectionArea, bool isWorldCords = 0 );
         void                            SetOverlayOpacity( double opacity );
         void                            SetOverlayThreshold( double threshold );
-        void                            SelectActors( int* tlcBrc );
+        void                            SetTlcBrc( int* tlcBrc );
         int*                            HighlightSelectionVoxels();
-        void                            GenerateClippingPlanes();
+        void                            GenerateClippingPlanes( );
         void                            SetupOverlay();
         void                            SetInterpolationType( int interpolationType );
         void                            SetLUT( svkLookupTable::svkLookupTableType type );
         void                            ResetWindowLevel();
-        int                             FindCenterImageSlice( int spectraSlice, int orientation );
-        int                             FindSpectraSlice( int imageSlice, int orientation );
+        int                             FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation );
+        int                             FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation orientation );
+        bool                            IsSatBandForSliceOn( svkDcmHeader::Orientation orientation );
+        bool                            IsSatBandOutlineForSliceOn( svkDcmHeader::Orientation orientation );
+        bool                            AreAllSatBandsOn( svkDcmHeader::Orientation orientation );
+        bool                            AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientation );
 
     private:
 
@@ -203,9 +214,9 @@ class svkOverlayView : public svkDataView
         InterpolationType               interpolationType; 
 
         //! Manipulates the actor that represents the sat bands
-        svkSatBandSet*                 satBands;
-        svkSatBandSet*                 satBandsPerp1;
-        svkSatBandSet*                 satBandsPerp2;
+        svkSatBandSet*                 satBandsAxial;
+        svkSatBandSet*                 satBandsCoronal;
+        svkSatBandSet*                 satBandsSagittal;
 
         void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
         

@@ -57,9 +57,9 @@ vtkStandardNewMacro(svkOverlayView);
 svkOverlayView::svkOverlayView()
 {
     this->imageViewer = svkImageViewer2::New();
-    this->satBands = svkSatBandSet::New();
-    this->satBandsPerp1 = svkSatBandSet::New();
-    this->satBandsPerp2 = svkSatBandSet::New();
+    this->satBandsAxial = svkSatBandSet::New();
+    this->satBandsCoronal = svkSatBandSet::New();
+    this->satBandsSagittal = svkSatBandSet::New();
     this->slice = 0;
     this->dataVector.push_back( NULL );
     this->dataVector.push_back( NULL );
@@ -70,7 +70,9 @@ svkOverlayView::svkOverlayView()
     this->tlcBrc[0] = -1;
     this->tlcBrc[1] = -1;
 
-    this->windowLeveler = NULL;
+    this->windowLevelerAxial = NULL;
+    this->windowLevelerCoronal = NULL;
+    this->windowLevelerSagittal = NULL;
     this->colorTransfer = NULL ;
     // Create a state vector for our images
 
@@ -91,37 +93,54 @@ svkOverlayView::svkOverlayView()
     this->SetProp( svkOverlayView::VOL_SELECTION, NULL );
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
-    this->SetProp( svkOverlayView::OVERLAY_IMAGE, overlayActor );
+    this->SetProp( svkOverlayView::AXIAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
     svkOpenGLOrientedImageActor* overlayActorBack = svkOpenGLOrientedImageActor::New();
-    this->SetProp( svkOverlayView::OVERLAY_IMAGE_BACK, overlayActorBack );
+    this->SetProp( svkOverlayView::AXIAL_OVERLAY_BACK, overlayActorBack );
+    overlayActorBack->Delete();
+
+    overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::CORONAL_OVERLAY_FRONT, overlayActor );
+    overlayActor->Delete();
+
+    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::CORONAL_OVERLAY_BACK, overlayActorBack );
+    overlayActorBack->Delete();
+
+    overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT, overlayActor );
+    overlayActor->Delete();
+
+    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
     vtkScalarBarActor* bar = vtkScalarBarActor::New();
     this->SetProp( svkOverlayView::COLOR_BAR, bar );
     bar->Delete();
 
-    this->SetProp( svkOverlayView::SAT_BANDS, this->satBands->GetSatBandsActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS );
+    this->SetProp( svkOverlayView::SAT_BANDS_AXIAL, this->satBandsAxial->GetSatBandsActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL );
 
-    this->SetProp( svkOverlayView::SAT_BANDS_OUTLINE, this->satBands->GetSatBandsOutlineActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS_OUTLINE );
+    this->SetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE, this->satBandsAxial->GetSatBandsOutlineActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE );
 
-    this->SetProp( svkOverlayView::SAT_BANDS_PERP1_OUTLINE, this->satBandsPerp1->GetSatBandsOutlineActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS_PERP1_OUTLINE );
+    this->SetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE, this->satBandsCoronal->GetSatBandsOutlineActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE );
 
-    this->SetProp( svkOverlayView::SAT_BANDS_PERP2_OUTLINE, this->satBandsPerp2->GetSatBandsOutlineActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS_PERP2_OUTLINE );
+    this->SetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE, this->satBandsSagittal->GetSatBandsOutlineActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE );
 
-    this->satBandsPerp1->SetOrientation( svkSatBandSet::YZ );
-    this->satBandsPerp2->SetOrientation( svkSatBandSet::XZ );
+    this->satBandsAxial->SetOrientation( svkDcmHeader::AXIAL );
+    this->satBandsCoronal->SetOrientation( svkDcmHeader::CORONAL );
+    this->satBandsSagittal->SetOrientation( svkDcmHeader::SAGITTAL );
 
-    this->SetProp( svkOverlayView::SAT_BANDS_PERP1, this->satBandsPerp1->GetSatBandsActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS_PERP1 );
+    this->SetProp( svkOverlayView::SAT_BANDS_CORONAL, this->satBandsCoronal->GetSatBandsActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL );
 
-    this->SetProp( svkOverlayView::SAT_BANDS_PERP2, this->satBandsPerp2->GetSatBandsActor() );
-    this->TurnPropOff( svkOverlayView::SAT_BANDS_PERP2 );
+    this->SetProp( svkOverlayView::SAT_BANDS_SAGITTAL, this->satBandsSagittal->GetSatBandsActor() );
+    this->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL );
 
     
     this->interpolationType = NEAREST; 
@@ -144,26 +163,36 @@ svkOverlayView::~svkOverlayView()
         this->rwi = NULL;
     }
 
-    if( this->windowLeveler != NULL ) {
-        this->windowLeveler->Delete();
-        this->windowLeveler = NULL;     
+    if( this->windowLevelerAxial != NULL ) {
+        this->windowLevelerAxial->Delete();
+        this->windowLevelerAxial = NULL;     
+    }
+
+    if( this->windowLevelerCoronal != NULL ) {
+        this->windowLevelerCoronal->Delete();
+        this->windowLevelerCoronal = NULL;     
+    }
+
+    if( this->windowLevelerSagittal != NULL ) {
+        this->windowLevelerSagittal->Delete();
+        this->windowLevelerSagittal = NULL;     
     }
 
     if( this->colorTransfer != NULL ) {
         this->colorTransfer->Delete();
         this->colorTransfer = NULL;     
     }
-    if( this->satBands != NULL ) {
-        this->satBands->Delete();
-        this->satBands = NULL;     
+    if( this->satBandsAxial != NULL ) {
+        this->satBandsAxial->Delete();
+        this->satBandsAxial = NULL;     
     }
-    if( this->satBandsPerp1 != NULL ) {
-        this->satBandsPerp1->Delete();
-        this->satBandsPerp1 = NULL;     
+    if( this->satBandsCoronal != NULL ) {
+        this->satBandsCoronal->Delete();
+        this->satBandsCoronal = NULL;     
     }
-    if( this->satBandsPerp2 != NULL ) {
-        this->satBandsPerp2->Delete();
-        this->satBandsPerp2 = NULL;     
+    if( this->satBandsSagittal != NULL ) {
+        this->satBandsSagittal->Delete();
+        this->satBandsSagittal = NULL;     
     }
 
     delete[] tlcBrc;
@@ -180,7 +209,10 @@ svkOverlayView::~svkOverlayView()
 void svkOverlayView::SetupMsInput( bool resetViewState ) 
 {
 
-    this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+    int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+    }
     vtkPolyDataMapper* entireGridMapper = vtkPolyDataMapper::New();
     entireGridMapper->ScalarVisibilityOff( );
     entireGridMapper->InterpolateScalarsBeforeMappingOff();
@@ -222,15 +254,15 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::PLOT_GRID ) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_OUTLINE) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_PERP1) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_PERP1_OUTLINE) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_PERP2) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_PERP2_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) );
 
     this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-    
+   
     this->SetProp( svkOverlayView::PLOT_GRID, this->GetProp( svkOverlayView::PLOT_GRID ) );
     string acquisitionType = dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     if( acquisitionType != "SINGLE VOXEL" ) {
@@ -246,16 +278,18 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
         this->HighlightSelectionVoxels();
     }
 
-    this->satBands->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
-    this->satBandsPerp1->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
-    this->satBandsPerp2->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
+    this->satBandsAxial->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
+    this->satBandsCoronal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
+    this->satBandsSagittal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
     if( this->dataVector[MRI] != NULL ) {
-        int* extent = this->dataVector[MRI]->GetExtent();
-        this->SetSlice((extent[3]-extent[2])/2,2);
-        this->SetSlice((extent[1]-extent[0])/2,1);
+        this->SetSlice(this->imageViewer->GetSlice(svkDcmHeader::AXIAL),    svkDcmHeader::AXIAL);
+        this->SetSlice(this->imageViewer->GetSlice(svkDcmHeader::SAGITTAL), svkDcmHeader::SAGITTAL);
+        this->SetSlice(this->imageViewer->GetSlice(svkDcmHeader::CORONAL),  svkDcmHeader::CORONAL);
     }
 
-    this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+    }
 
 }
 
@@ -274,7 +308,10 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     double cameraViewUp[3];
     double cameraFocus[3];
     
-    this->GetRenderer(svkOverlayView::PRIMARY)->DrawOff();
+    int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer(svkOverlayView::PRIMARY)->DrawOff();
+    }
 
     // Do we want to reset the camera?
     if( !resetViewState ) {
@@ -309,8 +346,8 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     if( dataVector[MRS] == NULL ) {
         this->SetSlice( (extent[5]-extent[4])/2 );
     } 
-    this->SetSlice((extent[1]-extent[0])/2,1);
-    this->SetSlice((extent[3]-extent[2])/2,2);
+    //this->SetSlice((extent[2]-extent[3])/2,svkDcmHeader::CORONAL);
+    //this->SetSlice((extent[1]-extent[0])/2,svkDcmHeader::SAGITTAL);
 
     // And here we return the camera to its original state
     if( !resetViewState ) {
@@ -321,7 +358,9 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     
     
     rwi->Render();
-    this->GetRenderer(svkOverlayView::PRIMARY)->DrawOn();
+    if( toggleDraw ) {
+        this->GetRenderer(svkOverlayView::PRIMARY)->DrawOn();
+    }
 
     // We need to reset the camera once Draw is on or the pipeline will not run
     imageViewer->ResetCamera();
@@ -383,22 +422,49 @@ void svkOverlayView::SetSlice(int slice)
     
             if( tlcBrc[0] >= 0 && tlcBrc[1] >= 0 ) {
                 int* extent = dataVector[MRS]->GetExtent();
-                tlcBrc[0] += (slice-this->slice)*extent[1]*extent[3];
-                tlcBrc[1] += (slice-this->slice)*extent[1]*extent[3];
+                svkDcmHeader::Orientation dataOrientation = dataVector[MRS]->GetDcmHeader()->GetOrientationType();
+                int tlcIndex[3];
+                int brcIndex[3];
+                this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
+                this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
+                int lastSlice  = dataVector[MRS]->GetLastSlice( this->orientation );
+                int firstSlice = dataVector[MRS]->GetFirstSlice( this->orientation );
+                slice = (slice > lastSlice) ? lastSlice:slice;
+                slice = (slice < firstSlice) ? firstSlice:slice;
+                tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
+                brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
+                tlcBrc[0] = this->dataVector[MRS]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
+                tlcBrc[1] = this->dataVector[MRS]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
             }
             this->slice = slice;
             GenerateClippingPlanes();
             // If it is make it visible, otherwise hide it
-            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice ) && isPropOn[VOL_SELECTION] ) {
+            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] ) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
             } else {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
             }
-            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+            int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+            if( toggleDraw ) {
+                this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+            }
             this->SetCenterImageSlice( );
             this->SetSliceOverlay();
-            this->satBands->SetClipSlice( slice );
-            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+            switch ( this->orientation ) {
+                case svkDcmHeader::AXIAL:
+                    this->satBandsAxial->SetClipSlice( this->slice );
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->satBandsCoronal->SetClipSlice( this->slice );
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->satBandsSagittal->SetClipSlice( this->slice );
+                    break;
+            }
+                
+            if( toggleDraw ) {
+                this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+            }
             this->Refresh();
         } else {
             this->imageViewer->SetSlice( slice );    
@@ -412,117 +478,56 @@ void svkOverlayView::SetSlice(int slice)
 /*
  *  Sets the slices for the images orthogonal to the primary.
  */
-void svkOverlayView::SetSlice(int slice, int imageNum)
+void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
 {
-    this->imageViewer->SetSlice( slice, imageNum );    
-    if( imageNum == 1 ) {
-        this->satBandsPerp1->SetClipSlice( this->FindSpectraSlice( slice, imageNum) );
-    } else if ( imageNum == 2 ) {
-        this->satBandsPerp2->SetClipSlice( this->FindSpectraSlice( slice, imageNum) );
+    this->imageViewer->SetSlice( slice, orientation );    
+    this->SetSliceOverlay();
+    if( dataVector[MRS] != NULL ) {
+        switch ( orientation ) {
+            case svkDcmHeader::AXIAL:
+                this->satBandsAxial->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
+                break;
+            case svkDcmHeader::CORONAL:
+                this->satBandsCoronal->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->satBandsSagittal->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
+                break;
+        }
     }
+
 }
 
 
 /*
  *  Finds the image slice that most closely corresponds to the input spectra slice.
  */
-int svkOverlayView::FindCenterImageSlice( int spectraSlice, int orientation ) 
+int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation ) 
 {
     int imageSlice;
-    vtkImageData* tmpData;
-    double* anatOrigin;
-    double* anatSpacing;
-    double* specOrigin;
-    double* specSpacing;
-    double sliceVoxelCenter;
-    double dcos[3][3];
-    int* imageExtent = dataVector[MRI]->GetExtent();
-    int wIndex = 2-orientation;
+    float spectraSliceCenter[3];
+    this->dataVector[MRS]->GetSliceOrigin( spectraSlice, spectraSliceCenter, orientation );
+    float normal[3];
+    this->dataVector[MRS]->GetSliceNormal( normal, orientation );
+    spectraSliceCenter[0] += normal[0]*this->dataVector[MRS]->GetSpacing()[0]*0.5;
+    spectraSliceCenter[1] += normal[1]*this->dataVector[MRS]->GetSpacing()[1]*0.5;
+    spectraSliceCenter[2] += normal[2]*this->dataVector[MRS]->GetSpacing()[2]*0.5;
 
-    // If the spectral data has been set, find the center of the slice, 
-    // and then the closest image slice to it
-    if( dataVector[MRS] != NULL ) {
-        tmpData = dataVector[MRI];
-        anatOrigin = tmpData->GetOrigin();
-        anatSpacing = tmpData->GetSpacing() ;
-        tmpData = dataVector[MRS];
-        specOrigin = tmpData->GetOrigin();
-        specSpacing= tmpData->GetSpacing();
-        dataVector[MRS]->GetDcos( dcos );
-
-        double wVecSpec[3];
-        wVecSpec[0] = dcos[wIndex][0];  
-        wVecSpec[1] = dcos[wIndex][1];  
-        wVecSpec[2] = dcos[wIndex][2];  
-
-        dataVector[MRI]->GetDcos( dcos );
-
-        double wVecImage[3];
-        wVecImage[0] = dcos[wIndex][0];  
-        wVecImage[1] = dcos[wIndex][1];  
-        wVecImage[2] = dcos[wIndex][2];  
-        // We project the origin of the spectroscopic data onto the wVec (slicing vector)
-        double spectroCenter = vtkMath::Dot( specOrigin, wVecSpec ) + specSpacing[wIndex]*(spectraSlice+0.5); 
-        double imageCenter = vtkMath::Dot( wVecImage, wVecSpec ) * spectroCenter; 
-        double idealCenter = ( imageCenter-vtkMath::Dot( anatOrigin, wVecImage) )/anatSpacing[wIndex];
-        imageSlice =(int) floor( idealCenter + 0.5); 
-    } else {
-        imageSlice = spectraSlice;
-    }
+    imageSlice = this->dataVector[MRI]->GetClosestSlice( spectraSliceCenter, orientation );
     return imageSlice;
-
 }
 
 
 /*
- *  Finds the image slice that most closely corresponds to the input spectra slice.
+ *  Finds the spectra slice that most closely corresponds to the input image slice.
  */
-int svkOverlayView::FindSpectraSlice( int imageSlice, int orientation ) 
+int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation orientation ) 
 {
     int spectraSlice;
-    vtkImageData* tmpData;
-    double* imageOrigin;
-    double* imageSpacing;
-    double* specOrigin;
-    double* specSpacing;
-    double sliceVoxelCenter;
-    double dcos[3][3];
-    int* imageExtent = dataVector[MRI]->GetExtent();
-    int wIndex = orientation-1;
-
-    // If the spectral data has been set, find the center of the slice, 
-    // and then the closest image slice to it
-    if( dataVector[MRS] != NULL ) {
-        tmpData = dataVector[MRI];
-        imageOrigin = tmpData->GetOrigin();
-        imageSpacing = tmpData->GetSpacing() ;
-        tmpData = dataVector[MRS];
-        specOrigin = tmpData->GetOrigin();
-        specSpacing= tmpData->GetSpacing();
-        dataVector[MRS]->GetDcos( dcos );
-
-        double wVecSpec[3];
-        wVecSpec[0] = dcos[wIndex][0];  
-        wVecSpec[1] = dcos[wIndex][1];  
-        wVecSpec[2] = dcos[wIndex][2];  
-
-        dataVector[MRI]->GetDcos( dcos );
-
-        double wVecImage[3];
-        wVecImage[0] = dcos[wIndex][0];  
-        wVecImage[1] = dcos[wIndex][1];  
-        wVecImage[2] = dcos[wIndex][2];  
-        // We project the origin of the spectroscopic data onto the wVec (slicing vector)
-        double imageCenter = vtkMath::Dot( imageOrigin, wVecImage )  + imageSpacing[wIndex] * imageSlice; 
-        double spectroCenter = vtkMath::Dot( wVecSpec, wVecImage ) * imageCenter; 
-        double idealCenter = ( spectroCenter-vtkMath::Dot( specOrigin, wVecSpec) )/specSpacing[wIndex] -0.5;
-        spectraSlice =(int) floor( idealCenter + 0.5); 
-    } else {
-        spectraSlice = imageSlice;
-    }
-    
+    float imageSliceCenter[3];
+    this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
+    spectraSlice = this->dataVector[MRS]->GetClosestSlice( imageSliceCenter, orientation );
     return spectraSlice;
-
 }
 
 
@@ -534,24 +539,19 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, int orientation )
  */
 void svkOverlayView::SetCenterImageSlice()
 {
-    int imageSlice = FindCenterImageSlice(this->slice, 0);
+    int imageSlice = FindCenterImageSlice(this->slice, this->orientation);
     int* imageExtent = dataVector[MRI]->GetExtent();
-
-    // Case if the the image is outside of the extent
-    if( imageSlice >= imageExtent[4] && imageSlice <= imageExtent[5] ) {
-        if( this->imageViewer->GetImageActor()->GetVisibility() == 0 ) {
-            this->imageViewer->GetImageActor()->SetVisibility(1);
-        }
-        this->imageViewer->SetSlice( imageSlice );
-    } else if( imageSlice > imageExtent[5] ) {
-        this->imageViewer->SetSlice( imageExtent[5] );
-        this->imageViewer->GetImageActor()->SetVisibility(0);
-        this->imageViewer->GetImageActor()->Modified();
+    if ( imageSlice >  this->dataVector[MRI]->GetLastSlice( this->orientation )) {
+        this->imageViewer->GetImageActor( this->orientation )->SetVisibility(0);
+        this->imageViewer->SetSlice( this->dataVector[MRI]->GetLastSlice(), this->orientation );
+    } else if ( imageSlice <  this->dataVector[MRI]->GetFirstSlice( this->orientation )) {
+        this->imageViewer->GetImageActor( this->orientation )->SetVisibility(0);
+        this->imageViewer->SetSlice( this->dataVector[MRI]->GetFirstSlice(), this->orientation );
     } else {
-        this->imageViewer->SetSlice( imageExtent[4] );
-        this->imageViewer->GetImageActor()->SetVisibility(0);
-        this->imageViewer->GetImageActor()->Modified();
+        this->imageViewer->GetImageActor( this->orientation )->SetVisibility(1);
+        this->imageViewer->SetSlice( imageSlice, this->orientation );
     }
+    // Case if the the image is outside of the extent
 }
 
 
@@ -621,88 +621,40 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
             worldEnd[1] = selectionArea[3]; 
             worldEnd[2] = selectionArea[5]; 
         }
-        double* origin  = dataVector[MRS]->GetOrigin();
-        double* spacing = dataVector[MRS]->GetSpacing();
-        double dcos[3][3];
-        dataVector[MRS]->GetDcos( dcos );
-        double xVec[3];
-        xVec[0] = dcos[0][0];
-        xVec[1] = dcos[1][0];
-        xVec[2] = dcos[2][0];
-        double yVec[3];
-        yVec[0] = dcos[0][1];
-        yVec[1] = dcos[1][1];
-        yVec[2] = dcos[2][1];
-        double uVec[3];
-        uVec[0] = dcos[0][0];
-        uVec[1] = dcos[0][1];
-        uVec[2] = dcos[0][2];
-        double vVec[3];
-        vVec[0] = dcos[1][0];
-        vVec[1] = dcos[1][1];
-        vVec[2] = dcos[1][2];
-        int* extent = dataVector[MRS]->GetExtent();
-        int indexRangeX[2];
-        int indexRangeY[2];
-        double tmp;
-        // Make Sure worldStart is less than worldEnd
-        double originProjection[2];
-        originProjection[0] = vtkMath::Dot( origin, uVec );
-        originProjection[1] = vtkMath::Dot( origin, vVec );
-        double worldStartProjection[2];
-        worldStartProjection[0] = vtkMath::Dot( worldStart, uVec );
-        worldStartProjection[1] = vtkMath::Dot( worldStart, vVec );
-        double worldEndProjection[2];
-        worldEndProjection[0] = vtkMath::Dot( worldEnd, uVec );
-        worldEndProjection[1] = vtkMath::Dot( worldEnd, vVec );
-        if( worldStartProjection[0] > worldEndProjection[0] ) {
-            tmp = worldStartProjection[0]; 
-            worldStartProjection[0] = worldEndProjection[0]; 
-            worldEndProjection[0] = tmp; 
-        }
-        if( worldStartProjection[1] > worldEndProjection[1] ) {
-            tmp = worldStartProjection[1]; 
-            worldStartProjection[1] = worldEndProjection[1]; 
-            worldEndProjection[1] = tmp; 
-        }
-
-        indexRangeX[0] = (int)( floor( ((worldStartProjection[0] - originProjection[0])/spacing[0] ) ));
-        indexRangeX[1] = (int)( ceil( ((worldEndProjection[0] - originProjection[0] )/spacing[0] ) ));
-        if( indexRangeX[0] < extent[0] ) {
-            indexRangeX[0] = extent[0];
-        }
-        if( indexRangeX[0] >= extent[1] ) {
-            indexRangeX[0] = -1;
-        }
-        if( indexRangeX[1] >= extent[1] ) {
-            indexRangeX[1] = extent[1];
-        }
-        if( indexRangeX[1] <= extent[0] ) {
-            indexRangeX[1] = -1;
-        }
-
-        indexRangeY[0] = (int)( floor( ((worldStartProjection[1] - originProjection[1])/spacing[1] ) ));
-        indexRangeY[1] = (int)( ceil( ((worldEndProjection[1] - originProjection[1] )/spacing[1] ) ));
-
-        if( indexRangeY[0] < extent[2] ) {
-            indexRangeY[0] = extent[2];
-        }
-        if( indexRangeY[0] >= extent[3] ) {
-            indexRangeY[0] = -1;
-        }
-        if( indexRangeY[1] >= extent[3] ) {
-            indexRangeY[1] = extent[3];
-        }
-        if( indexRangeY[1] <= extent[2] ) {
-            indexRangeY[1] = -1;
-        }
+        int tlcIndex[3];
+        int brcIndex[3];
+        this->dataVector[MRS]->GetIndexFromPosition( worldStart, tlcIndex );
+        this->dataVector[MRS]->GetIndexFromPosition( worldEnd, brcIndex );
+        int* extent = this->dataVector[MRS]->GetExtent();
         
-        if( indexRangeX[0] >= 0 && indexRangeX[1] >= 0 && indexRangeY[0] >= 0 && indexRangeY[1] >= 0 ) {
-            tlcBrc[0] = slice*extent[3] * extent[1] + indexRangeY[0]*extent[1] + indexRangeX[0]; 
-            tlcBrc[1] = slice*extent[3] * extent[1] + (indexRangeY[1]-1)*extent[1] + (indexRangeX[1]-1); 
-            GenerateClippingPlanes(); 
-        } 
+        int tmp;
+        for( int i = 0; i < 3; i++ ) {
+            if( tlcIndex[i] > brcIndex[i] ) {
+                tmp = brcIndex[i]; 
+                brcIndex[i] = tlcIndex[i];
+                tlcIndex[i] = tmp;
+            }
+        }
 
+        // This checks for out of bounds, if out of bounds use the end of the extent
+        tlcIndex[2] = (tlcIndex[2] >= extent[5]) ? extent[5]-1 : tlcIndex[2];
+        tlcIndex[1] = (tlcIndex[1] >= extent[3]) ? extent[3]-1 : tlcIndex[1];
+        tlcIndex[0] = (tlcIndex[0] >= extent[1]) ? extent[1]-1 : tlcIndex[0];
+        brcIndex[2] = (brcIndex[2] >= extent[5]) ? extent[5]-1 : brcIndex[2];
+        brcIndex[1] = (brcIndex[1] >= extent[3]) ? extent[3]-1 : brcIndex[1];
+        brcIndex[0] = (brcIndex[0] >= extent[1]) ? extent[1]-1 : brcIndex[0];
+        tlcIndex[2] = (tlcIndex[2] < extent[4]) ? extent[4] : tlcIndex[2];
+        tlcIndex[1] = (tlcIndex[1] < extent[2]) ? extent[2] : tlcIndex[1];
+        tlcIndex[0] = (tlcIndex[0] < extent[0]) ? extent[0] : tlcIndex[0];
+        brcIndex[2] = (brcIndex[2] < extent[4]) ? extent[4] : brcIndex[2];
+        brcIndex[1] = (brcIndex[1] < extent[2]) ? extent[2] : brcIndex[1];
+        brcIndex[0] = (brcIndex[0] < extent[0]) ? extent[0] : brcIndex[0];
+
+        brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
+        tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
+        tlcBrc[0] = tlcIndex[2]*extent[3] * extent[1] + tlcIndex[1]*extent[1] + tlcIndex[0]; 
+        tlcBrc[1] = brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]; 
+        GenerateClippingPlanes(); 
 
     } else if( dataVector[MRS] != NULL ) {
 
@@ -717,7 +669,7 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
  *
  *  \param tlcBrc the cell id's of the desired top left, bottom right corners
  */
-void svkOverlayView::SelectActors( int* tlcBrc ) 
+void svkOverlayView::SetTlcBrc( int* tlcBrc ) 
 {
     if( tlcBrc != NULL && dataVector[MRS] != NULL) {
         this->tlcBrc[0] = tlcBrc[0];
@@ -738,84 +690,60 @@ int* svkOverlayView::HighlightSelectionVoxels()
         double tolerance = 0.99;
         double* spacing = dataVector[MRS]->GetSpacing();
         double* corner;
+        double* minCorner;
+        double* maxCorner;
         double projectedCorner[6];
         double thresholdBounds[6]; 
 
-        double dcos[3][3];
-        dataVector[MRS]->GetDcos( dcos );
-        double xVec[3];
-        xVec[0] = dcos[0][0];
-        xVec[1] = dcos[1][0];
-        xVec[2] = dcos[2][0];
-        double yVec[3];
-        yVec[0] = dcos[0][1];
-        yVec[1] = dcos[1][1];
-        yVec[2] = dcos[2][1];
-        double zVec[3];
-        zVec[0] = dcos[0][2];
-        zVec[1] = dcos[1][2];
-        zVec[2] = dcos[2][2];
-        double uVec[3];
-        uVec[0] = dcos[0][0];
-        uVec[1] = dcos[0][1];
-        uVec[2] = dcos[0][2];
-        double vVec[3];
-        vVec[0] = dcos[1][0];
-        vVec[1] = dcos[1][1];
-        vVec[2] = dcos[1][2];
-        double wVec[3];
-        wVec[0] = dcos[2][0];
-        wVec[1] = dcos[2][1];
-        wVec[2] = dcos[2][2];
+        double LRNormal[3];
+        dataVector[MRS]->GetDataBasis(LRNormal, svkImageData::LR );
+        double PANormal[3];
+        dataVector[MRS]->GetDataBasis(PANormal, svkImageData::PA );
+        double SINormal[3];
+        dataVector[MRS]->GetDataBasis(SINormal, svkImageData::SI );
+        double rowNormal[3];
+        dataVector[MRS]->GetDataBasis(rowNormal, svkImageData::ROW );
+        double columnNormal[3];
+        dataVector[MRS]->GetDataBasis(columnNormal, svkImageData::COLUMN );
+        double sliceNormal[3];
+        dataVector[MRS]->GetDataBasis(sliceNormal, svkImageData::SLICE );
         vtkPoints* cellBoxPoints = vtkPointSet::SafeDownCast( vtkActor::SafeDownCast( 
                                    this->GetProp( svkOverlayView::VOL_SELECTION )
                                    )->GetMapper()->GetInput())->GetPoints();
+        double* selectionBounds = vtkActor::SafeDownCast( 
+                                   this->GetProp( svkOverlayView::VOL_SELECTION )
+                                   )->GetBounds();
 
-        projectedCorner[0] = VTK_DOUBLE_MAX; 
-        projectedCorner[1] = -VTK_DOUBLE_MAX; 
-        projectedCorner[2] = VTK_DOUBLE_MAX;
-        projectedCorner[3] = -VTK_DOUBLE_MAX;
-        projectedCorner[4] = VTK_DOUBLE_MAX;
-        projectedCorner[5] = -VTK_DOUBLE_MAX;
         int minCornerIndex;
         int maxCornerIndex;
-
         for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
             corner = cellBoxPoints->GetPoint(i); 
             if( i == 0 ) {
-                projectedCorner[4] = vtkMath::Dot( corner, wVec);
+                minCorner = corner;
+                maxCorner = corner;
                 minCornerIndex = i;
                 maxCornerIndex = i;
             }
-            if( vtkMath::Dot( corner, uVec ) <= projectedCorner[0]   && 
-                  vtkMath::Dot( corner, vVec ) <= projectedCorner[2] && 
-                  (int)(vtkMath::Dot( corner, wVec )*10) == (int)(projectedCorner[4]*10) ) {
-
-                projectedCorner[0] = vtkMath::Dot( corner, uVec);
-                projectedCorner[2] = vtkMath::Dot( corner, vVec);
+            if( corner[0] <= minCorner[0]  &&  corner[1] <= minCorner[1] && corner[2] <= minCorner[2] ) {
                 minCornerIndex = i;
-            } 
-            if( vtkMath::Dot( corner, uVec ) >= projectedCorner[1] && 
-                  vtkMath::Dot( corner, vVec ) >= projectedCorner[3] && 
-                  (int)(vtkMath::Dot( corner, wVec )*10) == (int)(projectedCorner[4]*10) ) {
-
-                projectedCorner[1] = vtkMath::Dot( corner, uVec);
-                projectedCorner[3] = vtkMath::Dot( corner, vVec);
+                minCorner = corner;
+            } else if( corner[0] >= maxCorner[0]   &&  corner[1] >= maxCorner[1] && corner[2] >= maxCorner[2] ) {
                 maxCornerIndex = i;
+                maxCorner = corner;
             } 
         }
         thresholdBounds[0] =(cellBoxPoints->GetPoint(minCornerIndex))[0] 
-                                             + vtkMath::Dot(spacing, xVec)*tolerance;
+                                             + vtkMath::Dot(spacing, LRNormal)*tolerance;
         thresholdBounds[1] =(cellBoxPoints->GetPoint(maxCornerIndex))[0] 
-                                             - vtkMath::Dot(spacing, xVec)*tolerance;
+                                             - vtkMath::Dot(spacing, LRNormal)*tolerance;
         thresholdBounds[2] =(cellBoxPoints->GetPoint(minCornerIndex))[1] 
-                                             + vtkMath::Dot(spacing, yVec)*tolerance;
+                                             + vtkMath::Dot(spacing, PANormal)*tolerance;
         thresholdBounds[3] =(cellBoxPoints->GetPoint(maxCornerIndex))[1] 
-                                             - vtkMath::Dot(spacing, yVec)*tolerance;
+                                             - vtkMath::Dot(spacing, PANormal)*tolerance;
         thresholdBounds[4] =(cellBoxPoints->GetPoint(minCornerIndex))[2] 
-                                             + vtkMath::Dot(spacing, zVec)*tolerance;
+                                             + vtkMath::Dot(spacing, SINormal)*tolerance;
         thresholdBounds[5] =(cellBoxPoints->GetPoint(maxCornerIndex))[2] 
-                                             - vtkMath::Dot(spacing, zVec)*tolerance;
+                                             - vtkMath::Dot(spacing, SINormal)*tolerance;
 
         SetSelection( thresholdBounds, 1 );
 
@@ -833,10 +761,12 @@ int* svkOverlayView::HighlightSelectionVoxels()
  */ 
 void svkOverlayView::SetOverlayOpacity( double opacity ) 
 {
-    if( this->GetProp( svkOverlayView::OVERLAY_IMAGE ) != NULL ) {
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE ))->SetOpacity( opacity );    
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ))->SetOpacity( opacity );    
-    } 
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->SetOpacity(opacity);  
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->SetOpacity(opacity);   
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
 }
 
 
@@ -847,9 +777,9 @@ void svkOverlayView::SetOverlayOpacity( double opacity )
  */ 
 void svkOverlayView::SetOverlayThreshold( double threshold ) 
 {
-    if( this->GetProp( svkOverlayView::OVERLAY_IMAGE ) != NULL ) {
+    if( this->colorTransfer != NULL ) {
         this->colorTransfer->SetAlphaThreshold(threshold); 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ))->Modified( );    
+        this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->Modified();
     } 
 }
 
@@ -859,116 +789,13 @@ void svkOverlayView::SetOverlayThreshold( double threshold )
  * set are enforced, after the data is scaled, it is clipped so that data
  * outside the plot range is simply not shown.
  */
-void svkOverlayView::GenerateClippingPlanes()
+void svkOverlayView::GenerateClippingPlanes( )
 {
     // We need to leave a little room around the edges, so the border does not get cut off
     if( dataVector[MRS] != NULL ) {
-        vtkPlane* clipperPlane0 = vtkPlane::New();
-        vtkPlane* clipperPlane1 = vtkPlane::New();
-        vtkPlane* clipperPlane2 = vtkPlane::New();
-        vtkPlane* clipperPlane3 = vtkPlane::New();
-        vtkPlane* clipperPlane4 = vtkPlane::New();
-        vtkPlane* clipperPlane5 = vtkPlane::New();
-
-        double dcos[3][3];
-        dataVector[MRS]->GetDcos( dcos );
-        double* spacing = dataVector[MRS]->GetSpacing();
-        double* origin = dataVector[MRS]->GetOrigin();
-        int* extent = dataVector[MRS]->GetExtent();
-        int uIndexRange[2];
-        int vIndexRange[2];
-        if( tlcBrc [0] >= 0 && tlcBrc[1] >= 0 ) {
-            uIndexRange[0] = (tlcBrc[0] - slice*extent[1]*extent[3] ) % extent[1];
-            uIndexRange[1] = (tlcBrc[1] - slice*extent[1]*extent[3] ) % extent[1];
-            vIndexRange[0] = (tlcBrc[0] - slice*extent[1]*extent[3] ) / extent[1];
-            vIndexRange[1] = (tlcBrc[1] - slice*extent[1]*extent[3] ) / extent[1];
-        } else {
-            uIndexRange[0] = extent[0];
-            uIndexRange[1] = extent[1];
-            vIndexRange[0] = extent[2];
-            vIndexRange[1] = extent[3];
-        }
-        double uVec[3];
-        uVec[0] = dcos[0][0];  
-        uVec[1] = dcos[0][1];  
-        uVec[2] = dcos[0][2];  
-        double vVec[3];
-        vVec[0] = dcos[1][0];  
-        vVec[1] = dcos[1][1];  
-        vVec[2] = dcos[1][2];  
-        double wVec[3];
-        wVec[0] = dcos[2][0];  
-        wVec[1] = dcos[2][1];  
-        wVec[2] = dcos[2][2];  
-        double xVec[3];
-        xVec[0] = dcos[0][0];  
-        xVec[1] = dcos[1][0];  
-        xVec[2] = dcos[2][0];  
-        double yVec[3];
-        yVec[0] = dcos[0][1];  
-        yVec[1] = dcos[1][1];  
-        yVec[2] = dcos[2][1];  
-        double zVec[3];
-        zVec[0] = dcos[0][2];  
-        zVec[1] = dcos[1][2];  
-        zVec[2] = dcos[2][2];  
-        double deltaX = vtkMath::Dot( spacing, xVec );
-        double deltaY = vtkMath::Dot( spacing, yVec );
-        double deltaZ = vtkMath::Dot( spacing, zVec );
-
-        clipperPlane0->SetNormal( uVec[0], uVec[1], uVec[2] );
-        clipperPlane0->SetOrigin( origin[0] + deltaX*(uIndexRange[0] - CLIP_TOLERANCE),
-                                  origin[1] + deltaY*(uIndexRange[0] - CLIP_TOLERANCE), 
-                                  origin[2] + deltaZ*(uIndexRange[0] - CLIP_TOLERANCE) );
-
-        clipperPlane1->SetNormal( -uVec[0], -uVec[1], -uVec[2] );
-        clipperPlane1->SetOrigin( origin[0] + deltaX * (uIndexRange[1] + 1 + CLIP_TOLERANCE),
-                                  origin[1] + deltaY * (uIndexRange[1] + 1 + CLIP_TOLERANCE), 
-                                  origin[2] + deltaZ * (uIndexRange[1] + 1 + CLIP_TOLERANCE) );
-
-
-        clipperPlane2->SetNormal( vVec[0], vVec[1], vVec[2] );
-        clipperPlane2->SetOrigin( origin[0] + deltaX*(vIndexRange[0] - CLIP_TOLERANCE),
-                                  origin[1] + deltaY*(vIndexRange[0] - CLIP_TOLERANCE), 
-                                  origin[2] + deltaZ*(vIndexRange[0] - CLIP_TOLERANCE) );
-
-        clipperPlane3->SetNormal( -vVec[0], -vVec[1], -vVec[2] );
-        clipperPlane3->SetOrigin( origin[0] + deltaX*(vIndexRange[1] + 1 + CLIP_TOLERANCE),
-                                  origin[1] + deltaY*(vIndexRange[1] + 1 + CLIP_TOLERANCE), 
-                                  origin[2] + deltaZ*(vIndexRange[1] + 1 + CLIP_TOLERANCE) );
-
-        clipperPlane4->SetNormal( wVec[0], wVec[1], wVec[2] );
-        clipperPlane4->SetOrigin( origin[0] + deltaX * ( slice - CLIP_TOLERANCE), 
-                                  origin[1] + deltaY * ( slice - CLIP_TOLERANCE), 
-                                  origin[2] + deltaZ * ( slice - CLIP_TOLERANCE) );
-
-        clipperPlane5->SetNormal( -wVec[0], -wVec[1], -wVec[2] );
-        clipperPlane5->SetOrigin( origin[0] + deltaX * ( slice + 1 + CLIP_TOLERANCE ), 
-                                  origin[1] + deltaY * ( slice + 1 + CLIP_TOLERANCE ), 
-                                  origin[2] + deltaZ * ( slice + 1 + CLIP_TOLERANCE ) );
-
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->RemoveAllClippingPlanes();
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane0 );
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane1 );
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane2 );
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane3 );
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane4 );
-        vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )
-                                 )->GetMapper()->AddClippingPlane( clipperPlane5 );
-        clipperPlane0->Delete();
-        clipperPlane1->Delete();
-        clipperPlane2->Delete();
-        clipperPlane3->Delete();
-        clipperPlane4->Delete();
-        clipperPlane5->Delete();
-    } else {
-        cerr<<"INPUT HAS NOT BEEN SET!!"<<endl;
+        this->ClipMapperToTlcBrc( dataVector[MRS], 
+                                 vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID ))->GetMapper(), 
+                                 tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
     }
 }
 
@@ -978,79 +805,199 @@ void svkOverlayView::GenerateClippingPlanes()
  */
 void svkOverlayView::SetSliceOverlay() {
 
-    if( this->GetRenderer( svkOverlayView::PRIMARY )->HasViewProp(this->GetProp( svkOverlayView::OVERLAY_IMAGE ))) {
-        int overlaySlice;
+    if( this->dataVector[OVERLAY] != NULL && dataVector[MRI] != NULL) {
+        int overlaySliceAxial;
+        int overlaySliceCoronal;
+        int overlaySliceSagittal;
+        double axialDelta;
+        double coronalDelta;
+        double sagittalDelta;
+
         vtkImageData* tmpData;
         double* overlayOrigin;
         double* overlaySpacing;
-        double* specOrigin;
-        double* specSpacing;
         double* imageOrigin;
         double* imageSpacing;
         int imageSlice;
         double sliceVoxelCenter;
-        double dcos[3][3];
         int* overlayExtent = dataVector[OVERLAY]->GetExtent();
+        vtkTransform* transformFrontAxial = vtkTransform::New();
+        vtkTransform* transformBackAxial = vtkTransform::New();
+        vtkTransform* transformFrontCoronal = vtkTransform::New();
+        vtkTransform* transformBackCoronal = vtkTransform::New();
+        vtkTransform* transformFrontSagittal = vtkTransform::New();
+        vtkTransform* transformBackSagittal = vtkTransform::New();
 
         // If the spectral data has been set, find the center of the slice, 
         // and then the closest image slice to it
         tmpData = dataVector[OVERLAY];
         overlayOrigin = tmpData->GetOrigin();
         overlaySpacing = tmpData->GetSpacing() ;
-        tmpData = dataVector[MRS];
-        specOrigin = tmpData->GetOrigin();
-        specSpacing= tmpData->GetSpacing();
         tmpData = dataVector[MRI];
         imageOrigin = tmpData->GetOrigin();
         imageSpacing= tmpData->GetSpacing();
         imageSlice = imageViewer->GetSlice();
-        dataVector[MRS]->GetDcos( dcos );
+        int* imageExtent = this->dataVector[MRI]->GetExtent();
 
-        double wVec[3];
-        wVec[0] = dcos[2][0];  
-        wVec[1] = dcos[2][1];  
-        wVec[2] = dcos[2][2];  
-        overlaySlice =(int) floor( (  vtkMath::Dot( specOrigin, wVec ) - 
-                                 vtkMath::Dot( overlayOrigin, wVec ) + 
-                                 specSpacing[2] * (slice + 0.5) )
-                                /overlaySpacing[2] +0.5); 
+        float normal[3];
+        this->dataVector[MRI]->GetSliceNormal( normal, svkDcmHeader::AXIAL );
+        double axialNormal[3] = { normal[0], normal[1], normal[2] };
+        this->dataVector[MRI]->GetSliceNormal( normal, svkDcmHeader::CORONAL );
+        double coronalNormal[3] = { normal[0], normal[1], normal[2] };
+        this->dataVector[MRI]->GetSliceNormal( normal, svkDcmHeader::SAGITTAL );
+        double sagittalNormal[3] = { normal[0], normal[1], normal[2] };
 
-        double distance;
-        double distanceBack;
+        int axialRange[2] = {this->dataVector[OVERLAY]->GetFirstSlice( svkDcmHeader::AXIAL ),
+                             this->dataVector[OVERLAY]->GetLastSlice( svkDcmHeader::AXIAL ) };
+        int coronalRange[2] = {this->dataVector[OVERLAY]->GetFirstSlice( svkDcmHeader::CORONAL ),
+                             this->dataVector[OVERLAY]->GetLastSlice( svkDcmHeader::CORONAL ) };
+        int sagittalRange[2] = {this->dataVector[OVERLAY]->GetFirstSlice( svkDcmHeader::SAGITTAL ),
+                             this->dataVector[OVERLAY]->GetLastSlice( svkDcmHeader::SAGITTAL ) };
+        if(    imageExtent[0] == overlayExtent[0] && imageExtent[1] == overlayExtent[1]  
+            && imageExtent[2] == overlayExtent[2] && imageExtent[3] == overlayExtent[3]  
+            && imageExtent[4] == overlayExtent[4] && imageExtent[5] == overlayExtent[5] ) {
+            overlaySliceAxial =   imageViewer->axialSlice; 
+            overlaySliceCoronal = imageViewer->coronalSlice; 
+            overlaySliceSagittal =imageViewer->sagittalSlice; 
+              
+        } else {
+            overlaySliceAxial =   this->FindSpectraSlice( imageViewer->axialSlice, svkDcmHeader::AXIAL); 
+            overlaySliceCoronal = this->FindSpectraSlice( imageViewer->coronalSlice, svkDcmHeader::CORONAL); 
+            overlaySliceSagittal =this->FindSpectraSlice( imageViewer->sagittalSlice, svkDcmHeader::SAGITTAL); 
+        }
+
+        if( overlaySliceAxial > axialRange[1] ) {
+            overlaySliceAxial = axialRange[1];
+            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_BACK );
+        } else if ( overlaySliceAxial < axialRange[0] ) {
+            overlaySliceAxial = axialRange[0];
+            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_BACK );
+        } else {
+            this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT );
+            this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_BACK );
+        }
+
+        if( overlaySliceCoronal > coronalRange[1] ) {
+            overlaySliceCoronal = coronalRange[1];
+            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_BACK );
+        } else if ( overlaySliceCoronal < coronalRange[0] ) {
+            overlaySliceCoronal = coronalRange[0];
+            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_BACK );
+        } else {
+            this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_FRONT );
+            this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_BACK );
+        }
+
+        if( overlaySliceSagittal > sagittalRange[1] ) {
+            overlaySliceSagittal = sagittalRange[1];
+            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_BACK );
+        } else if ( overlaySliceSagittal < sagittalRange[0] ) {
+            overlaySliceSagittal = sagittalRange[0];
+            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
+            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_BACK );
+        } else {
+            this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
+            this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_BACK );
+        }
+
+        int axialIndex = this->dataVector[MRI]->GetOrientationIndex( svkDcmHeader::AXIAL);
+        int coronalIndex = this->dataVector[MRI]->GetOrientationIndex( svkDcmHeader::CORONAL);
+        int sagittalIndex = this->dataVector[MRI]->GetOrientationIndex( svkDcmHeader::SAGITTAL);
+
+        axialDelta  = (vtkMath::Dot(imageOrigin, axialNormal )+(imageViewer->axialSlice)*imageSpacing[axialIndex] - 
+                                 (vtkMath::Dot( overlayOrigin, axialNormal ) +
+                                 overlaySpacing[axialIndex] * overlaySliceAxial));
+
+        coronalDelta  = (vtkMath::Dot(imageOrigin, coronalNormal )+(imageViewer->coronalSlice)*imageSpacing[coronalIndex] - 
+                                 (vtkMath::Dot( overlayOrigin, coronalNormal ) +
+                                 overlaySpacing[coronalIndex] * overlaySliceCoronal));
+        sagittalDelta  = (vtkMath::Dot(imageOrigin, sagittalNormal )+(imageViewer->sagittalSlice)*imageSpacing[sagittalIndex] -                                 (vtkMath::Dot( overlayOrigin, sagittalNormal ) +
+                                 overlaySpacing[sagittalIndex] * overlaySliceSagittal));
         // We need to guarantee that the overlay is between the image and the camera
         // This is why 0.01 is added, just some small fraction so they don't overlap. 
+        transformFrontAxial->Translate(
+                                   (axialDelta+0.05)*axialNormal[0], 
+                                   (axialDelta+0.05)*axialNormal[1], 
+                                   (axialDelta+0.05)*axialNormal[2]);
+        transformBackAxial->Translate(
+                                   (axialDelta-0.05)*axialNormal[0], 
+                                   (axialDelta-0.05)*axialNormal[1], 
+                                   (axialDelta-0.05)*axialNormal[2]);
 
-        distance  = (vtkMath::Dot(imageOrigin, wVec )+(imageSlice)*imageSpacing[2] - 
-                             (vtkMath::Dot( overlayOrigin, wVec ) +
-                             overlaySpacing[2] * overlaySlice)) + 0.01;
+        transformFrontCoronal->Translate(
+                                   (coronalDelta+0.05)*coronalNormal[0], 
+                                   (coronalDelta+0.05)*coronalNormal[1], 
+                                   (coronalDelta+0.05)*coronalNormal[2]);
+        transformBackCoronal->Translate(
+                                   (coronalDelta-0.05)*coronalNormal[0], 
+                                   (coronalDelta-0.05)*coronalNormal[1], 
+                                   (coronalDelta-0.05)*coronalNormal[2]);
+        transformFrontSagittal->Translate(
+                                   (sagittalDelta+0.05)*sagittalNormal[0], 
+                                   (sagittalDelta+0.05)*sagittalNormal[1], 
+                                   (sagittalDelta+0.05)*sagittalNormal[2]);
+        transformBackSagittal->Translate(
+                                   (sagittalDelta-0.05)*sagittalNormal[0], 
+                                   (sagittalDelta-0.05)*sagittalNormal[1], 
+                                   (sagittalDelta-0.05)*sagittalNormal[2]);
 
-        distanceBack  = (vtkMath::Dot(imageOrigin, wVec )+(imageSlice)*imageSpacing[2] - 
-                             (vtkMath::Dot( overlayOrigin, wVec ) +
-                             overlaySpacing[2] * overlaySlice)) - 0.01;
+        int axialExtent[6] = { overlayExtent[ 0 ], overlayExtent[ 1 ],
+                               overlayExtent[ 2 ], overlayExtent[ 3 ],
+                               overlayExtent[ 4 ], overlayExtent[ 5 ] };
+        axialExtent[ axialIndex *2 ] = overlaySliceAxial; 
+        axialExtent[ axialIndex *2 + 1 ] = overlaySliceAxial; 
+        int coronalExtent[6] = { overlayExtent[ 0 ], overlayExtent[ 1 ],
+                                 overlayExtent[ 2 ], overlayExtent[ 3 ],
+                                 overlayExtent[ 4 ], overlayExtent[ 5 ] };
+        coronalExtent[ coronalIndex *2 ] = overlaySliceCoronal; 
+        coronalExtent[ coronalIndex *2 + 1 ] = overlaySliceCoronal; 
 
-        vtkTransform* transform = vtkTransform::New();
-        vtkTransform* transformBack = vtkTransform::New();
-        transform->Translate( distance*wVec[0], distance*wVec[1], distance*wVec[2] );
-        transformBack->Translate( distanceBack*wVec[0], distanceBack*wVec[1], distanceBack*wVec[2] );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
-                             )->SetUserTransform( transform );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
-                             )->SetUserTransform( transformBack );
-        transform->Delete();
-        transformBack->Delete();
-        if( overlaySlice >= overlayExtent[4] && overlaySlice <= overlayExtent[5]) {
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
-                                   )->SetDisplayExtent( overlayExtent[0], overlayExtent[1], 
-                                                        overlayExtent[2], overlayExtent[3], 
-                                                        overlaySlice, overlaySlice );
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
-                                   )->SetDisplayExtent( overlayExtent[0], overlayExtent[1], 
-                                                        overlayExtent[2], overlayExtent[3], 
-                                                        overlaySlice, overlaySlice );
-        } else {
-            this->TurnPropOff( svkOverlayView::OVERLAY_IMAGE );
-            this->TurnPropOff( svkOverlayView::OVERLAY_IMAGE_BACK );
-        }
+        int sagittalExtent[6] = { overlayExtent[ 0 ], overlayExtent[ 1 ],
+                                 overlayExtent[ 2 ], overlayExtent[ 3 ],
+                                 overlayExtent[ 4 ], overlayExtent[ 5 ] };
+        sagittalExtent[ sagittalIndex *2 ] = overlaySliceSagittal; 
+        sagittalExtent[ sagittalIndex *2 + 1 ] = overlaySliceSagittal; 
+
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                               )->SetDisplayExtent( axialExtent );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+                               )->SetDisplayExtent( axialExtent );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+                               )->SetDisplayExtent( coronalExtent );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+                               )->SetDisplayExtent( coronalExtent );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+                               )->SetDisplayExtent( sagittalExtent );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+                               )->SetDisplayExtent( sagittalExtent );
+
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                             )->SetUserTransform( transformFrontAxial );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+                             )->SetUserTransform( transformBackAxial );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+                             )->SetUserTransform( transformFrontCoronal );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+                             )->SetUserTransform( transformBackCoronal );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+                             )->SetUserTransform( transformFrontSagittal );
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+                             )->SetUserTransform( transformBackSagittal );
+
+        transformFrontAxial->Delete();
+        transformBackAxial->Delete();
+        transformFrontCoronal->Delete();
+        transformBackCoronal->Delete();
+        transformFrontSagittal->Delete();
+        transformBackSagittal->Delete();
+
+
+
     }  
 }
 
@@ -1060,73 +1007,109 @@ void svkOverlayView::SetSliceOverlay() {
  */
 void svkOverlayView::SetupOverlay()
 {
-    if( this->windowLeveler != NULL ) {
-        this->windowLeveler->Delete();
-        this->windowLeveler = NULL;     
+    if( this->windowLevelerAxial != NULL ) {
+        this->windowLevelerAxial->Delete();
+        this->windowLevelerAxial = NULL;     
+    }
+    if( this->windowLevelerCoronal != NULL ) {
+        this->windowLevelerCoronal->Delete();
+        this->windowLevelerCoronal = NULL;     
+    }
+    if( this->windowLevelerSagittal != NULL ) {
+        this->windowLevelerSagittal->Delete();
+        this->windowLevelerSagittal = NULL;     
     }
     if( this->colorTransfer != NULL ) {
         this->colorTransfer->Delete();
         this->colorTransfer = NULL;     
     }
-    this->windowLeveler = svkImageMapToColors::New();
+    this->windowLevelerAxial = svkImageMapToColors::New();
+    this->windowLevelerCoronal = svkImageMapToColors::New();
+    this->windowLevelerSagittal = svkImageMapToColors::New();
     int* extent = dataVector[OVERLAY]->GetExtent();
     double* overlayOrigin = dataVector[OVERLAY]->GetOrigin();
 
     // Need a modification if we need to render the overlay w/out an image
     double* imageOrigin = dataVector[MRI]->GetOrigin();
-    double dcos[3][3];
-    dataVector[OVERLAY]->GetDcos( dcos );
-    double wVec[3];
-    wVec[0] = dcos[2][0];  
-    wVec[1] = dcos[2][1];  
-    wVec[2] = dcos[2][2];  
-    double wDistance = vtkMath::Dot( overlayOrigin, wVec ) - vtkMath::Dot( imageOrigin, wVec ); 
+    double sliceNormal[3];
+    dataVector[OVERLAY]->GetDataBasis( sliceNormal, svkImageData::SLICE);
+    double wDistance = vtkMath::Dot( overlayOrigin, sliceNormal ) - vtkMath::Dot( imageOrigin, sliceNormal ); 
 
     this->SetLUT( svkLookupTable::COLOR); 
    
-    this->windowLeveler->SetInput( dataVector[OVERLAY] );
-    this->windowLeveler->SetOutputFormatToRGBA();
-    this->windowLeveler->Update();
+    this->windowLevelerAxial->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerAxial->SetOutputFormatToRGBA();
+    this->windowLevelerAxial->Update();
+    this->windowLevelerCoronal->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerCoronal->SetOutputFormatToRGBA();
+    this->windowLevelerCoronal->Update();
+    this->windowLevelerSagittal->SetInput( dataVector[OVERLAY] );
+    this->windowLevelerSagittal->SetOutputFormatToRGBA();
+    this->windowLevelerSagittal->Update();
 
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
-                                   )->SetInput( this->windowLeveler->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                                   )->SetInput( this->windowLevelerAxial->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+                                   )->SetInput( this->windowLevelerAxial->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+                                   )->SetInput( this->windowLevelerCoronal->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+                                   )->SetInput( this->windowLevelerCoronal->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+                                   )->SetInput( this->windowLevelerSagittal->GetOutput() );
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+                                   )->SetInput( this->windowLevelerSagittal->GetOutput() );
 
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
-                                   )->SetInput( this->windowLeveler->GetOutput() );
-
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE )
-                                   )->SetDisplayExtent( extent[0], extent[1], 
-                                                        extent[2], extent[3], slice, slice );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK )
-                                   )->SetDisplayExtent( extent[0], extent[1], 
-                                                        extent[2], extent[3], slice, slice );
-
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( 
-                                    svkOverlayView::OVERLAY_IMAGE ))->InterpolateOff();
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( 
-                                    svkOverlayView::OVERLAY_IMAGE_BACK ))->InterpolateOff();
-
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( 
-                                    svkOverlayView::OVERLAY_IMAGE ))->SetOpacity(0.5);
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( 
-                                    svkOverlayView::OVERLAY_IMAGE_BACK ))->SetOpacity(0.5);
+    this->SetInterpolationType( NEAREST );
+    this->SetOverlayOpacity( 0.5 );
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
-                   )->HasViewProp( this->GetProp( svkOverlayView::OVERLAY_IMAGE ) ) ) {
+                   )->HasViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) ) ) {
 
         this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
-                   this->GetProp( svkOverlayView::OVERLAY_IMAGE ) );
+                   this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) );
     }
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
-                   )->HasViewProp( this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ) ) ) {
+                   )->HasViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ) ) ) {
 
         this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
-                   this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ) );
+                   this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ) );
     }
 
-    this->TurnPropOn( svkOverlayView::OVERLAY_IMAGE );
-    this->TurnPropOn( svkOverlayView::OVERLAY_IMAGE_BACK );
+    if( !this->GetRenderer( svkOverlayView::PRIMARY
+                   )->HasViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ) ) ) {
+
+        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
+                   this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ) );
+    }
+
+    if( !this->GetRenderer( svkOverlayView::PRIMARY
+                   )->HasViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ) ) ) {
+
+        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
+                  this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ) );
+    }
+
+    if( !this->GetRenderer( svkOverlayView::PRIMARY
+                   )->HasViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ) ) ) {
+
+        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
+                  this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ) );
+    }
+
+    if( !this->GetRenderer( svkOverlayView::PRIMARY
+                   )->HasViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ) ) ) {
+
+        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
+                  this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ) );
+    }
+    this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT );
+    this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_BACK );
+    this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_FRONT );
+    this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_BACK );
+    this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
+    this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_BACK );
 
 
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
@@ -1138,6 +1121,7 @@ void svkOverlayView::SetupOverlay()
         this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( 
                                 this->GetProp( svkOverlayView::COLOR_BAR) );
     }
+    
 
     this->SetProp( svkOverlayView::COLOR_BAR, this->GetProp( svkOverlayView::COLOR_BAR) );
     this->TurnPropOn( svkOverlayView::COLOR_BAR);
@@ -1159,12 +1143,20 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
 {
     if (interpolationType == NEAREST ) {
         this->interpolationType = NEAREST; 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
     } else if (interpolationType == LINEAR) {
         this->interpolationType = LINEAR; 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
     } else if (interpolationType == SINC) {
         this->interpolationType = SINC; 
         cout << "SINC NOT SUPPORTED YET" << endl;
@@ -1202,12 +1194,14 @@ void svkOverlayView::SetLUT( svkLookupTable::svkLookupTableType type )
     this->colorTransfer->SetLUTType( type ); 
     this->colorTransfer->SetAlphaThreshold( threshold ); 
 
-    this->windowLeveler->SetLookupTable( this->colorTransfer );
+    this->windowLevelerAxial->SetLookupTable( this->colorTransfer );
+    this->windowLevelerCoronal->SetLookupTable( this->colorTransfer );
+    this->windowLevelerSagittal->SetLookupTable( this->colorTransfer );
 
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
                                     )->SetLookupTable( this->colorTransfer );
 
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::OVERLAY_IMAGE_BACK ))->Modified( );    
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->Modified( );    
 
     this->Refresh();
 }
@@ -1238,7 +1232,6 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
         } 
 
         if( dataVector[MRS] != NULL ) {
-            //cout << "OVERLAY VIEW VALIDATION 1: " << endl;
             svkDataValidator::ValidationErrorStatus status 
                 = validator->AreDataIncompatible( data, dataVector[MRS] );
             if( status == svkDataValidator::INVALID_DATA_ORIENTATION ) { 
@@ -1252,7 +1245,6 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
     } else if( data->IsA("svkMrsImageData") ) {
         if( dataVector[MRI] != NULL ) {
-            //cout << "OVERLAY VIEW VALIDATION 2: " << endl;
             svkDataValidator::ValidationErrorStatus status 
                 = validator->AreDataIncompatible( data, dataVector[MRI] ); 
             if( status  == svkDataValidator::INVALID_DATA_ORIENTATION ) {
@@ -1323,3 +1315,221 @@ void svkOverlayView::TurnOrthogonalImagesOff()
     this->imageViewer->TurnOrthogonalImagesOff();
 }
 
+
+/*!     
+ *
+ */     
+void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
+{
+    svkDcmHeader::Orientation oldOrientation;
+    oldOrientation = this->orientation;
+    this->orientation = orientation;
+    if( this->dataVector[MRI] != NULL ) {
+        int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+        }
+
+        this->imageViewer->SetOrientation( orientation );
+        this->imageViewer->ResetCamera( );
+        if( this->dataVector[MRS] != NULL ) {
+            bool satBandsAllOn = false;
+            bool satBandsOutlineAllOn = false;
+            bool satBandsSliceOn = false;
+            bool satBandsOutlineSliceOn = false;
+            int imageSlice = this->imageViewer->GetSlice( orientation );
+            int spectraSlice = this->FindSpectraSlice( imageSlice, orientation);
+            this->imageViewer->GetImageActor( svkDcmHeader::AXIAL )->SetVisibility(1);
+            this->imageViewer->GetImageActor( svkDcmHeader::CORONAL )->SetVisibility(1);
+            this->imageViewer->GetImageActor( svkDcmHeader::SAGITTAL )->SetVisibility(1);
+            this->SetSlice( spectraSlice );
+            this->HighlightSelectionVoxels();
+            if( !this->AreAllSatBandsOn( oldOrientation ) ) {
+                if( this->IsSatBandForSliceOn( oldOrientation ) ) {
+                    switch( oldOrientation ) {
+                        case svkDcmHeader::AXIAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL );
+                            break;
+                        case svkDcmHeader::CORONAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL );
+                            break;
+                        case svkDcmHeader::SAGITTAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL );
+                            break;
+                    }
+                    switch( this->orientation ) {
+                        case svkDcmHeader::AXIAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL );
+                            break;
+                        case svkDcmHeader::CORONAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL );
+                            break;
+                        case svkDcmHeader::SAGITTAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL );
+                            break;
+                    }
+                }
+            }
+            if( !this->AreAllSatBandOutlinesOn( oldOrientation ) ) {
+                if( this->IsSatBandOutlineForSliceOn( oldOrientation ) ) {
+                    switch( oldOrientation ) {
+                        case svkDcmHeader::AXIAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                            break;
+                        case svkDcmHeader::CORONAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                            break;
+                        case svkDcmHeader::SAGITTAL:
+                            this->TurnPropOff( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                            break;
+                    }
+                    switch( this->orientation ) {
+                        case svkDcmHeader::AXIAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                            break;
+                        case svkDcmHeader::CORONAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                            break;
+                        case svkDcmHeader::SAGITTAL:
+                            this->TurnPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                            break;
+                    }
+                }
+            } 
+
+        } else {
+            this->SetSlice( this->imageViewer->GetSlice( orientation ), orientation );
+        }
+        if( toggleDraw ) {
+            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+        }
+        this->Refresh();
+    }
+}
+
+
+/*!     
+ *
+ */     
+bool svkOverlayView::IsSatBandForSliceOn( svkDcmHeader::Orientation orientation )
+{
+    bool satBandsSliceOn = false;
+    switch( orientation ) {
+        case svkDcmHeader::AXIAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL ) ) {
+                satBandsSliceOn = true;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL ) ) {
+                satBandsSliceOn = true;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL ) ) {
+                satBandsSliceOn = true;
+            }
+            break;
+    }
+    return satBandsSliceOn;
+}
+
+
+/*!     
+ *
+ */     
+bool svkOverlayView::IsSatBandOutlineForSliceOn( svkDcmHeader::Orientation orientation )
+{
+    bool satBandsOutlineSliceOn = false;
+    switch( orientation ) {
+        case svkDcmHeader::AXIAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ) ) {
+                satBandsOutlineSliceOn = true;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ) ) {
+                satBandsOutlineSliceOn = true;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ) ) {
+                satBandsOutlineSliceOn = true;
+            }
+            break;
+    }
+    return satBandsOutlineSliceOn;
+}
+
+
+/*!     
+ * Are all the sat bands on? If any bands other than the slice is on, we'll say yes
+ */     
+bool svkOverlayView::AreAllSatBandsOn( svkDcmHeader::Orientation orientation )
+{
+    bool satBandsAllOn = false;
+    switch( orientation ) {
+        case svkDcmHeader::AXIAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL ) ) {
+                satBandsAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL ) ) {
+                satBandsAllOn = true;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL ) ) {
+                satBandsAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL ) ) {
+                satBandsAllOn = true;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL ) ) {
+                satBandsAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL ) ) {
+                satBandsAllOn = true;
+            }
+            break;
+    }
+    return satBandsAllOn;
+}
+
+
+/*!     
+ *
+ */     
+bool svkOverlayView::AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientation )
+{
+    bool satBandsOutlineAllOn = false;
+    switch( orientation ) {
+        case svkDcmHeader::AXIAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            if( this->IsPropOn( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ) ) {
+                satBandsOutlineAllOn = true;
+            }
+            break;
+    }
+    return satBandsOutlineAllOn;
+
+}

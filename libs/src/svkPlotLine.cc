@@ -73,7 +73,9 @@ svkPlotLine::svkPlotLine()
     this->pointData = vtkFloatArray::New();
     this->polyLinePoints = NULL;
     this->plotComponent = REAL; 
-    this->invertPlots = true;
+    this->invertPlots = false;
+    this->mirrorPlots = false;
+    this->plotDirection = ROW_COLUMN;
 }
 
 
@@ -182,61 +184,96 @@ void svkPlotLine::SetValueRange( double minValue, double maxValue )
  */
 void svkPlotLine::GeneratePolyData()
 {
-    double dRow;
-    double dColumn;
-    double columnValue;
-    double rowValue;
+    // delta is change in the row, column, and slice direction
+    double delta[3];
+    double amplitude;
+    double frequency;
     float posLPS[3];
-    float initialPos[3];
+    int amplitudeIndex;
+    int pointIndex;
+
+    delta[0] = this->spacing[0]/2.0;
+    delta[1] = this->spacing[1]/2.0;
+    delta[2] = this->spacing[2]/2.0;
+
+    switch( this->plotDirection ) {
+        case ROW_COLUMN:
+            pointIndex = 0;
+            amplitudeIndex = 1;
+            break;
+        case COLUMN_ROW:
+            pointIndex = 1;
+            amplitudeIndex = 0;
+            break;
+        case ROW_SLICE:
+            pointIndex = 0;
+            amplitudeIndex = 2;
+            break;
+        case SLICE_ROW:
+            pointIndex = 2;
+            amplitudeIndex = 0;
+            break;
+        case SLICE_COLUMN:
+            pointIndex = 2;
+            amplitudeIndex = 1;
+            break;
+        case COLUMN_SLICE:
+            pointIndex = 1;
+            amplitudeIndex = 2;
+            break;
+    }
 
     // We are going to precalculate the start + the distance in the slice dimension for speed
-    initialPos[0] = this->origin[0] + (spacing[2]/2.0) * dcos[2][0];
-    initialPos[1] = this->origin[1] + (spacing[2]/2.0) * dcos[2][1];
-    initialPos[2] = this->origin[2] + (spacing[2]/2.0) * dcos[2][2];
     if( this->plotData != NULL && this->polyLinePoints != NULL ) {
 
         // The offset is the starting point in the vtkPoints object used by ALL plotLines
         int offset = this->GetPointIds()->GetId(0);
 
         // Loop over all points.
-        // NOTE: this loop could be broken into 0-startPt, startPt-endPt, endPt-numPoints for speed
+        // TODO: this loop could be broken into 0-startPt, startPt-endPt, endPt-numPoints for speed
         for( int i = 0; i < numPoints; i++ ) {
 
             // Which component are we using...
             if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-                columnValue = (plotData->GetTuple(i))[this->plotComponent];
+                amplitude = (plotData->GetTuple(i))[this->plotComponent];
             } else {
-                columnValue = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
+                amplitude = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
                         (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5);
             }
 
             // If the value is outside the max/min
-            if( columnValue > this->maxValue ) {
-                columnValue = this->maxValue;
-            } else if ( columnValue < this->minValue ) {
-                columnValue = this->minValue;
+            if( amplitude > this->maxValue ) {
+                amplitude = this->maxValue;
+            } else if ( amplitude < this->minValue ) {
+                amplitude = this->minValue;
             }
 
             // Often negative is up in LPS, so if this is true we invert 
             if( this->invertPlots ) {
-                dColumn = (this->maxValue - columnValue)*this->scale[1];
+                delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
             } else {
-                dColumn = (columnValue - this->minValue)*this->scale[1];
+                delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
             }
 
             // If the point is outside the start/end
             if( i > this->endPt ) {
-                dRow = (this->endPt - this->startPt)*this->scale[0];
+                frequency = this->endPt;
             } else if( i < this->startPt ) {
-                dRow = 0;
+                frequency = this->startPt;
             } else {
-                dRow = (i - this->startPt) * this->scale[0]; 
+                frequency = i;
+            }
+
+            if( this->mirrorPlots ) {
+                delta[ pointIndex ] = (this->endPt - frequency) * this->scale[0]; 
+            } else {
+                delta[ pointIndex ] = (frequency - this->startPt) * this->scale[0]; 
             }
 
             // NOTE: This could be moved into the above if blocks for speed
-            posLPS[0] = initialPos[0] + (dRow) * dcos[0][0] + (dColumn) * dcos[1][0];
-            posLPS[1] = initialPos[1] + (dRow) * dcos[0][1] + (dColumn) * dcos[1][1];
-            posLPS[2] = initialPos[2] + (dRow) * dcos[0][2] + (dColumn) * dcos[1][2];
+            posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
+            posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
+            posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
 
             this->polyLinePoints->SetPoint(i+offset, posLPS[0], posLPS[1], posLPS[2] );
         }
@@ -382,4 +419,22 @@ void svkPlotLine::RecalculatePlotAreaBounds()
 void svkPlotLine::SetInvertPlots( bool invertPlots ) 
 {
     this->invertPlots = invertPlots;
+}
+
+
+/*!
+ *
+ */
+void svkPlotLine::SetMirrorPlots( bool mirrorPlots ) 
+{
+    this->mirrorPlots = mirrorPlots;
+}
+
+
+/*!
+ *
+ */
+void svkPlotLine::SetPlotDirection( PlotDirection plotDirection  ) 
+{
+    this->plotDirection = plotDirection;
 }

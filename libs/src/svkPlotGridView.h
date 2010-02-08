@@ -48,7 +48,7 @@
 #include <vtkProp3DCollection.h>
 #include <vtkLabeledDataMapper.h>
 #include <vtkSelectVisiblePoints.h>
-#include <vtkImageClip.h>
+#include <svkImageClip.h>
 #include <vtkImageActor.h>
 #include <svkOpenGLOrientedImageActor.h>
 #include <vtkTextProperty.h>
@@ -63,6 +63,8 @@
 #include <svkObliqueReslice.h>
 #include <svkLookupTable.h>
 #include <svkImageClip.h>
+#include <svkSatBandSet.h>
+#include <vtkCellCenters.h>
 
 #include <vector>
 
@@ -117,7 +119,8 @@ class svkPlotGridView : public svkDataView
             OVERLAY_TEXT,
             PLOT_GRID,
             SAT_BANDS,
-            LAST_PROP = SAT_BANDS 
+            SAT_BANDS_OUTLINE,
+            LAST_PROP = SAT_BANDS_OUTLINE
         } ActorType;
 
         //! Enum represents renderers in the window
@@ -147,10 +150,11 @@ class svkPlotGridView : public svkDataView
         //  Members:
         int                    slice;
         svkPlotLineGrid*       plotGrid; 
-        vector<vtkImageClip*>  metClippers;
+        vector<svkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
+        void                   UpdateMetaboliteTextDisplacement( );
         void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
         int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                
@@ -165,6 +169,8 @@ class svkPlotGridView : public svkDataView
         void                ResliceImage(svkImageData* input, svkImageData* target); 
         int                 channel;
         svkLookupTable*     colorTransfer;
+        svkSatBandSet*      satBands;
+
 
 
 };

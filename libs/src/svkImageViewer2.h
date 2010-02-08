@@ -76,30 +76,52 @@ class svkImageViewer2 : public vtkImageViewer2
         static svkImageViewer2*       New();  
         
         void SetInput( svkImageData *in );
-        void SetSlice( int slice, int imageNum = 0 );
+        virtual void SetSlice( int slice );
+        virtual void SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation );
         void Render();
         void ResetCamera();
         void TurnOrthogonalImagesOn();
         void TurnOrthogonalImagesOff();
         int  GetSlice();
+        int  GetSlice( svkDcmHeader::Orientation orientation );
         virtual void SetColorLevel(double s);
         virtual void SetColorWindow(double s);
+        virtual void                      SetOrientation( svkDcmHeader::Orientation orientation );
+        virtual svkDcmHeader::Orientation GetOrientation( );
+        virtual svkOpenGLOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN );
+        virtual svkImageData* GetInput();
+
+        int axialSlice;
+        int coronalSlice;
+        int sagittalSlice;
 
     protected:
 
         svkImageViewer2();
         ~svkImageViewer2();
 
+        svkImageData* data;
+
         int orthSlice1;
         int orthSlice2;
+
+        svkDcmHeader::Orientation orientation;
+
 
         void InitializeOrthogonalActors();
 
         void                  InstallPipeline();
-        svkOpenGLOrientedImageActor*             orthImageActor1;
-        svkOpenGLOrientedImageActor*             orthImageActor2;
-        svkImageMapToWindowLevelColors*          orthWinLevel1;
-        svkImageMapToWindowLevelColors*          orthWinLevel2;
+        svkOpenGLOrientedImageActor*             axialImageActor;
+        svkOpenGLOrientedImageActor*             coronalImageActor;
+        svkOpenGLOrientedImageActor*             sagittalImageActor;
+
+        //svkOpenGLOrientedImageActor*             orthImageActor1;
+        //svkOpenGLOrientedImageActor*             orthImageActor2;
+        //svkImageMapToWindowLevelColors*          orthWinLevel1;
+        //svkImageMapToWindowLevelColors*          orthWinLevel2;
+        svkImageMapToWindowLevelColors*          axialWinLevel;
+        svkImageMapToWindowLevelColors*          coronalWinLevel;
+        svkImageMapToWindowLevelColors*          sagittalWinLevel;
 
 };
 

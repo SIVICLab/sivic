@@ -344,3 +344,121 @@ svkDcmHeader::Orientation svkDataView::GetOrientation( )
 {
     return this->orientation;
 }
+
+
+/*!
+ * Generates the clipping planes for the mMMapper. This is how the boundries
+ * set are enforced, after the data is scaled, it is clipped so that data
+ * outside the plot range is simply not shown.
+ */
+void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int* tlcBrc, double clip_tolerance_row, 
+                                                                                       double clip_tolerance_column,
+                                                                                       double clip_tolerance_slice )
+{
+    // We need to leave a little room around the edges, so the border does not get cut off
+    if( data != NULL ) {
+        vtkPlane* clipperPlane0 = vtkPlane::New();
+        vtkPlane* clipperPlane1 = vtkPlane::New();
+        vtkPlane* clipperPlane2 = vtkPlane::New();
+        vtkPlane* clipperPlane3 = vtkPlane::New();
+        vtkPlane* clipperPlane4 = vtkPlane::New();
+        vtkPlane* clipperPlane5 = vtkPlane::New();
+
+        int tlcBrcIndex[2][3]; 
+
+        svkDataView::GetClippingIndexFromTlcBrc( data, tlcBrcIndex, tlcBrc);
+
+        double rowNormal[3];
+        data->GetDataBasis( rowNormal, svkImageData::ROW );
+        double columnNormal[3];
+        data->GetDataBasis( columnNormal, svkImageData::COLUMN );
+        double sliceNormal[3];
+        data->GetDataBasis( sliceNormal, svkImageData::SLICE );
+        double LRNormal[3];
+        data->GetDataBasis( LRNormal, svkImageData::LR );
+        double PANormal[3];
+        data->GetDataBasis( PANormal, svkImageData::PA );
+        double SINormal[3];
+        data->GetDataBasis( SINormal, svkImageData::SI );
+
+        double* spacing = data->GetSpacing();
+
+        double deltaLR = vtkMath::Dot( spacing, LRNormal );
+        double deltaPA = vtkMath::Dot( spacing, PANormal );
+        double deltaSI = vtkMath::Dot( spacing, SINormal );
+
+        double* origin = data->GetOrigin();
+
+        clipperPlane0->SetNormal( rowNormal[0], rowNormal[1], rowNormal[2] );
+        clipperPlane0->SetOrigin( origin[0] + deltaLR*(tlcBrcIndex[0][0] - clip_tolerance_row),
+                                  origin[1] + deltaPA*(tlcBrcIndex[0][0] - clip_tolerance_row), 
+                                  origin[2] + deltaSI*(tlcBrcIndex[0][0] - clip_tolerance_row) );
+
+        clipperPlane1->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
+        clipperPlane1->SetOrigin( origin[0] + deltaLR * (tlcBrcIndex[1][0] + 1 + clip_tolerance_row),
+                                  origin[1] + deltaPA * (tlcBrcIndex[1][0] + 1 + clip_tolerance_row), 
+                                  origin[2] + deltaSI * (tlcBrcIndex[1][0] + 1 + clip_tolerance_row) );
+
+
+        clipperPlane2->SetNormal( columnNormal[0], columnNormal[1], columnNormal[2] );
+        clipperPlane2->SetOrigin( origin[0] + deltaLR*(tlcBrcIndex[0][1] - clip_tolerance_column),
+                                  origin[1] + deltaPA*(tlcBrcIndex[0][1] - clip_tolerance_column), 
+                                  origin[2] + deltaSI*(tlcBrcIndex[0][1] - clip_tolerance_column) );
+
+        clipperPlane3->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
+        clipperPlane3->SetOrigin( origin[0] + deltaLR*(tlcBrcIndex[1][1] + 1 + clip_tolerance_column),
+                                  origin[1] + deltaPA*(tlcBrcIndex[1][1] + 1 + clip_tolerance_column), 
+                                  origin[2] + deltaSI*(tlcBrcIndex[1][1] + 1 + clip_tolerance_column) );
+
+        clipperPlane4->SetNormal( sliceNormal[0], sliceNormal[1], sliceNormal[2] );
+        clipperPlane4->SetOrigin( origin[0] + deltaLR * ( tlcBrcIndex[0][2] - clip_tolerance_slice), 
+                                  origin[1] + deltaPA * ( tlcBrcIndex[0][2] - clip_tolerance_slice), 
+                                  origin[2] + deltaSI * ( tlcBrcIndex[0][2] - clip_tolerance_slice) );
+
+        clipperPlane5->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
+        clipperPlane5->SetOrigin( origin[0] + deltaLR * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ), 
+                                  origin[1] + deltaPA * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ), 
+                                  origin[2] + deltaSI * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ) );
+
+        //vtkMapper* plotGridMapper = actor->GetMapper();
+        mapper->RemoveAllClippingPlanes();
+        mapper->AddClippingPlane( clipperPlane0 );
+        mapper->AddClippingPlane( clipperPlane1 );
+        mapper->AddClippingPlane( clipperPlane2 );
+        mapper->AddClippingPlane( clipperPlane3 );
+        mapper->AddClippingPlane( clipperPlane4 );
+        mapper->AddClippingPlane( clipperPlane5 );
+
+        clipperPlane0->Delete();
+        clipperPlane1->Delete();
+        clipperPlane2->Delete();
+        clipperPlane3->Delete();
+        clipperPlane4->Delete();
+        clipperPlane5->Delete();
+    } else {
+        if( DEBUG ) {
+            cout<<"INPUT HAS NOT BEEN SET!!"<<endl;
+        }
+    }
+}
+
+
+/*!
+ *  Get the  index that should be clipped based on the tlcBrc
+ */
+void svkDataView::GetClippingIndexFromTlcBrc( svkImageData* data, int indexRange[2][3], int tlcBrc[2] )
+{
+    double* spacing = data->GetSpacing();
+    double* origin = data->GetOrigin();
+    int* extent = data->GetExtent();
+    int tlcIndex[3];
+    int brcIndex[3];
+    data->GetIndexFromID( tlcBrc[0], tlcIndex );
+    data->GetIndexFromID( tlcBrc[1], brcIndex );
+    indexRange[0][0] = tlcIndex[0];
+    indexRange[0][1] = tlcIndex[1];
+    indexRange[0][2] = tlcIndex[2];
+    indexRange[1][0] = brcIndex[0];
+    indexRange[1][1] = brcIndex[1];
+    indexRange[1][2] = brcIndex[2];
+}

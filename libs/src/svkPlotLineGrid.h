@@ -92,7 +92,7 @@ class svkPlotLineGrid : public vtkObject
         //  Methods
         void                    SetInput( svkMrsImageData* data );
         void                    Update();
-        void                    SetPlotVoxels(int tlcID, int brcID);
+        void                    SetTlcBrc(int tlcBrc[2]);
         void                    SetSlice(int slice);
         void                    SetRenderer(vtkRenderer* renderer);
         //int*                    GetCurrentTlcBrc();
@@ -104,16 +104,13 @@ class svkPlotLineGrid : public vtkObject
         int                     GetComponent( );
         void                    SetChannel( int channel );
         void                    UpdateDataArrays(int* tlcRange, int* brcRange);
+        void                    SetOrientation( svkDcmHeader::Orientation orientation );
 
     private:
 
         //  Members:
 
-        //! x, y index of the top left corner voxel to render
-        int*                        voxelIndexTLC;
-
-        //! x, y index of the bottom right corner voxel to render
-        int*                        voxelIndexBRC;
+        int                         tlcBrc[2];
 
         //! The current slice
         int                         slice;
@@ -175,6 +172,8 @@ class svkPlotLineGrid : public vtkObject
         //! Component to display (e.g. REAL, IMAG..)
         svkPlotLine::PlotComponent   plotComponent;
 
+        svkDcmHeader::Orientation orientation;
+
         vtkPoints*                  points;
 
         //  Methods:
@@ -184,6 +183,7 @@ class svkPlotLineGrid : public vtkObject
         void                        RemoveActors();
         void                        UpdatePlotRange();
         void                        UpdateComponent();
+        void                        UpdateOrientation();
         void                        GenerateActor();
         void                        HighlightSelectionVoxels();
 

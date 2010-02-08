@@ -457,3 +457,22 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
 
 
 }
+
+
+/*!
+ *
+ */
+int svkMrsImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ?
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    float normal[3];
+    double* origin = this->GetOrigin();
+    this->GetSliceNormal( normal, sliceOrientation );
+    double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
+    double imageCenter = vtkMath::Dot( posLPS, normal );
+    double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
+    int slice = (int) floor( idealCenter );
+    return slice;
+}
+

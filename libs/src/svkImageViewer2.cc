@@ -53,22 +53,21 @@ vtkStandardNewMacro(svkImageViewer2);
 //! Constructor
 svkImageViewer2::svkImageViewer2()
 {
-    if( this->ImageActor != NULL ) {
-        this->ImageActor->Delete();
-        this->ImageActor = NULL;
-    }
-    this->ImageActor = svkOpenGLOrientedImageActor::New();
-    this->ImageActor->InterpolateOff();
-    if( this->WindowLevel != NULL ) {
-        this->WindowLevel->Delete();
-    }
-    this->WindowLevel = svkImageMapToWindowLevelColors::New();
-    this->orthImageActor1 = svkOpenGLOrientedImageActor::New();
-    this->orthImageActor2 = svkOpenGLOrientedImageActor::New();
-    this->orthWinLevel1 = svkImageMapToWindowLevelColors::New();
-    this->orthWinLevel2 = svkImageMapToWindowLevelColors::New();
-    this->orthSlice1 = -1;
-    this->orthSlice2 = -1;
+    this->axialWinLevel = svkImageMapToWindowLevelColors::New();
+    this->coronalWinLevel = svkImageMapToWindowLevelColors::New();
+    this->sagittalWinLevel = svkImageMapToWindowLevelColors::New();
+
+    this->axialSlice    = 0;
+    this->coronalSlice  = 0;
+    this->sagittalSlice = 0;
+
+    this->axialImageActor    = NULL;
+    this->coronalImageActor  = NULL;
+    this->sagittalImageActor = NULL;
+
+    this->data = NULL;
+
+    this->orientation = svkDcmHeader::AXIAL;
 
 }
 
@@ -76,22 +75,42 @@ svkImageViewer2::svkImageViewer2()
 //! Destructor
 svkImageViewer2::~svkImageViewer2()
 {
-    if( orthImageActor1 != NULL ) {
-        orthImageActor1->Delete();
-        orthImageActor1 = NULL;
+
+    if( this->axialImageActor != NULL ) {
+        this->axialImageActor->Delete();
+        this->axialImageActor = NULL;
     }
-    if( orthImageActor2 != NULL ) {
-        orthImageActor2->Delete();
-        orthImageActor2 = NULL;
+
+    if( this->coronalImageActor != NULL ) {
+        this->coronalImageActor->Delete();
+        this->coronalImageActor = NULL;
     }
-    if( orthWinLevel1 != NULL ) {
-        orthWinLevel1->Delete();
-        orthWinLevel1 = NULL;
+
+    if( this->sagittalImageActor != NULL ) {
+        this->sagittalImageActor->Delete();
+        this->sagittalImageActor = NULL;
     }
-    if( orthWinLevel2 != NULL ) {
-        orthWinLevel2->Delete();
-        orthWinLevel2 = NULL;
+
+    if( this->axialWinLevel != NULL ) {
+        this->axialWinLevel->Delete();
+        this->axialWinLevel = NULL;
     }
+
+    if( this->coronalWinLevel != NULL ) {
+        this->coronalWinLevel->Delete();
+        this->coronalWinLevel = NULL;
+    }
+
+    if( this->sagittalWinLevel != NULL ) {
+        this->sagittalWinLevel->Delete();
+        this->sagittalWinLevel = NULL;
+    }
+
+    if( this->data != NULL ) {
+        this->data->Delete();
+        this->data = NULL;
+    }
+
 }
 
 
@@ -243,12 +262,12 @@ void svkImageViewer2::InstallPipeline()
 
   if (this->Renderer && this->ImageActor)
     {
-    this->Renderer->AddViewProp(this->ImageActor);
-    this->Renderer->AddViewProp(this->orthImageActor1);
-    this->Renderer->AddViewProp(this->orthImageActor2);
+    this->Renderer->AddViewProp(this->axialImageActor);
+    this->Renderer->AddViewProp(this->coronalImageActor);
+    this->Renderer->AddViewProp(this->sagittalImageActor);
     }
 
-  if (this->ImageActor && this->WindowLevel)
+  if ( this->data != NULL )
     {
     /*
      * Since the WindowLevel object is declared in the parent class it is actually 
@@ -256,9 +275,9 @@ void svkImageViewer2::InstallPipeline()
      * is not virtual, so we need to cast it to get our GetOutput method which copies
      * the correct dcos on output.
      */
-    this->ImageActor->SetInput(this->WindowLevel->GetOutput());
-    this->orthImageActor1->SetInput(this->orthWinLevel1->GetOutput());
-    this->orthImageActor2->SetInput(this->orthWinLevel2->GetOutput());
+    this->axialImageActor->SetInput(this->axialWinLevel->GetOutput());
+    this->coronalImageActor->SetInput(this->coronalWinLevel->GetOutput());
+    this->sagittalImageActor->SetInput(this->sagittalWinLevel->GetOutput());
     }
 }
 
@@ -268,14 +287,69 @@ void svkImageViewer2::InstallPipeline()
  */
 void svkImageViewer2::SetInput(svkImageData *in)
 {
-    this->WindowLevel->SetInput(in);
-    this->WindowLevel->SetNumberOfThreads(1);
-    this->orthWinLevel1->SetInput(in);
-    this->orthWinLevel1->SetNumberOfThreads(1);
-    this->orthWinLevel2->SetInput(in);
-    this->orthWinLevel2->SetNumberOfThreads(1);
-    this->UpdateDisplayExtent();
+    if( this->data != NULL ) {
+        this->data->Delete();
+    }
+    this->data = in;
+    this->data->Register(this);
+    this->axialWinLevel->SetInput(in);
+    this->axialWinLevel->SetNumberOfThreads(1);
+    this->coronalWinLevel->SetInput(in);
+    this->coronalWinLevel->SetNumberOfThreads(1);
+    this->sagittalWinLevel->SetInput(in);
+    this->sagittalWinLevel->SetNumberOfThreads(1);
+
+    //this->UpdateDisplayExtent();
+
+    if( this->axialImageActor != NULL ) {
+        this->axialImageActor->Delete();
+        this->axialImageActor = NULL;
+    }
+
+    if( this->coronalImageActor != NULL ) {
+        this->coronalImageActor->Delete();
+        this->coronalImageActor = NULL;
+    }
+
+    if( this->sagittalImageActor != NULL ) {
+        this->sagittalImageActor->Delete();
+        this->sagittalImageActor = NULL;
+    }
+    int* extent = in->GetExtent();
+
+    switch( in->GetDcmHeader()->GetOrientationType() ) {
+        case svkDcmHeader::AXIAL: 
+            this->axialSlice = (extent[5]-extent[4])/2;
+            this->coronalSlice = (extent[3]-extent[2])/2;
+            this->sagittalSlice = (extent[1]-extent[0])/2;
+            break;
+        case svkDcmHeader::CORONAL: 
+            this->coronalSlice = (extent[5]-extent[4])/2;
+            this->axialSlice = (extent[3]-extent[2])/2;
+            this->sagittalSlice = (extent[1]-extent[0])/2;
+            break;
+        case svkDcmHeader::SAGITTAL: 
+            this->coronalSlice = (extent[5]-extent[4])/2;
+            this->axialSlice = (extent[3]-extent[2])/2;
+            this->coronalSlice = (extent[1]-extent[0])/2;
+            break;
+
+    }
+
+    if( this->axialImageActor == NULL ) {
+        this->axialImageActor = svkOpenGLOrientedImageActor::New();
+    }
+
+    if( this->coronalImageActor == NULL ) {
+        this->coronalImageActor = svkOpenGLOrientedImageActor::New();
+    }
+
+    if( this->sagittalImageActor == NULL ) {
+        this->sagittalImageActor = svkOpenGLOrientedImageActor::New();
+    }
+
     this->InitializeOrthogonalActors();
+
 }
 
 
@@ -332,9 +406,12 @@ void svkImageViewer2::Render()
     }
   if (this->GetInput())
     {
-    this->ImageActor->Modified();
-    this->orthImageActor1->Modified();
-    this->orthImageActor2->Modified();
+    //this->ImageActor->Modified();
+    //this->orthImageActor1->Modified();
+    //this->orthImageActor2->Modified();
+    this->axialImageActor->Modified();
+    this->coronalImageActor->Modified();
+    this->sagittalImageActor->Modified();
     this->RenderWindow->Render();
     }
 }
@@ -345,35 +422,74 @@ void svkImageViewer2::Render()
  */
 int svkImageViewer2::GetSlice()
 {
-    return Slice; 
+    return this->GetSlice( this->orientation ); 
 }
 
 
 /*
+ *   Gets the slice of the main image.
+ */
+int svkImageViewer2::GetSlice(svkDcmHeader::Orientation orientation )
+{
+    int currentSlice; 
+    switch( orientation ) {
+        case svkDcmHeader::AXIAL:
+            currentSlice = axialSlice;
+            break;
+        case svkDcmHeader::CORONAL:
+            currentSlice = coronalSlice;
+            break;
+        case svkDcmHeader::SAGITTAL:
+            currentSlice = sagittalSlice;
+            break;
+    }
+    return currentSlice; 
+}
+
+
+void svkImageViewer2::SetSlice( int slice ) 
+{
+    //Superclass::SetSlice(slice);
+    this->SetSlice( slice, this->orientation );
+}
+ 
+
+/*
  *  Sets the slice for a given image. 0 is the primary, 1 and 2 are the orthogonal.
  */
-void svkImageViewer2::SetSlice( int slice, int imageNum ) 
+void svkImageViewer2::SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation ) 
 {
-
-    int* extent =  NULL; 
     if( this->GetInput() != NULL ) {
-        extent = this->GetInput()->GetExtent();
-    }
-    switch( imageNum ) {
-        case 1: 
-            this->orthSlice1 = slice;
-            if( extent != NULL ) {
-                this->orthImageActor1->SetDisplayExtent( slice, slice, extent[2], extent[3], extent[4], extent[5] );
-            }
-            break;
-        case 2: 
-            this->orthSlice2 = slice;
-            if( extent != NULL ) {
-                this->orthImageActor2->SetDisplayExtent( extent[0], extent[1], slice, slice, extent[4], extent[5] );
-            }
-            break;
-        default:
-            Superclass::SetSlice( slice ); 
+        svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
+        int* extent = this->GetInput()->GetExtent();
+        int sliceIndex = this->GetInput()->GetOrientationIndex( sliceOrientation );
+
+        int sliceExtent[6] = { extent[ 0 ], extent[ 1 ],
+                               extent[ 2 ], extent[ 3 ],
+                               extent[ 4 ], extent[ 5 ] };
+        int sliceRange[2] = { this->GetInput()->GetFirstSlice( sliceOrientation ), 
+                              this->GetInput()->GetLastSlice( sliceOrientation ) };
+
+        if( slice < sliceRange[0] ) {
+            slice = sliceRange[0];
+        } else if ( slice > sliceRange[1] ) { 
+            slice = sliceRange[1];
+        }
+        sliceExtent[ sliceIndex *2 ] = slice;
+        sliceExtent[ sliceIndex *2 + 1 ] = slice;
+        this->GetImageActor( sliceOrientation )->SetDisplayExtent( sliceExtent );
+        
+        switch( sliceOrientation ) {
+            case svkDcmHeader::AXIAL:
+                this->axialSlice = slice;
+                break;
+            case svkDcmHeader::CORONAL:
+                this->coronalSlice = slice;
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->sagittalSlice = slice;
+                break;
+        }
     }
 }
 
@@ -386,13 +502,14 @@ void svkImageViewer2::ResetCamera()
 
         // We need to reset and render to get the distance to the object correct
         this->Render();
-        GetRenderer()->ResetCamera();
+        this->GetRenderer()->ResetCamera();
         int* extent = this->GetInput()->GetExtent();
         double* spacing = this->GetInput()->GetSpacing();
         double* origin = this->GetInput()->GetOrigin();
         double distance = this->GetRenderer()->GetActiveCamera()->GetDistance();
         double dcos[3][3];
         static_cast<svkImageData*>(this->GetInput())->GetDcos( dcos );
+        svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
         double uVec[3];
         uVec[0] = dcos[0][0];
         uVec[1] = dcos[0][1];
@@ -405,38 +522,58 @@ void svkImageViewer2::ResetCamera()
         wVec[0] = dcos[2][0];
         wVec[1] = dcos[2][1];
         wVec[2] = dcos[2][2];
-        double imageCenter[3];
         double x[3];
-        for( int i = 0; i < 3; i++ ) {
-                imageCenter[i] = origin[i];
-            for( int j = 0; j < 3; j++ ) {
-                if( j == this->SliceOrientation ) {
-                    imageCenter[i] += Slice * spacing[j] * dcos[j][i];
-                } else {
-                    imageCenter[i] += (((extent[2*j+1] - extent[2*j]) * spacing[j])/2) * dcos[j][i];
-                }
-            }
-        }
+        float tmpCenter[3];
+        this->data->GetImageCenter( tmpCenter );
+        double imageCenter[3] = {tmpCenter[0], tmpCenter[1], tmpCenter[2]};
         // If it is an axial data set...
         GetRenderer()->GetActiveCamera()->SetFocalPoint( imageCenter  );
-        if( pow( wVec[2], 2) >= pow( wVec[1], 2 ) && pow( wVec[2], 2) >= pow( wVec[0], 2 ) ) {
-            x[0] = imageCenter[0] + distance * dcos[this->SliceOrientation][0];
-            x[1] = imageCenter[1] + distance * dcos[this->SliceOrientation][1];
-            x[2] = imageCenter[2] + distance * dcos[this->SliceOrientation][2];
-            GetRenderer()->GetActiveCamera()->SetPosition( x );
-            GetRenderer()->GetActiveCamera()->SetViewUp( -vVec[0], -vVec[1], -vVec[2] );
-        } else if( pow( wVec[1], 2) >= pow( wVec[0], 2 ) && pow( wVec[1], 2) >= pow( wVec[2], 2 ) ) {
-            x[0] = imageCenter[0] - distance * dcos[this->SliceOrientation][0];
-            x[1] = imageCenter[1] - distance * dcos[this->SliceOrientation][1];
-            x[2] = imageCenter[2] - distance * dcos[this->SliceOrientation][2];
-            GetRenderer()->GetActiveCamera()->SetPosition( x );
-            GetRenderer()->GetActiveCamera()->SetViewUp( -vVec[0], -vVec[1], -vVec[2] );
-        } else {
-            x[0] = imageCenter[0] + distance * dcos[this->SliceOrientation][0];
-            x[1] = imageCenter[1] + distance * dcos[this->SliceOrientation][1];
-            x[2] = imageCenter[2] + distance * dcos[this->SliceOrientation][2];
-            GetRenderer()->GetActiveCamera()->SetPosition( x );
-            GetRenderer()->GetActiveCamera()->SetViewUp( -vVec[0], -vVec[1], -vVec[2] );
+        float axialNormal[3];
+        this->data->GetSliceNormal( axialNormal, svkDcmHeader::AXIAL );
+        float coronalNormal[3];
+        this->data->GetSliceNormal( coronalNormal, svkDcmHeader::CORONAL );
+        float sagittalNormal[3];
+        this->data->GetSliceNormal( sagittalNormal, svkDcmHeader::SAGITTAL );
+
+        int inverter = -1;
+        switch( this->orientation ) {
+            case svkDcmHeader::AXIAL:
+                if( axialNormal[2] > 0 ) {
+                    distance *=-1;
+                }
+                x[0] = imageCenter[0] + distance * axialNormal[0];
+                x[1] = imageCenter[1] + distance * axialNormal[1];
+                x[2] = imageCenter[2] + distance * axialNormal[2];
+                GetRenderer()->GetActiveCamera()->SetPosition( x );
+                if( coronalNormal[1] < 0 ) {
+                    inverter *=-1;
+                }
+                GetRenderer()->GetActiveCamera()->SetViewUp( inverter*coronalNormal[0], 
+                                                             inverter*coronalNormal[1], 
+                                                             inverter*coronalNormal[2] );
+                break;
+            case svkDcmHeader::CORONAL:
+                if( coronalNormal[1] > 0 ) {
+                    distance *=-1;
+                }
+                x[0] = imageCenter[0] + distance * coronalNormal[0];
+                x[1] = imageCenter[1] + distance * coronalNormal[1];
+                x[2] = imageCenter[2] + distance * coronalNormal[2];
+                GetRenderer()->GetActiveCamera()->SetPosition( x );
+                GetRenderer()->GetActiveCamera()->SetViewUp( inverter*axialNormal[0], 
+                                                             inverter*axialNormal[1], 
+                                                             inverter*axialNormal[2] );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                if( sagittalNormal[0] < 0 ) {
+                    distance *=-1;
+                }
+                x[0] = imageCenter[0] + distance * sagittalNormal[0];
+                x[1] = imageCenter[1] + distance * sagittalNormal[1];
+                x[2] = imageCenter[2] + distance * sagittalNormal[2];
+                GetRenderer()->GetActiveCamera()->SetPosition( x );
+                GetRenderer()->GetActiveCamera()->SetViewUp( -axialNormal[0], -axialNormal[1], -axialNormal[2] );
+                break;
         }
         GetRenderer()->ResetCamera();
         GetRenderer()->GetActiveCamera()->Zoom( 1.2 );
@@ -449,9 +586,9 @@ void svkImageViewer2::ResetCamera()
  */
 void svkImageViewer2::SetColorWindow(double s)
 {
-  this->WindowLevel->SetWindow(s);
-  this->orthWinLevel1->SetWindow(s);
-  this->orthWinLevel2->SetWindow(s);
+  this->axialWinLevel->SetWindow(s);
+  this->coronalWinLevel->SetWindow(s);
+  this->sagittalWinLevel->SetWindow(s);
 }
 
 
@@ -460,9 +597,9 @@ void svkImageViewer2::SetColorWindow(double s)
  */
 void svkImageViewer2::SetColorLevel(double s)
 {
-  this->WindowLevel->SetLevel(s);
-  this->orthWinLevel1->SetLevel(s);
-  this->orthWinLevel2->SetLevel(s);
+  this->axialWinLevel->SetLevel(s);
+  this->coronalWinLevel->SetLevel(s);
+  this->sagittalWinLevel->SetLevel(s);
 }
 
 
@@ -471,36 +608,134 @@ void svkImageViewer2::SetColorLevel(double s)
  */
 void svkImageViewer2::InitializeOrthogonalActors() 
 {
-    int* extent = this->GetInput()->GetExtent();
+    int* extent = this->data->GetExtent();
 
     // Setting the DisplayExtent is how we select a slice.
-    if( orthSlice1 >=0 ) {
-        this->orthImageActor1->SetDisplayExtent( orthSlice1, orthSlice1, extent[2], extent[3], extent[4], extent[5] );
-    } else {
-        this->orthImageActor1->SetDisplayExtent( extent[1]/2, extent[1]/2, extent[2], extent[3], extent[4], extent[5] );
+    switch ( this->data->GetDcmHeader()->GetOrientationType() ) {
+        case svkDcmHeader::AXIAL:
+
+            this->axialImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], extent[2], extent[3], axialSlice, axialSlice );   
+
+            this->coronalImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], coronalSlice, coronalSlice, extent[4], extent[5]); 
+
+            this->sagittalImageActor->SetDisplayExtent( 
+                                    sagittalSlice, sagittalSlice, extent[2], extent[3], extent[4], extent[5] );
+            break;
+
+        case svkDcmHeader::CORONAL:
+
+            this->axialImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], axialSlice, axialSlice, extent[4], extent[5] );   
+
+            this->coronalImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], extent[2], extent[3], coronalSlice, coronalSlice ); 
+
+            this->sagittalImageActor->SetDisplayExtent( 
+                                    sagittalSlice, sagittalSlice, extent[2], extent[3], extent[4], extent[5] );
+            break;
+
+        case svkDcmHeader::SAGITTAL:
+
+            this->axialImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], axialSlice, axialSlice, extent[4], extent[5] );   
+
+            this->coronalImageActor->SetDisplayExtent( 
+                                    coronalSlice, coronalSlice, extent[2], extent[3], extent[4], extent[5] ); 
+
+            this->sagittalImageActor->SetDisplayExtent( 
+                                    extent[0], extent[1], extent[2], extent[3], sagittalSlice, sagittalSlice);
+            break;
     }
-    if( orthSlice2 >=0 ) {
-        this->orthImageActor2->SetDisplayExtent( extent[0], extent[1], orthSlice2, orthSlice2, extent[4], extent[5] );
-    } else {
-        this->orthImageActor2->SetDisplayExtent( extent[0], extent[1], extent[3]/2, extent[3]/2, extent[4], extent[5] );
-    }
-    this->orthImageActor1->InterpolateOff();
-    this->orthImageActor2->InterpolateOff();
+
+    this->axialImageActor->InterpolateOff();
+    this->coronalImageActor->InterpolateOff();
+    this->sagittalImageActor->InterpolateOff();
 
 }
 
 
-
+/*!
+ *
+ */
 void svkImageViewer2::TurnOrthogonalImagesOn()
 {
-    this->orthImageActor1->VisibilityOn();
-    this->orthImageActor2->VisibilityOn();
+    this->axialImageActor->VisibilityOn();
+    this->coronalImageActor->VisibilityOn();
+    this->sagittalImageActor->VisibilityOn();
 }
 
+
+/*!
+ *
+ */
 void svkImageViewer2::TurnOrthogonalImagesOff()
 {
-    this->orthImageActor1->VisibilityOff();
-    this->orthImageActor1->Modified();
-    this->orthImageActor2->VisibilityOff();
-    this->orthImageActor2->Modified();
+    switch ( this->orientation ) {
+        case svkDcmHeader::AXIAL:
+            this->coronalImageActor->VisibilityOff(); 
+            this->coronalImageActor->Modified(); 
+            this->sagittalImageActor->VisibilityOff(); 
+            this->sagittalImageActor->Modified(); 
+            break;
+        case svkDcmHeader::CORONAL:
+            this->axialImageActor->VisibilityOff(); 
+            this->axialImageActor->Modified(); 
+            this->sagittalImageActor->VisibilityOff(); 
+            this->sagittalImageActor->Modified(); 
+            break;
+        case svkDcmHeader::SAGITTAL:
+            this->axialImageActor->VisibilityOff(); 
+            this->axialImageActor->Modified(); 
+            this->coronalImageActor->VisibilityOff(); 
+            this->coronalImageActor->Modified(); 
+            break;
+    }
+}
+
+
+/*!
+ *
+ */
+void svkImageViewer2::SetOrientation( svkDcmHeader::Orientation orientation )
+{
+    this->orientation = orientation;
+}
+
+
+/*!
+ *
+ */
+svkDcmHeader::Orientation svkImageViewer2::GetOrientation( )
+{
+    return this->orientation;
+}
+
+
+/*!
+ *
+ */
+svkOpenGLOrientedImageActor* svkImageViewer2::GetImageActor( svkDcmHeader::Orientation actorOrientation )
+{
+    svkOpenGLOrientedImageActor* actor = NULL;
+    actorOrientation = (actorOrientation == svkDcmHeader::UNKNOWN ) ?
+                                this->GetInput()->GetDcmHeader()->GetOrientationType() : actorOrientation;
+    switch ( actorOrientation ) {
+        case svkDcmHeader::AXIAL:
+            actor = this->axialImageActor;
+            break;
+        case svkDcmHeader::CORONAL:
+            actor = this->coronalImageActor;
+            break;
+        case svkDcmHeader::SAGITTAL:
+            actor = this->sagittalImageActor;
+            break;
+    }
+    return actor;
+}
+
+svkImageData* svkImageViewer2::GetInput( ) 
+{
+    return this->data;
 }

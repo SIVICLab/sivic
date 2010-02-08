@@ -50,6 +50,7 @@
 #include <vtkObject.h>
 
 #include <svkImageData.h>
+#include <vtkPlane.h>
 #include <svkDataViewController.h>
 
 #include <vector>
@@ -133,6 +134,8 @@ class svkDataView : public vtkObject
 
         virtual void            SetOrientation( svkDcmHeader::Orientation orientation );
         virtual svkDcmHeader::Orientation  GetOrientation( );
+        static void             ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int tlcBrc[2], double clip_tolerance_row , double clip_tolerance_column, double clip_tolerance_slice);
+        static void             GetClippingIndexFromTlcBrc( svkImageData* data, int indexRange[2][3], int tlcBrc[2] );
 
 
     protected:
@@ -145,6 +148,9 @@ class svkDataView : public vtkObject
         svkDataViewController*          controller;  
         vtkCallbackCommand*             dataModifiedCallback;
         svkDcmHeader::Orientation       orientation;
+
+        //! the top left, bottom right corners of the current view 
+        int*                            tlcBrc;
 
         vector < bool >                 isPropOn;          //Is the actor turned on or off?
         vector < bool >                 isRendererOn;       //Is the renderer turned on or off?

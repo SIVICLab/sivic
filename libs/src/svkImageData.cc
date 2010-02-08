@@ -522,8 +522,6 @@ double* svkImageData::GetPoint (vtkIdType ptId)
  */
 vtkCell* svkImageData::GetCell (vtkIdType cellId)
 {
-    return NULL;
-    /*
     // Source here is pulled from vtkImageData, has been modified, 
     // and should work, but needs to be checked
     vtkCell *cell = NULL;
@@ -635,7 +633,6 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
     }
 
   return cell;
-    */
 }
 
 
@@ -1207,11 +1204,12 @@ void svkImageData::GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::O
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    int index = this->GetOrientationIndex( sliceOrientation );
     float normal[3];
     this->GetSliceNormal( normal, sliceOrientation );
-    sliceOrigin[0] = this->GetOrigin()[0] + normal[0]*this->GetSpacing()[0]*slice;
-    sliceOrigin[1] = this->GetOrigin()[1] + normal[1]*this->GetSpacing()[1]*slice;
-    sliceOrigin[2] = this->GetOrigin()[2] + normal[2]*this->GetSpacing()[2]*slice;
+    sliceOrigin[0] = this->GetOrigin()[0] + normal[0]*this->GetSpacing()[index]*slice;
+    sliceOrigin[1] = this->GetOrigin()[1] + normal[1]*this->GetSpacing()[index]*slice;
+    sliceOrigin[2] = this->GetOrigin()[2] + normal[2]*this->GetSpacing()[index]*slice;
 
 }
 
@@ -1263,6 +1261,25 @@ void svkImageData::GetSliceNormal(float* normal, svkDcmHeader::Orientation slice
                     break;
             }
             break;
+        case svkDcmHeader::SAGITTAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    normal[0] = dcos[1][0];  
+                    normal[1] = dcos[1][1];  
+                    normal[2] = dcos[1][2];  
+                    break;
+                case svkDcmHeader::CORONAL:
+                    normal[0] = dcos[0][0];  
+                    normal[1] = dcos[0][1];  
+                    normal[2] = dcos[0][2];  
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    normal[0] = dcos[2][0];  
+                    normal[1] = dcos[2][1];  
+                    normal[2] = dcos[2][2];  
+                    break;
+            }
+            break;
     } 
 
 }
@@ -1276,11 +1293,12 @@ int svkImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation slice
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     float normal[3];
+    double* origin = this->GetOrigin();
     this->GetSliceNormal( normal, sliceOrientation );
     double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
     double imageCenter = vtkMath::Dot( posLPS, normal ); 
     double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
-    int slice = (int) floor( idealCenter );
+    int slice = (int) floor( idealCenter + 0.5 );
     return slice; 
 }
 
@@ -1291,41 +1309,41 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
     int numSlices;
     switch ( this->GetDcmHeader()->GetOrientationType()) {
         case svkDcmHeader::AXIAL:
-            switch ( this->GetDcmHeader()->GetOrientationType()) {
+            switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[2];
+                    numSlices = this->GetDimensions()[2]-1;
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[1];
+                    numSlices = this->GetDimensions()[1]-1;
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0];
+                    numSlices = this->GetDimensions()[0]-1;
                     break;
             }
             break;
         case svkDcmHeader::CORONAL:
-            switch ( this->GetDcmHeader()->GetOrientationType()) {
+            switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1];
+                    numSlices = this->GetDimensions()[1]-1;
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[2];
+                    numSlices = this->GetDimensions()[2]-1;
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0];
+                    numSlices = this->GetDimensions()[0]-1;
                     break;
             }
             break;
         case svkDcmHeader::SAGITTAL:
-            switch ( this->GetDcmHeader()->GetOrientationType()) {
+            switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1];
+                    numSlices = this->GetDimensions()[1]-1;
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[0];
+                    numSlices = this->GetDimensions()[0]-1;
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[2];
+                    numSlices = this->GetDimensions()[2]-1;
                     break;
             }
             break;
@@ -1333,6 +1351,10 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
     return numSlices;
 }
 
+
+/*!
+ *
+ */
 int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 

@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-#define DEBUG 1
+#define DEBUG 0
 
 vtkCxxRevisionMacro(svkPlotGridViewController, "$Rev$");
 vtkStandardNewMacro(svkPlotGridViewController);
@@ -63,6 +63,11 @@ svkPlotGridViewController::svkPlotGridViewController()
     dataVector.push_back(NULL);
     this->view = svkPlotGridView::New();
     this->view->SetController(this);
+
+    vtkRenderer* primaryRenderer = vtkRenderer::New();
+    this->view->SetRenderer(svkPlotGridView::PRIMARY, primaryRenderer );
+    primaryRenderer->Delete();
+
     this->slice = 0;
     this->rwi = NULL;
 }
@@ -126,6 +131,10 @@ void svkPlotGridViewController::Reset()
     // Create View
     this->view = svkPlotGridView::New();
     this->view->SetController(this);
+    vtkRenderer* primaryRenderer = vtkRenderer::New();
+    this->view->SetRenderer(svkPlotGridView::PRIMARY, primaryRenderer );
+    primaryRenderer->Delete();
+
     this->SetRWInteractor( this->rwi );
     this->view->Refresh();
 
@@ -153,8 +162,8 @@ void svkPlotGridViewController::SetInput(svkImageData* data, int index)
  */ 
 void svkPlotGridViewController::SetSlice(int slice)
 {
-    this->slice = slice;
     this->view->SetSlice(slice);
+    this->slice = static_cast<svkPlotGridView*>(this->view)->GetSlice();
 }
 
 
@@ -245,24 +254,6 @@ void svkPlotGridViewController::SetRWInteractor( vtkRenderWindowInteractor* rwi 
  */
 void svkPlotGridViewController::UpdateSelection(vtkObject* subject, unsigned long eid, void* thisObject, void *callData)
 {
-/*
-    int* selectionArea = new int[4];
-
-    svkPlotGridViewController* thisController = static_cast<svkPlotGridViewController*>(thisObject);
-    svkSpecGridSelector* thisDragSelect = thisController->dragSelect; 
-    svkPlotGridView* view = static_cast<svkPlotGridView*>(thisController->GetView());
-     
-    selectionArea[0] = thisDragSelect->GetStartX();
-    selectionArea[1] = thisDragSelect->GetStartY();
-    selectionArea[2] = thisDragSelect->GetEndX();
-    selectionArea[3] = thisDragSelect->GetEndY();
-    view->SetSelection( selectionArea );
-    view->Refresh();
-    delete[] selectionArea;
-    
-    // Now lets notify anyone watching the rwi that we have changed its selection
-    thisController->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
-*/
     svkPlotGridViewController* dvController = static_cast<svkPlotGridViewController*>(thisObject);
     svkSpecGridSelector* myRubberband = dvController->dragSelect;
 

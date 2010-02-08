@@ -116,8 +116,8 @@ class svkOverlayViewController: public svkDataViewController
         //  Methods
         virtual void              SetInput( svkImageData* data, int index = 0 );
         virtual void              SetSlice( int slice );
-        virtual void              SetSlice(int slice, int imageNum);
-        virtual int               GetImageSlice();
+        virtual void              SetSlice(int slice, svkDcmHeader::Orientation orientation);
+        virtual int               GetImageSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         virtual void              SetRWInteractor(vtkRenderWindowInteractor*);
         virtual void              TurnPropOn( int propIndex );
         virtual void              TurnPropOff( int propIndex );

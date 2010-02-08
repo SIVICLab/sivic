@@ -84,14 +84,18 @@ void svkSpecGridSelector::OnMouseMove()
   
     if (this->Interaction == PANNING)
       {
+      this->Pan();
+/*
       double delta[] = {0, 0, 0};
-      delta[0] = -lastScale*(curPt[0] - lastPt[0]);
+      delta[0] = lastScale*(curPt[0] - lastPt[0]);
       delta[1] = lastScale*(curPt[1] - lastPt[1]);
       delta[2] = 0;
       camera->SetFocalPoint(lastFocalPt[0] + delta[0], lastFocalPt[1] + delta[1], lastFocalPt[2] + delta[2]);
       camera->SetPosition(lastPos[0] + delta[0], lastPos[1] + delta[1], lastPos[2] + delta[2]);
+*/
       this->InvokeEvent(vtkCommand::InteractionEvent);
       rwi->Render();
+
       }
     else if (this->Interaction == ZOOMING)
       {
@@ -219,4 +223,63 @@ void svkSpecGridSelector::RedrawRubberBand()
   this->Interactor->GetRenderWindow()->Frame();
   
   tmpPixelArray->Delete();
+}
+
+
+//----------------------------------------------------------------------------
+void svkSpecGridSelector::Pan()
+{
+  if (this->CurrentRenderer == NULL)
+    {
+    return;
+    }
+
+  vtkRenderWindowInteractor *rwi = this->Interactor;
+
+  double viewFocus[4], focalDepth, viewPoint[3];
+  double newPickPoint[4], oldPickPoint[4], motionVector[3];
+  
+  // Calculate the focal depth since we'll be using it a lot
+
+  vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+  camera->GetFocalPoint(viewFocus);
+  this->ComputeWorldToDisplay(viewFocus[0], viewFocus[1], viewFocus[2], 
+                              viewFocus);
+  focalDepth = viewFocus[2];
+
+  this->ComputeDisplayToWorld(rwi->GetEventPosition()[0], 
+                              rwi->GetEventPosition()[1],
+                              focalDepth, 
+                              newPickPoint);
+    
+  // Has to recalc old mouse point since the viewport has moved,
+  // so can't move it outside the loop
+
+  this->ComputeDisplayToWorld(rwi->GetLastEventPosition()[0],
+                              rwi->GetLastEventPosition()[1],
+                              focalDepth, 
+                              oldPickPoint);
+  
+  // Camera motion is reversed
+
+  motionVector[0] = oldPickPoint[0] - newPickPoint[0];
+  motionVector[1] = oldPickPoint[1] - newPickPoint[1];
+  motionVector[2] = oldPickPoint[2] - newPickPoint[2];
+  
+  camera->GetFocalPoint(viewFocus);
+  camera->GetPosition(viewPoint);
+  camera->SetFocalPoint(motionVector[0] + viewFocus[0],
+                        motionVector[1] + viewFocus[1],
+                        motionVector[2] + viewFocus[2]);
+
+  camera->SetPosition(motionVector[0] + viewPoint[0],
+                      motionVector[1] + viewPoint[1],
+                      motionVector[2] + viewPoint[2]);
+      
+  if (rwi->GetLightFollowCamera()) 
+    {
+    this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+    }
+    
+  rwi->Render();
 }

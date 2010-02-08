@@ -55,12 +55,6 @@ vtkStandardNewMacro(svkPlotLineGrid);
 //! Constructor 
 svkPlotLineGrid::svkPlotLineGrid()
 {
-    this->voxelIndexTLC = new int[2];
-    this->voxelIndexBRC = new int[2];
-    this->voxelIndexTLC[0] = 0;
-    this->voxelIndexTLC[1] = 0;
-    this->voxelIndexBRC[0] = 0;
-    this->voxelIndexBRC[1] = 0;
     this->data = NULL;
     this->channel = 0;
     this->slice = 0;
@@ -72,6 +66,7 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->plotGridActor = NULL;
     this->freqUpToDate = NULL;
     this->ampUpToDate = NULL;
+    this->orientation = svkDcmHeader::AXIAL;
 
 
     /*
@@ -95,6 +90,8 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->plotRangeY2 = 0;
     this->plotComponent = svkPlotLine::REAL; 
     this->points = NULL;
+    this->tlcBrc[0] = 0;
+    this->tlcBrc[1] = 0;
 
 }
 
@@ -138,8 +135,6 @@ svkPlotLineGrid::~svkPlotLineGrid()
     }
     
     delete[] viewBounds;
-    delete[] voxelIndexTLC;
-    delete[] voxelIndexBRC;
     delete[] freqUpToDate;
     delete[] ampUpToDate;
 }
@@ -179,15 +174,15 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     if( this->freqUpToDate != NULL ) {
         delete[] this->freqUpToDate;
     }
-    this->freqUpToDate = new bool[ this->data->GetDcmHeader()->GetNumberOfSlices() ];
-    for( int i = 0; i < this->data->GetDcmHeader()->GetNumberOfSlices(); i++ ) {
+    this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+    for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->freqUpToDate[i] = 0;
     }
     if( this->ampUpToDate != NULL ) {
         delete[] this->ampUpToDate;
     }
-    this->ampUpToDate = new bool[ this->data->GetDcmHeader()->GetNumberOfSlices() ];
-    for( int i = 0; i < this->data->GetDcmHeader()->GetNumberOfSlices(); i++ ) {
+    this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+    for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->ampUpToDate[i] = 0;
     }
     // maxPlots are saved to improve performance
@@ -244,18 +239,27 @@ void svkPlotLineGrid::SetSlice(int slice)
 {
     this->slice = slice; 
     if( data != NULL ) { 
-        int* extent = data->GetExtent();
-        if( slice < extent[5] && slice >= extent[4] ) { 
-            if( this->data->SliceInSelectionBox( slice )  ) {
-                this->selectionBoxActor->SetVisibility(1);
-                this->selectionBoxActor->SetPickable(0);
-            } else {
-                this->selectionBoxActor->SetVisibility(0);
-            }
+        int tlcIndex[3];
+        int brcIndex[3];
+        this->data->GetIndexFromID( tlcBrc[0], tlcIndex );
+        this->data->GetIndexFromID( tlcBrc[1], brcIndex );
+        int lastSlice  = this->data->GetLastSlice( this->orientation );
+        int firstSlice = this->data->GetFirstSlice( this->orientation );
+        slice = (slice > lastSlice) ? lastSlice:slice;
+        slice = (slice < firstSlice) ? firstSlice:slice;
+        tlcIndex[ this->data->GetOrientationIndex( this->orientation ) ] = slice;
+        brcIndex[ this->data->GetOrientationIndex( this->orientation ) ] = slice;
+        this->tlcBrc[0] = this->data->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
+        this->tlcBrc[1] = this->data->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
+        this->UpdatePlotRange();
+        this->Update();
 
-            this->UpdatePlotRange();
-            this->AlignCamera();
+        if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
+            this->selectionBoxActor->SetVisibility(1);
+        } else {
+            this->selectionBoxActor->SetVisibility(0);
         }
+
     }
 }
 
@@ -270,34 +274,32 @@ void svkPlotLineGrid::SetSlice(int slice)
  *
  *  \param brcID the id of the bottom right corner 
  */
-void svkPlotLineGrid::SetPlotVoxels(int tlcID, int brcID)
+void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
 {
-    int tlcX, tlcY, tlcZ;
-    int brcX, brcY, brcZ;
-    int gridSize = maxPlotsX* maxPlotsY;   
+    if( this->data != NULL ) { 
+        int minIndex[3] = {0,0,0};
+        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
 
-    if( data == NULL ) {
-        return;
-        // Check to see if the voxels asked for are within slice...
-    } else if( tlcID < slice*gridSize     || brcID < slice*gridSize 
-            || tlcID > (slice+1)*gridSize || brcID > (slice+1)*gridSize ) {
+        minIndex[ orientationIndex ] = this->slice;
+        maxIndex[ orientationIndex ] = this->slice;
+        int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
 
-        this->voxelIndexTLC[0] = 0; 
-        this->voxelIndexTLC[1] = 0;
-        this->voxelIndexBRC[0] = this->maxPlotsX - 1;
-        this->voxelIndexBRC[1] = this->maxPlotsY - 1;
-    } else {
-        this->data->GetIndexFromID(tlcID, &tlcX, &tlcY, &tlcZ);
-        this->data->GetIndexFromID(brcID, &brcX, &brcY, &brcZ);
-        this->voxelIndexTLC[0] = tlcX; 
-        this->voxelIndexTLC[1] = tlcY; 
-        this->voxelIndexBRC[0] = brcX;
-        this->voxelIndexBRC[1] = brcY;
-        if (DEBUG) {
-            cout << " Set Plot Voxels ID: " << tlcX << "," << tlcY << "," <<  brcX <<"," << brcY << endl;
+        if( tlcBrc[0] <= tlcBrc[1] ) {
+            if( tlcBrc[0] >= minID && tlcBrc[0] <= maxID ) {
+                minID = tlcBrc[0];
+            }
+            if( tlcBrc[1] >= minID && tlcBrc[1] <= maxID ) {
+                maxID = tlcBrc[1];
+            }
         }
-    }
-    this->Update();
+
+        this->tlcBrc[0] = minID;
+        this->tlcBrc[1] = maxID;
+        this->Update();
+    } 
+
 }
 
 
@@ -339,75 +341,60 @@ void svkPlotLineGrid::Update()
     tmpViewBounds[5] = -VTK_DOUBLE_MAX;
     svkPlotLine* tmpXYPlot;
 
-    for (int yInd = voxelIndexTLC[1]; yInd <= voxelIndexBRC[1]; yInd++) {
-        for (int xInd = voxelIndexTLC[0]; xInd <= voxelIndexBRC[0]; xInd++) {
-            ID = this->data->GetIDFromIndex(xInd, yInd, this->slice); 
-            tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
+    int rowRange[2] = {0,0};
+    int columnRange[2] = {0,0};
+    int sliceRange[2] = {0,0};
+    this->data->GetIndexFromID( tlcBrc[0], &rowRange[0], &columnRange[0], &sliceRange[0] );
+    this->data->GetIndexFromID( tlcBrc[1], &rowRange[1], &columnRange[1], &sliceRange[1] );
+    for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+        for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+            for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
+            
+                ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
+                tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
 
-            // If the data has been update since the actors- then regenerate them
-            if( data->GetMTime() > tmpXYPlot->GetMTime() ) {
-                tmpXYPlot->GeneratePolyData();
-            }
+                // If the data has been update since the actors- then regenerate them
+                if( data->GetMTime() > tmpXYPlot->GetMTime() ) {
+                    tmpXYPlot->GeneratePolyData();
+                }
 
-            if (DEBUG) {
-                cout << "Make Visible: " << xInd << " " << yInd << " " << this->slice << endl;
-            }
+                if (DEBUG) {
+                    cout << "Make Visible: " << ID << endl;
+                }
 
-            // We use the cellbounds to reset the camera's fov        
-            if( tmpXYPlot->plotAreaBounds[0] < tmpViewBounds[0] ) {
-                tmpViewBounds[0] = tmpXYPlot->plotAreaBounds[0];
+                // We use the cellbounds to reset the camera's fov        
+                if( tmpXYPlot->plotAreaBounds[0] < tmpViewBounds[0] ) {
+                    tmpViewBounds[0] = tmpXYPlot->plotAreaBounds[0];
+                }
+                if( tmpXYPlot->plotAreaBounds[1] > tmpViewBounds[1] ) {
+                    tmpViewBounds[1] = tmpXYPlot->plotAreaBounds[1];
+                }
+                if( tmpXYPlot->plotAreaBounds[2] < tmpViewBounds[2] ) {
+                    tmpViewBounds[2] = tmpXYPlot->plotAreaBounds[2];
+                }
+                if( tmpXYPlot->plotAreaBounds[3] > tmpViewBounds[3] ) {
+                    tmpViewBounds[3] = tmpXYPlot->plotAreaBounds[3];
+                }
+                if( tmpXYPlot->plotAreaBounds[4] < tmpViewBounds[4] ) {
+                    tmpViewBounds[4] = tmpXYPlot->plotAreaBounds[4];
+                }
+                if( tmpXYPlot->plotAreaBounds[5] > tmpViewBounds[5] ) {
+                    tmpViewBounds[5] = tmpXYPlot->plotAreaBounds[5];
+                }
             }
-            if( tmpXYPlot->plotAreaBounds[1] > tmpViewBounds[1] ) {
-                tmpViewBounds[1] = tmpXYPlot->plotAreaBounds[1];
-            }
-            if( tmpXYPlot->plotAreaBounds[2] < tmpViewBounds[2] ) {
-                tmpViewBounds[2] = tmpXYPlot->plotAreaBounds[2];
-            }
-            if( tmpXYPlot->plotAreaBounds[3] > tmpViewBounds[3] ) {
-                tmpViewBounds[3] = tmpXYPlot->plotAreaBounds[3];
-            }
-            if( tmpXYPlot->plotAreaBounds[4] < tmpViewBounds[4] ) {
-                tmpViewBounds[4] = tmpXYPlot->plotAreaBounds[4];
-            }
-            if( tmpXYPlot->plotAreaBounds[5] > tmpViewBounds[5] ) {
-                tmpViewBounds[5] = tmpXYPlot->plotAreaBounds[5];
-            }
-/*
-            if (yInd == voxelIndexTLC[1] && xInd == voxelIndexTLC[0]) {
-                cellBounds = tmpXYPlot->plotAreaBounds;   
-                tmpViewBounds[0] = cellBounds[0];
-                tmpViewBounds[2] = cellBounds[2];
-            } 
-
-            if (yInd == voxelIndexBRC[1] && xInd == voxelIndexBRC[0]) {
-                cellBounds = tmpXYPlot->plotAreaBounds;   
-                tmpViewBounds[1] = cellBounds[1];
-                tmpViewBounds[3] = cellBounds[3];
-                tmpViewBounds[4] = cellBounds[4];
-                tmpViewBounds[5] = cellBounds[5];
-            } 
-*/
         }
     }
 
-    // Reset the fov to include the selection box
-    if( selectionBoxActor->GetVisibility() == 1 ) {
-        double* selectionBounds = selectionBoxActor->GetBounds();
-        if( tmpViewBounds[4] > selectionBounds[4] ) {
-            tmpViewBounds[4] = selectionBounds[4];
-        }
-        if( tmpViewBounds[5] < selectionBounds[5] ) {
-            tmpViewBounds[5] = selectionBounds[5];
-        }
-    }
     // verify camera positioning
     if( viewBounds == NULL ) {
         viewBounds = tmpViewBounds;
         AlignCamera();
     } else if(  viewBounds[0] != tmpViewBounds[0] ||
-            viewBounds[1] != tmpViewBounds[1] ||
-            viewBounds[2] != tmpViewBounds[2] ||
-            viewBounds[3] != tmpViewBounds[3] ) { 
+                viewBounds[1] != tmpViewBounds[1] ||
+                viewBounds[2] != tmpViewBounds[2] ||
+                viewBounds[3] != tmpViewBounds[3] ||
+                viewBounds[4] != tmpViewBounds[4] ||
+                viewBounds[5] != tmpViewBounds[5] ) {
         delete[] viewBounds;
         viewBounds = tmpViewBounds; 
         AlignCamera();
@@ -507,9 +494,6 @@ void svkPlotLineGrid::GenerateActor()
 
                 tmpXYPlot->SetPointRange(plotRangeX1, plotRangeX2);
                 tmpXYPlot->SetValueRange(plotRangeY1, plotRangeY2);
-                if( acquisitionType == "SINGLE VOXEL" ) {
-                    tmpXYPlot->SetInvertPlots( false );
-                }
 
 
             }
@@ -543,7 +527,7 @@ void svkPlotLineGrid::GenerateActor()
 //!  Remove Actors for updating view: 
 void svkPlotLineGrid::RemoveActors()
 {
-    renderer->RemoveAllViewProps();
+   // renderer->RemoveAllViewProps();
     if( xyPlots != NULL ) {
         xyPlots->Delete();   
         xyPlots = NULL;
@@ -565,7 +549,7 @@ void svkPlotLineGrid::SetFrequencyWLRange(int lower, int upper)
     this->plotRangeX1 = lower; 
     this->plotRangeX2 = upper; 
     if( this->data != NULL ) {
-        for( int i = 0; i < this->data->GetDcmHeader()->GetNumberOfSlices(); i++ ) {
+        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->freqUpToDate[i] = 0;
         }
     }
@@ -585,7 +569,7 @@ void svkPlotLineGrid::SetIntensityWLRange(double lower, double upper)
     this->plotRangeY1 = lower;
     this->plotRangeY2 = upper;  
     if( this->data != NULL ) {
-        for( int i = 0; i < this->data->GetDcmHeader()->GetNumberOfSlices(); i++ ) {
+        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->ampUpToDate[i] = 0;
         }
     }
@@ -602,10 +586,24 @@ void svkPlotLineGrid::UpdatePlotRange()
     int ID;
     int* extent = data->GetExtent();
     if( data != NULL && (!this->ampUpToDate[slice] || (!this->freqUpToDate[slice]) )) { 
-        if( slice < extent[5] && slice >= extent[4] ) { 
-            for (int yInd = 0; yInd <= maxPlotsY; yInd++) {
-                for (int xInd = 0; xInd <= maxPlotsX; xInd++) {
-                    ID = this->data->GetIDFromIndex(xInd, yInd, this->slice);
+        int minIndex[3] = {0,0,0};
+        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+
+        minIndex[ orientationIndex ] = this->slice;
+        maxIndex[ orientationIndex ] = this->slice;
+        int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+
+        int rowRange[2] = {0,0};
+        int columnRange[2] = {0,0};
+        int sliceRange[2] = {0,0};
+        this->data->GetIndexFromID( minID, &rowRange[0], &columnRange[0], &sliceRange[0] );
+        this->data->GetIndexFromID( maxID, &rowRange[1], &columnRange[1], &sliceRange[1] );
+        for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
+            for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+                for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+                    ID = this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
                     if( !this->freqUpToDate[slice]) {
                         tmpXYPlot->SetPointRange(this->plotRangeX1, this->plotRangeX2);
@@ -630,10 +628,17 @@ void svkPlotLineGrid::UpdatePlotRange()
 //! Regenerates the plot data, used when data is modified.
 void svkPlotLineGrid::RegeneratePlots()
 {
-    for (int yInd = 0; yInd < maxPlotsY; yInd++) {
-        for (int xInd = 0; xInd < maxPlotsX; xInd++) {
+    int rowRange[2] = {0,0};
+    int columnRange[2] = {0,0};
+    int sliceRange[2] = {0,0};
+    this->data->GetIndexFromID( tlcBrc[0], &rowRange[0], &columnRange[0], &sliceRange[0] );
+    this->data->GetIndexFromID( tlcBrc[1], &rowRange[1], &columnRange[1], &sliceRange[1] );
+    for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+        for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+            for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
             static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(
-                        this->data->GetIDFromIndex(xInd, yInd, this->slice)))->GeneratePolyData(); 
+                        this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex)))->GeneratePolyData(); 
+            }
         }
     }
 
@@ -645,54 +650,88 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
 {  
     if( this->renderer != NULL && viewBounds != NULL ) {
         string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        float normal[3];
+        this->data->GetSliceNormal( normal, this->orientation );
         double zoom;
-        double viewWidth = viewBounds[1] - viewBounds[0];
+        double viewWidth =  viewBounds[1] - viewBounds[0];
         double viewHeight = viewBounds[3] - viewBounds[2];
-        viewBounds[4] = this->renderer->ComputeVisiblePropBounds()[4];
-        viewBounds[5] = this->renderer->ComputeVisiblePropBounds()[5];
-        double viewDepth = viewBounds[5] - viewBounds[4];
+        double viewDepth =  viewBounds[5] - viewBounds[4];
         double diagonal = sqrt( pow(viewWidth,2) + pow(viewHeight,2) + pow(viewDepth,2) );
         int toggleDraw = this->renderer->GetDraw();
         if( toggleDraw ) {
             this->renderer->DrawOff();
         }
+
         this->renderer->ResetCamera( viewBounds );
-        double dcos[3][3];
-        data->GetDcos( dcos );
-        double sliceNormal[3];
-        this->data->GetDataBasis( sliceNormal, svkImageData::SLICE );
         // if the data set is not axial, move the camera
         double* focalPoint = this->renderer->GetActiveCamera()->GetFocalPoint();
         double* cameraPosition = this->renderer->GetActiveCamera()->GetPosition();
         double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
-                pow( focalPoint[1] - cameraPosition[1], 2 ) +
-                pow( focalPoint[2] - cameraPosition[2], 2 ) );
+                                pow( focalPoint[1] - cameraPosition[1], 2 ) +
+                                pow( focalPoint[2] - cameraPosition[2], 2 ) );
+        
         double newCameraPosition[3];
 
-        if( pow( sliceNormal[2], 2) < pow( sliceNormal[1], 2 ) || pow( sliceNormal[2], 2) < pow( sliceNormal[0], 2 ) 
-                                                 || acquisitionType == "SINGLE VOXEL" ) {
-            newCameraPosition[0] = focalPoint[0] - distance*sliceNormal[0]; 
-            newCameraPosition[1] = focalPoint[1] - distance*sliceNormal[1];
-            newCameraPosition[2] = focalPoint[2] - distance*sliceNormal[2];
-        } else {
-            newCameraPosition[0] = focalPoint[0] + distance*sliceNormal[0]; 
-            newCameraPosition[1] = focalPoint[1] + distance*sliceNormal[1];
-            newCameraPosition[2] = focalPoint[2] + distance*sliceNormal[2];
-
+        // Lets calculate the distance from the focal point to the selection box
+        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 || acquisitionType == "SINGLE VOXEL" ) {
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::SAGITTAL && normal[0] < 0 ) { 
+            distance *=-1;
         }
+         
+        newCameraPosition[0] = focalPoint[0] + distance*normal[0]; 
+        newCameraPosition[1] = focalPoint[1] + distance*normal[1];
+        newCameraPosition[2] = focalPoint[2] + distance*normal[2];
         this->renderer->GetActiveCamera()->SetPosition( newCameraPosition );
 
-        double columnNormal[3];
-        this->data->GetDataBasis( columnNormal, svkImageData::COLUMN );
-        if(acquisitionType == "SINGLE VOXEL" ) {
-            this->renderer->GetActiveCamera()->SetViewUp( columnNormal[0], columnNormal[1], columnNormal[2] );
-        }
-        this->renderer->ResetCamera( viewBounds );
+        double* visibleBounds  = this->renderer->ComputeVisiblePropBounds();
+        double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
+                                 pow( visibleBounds[3] - visibleBounds[2], 2 ) +
+                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) );
+        this->renderer->GetActiveCamera()->SetThickness( thickness );
 
-        if( viewWidth >= viewHeight ) {
+        double columnNormal[3];
+        float viewUp[3];
+        int inverter = -1;
+
+        switch ( this->orientation ) {
+            case svkDcmHeader::AXIAL:
+                this->data->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
+                if( viewUp[1] < 0 ) {
+                    inverter *=-1;
+                }
+                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::CORONAL:
+                this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[1] > 0 ) {
+                    inverter *=-1;
+                }
+                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[1] < 0 ) {
+                    inverter *=-1;
+                }
+                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+        }
+
+        if( viewWidth >= viewHeight && viewWidth >= viewDepth ) {
             zoom = diagonal/viewWidth;        
-        } else {
+        } else if( viewHeight >= viewWidth && viewHeight >= viewDepth ) {
             zoom = diagonal/viewHeight;        
+        } else {
+            zoom = diagonal/viewDepth;        
         }
         // We'll back off the zoom to 95% to leave some edges
         this->renderer->GetActiveCamera()->Zoom(0.95*zoom);
@@ -752,7 +791,6 @@ void svkPlotLineGrid::HighlightSelectionVoxels()
         myIterator->Delete();
 
         if( newTlcBrc[0] >= 0 && newTlcBrc[0] >= 0 ) {
-            SetPlotVoxels(newTlcBrc[0], newTlcBrc[1]);
             this->Update();
             AlignCamera();
         } 
@@ -809,6 +847,150 @@ void svkPlotLineGrid::UpdateComponent()
 
 
 /*!
+ *  Checks to see if the component has change, if it has it updates.
+ */
+void svkPlotLineGrid::UpdateOrientation()
+{
+    if( data != NULL ) {
+        vtkCollectionIterator* iterator = vtkCollectionIterator::New();
+        svkPlotLine* tmpBoxPlot;
+        iterator->SetCollection(xyPlots);
+        iterator->InitTraversal();
+        svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
+        bool mirrorPlots = false;
+        bool invertPlots = false;
+        double LRNormal[3];
+        this->data->GetDataBasis(LRNormal, svkImageData::LR );
+        double PANormal[3];
+        this->data->GetDataBasis(PANormal, svkImageData::PA );
+        double SINormal[3];
+        this->data->GetDataBasis(SINormal, svkImageData::SI );  
+        svkPlotLine::PlotDirection plotDirection;
+
+        //TODO: Get rid of this nested switch, maybe by manipulating the dcos and/or origin of plotLines...
+        switch( dataOrientation ) {
+            case svkDcmHeader::AXIAL:
+                switch( this->orientation ) {
+                    case svkDcmHeader::AXIAL:
+                        // LR/PA direction
+                        if( LRNormal[0] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( PANormal[1] > 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::ROW_COLUMN;
+                        break;
+                    case svkDcmHeader::CORONAL:
+                        // LR/SI
+                        if( LRNormal[0] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[2] < 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::ROW_SLICE;
+                        break;
+                    case svkDcmHeader::SAGITTAL:
+                        // PA/SI
+                        if( PANormal[1] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[2] < 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::COLUMN_SLICE;
+                        break;
+                }
+                break;
+            case svkDcmHeader::CORONAL:
+                switch( this->orientation ) {
+                    case svkDcmHeader::AXIAL:
+                        // LR/PA direction
+                        if( LRNormal[0] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( PANormal[2] > 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::ROW_SLICE;
+                        break;
+                    case svkDcmHeader::CORONAL:
+                        // LR/SI
+                        if( LRNormal[0] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[1] < 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::ROW_COLUMN;
+                        break;
+                    case svkDcmHeader::SAGITTAL:
+                        plotDirection = svkPlotLine::SLICE_COLUMN;
+                        // PA/SI
+                        if( PANormal[2] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[1] < 0 ) {
+                            invertPlots = true;
+                        }
+                        break;
+                }
+                break;
+            case svkDcmHeader::SAGITTAL:
+                switch( this->orientation ) {
+                    case svkDcmHeader::AXIAL:
+                        // LR/PA direction
+                        if( LRNormal[2] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( PANormal[0] > 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::SLICE_ROW;
+                        break;
+                    case svkDcmHeader::CORONAL:
+                        // LR/SI
+                        if( LRNormal[2] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[1] < 0 ) {
+                            invertPlots = true;
+                        }
+                        plotDirection = svkPlotLine::SLICE_COLUMN;
+                        break;
+                    case svkDcmHeader::SAGITTAL:
+                        // PA/SI
+                        if( PANormal[0] < 0 ) {
+                            mirrorPlots = true;
+                        }
+                        if( SINormal[1] < 0 ) {
+                            invertPlots = true;
+                        }
+                        break;
+                }
+                break;
+        }
+
+        string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        if( acquisitionType == "SINGLE VOXEL" ) {
+            mirrorPlots = true;
+        }
+        while(!iterator->IsDoneWithTraversal()) {
+            tmpBoxPlot = static_cast<svkPlotLine*>( iterator->GetCurrentObject()); 
+            tmpBoxPlot->SetPlotDirection( plotDirection );
+            tmpBoxPlot->SetMirrorPlots( mirrorPlots );
+            tmpBoxPlot->GeneratePolyData();
+            tmpBoxPlot->SetInvertPlots( invertPlots );
+            iterator->GoToNextItem();
+        }
+        iterator->Delete();
+        this->Update();
+    }
+}
+
+
+/*!
  *
  */
 void svkPlotLineGrid::SetChannel( int channel )
@@ -843,5 +1025,32 @@ void svkPlotLineGrid::UpdateDataArrays( int* tlcRange, int* brcRange)
             }
             tmpXYPlot->polyLinePoints->Modified();
         }
+    }
+}
+
+
+/*!
+ *
+ */
+void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
+{
+    this->orientation = orientation;    
+    if( this->data!=NULL ) {
+        if( this->freqUpToDate != NULL ) {
+            delete[] this->freqUpToDate;
+        }
+        this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+        for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
+            this->freqUpToDate[i] = 0;
+        }
+        if( this->ampUpToDate != NULL ) {
+            delete[] this->ampUpToDate;
+        }
+        this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+        for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
+            this->ampUpToDate[i] = 0;
+        }
+        this->UpdateOrientation();
+        this->UpdatePlotRange();
     }
 }

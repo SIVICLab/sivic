@@ -83,17 +83,9 @@ class svkSatBandSet : public vtkObject
         vtkActor* GetSatBandsActor( );
         vtkActor* GetSatBandsOutlineActor( );
         void SetClipSlice( int slice );
-        void SetOrientation( int orientation );
+        void SetOrientation( svkDcmHeader::Orientation orientation );
         void SetInput( svkMrsImageData* spectra );
 
-        //! Enum represents orientation of the sat bands 
-        enum orientation {
-            XY = 0,
-            YZ,
-            XZ 
-        };
-
-    
     private:
 
 
@@ -109,7 +101,7 @@ class svkSatBandSet : public vtkObject
 
         svkMrsImageData* spectra;
         int slice;
-        int orientation; 
+        svkDcmHeader::Orientation orientation; 
         vector<vtkPlane*> clippingPlanes;
         vtkPoints*  satBandSurfaceOrigins;
         vtkPoints*  satBandOrigins;
@@ -121,9 +113,9 @@ class svkSatBandSet : public vtkObject
         double spectraDcos[3][3];
         double* spectraOrigin;
         int* spectraExtent;
-        double spectraDeltaX; // spacing project into x/y/z
-        double spectraDeltaY;
-        double spectraDeltaZ;
+        double spectraDeltaLR; // spacing project into x/y/z
+        double spectraDeltaAP;
+        double spectraDeltaSI;
 
 };
 

@@ -66,6 +66,16 @@ class svkPlotLine : public vtkPolyLine
             MAGNITUDE 
         };
 
+        typedef enum {
+            ROW_COLUMN = 0,
+            COLUMN_ROW,
+            SLICE_ROW,
+            ROW_SLICE,
+            SLICE_COLUMN,
+            COLUMN_SLICE
+        } PlotDirection;
+
+
         vtkTypeRevisionMacro( svkPlotLine, vtkPolyLine );
         
         static svkPlotLine*  New();
@@ -89,6 +99,8 @@ class svkPlotLine : public vtkPolyLine
         void                GetDcos( double dcos[3][3] );
         void                SetDcos( double dcos[3][3] );
         void                SetInvertPlots( bool invertPlots );
+        void                SetMirrorPlots( bool mirrorPlots );
+        void                SetPlotDirection( PlotDirection plotDirection  );
 
 
     protected:
@@ -124,6 +136,11 @@ class svkPlotLine : public vtkPolyLine
 
         //! Should the plots be inverted?
         bool                invertPlots;
+
+        //! Should the plots be flipped Left-Right?
+        bool                mirrorPlots;
+
+        PlotDirection       plotDirection;
 
     private:
 

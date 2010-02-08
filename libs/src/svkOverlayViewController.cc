@@ -398,10 +398,10 @@ void svkOverlayViewController::SetSlice( int slice )
  *  \param slice the slice you want to view
  *  \param the image you want to change the slice of, 0 is primary 1 and 2 are orthogonal 
  */
-void svkOverlayViewController::SetSlice(int slice, int imageNum)
+void svkOverlayViewController::SetSlice(int slice, svkDcmHeader::Orientation orientation)
 {
     if( visualizationCreated ) {
-        static_cast<svkOverlayView*>(this->view)->SetSlice( slice, imageNum );
+        static_cast<svkOverlayView*>(this->view)->SetSlice( slice, orientation );
     } else if (DEBUG) {
         cout<<"Visualization has not yet been created!!"<<endl;
     }
@@ -412,9 +412,10 @@ void svkOverlayViewController::SetSlice(int slice, int imageNum)
  *  Getter for the current image slice, as opposed to the spectroscopic slice.
  *
  */
-int svkOverlayViewController::GetImageSlice()
+int svkOverlayViewController::GetImageSlice( svkDcmHeader::Orientation sliceOrientation )
 {
-    return static_cast<svkOverlayView*>(this->GetView())->imageViewer->GetSlice(); 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? this->GetView()->GetOrientation() : sliceOrientation;
+    return static_cast<svkOverlayView*>(this->GetView())->imageViewer->GetSlice( sliceOrientation ); 
 }
 
 /*!
@@ -479,10 +480,10 @@ void svkOverlayViewController::SetTlcBrc( int* tlcBrc)
     if( tlcBrc != NULL ) {
         if( currentTlcBrc != NULL ) {
             if( tlcBrc[0] != currentTlcBrc[0] || tlcBrc[1] != currentTlcBrc[1] ) {
-                static_cast<svkOverlayView*>( view )->SelectActors( tlcBrc ); 
+                static_cast<svkOverlayView*>( view )->SetTlcBrc( tlcBrc ); 
             }
         } else {
-            static_cast<svkOverlayView*>( view )->SelectActors( tlcBrc ); 
+            static_cast<svkOverlayView*>( view )->SetTlcBrc( tlcBrc ); 
         }
     } 
 }
@@ -523,10 +524,10 @@ void svkOverlayViewController::UseColorOverlayStyle()
 void svkOverlayViewController::UseWindowLevelStyle() 
 {
     if( visualizationCreated ) {
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP1); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP2); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP1_OUTLINE); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP2_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         this->myRenderWindow->SetNumberOfLayers(1);
         //this->myRenderWindow->RemoveRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
@@ -546,44 +547,53 @@ void svkOverlayViewController::UseSelectionStyle()
             this->view->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );
             this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
         }
-        double dcos[3][3];
-        dataVector[MRI]->GetDcos( dcos );
-        double wVec[3];
-        wVec[0] = dcos[2][0];
-        wVec[1] = dcos[2][1];
-        wVec[2] = dcos[2][2];
-        double* viewPlaneNormal =  this->view->GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewPlaneNormal();
         
         // Lets make sure orthogonal sat bands are off...
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP1); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP2); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP1_OUTLINE); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_PERP2_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
       
         // We are going to turn the sat bands off if they were on just for resetting the camera
         // If left on the, the range if the sat bands changes the fov. 
         bool satBandsOn = 0; 
         bool satBandsOutlineOn = 0; 
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS) ) { 
+        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL) ) { 
             satBandsOn = 1;
-            view->TurnPropOff(svkOverlayView::SAT_BANDS);
+            view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL);
         }
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS_OUTLINE) ) { 
+        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) ) { 
             satBandsOutlineOn = 1;
-            view->TurnPropOff(svkOverlayView::SAT_BANDS_OUTLINE);
+            view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
         }
             
         rwi->SetInteractorStyle( dragSelectStyle ); 
-        if( (int)(viewPlaneNormal[0] * 100) != (int)(wVec[0]*100) ||
-            (int)(viewPlaneNormal[1] * 100) != (int)(wVec[1]*100) ||
-            (int)(viewPlaneNormal[2] * 100) != (int)(wVec[2]*100) ) {
-            (static_cast<svkOverlayView*>(view))->imageViewer->ResetCamera();
-        }
+        (static_cast<svkOverlayView*>(view))->imageViewer->ResetCamera();
         if( satBandsOn ) { 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS);
+            switch( this->GetView()->GetOrientation()) {
+                case svkDcmHeader::AXIAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL);
+                    break;
+                case svkDcmHeader::CORONAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL);
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL);
+                    break;
+            }
         }
         if( satBandsOutlineOn ) { 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS_OUTLINE);
+            switch( this->GetView()->GetOrientation() ) {
+                case svkDcmHeader::AXIAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                    break;
+                case svkDcmHeader::CORONAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                    break;
+            }
         }
         this->currentInteractorStyle = SELECTION;
     }
@@ -595,20 +605,38 @@ void svkOverlayViewController::UseSelectionStyle()
 void svkOverlayViewController::UseRotationStyle()
 {
     if( visualizationCreated ) {
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS) ) { 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS_PERP1); 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS_PERP2); 
+        bool areSatBandsOn;
+        bool areSatBandOutlinesOn;
+        switch( this->view->GetOrientation() ) {
+            case svkDcmHeader::AXIAL:
+                 areSatBandsOn = view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL);
+                 areSatBandOutlinesOn = view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                break;
+            case svkDcmHeader::CORONAL:
+                 areSatBandsOn = view->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL);
+                 areSatBandOutlinesOn = view->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                break;
+            case svkDcmHeader::SAGITTAL:
+                 areSatBandsOn = view->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL);
+                 areSatBandOutlinesOn = view->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                break;
         }
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS_OUTLINE) ) { 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS_PERP1_OUTLINE); 
-            view->TurnPropOn(svkOverlayView::SAT_BANDS_PERP2_OUTLINE); 
+        if( areSatBandsOn ) {
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL); 
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL); 
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL); 
+        }
+        if( areSatBandOutlinesOn ) {
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE); 
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+            view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         }
         svkOverlayView* myView = static_cast<svkOverlayView*>(view);
-        //this->myRenderWindow->RemoveRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
         rwi->SetInteractorStyle( rotationStyle );
+        rotationStyle->DebugOn();
         this->currentInteractorStyle = ROTATION;
     }
 
@@ -638,58 +666,43 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
     vtkRenderWindowInteractor *rwi = 
             vtkRenderWindowInteractor::SafeDownCast( subject );
 
-    //vtkRenderer* viewerRenderer = rwi->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
     vtkRenderer* viewerRenderer = dvController->GetView()->GetRenderer(svkOverlayView::PRIMARY);
-    //rwi->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
     pos[0] = dvController->rwi->GetEventPosition()[0];
     pos[1] = dvController->rwi->GetEventPosition()[1];
-    double dcos[3][3];
-    double distance = viewerRenderer->GetActiveCamera()->GetDistance(); 
     double* origin;
     double* spacing;
-    double wVec[3];
-    double xVec[3];
-    double yVec[3];
-    double zVec[3];
     double planeOrigin[3];
     double projection[3];
+    int index[3];
+    svkDcmHeader::Orientation orientation;
     // We need the anatomical slice to calculate a point on the image
     int slice; 
-    if( static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI] != NULL ) {
-        // Calculate plane origin
-        if( static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS] != NULL ) {
-            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetDcos( dcos );
-            slice = static_cast<svkOverlayView*>(dvController->GetView())->slice; 
-            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS]->GetDcmHeader()->GetOrigin(
-                planeOrigin, slice
-            ); 
-        } else {
-            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetDcos( dcos );
-            slice = static_cast<svkOverlayView*>(dvController->GetView())->imageViewer->GetSlice(); 
-            static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI]->GetDcmHeader()->GetOrigin(
-                planeOrigin, slice
-            ); 
-        }
+    svkImageData* targetData;
+    targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS];
+    if( targetData == NULL ) {
+        targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI];
+    }
+    if( targetData != NULL ) {
+
+        slice = static_cast<svkOverlayView*>(dvController->GetView())->slice; 
+        origin = targetData->GetOrigin();
+        orientation = dvController->GetView()->GetOrientation();
+        int index[3] = {0,0,0};
+        index[ targetData->GetOrientationIndex( orientation ) ] = slice;
+        float cellCenter[3];
+        targetData->GetPositionFromIndex(index, cellCenter); 
+        planeOrigin[0] = cellCenter[0];
+        planeOrigin[1] = cellCenter[1];
+        planeOrigin[2] = cellCenter[2];
+
         mousePosition->SetCoordinateSystemToDisplay();
         mousePosition->SetValue( pos[0], pos[1], 0); 
         imageCords = mousePosition->GetComputedWorldValue( viewerRenderer );
+        float viewNormal[3];
+        targetData->GetSliceNormal( viewNormal, orientation );
+        double viewNormalDouble[3] = { viewNormal[0], viewNormal[1], viewNormal[2] };
         // Project selection point onto the image
-
-        // We need to extract the vectors of the dcos for the projection
-        wVec[0] = dcos[2][0];
-        wVec[1] = dcos[2][1];
-        wVec[2] = dcos[2][2];
-        xVec[0] = dcos[0][0];
-        xVec[1] = dcos[1][0];
-        xVec[2] = dcos[2][0];
-        yVec[0] = dcos[0][1];
-        yVec[1] = dcos[1][1];
-        yVec[2] = dcos[2][1];
-        zVec[0] = dcos[0][2];
-        zVec[1] = dcos[1][2];
-        zVec[2] = dcos[2][2];
-
-        vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, wVec, projection );
+        vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, viewNormalDouble, projection );
 
         out.setf(ios::fixed,ios::floatfield); 
         out.precision(1);
@@ -747,7 +760,7 @@ void svkOverlayViewController::TurnPropOn(int propIndex)
     view->TurnPropOn( propIndex );
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
-        static_cast<svkOverlayView*>( view )->SelectActors( GetTlcBrc() ); 
+        static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
         view->SetSlice( slice ); 
     }   
 }
@@ -765,7 +778,7 @@ void  svkOverlayViewController::TurnPropOff(int propIndex)
     view->TurnPropOff( propIndex );
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
-        static_cast<svkOverlayView*>( view )->SelectActors( GetTlcBrc() ); 
+        static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
         view->SetSlice( slice ); 
     }   
 }
@@ -807,7 +820,7 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
 {
     svkOverlayViewController* dvController = static_cast<svkOverlayViewController*>(thisObject);
     svkOverlayView* myView = static_cast<svkOverlayView*>(dvController->GetView());
-    if( myView->windowLeveler == NULL ) {
+    if( myView->windowLevelerAxial == NULL ) {
         return;
     } 
     if (eid == vtkCommand::ResetWindowLevelEvent) {
@@ -816,8 +829,9 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
         dvController->dataVector[MET]->GetWholeExtent() );
         dvController->dataVector[MET]->Update();
         double *range = dvController->dataVector[MET]->GetScalarRange();
-        myView->windowLeveler->GetLookupTable()->SetRange(range[0], range[1]);
-        myView->GetProp( svkOverlayView::OVERLAY_IMAGE )->Modified();
+        myView->windowLevelerAxial->GetLookupTable()->SetRange(range[0], range[1]);
+        myView->windowLevelerCoronal->GetLookupTable()->SetRange(range[0], range[1]);
+        myView->windowLevelerSagittal->GetLookupTable()->SetRange(range[0], range[1]);
         myView->Refresh();
         return;
     }
@@ -829,7 +843,7 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
     int *size = dvController->myRenderWindow->GetSize();
 
     if (eid == vtkCommand::StartWindowLevelEvent) {
-        double* range = myView->windowLeveler->GetLookupTable()->GetRange();
+        double* range = myView->windowLevelerAxial->GetLookupTable()->GetRange();
         dvController->initialColorWindowLevel[0] = range[1] - range[0];
         dvController->initialColorWindowLevel[1] = range[0] + (range[1] - range[0])/2;
         return;
@@ -889,7 +903,7 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
         myView->colorTransfer->SetRange( newLevel - newWindow/2.0, newLevel + newWindow/2.0);
     }
 
-    myView->GetProp( svkOverlayView::OVERLAY_IMAGE )->Modified();
+    //myView->GetProp( svkOverlayView::OVERLAY_IMAGE )->Modified();
     myView->Refresh();
 }
 

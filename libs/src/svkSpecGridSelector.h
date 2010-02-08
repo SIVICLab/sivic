@@ -76,6 +76,9 @@ public:
     int GetStartY();
     int GetEndX();
     int GetEndY();
+private:
+
+    void Pan();
 
 };
 

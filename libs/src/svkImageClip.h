@@ -40,54 +40,53 @@
  */
 
 
-#ifndef SVK_IMAGE_CLIP_H
-#define SVK_IMAGE_CLIP_H
+#ifndef SVK_IMAGE_CLIP
+#define SVK_IMAGE_CLIP
 
 
-#include <vtkObject.h>
 #include <vtkObjectFactory.h>
+#include <vtkInformation.h>
+#include <vtkDataObject.h>
 #include <vtkImageClip.h>
-#include <vtkCallbackCommand.h>
+#include <vtkInstantiator.h>
 
-#include <svkImageInPlaceFilter.h>
+#include <svkOrientedImageActorFactory.h>
 
 
 namespace svk {
 
 
-using namespace std;
-
-
 
 /*! 
- * 
+ *  This class is designed to be a an svk replacement for vtkImageClip.
+ *  The only differences are that this class will instantiate an svkImageData
+ *  object for output, and it will copy the dcos of the input on GetOutput().
  */
-class svkImageClip : public svkImageInPlaceFilter
+class svkImageClip : public vtkImageClip
 {
 
     public:
 
-        static svkImageClip* New();
-        vtkTypeRevisionMacro( svkImageClip, svkImageInPlaceFilter);
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkImageClip, vtkImageClip );
+   
+        static svkImageClip*  New();  
+        
+        svkImageData*                   GetImageDataInput(int port);
 
 
-    protected:
 
+    protected:        
         svkImageClip();
         ~svkImageClip();
+        int RequestData(
+          vtkInformation *request,
+          vtkInformationVector **inputVector,
+          vtkInformationVector *outputVector);
 
-        virtual int     RequestData(
-                            vtkInformation* request,
-                            vtkInformationVector** inputVector,
-                            vtkInformationVector* outputVector
-                        );
+        //virtual int FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info);
+        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info);
 
-
-    private:
-
-        //  Methods:
-        virtual void            UpdateProvenance();
-        virtual void            UpdateHeader();
 
 };
 
@@ -95,5 +94,4 @@ class svkImageClip : public svkImageInPlaceFilter
 }   //svk
 
 
-#endif //SVK_IMAGE_CLIP_H
-
+#endif //SVK_IMAGE_CLIP
