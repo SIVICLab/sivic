@@ -1056,7 +1056,7 @@ void svkDdfVolumeReader::InitFrameContentMacro()
                     0,
                     "DimensionIndexValues", 
                     indexValues,        //  array of vals
-                    2,                  // num values in array
+                    numFrameIndices,    // num values in array
                     "PerFrameFunctionalGroupsSequence",
                     frame
                 );
