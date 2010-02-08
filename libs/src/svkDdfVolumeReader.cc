@@ -1523,7 +1523,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                      
-        "SVK_SpectroscopyAcqReorderedPhaseRows",
+        "SVK_SpectroscopyAcqReorderedPhaseColumns",
         this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints0" ), 
         "SharedFunctionalGroupsSequence",    
         0
@@ -1532,7 +1532,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                      
-        "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        "SVK_SpectroscopyAcqReorderedPhaseRows",
         this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints1" ), 
         "SharedFunctionalGroupsSequence",    
         0
@@ -2269,7 +2269,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyDataModule()
 
     //  Private Attributes for spatial domain encoding:
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "SVK_ColsDomain", 
+        "SVK_ColumnsDomain", 
         this->GetDimensionDomain( ddfMap["dimensionType1"] )
     );
 
@@ -2307,7 +2307,7 @@ string svkDdfVolumeReader::GetDimensionDomain( string ddfDomainString )
         domain.assign("FREQUENCY"); 
     } else if ( ddfDomainString.compare("space") == 0 )  { 
         domain.assign("SPACE"); 
-    } else if ( ddfDomainString.compare("kspace") == 0 )  { 
+    } else if ( ddfDomainString.compare("k-space") == 0 )  { 
         domain.assign("KSPACE"); 
     }
     return domain; 

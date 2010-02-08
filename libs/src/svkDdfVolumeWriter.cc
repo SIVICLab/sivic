@@ -234,7 +234,16 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
     out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
     out << "study code: " << "" <<  endl;
-    out << "study date: " << hdr->GetStringValue( "StudyDate" ) <<  endl;
+
+    string date = hdr->GetStringValue( "StudyDate" );
+    if ( date.length() == 0 ) {
+        date.assign("        ");
+    }
+
+    out << "study date: " << 
+        date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
+
+
     out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
     out << "root name: " << setw(7) << fileRoot <<  endl;
     out << "series number: " << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
@@ -299,14 +308,13 @@ void svkDdfVolumeWriter::WriteHeader()
     }
     out << "number of dimensions: " << numDims << endl; 
 
-    string specDomain;  
-    string sigDomain = hdr->GetStringValue( "SignalDomainColumns" );
-    if ( sigDomain.compare( "FREQUENCY" ) == 0 ) {
-        specDomain.assign( "frequency" ); 
-    } else if (sigDomain.compare( "TIME" ) == 0 ) {
-        specDomain.assign( "time" ); 
-    }
-   
+    string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
+  
+    string spatialDomains[3];  
+    spatialDomains[0] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_ColumnsDomain") ); 
+    spatialDomains[1] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_RowsDomain") ); 
+    spatialDomains[2] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_SliceDomain") ); 
+
     int numVoxels[3];  
     numVoxels[0] = hdr->GetIntValue( "Columns" ); 
     numVoxels[1] = hdr->GetIntValue( "Rows" ); 
@@ -314,10 +322,14 @@ void svkDdfVolumeWriter::WriteHeader()
     
     double voxelSpacing[3]; 
     hdr->GetPixelSpacing( voxelSpacing );  
-    out << "dimension 1: type: " << specDomain << " npoints: " << setw(4) << left << hdr->GetIntValue( "DataPointColumns" ) << endl;
-    out << "dimension 2: type: " << "space "<< "npoints: " << numVoxels[0] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[0] << endl;
-    out << "dimension 3: type: " << "space "<< "npoints: " << numVoxels[1] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[1] << endl;
-    out << "dimension 4: type: " << "space "<< "npoints: " << numVoxels[2] << " pixel spacing(mm): " << fixed << left << setw(10) << setprecision(6) << voxelSpacing[2] << endl;
+    out << "dimension 1: type: " << specDomain << " npoints: " << setw(5) << left << hdr->GetIntValue( "DataPointColumns" ) << endl;
+    out << "dimension 2: type: " << spatialDomains[0] << " npoints: " << numVoxels[0] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[0] << endl;
+    out << "dimension 3: type: " << spatialDomains[1] << " npoints: " << numVoxels[1] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[1] << endl;
+    out << "dimension 4: type: " << spatialDomains[2] << " npoints: " << numVoxels[2] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[2] << endl;
+
     if ( numDims == 5 ) {    
         out << "dimension 5: type: time" << endl ; 
     }
@@ -493,11 +505,11 @@ void svkDdfVolumeWriter::WriteHeader()
         "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseColumns", 
         "SharedFunctionalGroupsSequence", 0 
     );
-    int acqPts2 = hdr->GetFloatSequenceItemElement(
+    int acqPts2 = hdr->GetIntSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseRows", 
         "SharedFunctionalGroupsSequence", 0 
     );
-    int acqPts3 = hdr->GetFloatSequenceItemElement(
+    int acqPts3 = hdr->GetIntSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionOutOfPlanePhaseSteps", 
         "SharedFunctionalGroupsSequence", 0 
     );
@@ -593,7 +605,12 @@ void svkDdfVolumeWriter::WriteHeader()
         << setw(14) << reorderedTLC[1]
         << setw(14) << reorderedTLC[2] << endl;
 
-    out << "reordered center(lps, mm): " << endl;
+    float reorderedCenter[3]; 
+    this->GetDDFCenter( reorderedCenter, "reordered" );
+    out << "reordered center(lps, mm): " << fixed << setw(14) << setprecision(5) << reorderedCenter[0] 
+                                         << fixed << setw(14) << setprecision(5) << reorderedCenter[1]  
+                                         << fixed << setw(14) << setprecision(5) << reorderedCenter[2] 
+                                         << endl;  
 
     float reorderedSpacing[3];
     for (int i = 0; i < 2; i++) {
@@ -616,11 +633,11 @@ void svkDdfVolumeWriter::WriteHeader()
         "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
         "SharedFunctionalGroupsSequence", 0
     );
-    int reorderedPts2 = hdr->GetFloatSequenceItemElement(
+    int reorderedPts2 = hdr->GetIntSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
         "SharedFunctionalGroupsSequence", 0
     );
-    int reorderedPts3 = hdr->GetFloatSequenceItemElement(
+    int reorderedPts3 = hdr->GetIntSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
         "SharedFunctionalGroupsSequence", 0
     );
@@ -649,35 +666,44 @@ void svkDdfVolumeWriter::WriteHeader()
 /*!
  *   
  */
-void svkDdfVolumeWriter::GetDDFCenter(float center[3])
+void svkDdfVolumeWriter::GetDDFCenter(float center[3], string centerType)
 {
-
-    float centerFirst[3];
-    float centerLast[3];
-    double pixelSpacing[3];
-
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
+    double pixelSpacing[3];
+    hdr->GetPixelSpacing(pixelSpacing);
+
     double slicePositionFirst[3];
     hdr->GetOrigin(slicePositionFirst, 0);
-    double slicePositionLast[3];
-    hdr->GetOrigin(slicePositionLast, hdr->GetNumberOfSlices() - 1  );
 
     double dcos[3][3];
     this->GetImageDataInput(0)->GetDcos(dcos);
 
-    float numPix[3]; 
-    numPix[0] =  hdr->GetFloatValue("Columns");
-    numPix[1] =  hdr->GetFloatValue("Rows");
-    numPix[2] =  hdr->GetNumberOfSlices();
+    int numPix[3]; 
+    if ( centerType.compare( "reordered" ) == 0 ) {
+        numPix[0] = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
+            "SharedFunctionalGroupsSequence", 0
+        );
+        numPix[1] = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
+            "SharedFunctionalGroupsSequence", 0
+        );
+        numPix[2] = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+            "SharedFunctionalGroupsSequence", 0
+        );
+    } else if ( centerType.compare( "current" ) == 0 ) {
+        numPix[0] =  hdr->GetIntValue("Columns");
+        numPix[1] =  hdr->GetIntValue("Rows");
+        numPix[2] =  hdr->GetNumberOfSlices();
+    }
 
     float fov[3]; 
     for(int i = 0; i < 3; i++) {
         fov[i] = (numPix[i] - 1) * pixelSpacing[i];  
     }
-
 
     for (int i = 0; i < 3; i++ ){
         center[i] = slicePositionFirst[i];
@@ -714,6 +740,26 @@ string svkDdfVolumeWriter::GetDDFPatientsName(string patientsName)
 
     return patientsName;
 }
+
+
+/*!
+ *  Converts the DICOM dimension domain type to a ddf dimension type string:
+ */
+string svkDdfVolumeWriter::GetDimensionDomain( string dimensionDomainString )
+{
+    string domain;
+    if ( dimensionDomainString.compare("TIME") == 0 )  {
+        domain.assign("time");
+    } else if ( dimensionDomainString.compare("FREQUENCY") == 0 )  {
+        domain.assign("frequency");
+    } else if ( dimensionDomainString.compare("SPACE") == 0 )  {
+        domain.assign("space");
+    } else if ( dimensionDomainString.compare("KSPACE") == 0 )  {
+        domain.assign("k-space");
+    }
+    return domain;
+}
+
 
 
 /*!

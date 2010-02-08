@@ -366,26 +366,22 @@ cout << "HISTO INPUT: " << *(this->GetImageDataInput(0) ) << endl;
  */
 void svkIdfVolumeWriter::GetIDFCenter(float center[3])
 {
-
-    float centerFirst[3];
-    float centerLast[3];
-    double pixelSpacing[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+
+    double pixelSpacing[3];
+    hdr->GetPixelSpacing(pixelSpacing);
+
 
     double slicePositionFirst[3];
     hdr->GetOrigin(slicePositionFirst, 0);
-    double slicePositionLast[3];
-    hdr->GetOrigin(slicePositionLast, hdr->GetIntValue("NumberOfFrames") - 1  );
 
     double dcos[3][3];
     this->GetImageDataInput(0)->GetDcos(dcos);
 
-    float numPix[3]; 
-    numPix[0] =  hdr->GetFloatValue("Columns");
-    numPix[1] =  hdr->GetFloatValue("Rows");
-    numPix[2] =  hdr->GetFloatValue("NumberOfFrames");
+    int numPix[3]; 
+    numPix[0] =  hdr->GetIntValue("Columns");
+    numPix[1] =  hdr->GetIntValue("Rows");
+    numPix[2] =  hdr->GetNumberOfSlices();
 
     float fov[3]; 
     for(int i = 0; i < 3; i++) {

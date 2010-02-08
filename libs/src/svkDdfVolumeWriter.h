@@ -95,8 +95,9 @@ class svkDdfVolumeWriter : public svkImageWriter
         void            InitImageData();
         void            WriteData();
         void            WriteHeader();
-        void            GetDDFCenter(float center[3]);
+        void            GetDDFCenter(float center[3], string centerType = "current" );
         void            GetDDFOrientation(float orientation[6]);
+        string          GetDimensionDomain( string dimensionDomainString ); 
         string          GetDDFPatientsName(string patientsName);
 
 };

@@ -127,7 +127,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     // ===================================================
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1001, EVR_CS, 
-            "SVK_ColsDomain", 
+            "SVK_ColumnsDomain", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
