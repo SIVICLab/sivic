@@ -70,19 +70,14 @@ svkImageData* LoadFile( char* fileName );
 int main ( int argc, char** argv )
 {
     char* fileNameImage = NULL;
-    char* fileNameSpectra = NULL;
-    if( argc < 2 ) {
-        cerr<<"Not enough input arguments."<<endl;
-        return 1;
-    } else if( argc == 2 ) {
+    if( argc == 2 ) {
         fileNameImage = argv[1];
-    } else if( argc > 2) {
+    } else {
         cerr<<"Too many input arguments."<<endl;
         return 1;
     } 
     double* bounds;
     double* range;
-    int* extent;
     // initialize window
     vtkRenderer* ren = vtkRenderer::New();
     ren->SetBackground(0.1,0.2,0.4);
@@ -98,6 +93,7 @@ int main ( int argc, char** argv )
 
     // Load the data sets
     svkImageData* image = LoadFile( fileNameImage );
+    int* extent = image->GetExtent();
 
     // Throw in an axes
     vtkAxesActor* myAxesNormal = vtkAxesActor::New();
@@ -125,18 +121,45 @@ int main ( int argc, char** argv )
     // Create oblique image
     svkImageData* obliqueImage = svkMriImageData::New();
     obliqueImage->CopyVtkImage( image, dcos );
-    int slice = 22; 
+    int slice = 4; 
     viewer->SetSlice( slice ); 
-    viewer->SetInput( obliqueImage ); 
+    viewer->SetInput( image ); 
     viewer->SetupInteractor( rwi );
-    //viewer->GetRenderer()->ResetCamera();
+    viewer->GetRenderer()->ResetCamera();
     viewer->SetSliceOrientationToXY();
     viewer->GetImageActor()->InterpolateOff();
     viewer->ResetCamera();
     window->Render();
     vtkInteractorStyleTrackballCamera* style = vtkInteractorStyleTrackballCamera::New();
     //rwi->SetInteractorStyle( vtkInteractorStyleSwitch::New() );
-    rwi->SetInteractorStyle( style );
+    
+    //rwi->SetInteractorStyle( style );
+
+    viewer->SetOrientation( svkDcmHeader::CORONAL);
+    //viewer->SetSliceOrientationToXZ();
+    viewer->ResetCamera();
+    rwi->Start();
+    for( int i = extent[2]; i < extent[3]; i++ ) {
+        viewer->SetSlice( i, svkDcmHeader::CORONAL );
+        window->Render();
+    }
+    //viewer->SetSliceOrientationToYZ();
+    viewer->SetOrientation( svkDcmHeader::SAGITTAL);
+    viewer->ResetCamera();
+    for( int i = extent[0]; i < extent[1]; i++ ) {
+        viewer->SetSlice( i, svkDcmHeader::SAGITTAL );
+        window->Render();
+    }
+    viewer->SetOrientation( svkDcmHeader::AXIAL);
+    viewer->ResetCamera();
+    for( int i = extent[4]; i < extent[5]; i++ ) {
+        viewer->SetSlice( i );
+        window->Render();
+    }
+    for( int i = extent[4]; i < extent[5]; i++ ) {
+        viewer->SetSlice( i, svkDcmHeader::AXIAL );
+        window->Render();
+    }
     rwi->Start();
 
     obliqueImage->Delete();
@@ -146,7 +169,6 @@ int main ( int argc, char** argv )
     rwi->Delete();
     image->Delete();
     fileNameImage = NULL;
-    fileNameSpectra = NULL;
     return 0;
     
 }

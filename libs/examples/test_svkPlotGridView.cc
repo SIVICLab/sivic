@@ -240,28 +240,41 @@ void DefaultTest()
     svkPlotGridViewController* plotController = svkPlotGridViewController::New();
 
     plotController->SetRWInteractor( rwi );
-    rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New() );
+    //rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New() );
 
     window->SetSize(600,600);
 
     plotController->SetInput( spectra  );
-    plotController->SetSlice(4);
     plotController->HighlightSelectionVoxels();
+    plotController->SetSlice(4);
+    plotController->GetView()->Refresh();
+    window->GetRenderers()->GetFirstRenderer()->DrawOn();
+    window->GetRenderers()->GetFirstRenderer()->Render();
     //plotController->SetChannel(1);
-    plotController->SetWindowLevelRange(-100000000,100000000,1);
+    //plotController->SetWindowLevelRange(-1000,1000,1);
+    //plotController->TurnPropOff( svkPlotGridView::PLOT_GRID );
     if( overlay != NULL ) {
         plotController->SetInput( overlay, 1 );
     }
-    window->Render();
-    rwi->Start();
-    for( int j = 0; j < 3; j++) {
-        for( int i = 0; i < 8; i++) {
-            cout << "Setting slice to: " << i << endl;
-            plotController->SetSlice(i);
-            window->Render();
-            
-        }
+    plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+    for( int i = 0; i < 8; i++ ) {
+        plotController->SetSlice(i);
+        window->Render();
+        rwi->Start();
     }
+    plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+    for( int i = 0; i < 12; i++ ) {
+        plotController->SetSlice(i);
+        window->Render();
+        rwi->Start();
+    }
+    plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+    for( int i = 0; i < 12; i++ ) {
+        plotController->SetSlice(i);
+        window->Render();
+        rwi->Start();
+    }
+    
 
     spectra->Delete();    
     if( overlay != NULL ) {

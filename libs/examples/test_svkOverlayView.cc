@@ -51,6 +51,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <svkDataModel.h>
+#include <vtkAxesActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkDataObjectTypes.h>
 
@@ -274,6 +275,15 @@ void DefaultTest()
 
     overlayController->SetRWInteractor( rwi );
 
+    vtkAxesActor* axes = vtkAxesActor::New();
+    vtkTransform* transform = vtkTransform::New();
+    //transform->Translate( image->GetOrigin()[0],image->GetOrigin()[1], image->GetOrigin()[2]);
+    //axes->SetUserTransform( transform );
+    axes->SetTotalLength(100,100,100);
+    axes->SetXAxisLabelText("L");
+    axes->SetYAxisLabelText("P");
+    axes->SetZAxisLabelText("S");
+    window->GetRenderers()->GetFirstRenderer()->AddActor( axes );
 
     window->SetSize(600,600);
 
@@ -282,25 +292,40 @@ void DefaultTest()
     }
     overlayController->SetInput( image, 0  );
     overlayController->SetSlice(slice);
+    overlayController->SetSlice( 5 );
+    overlayController->UseWindowLevelStyle( );
+    overlayController->UseRotationStyle();
     overlayController->HighlightSelectionVoxels();
     overlayController->ResetWindowLevel();
     if( overlay != NULL ) {
         overlayController->SetInput( overlay, 2 );
     }
-    //static_cast<svkOverlayView*>(overlayController->GetView())->SetSlice( 128, 2 );
-    //static_cast<svkOverlayView*>(overlayController->GetView())->SetSlice( 96, 1 );
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS );
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_OUTLINE );
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP1 );
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP1_OUTLINE );
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP2);
-    //overlayController->TurnPropOn( svkOverlayView::SAT_BANDS_PERP2_OUTLINE );
-    overlayController->UseWindowLevelStyle( );
-    overlayController->UseRotationStyle();
-
+    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    overlayController->SetSlice( 0 );
+    overlayController->HighlightSelectionVoxels();
     overlayController->GetView()->Refresh();
-    window->Render();
-    rwi->Start();
+    for( int i = 0; i < 8; i++ ) {
+        overlayController->SetSlice( i );
+        window->Render();
+        rwi->Start();
+    }
+    overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL);
+    overlayController->HighlightSelectionVoxels();
+    overlayController->GetView()->Refresh();
+    for( int i = 0; i < 12 ; i++ ) {
+        overlayController->SetSlice( i );
+        window->Render();
+        rwi->Start();
+    }
+
+    overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL);
+    overlayController->HighlightSelectionVoxels();
+    overlayController->GetView()->Refresh();
+    for( int i = 0; i < 12; i++ ) {
+        overlayController->SetSlice( i );
+        window->Render();
+        rwi->Start();
+    }
 
     image->Delete();    
     if( spectra != NULL ) {
