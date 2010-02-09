@@ -807,6 +807,18 @@ void svkPlotGridView::SetChannel( int channel )
 
 }
 
+/*!
+ *
+ */
+void svkPlotGridView::SetTimePoint( int timePoint )
+{
+    this->timePoint = timePoint;
+    this->plotGrid->SetTimePoint( timePoint );
+    this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
+    this->Refresh();
+
+}
+
 
 /*!
  *

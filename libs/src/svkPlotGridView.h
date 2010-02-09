@@ -160,6 +160,7 @@ class svkPlotGridView : public svkDataView
         void                   SetColorSchema( int colorSchema );                
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetChannel( int channel );
+        void                   SetTimePoint( int timePoint );
         int                    GetChannel( );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
@@ -168,6 +169,7 @@ class svkPlotGridView : public svkDataView
     private: 
         void                ResliceImage(svkImageData* input, svkImageData* target); 
         int                 channel;
+        int                 timePoint;
         svkLookupTable*     colorTransfer;
         svkSatBandSet*      satBands;
 

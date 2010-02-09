@@ -82,8 +82,6 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->dataModifiedCB = vtkCallbackCommand::New();
     this->dataModifiedCB->SetCallback( UpdateData );
     this->dataModifiedCB->SetClientData( (void*)this );
-    this->maxPlotsX = 0;
-    this->maxPlotsY = 0;
     this->plotRangeX1 = 0;
     this->plotRangeX2 = 0;
     this->plotRangeY1 = 0;
@@ -185,9 +183,6 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->ampUpToDate[i] = 0;
     }
-    // maxPlots are saved to improve performance
-    this->maxPlotsX = extent[1]; 
-    this->maxPlotsY = extent[3]; 
 
     //  Set default plot range to full scale:
     int numFrequencyPoints = this->data->GetCellData()->GetNumberOfTuples();
@@ -464,7 +459,6 @@ void svkPlotLineGrid::GenerateActor()
 
                 if (DEBUG) {
                     cout << "CREATE: " << xInd << " " << yInd << " " << zInd;
-                    cout << " Local ID: " << ID << " Full ID " << (ID + 0*maxPlotsX*maxPlotsY);
                     cout << " True ID " << this->data->ComputeCellId( voxelIndex ) << endl;
                 }
                 tmpXYPlot->SetDcos( dcos );
@@ -996,31 +990,56 @@ void svkPlotLineGrid::UpdateOrientation()
 void svkPlotLineGrid::SetChannel( int channel )
 {
     this->channel = channel;
-    int tlcRange[2] = {0,0};
-    int brcRange[2] = {maxPlotsX-1, maxPlotsY-1};
-    this->UpdateDataArrays( tlcRange, brcRange);
+    int minIndex[3] = {0,0,0};
+    int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+    int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+
+    minIndex[ orientationIndex ] = this->slice;
+    maxIndex[ orientationIndex ] = this->slice;
+    int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+    int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+    this->UpdateDataArrays( minID, maxID);
 }
 
 
 /*!
  *
  */
-void svkPlotLineGrid::UpdateDataArrays( int* tlcRange, int* brcRange)
+void svkPlotLineGrid::SetTimePoint( int timePoint )
+{
+    this->timePoint = timePoint;
+    int minIndex[3] = {0,0,0};
+    int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+    int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+
+    minIndex[ orientationIndex ] = this->slice;
+    maxIndex[ orientationIndex ] = this->slice;
+    int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+    int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+    this->UpdateDataArrays( minID, maxID);
+}
+
+
+/*!
+ *
+ */
+void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
 {
     svkPlotLine* tmpXYPlot;
     int ID;
     if( data != NULL ) { 
-        int* extent = data->GetExtent();
-        double* spacing = data->GetSpacing();
-        double* origin = data->GetOrigin();
-        //double plotAreaBounds[6];
-        if( slice < extent[5] && slice >= extent[4] ) { 
-            for (int yInd = tlcRange[1]; yInd <= brcRange[1]; yInd++) {
-                for (int xInd = tlcRange[0]; xInd <= brcRange[0]; xInd++) {
-                    ID = this->data->GetIDFromIndex(xInd, yInd, this->slice) - 
-                        (this->slice * this->maxPlotsX * this->maxPlotsY );
+        int rowRange[2] = {0,0};
+        int columnRange[2] = {0,0};
+        int sliceRange[2] = {0,0};
+        this->data->GetIndexFromID( tlc, &rowRange[0], &columnRange[0], &sliceRange[0] );
+        this->data->GetIndexFromID( brc, &rowRange[1], &columnRange[1], &sliceRange[1] );
+        for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+            for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+                for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
+                
+                    ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
-                    tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(this->data->GetSpectrum(xInd, yInd, this->slice, 0, this->channel)));
+                    tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(this->data->GetSpectrum(rowIndex, columnIndex, sliceIndex, this->timePoint, this->channel)));
                 }
             }
             tmpXYPlot->polyLinePoints->Modified();

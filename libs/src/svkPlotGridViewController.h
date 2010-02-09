@@ -98,6 +98,7 @@ class svkPlotGridViewController : public svkDataViewController
                 void                    SetColorSchema( int colorSchema );
                 string                  GetDataCompatibility( svkImageData* data, int targetIndex );
                 void                    SetChannel( int channel );
+                void                    SetTimePoint( int timePoint );
                 int                     GetChannel( );
                 void                    SetOverlayOpacity( double opacity );
                 void                    SetOverlayThreshold( double threshold );

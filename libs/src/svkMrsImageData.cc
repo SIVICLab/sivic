@@ -284,31 +284,34 @@ void svkMrsImageData::UpdateRange()
     magRange[0] = VTK_DOUBLE_MAX;
     magRange[1] = VTK_DOUBLE_MIN;
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePoints  = this->GetNumberOfTimePoints();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
      for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {
             for (int x = extent[0]; x <= extent[1]-1; x++) {
                 for( int channel = 0; channel < numChannels; channel++ ) {
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( this->GetSpectrum( x, y, z, 0, channel ) );
-                    for (int i = 0; i < numFrequencyPoints; i++) {
-                        double* tuple = spectrum->GetTuple( i );
-                        realRange[0] = tuple[0] < realRange[0]
-                                                 ? tuple[0] : realRange[0];
-                        realRange[1] = tuple[0] > realRange[1] 
-                                                 ? tuple[0] : realRange[1];
+                    for( int timePoint = 0; timePoint < numTimePoints; timePoint++ ) {
+                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( this->GetSpectrum( x, y, z, timePoint, channel ) );
+                        for (int i = 0; i < numFrequencyPoints; i++) {
+                            double* tuple = spectrum->GetTuple( i );
+                            realRange[0] = tuple[0] < realRange[0]
+                                                     ? tuple[0] : realRange[0];
+                            realRange[1] = tuple[0] > realRange[1] 
+                                                     ? tuple[0] : realRange[1];
 
-                        imagRange[0] = tuple[1] < imagRange[0]
-                                                 ? tuple[1] : imagRange[0];
-                        imagRange[1] = tuple[1] > imagRange[1]
-                                                 ? tuple[1] : imagRange[1];
+                            imagRange[0] = tuple[1] < imagRange[0]
+                                                     ? tuple[1] : imagRange[0];
+                            imagRange[1] = tuple[1] > imagRange[1]
+                                                     ? tuple[1] : imagRange[1];
 
-                        double magnitude = pow( pow(tuple[0],2)
-                                                + pow(tuple[1],2),0.5);
+                            double magnitude = pow( pow(tuple[0],2)
+                                                    + pow(tuple[1],2),0.5);
 
-                        magRange[0] = magnitude < magRange[0]
-                                                 ? magnitude : magRange[0];
-                        magRange[1] = magnitude > magRange[1]
-                                                 ? magnitude : magRange[1];
+                            magRange[0] = magnitude < magRange[0]
+                                                     ? magnitude : magRange[0];
+                            magRange[1] = magnitude > magRange[1]
+                                                     ? magnitude : magRange[1];
+                        }
                     }
                 }
             }

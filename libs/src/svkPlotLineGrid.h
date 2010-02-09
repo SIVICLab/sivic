@@ -103,7 +103,8 @@ class svkPlotLineGrid : public vtkObject
         void                    SetComponent( svkPlotLine::PlotComponent component );
         int                     GetComponent( );
         void                    SetChannel( int channel );
-        void                    UpdateDataArrays(int* tlcRange, int* brcRange);
+        void                    SetTimePoint( int timePoint );
+        void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
 
     private:
@@ -118,6 +119,9 @@ class svkPlotLineGrid : public vtkObject
         //! The current channel
         int                         channel;
 
+        //! The current timePoint
+        int                         timePoint;
+
         //! The ID's of the top left corner, and bottom right corner cells 
         //int                         tlcBrc[2];
 
@@ -126,12 +130,6 @@ class svkPlotLineGrid : public vtkObject
 
         //! The actor that holds the plot grid
         vtkActor*                   plotGridActor;
-
-        //! The size of the extent of the data object in the x dimension-- same as extent, stored for speed
-        int                         maxPlotsX; 
-
-        //! The size of the extent of the data object in the y dimension-- same as extent, stored for speed
-        int                         maxPlotsY; 
 
         //! The index of the first point in the plots to be plotted-
         int                         plotRangeX1;     
