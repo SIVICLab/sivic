@@ -593,8 +593,8 @@ void vtkSivicController::SaveData()
     dlg->SaveDialogOn();
     dlg->Create();
     dlg->SetInitialFileName("E1S1I1");
-    dlg->SetFileTypes("{{DICOM MR Spectroscopy} {.dcm}}");
-    dlg->SetDefaultExtension("{{DICOM MR Spectroscoy} {.dcm}}");
+    dlg->SetFileTypes("{{DICOM MR Spectroscopy} {.dcm}} {{UCSF Volume File} {.ddf}}");
+    dlg->SetDefaultExtension("{{DICOM MR Spectroscoy} {.dcm}} {{UCSF Volume File} {.ddf}}");
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
         string filename = dlg->GetFileName(); 
@@ -645,7 +645,11 @@ void vtkSivicController::SaveData( char* fileName )
 
     string fileNameString = string( fileName);
     size_t pos = fileNameString.find(".");
-    writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_MRS));
+    if( strcmp( fileNameString.substr(pos).c_str(), ".ddf" ) == 0 ) {
+        writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DDF));
+    } else {
+        writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_MRS));
+    }
     cout << "FN: " << fileName << endl;
     writer->SetFileName(fileName);
     writerFactory->Delete();
