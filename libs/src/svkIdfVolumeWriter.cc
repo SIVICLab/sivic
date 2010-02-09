@@ -326,7 +326,6 @@ void svkIdfVolumeWriter::WriteHeader()
     out << "slice thickness (mm): " << setw(14) << setprecision(5) << pixelSize[2] << endl;
 
     vtkImageAccumulate* histo = vtkImageAccumulate::New();
-cout << "HISTO INPUT: " << *(this->GetImageDataInput(0) ) << endl;
     histo->SetInput( this->GetImageDataInput(0) );
     histo->Update();
 
