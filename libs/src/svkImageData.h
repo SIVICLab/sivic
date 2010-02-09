@@ -131,12 +131,20 @@ class svkImageData: public vtkImageData
 
 
         // Copy and Cast Methods
-        virtual void       DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED );
+        virtual void       DeepCopy( 
+                                vtkDataObject* src, 
+                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
+                           );
         virtual void       ShallowCopy( vtkDataObject* src );
-        virtual void       ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED );
+        virtual void       ZeroCopy( 
+                                vtkImageData* src, 
+                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
+                           );
         virtual void       CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat );
         virtual void       CopyAndCastFrom( vtkImageData* inData, int extent[6] );
-        virtual void       CopyAndCastFrom( vtkImageData* inData, int x0, int x1, int y0, int y1, int z0, int z1 );
+        virtual void       CopyAndCastFrom( 
+                                vtkImageData* inData, int x0, int x1, int y0, int y1, int z0, int z1 
+                           );
         virtual void       CopyStructure( vtkDataSet* ds );
         virtual void       CopyDcos( vtkDataObject* src );
         virtual void       CopyVtkImage( vtkImageData* sourceImage, double dcos[][3] );
@@ -207,19 +215,32 @@ class svkImageData: public vtkImageData
         void               GetIndexFromID(int voxelID, int* index);
         void               GetIndexFromPosition(double posLPS[3], int* index);
         virtual void       GetPositionFromIndex(int* index, float* posLPS);
-        virtual void       GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
-        virtual void       GetSliceNormal(float* normal, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
-        virtual int        GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
-        virtual int        GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual void       GetSliceOrigin(
+                                int slice, 
+                                float* sliceOrigin, 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
+        virtual void       GetSliceNormal(
+                                float* normal, 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
+        virtual int        GetClosestSlice(
+                                float* posLPS, 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
+        virtual int        GetNumberOfSlices( 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
         virtual int        GetFirstSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         virtual int        GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         virtual void       GetDataBasis( double basisVector[3], DataBasis basis );
         virtual int        GetOrientationIndex( svkDcmHeader::Orientation orientation );
         virtual void       GetImageCenter( float* center );
-        virtual double     GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual double     GetSliceSpacing( 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
-        int                GetNumberOfTimePoints();
 
     // REQUIRED?
     virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);

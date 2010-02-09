@@ -557,7 +557,9 @@ void svkDcmHeader::UpdateOrigin0()
 
 
 /*!
- *
+ *  Returns the number of time points from the DcmHeader.
+ *  Parses FrameContentSequence for the number of 
+ *  coils, if specified in the Multi Frame Dimension Module
  */
 int svkDcmHeader::GetNumberOfCoils()
 {
@@ -565,8 +567,76 @@ int svkDcmHeader::GetNumberOfCoils()
     int numberOfFrames = this->GetIntValue("NumberOfFrames");
     int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
 
-    if (numDims > 1) {
-        set <int> coils;
+    //  Determine which index in the DimensionIndexValues attribute represents
+    //  the coil number index.  Should use "DimensionIndexPointer" (to do).
+    int coilIndexNumber = this->GetDimensionIndexPosition( "Coil Number" ); 
+    numCoils = this->GetNumberOfFramesInDimension( coilIndexNumber ); 
+
+    return numCoils;
+}
+
+
+/*!
+ *  Returns the number of time points from the DcmHeader.
+ *  Parses FrameContentSequence for the number of 
+ *  time points, if specified in the Multi Frame Dimension Module
+ */
+int svkDcmHeader::GetNumberOfTimePoints()
+{
+    int numTimePts = 1;
+    int numberOfFrames = this->GetIntValue("NumberOfFrames");
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+
+    //  Determine which index in the DimensionIndexValues attribute represents
+    //  the coil number index.  Should use "DimensionIndexPointer" (to do).
+    int timeIndexNumber = GetDimensionIndexPosition( "Time Point" ); 
+    numTimePts = GetNumberOfFramesInDimension( timeIndexNumber ); 
+
+    return numTimePts;
+}
+
+
+/*!
+ *  Gets the position of the index representing the specified dimension type
+ *  from the DimensionIndexSequence.  e.g. given 3 indices "0/1/2", which
+ *  one represents slice, coil number, etc.
+ *  Returns -1 if dimension can't be determined.   
+ */
+int svkDcmHeader::GetDimensionIndexPosition(string indexLabel)    
+{
+    int dimIndexNumber = -1; 
+
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+    for ( int i = 0; i < numDims; i++ ) {
+
+        string dimensionLabel = this->GetStringSequenceItemElement(
+            "DimensionIndexSequence",
+            i, 
+            "DimensionDescriptionLabel",
+            NULL, 
+            i
+        );
+        if ( dimensionLabel.compare( indexLabel ) == 0 ) {
+            dimIndexNumber = i; 
+        }
+
+    }
+
+    return dimIndexNumber; 
+}
+
+
+/*!
+ *  Gets the number of frames in the specified dimension. 
+ */
+int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
+{
+    int numberOfFrames = this->GetIntValue("NumberOfFrames");
+
+    int numFramesInDimension; 
+
+    if ( dimensionIndex >= 0 ) {
+        set <int> frames;
         for (int i = 0; i < numberOfFrames; i++ ) {
 
             //get number of coils and divide numberof frames by it to get number of slices
@@ -576,13 +646,18 @@ int svkDcmHeader::GetNumberOfCoils()
                 "DimensionIndexValues",
                 "PerFrameFunctionalGroupsSequence",
                 i,
-                1
+                dimensionIndex  // position of the coil index in the index array. 
             );
-            coils.insert(value);
+            frames.insert(value);
         }
-        numCoils = coils.size();
+
+        numFramesInDimension = frames.size();
+
+    } else {
+        numFramesInDimension = 1; 
     }
-    return numCoils;
+
+    return numFramesInDimension; 
 }
 
 
@@ -592,8 +667,9 @@ int svkDcmHeader::GetNumberOfCoils()
 int svkDcmHeader::GetNumberOfSlices()
 {
     int numberOfFrames = this->GetIntValue( "NumberOfFrames" );
-    int numberOfChannels = this->GetNumberOfCoils();
-    return numberOfFrames/numberOfChannels;
+    int numberOfCoils = this->GetNumberOfCoils();
+    int numberOfTimePts = this->GetNumberOfTimePoints();
+    return numberOfFrames/(numberOfCoils * numberOfTimePts ) ;
 }
 
 

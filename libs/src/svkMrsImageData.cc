@@ -284,7 +284,7 @@ void svkMrsImageData::UpdateRange()
     magRange[0] = VTK_DOUBLE_MAX;
     magRange[1] = VTK_DOUBLE_MIN;
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePoints  = this->GetNumberOfTimePoints();
+    int numTimePoints  = this->GetDcmHeader()->GetNumberOfTimePoints();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
      for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {

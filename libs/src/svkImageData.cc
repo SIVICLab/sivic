@@ -1620,14 +1620,6 @@ void svkImageData::GetImageCenter( float* posLPS)
 }
 
 
-/*!
- *  Get the number of time points from the DcmHeader.       
- */
-int svkImageData::GetNumberOfTimePoints()
-{
-    return 1;
-}
-
 /*! 
  *
  */     

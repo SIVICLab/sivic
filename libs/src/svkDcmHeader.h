@@ -483,6 +483,9 @@ class svkDcmHeader: public vtkObject
                                 int numTimePts, 
                                 int numCoils
                             ); 
+        int                 GetNumberOfTimePoints(); 
+        int                 GetDimensionIndexPosition(string indexLabel); 
+        int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
 
 
     protected:

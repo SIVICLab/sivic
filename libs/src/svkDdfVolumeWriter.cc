@@ -152,7 +152,7 @@ void svkDdfVolumeWriter::WriteData()
     int rows     = hdr->GetIntValue( "Rows" );
     int slices   = hdr->GetNumberOfSlices();  
     int numCoils = hdr->GetNumberOfCoils();
-    int numTimePts = this->GetImageDataInput(0)->GetNumberOfTimePoints();  
+    int numTimePts = hdr->GetNumberOfTimePoints();  
     int specPts  = hdr->GetIntValue( "DataPointColumns" );
     string representation = hdr->GetStringValue( "DataRepresentation" );
 
@@ -303,7 +303,7 @@ void svkDdfVolumeWriter::WriteHeader()
     out << "source description: " << endl;
 
     int numDims = 4; 
-    if ( this->GetImageDataInput(0)->GetNumberOfTimePoints()  > 1 ) { 
+    if ( hdr->GetNumberOfTimePoints()  > 1 ) { 
         numDims = 5; 
     }
     out << "number of dimensions: " << numDims << endl; 
