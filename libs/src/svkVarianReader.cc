@@ -207,9 +207,9 @@ void svkVarianReader::GetProcparKeyValuePair( )
  */
 void svkVarianReader::ReadLine(ifstream* fs, istringstream* iss)    
 {
-    char line[256];
+    char line[2000];
     iss->clear();    
-    fs->getline(line, 256);
+    fs->getline(line, 2000);
     iss->str(string(line));
 }
 

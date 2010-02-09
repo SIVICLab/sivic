@@ -947,6 +947,7 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     InitPerFrameFunctionalGroupMacros();
 }
 
+
 /*!
  *
  */
@@ -1039,7 +1040,7 @@ void svkDdfVolumeReader::InitFrameContentMacro()
 
         for (int timePt = 0; timePt < numTimePts; timePt++) {
 
-            for (int sliceNum = 0; sliceNum < numSlices; sliceNum++) {
+            for (int sliceNum = 0; sliceNum < this->numSlices; sliceNum++) {
 
                 svkDcmHeader::SetDimensionIndices(
                     indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils

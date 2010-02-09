@@ -490,8 +490,7 @@ void svkDcmHeader::UpdatePixelSpacing()
         this->pixelSpacing[i] = size[i];
     }
 
-    int numSlices = this->GetIntValue( "NumberOfFrames" ) / this->GetNumberOfCoils(); 
-    if (numSlices >= 2) {
+    if ( this->GetNumberOfSlices() >= 2 ) {
 
         //  If can't get origins, then return pixelSize as slice spacing
         double origin0[3];

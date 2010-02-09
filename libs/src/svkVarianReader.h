@@ -59,6 +59,7 @@
 #include <svkImageReader2.h>
 #include <svkIOD.h>
 #include <svkMRIIOD.h>
+#include <svkMRSIOD.h>
 
 #include <sys/stat.h>
 #include <map>
@@ -112,7 +113,7 @@ class svkVarianReader : public svkImageReader2
         //  Members:
         ifstream*                                   procparFile;
         map <string, vector < vector<string> > >    procparMap; 
-        int                                         numFrames; 
+        int                                         numSlices; 
         long                                        procparFileSize; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
 

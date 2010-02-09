@@ -102,7 +102,6 @@ class svkVarianFidReader : public svkVarianReader
         void                             InitGeneralStudyModule();
         void                             InitGeneralSeriesModule();
         void                             InitGeneralEquipmentModule();
-        void                             InitImagePixelModule();
         void                             InitMultiFrameFunctionalGroupsModule();
         void                             InitMultiFrameDimensionModule();
         void                             InitAcquisitionContextModule();
@@ -113,18 +112,24 @@ class svkVarianFidReader : public svkVarianReader
         void                             InitPixelMeasuresMacro();
         void                             InitPlaneOrientationMacro();
         void                             InitMRReceiveCoilMacro();
-        void                             ReadFdfFiles();
+        void                             InitMRSpectroscopyDataModule();
+        void                             ReadFidFiles();
         svkDcmHeader::DcmPixelDataFormat GetFileType();
-        void                             SetupOutputInformation();
         string                           VarianToDicomDate(string* volumeDate);
         string                           GetDcmPatientPositionString(string patientPosition);
-        void                             ParseFdf();
-        void                             GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
+        void                             ParseFid();
+        void                             GetFidKeyValuePair( vtkStringArray* keySet = NULL);
         void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);
         int                              GetDataBufferSize();
-        int                              GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
-        float                            GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
-        string                           GetHeaderValueAsString(string keyString, int valueIndex = 0);
+        int                              GetHeaderValueAsInt(
+                                            string keyString, int valueIndex = 0, int procparRow = 0
+                                         ); 
+        float                            GetHeaderValueAsFloat(
+                                            string keyString, int valueIndex = 0, int procparRow = 0 
+                                         ); 
+        string                           GetHeaderValueAsString(
+                                            string keyString, int valueIndex = 0, int procparRow = 0
+                                         ); 
         void                             ParseAndSetStringElements(string key, string valueArrayString);
         void                             AddDimensionTo2DData();
         void                             PrintKeyValuePairs();
@@ -132,8 +137,8 @@ class svkVarianFidReader : public svkVarianReader
 
         //  Members:
         void*                                       pixelData; 
-        ifstream*                                   fdfFile;
-        map <string, vector<string> >               fdfMap; 
+        ifstream*                                   fidFile;
+        map <string, vector<string> >               fidMap; 
         long                                        fileSize; 
         vtkStringArray*                             tmpFileNames;
 

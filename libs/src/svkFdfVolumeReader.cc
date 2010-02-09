@@ -461,11 +461,11 @@ void svkFdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     );
 */
 
-    this->numFrames = this->GetHeaderValueAsInt("matrix[]", 2);
+    this->numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
-        this->numFrames
+        this->numSlices
     ); 
 
 
@@ -518,7 +518,7 @@ void svkFdfVolumeReader::InitPerFrameFunctionalGroupMacros()
  */
 void svkFdfVolumeReader::InitFrameContentMacro()
 {
-    for (int i = 0; i < this->numFrames; i++) {
+    for (int i = 0; i < this->numSlices; i++) {
 
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "PerFrameFunctionalGroupsSequence",

@@ -65,7 +65,7 @@ svkVarianFidReader::svkVarianFidReader()
 
     this->pixelData = NULL;
     this->dataArray = NULL; 
-    this->fdfFile = NULL;
+    this->fidFile = NULL;
     this->procparFile = NULL;
     this->fileSize = 0;
 }
@@ -84,9 +84,9 @@ svkVarianFidReader::~svkVarianFidReader()
         this->dataArray = NULL; 
     }
 
-    if ( this->fdfFile != NULL )  {
-        delete fdfFile; 
-        this->fdfFile = NULL; 
+    if ( this->fidFile != NULL )  {
+        delete fidFile; 
+        this->fidFile = NULL; 
     }
 
     if ( this->procparFile != NULL )  {
@@ -107,21 +107,21 @@ int svkVarianFidReader::CanReadFile(const char* fname)
 
     string fileToCheck(fname);
 
-    if( fileToCheck.size() > 4 ) {
+    if( fileToCheck.size() >= 3 ) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
-        if (  fileToCheck.substr( fileToCheck.size() - 4 ) == ".fdf" ) {
+        if (  fileToCheck.substr( fileToCheck.size() - 3 ) == "fid" ) {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
                 vtkDebugMacro(
-                    << this->GetClassName() << "::CanReadFile(): It's a Varian FDF File: " << fileToCheck
+                    << this->GetClassName() << "::CanReadFile(): It's a Varian FID File: " << fileToCheck
                 );
                 return 1;
             }
         } else {
             vtkDebugMacro(
-                << this->GetClassName() << "::CanReadFile(): It's NOT a Varian FDF File: " << fileToCheck
+                << this->GetClassName() << "::CanReadFile(): It's NOT a Varian FID File: " << fileToCheck
             );
             return 0;
         }
@@ -133,13 +133,13 @@ int svkVarianFidReader::CanReadFile(const char* fname)
 
 
 /*!
- *  Reads pixel data from all fdf files. 
- *  For .fdf series, each file contains 1/num_files_in_series worth of pixels. 
+ *  Reads pixel data from all fid files. 
+ *  For .fid series, each file contains 1/num_files_in_series worth of pixels. 
  */
-void svkVarianFidReader::ReadFdfFiles()
+void svkVarianFidReader::ReadFidFiles()
 {
 
-    vtkDebugMacro( << this->GetClassName() << "::ReadFdfFiles()" );
+    vtkDebugMacro( << this->GetClassName() << "::ReadFidFiles()" );
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
@@ -161,7 +161,7 @@ void svkVarianFidReader::ReadFdfFiles()
             this->pixelData = (void* ) malloc( numBytesInVol); 
         }
 
-        this->fdfFile->seekg(0, ios::end);     
+        this->fidFile->seekg(0, ios::end);     
         volumeDataIn->seekg(-1 * numBytesInFile, ios::end);
         int offset = (fileIndex * numBytesInFile);
         volumeDataIn->read( (char *)(this->pixelData) + offset, numBytesInFile);
@@ -176,19 +176,11 @@ void svkVarianFidReader::ReadFdfFiles()
      */
 #if defined (linux) || defined(Darwin)
     if ( this->GetHeaderValueAsInt("bigendian") != 0 ) {
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2) {
-            svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4) {
-            svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
-        }
+        svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
     }
 #else
     if ( this->GetHeaderValueAsInt("bigendian") != 1 ) {
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2) {
-            svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4) {
-            svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
-        }
+        svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
     }
 #endif
   
@@ -218,19 +210,12 @@ void svkVarianFidReader::ExecuteData(vtkDataObject* output)
             return;
         }
 
-        this->ReadFdfFiles();
+        this->ReadFidFiles();
 
         //  If input is float, convert to short int (16 bit depth):     
         this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
 
-        
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1) {
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
-        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 )  {
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) { 
-            this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
-        }
+        this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
 
         data->GetPointData()->SetScalars(this->dataArray);
 
@@ -300,27 +285,27 @@ void svkVarianFidReader::InitDcmHeader()
 
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRIIOD::New();
+    svkIOD* iod = svkMRSIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->InitDcmHeader();
     iod->Delete();
 
-    //  Read the fdf header into a map of values used to initialize the
+    //  Read the fid header into a map of values used to initialize the
     //  DICOM header. 
-    this->ParseFdf(); 
+    this->ParseFid(); 
 
-/*
     this->InitPatientModule();
     this->InitGeneralStudyModule();
-*/
     this->InitGeneralSeriesModule();
     this->InitGeneralEquipmentModule();
-    this->InitImagePixelModule();
+
     this->InitMultiFrameFunctionalGroupsModule();
-/*
-    this->InitMultiFrameDimensionModule();
-    this->InitAcquisitionContextModule();
-*/
+//    this->InitMultiFrameDimensionModule();
+//    this->InitAcquisitionContextModule();
+//    this->InitMRSpectroscopyModule();
+//    this->InitMRSpectroscopyPulseSequenceModule();
+
+    this->InitMRSpectroscopyDataModule();
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
@@ -333,18 +318,7 @@ void svkVarianFidReader::InitDcmHeader()
  */
 svkDcmHeader::DcmPixelDataFormat svkVarianFidReader::GetFileType()
 {
-
-    int numBitsPerByte = 8;
-    int pixelWordSize = this->GetHeaderValueAsInt("bits")/numBitsPerByte;
-
-    string storage = this->GetHeaderValueAsString("storage");
-
-    svkDcmHeader::DcmPixelDataFormat format = svkDcmHeader::UNDEFINED;
-    if ( pixelWordSize == 4 && storage == "float" ) {
-        format = svkDcmHeader::SIGNED_FLOAT_4;
-    } else {
-        throw runtime_error("Unsupported data type (min and max intensity values out of range.");
-    }
+    svkDcmHeader::DcmPixelDataFormat format = svkDcmHeader::SIGNED_FLOAT_4;
 
     return format; 
 }
@@ -355,8 +329,10 @@ svkDcmHeader::DcmPixelDataFormat svkVarianFidReader::GetFileType()
  */
 void svkVarianFidReader::InitPatientModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( this->GetHeaderValueAsString("storage") );
-    this->GetOutput()->GetDcmHeader()->SetValue( "PatientID", this->GetHeaderValueAsString("studyId"));
+    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( this->GetHeaderValueAsString("samplename") );
+    this->GetOutput()->GetDcmHeader()->SetValue( "PatientID", this->GetHeaderValueAsString("dataid"));
+    this->GetOutput()->GetDcmHeader()->SetValue( "PatientsBirthDate", this->GetHeaderValueAsString("birthday") );
+    this->GetOutput()->GetDcmHeader()->SetValue( "PatientsSex", this->GetHeaderValueAsString("gender") );
 }
 
 
@@ -367,12 +343,12 @@ void svkVarianFidReader::InitGeneralStudyModule()
 {
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyDate",
-        this->GetHeaderValueAsString("studyDate") 
+        this->GetHeaderValueAsString("date") 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "StudyID",
-        this->GetHeaderValueAsString("studyDate") 
+        this->GetHeaderValueAsString("studyid_") 
     );
 }
 
@@ -383,22 +359,19 @@ void svkVarianFidReader::InitGeneralStudyModule()
 void svkVarianFidReader::InitGeneralSeriesModule()
 {
 
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition",
-        "UNKNOWN" 
-    );
-
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesNumber",
         0 
     );
 
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesDescription",
-        "Varian Image"
+        "Varian FID Data"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "PatientPosition",
+        "UNKNOWN" 
     );
 
 
@@ -411,21 +384,27 @@ void svkVarianFidReader::InitGeneralSeriesModule()
  */
 void svkVarianFidReader::InitGeneralEquipmentModule()
 {
-    // No way to know what type of scanner the images were acquired on. 
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Manufacturer",
+        "Varian"
+    );
 }
 
 
 /*!
  *
  */
-void svkVarianFidReader::InitImagePixelModule()
+void svkVarianFidReader::InitMRSpectroscopyDataModule()
 {
-
-    this->GetOutput()->GetDcmHeader()->SetValue( "Columns", this->GetHeaderValueAsInt("matrix[]", 0) );
-    this->GetOutput()->GetDcmHeader()->SetValue( "Rows", this->GetHeaderValueAsInt("matrix[]", 1) );
-
-    this->GetOutput()->GetDcmHeader()->SetPixelDataType( this->GetFileType() );
-
+    this->GetOutput()->GetDcmHeader()->SetValue( "Columns", this->GetHeaderValueAsInt("nv", 0) );
+    this->GetOutput()->GetDcmHeader()->SetValue( "Rows", this->GetHeaderValueAsInt("nv2", 0) );
+    this->GetOutput()->GetDcmHeader()->SetValue( "DataPointRows", 0 );
+    this->GetOutput()->GetDcmHeader()->SetValue( "DataPointColumns", this->GetHeaderValueAsInt("np", 0)/2 );
+    this->GetOutput()->GetDcmHeader()->SetValue( "DataRepresentation", "COMPLEX" );
+    this->GetOutput()->GetDcmHeader()->SetValue( "SignalDomainColumns", "TIME" );
+    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
+    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_RowsDomain", "KSPACE" );
+    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_SliceDomain", "KSPACE" );
 }
 
 
@@ -436,22 +415,26 @@ void svkVarianFidReader::InitImagePixelModule()
 void svkVarianFidReader::InitMultiFrameFunctionalGroupsModule()
 {
 
-/*
+    this->InitSharedFunctionalGroupMacros();
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "InstanceNumber",
+        1
+    );
+
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ContentDate",
-        fdfMap[ "studyDate" ] 
+        this->GetHeaderValueAsString( "time_svfdate" )
     );
-*/
 
-    this->numFrames = this->GetHeaderValueAsInt("matrix[]", 2);
+    this->numSlices = this->GetHeaderValueAsInt("ns");
+    int numEchoes = this->GetHeaderValueAsInt("ne");
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
-        this->numFrames
+        this->numSlices * numEchoes 
     ); 
 
-
-    this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
 
 }
@@ -478,9 +461,23 @@ void svkVarianFidReader::InitAcquisitionContextModule()
  */
 void svkVarianFidReader::InitSharedFunctionalGroupMacros()
 {
+
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
+/*
+    this->InitFrameAnatomyMacro();
+    this->InitMRSpectroscopyFrameTypeMacro();
+    this->InitMRTimingAndRelatedParametersMacro();
+    this->InitMRSpectroscopyFOVGeometryMacro();
+    this->InitMREchoMacro();
+    this->InitMRModifierMacro();
     this->InitMRReceiveCoilMacro();
+    this->InitMRTransmitCoilMacro();
+    this->InitMRAveragesMacro();
+    this->InitMRSpatialSaturationMacro();
+    //this->InitMRSpatialVelocityEncodingMacro();
+*/
+
 }
 
 
@@ -489,8 +486,10 @@ void svkVarianFidReader::InitSharedFunctionalGroupMacros()
  */
 void svkVarianFidReader::InitPerFrameFunctionalGroupMacros()
 {
+
     this->InitFrameContentMacro();
     this->InitPlanePositionMacro();
+
 }
 
 
@@ -500,46 +499,80 @@ void svkVarianFidReader::InitPerFrameFunctionalGroupMacros()
  */
 void svkVarianFidReader::InitFrameContentMacro()
 {
-    for (int i = 0; i < this->numFrames; i++) {
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
+    int numCoils = 1; 
+    int numTimePts = 1; 
+    int numFrameIndices = svkDcmHeader::GetNumberOfDimensionIndices( numTimePts, numCoils ) ;
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
+    unsigned int* indexValues = new unsigned int[numFrameIndices];
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
+    int frame = 0;
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+            for (int sliceNum = 0; sliceNum < this->numSlices; sliceNum++) {
+
+                svkDcmHeader::SetDimensionIndices(
+                    indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils
+                );
+
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "PerFrameFunctionalGroupsSequence",
+                    frame,
+                    "FrameContentSequence"
+                );
+
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "DimensionIndexValues",
+                    indexValues,        //  array of vals
+                    numFrameIndices,    // num values in array
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
+    
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameReferenceDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
+    
+                this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDuration",
+                    "-1",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame 
+                );
+    
+                frame++; 
+            }
+        }
     }
+
+    delete[] indexValues;
+
 }
 
 
 /*!
- *  The FDF toplc is the center of the first voxel. 
+ *  The FID toplc is the center of the first voxel. 
  */
 void svkVarianFidReader::InitPlanePositionMacro()
 {
@@ -550,7 +583,7 @@ void svkVarianFidReader::InitPlanePositionMacro()
     double pixelSpacing[3];
     this->GetOutput()->GetDcmHeader()->GetPixelSize(pixelSpacing); 
 
-    //  Get center coordinate float array from fdfMap and use that to generate 
+    //  Get center coordinate float array from fidMap and use that to generate 
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
     //  toplc from which the individual frame locations are calculated
 
@@ -662,16 +695,21 @@ void svkVarianFidReader::InitPixelMeasuresMacro()
         "PixelMeasuresSequence"
     );
 
-    float fov[3]; 
+
     float numPixels[3]; 
+    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
+    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+
     float pixelSize[3]; 
+    pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
+    pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
+    pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
+
     string pixelSizeString[3]; 
 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
-        fov[i]       = GetHeaderValueAsFloat("roi[]", i);
-        numPixels[i] = GetHeaderValueAsFloat("matrix[]", i);
-        pixelSize[i] = fov[i]/numPixels[i]; 
         oss << pixelSize[i];
         pixelSizeString[i].assign( oss.str() );
     }
@@ -709,7 +747,6 @@ void svkVarianFidReader::InitPlaneOrientationMacro()
     );
 
     string orientationString;
-    
 
     for (int i = 0; i < 6; i++) {
         orientationString.append( GetHeaderValueAsString("orientation[]", i) );
@@ -819,20 +856,19 @@ string svkVarianFidReader::GetDcmPatientPositionString(string patientPosition)
 
 
 /*
- *  Read FDF header fields into a string STL map for use during initialization 
+ *  Read FID header blocks into a string STL map for use during initialization 
  *  of DICOM header by Init*Module methods. 
- *  The fdf header consists of a list of "=" delimited key/value pairs. 
  *  If a procpar file is present in the directory, parse that as well. 
  */
-void svkVarianFidReader::ParseFdf()
+void svkVarianFidReader::ParseFid()
 {
 
-    string fdfFileName( this->GetFileName() );  
-    string fdfFileExtension( this->GetFileExtension( this->GetFileName() ) );  
-    string fdfFilePath( this->GetFilePath( this->GetFileName() ) );  
+    string fidFileName( this->GetFileName() );  
+    string fidFileExtension( this->GetFileExtension( this->GetFileName() ) );  
+    string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
 
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( fdfFilePath + "/*." + fdfFileExtension).c_str() );
+    globFileNames->AddFileNames( string( fidFilePath + "/*." + fidFileExtension).c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->GroupingOn(); 
@@ -843,7 +879,7 @@ void svkVarianFidReader::ParseFdf()
     //  If globed file names are not similar, use only the specified file
     if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
-        vtkWarningWithObjectMacro(this, "Found Multiple fdf file groups, using only specified file ");   
+        vtkWarningWithObjectMacro(this, "Found Multiple fid file groups, using only specified file ");   
 
         vtkStringArray* fileNames = vtkStringArray::New(); 
         fileNames->SetNumberOfValues(1);  
@@ -868,45 +904,47 @@ void svkVarianFidReader::ParseFdf()
          *  and append these to the existing map value in the order read.  Also, add a 
          *  file name element to map also in this order. 
          */
-        this->fdfFile = new ifstream();
-        this->fdfFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+/*
+        this->fidFile = new ifstream();
+        this->fidFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-            string currentFdfFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
+            string currentFidFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
 
-            this->fdfFile->open( currentFdfFileName.c_str(), ifstream::in );
-            if ( ! this->fdfFile->is_open() ) {
-                throw runtime_error( "Could not open fdf file: " + currentFdfFileName );
+            this->fidFile->open( currentFidFileName.c_str(), ifstream::in );
+            if ( ! this->fidFile->is_open() ) {
+                throw runtime_error( "Could not open fid file: " + currentFidFileName );
             } 
 
-            this->ParseAndSetStringElements("FileName", currentFdfFileName);
+            this->ParseAndSetStringElements("FileName", currentFidFileName);
 
             // determine how big the data buffer is (num pts * word size).  
             // header key-value pairs use total_bytes_in_file - sizeof_data_buffer
             // read key-value pairs from the top until start of data buffer. 
-            this->fileSize = this->GetFileSize( this->fdfFile );
+            this->fileSize = this->GetFileSize( this->fidFile );
 
             vtkStringArray* keysToFind = vtkStringArray::New(); 
             SetKeysToSearch(keysToFind, fileIndex);
 
-            while (! this->fdfFile->eof() ) {
-                this->GetFdfKeyValuePair(keysToFind);
+            while (! this->fidFile->eof() ) {
+                this->GetFidKeyValuePair(keysToFind);
             }
 
-            this->fdfFile->close();
+            this->fidFile->close();
         }
 
         if (GetHeaderValueAsInt("rank") == 2) {
             this->AddDimensionTo2DData();
         }
+*/
 
-        this->ParseProcpar(fdfFilePath);
+        this->ParseProcpar(fidFilePath);
 
         this->PrintProcparKeyValuePairs();
 
     } catch (const exception& e) {
-        cerr << "ERROR opening or reading Varian fdf file (" << fdfFileName << "): " << e.what() << endl;
+        cerr << "ERROR opening or reading Varian fid file (" << fidFileName << "): " << e.what() << endl;
     }
 
     globFileNames->Delete();
@@ -915,10 +953,10 @@ void svkVarianFidReader::ParseFdf()
 
 
 /*! 
- *  Utility function to read a single line from the fdf file and return 
+ *  Utility function to read a single line from the fid file and return 
  *  set the delimited key/value pair into the stl map.  
  */
-void svkVarianFidReader::GetFdfKeyValuePair( vtkStringArray* keySet )    
+void svkVarianFidReader::GetFidKeyValuePair( vtkStringArray* keySet )    
 {
 
     istringstream* iss = new istringstream();
@@ -928,7 +966,7 @@ void svkVarianFidReader::GetFdfKeyValuePair( vtkStringArray* keySet )
 
     try {
 
-        this->ReadLine(this->fdfFile, iss); 
+        this->ReadLine(this->fidFile, iss); 
 
         size_t  position; 
         string  tmp; 
@@ -940,7 +978,7 @@ void svkVarianFidReader::GetFdfKeyValuePair( vtkStringArray* keySet )
         //  Read only to the start of the pixel buffer, 
         //  i.e. no more than the header size:     
         headerSize = this->fileSize - dataBufferSize; 
-        if ( this->fdfFile->tellg() < headerSize - 1 ) {
+        if ( this->fidFile->tellg() < headerSize - 1 ) {
 
             //  find first white space position before "key" string: 
             position = iss->str().find_first_of(' ');
@@ -1004,7 +1042,7 @@ void svkVarianFidReader::GetFdfKeyValuePair( vtkStringArray* keySet )
             } 
 
         } else { 
-            this->fdfFile->seekg(0, ios::end);     
+            this->fidFile->seekg(0, ios::end);     
         }
     } catch (const exception& e) {
         cout <<  "ERROR reading line: " << e.what() << endl;
@@ -1024,9 +1062,9 @@ int svkVarianFidReader::GetDataBufferSize()
     int bufferSize = 0; 
     map<string, string>::iterator it;
 
-    if (fdfMap.find("bits") != fdfMap.end() && 
-        fdfMap.find("rank") != fdfMap.end() && 
-        fdfMap.find("matrix[]") != fdfMap.end() ) {
+    if (fidMap.find("bits") != fidMap.end() && 
+        fidMap.find("rank") != fidMap.end() && 
+        fidMap.find("matrix[]") != fidMap.end() ) {
 
         int numDims = this->GetHeaderValueAsInt("rank");
 
@@ -1058,14 +1096,14 @@ void svkVarianFidReader::ParseAndSetStringElements(string key, string valueArray
 
         iss->str( valueArrayString.substr(0, pos) );
         *iss >> tmpString;
-        fdfMap[key].push_back(tmpString); 
+        fidMap[key].push_back(tmpString); 
         iss->clear();
 
         valueArrayString.assign( valueArrayString.substr(pos + 1) ); 
     }
     iss->str( valueArrayString );
     *iss >> tmpString;
-    fdfMap[key].push_back(tmpString); 
+    fidMap[key].push_back(tmpString); 
     delete iss; 
 }
 
@@ -1073,13 +1111,13 @@ void svkVarianFidReader::ParseAndSetStringElements(string key, string valueArray
 /*!
  *
  */
-int svkVarianFidReader::GetHeaderValueAsInt(string keyString, int valueIndex) 
+int svkVarianFidReader::GetHeaderValueAsInt(string keyString, int valueIndex, int procparRow) 
 {
     
     istringstream* iss = new istringstream();
     int value;
 
-    iss->str( (fdfMap[keyString])[valueIndex]);
+    iss->str( (procparMap[keyString])[procparRow][valueIndex]);
     *iss >> value;
     return value; 
 }
@@ -1088,13 +1126,13 @@ int svkVarianFidReader::GetHeaderValueAsInt(string keyString, int valueIndex)
 /*!
  *
  */
-float svkVarianFidReader::GetHeaderValueAsFloat(string keyString, int valueIndex) 
+float svkVarianFidReader::GetHeaderValueAsFloat(string keyString, int valueIndex, int procparRow) 
 {
     
     istringstream* iss = new istringstream();
     float value;
 
-    iss->str( (fdfMap[keyString])[valueIndex]);
+    iss->str( (procparMap[keyString])[procparRow][valueIndex]);
     *iss >> value;
     return value; 
 }
@@ -1103,9 +1141,9 @@ float svkVarianFidReader::GetHeaderValueAsFloat(string keyString, int valueIndex
 /*!
  *
  */
-string svkVarianFidReader::GetHeaderValueAsString(string keyString, int valueIndex) 
+string svkVarianFidReader::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow) 
 {
-    return (fdfMap[keyString])[valueIndex];
+    return (procparMap[keyString])[procparRow][valueIndex];
 }
 
 
@@ -1118,7 +1156,7 @@ void svkVarianFidReader::AddDimensionTo2DData()
 
     ostringstream numSlicesOss;
     numSlicesOss << this->GetFileNames()->GetNumberOfValues();
-    fdfMap["matrix[]"].push_back( numSlicesOss.str() );     
+    fidMap["matrix[]"].push_back( numSlicesOss.str() );     
 
     //  Get Min and Max location value in 3rd dimension: 
     float sliceMin = this->GetHeaderValueAsFloat("location[]", 2) ; 
@@ -1139,8 +1177,8 @@ void svkVarianFidReader::AddDimensionTo2DData()
     float sliceFOV = numSlices * sliceThickness; 
     ostringstream sliceFOVoss;
     sliceFOVoss << sliceFOV; 
-    fdfMap["roi[]"][2] = sliceFOVoss.str(); 
-    fdfMap["span[]"].push_back( sliceFOVoss.str() );     
+    fidMap["roi[]"][2] = sliceFOVoss.str(); 
+    fidMap["span[]"].push_back( sliceFOVoss.str() );     
 }
 
 
@@ -1152,12 +1190,12 @@ void svkVarianFidReader::PrintKeyValuePairs()
 
     //  Print out key value pairs parsed from header:
     map< string, vector<string> >::iterator mapIter;
-    for ( mapIter = fdfMap.begin(); mapIter != fdfMap.end(); ++mapIter ) {
+    for ( mapIter = fidMap.begin(); mapIter != fidMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = ";
 
         vector<string>::iterator it;
-        for ( it = fdfMap[mapIter->first].begin() ; it < fdfMap[mapIter->first].end(); it++ ) {
+        for ( it = fidMap[mapIter->first].begin() ; it < fidMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }
         cout << endl;

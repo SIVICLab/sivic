@@ -65,6 +65,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->idfVolReader    = svkIdfVolumeReader::New();
     this->ddfVolReader    = svkDdfVolumeReader::New();
     this->fdfVolReader    = svkFdfVolumeReader::New();
+    this->fidVolReader    = svkVarianFidReader::New();
     this->sdbmVolReader    = svkSdbmVolumeReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
@@ -72,6 +73,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->idfVolReader );
     vtkImageReader2Factory::RegisterReader( this->ddfVolReader );
     vtkImageReader2Factory::RegisterReader( this->fdfVolReader );
+    vtkImageReader2Factory::RegisterReader( this->fidVolReader );
     vtkImageReader2Factory::RegisterReader( this->sdbmVolReader );
 
 }
@@ -108,6 +110,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->fdfVolReader != NULL) {
         this->fdfVolReader->Delete();
         this->fdfVolReader = NULL;
+    }
+
+    if (this->fidVolReader != NULL) {
+        this->fidVolReader->Delete();
+        this->fidVolReader = NULL;
     }
 
     if (this->sdbmVolReader != NULL) {
