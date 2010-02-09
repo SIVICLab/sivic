@@ -110,7 +110,8 @@ class svkOverlayView : public svkDataView
         void                TurnOrthogonalImagesOn();
         void                TurnOrthogonalImagesOff();
         void                SetOrientation( svkDcmHeader::Orientation orientation );
-
+        void                ToggleSelBoxVisibilityOn();
+        void                ToggleSelBoxVisibilityOff();
 
         //! Enum represents input indecies
         enum DataInputs { 
@@ -175,6 +176,8 @@ class svkOverlayView : public svkDataView
 
         //! the render window in which the view is to be displayed 
         vtkRenderWindow*                myRenderWindow;
+
+        bool                            toggleSelBoxVisibility;
 
         //! Object used to window livel the overlay 
         svkImageMapToColors* windowLevelerAxial;

@@ -596,6 +596,7 @@ void svkOverlayViewController::UseSelectionStyle()
             }
         }
         this->currentInteractorStyle = SELECTION;
+        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOn();
     }
 
 }
@@ -607,6 +608,7 @@ void svkOverlayViewController::UseRotationStyle()
     if( visualizationCreated ) {
         bool areSatBandsOn;
         bool areSatBandOutlinesOn;
+
         switch( this->view->GetOrientation() ) {
             case svkDcmHeader::AXIAL:
                  areSatBandsOn = view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL);
@@ -632,11 +634,11 @@ void svkOverlayViewController::UseRotationStyle()
             view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         }
         svkOverlayView* myView = static_cast<svkOverlayView*>(view);
+        svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOff();
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
         rwi->SetInteractorStyle( rotationStyle );
-        rotationStyle->DebugOn();
         this->currentInteractorStyle = ROTATION;
     }
 

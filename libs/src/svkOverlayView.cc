@@ -69,6 +69,7 @@ svkOverlayView::svkOverlayView()
     this->tlcBrc = new int[2];
     this->tlcBrc[0] = -1;
     this->tlcBrc[1] = -1;
+    this->toggleSelBoxVisibility = true;
 
     this->windowLevelerAxial = NULL;
     this->windowLevelerCoronal = NULL;
@@ -439,7 +440,7 @@ void svkOverlayView::SetSlice(int slice)
             this->slice = slice;
             GenerateClippingPlanes();
             // If it is make it visible, otherwise hide it
-            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] ) {
+            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
             } else {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
@@ -1532,4 +1533,30 @@ bool svkOverlayView::AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientat
     }
     return satBandsOutlineAllOn;
 
+}
+
+
+/*!
+ *
+ */
+void svkOverlayView::ToggleSelBoxVisibilityOn() 
+{
+    this->toggleSelBoxVisibility = true;
+    if( this->dataVector[MRS] != NULL && static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) ) {
+        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+    } else {
+        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+    }
+}
+
+
+/*!
+ *
+ */
+void svkOverlayView::ToggleSelBoxVisibilityOff() 
+{
+    this->toggleSelBoxVisibility = false;
+    this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
 }
