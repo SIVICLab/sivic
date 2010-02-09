@@ -1225,37 +1225,40 @@ void vtkSivicController::UseSelectionStyle()
         float sagittalNormal[3];
         data->GetSliceNormal( sagittalNormal, svkDcmHeader::SAGITTAL );
         svkDcmHeader::Orientation closestOrientation = this->overlayController->GetView()->GetOrientation();
+        string newOrientation;
         float* closestNormal;
         switch ( closestOrientation ) {
             case svkDcmHeader::AXIAL:
                 closestNormal = axialNormal;
-                this->orientation = "AXIAL";
+                newOrientation = "AXIAL";
                 break;
             case svkDcmHeader::CORONAL:
                 closestNormal = coronalNormal;
-                this->orientation = "CORONAL";
+                newOrientation = "CORONAL";
                 break;
             case svkDcmHeader::SAGITTAL:
                 closestNormal = sagittalNormal;
-                this->orientation = "SAGITTAL";
+                newOrientation = "SAGITTAL";
                 break;
         }
         if( fabs(vtkMath::Dot( axialNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
             closestNormal = axialNormal;
             closestOrientation = svkDcmHeader::AXIAL;
-            this->orientation = "AXIAL";
+            newOrientation = "AXIAL";
         }  
         if( fabs(vtkMath::Dot( coronalNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
             closestNormal = coronalNormal;
             closestOrientation = svkDcmHeader::CORONAL;
-            this->orientation = "CORONAL";
+            newOrientation = "CORONAL";
         }  
         if( fabs(vtkMath::Dot( sagittalNormal, viewNormal )) > fabs(vtkMath::Dot( closestNormal, viewNormal )) ) {
             closestNormal = sagittalNormal;
             closestOrientation = svkDcmHeader::SAGITTAL;
-            this->orientation = "SAGITTAL";
+            newOrientation = "SAGITTAL";
         }
-        this->SetOrientation( this->orientation.c_str() );
+        if( this->orientation != newOrientation ) {
+            this->SetOrientation( this->orientation.c_str() );
+        }
    /* 
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem(this->orientation.c_str());
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
