@@ -92,7 +92,7 @@ class svkVarianReader : public svkImageReader2
         int                              GetNumPixelsInVol();
         int                              GetNumSlices();
         void                             ParseProcpar( string path );
-        void                             GetProcparKeyValuePair();
+        int                              GetProcparKeyValuePair();
         void                             ReadLine(ifstream* fs, istringstream* iss);
         long                             GetFileSize(ifstream* fs);
         void                             ParseAndSetProcparStringElements(

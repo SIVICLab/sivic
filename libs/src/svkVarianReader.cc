@@ -134,7 +134,9 @@ void svkVarianReader::ParseProcpar( string path )
 
             this->procparFileSize = this->GetFileSize( this->procparFile );
             while (! this->procparFile->eof() ) {
-                this->GetProcparKeyValuePair();
+                if (this->GetProcparKeyValuePair() != 0 ) {
+                    break;
+                }
             }
 
             this->procparFile->close();
@@ -156,9 +158,12 @@ void svkVarianReader::ParseProcpar( string path )
 /*! 
  *  Utility function to read key/values from procpar file 
  *  and set the delimited key/value pair into the stl map.  
+ *  Returns -1 if can't parse line. 
  */
-void svkVarianReader::GetProcparKeyValuePair( )    
+int svkVarianReader::GetProcparKeyValuePair( )    
 {
+
+    int status = 0; 
 
     istringstream* iss = new istringstream();
 
@@ -196,9 +201,11 @@ void svkVarianReader::GetProcparKeyValuePair( )
 
     } catch (const exception& e) {
         cout <<  "ERROR reading line: " << e.what() << endl;
+        status = -1;  
     }
 
     delete iss; 
+    return status; 
 }
 
 
