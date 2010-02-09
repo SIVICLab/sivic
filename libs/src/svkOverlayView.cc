@@ -442,7 +442,7 @@ void svkOverlayView::SetSlice(int slice)
             // If it is make it visible, otherwise hide it
             if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-            } else {
+            } else if( this->toggleSelBoxVisibility ) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
             }
             int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
