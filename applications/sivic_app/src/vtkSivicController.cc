@@ -285,15 +285,21 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             // Now we can update the sliders based on the image data properties
             spectraData = static_cast<vtkImageData*>(newData );
             int* extent = newData->GetExtent();
+
+            // TODO: this will fail for sagittal/coronal data...
             if( tlcBrc == NULL ) {
+                int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
+                int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
+                this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
                 int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
-                this->imageViewWidget->sliceSlider->SetRange( extent[4]+1, extent[5]); 
-                int centerSlice = (extent[5] - extent[4] ) / 2;
-                this->imageViewWidget->sliceSlider->SetValue( centerSlice + 1);
-                this->processingWidget->channelSlider->SetRange( 1, channels); 
-                this->processingWidget->channelSlider->SetValue( 1 );
-                this->plotController->SetSlice( centerSlice ); 
-                this->overlayController->SetSlice( centerSlice ); 
+                this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
+                this->spectraViewWidget->channelSlider->SetValue( 1 );
+                int timePoints = svkMrsImageData::SafeDownCast( newData )->GetNumberOfTimePoints();
+                this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints); 
+                this->spectraViewWidget->timePointSlider->SetValue( 1 );
+                this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
+                this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
             }
             this->plotController->SetInput( newData ); 
 
@@ -1568,8 +1574,10 @@ void vtkSivicController::SetOrientation( const char* orientation )
         }
     }
     this->SetSlice( this->overlayController->GetSlice() );
-    this->imageViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-    this->imageViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+    if( this->model->DataExists("SpectroscopicData") ) {
+        this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+        this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1 );
+    }
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
         this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -1712,11 +1720,8 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->volSelButton->EnabledOn();
     }
 
-    if ( model->DataExists("SpectroscopicData") || model->DataExists("AnatomicalData") ) {
-        this->imageViewWidget->sliceSlider->EnabledOn();
-    }
-
     if ( model->DataExists("SpectroscopicData") ) {
+        this->spectraViewWidget->sliceSlider->EnabledOn();
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
@@ -1740,7 +1745,11 @@ void vtkSivicController::EnableWidgets()
         this->spectraViewWidget->unitSelectBox->EnabledOn();
         this->spectraViewWidget->componentSelectBox->EnabledOn();
         if( numChannels > 1 ) {
-            this->processingWidget->channelSlider->EnabledOn();
+            this->spectraViewWidget->channelSlider->EnabledOn();
+        }
+        int numTimePoints = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetNumberOfTimePoints();
+        if( numTimePoints > 1 ) {
+            this->spectraViewWidget->timePointSlider->EnabledOn();
         }
     }
 
@@ -1784,8 +1793,9 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->plotGridButton->EnabledOff();
 
     this->spectraViewWidget->detailedPlotButton->EnabledOff();
-    this->imageViewWidget->sliceSlider->EnabledOff();
-    this->processingWidget->channelSlider->EnabledOff();
+    this->spectraViewWidget->sliceSlider->EnabledOff();
+    this->spectraViewWidget->channelSlider->EnabledOff();
+    this->spectraViewWidget->timePointSlider->EnabledOff();
     this->imageViewWidget->axialSlider->EnabledOff();
     this->imageViewWidget->coronalSlider->EnabledOff();
     this->imageViewWidget->sagittalSlider->EnabledOff();

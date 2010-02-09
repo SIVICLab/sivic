@@ -19,7 +19,6 @@ vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
  */
 sivicProcessingWidget::sivicProcessingWidget()
 {
-    this->channelSlider = NULL;
     this->phaseSlider = NULL;
     this->phaser = NULL;
     this->phaseAllVoxelsButton = NULL;
@@ -37,10 +36,6 @@ sivicProcessingWidget::sivicProcessingWidget()
  */
 sivicProcessingWidget::~sivicProcessingWidget()
 {
-    if( this->channelSlider != NULL ) {
-        this->channelSlider->Delete();
-        this->channelSlider = NULL;
-    }
 
     if( this->phaseSlider != NULL ) {
         this->phaseSlider->Delete();
@@ -99,21 +94,6 @@ void sivicProcessingWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    //channel slider 
-    this->channelSlider = vtkKWScaleWithEntry::New();
-    this->channelSlider->SetParent(this);
-    this->channelSlider->Create();
-    this->channelSlider->SetEntryWidth( 4 );
-    this->channelSlider->SetLength( 200 );
-    this->channelSlider->SetOrientationToHorizontal();
-    this->channelSlider->SetLabelText("Channel");
-    this->channelSlider->SetValue(1);
-    this->channelSlider->SetBalloonHelpString("Changes the spectroscopic channel.");
-    this->channelSlider->SetRange( 1, 1 );
-    this->channelSlider->EnabledOff();
-    this->channelSlider->SetEntryPositionToTop();
-    this->channelSlider->SetLabelPositionToTop();
-
     this->phaseSlider = vtkKWScaleWithEntry::New();
     this->phaseSlider->SetParent(this);
     this->phaseSlider->Create();
@@ -164,13 +144,12 @@ void sivicProcessingWidget::CreateWidget()
     this->combineButton->EnabledOff();
     this->combineButton->SetText( "Combine");
 
-    this->Script("grid %s -row 0 -column 0 -sticky nsew", this->channelSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
-    this->Script("grid %s -row 4 -column 0 -sticky nsew", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 5 -column 0 -sticky nsew", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 6 -column 0 -sticky nsew", this->combineButton->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -sticky nsew", this->phaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 0 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 0 -sticky nsew", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 4 -column 0 -sticky nsew", this->phaseButton->GetWidgetName() );
+    this->Script("grid %s -row 5 -column 0 -sticky nsew", this->combineButton->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
@@ -178,15 +157,12 @@ void sivicProcessingWidget::CreateWidget()
     this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 4  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 5  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 6  -weight 16", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->channelSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
     this->AddCallbackCommandObserver(
         this->phaseSlider, vtkKWScale::ScaleValueChangedEvent );
     this->AddCallbackCommandObserver(
@@ -222,20 +198,6 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
     } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
 
         this->SetPhaseUpdateExtent();
-
-    } else if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
-        int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
-        this->plotController->SetChannel( channel );
-        stringstream increment;
-        increment << "SetValue " << channel + 1;
-        stringstream decrement;
-        decrement << "SetValue " << channel - 1;
-        this->channelSlider->RemoveBinding( "<Left>");
-        this->channelSlider->AddBinding( "<Left>", this->channelSlider, decrement.str().c_str() );
-        this->channelSlider->RemoveBinding( "<Right>");
-        this->channelSlider->AddBinding( "<Right>", this->channelSlider, increment.str().c_str() );
-        this->channelSlider->Focus(); 
-        this->plotController->GetView()->Refresh();
     } else if( caller == this->phaseSlider ) {
         switch ( event ) {
             case vtkKWScale::ScaleValueChangedEvent:

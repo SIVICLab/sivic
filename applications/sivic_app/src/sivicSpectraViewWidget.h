@@ -107,6 +107,9 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
         sivicSpectraViewWidget();
         ~sivicSpectraViewWidget();
 
+        vtkKWScaleWithEntry*            sliceSlider;
+        vtkKWScaleWithEntry*            channelSlider;
+        vtkKWScaleWithEntry*            timePointSlider;
         vtkKWRenderWidget*              detailedPlotWidget;
         vtkKWCheckButton*               overlayImageCheck;
         vtkKWCheckButton*               overlayTextCheck;

@@ -74,7 +74,6 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
 
         vtkKWCheckButton*               phaseAllVoxelsButton;
         vtkKWCheckButton*               phaseAllChannelsButton;
-        vtkKWScaleWithEntry*            channelSlider;
         vtkKWScaleWithEntry*            phaseSlider;
         vtkKWPushButton*                fftButton;
         vtkKWPushButton*                phaseButton;

@@ -68,7 +68,7 @@ void sivicGlobalWidget::CreateWidget()
     this->orientationSelect->SetParent(this);
     this->orientationSelect->Create();
     this->orientationSelect->SetLabelText("Orientation");
-    this->orientationSelect->SetLabelPositionToTop();
+    this->orientationSelect->SetLabelPositionToLeft();
     //this->orientationSelect->SetPadY(10);
     //this->orientationSelect->SetPadX(8);
     //this->orientationSelect->SetHeight(2);

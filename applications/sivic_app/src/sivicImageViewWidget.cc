@@ -22,7 +22,6 @@ vtkCxxRevisionMacro( sivicImageViewWidget, "$Revision$");
  */
 sivicImageViewWidget::sivicImageViewWidget()
 {
-    this->sliceSlider = NULL;
     this->overlayOpacitySlider = NULL;
     this->overlayThresholdSlider = NULL;
     this->axialSlider = NULL;
@@ -49,12 +48,6 @@ sivicImageViewWidget::sivicImageViewWidget()
  */
 sivicImageViewWidget::~sivicImageViewWidget()
 {
-
-    if( this->sliceSlider != NULL ) {
-        this->sliceSlider->Delete();
-        this->sliceSlider = NULL;
-    }
-
     if( this->axialSlider != NULL ) {
         this->axialSlider->Delete();
         this->axialSlider= NULL;
@@ -170,18 +163,6 @@ void sivicImageViewWidget::CreateWidget()
     //  Spec View Widgets
     //  =======================================================
   
-    //The Master slice slider 
-    this->sliceSlider = vtkKWScaleWithEntry::New();
-    this->sliceSlider->SetParent(this);
-    this->sliceSlider->Create();
-    this->sliceSlider->SetEntryWidth( 4 );
-    this->sliceSlider->SetOrientationToHorizontal();
-    this->sliceSlider->SetLabelText("Slice");
-    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
-    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
-    this->sliceSlider->SetRange( 1, 1 );
-    this->sliceSlider->EnabledOff();
-
     //  =======================================================
     //  Image View Widgets
     //  =======================================================
@@ -249,7 +230,7 @@ void sivicImageViewWidget::CreateWidget()
     this->interpolationBox->Create();
     this->interpolationBox->SetLabelText("Interpolation Method");
     this->interpolationBox->SetLabelPositionToTop();
-    this->interpolationBox->SetPadY(10);
+    this->interpolationBox->SetPadY(5);
     this->interpolationBox->EnabledOff();
     vtkKWMenu* interpMenu = this->interpolationBox->GetWidget()->GetMenu();
     interpMenu->AddRadioButton("nearest neighbor", this->sivicController, "SetInterpolationCallback 0");
@@ -262,7 +243,7 @@ void sivicImageViewWidget::CreateWidget()
     this->lutBox->Create();
     this->lutBox->SetLabelText("Color Map");
     this->lutBox->SetLabelPositionToTop();
-    this->lutBox->SetPadY(10);
+    this->lutBox->SetPadY(5);
     this->lutBox->EnabledOff();
     vtkKWMenu* lutMenu = this->lutBox->GetWidget()->GetMenu();
 
@@ -442,7 +423,7 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -sticky ew", orthoSeparator->GetWidgetName(), row); 
 
     row++; 
-    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 10", this->orthoViewFrame->GetWidgetName(), row);
+    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 5", this->orthoViewFrame->GetWidgetName(), row);
         this->Script("grid %s -in %s -row 0 -column 0 -sticky w", 
                 this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
         this->Script("grid %s -in %s -row 1 -column 0  -columnspan 2 -sticky ew ", 
@@ -465,7 +446,7 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
 
     row++; 
-    this->Script("grid %s -row %d -column 0 -rowspan 4 -sticky nsew -padx 10 -pady 10 ", this->overlayViewFrame->GetWidgetName(), row);
+    this->Script("grid %s -row %d -column 0 -rowspan 4 -sticky nsew -padx 10 -pady 5 ", this->overlayViewFrame->GetWidgetName(), row);
 
         this->Script("grid %s -in %s -row 0 -column 2 -sticky w", 
                 this->overlayButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
@@ -484,7 +465,6 @@ void sivicImageViewWidget::CreateWidget()
         this->Script("grid columnconfigure %s 1 -weight 90 ", this->overlayViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 2 -weight 20 ", this->overlayViewFrame->GetWidgetName() );
     row++; 
-    this->Script("grid %s -row 8 -column 0  -sticky nsew -padx 10 -pady 10 ", this->sliceSlider->GetWidgetName(), row);
 
 
     this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );
@@ -504,8 +484,6 @@ void sivicImageViewWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
 
-    this->AddCallbackCommandObserver(
-        this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
         this->axialSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -561,20 +539,7 @@ void sivicImageViewWidget::CreateWidget()
 void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
-    if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
-        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1);
-        stringstream increment;
-        increment << "SetValue " << this->overlayController->GetSlice() + 2;
-        stringstream decrement;
-        decrement << "SetValue " << this->overlayController->GetSlice();
-        this->sliceSlider->RemoveBinding( "<Left>");
-        this->sliceSlider->AddBinding( "<Left>", this->sliceSlider, decrement.str().c_str() );
-        this->sliceSlider->RemoveBinding( "<Right>");
-        this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
-        this->sliceSlider->Focus(); 
-        //this->SetPhaseUpdateExtent();
-        // viewer widget renders automatically when you set its slice
-    } else if( caller == this->axialSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+    if( caller == this->axialSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
         this->overlayController->SetSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, svkDcmHeader::AXIAL); 
         this->overlayController->GetView()->Refresh();
 

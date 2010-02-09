@@ -125,7 +125,6 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         sivicImageViewWidget();
         ~sivicImageViewWidget();
 
-        vtkKWScaleWithEntry*            sliceSlider;
         vtkKWScaleWithEntry*            coronalSlider;
         vtkKWScaleWithEntry*            sagittalSlider;
         vtkKWScaleWithEntry*            axialSlider;

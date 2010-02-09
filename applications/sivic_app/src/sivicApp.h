@@ -64,7 +64,7 @@
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/CommandLineArguments.hxx>
 
-#define WINDOW_SIZE_X 900
+#define WINDOW_SIZE_X 1000
 #define WINDOW_SIZE_Y 700
 
 extern "C" int Sivickwcallbackslib_Init(Tcl_Interp *interp);
