@@ -910,7 +910,9 @@ void svkFdfVolumeReader::ParseFdf()
             SetKeysToSearch(keysToFind, fileIndex);
 
             while (! this->fdfFile->eof() ) {
-                this->GetFdfKeyValuePair(keysToFind);
+                if ( this->GetFdfKeyValuePair(keysToFind) != 0 ) {
+                    break; 
+                }
             }
 
             this->fdfFile->close();
@@ -942,9 +944,12 @@ void svkFdfVolumeReader::ParseFdf()
 /*! 
  *  Utility function to read a single line from the fdf file and return 
  *  set the delimited key/value pair into the stl map.  
+ *  Returns -1 if reading isn't successful. 
  */
-void svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )    
+int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )    
 {
+
+    int status = 0; 
 
     istringstream* iss = new istringstream();
 
@@ -998,7 +1003,7 @@ void svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
                     } 
                 }
                 if ( !parseValue )  {
-                    return; 
+                    return status; 
                 }   
 
                 valueString.assign( tmp.substr(position + 2) );
@@ -1033,9 +1038,11 @@ void svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
         }
     } catch (const exception& e) {
         cout <<  "ERROR reading line: " << e.what() << endl;
+        status = -1; 
     }
 
     delete iss; 
+    return status; 
 }
 
 

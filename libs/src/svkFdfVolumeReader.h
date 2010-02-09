@@ -118,7 +118,7 @@ class svkFdfVolumeReader : public svkVarianReader
         string                           VarianToDicomDate(string* volumeDate);
         string                           GetDcmPatientPositionString(string patientPosition);
         void                             ParseFdf();
-        void                             GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
+        int                              GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
         void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);
         int                              GetDataBufferSize();
         int                              GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
