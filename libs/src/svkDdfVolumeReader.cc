@@ -314,7 +314,7 @@ void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z
     numVoxels[2] = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints3"); 
 
     int offset = (numPts * numComponents) *  (
-                     ( numVoxels[0] * numVoxels[1] * numVoxels[2] * timePt ) * z
+                     ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt 
                     +( numVoxels[0] * numVoxels[1] ) * z
                     +  numVoxels[0] * y
                     +  x 
