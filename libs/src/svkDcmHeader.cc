@@ -565,7 +565,6 @@ int svkDcmHeader::GetNumberOfCoils()
 {
     int numCoils = 1;
     int numberOfFrames = this->GetIntValue("NumberOfFrames");
-    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
@@ -585,7 +584,6 @@ int svkDcmHeader::GetNumberOfTimePoints()
 {
     int numTimePts = 1;
     int numberOfFrames = this->GetIntValue("NumberOfFrames");
-    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
