@@ -1139,7 +1139,7 @@ void svkVarianFidReader::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionDataColumns",
-        this->GetHeaderValueAsInt("np", 0), 
+        this->GetHeaderValueAsInt("np", 0)/2, 
         "SharedFunctionalGroupsSequence",
         0
     );
