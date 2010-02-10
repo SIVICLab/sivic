@@ -246,6 +246,7 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 
         cmplxDataIn->open( cmplxFile.c_str(), ios::binary);
 
+        //  Read in data from 1 coil:
         int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
         int numPts = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints0"); 
         int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 4 * this->numTimePts; 
@@ -253,7 +254,7 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
 #if defined (linux) || defined(Darwin)
-        svkByteSwap::SwapBufferEndianness( specData, numBytesInVol/4);
+        svkByteSwap::SwapBufferEndianness(this->specData, numBytesInVol/4);
 #endif
 
         for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
@@ -313,12 +314,14 @@ void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z
     numVoxels[2] = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints3"); 
 
     int offset = (numPts * numComponents) *  (
-                        (numVoxels[0] * numVoxels[1]) * z
-                        + numVoxels[0] * y
-                        + x ); 
+                     ( numVoxels[0] * numVoxels[1] * numVoxels[2] * timePt ) * z
+                    +( numVoxels[0] * numVoxels[1] ) * z
+                    +  numVoxels[0] * y
+                    +  x 
+                 ); 
 
     for (int i = 0; i < numPts; i++) {
-        dataArray->SetTuple(i, &(specData[offset + (i * 2)]));
+        dataArray->SetTuple(i, &(this->specData[offset + (i * 2)]));
     }
 
     //  Add the spectrum's dataArray to the CellData:
