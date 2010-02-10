@@ -113,9 +113,17 @@ class svkVarianFidReader : public svkVarianReader
         void                             InitPlanePositionMacro();
         void                             InitPixelMeasuresMacro();
         void                             InitPlaneOrientationMacro();
+        void                             InitMREchoMacro(); 
+        void                             InitMRTimingAndRelatedParametersMacro();
         void                             InitMRReceiveCoilMacro();
+        void                             InitMRSpectroscopyPulseSequenceModule(); 
+        void                             InitMRSpectroscopyModule(); 
+        void                             InitMRSpectroscopyFOVGeometryMacro(); 
         void                             InitMRSpectroscopyDataModule();
-        void                             ReadFidFiles();
+        void                             ReadFidFiles( vtkImageData* data );
+        void                             SetCellSpectrum(
+                                            vtkImageData* data, int x, int y, int z, int timePt, int coilNum
+                                         ); 
         svkDcmHeader::DcmPixelDataFormat GetFileType();
         string                           VarianToDicomDate(string* volumeDate);
         string                           GetDcmPatientPositionString(string patientPosition);
@@ -138,7 +146,7 @@ class svkVarianFidReader : public svkVarianReader
 
 
         //  Members:
-        void*                                       specData; 
+        float*                                      specData; 
         ifstream*                                   fidFile;
         map <string, vector<string> >               fidMap; 
         long                                        fileSize; 

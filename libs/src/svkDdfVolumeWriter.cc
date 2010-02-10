@@ -536,24 +536,36 @@ void svkDdfVolumeWriter::WriteHeader()
     float selBoxSize[3]; 
     float selBoxCenter[3]; 
 
-    for (int i = 0; i < 3; i++) {
+    if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
 
-        selBoxSize[i] = hdr->GetFloatSequenceItemElement(
-            "VolumeLocalizationSequence",
-            i,
-            "SlabThickness"
-        );
+        for (int i = 0; i < 3; i++) {
+    
+            selBoxSize[i] = hdr->GetFloatSequenceItemElement(
+                "VolumeLocalizationSequence",
+                i,
+                "SlabThickness"
+            );
+    
+            selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
+                "VolumeLocalizationSequence",
+                0,
+                "MidSlabPosition", 
+                NULL,      
+                0,
+                i 
+            );
 
-        selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
-            "VolumeLocalizationSequence",
-            0,
-            "MidSlabPosition", 
-            NULL,      
-            0,
-            i 
-        );
+        }
+    } else {
 
+        selBoxSize[0] = 0.; 
+        selBoxSize[1] = 0.; 
+        selBoxSize[2] = 0.; 
+        selBoxCenter[0] = 0.; 
+        selBoxCenter[1] = 0.; 
+        selBoxCenter[2] = 0.; 
     }
+
     out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
                                          << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
                                          << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
@@ -566,18 +578,30 @@ void svkDdfVolumeWriter::WriteHeader()
 
 
     float selBoxOrientation[3][3]; 
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
 
-            selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
-                "VolumeLocalizationSequence",
-                i,
-                "SlabOrientation",
-                NULL, 
-                0,    
-                j 
-            );
+                selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
+                    "VolumeLocalizationSequence",
+                    i,
+                    "SlabOrientation",
+                    NULL, 
+                    0,    
+                    j 
+                );
+            }
         }
+    } else {
+        selBoxOrientation[0][0] = 0; 
+        selBoxOrientation[0][1] = 0; 
+        selBoxOrientation[0][2] = 0; 
+        selBoxOrientation[1][0] = 0; 
+        selBoxOrientation[1][1] = 0; 
+        selBoxOrientation[1][2] = 0; 
+        selBoxOrientation[2][0] = 0; 
+        selBoxOrientation[2][1] = 0; 
+        selBoxOrientation[2][2] = 0; 
     }
 
     out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
