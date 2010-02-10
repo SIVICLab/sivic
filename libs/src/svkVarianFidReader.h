@@ -55,6 +55,8 @@
 #include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
 #include <vtkDebugLeaks.h>
+#include <vtkTransform.h>
+#include <vtkMatrix4x4.h>
 
 #include <svkVarianReader.h>
 #include <svkByteSwap.h>
@@ -136,11 +138,10 @@ class svkVarianFidReader : public svkVarianReader
 
 
         //  Members:
-        void*                                       pixelData; 
+        void*                                       specData; 
         ifstream*                                   fidFile;
         map <string, vector<string> >               fidMap; 
         long                                        fileSize; 
-        vtkStringArray*                             tmpFileNames;
 
 };
 

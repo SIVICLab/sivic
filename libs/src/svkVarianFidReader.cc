@@ -63,7 +63,7 @@ svkVarianFidReader::svkVarianFidReader()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    this->pixelData = NULL;
+    this->specData = NULL;
     this->dataArray = NULL; 
     this->fidFile = NULL;
     this->procparFile = NULL;
@@ -141,33 +141,31 @@ void svkVarianFidReader::ReadFidFiles()
 
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFiles()" );
 
-    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+    ifstream* fidDataIn = new ifstream();
+    fidDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        ifstream* volumeDataIn = new ifstream();
-        volumeDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    int pixelWordSize = 4; 
+    int numComponents = 2; 
+    int numSpecPoints = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
-        int numBitsPerByte = 8;
-        int pixelWordSize = this->GetHeaderValueAsInt("bits")/numBitsPerByte;
+    int numBytesInVol = ( this->GetNumPixelsInVol() * pixelWordSize * numComponents * numSpecPoints );
 
-        int numBytesInVol = (this->GetNumPixelsInVol() * pixelWordSize);
-        int numFilesInVol = this->GetFileNames()->GetNumberOfValues(); 
-        int numBytesInFile = numBytesInVol/numFilesInVol;  
-        volumeDataIn->open( this->GetFileNames()->GetValue( fileIndex ), ios::binary );
+    fidDataIn->open( this->GetFileName(), ios::binary );
 
-        /*
-        *   Flatten the data volume into one dimension
-        */
-        if (this->pixelData == NULL) {
-            this->pixelData = (void* ) malloc( numBytesInVol); 
-        }
-
-        this->fidFile->seekg(0, ios::end);     
-        volumeDataIn->seekg(-1 * numBytesInFile, ios::end);
-        int offset = (fileIndex * numBytesInFile);
-        volumeDataIn->read( (char *)(this->pixelData) + offset, numBytesInFile);
-        volumeDataIn->close();
-        delete volumeDataIn;
+    /*
+     *   Flatten the data volume into one dimension
+     */
+    if (this->specData == NULL) {
+        this->specData = (void* ) malloc( numBytesInVol ); 
     }
+/*
+    fidDataIn->seekg(0, ios::end);     
+    fidDataIn->seekg(-1 * numBytesInFile, ios::end);
+    int offset = (fileIndex * numBytesInFile);
+    fidDataIn->read( (char *)(this->specData) + offset, numBytesInFile);
+    fidDataIn->close();
+    delete fidDataIn;
+*/
 
     /*  
      *  If this is running on linux, and the input is bigendian, then swap bytes:
@@ -176,11 +174,11 @@ void svkVarianFidReader::ReadFidFiles()
      */
 #if defined (linux) || defined(Darwin)
     if ( this->GetHeaderValueAsInt("bigendian") != 0 ) {
-        svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
+        svkByteSwap::SwapBufferEndianness( (float*)specData, this->GetNumPixelsInVol() );
     }
 #else
     if ( this->GetHeaderValueAsInt("bigendian") != 1 ) {
-        svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
+        svkByteSwap::SwapBufferEndianness( (float*)specData, this->GetNumPixelsInVol() );
     }
 #endif
   
@@ -194,39 +192,14 @@ void svkVarianFidReader::ReadFidFiles()
 void svkVarianFidReader::ExecuteData(vtkDataObject* output)
 {
 
-    this->FileNames = vtkStringArray::New(); 
-    this->FileNames->DeepCopy(this->tmpFileNames); 
-    this->tmpFileNames->Delete(); 
-    this->tmpFileNames = NULL; 
-
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    if ( this->GetFileNames()->GetNumberOfValues() ) {
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
-        struct stat fs;
-        if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
-            return;
-        }
-
+    if ( this->FileName ) {
         this->ReadFidFiles();
-
-        //  If input is float, convert to short int (16 bit depth):     
-        this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
-
-        this->Superclass::Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
-
-        data->GetPointData()->SetScalars(this->dataArray);
-
     }
 
-    /* 
-     * We need to make a shallow copy of the output, otherwise we would have it
-     * registered twice to the same reader which would cause the reader to never delete.
-     */
     double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
     this->GetOutput()->SetDcos(dcos);
 
@@ -263,15 +236,6 @@ void svkVarianFidReader::ExecuteInformation()
         this->SetupOutputInformation();
     }
 
-    //  This is a workaround required since the vtkImageAlgo executive 
-    //  for the reder resets the Extent[5] value to the number of files
-    //  which is not correct for 3D multislice volume files. So store
-    //  the files in a temporary array until after ExecuteData has been 
-    //  called, then reset the array.  
-    this->tmpFileNames = vtkStringArray::New(); 
-    this->tmpFileNames->DeepCopy(this->FileNames); 
-    this->FileNames->Delete(); 
-    this->FileNames = NULL; 
 }
 
 
@@ -583,13 +547,18 @@ void svkVarianFidReader::InitPlanePositionMacro()
     double pixelSpacing[3];
     this->GetOutput()->GetDcmHeader()->GetPixelSize(pixelSpacing); 
 
+    float numPixels[3]; 
+    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
+    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+
     //  Get center coordinate float array from fidMap and use that to generate 
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
     //  toplc from which the individual frame locations are calculated
 
-    //  If volumetric 3D, get the center of the TLC voxel in LPS coords: 
+    //  If volumetric 3D (not 2D), get the center of the TLC voxel in LPS coords: 
     float* volumeTlcLPSFrame = new float[3];  
-    if (GetHeaderValueAsInt("rank") == 3) {
+    if ( this->GetHeaderValueAsInt("ns", 0) > 1 ) {
 
         //  Get the volumetric center in acquisition frame coords: 
         float volumeCenterAcqFrame[3];  
@@ -616,7 +585,7 @@ void svkVarianFidReader::InitPlanePositionMacro()
      *  If 3D vol, calculate slice position, otherwise use value encoded 
      *  into slice header
      */
-    for (int i = 0; i < this->GetHeaderValueAsInt("matrix[]", 2); i++) {
+    for (int i = 0; i < this->GetOutput()->GetDcmHeader()->GetNumberOfSlices(); i++) {
 
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "PerFrameFunctionalGroupsSequence",
@@ -632,19 +601,20 @@ void svkVarianFidReader::InitPlanePositionMacro()
 
         string imagePositionPatient;
 
-        if (GetHeaderValueAsInt("rank") == 2) {
+        //  If 2D (single slice)
+        if ( this->GetHeaderValueAsInt("ns", 0) == 1 ) {
 
             //  Location is the center of the image frame in user (acquisition frame). 
             float centerAcqFrame[3];  
             for ( int j = 0; j < 3; j++) {
-                centerAcqFrame[j] = this->GetHeaderValueAsFloat("location[]", i * 3 + j ) ;
+                centerAcqFrame[j] = 0.0;  
             }
 
             //  Now get the center of the tlc voxel in the acq frame: 
             float* tlcAcqFrame = new float[3];  
             for (int j = 0; j < 2; j++) {
                 tlcAcqFrame[j] = centerAcqFrame[j] 
-                                 - ( this->GetHeaderValueAsFloat("span[]", j) - pixelSpacing[j] )/2; 
+                                 - ( ( numPixels[j] * pixelSpacing[j] ) - pixelSpacing[j] )/2; 
             }
             tlcAcqFrame[2] = centerAcqFrame[2]; 
 
@@ -694,7 +664,6 @@ void svkVarianFidReader::InitPixelMeasuresMacro()
         0,
         "PixelMeasuresSequence"
     );
-
 
     float numPixels[3]; 
     numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
@@ -746,12 +715,29 @@ void svkVarianFidReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
+    //  Get the euler angles for the acquisitin coordinate system: 
+    float psi = this->GetHeaderValueAsFloat("psi", 0);
+    float phi = this->GetHeaderValueAsFloat("phi", 0);
+    float theta = this->GetHeaderValueAsFloat("theta", 0);
+
+    vtkTransform* eulerTransform = vtkTransform::New(); 
+    eulerTransform->RotateX( psi ); 
+    eulerTransform->RotateY( theta ); 
+    eulerTransform->RotateY( phi ); 
+    vtkMatrix4x4* dcos = vtkMatrix4x4::New();  
+    eulerTransform->GetMatrix(dcos); 
+    cout << *dcos << endl; 
+
     string orientationString;
 
-    for (int i = 0; i < 6; i++) {
-        orientationString.append( GetHeaderValueAsString("orientation[]", i) );
-        if (i < 5) {
-            orientationString.append( "\\");
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            ostringstream dcosOss;
+            dcosOss << dcos->GetElement(i, j); 
+            orientationString.append( dcosOss.str() );
+            if (i <=1 && j < 2  ) {
+                orientationString.append( "\\");
+            }
         }
     }
 
@@ -764,14 +750,13 @@ void svkVarianFidReader::InitPlaneOrientationMacro()
         0
     );
 
-
     //  Determine whether the data is ordered with or against the slice normal direction.
     double normal[3];
     this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
 
     double dcosSliceOrder[3];
     for (int j = 0; j < 3; j++) {
-        dcosSliceOrder[j] =  this->GetHeaderValueAsFloat("orientation[]", j + 6 );
+        dcosSliceOrder[j] = dcos->GetElement(2, j);   
     }
 
     //  Use the scalar product to determine whether the data in the .cmplx
@@ -867,43 +852,10 @@ void svkVarianFidReader::ParseFid()
     string fidFileExtension( this->GetFileExtension( this->GetFileName() ) );  
     string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
 
-    vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( fidFilePath + "/*." + fidFileExtension).c_str() );
-
-    vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
-    sortFileNames->GroupingOn(); 
-    sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
-    sortFileNames->NumericSortOn();
-    sortFileNames->Update();
-
-    //  If globed file names are not similar, use only the specified file
-    if (sortFileNames->GetNumberOfGroups() > 1 ) {
-
-        vtkWarningWithObjectMacro(this, "Found Multiple fid file groups, using only specified file ");   
-
-        vtkStringArray* fileNames = vtkStringArray::New(); 
-        fileNames->SetNumberOfValues(1);  
-        fileNames->SetValue(0, this->GetFileName() ); 
-        sortFileNames->SetInputFileNames( fileNames ); 
-        fileNames->Delete(); 
-
-    } 
-
-    this->SetFileNames( sortFileNames->GetFileNames() );
-    vtkStringArray* fileNames =  sortFileNames->GetFileNames();
-    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        cout << "FN: " << fileNames->GetValue(i) << endl; 
-    } 
-    //this->SetDataByteOrderToLittleEndian
+    cout << "FN: " << this->GetFileName() << endl;; 
 
     try { 
 
-        /*  Read in the FDF Header:
-         *  for image 1 read everything.  
-         *  for subsequent images in the series get "slice_no" and "location[]" elements
-         *  and append these to the existing map value in the order read.  Also, add a 
-         *  file name element to map also in this order. 
-         */
 /*
         this->fidFile = new ifstream();
         this->fidFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
@@ -924,19 +876,9 @@ void svkVarianFidReader::ParseFid()
             // read key-value pairs from the top until start of data buffer. 
             this->fileSize = this->GetFileSize( this->fidFile );
 
-            vtkStringArray* keysToFind = vtkStringArray::New(); 
-            SetKeysToSearch(keysToFind, fileIndex);
-
-            while (! this->fidFile->eof() ) {
-                this->GetFidKeyValuePair(keysToFind);
-            }
-
             this->fidFile->close();
         }
 
-        if (GetHeaderValueAsInt("rank") == 2) {
-            this->AddDimensionTo2DData();
-        }
 */
 
         this->ParseProcpar(fidFilePath);
@@ -947,8 +889,6 @@ void svkVarianFidReader::ParseFid()
         cerr << "ERROR opening or reading Varian fid file (" << fidFileName << "): " << e.what() << endl;
     }
 
-    globFileNames->Delete();
-    sortFileNames->Delete();
 }
 
 
@@ -1144,76 +1084,6 @@ float svkVarianFidReader::GetHeaderValueAsFloat(string keyString, int valueIndex
 string svkVarianFidReader::GetHeaderValueAsString(string keyString, int valueIndex, int procparRow) 
 {
     return (procparMap[keyString])[procparRow][valueIndex];
-}
-
-
-/*!
- *  If this is a 2D header, add explicit 3rd dimension with numSlices , 
- *  and modify slice roi and span 3rd dimension too: 
- */
-void svkVarianFidReader::AddDimensionTo2DData() 
-{
-
-    ostringstream numSlicesOss;
-    numSlicesOss << this->GetFileNames()->GetNumberOfValues();
-    fidMap["matrix[]"].push_back( numSlicesOss.str() );     
-
-    //  Get Min and Max location value in 3rd dimension: 
-    float sliceMin = this->GetHeaderValueAsFloat("location[]", 2) ; 
-    float sliceMax = this->GetHeaderValueAsFloat("location[]", 2) ; 
-       
-    float val;  
-    int numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
-    for (int i = 0; i < numSlices; i++) {
-        val = this->GetHeaderValueAsFloat("location[]", (i * 3) + 2 ) ;
-        if (val > sliceMax ) {
-            sliceMax = val; 
-        }    
-        if (val < sliceMin ) {
-            sliceMin = val; 
-        }    
-    }
-    float sliceThickness = (sliceMax - sliceMin)/(numSlices - 1); 
-    float sliceFOV = numSlices * sliceThickness; 
-    ostringstream sliceFOVoss;
-    sliceFOVoss << sliceFOV; 
-    fidMap["roi[]"][2] = sliceFOVoss.str(); 
-    fidMap["span[]"].push_back( sliceFOVoss.str() );     
-}
-
-
-/*!
- *  Prints the key value pairs parsed from the header. 
- */
-void svkVarianFidReader::PrintKeyValuePairs()
-{
-
-    //  Print out key value pairs parsed from header:
-    map< string, vector<string> >::iterator mapIter;
-    for ( mapIter = fidMap.begin(); mapIter != fidMap.end(); ++mapIter ) {
-     
-        cout << this->GetClassName() << " " << mapIter->first << " = ";
-
-        vector<string>::iterator it;
-        for ( it = fidMap[mapIter->first].begin() ; it < fidMap[mapIter->first].end(); it++ ) {
-            cout << " " << *it ;
-        }
-        cout << endl;
-    }
-}
-
-
-/*!
- *  Sets the keys to search for in the file header.  The first file all values are parsed, but
- *  only certain key values are parsed for subsequent files. 
- */
-void svkVarianFidReader::SetKeysToSearch(vtkStringArray* fltArray, int fileIndex)
-{
-    if (fileIndex > 0) {  
-        fltArray->InsertNextValue("location[]"); 
-        fltArray->InsertNextValue("slice_no"); 
-        fltArray->InsertNextValue("display_order"); 
-    }
 }
 
 

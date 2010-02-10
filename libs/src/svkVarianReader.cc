@@ -200,7 +200,9 @@ int svkVarianReader::GetProcparKeyValuePair( )
         }
 
     } catch (const exception& e) {
-        cout <<  "ERROR reading line: " << e.what() << endl;
+        if (this->GetDebug()) {
+            cout <<  "ERROR reading line: " << e.what() << endl;
+        }
         status = -1;  
     }
 
