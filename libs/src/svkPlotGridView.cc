@@ -80,13 +80,6 @@ svkPlotGridView::svkPlotGridView()
     vtkActor* entirePlotGrid = vtkActor::New();
     this->SetProp( svkPlotGridView::PLOT_GRID, entirePlotGrid );
     entirePlotGrid->Delete();
-/*
-    vtkRenderer* ren = vtkRenderer::New();
-    this->SetRenderer( svkPlotGridView::PRIMARY, ren ); 
-    ren->Delete();
-*/
-
-    //this->GetRenderer( svkPlotGridView::PRIMARY )->SetLayer(0);
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
@@ -185,7 +178,13 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(  this->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE));
             }
             this->SetProp( svkPlotGridView::SAT_BANDS, this->satBands->GetSatBandsActor() );
-            
+            string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+            if( acquisitionType == "SINGLE VOXEL" ) {
+                this->TurnPropOff( svkPlotGridView::PLOT_GRID );
+            } else {
+                this->TurnPropOn( svkPlotGridView::PLOT_GRID );
+            }
+
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
             }
@@ -385,7 +384,7 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
         this->dataVector[MRS]->GetIndexFromPosition( worldStart, tlcIndex );
         this->dataVector[MRS]->GetIndexFromPosition( worldEnd, brcIndex );
         int* extent = this->dataVector[MRS]->GetExtent();
-        
+
         int tmp;
         for( int i = 0; i < 3; i++ ) {
             if( tlcIndex[i] > brcIndex[i] ) {
@@ -412,7 +411,7 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
         brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
         tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
         this->SetTlcBrc( tlcIndex[2]*extent[3] * extent[1] + tlcIndex[1]*extent[1] + tlcIndex[0], 
-                         brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]);
+                brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]);
 
     } else if( dataVector[MRS] != NULL ) {
 
@@ -462,7 +461,7 @@ int* svkPlotGridView::HighlightSelectionVoxels()
         double sliceNormal[3];
         dataVector[MRS]->GetDataBasis(sliceNormal, svkImageData::SLICE );
         vtkPoints* cellBoxPoints = vtkPointSet::SafeDownCast(
-                                   plotGrid->selectionBoxActor->GetMapper()->GetInput())->GetPoints();
+                plotGrid->selectionBoxActor->GetMapper()->GetInput())->GetPoints();
         double* selectionBounds =  plotGrid->selectionBoxActor->GetBounds();
 
         int minCornerIndex;
@@ -484,17 +483,17 @@ int* svkPlotGridView::HighlightSelectionVoxels()
             } 
         }
         thresholdBounds[0] =(cellBoxPoints->GetPoint(minCornerIndex))[0] 
-                                             + vtkMath::Dot(spacing, LRNormal)*tolerance;
+            + vtkMath::Dot(spacing, LRNormal)*tolerance;
         thresholdBounds[1] =(cellBoxPoints->GetPoint(maxCornerIndex))[0] 
-                                             - vtkMath::Dot(spacing, LRNormal)*tolerance;
+            - vtkMath::Dot(spacing, LRNormal)*tolerance;
         thresholdBounds[2] =(cellBoxPoints->GetPoint(minCornerIndex))[1] 
-                                             + vtkMath::Dot(spacing, PANormal)*tolerance;
+            + vtkMath::Dot(spacing, PANormal)*tolerance;
         thresholdBounds[3] =(cellBoxPoints->GetPoint(maxCornerIndex))[1] 
-                                             - vtkMath::Dot(spacing, PANormal)*tolerance;
+            - vtkMath::Dot(spacing, PANormal)*tolerance;
         thresholdBounds[4] =(cellBoxPoints->GetPoint(minCornerIndex))[2] 
-                                             + vtkMath::Dot(spacing, SINormal)*tolerance;
+            + vtkMath::Dot(spacing, SINormal)*tolerance;
         thresholdBounds[5] =(cellBoxPoints->GetPoint(maxCornerIndex))[2] 
-                                             - vtkMath::Dot(spacing, SINormal)*tolerance;
+            - vtkMath::Dot(spacing, SINormal)*tolerance;
 
         SetSelection( thresholdBounds, 1 );
 
@@ -534,7 +533,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         } else if( range[1] < 100000 ) {
             metMapper->SetLabelFormat("%1.2f");
         } else {
-           metMapper->SetLabelFormat("%0.1e");
+            metMapper->SetLabelFormat("%0.1e");
         }
         metMapper->GetLabelTextProperty()->ShadowOff();
         metMapper->GetLabelTextProperty()->ItalicOff();
@@ -565,7 +564,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         metTextClipper->Update();
         windowLevel->SetInput( dataVector[MET] );
         if( this->colorTransfer == NULL ) {
-           this->colorTransfer = svkLookupTable::New();
+            this->colorTransfer = svkLookupTable::New();
         }
 
         double window = range[1] - range[0];
@@ -593,7 +592,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->plotGrid->AlignCamera();
         this->Refresh();
 
-   } 
+    } 
 }
 
 
@@ -656,8 +655,8 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
         }
         optimus->Translate( displacement );
         vtkLabeledDataMapper::SafeDownCast( 
-                      vtkActor2D::SafeDownCast( 
-                              this->GetProp( svkPlotGridView::OVERLAY_TEXT ) )->GetMapper())->SetTransform(optimus);
+                vtkActor2D::SafeDownCast( 
+                    this->GetProp( svkPlotGridView::OVERLAY_TEXT ) )->GetMapper())->SetTransform(optimus);
         optimus->Delete();
 
     }
@@ -722,7 +721,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
 {
     svkDataValidator* validator = svkDataValidator::New();
     string resultInfo = "";
-    
+
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex > MET || targetIndex < 0 ) {
         resultInfo += "Data incompatible-- NULL or outside of input range!\n";
@@ -746,11 +745,11 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
             // If its on overlay it must have the same extent as our spectra
             //  SHOULDN'T THIS BE IN VALIDATOR CLASS?
             if( overlayExtent[0] != spectraExtent[0] || overlayExtent[1] != spectraExtent[1]-1 || 
-                overlayExtent[2] != spectraExtent[2] || overlayExtent[3] != spectraExtent[3]-1 ||
-                overlayExtent[4] != spectraExtent[4] || overlayExtent[5] != spectraExtent[5]-1 ) { 
+                    overlayExtent[2] != spectraExtent[2] || overlayExtent[3] != spectraExtent[3]-1 ||
+                    overlayExtent[4] != spectraExtent[4] || overlayExtent[5] != spectraExtent[5]-1 ) { 
 
-                    resultInfo += "Mismatched extents.\n";
-                 
+                resultInfo += "Mismatched extents.\n";
+
             }
         } else {
             resultInfo += "Spectra must be loaded before overlays!\n";
@@ -773,7 +772,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
     } else {
         resultInfo += "Unrecognized data type!\n";
     }
-   
+
     cout << resultInfo.c_str() << endl;
     validator->Delete();
     return resultInfo; 
@@ -909,12 +908,15 @@ void svkPlotGridView::GeneratePlotGridActor( )
  */
 void svkPlotGridView::GenerateClippingPlanes()
 { 
-    if( dataVector[MRS] != NULL ) {
-        this->ClipMapperToTlcBrc( dataVector[MRS],
+    if( this->dataVector[MRS] != NULL ) {
+        string acquisitionType = this->dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        if( acquisitionType != "SINGLE VOXEL" ) {
+            this->ClipMapperToTlcBrc( dataVector[MRS],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(),
                                  tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
-        this->ClipMapperToTlcBrc( dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
+            this->ClipMapperToTlcBrc( dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
                                  tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
+        }
     }
 }
 

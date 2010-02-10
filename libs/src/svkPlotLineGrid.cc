@@ -213,9 +213,9 @@ void svkPlotLineGrid::AllocateXYPlots()
     this->xyPlots = vtkCollection::New();
     svkPlotLine* tmpXYPlot;
     int* extent = this->data->GetExtent();
-    for (int zInd = extent[4] ; zInd <= extent[5]; zInd++) {
-        for (int yInd = extent[2] ; yInd <= extent[3]; yInd++) {
-            for (int xInd = extent[0]; xInd <= extent[1]; xInd++) {
+    for (int zInd = extent[4] ; zInd < extent[5]; zInd++) {
+        for (int yInd = extent[2] ; yInd < extent[3]; yInd++) {
+            for (int xInd = extent[0]; xInd < extent[1]; xInd++) {
                 tmpXYPlot = svkPlotLine::New();
                 this->xyPlots->AddItem( tmpXYPlot );
                 tmpXYPlot->Delete();
@@ -335,6 +335,7 @@ void svkPlotLineGrid::Update()
     tmpViewBounds[4] = VTK_DOUBLE_MAX;
     tmpViewBounds[5] = -VTK_DOUBLE_MAX;
     svkPlotLine* tmpXYPlot;
+    string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
 
     int rowRange[2] = {0,0};
     int columnRange[2] = {0,0};
@@ -376,6 +377,9 @@ void svkPlotLineGrid::Update()
                 if( tmpXYPlot->plotAreaBounds[5] > tmpViewBounds[5] ) {
                     tmpViewBounds[5] = tmpXYPlot->plotAreaBounds[5];
                 }
+                if( acquisitionType == "SINGLE VOXEL" ) {
+                    memcpy( tmpViewBounds, selectionBoxActor->GetBounds(), sizeof(double)*6 );
+                }
             }
         }
     }
@@ -389,7 +393,7 @@ void svkPlotLineGrid::Update()
                 viewBounds[2] != tmpViewBounds[2] ||
                 viewBounds[3] != tmpViewBounds[3] ||
                 viewBounds[4] != tmpViewBounds[4] ||
-                viewBounds[5] != tmpViewBounds[5] ) {
+                viewBounds[5] != tmpViewBounds[5] || acquisitionType == "SINGLE VOXEL") {
         delete[] viewBounds;
         viewBounds = tmpViewBounds; 
         AlignCamera();
@@ -667,7 +671,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
         double newCameraPosition[3];
 
         // Lets calculate the distance from the focal point to the selection box
-        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 || acquisitionType == "SINGLE VOXEL" ) {
+        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {
             distance *=-1;
         } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
             distance *=-1;
@@ -967,9 +971,9 @@ void svkPlotLineGrid::UpdateOrientation()
         }
 
         string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            mirrorPlots = true;
-        }
+        //if( acquisitionType == "SINGLE VOXEL" ) {
+        //    mirrorPlots = false;
+        //}
         while(!iterator->IsDoneWithTraversal()) {
             tmpBoxPlot = static_cast<svkPlotLine*>( iterator->GetCurrentObject()); 
             tmpBoxPlot->SetPlotDirection( plotDirection );

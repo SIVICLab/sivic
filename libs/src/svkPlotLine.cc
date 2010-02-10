@@ -76,6 +76,8 @@ svkPlotLine::svkPlotLine()
     this->invertPlots = false;
     this->mirrorPlots = false;
     this->plotDirection = ROW_COLUMN;
+    this->pointIndex = 0;
+    this->amplitudeIndex =1;
 }
 
 
@@ -189,39 +191,12 @@ void svkPlotLine::GeneratePolyData()
     double amplitude;
     double frequency;
     float posLPS[3];
-    int amplitudeIndex;
-    int pointIndex;
+
+
 
     delta[0] = this->spacing[0]/2.0;
     delta[1] = this->spacing[1]/2.0;
     delta[2] = this->spacing[2]/2.0;
-
-    switch( this->plotDirection ) {
-        case ROW_COLUMN:
-            pointIndex = 0;
-            amplitudeIndex = 1;
-            break;
-        case COLUMN_ROW:
-            pointIndex = 1;
-            amplitudeIndex = 0;
-            break;
-        case ROW_SLICE:
-            pointIndex = 0;
-            amplitudeIndex = 2;
-            break;
-        case SLICE_ROW:
-            pointIndex = 2;
-            amplitudeIndex = 0;
-            break;
-        case SLICE_COLUMN:
-            pointIndex = 2;
-            amplitudeIndex = 1;
-            break;
-        case COLUMN_SLICE:
-            pointIndex = 1;
-            amplitudeIndex = 2;
-            break;
-    }
 
     // We are going to precalculate the start + the distance in the slice dimension for speed
     if( this->plotData != NULL && this->polyLinePoints != NULL ) {
@@ -363,8 +338,8 @@ void svkPlotLine::SetDcos( double dcos[][3] )
  */
 void svkPlotLine::RecalculateScale()
 {
-    this->scale[0] = ( spacing[0] )/((float)( this->endPt - this->startPt ));
-    this->scale[1] = ( spacing[1] )/((float)( this->maxValue - this->minValue ));
+    this->scale[0] = ( spacing[this->pointIndex] )/((float)( this->endPt - this->startPt ));
+    this->scale[1] = ( spacing[this->amplitudeIndex] )/((float)( this->maxValue - this->minValue ));
 }
 
 
@@ -437,4 +412,31 @@ void svkPlotLine::SetMirrorPlots( bool mirrorPlots )
 void svkPlotLine::SetPlotDirection( PlotDirection plotDirection  ) 
 {
     this->plotDirection = plotDirection;
+    switch( this->plotDirection ) {
+        case ROW_COLUMN:
+            this->pointIndex     = 0;
+            this->amplitudeIndex = 1;
+            break;
+        case COLUMN_ROW:
+            this->pointIndex     = 1;
+            this->amplitudeIndex = 0;
+            break;
+        case ROW_SLICE:
+            this->pointIndex     = 0;
+            this->amplitudeIndex = 2;
+            break;
+        case SLICE_ROW:
+            this->pointIndex     = 2;
+            this->amplitudeIndex = 0;
+            break;
+        case SLICE_COLUMN:
+            this->pointIndex     = 2;
+            this->amplitudeIndex = 1;
+            break;
+        case COLUMN_SLICE:
+            this->pointIndex     = 1;
+            this->amplitudeIndex = 2;
+            break;
+    }
+    this->RecalculateScale();
 }

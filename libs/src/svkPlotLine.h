@@ -144,6 +144,12 @@ class svkPlotLine : public vtkPolyLine
 
     private:
 
+        //! Which index should map to amplitude
+        int amplitudeIndex;
+
+        //! Which index should map to frequency/points
+        int pointIndex;
+
         //! the scale 
         float scale[2]; 
 

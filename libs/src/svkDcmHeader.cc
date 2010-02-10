@@ -570,7 +570,6 @@ int svkDcmHeader::GetNumberOfCoils()
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
     int coilIndexNumber = this->GetDimensionIndexPosition( "Coil Number" ); 
     numCoils = this->GetNumberOfFramesInDimension( coilIndexNumber ); 
-
     return numCoils;
 }
 

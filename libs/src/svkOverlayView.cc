@@ -1546,7 +1546,10 @@ void svkOverlayView::ToggleSelBoxVisibilityOn()
         this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
         this->TurnPropOn( svkOverlayView::VOL_SELECTION );
     } else {
-        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+        vtkProp* volSelection = this->GetProp( svkOverlayView::VOL_SELECTION ); 
+        if( volSelection != NULL ) {
+            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+        }
     }
 }
 
@@ -1557,6 +1560,9 @@ void svkOverlayView::ToggleSelBoxVisibilityOn()
 void svkOverlayView::ToggleSelBoxVisibilityOff() 
 {
     this->toggleSelBoxVisibility = false;
-    this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+    vtkProp* volSelection = this->GetProp( svkOverlayView::VOL_SELECTION ); 
+    if( volSelection != NULL ) {
+        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+        this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+    }
 }

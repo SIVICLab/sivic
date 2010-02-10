@@ -61,9 +61,9 @@ svkImageViewer2::svkImageViewer2()
     this->coronalSlice  = 0;
     this->sagittalSlice = 0;
 
-    this->axialImageActor    = NULL;
-    this->coronalImageActor  = NULL;
-    this->sagittalImageActor = NULL;
+    this->axialImageActor = svkOpenGLOrientedImageActor::New();
+    this->coronalImageActor = svkOpenGLOrientedImageActor::New();
+    this->sagittalImageActor = svkOpenGLOrientedImageActor::New();
 
     this->data = NULL;
 
@@ -301,20 +301,6 @@ void svkImageViewer2::SetInput(svkImageData *in)
 
     //this->UpdateDisplayExtent();
 
-    if( this->axialImageActor != NULL ) {
-        this->axialImageActor->Delete();
-        this->axialImageActor = NULL;
-    }
-
-    if( this->coronalImageActor != NULL ) {
-        this->coronalImageActor->Delete();
-        this->coronalImageActor = NULL;
-    }
-
-    if( this->sagittalImageActor != NULL ) {
-        this->sagittalImageActor->Delete();
-        this->sagittalImageActor = NULL;
-    }
     int* extent = in->GetExtent();
 
     switch( in->GetDcmHeader()->GetOrientationType() ) {
@@ -334,18 +320,6 @@ void svkImageViewer2::SetInput(svkImageData *in)
             this->coronalSlice = (extent[1]-extent[0])/2;
             break;
 
-    }
-
-    if( this->axialImageActor == NULL ) {
-        this->axialImageActor = svkOpenGLOrientedImageActor::New();
-    }
-
-    if( this->coronalImageActor == NULL ) {
-        this->coronalImageActor = svkOpenGLOrientedImageActor::New();
-    }
-
-    if( this->sagittalImageActor == NULL ) {
-        this->sagittalImageActor = svkOpenGLOrientedImageActor::New();
     }
 
     this->InitializeOrthogonalActors();
@@ -510,18 +484,6 @@ void svkImageViewer2::ResetCamera()
         double dcos[3][3];
         static_cast<svkImageData*>(this->GetInput())->GetDcos( dcos );
         svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
-        double uVec[3];
-        uVec[0] = dcos[0][0];
-        uVec[1] = dcos[0][1];
-        uVec[2] = dcos[0][2];
-        double vVec[3];
-        vVec[0] = dcos[1][0];
-        vVec[1] = dcos[1][1];
-        vVec[2] = dcos[1][2];
-        double wVec[3];
-        wVec[0] = dcos[2][0];
-        wVec[1] = dcos[2][1];
-        wVec[2] = dcos[2][2];
         double x[3];
         float tmpCenter[3];
         this->data->GetImageCenter( tmpCenter );
