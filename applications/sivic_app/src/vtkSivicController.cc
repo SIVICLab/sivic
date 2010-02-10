@@ -224,9 +224,6 @@ void vtkSivicController::OpenImage( const char* fileName )
             } else {
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
             }
-            //int firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
-            //int lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
-            //this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             switch( newData->GetDcmHeader()->GetOrientationType() ) {
                 case svkDcmHeader::AXIAL:
                     this->SetOrientation( "AXIAL" );
@@ -253,6 +250,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename );
+    cout << *newData << endl;
 
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -295,7 +293,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
                 this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
                 this->spectraViewWidget->channelSlider->SetValue( 1 );
-                int timePoints = svkMrsImageData::SafeDownCast( newData )->GetNumberOfTimePoints();
+                int timePoints = newData->GetDcmHeader()->GetNumberOfTimePoints();
                 this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints); 
                 this->spectraViewWidget->timePointSlider->SetValue( 1 );
                 this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
@@ -1269,24 +1267,6 @@ void vtkSivicController::UseSelectionStyle()
         if( this->orientation != newOrientation ) {
             this->SetOrientation( this->orientation.c_str() );
         }
-   /* 
-        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem(this->orientation.c_str());
-        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
-            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
-        }
-        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
-        if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-            this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
-        }
-        this->overlayController->GetView()->SetOrientation( closestOrientation );
-        this->plotController->GetView()->SetOrientation( closestOrientation );
-        this->plotController->SetSlice( this->overlayController->GetSlice() );
-        if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-            this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        }
-*/
     }
     this->overlayController->UseSelectionStyle();
     this->viewRenderingWidget->specViewerWidget->Render();
@@ -1517,11 +1497,14 @@ string vtkSivicController::GetPrinterName( )
 
 }
 
+
+
 /*!
- *
+ * Sets the orientation to
  */
 void vtkSivicController::SetOrientation( const char* orientation ) 
 {
+    // Set Our orientation member variable
     this->orientation = orientation;
     int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
     if( toggleDraw ) {
@@ -1747,7 +1730,7 @@ void vtkSivicController::EnableWidgets()
         if( numChannels > 1 ) {
             this->spectraViewWidget->channelSlider->EnabledOn();
         }
-        int numTimePoints = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetNumberOfTimePoints();
+        int numTimePoints = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfTimePoints();
         if( numTimePoints > 1 ) {
             this->spectraViewWidget->timePointSlider->EnabledOn();
         }
