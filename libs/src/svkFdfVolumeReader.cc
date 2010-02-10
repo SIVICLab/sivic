@@ -1037,7 +1037,9 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
             this->fdfFile->seekg(0, ios::end);     
         }
     } catch (const exception& e) {
-        cout <<  "ERROR reading line: " << e.what() << endl;
+        if (this->GetDebug()) {
+            cout <<  "ERROR reading line: " << e.what() << endl;
+        }
         status = -1; 
     }
 
