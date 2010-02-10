@@ -248,16 +248,14 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 
         int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
         int numPts = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints0"); 
-        int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 4 ; 
+        int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 4 * this->numTimePts; 
         this->specData = new float[ numBytesInVol/4 ];  
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
-
 #if defined (linux) || defined(Darwin)
-        svkByteSwap::SwapBufferEndianness( specData, this->GetNumPixelsInVol() * numPts * numComponents);
+        svkByteSwap::SwapBufferEndianness( specData, numBytesInVol/4);
 #endif
 
-    
         for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
             for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
                 for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
@@ -938,6 +936,8 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     if ( this->GetHeaderValueAsInt( ddfMap, "numberOfDimensions" ) == 5 ) {
         this->numTimePts = this->GetHeaderValueAsInt( ddfMap, "dimensionNumberOfPoints4" ); 
     }
+
+    this->numCoils = this->GetFileNames()->GetNumberOfValues();
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
@@ -1749,9 +1749,7 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
         /*
          *  If multi-channel coil, assume each file corresponds to an individual channel:
          */
-        this->numCoils = this->GetFileNames()->GetNumberOfValues();
-
-        for (int coilIndex = 0; coilIndex < this->GetFileNames()->GetNumberOfValues(); coilIndex++) {
+        for (int coilIndex = 0; coilIndex < this->numCoils; coilIndex++) {
 
             ostringstream ossIndex;
             ossIndex << coilIndex;
@@ -1962,6 +1960,7 @@ void svkDdfVolumeReader::InitMultiFrameDimensionModule()
     }
 
     if (this->numCoils > 1) {
+        indexCount++;
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "DimensionIndexSequence",
             indexCount,

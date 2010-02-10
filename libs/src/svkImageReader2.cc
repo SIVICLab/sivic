@@ -222,11 +222,7 @@ void svkImageReader2::SetupOutputExtent()
     int numVoxels[3];
     numVoxels[0] = this->GetOutput()->GetDcmHeader()->GetIntValue("Columns");
     numVoxels[1] = this->GetOutput()->GetDcmHeader()->GetIntValue("Rows");
-    int numberOfFrames = this->GetOutput()->GetDcmHeader()->GetIntValue("NumberOfFrames");
-    numVoxels[2] = numberOfFrames; 
-
-    int numCoils =  this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
-    numVoxels[2] /= numCoils;  
+    numVoxels[2] = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
 
     if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
         this->SetDataExtent(

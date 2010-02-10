@@ -163,9 +163,10 @@ void svkDdfVolumeWriter::WriteData()
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents;
+    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents * numTimePts;
     int dataLength = dataLengthPerCoil * numCoils;
-    int coilOffset = cols * rows * slices ;
+    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
+    int timePtOffset = cols * rows * slices; 
 
     // write out one coil per ddf file
     float* specData = new float [ dataLengthPerCoil ];
@@ -179,7 +180,9 @@ void svkDdfVolumeWriter::WriteData()
                 for (int y = 0; y < rows; y++) {
                     for (int x = 0; x < cols; x++) {
 
-                        int offset = (cols * rows * z) + (cols * y) + x + (coilNum * coilOffset);
+                        int offset = ( cols * rows * z ) + ( cols * y ) + x 
+                                     + ( timePt * timePtOffset )
+                                     + ( coilNum * coilOffset );
                         fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
 
                         for (int i = 0; i < specPts; i++) {
