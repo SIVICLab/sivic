@@ -68,7 +68,6 @@ svkPlotGridViewController::svkPlotGridViewController()
     this->view->SetRenderer(svkPlotGridView::PRIMARY, primaryRenderer );
     primaryRenderer->Delete();
 
-    this->slice = 0;
     this->rwi = NULL;
 }
 
@@ -163,7 +162,6 @@ void svkPlotGridViewController::SetInput(svkImageData* data, int index)
 void svkPlotGridViewController::SetSlice(int slice)
 {
     this->view->SetSlice(slice);
-    this->slice = static_cast<svkPlotGridView*>(this->view)->GetSlice();
 }
 
 

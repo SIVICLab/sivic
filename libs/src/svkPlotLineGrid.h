@@ -60,6 +60,7 @@
 #include <svkPlotLine.h>
 #include <svkAreaPicker.h>
 #include <svkImageData.h>
+#include <svkDataView.h>
 #include <svkMrsImageData.h>
 
 
@@ -93,7 +94,9 @@ class svkPlotLineGrid : public vtkObject
         void                    SetInput( svkMrsImageData* data );
         void                    Update();
         void                    SetTlcBrc(int tlcBrc[2]);
+        int*                    GetTlcBrc();
         void                    SetSlice(int slice);
+        int                     GetSlice( );
         void                    SetRenderer(vtkRenderer* renderer);
         //int*                    GetCurrentTlcBrc();
         void                    SetFrequencyWLRange(int lower, int range); 

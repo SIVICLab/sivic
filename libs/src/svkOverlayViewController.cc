@@ -57,7 +57,6 @@ vtkStandardNewMacro(svkOverlayViewController);
  */
 svkOverlayViewController::svkOverlayViewController()
 {
-    slice = 0;
     visualizationCreated = 0;
 
     // Create View 
@@ -277,7 +276,7 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
                 this->view->SetInput(dataVector[MRS], 1); 
             }
         }
-        this->SetSlice( this->slice );
+        this->SetSlice( this->GetView()->GetSlice());
     } else if( index == MRS && data != NULL ) {
         if( dataVector[MRS] != NULL ) {
             dataVector[MRS]->Delete();
@@ -286,7 +285,7 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
         dataVector[MRS] = data;
         if( dataVector[MRI] != NULL ) {
             this->view->SetInput(data, 1);
-            this->SetSlice( this->slice );
+            this->SetSlice( this->GetView()->GetSlice() );
         }
     } else if( index == MET && data != NULL && dataVector[MRI] != NULL && dataVector[MRS]!=NULL ) {
         if( dataVector[MET] != NULL ) {
@@ -383,7 +382,6 @@ void svkOverlayViewController::CreateDataVisualization( )
  */
 void svkOverlayViewController::SetSlice( int slice )
 {
-    this->slice = slice;
     if( visualizationCreated ) {
         this->view->SetSlice( slice );
     } else if (DEBUG) {
@@ -686,7 +684,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
     }
     if( targetData != NULL ) {
 
-        slice = static_cast<svkOverlayView*>(dvController->GetView())->slice; 
+        slice = dvController->GetView()->GetSlice(); 
         origin = targetData->GetOrigin();
         orientation = dvController->GetView()->GetOrientation();
         int index[3] = {0,0,0};
@@ -763,7 +761,7 @@ void svkOverlayViewController::TurnPropOn(int propIndex)
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
-        view->SetSlice( slice ); 
+        this->view->SetSlice( this->GetView()->GetSlice() ); 
     }   
 }
 
@@ -781,7 +779,7 @@ void  svkOverlayViewController::TurnPropOff(int propIndex)
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
-        view->SetSlice( slice ); 
+        this->view->SetSlice( this->GetView()->GetSlice() ); 
     }   
 }
 

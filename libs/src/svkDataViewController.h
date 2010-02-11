@@ -101,7 +101,6 @@ class svkDataViewController: public vtkObject
         //  Members:
         vector <svkImageData*>          dataVector;
         svkDataView*                    view;
-        int                             slice;
         vtkRenderWindowInteractor*      rwi;
 
 

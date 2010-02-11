@@ -267,21 +267,23 @@ void svkPlotGridView::SetSlice(int slice)
 void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
 {
 
-    int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
-    if( toggleDraw ) {
-        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
+    if( svkDataView::IsTlcBrcWithinData(this->dataVector[MRS],tlcID, brcID ) ) {
+        this->tlcBrc[0] = tlcID;
+        this->tlcBrc[1] = brcID;
+        int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
+        }
+        plotGrid->SetTlcBrc(this->tlcBrc);
+        plotGrid->Update();
+        UpdateMetaboliteText(tlcBrc);
+        this->GenerateClippingPlanes();
+        plotGrid->AlignCamera(); 
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
+        }
+        this->Refresh();
     }
-    this->tlcBrc[0] = tlcID;
-    this->tlcBrc[1] = brcID;
-    plotGrid->SetTlcBrc(this->tlcBrc);
-    plotGrid->Update();
-    UpdateMetaboliteText(tlcBrc);
-    this->GenerateClippingPlanes();
-    plotGrid->AlignCamera(); 
-    if( toggleDraw ) {
-        this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
-    }
-    this->Refresh();
 }
 
 
@@ -664,18 +666,6 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
 
 
 /*!
- *  Get the current slice.
- *
- *  \return slice the current slice
- *
- */
-int  svkPlotGridView::GetSlice() 
-{
-    return this->slice;
-}
-
-
-/*!
  *  Sets the color schema. Currently we only support one light-on-dark 
  *  and one dark-on-light. Used for making a printable version.
  *
@@ -926,19 +916,21 @@ void svkPlotGridView::GenerateClippingPlanes()
  */
 void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
 {
-    int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
-    if( toggleDraw ) {
-        this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
-    }
     this->orientation = orientation;
-    this->UpdateMetaboliteTextDisplacement();
-    this->satBands->SetOrientation( this->orientation );
-    this->HighlightSelectionVoxels();
-    this->SetTlcBrc( this->tlcBrc[0], this->tlcBrc[1] );
-    this->plotGrid->SetOrientation( this->orientation );
-    if( toggleDraw ) {
-        this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
+    if( this->dataVector[MRS] != NULL ) {
+        int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
+        }
+        this->UpdateMetaboliteTextDisplacement();
+        this->satBands->SetOrientation( this->orientation );
+        this->plotGrid->SetOrientation( this->orientation );
+        this->SetTlcBrc( this->plotGrid->GetTlcBrc()[0], this->plotGrid->GetTlcBrc()[1] );
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
+        }
+        this->SetSlice( this->plotGrid->GetSlice() );
+        this->Refresh();
     }
-    this->Refresh();
 }
 

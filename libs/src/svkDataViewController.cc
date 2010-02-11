@@ -89,7 +89,6 @@ svkDataView* svkDataViewController::GetView()
  */
 void svkDataViewController::SetSlice(int slice)
 {
-    this->slice = slice;
     this->view->SetSlice(slice);
 }
 
@@ -99,7 +98,7 @@ void svkDataViewController::SetSlice(int slice)
  */
 int svkDataViewController::GetSlice()
 {
-    return this->slice;
+    return this->view->GetSlice();
 }
 
 /*!

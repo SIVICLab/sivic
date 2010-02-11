@@ -122,6 +122,14 @@ void svkDataView::SetRWInteractor(vtkRenderWindowInteractor* rwi)
 
 
 /*!
+ *
+ */
+int svkDataView::GetSlice( ) 
+{
+    return this->slice;
+}
+
+/*!
  *       
  */
 void svkDataView::SetWindowLevelRange( double lower, double upper, int index)
@@ -461,4 +469,53 @@ void svkDataView::GetClippingIndexFromTlcBrc( svkImageData* data, int indexRange
     indexRange[1][0] = brcIndex[0];
     indexRange[1][1] = brcIndex[1];
     indexRange[1][2] = brcIndex[2];
+}
+
+
+/*!
+ *
+ */
+bool svkDataView::IsTlcBrcWithinData( svkImageData* data, int tlcBrc[2])
+{
+    return svkDataView::IsTlcBrcWithinData( data, tlcBrc[0], tlcBrc[1] );
+}
+
+
+/*!
+ *
+ */
+bool svkDataView::IsTlcBrcWithinData( svkImageData* data, int tlcID, int brcID)
+{
+    bool isWithinData = false; 
+    if( data != NULL ) {
+        int* extent = data->GetExtent();
+        int maxIndex[3] = {data->GetDimensions()[0]-2,data->GetDimensions()[1]-2,data->GetDimensions()[2]-2};
+        int maxID = data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+
+        if( tlcID >= 0 && brcID >= 0 && tlcID <= maxID && brcID <= maxID && tlcID <= brcID ) {
+            isWithinData = true; 
+        }
+    }
+    return isWithinData;
+}
+
+
+/*!
+ *
+ */
+void svkDataView::ResetTlcBrcForNewOrientation( svkImageData* data, svkDcmHeader::Orientation orientation, int tlcBrc[2], int &slice)
+{
+    if( svkDataView::IsTlcBrcWithinData( data, tlcBrc ) ) {
+        int tlcIndex[3];
+        int brcIndex[3];
+        data->GetIndexFromID( tlcBrc[0], tlcIndex );
+        data->GetIndexFromID( tlcBrc[1], brcIndex );
+        int orientationIndex = data->GetOrientationIndex( orientation );
+
+        slice = tlcIndex[orientationIndex] + (brcIndex[orientationIndex] - tlcIndex[orientationIndex])/2;
+        brcIndex[orientationIndex] = slice;
+        tlcIndex[orientationIndex] = slice;
+        tlcBrc[0] = data->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
+        tlcBrc[1] = data->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
+    } 
 }

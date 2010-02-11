@@ -168,12 +168,6 @@ class svkOverlayView : public svkDataView
         //! the vtkImageViewer2 object used to display the image 
         svkImageViewer2*                imageViewer;   
 
-        //! the top left, bottom right corners of the current view 
-        //int*                            tlcBrc;
-
-        //! the slice of the current view
-        int                             slice;
-
         //! the render window in which the view is to be displayed 
         vtkRenderWindow*                myRenderWindow;
 

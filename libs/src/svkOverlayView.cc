@@ -438,7 +438,7 @@ void svkOverlayView::SetSlice(int slice)
                 tlcBrc[1] = this->dataVector[MRS]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
             }
             this->slice = slice;
-            GenerateClippingPlanes();
+            this->GenerateClippingPlanes();
             // If it is make it visible, otherwise hide it
             if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
                 this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
@@ -672,7 +672,7 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
  */
 void svkOverlayView::SetTlcBrc( int* tlcBrc ) 
 {
-    if( tlcBrc != NULL && dataVector[MRS] != NULL) {
+    if( svkDataView::IsTlcBrcWithinData( this->dataVector[MRS], tlcBrc ) ) {
         this->tlcBrc[0] = tlcBrc[0];
         this->tlcBrc[1] = tlcBrc[1];
         this->GenerateClippingPlanes();
@@ -1330,21 +1330,22 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
         if( toggleDraw ) {
             this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
         }
-
         this->imageViewer->SetOrientation( orientation );
         this->imageViewer->ResetCamera( );
         if( this->dataVector[MRS] != NULL ) {
+            svkDataView::ResetTlcBrcForNewOrientation( this->dataVector[MRS], this->orientation, this->tlcBrc, this->slice );
             bool satBandsAllOn = false;
             bool satBandsOutlineAllOn = false;
             bool satBandsSliceOn = false;
             bool satBandsOutlineSliceOn = false;
+/*
             int imageSlice = this->imageViewer->GetSlice( orientation );
             int spectraSlice = this->FindSpectraSlice( imageSlice, orientation);
+*/
             this->imageViewer->GetImageActor( svkDcmHeader::AXIAL )->SetVisibility(1);
             this->imageViewer->GetImageActor( svkDcmHeader::CORONAL )->SetVisibility(1);
             this->imageViewer->GetImageActor( svkDcmHeader::SAGITTAL )->SetVisibility(1);
-            this->SetSlice( spectraSlice );
-            this->HighlightSelectionVoxels();
+            //this->HighlightSelectionVoxels();
             if( !this->AreAllSatBandsOn( oldOrientation ) ) {
                 if( this->IsSatBandForSliceOn( oldOrientation ) ) {
                     switch( oldOrientation ) {
@@ -1397,6 +1398,8 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
                     }
                 }
             } 
+
+            this->SetSlice( this->slice );
 
         } else {
             this->SetSlice( this->imageViewer->GetSlice( orientation ), orientation );

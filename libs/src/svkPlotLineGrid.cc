@@ -260,6 +260,16 @@ void svkPlotLineGrid::SetSlice(int slice)
 
 
 /*! 
+ *  Get the slice number to plot in the data object.
+ *
+ */
+int svkPlotLineGrid::GetSlice()
+{
+    return this->slice;
+}
+
+
+/*! 
  *  Set the plot indices corresponding to the tlc and brc 
  *  voxels to plot in the current slice (i.e. 2D space). 
  *  This together with the slice index defines the 
@@ -297,6 +307,14 @@ void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
 
 }
 
+
+/*!
+ *
+ */
+int* svkPlotLineGrid::GetTlcBrc() 
+{
+    return this->tlcBrc;
+}
 
 /*! 
  *  Sets the renderer to be used. Also repositions the camera
@@ -706,7 +724,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
                 break;
             case svkDcmHeader::CORONAL:
                 this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                if( viewUp[1] > 0 ) {
+                if( viewUp[2] > 0 ) {
                     inverter *=-1;
                 }
                 this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
@@ -715,7 +733,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
                 break;
             case svkDcmHeader::SAGITTAL:
                 this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                if( viewUp[1] < 0 ) {
+                if( viewUp[2] > 0 ) {
                     inverter *=-1;
                 }
                 this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
@@ -1057,6 +1075,7 @@ void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
  */
 void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
 {
+    svkDcmHeader::Orientation oldOrientation = this->orientation;
     this->orientation = orientation;    
     if( this->data!=NULL ) {
         if( this->freqUpToDate != NULL ) {
@@ -1073,7 +1092,18 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
         for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
             this->ampUpToDate[i] = 0;
         }
+        svkDataView::ResetTlcBrcForNewOrientation( this->data, this->orientation, this->tlcBrc, this->slice );
+
+        if( !svkDataView::IsTlcBrcWithinData( this->data, tlcBrc ) ) {
+            int lastSlice  = data->GetLastSlice( this->orientation );
+            int firstSlice = data->GetFirstSlice( this->orientation );
+            this->slice = (lastSlice-firstSlice)/2;
+            this->SetSlice( this->slice );
+            this->HighlightSelectionVoxels();
+        }
+
         this->UpdateOrientation();
         this->UpdatePlotRange();
+        this->AlignCamera();
     }
 }

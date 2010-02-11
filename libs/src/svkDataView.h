@@ -94,6 +94,7 @@ class svkDataView : public vtkObject
         virtual svkDataViewController*  GetController();
 
         virtual void                    SetSlice( int slice ) = 0;
+        virtual int                     GetSlice( );
         virtual void                    SetWindowLevelRange( double lower, double upper, int index );
 
         // intended to represent setting of real world FOV of data in renderer
@@ -136,6 +137,9 @@ class svkDataView : public vtkObject
         virtual svkDcmHeader::Orientation  GetOrientation( );
         static void             ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int tlcBrc[2], double clip_tolerance_row , double clip_tolerance_column, double clip_tolerance_slice);
         static void             GetClippingIndexFromTlcBrc( svkImageData* data, int indexRange[2][3], int tlcBrc[2] );
+        static bool             IsTlcBrcWithinData(svkImageData* data, int tlcBrc[2]);
+        static bool             IsTlcBrcWithinData( svkImageData* data, int tlcID, int brcID);
+        static void             ResetTlcBrcForNewOrientation( svkImageData* data, svkDcmHeader::Orientation orientation, int tlcBrc[2], int &slice);
 
 
     protected:
@@ -151,6 +155,7 @@ class svkDataView : public vtkObject
 
         //! the top left, bottom right corners of the current view 
         int*                            tlcBrc;
+        int                             slice;
 
         vector < bool >                 isPropOn;          //Is the actor turned on or off?
         vector < bool >                 isRendererOn;       //Is the renderer turned on or off?
