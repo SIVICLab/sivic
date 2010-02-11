@@ -518,7 +518,7 @@ double* svkImageData::GetPoint (vtkIdType ptId)
 
 
 /*!
- * NOT YET IMPLEMENTED: returns NULL;
+ *
  */
 vtkCell* svkImageData::GetCell (vtkIdType cellId)
 {
@@ -1286,7 +1286,7 @@ void svkImageData::GetSliceNormal(float* normal, svkDcmHeader::Orientation slice
 
 
 /*!
- *
+ *  Calculates the closests slice to a given LPS coordinate for a given orientation.
  */
 int svkImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
@@ -1302,6 +1302,10 @@ int svkImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation slice
     return slice; 
 }
 
+
+/*!
+ *  Determins the number of slices for a given orientation.
+ */
 int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
@@ -1353,7 +1357,7 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
 
 
 /*!
- *
+ *  Gets the first slice in a given orientation.
  */
 int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
 {
@@ -1404,6 +1408,10 @@ int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
     return firstSlice;
 }
 
+
+/*!
+ *  Gets the last slice in a given orientation.
+ */
 int svkImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation)
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
@@ -1455,7 +1463,9 @@ int svkImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation)
 
 
 /*!
- *
+ *  Gets the data basis. Some calculations are easier conceptually if you use
+ *  the different vectors of the dcos. The basis are ROW, COLUMN, SLICE,
+ *  LR, PA, SI.
  */
 void svkImageData::GetDataBasis( double basisVector[3], DataBasis basis )
 {
@@ -1496,7 +1506,12 @@ void svkImageData::GetDataBasis( double basisVector[3], DataBasis basis )
 
 
 /*!
+ *  The orientation index is the index of a dataset for a given orientation.
+ *  It represents whether a given orientation progresses in the row, column, or slice
+ *  dimension.
  *
+ *  \param orientation the orientation whose index you wish to get
+ *  \return the index, 0 is rows, 1 is columns, 2 is slices.
  */
 int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
 {
@@ -1546,8 +1561,9 @@ int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
     
 }
 
+
 /*!
- *
+ *  Get the spacing for a given orientation.
  */
 double svkImageData::GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation )
 {
@@ -1621,7 +1637,7 @@ void svkImageData::GetImageCenter( float* posLPS)
 
 
 /*! 
- *
+ *  Updates svk parameters.
  */     
 void svkImageData::UpdateSvkParams()
 {

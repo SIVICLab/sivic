@@ -64,7 +64,7 @@ svkMrsImageData::svkMrsImageData()
 
 
 /*!
- *
+ *  This is used by vtkInstantiator and is used in svk algorithms
  */
 vtkObject* svkMrsImageData::NewObject()
 {
@@ -97,7 +97,9 @@ void svkMrsImageData::GetNumberOfVoxels(int numVoxels[3])
 
  
 /*!
+ *  Creates an unstructured frid that represents the selection box.
  *
+ *  \param selectionBoxGrid the object to populate
  */
 void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGrid )
 {
@@ -209,7 +211,9 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
 
 
 /*!
+ *  Calculate the center of the selection box.
  *
+ *  \param selBoxCenter the array to populate in LPS coords
  */
 void svkMrsImageData::GetSelectionBoxCenter( float* selBoxCenter )
 {
@@ -270,7 +274,8 @@ vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, 
 
 
 /*! 
- *
+ *  Makes sure the range gets updated when the object is modified. It searches all arrays for each
+ *  component to determine maximum and minimums
  */     
 void svkMrsImageData::UpdateRange()
 {
@@ -389,7 +394,11 @@ bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation 
 
 
 /*!
+ *  Get the last slice index for a given orientation. This is different for cell data so
+ *  that is why it is overloaded.
  *
+ *  \param sliceOrientation the orientation whose last slice you wish to get
+ *  \return the last slice
  */
 int svkMrsImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
 {
@@ -398,7 +407,9 @@ int svkMrsImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
 
 
 /*!
+ *  Get the spacing of the selection box
  *
+ *  \param spacing target array
  */
 void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
 {
@@ -410,7 +421,9 @@ void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
 
 
 /*!
+ *  Get the origin of the selection box as defined in the images coordinate system.
  *
+ *  \param orgin target array
  */
 void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
 {
