@@ -56,6 +56,12 @@ svkImageViewer2::svkImageViewer2()
     this->axialWinLevel = svkImageMapToWindowLevelColors::New();
     this->coronalWinLevel = svkImageMapToWindowLevelColors::New();
     this->sagittalWinLevel = svkImageMapToWindowLevelColors::New();
+    
+    // We are going to tie the default WL object to one of our WL objects so it updates correctly
+    this->WindowLevel = axialWinLevel;
+    
+    // The parent class will free this object, but we want to free it too (just to be clear we kill everything we create) 
+    axialWinLevel->Register( this );
 
     this->axialSlice    = 0;
     this->coronalSlice  = 0;
@@ -75,7 +81,6 @@ svkImageViewer2::svkImageViewer2()
 //! Destructor
 svkImageViewer2::~svkImageViewer2()
 {
-
     if( this->axialImageActor != NULL ) {
         this->axialImageActor->Delete();
         this->axialImageActor = NULL;
