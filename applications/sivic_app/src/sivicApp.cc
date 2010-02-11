@@ -351,7 +351,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openIdfButton->SetText("image");
     openIdfButton->SetCompoundModeToLeft();
     openIdfButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
-    openIdfButton->SetCommand( this->sivicController, "OpenFile image NULL");
+    openIdfButton->SetCommand( this->sivicController, "OpenFile image NULL 0");
     openIdfButton->SetBalloonHelpString( "Open a image file." );
     toolbar->AddWidget( openIdfButton );
 
@@ -363,7 +363,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openDdfButton->SetText("spectra");
     openDdfButton->SetCompoundModeToLeft();
     openDdfButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen ); 
-    openDdfButton->SetCommand( this->sivicController, "OpenFile spectra NULL");
+    openDdfButton->SetCommand( this->sivicController, "OpenFile spectra NULL 0");
     openDdfButton->SetBalloonHelpString( "Open a spectra file." );
     toolbar->AddWidget( openDdfButton );
 
@@ -375,7 +375,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openMetButton->SetText("overlay");
     openMetButton->SetCompoundModeToLeft();
     openMetButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
-    openMetButton->SetCommand( this->sivicController, "OpenFile overlay NULL");
+    openMetButton->SetCommand( this->sivicController, "OpenFile overlay NULL 0");
     openMetButton->SetBalloonHelpString( "Open an image to overlay or a metabolite file." );
     toolbar->AddWidget( openMetButton );
 

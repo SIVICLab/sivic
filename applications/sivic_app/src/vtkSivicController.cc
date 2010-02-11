@@ -1522,7 +1522,10 @@ string vtkSivicController::GetPrinterName( )
 void vtkSivicController::SetOrientation( const char* orientation ) 
 {
     // Set Our orientation member variable
+    svkDcmHeader::Orientation newOrientation = svkDcmHeader::UNKNOWN;
     this->orientation = orientation;
+    int firstSlice;
+    int lastSlice;
     int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
@@ -1532,6 +1535,7 @@ void vtkSivicController::SetOrientation( const char* orientation )
     if( this->orientation == "AXIAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+        newOrientation = svkDcmHeader::AXIAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("AXIAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
@@ -1539,6 +1543,7 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "CORONAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+        newOrientation = svkDcmHeader::CORONAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("CORONAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
@@ -1546,6 +1551,7 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "SAGITTAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+        newOrientation = svkDcmHeader::SAGITTAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("SAGITTAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
@@ -1553,6 +1559,9 @@ void vtkSivicController::SetOrientation( const char* orientation )
     }
 
     if( this->model->DataExists("SpectroscopicData") ) {
+        firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( newOrientation );
+        lastSlice =  this->model->GetDataObject("SpectroscopicData")->GetLastSlice( newOrientation );
+        this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
         this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
         this->SetSlice( this->plotController->GetSlice() );
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );

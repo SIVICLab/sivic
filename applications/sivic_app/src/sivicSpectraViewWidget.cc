@@ -339,17 +339,19 @@ void sivicSpectraViewWidget::CreateWidget()
         this->Script("grid %s -in %s -row 1 -column 1 -sticky wse", 
                 this->componentSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-        this->Script("grid %s -in %s -row 2 -column 0 -sticky wse -padx 5 -pady 2 ", this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+        this->Script("grid %s -in %s -row 2 -column 0 -sticky wse -padx 5 -pady 2 ", this->timePointSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
         this->Script("grid %s -in %s -row 2 -column 1 -sticky wse -padx 2 -pady 2", 
                     this->overlayImageCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
+
 
         this->Script("grid %s -in %s -row 3 -column 0 -sticky wnse -padx 5 -pady 2 ", this->channelSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
         this->Script("grid %s -in %s -row 3 -column 1 -sticky wse -padx 2 -pady 2", 
                     this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
 
-        this->Script("grid %s -in %s -row 4 -column 0 -sticky wse -padx 5 -pady 2 ", this->timePointSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+        this->Script("grid %s -in %s -row 4 -column 0 -sticky wse -padx 5 -pady 2 ", this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+
 
         this->Script("grid %s -in %s -row 4 -column 1 -sticky wse -padx 5 ", 
                 this->detailedPlotButton->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
