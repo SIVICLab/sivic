@@ -255,6 +255,15 @@ void svkPlotGridView::SetSlice(int slice)
 
 
 /*!
+ *
+ */
+void svkPlotGridView::SetTlcBrc(int tlcBrc[2])
+{
+    this->SetTlcBrc( tlcBrc[0], tlcBrc[1]);
+}
+
+
+/*!
  *  Currently this method is being used to set the selection range. This
  *  should be changed to have a more meaningful name, or be implemented
  *  differently.
@@ -381,45 +390,21 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
             worldEnd[1] = selectionArea[3]; 
             worldEnd[2] = selectionArea[5]; 
         }
-        int tlcIndex[3];
-        int brcIndex[3];
-        this->dataVector[MRS]->GetIndexFromPosition( worldStart, tlcIndex );
-        this->dataVector[MRS]->GetIndexFromPosition( worldEnd, brcIndex );
-        int* extent = this->dataVector[MRS]->GetExtent();
+        double selection[6];
 
-        int tmp;
-        for( int i = 0; i < 3; i++ ) {
-            if( tlcIndex[i] > brcIndex[i] ) {
-                tmp = brcIndex[i]; 
-                brcIndex[i] = tlcIndex[i];
-                tlcIndex[i] = tmp;
-            }
-        }
+        selection[0] = worldStart[0];
+        selection[1] = worldEnd[0];
+        selection[2] = worldStart[1];
+        selection[3] = worldEnd[1];
+        selection[4] = worldStart[2];
+        selection[5] = worldEnd[2];
 
-        // This checks for out of bounds, if out of bounds use the end of the extent
-        tlcIndex[2] = (tlcIndex[2] >= extent[5]) ? extent[5]-1 : tlcIndex[2];
-        tlcIndex[1] = (tlcIndex[1] >= extent[3]) ? extent[3]-1 : tlcIndex[1];
-        tlcIndex[0] = (tlcIndex[0] >= extent[1]) ? extent[1]-1 : tlcIndex[0];
-        brcIndex[2] = (brcIndex[2] >= extent[5]) ? extent[5]-1 : brcIndex[2];
-        brcIndex[1] = (brcIndex[1] >= extent[3]) ? extent[3]-1 : brcIndex[1];
-        brcIndex[0] = (brcIndex[0] >= extent[1]) ? extent[1]-1 : brcIndex[0];
-        tlcIndex[2] = (tlcIndex[2] < extent[4]) ? extent[4] : tlcIndex[2];
-        tlcIndex[1] = (tlcIndex[1] < extent[2]) ? extent[2] : tlcIndex[1];
-        tlcIndex[0] = (tlcIndex[0] < extent[0]) ? extent[0] : tlcIndex[0];
-        brcIndex[2] = (brcIndex[2] < extent[4]) ? extent[4] : brcIndex[2];
-        brcIndex[1] = (brcIndex[1] < extent[2]) ? extent[2] : brcIndex[1];
-        brcIndex[0] = (brcIndex[0] < extent[0]) ? extent[0] : brcIndex[0];
+        int tlcBrcImageData[2];
+        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
+        this->SetTlcBrc( tlcBrcImageData );
 
-        brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
-        tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation) ] = slice; 
-        this->SetTlcBrc( tlcIndex[2]*extent[3] * extent[1] + tlcIndex[1]*extent[1] + tlcIndex[0], 
-                brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]);
-
-    } else if( dataVector[MRS] != NULL ) {
-
-        //What should we do when the mri data is null, but the mrs is not....
     } 
-    rwi->Render();
+    this->rwi->Render();
 }
 
 
@@ -443,62 +428,9 @@ int* svkPlotGridView::HighlightSelectionVoxels()
 {
     if( dataVector[MRS] != NULL ) { 
         double tolerance = 0.99;
-        double* spacing = dataVector[MRS]->GetSpacing();
-        double* corner;
-        double* minCorner;
-        double* maxCorner;
-        double projectedCorner[6];
-        double thresholdBounds[6]; 
-
-        double LRNormal[3];
-        dataVector[MRS]->GetDataBasis(LRNormal, svkImageData::LR );
-        double PANormal[3];
-        dataVector[MRS]->GetDataBasis(PANormal, svkImageData::PA );
-        double SINormal[3];
-        dataVector[MRS]->GetDataBasis(SINormal, svkImageData::SI );
-        double rowNormal[3];
-        dataVector[MRS]->GetDataBasis(rowNormal, svkImageData::ROW );
-        double columnNormal[3];
-        dataVector[MRS]->GetDataBasis(columnNormal, svkImageData::COLUMN );
-        double sliceNormal[3];
-        dataVector[MRS]->GetDataBasis(sliceNormal, svkImageData::SLICE );
-        vtkPoints* cellBoxPoints = vtkPointSet::SafeDownCast(
-                plotGrid->selectionBoxActor->GetMapper()->GetInput())->GetPoints();
-        double* selectionBounds =  plotGrid->selectionBoxActor->GetBounds();
-
-        int minCornerIndex;
-        int maxCornerIndex;
-        for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
-            corner = cellBoxPoints->GetPoint(i); 
-            if( i == 0 ) {
-                minCorner = corner;
-                maxCorner = corner;
-                minCornerIndex = i;
-                maxCornerIndex = i;
-            }
-            if( corner[0] <= minCorner[0]  &&  corner[1] <= minCorner[1] && corner[2] <= minCorner[2] ) {
-                minCornerIndex = i;
-                minCorner = corner;
-            } else if( corner[0] >= maxCorner[0]   &&  corner[1] >= maxCorner[1] && corner[2] >= maxCorner[2] ) {
-                maxCornerIndex = i;
-                maxCorner = corner;
-            } 
-        }
-        thresholdBounds[0] =(cellBoxPoints->GetPoint(minCornerIndex))[0] 
-            + vtkMath::Dot(spacing, LRNormal)*tolerance;
-        thresholdBounds[1] =(cellBoxPoints->GetPoint(maxCornerIndex))[0] 
-            - vtkMath::Dot(spacing, LRNormal)*tolerance;
-        thresholdBounds[2] =(cellBoxPoints->GetPoint(minCornerIndex))[1] 
-            + vtkMath::Dot(spacing, PANormal)*tolerance;
-        thresholdBounds[3] =(cellBoxPoints->GetPoint(maxCornerIndex))[1] 
-            - vtkMath::Dot(spacing, PANormal)*tolerance;
-        thresholdBounds[4] =(cellBoxPoints->GetPoint(minCornerIndex))[2] 
-            + vtkMath::Dot(spacing, SINormal)*tolerance;
-        thresholdBounds[5] =(cellBoxPoints->GetPoint(maxCornerIndex))[2] 
-            - vtkMath::Dot(spacing, SINormal)*tolerance;
-
-        SetSelection( thresholdBounds, 1 );
-
+        int tlcBrcImageData[2];
+        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, tolerance, this->orientation, this->slice );
+        this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {
         return NULL; 

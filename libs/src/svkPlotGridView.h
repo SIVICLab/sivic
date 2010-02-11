@@ -102,6 +102,7 @@ class svkPlotGridView : public svkDataView
         //  Methods:
         virtual void                SetInput( svkImageData* data, int index );
         virtual void                SetSlice( int slice );
+        virtual void                SetTlcBrc( int tlcBrc[2] );
         virtual void                SetTlcBrc( int tlcID, int brcID );
         virtual void                SetWindowLevelRange( double lower, double upper, int index );
         void                        SetComponent( svkPlotLine::PlotComponent component );
@@ -162,7 +163,6 @@ class svkPlotGridView : public svkDataView
         int                    GetChannel( );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
-        int                    tlcBrc[2];
 
     private: 
         void                ResliceImage(svkImageData* input, svkImageData* target); 

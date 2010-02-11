@@ -154,7 +154,7 @@ class svkDataView : public vtkObject
         svkDcmHeader::Orientation       orientation;
 
         //! the top left, bottom right corners of the current view 
-        int*                            tlcBrc;
+        int                             tlcBrc[2];
         int                             slice;
 
         vector < bool >                 isPropOn;          //Is the actor turned on or off?

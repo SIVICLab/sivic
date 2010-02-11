@@ -463,7 +463,10 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
 
 
 /*!
+ *  Gets the closests slice for a given LPS coordinate, and a sliceOrientation.
  *
+ *  \param posLPS the position in LPS coordinates
+ *  \param orientation the orientation of the slice you wish to select 
  */
 int svkMrsImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
@@ -479,3 +482,157 @@ int svkMrsImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sl
     return slice;
 }
 
+
+/*!
+ *  Method takes all points that define our selection box and determines the maximum and minimum point.
+ *  
+ *  \param minPoint the lowest point (most negative)
+ *  \param maxPoint the highest point (most positive)
+ *  \param tolerance ranges from 0-1, allows you to push slightly past the points for selection purposes
+ */
+void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance )
+{
+        double* spacing = this->GetSpacing();
+        double* corner;
+        double* minCorner;
+        double* maxCorner;
+        double projectedCorner[6];
+        double thresholdBounds[6];
+
+        double LRNormal[3];
+        this->GetDataBasis(LRNormal, svkImageData::LR );
+        double PANormal[3];
+        this->GetDataBasis(PANormal, svkImageData::PA );
+        double SINormal[3];
+        this->GetDataBasis(SINormal, svkImageData::SI );
+        vtkUnstructuredGrid* selectionBox = vtkUnstructuredGrid::New();
+        this->GenerateSelectionBox( selectionBox );
+        vtkPoints* cellBoxPoints = selectionBox->GetPoints();
+
+        int minCornerIndex;
+        int maxCornerIndex;
+        for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
+            corner = cellBoxPoints->GetPoint(i);
+            if( i == 0 ) {
+                minCorner = corner;
+                maxCorner = corner;
+                minCornerIndex = i;
+                maxCornerIndex = i;
+            }
+            if( corner[0] <= minCorner[0]  &&  corner[1] <= minCorner[1] && corner[2] <= minCorner[2] ) {
+                minCornerIndex = i;
+                minCorner = corner;
+            } else if( corner[0] >= maxCorner[0]   &&  corner[1] >= maxCorner[1] && corner[2] >= maxCorner[2] ) {
+                maxCornerIndex = i;
+                maxCorner = corner;
+            }
+        }
+
+        minPoint[0] =(cellBoxPoints->GetPoint(minCornerIndex))[0]
+                                             + vtkMath::Dot(spacing, LRNormal)*tolerance;
+        minPoint[1] =(cellBoxPoints->GetPoint(minCornerIndex))[1]
+                                             + vtkMath::Dot(spacing, PANormal)*tolerance;
+        minPoint[2] =(cellBoxPoints->GetPoint(minCornerIndex))[2]
+                                             + vtkMath::Dot(spacing, SINormal)*tolerance;
+        maxPoint[0] =(cellBoxPoints->GetPoint(maxCornerIndex))[0]
+                                             - vtkMath::Dot(spacing, LRNormal)*tolerance;
+        maxPoint[1] =(cellBoxPoints->GetPoint(maxCornerIndex))[1]
+                                             - vtkMath::Dot(spacing, PANormal)*tolerance;
+        maxPoint[2] =(cellBoxPoints->GetPoint(maxCornerIndex))[2]
+                                             - vtkMath::Dot(spacing, SINormal)*tolerance;
+
+}
+
+
+/*!
+ *  Calculates the top left corner, and bottom right corner (high index-low index) of all
+ *  voxels that lie within the selection box for a given slice. 
+ *
+ *  \param tlcBrc the destination for the result of the calculation
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *                   voxel must be within the selection box to be selected
+ *  \param slice the slice you wish to select within
+ */
+void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], double tolerance, 
+                                            svkDcmHeader::Orientation orientation, int slice )
+{
+        orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+                                this->GetDcmHeader()->GetOrientationType() : orientation;
+        double minPoint[3];
+        double maxPoint[3];
+        double selection[6];
+        this->GetSelectionBoxMaxMin( minPoint, maxPoint );
+        selection[0] = minPoint[0];
+        selection[1] = maxPoint[0];
+        selection[2] = minPoint[1];
+        selection[3] = maxPoint[1];
+        selection[4] = minPoint[2];
+        selection[5] = maxPoint[2];
+        this->GetTlcBrcInUserSelection( tlcBrc, selection, orientation, slice );
+}
+
+
+/*!
+ *  This will get the top left corner, and bottom right hand corner (low index-high index) for 
+ *  a given selection and slice. It assumes the userSelection defines a minimum and maximum
+ *  range and that the user wishes to select all voxels within that range (for a given slice)
+ *  in a regular box aligned with the dcos having corners at the minimum and maximum values.
+ *
+ *  \param tlcBrc the destination for the result of the calculation
+ *  \param userSelection the [minx, maxx, miny, maxy, minz, maxz] selection range 
+ *  \param slice the slice within which to make the selection, if slice is outside of the range
+ *               all voxels in the volume will be returned.
+ */
+void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], 
+                                                svkDcmHeader::Orientation orientation, int slice )
+{
+    orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+                                this->GetDcmHeader()->GetOrientationType() : orientation;
+    if( userSelection != NULL ) {
+        double worldStart[3]; 
+        double worldEnd[3]; 
+        worldStart[0] = userSelection[0]; 
+        worldStart[1] = userSelection[2]; 
+        worldStart[2] = userSelection[4]; 
+        worldEnd[0] = userSelection[1]; 
+        worldEnd[1] = userSelection[3]; 
+        worldEnd[2] = userSelection[5]; 
+
+        int tlcIndex[3];
+        int brcIndex[3];
+        this->GetIndexFromPosition( worldStart, tlcIndex );
+        this->GetIndexFromPosition( worldEnd, brcIndex );
+        int* extent = this->GetExtent();
+        
+        int tmp;
+        for( int i = 0; i < 3; i++ ) {
+            if( tlcIndex[i] > brcIndex[i] ) {
+                tmp = brcIndex[i]; 
+                brcIndex[i] = tlcIndex[i];
+                tlcIndex[i] = tmp;
+            }
+        }
+
+        // This checks for out of bounds, if out of bounds use the end of the extent
+        tlcIndex[2] = (tlcIndex[2] >= extent[5]) ? extent[5]-1 : tlcIndex[2];
+        tlcIndex[1] = (tlcIndex[1] >= extent[3]) ? extent[3]-1 : tlcIndex[1];
+        tlcIndex[0] = (tlcIndex[0] >= extent[1]) ? extent[1]-1 : tlcIndex[0];
+        brcIndex[2] = (brcIndex[2] >= extent[5]) ? extent[5]-1 : brcIndex[2];
+        brcIndex[1] = (brcIndex[1] >= extent[3]) ? extent[3]-1 : brcIndex[1];
+        brcIndex[0] = (brcIndex[0] >= extent[1]) ? extent[1]-1 : brcIndex[0];
+        tlcIndex[2] = (tlcIndex[2] < extent[4]) ? extent[4] : tlcIndex[2];
+        tlcIndex[1] = (tlcIndex[1] < extent[2]) ? extent[2] : tlcIndex[1];
+        tlcIndex[0] = (tlcIndex[0] < extent[0]) ? extent[0] : tlcIndex[0];
+        brcIndex[2] = (brcIndex[2] < extent[4]) ? extent[4] : brcIndex[2];
+        brcIndex[1] = (brcIndex[1] < extent[2]) ? extent[2] : brcIndex[1];
+        brcIndex[0] = (brcIndex[0] < extent[0]) ? extent[0] : brcIndex[0];
+        int lastSlice  = this->GetLastSlice( orientation );
+        int firstSlice = this->GetFirstSlice( orientation );
+        if( slice >= firstSlice && slice <= lastSlice ) {
+            brcIndex[ this->GetOrientationIndex( orientation) ] = slice; 
+            tlcIndex[ this->GetOrientationIndex( orientation) ] = slice; 
+        }
+        tlcBrc[0] = tlcIndex[2]*extent[3] * extent[1] + tlcIndex[1]*extent[1] + tlcIndex[0]; 
+        tlcBrc[1] = brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]; 
+    }
+} 
