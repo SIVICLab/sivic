@@ -78,6 +78,9 @@ svkPlotLine::svkPlotLine()
     this->plotDirection = ROW_COLUMN;
     this->pointIndex = 0;
     this->amplitudeIndex =1;
+    this->origin[0] = 0;
+    this->origin[1] = 0;
+    this->origin[2] = 0;
 }
 
 

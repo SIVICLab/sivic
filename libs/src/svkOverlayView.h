@@ -86,6 +86,8 @@ class svkOverlayViewController;
  *   visualization of the spectroscopy spatial information overlayed on the
  *   anatomical image. It uses a vtkImageViewer2 to present the anatamical data
  *   then the spectroscopy data is added.
+ *
+ *   TODO: Find a better (more condensed) way to deal with satband and overlay actors
  */
 class svkOverlayView : public svkDataView
 {

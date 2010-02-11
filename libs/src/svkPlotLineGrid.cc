@@ -686,7 +686,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
                                 pow( focalPoint[1] - cameraPosition[1], 2 ) +
                                 pow( focalPoint[2] - cameraPosition[2], 2 ) );
         
-        double newCameraPosition[3];
+        double newCameraPosition[3] = {0,0,0};
 
         // Lets calculate the distance from the focal point to the selection box
         if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {

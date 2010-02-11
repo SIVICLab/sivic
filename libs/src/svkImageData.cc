@@ -1595,14 +1595,14 @@ double svkImageData::GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation
 void svkImageData::GetImageCenter( float* posLPS)
 {
 
-    double origin[3];
+    double origin[3] = {0,0,0};
     this->GetDcmHeader()->GetOrigin(origin);
-    double pixelSpacing[3]; 
+    double pixelSpacing[3] = {0,0,0}; 
     this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-    float index[3];
+    float index[3] = {0,0,0};
     int* extent = this->GetExtent(); 
 
-    int numVoxels[3];
+    int numVoxels[3] = {0,0,0};
     numVoxels[0] = this->GetDcmHeader()->GetIntValue("Columns");
     numVoxels[1] = this->GetDcmHeader()->GetIntValue("Rows");
     numVoxels[2] = this->GetDcmHeader()->GetIntValue( "NumberOfFrames" ) / this->GetDcmHeader()->GetNumberOfCoils(); 

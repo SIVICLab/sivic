@@ -224,6 +224,7 @@ void svkMrsImageData::GetSelectionBoxCenter( float* selBoxCenter )
         }
         selBoxCenter[i] /= numPoints;
     } 
+    selBox->Delete();
 
 }
 
@@ -457,6 +458,7 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
     origin[0] = selBoxPoints->GetPoint(originIndex)[0];
     origin[1] = selBoxPoints->GetPoint(originIndex)[1];
     origin[2] = selBoxPoints->GetPoint(originIndex)[2];
+    uGrid->Delete();
 
 
 }
@@ -540,6 +542,7 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
                                              - vtkMath::Dot(spacing, PANormal)*tolerance;
         maxPoint[2] =(cellBoxPoints->GetPoint(maxCornerIndex))[2]
                                              - vtkMath::Dot(spacing, SINormal)*tolerance;
+        selectionBox->Delete();
 
 }
 
