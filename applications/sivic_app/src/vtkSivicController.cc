@@ -241,6 +241,7 @@ void vtkSivicController::OpenImage( const char* fileName )
             message += resultInfo;
             this->PopupMessage( resultInfo ); 
         }
+        this->UseSelectionStyle();
     }
 }
 
@@ -411,6 +412,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
 void vtkSivicController::OpenExam( )
 {
     struct stat st;
+    int status = -1;
     char cwd[MAXPATHLEN];
     char lastPath[MAXPATHLEN];
     getcwd(cwd, MAXPATHLEN);
@@ -422,10 +424,14 @@ void vtkSivicController::OpenExam( )
     if(stat("images",&st) == 0) {
         imagePathName+= "/images";
         //cout << "Switching to image path:" << imagePathName.c_str() << endl;
-        this->OpenFile( "image", imagePathName.c_str() ); 
+        status = this->OpenFile( "image", imagePathName.c_str(), true ); 
     } else {
-        this->OpenFile( "image", NULL ); 
+        status = this->OpenFile( "image", NULL, true ); 
     }
+    
+    if( status == vtkKWDialog::StatusCanceled ) {
+        return;
+    } 
 
     // Lets retrieve the path used to open the image
     this->app->GetRegistryValue( 0, "RunTime", "lastPath", lastPath ); 
@@ -443,14 +449,18 @@ void vtkSivicController::OpenExam( )
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
         if( stat(spectraPathName.c_str(),&st) == 0 ) {
-            this->OpenFile( "spectra", spectraPathName.c_str() ); 
+            status = this->OpenFile( "spectra", spectraPathName.c_str() ); 
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
-            this->OpenFile( "spectra", lastPathString.substr(0,found).c_str() ); 
+            status = this->OpenFile( "spectra", lastPathString.substr(0,found).c_str() ); 
         }
     } else { 
-        this->OpenFile( "spectra", lastPathString.c_str() ); 
+        status = this->OpenFile( "spectra", lastPathString.c_str() ); 
     }
+
+    if( status == vtkKWDialog::StatusCanceled ) {
+        return;
+    } 
 
     if( lastPathString.substr(found+1) == "images" ) {
         string spectraPathName;
@@ -470,7 +480,7 @@ void vtkSivicController::OpenExam( )
 
 
 /*!    Open a file.    */
-void vtkSivicController::OpenFile( char* openType, const char* startPath )
+int vtkSivicController::OpenFile( char* openType, const char* startPath, bool resetBeforeLoad )
 {
     struct stat st;
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
@@ -538,10 +548,12 @@ void vtkSivicController::OpenFile( char* openType, const char* startPath )
         dlg->Invoke();
 
         if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
+            if( resetBeforeLoad ) {
+                this->ResetApplication();
+            } 
             this->imageViewWidget->loadingLabel->SetText("Loading...");
             app->ProcessPendingEvents(); 
             this->imageViewWidget->Focus();
-    
             string fileName("");
             fileName += dlg->GetFileName(); 
             pos = fileName.find("."); 
@@ -576,7 +588,7 @@ void vtkSivicController::OpenFile( char* openType, const char* startPath )
 
     // If the image was loaded and a spec data set is also loaded, then activate the toggle buttons:
     this->EnableWidgets(); 
-
+    int dlgStatus = dlg->GetStatus();
     this->imageViewWidget->loadingLabel->SetText("Done!");
     if ( dlg != NULL) {
         dlg->SaveLastPathToRegistry("lastPath");
@@ -586,6 +598,7 @@ void vtkSivicController::OpenFile( char* openType, const char* startPath )
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Enable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Enable();
     this->imageViewWidget->loadingLabel->SetText("");
+    return dlgStatus;
 }
 
 
@@ -1217,7 +1230,10 @@ void vtkSivicController::UseColorOverlayStyle()
 //! Changes to the drag selection mouse interactor.
 void vtkSivicController::UseSelectionStyle() 
 {
+        // This code snaps from 3D to the closest plane. Seems unnecessary now, but we might want it later. 
+        /*
     if( model->DataExists( "SpectroscopicData" ) ) {
+       
         svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
         double* viewPlaneNormal =  this->overlayController->GetView()->
                                      GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewPlaneNormal();
@@ -1265,9 +1281,10 @@ void vtkSivicController::UseSelectionStyle()
             newOrientation = "SAGITTAL";
         }
         if( this->orientation != newOrientation ) {
-            this->SetOrientation( this->orientation.c_str() );
+            this->SetOrientation( newOrientation.c_str() );
         }
     }
+    */
     this->overlayController->UseSelectionStyle();
     this->viewRenderingWidget->specViewerWidget->Render();
     this->viewRenderingWidget->viewerWidget->Render();
@@ -1511,18 +1528,10 @@ void vtkSivicController::SetOrientation( const char* orientation )
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
     }
-    int firstSlice;
-    int lastSlice;
+
     if( this->orientation == "AXIAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
-        if( this->model->DataExists("SpectroscopicData") ) {
-            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::AXIAL );
-            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::AXIAL );
-        } else if( this->model->DataExists("AnatomicalData") ) {
-            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::AXIAL );
-            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::AXIAL );
-        }
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("AXIAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
@@ -1530,13 +1539,6 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "CORONAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
-        if( this->model->DataExists("SpectroscopicData") ) {
-            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::CORONAL );
-            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::CORONAL );
-        } else if( this->model->DataExists("AnatomicalData") ) {
-            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::CORONAL );
-            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::CORONAL );
-        }
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("CORONAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
@@ -1544,23 +1546,18 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "SAGITTAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
-        if( this->model->DataExists("SpectroscopicData") ) {
-            firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( svkDcmHeader::SAGITTAL );
-            lastSlice = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( svkDcmHeader::SAGITTAL );
-        } else if( this->model->DataExists("AnatomicalData") ) {
-            firstSlice = this->model->GetDataObject("AnatomicalData")->GetFirstSlice( svkDcmHeader::SAGITTAL );
-            lastSlice = this->model->GetDataObject("AnatomicalData")->GetLastSlice( svkDcmHeader::SAGITTAL );
-        }
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("SAGITTAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
             this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
         }
     }
-    this->SetSlice( this->overlayController->GetSlice() );
+
     if( this->model->DataExists("SpectroscopicData") ) {
-        this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-        this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1 );
+        this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
+        this->SetSlice( this->plotController->GetSlice() );
+        this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
     }
+
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
         this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();

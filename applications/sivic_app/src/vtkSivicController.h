@@ -110,7 +110,7 @@ class vtkSivicController : public vtkObject
         void                       SetSlice( int slice );
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
-        void                       OpenFile( char* openType, const char* startPath);
+        int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);
         void                       OpenImage(   const char* fileName );
         void                       OpenSpectra( const char* fileName );
         void                       OpenOverlay( const char* fileName );

@@ -443,12 +443,12 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->channelSlider->AddBinding( "<Right>", this->channelSlider, increment.str().c_str() );
         this->channelSlider->Focus(); 
     } else if( caller == this->timePointSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
-        int channel = static_cast<int>(this->timePointSlider->GetValue()) - 1;
-        this->plotController->SetTimePoint( channel );
+        int timePoint = static_cast<int>(this->timePointSlider->GetValue()) - 1;
+        this->plotController->SetTimePoint( timePoint );
         stringstream increment;
-        increment << "SetValue " << channel + 1;
+        increment << "SetValue " << timePoint + 1;
         stringstream decrement;
-        decrement << "SetValue " << channel - 1;
+        decrement << "SetValue " << timePoint - 1;
         this->timePointSlider->RemoveBinding( "<Left>");
         this->timePointSlider->AddBinding( "<Left>", this->timePointSlider, decrement.str().c_str() );
         this->timePointSlider->RemoveBinding( "<Right>");
