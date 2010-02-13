@@ -140,7 +140,7 @@ void svkIdfVolumeWriter::WriteData()
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
-    int numSlices = hdr->GetIntValue( "NumberOfFrames" );
+    int numSlices = hdr->GetNumberOfSlices();
 
     int dataWordSize = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "BitsAllocated" );
     string extension; 
@@ -160,8 +160,8 @@ void svkIdfVolumeWriter::WriteData()
         pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
     }
 
-    ofstream pixels_out( (this->InternalFileName + extension).c_str(), ios::binary);
-    if(!pixels_out) {
+    ofstream pixelsOut( (this->InternalFileName + extension).c_str(), ios::binary);
+    if( !pixelsOut ) {
         throw runtime_error("Cannot open .int2 file for writing");
     }
 
@@ -175,7 +175,7 @@ void svkIdfVolumeWriter::WriteData()
     }
 #endif
 
-    pixels_out.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
+    pixelsOut.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
 
 }
 
@@ -199,22 +199,22 @@ void svkIdfVolumeWriter::WriteHeader()
     out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
     out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
     out << "position: ";
-    string position_string = hdr->GetStringValue( "PatientPosition" );
-    if ( position_string.substr(0,2) == string( "HF" ) ){
+    string positionString = hdr->GetStringValue( "PatientPosition" );
+    if ( positionString.substr(0,2) == string( "HF" ) ){
         out << "Head First, ";
-    } else if ( position_string.substr(0,2) == string( "FF" ) ) {
+    } else if ( positionString.substr(0,2) == string( "FF" ) ) {
         out << "Feet First, ";
     } else {
         out << "UNKNOWN, ";
     }
 
-    if ( position_string.substr(2) == string( "S" ) ) {
+    if ( positionString.substr(2) == string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( position_string.substr(2) == string( "P" ) ) {
+    } else if ( positionString.substr(2) == string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( position_string.substr(2) == string( "DL" ) ) {
+    } else if ( positionString.substr(2) == string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( position_string.substr(2) == string( "DR" ) ) {
+    } else if ( positionString.substr(2) == string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;
