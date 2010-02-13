@@ -728,14 +728,39 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     );
 
     string orientationString;
-    
+ 
+    //  varian appears to be LAI coords (rather than LPS), 
+    //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
+    //  HF vs FF should flip both RL and AP.  Supine/Prone should flip 
+    //  RL and AP.  
+    //  FF + Prone should flip AP + SI relative to HF + Supine 
+    float dcos[6];
+    dcos[0] =      GetHeaderValueAsFloat("orientation[]", 0);
+    dcos[1] = -1 * GetHeaderValueAsFloat("orientation[]", 1);
+    dcos[2] = -1 * GetHeaderValueAsFloat("orientation[]", 2);
+    dcos[3] =      GetHeaderValueAsFloat("orientation[]", 3);
+    dcos[4] = -1 * GetHeaderValueAsFloat("orientation[]", 4);
+    dcos[5] = -1 * GetHeaderValueAsFloat("orientation[]", 5);
 
+    for (int i = 0; i < 6; i++) {
+        ostringstream dcosOSS;
+        dcosOSS << dcos[i];
+        orientationString.append( dcosOSS.str() );
+        if (i < 5) {
+            orientationString.append( "\\");
+        }
+    }
+ 
+/*
+
+    //  FOR HF,SUPINE with LPS along XYZ, this seems to work:     
     for (int i = 0; i < 6; i++) {
         orientationString.append( GetHeaderValueAsString("orientation[]", i) );
         if (i < 5) {
             orientationString.append( "\\");
         }
     }
+*/
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "PlaneOrientationSequence",
