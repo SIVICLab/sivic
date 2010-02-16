@@ -487,6 +487,10 @@ class svkDcmHeader: public vtkObject
         int                 GetDimensionIndexPosition(string indexLabel); 
         int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
 
+        void                InitPerFrameFunctionalGroupSequence(
+                                            double toplc[3], double voxelSpacing[3],
+                                            double dcos[3][3], int numSlices, int numTimePts, int numCoils); 
+
 
     protected:
 
@@ -508,6 +512,19 @@ class svkDcmHeader: public vtkObject
         void                        UpdatePixelSpacing();
         void                        UpdatePixelSize();
         void                        UpdateOrigin0();
+
+        void                        InitPlanePositionMacro(
+                                             double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils
+                                    ); 
+
+        void                        InitFrameContentMacro( 
+                                        int numSlices = -1, 
+                                        int numTimePts = -1, 
+                                        int numCoils  = -1
+                                    ); 
+
+
 };
 
 

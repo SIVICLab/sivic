@@ -111,6 +111,8 @@ class svkCoilCombine : public svkImageInPlaceFilter
 
     private:
 
+        void            RedimensionData( svkImageData* data ); 
+
 
 };
 

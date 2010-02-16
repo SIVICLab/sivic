@@ -151,6 +151,7 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     int numFrequencyPoints = cellData->GetNumberOfTuples();
     int numComponents = cellData->GetNumberOfComponents();
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
     float re;
     float im;
@@ -164,24 +165,26 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     }
         
     for( int channel = firstChannel; channel < lastChannel; channel++ ) { 
-        for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
-            for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
-                for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, channel ) );
+        for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
+            for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
+                for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
+                    for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
+                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
 
-//cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
-                    for (int i = 0; i < numFrequencyPoints; i++) {
+                        //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
+                        for (int i = 0; i < numFrequencyPoints; i++) {
 
-                        spectrum->GetTupleValue(i, this->cmplxSpec);
+                            spectrum->GetTupleValue(i, this->cmplxSpec);
 
-                        re = (this->cmplxSpec)[0] * cosPhase - (this->cmplxSpec)[1] * sinPhase;
-                        im = (this->cmplxSpec)[0] * sinPhase + (this->cmplxSpec)[1] * cosPhase;
-                        (this->cmplxSpec)[0] = re; 
-                        (this->cmplxSpec)[1] = im; 
+                            re = (this->cmplxSpec)[0] * cosPhase - (this->cmplxSpec)[1] * sinPhase;
+                            im = (this->cmplxSpec)[0] * sinPhase + (this->cmplxSpec)[1] * cosPhase;
+                            (this->cmplxSpec)[0] = re; 
+                            (this->cmplxSpec)[1] = im; 
 
-                        spectrum->SetTuple( i, this->cmplxSpec );
+                            spectrum->SetTuple( i, this->cmplxSpec );
 
+                        }
                     }
                 }
 

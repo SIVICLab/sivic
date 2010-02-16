@@ -108,51 +108,54 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
 
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
     this->phaseAlgo->SetInput( data );
     
-    for( int channel = 0; channel < numChannels; channel++ ) { 
-        for (int z = 0; z < numVoxels[2]; z++) {
-            for (int y = 0; y < numVoxels[1]; y++) {
-                for (int x = 0; x < numVoxels[0]; x++) {
+    for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
+        for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
+            for (int z = 0; z < numVoxels[2]; z++) {
+                for (int y = 0; y < numVoxels[1]; y++) {
+                    for (int x = 0; x < numVoxels[0]; x++) {
 
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, channel ) );
+                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
 
-                    int h2oPeakPos = this->FindMagnitudeSpecPeak( spectrum ); 
+                        int h2oPeakPos = this->FindMagnitudeSpecPeak( spectrum ); 
 
-                    //  Need to implement dynamic peak width determiniation.   hardcode for now: 
-                    float phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 ); 
+                        //  Need to implement dynamic peak width determiniation.   hardcode for now: 
+                        float phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 ); 
 
-                    //cout << "PEAK MAX PT: " << x << " " << y << " " << z << " " << channel << " -> " 
-                    ////        << h2oPeakPos << " Phase: " << phase << endl; 
+                        //cout << "PEAK MAX PT: " << x << " " << y << " " << z << " " << coilNum << " -> " 
+                        ////        << h2oPeakPos << " Phase: " << phase << endl; 
 
-                    //  Apply algo to data from reader:
-                    int index[3]; 
-                    index[0] = x; 
-                    index[1] = y; 
-                    index[2] = z; 
-
-                    svkPhaseSpec* pa = svkPhaseSpec::New();
-                    pa->SetInput(data); 
-                    pa->SetUpdateExtent(index, index); 
-                    pa->SetChannel( channel ); 
-                    pa->SetPhase0( phase ); 
-                    pa->Update( ); 
-                    pa->Delete(); 
-
-                    // SetPhase is relative to the previous value.  Probably need to add a SetPhase, vs 
-                    // SetAbsolutePhase method to get this to work in this context. otherwise adjacent
-                    //  voxels only get a relative phase applied. 
-                    //this->phaseAlgo->SetUpdateExtent( index, index );
-                    //this->phaseAlgo->SetChannel( channel );
-                    //this->phaseAlgo->SetPhase0( 0. );
-                    //this->phaseAlgo->SetPhase0( phase );
-                    //this->phaseAlgo->Update();
+                        //  Apply algo to data from reader:
+                        int index[3]; 
+                        index[0] = x; 
+                        index[1] = y; 
+                        index[2] = z; 
+    
+                        svkPhaseSpec* pa = svkPhaseSpec::New();
+                        pa->SetInput(data); 
+                        pa->SetUpdateExtent(index, index); 
+                        pa->SetChannel( coilNum); 
+                        pa->SetPhase0( phase ); 
+                        pa->Update( ); 
+                        pa->Delete(); 
+    
+                        // SetPhase is relative to the previous value.  Probably need to add a SetPhase, vs 
+                        // SetAbsolutePhase method to get this to work in this context. otherwise adjacent
+                        //  voxels only get a relative phase applied. 
+                        //this->phaseAlgo->SetUpdateExtent( index, index );
+                        //this->phaseAlgo->SetChannel( coilNum);
+                        //this->phaseAlgo->SetPhase0( 0. );
+                        //this->phaseAlgo->SetPhase0( phase );
+                        //this->phaseAlgo->Update();
+                    }
                 }
             }
         }

@@ -147,45 +147,52 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
   
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
     vtkImageFourierFilter* vtkFTFilter = vtkImageFFT::New();
 
-    for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
-        for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
-            for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
-                for( int channel = 0; channel < numChannels; channel++ ) { 
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, channel ) );
+    for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
+        for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
+            for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
+                for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
+                    for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
 
-                    vtkImageComplex* imageComplexTime = new vtkImageComplex[ numFrequencyPoints ];
-                    this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
+                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
 
-                    vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
-                    vtkFTFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
-
-                    // Lets modify the data, putting 0 frequency at the center
-                    for (int i = 0; i < numFrequencyPoints; i++) {
-                        if( i > numFrequencyPoints/2 ) {
-                            spectrum->SetTuple2( i - numFrequencyPoints/2-1, 
-                                                 imageComplexFrequency[i].Real,  
-                                                 imageComplexFrequency[i].Imag );
-                        } else {
-                            spectrum->SetTuple2( i + numFrequencyPoints/2-1, 
-                                                 imageComplexFrequency[i].Real,  
-                                                 imageComplexFrequency[i].Imag );
+                        vtkImageComplex* imageComplexTime = new vtkImageComplex[ numFrequencyPoints ];
+                        this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
+    
+                        vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
+                        vtkFTFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+    
+                        // Lets modify the data, putting 0 frequency at the center
+                        for (int i = 0; i < numFrequencyPoints; i++) {
+                            if( i > numFrequencyPoints/2 ) {
+                                spectrum->SetTuple2( i - numFrequencyPoints/2-1, 
+                                                    imageComplexFrequency[i].Real,  
+                                                    imageComplexFrequency[i].Imag );
+                            } else {
+                                spectrum->SetTuple2( i + numFrequencyPoints/2-1, 
+                                                    imageComplexFrequency[i].Real,  
+                                                    imageComplexFrequency[i].Imag );
+                            }
+    
                         }
-
                     }
+    
                 }
-
             }
         }
     }
 
     vtkFTFilter->Delete();
+
+    //  Update the DICOM header to reflect the spectral domain changes:
     string domain("FREQUENCY");
     data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();

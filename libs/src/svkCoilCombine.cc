@@ -88,6 +88,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
@@ -95,40 +96,94 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
     // For each voxel, add data from individual voxels:  
     float cmplxPt0[2];
     float cmplxPtN[2];
-    for (int z = 0; z < numVoxels[2]; z++) {
-        for (int y = 0; y < numVoxels[1]; y++) {
-            for (int x = 0; x < numVoxels[0]; x++) {
+    for (int timePt = 0; timePt < numTimePts; timePt++) {
+        for (int z = 0; z < numVoxels[2]; z++) {
+            for (int y = 0; y < numVoxels[1]; y++) {
+                for (int x = 0; x < numVoxels[0]; x++) {
 
-                vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>(
-                    svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, 0) );
+                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>(
+                        svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, 0) );
 
-                for( int channel = 1; channel < numChannels; channel++ ) { 
+                    for( int channel = 1; channel < numChannels; channel++ ) { 
 
-                    vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, channel ) );
+                        vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
+    
+                        for (int i = 0; i < numFrequencyPoints; i++) {
 
-                    for (int i = 0; i < numFrequencyPoints; i++) {
+                            spectrum0->GetTupleValue(i, cmplxPt0);
+                            spectrumN->GetTupleValue(i, cmplxPtN);
 
+                            cmplxPt0[0] += cmplxPtN[0]; 
+                            cmplxPt0[1] += cmplxPtN[1]; 
 
-                        spectrum0->GetTupleValue(i, cmplxPt0);
-                        spectrumN->GetTupleValue(i, cmplxPtN);
+                            spectrum0->SetTuple( i, cmplxPt0);
+                        }
 
-                        cmplxPt0[0] += cmplxPtN[0]; 
-                        cmplxPt0[1] += cmplxPtN[1]; 
-
-                        spectrum0->SetTuple( i, cmplxPt0);
                     }
-
                 }
             }
         }
     }
+
+    //  Redimension data set:
+    this->RedimensionData( data ); 
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
     return 1; 
 } 
+
+
+/*!
+ *  Remove coil dimension from data set:
+ */
+void svkCoilCombine::RedimensionData( svkImageData* data )
+{
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+
+    int numVoxels[3]; 
+    data->GetNumberOfVoxels(numVoxels); 
+
+    //  Remove all arrays with coil number > 0
+    for (int coilNum = 1; coilNum < numCoils; coilNum++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+            for (int z = 0; z < numVoxels[2]; z++) {
+                for (int y = 0; y < numVoxels[1]; y++) {
+                    for (int x = 0; x < numVoxels[0]; x++) {
+                        char arrayName[30];
+                        sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
+                        data->GetCellData()->RemoveArray( arrayName );
+                    }     
+                }
+            }
+        }
+    }
+
+
+    double origin[3]; 
+    data->GetDcmHeader()->GetOrigin( origin, 0 ); 
+
+    double voxelSpacing[3];  
+    data->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
+
+    double dcos[3][3]; 
+    data->GetDcmHeader()->GetDataDcos( dcos ); 
+
+    data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( 
+        origin,
+        voxelSpacing,
+        dcos, 
+        data->GetDcmHeader()->GetNumberOfSlices(), 
+        numTimePts, 
+        1 
+    );
+
+    data->GetDcmHeader()->PrintDcmHeader( ); 
+    
+}
 
 
 /*!

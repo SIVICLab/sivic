@@ -710,3 +710,160 @@ void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIn
     }
 }
 
+
+/*!
+ *
+ */
+void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils)
+{
+
+    this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
+    this->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );  
+    this->InitFrameContentMacro(numSlices, numTimePts, numCoils ); 
+    this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
+}
+ 
+
+/*!
+ *
+ */
+void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils)
+{
+
+    int frame = 0;
+
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+
+        float displacement[3];
+        float frameLPSPosition[3];
+
+        for (int i = 0; i < numSlices; i++) {
+
+            this->AddSequenceItemElement(
+                "PerFrameFunctionalGroupsSequence",
+                i,
+                "PlanePositionSequence"
+            );
+
+            //add displacement along normal vector:
+            for (int j = 0; j < 3; j++) {
+                displacement[j] = dcos[2][j] * voxelSpacing[2] * i;
+            }
+            for(int j = 0; j < 3; j++) { //L, P, S
+                frameLPSPosition[j] = toplc[j] +  displacement[j] ;
+            }
+
+            string imagePositionPatient;
+            for (int j = 0; j < 3; j++) {
+                ostringstream oss;
+                oss.precision(8);
+                oss << frameLPSPosition[j];
+                imagePositionPatient += oss.str();
+                if (j < 2) {
+                    imagePositionPatient += '\\';
+                }
+            }
+
+            this->AddSequenceItemElement(
+                "PlanePositionSequence",
+                0,
+                "ImagePositionPatient",
+                imagePositionPatient,
+                "PerFrameFunctionalGroupsSequence",
+                frame
+            );
+
+            frame++;
+        }
+    }
+}
+
+
+/*!
+ *  Mandatory, Must be a per-frame functional group
+ */
+void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int numCoils )
+{
+
+    if ( numSlices < 0 ) {
+        numSlices = this->GetNumberOfSlices(); 
+    }
+
+    if ( numTimePts < 0 ) {
+        numTimePts = this->GetNumberOfTimePoints(); 
+    }
+
+    if ( numCoils < 0 ) {
+        numCoils = this->GetNumberOfCoils(); 
+    }
+    
+    int numFrameIndices = svkDcmHeader::GetNumberOfDimensionIndices( numTimePts, numCoils ) ;
+
+    unsigned int* indexValues = new unsigned int[numFrameIndices];
+
+    int frame = 0;
+
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+            for (int sliceNum = 0; sliceNum < numSlices; sliceNum++) {
+
+                svkDcmHeader::SetDimensionIndices(
+                    indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils
+                );
+
+                this->AddSequenceItemElement(
+                    "PerFrameFunctionalGroupsSequence",
+                    frame,
+                    "FrameContentSequence"
+                );
+
+                this->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "DimensionIndexValues",
+                    indexValues,        //  array of vals
+                    numFrameIndices,    // num values in array
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                this->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                this->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameReferenceDateTime",
+                    "EMPTY_ELEMENT",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                this->AddSequenceItemElement(
+                    "FrameContentSequence",
+                    0,
+                    "FrameAcquisitionDuration",
+                    "-1",
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                frame++;
+            }
+        }
+    }
+
+    delete[] indexValues;
+
+}
+
