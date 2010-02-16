@@ -465,7 +465,8 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         }
         if( (tlcBrc[0] == tlcBrc[1] && tlcBrc[0] != -1)|| acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotButton->EnabledOn();
+            //this->detailedPlotButton->EnabledOn();
+            this->detailedPlotButton->EnabledOff();
         } else {
             this->detailedPlotButton->EnabledOff();
         }

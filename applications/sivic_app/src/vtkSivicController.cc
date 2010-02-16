@@ -1685,6 +1685,11 @@ void vtkSivicController::ResetRange( bool useFullRange )
             svkSpecPoint::PTS
         );
 
+        // Lets also reset the number of channels:
+        
+        int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
+        this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
+        this->spectraViewWidget->channelSlider->SetValue( 1 );
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
         this->spectraViewWidget->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 
@@ -1717,12 +1722,16 @@ void vtkSivicController::EnableWidgets()
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 
             this->processingWidget->combineButton->EnabledOff(); 
+            this->spectraViewWidget->xSpecRange->SetLabelText( "Time" );
+            this->spectraViewWidget->unitSelectBox->EnabledOff();
         } else {
             this->processingWidget->fftButton->EnabledOff(); 
             this->processingWidget->phaseButton->EnabledOn(); 
             if( numChannels > 1 ) {
                 this->processingWidget->combineButton->EnabledOn();
             }
+            this->spectraViewWidget->xSpecRange->SetLabelText( "Frequency" );
+            this->spectraViewWidget->unitSelectBox->EnabledOn();
         }
         this->imageViewWidget->satBandButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
@@ -1731,7 +1740,6 @@ void vtkSivicController::EnableWidgets()
         this->spectraViewWidget->ySpecRange->EnabledOn();
         this->processingWidget->phaseAllChannelsButton->EnabledOn(); 
         this->processingWidget->phaseAllVoxelsButton->EnabledOn(); 
-        this->spectraViewWidget->unitSelectBox->EnabledOn();
         this->spectraViewWidget->componentSelectBox->EnabledOn();
         if( numChannels > 1 ) {
             this->spectraViewWidget->channelSlider->EnabledOn();
