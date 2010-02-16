@@ -487,6 +487,7 @@ class svkDcmHeader: public vtkObject
         int                 GetDimensionIndexPosition(string indexLabel); 
         int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
 
+        void                InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
         void                InitPerFrameFunctionalGroupSequence(
                                             double toplc[3], double voxelSpacing[3],
                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils); 

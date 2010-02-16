@@ -720,10 +720,50 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
 
     this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
     this->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );  
-    this->InitFrameContentMacro(numSlices, numTimePts, numCoils ); 
+    this->InitMultiFrameDimensionModule( numSlices, numTimePts, numCoils ); 
+    this->InitFrameContentMacro( numSlices, numTimePts, numCoils ); 
     this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
 }
  
+
+/*!
+ *
+ */
+void svkDcmHeader::InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils )
+{
+
+    this->ClearSequence( "DimensionIndexSequence" );
+
+    int indexCount = 0;
+
+    this->AddSequenceItemElement(
+        "DimensionIndexSequence",
+        indexCount,
+        "DimensionDescriptionLabel",
+        "Slice"
+    );
+
+    if ( numTimePts > 1 ) {
+        indexCount++;
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            indexCount,
+            "DimensionDescriptionLabel",
+            "Time Point"
+        );
+    }
+
+    if ( numCoils > 1 ) {
+        indexCount++;
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            indexCount,
+            "DimensionDescriptionLabel",
+            "Coil Number"
+        );
+    }
+}
+
 
 /*!
  *

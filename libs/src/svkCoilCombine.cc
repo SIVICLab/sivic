@@ -162,7 +162,6 @@ void svkCoilCombine::RedimensionData( svkImageData* data )
         }
     }
 
-
     double origin[3]; 
     data->GetDcmHeader()->GetOrigin( origin, 0 ); 
 
