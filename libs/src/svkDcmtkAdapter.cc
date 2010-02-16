@@ -710,7 +710,7 @@ void svkDcmtkAdapter::ClearSequence(const char* seqName)
 
 
 /*!
- *  Removes all items from the specified sequence
+ *  Clears the specified element 
  *
  *  \param seqName the string name of the parent sequence to clear
  */

@@ -126,6 +126,9 @@ void svkDICOMMRSWriter::Write()
 
     delete [] this->InternalFileName;
     this->InternalFileName = NULL;
+
+    //  Clear the SpectroscopyData element: 
+    this->GetImageDataInput(0)->GetDcmHeader()->ClearElement( "SpectroscopyData" ); 
 }
 
 
