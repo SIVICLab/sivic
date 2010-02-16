@@ -1012,15 +1012,23 @@ void svkPlotLineGrid::UpdateOrientation()
 void svkPlotLineGrid::SetChannel( int channel )
 {
     this->channel = channel;
-    int minIndex[3] = {0,0,0};
-    int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
-    int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+    if( this->data != NULL ) {
+        int numChannels = this->data->GetDcmHeader()->GetNumberOfCoils();
+        if ( channel >= numChannels ) {
+            channel = numChannels -1;
+        } else if ( channel < 0 ) {
+            channel = 0;
+        }
+        int minIndex[3] = {0,0,0};
+        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
 
-    minIndex[ orientationIndex ] = this->slice;
-    maxIndex[ orientationIndex ] = this->slice;
-    int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
-    int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
-    this->UpdateDataArrays( minID, maxID);
+        minIndex[ orientationIndex ] = this->slice;
+        maxIndex[ orientationIndex ] = this->slice;
+        int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+        this->UpdateDataArrays( minID, maxID);
+    }
 }
 
 
