@@ -785,43 +785,49 @@ void svkOverlayView::SetSliceOverlay() {
             overlaySliceSagittal =this->FindSpectraSlice( imageViewer->sagittalSlice, svkDcmHeader::SAGITTAL); 
         }
 
-        if( overlaySliceAxial > axialRange[1] ) {
-            overlaySliceAxial = axialRange[1];
-            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_BACK );
-        } else if ( overlaySliceAxial < axialRange[0] ) {
-            overlaySliceAxial = axialRange[0];
-            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::AXIAL_OVERLAY_BACK );
-        } else {
-            this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT );
-            this->TurnPropOn( svkOverlayView::AXIAL_OVERLAY_BACK );
+        if( this->IsPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT ) ) {
+            if( overlaySliceAxial > axialRange[1] ) {
+                overlaySliceAxial = axialRange[1];
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )->VisibilityOff();
+            } else if ( overlaySliceAxial < axialRange[0] ) {
+                overlaySliceAxial = axialRange[0];
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )->VisibilityOff();
+            } else {
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->VisibilityOn();
+                this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )->VisibilityOn();
+            }
         }
 
-        if( overlaySliceCoronal > coronalRange[1] ) {
-            overlaySliceCoronal = coronalRange[1];
-            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_BACK );
-        } else if ( overlaySliceCoronal < coronalRange[0] ) {
-            overlaySliceCoronal = coronalRange[0];
-            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::CORONAL_OVERLAY_BACK );
-        } else {
-            this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_FRONT );
-            this->TurnPropOn( svkOverlayView::CORONAL_OVERLAY_BACK );
+        if( this->IsPropOn( svkOverlayView::CORONAL_OVERLAY_FRONT ) ) {
+            if( overlaySliceCoronal > coronalRange[1] ) {
+                overlaySliceCoronal = coronalRange[1];
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )->VisibilityOff();
+            } else if ( overlaySliceCoronal < coronalRange[0] ) {
+                overlaySliceCoronal = coronalRange[0];
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )->VisibilityOff();
+            } else {
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )->VisibilityOn();
+                this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )->VisibilityOn();
+            }
         }
 
-        if( overlaySliceSagittal > sagittalRange[1] ) {
-            overlaySliceSagittal = sagittalRange[1];
-            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_BACK );
-        } else if ( overlaySliceSagittal < sagittalRange[0] ) {
-            overlaySliceSagittal = sagittalRange[0];
-            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
-            this->TurnPropOff( svkOverlayView::SAGITTAL_OVERLAY_BACK );
-        } else {
-            this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_FRONT );
-            this->TurnPropOn( svkOverlayView::SAGITTAL_OVERLAY_BACK );
+        if( this->IsPropOn( svkOverlayView::SAGITTAL_OVERLAY_FRONT ) ) {
+            if( overlaySliceSagittal > sagittalRange[1] ) {
+                overlaySliceSagittal = sagittalRange[1];
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )->VisibilityOff();
+            } else if ( overlaySliceSagittal < sagittalRange[0] ) {
+                overlaySliceSagittal = sagittalRange[0];
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )->VisibilityOff();
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )->VisibilityOff();
+            } else {
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )->VisibilityOn();
+                this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )->VisibilityOn();
+            }
         }
 
         int axialIndex = this->dataVector[MRI]->GetOrientationIndex( svkDcmHeader::AXIAL);
