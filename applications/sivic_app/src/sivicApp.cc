@@ -324,7 +324,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");
 #endif
-    this->sivicKWApp->SetHelpDialogStartingPage("https://sivic.sourceforge.com");
+    this->sivicKWApp->SetHelpDialogStartingPage("http://sivic.sourceforge.net");
     this->sivicWindow->Display();
 }
 
