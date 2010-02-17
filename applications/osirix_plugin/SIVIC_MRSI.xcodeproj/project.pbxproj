@@ -346,7 +346,7 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = SIVIC_MRSI;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.4 /Users/jasonc/svn/surbeck/brain/sivic/trunk/libs/src /Users/jasonc/svn/surbeck/brain/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.4 /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -397,7 +397,7 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = SIVIC_MRSI;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.4 /usr/local/dicom/include /Users/jasonc/svn/surbeck/brain/sivic/trunk/libs/src /Users/jasonc/svn/surbeck/brain/sivic/trunk/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.4 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
