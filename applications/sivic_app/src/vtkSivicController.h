@@ -143,7 +143,7 @@ class vtkSivicController : public vtkObject
         void                       PopupMessage( string message );
         void                       SaveSession( );
         void                       RestoreSession( );
-        void                       ResetRange( bool useFullRange = 0);
+        void                       ResetRange( bool useFullRange = 0, bool resetChannel = 0);
         string                     GetPrinterName( );
         void                       SetOrientation( const char* );
 

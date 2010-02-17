@@ -1623,7 +1623,7 @@ void vtkSivicController::RestoreSession( )
 /*!
  * Resets the x and y ranges
  */
-void vtkSivicController::ResetRange( bool useFullRange )
+void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
 {
     svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
     if( data != NULL ) {
@@ -1686,10 +1686,11 @@ void vtkSivicController::ResetRange( bool useFullRange )
         );
 
         // Lets also reset the number of channels:
-        
-        int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
-        this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
-        this->spectraViewWidget->channelSlider->SetValue( 1 );
+        if( resetChannel ) { 
+            int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
+            this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
+            this->spectraViewWidget->channelSlider->SetValue( 1 );
+        }
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
         this->spectraViewWidget->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 

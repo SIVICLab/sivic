@@ -345,7 +345,8 @@ void sivicProcessingWidget::ExecuteCombine()
         data->Modified();
         coilCombine->Delete();
         bool useFullRange = 1;
-        this->sivicController->ResetRange(useFullRange);
+        bool resetChannel = 1;
+        this->sivicController->ResetRange(useFullRange, resetChannel);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }
