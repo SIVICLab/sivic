@@ -92,8 +92,8 @@ void svkDICOMMRSWriter::Write()
     // Make sure the file name is allocated
     this->InternalFileName =
         new char[(this->FileName ? strlen(this->FileName) : 1) +
-            (this->FilePrefix ? strlen(this->FilePrefix) : 1) +
-            (this->FilePattern ? strlen(this->FilePattern) : 1) + 10];
+        (this->FilePrefix ? strlen(this->FilePrefix) : 1) +
+        (this->FilePattern ? strlen(this->FilePattern) : 1) + 10];
 
     this->FileNumber = 0;
     this->MinimumFileNumber = this->FileNumber;
@@ -108,7 +108,7 @@ void svkDICOMMRSWriter::Write()
     } else {
         if (this->FilePrefix) {
             sprintf(this->InternalFileName, this->FilePattern,
-                this->FilePrefix, this->FileNumber);
+                    this->FilePrefix, this->FileNumber);
         } else {
             sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
         }
@@ -144,6 +144,7 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
     int slices = (this->GetImageDataInput(0)->GetExtent() ) [5]; 
     int numCoils = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfCoils(); 
+    int numTimePts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints(); 
     int specPts = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
     string representation = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
 
@@ -154,29 +155,36 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents; 
-    int dataLength = dataLengthPerCoil * numCoils; 
-    int coilOffset = cols * rows * slices ; 
+    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents * numTimePts;
+    int dataLength = dataLengthPerCoil * numCoils;
+    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
+    int timePtOffset = cols * rows * slices;
+
     float* specData = new float [ dataLength ];
     int index = 0;
 
     vtkFloatArray* fa; 
     float* dataTuple = new float[numComponents];  
 
-    for (int coil = 0; coil < numCoils; coil ++) {
-        for (int z = 0; z < slices; z++) {
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
+    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+        for (int timePt = 0; timePt < numTimePts; timePt ++) {
+            for (int z = 0; z < slices; z++) {
+                for (int y = 0; y < rows; y++) {
+                    for (int x = 0; x < cols; x++) {
 
-                    int offset = (cols * rows * z) + (cols * y) + x + (coil * coilOffset); 
-                    fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
-    
-                    for (int i = 0; i < specPts; i++) {
-    
-                        fa->GetTupleValue(i, dataTuple);  
-    
-                        for (int j = 0; j < numComponents; j++) {
-                            specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                        int offset = ( cols * rows * z ) + ( cols * y ) + x
+                                     + ( timePt * timePtOffset )
+                                     + ( coilNum * coilOffset );
+
+                        fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+        
+                        for (int i = 0; i < specPts; i++) {
+        
+                            fa->GetTupleValue(i, dataTuple);  
+        
+                            for (int j = 0; j < numComponents; j++) {
+                                specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                            }
                         }
                     }
                 }
@@ -188,7 +196,7 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
     this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
         "SpectroscopyData",
         specData, 
-        dataLength * numCoils
+        dataLength 
     );
    
     delete [] specData; 
