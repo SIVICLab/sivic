@@ -62,6 +62,7 @@ svkPlotGridView::svkPlotGridView()
 
     this->slice = 0;
     this->channel = 0;
+    this->timePoint = 0;
     this->rwi = NULL;
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);

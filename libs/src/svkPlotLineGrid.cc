@@ -57,6 +57,7 @@ svkPlotLineGrid::svkPlotLineGrid()
 {
     this->data = NULL;
     this->channel = 0;
+    this->timePoint = 0;
     this->slice = 0;
     this->renderer = NULL;
     this->selectionBoxActor = NULL;
