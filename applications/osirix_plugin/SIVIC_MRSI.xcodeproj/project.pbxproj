@@ -376,7 +376,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/lib/KWWidgets,
-					/Users/jasonc/svn/surbeck/brain/sivic/trunk/applications/sivic_app/Darwin_i386,
+					/Users/jasonc/sivic/trunk/applications/sivic_app/Darwin_i386,
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
 				);

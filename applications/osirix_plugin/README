@@ -31,4 +31,4 @@ create_modified_libs_for_plugin.sh
 
 4.  create package:
 start packagemaker, load pmdoc and "build"    
-
+    - change the title to reflect new version number. 
