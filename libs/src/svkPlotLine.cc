@@ -244,7 +244,7 @@ void svkPlotLine::GeneratePolyData()
 
         // First we will set all of the points before start Pt to the same position.
 
-        amplitude = dataPtr[numComponents*(this->startPt-1) + componentOffset];
+        amplitude = dataPtr[numComponents*(this->startPt) + componentOffset];
         // Often negative is up in LPS, so if this is true we invert 
         if( this->invertPlots ) {
             delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
