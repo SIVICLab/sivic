@@ -523,7 +523,6 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->xSpecRange->RemoveBinding( "<Down>");
         this->xSpecRange->AddBinding( "<Down>", this->xSpecRange, widenRange.str().c_str() );
         this->xSpecRange->Focus(); 
-        this->plotController->GetView()->Refresh();
 
         //  Get the display unit type and convert to points:
         //  Convert Values to points before setting the plot controller's range
