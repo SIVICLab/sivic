@@ -57,6 +57,7 @@ vtkStandardNewMacro(svkPlotLine);
 svkPlotLine::svkPlotLine()
 {
     this->plotData = NULL;
+    this->plotDataMagnitude = NULL;
     this->plotAreaBounds[0] = 0;
     this->plotAreaBounds[1] = 1;
     this->plotAreaBounds[2] = 0;
@@ -81,6 +82,7 @@ svkPlotLine::svkPlotLine()
     this->origin[0] = 0;
     this->origin[1] = 0;
     this->origin[2] = 0;
+    this->offset = 0;
 }
 
 
@@ -115,6 +117,15 @@ double* svkPlotLine::GetBounds()
 void svkPlotLine::SetComponent( PlotComponent component )
 {
     this->plotComponent = component;
+    if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
+        dataPtr = this->plotData->GetPointer(0);
+        this->componentOffset = this->plotComponent;
+        numComponents = 2;
+    } else {
+        componentOffset = 0;
+        dataPtr = this->plotDataMagnitude->GetPointer(0);
+        numComponents = 1;
+    }
 }
 
 
@@ -128,14 +139,43 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
     if( this->plotData != NULL ) {
         this->plotData->Delete();
     }
+    if( this->plotDataMagnitude != NULL ) {
+        this->plotDataMagnitude->Delete();
+    }
+
     this->plotData = plotData; 
     this->plotData->Register( this );
+
+    this->plotDataMagnitude = vtkFloatArray::New();
+    this->plotDataMagnitude->SetNumberOfComponents(1);
+    this->plotDataMagnitude->SetNumberOfTuples( this->plotData->GetNumberOfTuples() );
     
     // We can now setup the polyLine and polyData
 
     // Get the number of points in the incoming data
     if( this->numPoints != this->plotData->GetNumberOfTuples()) {
         this->numPoints = this->plotData->GetNumberOfTuples();
+    }
+
+    for( int i = 0; i < this->numPoints; i++ ) {
+        this->GetPointIds()->SetId(i,i+offset );
+    }
+
+    if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
+        dataPtr = this->plotData->GetPointer(0);
+        this->componentOffset = this->plotComponent;
+        numComponents = 2;
+    } else {
+        componentOffset = 0;
+        dataPtr = this->plotDataMagnitude->GetPointer(0);
+        numComponents = 1;
+    }
+    // Lets precompute the magnitudes...
+    for( int i = 0; i < numPoints; i++ ) {
+        double amplitude = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
+                (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5);
+        this->plotDataMagnitude->SetValue(i, amplitude);
+
     }
 
     // Generate poly data is where the data is sync'd
@@ -192,10 +232,7 @@ void svkPlotLine::GeneratePolyData()
     // delta is change in the row, column, and slice direction
     double delta[3];
     double amplitude;
-    double frequency;
     float posLPS[3];
-
-
 
     delta[0] = this->spacing[0]/2.0;
     delta[1] = this->spacing[1]/2.0;
@@ -204,20 +241,35 @@ void svkPlotLine::GeneratePolyData()
     // We are going to precalculate the start + the distance in the slice dimension for speed
     if( this->plotData != NULL && this->polyLinePoints != NULL ) {
 
-        // The offset is the starting point in the vtkPoints object used by ALL plotLines
-        int offset = this->GetPointIds()->GetId(0);
 
-        // Loop over all points.
-        // TODO: this loop could be broken into 0-startPt, startPt-endPt, endPt-numPoints for speed
-        for( int i = 0; i < numPoints; i++ ) {
+        // First we will set all of the points before start Pt to the same position.
+
+        amplitude = dataPtr[numComponents*(this->startPt-1) + componentOffset];
+        // Often negative is up in LPS, so if this is true we invert 
+        if( this->invertPlots ) {
+            delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
+        } else {
+            delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
+        }
+        if( this->mirrorPlots ) {
+            delta[ pointIndex ] = (this->endPt - this->startPt) * this->scale[0]; 
+        } else {
+            delta[ pointIndex ] = 0; 
+        }
+        posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
+        posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
+        posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
+
+        // All points before the start get moved to the same position
+        for( int i = 0; i < this->startPt; i++ ) {
+            this->polyLinePoints->SetPoint(i+offset, posLPS );
+        }
+
+        // Now for visible Points
+        for( int i = this->startPt; i <= this->endPt; i++ ) {
 
             // Which component are we using...
-            if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-                amplitude = (plotData->GetTuple(i))[this->plotComponent];
-            } else {
-                amplitude = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
-                        (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5);
-            }
+            amplitude = dataPtr[numComponents*i + componentOffset];
 
             // If the value is outside the max/min
             if( amplitude > this->maxValue ) {
@@ -233,19 +285,11 @@ void svkPlotLine::GeneratePolyData()
                 delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
             }
 
-            // If the point is outside the start/end
-            if( i > this->endPt ) {
-                frequency = this->endPt;
-            } else if( i < this->startPt ) {
-                frequency = this->startPt;
-            } else {
-                frequency = i;
-            }
 
             if( this->mirrorPlots ) {
-                delta[ pointIndex ] = (this->endPt - frequency) * this->scale[0]; 
+                delta[ pointIndex ] = (this->endPt - i) * this->scale[0]; 
             } else {
-                delta[ pointIndex ] = (frequency - this->startPt) * this->scale[0]; 
+                delta[ pointIndex ] = (i - this->startPt) * this->scale[0]; 
             }
 
             // NOTE: This could be moved into the above if blocks for speed
@@ -253,7 +297,38 @@ void svkPlotLine::GeneratePolyData()
             posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
             posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
 
-            this->polyLinePoints->SetPoint(i+offset, posLPS[0], posLPS[1], posLPS[2] );
+            this->polyLinePoints->SetPoint(i+offset, posLPS);
+        }
+
+        // And finally we set all points outside the range to the last value
+        amplitude = dataPtr[numComponents*(this->endPt+1) + componentOffset];
+
+        // If the value is outside the max/min
+        if( amplitude > this->maxValue ) {
+            amplitude = this->maxValue;
+        } else if ( amplitude < this->minValue ) {
+            amplitude = this->minValue;
+        }
+
+        // Often negative is up in LPS, so if this is true we invert 
+        if( this->invertPlots ) {
+            delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
+        } else {
+            delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
+        }
+
+        // If the point is outside the start/end
+        if( this->mirrorPlots ) {
+            delta[ pointIndex ] = 0; 
+        } else {
+            delta[ pointIndex ] = (this->endPt - this->startPt) * this->scale[0]; 
+        }
+        // NOTE: This could be moved into the above if blocks for speed
+        posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
+        posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
+        posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
+        for( int i = this->endPt+1; i < numPoints; i++ ) {
+            this->polyLinePoints->SetPoint(i+offset, posLPS );
         }
         polyLinePoints->Modified(); 
     }
@@ -442,4 +517,13 @@ void svkPlotLine::SetPlotDirection( PlotDirection plotDirection  )
             break;
     }
     this->RecalculateScale();
+}
+
+
+/*!
+ *
+ */
+void svkPlotLine::SetOffset( int offset  ) 
+{
+    this->offset = offset;
 }

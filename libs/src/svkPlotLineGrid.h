@@ -62,6 +62,7 @@
 #include <svkImageData.h>
 #include <svkDataView.h>
 #include <svkMrsImageData.h>
+#include <vtkPolyDataCollection.h>
 
 
 namespace svk {
@@ -96,6 +97,7 @@ class svkPlotLineGrid : public vtkObject
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
         void                    SetSlice(int slice);
+        void                    SetSliceAppender();
         int                     GetSlice( );
         void                    SetRenderer(vtkRenderer* renderer);
         //int*                    GetCurrentTlcBrc();
@@ -134,6 +136,10 @@ class svkPlotLineGrid : public vtkObject
         //! The actor that holds the plot grid
         vtkActor*                   plotGridActor;
 
+        vtkAppendPolyData*          appender;
+
+        vtkPolyDataCollection*         polyDataCollection;
+
         //! The index of the first point in the plots to be plotted-
         int                         plotRangeX1;     
 
@@ -149,8 +155,13 @@ class svkPlotLineGrid : public vtkObject
         //! Array of booleans keeps track of frequency changes
         bool*                       freqUpToDate;
 
+        //! keeps track of whether the frequency is up to date
+        int                         freqSelectionUpToDate[2];
+
         //! Array of booleans keeps track of frequency changes
         bool*                       ampUpToDate;
+
+        int                         ampSelectionUpToDate[2];
 
         //! Has the channel been modified since the last slice update 
         bool                        channelChanged;
@@ -174,8 +185,6 @@ class svkPlotLineGrid : public vtkObject
         svkPlotLine::PlotComponent   plotComponent;
 
         svkDcmHeader::Orientation orientation;
-
-        vtkPoints*                  points;
 
         //  Methods:
         void                        RegeneratePlots();

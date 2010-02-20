@@ -549,7 +549,6 @@ void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc)
             (*iter)->SetOutputWholeExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]); 
             (*iter)->ClipDataOn();
         }
-        this->Refresh();
     }
 }
 
@@ -835,9 +834,8 @@ void svkPlotGridView::GenerateClippingPlanes()
         string acquisitionType = this->dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType != "SINGLE VOXEL" ) {
             this->ClipMapperToTlcBrc( dataVector[MRS],
-                                 vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(),
-                                 tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
-            this->ClipMapperToTlcBrc( dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
+                                 vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
+            this->ClipMapperToTlcBrc( this->dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
                                  tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
         }
     }

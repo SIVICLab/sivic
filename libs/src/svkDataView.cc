@@ -353,18 +353,11 @@ svkDcmHeader::Orientation svkDataView::GetOrientation( )
     return this->orientation;
 }
 
-
-/*!
- * Generates the clipping planes for the mMMapper. This is how the boundries
- * set are enforced, after the data is scaled, it is clipped so that data
- * outside the plot range is simply not shown.
- */
-void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int* tlcBrc, double clip_tolerance_row, 
-                                                                                       double clip_tolerance_column,
-                                                                                       double clip_tolerance_slice )
+void svkDataView::GetClippingPlanes( vtkPlaneCollection* planes, svkImageData* data, int* tlcBrc, double clip_tolerance_row,
+                                                                               double clip_tolerance_column,
+                                                                               double clip_tolerance_slice ) 
 {
-    // We need to leave a little room around the edges, so the border does not get cut off
-    if( data != NULL ) {
+    if( data != NULL && planes != NULL ) {
         vtkPlane* clipperPlane0 = vtkPlane::New();
         vtkPlane* clipperPlane1 = vtkPlane::New();
         vtkPlane* clipperPlane2 = vtkPlane::New();
@@ -427,15 +420,13 @@ void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* map
         clipperPlane5->SetOrigin( origin[0] + deltaLR * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ), 
                                   origin[1] + deltaPA * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ), 
                                   origin[2] + deltaSI * ( tlcBrcIndex[1][2] + 1 + clip_tolerance_slice ) );
-
-        //vtkMapper* plotGridMapper = actor->GetMapper();
-        mapper->RemoveAllClippingPlanes();
-        mapper->AddClippingPlane( clipperPlane0 );
-        mapper->AddClippingPlane( clipperPlane1 );
-        mapper->AddClippingPlane( clipperPlane2 );
-        mapper->AddClippingPlane( clipperPlane3 );
-        mapper->AddClippingPlane( clipperPlane4 );
-        mapper->AddClippingPlane( clipperPlane5 );
+    
+        planes->AddItem( clipperPlane0 );
+        planes->AddItem( clipperPlane1 );
+        planes->AddItem( clipperPlane2 );
+        planes->AddItem( clipperPlane3 );
+        planes->AddItem( clipperPlane4 );
+        planes->AddItem( clipperPlane5 );
 
         clipperPlane0->Delete();
         clipperPlane1->Delete();
@@ -443,6 +434,35 @@ void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* map
         clipperPlane3->Delete();
         clipperPlane4->Delete();
         clipperPlane5->Delete();
+        
+    }
+
+
+} 
+
+/*!
+ * Generates the clipping planes for the mMMapper. This is how the boundries
+ * set are enforced, after the data is scaled, it is clipped so that data
+ * outside the plot range is simply not shown.
+ */
+void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int* tlcBrc, double clip_tolerance_row, 
+                                                                                       double clip_tolerance_column,
+                                                                                       double clip_tolerance_slice )
+{
+    // We need to leave a little room around the edges, so the border does not get cut off
+    if( data != NULL ) {
+        vtkPlaneCollection* planes = vtkPlaneCollection::New();
+        svkDataView::GetClippingPlanes( planes, data, tlcBrc, clip_tolerance_row, clip_tolerance_column, clip_tolerance_slice );
+        mapper->RemoveAllClippingPlanes();
+        vtkCollectionIterator* myIterator = vtkCollectionIterator::New();
+        myIterator->SetCollection( planes );
+        myIterator->InitTraversal();
+        while( !myIterator->IsDoneWithTraversal() ) {
+            mapper->AddClippingPlane( vtkPlane::SafeDownCast( myIterator->GetCurrentObject()) );
+            myIterator->GoToNextItem();
+        }
+        myIterator->Delete();
+    
     } else {
         if( DEBUG ) {
             cout<<"INPUT HAS NOT BEEN SET!!"<<endl;

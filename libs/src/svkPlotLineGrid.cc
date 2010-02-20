@@ -65,6 +65,7 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->xyPlots = NULL;
     this->renderer = NULL;
     this->plotGridActor = NULL;
+    this->appender = NULL;
     this->freqUpToDate = NULL;
     this->ampUpToDate = NULL;
     this->orientation = svkDcmHeader::AXIAL;
@@ -88,9 +89,13 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->plotRangeY1 = 0;
     this->plotRangeY2 = 0;
     this->plotComponent = svkPlotLine::REAL; 
-    this->points = NULL;
     this->tlcBrc[0] = 0;
     this->tlcBrc[1] = 0;
+    this->freqSelectionUpToDate[0] = -1;
+    this->freqSelectionUpToDate[1] = -1;
+    this->ampSelectionUpToDate[0] = -1;
+    this->ampSelectionUpToDate[1] = -1;
+    this->polyDataCollection = vtkPolyDataCollection::New();
 
 }
 
@@ -109,6 +114,11 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->plotGridActor = NULL;
     }
 
+    if( this->appender != NULL ) {
+        this->appender->Delete();
+        this->appender = NULL;
+    }
+
     if( data != NULL ) {
         data->Delete();
         data = NULL;
@@ -122,17 +132,16 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->xyPlots->Delete();
         this->xyPlots = NULL;
     }
+    if( this->polyDataCollection != NULL ) {
+        this->polyDataCollection->Delete();
+        this->polyDataCollection = NULL;
+    }
 
     if( this->renderer != NULL ) {
         this->renderer->Delete();
         this->renderer= NULL;
     }
 
-    if( this->points != NULL ) {
-        this->points->Delete();
-        this->points = NULL;
-    }
-    
     delete[] viewBounds;
     delete[] freqUpToDate;
     delete[] ampUpToDate;
@@ -173,6 +182,8 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     if( this->freqUpToDate != NULL ) {
         delete[] this->freqUpToDate;
     }
+    this->freqSelectionUpToDate[0] = -1;
+    this->freqSelectionUpToDate[1] = -1;
     this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
     for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->freqUpToDate[i] = 0;
@@ -180,6 +191,9 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     if( this->ampUpToDate != NULL ) {
         delete[] this->ampUpToDate;
     }
+
+    this->ampSelectionUpToDate[0] = -1;
+    this->ampSelectionUpToDate[1] = -1;
     this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
     for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->ampUpToDate[i] = 0;
@@ -249,6 +263,7 @@ void svkPlotLineGrid::SetSlice(int slice)
         this->tlcBrc[1] = this->data->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
         this->UpdatePlotRange();
         this->Update();
+        this->SetSliceAppender();
 
         if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
             this->selectionBoxActor->SetVisibility(1);
@@ -257,6 +272,36 @@ void svkPlotLineGrid::SetSlice(int slice)
         }
 
     }
+}
+
+
+void svkPlotLineGrid::SetSliceAppender() 
+{
+
+    int minIndex[3] = {0,0,0};
+    int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+    int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+
+    minIndex[ orientationIndex ] = this->slice;
+    maxIndex[ orientationIndex ] = this->slice;
+    int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+    int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+    int rowRange[2] = {0,0};
+    int columnRange[2] = {0,0};
+    int sliceRange[2] = {0,0};
+    int ID;
+    this->data->GetIndexFromID( minID, &rowRange[0], &columnRange[0], &sliceRange[0] );
+    this->data->GetIndexFromID( maxID, &rowRange[1], &columnRange[1], &sliceRange[1] );
+    this->appender->RemoveAllInputs();
+    for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
+        for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+            for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+                ID = this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex );
+                this->appender->AddInput(vtkPolyData::SafeDownCast(polyDataCollection->GetItemAsObject( ID )));
+            }
+        }
+    }
+
 }
 
 
@@ -303,6 +348,7 @@ void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
 
         this->tlcBrc[0] = minID;
         this->tlcBrc[1] = maxID;
+        this->UpdatePlotRange();
         this->Update();
     } 
 
@@ -451,18 +497,26 @@ void svkPlotLineGrid::GenerateActor()
     int* extent = this->data->GetExtent();
     double dcos[3][3];
     this->data->GetDcos( dcos );
-    vtkPolyData* boxPlot = vtkPolyData::New();
-    boxPlot->Allocate(1,1);
-    if( this->points != NULL ) {
-        this->points->Delete();
+
+    vtkPolyData* tmpPolyData =NULL; 
+    vtkPoints* tmpPoints = NULL;
+
+    if( this->appender != NULL ) {
+        this->appender->Delete();
+        this->appender = NULL;
     }
-    this->points = vtkPoints::New();
-    points->SetNumberOfPoints((extent[5]-extent[4])*(extent[3]-extent[2])*(extent[1]-extent[0])*arrayLength );
-    boxPlot->SetPoints( points );
+    this->appender = vtkAppendPolyData::New();
+    this->polyDataCollection->RemoveAllItems();
+
     for (int zInd = extent[4]; zInd < extent[5]; zInd++) {
         for (int yInd = extent[2]; yInd < extent[3]; yInd++) {
             for (int xInd = extent[0]; xInd < extent[1]; xInd++) {
+                tmpPolyData = vtkPolyData::New();
+                tmpPolyData->Allocate(1,1);
 
+                tmpPoints = vtkPoints::New();
+                tmpPoints->SetNumberOfPoints( arrayLength + 1 );
+                tmpPolyData->SetPoints( tmpPoints );
                 //  =====================================  
                 //  Load data arrays into plots: 
                 //  =====================================  
@@ -473,12 +527,7 @@ void svkPlotLineGrid::GenerateActor()
                 ID = this->data->GetIDFromIndex(xInd, yInd, zInd); 
                 tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
                 tmpXYPlot->GetPointIds()->SetNumberOfIds(arrayLength);
-                tmpXYPlot->SetDataPoints( points );
-                for( int i = 0; i < arrayLength; i++ ) {
-                    tmpXYPlot->GetPointIds()->SetId(i,i+ID*arrayLength );
-                }
-                boxPlot->InsertNextCell(tmpXYPlot->GetCellType(), tmpXYPlot->GetPointIds());
-                boxPlot->Update();
+                tmpXYPlot->SetDataPoints( tmpPoints );
 
                 if (DEBUG) {
                     cout << "CREATE: " << xInd << " " << yInd << " " << zInd;
@@ -486,11 +535,14 @@ void svkPlotLineGrid::GenerateActor()
                 }
                 tmpXYPlot->SetDcos( dcos );
                 tmpXYPlot->SetSpacing( spacing );
+                tmpXYPlot->SetOffset( 0 );
                 tmpXYPlot->SetData( 
                         vtkFloatArray::SafeDownCast(
                             this->data->GetSpectrum(xInd, yInd, zInd , 0, channel )) );
 
                 tmpXYPlot->GeneratePolyData();
+                tmpPolyData->InsertNextCell(tmpXYPlot->GetCellType(), tmpXYPlot->GetPointIds());
+                tmpPolyData->Update();
                 vtkGenericCell* myCell = vtkGenericCell::New();
                 this->data->GetCell( this->data->ComputeCellId(voxelIndex), myCell );   
                 cellBounds = myCell->GetBounds();
@@ -511,14 +563,14 @@ void svkPlotLineGrid::GenerateActor()
 
                 tmpXYPlot->SetPointRange(plotRangeX1, plotRangeX2);
                 tmpXYPlot->SetValueRange(plotRangeY1, plotRangeY2);
-
-
+                polyDataCollection->AddItem( tmpPolyData );
+                tmpPolyData->Delete();
+                tmpPoints->Delete();
             }
         }
     }
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( boxPlot );
-    boxPlot->Delete();
+    mapper->SetInput( appender->GetOutput() );
 
     if( this->plotGridActor != NULL) {
         this->renderer->RemoveViewProp( plotGridActor );
@@ -602,43 +654,45 @@ void svkPlotLineGrid::UpdatePlotRange()
     svkPlotLine* tmpXYPlot;
     int ID;
     int* extent = data->GetExtent();
-    if( data != NULL && (!this->ampUpToDate[slice] || (!this->freqUpToDate[slice]) )) { 
-        int minIndex[3] = {0,0,0};
-        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
-        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
-
-        minIndex[ orientationIndex ] = this->slice;
-        maxIndex[ orientationIndex ] = this->slice;
-        int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
-        int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+    if( data != NULL && (!this->ampUpToDate[slice] || (!this->freqUpToDate[slice]) ||
+        ampSelectionUpToDate[0] > tlcBrc[0] || ampSelectionUpToDate[1] < tlcBrc[1] ||
+        freqSelectionUpToDate[0] > tlcBrc[0] || freqSelectionUpToDate[1] < tlcBrc[1] )) { 
 
         int rowRange[2] = {0,0};
         int columnRange[2] = {0,0};
         int sliceRange[2] = {0,0};
-        this->data->GetIndexFromID( minID, &rowRange[0], &columnRange[0], &sliceRange[0] );
-        this->data->GetIndexFromID( maxID, &rowRange[1], &columnRange[1], &sliceRange[1] );
+
+        this->data->GetIndexFromID( tlcBrc[0], &rowRange[0], &columnRange[0], &sliceRange[0] );
+        this->data->GetIndexFromID( tlcBrc[1], &rowRange[1], &columnRange[1], &sliceRange[1] );
+
         for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
             for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
                 for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
                     ID = this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
-                    if( !this->freqUpToDate[slice]) {
+                    if( !this->freqUpToDate[slice] ||
+                        freqSelectionUpToDate[0] > tlcBrc[0] || freqSelectionUpToDate[1] < tlcBrc[1] ) {
                         tmpXYPlot->SetPointRange(this->plotRangeX1, this->plotRangeX2);
                     }
-                    if( !this->ampUpToDate[slice] ) {
+                    if( !this->ampUpToDate[slice]  ||
+                        ampSelectionUpToDate[0] > tlcBrc[0] || ampSelectionUpToDate[1] < tlcBrc[1] ) {
                         tmpXYPlot->SetValueRange(this->plotRangeY1, this->plotRangeY2);
                     }
                 }
             }
         }
     }
+
     if( !this->ampUpToDate[slice]) {
         this->ampUpToDate[slice] = 1;
     }
     if( !this->freqUpToDate[slice]) {
         this->freqUpToDate[slice] = 1;
     }
-    this->Update();
+    this->ampSelectionUpToDate[0] = tlcBrc[0];
+    this->ampSelectionUpToDate[1] = tlcBrc[1];
+    this->freqSelectionUpToDate[0] = tlcBrc[0];
+    this->freqSelectionUpToDate[1] = tlcBrc[1];
 }
 
 

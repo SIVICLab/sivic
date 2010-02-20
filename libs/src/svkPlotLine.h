@@ -101,6 +101,7 @@ class svkPlotLine : public vtkPolyLine
         void                SetInvertPlots( bool invertPlots );
         void                SetMirrorPlots( bool mirrorPlots );
         void                SetPlotDirection( PlotDirection plotDirection  );
+        void                SetOffset( int offset );
 
 
     protected:
@@ -119,6 +120,10 @@ class svkPlotLine : public vtkPolyLine
         //! The number of points in the plotData
         int                 numPoints;
 
+        int                 numComponents;
+
+        int                 componentOffset;
+
         //! The minimum value to be plotted
         double              minValue;
 
@@ -127,6 +132,11 @@ class svkPlotLine : public vtkPolyLine
 
         //! The data to be plotted
         vtkFloatArray*      plotData;
+
+        float*              dataPtr;
+
+        //! The magnitude of the data to be plotted
+        vtkFloatArray*      plotDataMagnitude;
 
         //! The data point values used to make up the line 
         vtkFloatArray*      pointData;
@@ -141,6 +151,9 @@ class svkPlotLine : public vtkPolyLine
         bool                mirrorPlots;
 
         PlotDirection       plotDirection;
+
+        // Which is the first point we should use
+        int                 offset;
 
     private:
 
@@ -161,7 +174,7 @@ class svkPlotLine : public vtkPolyLine
         
         //! Size of the box to fill
         double          spacing[3];
-        
+
         //! The dcos of the dataset
         double          dcos[3][3];
 

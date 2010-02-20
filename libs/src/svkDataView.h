@@ -51,6 +51,8 @@
 
 #include <svkImageData.h>
 #include <vtkPlane.h>
+#include <vtkPlaneCollection.h>
+#include <vtkCollectionIterator.h>
 #include <svkDataViewController.h>
 
 #include <vector>
@@ -137,6 +139,7 @@ class svkDataView : public vtkObject
         virtual svkDcmHeader::Orientation  GetOrientation( );
         static void             ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* mapper, int tlcBrc[2], double clip_tolerance_row , double clip_tolerance_column, double clip_tolerance_slice);
         static void             GetClippingIndexFromTlcBrc( svkImageData* data, int indexRange[2][3], int tlcBrc[2] );
+        static void             GetClippingPlanes( vtkPlaneCollection* planes, svkImageData* data, int* tlcBrc, double clip_tolerance_row, double clip_tolerance_column, double clip_tolerance_slice );
         static bool             IsTlcBrcWithinData(svkImageData* data, int tlcBrc[2]);
         static bool             IsTlcBrcWithinData( svkImageData* data, int tlcID, int brcID);
         static void             ResetTlcBrcForNewOrientation( svkImageData* data, svkDcmHeader::Orientation orientation, int tlcBrc[2], int &slice);
