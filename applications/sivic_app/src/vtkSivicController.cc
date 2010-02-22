@@ -792,7 +792,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
      * the original header.
      */
     if( writer->IsA("svkImageWriter") ) {  
-        outputImage = svkMrsImageData::New();
+        outputImage = svkMriImageData::New();
         outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
         this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
         
@@ -803,10 +803,12 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     } else if( strcmp(captureType,"IMAGE_CAPTURE") == 0 ) {
         this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
-        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
         if( writer->IsA("svkDICOMSCWriter") ) {  
             svkDICOMSCWriter::SafeDownCast(writer)->SetCreateNewSeries( 0 );
-        this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
+        }
+        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
+        if( writer->IsA("svkDICOMSCWriter") ) {  
+            this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
                      outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
         } else {
             this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print );
