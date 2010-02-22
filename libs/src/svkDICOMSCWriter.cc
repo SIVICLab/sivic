@@ -298,7 +298,7 @@ void svkDICOMSCWriter::InitDcmHeader()
 
     this->dcmHeader->SetValue(
         "AccessionNumber",
-        this->dcmHeaderTemplate->GetStringValue("StudyInstanceUID") 
+        this->dcmHeaderTemplate->GetStringValue("AccessionNumber") 
     );
 
     if( !this->createNewSeries ) {

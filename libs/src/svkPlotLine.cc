@@ -150,9 +150,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
     dataPtr = this->plotData->GetPointer(0);
     if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
         this->componentOffset = this->plotComponent;
-    } else {
-        componentOffset = 0;
-    }
+    } 
 
     // Generate poly data is where the data is sync'd
     this->GeneratePolyData();
