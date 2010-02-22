@@ -238,14 +238,8 @@ void svkPlotGridView::SetSlice(int slice)
     this->plotGrid->Update();
     this->plotGrid->AlignCamera();
     if( dataVector[MET] != NULL ) {
-        UpdateMetaboliteText(tlcBrc);
-        int extent[6];
-        memcpy(extent, this->dataVector[MET]->GetExtent(), sizeof(int)*6);
-        int orientationIndex = this->dataVector[MRS]->GetOrientationIndex( this->orientation );
-        extent[ 2*orientationIndex ] = this->slice;
-        extent[ 2*orientationIndex + 1 ] = this->slice;
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]);
-        this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
+        this->UpdateMetaboliteText(tlcBrc);
+        this->UpdateMetaboliteImage(tlcBrc);
     }
     this->GenerateClippingPlanes();
     if( toggleDraw ) {
@@ -276,7 +270,6 @@ void svkPlotGridView::SetTlcBrc(int tlcBrc[2])
  */
 void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
 {
-
     if( svkDataView::IsTlcBrcWithinData(this->dataVector[MRS],tlcID, brcID ) ) {
         this->tlcBrc[0] = tlcID;
         this->tlcBrc[1] = brcID;
@@ -286,7 +279,8 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
         }
         plotGrid->SetTlcBrc(this->tlcBrc);
         plotGrid->Update();
-        UpdateMetaboliteText(tlcBrc);
+        this->UpdateMetaboliteText(tlcBrc);
+        this->UpdateMetaboliteImage(tlcBrc);
         this->GenerateClippingPlanes();
         plotGrid->AlignCamera(); 
         if( toggleDraw ) {
@@ -525,6 +519,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->GetRenderer( svkPlotGridView::PRIMARY)->Render();
         this->UpdateMetaboliteText(this->tlcBrc);
         this->plotGrid->AlignCamera();
+        this->SetOverlayOpacity(0.5);
         this->Refresh();
 
     } 
@@ -549,7 +544,47 @@ void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc)
             (*iter)->SetOutputWholeExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]); 
             (*iter)->ClipDataOn();
         }
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]);
     }
+}
+
+
+/*!
+ *  Updates the visible metabolite values depending on the selection
+ *
+ *  \param tlcBrc points to a legth two int vector, the first index being the top left corner
+ *         and the second being the bottom right.
+ */
+void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc) 
+{
+    if( dataVector[MRS] != NULL ) {
+        int minIndex[3] = {0,0,0};
+        int maxIndex[3] = {this->dataVector[MRS]->GetDimensions()[0]-2,this->dataVector[MRS]->GetDimensions()[1]-2,this->dataVector[MRS]->GetDimensions()[2]-2};
+        int orientationIndex = this->dataVector[MRS]->GetOrientationIndex( this->orientation );
+
+        minIndex[ orientationIndex ] = this->slice;
+        maxIndex[ orientationIndex ] = this->slice;
+        int minID = this->dataVector[MRS]->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->dataVector[MRS]->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+
+        int tlcIndex[3];
+        int brcIndex[3];
+        this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
+        this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
+        for( int i = 0; i < 3; i++ ) {
+            if( i != orientationIndex ) {
+                tlcIndex[i]--;
+                brcIndex[i]++;
+            if( tlcIndex[i] < minIndex[i] ) {
+                tlcIndex[i] = minIndex[i];
+            }
+            if( brcIndex[i] > maxIndex[i] ) {
+                brcIndex[i] = maxIndex[i];
+            }
+        }
+    }
+    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]);
+    this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
 }
 
 

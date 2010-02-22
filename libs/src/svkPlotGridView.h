@@ -153,6 +153,7 @@ class svkPlotGridView : public svkDataView
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
+        void                   UpdateMetaboliteImage( int* tlcBrc );
         void                   UpdateMetaboliteTextDisplacement( );
         void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
         int*                   HighlightSelectionVoxels();
