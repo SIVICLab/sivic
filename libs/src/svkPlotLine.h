@@ -120,7 +120,7 @@ class svkPlotLine : public vtkPolyLine
         //! The number of points in the plotData
         int                 numPoints;
 
-        int                 numComponents;
+        //int                 numComponents;
 
         int                 componentOffset;
 
@@ -136,7 +136,7 @@ class svkPlotLine : public vtkPolyLine
         float*              dataPtr;
 
         //! The magnitude of the data to be plotted
-        vtkFloatArray*      plotDataMagnitude;
+        //vtkFloatArray*      plotDataMagnitude;
 
         //! The data point values used to make up the line 
         vtkFloatArray*      pointData;

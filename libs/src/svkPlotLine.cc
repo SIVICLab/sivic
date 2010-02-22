@@ -57,7 +57,6 @@ vtkStandardNewMacro(svkPlotLine);
 svkPlotLine::svkPlotLine()
 {
     this->plotData = NULL;
-    this->plotDataMagnitude = NULL;
     this->plotAreaBounds[0] = 0;
     this->plotAreaBounds[1] = 1;
     this->plotAreaBounds[2] = 0;
@@ -118,14 +117,8 @@ void svkPlotLine::SetComponent( PlotComponent component )
 {
     this->plotComponent = component;
     if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-        dataPtr = this->plotData->GetPointer(0);
         this->componentOffset = this->plotComponent;
-        numComponents = 2;
-    } else {
-        componentOffset = 0;
-        dataPtr = this->plotDataMagnitude->GetPointer(0);
-        numComponents = 1;
-    }
+    } 
 }
 
 
@@ -139,17 +132,10 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
     if( this->plotData != NULL ) {
         this->plotData->Delete();
     }
-    if( this->plotDataMagnitude != NULL ) {
-        this->plotDataMagnitude->Delete();
-    }
 
     this->plotData = plotData; 
     this->plotData->Register( this );
 
-    this->plotDataMagnitude = vtkFloatArray::New();
-    this->plotDataMagnitude->SetNumberOfComponents(1);
-    this->plotDataMagnitude->SetNumberOfTuples( this->plotData->GetNumberOfTuples() );
-    
     // We can now setup the polyLine and polyData
 
     // Get the number of points in the incoming data
@@ -161,21 +147,11 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
         this->GetPointIds()->SetId(i,i+offset );
     }
 
+    dataPtr = this->plotData->GetPointer(0);
     if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-        dataPtr = this->plotData->GetPointer(0);
         this->componentOffset = this->plotComponent;
-        numComponents = 2;
     } else {
         componentOffset = 0;
-        dataPtr = this->plotDataMagnitude->GetPointer(0);
-        numComponents = 1;
-    }
-    // Lets precompute the magnitudes...
-    for( int i = 0; i < numPoints; i++ ) {
-        double amplitude = pow( (double)((plotData->GetTuple(i))[0] * (plotData->GetTuple(i))[0] +
-                (plotData->GetTuple(i))[1] * (plotData->GetTuple(i))[1]), 0.5);
-        this->plotDataMagnitude->SetValue(i, amplitude);
-
     }
 
     // Generate poly data is where the data is sync'd
@@ -243,8 +219,12 @@ void svkPlotLine::GeneratePolyData()
 
 
         // First we will set all of the points before start Pt to the same position.
-
-        amplitude = dataPtr[numComponents*(this->startPt) + componentOffset];
+        if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
+            amplitude = dataPtr[2*(this->startPt) + componentOffset];
+        } else {
+            amplitude = pow( dataPtr[2*(this->startPt)] * dataPtr[2*(this->startPt)] +
+                             dataPtr[2*(this->startPt) + 1] * dataPtr[2*(this->startPt) + 1], 0.5);
+        }
         // Often negative is up in LPS, so if this is true we invert 
         if( this->invertPlots ) {
             delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
@@ -269,7 +249,12 @@ void svkPlotLine::GeneratePolyData()
         for( int i = this->startPt; i <= this->endPt; i++ ) {
 
             // Which component are we using...
-            amplitude = dataPtr[numComponents*i + componentOffset];
+            if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
+                amplitude = dataPtr[2*(i) + componentOffset];
+            } else {
+                amplitude = pow( dataPtr[2*(i)] * dataPtr[2*(i)] +
+                                 dataPtr[2*(i) + 1] * dataPtr[2*(i) + 1], 0.5 );
+            }
 
             // If the value is outside the max/min
             if( amplitude > this->maxValue ) {
@@ -301,7 +286,12 @@ void svkPlotLine::GeneratePolyData()
         }
 
         // And finally we set all points outside the range to the last value
-        amplitude = dataPtr[numComponents*(this->endPt+1) + componentOffset];
+        if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
+            amplitude = dataPtr[2*(this->endPt) + componentOffset];
+        } else {
+            amplitude = pow( dataPtr[2*(this->endPt)] * dataPtr[2*(this->endPt)] +
+                             dataPtr[2*(this->endPt) + 1] * dataPtr[2*(this->endPt) + 1], 0.5);
+        }
 
         // If the value is outside the max/min
         if( amplitude > this->maxValue ) {
