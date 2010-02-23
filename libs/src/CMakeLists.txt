@@ -159,6 +159,7 @@ ADD_LIBRARY(
     svkMultiCoilPhase.cc
     svkCoilCombine.cc
     svkSpecUtils.cc
+    svkUCSFUtils.cc
 )
 
 
