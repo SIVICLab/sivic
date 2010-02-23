@@ -472,3 +472,12 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    test_svkUCSFUtils
+    test_svkUCSFUtils.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_svkUCSFUtils
+    ${SVK_LIBS}
+)
