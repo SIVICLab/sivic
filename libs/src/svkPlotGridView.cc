@@ -557,6 +557,8 @@ void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc)
  */
 void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc) 
 {
+    int tlcIndex[3];
+    int brcIndex[3];
     if( dataVector[MRS] != NULL ) {
         int minIndex[3] = {0,0,0};
         int maxIndex[3] = {this->dataVector[MRS]->GetDimensions()[0]-2,this->dataVector[MRS]->GetDimensions()[1]-2,this->dataVector[MRS]->GetDimensions()[2]-2};
@@ -567,14 +569,13 @@ void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc)
         int minID = this->dataVector[MRS]->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
         int maxID = this->dataVector[MRS]->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
 
-        int tlcIndex[3];
-        int brcIndex[3];
         this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
         this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
         for( int i = 0; i < 3; i++ ) {
             if( i != orientationIndex ) {
                 tlcIndex[i]--;
                 brcIndex[i]++;
+            }
             if( tlcIndex[i] < minIndex[i] ) {
                 tlcIndex[i] = minIndex[i];
             }

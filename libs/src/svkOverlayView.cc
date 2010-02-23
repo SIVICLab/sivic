@@ -272,7 +272,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     this->SetSlice( slice );
     selectionTopo->Delete();
     if( resetViewState ) {
-        this->imageViewer->ResetCamera( ); 
+        this->AlignCamera();
         this->HighlightSelectionVoxels();
     }
 
@@ -334,7 +334,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
         imageViewer->SetRenderWindow( myRenderWindow ); 
         imageViewer->SetRenderer( this->GetRenderer( svkOverlayView::PRIMARY ) ); 
         imageViewer->GetRenderer()->SetBackground(0.0,0.0,0.0);
-        imageViewer->ResetCamera();
+        this->AlignCamera( ); 
         imageViewer->GetRenderer()->GetActiveCamera()->SetParallelProjection(1);
         imageViewer->GetImageActor()->PickableOff();
         this->ResetWindowLevel();
@@ -361,7 +361,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     }
 
     // We need to reset the camera once Draw is on or the pipeline will not run
-    imageViewer->ResetCamera();
+    this->AlignCamera();
     resetViewState = 0;
 
 }
@@ -1255,7 +1255,7 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
             this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
         }
         this->imageViewer->SetOrientation( orientation );
-        this->imageViewer->ResetCamera( );
+        this->AlignCamera();
         if( this->dataVector[MRS] != NULL ) {
             svkDataView::ResetTlcBrcForNewOrientation( this->dataVector[MRS], this->orientation, this->tlcBrc, this->slice );
             bool satBandsAllOn = false;
@@ -1491,5 +1491,36 @@ void svkOverlayView::ToggleSelBoxVisibilityOff()
     if( volSelection != NULL ) {
         this->TurnPropOn( svkOverlayView::VOL_SELECTION );
         this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+    }
+}
+
+
+/*!
+ *
+ */
+void svkOverlayView::AlignCamera() 
+{
+    int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+    }
+
+    // We don't want the presence of the sat bands to influence the alignment, so we will temporarily remove them.
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) );
+    this->imageViewer->ResetCamera();
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL) );
+    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) );
+
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
     }
 }

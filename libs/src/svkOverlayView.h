@@ -114,6 +114,7 @@ class svkOverlayView : public svkDataView
         void                SetOrientation( svkDcmHeader::Orientation orientation );
         void                ToggleSelBoxVisibilityOn();
         void                ToggleSelBoxVisibilityOff();
+        void                AlignCamera();
 
         //! Enum represents input indecies
         enum DataInputs { 
