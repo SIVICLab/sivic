@@ -175,6 +175,12 @@ void vtkSivicController::ResetApplication( )
 
 void vtkSivicController::OpenImage( const char* fileName )
 {
+    struct stat st;
+    // Lets check to see if the file exists 
+    if(stat(fileName,&st) != 0) {
+        this->PopupMessage(" File does not exist!"); 
+        return;
+    }
     string stringFilename(fileName);
     svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
     svkImageData* newData = this->model->LoadFile( stringFilename );
@@ -248,6 +254,12 @@ void vtkSivicController::OpenImage( const char* fileName )
 
 void vtkSivicController::OpenSpectra( const char* fileName )
 {
+    struct stat st;
+    // Lets check to see if the file exists 
+    if(stat(fileName,&st) != 0) {
+        this->PopupMessage(" File does not exist!"); 
+        return;
+    }
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename );
@@ -346,12 +358,19 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 
     }
 //this->plotController->GetRWInteractor()->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New());
-
+    // Lets update the metabolite menu for the current spectra
+    this->globalWidget->PopulateMetaboliteMenu();
 }
 
 
 void vtkSivicController::OpenOverlay( const char* fileName )
 {
+    struct stat st;
+    // Lets check to see if the file exists 
+    if(stat(fileName,&st) != 0) {
+        this->PopupMessage(" File does not exist!"); 
+        return;
+    }
     string resultInfo = "";
     string stringFilename( fileName );
     if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
@@ -375,6 +394,8 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                         this->model->AddDataObject( "MetaboliteData", data );
                         this->model->SetDataFileName( "MetaboliteData", stringFilename );
                     }
+                    this->globalWidget->metaboliteSelect->GetWidget()->GetMenu()->DeselectItem(
+                        this->globalWidget->metaboliteSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem() );
                     this->viewRenderingWidget->ResetInfoText();
                 } else {
                     if( this->model->DataExists( "OverlayData" ) ) {
@@ -395,6 +416,35 @@ void vtkSivicController::OpenOverlay( const char* fileName )
 
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
+    }
+}
+
+
+void vtkSivicController::OpenMetabolites( const char* metabolites )
+{
+    cout << "Attempting to open metabolites " << metabolites << endl;
+    string metaboliteString(metabolites);
+    string metaboliteFileName;
+    if ( !(metaboliteString == "None") ) {
+        if( !this->model->DataExists("MetaboliteData") || 
+             metaboliteString != svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ) ) {
+
+            // Currently require an image and a spectra to be loading to limit testing
+            if( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
+                bool includePath = true;
+                string metaboliteFileName;
+                metaboliteFileName += svkUCSFUtils::GetMetaboliteFileName( 
+                                        this->model->GetDataFileName("SpectroscopicData"), metaboliteString, includePath );
+                this->OpenOverlay( metaboliteFileName.c_str() );
+                if( !this->model->DataExists("MetaboliteData")) {
+                    this->globalWidget->metaboliteSelect->GetWidget()->SetValue( "None" );
+                } 
+                this->globalWidget->metaboliteSelect->GetWidget()
+                          ->SetValue( svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ).c_str());
+            } else {
+               this->PopupMessage( "You must load an image and a spectra before loading metabolites." ); 
+            } 
+        }
     }
 }
 
@@ -466,6 +516,8 @@ void vtkSivicController::OpenExam( )
         string spectraPathName;
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
+        spectraPathName += "/" + svkUCSFUtils::GetMetaboliteDirectoryName(this->model->GetDataFileName("SpectroscopicData"));
+        cout << "spectra path: " << spectraPathName << endl;
         if( stat(spectraPathName.c_str(),&st) == 0 ) {
             this->OpenFile( "overlay", spectraPathName.c_str() ); 
         } else {
@@ -1707,6 +1759,7 @@ void vtkSivicController::EnableWidgets()
 {
     this->DisableWidgets();
     if ( model->DataExists("SpectroscopicData") && model->DataExists("AnatomicalData") ) {
+        this->globalWidget->metaboliteSelect->EnabledOn();
         string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
@@ -1823,6 +1876,7 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->colorBarButton->EnabledOff();
     this->imageViewWidget->satBandButton->EnabledOff();
     this->imageViewWidget->satBandOutlineButton->EnabledOff();
+    this->globalWidget->metaboliteSelect->EnabledOff();
 }
 
 

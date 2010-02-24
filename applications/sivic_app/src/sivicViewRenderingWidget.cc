@@ -352,53 +352,7 @@ void sivicViewRenderingWidget::ResetInfoText()
 
 const char* sivicViewRenderingWidget::GetMetaboliteName( string fileName )
 {
-    if( strcmp( fileName.c_str(), "" ) == 0 ) {
-        return "";
-    }
-    size_t pos;
-
-    pos = fileName.rfind("."); 
-    if( pos != fileName.npos ) {
-        fileName = fileName.substr(0,pos);
-    }
-    pos = fileName.rfind("cor"); 
-    if( pos == fileName.npos ) {
-        pos = fileName.rfind("_"); 
-        if( pos + 2 < fileName.npos ) {
-            pos += 2;
-        } else {
-            return "";
-        }
-    } 
-
-    if(        strcmp( fileName.substr(pos).c_str(), "r01") == 0 ) { 
-        return "CHO (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "rh01") == 0 ) { 
-        return "CHO (ht)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r02") == 0 ) { 
-        return "CRE (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "rh02") == 0 ) { 
-        return "CRE (ht)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r03") == 0 ) { 
-        return "NAA (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "rh03") == 0 ) { 
-        return "NAA (ht)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r04") == 0 ) { 
-        return "LAC/LIP (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "rh04") == 0 ) { 
-        return "LAC/LIP (ht)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r01ares02") == 0 ) { 
-        return "CCRI (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r01hres02") == 0 ) { 
-        return "CCRI (ht)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r01ares03") == 0 ) { 
-        return "CNI (area)";
-    } else if( strcmp( fileName.substr(pos).c_str(), "r01hres03") == 0 ) { 
-        return "CNI (ht)";
-    } else { 
-        return "UNK";
-    }
-    
+    return svkUCSFUtils::GetMetaboliteName( fileName ).c_str();
 }
 
 

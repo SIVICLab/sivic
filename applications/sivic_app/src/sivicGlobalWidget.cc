@@ -36,6 +36,10 @@ sivicGlobalWidget::~sivicGlobalWidget()
         this->orientationSelect ->Delete();
         this->orientationSelect = NULL;
     }
+    if( this->metaboliteSelect != NULL ) {
+        this->metaboliteSelect ->Delete();
+        this->metaboliteSelect = NULL;
+    }
 }
 
 
@@ -68,7 +72,7 @@ void sivicGlobalWidget::CreateWidget()
     this->orientationSelect->SetParent(this);
     this->orientationSelect->Create();
     this->orientationSelect->SetLabelText("Orientation");
-    this->orientationSelect->SetLabelPositionToLeft();
+    this->orientationSelect->SetLabelPositionToTop();
     //this->orientationSelect->SetPadY(10);
     //this->orientationSelect->SetPadX(8);
     //this->orientationSelect->SetHeight(2);
@@ -82,6 +86,20 @@ void sivicGlobalWidget::CreateWidget()
 
     this->Script("grid %s -in %s -row 0 -column 0 -sticky sw", 
                 this->orientationSelect->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
+
+    this->metaboliteSelect = vtkKWMenuButtonWithLabel::New();
+    this->metaboliteSelect->SetParent( this->specViewFrame );
+    this->metaboliteSelect->Create();
+    this->metaboliteSelect->SetLabelText("Detected Metabolites");
+    this->metaboliteSelect->SetLabelPositionToTop();
+    this->metaboliteSelect->EnabledOff();
+    this->PopulateMetaboliteMenu( );
+
+#if defined( UCSF_INTERNAL )
+    // Add a drop down that lets you select overlays by name. Based on UCSF naming conventions.
+    this->Script("grid %s -in %s -row 1 -column 0 -sticky sw", 
+                this->metaboliteSelect->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
+#endif
 }
 
 
@@ -91,4 +109,41 @@ void sivicGlobalWidget::CreateWidget()
 void sivicGlobalWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
 
+}
+
+
+/*!
+ *
+ */
+void sivicGlobalWidget::PopulateMetaboliteMenu( ) 
+{
+    vector<string> names = svkUCSFUtils::GetAllMetaboliteNames(); 
+    vector<string>::iterator it = names.begin();
+    string commandString;
+    vtkKWMenu* metaboliteNames = this->metaboliteSelect->GetWidget()->GetMenu();
+    metaboliteNames->DeleteAllItems();
+    if( this->model != NULL ) {
+        string spectraFile = this->model->GetDataFileName("SpectroscopicData");
+        while(it != names.end()) {
+            if( spectraFile != "" ) {
+                bool includePath = true;
+                string metaboliteFileName;
+                metaboliteFileName = svkUCSFUtils::GetMetaboliteFileName(
+                                        this->model->GetDataFileName("SpectroscopicData"), it->c_str(), includePath );
+
+                struct stat st;
+                // Lets check to see if the file exists 
+                if(stat(metaboliteFileName.c_str(),&st) == 0) {
+                    commandString = "OpenMetabolites";
+                    commandString += " \""; 
+                    commandString += *it;
+                    commandString += "\""; 
+                    cout << "Command string is: " << commandString << endl;
+                    metaboliteNames->AddRadioButton(it->c_str(), this->sivicController, commandString.c_str());
+                }
+
+            }
+            ++it;
+        }
+    }
 }

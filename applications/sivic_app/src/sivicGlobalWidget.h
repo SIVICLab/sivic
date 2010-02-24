@@ -63,6 +63,8 @@
 #include <vtkKWMenuButtonWithSpinButtons.h>
 #include <vtkKWMenu.h>
 #include <vtkKWMenuButton.h>
+#include <vtkKWComboBoxWithLabel.h>
+#include <vtkKWComboBox.h>
 #include <vtkKWPushButton.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkImageWriter.h>
@@ -74,6 +76,8 @@
 #include <vtkImageConstantPad.h>
 #include <vtkImageWrapPad.h>
 #include <vtkImageMirrorPad.h>
+
+#include <vector>
 
 #include <svkDataView.h>
 #include <svkDataModel.h>
@@ -101,6 +105,7 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
 
         static sivicGlobalWidget *New();
         vtkTypeRevisionMacro(sivicGlobalWidget,sivicKWCompositeWidget);
+        void            PopulateMetaboliteMenu( );
         
     protected:
 
@@ -108,6 +113,7 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
         ~sivicGlobalWidget();
 
         vtkKWMenuButtonWithLabel*    orientationSelect;
+        vtkKWMenuButtonWithLabel*    metaboliteSelect;
         vtkKWFrame*                   specViewFrame;   
 
         

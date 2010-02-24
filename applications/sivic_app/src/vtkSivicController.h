@@ -114,6 +114,7 @@ class vtkSivicController : public vtkObject
         void                       OpenImage(   const char* fileName );
         void                       OpenSpectra( const char* fileName );
         void                       OpenOverlay( const char* fileName );
+        void                       OpenMetabolites( const char* metabolites );
         void                       SaveData();    
         void                       SaveData( char* fileName );    
         void                       SaveSecondaryCapture( char* captureType );    

@@ -43,6 +43,7 @@
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkUCSFUtils.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>

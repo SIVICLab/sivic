@@ -22,6 +22,7 @@ sivicKWCompositeWidget::sivicKWCompositeWidget()
     this->plotController = NULL;
     this->overlayController = NULL;
     this->sivicController = NULL;
+    this->model = NULL;
 
 }
 

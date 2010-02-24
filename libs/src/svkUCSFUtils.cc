@@ -68,6 +68,8 @@ svkUCSFUtils::~svkUCSFUtils()
 
 /*!
  *  Creates our hash.
+ *
+ *  TODO: Consider making the hash read from a text file so we don't have to recompile to add mappings
  */
 void svkUCSFUtils::CreateMap()
 {
@@ -194,15 +196,12 @@ string svkUCSFUtils::GetMetabolitePostfix( string metaboliteName )
 string svkUCSFUtils::GetMetaboliteFromPostfix( string postfixName )
 {
     string metaboliteName;
-    if ( svkUCSFUtils::mapCreated ) {
-        cout << "Map already created" << endl;
-    } else {
-        cout << "Map not created" << endl;
+    if ( !svkUCSFUtils::mapCreated ) {
         svkUCSFUtils::CreateMap();
     }
 
     bool found = false;
-    map<string,string>::iterator it = svkUCSFUtils::metaboliteMap.begin(); // internalMap is std::map
+    map<string,string>::iterator it = svkUCSFUtils::metaboliteMap.begin();
 
     while(it != svkUCSFUtils::metaboliteMap.end())
     {
@@ -214,4 +213,27 @@ string svkUCSFUtils::GetMetaboliteFromPostfix( string postfixName )
     }
 
     return metaboliteName;
+}
+
+
+/*!
+ *  Gets the names of all the metabolites in the current hash.
+ *
+ *  \return all the names in a vector of strings
+ */
+vector<string> svkUCSFUtils::GetAllMetaboliteNames()
+{
+    vector<string> names;
+    if ( !svkUCSFUtils::mapCreated ) {
+        svkUCSFUtils::CreateMap();
+    }
+
+    map<string,string>::iterator it = svkUCSFUtils::metaboliteMap.begin(); 
+
+    while(it != svkUCSFUtils::metaboliteMap.end())
+    {
+        names.push_back( it->first );
+        ++it;
+    }
+    return names;
 }

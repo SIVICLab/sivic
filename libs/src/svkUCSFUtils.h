@@ -46,6 +46,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <vtkObjectFactory.h>
 #include <vtkObject.h>
 
@@ -66,32 +67,37 @@ class svkUCSFUtils : public vtkObject
 
         // vtk type revision macro
         vtkTypeRevisionMacro( svkUCSFUtils,vtkObject );
-   
+  
+        // vtk initialization 
         static svkUCSFUtils* New();  
 
+        //! Create the map from metabolite proper names to filenames
+        static void           CreateMap();
+
         //! Gets the name of a metabolite fore a given filename
-        static string        GetMetaboliteName( string fileName );
+        static string         GetMetaboliteName( string fileName );
 
         //! Gets the directory in which a metabolite file should reside
-        static string        GetMetaboliteDirectoryName( string spectraFileName );
+        static string         GetMetaboliteDirectoryName( string spectraFileName );
 
         //! Gets the root name for a metabolite file
-        static string        GetMetaboliteRoot( string spectraFileName );
+        static string         GetMetaboliteRoot( string spectraFileName );
 
         //! Get the filename for a given metabolite
-        static string        GetMetaboliteFileName( string spectraFileName, string metaboliteName, bool includePath=false );
+        static string         GetMetaboliteFileName( string spectraFileName, string metaboliteName, bool includePath=false );
 
         //! Get the postfix for a given metabolite
-        static string        GetMetabolitePostfix( string metaboliteName );
+        static string         GetMetabolitePostfix( string metaboliteName );
 
         //! Get the metabolite name for a given postfix
-        static string        GetMetaboliteFromPostfix( string postfixName );
+        static string         GetMetaboliteFromPostfix( string postfixName );
+
+        //! Returns a liste of all metabolites in our hash
+        static vector<string> GetAllMetaboliteNames();
 
         //! Maps metabolite names to file extentions
         static map<string, string> metaboliteMap;
 
-        //! Create the map from metabolite proper names to filenames
-        static void         CreateMap();
 
     protected:
 
