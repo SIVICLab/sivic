@@ -223,6 +223,12 @@ void svkPlotLine::GeneratePolyData()
             amplitude = pow( dataPtr[2*(this->startPt)] * dataPtr[2*(this->startPt)] +
                              dataPtr[2*(this->startPt) + 1] * dataPtr[2*(this->startPt) + 1], 0.5);
         }
+
+        if( amplitude > this->maxValue ) {
+            amplitude = this->maxValue;
+        } else if ( amplitude < this->minValue ) {
+            amplitude = this->minValue;
+        }
         // Often negative is up in LPS, so if this is true we invert 
         if( this->invertPlots ) {
             delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];

@@ -509,6 +509,7 @@ int svkOverlayViewController::GetCurrentStyle()
 void svkOverlayViewController::UseColorOverlayStyle() 
 {
     if( visualizationCreated ) {
+        this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
         this->myRenderWindow->SetNumberOfLayers(1);
         //this->myRenderWindow->RemoveRenderer(  this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
@@ -526,9 +527,9 @@ void svkOverlayViewController::UseWindowLevelStyle()
         view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
         view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
         view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
+        this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         //this->myRenderWindow->RemoveRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
-        this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->rwi->SetInteractorStyle( windowLevelStyle ); 
         this->currentInteractorStyle = WINDOW_LEVEL;
     }
@@ -543,8 +544,8 @@ void svkOverlayViewController::UseSelectionStyle()
         if( !this->myRenderWindow->HasRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) ) ) {
             this->myRenderWindow->SetNumberOfLayers(2);
             this->view->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );
-            this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
         }
+        this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
         
         // Lets make sure orthogonal sat bands are off...
         view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
