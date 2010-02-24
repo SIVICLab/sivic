@@ -147,3 +147,16 @@ void sivicGlobalWidget::PopulateMetaboliteMenu( )
         }
     }
 }
+
+
+/*! 
+ *  Make sure no metabolites are selected.
+ */
+void sivicGlobalWidget::DeselectMetabolites( )
+{
+    int numItems = this->metaboliteSelect->GetWidget()->GetMenu()->GetNumberOfItems(); 
+    for( int i = 0; i < numItems; i++ ) {
+        this->metaboliteSelect->GetWidget()->GetMenu()->DeselectItem(i); 
+    }
+ 
+}

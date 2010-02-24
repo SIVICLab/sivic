@@ -394,8 +394,8 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                         this->model->AddDataObject( "MetaboliteData", data );
                         this->model->SetDataFileName( "MetaboliteData", stringFilename );
                     }
-                    this->globalWidget->metaboliteSelect->GetWidget()->GetMenu()->DeselectItem(
-                        this->globalWidget->metaboliteSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem() );
+                    // We are going to deselect the metabolites since we don't know where they were loaded from
+                    this->globalWidget->DeselectMetabolites();
                     this->viewRenderingWidget->ResetInfoText();
                 } else {
                     if( this->model->DataExists( "OverlayData" ) ) {

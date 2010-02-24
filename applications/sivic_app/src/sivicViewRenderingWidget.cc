@@ -208,10 +208,10 @@ void sivicViewRenderingWidget::ResetInfoText()
         string studyDate = model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->GetStringValue("StudyDate");
 
         // Temporarily removing study date just in case for phi while making screenshots
-        if( studyDate.size() > 0) {
+        if( studyDate.size() >= 4) {
             infoSS << "Scan Date:  " << studyDate.substr( studyDate.size()-4, 2) << "/" 
-                                 << studyDate.substr( studyDate.size()-2, 2) << "/"
-                                 << studyDate.substr( 0, 4 ) << endl;
+                                     << studyDate.substr( studyDate.size()-2, 2) << "/"
+                                     << studyDate.substr( 0, 4 ) << endl;
         } else {
             infoSS << "Scan Date:  " << "?" << endl;
 
@@ -221,7 +221,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         pos = currentImageName.find_last_of("/"); 
         if( pos == currentImageName.npos ) {
             pos = 0;
-        } else if( pos+1 < currentImageName.npos) {
+        } else if( pos + 1 < currentImageName.npos) {
             pos++;
         }
         infoSS << "Image File:  " << endl << " " <<  currentImageName.substr(pos) << endl;
@@ -238,8 +238,12 @@ void sivicViewRenderingWidget::ResetInfoText()
                         string pixelSpacing = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("PixelMeasuresSequence", 0, "PixelSpacing" , "SharedFunctionalGroupsSequence");
 
         pos = pixelSpacing.find_last_of("\\"); 
-        infoSS << "Image FOV:  " << atof(pixelSpacing.substr(0,pos).c_str()) * rows << " X " 
+        if( pos == pixelSpacing.npos || pos + 1 >= pixelSpacing.npos ) {
+            infoSS << "Image FOV:  ?" << endl; 
+        } else {
+            infoSS << "Image FOV:  " << atof(pixelSpacing.substr(0,pos).c_str()) * rows << " X " 
                                << atof(pixelSpacing.substr(pos+1).c_str()) * cols << endl;
+        }
 
         // Image Coil
         string imageCoil = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");

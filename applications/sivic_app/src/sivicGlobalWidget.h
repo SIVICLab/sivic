@@ -106,6 +106,7 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
         static sivicGlobalWidget *New();
         vtkTypeRevisionMacro(sivicGlobalWidget,sivicKWCompositeWidget);
         void            PopulateMetaboliteMenu( );
+        void            DeselectMetabolites( );
         
     protected:
 
