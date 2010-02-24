@@ -575,17 +575,6 @@ void svkOverlayView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
 
 
 /*!
- *  Rerenders the vtkRenderWindow associated with the vtkRenderWindowInteractor
- *  used by this DataView.
- */
-void svkOverlayView::Refresh()
-{
-    if( dataVector[MRI] != NULL ) {
-        this->myRenderWindow->Render();
-    }
-}  
-
-/*!
  *  Sets desired the current selection in Display (pixels) coordinates
  *  and highlights the intersected voxels.
  *

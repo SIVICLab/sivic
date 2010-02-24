@@ -515,6 +515,7 @@ void svkOverlayViewController::UseColorOverlayStyle()
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->rwi->SetInteractorStyle( colorOverlayStyle ); 
         this->currentInteractorStyle = COLOR_OVERLAY;
+        this->view->Refresh();
     }
 
 }
@@ -523,10 +524,6 @@ void svkOverlayViewController::UseColorOverlayStyle()
 void svkOverlayViewController::UseWindowLevelStyle() 
 {
     if( visualizationCreated ) {
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         //this->myRenderWindow->RemoveRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
@@ -547,26 +544,33 @@ void svkOverlayViewController::UseSelectionStyle()
         }
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
         
-        // Lets make sure orthogonal sat bands are off...
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
-        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
       
         // We are going to turn the sat bands off if they were on just for resetting the camera
         // If left on the, the range if the sat bands changes the fov. 
         bool satBandsOn = 0; 
         bool satBandsOutlineOn = 0; 
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL) ) { 
+        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL) ||
+            view->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL) || 
+            view->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL) ) { 
             satBandsOn = 1;
-            view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL);
         }
-        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) ) { 
+        if( view->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) ||
+            view->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) || 
+            view->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) ) { 
             satBandsOutlineOn = 1;
-            view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
         }
             
+        // Lets make sure orthogonal sat bands are off...
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
+        view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
+
+        // Set style
         rwi->SetInteractorStyle( dragSelectStyle ); 
+
         (static_cast<svkOverlayView*>(view))->imageViewer->ResetCamera();
         if( satBandsOn ) { 
             switch( this->GetView()->GetOrientation()) {

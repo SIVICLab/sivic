@@ -107,8 +107,7 @@ class svkOverlayView : public svkDataView
         virtual void        SetSlice(int slice);
         virtual void        SetSlice(int slice, svkDcmHeader::Orientation orientation);
         virtual void        SetRWInteractor( vtkRenderWindowInteractor* );    
-        virtual void        Refresh();
-              string        GetDataCompatibility( svkImageData* data, int targetIndex );
+        string              GetDataCompatibility( svkImageData* data, int targetIndex );
         void                TurnOrthogonalImagesOn();
         void                TurnOrthogonalImagesOff();
         void                SetOrientation( svkDcmHeader::Orientation orientation );
