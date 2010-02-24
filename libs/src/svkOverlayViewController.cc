@@ -368,7 +368,8 @@ void svkOverlayViewController::CreateDataVisualization( )
     colorOverlayStyle->AddObserver(vtkCommand::StartPickEvent, colorOverlayCB);
     
     // Set default style to drag selection
-    rwi->SetInteractorStyle( dragSelectStyle );
+    this->rwi->SetInteractorStyle( dragSelectStyle );
+    this->rwi->Enable(); 
     visualizationCreated = 1;
 }
 
@@ -514,6 +515,7 @@ void svkOverlayViewController::UseColorOverlayStyle()
         //this->myRenderWindow->RemoveRenderer(  this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->rwi->SetInteractorStyle( colorOverlayStyle ); 
+        this->rwi->Enable(); 
         this->currentInteractorStyle = COLOR_OVERLAY;
         this->view->Refresh();
     }
@@ -528,6 +530,7 @@ void svkOverlayViewController::UseWindowLevelStyle()
         this->myRenderWindow->SetNumberOfLayers(1);
         //this->myRenderWindow->RemoveRenderer( this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION) );
         this->rwi->SetInteractorStyle( windowLevelStyle ); 
+        this->rwi->Enable(); 
         this->currentInteractorStyle = WINDOW_LEVEL;
     }
 
@@ -569,7 +572,8 @@ void svkOverlayViewController::UseSelectionStyle()
         view->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
 
         // Set style
-        rwi->SetInteractorStyle( dragSelectStyle ); 
+        this->rwi->SetInteractorStyle( dragSelectStyle ); 
+        this->rwi->Enable(); 
 
         (static_cast<svkOverlayView*>(view))->imageViewer->ResetCamera();
         if( satBandsOn ) { 
@@ -641,7 +645,8 @@ void svkOverlayViewController::UseRotationStyle()
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
         this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
-        rwi->SetInteractorStyle( rotationStyle );
+        this->rwi->SetInteractorStyle( rotationStyle );
+        this->rwi->Enable(); 
         this->currentInteractorStyle = ROTATION;
     }
 
