@@ -300,26 +300,24 @@ int sivicApp::Build( int argc, char* argv[] )
             0, "&Open", this->sivicController, "OpenFile .* NULL");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             1, "&Save Data", this->sivicController, "SaveData");
-   /*
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             2, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             3, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE");
-    */
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            2, "&Save Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
+            4, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            3, "&Print Current Slice", this->sivicController, "Print 1");
+            5, "&Print Current Slice", this->sivicController, "Print 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            4, "&Print All Slices", this->sivicController, "Print 0");
+            6, "&Print All Slices", this->sivicController, "Print 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Save Session", this->sivicController, "SaveSession");
+            7, "&Save Session", this->sivicController, "SaveSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            6, "&Restore Session", this->sivicController, "RestoreSession");
+            8, "&Restore Session", this->sivicController, "RestoreSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            7, "&Close All", this->sivicController, "ResetApplication");
+            9, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            0, "&Sivic Resources", this->sivicController, "DisplayInfo");
+            10, "&Sivic Resources", this->sivicController, "DisplayInfo");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");

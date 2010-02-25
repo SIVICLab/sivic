@@ -752,6 +752,10 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
 
     dlg->SetFileTypes("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{All files} {.*}}");
     dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{All files} {.*}}");
+#if defined( SVK_USE_GL2PS )
+    dlg->SetFileTypes("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{TeX} {.tex}} {All files} {.*}}");
+    dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{All files} {.*}}");
+#endif
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
         string filename = dlg->GetFileName(); 
@@ -769,7 +773,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
 void vtkSivicController::SaveSecondaryCaptureOsiriX()
 {
     string fname( this->GetOsiriXInDir() + "sc.dcm" );
-    this->SaveSecondaryCapture( const_cast<char*>( fname.c_str() ), 77, "SPECTRA_CAPTURE");
+    this->SaveSecondaryCapture( const_cast<char*>( fname.c_str() ), 77, "COMBINED_CAPTURE");
 }
 
 
@@ -804,6 +808,14 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         writer = writerFactory->CreateImageWriter( svkImageWriterFactory::JPEG );
         vtkJPEGWriter* tmp = vtkJPEGWriter::SafeDownCast( writer );
         tmp->SetQuality(100);
+#if defined( SVK_USE_GL2PS )
+    } else if( strcmp( fileNameString.substr(pos).c_str(), ".svg" ) == 0 ||
+               strcmp( fileNameString.substr(pos).c_str(), ".eps" ) == 0 ||
+               strcmp( fileNameString.substr(pos).c_str(), ".pdf" ) == 0 ||
+               strcmp( fileNameString.substr(pos).c_str(), ".tex" ) == 0 ) {
+        this->ExportSpectraCapture( fileNameString, outputOption, fileNameString.substr(pos));
+        return;
+#endif
     } else {
         this->PopupMessage("Error: Extension not supported-- FILE NOT WRITTEN!!");
         return;
@@ -850,15 +862,17 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         
     }
     
-    if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
-        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
+    if( strcmp(captureType,"COMBINED_CAPTURE") == 0 ) {
+        this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"IMAGE_CAPTURE") == 0 ) {
         this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print);
+    } else if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
+        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
         if( writer->IsA("svkDICOMSCWriter") ) {  
             svkDICOMSCWriter::SafeDownCast(writer)->SetCreateNewSeries( 0 );
         }
-        this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
+        this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
         if( writer->IsA("svkDICOMSCWriter") ) {  
             this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
                      outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
@@ -902,7 +916,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
 /*!
  *
  */
-void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
 
     int firstFrame = 0;
@@ -1163,6 +1177,160 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
     }
 }
 
+
+/*!
+ *
+ */
+void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+{
+    int firstFrame = 0;
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame + 1;
+    }
+    int instanceNumber = 1;
+    for (int m = firstFrame; m <= lastFrame; m++) {
+        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
+            continue;
+        }
+        string fileNameStringTmp = fileNameString; 
+
+        ostringstream frameNum;
+        frameNum <<  instanceNumber;
+
+        this->SetSlice(m);
+
+        //  Replace * with slice number in output file name: 
+        size_t pos = fileNameStringTmp.find_last_of("*");
+        if ( pos != string::npos) {
+            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
+        } else {
+            size_t pos = fileNameStringTmp.find_last_of(".");
+            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
+        }
+
+        cout << "FN: " << fileNameStringTmp.c_str() << endl;
+        writer->SetFileName( fileNameStringTmp.c_str() );
+
+        /*
+         ==============================================================
+         ==              FORMATTING OUTPUT IMAGE                     ==
+         ==============================================================
+        */
+
+        /*
+         * For now we are going to try to duplicate the output of mr.dev
+         * We are goung to use the svkMultiWindowToImageFilter to concatenate
+         * the image and the text, then use vtkImageAppend to concatenate the
+         * combined image/text with spectrscopy. We cannot just use the
+         * MultiWindowToImageFilter because it would not allow us to have
+         * images side-by-side in a single "row".
+         */
+
+        // Now lets use the multiwindow to get the image of the spectroscopy
+        svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
+        mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, 2 );
+        mw2if->Update();
+
+        if( writer->IsA("svkImageWriter") ) {  
+            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
+            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
+            double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+            outputImage->CopyVtkImage( mw2if->GetOutput(), dcos );
+            static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
+        } else {
+            vtkImageFlip* flipper = vtkImageFlip::New();
+            flipper->SetFilteredAxis( 1 );
+            flipper->SetInput( mw2if->GetOutput() );
+            writer->SetInput( flipper->GetOutput() );
+            flipper->Delete();
+            flipper = NULL;
+        }
+        instanceNumber++;
+
+        writer->Write();
+        
+        mw2if->Delete();
+        if( print ) {
+            stringstream printCommand;
+            printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
+            cout<< printCommand.str().c_str() << endl;
+            system( printCommand.str().c_str() ); 
+            stringstream removeCommand;
+            removeCommand << "rm " << fileNameStringTmp.c_str(); 
+            system( removeCommand.str().c_str() ); 
+        }
+    }
+}
+
+
+#if defined( SVK_USE_GL2PS )
+/*!
+ *
+ */
+void vtkSivicController::ExportSpectraCapture( string fileNameString, int outputOption, string type ) 
+{
+    vtkGL2PSExporter* gl2psExporter = vtkGL2PSExporter::New();
+    gl2psExporter->SetRenderWindow(this->viewRenderingWidget->specViewerWidget->GetRenderWindow());
+    gl2psExporter->CompressOff();
+    gl2psExporter->OcclusionCullOff();
+    if( type == ".svg" ) {
+        gl2psExporter->SetFileFormatToSVG();
+    } else if( type == ".eps" ) {
+        gl2psExporter->SetFileFormatToEPS();
+    } else if( type == ".pdf" ) {
+        gl2psExporter->SetFileFormatToPDF();
+    } else if( type == ".tex" ) {
+        gl2psExporter->SetFileFormatToTeX();
+    }
+ 
+    int firstFrame = 0;
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame + 1;
+    }
+    int instanceNumber = 1;
+    for (int m = firstFrame; m <= lastFrame; m++) {
+        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
+            continue;
+        }
+        string fileNameStringTmp = fileNameString; 
+
+        ostringstream frameNum;
+        frameNum <<  instanceNumber;
+
+        this->SetSlice(m);
+
+        //  Replace * with slice number in output file name: 
+        size_t posStar = fileNameStringTmp.find_last_of("*");
+        size_t posDot = fileNameStringTmp.find_last_of(".");
+        if ( posStar != string::npos) {
+            fileNameStringTmp.replace(posStar, 1, frameNum.str()); 
+            posDot = fileNameStringTmp.find_last_of(".");
+        } else if ( posDot != string::npos) {
+            fileNameStringTmp.replace(posDot, 1, frameNum.str() + ".");
+            posDot = fileNameStringTmp.find_last_of(".");
+        } else if ( posDot != string::npos) {
+            fileNameStringTmp+= frameNum.str();
+            posDot = fileNameStringTmp.find_last_of(".");
+        }
+
+        cout << "FN: " << fileNameStringTmp.c_str() << endl;
+        if( posDot != string::npos ) {
+            gl2psExporter->SetFilePrefix(fileNameStringTmp.substr(0,posDot).c_str());
+        } else {
+            gl2psExporter->SetFilePrefix(fileNameStringTmp.c_str());
+        }
+
+
+        gl2psExporter->Write();
+        instanceNumber++;
+    }
+    gl2psExporter->Delete();
+}
+#endif
 
 /*!
  *
@@ -1537,7 +1705,7 @@ void vtkSivicController::Print( int outputOption )
         model->GetDataObject( "SpectroscopicData" ) ,
         &defaultNamePattern
     );
-    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, "SPECTRA_CAPTURE", outputOption, 1 );
+    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, "COMBINED_CAPTURE", outputOption, 1 );
 }
 
 

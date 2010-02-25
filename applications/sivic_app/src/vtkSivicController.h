@@ -76,6 +76,9 @@
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
 #include <sivicGlobalWidget.h>
+#if defined( SVK_USE_GL2PS )
+    #include <vtkGL2PSExporter.h>
+#endif
 
 // Used for determining the default range, as a percentage of whole range
 // for plotting spectra.
@@ -124,7 +127,11 @@ class vtkSivicController : public vtkObject
         void                       SaveDataOsiriX(); 
         void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
                                                          int outputOption = 0, bool print = 0 );
+        void                       WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
         void                       WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+#if defined( SVK_USE_GL2PS )
+        void                       ExportSpectraCapture( string fileNameString, int outputOption, string type );
+#endif
         void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
         void                       ToggleColorsForPrinting( bool colorSchema );
         void                       ResetApplication();    

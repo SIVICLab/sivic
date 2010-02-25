@@ -263,16 +263,19 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
-#ADD_EXECUTABLE(
-#    test_vtkGL2PSExporter
-#    test_vtkGL2PSExporter.cc
-#)
+IF (SVK_USE_GL2PS)
+ 
+    ADD_EXECUTABLE(
+        test_vtkGL2PSExporter
+        test_vtkGL2PSExporter.cc
+    )
 
 
-#TARGET_LINK_LIBRARIES(
-#    test_vtkGL2PSExporter
-#	${SVK_LIBS}
-#)
+    TARGET_LINK_LIBRARIES(
+        test_vtkGL2PSExporter
+        ${SVK_LIBS}
+    )
+ENDIF(SVK_USE_GL2PS)
 
 ADD_EXECUTABLE(
     test_actorSizeRectGrid

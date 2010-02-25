@@ -33,6 +33,7 @@ option( BUILD_EXAMPLES "Build examples." FALSE )
 option( BUILD_APPS "Build mini-applications." FALSE )
 option( BUILD_OSIRIX "Build OsiriX Plugin." FALSE )
 option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
+option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 
 ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.4.9\"' )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
