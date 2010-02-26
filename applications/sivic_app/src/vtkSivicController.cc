@@ -517,8 +517,12 @@ void vtkSivicController::OpenExam( )
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
         spectraPathName += "/" + svkUCSFUtils::GetMetaboliteDirectoryName(this->model->GetDataFileName("SpectroscopicData"));
-        cout << "spectra path: " << spectraPathName << endl;
-        if( stat(spectraPathName.c_str(),&st) == 0 ) {
+        bool includePath = true;
+        string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI (ht)",includePath );
+        if( stat(cniFileName.c_str(),&st) == 0 ) {
+            this->OpenOverlay( cniFileName.c_str() ); 
+            this->EnableWidgets(); 
+        } else if( stat(spectraPathName.c_str(),&st) == 0 ) {
             this->OpenFile( "overlay", spectraPathName.c_str() ); 
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
