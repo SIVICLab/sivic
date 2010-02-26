@@ -240,7 +240,6 @@ void svkPlotGridViewController::SetRWInteractor( vtkRenderWindowInteractor* rwi 
         // If we wanted another type of interactor...
         //rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New ());
         rwi->SetInteractorStyle( dragSelect );
-        rwi->Enable( );
         rwi->GetRenderWindow()->SetNumberOfLayers(1);
         rwi->AddObserver(vtkCommand::LeftButtonReleaseEvent, dragSelectionCB);
         this->svkDataViewController::SetRWInteractor( rwi );

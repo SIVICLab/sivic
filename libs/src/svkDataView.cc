@@ -462,7 +462,7 @@ void svkDataView::ClipMapperToTlcBrc( svkImageData* data, vtkAbstractMapper* map
             myIterator->GoToNextItem();
         }
         myIterator->Delete();
-    
+        planes->Delete(); 
     } else {
         if( DEBUG ) {
             cout<<"INPUT HAS NOT BEEN SET!!"<<endl;
