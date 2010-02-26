@@ -262,6 +262,13 @@ void svkDICOMSCWriter::InitDcmHeader()
         this->seriesNumber 
     );
 
+    if (this->seriesDescription.length() > 0) {
+        this->dcmHeader->SetValue(
+            "SeriesDescription",
+            this->seriesDescription
+        );
+    }
+
     this->dcmHeader->SetValue(
         "InstanceNumber",
         this->instanceNumber 

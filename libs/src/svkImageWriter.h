@@ -75,6 +75,7 @@ class svkImageWriter : public vtkImageWriter
         using   vtkImageWriter::SetInput;
 
         void    SetSeriesNumber(int number);
+        void    SetSeriesDescription(string description);
         void    SetInstanceNumber(int number);
 
 
@@ -85,6 +86,7 @@ class svkImageWriter : public vtkImageWriter
 
     protected:
         int     seriesNumber;
+        string  seriesDescription;
         int     instanceNumber;
 
 };

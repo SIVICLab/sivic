@@ -96,6 +96,16 @@ void svkImageWriter::SetSeriesNumber(int number)
 /*!
  *
  */
+void svkImageWriter::SetSeriesDescription(string seriesDescription)
+{
+    this->seriesDescription = seriesDescription;
+}
+
+
+
+/*!
+ *
+ */
 void svkImageWriter::SetInstanceNumber(int number)
 {
     this->instanceNumber = number;
