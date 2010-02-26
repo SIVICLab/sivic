@@ -1028,6 +1028,7 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
 
         if( writer->IsA("svkImageWriter") ) {  
             static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
+            static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "MRS_SC" );
             outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
             double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
             outputImage->CopyVtkImage( appender->GetOutput(), dcos );
