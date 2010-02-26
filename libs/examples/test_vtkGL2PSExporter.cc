@@ -63,7 +63,7 @@ int main ( int argc, char** argv )
     vtkGL2PSExporter* epsWriter = vtkGL2PSExporter::New();
     epsWriter->SetRenderWindow(renWin);
     epsWriter->SetFilePrefix("testGraphics");
-    epsWriter->SetFileFormatToSVG();
+    epsWriter->SetFileFormatToPDF();
     epsWriter->CompressOff();
     epsWriter->Write3DPropsAsRasterImageOn();
 /*
