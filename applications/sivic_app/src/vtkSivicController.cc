@@ -873,9 +873,6 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     } else if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
-        if( writer->IsA("svkDICOMSCWriter") ) {  
-            svkDICOMSCWriter::SafeDownCast(writer)->SetCreateNewSeries( 0 );
-        }
         this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
         if( writer->IsA("svkDICOMSCWriter") ) {  
             this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
