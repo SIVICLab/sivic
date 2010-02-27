@@ -65,7 +65,6 @@ svkDICOMSCWriter::svkDICOMSCWriter()
 
     this->seriesNumber = 0; 
     this->instanceNumber = 1; 
-    bool createNewSeries = 1;
     this->isGray = false;
 
 }
@@ -116,10 +115,18 @@ void svkDICOMSCWriter::Write()
     this->FilesDeleted = 0;
     this->UpdateProgress(0.0);
 
+
+    this->InitDcmHeader();
+
+
     // loop over the z axis and write the slices
     for (this->FileNumber = wExtent[4]; this->FileNumber <= wExtent[5]; ++this->FileNumber) {
 
         cout << "FileNumber: " << this->FileNumber << endl; 
+        this->dcmHeader->SetValue(
+            "InstanceNumber",
+            this->instanceNumber 
+        );
 
         this->MaximumFileNumber = this->FileNumber;
         this->GetImageDataInput(0)->SetUpdateExtent(
@@ -169,8 +176,6 @@ void svkDICOMSCWriter::WriteSlice()
 {
 
     vtkDebugMacro( <<  this->GetClassName() << "::WriteSlice()" );
-
-    this->InitDcmHeader();
 
     if ( this->isGray ) {
 
@@ -308,12 +313,10 @@ void svkDICOMSCWriter::InitDcmHeader()
         this->dcmHeaderTemplate->GetStringValue("AccessionNumber") 
     );
 
-    if( !this->createNewSeries ) {
-        this->dcmHeader->SetValue(
-            "SeriesInstanceUID",
-            this->dcmHeaderTemplate->GetStringValue("SeriesInstanceUID") 
-        );
-    }
+    this->dcmHeader->SetValue(
+        "SeriesInstanceUID",
+        this->dcmHeaderTemplate->GetStringValue("SeriesInstanceUID") 
+    );
 
     this->dcmHeader->SetValue(
         "Columns",
@@ -324,7 +327,6 @@ void svkDICOMSCWriter::InitDcmHeader()
         "Rows",
         (this->GetImageDataInput(0)->GetDimensions())[1]
     );
-
 
 
     /*  Set the ImagePixelModule Attributes depending on whether 
@@ -418,9 +420,8 @@ svkImageData* svkDICOMSCWriter::GetImageDataInput(int port)
 /*!
  *
  */
-void svkDICOMSCWriter::SetCreateNewSeries( bool createNewSeries ) 
+void svkDICOMSCWriter::CreateNewSeries( ) 
 {
-    this->createNewSeries = createNewSeries;
 }
 
 

@@ -90,7 +90,7 @@ class svkDICOMSCWriter : public svkImageWriter
 
         //  Return the default file name pattern
         static string   GetFilePattern( svkImageData* imageData ); 
-        void            SetCreateNewSeries( bool createNewSeries );
+        void            CreateNewSeries();
         void            SetOutputToGrayscale( bool isOutputGray ); 
 
 
@@ -110,7 +110,6 @@ class svkDICOMSCWriter : public svkImageWriter
         //  Members:
         svkDcmHeader*   dcmHeader;
         svkDcmHeader*   dcmHeaderTemplate;
-        bool            createNewSeries;
         bool            isGray; 
         
 
