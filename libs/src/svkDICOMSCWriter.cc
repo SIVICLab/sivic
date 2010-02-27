@@ -425,8 +425,9 @@ void svkDICOMSCWriter::CreateNewSeries( )
 
 
 /*!
- *  Sets the ImagePixelModule attribures correctly for grayscale output.  
- *  The default output is RGB.  
+ *  If set to true, results in conversion of input pixels to grayscale 
+ *  for DICOM PixelDataSets, and also sets ImagePixelModule attribures 
+ *  correctly for grayscale output. The default output is RGB.   
  */
 void svkDICOMSCWriter::SetOutputToGrayscale( bool isOutputGray )
 {
