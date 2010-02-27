@@ -236,8 +236,8 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
     vtkKWWidget* interactorPanel = tabbedPanel->GetFrame("Inspecting");
 
-    this->tabbedPanel->AddPage("Processing", "Process the data.", NULL);
-    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("Processing");
+    this->tabbedPanel->AddPage("SV Processing Demo", "Prototype multi-channel SV Data Processing.", NULL);
+    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("SV Processing Demo");
 
     vtkKWSeparator* separator = vtkKWSeparator::New();
     separator->SetParent(this->sivicWindow->GetViewFrame());
@@ -317,7 +317,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             9, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            10, "&Sivic Resources", this->sivicController, "DisplayInfo");
+            10, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");

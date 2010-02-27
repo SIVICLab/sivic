@@ -131,18 +131,21 @@ void sivicProcessingWidget::CreateWidget()
     this->fftButton->Create( );
     this->fftButton->EnabledOff();
     this->fftButton->SetText( "FFT");
+    this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
 
     this->phaseButton = vtkKWPushButton::New();
     this->phaseButton->SetParent( this );
     this->phaseButton->Create( );
     this->phaseButton->EnabledOff();
     this->phaseButton->SetText( "Phase");
+    this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
 
     this->combineButton = vtkKWPushButton::New();
     this->combineButton->SetParent( this );
     this->combineButton->Create( );
     this->combineButton->EnabledOff();
     this->combineButton->SetText( "Combine");
+    this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
 
     this->Script("grid %s -row 0 -column 0 -sticky nsew", this->phaseSlider->GetWidgetName() );
     this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
