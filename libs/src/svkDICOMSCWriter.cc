@@ -27,7 +27,6 @@
  */
 
 
-
 /*
  *  $URL$
  *  $Rev$
@@ -80,7 +79,7 @@ svkDICOMSCWriter::~svkDICOMSCWriter()
 
 
 /*!
- *
+ *  The main method which triggers the writer to write DICOM SC files.
  */
 void svkDICOMSCWriter::Write()
 {
@@ -166,11 +165,8 @@ void svkDICOMSCWriter::Write()
 
 
 /*!
- *  Note:  WARNING:  Probably need a LUT to map the color data to BW for this particular IOD
- *  Currently just taking one component, which is probably reasonable for a BW window.
- *
- *  Maps RGB color input image to gray scale via vtkImageLuminance
- *  for output to DICOM Secondary Capture. 
+ *  Sets RGB DICOM PixelData (default), or if SetOutputToGrayscale was called, maps RGB 
+ *  from input image to gray scale via vtkImageLuminance for PixelData. 
  */
 void svkDICOMSCWriter::WriteSlice()
 {
@@ -235,8 +231,8 @@ void svkDICOMSCWriter::WriteSlice()
 /*!
  *  Generates a new svkDcmHeader initialized to a default DICOM Secondary
  *  Capture IOD, then fills in instance specific values.       
- *  The StudyInstanceUID is copied from the template to attach the images to the 
- *  data from which it was derived.    
+ *  The StudyInstanceUID and other patient/exam specific attributes are copied from the 
+ *  template to attach the images to the data from which it was derived.    
  */
 void svkDICOMSCWriter::InitDcmHeader()
 {
@@ -377,7 +373,8 @@ int svkDICOMSCWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInforma
 
 
 /*!
- *
+ *  Set the input svkImageDataObject, which will be used to set the DICOM PixelData
+ *  and also populate Exam/Patient specific DICOM attributes for the output data. 
  */
 void svkDICOMSCWriter::SetInput( vtkDataObject* input )
 {
@@ -418,7 +415,9 @@ svkImageData* svkDICOMSCWriter::GetImageDataInput(int port)
 
 
 /*!
- *
+ *  Not yet implemented. Intended to force new SeriesInstanceUID 
+ *  generation of for use when writer instance will create multiple 
+ *  DICOM SC output series. 
  */
 void svkDICOMSCWriter::CreateNewSeries( ) 
 {
@@ -426,7 +425,8 @@ void svkDICOMSCWriter::CreateNewSeries( )
 
 
 /*!
- *
+ *  Sets the ImagePixelModule attribures correctly for grayscale output.  
+ *  The default output is RGB.  
  */
 void svkDICOMSCWriter::SetOutputToGrayscale( bool isOutputGray )
 {
