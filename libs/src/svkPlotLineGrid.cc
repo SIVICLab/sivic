@@ -169,6 +169,9 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     this->data->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
 
     if( this->selectionBoxActor != NULL ) {
+        if( this->renderer->HasViewProp( selectionBoxActor ) ) {
+            this->renderer->RemoveViewProp( selectionBoxActor );
+        }
         this->selectionBoxActor->Delete();
         this->selectionBoxActor = NULL;
     }
