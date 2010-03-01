@@ -389,25 +389,27 @@ void svkDdfVolumeReader::ParseDdf()
     sortFileNames->Update();
 
     //  If globed file names are not similar, use only the 0th group. 
+    int groupToUse = 0;     
     if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
-        vtkWarningWithObjectMacro(this, "Found Multiple ddf file groups, using only specified file ");
-
-        vtkStringArray* fileNames = vtkStringArray::New();
-        fileNames->SetNumberOfValues(1);
-        fileNames->SetValue(0, this->GetFileName() );
-        sortFileNames->SetInputFileNames( fileNames );
-        fileNames->Delete();
-
+        //  Get the group the selected file belongs to:
+        vtkStringArray* group;
+        for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
+            group = sortFileNames->GetNthGroup(k); 
+            for (int i = 0; i < group->GetNumberOfValues(); i++) {
+                if ( ddfFileName.compare( group->GetValue(i) ) == 0 ) {
+                    groupToUse = k; 
+                    break; 
+                }
+            }
+        }
     }
 
-    this->SetFileNames( sortFileNames->GetFileNames() );
-    vtkStringArray* fileNames =  sortFileNames->GetFileNames();
+    this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+    vtkStringArray* fileNames =  sortFileNames->GetNthGroup( groupToUse );
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
         cout << "FN: " << fileNames->GetValue(i) << endl;
     }
-
-
 
     try {
 
@@ -2469,3 +2471,4 @@ bool svkDdfVolumeReader::IsMultiCoil()
     //} 
     return isMultiCoil; 
 }
+
