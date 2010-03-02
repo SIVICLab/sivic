@@ -757,8 +757,10 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
     dlg->SetFileTypes("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{All files} {.*}}");
     dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{All files} {.*}}");
 #if defined( SVK_USE_GL2PS )
-    dlg->SetFileTypes("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{TeX} {.tex}} {All files} {.*}}");
-    dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{All files} {.*}}");
+    if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
+        dlg->SetFileTypes("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{TeX} {.tex}} {All files} {.*}}");
+        dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{All files} {.*}}");
+    }
 #endif
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
@@ -924,9 +926,12 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
     if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame + 1;
+        lastFrame = firstFrame;
     }
     int instanceNumber = 1;
+    int imageMagnification = 1;
+    int textMagnification = 1;
+    int spectraMagnification = 2;
     for (int m = firstFrame; m <= lastFrame; m++) {
         if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
             continue;
@@ -973,8 +978,9 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
         if( print ) {
             mw2ifprep->SetPadConstant( 255 );
         }
-        mw2ifprep->SetInput(     this->viewRenderingWidget->viewerWidget->GetRenderWindow(), 0, 0, 1 );
-        mw2ifprep->SetInput(       this->viewRenderingWidget->infoWidget->GetRenderWindow(), 1, 0, 1 );
+        int* imageViewSize = this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetSize();
+        mw2ifprep->SetInput(this->viewRenderingWidget->viewerWidget->GetRenderWindow(), 0, 0, imageMagnification );
+        mw2ifprep->SetInput( this->viewRenderingWidget->infoWidget->GetRenderWindow(), 1, 0, textMagnification );
         mw2ifprep->Update();
 
         // Now lets use the multiwindow to get the image of the spectroscopy
@@ -984,7 +990,7 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
         }
         //  starts index at bottom left corner of window
         //mw2if->SetInput(     viewerWidget->GetRenderWindow(), 0, 0, 1 );
-        mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, 2 );
+        mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, spectraMagnification );
         //mw2if->SetInput(       this->viewRenderingWidget->infoWidget->GetRenderWindow(), 2, 0, 1 );
         //mw2if->SetInput( this->viewRenderingWidget->titleWidget->GetRenderWindow(), 0, 3, 1 );
         mw2if->Update();
@@ -997,25 +1003,40 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
         int newExtent[6];
         int* prepImageExtent =  mw2ifprep->GetOutput()->GetExtent();
         int* specImageExtent =  mw2if->GetOutput()->GetExtent();
-        newExtent[0] = specImageExtent[0];
         
-        // The +1 -1 here is to get the resolution of the image and spectra secondary capture to match exactly.
         // TODO: Find a less manual way of making the resolution match.
-        newExtent[1] = specImageExtent[1]+1;
+        // This should be refactored when we create our formatting class
+        newExtent[0] = specImageExtent[0];
+        if( specImageExtent[1] < spectraMagnification*(imageViewSize[0]) - 1  ) {
+            newExtent[1] = spectraMagnification*imageViewSize[0] - 1;
+        } else {
+            newExtent[1] = specImageExtent[1];
+        }
         newExtent[2] = prepImageExtent[2];
-        newExtent[3] = prepImageExtent[3]-1;
+        newExtent[3] = prepImageExtent[3];
         newExtent[4] = prepImageExtent[4];
         newExtent[5] = prepImageExtent[5];
         padder->SetOutputWholeExtent( newExtent );
         padder->SetInput( mw2ifprep->GetOutput());
 
+        vtkImageConstantPad* spectraPadder = vtkImageConstantPad::New();
+        if( print ) {
+            spectraPadder->SetConstant( 255 );
+        }
+        spectraPadder->SetInput(mw2if->GetOutput());
+        newExtent[2] = specImageExtent[2];
+        newExtent[3] = specImageExtent[3];
+        newExtent[4] = specImageExtent[4];
+        newExtent[5] = specImageExtent[5];
+        spectraPadder->SetOutputWholeExtent(newExtent);
         // And use image append to add the specroscopy to the image+text
         vtkImageAppend* appender = vtkImageAppend::New();
         appender->SetAppendAxis( 1 );
         appender->SetInput(0, padder->GetOutput()); 
-        appender->SetInput(1, mw2if->GetOutput()); 
+        appender->SetInput(1, spectraPadder->GetOutput()); 
         appender->Update();
         padder->Delete();
+        spectraPadder->Delete();
 
         /*
          ==============================================================
