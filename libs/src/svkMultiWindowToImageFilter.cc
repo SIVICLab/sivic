@@ -208,7 +208,7 @@ int svkMultiWindowToImageFilter::RequestData(vtkInformation* request, vtkInforma
                 blank->Delete();
             }
             //pad to max 
-            pad->SetOutputWholeExtent( 0, colWidthVector[x], 0, rowHeightVector[y], 0, 0 );
+            pad->SetOutputWholeExtent( 0, colWidthVector[x]-1, 0, rowHeightVector[y]-1, 0, 0 );
             pad->Update();
             colAppend->AddInput( pad->GetOutput() );
             colAppend->Update();

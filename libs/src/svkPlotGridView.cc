@@ -644,6 +644,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
 {
     double backgroundColor[3];
     double foregroundColor[3];
+    double textColor[3];
     if( colorSchema == svkPlotGridView::LIGHT_ON_DARK ) {
         backgroundColor[0] = 0;
         backgroundColor[1] = 0;
@@ -651,6 +652,9 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
         foregroundColor[0] = 1;
         foregroundColor[1] = 1;
         foregroundColor[2] = 1;
+        textColor[0]       = 0;
+        textColor[1]       = 1;
+        textColor[2]       = 1;
     } else if ( colorSchema == svkPlotGridView::DARK_ON_LIGHT ) {
         backgroundColor[0] = 1;
         backgroundColor[1] = 1;
@@ -658,11 +662,20 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
         foregroundColor[0] = 0;
         foregroundColor[1] = 0;
         foregroundColor[2] = 0;
+        textColor[0]       = 0;
+        textColor[1]       = 0;
+        textColor[2]       = 0;
 
     } 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
     this->plotGrid->plotGridActor->GetProperty()->SetColor( foregroundColor );
-
+   
+    if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
+        vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
+        vtkLabeledDataMapper::SafeDownCast( 
+                            vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
+                            ->GetLabelTextProperty()->SetColor(textColor);
+    }
 }
 
 
