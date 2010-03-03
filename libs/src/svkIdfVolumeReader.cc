@@ -802,7 +802,7 @@ void svkIdfVolumeReader::InitNonIdfTags()
     if ( stat( dcmFileName.c_str(), &buffer ) == 0 ) {
         svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();    
         dcmReader->SetFileName( dcmFileName.c_str() );
-        dcmReader->Update();
+        dcmReader->UpdateInformation();
         svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
         this->GetOutput()->GetDcmHeader()->SetValue(
                   "StudyInstanceUID", dcmHeader->GetStringValue("StudyInstanceUID") );
