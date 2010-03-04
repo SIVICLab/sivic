@@ -1232,27 +1232,28 @@ void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkUnsig
     //  Get the input range for scaling: 
     double inputRange[2];
     fltArray->GetRange(inputRange);
-    double deltaRange = inputRange[1] - inputRange[0]; 
+    double deltaRangeIn = inputRange[1] - inputRange[0]; 
 
     //  Map to full dynamic range of target type:
     vtkUnsignedShortArray* usArray = vtkUnsignedShortArray::New();
     int maxShort =  static_cast<int>( usArray->GetDataTypeMax() );
     int minShort =  static_cast<int>( usArray->GetDataTypeMin() );
+    double deltaRangeOut = maxShort - minShort;  
     usArray->Delete(); 
     shortArray->SetNumberOfValues( fltArray->GetNumberOfTuples() ); 
 
     //  Map values to range between 0 and 1, then scale to type max. 
-    double rgb[3]; 
+    //  apply linear mapping from float range to unsigned short range
+    //  maxShort = inputRangeMax * m + b , minShort = inputRangeMin * m + b
     for (int i = 0; i < fltArray->GetNumberOfTuples(); i++) {
         shortArray->SetValue( 
             i, 
-            static_cast<unsigned short> ( (fltArray->GetValue(i) - inputRange[0])* maxShort / deltaRange ) 
-        ); 
+            static_cast<unsigned short> ( (deltaRangeOut/deltaRangeIn) * fltArray->GetValue(i) 
+                +  minShort - ( deltaRangeOut/deltaRangeIn ) * inputRange[0]
+            ) 
+        );
     } 
 
-    //  These are protected in vtk5.4, but not sure if they were ever used. 
-    //fltArray->ComputeRange(0);
-    //fltArray->GetRange(inputRange);
 }
 
 

@@ -50,6 +50,7 @@
 #include <vtkImageAccumulate.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
+#include <vtkShortArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkExecutive.h>
@@ -99,6 +100,8 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            WriteHeader();
         void            GetIDFCenter(float center[3]);
         string          GetIDFPatientsName(string patientsName);
+        int             MapUnsignedToSigned( void* pixels, int numPixels ); 
+
 
 };
 

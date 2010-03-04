@@ -153,7 +153,13 @@ void svkIdfVolumeWriter::WriteData()
     } else if ( dataWordSize == 16 ) {
         extension = ".int2"; 
         numBytesPerPixel = 2; 
-        pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        //  If input pixels are unsigned (PixelRepresentation = 0), then convert to signed values: 
+        if ( this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "PixelRepresentation" ) == 0 ) {
+            pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+            this->MapUnsignedToSigned(pixels, numSlices * numPixelsPerSlice); 
+        } else {
+            pixels = static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        }
     } else if ( dataWordSize == 32) {
         extension = ".real"; 
         numBytesPerPixel = 4; 
@@ -422,6 +428,36 @@ string svkIdfVolumeWriter::GetIDFPatientsName(string patientsName)
     }
 
     return patientsName;
+}
+
+
+/*!
+ *
+ */
+int svkIdfVolumeWriter::MapUnsignedToSigned( void* pixels, int numPixels ) 
+{
+    //  Get input and output ranges: 
+    vtkUnsignedShortArray* usArray = vtkUnsignedShortArray::New();
+    int maxUShort =  static_cast<int>( usArray->GetDataTypeMax() );
+    int minUShort =  static_cast<int>( usArray->GetDataTypeMin() );
+    int deltaRangeIn = maxUShort - minUShort;
+    usArray->Delete();
+
+    vtkShortArray* sArray = vtkShortArray::New();
+    int maxShort =  static_cast<int>( sArray->GetDataTypeMax() );
+    int minShort =  static_cast<int>( sArray->GetDataTypeMin() );
+    int deltaRangeOut = maxShort - minShort;
+    sArray->Delete();
+
+    //  Map values to range between 0 and 1, then scale to type max.
+    //  apply linear mapping between unsigned and signed short ranges
+    //  maxShort = maxUShort * m + b , minShort = minUShort * m + b
+    for (int i = 0; i < numPixels; i++) {
+        ((short*)(pixels))[i] = 
+            static_cast<short> ( 
+                (deltaRangeOut/deltaRangeIn) * ((unsigned short*)(pixels))[i] + minShort 
+            ); 
+    }
 }
 
 
