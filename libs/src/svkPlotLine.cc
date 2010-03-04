@@ -220,8 +220,8 @@ void svkPlotLine::GeneratePolyData()
         if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
             amplitude = dataPtr[2*(this->startPt) + componentOffset];
         } else {
-            amplitude = pow( dataPtr[2*(this->startPt)] * dataPtr[2*(this->startPt)] +
-                             dataPtr[2*(this->startPt) + 1] * dataPtr[2*(this->startPt) + 1], 0.5);
+            amplitude = pow( static_cast<double>(dataPtr[2*(this->startPt)] * dataPtr[2*(this->startPt)] +
+                             dataPtr[2*(this->startPt) + 1] * dataPtr[2*(this->startPt) + 1]), 0.5);
         }
 
         if( amplitude > this->maxValue ) {
@@ -256,8 +256,8 @@ void svkPlotLine::GeneratePolyData()
             if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
                 amplitude = dataPtr[2*(i) + componentOffset];
             } else {
-                amplitude = pow( dataPtr[2*(i)] * dataPtr[2*(i)] +
-                                 dataPtr[2*(i) + 1] * dataPtr[2*(i) + 1], 0.5 );
+                amplitude = pow( static_cast<double>(dataPtr[2*(i)] * dataPtr[2*(i)] +
+                                 dataPtr[2*(i) + 1] * dataPtr[2*(i) + 1]), 0.5 );
             }
 
             // If the value is outside the max/min
@@ -293,8 +293,8 @@ void svkPlotLine::GeneratePolyData()
         if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
             amplitude = dataPtr[2*(this->endPt) + componentOffset];
         } else {
-            amplitude = pow( dataPtr[2*(this->endPt)] * dataPtr[2*(this->endPt)] +
-                             dataPtr[2*(this->endPt) + 1] * dataPtr[2*(this->endPt) + 1], 0.5);
+            amplitude = pow( static_cast<double>(dataPtr[2*(this->endPt)] * dataPtr[2*(this->endPt)] +
+                             dataPtr[2*(this->endPt) + 1] * dataPtr[2*(this->endPt) + 1]), 0.5);
         }
 
         // If the value is outside the max/min
