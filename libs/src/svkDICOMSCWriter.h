@@ -92,7 +92,6 @@ class svkDICOMSCWriter : public svkImageWriter
         virtual void    Write();
 
         //  Return the default file name pattern
-        static string   GetFilePattern( svkImageData* imageData ); 
         void            CreateNewSeries();
         void            SetOutputToGrayscale( bool isOutputGray ); 
 

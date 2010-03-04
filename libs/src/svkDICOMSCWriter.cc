@@ -146,6 +146,7 @@ void svkDICOMSCWriter::Write()
                 sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
             }
         }
+
         this->GetImageDataInput(0)->Update();
         this->WriteSlice();
         if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
