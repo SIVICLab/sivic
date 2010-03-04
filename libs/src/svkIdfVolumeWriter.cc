@@ -434,7 +434,7 @@ string svkIdfVolumeWriter::GetIDFPatientsName(string patientsName)
 /*!
  *
  */
-int svkIdfVolumeWriter::MapUnsignedToSigned( void* pixels, int numPixels ) 
+void svkIdfVolumeWriter::MapUnsignedToSigned( void* pixels, int numPixels ) 
 {
     //  Get input and output ranges: 
     vtkUnsignedShortArray* usArray = vtkUnsignedShortArray::New();

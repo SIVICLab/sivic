@@ -100,7 +100,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            WriteHeader();
         void            GetIDFCenter(float center[3]);
         string          GetIDFPatientsName(string patientsName);
-        int             MapUnsignedToSigned( void* pixels, int numPixels ); 
+        void            MapUnsignedToSigned( void* pixels, int numPixels ); 
 
 
 };
