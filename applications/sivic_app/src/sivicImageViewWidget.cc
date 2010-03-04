@@ -540,17 +540,11 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
 {
     // Respond to a selection change in the overlay view
     if( caller == this->axialSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, svkDcmHeader::AXIAL); 
-        this->overlayController->GetView()->Refresh();
-
+        this->sivicController->SetImageSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, string("AXIAL")); 
     } else if( caller == this->coronalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, svkDcmHeader::CORONAL); 
-        this->overlayController->GetView()->Refresh();
-
+        this->sivicController->SetImageSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, string("CORONAL")); 
     } else if( caller == this->sagittalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->overlayController->SetSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, svkDcmHeader::SAGITTAL); 
-        this->overlayController->GetView()->Refresh();
-
+        this->sivicController->SetImageSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, string("SAGITTAL")); 
     } else if( caller == this->overlayOpacitySlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
 
         this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );

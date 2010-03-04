@@ -101,6 +101,8 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
 
         static sivicSpectraViewWidget *New();
         vtkTypeRevisionMacro(sivicSpectraViewWidget,sivicKWCompositeWidget);
+
+        void    SetCenterImage( bool centerImage );
         
     protected:
 
@@ -122,6 +124,7 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
         vtkKWWindowBase*                detailedPlotWindow;
 
         int                             specUnits;
+        bool                            centerImage;
 
         
         // Description:

@@ -110,7 +110,8 @@ class vtkSivicController : public vtkObject
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
         void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
-        void                       SetSlice( int slice );
+        void                       SetSlice( int slice, bool centerImage = true );
+        void                       SetImageSlice( int slice, string orientation );
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
         int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);

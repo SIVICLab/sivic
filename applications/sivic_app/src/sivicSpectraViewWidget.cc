@@ -34,6 +34,7 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
     this->sliceSlider = NULL;
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->detailedPlotWindow = NULL;
+    this->centerImage = true;
 
 }
 
@@ -422,7 +423,7 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
 {
     // Respond to a selection change in the overlay view
     if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1);
+        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
         stringstream increment;
         increment << "SetValue " << this->overlayController->GetSlice() + 2;
         stringstream decrement;
@@ -647,4 +648,9 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
     // Make sure the superclass gets called for render requests
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 
+}
+
+void sivicSpectraViewWidget::SetCenterImage( bool centerImage ) 
+{
+    this->centerImage = centerImage;
 }

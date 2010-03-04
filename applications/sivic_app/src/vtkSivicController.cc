@@ -81,19 +81,21 @@ vtkSivicController::~vtkSivicController()
 
 
 //! Set the slice of all Controllers
-void vtkSivicController::SetSlice( int slice )
+void vtkSivicController::SetSlice( int slice, bool centerImage )
 {
     int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
     }
-    this->plotController->SetSlice(slice);
-    this->overlayController->SetSlice(slice);
-    //this->plotController->GetView()->Refresh();
-    //this->overlayController->GetView()->Refresh();
+    if( this->plotController->GetSlice() != slice ) {
+        this->plotController->SetSlice(slice);
+    }
+    if( this->overlayController->GetSlice() != slice ) {
+        this->overlayController->SetSlice(slice, centerImage);
+    }
     this->viewRenderingWidget->ResetInfoText();
-    if( this->model->DataExists("AnatomicalData")) {
+    if( this->model->DataExists("AnatomicalData") && this->overlayController->IsImageInsideSpectra()) {
         if( this->orientation == "AXIAL" ) {
             this->imageViewWidget->axialSlider->SetValue( this->overlayController->GetImageSlice( svkDcmHeader::AXIAL )+1 ); 
         } else if ( this->orientation == "CORONAL" ) {
@@ -102,6 +104,7 @@ void vtkSivicController::SetSlice( int slice )
             this->imageViewWidget->sagittalSlider->SetValue( this->overlayController->GetImageSlice( svkDcmHeader::SAGITTAL )+1 ); 
         }
     }
+
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
         this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -111,6 +114,54 @@ void vtkSivicController::SetSlice( int slice )
 }
 
 
+//! Set the slice of all Controllers
+void vtkSivicController::SetImageSlice( int slice, string orientation )
+{
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+    if( orientation == "AXIAL" ) {
+        this->overlayController->SetSlice( slice, svkDcmHeader::AXIAL);
+    } else if ( orientation == "CORONAL" ) {
+        this->overlayController->SetSlice( slice, svkDcmHeader::CORONAL);
+    } else if ( orientation == "SAGITTAL" ) {
+        this->overlayController->SetSlice( slice, svkDcmHeader::SAGITTAL);
+    }
+        // Check to see if the image is inside the spectra
+    if( !this->overlayController->IsImageInsideSpectra() ) {
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    }
+    if( this->overlayController->GetSlice() != this->plotController->GetSlice()) {
+        this->spectraViewWidget->SetCenterImage(false);
+        this->spectraViewWidget->sliceSlider->SetValue( this->overlayController->GetSlice() + 1);
+        this->spectraViewWidget->SetCenterImage(true);
+    }
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+    this->overlayController->GetView()->Refresh();
+    this->plotController->GetView()->Refresh();
+}
 //! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetApplication( vtkKWApplication* app)
 {
@@ -1808,7 +1859,7 @@ void vtkSivicController::SetOrientation( const char* orientation )
         lastSlice =  this->model->GetDataObject("SpectroscopicData")->GetLastSlice( newOrientation );
         this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
         this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
-        this->SetSlice( this->plotController->GetSlice() );
+        this->SetSlice( this->plotController->GetSlice());
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
     }
 
