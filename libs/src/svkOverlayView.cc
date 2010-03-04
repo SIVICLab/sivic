@@ -74,6 +74,9 @@ svkOverlayView::svkOverlayView()
     this->windowLevelerCoronal = NULL;
     this->windowLevelerSagittal = NULL;
     this->colorTransfer = NULL ;
+    this->imageInsideSpectra = false;
+
+
     // Create a state vector for our images
 
     this->isPropOn.assign(LAST_PROP+1, FALSE);
@@ -407,13 +410,23 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
     }
 }
 
-
 /*!
  *   Sets the current slice.
  *
  *   \param slice the slice you want to view
  */
 void svkOverlayView::SetSlice(int slice)
+{
+    bool centerImage = true;
+    this->SetSlice( slice, centerImage );
+}
+
+/*!
+ *   Sets the current slice and centers the image to the voxel.
+ *
+ *   \param slice the slice you want to view
+ */
+void svkOverlayView::SetSlice(int slice, bool centerImage)
 {
     if( dataVector[MRI] != NULL ) {
         if( dataVector[MRS] != NULL ) { 
@@ -446,7 +459,7 @@ void svkOverlayView::SetSlice(int slice)
             if( toggleDraw ) {
                 this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
             }
-            this->SetCenterImageSlice( );
+            this->UpdateImageSlice( centerImage );
             this->SetSliceOverlay();
             switch ( this->orientation ) {
                 case svkDcmHeader::AXIAL:
@@ -478,8 +491,38 @@ void svkOverlayView::SetSlice(int slice)
  */
 void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
 {
+    int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+    }
+    if( this->dataVector[MRS] != NULL && orientation == this->orientation ) {
+
+        // We may have removed the plot grid, so lets make sure its present
+        if( !this->GetRenderer(svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::PLOT_GRID ) )) {
+            this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
+        }
+        int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
+        if(  newSpectraSlice >= this->dataVector[MRS]->GetExtent()[4] &&
+             newSpectraSlice <  this->dataVector[MRS]->GetExtent()[5] ) {
+
+            if( newSpectraSlice != this->slice ) {
+                this->SetSlice( newSpectraSlice );    
+            }
+            this->imageInsideSpectra = true;
+        } else {
+            if( this->GetRenderer(svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::PLOT_GRID ) )) {
+                this->GetRenderer(svkOverlayView::PRIMARY)->RemoveViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
+            }
+            this->imageInsideSpectra = false;
+        }
+    }
     this->imageViewer->SetSlice( slice, orientation );    
     this->SetSliceOverlay();
+    if( toggleDraw ) {
+        this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+    }
+    this->Refresh();
+/*
     if( dataVector[MRS] != NULL ) {
         switch ( orientation ) {
             case svkDcmHeader::AXIAL:
@@ -493,6 +536,7 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
                 break;
         }
     }
+*/
 
 }
 
@@ -535,19 +579,25 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
  *  slice.
  *
  */
-void svkOverlayView::SetCenterImageSlice()
+void svkOverlayView::UpdateImageSlice( bool centerImage )
 {
-    int imageSlice = FindCenterImageSlice(this->slice, this->orientation);
+    int imageSlice = this->imageViewer->GetSlice( this->orientation );
+    if( centerImage ) {
+        imageSlice = FindCenterImageSlice(this->slice, this->orientation);
+    }
     int* imageExtent = dataVector[MRI]->GetExtent();
     if ( imageSlice >  this->dataVector[MRI]->GetLastSlice( this->orientation )) {
         this->imageViewer->GetImageActor( this->orientation )->SetVisibility(0);
         this->imageViewer->SetSlice( this->dataVector[MRI]->GetLastSlice(), this->orientation );
+        this->imageInsideSpectra = false;
     } else if ( imageSlice <  this->dataVector[MRI]->GetFirstSlice( this->orientation )) {
         this->imageViewer->GetImageActor( this->orientation )->SetVisibility(0);
         this->imageViewer->SetSlice( this->dataVector[MRI]->GetFirstSlice(), this->orientation );
+        this->imageInsideSpectra = false;
     } else {
         this->imageViewer->GetImageActor( this->orientation )->SetVisibility(1);
         this->imageViewer->SetSlice( imageSlice, this->orientation );
+        this->imageInsideSpectra = true;
     }
     // Case if the the image is outside of the extent
 }
@@ -1512,4 +1562,13 @@ void svkOverlayView::AlignCamera()
     if( toggleDraw ) {
         this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
     }
+}
+
+
+/*!
+ *  Returns true if the current image is within the spectrscopy data set
+ */
+bool svkOverlayView::IsImageInsideSpectra() 
+{
+    return imageInsideSpectra;
 }

@@ -118,6 +118,7 @@ class svkPlotGridView : public svkDataView
             OVERLAY_IMAGE,
             OVERLAY_TEXT,
             PLOT_GRID,
+            PLOT_LINES,
             SAT_BANDS,
             SAT_BANDS_OUTLINE,
             LAST_PROP = SAT_BANDS_OUTLINE

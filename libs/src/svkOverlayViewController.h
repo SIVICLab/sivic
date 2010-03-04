@@ -116,6 +116,7 @@ class svkOverlayViewController: public svkDataViewController
         //  Methods
         virtual void              SetInput( svkImageData* data, int index = 0 );
         virtual void              SetSlice( int slice );
+        virtual void              SetSlice( int slice, bool centerImage );
         virtual void              SetSlice(int slice, svkDcmHeader::Orientation orientation);
         virtual int               GetImageSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         virtual void              SetRWInteractor(vtkRenderWindowInteractor*);
@@ -138,6 +139,7 @@ class svkOverlayViewController: public svkDataViewController
         void                      SetLUT( svkLookupTable::svkLookupTableType type );
         void                      TurnOrthogonalImagesOn();
         void                      TurnOrthogonalImagesOff();
+        bool                      IsImageInsideSpectra();
 
 
 

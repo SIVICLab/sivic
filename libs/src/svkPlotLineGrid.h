@@ -111,6 +111,7 @@ class svkPlotLineGrid : public vtkObject
         void                    SetTimePoint( int timePoint );
         void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
+        vtkActor*               GetPlotGridActor();
 
     private:
 

@@ -105,6 +105,7 @@ class svkOverlayView : public svkDataView
         // Methods:
         virtual void        SetInput( svkImageData* data, int index = 0);
         virtual void        SetSlice(int slice);
+        virtual void        SetSlice(int slice, bool centerImage );
         virtual void        SetSlice(int slice, svkDcmHeader::Orientation orientation);
         virtual void        SetRWInteractor( vtkRenderWindowInteractor* );    
         string              GetDataCompatibility( svkImageData* data, int targetIndex );
@@ -114,6 +115,7 @@ class svkOverlayView : public svkDataView
         void                ToggleSelBoxVisibilityOn();
         void                ToggleSelBoxVisibilityOff();
         void                AlignCamera();
+        bool                IsImageInsideSpectra();
 
         //! Enum represents input indecies
         enum DataInputs { 
@@ -174,11 +176,12 @@ class svkOverlayView : public svkDataView
         vtkRenderWindow*                myRenderWindow;
 
         bool                            toggleSelBoxVisibility;
+        bool                            imageInsideSpectra;
 
         //! Object used to window livel the overlay 
-        svkImageMapToColors* windowLevelerAxial;
-        svkImageMapToColors* windowLevelerCoronal;
-        svkImageMapToColors* windowLevelerSagittal;
+        svkImageMapToColors*            windowLevelerAxial;
+        svkImageMapToColors*            windowLevelerCoronal;
+        svkImageMapToColors*            windowLevelerSagittal;
 
         // Transfer function for rendering overlays
         svkLookupTable*                 colorTransfer;
@@ -187,7 +190,7 @@ class svkOverlayView : public svkDataView
         // Methods:
         void                            SetupMrInput( bool firstInput );
         void                            SetupMsInput( bool firstInput );
-        void                            SetCenterImageSlice( );
+        void                            UpdateImageSlice( bool centerImage );
         void                            SetSelection( double* selectionArea, bool isWorldCords = 0 );
         void                            SetOverlayOpacity( double opacity );
         void                            SetOverlayThreshold( double threshold );

@@ -1173,3 +1173,12 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
         this->AlignCamera();
     }
 }
+
+
+/*!
+ *
+ */
+vtkActor* svkPlotLineGrid::GetPlotGridActor()
+{
+    return this->plotGridActor;
+}

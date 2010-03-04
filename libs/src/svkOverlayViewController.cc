@@ -390,6 +390,23 @@ void svkOverlayViewController::SetSlice( int slice )
     }
 }
 
+
+/*!
+ *  Setter. Should be modified to take action once the slice is set,
+ *  and to modify its View to do the same. 
+ *
+ *  \param slice the slice you want to view
+ *  \param the image you want to change the slice of, 0 is primary 1 and 2 are orthogonal 
+ */
+void svkOverlayViewController::SetSlice( int slice, bool centerImage )
+{
+    if( visualizationCreated ) {
+        svkOverlayView::SafeDownCast( this->view )->SetSlice( slice, centerImage );
+    } else if (DEBUG) {
+        cout<<"Visualization has not yet been created!!"<<endl;
+    }
+}
+
 /*!
  *  Setter. Should be modified to take action once the slice is set,
  *  and to modify its View to do the same. 
@@ -771,7 +788,6 @@ void svkOverlayViewController::TurnPropOn(int propIndex)
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
-        this->view->SetSlice( this->GetView()->GetSlice() ); 
     }   
 }
 
@@ -789,7 +805,6 @@ void  svkOverlayViewController::TurnPropOff(int propIndex)
     if( visualizationCreated ) {
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
-        this->view->SetSlice( this->GetView()->GetSlice() ); 
     }   
 }
 
@@ -965,3 +980,11 @@ void svkOverlayViewController::TurnOrthogonalImagesOff()
     static_cast<svkOverlayView*>(this->view)->TurnOrthogonalImagesOff();
 }
 
+
+/*!
+ *
+ */
+bool svkOverlayViewController::IsImageInsideSpectra()
+{
+    return static_cast<svkOverlayView*>(this->view)->IsImageInsideSpectra();
+}

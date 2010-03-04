@@ -82,6 +82,8 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::PLOT_GRID, entirePlotGrid );
     entirePlotGrid->Delete();
 
+    this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
     this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
@@ -185,6 +187,8 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             } else {
                 this->TurnPropOn( svkPlotGridView::PLOT_GRID );
             }
+            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+            this->TurnPropOn( svkPlotGridView::PLOT_LINES );
 
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
