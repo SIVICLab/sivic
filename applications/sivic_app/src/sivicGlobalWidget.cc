@@ -21,6 +21,8 @@ vtkCxxRevisionMacro( sivicGlobalWidget, "$Revision: 38 $");
 sivicGlobalWidget::sivicGlobalWidget()
 {
     this->orientationSelect = NULL;
+    this->sliceSlider = NULL;
+    this->centerImage = true;
 
 }
 
@@ -30,7 +32,10 @@ sivicGlobalWidget::sivicGlobalWidget()
  */
 sivicGlobalWidget::~sivicGlobalWidget()
 {
-
+    if( this->sliceSlider != NULL ) {
+        this->sliceSlider->Delete();
+        this->sliceSlider = NULL;
+    }
 
     if( this->orientationSelect != NULL ) {
         this->orientationSelect ->Delete();
@@ -40,6 +45,15 @@ sivicGlobalWidget::~sivicGlobalWidget()
         this->metaboliteSelect ->Delete();
         this->metaboliteSelect = NULL;
     }
+}
+
+
+/*!
+ *   Set to true if callback for slicing should center the image inside the spectra
+ */
+void sivicGlobalWidget::SetCenterImage( bool centerImage )
+{
+    this->centerImage = centerImage;
 }
 
 
@@ -68,6 +82,20 @@ void sivicGlobalWidget::CreateWidget()
     this->specViewFrame->SetParent(this);
     this->specViewFrame->Create();
 
+    this->sliceSlider = vtkKWScaleWithEntry::New();
+    this->sliceSlider->SetParent(this);
+    this->sliceSlider->Create();
+    this->sliceSlider->SetEntryWidth( 3 );
+    this->sliceSlider->SetOrientationToHorizontal();
+    //this->sliceSlider->SetOrientationToVertical();
+    this->sliceSlider->SetLabelText("Spectroscopic Slice");
+    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
+    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
+    this->sliceSlider->SetEntryPositionToBottom();
+    this->sliceSlider->SetLabelPositionToBottom();
+    this->sliceSlider->SetRange( 1, 1 );
+    this->sliceSlider->EnabledOff();
+
     this->orientationSelect = vtkKWMenuButtonWithLabel::New();   
     this->orientationSelect->SetParent(this);
     this->orientationSelect->Create();
@@ -82,10 +110,6 @@ void sivicGlobalWidget::CreateWidget()
     unitMenu->AddRadioButton("AXIAL", this->sivicController, "SetOrientation AXIAL");
     unitMenu->AddRadioButton("CORONAL", this->sivicController, "SetOrientation CORONAL");
     unitMenu->AddRadioButton("SAGITTAL", this->sivicController, "SetOrientation SAGITTAL");
-    this->Script("grid %s -row 0 -column 0 -sticky wnse -pady 5 ", this->specViewFrame->GetWidgetName());
-
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky sw", 
-                this->orientationSelect->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
     this->metaboliteSelect = vtkKWMenuButtonWithLabel::New();
     this->metaboliteSelect->SetParent( this->specViewFrame );
@@ -95,11 +119,27 @@ void sivicGlobalWidget::CreateWidget()
     this->metaboliteSelect->EnabledOff();
     this->PopulateMetaboliteMenu( );
 
+    this->Script("grid %s -row 0 -column 0 -sticky wnse -pady 5 ", this->specViewFrame->GetWidgetName());
+
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky sw", 
+                this->orientationSelect->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
+
 #if defined( UCSF_INTERNAL )
     // Add a drop down that lets you select overlays by name. Based on UCSF naming conventions.
     this->Script("grid %s -in %s -row 1 -column 0 -sticky sw", 
                 this->metaboliteSelect->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 #endif
+
+    this->Script("grid %s -in %s -row 2 -column 0 -sticky s -padx 5 -pady 10 ", this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+    this->Script("grid rowconfigure  %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
+    this->Script("grid rowconfigure  %s 1 -weight 1 ", this->specViewFrame->GetWidgetName() );
+    this->Script("grid rowconfigure  %s 2 -weight 100 -minsize 150", this->specViewFrame->GetWidgetName() );
+
+
+
+    this->AddCallbackCommandObserver(
+        this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
 }
 
 
@@ -108,7 +148,18 @@ void sivicGlobalWidget::CreateWidget()
  */
 void sivicGlobalWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-
+    if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
+        stringstream increment;
+        increment << "SetValue " << this->overlayController->GetSlice() + 2;
+        stringstream decrement;
+        decrement << "SetValue " << this->overlayController->GetSlice();
+        this->sliceSlider->RemoveBinding( "<Left>");
+        this->sliceSlider->AddBinding( "<Left>", this->sliceSlider, decrement.str().c_str() );
+        this->sliceSlider->RemoveBinding( "<Right>");
+        this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
+        this->sliceSlider->Focus();
+    }
 }
 
 

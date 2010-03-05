@@ -36,6 +36,7 @@ sivicImageViewWidget::sivicImageViewWidget()
     this->orthImagesButton = NULL;
     this->interpolationBox = NULL;
     this->lutBox = NULL;
+    this->thresholdType = NULL;
     this->imageViewFrame = NULL;
     this->orthoViewFrame = NULL;
     this->overlayViewFrame = NULL;
@@ -116,6 +117,11 @@ sivicImageViewWidget::~sivicImageViewWidget()
     if( this->lutBox!= NULL ) {
         this->lutBox->Delete();
         this->lutBox= NULL;
+    }
+
+    if( this->thresholdType!= NULL ) {
+        this->thresholdType->Delete();
+        this->thresholdType= NULL;
     }
 
     if( this->imageViewFrame != NULL ) {
@@ -265,6 +271,25 @@ void sivicImageViewWidget::CreateWidget()
 
     this->lutBox->GetWidget()->SetValue( "color" );
 
+    this->thresholdType = vtkKWMenuButtonWithLabel::New();   
+    this->thresholdType->SetParent(this);
+    this->thresholdType->Create();
+    this->thresholdType->SetLabelText("Threshold Type");
+    this->thresholdType->SetLabelPositionToTop();
+    this->thresholdType->SetPadY(5);
+    this->thresholdType->EnabledOff();
+    vtkKWMenu* thresholdTypeMenu = this->thresholdType->GetWidget()->GetMenu();
+
+    invocation.str("");
+    invocation << "SetThresholdTypeToQuantity " << endl;
+    thresholdTypeMenu->AddRadioButton("Quantity", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
+    invocation << "SetThresholdTypeToPercent " << endl;
+    thresholdTypeMenu->AddRadioButton("Percent", this->sivicController, invocation.str().c_str());
+
+    this->thresholdType->GetWidget()->SetValue( "Quantity" );
+
     this->axialSlider = vtkKWScaleWithEntry::New();
     this->axialSlider->SetParent(this);
     this->axialSlider->Create();
@@ -320,11 +345,11 @@ void sivicImageViewWidget::CreateWidget()
     this->overlayThresholdSlider = vtkKWScaleWithEntry::New();
     this->overlayThresholdSlider->SetParent(this);
     this->overlayThresholdSlider->Create();
-    this->overlayThresholdSlider->SetEntryWidth( 3 );
+    this->overlayThresholdSlider->SetEntryWidth( 10 );
     this->overlayThresholdSlider->SetOrientationToHorizontal();
     this->overlayThresholdSlider->SetLabelText("Threshold");
     this->overlayThresholdSlider->SetValue(0);
-    this->overlayThresholdSlider->SetRange( 0, 100 );
+    this->overlayThresholdSlider->SetRange( 0, 0 );
     this->overlayThresholdSlider->SetBalloonHelpString("Adjusts the threshold of image overlay.");
     this->overlayThresholdSlider->EnabledOff();
     this->overlayThresholdSlider->SetLabelPositionToLeft();
@@ -415,13 +440,38 @@ void sivicImageViewWidget::CreateWidget()
         this->Script("grid columnconfigure %s 1 -weight 80 ", this->imageViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 2 -weight 80 ", this->imageViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 3 -weight 80 ", this->imageViewFrame->GetWidgetName() );
-
     //==================================================================
     //  Ortho View Widgets Frame
     //==================================================================
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky ew", orthoSeparator->GetWidgetName(), row); 
+    row++; 
+    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 5 ", this->overlayViewFrame->GetWidgetName(), row);
 
+
+    this->Script("grid %s -in %s -row 0 -column 2 -sticky w", 
+                this->overlayButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 1 -column 2 -sticky w", 
+                this->colorBarButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 0 -column 0 -rowspan 2 -sticky w", 
+                this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid %s -in %s -row 0 -column 1 -rowspan 2 -sticky w", 
+                this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 2 -column 0  -columnspan 2 -sticky ew ", 
+                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 2 -sticky ew ", 
+                this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 2 -column 2 -rowspan 2 -sticky e", 
+                this->thresholdType->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid columnconfigure %s 0 -weight 10 ", this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 90 ", this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 20 ", this->overlayViewFrame->GetWidgetName() );
+
+    //==================================================================
+    //  Overlay View Widgets Frame
+    //==================================================================
+    row++; 
+    this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
     row++; 
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 5", this->orthoViewFrame->GetWidgetName(), row);
         this->Script("grid %s -in %s -row 0 -column 0 -sticky w", 
@@ -432,39 +482,10 @@ void sivicImageViewWidget::CreateWidget()
                 this->coronalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
         this->Script("grid %s -in %s -row 3 -column 0 -columnspan 2 -sticky ew ", 
                 this->sagittalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-
         this->Script("grid columnconfigure %s 0 -weight 10 ", this->orthoViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 1 -weight 90 ",  this->orthoViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 2 -weight 20 ",  this->orthoViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 3 -weight 20 ",  this->orthoViewFrame->GetWidgetName() );
-
-
-    //==================================================================
-    //  Overlay View Widgets Frame
-    //==================================================================
-    row++; 
-    this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
-
-    row++; 
-    this->Script("grid %s -row %d -column 0 -rowspan 4 -sticky nsew -padx 10 -pady 5 ", this->overlayViewFrame->GetWidgetName(), row);
-
-        this->Script("grid %s -in %s -row 0 -column 2 -sticky w", 
-                this->overlayButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 2 -sticky w", 
-                this->colorBarButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky w", 
-                this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-        this->Script("grid %s -in %s -row 0 -column 1 -sticky w", 
-                this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 0  -columnspan 2 -sticky ew ", 
-                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-        this->Script("grid %s -in %s -row 2 -column 0 -columnspan 2  -sticky ew ", 
-                this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-
-        this->Script("grid columnconfigure %s 0 -weight 10 ", this->overlayViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 1 -weight 90 ", this->overlayViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 2 -weight 20 ", this->overlayViewFrame->GetWidgetName() );
-    row++; 
 
 
     this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );
@@ -476,14 +497,12 @@ void sivicImageViewWidget::CreateWidget()
 
     this->Script("grid columnconfigure %s 0 -weight 100 -uniform 1 -minsize 200", this->GetWidgetName() );
 
-
     // Here we will add callbacks 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
 
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
-
 
     this->AddCallbackCommandObserver(
         this->axialSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -524,6 +543,11 @@ void sivicImageViewWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->interpolationBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
 
+    // this is to catch overlay events to reset threshold slider
+    this->AddCallbackCommandObserver(
+        this->overlayController->GetRWInteractor(), vtkCommand::EndWindowLevelEvent );
+
+
     // We can delete our references to all widgets that we do not have callbacks for.
     overlaySeparator->Delete();
     orthoSeparator->Delete();
@@ -546,7 +570,6 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->sagittalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
         this->sivicController->SetImageSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, string("SAGITTAL")); 
     } else if( caller == this->overlayOpacitySlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-
         this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
         this->plotController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
         stringstream increment;
@@ -563,19 +586,53 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
 
     } else if( caller == this->overlayThresholdSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
 
-        this->overlayController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue()/100.0 );
-        this->plotController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue()/100.0 );
-        stringstream increment;
-        increment << "SetValue " << this->overlayThresholdSlider->GetValue() + 1;
-        stringstream decrement;
-        decrement << "SetValue " << this->overlayThresholdSlider->GetValue()-1;
-        this->overlayThresholdSlider->RemoveBinding( "<Left>");
-        this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
-        this->overlayThresholdSlider->RemoveBinding( "<Right>");
-        this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
-        this->overlayThresholdSlider->Focus(); 
-        this->overlayController->GetView()->Refresh();
-        this->plotController->GetView()->Refresh();
+        if( this->sivicController->GetThresholdType() == "Quantity" ) {
+
+            double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();
+
+            int numTableVals = svkOverlayView::SafeDownCast(
+                                      overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
+
+            double currentThreshold =  svkLookupTable::SafeDownCast( 
+                                          svkOverlayView::SafeDownCast(
+                                             overlayController->GetView())->GetLookupTable() )->GetAlphaThreshold();
+            double newThreshold = (this->overlayThresholdSlider->GetValue()-dataRange[0])/(dataRange[1]-dataRange[0]);
+
+            int firstVisibleIndex = (int)ceil( newThreshold * numTableVals );
+            double trueThreshold = ((double)firstVisibleIndex) / numTableVals;
+            double thresholdValue = dataRange[0] + (trueThreshold)*(dataRange[1] - dataRange[0]);
+            if( thresholdValue != this->overlayThresholdSlider->GetValue() ) {
+                this->overlayThresholdSlider->SetValue( thresholdValue );
+            } else {
+
+                this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
+                stringstream increment;
+                increment << "SetValue " 
+                          << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
+                stringstream decrement;
+                decrement << "SetValue " 
+                          << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
+                this->overlayThresholdSlider->RemoveBinding( "<Left>");
+                this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
+                this->overlayThresholdSlider->RemoveBinding( "<Right>");
+                this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
+                this->overlayThresholdSlider->Focus(); 
+            }
+        } else {
+
+            this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
+            stringstream increment;
+            increment << "SetValue " 
+                      << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
+            stringstream decrement;
+            decrement << "SetValue " 
+                      << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
+            this->overlayThresholdSlider->RemoveBinding( "<Left>");
+            this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
+            this->overlayThresholdSlider->RemoveBinding( "<Right>");
+            this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
+            this->overlayThresholdSlider->Focus(); 
+        }
 
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
@@ -674,6 +731,13 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
             this->plotController->TurnPropOff( svkPlotGridView::SAT_BANDS_OUTLINE);
         }
         this->overlayController->GetView()->Refresh();
+    // Respond to an overlay window level 
+    }else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::EndWindowLevelEvent ) {
+        if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY &&
+                 this->sivicController->GetThresholdType() == "Quantity" ) {
+            this->sivicController->SetThresholdTypeToQuantity();
+        }
+
     } else if( caller == this->orthImagesButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
 
         if ( this->orthImagesButton->GetSelectedState() ) {

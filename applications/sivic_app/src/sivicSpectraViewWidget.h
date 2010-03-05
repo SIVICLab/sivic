@@ -102,14 +102,13 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
         static sivicSpectraViewWidget *New();
         vtkTypeRevisionMacro(sivicSpectraViewWidget,sivicKWCompositeWidget);
 
-        void    SetCenterImage( bool centerImage );
+        void    SetSyncOverlayWL( bool syncOverlayWL );
         
     protected:
 
         sivicSpectraViewWidget();
         ~sivicSpectraViewWidget();
 
-        vtkKWScaleWithEntry*            sliceSlider;
         vtkKWScaleWithEntry*            channelSlider;
         vtkKWScaleWithEntry*            timePointSlider;
         vtkKWRenderWidget*              detailedPlotWidget;
@@ -125,6 +124,7 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
 
         int                             specUnits;
         bool                            centerImage;
+        bool                            syncOverlayWL;
 
         
         // Description:

@@ -107,6 +107,8 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicGlobalWidget,sivicKWCompositeWidget);
         void            PopulateMetaboliteMenu( );
         void            DeselectMetabolites( );
+        void            SetCenterImage( bool centerImage );
+
         
     protected:
 
@@ -115,6 +117,7 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
 
         vtkKWMenuButtonWithLabel*    orientationSelect;
         vtkKWMenuButtonWithLabel*    metaboliteSelect;
+        vtkKWScaleWithEntry*            sliceSlider;
         vtkKWFrame*                   specViewFrame;   
 
         
@@ -125,6 +128,7 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
 
     private:
 
+        bool centerImage;
         sivicGlobalWidget(const sivicGlobalWidget&);   // Not implemented.
         void operator=(const sivicGlobalWidget&);  // Not implemented.
         

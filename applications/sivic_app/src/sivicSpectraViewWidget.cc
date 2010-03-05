@@ -31,10 +31,9 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
     this->specViewFrame = NULL;
     this->overlayImageCheck = NULL;
     this->overlayTextCheck = NULL;
-    this->sliceSlider = NULL;
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->detailedPlotWindow = NULL;
-    this->centerImage = true;
+    this->syncOverlayWL = false;
 
 }
 
@@ -44,10 +43,6 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
  */
 sivicSpectraViewWidget::~sivicSpectraViewWidget()
 {
-    if( this->sliceSlider != NULL ) {
-        this->sliceSlider->Delete();
-        this->sliceSlider = NULL;
-    }
 
     if( this->channelSlider != NULL ) {
         this->channelSlider->Delete();
@@ -117,6 +112,16 @@ sivicSpectraViewWidget::~sivicSpectraViewWidget()
 
 
 /*! 
+ *  Set to true if you want it to sync to window level events from the overlay
+ *  This should be done when both views are displaying the same data.
+ */
+void sivicSpectraViewWidget::SetSyncOverlayWL( bool syncOverlayWL )
+{
+    this->syncOverlayWL = syncOverlayWL;
+}
+
+
+/*! 
  *  Method in superclass to be overriden to add our custom widgets.
  */
 void sivicSpectraViewWidget::CreateWidget()
@@ -140,18 +145,6 @@ void sivicSpectraViewWidget::CreateWidget()
     this->specViewFrame = vtkKWFrame::New();   
     this->specViewFrame->SetParent(this);
     this->specViewFrame->Create();
-
-     //The Master slice slider 
-    this->sliceSlider = vtkKWScaleWithEntry::New();
-    this->sliceSlider->SetParent(this);
-    this->sliceSlider->Create();
-    this->sliceSlider->SetEntryWidth( 4 );
-    this->sliceSlider->SetOrientationToHorizontal();
-    this->sliceSlider->SetLabelText("Slice        ");
-    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
-    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
-    this->sliceSlider->SetRange( 1, 1 );
-    this->sliceSlider->EnabledOff();
 
     //channel slider 
     this->channelSlider = vtkKWScaleWithEntry::New();
@@ -351,9 +344,6 @@ void sivicSpectraViewWidget::CreateWidget()
         this->Script("grid %s -in %s -row 3 -column 1 -sticky wse -padx 2 -pady 2", 
                     this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
 
-        this->Script("grid %s -in %s -row 4 -column 0 -sticky wse -padx 5 -pady 2 ", this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
-
-
         this->Script("grid %s -in %s -row 4 -column 1 -sticky wse -padx 5 ", 
                 this->detailedPlotButton->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
@@ -378,9 +368,6 @@ void sivicSpectraViewWidget::CreateWidget()
         this->overlayTextCheck, vtkKWCheckButton::SelectedStateChangedEvent );
 
     this->AddCallbackCommandObserver(
-        this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
-
-    this->AddCallbackCommandObserver(
         this->channelSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
@@ -388,6 +375,10 @@ void sivicSpectraViewWidget::CreateWidget()
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
+
+    // this is to catch overlay events
+    this->AddCallbackCommandObserver(
+        this->overlayController->GetRWInteractor(), vtkCommand::WindowLevelEvent );
 
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -421,19 +412,7 @@ void sivicSpectraViewWidget::CreateWidget()
  */
 void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    // Respond to a selection change in the overlay view
-    if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
-        stringstream increment;
-        increment << "SetValue " << this->overlayController->GetSlice() + 2;
-        stringstream decrement;
-        decrement << "SetValue " << this->overlayController->GetSlice();
-        this->sliceSlider->RemoveBinding( "<Left>");
-        this->sliceSlider->AddBinding( "<Left>", this->sliceSlider, decrement.str().c_str() );
-        this->sliceSlider->RemoveBinding( "<Right>");
-        this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
-        this->sliceSlider->Focus();
-    } else if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
+    if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
         this->plotController->SetChannel( channel );
         stringstream increment;
@@ -470,6 +449,13 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
             this->detailedPlotButton->EnabledOff();
         } else {
             this->detailedPlotButton->EnabledOff();
+        }
+    // Respond to an overlay window level 
+    }else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::WindowLevelEvent ) {
+        if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY && this->syncOverlayWL ) {
+            double* range = svkOverlayView::SafeDownCast( this->overlayController->GetView())->GetLookupTable()->GetRange(); 
+            svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range); 
+            
         }
     // Respond to a selection change in the plot grid view 
     } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
@@ -648,9 +634,4 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
     // Make sure the superclass gets called for render requests
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 
-}
-
-void sivicSpectraViewWidget::SetCenterImage( bool centerImage ) 
-{
-    this->centerImage = centerImage;
 }

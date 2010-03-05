@@ -56,6 +56,7 @@ vtkSivicController::vtkSivicController()
     this->spectraViewWidget = NULL;
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
+    this->thresholdType = "Quantity";
 }
 
 
@@ -151,9 +152,9 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
                                            this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
     }
     if( this->overlayController->GetSlice() != this->plotController->GetSlice()) {
-        this->spectraViewWidget->SetCenterImage(false);
-        this->spectraViewWidget->sliceSlider->SetValue( this->overlayController->GetSlice() + 1);
-        this->spectraViewWidget->SetCenterImage(true);
+        this->globalWidget->SetCenterImage(false);
+        this->globalWidget->sliceSlider->SetValue( this->overlayController->GetSlice() + 1);
+        this->globalWidget->SetCenterImage(true);
     }
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -352,8 +353,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             if( tlcBrc == NULL ) {
                 int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
                 int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
-                this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-                this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+                this->globalWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->globalWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
                 int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
                 this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
                 this->spectraViewWidget->channelSlider->SetValue( 1 );
@@ -445,6 +446,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                         this->model->AddDataObject( "MetaboliteData", data );
                         this->model->SetDataFileName( "MetaboliteData", stringFilename );
                     }
+                    this->spectraViewWidget->SetSyncOverlayWL( true );
                     // We are going to deselect the metabolites since we don't know where they were loaded from
                     this->globalWidget->DeselectMetabolites();
                     this->viewRenderingWidget->ResetInfoText();
@@ -457,6 +459,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                         this->model->SetDataFileName( "OverlayData", stringFilename );
                     }
                     this->viewRenderingWidget->ResetInfoText();
+                    this->spectraViewWidget->SetSyncOverlayWL( false );
                 }
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
@@ -464,7 +467,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                 this->PopupMessage( message );
             }
         }
-
+        this->SetThresholdType( this->thresholdType );
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
     }
@@ -573,6 +576,9 @@ void vtkSivicController::OpenExam( )
         if( stat(cniFileName.c_str(),&st) == 0 ) {
             this->OpenOverlay( cniFileName.c_str() ); 
             this->EnableWidgets(); 
+            this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
+            this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
+            this->SetOverlayThreshold( 2.0 );
         } else if( stat(spectraPathName.c_str(),&st) == 0 ) {
             this->OpenFile( "overlay", spectraPathName.c_str() ); 
         } else {
@@ -1406,6 +1412,7 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
 }
 #endif
 
+
 /*!
  *
  */
@@ -1857,8 +1864,8 @@ void vtkSivicController::SetOrientation( const char* orientation )
     if( this->model->DataExists("SpectroscopicData") ) {
         firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( newOrientation );
         lastSlice =  this->model->GetDataObject("SpectroscopicData")->GetLastSlice( newOrientation );
-        this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
-        this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
+        this->globalWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
+        this->globalWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
         this->SetSlice( this->plotController->GetSlice());
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
     }
@@ -2013,7 +2020,7 @@ void vtkSivicController::EnableWidgets()
     }
 
     if ( model->DataExists("SpectroscopicData") ) {
-        this->spectraViewWidget->sliceSlider->EnabledOn();
+        this->globalWidget->sliceSlider->EnabledOn();
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
@@ -2071,6 +2078,7 @@ void vtkSivicController::EnableWidgets()
     if ( model->DataExists("OverlayData") ||  model->DataExists("MetaboliteData")) {
         this->imageViewWidget->interpolationBox->EnabledOn();
         this->imageViewWidget->lutBox->EnabledOn();
+        this->imageViewWidget->thresholdType->EnabledOn();
         this->imageViewWidget->overlayOpacitySlider->EnabledOn();
         this->imageViewWidget->overlayThresholdSlider->EnabledOn();
         this->imageViewWidget->overlayButton->EnabledOn();
@@ -2088,7 +2096,7 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->plotGridButton->EnabledOff();
 
     this->spectraViewWidget->detailedPlotButton->EnabledOff();
-    this->spectraViewWidget->sliceSlider->EnabledOff();
+    this->globalWidget->sliceSlider->EnabledOff();
     this->spectraViewWidget->channelSlider->EnabledOff();
     this->spectraViewWidget->timePointSlider->EnabledOff();
     this->imageViewWidget->axialSlider->EnabledOff();
@@ -2112,6 +2120,7 @@ void vtkSivicController::DisableWidgets()
 
     this->imageViewWidget->interpolationBox->EnabledOff();
     this->imageViewWidget->lutBox->EnabledOff();
+    this->imageViewWidget->thresholdType->EnabledOff();
     this->imageViewWidget->overlayOpacitySlider->EnabledOff();
     this->imageViewWidget->overlayThresholdSlider->EnabledOff();
     this->imageViewWidget->overlayButton->EnabledOff();
@@ -2123,9 +2132,110 @@ void vtkSivicController::DisableWidgets()
 
 
 /*!
+ *  This method is used to set the threshold type for changing the threshold of
+ *  overlays. Threshold types can have values "Quantity" or "Percent". The 
+ *  vtk wrapper will not allow us to declace an enumeration, that is why strings
+ *  are used. 
+ */
+void vtkSivicController::SetThresholdType( string thresholdType )
+{
+    if( thresholdType == "Quantity" ) {
+        this->SetThresholdTypeToQuantity();
+    } else if (thresholdType == "Percent") {
+        this->SetThresholdTypeToPercent();
+    }
+}
+
+
+/*!
+ *  
+ */
+string vtkSivicController::GetThresholdType()
+{
+    return this->thresholdType;
+}
+
+
+/*!
+ *  
+ */
+void vtkSivicController::SetThresholdTypeToPercent()
+{
+    this->thresholdType = "Percent";
+    svkImageData* overlay = this->model->GetDataObject("OverlayData");
+    this->imageViewWidget->overlayThresholdSlider->SetResolution( 1 );
+    this->imageViewWidget->overlayThresholdSlider->SetRange(0,100);
+    if( overlay == NULL ) {
+        overlay = this->model->GetDataObject("MetaboliteData");
+    }
+    if( overlay == NULL ) {
+        this->imageViewWidget->overlayThresholdSlider->SetValue(0);
+    } else {
+        int threshold = (int)(100*this->overlayController->GetOverlayThreshold());
+        this->imageViewWidget->overlayThresholdSlider->SetValue( threshold );
+    }
+}
+
+
+/*!
+ *  
+ */
+void vtkSivicController::SetThresholdTypeToQuantity()
+{
+    this->thresholdType = "Quantity";
+    svkImageData* overlay = this->model->GetDataObject("OverlayData");
+    if( overlay == NULL ) {
+        overlay = this->model->GetDataObject("MetaboliteData");
+    }
+    if( overlay == NULL ) {
+        this->imageViewWidget->overlayThresholdSlider->SetValue(0);
+        this->imageViewWidget->overlayThresholdSlider->SetRange(0,0);
+    } else {
+        double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();
+        int numTableVals = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
+        double threshold = this->overlayController->GetOverlayThreshold();
+        this->imageViewWidget->overlayThresholdSlider->SetResolution( (dataRange[1] - dataRange[0])/(numTableVals*0.99) );
+        this->imageViewWidget->overlayThresholdSlider->SetRange( dataRange[0] , dataRange[1] );
+        this->imageViewWidget->overlayThresholdSlider->SetValue( dataRange[0] + threshold * ( dataRange[1] - dataRange[0] ));
+    }
+}
+
+
+/*!
+ *  
+ */
+void vtkSivicController::SetOverlayThreshold( double threshold )
+{
+    if( this->thresholdType == "Percent" ) {
+        this->overlayController->SetOverlayThreshold( threshold/100.0 );
+        this->plotController->SetOverlayThreshold( threshold/100.0 );
+        this->overlayController->GetView()->Refresh();
+        this->plotController->GetView()->Refresh();
+    } else if ( this->thresholdType == "Quantity" ) {
+        svkImageData* overlay = this->model->GetDataObject("OverlayData");
+        if( overlay == NULL ) {
+            overlay = this->model->GetDataObject("MetaboliteData");
+        }   
+        if( overlay != NULL ) {
+            int numTableVals = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
+            double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();
+            double thresholdQuantity = (threshold-dataRange[0])/(dataRange[1]-dataRange[0]);
+            this->overlayController->SetOverlayThreshold( thresholdQuantity );
+            if ( this->model->GetDataObject("MetaboliteData") != NULL ) {
+                this->plotController->SetOverlayThreshold( thresholdQuantity );
+            }
+
+            this->overlayController->GetView()->Refresh();
+            this->plotController->GetView()->Refresh();
+        }
+
+    }
+}
+
+
+/*!
  *  Runs tests for the application.
  */
-
 void vtkSivicController::RunTestingSuite()
 {
     sivicTestSuite* suite = new sivicTestSuite( this );

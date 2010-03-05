@@ -117,6 +117,8 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
             IMAGE_CAPTURE
         } CaptureType;
 
+        void SetSyncOverlayWL( bool syncOverlayWL );
+
 
 
 
@@ -141,6 +143,7 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         vtkKWLabel*                     loadingLabel;
         vtkKWMenuButtonWithLabel*       interpolationBox;
         vtkKWMenuButtonWithLabel*       lutBox;
+        vtkKWMenuButtonWithLabel*       thresholdType;
         vtkKWFrame*                     imageViewFrame;
         vtkKWFrame*                     orthoViewFrame;
         vtkKWFrame*                     overlayViewFrame;
@@ -156,6 +159,7 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
 
     private:
 
+        bool syncOverlayWL;
 
         sivicImageViewWidget(const sivicImageViewWidget&);   // Not implemented.
         void operator=(const sivicImageViewWidget&);  // Not implemented.

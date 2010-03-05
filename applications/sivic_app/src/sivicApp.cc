@@ -426,7 +426,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* vsResetButton = vtkKWPushButton::New();
     vsResetButton->SetParent( toolbar->GetFrame() );
     vsResetButton->Create();
-    vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera ); 
+    vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconCameraMini ); 
     vsResetButton->SetCommand( this->sivicController, "HighlightSelectionBoxVoxels");
     vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice." );
     toolbar->AddWidget( vsResetButton );
@@ -435,7 +435,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* rotateButton = vtkKWPushButton::New();
     rotateButton->SetParent( toolbar->GetFrame() );
     rotateButton->Create();
-    rotateButton->SetImageToPredefinedIcon( vtkKWIcon::IconCrystalProject16x16ActionsRotate ); 
+    rotateButton->SetImageToPredefinedIcon( vtkKWIcon::IconRotate ); 
     rotateButton->SetCommand( this->sivicController, "UseRotationStyle");
     rotateButton->SetBalloonHelpString( "Switch to 3D rotation interactor." );
     toolbar->AddWidget( rotateButton );

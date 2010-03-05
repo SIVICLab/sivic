@@ -164,6 +164,11 @@ class vtkSivicController : public vtkObject
         vtkKWFileBrowserDialog*    myFileBrowser;
         void                       EnableWidgets();
         void                       DisableWidgets();
+        void                       SetThresholdType( string thresholdType );
+        string                     GetThresholdType( );
+        void                       SetThresholdTypeToPercent();
+        void                       SetThresholdTypeToQuantity();
+        void                       SetOverlayThreshold( double threshold );
 
  
     protected:
@@ -174,6 +179,7 @@ class vtkSivicController : public vtkObject
          
     private:
     
+        string                     thresholdType;
         string                     orientation; 
         svkDataModel*              model; 
         vtkKWApplication*          app;
