@@ -292,6 +292,8 @@ void svkIdfVolumeWriter::WriteHeader()
         out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
         out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
+    } else if (dataType == svkDcmHeader::SIGNED_INT_2) {
+        out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
     }
