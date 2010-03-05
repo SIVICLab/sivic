@@ -105,6 +105,7 @@ class svkPlotGridView : public svkDataView
         virtual void                SetTlcBrc( int tlcBrc[2] );
         virtual void                SetTlcBrc( int tlcID, int brcID );
         virtual void                SetWindowLevelRange( double lower, double upper, int index );
+        virtual void                SetOverlayWLRange( double* range );
         void                        SetComponent( svkPlotLine::PlotComponent component );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                Refresh();

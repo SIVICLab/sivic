@@ -636,6 +636,20 @@ double svkLookupTable::GetAlphaThreshold()
 }
 
 
+/*!
+ *  Method returns the actual value that it is thresholding on. Not
+ *  the percentage but the value within the range above which nothing
+ *  will be visible.
+ */
+double svkLookupTable::GetAlphaThresholdValue() 
+{
+    int firstVisibleIndex = ceil( this->alphaThresholdPercentage * this->GetNumberOfTableValues());
+    double trueThreshold = ((double)firstVisibleIndex)/ this->GetNumberOfTableValues();
+    double thresholdValue = this->GetRange()[0] + (trueThreshold)*(this->GetRange()[1] - this->GetRange()[0]);
+    return thresholdValue;
+}
+
+
 //! Resets the alpha value to zero for lut values below threshold percentage and rebuilds the lut. 
 void svkLookupTable::ConfigureAlphaThreshold() 
 {

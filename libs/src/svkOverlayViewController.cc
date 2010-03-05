@@ -363,6 +363,7 @@ void svkOverlayViewController::CreateDataVisualization( )
     rwi->AddObserver(vtkCommand::LeftButtonReleaseEvent, dragSelectionCB);
     colorOverlayStyle->AddObserver(vtkCommand::StartWindowLevelEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::WindowLevelEvent, colorOverlayCB);
+    colorOverlayStyle->AddObserver(vtkCommand::EndWindowLevelEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::ResetWindowLevelEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::PickEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::StartPickEvent, colorOverlayCB);
@@ -816,6 +817,10 @@ void svkOverlayViewController::SetOverlayThreshold(double threshold){
     static_cast<svkOverlayView*>( view )->SetOverlayThreshold( threshold );
 }
 
+double svkOverlayViewController::GetOverlayThreshold(){
+    return static_cast<svkOverlayView*>( view )->GetOverlayThreshold( );
+}
+
 /*!
  *  Updates the currently selected voxels. 
  */
@@ -929,6 +934,13 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
     }
 
     //myView->GetProp( svkOverlayView::OVERLAY_IMAGE )->Modified();
+    
+    dvController->myRenderWindow->GetInteractor()->InvokeEvent(vtkCommand::WindowLevelEvent);
+
+    // we will need to know when the event ends for other objects To Update themselves
+    if (eid == vtkCommand::EndWindowLevelEvent) {
+        dvController->myRenderWindow->GetInteractor()->InvokeEvent(vtkCommand::EndWindowLevelEvent);
+    }
     myView->Refresh();
 }
 

@@ -116,6 +116,7 @@ class svkOverlayView : public svkDataView
         void                ToggleSelBoxVisibilityOff();
         void                AlignCamera();
         bool                IsImageInsideSpectra();
+        svkLookupTable*     GetLookupTable( );
 
         //! Enum represents input indecies
         enum DataInputs { 
@@ -193,7 +194,9 @@ class svkOverlayView : public svkDataView
         void                            UpdateImageSlice( bool centerImage );
         void                            SetSelection( double* selectionArea, bool isWorldCords = 0 );
         void                            SetOverlayOpacity( double opacity );
+        double                          GetOverlayOpacity( );
         void                            SetOverlayThreshold( double threshold );
+        double                          GetOverlayThreshold( );
         void                            SetTlcBrc( int* tlcBrc );
         int*                            HighlightSelectionVoxels();
         void                            GenerateClippingPlanes( );
@@ -209,6 +212,9 @@ class svkOverlayView : public svkDataView
         bool                            AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientation );
 
     private:
+
+        double                          overlayOpacity;
+        double                          overlayThreshold;
 
         void                            SetSliceOverlay();
         

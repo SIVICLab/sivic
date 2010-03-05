@@ -77,8 +77,13 @@ class svkLookupTable : public vtkLookupTable
         //  Methods
         void        SetAlphaThreshold(double thresholdPercentage);
         double      GetAlphaThreshold();
+
+        // Returns the actual value
+        double      GetAlphaThresholdValue();
+
         void        PrintLUT();
         void        SetLUTType(svkLookupTableType type);
+        
 
 
     protected:

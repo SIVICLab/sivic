@@ -75,6 +75,8 @@ svkOverlayView::svkOverlayView()
     this->windowLevelerSagittal = NULL;
     this->colorTransfer = NULL ;
     this->imageInsideSpectra = false;
+    this->overlayOpacity = 0.5;
+    this->overlayThreshold = 0.0;
 
 
     // Create a state vector for our images
@@ -403,6 +405,8 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
         } else if( data->IsA("svkMrsImageData") ) {
             SetupMsInput( resetViewState );
         } 
+        this->Refresh();
+        this->SetOrientation( this->orientation );
     } else {
         string message = "ERROR: Dataset NOT loaded!!! \n";
         message += resultInfo;
@@ -502,8 +506,8 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
             this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
         }
         int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
-        if(  newSpectraSlice >= this->dataVector[MRS]->GetExtent()[4] &&
-             newSpectraSlice <  this->dataVector[MRS]->GetExtent()[5] ) {
+        if(  newSpectraSlice >= this->dataVector[MRS]->GetFirstSlice( this->orientation ) &&
+             newSpectraSlice <=  this->dataVector[MRS]->GetLastSlice( this->orientation ) ) {
 
             if( newSpectraSlice != this->slice ) {
                 this->SetSlice( newSpectraSlice );    
@@ -719,6 +723,7 @@ int* svkOverlayView::HighlightSelectionVoxels()
  */ 
 void svkOverlayView::SetOverlayOpacity( double opacity ) 
 {
+    this->overlayOpacity = opacity;
     svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->SetOpacity(opacity);  
     svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->SetOpacity(opacity);   
     svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
@@ -729,16 +734,37 @@ void svkOverlayView::SetOverlayOpacity( double opacity )
 
 
 /*!
+ *  Gets the opacity of the image overlay.
+ *
+ */ 
+double svkOverlayView::GetOverlayOpacity( ) 
+{
+    return this->overlayOpacity;
+}
+
+
+/*!
  *  Sets the threshold of the image overlay.
  *
  *   \param threshold the new threshold you wish the image overlay to have. 
  */ 
 void svkOverlayView::SetOverlayThreshold( double threshold ) 
 {
+    this->overlayThreshold = threshold;
     if( this->colorTransfer != NULL ) {
         this->colorTransfer->SetAlphaThreshold(threshold); 
         this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )->Modified();
     } 
+}
+
+
+/*!
+ *  Gets the opacity of the image overlay.
+ *
+ */ 
+double svkOverlayView::GetOverlayThreshold( ) 
+{
+    return this->overlayThreshold;
 }
 
 
@@ -987,6 +1013,38 @@ void svkOverlayView::SetupOverlay()
         this->colorTransfer->Delete();
         this->colorTransfer = NULL;     
     }
+
+    // We need to kill the old actors, window levelers, and the color transfer otherwise update cause problems
+    // (seg faults in vtkLookupTable) when switching from a larger dataset to a smaller dataset
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) );
+    svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::AXIAL_OVERLAY_FRONT, overlayActor );
+    overlayActor->Delete();
+
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ) );
+    svkOpenGLOrientedImageActor* overlayActorBack = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::AXIAL_OVERLAY_BACK, overlayActorBack );
+    overlayActorBack->Delete();
+
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ) );
+    overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::CORONAL_OVERLAY_FRONT, overlayActor );
+    overlayActor->Delete();
+
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ) );
+    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::CORONAL_OVERLAY_BACK, overlayActorBack );
+    overlayActorBack->Delete();
+
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ) );
+    overlayActor = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT, overlayActor );
+    overlayActor->Delete();
+
+    this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ) );
+    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK, overlayActorBack );
+    overlayActorBack->Delete();
     this->windowLevelerAxial = svkImageMapToColors::New();
     this->windowLevelerCoronal = svkImageMapToColors::New();
     this->windowLevelerSagittal = svkImageMapToColors::New();
@@ -1126,6 +1184,17 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         cout << "SINC NOT SUPPORTED YET" << endl;
     }
     this->Refresh();
+}
+
+
+/*!
+ *  Sets the LUT type 
+ *
+ *  \param LUT type 
+ */
+svkLookupTable* svkOverlayView::GetLookupTable( )
+{
+    return this->colorTransfer; 
 }
 
 
