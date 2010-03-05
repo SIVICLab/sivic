@@ -42,6 +42,7 @@
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkDetailedPlotViewController.h>
 
 #include <string.h>
 
@@ -62,6 +63,7 @@ class sivicKWCompositeWidget : public vtkKWCompositeWidget
         void SetSivicController( vtkSivicController* );
         void SetPlotController( svkPlotGridViewController* plotController );
         void SetOverlayController( svkOverlayViewController* overlayController );
+        void SetDetailedPlotController( svkDetailedPlotViewController* detailedplotController );
         void SetModel( svkDataModel* );    
 
 
@@ -71,10 +73,11 @@ class sivicKWCompositeWidget : public vtkKWCompositeWidget
         sivicKWCompositeWidget();
         ~sivicKWCompositeWidget();
 
-        vtkSivicController*    sivicController;
-        svkPlotGridViewController*  plotController;
-        svkOverlayViewController*   overlayController;
-        svkDataModel*               model;
+        vtkSivicController*            sivicController;
+        svkPlotGridViewController*     plotController;
+        svkDetailedPlotViewController* detailedPlotController;
+        svkOverlayViewController*      overlayController;
+        svkDataModel*                  model;
 
 };
 

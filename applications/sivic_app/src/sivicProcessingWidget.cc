@@ -105,8 +105,8 @@ void sivicProcessingWidget::CreateWidget()
     this->phaseSlider->SetRange( -180, 180 );
     this->phaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
     this->phaseSlider->EnabledOff();
-    this->phaseSlider->SetEntryPositionToTop();
-    this->phaseSlider->SetLabelPositionToTop();
+    this->phaseSlider->SetEntryPositionToRight();
+    this->phaseSlider->SetLabelPositionToLeft();
 
     this->phaser = svkPhaseSpec::New();
     this->phaser->SetChannel(0);
@@ -147,19 +147,18 @@ void sivicProcessingWidget::CreateWidget()
     this->combineButton->SetText( "Combine");
     this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
 
-    this->Script("grid %s -row 0 -column 0 -sticky nsew", this->phaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -columnspan 2 -sticky nsew", this->phaseSlider->GetWidgetName() );
     this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -sticky nsew", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 4 -column 0 -sticky nsew", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 5 -column 0 -sticky nsew", this->combineButton->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 1 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nsew", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 0 -columnspan 2 -sticky nsew", this->phaseButton->GetWidgetName() );
+    this->Script("grid %s -row 4 -column 0 -columnspan 2 -sticky nsew", this->combineButton->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 2  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 4  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 5  -weight 16", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(

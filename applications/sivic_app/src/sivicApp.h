@@ -59,6 +59,7 @@
 #include <sivicViewRenderingWidget.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
 
 #include <vtksys/SystemTools.hxx>
@@ -94,16 +95,17 @@ class sivicApp
         int exitStatus;
         vtkKWWindowBase*             sivicWindow;
 
-        vtkSivicController* sivicController;
+        vtkSivicController*        sivicController;
         sivicViewRenderingWidget*  viewRenderingWidget;
         sivicProcessingWidget*     processingWidget;
-        sivicImageViewWidget*    imageViewWidget;
-        sivicSpectraViewWidget*  spectraViewWidget;
-        sivicGlobalWidget*       globalWidget;
-        vtkKWUserInterfacePanel* uiPanel;
-        vtkKWNotebook*           tabbedPanel;
-        svkDataModel*            model;
-        vtkKWApplication*        sivicKWApp;
+        sivicImageViewWidget*      imageViewWidget;
+        sivicSpectraViewWidget*    spectraViewWidget;
+        sivicSpectraRangeWidget*   spectraRangeWidget;
+        sivicGlobalWidget*         globalWidget;
+        vtkKWUserInterfacePanel*   uiPanel;
+        vtkKWNotebook*             tabbedPanel;
+        svkDataModel*              model;
+        vtkKWApplication*          sivicKWApp;
 
         // Methods
         void PopulateMainToolbar( vtkKWToolbar* toolbar );

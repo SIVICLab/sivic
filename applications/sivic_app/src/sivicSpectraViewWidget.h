@@ -103,6 +103,8 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicSpectraViewWidget,sivicKWCompositeWidget);
 
         void    SetSyncOverlayWL( bool syncOverlayWL );
+        void    SetCenterImage( bool centerImage );
+
         
     protected:
 
@@ -111,13 +113,9 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
 
         vtkKWScaleWithEntry*            channelSlider;
         vtkKWScaleWithEntry*            timePointSlider;
-        vtkKWRenderWidget*              detailedPlotWidget;
+        vtkKWScaleWithEntry*            sliceSlider;
         vtkKWCheckButton*               overlayImageCheck;
         vtkKWCheckButton*               overlayTextCheck;
-        vtkKWRange*                     xSpecRange;
-        vtkKWRange*                     ySpecRange;
-        vtkKWMenuButtonWithLabel*       unitSelectBox;
-        vtkKWMenuButtonWithLabel*       componentSelectBox;
         vtkKWFrame*                     specViewFrame;
         vtkKWPushButton*                detailedPlotButton;
         vtkKWWindowBase*                detailedPlotWindow;
@@ -135,11 +133,6 @@ class sivicSpectraViewWidget : public sivicKWCompositeWidget
 
 
     private:
-
-        svkDetailedPlotViewController*  detailedPlotController;
-        svkSpecPoint*               point;
-
-        const char*             GetMetaboliteName( string fileName );
 
         sivicSpectraViewWidget(const sivicSpectraViewWidget&);   // Not implemented.
         void operator=(const sivicSpectraViewWidget&);  // Not implemented.

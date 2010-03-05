@@ -1,4 +1,32 @@
 /*
+ *  Copyright © 2009-2010 The Regents of the University of California.
+ *  All Rights Reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without 
+ *  modification, are permitted provided that the following conditions are met:
+ *  •   Redistributions of source code must retain the above copyright notice, 
+ *      this list of conditions and the following disclaimer.
+ *  •   Redistributions in binary form must reproduce the above copyright notice, 
+ *      this list of conditions and the following disclaimer in the documentation 
+ *      and/or other materials provided with the distribution.
+ *  •   None of the names of any campus of the University of California, the name 
+ *      "The Regents of the University of California," or the names of any of its 
+ *      contributors may be used to endorse or promote products derived from this 
+ *      software without specific prior written permission.
+ *  
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+ *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ *  OF SUCH DAMAGE.
+ */
+
+/*
  *  $URL$
  *  $Rev$
  *  $Author$
@@ -22,17 +50,11 @@ vtkCxxRevisionMacro( sivicSpectraViewWidget, "$Revision$");
  */
 sivicSpectraViewWidget::sivicSpectraViewWidget()
 {
-    this->unitSelectBox = NULL;
-    this->componentSelectBox = NULL;
     this->channelSlider = NULL;
     this->timePointSlider = NULL;
-    this->xSpecRange = NULL;
-    this->ySpecRange = NULL;
     this->specViewFrame = NULL;
     this->overlayImageCheck = NULL;
     this->overlayTextCheck = NULL;
-    this->detailedPlotController = svkDetailedPlotViewController::New();
-    this->detailedPlotWindow = NULL;
     this->syncOverlayWL = false;
 
 }
@@ -44,6 +66,11 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
 sivicSpectraViewWidget::~sivicSpectraViewWidget()
 {
 
+    if( this->sliceSlider != NULL ) {
+        this->sliceSlider->Delete();
+        this->sliceSlider = NULL;
+    }   
+
     if( this->channelSlider != NULL ) {
         this->channelSlider->Delete();
         this->channelSlider = NULL;
@@ -52,11 +79,6 @@ sivicSpectraViewWidget::~sivicSpectraViewWidget()
     if( this->timePointSlider != NULL ) {
         this->timePointSlider->Delete();
         this->timePointSlider = NULL;
-    }
-
-    if( this->detailedPlotController != NULL ) {
-        this->detailedPlotController->Delete();
-        this->detailedPlotController = NULL;
     }
 
     if( this->overlayImageCheck != NULL ) {
@@ -69,46 +91,20 @@ sivicSpectraViewWidget::~sivicSpectraViewWidget()
         this->overlayTextCheck = NULL;
     }
 
-    if( this->detailedPlotButton != NULL ) {
-        this->detailedPlotButton->Delete();
-        this->detailedPlotButton = NULL;
-    }
-
-
-    if( this->xSpecRange != NULL ) {
-        this->xSpecRange->Delete();
-        this->xSpecRange = NULL;
-    }
-
-    if( this->unitSelectBox != NULL ) {
-        this->unitSelectBox ->Delete();
-        this->unitSelectBox = NULL;
-    }
-
-    if( this->componentSelectBox != NULL ) {
-        this->componentSelectBox ->Delete();
-        this->componentSelectBox = NULL;
-    }
-
-
-    if( this->ySpecRange != NULL) {
-        this->ySpecRange->Delete();
-        this->ySpecRange = NULL;
-    }
-
-
-    if( this->point != NULL ) {
-        this->point->Delete();
-        this->point = NULL;
-    }
-
-
     if( this->specViewFrame != NULL ) {
         this->specViewFrame->Delete();
         this->specViewFrame = NULL;
     }
 
 }
+
+/*!     
+ *   Set to true if callback for slicing should center the image inside the spectra
+ */     
+void sivicSpectraViewWidget::SetCenterImage( bool centerImage )
+{       
+    this->centerImage = centerImage;
+}  
 
 
 /*! 
@@ -146,14 +142,27 @@ void sivicSpectraViewWidget::CreateWidget()
     this->specViewFrame->SetParent(this);
     this->specViewFrame->Create();
 
+    this->sliceSlider = vtkKWScaleWithEntry::New();
+    this->sliceSlider->SetParent(this);
+    this->sliceSlider->Create();
+    this->sliceSlider->SetEntryWidth( 2 );
+    this->sliceSlider->SetOrientationToHorizontal();
+    this->sliceSlider->SetLabelText("Spectra Slice");
+    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
+    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
+    this->sliceSlider->SetEntryPositionToRight();
+    this->sliceSlider->SetLabelPositionToLeft();
+    this->sliceSlider->SetRange( 1, 1 );
+    this->sliceSlider->EnabledOff();
+
     //channel slider 
     this->channelSlider = vtkKWScaleWithEntry::New();
     this->channelSlider->SetParent(this);
     this->channelSlider->Create();
-    this->channelSlider->SetEntryWidth( 4 );
+    this->channelSlider->SetEntryWidth( 2 );
     this->channelSlider->SetLength( 200 );
     this->channelSlider->SetOrientationToHorizontal();
-    this->channelSlider->SetLabelText("Channel   ");
+    this->channelSlider->SetLabelText("Channel       ");
     this->channelSlider->SetValue(1);
     this->channelSlider->SetBalloonHelpString("Changes the spectroscopic channel.");
     this->channelSlider->SetRange( 1, 1 );
@@ -165,10 +174,10 @@ void sivicSpectraViewWidget::CreateWidget()
     this->timePointSlider = vtkKWScaleWithEntry::New();
     this->timePointSlider->SetParent(this);
     this->timePointSlider->Create();
-    this->timePointSlider->SetEntryWidth( 4 );
+    this->timePointSlider->SetEntryWidth( 2 );
     this->timePointSlider->SetLength( 200 );
     this->timePointSlider->SetOrientationToHorizontal();
-    this->timePointSlider->SetLabelText("TimePoint");
+    this->timePointSlider->SetLabelText("Time Point    ");
     this->timePointSlider->SetValue(1);
     this->timePointSlider->SetBalloonHelpString("Changes the spectroscopic timepoint.");
     this->timePointSlider->SetRange( 1, 1 );
@@ -193,85 +202,6 @@ void sivicSpectraViewWidget::CreateWidget()
     this->overlayTextCheck->SetPadX(2);
     this->overlayTextCheck->SetText("Overlay Text");
     this->overlayTextCheck->SelectedStateOn();
-
-    // Create the x range widget 
-    this->xSpecRange = vtkKWRange::New(); 
-    this->xSpecRange->SetParent(this);
-    this->xSpecRange->SetLabelText( "Frequency" );
-    this->xSpecRange->SetBalloonHelpString("Adjusts x range of the spectroscopic data.");
-    this->xSpecRange->SetWholeRange(0, 1);
-    this->xSpecRange->Create();
-    this->xSpecRange->SetRange(0, 1);
-    this->xSpecRange->EnabledOff();
-    this->xSpecRange->SetSliderSize(3);
-    this->xSpecRange->SetEntry1PositionToTop();
-    this->xSpecRange->SetEntry2PositionToTop();
-    this->xSpecRange->SetLabelPositionToTop();
-    this->point = svkSpecPoint::New();
-    //  Set default resolution for PPM:
-    this->xSpecRange->SetResolution( .001 );
-
-    //  X Spec Unit Selector
-    this->unitSelectBox = vtkKWMenuButtonWithLabel::New();   
-    this->unitSelectBox->SetParent(this);
-    this->unitSelectBox->Create();
-    this->unitSelectBox->SetLabelText("Units");
-    this->unitSelectBox->SetLabelPositionToTop();
-    this->unitSelectBox->SetPadY(10);
-    this->unitSelectBox->SetPadX(8);
-    this->unitSelectBox->SetHeight(2);
-    this->unitSelectBox->GetWidget()->SetWidth(4);
-    this->unitSelectBox->EnabledOff();
-    vtkKWMenu* unitMenu = this->unitSelectBox->GetWidget()->GetMenu();
-    unitMenu->AddRadioButton("PPM", this->sivicController, "SetSpecUnitsCallback 0");
-    unitMenu->AddRadioButton("Hz", this->sivicController, "SetSpecUnitsCallback 1");
-    unitMenu->AddRadioButton("PTS", this->sivicController, "SetSpecUnitsCallback 2");
-    unitSelectBox->GetWidget()->SetValue( "PPM" );
-    this->specUnits = svkSpecPoint::PPM; 
-
-    //  Component Selector (RE, IM, MAG) 
-    this->componentSelectBox = vtkKWMenuButtonWithLabel::New();   
-    this->componentSelectBox->SetParent(this);
-    this->componentSelectBox->Create();
-    this->componentSelectBox->SetLabelText("Component");
-    this->componentSelectBox->SetLabelPositionToTop();
-    this->componentSelectBox->SetPadY(10);
-    this->componentSelectBox->SetPadX(8);
-    this->componentSelectBox->SetHeight(2);
-    this->componentSelectBox->GetWidget()->SetWidth(4);
-    this->componentSelectBox->EnabledOff();
-    vtkKWMenu* componentMenu = this->componentSelectBox->GetWidget()->GetMenu();
-    componentMenu->AddRadioButton("real", this->sivicController, "SetComponentCallback 0");
-    componentMenu->AddRadioButton("imag", this->sivicController, "SetComponentCallback 1");
-    componentMenu->AddRadioButton("mag", this->sivicController, "SetComponentCallback 2");
-    componentSelectBox->GetWidget()->SetValue( "real" );
-
-
-    // Create the y range widget 
-    this->ySpecRange = vtkKWRange::New(); 
-    this->ySpecRange->SetParent(this);
-    this->ySpecRange->SetLabelText( "Amplitude" );
-    this->ySpecRange->SetBalloonHelpString("Adjusts y range of the spectroscopic data.");
-    this->ySpecRange->SetWholeRange(0, 1);
-    this->ySpecRange->SetResolution(1.0);
-    this->ySpecRange->Create();
-    this->ySpecRange->SetRange(0, 1);
-    this->ySpecRange->EnabledOff();
-    this->ySpecRange->SetSliderSize(3);
-    this->ySpecRange->SetEntry1PositionToTop();
-    this->ySpecRange->SetEntry2PositionToTop();
-    this->ySpecRange->SetLabelPositionToTop();
-
-    this->ySpecRange->SetWholeRange(0, 1);
-    this->ySpecRange->SetRange(0, 1);
-    this->ySpecRange->ClampRangeOff();
-
-    this->detailedPlotButton = vtkKWPushButton::New();
-    this->detailedPlotButton->SetParent(this);
-    this->detailedPlotButton->Create();
-    this->detailedPlotButton->SetText("Plot");
-    this->detailedPlotButton->SetBalloonHelpString("Gives you a detailed plot of the selected voxel. You must select only one voxel to activate");
-    this->detailedPlotButton->EnabledOff();
 
     // Create separator 
     vtkKWSeparator* separator = vtkKWSeparator::New();   
@@ -319,43 +249,31 @@ void sivicSpectraViewWidget::CreateWidget()
     //==================================================================
     //  Spec View Widgets Frame
     //==================================================================
-    this->Script("grid %s -row %d -column 0 -rowspan 5 -columnspan 2 -sticky wnse -pady 2 ", this->specViewFrame->GetWidgetName(), row); 
+    this->Script("grid %s -row %d -column 0 -rowspan 3 -columnspan 2 -sticky wnse -pady 2 ", this->specViewFrame->GetWidgetName(), row); 
 
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky wse -padx 2 -pady 2", 
-                    this->xSpecRange->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
+        this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 5 -pady 2 ", 
+                    this->timePointSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
-        this->Script("grid %s -in %s -row 0 -column 1 -sticky wse", 
-                this->unitSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
+        this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -padx 2 -pady 2", 
+                    this->overlayImageCheck->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky wse -padx 2  -pady 2", 
-                    this->ySpecRange->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
+        this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 5 -pady 2 ", 
+                    this->channelSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
-        this->Script("grid %s -in %s -row 1 -column 1 -sticky wse", 
-                this->componentSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
+        this->Script("grid %s -in %s -row 1 -column 1 -sticky wnse -padx 2 -pady 2", 
+                    this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-        this->Script("grid %s -in %s -row 2 -column 0 -sticky wse -padx 5 -pady 2 ", this->timePointSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+        this->Script("grid %s -in %s -row 2 -column 0 -sticky wnse -padx 5 -pady 2 ", 
+                    this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
-        this->Script("grid %s -in %s -row 2 -column 1 -sticky wse -padx 2 -pady 2", 
-                    this->overlayImageCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
-
-
-        this->Script("grid %s -in %s -row 3 -column 0 -sticky wnse -padx 5 -pady 2 ", this->channelSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
-
-        this->Script("grid %s -in %s -row 3 -column 1 -sticky wse -padx 2 -pady 2", 
-                    this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName(), row); 
-
-        this->Script("grid %s -in %s -row 4 -column 1 -sticky wse -padx 5 ", 
-                this->detailedPlotButton->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
     this->Script("grid columnconfigure %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 100 -minsize 110",  this->specViewFrame->GetWidgetName() );
     this->Script("grid rowconfigure    %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
     this->Script("grid rowconfigure    %s 1 -weight 1 ", this->specViewFrame->GetWidgetName() );
     this->Script("grid rowconfigure    %s 2 -weight 1 ", this->specViewFrame->GetWidgetName() );
-    this->Script("grid rowconfigure    %s 3 -weight 1 ", this->specViewFrame->GetWidgetName() );
-    this->Script("grid rowconfigure    %s 4 -weight 1 ", this->specViewFrame->GetWidgetName() );
 
-    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 100 ", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 10 ", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 1 -minsize 100 ", this->GetWidgetName() );
 
 
@@ -366,6 +284,9 @@ void sivicSpectraViewWidget::CreateWidget()
 
     this->AddCallbackCommandObserver(
         this->overlayTextCheck, vtkKWCheckButton::SelectedStateChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
         this->channelSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -383,21 +304,6 @@ void sivicSpectraViewWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
 
-    this->AddCallbackCommandObserver(
-        this->xSpecRange, vtkKWRange::RangeValueChangingEvent );
-
-    this->AddCallbackCommandObserver(
-        this->ySpecRange, vtkKWRange::RangeValueChangingEvent );
-
-    this->AddCallbackCommandObserver(
-        this->unitSelectBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
-
-    this->AddCallbackCommandObserver(
-        this->componentSelectBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
-
-    this->AddCallbackCommandObserver(
-        this->detailedPlotButton, vtkKWPushButton::InvokedEvent);
-
     // We can delete our references to all widgets that we do not have callbacks for.
     separator->Delete();
     separatorVert->Delete();
@@ -412,7 +318,18 @@ void sivicSpectraViewWidget::CreateWidget()
  */
 void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
+    if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
+        stringstream increment;
+        increment << "SetValue " << this->overlayController->GetSlice() + 2;
+        stringstream decrement;
+        decrement << "SetValue " << this->overlayController->GetSlice();
+        this->sliceSlider->RemoveBinding( "<Left>");
+        this->sliceSlider->AddBinding( "<Left>", this->sliceSlider, decrement.str().c_str() );
+        this->sliceSlider->RemoveBinding( "<Right>");
+        this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
+        this->sliceSlider->Focus();
+    } else if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
         this->plotController->SetChannel( channel );
         stringstream increment;
@@ -436,39 +353,12 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->timePointSlider->RemoveBinding( "<Right>");
         this->timePointSlider->AddBinding( "<Right>", this->timePointSlider, increment.str().c_str() );
         this->timePointSlider->Focus(); 
-
-    }else if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-        int * tlcBrc = overlayController->GetTlcBrc();
-        string acquisitionType; 
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( (tlcBrc[0] == tlcBrc[1] && tlcBrc[0] != -1)|| acquisitionType == "SINGLE VOXEL" ) {
-            //this->detailedPlotButton->EnabledOn();
-            this->detailedPlotButton->EnabledOff();
-        } else {
-            this->detailedPlotButton->EnabledOff();
-        }
     // Respond to an overlay window level 
     }else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::WindowLevelEvent ) {
         if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY && this->syncOverlayWL ) {
             double* range = svkOverlayView::SafeDownCast( this->overlayController->GetView())->GetLookupTable()->GetRange(); 
             svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range); 
             
-        }
-    // Respond to a selection change in the plot grid view 
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-        int * tlcBrc = overlayController->GetTlcBrc();
-        string acquisitionType; 
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( tlcBrc[0] == tlcBrc[1] && tlcBrc[0] != -1 || acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotButton->EnabledOn();
-        } else {
-            this->detailedPlotButton->EnabledOff();
         }
     } else if( caller == this->overlayImageCheck && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->overlayImageCheck->GetSelectedState() ) {
@@ -485,149 +375,6 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         }
         this->plotController->GetView()->Refresh();
     // Respond to a change in the x range (frequency)
-    } else if( caller == this->xSpecRange && event == vtkKWRange::RangeValueChangingEvent) {
-        double minValue;
-        double maxValue;
-        xSpecRange->GetRange( minValue, maxValue ); 
-        stringstream widenRange;
-        widenRange << "SetRange " << minValue - xSpecRange->GetResolution() 
-                                  << " " << maxValue + xSpecRange->GetResolution();
-        stringstream narrowRange;
-        narrowRange << "SetRange " << minValue + xSpecRange->GetResolution() 
-                                   << " " << maxValue - xSpecRange->GetResolution();
-        stringstream incrementRange;
-        incrementRange << "SetRange " << minValue + xSpecRange->GetResolution() 
-                                      << " " << maxValue + xSpecRange->GetResolution();
-        stringstream decrementRange;
-        decrementRange << "SetRange " << minValue - xSpecRange->GetResolution()
-                                      << " " << maxValue - xSpecRange->GetResolution();
-        this->xSpecRange->RemoveBinding( "<Left>");
-        this->xSpecRange->AddBinding( "<Left>", this->xSpecRange, decrementRange.str().c_str() );
-        this->xSpecRange->RemoveBinding( "<Right>");
-        this->xSpecRange->AddBinding( "<Right>", this->xSpecRange, incrementRange.str().c_str() );
-        this->xSpecRange->RemoveBinding( "<Up>");
-        this->xSpecRange->AddBinding( "<Up>", this->xSpecRange, narrowRange.str().c_str() );
-        this->xSpecRange->RemoveBinding( "<Down>");
-        this->xSpecRange->AddBinding( "<Down>", this->xSpecRange, widenRange.str().c_str() );
-        this->xSpecRange->Focus(); 
-
-        //  Get the display unit type and convert to points:
-        //  Convert Values to points before setting the plot controller's range
-
-        float lowestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry1()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-    
-        float highestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry2()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-
-        this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
-        this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
-
-
-    // Respond to a change in the y range (amplitude) 
-    } else if( caller == this->ySpecRange && event == vtkKWRange::RangeValueChangingEvent) {
-        double newMin = this->ySpecRange->GetEntry1()->GetValueAsDouble();
-        double newMax = this->ySpecRange->GetEntry2()->GetValueAsDouble(); 
-        double* wholeRange = ySpecRange->GetWholeRange( ); 
-        double newRangeMag = newMax-newMin;
-        double wholeRangeMag = wholeRange[1]-wholeRange[0];
-        if( wholeRangeMag/newRangeMag > MINIMUM_RANGE_FACTOR ) {
-            
-            double newCenter = (newMax-newMin)/2.0 + newMin;
-            newMin = newCenter-wholeRangeMag/(MINIMUM_RANGE_FACTOR*2); 
-            newMax = newCenter+wholeRangeMag/(MINIMUM_RANGE_FACTOR*2); 
-            if( newMin < wholeRange[0] ) {
-                newMin = wholeRange[0];
-                newMax = wholeRange[0] + wholeRangeMag/MINIMUM_RANGE_FACTOR; 
-            }
-            if( newMin > wholeRange[1] ) {
-                newMin = wholeRange[1];
-                newMax = wholeRange[1] - wholeRangeMag/MINIMUM_RANGE_FACTOR; 
-            }
-            this->ySpecRange->SetRange( newMin, newMax );
-            
-        } else { 
-
-            this->plotController->SetWindowLevelRange( newMin, newMax, 1 );
-
-            double minValue;
-            double maxValue;
-            ySpecRange->GetRange( minValue, maxValue ); 
-            double delta = (maxValue-minValue)/500;
-            stringstream widenRange;
-            widenRange << "SetRange " << minValue - delta << " " << maxValue + delta;
-            stringstream narrowRange;
-            narrowRange << "SetRange " << minValue + delta << " " << maxValue - delta;
-            stringstream incrementRange;
-            incrementRange << "SetRange " << minValue + delta << " " << maxValue + delta;
-            stringstream decrementRange;
-            decrementRange << "SetRange " << minValue - delta << " " << maxValue - delta;
-            this->ySpecRange->RemoveBinding( "<Left>");
-            this->ySpecRange->AddBinding( "<Left>", this->ySpecRange, decrementRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Right>");
-            this->ySpecRange->AddBinding( "<Right>", this->ySpecRange, incrementRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Up>");
-            this->ySpecRange->AddBinding( "<Up>", this->ySpecRange, narrowRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Down>");
-            this->ySpecRange->AddBinding( "<Down>", this->ySpecRange, widenRange.str().c_str() );
-            this->ySpecRange->Focus(); 
-            this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
-        }
-    } else if( caller == this->detailedPlotButton && event == vtkKWPushButton::InvokedEvent) {
-        if( this->detailedPlotWindow == NULL ) {
-            this->detailedPlotWindow = vtkKWWindowBase::New(); 
-            vtkKWApplication *app = this->GetApplication();
-            app->AddWindow( this->detailedPlotWindow );
-            this->detailedPlotWindow->Create(); 
-            this->detailedPlotWindow->SetSize(500,250);
-            this->detailedPlotWidget = vtkKWRenderWidget::New();
-            this->detailedPlotWidget->SetParent( this->detailedPlotWindow->GetViewFrame() );
-            this->detailedPlotWidget->Create();
-            detailedPlotController->SetRWInteractor(this->detailedPlotWidget->GetRenderWindowInteractor());
-            app->Script("pack %s -expand y -fill both -anchor c -expand y",
-            this->detailedPlotWidget->GetWidgetName());
-        }
-        int* tlcBrc = this->plotController->GetTlcBrc();
-        cout << "Tlc is: " << tlcBrc[0] << " Brc is: " << tlcBrc[1] << endl; 
-        this->detailedPlotController->SetUnits( this->specUnits );
-        double minValue;
-        double maxValue;
-        this->xSpecRange->GetRange( minValue, maxValue ); 
-        float lowestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry1()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-        float highestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry2()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-        this->detailedPlotController->SetWindowLevelRange(lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
-        this->detailedPlotController->GetView()->Refresh( );
-        this->detailedPlotWindow->Display();
-        this->detailedPlotController->GetView()->Refresh( );
-        this->ySpecRange->GetRange( minValue, maxValue ); 
-        this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
-        string acquisitionType;
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotController->AddPlot( 0, this->plotController->GetComponent(), this->plotController->GetChannel());
-        } else {
-            this->detailedPlotController->AddPlot( tlcBrc[0], this->plotController->GetComponent(), this->plotController->GetChannel());
-        }
-        this->detailedPlotController->GetView()->Refresh( );
-        this->detailedPlotController->SetUnits( this->specUnits );
-        this->detailedPlotController->GetView()->Refresh( );
     } 
 
 

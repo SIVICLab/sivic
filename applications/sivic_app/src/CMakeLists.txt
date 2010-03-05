@@ -159,6 +159,7 @@ ADD_LIBRARY(
     sivicGlobalWidget.cc
     sivicImageViewWidget.cc
     sivicSpectraViewWidget.cc
+    sivicSpectraRangeWidget.cc
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
     sivicKWCompositeWidget.cc

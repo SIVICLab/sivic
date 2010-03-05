@@ -53,6 +53,7 @@ sivicApp::sivicApp()
     this->processingWidget = sivicProcessingWidget::New();
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
+    this->spectraRangeWidget = sivicSpectraRangeWidget::New();
     this->viewRenderingWidget = sivicViewRenderingWidget::New();
     this->globalWidget        = sivicGlobalWidget::New();
     this->tabbedPanel = vtkKWNotebook::New();
@@ -102,6 +103,11 @@ sivicApp::~sivicApp()
     if( this->spectraViewWidget != NULL ) {
         this->spectraViewWidget->Delete();
         this->spectraViewWidget = NULL;
+    }
+
+    if( this->spectraRangeWidget != NULL ) {
+        this->spectraRangeWidget->Delete();
+        this->spectraRangeWidget = NULL;
     }
 
     if( this->model != NULL ) {
@@ -199,30 +205,42 @@ int sivicApp::Build( int argc, char* argv[] )
     this->viewRenderingWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->viewRenderingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->viewRenderingWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->viewRenderingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->viewRenderingWidget->SetApplication( this->sivicKWApp );
     this->viewRenderingWidget->Create();
 
     this->processingWidget->SetParent(tabbedPanel );
     this->processingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->processingWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->processingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->processingWidget->SetSivicController(this->sivicController);
     this->processingWidget->Create();
 
     this->imageViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->imageViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->imageViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->imageViewWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->imageViewWidget->SetSivicController(this->sivicController);
     this->imageViewWidget->Create();
 
-    this->spectraViewWidget->SetParent(tabbedPanel);
+    this->spectraViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->spectraViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->spectraViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->spectraViewWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->spectraViewWidget->SetSivicController(this->sivicController);
     this->spectraViewWidget->Create();
+
+    this->spectraRangeWidget->SetParent(tabbedPanel);
+    this->spectraRangeWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->spectraRangeWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->spectraRangeWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->spectraRangeWidget->SetSivicController(this->sivicController);
+    this->spectraRangeWidget->Create();
 
     this->globalWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->globalWidget->SetPlotController(this->sivicController->GetPlotController());
     this->globalWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->globalWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->globalWidget->SetSivicController(this->sivicController);
     this->globalWidget->Create();
 
@@ -231,6 +249,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
+    this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetGlobalWidget( globalWidget );
 
     this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
@@ -244,6 +263,11 @@ int sivicApp::Build( int argc, char* argv[] )
     separator->Create();
     separator->SetThickness(5);
 
+    vtkKWSeparator* separator2 = vtkKWSeparator::New();
+    separator2->SetParent(this->sivicWindow->GetViewFrame());
+    separator2->Create();
+    separator2->SetThickness(5);
+
     vtkKWSeparator* separatorVert = vtkKWSeparator::New();
     separatorVert->SetParent(this->sivicWindow->GetViewFrame());
     separatorVert->Create();
@@ -256,20 +280,23 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicKWApp->Script("grid %s -row 0 -column 0 -columnspan 5 -sticky nsew", viewRenderingWidget->GetWidgetName());
     this->sivicKWApp->Script("grid %s -row 1 -column 0 -columnspan 5 -sticky nsew", separator->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 0 -sticky wnse", imageViewWidget->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 1 -sticky nsew", separatorVert->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 0 -rowspan 3 -sticky wnse", imageViewWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 1 -sticky nsew -rowspan 2", separatorVert->GetWidgetName());
     this->sivicKWApp->Script("grid %s -row 2 -column 2 -sticky ensw -padx 2 -pady 2", tabbedPanel->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew", separatorVert2->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 4 -sticky nsew -padx 2 -pady 2", globalWidget->GetWidgetName());
+    //this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky nsew", separator2->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky nsew -padx 2 -pady 2", spectraViewWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew -rowspan 2", separatorVert2->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 4 -sticky nsew -rowspan 2 -padx 2 -pady 2", globalWidget->GetWidgetName());
 
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
-              this->spectraViewWidget->GetWidgetName(), interactorPanel->GetWidgetName());
+              this->spectraRangeWidget->GetWidgetName(), interactorPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
 
     this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 100 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 -minsize 5 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0 -minsize 255 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0 -minsize 175 -maxsize 175", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 0 -minsize 80", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 50 -uniform 1 -minsize 300", this->sivicWindow->GetViewFrame()->GetWidgetName() );
@@ -427,6 +454,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vsResetButton->SetParent( toolbar->GetFrame() );
     vsResetButton->Create();
     vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconCameraMini ); 
+    //vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera ); 
     vsResetButton->SetCommand( this->sivicController, "HighlightSelectionBoxVoxels");
     vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice." );
     toolbar->AddWidget( vsResetButton );

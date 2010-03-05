@@ -66,6 +66,7 @@
 #include <stdio.h>
 
 #include <svkDataViewController.h>
+#include <svkDetailedPlotViewController.h>
 #include <sivicViewRenderingWidget.h>
 #include <svkDataModel.h>
 #include <svkLookupTable.h>
@@ -75,6 +76,7 @@
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
 #if defined( SVK_USE_GL2PS )
     #include <vtkGL2PSExporter.h>
@@ -108,6 +110,7 @@ class vtkSivicController : public vtkObject
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
+        void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
         void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
         void                       SetSlice( int slice, bool centerImage = true );
@@ -160,6 +163,7 @@ class vtkSivicController : public vtkObject
         svkDataModel*              GetModel();
         svkOverlayViewController*  GetOverlayController(); 
         svkPlotGridViewController* GetPlotController(); 
+        svkDetailedPlotViewController* GetDetailedPlotController(); 
 
         vtkKWFileBrowserDialog*    myFileBrowser;
         void                       EnableWidgets();
@@ -179,18 +183,20 @@ class vtkSivicController : public vtkObject
          
     private:
     
-        string                     thresholdType;
-        string                     orientation; 
-        svkDataModel*              model; 
-        vtkKWApplication*          app;
-        vtkImageData*              spectraData;
-        sivicViewRenderingWidget*    viewRenderingWidget;
-        sivicProcessingWidget*       processingWidget;
-        sivicImageViewWidget*      imageViewWidget;
-        sivicSpectraViewWidget*    spectraViewWidget;
-        sivicGlobalWidget*         globalWidget;
-        svkPlotGridViewController* plotController;
-        svkOverlayViewController*  overlayController;
+        string                         thresholdType;
+        string                         orientation; 
+        svkDataModel*                  model; 
+        vtkKWApplication*              app;
+        vtkImageData*                  spectraData;
+        sivicViewRenderingWidget*      viewRenderingWidget;
+        sivicProcessingWidget*         processingWidget;
+        sivicImageViewWidget*          imageViewWidget;
+        sivicSpectraRangeWidget*       spectraRangeWidget;
+        sivicSpectraViewWidget*        spectraViewWidget;
+        sivicGlobalWidget*             globalWidget;
+        svkPlotGridViewController*     plotController;
+        svkOverlayViewController*      overlayController;
+        svkDetailedPlotViewController* detailedPlotController;
 
 };
 

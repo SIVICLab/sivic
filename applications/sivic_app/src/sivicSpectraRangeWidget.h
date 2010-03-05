@@ -32,8 +32,8 @@
  *  $Date$
  */
 
-#ifndef SIVIC_GLOBAL_WIDGET_H 
-#define SIVIC_GLOBAL_WIDGET_H 
+#ifndef SIVIC_SPECTRA_RANGE_WIDGET_H 
+#define SIVIC_SPECTRA_RANGE_WIDGET_H 
 
 #include <vtkKWScale.h>
 #include <vtkKWScaleWithEntry.h>
@@ -63,8 +63,6 @@
 #include <vtkKWMenuButtonWithSpinButtons.h>
 #include <vtkKWMenu.h>
 #include <vtkKWMenuButton.h>
-#include <vtkKWComboBoxWithLabel.h>
-#include <vtkKWComboBox.h>
 #include <vtkKWPushButton.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkImageWriter.h>
@@ -76,8 +74,6 @@
 #include <vtkImageConstantPad.h>
 #include <vtkImageWrapPad.h>
 #include <vtkImageMirrorPad.h>
-
-#include <vector>
 
 #include <svkDataView.h>
 #include <svkDataModel.h>
@@ -96,27 +92,36 @@
 
 using namespace svk; 
 
-class sivicGlobalWidget : public sivicKWCompositeWidget
+class sivicSpectraRangeWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicGlobalWidget *New();
-        vtkTypeRevisionMacro(sivicGlobalWidget,sivicKWCompositeWidget);
-        void            PopulateMetaboliteMenu( );
-        void            DeselectMetabolites( );
+        static sivicSpectraRangeWidget *New();
+        vtkTypeRevisionMacro(sivicSpectraRangeWidget,sivicKWCompositeWidget);
 
+        void    SetSyncOverlayWL( bool syncOverlayWL );
         
+        sivicSpectraRangeWidget();
+        ~sivicSpectraRangeWidget();
+
     protected:
 
-        sivicGlobalWidget();
-        ~sivicGlobalWidget();
 
-        vtkKWMenuButtonWithLabel*    orientationSelect;
-        vtkKWMenuButtonWithLabel*    metaboliteSelect;
-        vtkKWFrame*                   specViewFrame;   
+        vtkKWRenderWidget*              detailedPlotWidget;
+        vtkKWRange*                     xSpecRange;
+        vtkKWRange*                     ySpecRange;
+        vtkKWMenuButtonWithLabel*       unitSelectBox;
+        vtkKWMenuButtonWithLabel*       componentSelectBox;
+        vtkKWFrame*                     specViewFrame;
+        vtkKWFrame*                     specRangeFrame;
+        vtkKWPushButton*                detailedPlotButton;
+        vtkKWWindowBase*                detailedPlotWindow;
+
+        int                             specUnits;
+        bool                            centerImage;
 
         
         // Description:
@@ -124,12 +129,15 @@ class sivicGlobalWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
 
+
+
     private:
 
-        //bool centerImage;
-        sivicGlobalWidget(const sivicGlobalWidget&);   // Not implemented.
-        void operator=(const sivicGlobalWidget&);  // Not implemented.
+        svkSpecPoint*               point;
+
+        sivicSpectraRangeWidget(const sivicSpectraRangeWidget&);   // Not implemented.
+        void operator=(const sivicSpectraRangeWidget&);  // Not implemented.
         
 };
 
-#endif //SIVIC_GLOBAL_WIDGET_H 
+#endif //SIVIC_SPECTRA_RANGE_WIDGET_H 

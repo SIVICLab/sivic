@@ -376,7 +376,7 @@ void sivicImageViewWidget::CreateWidget()
     this->orthImagesButton->SetParent(this);
     this->orthImagesButton->Create();
     this->orthImagesButton->EnabledOff();
-    this->orthImagesButton->SetText("Orthogonal Images");
+    this->orthImagesButton->SetText("Orthogonal\n Images");
     this->orthImagesButton->SelectedStateOn();
 
     // Here is a progress gauge
@@ -474,18 +474,16 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
     row++; 
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 5", this->orthoViewFrame->GetWidgetName(), row);
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky w", 
-                this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 0  -columnspan 2 -sticky ew ", 
+        this->Script("grid %s -in %s -row 0 -column 0 -sticky ew ", 
                 this->axialSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 2 -column 0  -columnspan 2 -sticky ew ", 
+        this->Script("grid %s -in %s -row 0 -column 1 -rowspan 2 -sticky w", 
+                this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid %s -in %s -row 1 -column 0 -sticky ew ", 
                 this->coronalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 3 -column 0 -columnspan 2 -sticky ew ", 
+        this->Script("grid %s -in %s -row 2 -column 0 -sticky ew ", 
                 this->sagittalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 0 -weight 10 ", this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 1 -weight 90 ",  this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 2 -weight 20 ",  this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 3 -weight 20 ",  this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid columnconfigure %s 0 -weight 90 ", this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid columnconfigure %s 1 -weight 10 ",  this->orthoViewFrame->GetWidgetName() );
 
 
     this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );

@@ -52,6 +52,7 @@ vtkSivicController::vtkSivicController()
     this->spectraData = NULL;
     this->plotController    = svkPlotGridViewController::New();
     this->overlayController = svkOverlayViewController::New();
+    this->detailedPlotController = svkDetailedPlotViewController::New();
     this->imageViewWidget = NULL;
     this->spectraViewWidget = NULL;
     this->viewRenderingWidget = NULL;
@@ -152,9 +153,9 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
                                            this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
     }
     if( this->overlayController->GetSlice() != this->plotController->GetSlice()) {
-        this->globalWidget->SetCenterImage(false);
-        this->globalWidget->sliceSlider->SetValue( this->overlayController->GetSlice() + 1);
-        this->globalWidget->SetCenterImage(true);
+        this->spectraViewWidget->SetCenterImage(false);
+        this->spectraViewWidget->sliceSlider->SetValue( this->overlayController->GetSlice() + 1);
+        this->spectraViewWidget->SetCenterImage(true);
     }
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -193,6 +194,13 @@ void vtkSivicController::SetImageViewWidget( sivicImageViewWidget* imageViewWidg
     this->imageViewWidget->SetModel(this->model);
 }
 
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget )
+{
+    this->spectraRangeWidget = spectraRangeWidget;
+    this->spectraRangeWidget->SetModel(this->model);
+}
 
 //! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget )
@@ -353,8 +361,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             if( tlcBrc == NULL ) {
                 int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
                 int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
-                this->globalWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-                this->globalWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+                this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+                this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
                 int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
                 this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
                 this->spectraViewWidget->channelSlider->SetValue( 1 );
@@ -366,13 +374,13 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             }
             this->plotController->SetInput( newData ); 
 
-            this->spectraViewWidget->detailedPlotController->SetInput( newData ); 
+            this->detailedPlotController->SetInput( newData ); 
             this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
     
             this->processingWidget->phaseSlider->SetValue(0.0); 
             this->processingWidget->phaser->SetInput( newData );
     
-            this->spectraViewWidget->point->SetDataHdr( newData->GetDcmHeader() );
+            this->spectraRangeWidget->point->SetDataHdr( newData->GetDcmHeader() );
    
             if( tlcBrc == NULL ) {
                 this->plotController->HighlightSelectionVoxels();
@@ -1486,6 +1494,9 @@ void vtkSivicController::SetModel( svkDataModel* model  )
     if( this->spectraViewWidget != NULL ) {
         this->spectraViewWidget->SetModel(this->model);
     }
+    if( this->spectraRangeWidget != NULL ) {
+        this->spectraRangeWidget->SetModel(this->model);
+    }
     if( this->viewRenderingWidget != NULL ) {
         this->viewRenderingWidget->SetModel(this->model);
     }
@@ -1510,6 +1521,13 @@ svkOverlayViewController* vtkSivicController::GetOverlayController()
 svkPlotGridViewController* vtkSivicController::GetPlotController()
 {
     return this->plotController;
+}
+
+
+//! Returns the plot controller
+svkDetailedPlotViewController* vtkSivicController::GetDetailedPlotController()
+{
+    return this->detailedPlotController;
 }
 
 
@@ -1659,43 +1677,43 @@ void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 {
 
     //  Convert the current values to the target unit scale:
-    float lowestPoint = spectraViewWidget->point->ConvertPosUnits(
-        this->spectraViewWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
-        this->spectraViewWidget->specUnits, 
+    float lowestPoint = spectraRangeWidget->point->ConvertPosUnits(
+        this->spectraRangeWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
+        this->spectraRangeWidget->specUnits, 
         targetUnits 
     );
 
-    float highestPoint = spectraViewWidget->point->ConvertPosUnits(
-        this->spectraViewWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
-        this->spectraViewWidget->specUnits, 
+    float highestPoint = spectraRangeWidget->point->ConvertPosUnits(
+        this->spectraRangeWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
+        this->spectraRangeWidget->specUnits, 
         targetUnits 
     );
 
     //  convert the Whole Range to the target unit scale:
-    float lowestPointRange = spectraViewWidget->point->ConvertPosUnits(
+    float lowestPointRange = spectraRangeWidget->point->ConvertPosUnits(
         0,
         svkSpecPoint::PTS, 
         targetUnits 
     );
 
-    float highestPointRange = spectraViewWidget->point->ConvertPosUnits(
+    float highestPointRange = spectraRangeWidget->point->ConvertPosUnits(
         spectraData->GetCellData()->GetArray(0)->GetNumberOfTuples(), 
         svkSpecPoint::PTS, 
         targetUnits 
     );
 
-    this->spectraViewWidget->specUnits = targetUnits; 
+    this->spectraRangeWidget->specUnits = targetUnits; 
 
     //  Adjust the slider resolution for the target units:
     if ( targetUnits == svkSpecPoint::PPM ) {
-        this->spectraViewWidget->xSpecRange->SetResolution( .001 );
-        this->spectraViewWidget->unitSelectBox->GetWidget()->SetValue( "PPM" );
+        this->spectraRangeWidget->xSpecRange->SetResolution( .001 );
+        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "PPM" );
     } else if ( targetUnits == svkSpecPoint::Hz ) {
-        this->spectraViewWidget->xSpecRange->SetResolution( .1 );
-        this->spectraViewWidget->unitSelectBox->GetWidget()->SetValue( "HZ" );
+        this->spectraRangeWidget->xSpecRange->SetResolution( .1 );
+        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "Hz" );
     } else if ( targetUnits == svkSpecPoint::PTS ) {
-        this->spectraViewWidget->xSpecRange->SetResolution( 1 );
-        this->spectraViewWidget->unitSelectBox->GetWidget()->SetValue( "PTS" );
+        this->spectraRangeWidget->xSpecRange->SetResolution( 1 );
+        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "PTS" );
         lowestPoint = (float)(nearestInt(lowestPoint)); 
         highestPoint = (float)(nearestInt(highestPoint)); 
         lowestPointRange = (float)(nearestInt(lowestPointRange)); 
@@ -1708,10 +1726,10 @@ void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
         }
     }
 
-    this->spectraViewWidget->detailedPlotController->SetUnits( this->spectraViewWidget->specUnits );
-    this->spectraViewWidget->detailedPlotController->GetView()->Refresh( );
-    this->spectraViewWidget->xSpecRange->SetWholeRange( lowestPointRange, highestPointRange );
-    this->spectraViewWidget->xSpecRange->SetRange( lowestPoint, highestPoint ); 
+    this->detailedPlotController->SetUnits( this->spectraRangeWidget->specUnits );
+    this->detailedPlotController->GetView()->Refresh( );
+    this->spectraRangeWidget->xSpecRange->SetWholeRange( lowestPointRange, highestPointRange );
+    this->spectraRangeWidget->xSpecRange->SetRange( lowestPoint, highestPoint ); 
 
 }
 
@@ -1864,8 +1882,8 @@ void vtkSivicController::SetOrientation( const char* orientation )
     if( this->model->DataExists("SpectroscopicData") ) {
         firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( newOrientation );
         lastSlice =  this->model->GetDataObject("SpectroscopicData")->GetLastSlice( newOrientation );
-        this->globalWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
-        this->globalWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
+        this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
+        this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
         this->SetSlice( this->plotController->GetSlice());
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
     }
@@ -1935,27 +1953,27 @@ void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
         float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
         this->SetSpecUnitsCallback(svkSpecPoint::PPM);
         if( domain == "FREQUENCY" ) {
-            min = this->spectraViewWidget->point->ConvertPosUnits(
+            min = this->spectraRangeWidget->point->ConvertPosUnits(
                             0,
                             svkSpecPoint::PTS,
                             svkSpecPoint::PPM
                                 );
-            max = this->spectraViewWidget->point->ConvertPosUnits(
+            max = this->spectraRangeWidget->point->ConvertPosUnits(
                             data->GetCellData()->GetArray(0)->GetNumberOfTuples(),
                             svkSpecPoint::PTS,
                             svkSpecPoint::PPM
                                 );
 
-            this->spectraViewWidget->xSpecRange->SetWholeRange( min, max );
+            this->spectraRangeWidget->xSpecRange->SetWholeRange( min, max );
             if ( useFullRange ) {
-                this->spectraViewWidget->xSpecRange->SetRange( min, max );
+                this->spectraRangeWidget->xSpecRange->SetRange( min, max );
             } else {
-                this->spectraViewWidget->xSpecRange->SetRange( PPM_DEFAULT_MIN, PPM_DEFAULT_MAX );
+                this->spectraRangeWidget->xSpecRange->SetRange( PPM_DEFAULT_MIN, PPM_DEFAULT_MAX );
             }
         } else {
             this->SetSpecUnitsCallback(svkSpecPoint::PTS);
-            this->spectraViewWidget->xSpecRange->SetWholeRange( min, max );
-            this->spectraViewWidget->xSpecRange->SetRange( min, max );
+            this->spectraRangeWidget->xSpecRange->SetWholeRange( min, max );
+            this->spectraRangeWidget->xSpecRange->SetRange( min, max );
         }
 
         double range[2];
@@ -1968,23 +1986,23 @@ void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
         } else {
             cout << "UNKNOWN COMPONENT: " << this->plotController->GetComponent() << endl; 
         }
-        this->spectraViewWidget->ySpecRange->SetWholeRange( range[0], range[1] );
+        this->spectraRangeWidget->ySpecRange->SetWholeRange( range[0], range[1] );
         if ( useFullRange || domain == "TIME" ) {
-            this->spectraViewWidget->ySpecRange->SetRange( range[0], range[1] );
+            this->spectraRangeWidget->ySpecRange->SetRange( range[0], range[1] );
         } else {
-            this->spectraViewWidget->ySpecRange->SetRange( range[0]*NEG_RANGE_SCALE, range[1]*POS_RANGE_SCALE );
+            this->spectraRangeWidget->ySpecRange->SetRange( range[0]*NEG_RANGE_SCALE, range[1]*POS_RANGE_SCALE );
         }
-        this->spectraViewWidget->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
+        this->spectraRangeWidget->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
         //We now need to reset the range of the plotController
-        float lowestPoint = this->spectraViewWidget->point->ConvertPosUnits(
-            this->spectraViewWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
-            this->spectraViewWidget->specUnits,
+        float lowestPoint = this->spectraRangeWidget->point->ConvertPosUnits(
+            this->spectraRangeWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
+            this->spectraRangeWidget->specUnits,
             svkSpecPoint::PTS
         );
 
-        float highestPoint = this->spectraViewWidget->point->ConvertPosUnits(
-            this->spectraViewWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
-            this->spectraViewWidget->specUnits,
+        float highestPoint = this->spectraRangeWidget->point->ConvertPosUnits(
+            this->spectraRangeWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
+            this->spectraRangeWidget->specUnits,
             svkSpecPoint::PTS
         );
 
@@ -1995,7 +2013,7 @@ void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
             this->spectraViewWidget->channelSlider->SetValue( 1 );
         }
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
-        this->spectraViewWidget->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
+        this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 
     }
 }
@@ -2020,32 +2038,32 @@ void vtkSivicController::EnableWidgets()
     }
 
     if ( model->DataExists("SpectroscopicData") ) {
-        this->globalWidget->sliceSlider->EnabledOn();
+        this->spectraViewWidget->sliceSlider->EnabledOn();
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 
             this->processingWidget->combineButton->EnabledOff(); 
-            this->spectraViewWidget->xSpecRange->SetLabelText( "Time" );
-            this->spectraViewWidget->unitSelectBox->EnabledOff();
+            this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+            this->spectraRangeWidget->unitSelectBox->EnabledOff();
         } else {
             this->processingWidget->fftButton->EnabledOff(); 
             this->processingWidget->phaseButton->EnabledOn(); 
             if( numChannels > 1 ) {
                 this->processingWidget->combineButton->EnabledOn();
             }
-            this->spectraViewWidget->xSpecRange->SetLabelText( "Frequency" );
-            this->spectraViewWidget->unitSelectBox->EnabledOn();
+            this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
+            this->spectraRangeWidget->unitSelectBox->EnabledOn();
         }
         this->imageViewWidget->satBandButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
         this->processingWidget->phaseSlider->EnabledOn(); 
-        this->spectraViewWidget->xSpecRange->EnabledOn();
-        this->spectraViewWidget->ySpecRange->EnabledOn();
+        this->spectraRangeWidget->xSpecRange->EnabledOn();
+        this->spectraRangeWidget->ySpecRange->EnabledOn();
         this->processingWidget->phaseAllChannelsButton->EnabledOn(); 
         this->processingWidget->phaseAllVoxelsButton->EnabledOn(); 
-        this->spectraViewWidget->componentSelectBox->EnabledOn();
+        this->spectraRangeWidget->componentSelectBox->EnabledOn();
         if( numChannels > 1 ) {
             this->spectraViewWidget->channelSlider->EnabledOn();
         }
@@ -2095,8 +2113,8 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->volSelButton->EnabledOff();
     this->imageViewWidget->plotGridButton->EnabledOff();
 
-    this->spectraViewWidget->detailedPlotButton->EnabledOff();
-    this->globalWidget->sliceSlider->EnabledOff();
+    //this->spectraViewWidget->detailedPlotButton->EnabledOff();
+    this->spectraViewWidget->sliceSlider->EnabledOff();
     this->spectraViewWidget->channelSlider->EnabledOff();
     this->spectraViewWidget->timePointSlider->EnabledOff();
     this->imageViewWidget->axialSlider->EnabledOff();
@@ -2104,10 +2122,10 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->sagittalSlider->EnabledOff();
     this->spectraViewWidget->overlayImageCheck->EnabledOff();
     this->spectraViewWidget->overlayTextCheck->EnabledOff();
-    this->spectraViewWidget->unitSelectBox->EnabledOff();
-    this->spectraViewWidget->componentSelectBox->EnabledOff();
-    this->spectraViewWidget->xSpecRange->EnabledOff();
-    this->spectraViewWidget->ySpecRange->EnabledOff();
+    this->spectraRangeWidget->unitSelectBox->EnabledOff();
+    this->spectraRangeWidget->componentSelectBox->EnabledOff();
+    this->spectraRangeWidget->xSpecRange->EnabledOff();
+    this->spectraRangeWidget->ySpecRange->EnabledOff();
 
     this->processingWidget->phaseSlider->EnabledOff(); 
     this->processingWidget->phaseAllChannelsButton->EnabledOff(); 
