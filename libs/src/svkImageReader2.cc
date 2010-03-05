@@ -266,6 +266,10 @@ void svkImageReader2::SetupOutputScalarData()
             this->SetDataScalarTypeToUnsignedShort();
             this->dataArray = vtkUnsignedShortArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
+        } else if (  this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
+            this->SetDataScalarTypeToShort();
+            this->dataArray = vtkShortArray::New();
+            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_INT_2 );
         } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->SetDataScalarTypeToFloat();
             this->dataArray = vtkFloatArray::New();

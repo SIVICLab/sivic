@@ -57,6 +57,7 @@
 #include <vtkCellData.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
+#include <vtkShortArray.h>
 #include <vtkFloatArray.h>
 #include <vtkActorCollection.h>
 #include <vtkDataSetAttributes.h>
