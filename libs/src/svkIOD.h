@@ -83,10 +83,6 @@ class svkIOD : public vtkObject
          */
         virtual string  GetModality();
         virtual string  GetManufacturer();
-        virtual int     GetBitsAllocated();
-        virtual int     GetBitsStored();
-        virtual int     GetHighBit();
-
 
         //  Patient IE
         virtual void    InitPatientModule(); 

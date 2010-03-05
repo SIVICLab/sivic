@@ -245,34 +245,6 @@ string svkIOD::GetManufacturer()
 }
 
 
-
-/*!
- *
- */
-int svkIOD::GetBitsAllocated()
-{
-    return 16;
-}
-
-
-/*!
- *
- */
-int svkIOD::GetBitsStored()
-{
-    return 16;
-}
-
-
-/*!
- *
- */
-int svkIOD::GetHighBit()
-{
-    return 15;
-}
-
-
 /*!
  *
  */
