@@ -122,6 +122,11 @@ void svkDcmHeader::SetPixelDataType(DcmPixelDataFormat dataType)
         this->SetValue( "BitsStored", 16 );
         this->SetValue( "HighBit", 15 );
         this->SetValue( "PixelRepresentation", 0 ); //unsigned
+    } else if ( dataType == SIGNED_INT_2 ) {
+        this->SetValue( "BitsAllocated", 16 );
+        this->SetValue( "BitsStored", 16 );
+        this->SetValue( "HighBit", 15 );
+        this->SetValue( "PixelRepresentation", 1 ); //unsigned
     } else if ( dataType == SIGNED_FLOAT_4 ) {
         this->SetValue( "BitsAllocated", 32 );
         this->SetValue( "BitsStored", 32 );
@@ -144,6 +149,8 @@ int svkDcmHeader::GetPixelDataType()
         return UNSIGNED_INT_1;
     } else if (bitsPerWord == 16 && pixRep == 0) {
         return UNSIGNED_INT_2;
+    } else if (bitsPerWord == 16 && pixRep == 1) {
+        return SIGNED_INT_2;
     } else if (bitsPerWord == 32 && pixRep == 1) {
         return SIGNED_FLOAT_4;
     } 
