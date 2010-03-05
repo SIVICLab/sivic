@@ -148,7 +148,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
     if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
         volFileName.append( ".byt" );
         dataUnitSize = 1;
-    } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+    } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
         volFileName.append( ".int2" );
         dataUnitSize = 2;
     } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
@@ -172,7 +172,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
         volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
 
 #if defined (linux) || defined(Darwin)
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+        if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
             svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
@@ -232,8 +232,8 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
 
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
-        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
+            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_SHORT);
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
         }
@@ -340,7 +340,7 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
     if ( fileType == 2 ) { 
         return svkDcmHeader::UNSIGNED_INT_1;
     } else if ( fileType == 3 ) { 
-        return svkDcmHeader::UNSIGNED_INT_2;
+        return svkDcmHeader::SIGNED_INT_2;
     } else if ( fileType == 7 ) { 
         return svkDcmHeader::SIGNED_FLOAT_4;
     }
