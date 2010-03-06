@@ -422,14 +422,14 @@ void svkVarianReader::PrintProcparKeyValuePairs()
 
 
 /*
- *  Utility method to convert from the acq frame to the magnet LPS frame: 
+ *  Utility method to convert from the Varian user frame to the magnet XYZ frame: 
  */
-void svkVarianReader::AcqToLPS(float* acq, float* lps, double dcos[3][3])
+void svkVarianReader::UserToMagnet(float* user, float* magnet, double dcos[3][3])
 {  
     for (int i = 0; i < 3; i++) {
-        lps[i] = 0.;     
+        magnet[i] = 0.;     
         for (int j = 0; j < 3; j++) {
-            lps[i] += dcos[i][j] * acq[j];
+            magnet[i] += dcos[j][i] * user[j];
         }
     }
 }

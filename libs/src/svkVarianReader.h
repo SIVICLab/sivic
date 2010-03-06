@@ -108,7 +108,7 @@ class svkVarianReader : public svkImageReader2
                                             vector<string>* procparVector, 
                                             string valueArray
                                             );
-        void                             AcqToLPS(float* acq, float* lps, double dcos[3][3]); 
+        void                             UserToMagnet(float* user, float* magnet, double dcos[3][3]); 
 
         //  Members:
         ifstream*                                   procparFile;
