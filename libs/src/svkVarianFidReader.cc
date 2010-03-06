@@ -857,7 +857,7 @@ void svkVarianFidReader::InitPlanePositionMacro()
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i] 
                                  + ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2; 
         }
-        this->AcqToLPS(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);  
+        this->UserToMagnet(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);  
         delete [] volumeTlcAcqFrame;
         
     }
@@ -905,7 +905,7 @@ void svkVarianFidReader::InitPlanePositionMacro()
             tlcAcqFrame[2] = centerAcqFrame[2]; 
 
             //  and convert to LPS (magnet) frame: 
-            this->AcqToLPS(tlcAcqFrame, frameLPSPosition, dcos);  
+            this->UserToMagnet(tlcAcqFrame, frameLPSPosition, dcos);  
                 
             delete [] tlcAcqFrame; 
 
