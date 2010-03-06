@@ -70,7 +70,15 @@ using namespace std;
 
 
 /*! 
+ *  This is a SIVIC reader for Varian FDF files.  The reader parses multiple one or more *.fdf files 
+ *  from a directory as well as the procpar file (if present) to create an svkImageData object. The 
+ *  svkImageData's header (svkDcmHeader) Is initialized by parsing the Varian header information  
+ *  from the fdf files (and/or procpar file) and mapping it to a DICOM EnhancedMRImageStorage 
+ *  SOP class (1.2.840.10008.5.1.4.1.1.4.1) instance of the svkDcmHeader.
  *  
+ *  float type Varian fdf pixel data is by default mapped to short valued pixels (16 bit). Reader methods 
+ *  permit the output type/dynamic range to be set as needed.      
+ * 
  */
 class svkFdfVolumeReader : public svkVarianReader
 {
@@ -93,6 +101,7 @@ class svkFdfVolumeReader : public svkVarianReader
         virtual void                     ExecuteInformation();
         virtual void                     ExecuteData(vtkDataObject *output);
         svkDcmHeader::DcmPixelDataFormat GetFileType();
+        void                             ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShort, bool scaleToPositiveRange ); 
 
 
     private:
@@ -125,11 +134,14 @@ class svkFdfVolumeReader : public svkVarianReader
         float                            GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
         string                           GetHeaderValueAsString(string keyString, int valueIndex = 0);
         void                             ParseAndSetStringElements(string key, string valueArrayString);
+        void                             ConvertCmToMm();  
+        void                             ConvertUserToMagnetFrame(); 
+        string                           GetStringFromFloat(float floatValue); 
         void                             AddDimensionTo2DData();
         void                             PrintKeyValuePairs();
         void                             MapFloatValuesTo16Bit(
                                                 vtkFloatArray* fltArray, 
-                                                vtkUnsignedShortArray* shortArray
+                                                vtkDataArray* dataArray
                                          );
 
         //  Members:
@@ -139,6 +151,9 @@ class svkFdfVolumeReader : public svkVarianReader
         long                                        fileSize; 
         vtkStringArray*                             tmpFileNames;
         bool                                        scaleTo16Bit;
+        bool                                        scaleToSignedShort;
+        bool                                        scaleToPositiveRange;
+
 
 };
 

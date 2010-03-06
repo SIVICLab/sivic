@@ -41,6 +41,7 @@
 
 
 #include <svkFdfVolumeReader.h>
+#include <vtkImageAccumulate.h>
 
 
 using namespace svk;
@@ -68,7 +69,8 @@ svkFdfVolumeReader::svkFdfVolumeReader()
     this->fdfFile = NULL;
     this->procparFile = NULL;
     this->fileSize = 0;
-    this->scaleTo16Bit = true;
+    this->ScaleTo16Bit( true, true, true); 
+
 }
 
 
@@ -95,6 +97,20 @@ svkFdfVolumeReader::~svkFdfVolumeReader()
         this->procparFile = NULL; 
     }
 }
+
+
+/*!
+ *
+ */
+void svkFdfVolumeReader::ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShort, bool scaleToPositiveRange )
+{
+    this->scaleTo16Bit = scaleTo16Bit;
+    this->scaleToSignedShort = scaleToSignedShort;
+    this->scaleToPositiveRange = scaleToPositiveRange;
+}
+
+
+
 
 
 
@@ -227,10 +243,14 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
             vtkFloatArray* tmpArray = vtkFloatArray::New();
             tmpArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
             this->dataArray->Delete();     
-            this->dataArray = vtkUnsignedShortArray::New();
-            this->MapFloatValuesTo16Bit( tmpArray, static_cast<vtkUnsignedShortArray*>(this->dataArray) );
+            if ( this->scaleToSignedShort ) {
+                this->dataArray = vtkShortArray::New();
+            } else {
+                this->dataArray = vtkUnsignedShortArray::New();
+            }
+            this->MapFloatValuesTo16Bit( tmpArray, this->dataArray );
             tmpArray->Delete();
-            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
+            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_INT_2 );
         }  else {
             this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
         }
@@ -264,7 +284,7 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
     this->GetOutput()->Update();
 
     if (this->GetDebug()) {
-        cout << "FDF READER HEADER " << endl;
+        cout << "FDF READER HEADER " << *data << endl;
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
 
@@ -562,6 +582,11 @@ void svkFdfVolumeReader::InitFrameContentMacro()
 void svkFdfVolumeReader::InitPlanePositionMacro()
 {
 
+    /*  
+     *  First do all calculations in the user frame (cols, rows, slices)  Nice and
+     *  rectalinear.  Then next convert to Magnet frame.  Finally consider patient orientation
+     *  to convert to LPS.  
+     */
     double dcos[3][3];
     this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
@@ -576,19 +601,19 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
     float* volumeTlcLPSFrame = new float[3];  
     if (GetHeaderValueAsInt("rank") == 3) {
 
-        //  Get the volumetric center in acquisition frame coords: 
-        float volumeCenterAcqFrame[3];  
+        //  Get the volumetric center in magnet frame coords: 
+        float volumeCenterUserFrame[3];  
         for (int i = 0; i < 3; i++) {
-            volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i); 
+            volumeCenterUserFrame[i] = this->GetHeaderValueAsFloat("location[]", i); 
         }
 
-        float* volumeTlcAcqFrame = new float[3];  
+        float* volumeTlcUserFrame = new float[3];  
         for (int i = 0; i < 3; i++) {
-            volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i] 
+            volumeTlcUserFrame[i] = volumeCenterUserFrame[i] 
                                  + ( this->GetHeaderValueAsFloat("roi[]", i) - pixelSpacing[i] )/2; 
         }
-        this->AcqToLPS(volumeTlcAcqFrame, volumeTlcLPSFrame, dcos);  
-        delete [] volumeTlcAcqFrame;
+        this->UserToMagnet(volumeTlcUserFrame, volumeTlcLPSFrame, dcos);  
+        delete [] volumeTlcUserFrame;
         
     }
 
@@ -597,7 +622,7 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
     float frameLPSPosition[3];
 
     /*  
-     *  Iterate over slices (frames)
+     *  Iterate over slices 
      *  If 3D vol, calculate slice position, otherwise use value encoded 
      *  into slice header
      */
@@ -620,23 +645,23 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
         if (GetHeaderValueAsInt("rank") == 2) {
 
             //  Location is the center of the image frame in user (acquisition frame). 
-            float centerAcqFrame[3];  
+            float centerUserFrame[3];  
             for ( int j = 0; j < 3; j++) {
-                centerAcqFrame[j] = this->GetHeaderValueAsFloat("location[]", i * 3 + j ) ;
+                centerUserFrame[j] = this->GetHeaderValueAsFloat("location[]", i * 3 + j ) ;
             }
 
-            //  Now get the center of the tlc voxel in the acq frame: 
-            float* tlcAcqFrame = new float[3];  
+            //  Now get the center of the tlc voxel in the magnet frame: 
+            float* tlcUserFrame = new float[3];  
             for (int j = 0; j < 2; j++) {
-                tlcAcqFrame[j] = centerAcqFrame[j] 
+                tlcUserFrame[j] = centerUserFrame[j] 
                                  - ( this->GetHeaderValueAsFloat("roi[]", j) - pixelSpacing[j] )/2; 
             }
-            tlcAcqFrame[2] = centerAcqFrame[2]; 
+            tlcUserFrame[2] = centerUserFrame[2]; 
 
             //  and convert to LPS (magnet) frame: 
-            this->AcqToLPS(tlcAcqFrame, frameLPSPosition, dcos);  
+            this->UserToMagnet(tlcUserFrame, frameLPSPosition, dcos);  
                 
-            delete [] tlcAcqFrame; 
+            delete [] tlcUserFrame; 
 
         } else {
 
@@ -685,10 +710,10 @@ void svkFdfVolumeReader::InitPixelMeasuresMacro()
     float pixelSize[3]; 
     string pixelSizeString[3]; 
 
+    //  These are in the user frame: (cols, rows, slice) 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
-        //  convert from cm to mm: 
-        fov[i]       = 10 * GetHeaderValueAsFloat("roi[]", i);
+        fov[i]       = fabs( GetHeaderValueAsFloat("roi[]", i) );
         numPixels[i] = GetHeaderValueAsFloat("matrix[]", i);
         pixelSize[i] = fov[i]/numPixels[i]; 
         oss << pixelSize[i];
@@ -947,6 +972,12 @@ void svkFdfVolumeReader::ParseFdf()
             this->AddDimensionTo2DData();
         }
 
+        //  Convert fdf spatial params from cm to mm: 
+        this->ConvertCmToMm(); 
+
+        //  Convert location values from user to magnet frame; 
+        this->ConvertUserToMagnetFrame(); 
+
         if (this->GetDebug()) {
             this->PrintKeyValuePairs(); 
         }
@@ -1132,6 +1163,17 @@ void svkFdfVolumeReader::ParseAndSetStringElements(string key, string valueArray
 /*!
  *
  */
+string svkFdfVolumeReader::GetStringFromFloat(float floatValue) 
+{
+    ostringstream tmpOss;
+    tmpOss << floatValue; 
+    return tmpOss.str(); 
+}
+
+
+/*!
+ *
+ */
 int svkFdfVolumeReader::GetHeaderValueAsInt(string keyString, int valueIndex) 
 {
     
@@ -1181,7 +1223,7 @@ void svkFdfVolumeReader::AddDimensionTo2DData()
 
     //  Get Min and Max location value in 3rd dimension: 
     float sliceMin = this->GetHeaderValueAsFloat("location[]", 2) ; 
-    float sliceMax = this->GetHeaderValueAsFloat("location[]", 2) ; 
+    float sliceMax = sliceMin; 
        
     float val;  
     int numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
@@ -1194,12 +1236,124 @@ void svkFdfVolumeReader::AddDimensionTo2DData()
             sliceMin = val; 
         }    
     }
+
     float sliceThickness = (sliceMax - sliceMin)/(numSlices - 1); 
     float sliceFOV = numSlices * sliceThickness; 
     ostringstream sliceFOVoss;
     sliceFOVoss << sliceFOV; 
+
     fdfMap["span[]"].push_back( GetHeaderValueAsString("roi[]", 2) ) ; 
+
 }
+
+
+/*!
+ *  Convert FDF spatial values from cm to mm roi, span, locations gap:  
+ */
+void svkFdfVolumeReader::ConvertCmToMm() 
+{
+    float cmToMm = 10.; 
+    float tmp; 
+
+    //  ROI
+    for (int i = 0; i < 3; i++ ) {
+        tmp = cmToMm * this->GetHeaderValueAsFloat("roi[]", i); 
+        (fdfMap["roi[]"])[i] = this->GetStringFromFloat( tmp ); 
+    }
+
+    //  SPAN 
+    for (int i = 0; i < 3; i++ ) {
+        tmp = cmToMm * this->GetHeaderValueAsFloat("span[]", i); 
+        (fdfMap["span[]"])[i] = this->GetStringFromFloat( tmp ); 
+    }
+
+    //  LOCATIONS
+    int numberOfLocationCoords = (fdfMap["location[]"]).size(); 
+    for (int i = 0; i < numberOfLocationCoords; i++ ) {
+        tmp = cmToMm * this->GetHeaderValueAsFloat("location[]", i); 
+        (fdfMap["location[]"])[i] = this->GetStringFromFloat( tmp ); 
+    }
+
+    //  GAP 
+    tmp = cmToMm * this->GetHeaderValueAsFloat("gap", 0); 
+    (fdfMap["gap"])[0] = this->GetStringFromFloat( tmp ); 
+}
+
+
+/*!
+ *  Convert locations from user frame to magnet frame: 
+ *  According to the VNMR User Programming Manual: 
+ *  the fdf "orientation field" contains the dcos relating
+ *  the user (xyz) to the magnet (XYZ) frame according to: 
+ *      X = (dcos00 * x) + (dcos10 * y) + (dcos20 * z)
+ *      Y = (dcos01 * x) + (dcos11 * y) + (dcos21 * z)
+ *      Z = (dcos02 * x) + (dcos12 * y) + (dcos22 * z)
+ *
+ *   And conversely:     
+ *
+ *      x = (dcos00 * X) + (dcos01 * Y) + (dcos02 * Z)
+ *      y = (dcos10 * X) + (dcos11 * Y) + (dcos12 * Z)
+ *      z = (dcos20 * X) + (dcos21 * Y) + (dcos22 * Z)
+ */
+void svkFdfVolumeReader::ConvertUserToMagnetFrame() 
+{
+
+    double dcos[3][3]; 
+    dcos[0][0] = GetHeaderValueAsFloat("orientation[]", 0);
+    dcos[0][1] = GetHeaderValueAsFloat("orientation[]", 1);
+    dcos[0][2] = GetHeaderValueAsFloat("orientation[]", 2);
+    dcos[1][0] = GetHeaderValueAsFloat("orientation[]", 3);
+    dcos[1][1] = GetHeaderValueAsFloat("orientation[]", 4);
+    dcos[1][2] = GetHeaderValueAsFloat("orientation[]", 5);
+    dcos[2][0] = GetHeaderValueAsFloat("orientation[]", 6);
+    dcos[2][1] = GetHeaderValueAsFloat("orientation[]", 7);
+    dcos[2][2] = GetHeaderValueAsFloat("orientation[]", 8);
+
+    int numberOfLocationCoords = (fdfMap["location[]"]).size(); 
+
+    //  user and magnet frame coordinates
+    float userLoc[3]; 
+    float magnetLoc[3]; 
+
+    for (int loc = 0; loc < numberOfLocationCoords; loc+=3 ) {
+
+        userLoc[0] = this->GetHeaderValueAsFloat("location[]", loc + 0); 
+        userLoc[1] = this->GetHeaderValueAsFloat("location[]", loc + 1); 
+        userLoc[2] = this->GetHeaderValueAsFloat("location[]", loc + 2); 
+        
+
+        for (int i = 0; i < 3; i++) {
+            magnetLoc[i] = 0.; 
+            for (int j = 0; j < 3; j++) {
+                magnetLoc[i] += dcos[j][i] * userLoc[j];  
+            }
+            fdfMap["locationMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetLoc[i] ) ) ; 
+        }
+    }
+/*
+    float userRoi[3]; 
+    float magnetRoi[3]; 
+    float userMatrix[3];    //cols, rows, slices
+    float magnetMatrix[3];  //magnetX, magnetY, magnetZ
+    userRoi[0] = this->GetHeaderValueAsFloat("roi[]", 0); 
+    userRoi[1] = this->GetHeaderValueAsFloat("roi[]", 1); 
+    userRoi[2] = this->GetHeaderValueAsFloat("roi[]", 2); 
+    userMatrix[0] = this->GetHeaderValueAsFloat("matrix[]", 0); 
+    userMatrix[1] = this->GetHeaderValueAsFloat("matrix[]", 1); 
+    userMatrix[2] = this->GetHeaderValueAsFloat("matrix[]", 2); 
+    for (int i = 0; i < 3; i++) {
+        magnetRoi[i] = 0.; 
+        magnetMatrix[i] = 0.; 
+        for (int j = 0; j < 3; j++) {
+            magnetRoi[i] += dcos[j][i] * userRoi[j];  
+            magnetMatrix[i] += dcos[j][i] * userMatrix[j];  
+        }
+        fdfMap["roiMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetRoi[i] ) ) ; 
+        fdfMap["matrixMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetMatrix[i] ) ) ; 
+    }
+*/
+}
+
 
 
 /*!
@@ -1226,7 +1380,7 @@ void svkFdfVolumeReader::PrintKeyValuePairs()
 /*!
  *  Map 
  */
-void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkUnsignedShortArray* shortArray)
+void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkDataArray* dataArray)
 {
 
     //  Get the input range for scaling: 
@@ -1235,23 +1389,42 @@ void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkUnsig
     double deltaRangeIn = inputRange[1] - inputRange[0]; 
 
     //  Map to full dynamic range of target type:
-    vtkUnsignedShortArray* usArray = vtkUnsignedShortArray::New();
-    int maxShort =  static_cast<int>( usArray->GetDataTypeMax() );
-    int minShort =  static_cast<int>( usArray->GetDataTypeMin() );
+    //vtkShortArray* usArray = vtkShortArray::New();
+    //int maxShort =  static_cast<int>( usArray->GetDataTypeMax() );
+    //int minShort =  static_cast<int>( usArray->GetDataTypeMin() );
+    int maxShort =  static_cast<int>( dataArray->GetDataTypeMax() );
+    int minShort =  static_cast<int>( dataArray->GetDataTypeMin() );
+    if ( this->scaleToPositiveRange ) {
+        minShort =  0;  // for now map to short, but only use positive dynamic range:
+    }
     double deltaRangeOut = maxShort - minShort;  
-    usArray->Delete(); 
-    shortArray->SetNumberOfValues( fltArray->GetNumberOfTuples() ); 
+    //usArray->Delete(); 
+    
+    static_cast<vtkShortArray*>( dataArray)->SetNumberOfValues( fltArray->GetNumberOfTuples() ); 
 
-    //  Map values to range between 0 and 1, then scale to type max. 
-    //  apply linear mapping from float range to unsigned short range
+
+    //  apply linear mapping from float range to short range using positive 
+    //  values only. 
     //  maxShort = inputRangeMax * m + b , minShort = inputRangeMin * m + b
+
+    double scaledPixelValue; 
+
     for (int i = 0; i < fltArray->GetNumberOfTuples(); i++) {
-        shortArray->SetValue( 
-            i, 
-            static_cast<unsigned short> ( (deltaRangeOut/deltaRangeIn) * fltArray->GetValue(i) 
-                +  minShort - ( deltaRangeOut/deltaRangeIn ) * inputRange[0]
-            ) 
-        );
+
+        scaledPixelValue =  (deltaRangeOut/deltaRangeIn) * fltArray->GetValue(i) 
+                            +  minShort - ( deltaRangeOut/deltaRangeIn ) * inputRange[0]; 
+
+        if ( this->scaleToSignedShort ) {
+            static_cast<vtkShortArray*>(dataArray)->SetValue( 
+                i, 
+                static_cast<short> ( scaledPixelValue )
+            ); 
+        } else {
+            static_cast<vtkShortArray*>(dataArray)->SetValue( 
+                i, 
+                static_cast<unsigned short> ( scaledPixelValue )
+            ); 
+        }
     } 
 
 }
