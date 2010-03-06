@@ -578,6 +578,22 @@ void svkFdfVolumeReader::InitFrameContentMacro()
 
 /*!
  *  The FDF toplc is the center of the first voxel. 
+ *  calculate toplc in user coords, then conver to magnet
+ *  frame: 
+
+ *  Convert locations from user frame to magnet frame: 
+ *  According to the VNMR User Programming Manual: 
+ *  the fdf "orientation field" contains the dcos relating
+ *  the user (xyz) to the magnet (XYZ) frame according to: 
+ *      X = (dcos00 * x) + (dcos10 * y) + (dcos20 * z)
+ *      Y = (dcos01 * x) + (dcos11 * y) + (dcos21 * z)
+ *      Z = (dcos02 * x) + (dcos12 * y) + (dcos22 * z)
+ *
+ *   And conversely:     
+ *
+ *      x = (dcos00 * X) + (dcos01 * Y) + (dcos02 * Z)
+ *      y = (dcos10 * X) + (dcos11 * Y) + (dcos12 * Z)
+ *      z = (dcos20 * X) + (dcos21 * Y) + (dcos22 * Z)
  */
 void svkFdfVolumeReader::InitPlanePositionMacro()
 {
@@ -975,9 +991,6 @@ void svkFdfVolumeReader::ParseFdf()
         //  Convert fdf spatial params from cm to mm: 
         this->ConvertCmToMm(); 
 
-        //  Convert location values from user to magnet frame; 
-        this->ConvertUserToMagnetFrame(); 
-
         if (this->GetDebug()) {
             this->PrintKeyValuePairs(); 
         }
@@ -1278,82 +1291,6 @@ void svkFdfVolumeReader::ConvertCmToMm()
     tmp = cmToMm * this->GetHeaderValueAsFloat("gap", 0); 
     (fdfMap["gap"])[0] = this->GetStringFromFloat( tmp ); 
 }
-
-
-/*!
- *  Convert locations from user frame to magnet frame: 
- *  According to the VNMR User Programming Manual: 
- *  the fdf "orientation field" contains the dcos relating
- *  the user (xyz) to the magnet (XYZ) frame according to: 
- *      X = (dcos00 * x) + (dcos10 * y) + (dcos20 * z)
- *      Y = (dcos01 * x) + (dcos11 * y) + (dcos21 * z)
- *      Z = (dcos02 * x) + (dcos12 * y) + (dcos22 * z)
- *
- *   And conversely:     
- *
- *      x = (dcos00 * X) + (dcos01 * Y) + (dcos02 * Z)
- *      y = (dcos10 * X) + (dcos11 * Y) + (dcos12 * Z)
- *      z = (dcos20 * X) + (dcos21 * Y) + (dcos22 * Z)
- */
-void svkFdfVolumeReader::ConvertUserToMagnetFrame() 
-{
-
-    double dcos[3][3]; 
-    dcos[0][0] = GetHeaderValueAsFloat("orientation[]", 0);
-    dcos[0][1] = GetHeaderValueAsFloat("orientation[]", 1);
-    dcos[0][2] = GetHeaderValueAsFloat("orientation[]", 2);
-    dcos[1][0] = GetHeaderValueAsFloat("orientation[]", 3);
-    dcos[1][1] = GetHeaderValueAsFloat("orientation[]", 4);
-    dcos[1][2] = GetHeaderValueAsFloat("orientation[]", 5);
-    dcos[2][0] = GetHeaderValueAsFloat("orientation[]", 6);
-    dcos[2][1] = GetHeaderValueAsFloat("orientation[]", 7);
-    dcos[2][2] = GetHeaderValueAsFloat("orientation[]", 8);
-
-    int numberOfLocationCoords = (fdfMap["location[]"]).size(); 
-
-    //  user and magnet frame coordinates
-    float userLoc[3]; 
-    float magnetLoc[3]; 
-
-    for (int loc = 0; loc < numberOfLocationCoords; loc+=3 ) {
-
-        userLoc[0] = this->GetHeaderValueAsFloat("location[]", loc + 0); 
-        userLoc[1] = this->GetHeaderValueAsFloat("location[]", loc + 1); 
-        userLoc[2] = this->GetHeaderValueAsFloat("location[]", loc + 2); 
-        
-
-        for (int i = 0; i < 3; i++) {
-            magnetLoc[i] = 0.; 
-            for (int j = 0; j < 3; j++) {
-                magnetLoc[i] += dcos[j][i] * userLoc[j];  
-            }
-            fdfMap["locationMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetLoc[i] ) ) ; 
-        }
-    }
-/*
-    float userRoi[3]; 
-    float magnetRoi[3]; 
-    float userMatrix[3];    //cols, rows, slices
-    float magnetMatrix[3];  //magnetX, magnetY, magnetZ
-    userRoi[0] = this->GetHeaderValueAsFloat("roi[]", 0); 
-    userRoi[1] = this->GetHeaderValueAsFloat("roi[]", 1); 
-    userRoi[2] = this->GetHeaderValueAsFloat("roi[]", 2); 
-    userMatrix[0] = this->GetHeaderValueAsFloat("matrix[]", 0); 
-    userMatrix[1] = this->GetHeaderValueAsFloat("matrix[]", 1); 
-    userMatrix[2] = this->GetHeaderValueAsFloat("matrix[]", 2); 
-    for (int i = 0; i < 3; i++) {
-        magnetRoi[i] = 0.; 
-        magnetMatrix[i] = 0.; 
-        for (int j = 0; j < 3; j++) {
-            magnetRoi[i] += dcos[j][i] * userRoi[j];  
-            magnetMatrix[i] += dcos[j][i] * userMatrix[j];  
-        }
-        fdfMap["roiMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetRoi[i] ) ) ; 
-        fdfMap["matrixMagnetFrame[]"].push_back( this->GetStringFromFloat( magnetMatrix[i] ) ) ; 
-    }
-*/
-}
-
 
 
 /*!
