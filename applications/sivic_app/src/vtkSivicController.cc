@@ -55,6 +55,7 @@ vtkSivicController::vtkSivicController()
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->imageViewWidget = NULL;
     this->spectraViewWidget = NULL;
+    this->spectraRangeWidget = NULL;
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
     this->thresholdType = "Quantity";
