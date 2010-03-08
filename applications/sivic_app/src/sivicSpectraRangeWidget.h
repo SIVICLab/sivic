@@ -103,6 +103,13 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicSpectraRangeWidget,sivicKWCompositeWidget);
 
         void    SetSyncOverlayWL( bool syncOverlayWL );
+        void    SetSpecUnitsCallback(int targetUnits);
+        void    ResetRange( bool useFullFrequencyRange = 0, bool useFullAmplitudeRange = 0,
+                            bool resetAmplitude = 1, bool resetFrequency = 1);
+        void    ResetAmplitudeWholeRange( );
+        void    ResetAmplitudeRange( bool useFullRange = 0);
+        void    ResetFrequencyWholeRange( );
+        void    ResetFrequencyRange( bool useFullRange = 0);
         
         sivicSpectraRangeWidget();
         ~sivicSpectraRangeWidget();

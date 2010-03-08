@@ -453,8 +453,8 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* vsResetButton = vtkKWPushButton::New();
     vsResetButton->SetParent( toolbar->GetFrame() );
     vsResetButton->Create();
-    //vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconCameraMini ); 
-    vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera ); 
+    vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconCameraMini ); 
+    //vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera ); 
     vsResetButton->SetCommand( this->sivicController, "HighlightSelectionBoxVoxels");
     vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice." );
     toolbar->AddWidget( vsResetButton );

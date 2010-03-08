@@ -44,7 +44,7 @@ using namespace svk;
 vtkStandardNewMacro( vtkSivicController );
 vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 
-static int nearestInt(float x); 
+//static int nearestInt(float x); 
 
 //! Constructor
 vtkSivicController::vtkSivicController()
@@ -272,35 +272,48 @@ void vtkSivicController::OpenImage( const char* fileName )
                 this->overlayController->HighlightSelectionVoxels();
             }
             int* extent = newData->GetExtent();
-            if( !model->DataExists("SpectroscopicData") ) {
-                int firstSlice;
-                int lastSlice;
-                firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
-                lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
-                this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            int firstSlice;
+            int lastSlice;
+            firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
+            lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
+            this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            if( oldData == NULL ) {
                 this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-                firstSlice = newData->GetFirstSlice( svkDcmHeader::CORONAL );
-                lastSlice = newData->GetLastSlice( svkDcmHeader::CORONAL );
-                this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-                this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-                firstSlice = newData->GetFirstSlice( svkDcmHeader::SAGITTAL );
-                lastSlice = newData->GetLastSlice( svkDcmHeader::SAGITTAL );
-                this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-                this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-
             } else {
+                this->imageViewWidget->axialSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+            }
+            firstSlice = newData->GetFirstSlice( svkDcmHeader::CORONAL );
+            lastSlice = newData->GetLastSlice( svkDcmHeader::CORONAL );
+            this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            if( oldData == NULL ) {
+                this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+            } else {
+                this->imageViewWidget->coronalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+            }
+            firstSlice = newData->GetFirstSlice( svkDcmHeader::SAGITTAL );
+            lastSlice = newData->GetLastSlice( svkDcmHeader::SAGITTAL );
+            this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            if( oldData == NULL ) {
+                this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
+            } else {
+                this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+            }
+
+            if( model->DataExists("SpectroscopicData") ) {
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
             }
-            switch( newData->GetDcmHeader()->GetOrientationType() ) {
-                case svkDcmHeader::AXIAL:
-                    this->SetOrientation( "AXIAL" );
-                    break;
-                case svkDcmHeader::CORONAL:
-                    this->SetOrientation( "CORONAL" );
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    this->SetOrientation( "SAGITTAL" );
-                    break;
+            if( oldData == NULL ) {
+                switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                    case svkDcmHeader::AXIAL:
+                        this->SetOrientation( "AXIAL" );
+                        break;
+                    case svkDcmHeader::CORONAL:
+                        this->SetOrientation( "CORONAL" );
+                        break;
+                    case svkDcmHeader::SAGITTAL:
+                        this->SetOrientation( "SAGITTAL" );
+                        break;
+                }
             }
             this->viewRenderingWidget->ResetInfoText();
         } else {
@@ -308,7 +321,12 @@ void vtkSivicController::OpenImage( const char* fileName )
             message += resultInfo;
             this->PopupMessage( resultInfo ); 
         }
-        this->UseSelectionStyle();
+        if( oldData == NULL ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView() )->AlignCamera();
+            this->UseSelectionStyle();
+        } else if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
+            this->UseRotationStyle();
+        }
     }
 }
 
@@ -349,6 +367,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 memcpy( tlcBrc, this->plotController->GetTlcBrc(), 2*sizeof(int) );
                 this->model->ChangeDataObject( "SpectroscopicData", newData );
                 this->model->SetDataFileName( "SpectroscopicData", stringFilename );
+
             } else {
                 this->model->AddDataObject( "SpectroscopicData", newData );
                 this->model->SetDataFileName( "SpectroscopicData", stringFilename );
@@ -358,7 +377,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             spectraData = static_cast<vtkImageData*>(newData );
             int* extent = newData->GetExtent();
 
-            // TODO: this will fail for sagittal/coronal data...
             if( tlcBrc == NULL ) {
                 int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
                 int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
@@ -390,7 +408,23 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 this->plotController->SetTlcBrc( tlcBrc ); 
                 this->overlayController->SetTlcBrc( tlcBrc ); 
             }
-            this->ResetRange( );
+            if( oldData != NULL ) {
+                bool useFullFrequencyRange = 0;
+                bool useFullAmplitudeRange = 0;
+                bool resetAmplitude = 0;
+                bool resetFrequency = 0;
+                this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                           resetAmplitude, resetFrequency );
+            } else {
+                bool useFullFrequencyRange = 0;
+                bool useFullAmplitudeRange = 0;
+                bool resetAmplitude = 1;
+                bool resetFrequency = 1;
+                this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                           resetAmplitude, resetFrequency );
+            }
+            this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
+            this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
             switch( newData->GetDcmHeader()->GetOrientationType() ) {
                 case svkDcmHeader::AXIAL:
                     this->SetOrientation( "AXIAL" );
@@ -401,6 +435,14 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 case svkDcmHeader::SAGITTAL:
                     this->SetOrientation( "SAGITTAL" );
                     break;
+            }
+            string component = (this->spectraRangeWidget->componentSelectBox->GetWidget()->GetValue( ));
+            if( component == "read" ) {
+                this->SetComponentCallback( 0 );
+            } else if ( component == "imag" ) {
+                this->SetComponentCallback( 1 );
+            } else if ( component == "mag" ) {
+                this->SetComponentCallback( 2 );
             }
             this->viewRenderingWidget->ResetInfoText();
         } else {
@@ -444,6 +486,11 @@ void vtkSivicController::OpenOverlay( const char* fileName )
 
             resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
+                int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+                if( toggleDraw ) {
+                    this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+                    this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+                }
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
                 resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
                 if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
@@ -469,6 +516,30 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                     }
                     this->viewRenderingWidget->ResetInfoText();
                     this->spectraViewWidget->SetSyncOverlayWL( false );
+                }
+                string interp = (this->imageViewWidget->interpolationBox->GetWidget()->GetValue( ));
+                if( interp == "nearest neighbor" ) {
+                    this->SetInterpolationCallback( 0 );
+                } else if ( interp == "linear" ) {
+                    this->SetInterpolationCallback( 1 );
+                } else if ( interp == "sinc" ) {
+                    this->SetInterpolationCallback( 2 );
+                }
+                string lut = (this->imageViewWidget->lutBox->GetWidget()->GetValue( ));
+                if( lut == "color" ) {
+                    this->SetLUTCallback( svkLookupTable::COLOR );
+                } else if ( lut == "grey " ) {
+                    this->SetLUTCallback( svkLookupTable::GREY_SCALE );
+                } else if ( lut == "hurd " ) {
+                    this->SetLUTCallback( svkLookupTable::HURD );
+                } else if ( lut == "cyan " ) {
+                    this->SetLUTCallback( svkLookupTable::CYAN_HOT );
+                }
+                this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
+                this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
+                if( toggleDraw ) {
+                    this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+                    this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
                 }
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
@@ -1607,6 +1678,9 @@ void vtkSivicController::UseSelectionStyle()
         }
     }
     */
+    if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
+        svkOverlayView::SafeDownCast( this->overlayController->GetView() )->AlignCamera();
+    }
     this->overlayController->UseSelectionStyle();
     this->viewRenderingWidget->specViewerWidget->Render();
     this->viewRenderingWidget->viewerWidget->Render();
@@ -1676,62 +1750,7 @@ void vtkSivicController::DisplayInfo()
  */
 void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 {
-
-    //  Convert the current values to the target unit scale:
-    float lowestPoint = spectraRangeWidget->point->ConvertPosUnits(
-        this->spectraRangeWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
-        this->spectraRangeWidget->specUnits, 
-        targetUnits 
-    );
-
-    float highestPoint = spectraRangeWidget->point->ConvertPosUnits(
-        this->spectraRangeWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
-        this->spectraRangeWidget->specUnits, 
-        targetUnits 
-    );
-
-    //  convert the Whole Range to the target unit scale:
-    float lowestPointRange = spectraRangeWidget->point->ConvertPosUnits(
-        0,
-        svkSpecPoint::PTS, 
-        targetUnits 
-    );
-
-    float highestPointRange = spectraRangeWidget->point->ConvertPosUnits(
-        spectraData->GetCellData()->GetArray(0)->GetNumberOfTuples(), 
-        svkSpecPoint::PTS, 
-        targetUnits 
-    );
-
-    this->spectraRangeWidget->specUnits = targetUnits; 
-
-    //  Adjust the slider resolution for the target units:
-    if ( targetUnits == svkSpecPoint::PPM ) {
-        this->spectraRangeWidget->xSpecRange->SetResolution( .001 );
-        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "PPM" );
-    } else if ( targetUnits == svkSpecPoint::Hz ) {
-        this->spectraRangeWidget->xSpecRange->SetResolution( .1 );
-        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "Hz" );
-    } else if ( targetUnits == svkSpecPoint::PTS ) {
-        this->spectraRangeWidget->xSpecRange->SetResolution( 1 );
-        this->spectraRangeWidget->unitSelectBox->GetWidget()->SetValue( "PTS" );
-        lowestPoint = (float)(nearestInt(lowestPoint)); 
-        highestPoint = (float)(nearestInt(highestPoint)); 
-        lowestPointRange = (float)(nearestInt(lowestPointRange)); 
-        highestPointRange = (float)(nearestInt(highestPointRange)); 
-        if (lowestPoint == 0) {
-            lowestPoint = 1; 
-        }
-        if (lowestPointRange == 0) {
-            lowestPointRange = 1; 
-        }
-    }
-
-    this->detailedPlotController->SetUnits( this->spectraRangeWidget->specUnits );
-    this->detailedPlotController->GetView()->Refresh( );
-    this->spectraRangeWidget->xSpecRange->SetWholeRange( lowestPointRange, highestPointRange );
-    this->spectraRangeWidget->xSpecRange->SetRange( lowestPoint, highestPoint ); 
-
+    this->spectraRangeWidget->SetSpecUnitsCallback( targetUnits );
 }
 
 
@@ -1752,7 +1771,7 @@ void vtkSivicController::SetComponentCallback( int targetComponent)
         acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
-            this->ResetRange(1);
+            this->ResetRange(1,1);
         } 
     }
 }
@@ -1841,7 +1860,7 @@ string vtkSivicController::GetPrinterName( )
 /*!
  * Sets the orientation to
  */
-void vtkSivicController::SetOrientation( const char* orientation ) 
+void vtkSivicController::SetOrientation( const char* orientation, bool alignOverlay ) 
 {
     // Set Our orientation member variable
     svkDcmHeader::Orientation newOrientation = svkDcmHeader::UNKNOWN;
@@ -1857,6 +1876,9 @@ void vtkSivicController::SetOrientation( const char* orientation )
     if( this->orientation == "AXIAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+        if( alignOverlay ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
+        }
         newOrientation = svkDcmHeader::AXIAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("AXIAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
@@ -1865,6 +1887,9 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "CORONAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+        if( alignOverlay ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
+        }
         newOrientation = svkDcmHeader::CORONAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("CORONAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
@@ -1873,6 +1898,9 @@ void vtkSivicController::SetOrientation( const char* orientation )
     } else if ( this->orientation == "SAGITTAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+        if( alignOverlay ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
+        }
         newOrientation = svkDcmHeader::SAGITTAL;
         int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("SAGITTAL");
         if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
@@ -1945,10 +1973,15 @@ void vtkSivicController::RestoreSession( )
 /*!
  * Resets the x and y ranges
  */
-void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
-{
+void vtkSivicController::ResetRange( bool useFullFrequencyRange, bool useFullAmplitudeRange,
+                                          bool resetAmplitude, bool resetFrequency)
+{ 
     svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
     if( data != NULL ) {
+        this->spectraRangeWidget->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                              resetAmplitude, resetFrequency );
+        this->plotController->GetView()->Refresh();
+/*
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         float min = 1;
         float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
@@ -2007,15 +2040,25 @@ void vtkSivicController::ResetRange( bool useFullRange, bool resetChannel )
             svkSpecPoint::PTS
         );
 
+*/
         // Lets also reset the number of channels:
-        if( resetChannel ) { 
-            int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
-            this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
-            this->spectraViewWidget->channelSlider->SetValue( 1 );
-        }
-        this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
-        this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
+//        this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
+ //       this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 
+    }
+}
+
+
+/*!
+ * Resets the current channel and the number of channels 
+ */
+void vtkSivicController::ResetChannel( )
+{
+    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    if( data != NULL ) {
+        int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
+        this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
+        this->spectraViewWidget->channelSlider->SetValue( 1 );
     }
 }
 
@@ -2075,7 +2118,11 @@ void vtkSivicController::EnableWidgets()
     }
 
     if ( model->DataExists("AnatomicalData") ) {
-        if( this->orientation == "AXIAL" ) {
+        if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::ROTATION ) {
+            this->imageViewWidget->axialSlider->EnabledOn();
+            this->imageViewWidget->coronalSlider->EnabledOn();
+            this->imageViewWidget->sagittalSlider->EnabledOn();
+        } else if( this->orientation == "AXIAL" ) {
             this->imageViewWidget->axialSlider->EnabledOn();
             this->imageViewWidget->coronalSlider->EnabledOff();
             this->imageViewWidget->sagittalSlider->EnabledOff();
@@ -2265,15 +2312,16 @@ void vtkSivicController::RunTestingSuite()
 /*
  *   Returns the nearest int.  For values at the mid-point,
  *   the value is rounded to the larger int.
- */
 int nearestInt(float x) 
 {
     int x_to_int;
     x_to_int = (int) x;
 
+ */
     /*
      *   First do positive numbers, then negative ones.
      */
+/*
     if (x>=0) {
         if ((x - x_to_int) >= 0.5) {
             x_to_int += 1;   
@@ -2286,4 +2334,4 @@ int nearestInt(float x)
 
     return (int) x_to_int;   
 }
-
+*/

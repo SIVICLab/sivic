@@ -56,6 +56,7 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
     this->overlayImageCheck = NULL;
     this->overlayTextCheck = NULL;
     this->syncOverlayWL = false;
+    this->centerImage = true;
 
 }
 

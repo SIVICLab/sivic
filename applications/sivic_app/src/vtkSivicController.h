@@ -155,9 +155,12 @@ class vtkSivicController : public vtkObject
         void                       PopupMessage( string message );
         void                       SaveSession( );
         void                       RestoreSession( );
-        void                       ResetRange( bool useFullRange = 0, bool resetChannel = 0);
+        void                       ResetRange( bool useFullFrequencyRange = 0, bool useFullAmplitudeRange = 0,
+                                               bool resetAmplitude = 1, bool resetFrequency = 1);
+
+        void                       ResetChannel( );
         string                     GetPrinterName( );
-        void                       SetOrientation( const char* );
+        void                       SetOrientation( const char*, bool alignOverlay = 0 );
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();

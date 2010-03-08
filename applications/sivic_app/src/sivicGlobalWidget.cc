@@ -73,9 +73,9 @@ void sivicGlobalWidget::CreateWidget()
     this->orientationSelect->SetLabelPositionToTop();
 
     vtkKWMenu* unitMenu = this->orientationSelect->GetWidget()->GetMenu();
-    unitMenu->AddRadioButton("AXIAL", this->sivicController, "SetOrientation AXIAL");
-    unitMenu->AddRadioButton("CORONAL", this->sivicController, "SetOrientation CORONAL");
-    unitMenu->AddRadioButton("SAGITTAL", this->sivicController, "SetOrientation SAGITTAL");
+    unitMenu->AddRadioButton("AXIAL", this->sivicController, "SetOrientation AXIAL 1");
+    unitMenu->AddRadioButton("CORONAL", this->sivicController, "SetOrientation CORONAL 1");
+    unitMenu->AddRadioButton("SAGITTAL", this->sivicController, "SetOrientation SAGITTAL 1");
 
     this->metaboliteSelect = vtkKWMenuButtonWithLabel::New();
     this->metaboliteSelect->SetParent( this->specViewFrame );

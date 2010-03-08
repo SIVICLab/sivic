@@ -299,8 +299,12 @@ void sivicProcessingWidget::ExecuteFFT()
         imageFFT->Update();
         data->Modified();
         imageFFT->Delete();
-        bool useFullRange = 1;
-        this->sivicController->ResetRange( useFullRange );
+        bool useFullFrequencyRange = 1;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 1;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+                                           resetAmplitude, resetFrequency );
         this->sivicController->EnableWidgets( );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
@@ -323,8 +327,12 @@ void sivicProcessingWidget::ExecutePhase()
         multiCoilPhase->Update();
         data->Modified();
         multiCoilPhase->Delete();
-        bool useFullRange = 1;
-        this->sivicController->ResetRange(useFullRange);
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 0;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+                                           resetAmplitude, resetFrequency );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }
@@ -346,9 +354,13 @@ void sivicProcessingWidget::ExecuteCombine()
         coilCombine->Update();
         data->Modified();
         coilCombine->Delete();
-        bool useFullRange = 1;
-        bool resetChannel = 1;
-        this->sivicController->ResetRange(useFullRange, resetChannel);
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 0;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+                                           resetAmplitude, resetFrequency );
+        this->sivicController->ResetChannel( );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }
