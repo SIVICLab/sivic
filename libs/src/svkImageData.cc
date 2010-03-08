@@ -1546,10 +1546,10 @@ int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
         case svkDcmHeader::SAGITTAL:
             switch( orientation ) {
                 case svkDcmHeader::AXIAL:
-                    index = 0;
+                    index = 1;
                     break;
                 case svkDcmHeader::CORONAL:
-                    index = 1;
+                    index = 0;
                     break;
                 case svkDcmHeader::SAGITTAL:
                     index = 2;

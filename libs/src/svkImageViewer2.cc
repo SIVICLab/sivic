@@ -460,6 +460,7 @@ void svkImageViewer2::SetSlice( int slice, svkDcmHeader::Orientation sliceOrient
         sliceExtent[ sliceIndex *2 ] = slice;
         sliceExtent[ sliceIndex *2 + 1 ] = slice;
         this->GetImageActor( sliceOrientation )->SetDisplayExtent( sliceExtent );
+        this->GetImageActor( sliceOrientation )->Modified( );
         
         switch( sliceOrientation ) {
             case svkDcmHeader::AXIAL:

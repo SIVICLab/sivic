@@ -276,7 +276,6 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
                 this->view->SetInput(dataVector[MRS], 1); 
             }
         }
-        this->SetSlice( this->GetView()->GetSlice());
     } else if( index == MRS && data != NULL ) {
         if( dataVector[MRS] != NULL ) {
             dataVector[MRS]->Delete();
@@ -524,6 +523,29 @@ int svkOverlayViewController::GetCurrentStyle()
     return this->currentInteractorStyle;
 }
 
+
+/*!
+ *
+ */
+void svkOverlayViewController::SetCurrentStyle( int style ) 
+{
+        enum InteractorStyle { SELECTION, WINDOW_LEVEL, COLOR_OVERLAY, ROTATION };
+    switch( style ) {
+        case SELECTION:
+            this->UseSelectionStyle();
+            break;
+        case WINDOW_LEVEL:
+            this->UseWindowLevelStyle();
+            break;
+        case COLOR_OVERLAY:
+            this->UseColorOverlayStyle();
+            break;
+        case ROTATION:
+            this->UseRotationStyle();
+            break;
+    }
+}
+
 //! Switches to the window level style interactor
 void svkOverlayViewController::UseColorOverlayStyle() 
 {
@@ -593,7 +615,7 @@ void svkOverlayViewController::UseSelectionStyle()
         this->rwi->SetInteractorStyle( dragSelectStyle ); 
         this->rwi->Enable(); 
 
-        (static_cast<svkOverlayView*>(view))->imageViewer->ResetCamera();
+        //(static_cast<svkOverlayView*>(view))->AlignCamera();
         if( satBandsOn ) { 
             switch( this->GetView()->GetOrientation()) {
                 case svkDcmHeader::AXIAL:
@@ -769,6 +791,7 @@ void svkOverlayViewController::UpdateInteractor(vtkObject* subject, unsigned lon
                 dvController->UseRotationStyle(); 
                 break;
             case ROTATION:
+                svkOverlayView::SafeDownCast(dvController->GetView())->AlignCamera();
                 dvController->UseWindowLevelStyle(); 
                 break;
         } 

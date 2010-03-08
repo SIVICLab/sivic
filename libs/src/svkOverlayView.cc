@@ -277,7 +277,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     this->SetSlice( slice );
     selectionTopo->Delete();
     if( resetViewState ) {
-        this->AlignCamera();
+        //this->AlignCamera();
         this->HighlightSelectionVoxels();
     }
 
@@ -357,6 +357,8 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
         this->GetRenderer( svkOverlayView::PRIMARY )->GetActiveCamera()->SetPosition( cameraPosition ); 
         this->GetRenderer( svkOverlayView::PRIMARY )->GetActiveCamera()->SetViewUp( cameraViewUp ); 
         this->GetRenderer( svkOverlayView::PRIMARY )->GetActiveCamera()->SetFocalPoint( cameraFocus ); 
+    } else {
+        this->AlignCamera();
     }
     
     
@@ -366,8 +368,6 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     }
 
     // We need to reset the camera once Draw is on or the pipeline will not run
-    this->AlignCamera();
-    resetViewState = 0;
 
 }
 
@@ -388,9 +388,9 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
     if( strcmp( resultInfo.c_str(), "" ) == 0 ) { 
     
         if( dataVector[index] != NULL ) {
-            if( dataVector[MRI] != NULL && dataVector[MRS] != NULL ) {
+            //if( dataVector[MRI] != NULL && dataVector[MRS] != NULL ) {
                 resetViewState = 0; 
-            }
+            //}
             dataVector[index]->Delete();
             dataVector[index] = NULL;
         }
@@ -406,7 +406,7 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
             SetupMsInput( resetViewState );
         } 
         this->Refresh();
-        this->SetOrientation( this->orientation );
+        //this->SetOrientation( this->orientation );
     } else {
         string message = "ERROR: Dataset NOT loaded!!! \n";
         message += resultInfo;
@@ -1146,8 +1146,8 @@ void svkOverlayView::SetupOverlay()
     
 
     this->SetProp( svkOverlayView::COLOR_BAR, this->GetProp( svkOverlayView::COLOR_BAR) );
-    this->TurnPropOn( svkOverlayView::COLOR_BAR);
-    this->GetProp( svkOverlayView::COLOR_BAR)->Modified();
+    this->TurnPropOn( svkOverlayView::COLOR_BAR );
+    this->GetProp( svkOverlayView::COLOR_BAR )->Modified();
     this->GetRenderer( svkOverlayView::PRIMARY)->Render();
 
     // Now lets make sure we are looking at the appropriate slice.
@@ -1363,7 +1363,7 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
             this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
         }
         this->imageViewer->SetOrientation( orientation );
-        this->AlignCamera();
+        //this->AlignCamera();
         if( this->dataVector[MRS] != NULL ) {
             svkDataView::ResetTlcBrcForNewOrientation( this->dataVector[MRS], this->orientation, this->tlcBrc, this->slice );
             bool satBandsAllOn = false;
