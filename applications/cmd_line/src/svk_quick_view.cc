@@ -139,6 +139,13 @@ void QuickView( const char* filename)
 
     // Lets add a text actor with some info in it.
     dataViewer->SetInput( data, 0  );
+
+    dataViewer->GetView()->SetOrientation( data->GetDcmHeader()->GetOrientationType() );
+    if( data->IsA("svkMriImageData")) {
+        svkOverlayView::SafeDownCast( dataViewer->GetView())->AlignCamera( );
+        svkOverlayViewController::SafeDownCast(dataViewer)->UseWindowLevelStyle();
+    }
+
     slice = (extent[5]-extent[4])/2;
     dataViewer->SetSlice( slice );
     stringstream text;
@@ -152,9 +159,6 @@ void QuickView( const char* filename)
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( annotation );
 
-    if( data->IsA("svkMriImageData")) {
-        svkOverlayViewController::SafeDownCast(dataViewer)->UseWindowLevelStyle();
-    }
     dataViewer->GetView()->Refresh();
     window->Render();
     rwi->Start();
