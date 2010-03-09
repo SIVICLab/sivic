@@ -178,9 +178,11 @@ void svkDcmMriVolumeReader::InitDcmHeader()
 
     this->SetFileNames( sortFileNames->GetFileNames() );
     vtkStringArray* fileNames =  sortFileNames->GetFileNames();
+#if VTK_DEBUG_ON
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
         cout << "FN: " << fileNames->GetValue(i) << endl;
     }
+#endif
 
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );

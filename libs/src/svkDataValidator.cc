@@ -109,7 +109,6 @@ svkDataValidator::ValidationErrorStatus svkDataValidator::AreDataIncompatible( s
         areDataIncompatible = svkDataValidator::INVALID_DATA_CORRUPTED;
         resultInfo += "At least one dataset is corrupt (null)!  ";
     } 
-cout << " VALID: " << areDataIncompatible << endl;
 
     return areDataIncompatible; 
 }

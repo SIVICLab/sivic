@@ -409,7 +409,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     scButton->SetParent( toolbar->GetFrame() );
     scButton->Create();
     scButton->SetImageToPredefinedIcon( vtkKWIcon::IconCamera ); 
-    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
+    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture COMBINED_CAPTURE");
     scButton->SetBalloonHelpString( "Take a secondary capture." );
     toolbar->AddWidget( scButton );
 

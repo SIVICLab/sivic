@@ -407,9 +407,11 @@ void svkDdfVolumeReader::ParseDdf()
 
     this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
     vtkStringArray* fileNames =  sortFileNames->GetNthGroup( groupToUse );
+#if VTK_DEBUG_ON
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
         cout << "FN: " << fileNames->GetValue(i) << endl;
     }
+#endif
 
     try {
 

@@ -483,7 +483,9 @@ void svkPlotLineGrid::GenerateActor()
     string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
 
 
-    cout << "Warning(svkPlotLineGrid::GenerateActor):  Stabilize conventions for data ordering CellID ordering and x,y sign convention, tlc, brc, etc. (TODO) " << endl;
+    if (DEBUG) {
+        cout << "Warning(svkPlotLineGrid::GenerateActor):  Stabilize conventions for data ordering CellID ordering and x,y sign convention, tlc, brc, etc. (TODO) " << endl;
+    }
 
     //  Note that 2D selection range is defined from tlc to brc of rubber band with y 
     //  increasing in negative direction.

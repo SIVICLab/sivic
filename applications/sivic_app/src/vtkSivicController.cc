@@ -342,7 +342,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename );
-    cout << *newData << endl;
 
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -415,6 +414,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 bool resetFrequency = 0;
                 this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                            resetAmplitude, resetFrequency );
+                this->SetOrientation( this->orientation.c_str() );
             } else {
                 bool useFullFrequencyRange = 0;
                 bool useFullAmplitudeRange = 0;
@@ -422,20 +422,20 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 bool resetFrequency = 1;
                 this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                            resetAmplitude, resetFrequency );
+                switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                    case svkDcmHeader::AXIAL:
+                        this->SetOrientation( "AXIAL" );
+                        break;
+                    case svkDcmHeader::CORONAL:
+                        this->SetOrientation( "CORONAL" );
+                        break;
+                    case svkDcmHeader::SAGITTAL:
+                        this->SetOrientation( "SAGITTAL" );
+                        break;
+                }
             }
             this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
             this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
-            switch( newData->GetDcmHeader()->GetOrientationType() ) {
-                case svkDcmHeader::AXIAL:
-                    this->SetOrientation( "AXIAL" );
-                    break;
-                case svkDcmHeader::CORONAL:
-                    this->SetOrientation( "CORONAL" );
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    this->SetOrientation( "SAGITTAL" );
-                    break;
-            }
             string component = (this->spectraRangeWidget->componentSelectBox->GetWidget()->GetValue( ));
             if( component == "read" ) {
                 this->SetComponentCallback( 0 );
@@ -537,6 +537,8 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                 }
                 this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
+                this->imageViewWidget->overlayOpacitySlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
+
                 if( toggleDraw ) {
                     this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
                     this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
@@ -556,7 +558,6 @@ void vtkSivicController::OpenOverlay( const char* fileName )
 
 void vtkSivicController::OpenMetabolites( const char* metabolites )
 {
-    cout << "Attempting to open metabolites " << metabolites << endl;
     string metaboliteString(metabolites);
     string metaboliteFileName;
     if ( !(metaboliteString == "None") ) {

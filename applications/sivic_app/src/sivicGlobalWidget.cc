@@ -137,7 +137,6 @@ void sivicGlobalWidget::PopulateMetaboliteMenu( )
                     commandString += " \""; 
                     commandString += *it;
                     commandString += "\""; 
-                    cout << "Command string is: " << commandString << endl;
                     metaboliteNames->AddRadioButton(it->c_str(), this->sivicController, commandString.c_str());
                 }
 
