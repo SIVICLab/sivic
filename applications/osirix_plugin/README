@@ -19,6 +19,8 @@ ccmake ./
  EXECUTABLE_OUTPUT_PATH                                                                                                                        
  KWWidgets_DIR                    /usr/local/lib/KWWidgets                                                                                     
  LIBRARY_OUTPUT_PATH                                                                                                                           
+ SVK_USE_GL2PS                    OFF                                          
+ UCSF_INTERNAL                    OFF                                          
  VTK_DIR                          /usr/local/lib/vtk-5.4                                                                                       
 
 
