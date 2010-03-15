@@ -176,11 +176,14 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
         this->selectionBoxActor = NULL;
     }
     vtkActorCollection* selectionBoxTopology = data->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
-    selectionBoxTopology->InitTraversal();
-    this->selectionBoxActor = selectionBoxTopology->GetNextActor();
-    this->selectionBoxActor->Register(this);
-    this->renderer->AddActor( selectionBoxActor );
-    selectionBoxTopology->Delete();
+    // Case for no selection Box
+    if( selectionBoxTopology != NULL ) {
+        selectionBoxTopology->InitTraversal();
+        this->selectionBoxActor = selectionBoxTopology->GetNextActor();
+        this->selectionBoxActor->Register(this);
+        this->renderer->AddActor( selectionBoxActor );
+        selectionBoxTopology->Delete();
+    }
     int* extent = this->data->GetExtent(); 
     if( this->freqUpToDate != NULL ) {
         delete[] this->freqUpToDate;
@@ -268,10 +271,13 @@ void svkPlotLineGrid::SetSlice(int slice)
         this->Update();
         this->SetSliceAppender();
 
-        if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
-            this->selectionBoxActor->SetVisibility(1);
-        } else {
-            this->selectionBoxActor->SetVisibility(0);
+        // Case for no selection box
+        if( this->selectionBoxActor != NULL ) {
+            if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
+                this->selectionBoxActor->SetVisibility(1);
+            } else {
+                this->selectionBoxActor->SetVisibility(0);
+            }
         }
 
     }
@@ -831,46 +837,13 @@ void svkPlotLineGrid::UpdateData(vtkObject* subject, unsigned long eid, void* th
  */
 void svkPlotLineGrid::HighlightSelectionVoxels()
 {
-    if( data != NULL ) {
-        double* selectionBounds = this->selectionBoxActor->GetBounds();
-        double* actorBounds;
-        int newTlcBrc[2];
-        int ID;
-        int* extent = data->GetExtent();
-        newTlcBrc[0] = -1 ;
-        newTlcBrc[1] = -1 ;
-        vtkCollectionIterator* myIterator = vtkCollectionIterator::New();
-        svkPlotLine* currentPlot;
-        myIterator->SetCollection( xyPlots );
-        myIterator->InitTraversal();
-        while( !myIterator->IsDoneWithTraversal() ) {
-            currentPlot= svkPlotLine::SafeDownCast( myIterator->GetCurrentObject() );
-            // Get location of the data referenced by the actor
-            ID = xyPlots->IsItemPresent( currentPlot ) - 1 + slice*extent[1]*extent[3];
-            actorBounds = currentPlot->GetBounds();
-            if( (newTlcBrc[0] == -1 || ID < newTlcBrc[0] )   &&
-                    actorBounds[0] >= selectionBounds[0] &&
-                    actorBounds[1] <= selectionBounds[1] &&
-                    actorBounds[2] >= selectionBounds[2] &&
-                    actorBounds[3] <= selectionBounds[3] ) {
-                newTlcBrc[0] = ID;
-            }
-            if( (newTlcBrc[1] == -1 || ID > newTlcBrc[1])   &&
-                    actorBounds[0] >= selectionBounds[0] &&
-                    actorBounds[1] <= selectionBounds[1] &&
-                    actorBounds[2] >= selectionBounds[2] &&
-                    actorBounds[3] <= selectionBounds[3] ) {
-                newTlcBrc[1] = ID;
-            }
-            myIterator->GoToNextItem();
-        }
-        myIterator->Delete();
-
-        if( newTlcBrc[0] >= 0 && newTlcBrc[0] >= 0 ) {
-            this->Update();
-            AlignCamera();
-        } 
+    if( this->data != NULL ) {
+        double tolerance = 0.99;
+        int tlcBrcImageData[2];
+        this->data->GetTlcBrcInSelectionBox( tlcBrcImageData, tolerance, this->orientation, this->slice );
+        this->SetTlcBrc( tlcBrcImageData );
     } 
+
 }
 
 

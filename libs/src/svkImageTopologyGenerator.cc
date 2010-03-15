@@ -328,6 +328,11 @@ vtkActorCollection* svkImageTopologyGenerator::GenerateSelectionBox ( svkImageDa
     svkMrsImageData::SafeDownCast( data )->GenerateSelectionBox( selectionBoxGrid );
     vtkPoints* selectionBoxPoints = selectionBoxGrid->GetPoints();
     vtkCell* selectionBox = selectionBoxGrid->GetCell(0);
+    
+    // Case for no selection box
+    if( selectionBox == NULL ) {
+        return NULL;
+    }
     vtkPolyData* polyData = vtkPolyData::New();
     polyData->Allocate(12, 12);
     polyData->SetPoints(selectionBoxPoints);

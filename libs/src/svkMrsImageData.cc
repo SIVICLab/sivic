@@ -115,7 +115,7 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
         vtkFloatArray* planeNormals = vtkFloatArray::New();
         planeNormals->SetNumberOfComponents(3);
         planeNormals->SetNumberOfTuples(numberOfItems * 2);
-        
+
         int index = 0;   // Used to index planes, as opposed to slabs 
 
         for (int i = 0; i < numberOfItems; i++) {
@@ -123,36 +123,36 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
             thickness = header->GetFloatSequenceItemElement("VolumeLocalizationSequence", i, "SlabThickness" );
 
             center[0] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "MidSlabPosition", 0).c_str(),NULL);
+                        "VolumeLocalizationSequence", i, "MidSlabPosition", 0).c_str(),NULL);
             center[1] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "MidSlabPosition", 1).c_str(),NULL);
+                        "VolumeLocalizationSequence", i, "MidSlabPosition", 1).c_str(),NULL);
             center[2] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "MidSlabPosition", 2).c_str(),NULL);
+                        "VolumeLocalizationSequence", i, "MidSlabPosition", 2).c_str(),NULL);
 
             normal[0] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "SlabOrientation", 0).c_str(),NULL);
+                        "VolumeLocalizationSequence", i, "SlabOrientation", 0).c_str(),NULL);
             normal[1] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "SlabOrientation", 1).c_str(),NULL);
+                        "VolumeLocalizationSequence", i, "SlabOrientation", 1).c_str(),NULL);
             normal[2] = strtod(header->GetStringSequenceItemElement(
-                                       "VolumeLocalizationSequence", i, "SlabOrientation", 2).c_str(),NULL);
-            
+                        "VolumeLocalizationSequence", i, "SlabOrientation", 2).c_str(),NULL);
+
             //  Top Point of plane 
             planePoints->InsertPoint(index, center[0] + normal[0] * (thickness/2), 
-                                            center[1] + normal[1] * (thickness/2),
-                                            center[2] + normal[2] * (thickness/2) );
+                    center[1] + normal[1] * (thickness/2),
+                    center[2] + normal[2] * (thickness/2) );
             planeNormals->SetTuple3( index, normal[0], normal[1], normal[2] );
 
             index++; // index is per plane
 
             //  Bottom Point of plane 
             planePoints->InsertPoint(index, center[0] - normal[0] * (thickness/2), 
-                                            center[1] - normal[1] * (thickness/2),
-                                            center[2] - normal[2] * (thickness/2) );
+                    center[1] - normal[1] * (thickness/2),
+                    center[2] - normal[2] * (thickness/2) );
             planeNormals->SetTuple3( index, -normal[0], -normal[1], -normal[2] );
 
             index++;
         }
-        
+
         // vtkPlanesIntersection represents a convex region defined by an arbitrary number of planes
         vtkPlanesIntersection* region = vtkPlanesIntersection::New();
         region->SetPoints( planePoints );
@@ -168,8 +168,8 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
         selectionBoxPoints->SetNumberOfPoints(numVerticies);
         for( int i = 0; i < numVerticies; i++ ) {
             selectionBoxPoints->InsertPoint(i, vertices[i*numDims], 
-                                               vertices[i*numDims + 1], 
-                                               vertices[i*numDims + 2]   );
+                    vertices[i*numDims + 1], 
+                    vertices[i*numDims + 2]   );
         }
         // And now lets use a Hexahedron to represent them.
         // The point ID's must be in a specific order for this to work, 
@@ -217,18 +217,25 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
  */
 void svkMrsImageData::GetSelectionBoxCenter( float* selBoxCenter )
 {
+
+    selBoxCenter[0] = 0;
+    selBoxCenter[1] = 0;
+    selBoxCenter[2] = 0;
+
     vtkUnstructuredGrid* selBox = vtkUnstructuredGrid::New(); 
     this->GenerateSelectionBox( selBox );
     vtkPoints* selBoxPoints = selBox->GetPoints();
-    int numPoints = selBoxPoints->GetNumberOfPoints();
-    for( int i = 0; i < 3; i++ ) {
-        selBoxCenter[i] = 0;
-        for( int j = 0; j < numPoints; j++ ) {
-            selBoxCenter[i] += selBoxPoints->GetPoint(j)[i];
-        }
-        selBoxCenter[i] /= numPoints;
-    } 
-    selBox->Delete();
+
+    if( selBoxPoints != NULL ) {
+        int numPoints = selBoxPoints->GetNumberOfPoints();
+        for( int i = 0; i < 3; i++ ) {
+            for( int j = 0; j < numPoints; j++ ) {
+                selBoxCenter[i] += selBoxPoints->GetPoint(j)[i];
+            }
+            selBoxCenter[i] /= numPoints;
+        } 
+        selBox->Delete();
+    }
 
 }
 
@@ -244,6 +251,10 @@ void svkMrsImageData::GetSelectionBoxDimensions( float* dims )
         for (int i = 0; i < numberOfItems; i++) {
             dims[i] = header->GetFloatSequenceItemElement("VolumeLocalizationSequence", i, "SlabThickness" );
         }
+    } else { 
+        dims[0] = 0;
+        dims[1] = 0;
+        dims[2] = 0;
     }
 
 }
@@ -292,7 +303,7 @@ void svkMrsImageData::UpdateRange()
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = this->GetDcmHeader()->GetNumberOfTimePoints();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
-     for (int z = extent[4]; z <= extent[5]-1; z++) {
+    for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {
             for (int x = extent[0]; x <= extent[1]-1; x++) {
                 for( int channel = 0; channel < numChannels; channel++ ) {
@@ -301,22 +312,22 @@ void svkMrsImageData::UpdateRange()
                         for (int i = 0; i < numFrequencyPoints; i++) {
                             double* tuple = spectrum->GetTuple( i );
                             realRange[0] = tuple[0] < realRange[0]
-                                                     ? tuple[0] : realRange[0];
+                                ? tuple[0] : realRange[0];
                             realRange[1] = tuple[0] > realRange[1] 
-                                                     ? tuple[0] : realRange[1];
+                                ? tuple[0] : realRange[1];
 
                             imagRange[0] = tuple[1] < imagRange[0]
-                                                     ? tuple[1] : imagRange[0];
+                                ? tuple[1] : imagRange[0];
                             imagRange[1] = tuple[1] > imagRange[1]
-                                                     ? tuple[1] : imagRange[1];
+                                ? tuple[1] : imagRange[1];
 
                             double magnitude = pow( pow(tuple[0],2)
-                                                    + pow(tuple[1],2),0.5);
+                                    + pow(tuple[1],2),0.5);
 
                             magRange[0] = magnitude < magRange[0]
-                                                     ? magnitude : magRange[0];
+                                ? magnitude : magRange[0];
                             magRange[1] = magnitude > magRange[1]
-                                                     ? magnitude : magRange[1];
+                                ? magnitude : magRange[1];
                         }
                     }
                 }
@@ -337,7 +348,7 @@ void svkMrsImageData::UpdateRange()
 bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation )
 {
     orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
-                                this->GetDcmHeader()->GetOrientationType() : orientation;
+        this->GetDcmHeader()->GetOrientationType() : orientation;
 
     int voxelIndex[3] = {0,0,0};
 
@@ -355,6 +366,9 @@ bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation 
     projectedSelBoxRange[0] = VTK_DOUBLE_MAX;
     projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
     double projectedDistance;
+    if( selBoxPoints == NULL ) {
+        return false; 
+    }
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
         projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal ); 
         if( projectedDistance < projectedSelBoxRange[0]) {
@@ -382,14 +396,14 @@ bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation 
     double sliceCenter = projectedSliceRange[0] + (projectedSliceRange[1] - projectedSliceRange[0])/2;
     bool inSlice = 0;
     if( ( projectedSelBoxRange[0] > projectedSliceRange[0] && projectedSelBoxRange[0] < sliceCenter 
- )   || ( projectedSelBoxRange[1] > sliceCenter && projectedSelBoxRange[1] < projectedSliceRange[1]
- )   || ( sliceCenter > projectedSelBoxRange[0] && sliceCenter < projectedSelBoxRange[1]
- ) ){
+        )   || ( projectedSelBoxRange[1] > sliceCenter && projectedSelBoxRange[1] < projectedSliceRange[1]
+            )   || ( sliceCenter > projectedSelBoxRange[0] && sliceCenter < projectedSelBoxRange[1]
+                ) ){
         inSlice = 1;
     }
     uGrid->Delete();
     return inSlice;
-    
+
 }
 
 
@@ -413,10 +427,17 @@ int svkMrsImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
  */
 void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
 {
-    spacing[0] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 0, "SlabThickness" );
-    spacing[1] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 1, "SlabThickness" );
-    spacing[2] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 2, "SlabThickness" );
-    
+    int numberOfItems = this->GetDcmHeader()->GetNumberOfItemsInSequence("VolumeLocalizationSequence");
+    if( numberOfItems == 3 ) {
+        spacing[0] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 0, "SlabThickness" );
+        spacing[1] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 1, "SlabThickness" );
+        spacing[2] = this->GetDcmHeader()->GetFloatSequenceItemElement("VolumeLocalizationSequence", 2, "SlabThickness" );
+    } else {
+        spacing[0] = 0;
+        spacing[1] = 0;
+        spacing[2] = 0;
+    }
+
 }
 
 
@@ -526,6 +547,16 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
 
         int minCornerIndex;
         int maxCornerIndex;
+        // Case for no selection box
+        if( cellBoxPoints == NULL ) {
+            minPoint[0] = 0; 
+            minPoint[1] = 0; 
+            minPoint[2] = 0; 
+            maxPoint[0] = 0; 
+            maxPoint[1] = 0; 
+            maxPoint[2] = 0; 
+            return;
+        }
         for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
             corner = cellBoxPoints->GetPoint(i);
             if( i == 0 ) {
@@ -578,12 +609,26 @@ void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], double tolerance,
         double maxPoint[3];
         double selection[6];
         this->GetSelectionBoxMaxMin( minPoint, maxPoint );
-        selection[0] = minPoint[0];
-        selection[1] = maxPoint[0];
-        selection[2] = minPoint[1];
-        selection[3] = maxPoint[1];
-        selection[4] = minPoint[2];
-        selection[5] = maxPoint[2];
+        // Case for no selection box.. select all voxels
+        if( minPoint[0] == 0 && maxPoint[0] == 0 &&
+            minPoint[1] == 0 && maxPoint[1] == 0 &&
+            minPoint[2] == 0 && maxPoint[2] == 0 ) {
+            // We are going to use min/max of int/2 to avoid overflow
+            // The goal is to select All voxels
+            selection[0] = VTK_INT_MIN/2;
+            selection[1] = VTK_INT_MAX/2;
+            selection[2] = VTK_INT_MIN/2;
+            selection[3] = VTK_INT_MAX/2;
+            selection[4] = VTK_INT_MIN/2;
+            selection[5] = VTK_INT_MAX/2;
+        } else {
+            selection[0] = minPoint[0];
+            selection[1] = maxPoint[0];
+            selection[2] = minPoint[1];
+            selection[3] = maxPoint[1];
+            selection[4] = minPoint[2];
+            selection[5] = maxPoint[2];
+        }
         this->GetTlcBrcInUserSelection( tlcBrc, selection, orientation, slice );
 }
 

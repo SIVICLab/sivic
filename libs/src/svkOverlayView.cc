@@ -250,13 +250,19 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
 
     // Now we need to grab the selection box
     vtkActorCollection* selectionTopo = dataVector[MRS]->GetTopoActorCollection( 1 );
-    selectionTopo->InitTraversal();
-    if( this->GetRenderer( svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION) ) ) {
-        this->GetRenderer( svkOverlayView::PRIMARY)->RemoveActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+
+    // Case for no selection box
+    if( selectionTopo != NULL ) {
+        selectionTopo->InitTraversal();
+        if( this->GetRenderer( svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION) ) ) {
+            this->GetRenderer( svkOverlayView::PRIMARY)->RemoveActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+        }
+        this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
+        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+        selectionTopo->Delete();
     }
-    this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::PLOT_GRID ) );
-    this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL) );
@@ -264,7 +270,6 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) );
 
-    this->TurnPropOn( svkOverlayView::VOL_SELECTION );
    
     this->SetProp( svkOverlayView::PLOT_GRID, this->GetProp( svkOverlayView::PLOT_GRID ) );
     string acquisitionType = dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
@@ -275,7 +280,6 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     }
 
     this->SetSlice( slice );
-    selectionTopo->Delete();
     if( resetViewState ) {
         //this->AlignCamera();
         this->HighlightSelectionVoxels();
@@ -453,11 +457,17 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
             }
             this->slice = slice;
             this->GenerateClippingPlanes();
-            // If it is make it visible, otherwise hide it
-            if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
-                this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-            } else if( this->toggleSelBoxVisibility ) {
-                this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+
+            // Case for no selection box
+            if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL ) {
+
+                // If it is make it visible, otherwise hide it
+                if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
+                    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+                } else if( this->toggleSelBoxVisibility ) {
+                    this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+                }
+
             }
             int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
             if( toggleDraw ) {
@@ -1577,6 +1587,9 @@ bool svkOverlayView::AreAllSatBandOutlinesOn( svkDcmHeader::Orientation orientat
 void svkOverlayView::ToggleSelBoxVisibilityOn() 
 {
     this->toggleSelBoxVisibility = true;
+    if( this->GetProp( svkOverlayView::VOL_SELECTION ) == NULL ) {
+        return;
+    }
     if( this->dataVector[MRS] != NULL && static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) ) {
         this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
         this->TurnPropOn( svkOverlayView::VOL_SELECTION );
