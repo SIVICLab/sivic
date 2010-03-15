@@ -327,12 +327,12 @@ vtkActorCollection* svkImageTopologyGenerator::GenerateSelectionBox ( svkImageDa
     vtkUnstructuredGrid* selectionBoxGrid = vtkUnstructuredGrid::New(); 
     svkMrsImageData::SafeDownCast( data )->GenerateSelectionBox( selectionBoxGrid );
     vtkPoints* selectionBoxPoints = selectionBoxGrid->GetPoints();
-    vtkCell* selectionBox = selectionBoxGrid->GetCell(0);
-    
     // Case for no selection box
-    if( selectionBox == NULL ) {
+    if( selectionBoxPoints == NULL ) {
         return NULL;
     }
+    vtkCell* selectionBox = selectionBoxGrid->GetCell(0);
+    
     vtkPolyData* polyData = vtkPolyData::New();
     polyData->Allocate(12, 12);
     polyData->SetPoints(selectionBoxPoints);
