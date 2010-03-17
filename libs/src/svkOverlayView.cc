@@ -536,8 +536,8 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
         this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
     }
     this->Refresh();
-/*
-    if( dataVector[MRS] != NULL ) {
+
+    if( dataVector[MRS] != NULL && orientation != this->orientation ) {
         switch ( orientation ) {
             case svkDcmHeader::AXIAL:
                 this->satBandsAxial->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
@@ -550,7 +550,6 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
                 break;
         }
     }
-*/
 
 }
 
@@ -716,8 +715,7 @@ int* svkOverlayView::HighlightSelectionVoxels()
 {
     if( dataVector[MRS] != NULL ) { 
         int tlcBrcImageData[2];
-        double tolerance = 0.99;
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, tolerance, this->orientation, this->slice );
+        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {
@@ -1146,6 +1144,23 @@ void svkOverlayView::SetupOverlay()
 
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
                                     )->SetTextPositionToPrecedeScalarBar();
+
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->UseOpacityOn();
+
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->SetNumberOfLabels(3);
+
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->GetLabelTextProperty()->ShadowOff();
+
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->GetLabelTextProperty()->ItalicOff();
+
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->SetPosition(0.02,0.27);
+    vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
+                                    )->SetPosition2(0.15,0.8);
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                            )->HasViewProp( this->GetProp( svkOverlayView::COLOR_BAR) ) ) {

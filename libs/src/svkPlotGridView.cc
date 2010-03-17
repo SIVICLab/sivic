@@ -344,6 +344,23 @@ void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index
 
 
 /*!
+ *
+ */
+void svkPlotGridView::GetWindowLevelRange( double &lower, double &upper, int index)
+{
+    if (index == FREQUENCY) {
+        int integerLower;
+        int integerUpper;
+        this->plotGrid->GetFrequencyWLRange( integerLower, integerUpper );
+        lower = integerLower;
+        upper = integerUpper;
+    } else if (index == AMPLITUDE) {
+        this->plotGrid->GetIntensityWLRange(lower, upper);
+    }
+}
+
+
+/*!
  *  Method sets the window level range for the overlay.
  */
 void svkPlotGridView::SetOverlayWLRange( double* range )
@@ -439,9 +456,8 @@ void svkPlotGridView::Refresh()
 int* svkPlotGridView::HighlightSelectionVoxels()
 {
     if( dataVector[MRS] != NULL ) { 
-        double tolerance = 0.99;
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, tolerance, this->orientation, this->slice );
+        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {

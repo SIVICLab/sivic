@@ -88,6 +88,7 @@ class svkPlotGridViewController : public svkDataViewController
         virtual int*                    GetTlcBrc();
         virtual void                    SetTlcBrc( int* tlcBrc );
         virtual void                    SetWindowLevelRange( double lower, double upper, int index);
+        virtual void                    GetWindowLevelRange( double &lower, double &upper, int index);
                 void                    SetComponent( svkPlotLine::PlotComponent component);
                 int                     GetComponent( );
         virtual void                    SetRWInteractor( vtkRenderWindowInteractor* rwi );

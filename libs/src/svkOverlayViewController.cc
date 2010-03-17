@@ -808,8 +808,8 @@ void svkOverlayViewController::UpdateInteractor(vtkObject* subject, unsigned lon
  */
 void svkOverlayViewController::TurnPropOn(int propIndex)
 {
-    view->TurnPropOn( propIndex );
     if( visualizationCreated ) {
+        view->TurnPropOn( propIndex );
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
     }   
@@ -825,8 +825,8 @@ void svkOverlayViewController::TurnPropOn(int propIndex)
  */
 void  svkOverlayViewController::TurnPropOff(int propIndex)
 {
-    view->TurnPropOff( propIndex );
     if( visualizationCreated ) {
+        view->TurnPropOff( propIndex );
         // Used as an update, to catch collection change
         static_cast<svkOverlayView*>( view )->SetTlcBrc( GetTlcBrc() ); 
     }   
@@ -842,6 +842,11 @@ void svkOverlayViewController::SetOverlayThreshold(double threshold){
 
 double svkOverlayViewController::GetOverlayThreshold(){
     return static_cast<svkOverlayView*>( view )->GetOverlayThreshold( );
+}
+
+
+double svkOverlayViewController::GetOverlayThresholdValue(){
+    return static_cast<svkOverlayView*>( view )->GetLookupTable( )->GetAlphaThresholdValue();
 }
 
 /*!

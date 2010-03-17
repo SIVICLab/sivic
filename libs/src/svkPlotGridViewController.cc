@@ -199,6 +199,15 @@ void svkPlotGridViewController::SetWindowLevelRange( double lower, double upper,
 
 
 /*!
+ *  GetWindowLevel for spectral view;  index 0 is frequency, index 1 is intensity
+ */
+void svkPlotGridViewController::GetWindowLevelRange( double &lower, double &upper, int index)
+{
+   svkPlotGridView::SafeDownCast(this->view)->GetWindowLevelRange(lower, upper, index);
+}
+
+
+/*!
  *  SetWindowLevel for spectral view;  index 0 is frequency, index 1 is intensity
  */
 void svkPlotGridViewController::SetComponent( svkPlotLine::PlotComponent component)

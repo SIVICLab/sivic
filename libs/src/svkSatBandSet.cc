@@ -529,14 +529,14 @@ void svkSatBandSet::GenerateSatBandsActor( )
         satBandOutlineActor->SetMapper(satBandOutlineMapper);
         satBandMapper->Delete();
         satBandOutlineMapper->Delete();
-        satBandActor->GetProperty()->SetAmbientColor( 1.0, 1.0, 0.0 );
-        satBandActor->GetProperty()->SetOpacity(0.2);
+        satBandActor->GetProperty()->SetAmbientColor( 0.9, 0.25, 0.0 );
+        satBandActor->GetProperty()->SetOpacity(0.4);
         satBandActor->GetProperty()->SetAmbient(1.0);
         satBandActor->GetProperty()->SetLineWidth(3.0);
         satBandActor->GetProperty()->SetDiffuse(0.0);
         satBandActor->GetProperty()->SetSpecular(0.0);
 
-        satBandOutlineActor->GetProperty()->SetAmbientColor( 1.0, 1.0, 1.0 );
+        satBandOutlineActor->GetProperty()->SetAmbientColor( 0.9, 0.25, 0.0 );
         satBandOutlineActor->GetProperty()->SetAmbient(1.0);
         satBandOutlineActor->GetProperty()->SetDiffuse(0.0);
         satBandOutlineActor->GetProperty()->SetLineWidth(2.0);

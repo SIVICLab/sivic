@@ -638,6 +638,16 @@ void svkPlotLineGrid::SetFrequencyWLRange(int lower, int upper)
 
 
 /*!
+ *
+ */
+void svkPlotLineGrid::GetFrequencyWLRange(int &lower, int &upper)
+{
+    lower = this->plotRangeX1; 
+    upper = this->plotRangeX2; 
+}
+
+
+/*!
  *  Sets the intesity range to be between lower and upper.
  *
  *  \param lower the minimum amplitude
@@ -654,6 +664,16 @@ void svkPlotLineGrid::SetIntensityWLRange(double lower, double upper)
         }
     }
     this->UpdatePlotRange();
+}
+
+
+/*!
+ *
+ */
+void svkPlotLineGrid::GetIntensityWLRange(double &lower, double &upper)
+{
+    lower = this->plotRangeY1;
+    upper = this->plotRangeY2;  
 }
 
 
@@ -838,9 +858,8 @@ void svkPlotLineGrid::UpdateData(vtkObject* subject, unsigned long eid, void* th
 void svkPlotLineGrid::HighlightSelectionVoxels()
 {
     if( this->data != NULL ) {
-        double tolerance = 0.99;
         int tlcBrcImageData[2];
-        this->data->GetTlcBrcInSelectionBox( tlcBrcImageData, tolerance, this->orientation, this->slice );
+        this->data->GetTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
     } 
 

@@ -127,6 +127,7 @@ class svkOverlayViewController: public svkDataViewController
         void                      SetOverlayOpacity(double opacity);
         void                      SetOverlayThreshold(double threshold);
         double                    GetOverlayThreshold();
+        double                    GetOverlayThresholdValue();
         int                       GetCurrentStyle();
         void                      SetCurrentStyle( int style );
         void                      UseWindowLevelStyle();

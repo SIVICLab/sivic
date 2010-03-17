@@ -600,8 +600,7 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
  *                   voxel must be within the selection box to be selected
  *  \param slice the slice you wish to select within
  */
-void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], double tolerance, 
-                                            svkDcmHeader::Orientation orientation, int slice )
+void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice )
 {
         orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
                                 this->GetDcmHeader()->GetOrientationType() : orientation;
