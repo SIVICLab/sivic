@@ -123,21 +123,21 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
         numComponents = 1; 
     }
 
-    int numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
+    this->numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
+    this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
-
 
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
-    long unsigned int dataLength = numVoxels[0] * numVoxels[1] * numVoxels[2] * numFreqPts * numComponents*numCoils*numTimePts;
+    long unsigned int dataLength = 
+        numVoxels[0] * numVoxels[1] * numVoxels[2] * this->numFreqPts * numComponents * numCoils * this->numTimePts;
 
     float* specData = new float [ dataLength ];
     this->GetOutput()->GetDcmHeader()->GetFloatValue( "SpectroscopyData", specData, dataLength);  
         
     for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
-        for (int timePt = 0; timePt < numTimePts; timePt ++) {
+        for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
             for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
                 for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
                     for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
@@ -165,11 +165,7 @@ void svkDcmMrsVolumeReader::SetCellSpectrum(svkImageData* data, int x, int y, in
     vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
     dataArray->SetNumberOfComponents( numComponents );
 
-    int numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
-    int numCoils = this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
-
-    dataArray->SetNumberOfTuples(numFreqPts);
+    dataArray->SetNumberOfTuples(this->numFreqPts);
     char arrayName[30];
     sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
     dataArray->SetName(arrayName);
@@ -179,14 +175,14 @@ void svkDcmMrsVolumeReader::SetCellSpectrum(svkImageData* data, int x, int y, in
     int cols = numVoxels[0];
     int rows = numVoxels[1];
     int slices = numVoxels[2];
-    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
+    int coilOffset = cols * rows * slices * this->numTimePts;     //number of spectra per coil
     int timePtOffset = cols * rows * slices;
 
     int offset = ((( cols * rows * z ) + ( cols * y ) + x )  
-             + ( timePt * timePtOffset ) + ( coilNum * coilOffset ) ) *numFreqPts*numComponents;
+             + ( timePt * timePtOffset ) + ( coilNum * coilOffset ) ) * this->numFreqPts * numComponents;
 
 
-    for (int i = 0; i < numFreqPts; i++) {
+    for (int i = 0; i < this->numFreqPts; i++) {
         dataArray->SetTuple( i, &(specData[ offset + (i * 2) ]) );
     }
 
