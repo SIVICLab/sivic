@@ -102,21 +102,6 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         static sivicImageViewWidget *New();
         vtkTypeRevisionMacro(sivicImageViewWidget,sivicKWCompositeWidget);
         
-        enum {
-            ALL_SLICES = 0,
-            CURRENT_SLICE
-        } OutputOption;
-
-        enum {
-            LIGHT_ON_DARK = 0,
-            DARK_ON_LIGHT 
-        } ColorSchema;
-
-        enum {
-            SPECTRA_CAPTURE = 0,
-            IMAGE_CAPTURE
-        } CaptureType;
-
         void SetSyncOverlayWL( bool syncOverlayWL );
 
 

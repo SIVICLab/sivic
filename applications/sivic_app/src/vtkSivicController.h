@@ -67,6 +67,7 @@
 
 #include <svkDataViewController.h>
 #include <svkDetailedPlotViewController.h>
+#include <svkSecondaryCaptureFormatter.h>
 #include <sivicViewRenderingWidget.h>
 #include <svkDataModel.h>
 #include <svkLookupTable.h>
@@ -173,6 +174,7 @@ class vtkSivicController : public vtkObject
         void                       DisableWidgets();
         void                       SetThresholdType( string thresholdType );
         string                     GetThresholdType( );
+        int                        GetFrequencyType( );
         void                       SetThresholdTypeToPercent();
         void                       SetThresholdTypeToQuantity();
         void                       SetOverlayThreshold( double threshold );
@@ -200,6 +202,7 @@ class vtkSivicController : public vtkObject
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
         svkDetailedPlotViewController* detailedPlotController;
+        svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
 
 };
 

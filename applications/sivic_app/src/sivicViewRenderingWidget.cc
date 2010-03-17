@@ -33,6 +33,7 @@ sivicViewRenderingWidget::sivicViewRenderingWidget()
 
     this->plotController = NULL;
     this->overlayController = NULL;
+    this->orientation = svkDcmHeader::AXIAL;
 
 }
 
@@ -185,6 +186,12 @@ void sivicViewRenderingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
 }
 
 
+void sivicViewRenderingWidget::SetOrientation( svkDcmHeader::Orientation orientation )
+{
+    this->orientation = orientation;
+}
+
+
 /*!
  * Reset the text describing the loaded data.
  */
@@ -277,8 +284,11 @@ void sivicViewRenderingWidget::ResetInfoText()
 
         // Slice Position:
         int sliceIndex[3] = {0, 0, this->plotController->GetSlice() };
+        int orientationIndex = model->GetDataObject("SpectroscopicData")->GetOrientationIndex( orientation );
+        sliceIndex[ orientationIndex ] = this->plotController->GetSlice();
         model->GetDataObject( "SpectroscopicData" )->GetPositionFromIndex( sliceIndex, sliceLocation );
-        infoSS << "CSI Slice Pos:  " << sliceLocation[2] << endl;
+
+        infoSS << "CSI Slice Pos:  " << sliceLocation[orientationIndex] << endl;
         
         // Coil
         string specCoil = model->GetDataObject( "SpectroscopicData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");

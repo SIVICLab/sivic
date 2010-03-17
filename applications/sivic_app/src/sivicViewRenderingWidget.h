@@ -60,6 +60,7 @@ class sivicViewRenderingWidget : public sivicKWCompositeWidget
         static sivicViewRenderingWidget *New();
         vtkTypeRevisionMacro(sivicViewRenderingWidget,sivicKWCompositeWidget);
 
+        void SetOrientation( svkDcmHeader::Orientation orientation );
         void ResetInfoText( );
 
     protected:
@@ -83,6 +84,7 @@ class sivicViewRenderingWidget : public sivicKWCompositeWidget
     private:
 
         vtkTextActor*               it;
+        svkDcmHeader::Orientation   orientation;
         const char*                 GetMetaboliteName( string fileName );
 
         sivicViewRenderingWidget(const sivicViewRenderingWidget&);   // Not implemented.

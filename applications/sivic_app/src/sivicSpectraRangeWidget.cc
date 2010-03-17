@@ -661,7 +661,6 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
             this->detailedPlotWidget->GetWidgetName());
         }
         int* tlcBrc = this->plotController->GetTlcBrc();
-        cout << "Tlc is: " << tlcBrc[0] << " Brc is: " << tlcBrc[1] << endl; 
         this->detailedPlotController->SetUnits( this->specUnits );
         double minValue;
         double maxValue;

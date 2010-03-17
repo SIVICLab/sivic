@@ -59,6 +59,12 @@ vtkSivicController::vtkSivicController()
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
     this->thresholdType = "Quantity";
+    this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
+    this->secondaryCaptureFormatter->SetPlotController( this->plotController );
+    this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
+    this->secondaryCaptureFormatter->SetDetailedPlotController( this->detailedPlotController );
+    this->secondaryCaptureFormatter->SetSivicController( this );
+    
 }
 
 
@@ -78,6 +84,16 @@ vtkSivicController::~vtkSivicController()
     if( this->plotController != NULL ) {
         this->plotController->Delete();
         this->plotController = NULL;
+    }
+
+    if( this->detailedPlotController != NULL ) {
+        this->detailedPlotController->Delete();
+        this->detailedPlotController = NULL;
+    }
+
+    if( this->secondaryCaptureFormatter != NULL ) {
+        this->secondaryCaptureFormatter->Delete();
+        this->secondaryCaptureFormatter = NULL;
     }
 
 }
@@ -883,6 +899,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
     dlg->SetApplication(app);
     dlg->SaveDialogOn();
     dlg->Create();
+    
 
     string defaultNamePattern;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern( 
@@ -977,21 +994,14 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
 
     int firstFrame = 0;
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
+    if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
     
     if( print ) {
-        this->ToggleColorsForPrinting( sivicImageViewWidget::DARK_ON_LIGHT );
+        this->ToggleColorsForPrinting( svkSecondaryCaptureFormatter::DARK_ON_LIGHT );
     }
-
-    if ( this->model->DataExists("MetaboliteData") ) {
-        vtkLabeledDataMapper::SafeDownCast(
-            vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())->GetLabelTextProperty()->SetFontSize(18);
-    }
-
-    this->viewRenderingWidget->it->GetTextProperty()->SetFontSize(35);
 
     svkImageData* outputImage = NULL;
 
@@ -1038,14 +1048,17 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
     }
 
+/*
     if ( this->model->DataExists("MetaboliteData") ) {
         vtkLabeledDataMapper::SafeDownCast(
             vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())->GetLabelTextProperty()->SetFontSize(12);
     }
-    this->viewRenderingWidget->it->GetTextProperty()->SetFontSize(13);
+    this->viewRenderingWidget->imageInfoActor->GetTextProperty()->SetFontSize(13);
+    this->viewRenderingWidget->specInfoActor->GetTextProperty()->SetFontSize(13);
+*/
 
     if( print ){
-        ToggleColorsForPrinting( sivicImageViewWidget::LIGHT_ON_DARK );
+        ToggleColorsForPrinting( svkSecondaryCaptureFormatter::LIGHT_ON_DARK );
     }
     writer->Delete();
     this->overlayController->GetView()->Refresh();    
@@ -1059,159 +1072,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
  */
 void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
-
-    int firstFrame = 0;
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
-    int instanceNumber = 1;
-    int imageMagnification = 1;
-    int textMagnification = 1;
-    int spectraMagnification = 2;
-    for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
-            continue;
-        }
-        string fileNameStringTmp = fileNameString; 
-
-        ostringstream frameNum;
-        frameNum <<  instanceNumber;
-
-        this->SetSlice(m);
-
-        //  Replace * with slice number in output file name: 
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } else {
-            size_t pos = fileNameStringTmp.find_last_of(".");
-            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
-        }
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-        //  if Darwin: 
-        //fileNameStringTmp.assign("\"" + fileNameStringTmp + "\""); 
-        //cout << "FN: " << fileNameStringTmp.c_str() << endl;
-        writer->SetFileName( fileNameStringTmp.c_str() );
-
-        /*
-         ==============================================================
-         ==              FORMATTING OUTPUT IMAGE                     ==
-         ==============================================================
-        */
-
-        /*
-         * For now we are going to try to duplicate the output of mr.dev
-         * We are goung to use the svkMultiWindowToImageFilter to concatenate
-         * the image and the text, then use vtkImageAppend to concatenate the
-         * combined image/text with spectrscopy. We cannot just use the
-         * MultiWindowToImageFilter because it would not allow us to have
-         * images side-by-side in a single "row".
-         */
-
-        // First lets concatenate the image, and the text
-        svkMultiWindowToImageFilter* mw2ifprep = svkMultiWindowToImageFilter::New();
-        if( print ) {
-            mw2ifprep->SetPadConstant( 255 );
-        }
-        int* imageViewSize = this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetSize();
-        mw2ifprep->SetInput(this->viewRenderingWidget->viewerWidget->GetRenderWindow(), 0, 0, imageMagnification );
-        mw2ifprep->SetInput( this->viewRenderingWidget->infoWidget->GetRenderWindow(), 1, 0, textMagnification );
-        mw2ifprep->Update();
-
-        // Now lets use the multiwindow to get the image of the spectroscopy
-        svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
-        if( print ) {
-            mw2if->SetPadConstant( 255 );
-        }
-        //  starts index at bottom left corner of window
-        //mw2if->SetInput(     viewerWidget->GetRenderWindow(), 0, 0, 1 );
-        mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, spectraMagnification );
-        //mw2if->SetInput(       this->viewRenderingWidget->infoWidget->GetRenderWindow(), 2, 0, 1 );
-        //mw2if->SetInput( this->viewRenderingWidget->titleWidget->GetRenderWindow(), 0, 3, 1 );
-        mw2if->Update();
-
-        // Now we need to pad the first image since it is smaller
-        vtkImageConstantPad* padder = vtkImageConstantPad::New();
-        if( print ) {
-            padder->SetConstant( 255 );
-        }
-        int newExtent[6];
-        int* prepImageExtent =  mw2ifprep->GetOutput()->GetExtent();
-        int* specImageExtent =  mw2if->GetOutput()->GetExtent();
-        
-        // TODO: Find a less manual way of making the resolution match.
-        // This should be refactored when we create our formatting class
-        newExtent[0] = specImageExtent[0];
-        if( specImageExtent[1] < spectraMagnification*(imageViewSize[0]) - 1  ) {
-            newExtent[1] = spectraMagnification*imageViewSize[0] - 1;
-        } else {
-            newExtent[1] = specImageExtent[1];
-        }
-        newExtent[2] = prepImageExtent[2];
-        newExtent[3] = prepImageExtent[3];
-        newExtent[4] = prepImageExtent[4];
-        newExtent[5] = prepImageExtent[5];
-        padder->SetOutputWholeExtent( newExtent );
-        padder->SetInput( mw2ifprep->GetOutput());
-
-        vtkImageConstantPad* spectraPadder = vtkImageConstantPad::New();
-        if( print ) {
-            spectraPadder->SetConstant( 255 );
-        }
-        spectraPadder->SetInput(mw2if->GetOutput());
-        newExtent[2] = specImageExtent[2];
-        newExtent[3] = specImageExtent[3];
-        newExtent[4] = specImageExtent[4];
-        newExtent[5] = specImageExtent[5];
-        spectraPadder->SetOutputWholeExtent(newExtent);
-        // And use image append to add the specroscopy to the image+text
-        vtkImageAppend* appender = vtkImageAppend::New();
-        appender->SetAppendAxis( 1 );
-        appender->SetInput(0, padder->GetOutput()); 
-        appender->SetInput(1, spectraPadder->GetOutput()); 
-        appender->Update();
-        padder->Delete();
-        spectraPadder->Delete();
-
-        /*
-         ==============================================================
-         ==           END FORMATTING OUTPUT IMAGE                    ==
-         ==============================================================
-        */
-
-        if( writer->IsA("svkImageWriter") ) {  
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "MRS_SC" );
-            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
-            double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
-            outputImage->CopyVtkImage( appender->GetOutput(), dcos );
-            static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
-        } else {
-            vtkImageFlip* flipper = vtkImageFlip::New();
-            flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( appender->GetOutput() );
-            writer->SetInput( flipper->GetOutput() );
-            flipper->Delete();
-            flipper = NULL;
-        }
-        instanceNumber++;
-
-        writer->Write();
-        
-        mw2if->Delete();
-        if( print ) {
-            stringstream printCommand;
-            printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-            cout<< printCommand.str().c_str() << endl;
-            system( printCommand.str().c_str() ); 
-            stringstream removeCommand;
-            removeCommand << "rm " << fileNameStringTmp.c_str(); 
-            system( removeCommand.str().c_str() ); 
-        }
-    }
+    this->secondaryCaptureFormatter->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print );
 }
 
 
@@ -1220,122 +1081,7 @@ void vtkSivicController::WriteCombinedCapture( vtkImageWriter* writer, string fi
  */
 void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber ) 
 {
-    vtkTextActor* sliceLocation = vtkTextActor::New();
-    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->AddActor( sliceLocation );
-    int* winSize = this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetSize();
-    sliceLocation->SetPosition(10,winSize[1]-25);
-    
-    // Lets start by determining the first frame we want to show.
-    int i = 0;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i) 
-           && i <= this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices() - 1 ) {
-        i++;
-    }
-
-    // We want to to start two frames before the start. This is the convention for mr.dev
-    int firstFrame = i-2; 
-    firstFrame = firstFrame < 0 ? 0 : firstFrame;
-    i = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i)  
-           && i >= firstFrame ) {
-        i--;
-    }
-    int lastFrame = i; 
-    svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
-    string fileNameStringTmp = fileNameString; 
-
-    vtkDataSetCollection* allImages = vtkDataSetCollection::New();
-    vector <vtkImageAppend*> rowAppender; 
-    rowAppender.reserve( (lastFrame-firstFrame)/2+1 ); 
-    vtkImageAppend* colAppender = vtkImageAppend::New();
-    colAppender->SetAppendAxis(1);
-    for (int m = firstFrame; m <= lastFrame; m++) {
-        vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
-        double origin[3];
-        model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetOrigin(origin, lastFrame+firstFrame-m );
-        // We need to reverse the slice order because of the direction of the appender.
-        ostringstream position;
-        position << "Slice: " << lastFrame+firstFrame-m+1 << "Pos(mm): " << origin[2];
-        sliceLocation->SetInput( position.str().c_str() );
-        this->SetSlice(lastFrame + firstFrame - m);
-        vtkImageData* data = vtkImageData::New();
-        allImages->AddItem( data );
-        //  Replace * with slice number in output file name: 
-        ostringstream frameNum;
-        if( instanceNumber == 0 ) {
-            frameNum << 0;
-        } else {
-            frameNum << instanceNumber;
-        }
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } 
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-
-        writer->SetFileName( fileNameStringTmp.c_str() );
-    
-        // Now lets use the multiwindow to get the image of the spectroscopy
-        rendererToImage->SetInput( this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer() );
-        rendererToImage->SetMagnification(1);
-        rendererToImage->Update();
-        data->DeepCopy( rendererToImage->GetOutput() );
-        data->Update();
-        mw2if->SetInput( this->viewRenderingWidget->viewerWidget->GetRenderWindow(), m/2, m%2, 1 );
-        if( (m - firstFrame) % 2 == 0 ) {
-            rowAppender[(m-firstFrame)/2] = vtkImageAppend::New();
-            rowAppender[(m-firstFrame)/2]->SetInput( 1, data );
-            if( m == lastFrame - 1 ) {
-                colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
-            }
-        } else {
-            rowAppender[(m-firstFrame)/2]->SetInput( 0, data );
-            rowAppender[(m-firstFrame)/2]->Update();
-            colAppender->SetInput( (m-firstFrame)/2, rowAppender[(m-firstFrame)/2]->GetOutput() );
-            rowAppender[(m-firstFrame)/2]->Delete();
-        }
-        //data->Delete();
-        //colAppender->SetInput(m-firstFrame, data );
-        rendererToImage->Delete();
-
-    }
-    colAppender->Update();
-    mw2if->Update();
-
-    if( writer->IsA("svkImageWriter") ) {  
-        if( instanceNumber == 0 ) {
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( 1 );
-        } else {
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-        }
-        double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
-        //outputImage->CopyVtkImage( mw2if->GetOutput(), dcos );
-        vtkImageFlip* flipper = vtkImageFlip::New();
-        flipper->SetFilteredAxis( 1 );
-        flipper->SetInput( colAppender->GetOutput() );
-        flipper->Update();
-        outputImage->CopyVtkImage( flipper->GetOutput(), dcos );
-        static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
-        flipper->Delete();
-        flipper = NULL;
-    } else {
-        writer->SetInput( colAppender->GetOutput() );
-    }
-
-    writer->Write();
-    //mw2if->Delete();
-    this->viewRenderingWidget->viewerWidget->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->RemoveViewProp( sliceLocation );
-
-    if( print ) {
-        stringstream printCommand;
-        printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-        cout<< printCommand.str().c_str() << endl;
-        system( printCommand.str().c_str() ); 
-        stringstream removeCommand;
-        removeCommand << "rm " << fileNameStringTmp.c_str(); 
-        system( removeCommand.str().c_str() ); 
-    }
+    this->secondaryCaptureFormatter->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print, instanceNumber );
 }
 
 
@@ -1344,85 +1090,7 @@ void vtkSivicController::WriteImageCapture( vtkImageWriter* writer, string fileN
  */
 void vtkSivicController::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
-    int firstFrame = 0;
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame + 1;
-    }
-    int instanceNumber = 1;
-    for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
-            continue;
-        }
-        string fileNameStringTmp = fileNameString; 
-
-        ostringstream frameNum;
-        frameNum <<  instanceNumber;
-
-        this->SetSlice(m);
-
-        //  Replace * with slice number in output file name: 
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } else {
-            size_t pos = fileNameStringTmp.find_last_of(".");
-            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
-        }
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-        writer->SetFileName( fileNameStringTmp.c_str() );
-
-        /*
-         ==============================================================
-         ==              FORMATTING OUTPUT IMAGE                     ==
-         ==============================================================
-        */
-
-        /*
-         * For now we are going to try to duplicate the output of mr.dev
-         * We are goung to use the svkMultiWindowToImageFilter to concatenate
-         * the image and the text, then use vtkImageAppend to concatenate the
-         * combined image/text with spectrscopy. We cannot just use the
-         * MultiWindowToImageFilter because it would not allow us to have
-         * images side-by-side in a single "row".
-         */
-
-        // Now lets use the multiwindow to get the image of the spectroscopy
-        svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
-        mw2if->SetInput( this->viewRenderingWidget->specViewerWidget->GetRenderWindow(), 0, 0, 2 );
-        mw2if->Update();
-
-        if( writer->IsA("svkImageWriter") ) {  
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
-            double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
-            outputImage->CopyVtkImage( mw2if->GetOutput(), dcos );
-            static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
-        } else {
-            vtkImageFlip* flipper = vtkImageFlip::New();
-            flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( mw2if->GetOutput() );
-            writer->SetInput( flipper->GetOutput() );
-            flipper->Delete();
-            flipper = NULL;
-        }
-        instanceNumber++;
-
-        writer->Write();
-        
-        mw2if->Delete();
-        if( print ) {
-            stringstream printCommand;
-            printCommand << "lpr -h -P " << this->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-            cout<< printCommand.str().c_str() << endl;
-            system( printCommand.str().c_str() ); 
-            stringstream removeCommand;
-            removeCommand << "rm " << fileNameStringTmp.c_str(); 
-            system( removeCommand.str().c_str() ); 
-        }
-    }
+    this->secondaryCaptureFormatter->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print );
 }
 
 
@@ -1448,7 +1116,7 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
  
     int firstFrame = 0;
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
-    if( outputOption == sivicImageViewWidget::CURRENT_SLICE ) { 
+    if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
@@ -1502,14 +1170,14 @@ void vtkSivicController::ToggleColorsForPrinting( bool colorSchema )
     double backgroundColor[3];
     double foregroundColor[3];
     int plotGridSchema;
-    if( colorSchema == sivicImageViewWidget::DARK_ON_LIGHT ) {
+    if( colorSchema == svkSecondaryCaptureFormatter::DARK_ON_LIGHT ) {
         backgroundColor[0] = 1;
         backgroundColor[1] = 1;
         backgroundColor[2] = 1;
         foregroundColor[0] = 0;
         foregroundColor[1] = 0;
         foregroundColor[2] = 0;
-        plotGridSchema = svkPlotGridView::DARK_ON_LIGHT;
+        plotGridSchema = svkSecondaryCaptureFormatter::DARK_ON_LIGHT;
     } else {
         backgroundColor[0] = 0;
         backgroundColor[1] = 0;
@@ -1525,7 +1193,8 @@ void vtkSivicController::ToggleColorsForPrinting( bool colorSchema )
     this->plotController->SetColorSchema( plotGridSchema );
    
     // Now lets invert the colors of the text bar 
-    vtkRenderer* tmpRenderer = this->viewRenderingWidget->titleWidget->GetRenderer();
+/*
+    vtkRenderer* tmpRenderer = this->viewRenderingWidget->specInfoWidget->GetRenderer();
     tmpRenderer->SetBackground( backgroundColor );
     vtkPropCollection* tmpActors = tmpRenderer->GetViewProps();
     vtkCollectionIterator* iterator = vtkCollectionIterator::New();
@@ -1553,6 +1222,7 @@ void vtkSivicController::ToggleColorsForPrinting( bool colorSchema )
         iterator->GoToNextItem();
     }
     iterator->Delete();
+*/
 
 }
 
@@ -1572,6 +1242,9 @@ void vtkSivicController::SetModel( svkDataModel* model  )
     }
     if( this->viewRenderingWidget != NULL ) {
         this->viewRenderingWidget->SetModel(this->model);
+    }
+    if( this->secondaryCaptureFormatter != NULL ) {
+        secondaryCaptureFormatter->SetModel( model );
     }
 }
 
@@ -1707,15 +1380,6 @@ void vtkSivicController::UseRotationStyle()
         this->imageViewWidget->coronalSlider->EnabledOn();
         this->imageViewWidget->sagittalSlider->EnabledOn();
 
-        //svkImageData* data = this->model->GetDataObject( "AnatomicalData" );
-        //int firstSlice = data->GetFirstSlice( svkDcmHeader::CORONAL );
-        //int lastSlice = data->GetLastSlice( svkDcmHeader::CORONAL );
-        //this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-        //this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-        //firstSlice = data->GetFirstSlice( svkDcmHeader::SAGITTAL );
-        //lastSlice = data->GetLastSlice( svkDcmHeader::SAGITTAL );
-        //this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-        //this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
     }
 }
 
@@ -1877,6 +1541,8 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
     if( this->orientation == "AXIAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+        this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::AXIAL );
+        this->viewRenderingWidget->SetOrientation( svkDcmHeader::AXIAL );
         if( alignOverlay ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
@@ -1888,6 +1554,8 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
     } else if ( this->orientation == "CORONAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+        this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::CORONAL );
+        this->viewRenderingWidget->SetOrientation( svkDcmHeader::CORONAL );
         if( alignOverlay ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
@@ -1899,6 +1567,8 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
     } else if ( this->orientation == "SAGITTAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+        this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::SAGITTAL );
+        this->viewRenderingWidget->SetOrientation( svkDcmHeader::SAGITTAL );
         if( alignOverlay ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
@@ -1982,69 +1652,6 @@ void vtkSivicController::ResetRange( bool useFullFrequencyRange, bool useFullAmp
         this->spectraRangeWidget->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                               resetAmplitude, resetFrequency );
         this->plotController->GetView()->Refresh();
-/*
-        string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
-        float min = 1;
-        float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
-        this->SetSpecUnitsCallback(svkSpecPoint::PPM);
-        if( domain == "FREQUENCY" ) {
-            min = this->spectraRangeWidget->point->ConvertPosUnits(
-                            0,
-                            svkSpecPoint::PTS,
-                            svkSpecPoint::PPM
-                                );
-            max = this->spectraRangeWidget->point->ConvertPosUnits(
-                            data->GetCellData()->GetArray(0)->GetNumberOfTuples(),
-                            svkSpecPoint::PTS,
-                            svkSpecPoint::PPM
-                                );
-
-            this->spectraRangeWidget->xSpecRange->SetWholeRange( min, max );
-            if ( useFullRange ) {
-                this->spectraRangeWidget->xSpecRange->SetRange( min, max );
-            } else {
-                this->spectraRangeWidget->xSpecRange->SetRange( PPM_DEFAULT_MIN, PPM_DEFAULT_MAX );
-            }
-        } else {
-            this->SetSpecUnitsCallback(svkSpecPoint::PTS);
-            this->spectraRangeWidget->xSpecRange->SetWholeRange( min, max );
-            this->spectraRangeWidget->xSpecRange->SetRange( min, max );
-        }
-
-        double range[2];
-        if( this->plotController->GetComponent() == svkBoxPlot::REAL ) {
-            data->GetDataRange( range, svkImageData::REAL  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::IMAGINARY ) {
-            data->GetDataRange( range, svkImageData::IMAGINARY  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::MAGNITUDE ) {
-            data->GetDataRange( range, svkImageData::MAGNITUDE  );
-        } else {
-            cout << "UNKNOWN COMPONENT: " << this->plotController->GetComponent() << endl; 
-        }
-        this->spectraRangeWidget->ySpecRange->SetWholeRange( range[0], range[1] );
-        if ( useFullRange || domain == "TIME" ) {
-            this->spectraRangeWidget->ySpecRange->SetRange( range[0], range[1] );
-        } else {
-            this->spectraRangeWidget->ySpecRange->SetRange( range[0]*NEG_RANGE_SCALE, range[1]*POS_RANGE_SCALE );
-        }
-        this->spectraRangeWidget->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
-        //We now need to reset the range of the plotController
-        float lowestPoint = this->spectraRangeWidget->point->ConvertPosUnits(
-            this->spectraRangeWidget->xSpecRange->GetEntry1()->GetValueAsDouble(),
-            this->spectraRangeWidget->specUnits,
-            svkSpecPoint::PTS
-        );
-
-        float highestPoint = this->spectraRangeWidget->point->ConvertPosUnits(
-            this->spectraRangeWidget->xSpecRange->GetEntry2()->GetValueAsDouble(),
-            this->spectraRangeWidget->specUnits,
-            svkSpecPoint::PTS
-        );
-
-*/
-        // Lets also reset the number of channels:
-//        this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
- //       this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 
     }
 }
@@ -2226,6 +1833,15 @@ string vtkSivicController::GetThresholdType()
 /*!
  *  
  */
+int vtkSivicController::GetFrequencyType()
+{
+    return this->spectraRangeWidget->specUnits;
+}
+
+
+/*!
+ *  
+ */
 void vtkSivicController::SetThresholdTypeToPercent()
 {
     this->thresholdType = "Percent";
@@ -2308,31 +1924,3 @@ void vtkSivicController::RunTestingSuite()
     sivicTestSuite* suite = new sivicTestSuite( this );
     suite->RunTests();
 }
-
-
-/*
- *   Returns the nearest int.  For values at the mid-point,
- *   the value is rounded to the larger int.
-int nearestInt(float x) 
-{
-    int x_to_int;
-    x_to_int = (int) x;
-
- */
-    /*
-     *   First do positive numbers, then negative ones.
-     */
-/*
-    if (x>=0) {
-        if ((x - x_to_int) >= 0.5) {
-            x_to_int += 1;   
-        }
-    } else {
-        if ((x_to_int - x) > 0.5) {
-            x_to_int -= 1;   
-        }
-    }
-
-    return (int) x_to_int;   
-}
-*/

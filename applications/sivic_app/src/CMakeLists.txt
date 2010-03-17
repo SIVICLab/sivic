@@ -168,6 +168,7 @@ ADD_LIBRARY(
     sivicBasicTest.cc
     sivicTestCase.cc
     sivicTestSuite.cc
+    svkSecondaryCaptureFormatter.cc
 )
 
 
