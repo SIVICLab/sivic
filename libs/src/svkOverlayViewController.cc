@@ -739,7 +739,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         orientation = dvController->GetView()->GetOrientation();
         int index[3] = {0,0,0};
         index[ targetData->GetOrientationIndex( orientation ) ] = slice;
-        float cellCenter[3];
+        double cellCenter[3];
         targetData->GetPositionFromIndex(index, cellCenter); 
         planeOrigin[0] = cellCenter[0];
         planeOrigin[1] = cellCenter[1];

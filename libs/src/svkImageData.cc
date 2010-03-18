@@ -1176,7 +1176,7 @@ void svkImageData::SetDataRange( double range[2], int component )
  *  \return the L,P,S coordinate of the center of the voxel at
  *  that xyz index.
  */
-void svkImageData::GetPositionFromIndex(int* index, float* posLPS)
+void svkImageData::GetPositionFromIndex(int* index, double* posLPS)
 {
 
     double origin[3];
