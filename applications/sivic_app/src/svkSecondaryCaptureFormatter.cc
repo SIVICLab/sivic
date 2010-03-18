@@ -145,9 +145,11 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
     vtkRenderWindow* window = vtkRenderWindow::New();
     window->AddRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     window->SetSize( spectraHalfSize[0],spectraHalfSize[1] );
-    vtkLabeledDataMapper::SafeDownCast( 
+    if(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
+        vtkLabeledDataMapper::SafeDownCast( 
               vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) )
                                ->GetMapper())->GetLabelTextProperty()->SetFontSize(20);
+    }
     for (int m = firstFrame; m <= lastFrame; m++) {
         if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m, this->orientation) ) {
             continue;
@@ -208,9 +210,11 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
     window->RemoveRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     this->plotController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
     this->overlayController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
-    vtkLabeledDataMapper::SafeDownCast( 
+    if(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
+        vtkLabeledDataMapper::SafeDownCast( 
               vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) )
                                ->GetMapper())->GetLabelTextProperty()->SetFontSize(10);
+    }
     window->Delete();
 }
 
