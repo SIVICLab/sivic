@@ -280,7 +280,7 @@ void sivicViewRenderingWidget::ResetInfoText()
 
         // Slice
         infoSS << "CSI Slice No:  " << this->plotController->GetSlice() + 1 << endl;
-        float sliceLocation[3];
+        double sliceLocation[3];
 
         // Slice Position:
         int sliceIndex[3] = {0, 0, this->plotController->GetSlice() };
