@@ -560,9 +560,9 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
 int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation ) 
 {
     int imageSlice;
-    float spectraSliceCenter[3];
+    double spectraSliceCenter[3];
     this->dataVector[MRS]->GetSliceOrigin( spectraSlice, spectraSliceCenter, orientation );
-    float normal[3];
+    double normal[3];
     this->dataVector[MRS]->GetSliceNormal( normal, orientation );
     spectraSliceCenter[0] += normal[0]*this->dataVector[MRS]->GetSpacing()[0]*0.5;
     spectraSliceCenter[1] += normal[1]*this->dataVector[MRS]->GetSpacing()[1]*0.5;
@@ -579,7 +579,7 @@ int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orient
 int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation orientation ) 
 {
     int spectraSlice;
-    float imageSliceCenter[3];
+    double imageSliceCenter[3];
     this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
     spectraSlice = this->dataVector[MRS]->GetClosestSlice( imageSliceCenter, orientation );
     return spectraSlice;
@@ -831,7 +831,7 @@ void svkOverlayView::SetSliceOverlay() {
         imageSlice = imageViewer->GetSlice();
         int* imageExtent = this->dataVector[MRI]->GetExtent();
 
-        float normal[3];
+        double normal[3];
         this->dataVector[MRI]->GetSliceNormal( normal, svkDcmHeader::AXIAL );
         double axialNormal[3] = { normal[0], normal[1], normal[2] };
         this->dataVector[MRI]->GetSliceNormal( normal, svkDcmHeader::CORONAL );

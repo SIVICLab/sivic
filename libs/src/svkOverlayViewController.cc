@@ -748,7 +748,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         mousePosition->SetCoordinateSystemToDisplay();
         mousePosition->SetValue( pos[0], pos[1], 0); 
         imageCords = mousePosition->GetComputedWorldValue( viewerRenderer );
-        float viewNormal[3];
+        double viewNormal[3];
         targetData->GetSliceNormal( viewNormal, orientation );
         double viewNormalDouble[3] = { viewNormal[0], viewNormal[1], viewNormal[2] };
         // Project selection point onto the image

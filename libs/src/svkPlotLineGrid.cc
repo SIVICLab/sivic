@@ -752,7 +752,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
 {  
     if( this->renderer != NULL && viewBounds != NULL ) {
         string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        float normal[3];
+        double normal[3];
         this->data->GetSliceNormal( normal, this->orientation );
         double zoom;
         double viewWidth =  viewBounds[1] - viewBounds[0];
@@ -795,7 +795,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
         this->renderer->GetActiveCamera()->SetThickness( thickness );
 
         double columnNormal[3];
-        float viewUp[3];
+        double viewUp[3];
         int inverter = -1;
 
         switch ( this->orientation ) {

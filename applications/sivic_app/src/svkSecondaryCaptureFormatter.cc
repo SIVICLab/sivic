@@ -486,7 +486,7 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 
     for (int m = firstFrame; m <= lastFrame; m++) {
         vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
-        float origin[3];
+        double origin[3];
         model->GetDataObject("SpectroscopicData")->GetSliceOrigin(lastFrame+firstFrame-m, origin, orientation );
         if( isColorBarOn && m == firstFrame + 1 ) {
             this->overlayController->GetView()->TurnPropOff( svkOverlayView::COLOR_BAR );
@@ -733,7 +733,7 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
 
         // Slice
         specInfo1 << "CSI Slice No:  " << this->plotController->GetSlice() + 1 << endl;
-        float sliceLocation[3];
+        double sliceLocation[3];
 
         // Slice Position:
         int sliceIndex[3] = {0, 0, 0 };
@@ -769,7 +769,7 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
 
         // Selected Region 
         // Center
-        float center[3]; 
+        double center[3]; 
         svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
         specInfo2 << "Selection Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
         // Size

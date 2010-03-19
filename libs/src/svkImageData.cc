@@ -1200,12 +1200,12 @@ void svkImageData::GetPositionFromIndex(int* index, double* posLPS)
  *  This method will get the origin of a given slice, for a given orientation. Default uses the data's 
  *  orientation.
  */
-void svkImageData::GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::Orientation sliceOrientation )
+void svkImageData::GetSliceOrigin(int slice, double* sliceOrigin, svkDcmHeader::Orientation sliceOrientation )
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int index = this->GetOrientationIndex( sliceOrientation );
-    float normal[3];
+    double normal[3];
     this->GetSliceNormal( normal, sliceOrientation );
     sliceOrigin[0] = this->GetOrigin()[0] + normal[0]*this->GetSpacing()[index]*slice;
     sliceOrigin[1] = this->GetOrigin()[1] + normal[1]*this->GetSpacing()[index]*slice;
@@ -1217,7 +1217,7 @@ void svkImageData::GetSliceOrigin(int slice, float* sliceOrigin, svkDcmHeader::O
 /*!
  * Gets the normal vector to a given orientation.
  */
-void svkImageData::GetSliceNormal(float* normal, svkDcmHeader::Orientation sliceOrientation )
+void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation sliceOrientation )
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
@@ -1288,11 +1288,11 @@ void svkImageData::GetSliceNormal(float* normal, svkDcmHeader::Orientation slice
 /*!
  *  Calculates the closests slice to a given LPS coordinate for a given orientation.
  */
-int svkImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
+int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    float normal[3];
+    double normal[3];
     double* origin = this->GetOrigin();
     this->GetSliceNormal( normal, sliceOrientation );
     double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
@@ -1608,7 +1608,7 @@ double svkImageData::GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation
  *
  *  \return the L,P,S coordinate of the center of the image 
  */
-void svkImageData::GetImageCenter( float* posLPS)
+void svkImageData::GetImageCenter( double* posLPS)
 {
 
     double origin[3] = {0,0,0};

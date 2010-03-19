@@ -494,7 +494,7 @@ void svkImageViewer2::ResetCamera()
         static_cast<svkImageData*>(this->GetInput())->GetDcos( dcos );
         svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
         double x[3] = {0,0,0};
-        float tmpCenter[3] = {0,0,0};
+        double tmpCenter[3] = {0,0,0};
         this->data->GetImageCenter( tmpCenter );
         double imageCenter[3] = {0, 0, 0};
         imageCenter[0] = tmpCenter[0];
@@ -502,11 +502,11 @@ void svkImageViewer2::ResetCamera()
         imageCenter[2] = tmpCenter[2];
         // If it is an axial data set...
         this->GetRenderer()->GetActiveCamera()->SetFocalPoint( imageCenter  );
-        float axialNormal[3] = {0,0,0};
+        double axialNormal[3] = {0,0,0};
         this->data->GetSliceNormal( axialNormal, svkDcmHeader::AXIAL );
-        float coronalNormal[3] = {0,0,0};
+        double coronalNormal[3] = {0,0,0};
         this->data->GetSliceNormal( coronalNormal, svkDcmHeader::CORONAL );
-        float sagittalNormal[3] = {0,0,0};
+        double sagittalNormal[3] = {0,0,0};
         this->data->GetSliceNormal( sagittalNormal, svkDcmHeader::SAGITTAL );
 
         int inverter = -1;

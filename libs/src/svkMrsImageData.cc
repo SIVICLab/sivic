@@ -215,7 +215,7 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
  *
  *  \param selBoxCenter the array to populate in LPS coords
  */
-void svkMrsImageData::GetSelectionBoxCenter( float* selBoxCenter )
+void svkMrsImageData::GetSelectionBoxCenter( double* selBoxCenter )
 {
 
     selBoxCenter[0] = 0;
@@ -352,7 +352,7 @@ bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation 
 
     int voxelIndex[3] = {0,0,0};
 
-    float normal[3];
+    double normal[3];
     this->GetSliceNormal( normal, orientation );
     double sliceNormal[3] = { normal[0], normal[1], normal[2] };
     voxelIndex[ this->GetOrientationIndex( orientation ) ] = slice;
@@ -504,11 +504,11 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
  *  \param posLPS the position in LPS coordinates
  *  \param orientation the orientation of the slice you wish to select 
  */
-int svkMrsImageData::GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation )
+int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ?
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    float normal[3];
+    double normal[3];
     double* origin = this->GetOrigin();
     this->GetSliceNormal( normal, sliceOrientation );
     double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };

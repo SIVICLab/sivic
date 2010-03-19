@@ -77,7 +77,7 @@ class svkMrsImageData: public svkImageData
         virtual void   GetNumberOfVoxels(int numVoxels[3]);
 
         void           GenerateSelectionBox( vtkUnstructuredGrid* selectionBox );
-        void           GetSelectionBoxCenter( float* selBoxCenter );
+        void           GetSelectionBoxCenter( double* selBoxCenter );
         void           GetSelectionBoxDimensions( float* dims );
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );
@@ -85,7 +85,7 @@ class svkMrsImageData: public svkImageData
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         void           GetSelectionBoxSpacing( double spacing[3] );
         void           GetSelectionBoxOrigin(  double origin[3] );
-        int            GetClosestSlice(float* posLPS, svkDcmHeader::Orientation sliceOrientation );
+        int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
         void           GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );
         void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.5 );
         void           GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );

@@ -308,7 +308,7 @@ void sivicViewRenderingWidget::ResetInfoText()
         infoSS << "Size RAS: " << dims[0] << " " << dims[1] << " " << dims[2] << "mm"<< endl;
 
         // Center
-        float center[3]; 
+        double center[3]; 
         svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
         infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
         double* spacing = model->GetDataObject( "SpectroscopicData" )->GetSpacing();

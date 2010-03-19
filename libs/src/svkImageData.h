@@ -218,15 +218,15 @@ class svkImageData: public vtkImageData
         virtual void       GetPositionFromIndex(int* index, double* posLPS);
         virtual void       GetSliceOrigin(
                                 int slice, 
-                                float* sliceOrigin, 
+                                double* sliceOrigin, 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
                            );
         virtual void       GetSliceNormal(
-                                float* normal, 
+                                double* normal, 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
                            );
         virtual int        GetClosestSlice(
-                                float* posLPS, 
+                                double * posLPS, 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
                            );
         virtual int        GetNumberOfSlices( 
@@ -236,7 +236,7 @@ class svkImageData: public vtkImageData
         virtual int        GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         virtual void       GetDataBasis( double basisVector[3], DataBasis basis );
         virtual int        GetOrientationIndex( svkDcmHeader::Orientation orientation );
-        virtual void       GetImageCenter( float* center );
+        virtual void       GetImageCenter( double* center );
         virtual double     GetSliceSpacing( 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
                            );
