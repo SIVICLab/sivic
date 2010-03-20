@@ -143,6 +143,9 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
     this->plotController->GetView()->TurnRendererOff( svkPlotGridView::PRIMARY );
     this->overlayController->GetView()->TurnRendererOff( svkPlotGridView::PRIMARY );
     vtkRenderWindow* window = vtkRenderWindow::New();
+#if defined(linux)
+    window->OffScreenRenderingOn();
+#endif 
     window->AddRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     window->SetSize( spectraHalfSize[0],spectraHalfSize[1] );
     if(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
@@ -274,6 +277,9 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 
 
     vtkRenderWindow* window = vtkRenderWindow::New();
+#if defined(linux)
+    window->OffScreenRenderingOn();
+#endif 
 
     // Add Title
     vtkRenderer* titleRenderer = vtkRenderer::New();
@@ -440,6 +446,9 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->AddActor( sliceLocationActor );
 
     vtkRenderWindow* window = vtkRenderWindow::New();
+#if defined(linux)
+    window->OffScreenRenderingOn();
+#endif 
     window->AddRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
 
     int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
@@ -565,6 +574,9 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     titleRenderer->AddActor( titleActor );
     titleActor->Delete();
     vtkRenderWindow* titleWindow = vtkRenderWindow::New();
+#if defined(linux)
+    titleWindow->OffScreenRenderingOn();
+#endif 
     titleWindow->AddRenderer( titleRenderer );
     titleRenderer->Delete();
 
