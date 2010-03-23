@@ -410,6 +410,88 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 
             this->detailedPlotController->SetInput( newData ); 
             this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
+
+            // This block recals sat band colors from config file
+            char satBandRed[50];
+            this->app->GetRegistryValue( 0, "sat_bands", "red", satBandRed );
+            char satBandBlue[50];
+            this->app->GetRegistryValue( 0, "sat_bands", "blue", satBandBlue );
+            char satBandGreen[50];
+            this->app->GetRegistryValue( 0, "sat_bands", "green", satBandGreen );
+            if( string( satBandRed ) != "" && string(satBandBlue) != "" && string(satBandGreen) != "" ) {
+                double rgb[3];
+                rgb[0] = atof( satBandRed );
+                rgb[1] = atof( satBandGreen );
+                rgb[2] = atof( satBandBlue );
+                vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+                vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_AXIAL ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+                vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_CORONAL ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+                vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+                char satBandOpacity[50];
+                this->app->GetRegistryValue( 0, "sat_bands", "opacity", satBandOpacity );
+                if( string( satBandOpacity ) != "" ) {
+                    vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS ))
+                                           ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
+                    vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_AXIAL ))
+                                           ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
+                    vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_CORONAL ))
+                                           ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
+                    vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL ))
+                                           ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
+                    
+                }
+            }
+
+            char satBandOutlineRed[50];
+            this->app->GetRegistryValue( 0, "sat_bands_outline", "red", satBandOutlineRed );
+            char satBandOutlineBlue[50];
+            this->app->GetRegistryValue( 0, "sat_bands_outline", "blue", satBandOutlineBlue );
+            char satBandOutlineGreen[50];
+            this->app->GetRegistryValue( 0, "sat_bands_outline", "green", satBandOutlineGreen );
+            if( string(satBandOutlineRed) != "" && string(satBandOutlineBlue) != "" && string(satBandOutlineGreen) != "" ) {
+                double rgb[3];
+                rgb[0] = atof( satBandOutlineRed );
+                rgb[1] = atof( satBandOutlineGreen );
+                rgb[2] = atof( satBandOutlineBlue );
+
+                vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+
+                vtkActor::SafeDownCast(this->overlayController->GetView()
+                                           ->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+
+                vtkActor::SafeDownCast(this->overlayController->GetView()
+                                           ->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+
+                vtkActor::SafeDownCast(this->overlayController->GetView()
+                                           ->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ))
+                                           ->GetProperty()->SetAmbientColor( rgb );
+                char satBandOutlineOpacity[50];
+                this->app->GetRegistryValue( 0, "sat_bands_outline", "opacity", satBandOutlineOpacity );
+                if( string( satBandOutlineOpacity ) != "" ) {
+                    vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE ))
+                                           ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
+                    vtkActor::SafeDownCast(this->overlayController->GetView()
+                                               ->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ))
+                                               ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
+
+                    vtkActor::SafeDownCast(this->overlayController->GetView()
+                                               ->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ))
+                                               ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
+
+                    vtkActor::SafeDownCast(this->overlayController->GetView()
+                                               ->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ))
+                                               ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
+                    
+                }
+            }
+
     
             this->processingWidget->phaseSlider->SetValue(0.0); 
             this->processingWidget->phaser->SetInput( newData );
