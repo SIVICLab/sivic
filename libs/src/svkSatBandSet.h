@@ -56,6 +56,7 @@
 #include <vtkClipDataSet.h>
 #include <vtkClipPolyData.h>
 #include <svkMrsImageData.h>
+#include <svkMriImageData.h>
 #include <svkImageTopologyGenerator.h>
 
 
@@ -85,11 +86,14 @@ class svkSatBandSet : public vtkObject
         void SetClipSlice( int slice );
         void SetOrientation( svkDcmHeader::Orientation orientation );
         void SetInput( svkMrsImageData* spectra );
+        void SetReferenceImage( svkMriImageData* image );
+        void RemoveReferenceImage( );
 
     private:
 
 
         // methods...
+        void UpdateClippingParameters();
         void GenerateSatBandsActor();
         void GenerateSliceClippingPlanes( );
         vtkActor* satBandActor;
@@ -100,6 +104,7 @@ class svkSatBandSet : public vtkObject
         // members...
 
         svkMrsImageData* spectra;
+        svkMriImageData* image;
         int slice;
         svkDcmHeader::Orientation orientation; 
         vector<vtkPlane*> clippingPlanes;
@@ -109,13 +114,13 @@ class svkSatBandSet : public vtkObject
         vtkFloatArray*  satBandNormals;
 
         // These are stored as memeber variables to speed up slicing
-        double* spectraSpacing;
-        double spectraDcos[3][3];
-        double* spectraOrigin;
-        int* spectraExtent;
-        double spectraDeltaLR; // spacing project into x/y/z
-        double spectraDeltaAP;
-        double spectraDeltaSI;
+        double* spacing;
+        double dcos[3][3];
+        double* origin;
+        int* extent;
+        double deltaLR; // spacing project into x/y/z
+        double deltaAP;
+        double deltaSI;
 
 };
 

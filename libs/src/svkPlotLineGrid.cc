@@ -758,15 +758,33 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
         double viewWidth =  viewBounds[1] - viewBounds[0];
         double viewHeight = viewBounds[3] - viewBounds[2];
         double viewDepth =  viewBounds[5] - viewBounds[4];
-        double diagonal = sqrt( pow(viewWidth,2) + pow(viewHeight,2) + pow(viewDepth,2) );
+        double diagonal = sqrt( pow(viewBounds[1] - viewBounds[0],2) 
+                              + pow(viewBounds[3] - viewBounds[2],2) 
+                              + pow(viewBounds[5] - viewBounds[4],2) );
+        double focalPoint[3] = { viewBounds[0] + (viewBounds[1] - viewBounds[0])/2.0 
+                                ,viewBounds[2] + (viewBounds[3] - viewBounds[2])/2.0 
+                                ,viewBounds[4] + (viewBounds[5] - viewBounds[4])/2.0 };
+
+        this->renderer->ResetCamera( viewBounds );
+        if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
+            double* selectionBoxBounds = selectionBoxActor->GetBounds();
+            double tmpViewBounds[6];
+            memcpy( tmpViewBounds, viewBounds, sizeof(double)*6 );
+            int orientationIndex = this->data->GetOrientationIndex( this->orientation ); 
+            tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
+            tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
+            diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
+                           + pow(tmpViewBounds[3] - tmpViewBounds[2],2) 
+                           + pow(tmpViewBounds[5] - tmpViewBounds[4],2) );
+            this->renderer->ResetCamera( tmpViewBounds );
+        }
+
         int toggleDraw = this->renderer->GetDraw();
         if( toggleDraw ) {
             this->renderer->DrawOff();
         }
-
-        this->renderer->ResetCamera( viewBounds );
         // if the data set is not axial, move the camera
-        double* focalPoint = this->renderer->GetActiveCamera()->GetFocalPoint();
+        this->renderer->GetActiveCamera()->SetFocalPoint( focalPoint );
         double* cameraPosition = this->renderer->GetActiveCamera()->GetPosition();
         double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
                                 pow( focalPoint[1] - cameraPosition[1], 2 ) +

@@ -356,6 +356,10 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     //this->SetSlice((extent[2]-extent[3])/2,svkDcmHeader::CORONAL);
     //this->SetSlice((extent[1]-extent[0])/2,svkDcmHeader::SAGITTAL);
 
+    this->satBandsAxial->SetReferenceImage( static_cast<svkMriImageData*>(this->dataVector[MRI]) );
+    this->satBandsCoronal->SetReferenceImage( static_cast<svkMriImageData*>(this->dataVector[MRI]) );
+    this->satBandsSagittal->SetReferenceImage( static_cast<svkMriImageData*>(this->dataVector[MRI]) );
+
     // And here we return the camera to its original state
     if( !resetViewState ) {
         this->GetRenderer( svkOverlayView::PRIMARY )->GetActiveCamera()->SetPosition( cameraPosition ); 
@@ -475,17 +479,6 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
             }
             this->UpdateImageSlice( centerImage );
             this->SetSliceOverlay();
-            switch ( this->orientation ) {
-                case svkDcmHeader::AXIAL:
-                    this->satBandsAxial->SetClipSlice( this->slice );
-                    break;
-                case svkDcmHeader::CORONAL:
-                    this->satBandsCoronal->SetClipSlice( this->slice );
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    this->satBandsSagittal->SetClipSlice( this->slice );
-                    break;
-            }
                 
             if( toggleDraw ) {
                 this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
@@ -532,24 +525,25 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
     }
     this->imageViewer->SetSlice( slice, orientation );    
     this->SetSliceOverlay();
+
+    if( dataVector[MRS] != NULL ) {
+        switch ( orientation ) {
+            case svkDcmHeader::AXIAL:
+                this->satBandsAxial->SetClipSlice( slice );
+                break;
+            case svkDcmHeader::CORONAL:
+                this->satBandsCoronal->SetClipSlice( slice );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->satBandsSagittal->SetClipSlice(  slice );
+                break;
+        }
+    }
+
     if( toggleDraw ) {
         this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
     }
     this->Refresh();
-
-    if( dataVector[MRS] != NULL && orientation != this->orientation ) {
-        switch ( orientation ) {
-            case svkDcmHeader::AXIAL:
-                this->satBandsAxial->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
-                break;
-            case svkDcmHeader::CORONAL:
-                this->satBandsCoronal->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
-                break;
-            case svkDcmHeader::SAGITTAL:
-                this->satBandsSagittal->SetClipSlice( this->FindSpectraSlice( slice, orientation) );
-                break;
-        }
-    }
 
 }
 
@@ -612,7 +606,17 @@ void svkOverlayView::UpdateImageSlice( bool centerImage )
         this->imageViewer->SetSlice( imageSlice, this->orientation );
         this->imageInsideSpectra = true;
     }
-    // Case if the the image is outside of the extent
+    switch ( this->orientation ) {
+        case svkDcmHeader::AXIAL:
+            this->satBandsAxial->SetClipSlice( imageSlice );
+            break;
+        case svkDcmHeader::CORONAL:
+            this->satBandsCoronal->SetClipSlice( imageSlice );
+            break;
+        case svkDcmHeader::SAGITTAL:
+            this->satBandsSagittal->SetClipSlice( imageSlice );
+            break;
+    }
 }
 
 

@@ -44,7 +44,7 @@
 
 
 #include <svkSatBandSet.h>
-#define CLIP_TOLERANCE 0
+#define CLIP_TOLERANCE -0.45
 #define PROJECTION_MULTIPLIER 4
 using namespace svk;
 
@@ -57,6 +57,7 @@ vtkStandardNewMacro(svkSatBandSet);
 svkSatBandSet::svkSatBandSet()
 {
     this->spectra = NULL;
+    this->image = NULL;
     this->slice = 5;
     this->orientation = svkDcmHeader::AXIAL;
     // Read in from header
@@ -96,6 +97,10 @@ svkSatBandSet::~svkSatBandSet()
         this->spectra->Delete();
         this->spectra = NULL;
     }
+    if( this->image != NULL ) {
+        this->image->Delete();
+        this->image = NULL;
+    }
     if( this->satBandOrigins != NULL ) {
         this->satBandOrigins->Delete();
         this->satBandOrigins = NULL;
@@ -131,34 +136,87 @@ void svkSatBandSet::SetInput( svkMrsImageData* spectra )
         this->spectra = NULL;
     }
     this->spectra = spectra;
-
-    // if the input dataset is not null, initialize it...
-    if( this->spectra != NULL ) {
-        this->spectra->Register( this );
-
-        // These member variables are to speed up slicing...
-        this->spectraSpacing = this->spectra->GetSpacing();
-        this->spectra->GetDcos( spectraDcos );
-        this->spectraOrigin = this->spectra->GetOrigin();
-        this->spectraExtent = this->spectra->GetExtent();
-        double LRNormal[3];
-        this->spectra->GetDataBasis(LRNormal, svkImageData::LR );
-        double PANormal[3];
-        this->spectra->GetDataBasis(PANormal, svkImageData::PA );
-        double SINormal[3];
-        this->spectra->GetDataBasis(SINormal, svkImageData::SI );
-        this->spectraDeltaLR = vtkMath::Dot( this->spectraSpacing, LRNormal );
-        this->spectraDeltaAP = vtkMath::Dot( this->spectraSpacing, PANormal );
-        this->spectraDeltaSI = vtkMath::Dot( this->spectraSpacing, SINormal );
-
-
+    this->spectra->Register(this);
     
+    if( this->spectra != NULL ) {
+        this->UpdateClippingParameters();
+
+        // Now lets get our clipping planes, and generate the sat bands
+        this->GenerateClippingPlanes();
+        this->GenerateSatBandsActor();
+    }
+
+}
+
+void svkSatBandSet::SetReferenceImage( svkMriImageData* image )
+{
+    if( this->image != NULL ) {
+        this->image->Delete();
+        this->image = NULL;
+    }
+    this->image = image;
+    this->image->Register(this);
+
+    if( this->spectra != NULL ) {
+        this->UpdateClippingParameters();
+
         // Now lets get our clipping planes, and generate the sat bands
         this->GenerateClippingPlanes();
         this->GenerateSatBandsActor();
     }
 }
 
+
+void svkSatBandSet::RemoveReferenceImage( ) 
+{
+    if( this->image != NULL ) {
+        this->image->Delete();
+        this->image = NULL;
+    }
+
+    if( this->spectra != NULL ) {
+        this->UpdateClippingParameters();
+
+        // Now lets get our clipping planes, and generate the sat bands
+        this->GenerateClippingPlanes();
+        this->GenerateSatBandsActor();
+    }
+}
+
+
+void svkSatBandSet::UpdateClippingParameters() 
+{
+    // if the input dataset is not null, initialize it...
+    if( this->spectra != NULL ) {
+        double LRNormal[3];
+        double PANormal[3];
+        double SINormal[3];
+        if( this->image != NULL ) {
+            // These member variables are to speed up slicing...
+            this->spacing = this->image->GetSpacing();
+            this->image->GetDcos( dcos );
+            this->origin = this->image->GetOrigin();
+            this->extent = this->image->GetExtent();
+            this->image->GetDataBasis(LRNormal, svkImageData::LR );
+            this->image->GetDataBasis(PANormal, svkImageData::PA );
+            this->image->GetDataBasis(SINormal, svkImageData::SI );
+            this->image->Register( this );
+        } else {
+            // These member variables are to speed up slicing...
+            this->spacing = this->spectra->GetSpacing();
+            this->spectra->GetDcos( dcos );
+            this->origin = this->spectra->GetOrigin();
+            this->extent = this->spectra->GetExtent();
+            this->spectra->GetDataBasis(LRNormal, svkImageData::LR );
+            this->spectra->GetDataBasis(PANormal, svkImageData::PA );
+            this->spectra->GetDataBasis(SINormal, svkImageData::SI );
+        }
+        this->deltaLR = vtkMath::Dot( this->spacing, LRNormal );
+        this->deltaAP = vtkMath::Dot( this->spacing, PANormal );
+        this->deltaSI = vtkMath::Dot( this->spacing, SINormal );
+    }
+
+}
 
 /*
  * Sets the slice used for clipping the sat bands.
@@ -561,12 +619,12 @@ void svkSatBandSet::GenerateClippingPlanes( )
         int uIndexRange[2];
         int vIndexRange[2];
         int wIndexRange[2];
-        uIndexRange[0] = spectraExtent[0];
-        uIndexRange[1] = spectraExtent[1];
-        vIndexRange[0] = spectraExtent[2];
-        vIndexRange[1] = spectraExtent[3];
-        wIndexRange[0] = spectraExtent[4];
-        wIndexRange[1] = spectraExtent[5];
+        uIndexRange[0] = extent[0];
+        uIndexRange[1] = extent[1];
+        vIndexRange[0] = extent[2];
+        vIndexRange[1] = extent[3];
+        wIndexRange[0] = extent[4];
+        wIndexRange[1] = extent[5];
         double rowNormal[3];
         this->spectra->GetDataBasis(rowNormal, svkImageData::ROW );
         double columnNormal[3];
@@ -583,22 +641,22 @@ void svkSatBandSet::GenerateClippingPlanes( )
                 clippingPlanes[4]->SetNormal(  sliceNormal[0],  sliceNormal[1],  sliceNormal[2] );
                 clippingPlanes[5]->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
 
-                clippingPlanes[0]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[1]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
 
 
-                clippingPlanes[2]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[3]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(vIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(vIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(vIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(vIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(vIndexRange[1] + CLIP_TOLERANCE) );
                 break;
             case svkDcmHeader::CORONAL:
                 clippingPlanes[0]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
@@ -608,22 +666,22 @@ void svkSatBandSet::GenerateClippingPlanes( )
                 clippingPlanes[4]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
                 clippingPlanes[5]->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
 
-                clippingPlanes[0]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[1]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
 
 
-                clippingPlanes[2]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[3]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
                 break;
             case svkDcmHeader::SAGITTAL:
                 clippingPlanes[0]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
@@ -633,22 +691,22 @@ void svkSatBandSet::GenerateClippingPlanes( )
                 clippingPlanes[4]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
                 clippingPlanes[5]->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
 
-                clippingPlanes[0]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[1]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR * (vIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP * (vIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI * (vIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (vIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP * (vIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI * (vIndexRange[1] + CLIP_TOLERANCE) );
 
 
-                clippingPlanes[2]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
+                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[3]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
-                                              spectraOrigin[1] + this->spectraDeltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
-                                              spectraOrigin[2] + this->spectraDeltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
+                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
+                                              origin[2] + this->deltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
                 break;
 
         } 
@@ -669,14 +727,26 @@ void svkSatBandSet::GenerateClippingPlanes( )
 void svkSatBandSet::GenerateSliceClippingPlanes( )
 {
     if( spectra != NULL ) {
-        if( slice >= 0 ) {
-            clippingPlanes[4]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR * ( slice - CLIP_TOLERANCE),
-                                          spectraOrigin[1] + this->spectraDeltaAP * ( slice - CLIP_TOLERANCE),
-                                          spectraOrigin[2] + this->spectraDeltaSI * ( slice - CLIP_TOLERANCE) );
+        if( image != NULL ) {
+            if( slice >= 0 ) {
+                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice - 0.5 - CLIP_TOLERANCE),
+                                          origin[1] + this->deltaAP * ( slice - 0.5 - CLIP_TOLERANCE),
+                                          origin[2] + this->deltaSI * ( slice - 0.5 - CLIP_TOLERANCE) );
 
-            clippingPlanes[5]->SetOrigin( spectraOrigin[0] + this->spectraDeltaLR * ( slice + 1 + CLIP_TOLERANCE ),
-                                          spectraOrigin[1] + this->spectraDeltaAP * ( slice + 1 + CLIP_TOLERANCE ),
-                                          spectraOrigin[2] + this->spectraDeltaSI * ( slice + 1 + CLIP_TOLERANCE ) );
+                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 + CLIP_TOLERANCE ),
+                                          origin[1] + this->deltaAP * ( slice + 0.5 + CLIP_TOLERANCE ),
+                                          origin[2] + this->deltaSI * ( slice + 0.5 + CLIP_TOLERANCE ) );
+            }
+        } else {
+            if( slice >= 0 ) {
+                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice - CLIP_TOLERANCE),
+                                          origin[1] + this->deltaAP * ( slice - CLIP_TOLERANCE),
+                                          origin[2] + this->deltaSI * ( slice - CLIP_TOLERANCE) );
+
+                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + 1 + CLIP_TOLERANCE ),
+                                          origin[1] + this->deltaAP * ( slice + 1 + CLIP_TOLERANCE ),
+                                          origin[2] + this->deltaSI * ( slice + 1 + CLIP_TOLERANCE ) );
+            }
         }
     }
 }
