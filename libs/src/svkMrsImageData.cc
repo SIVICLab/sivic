@@ -696,3 +696,82 @@ void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelect
         tlcBrc[1] = brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]; 
     }
 } 
+
+
+/*!
+ *   Method will extract a volume into a vtkImageData object representing
+ *   a single point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param target image the point image (must be initialized)
+ *  \param point the point in the array you wish operate on 
+ *  \param component the component to operate on 
+ *  \param timePoint the time point to operate on 
+ *  \param channel the the channel to operate on 
+ *
+ */
+void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, int channel ) 
+{
+    if( image != NULL ) {
+        // Setup image dimensions
+        image->SetExtent( Extent[0]-1, Extent[1]-1, Extent[2]-1, Extent[3]-1, Extent[4]-1, Extent[5]-1);
+        image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
+        image->SetScalarType(this->GetScalarType() );
+
+        // Create a float array to hold the pixel data
+        vtkFloatArray* pixelData = vtkFloatArray::New();
+        pixelData->SetNumberOfComponents( 2 );
+        pixelData->SetNumberOfTuples( (Dimensions[0]-1)*(Dimensions[1]-1)*(Dimensions[2]-1) );
+        int linearIndex = 0;
+        float tuple[2];
+        for (int z = Extent[4]; z < Extent[5]; z++) {
+            for (int y = Extent[2]; y < Extent[3]; y++) {
+                for (int x = Extent[0]; x < Extent[1]; x++) {
+                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( 
+                                           this->GetSpectrum( x, y, z, timePoint, channel ) );
+
+                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
+                    spectrum->GetTupleValue( point, tuple );
+                    pixelData->SetComponent( linearIndex, 0, tuple[0] );
+                    pixelData->SetComponent( linearIndex, 1, tuple[1] );
+                }
+            }
+        }
+        image->GetPointData()->SetScalars( pixelData );
+        pixelData->Delete();
+    }
+}
+
+
+/*!
+ *   Method will set a spectral point from a vtkImageData object representing
+ *   a single point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param image the point image 
+ *  \param point the point in the array you wish operate on 
+ *  \param component the component to operate on 
+ *  \param timePoint the time point to operate on 
+ *  \param channel the the channel to operate on 
+ *
+ */
+void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, int channel ) 
+{
+
+    if( image != NULL ) {
+        int linearIndex = 0;
+        float value[2];
+        for (int z = Extent[4]; z < Extent[5]; z++) {
+            for (int y = Extent[2]; y < Extent[3]; y++) {
+                for (int x = Extent[0]; x < Extent[1]; x++) {
+                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( 
+                                           this->GetSpectrum( x, y, z, timePoint, channel ) );
+
+                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
+                    static_cast<vtkFloatArray*>(image->GetPointData()->GetScalars())->GetTupleValue( linearIndex, value );
+                    spectrum->SetTuple( point, value );
+                    
+                }
+            }
+        }
+        this->Modified();
+    }
+}
