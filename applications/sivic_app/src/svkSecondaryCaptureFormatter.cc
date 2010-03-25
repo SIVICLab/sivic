@@ -182,9 +182,9 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
         wtif->SetInput( window );
         
 
+        outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
         if( writer->IsA("svkImageWriter") ) {  
             static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
             flipper->SetInput( wtif->GetOutput() );
@@ -386,9 +386,9 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
         wtif->SetInput( window );
         
 
+        outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
         if( writer->IsA("svkImageWriter") ) {  
             static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
             vtkImageFlip* flipper = vtkImageFlip::New();
             flipper->SetFilteredAxis( 1 );
             flipper->SetInput( wtif->GetOutput() );
@@ -492,6 +492,18 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     colAppenders.reserve( (numFrames)/numCols ); 
     vtkImageAppend* rowAppender = vtkImageAppend::New();
     rowAppender->SetAppendAxis(1);
+    //  Replace * with slice number in output file name: 
+    ostringstream frameNum;
+    if( instanceNumber != 0 ) {
+        frameNum << instanceNumber;
+    }
+    size_t pos = fileNameStringTmp.find_last_of("*");
+    if ( pos != string::npos) {
+        fileNameStringTmp.replace(pos, 1, frameNum.str()); 
+    } else {
+        size_t pos = fileNameStringTmp.find_last_of(".");
+        fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
+    }
 
     for (int m = firstFrame; m <= lastFrame; m++) {
         vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
@@ -511,17 +523,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
         sliceLocationActor->SetInput( position.str().c_str() );
         vtkImageData* data = vtkImageData::New();
         allImages->AddItem( data );
-        //  Replace * with slice number in output file name: 
-        ostringstream frameNum;
-        if( instanceNumber == 0 ) {
-            frameNum << 0;
-        } else {
-            frameNum << instanceNumber;
-        }
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } 
 
         cout << "FN: " << fileNameStringTmp.c_str() << endl;
 

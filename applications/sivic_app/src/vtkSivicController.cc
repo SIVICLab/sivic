@@ -1091,10 +1091,11 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
      * and register the it so we can delete our new svkImageData object without deleting
      * the original header.
      */
+    outputImage = svkMriImageData::New();
+    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     if( writer->IsA("svkImageWriter") ) {  
-        outputImage = svkMriImageData::New();
-        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
-        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+        static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
         
     }
     
@@ -1106,12 +1107,8 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
         this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
-        if( writer->IsA("svkDICOMSCWriter") ) {  
             this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
                      outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
-        } else {
-            this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print );
-        }
     }
 
 
