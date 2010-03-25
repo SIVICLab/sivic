@@ -144,7 +144,7 @@ class svkIdfVolumeReader : public svkImageReader2
         void*                                   pixelData; 
         ifstream*                               volumeHdr;
         map <string, string>                    idfMap; 
-        int                                     numFrames; 
+        int                                     numSlices; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         bool                                    onlyReadHeader; 
 

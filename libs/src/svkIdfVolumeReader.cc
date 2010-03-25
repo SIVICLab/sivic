@@ -66,7 +66,7 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     this->pixelData = NULL;
     this->volumeHdr = NULL;
 
-    this->numFrames = -1; 
+    this->numSlices = -1; 
     this->onlyReadHeader = false;
 
 }
@@ -445,8 +445,8 @@ void svkIdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     int value;
     istringstream* iss = new istringstream();
     iss->str(idfMap["numPixels_2"]);  
-    *iss >> this->numFrames; 
-    this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfFrames", this->numFrames); 
+    *iss >> this->numSlices; 
+    this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfFrames", this->numSlices); 
 
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
@@ -486,78 +486,27 @@ void svkIdfVolumeReader::InitSharedFunctionalGroupMacros()
  */
 void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 {
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
-}
-
-
-
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkIdfVolumeReader::InitFrameContentMacro()
-{
-    for (int i = 0; i < this->numFrames; i++) {
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-    }
-}
-
-
-/*!
- *  The IDF toplc is the center of the first voxel. 
- */
-void svkIdfVolumeReader::InitPlanePositionMacro()
-{
 
     //  Get toplc float array from idfMap and use that to generate 
     //  frame locations:
-    float toplc[3];
+    double toplc[3];
     int value;
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;     
         string indexString(ossIndex.str());
         istringstream* iss = new istringstream();
+        iss->setf(ios::fixed, ios::floatfield); 
+        iss->precision(3);
         iss->str( idfMap[ string("toplc_" + indexString) ] );  
-        std::cout.precision(8);
-        *iss >> toplc[i]; 
+        *iss >> setiosflags(std::ios::fixed) >> setprecision(3) >>  toplc[i]; 
         delete iss; 
+        //toplc[i] = strtod((idfMap[ string("toplc_" + indexString) ]).c_str(), NULL);
+        //toplc[i] = atof((idfMap[ string("toplc_" + indexString) ]).c_str());
     }
 
-    float dcos[3][3];
-    float pixelSize[3];
+    double dcos[3][3];
+    double pixelSize[3];
     for (int i = 0; i < 3; i++) {
 
         ostringstream ossIndexI;
@@ -581,51 +530,14 @@ void svkIdfVolumeReader::InitPlanePositionMacro()
         delete issSize; 
     }
 
-    //istringstream* issSize = new istringstream();
-    //issSize->str( idfMap[ "sliceThickness" ] );
-    //*issSize >> pixelSize[2];
-    //delete issSize; 
+    istringstream* issSize = new istringstream();
+    issSize->str( idfMap[ "sliceThickness" ] );
+    *issSize >> pixelSize[2];
+    delete issSize; 
 
-    float displacement[3];
-    float frameLPSPosition[3];
-
-    for (int i = 0; i < this->numFrames; i++) {
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
-
-        //add displacement along normal vector:
-        for (int j = 0; j < 3; j++) {
-            displacement[j] = dcos[2][j] * pixelSize[2] * i;
-        }
-        for(int j = 0; j < 3; j++) { //L, P, S
-            frameLPSPosition[j] = toplc[j] +  displacement[j] ;
-        }
-
-        string imagePositionPatient;
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss.precision(8);
-            oss << frameLPSPosition[j];
-            imagePositionPatient += oss.str();
-            if (j < 2) {
-               imagePositionPatient += '\\';
-            }
-        }
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient",
-            imagePositionPatient,
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-    }
-
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSize, dcos, numSlices, 1, 1
+    );
 }
 
 
