@@ -805,7 +805,8 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
             string imagePositionPatient;
             for (int j = 0; j < 3; j++) {
                 ostringstream oss;
-                oss.precision(8);
+                oss.setf(ios::fixed);
+                oss.precision(5);
                 oss << frameLPSPosition[j];
                 imagePositionPatient += oss.str();
                 if (j < 2) {
