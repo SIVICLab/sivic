@@ -299,7 +299,7 @@ void svkIdfVolumeWriter::WriteHeader()
     }
 
     
-    float center[3];
+    double center[3];
     this->GetIDFCenter(center);
     double pixelSpacing[3];
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
@@ -371,13 +371,12 @@ void svkIdfVolumeWriter::WriteHeader()
 /*!
  *   
  */
-void svkIdfVolumeWriter::GetIDFCenter(float center[3])
+void svkIdfVolumeWriter::GetIDFCenter(double center[3])
 {
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
     double pixelSpacing[3];
     hdr->GetPixelSpacing(pixelSpacing);
-
 
     double slicePositionFirst[3];
     hdr->GetOrigin(slicePositionFirst, 0);
@@ -390,11 +389,10 @@ void svkIdfVolumeWriter::GetIDFCenter(float center[3])
     numPix[1] =  hdr->GetIntValue("Rows");
     numPix[2] =  hdr->GetNumberOfSlices();
 
-    float fov[3]; 
+    double fov[3]; 
     for(int i = 0; i < 3; i++) {
-        fov[i] = (numPix[i] - 1) * pixelSpacing[i];  
+        fov[i] = static_cast<double>(numPix[i] - 1) * pixelSpacing[i];  
     }
-
 
     for (int i = 0; i < 3; i++ ){
         center[i] = slicePositionFirst[i];
