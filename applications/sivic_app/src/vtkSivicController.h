@@ -123,6 +123,7 @@ class vtkSivicController : public vtkObject
         void                       OpenSpectra( const char* fileName );
         void                       OpenOverlay( const char* fileName );
         void                       OpenMetabolites( const char* metabolites );
+        void                       SetPreferencesFromRegistry( );
         void                       SaveData();    
         void                       SaveData( char* fileName );    
         void                       SaveSecondaryCapture( char* captureType );    
