@@ -530,11 +530,6 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
         delete issSize; 
     }
 
-    istringstream* issSize = new istringstream();
-    issSize->str( idfMap[ "sliceThickness" ] );
-    *issSize >> pixelSize[2];
-    delete issSize; 
-
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSize, dcos, numSlices, 1, 1
     );
