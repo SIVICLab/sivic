@@ -321,6 +321,15 @@ int sivicApp::Build( int argc, char* argv[] )
     toolbar->Delete();
 
     this->sivicWindow->Display();
+#if defined( UCSF_INTERNAL )
+    vtkKWMenu* ucsfMenu = vtkKWMenu::New();
+
+    ucsfMenu->SetParent(this->sivicKWApp->GetNthWindow(0)->GetMenu());
+    ucsfMenu->Create();
+    this->sivicKWApp->GetNthWindow(0)->GetMenu()->AddCascade("UCSF", ucsfMenu);
+    ucsfMenu->InsertCommand( 0, "&Send To PACS", this->sivicController, "PushToPACS" );
+#endif
+
 
     // Now we add the "open" callback
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(

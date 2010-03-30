@@ -283,10 +283,10 @@ void sivicViewRenderingWidget::ResetInfoText()
         double sliceLocation[3];
 
         // Slice Position:
-        int sliceIndex[3] = {0, 0, this->plotController->GetSlice() };
         int orientationIndex = model->GetDataObject("SpectroscopicData")->GetOrientationIndex( orientation );
-        sliceIndex[ orientationIndex ] = this->plotController->GetSlice();
-        model->GetDataObject( "SpectroscopicData" )->GetPositionFromIndex( sliceIndex, sliceLocation );
+        int sliceIndex = this->plotController->GetSlice();
+
+        model->GetDataObject("SpectroscopicData")->GetSliceCenter(sliceIndex, sliceLocation, orientation );
 
         infoSS << "CSI Slice Pos:  " << sliceLocation[orientationIndex] << endl;
         
@@ -305,17 +305,17 @@ void sivicViewRenderingWidget::ResetInfoText()
         
         svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxDimensions( dims );
         infoSS << "Selected Region:  " << dims[0]*dims[1]*dims[2] / 1000.0 << "cc" << endl;
-        infoSS << "Size RAS: " << dims[0] << " " << dims[1] << " " << dims[2] << "mm"<< endl;
+        infoSS << "Size: " << dims[0] << " " << dims[1] << " " << dims[2] << "mm"<< endl;
 
         // Center
         double center[3]; 
         svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
-        infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
+        infoSS << "Center : " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
         double* spacing = model->GetDataObject( "SpectroscopicData" )->GetSpacing();
         infoSS << "CSI Resolution:" << spacing[0] * spacing[1] * spacing[2] / 1000.0 << "cc" <<  endl;
-        infoSS << "Size RAS: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << "mm" <<  endl;
+        infoSS << "Size: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << "mm" <<  endl;
         model->GetDataObject( "SpectroscopicData" )->GetImageCenter( center );
-        infoSS << "Center RAS: " << center[0] << " " << center[1] << " " << center[2] << " mm"<< endl << endl;
+        infoSS << "Center: " << center[0] << " " << center[1] << " " << center[2] << " mm"<< endl << endl;
     } else {
         infoSS << "CSI File: " << endl;
         infoSS << "CSI Slice No:" << endl;

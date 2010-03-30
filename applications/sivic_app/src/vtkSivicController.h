@@ -179,6 +179,7 @@ class vtkSivicController : public vtkObject
         void                       SetThresholdTypeToPercent();
         void                       SetThresholdTypeToQuantity();
         void                       SetOverlayThreshold( double threshold );
+        void                       PushToPACS();
 
  
     protected:

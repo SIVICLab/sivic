@@ -428,13 +428,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     
             this->spectraRangeWidget->point->SetDataHdr( newData->GetDcmHeader() );
    
-            if( tlcBrc == NULL ) {
-                this->plotController->HighlightSelectionVoxels();
-                this->overlayController->HighlightSelectionVoxels();
-            } else {
-                this->plotController->SetTlcBrc( tlcBrc ); 
-                this->overlayController->SetTlcBrc( tlcBrc ); 
-            }
             if( oldData != NULL ) {
                 bool useFullFrequencyRange = 0;
                 bool useFullAmplitudeRange = 0;
@@ -461,6 +454,13 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                         this->SetOrientation( "SAGITTAL" );
                         break;
                 }
+            }
+            if( tlcBrc == NULL ) {
+                this->plotController->HighlightSelectionVoxels();
+                this->overlayController->HighlightSelectionVoxels();
+            } else {
+                this->plotController->SetTlcBrc( tlcBrc ); 
+                this->overlayController->SetTlcBrc( tlcBrc ); 
             }
             this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
             this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
@@ -2010,6 +2010,214 @@ void vtkSivicController::SetOverlayThreshold( double threshold )
     }
 }
 
+
+void vtkSivicController::PushToPACS()
+{
+#if defined( UCSF_INTERNAL )
+    if(     this->model->GetDataObject( "SpectroscopicData" ) == NULL 
+         || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
+
+        PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
+        return; 
+    }
+    
+    struct stat st;
+
+    // Lets check to see if the original DICOM file can be found so we can get the studyUID and Accession number
+    string dcmFileName = svkUCSFUtils::GetDICOMFileName( this->model->GetDataFileName( "AnatomicalData" ), 
+                                                         this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader());
+
+    // Lets create image to write out, and attach the image's header to get study info
+    svkImageData* outputImage = svkMriImageData::New();
+    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+    string sourceImageName = this->model->GetDataFileName("AnatomicalData"); 
+    size_t pos = sourceImageName.find_last_of(".");
+
+    bool imageIsDICOM = 0;
+    if ( pos != string::npos && pos + 3 < sourceImageName.size()) {
+        string extention = sourceImageName.substr( pos+1, 3 ); 
+        if( extention == "DCM" || extention == "dcm" ) {
+            imageIsDICOM = 1;
+        }
+    } 
+
+    // Lets make sure the dicom file exists, this implies the studyUID and Accession number or correct
+    if( stat(dcmFileName.c_str(),&st) != 0 && !imageIsDICOM ) {
+
+        // If the dicom file cannot be found, lets allow the user to choose one
+        string errorMessage("CANNOT FIND DICOM FILE:");
+        errorMessage.append( dcmFileName );
+        errorMessage.append( "\n Do you want to choose a DICOM image to get the study information?" );
+        vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
+        messageDialog->SetApplication(app);
+        messageDialog->Create();
+        messageDialog->SetText( errorMessage.c_str() );
+        messageDialog->SetStyle( vtkKWMessageDialog::StyleYesNo);
+        messageDialog->Invoke();
+
+        // If the user wants to choose a dicom image
+        if ( messageDialog->GetStatus() == vtkKWDialog::StatusOK ) {
+            vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
+            dlg->SetApplication(app);
+            dlg->Create();
+            dlg->SetFileTypes("{{DICOM Image} {.dcm .DCM}}");
+            dlg->Invoke();
+            string filename = dlg->GetFileName(); 
+            struct stat buffer;
+            svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
+            int dialogStatus = dlg->GetStatus();
+            dlg->Delete();
+            if ( dialogStatus == vtkKWDialog::StatusOK ) {
+                if( stat( filename.c_str(), &buffer ) == 0 && dcmReader->CanReadFile( filename.c_str() ) ){
+
+                    dcmReader->SetFileName( filename.c_str() );
+                    dcmReader->UpdateInformation();
+                    svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
+                    outputImage->GetDcmHeader()->SetValue(
+                          "StudyInstanceUID", dcmHeader->GetStringValue("StudyInstanceUID") );
+                    outputImage->GetDcmHeader()->SetValue(
+                          "AccessionNumber", dcmHeader->GetStringValue("AccessionNumber") );
+                } else {
+                    string errorMessage2("NOT A VALID DICOM IMAGE:");
+                    errorMessage2.append( dcmFileName );
+                    PopupMessage( errorMessage2 );
+                    return; 
+                }
+            } else { // Dialog was canceled 
+                return;
+            } 
+        } else { // User did not want to choose an image
+            return;
+        }
+    }
+
+
+    // Verify the user wants to push to pacs
+    vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
+    messageDialog->SetApplication(app);
+    messageDialog->Create();
+    messageDialog->SetText( "Are you sure you want to push to PACS?" );
+    messageDialog->SetStyle( vtkKWMessageDialog::StyleOkCancel);
+    messageDialog->Invoke();
+    if ( messageDialog->GetStatus() != vtkKWDialog::StatusOK ) {
+        return;
+    }
+    messageDialog->Delete();
+
+    // Set PACS directory
+    string pacsDirectory( "/data/dicom_mb/export/PACS/" );
+    char cwd[MAXPATHLEN];
+    getcwd(cwd, MAXPATHLEN);
+
+    // Lets Create a local directory to make a copy of the images
+    string localDirectory( cwd );
+    localDirectory.append( "/DICOM/" );
+    if(stat(localDirectory.c_str(),&st) != 0) {
+        stringstream mkdirCommand;
+        mkdirCommand << "mkdir " << localDirectory.c_str();
+        //cout<< mkdirCommand.str().c_str() << endl;
+        system( mkdirCommand.str().c_str() );
+    }
+
+
+    // Lets create a name for the images that uses the series ID of the image, and the spectra
+    string filePattern;
+    filePattern.append("E");
+    string studyId = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetStringValue("StudyID");
+    filePattern.append(studyId);
+    filePattern.append("_ImageSpec_S");
+    ostringstream ossSN;
+
+    ossSN << this->model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetIntValue("SeriesNumber");
+    string imageSeriesNumber (ossSN.str());
+    filePattern.append(imageSeriesNumber);
+    filePattern.append("_");
+
+    ossSN.str("");
+    ossSN << this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetIntValue("SeriesNumber");
+    string specSeriesNumber (ossSN.str());
+    filePattern.append(specSeriesNumber);
+    filePattern.append("I");
+    
+    filePattern.append("*.dcm");
+
+    string fileNameString = localDirectory + filePattern;
+
+    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    vtkImageWriter* writer = NULL;
+
+    // If the cursor location was on, we want to turn it off for the capture
+    bool wasCursorLocationOn = 0;
+    if( this->overlayController != NULL ) {
+        if( this->viewRenderingWidget->viewerWidget->GetRenderWindow()
+                        ->HasRenderer(this->overlayController->GetView()->GetRenderer( svkOverlayView::MOUSE_LOCATION ))) {
+            wasCursorLocationOn = 1; 
+            this->overlayController->GetView()->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );    
+        }
+    }
+
+    // Lets create our writer
+    writer = writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_SC );
+    writerFactory->Delete();
+    static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC MRSI secondary capture" );
+
+    // We will save the current slice so we can return to it after the capture is done
+    int currentSlice = this->plotController->GetSlice(); 
+     
+    bool print = 0; 
+
+    // Write image with spectra slide
+    this->WriteCombinedCapture( writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print);
+
+    // Write summary slide 
+    this->WriteImageCapture( writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print,
+                             outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
+
+    // Reset the slice
+    this->SetSlice(currentSlice);
+
+    // Now we copy the local images to PACS
+    for( int i = 1; i <= outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1; i++ ) {
+        string sourceImageName = fileNameString;
+
+        ostringstream frameNum;
+        frameNum <<  i;
+
+        //  Replace * with slice number in output file name: 
+        size_t pos = sourceImageName.find_last_of("*");
+        if ( pos != string::npos) {
+            sourceImageName.replace(pos, 1, frameNum.str());
+        } else {
+            size_t pos = sourceImageName.find_last_of(".");
+            sourceImageName.replace(pos, 1, frameNum.str() + ".");
+        }
+        string targetImageName = sourceImageName;
+        pos = targetImageName.find( localDirectory.c_str() ); 
+        targetImageName.replace( pos, localDirectory.size(), pacsDirectory.c_str(), pos, pacsDirectory.size());
+
+        stringstream copyCommand;
+        copyCommand << "cp " << sourceImageName.c_str() <<" "<< targetImageName.c_str();
+        cout<< copyCommand.str().c_str() << endl;
+        system( copyCommand.str().c_str() );
+    }
+
+    if (outputImage != NULL) {
+        outputImage->Delete();
+        outputImage = NULL; 
+    }
+
+    // Turn mouse position renderer back on if it was on when we started
+    if( wasCursorLocationOn && this->overlayController != NULL ) {
+        this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
+    }
+
+    writer->Delete();
+    this->overlayController->GetView()->Refresh();    
+    this->plotController->GetView()->Refresh();    
+    this->viewRenderingWidget->infoWidget->Render();    
+#endif
+}
 
 /*!
  *  Runs tests for the application.
