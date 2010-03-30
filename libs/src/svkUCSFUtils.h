@@ -49,6 +49,7 @@
 #include <vector>
 #include <vtkObjectFactory.h>
 #include <vtkObject.h>
+#include <svkDcmHeader.h>
 
 
 namespace svk {
@@ -95,8 +96,11 @@ class svkUCSFUtils : public vtkObject
         //! Returns a liste of all metabolites in our hash
         static vector<string> GetAllMetaboliteNames();
 
+        static string         GetDICOMFileName( string fileName, svkDcmHeader* header );
+
         //! Maps metabolite names to file extentions
         static map<string, string> metaboliteMap;
+
 
 
     protected:

@@ -237,3 +237,30 @@ vector<string> svkUCSFUtils::GetAllMetaboliteNames()
     }
     return names;
 }
+
+
+string svkUCSFUtils::GetDICOMFileName( string fileName, svkDcmHeader* dcmHeader )
+{
+    // First we construct the filename of a .dcm file from the same series
+    size_t pos;
+    pos = fileName.find_last_of("/");
+    pos = fileName.substr(0,pos).find_last_of("/");
+    
+
+    // First we construct the filename of a .dcm file from the same series
+    string dcmFileName(fileName.substr(0,pos).c_str());
+
+    stringstream ss;
+    ss << "/E";
+    ss << dcmHeader->GetStringValue("StudyID");
+    ss << "/";
+    ss << dcmHeader->GetIntValue("SeriesNumber");
+    ss << "/E";
+    ss << dcmHeader->GetStringValue("StudyID");
+    ss << "S";
+    ss << dcmHeader->GetIntValue("SeriesNumber");
+    ss << "I";
+    ss << "1.DCM";
+    dcmFileName.append( ss.str() );
+    return dcmFileName;
+}

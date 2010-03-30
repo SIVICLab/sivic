@@ -1030,27 +1030,28 @@ void svkPlotLineGrid::UpdateOrientation()
                         if( LRNormal[2] < 0 ) {
                             mirrorPlots = true;
                         }
-                        if( PANormal[0] > 0 ) {
+                        if( PANormal[1] > 0 ) {
                             invertPlots = true;
                         }
                         plotDirection = svkPlotLine::SLICE_ROW;
                         break;
                     case svkDcmHeader::CORONAL:
                         // LR/SI
-                        if( LRNormal[2] < 0 ) {
+                        if( LRNormal[2] > 0 ) {
                             mirrorPlots = true;
                         }
-                        if( SINormal[1] < 0 ) {
+                        if( SINormal[0] > 0 ) {
                             invertPlots = true;
                         }
                         plotDirection = svkPlotLine::SLICE_COLUMN;
                         break;
                     case svkDcmHeader::SAGITTAL:
                         // PA/SI
-                        if( PANormal[0] < 0 ) {
+                        plotDirection = svkPlotLine::ROW_COLUMN;
+                        if( PANormal[1] < 0 ) {
                             mirrorPlots = true;
                         }
-                        if( SINormal[1] < 0 ) {
+                        if( SINormal[0] > 0 ) {
                             invertPlots = true;
                         }
                         break;

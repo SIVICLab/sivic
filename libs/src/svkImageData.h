@@ -221,6 +221,11 @@ class svkImageData: public vtkImageData
                                 double* sliceOrigin, 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
                            );
+        virtual void       GetSliceCenter(
+                                int slice, 
+                                double* sliceCenter, 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                           );
         virtual void       GetSliceNormal(
                                 double* normal, 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 

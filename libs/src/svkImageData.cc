@@ -1215,6 +1215,43 @@ void svkImageData::GetSliceOrigin(int slice, double* sliceOrigin, svkDcmHeader::
 
 
 /*!
+ *  This method will get the center of a given slice, for a given orientation. Default uses the data's 
+ *  orientation.
+ */
+void svkImageData::GetSliceCenter(int slice, double* sliceCenter, svkDcmHeader::Orientation sliceOrientation )
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    double origin[3] = {0,0,0};
+    this->GetDcmHeader()->GetOrigin(origin);
+    double pixelSpacing[3] = {0,0,0};
+    this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
+    float index[3] = {0,0,0};
+
+    int numVoxels[3] = {0,0,0};
+    numVoxels[0] = this->GetDcmHeader()->GetIntValue("Columns");
+    numVoxels[1] = this->GetDcmHeader()->GetIntValue("Rows");
+    numVoxels[2] = this->GetDcmHeader()->GetNumberOfSlices(); 
+
+    double dcos[3][3];
+    this->GetDcos(dcos);
+    for (int i = 0; i < 3; i++) {
+        index[i] = (numVoxels[i]-1)/2.0;
+    }
+    int orientationIndex = this->GetOrientationIndex( sliceOrientation );
+    index[orientationIndex] = slice;
+
+    for (int i = 0; i < 3; i++) {
+        sliceCenter[i] = origin[i];  
+        for (int j = 0; j < 3; j++) { 
+            sliceCenter[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
+        }
+    }
+
+}
+
+
+/*!
  * Gets the normal vector to a given orientation.
  */
 void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation sliceOrientation )
@@ -1616,18 +1653,18 @@ void svkImageData::GetImageCenter( double* posLPS)
     double pixelSpacing[3] = {0,0,0}; 
     this->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
     float index[3] = {0,0,0};
-    int* extent = this->GetExtent(); 
 
     int numVoxels[3] = {0,0,0};
     numVoxels[0] = this->GetDcmHeader()->GetIntValue("Columns");
     numVoxels[1] = this->GetDcmHeader()->GetIntValue("Rows");
-    numVoxels[2] = this->GetDcmHeader()->GetIntValue( "NumberOfFrames" ) / this->GetDcmHeader()->GetNumberOfCoils(); 
+    numVoxels[2] = this->GetDcmHeader()->GetNumberOfSlices(); 
 
     double dcos[3][3];
     this->GetDcos(dcos);
-
     for (int i = 0; i < 3; i++) {
         index[i] = (numVoxels[i]-1)/2.0;
+    }
+    for (int i = 0; i < 3; i++) {
         posLPS[i] = origin[i];  
         for (int j = 0; j < 3; j++) { 
             posLPS[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
