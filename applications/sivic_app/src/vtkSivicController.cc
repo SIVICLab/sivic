@@ -2160,6 +2160,16 @@ void vtkSivicController::PushToPACS()
     // Lets create our writer
     writer = writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_SC );
     writerFactory->Delete();
+
+    // Lets get a new series number...
+    string notUsed;
+    int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern(
+        this->model->GetDataObject( "SpectroscopicData" ) ,
+        &notUsed
+    );
+    static_cast<svkImageWriter*>(writer)->SetSeriesNumber( seriesNumber );
+
+    // And set the series description
     static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC MRSI secondary capture" );
 
     // We will save the current slice so we can return to it after the capture is done
@@ -2198,7 +2208,7 @@ void vtkSivicController::PushToPACS()
 
         stringstream copyCommand;
         copyCommand << "cp " << sourceImageName.c_str() <<" "<< targetImageName.c_str();
-        cout<< copyCommand.str().c_str() << endl;
+        //cout<< copyCommand.str().c_str() << endl;
         system( copyCommand.str().c_str() );
     }
 
