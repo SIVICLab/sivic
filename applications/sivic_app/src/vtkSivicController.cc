@@ -1122,9 +1122,8 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     } else if( strcmp(captureType,"SPECTRA_CAPTURE") == 0 ) {
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
-        this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
-            this->WriteImageCapture( writer, fileNameString, outputOption, outputImage, print,
-                     outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
+        this->secondaryCaptureFormatter
+                  ->WriteCombinedWithSummaryCapture( writer, fileNameString, outputOption, outputImage, print );
     }
 
 
@@ -2177,22 +2176,18 @@ void vtkSivicController::PushToPACS()
      
     bool print = 0; 
 
-    // Write image with spectra slide
-    this->WriteCombinedCapture( writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print);
-
-    // Write summary slide 
-    this->WriteImageCapture( writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print,
-                             outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1 );
+    this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
+                               writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print );
 
     // Reset the slice
     this->SetSlice(currentSlice);
 
     // Now we copy the local images to PACS
-    for( int i = 1; i <= outputImage->GetDcmHeader()->GetIntValue("InstanceNumber") + 1; i++ ) {
+    for( int i = outputImage->GetExtent()[4]; i <= outputImage->GetExtent()[5]; i++ ) {
         string sourceImageName = fileNameString;
 
         ostringstream frameNum;
-        frameNum <<  i;
+        frameNum <<  i+1;
 
         //  Replace * with slice number in output file name: 
         size_t pos = sourceImageName.find_last_of("*");

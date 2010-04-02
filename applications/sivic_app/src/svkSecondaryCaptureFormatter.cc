@@ -133,13 +133,73 @@ void svkSecondaryCaptureFormatter::SetOrientation( svkDcmHeader::Orientation ori
  */
 void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
+    // Here are all the frames we may want to look at....
     int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+
+    // If we want to only look at the current slice....
     if( outputOption == CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame;
     }
-    int instanceNumber = 1;
+
+    // Lets figure out which are our starting and ending frames
+    int i = firstFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+        i++;
+    }
+
+    firstFrame = i; 
+    firstFrame = firstFrame < 0 ? 0 : firstFrame;
+
+    // Now lets find the last slice inside the selection box...
+    i = lastFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+        i--;
+    }
+    lastFrame = i; 
+
+    //  Replace * with slice number in output file name: 
+    size_t pos = fileNameString.find_last_of("*");
+    if ( pos != string::npos) {
+        fileNameString.erase(pos);
+    } else {
+        pos = fileNameString.find_last_of(string("."));
+    }
+    string filePattern = "%s%d";
+    if ( pos != string::npos && pos > 0 ) {
+        writer->SetFilePrefix( fileNameString.substr(0,pos).c_str() );
+        filePattern.append( fileNameString.substr(pos).c_str() );
+    } else {
+        writer->SetFilePrefix( fileNameString.c_str() );
+    }
+    writer->SetFilePattern(filePattern.c_str());
+
+    bool flipImage = 0;
+    if( writer->IsA("svkImageWriter") ) {  
+        flipImage = 1;
+    }
+    this->RenderSpectraImage( firstFrame, lastFrame, outputImage, flipImage );
+    if( !writer->IsA("svkImageWriter") ) {  
+        vtkImageData* imageCopy = vtkImageData::New();
+        imageCopy->DeepCopy( outputImage );
+        imageCopy->Update();
+        writer->SetInput( imageCopy );
+        imageCopy->Delete();
+    } else {
+        writer->SetInput( outputImage );
+    }
+    writer->Write();
+
+    if( print ) {
+        this->PrintImages( fileNameString, firstFrame, lastFrame );
+    }
+}
+
+
+void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage )
+{
+    // First we need to prepare to renderer
     this->plotController->GetView()->TurnRendererOff( svkPlotGridView::PRIMARY );
     this->overlayController->GetView()->TurnRendererOff( svkPlotGridView::PRIMARY );
     vtkRenderWindow* window = vtkRenderWindow::New();
@@ -153,63 +213,37 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
               vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) )
                                ->GetMapper())->GetLabelTextProperty()->SetFontSize(20);
     }
+
+    // Now lets loop through the slices....
+    vtkImageAppend* sliceAppender = vtkImageAppend::New();
+    sliceAppender->SetAppendAxis(2);
     for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m, this->orientation) ) {
-            continue;
-        }
-        string fileNameStringTmp = fileNameString; 
-
-        ostringstream frameNum;
-        frameNum <<  instanceNumber;
-
-        //  Replace * with slice number in output file name: 
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } else {
-            size_t pos = fileNameStringTmp.find_last_of(".");
-            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
-        }
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-        writer->SetFileName( fileNameStringTmp.c_str() );
-
-
+        vtkImageData* tmpData = vtkImageData::New();
         this->sivicController->SetSlice(m);
         window->Render();
         vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
         wtif->SetMagnification(2);
         wtif->SetInput( window );
-        
-
-        outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
-        if( writer->IsA("svkImageWriter") ) {  
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            vtkImageFlip* flipper = vtkImageFlip::New();
-            flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( wtif->GetOutput() );
-            flipper->Update();
-            outputImage->DeepCopy( flipper->GetOutput() );
-            static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
-            flipper->Delete();
-        } else {
-            writer->SetInput( wtif->GetOutput() );
-        }
-        instanceNumber++;
-
-        writer->Write();
-        
-        if( print ) {
-            stringstream printCommand;
-            printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << this->sivicController->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-            cout<< printCommand.str().c_str() << endl;
-            system( printCommand.str().c_str() ); 
-            stringstream removeCommand;
-            removeCommand << "rm " << fileNameStringTmp.c_str(); 
-            system( removeCommand.str().c_str() ); 
-        }
+        wtif->Update();
+        tmpData->DeepCopy( wtif->GetOutput() );
+        tmpData->Update();
+        sliceAppender->SetInput(m-firstFrame, tmpData );
         wtif->Delete();
+        tmpData->Delete();
     }
+    if( flipImage ) {  
+        vtkImageFlip* flipper = vtkImageFlip::New();
+        flipper->SetFilteredAxis( 1 );
+        flipper->SetInput( sliceAppender->GetOutput() );
+        flipper->Update();
+        outputImage->DeepCopy( flipper->GetOutput() );
+        flipper->Delete();
+    } else {
+        sliceAppender->Update();
+        outputImage->DeepCopy( sliceAppender->GetOutput() );
+    }
+
+    // Now we clean things up
     window->RemoveRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     this->plotController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
     this->overlayController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
@@ -226,6 +260,173 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
  *
  */
 void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+{
+    // Here are all the frames we may want to look at....
+    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
+
+    // Lets figure out which are our starting and ending frames
+    int i = firstFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+        i++;
+    }
+
+    firstFrame = i; 
+    firstFrame = firstFrame < 0 ? 0 : firstFrame;
+
+    // Now lets find the last slice inside the selection box...
+    i = lastFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+        i--;
+    }
+    lastFrame = i; 
+
+    //  Replace * with slice number in output file name: 
+    size_t pos = fileNameString.find_last_of("*");
+    if ( pos != string::npos) {
+        fileNameString.erase(pos);
+    } else {
+        pos = fileNameString.find_last_of(string("."));
+    }
+    string filePattern = "%s%d";
+    if ( pos != string::npos && pos > 0 ) {
+        writer->SetFilePrefix( fileNameString.substr(0,pos).c_str() );
+        filePattern.append( fileNameString.substr(pos).c_str() );
+    } else {
+        writer->SetFilePrefix( fileNameString.c_str() );
+    }
+    writer->SetFilePattern(filePattern.c_str());
+
+    bool flipImage = 0;
+    if( writer->IsA("svkImageWriter") ) {  
+        flipImage = 1;
+    }
+
+    this->RenderCombinedImage( firstFrame, lastFrame, outputImage, flipImage, print );
+    if( !writer->IsA("svkImageWriter") ) {  
+        vtkImageData* imageCopy = vtkImageData::New();
+        imageCopy->DeepCopy( outputImage );
+        imageCopy->Update();
+        writer->SetInput( imageCopy );
+        imageCopy->Delete();
+    } else {
+        writer->SetInput( outputImage );
+    }
+    writer->Write();
+
+    if( print ) {
+        this->PrintImages( fileNameString, firstFrame, lastFrame );
+    }
+}
+
+
+/*!
+ *
+ */
+void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+{
+    // Here are all the frames we may want to look at....
+    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
+
+    // Lets figure out which are our starting and ending frames
+    int i = firstFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+        i++;
+    }
+
+    firstFrame = i; 
+    firstFrame = firstFrame < 0 ? 0 : firstFrame;
+
+    // Now lets find the last slice inside the selection box...
+    i = lastFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+        i--;
+    }
+    lastFrame = i; 
+
+    //  Replace * with slice number in output file name: 
+    size_t pos = fileNameString.find_last_of("*");
+    if ( pos != string::npos) {
+        fileNameString.erase(pos);
+    } else {
+        pos = fileNameString.find_last_of(string("."));
+    }
+    string filePattern = "%s%d";
+    if ( pos != string::npos && pos > 0 ) {
+        writer->SetFilePrefix( fileNameString.substr(0,pos).c_str() );
+        filePattern.append( fileNameString.substr(pos).c_str() );
+    } else {
+        writer->SetFilePrefix( fileNameString.c_str() );
+    }
+    writer->SetFilePattern(filePattern.c_str());
+
+    bool flipImage = 0;
+    if( writer->IsA("svkImageWriter") ) {  
+        flipImage = 1;
+    }
+
+    vtkImageAppend* sliceAppender = vtkImageAppend::New();
+    sliceAppender->SetAppendAxis(2);
+    svkImageData* outputImageCopy1 = svkMriImageData::New();
+    outputImageCopy1->SetDcmHeader( outputImage->GetDcmHeader() );
+    outputImageCopy1->GetDcmHeader()->Register( outputImageCopy1 );
+    this->RenderCombinedImage( firstFrame, lastFrame, outputImageCopy1, flipImage, print );
+    sliceAppender->SetInput(0, outputImageCopy1 );
+    firstFrame = firstFrame-2 < 0 ? 0 : firstFrame-2;
+    int numSummaryImages = lastFrame-firstFrame+1;
+    int currentSummaryImage = 1;
+    while( numSummaryImages > 6 ) {
+        svkImageData* outputImageCopy2 = svkMriImageData::New();
+        outputImageCopy2->SetDcmHeader( outputImage->GetDcmHeader() );
+        outputImageCopy2->GetDcmHeader()->Register( outputImageCopy2 );
+        this->RenderSummaryImage( firstFrame, firstFrame+5, outputImageCopy2, flipImage, print );
+        firstFrame+=5;
+        numSummaryImages = lastFrame-firstFrame+1;
+        sliceAppender->SetInput(currentSummaryImage, outputImageCopy2 );
+        currentSummaryImage++;
+        outputImageCopy2->Delete();
+    }
+    if( numSummaryImages > 0 ) {
+        svkImageData* outputImageCopy2 = svkMriImageData::New();
+        outputImageCopy2->SetDcmHeader( outputImage->GetDcmHeader() );
+        outputImageCopy2->GetDcmHeader()->Register( outputImageCopy2 );
+        this->RenderSummaryImage( firstFrame, lastFrame, outputImageCopy2, flipImage, print );
+        sliceAppender->SetInput(currentSummaryImage, outputImageCopy2 );
+    }
+    sliceAppender->Update();
+    outputImage->DeepCopy( sliceAppender->GetOutput() );
+    outputImage->Update();
+    if( !writer->IsA("svkImageWriter") ) {  
+        vtkImageData* imageCopy = vtkImageData::New();
+        imageCopy->DeepCopy( outputImage );
+        imageCopy->Update();
+        writer->SetInput( imageCopy );
+        imageCopy->Delete();
+    } else {
+        writer->SetInput( outputImage );
+    }
+    writer->Write();
+
+}
+
+
+/*!
+ *
+ */
+void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print )
 {
     double plotViewport[4] =        { 0.5,
                                       0.0,
@@ -349,73 +550,36 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
     imageInfoRenderer->Delete();
     window->SetSize( imageSize[0],imageSize[1] );
 
-    int instanceNumber = 1;
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
-    if( outputOption == CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
+    vtkImageAppend* sliceAppender = vtkImageAppend::New();
+    sliceAppender->SetAppendAxis(2);
     for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m, this->orientation) ) {
-            continue;
-        }
-        string fileNameStringTmp = fileNameString; 
-
-        ostringstream frameNum;
-        frameNum <<  instanceNumber;
-
-        //  Replace * with slice number in output file name: 
-        size_t pos = fileNameStringTmp.find_last_of("*");
-        if ( pos != string::npos) {
-            fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-        } else {
-            size_t pos = fileNameStringTmp.find_last_of(".");
-            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
-        }
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-        writer->SetFileName( fileNameStringTmp.c_str() );
-
-
+        vtkImageData* tmpData = vtkImageData::New();
         this->sivicController->SetSlice(m);
         this->PopulateInfoText( specText1, specText2,  imageText );
         window->Render();
         vtkWindowToImageFilter* wtif = vtkWindowToImageFilter::New();
         wtif->SetMagnification(1);
         wtif->SetInput( window );
-        
+        wtif->Update( );
 
-        outputImage->GetDcmHeader()->SetValue( "InstanceNumber", instanceNumber );
-        if( writer->IsA("svkImageWriter") ) {  
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-            vtkImageFlip* flipper = vtkImageFlip::New();
-            flipper->SetFilteredAxis( 1 );
-            flipper->SetInput( wtif->GetOutput() );
-            flipper->Update();
-            outputImage->DeepCopy( flipper->GetOutput() );
-            static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
-            flipper->Delete();
-        } else {
-            writer->SetInput( wtif->GetOutput() );
-        }
-        instanceNumber++;
-
-        writer->Write();
-        
-        if( print ) {
-            stringstream printCommand;
-            printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << this->sivicController->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-            cout<< printCommand.str().c_str() << endl;
-            system( printCommand.str().c_str() ); 
-            stringstream removeCommand;
-            removeCommand << "rm " << fileNameStringTmp.c_str(); 
-            system( removeCommand.str().c_str() ); 
-            vtkScalarBarActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::COLOR_BAR )
-                                    )->GetLabelTextProperty()->SetColor(1, 1, 1);
-        }
+        tmpData->DeepCopy( wtif->GetOutput() );
+        tmpData->Update();
+        sliceAppender->SetInput(m-firstFrame, tmpData );
         wtif->Delete();
     }
+
+    if( flipImage ) {  
+        vtkImageFlip* flipper = vtkImageFlip::New();
+        flipper->SetFilteredAxis( 1 );
+        flipper->SetInput( sliceAppender->GetOutput() );
+        flipper->Update();
+        outputImage->DeepCopy( flipper->GetOutput() );
+        flipper->Delete();
+    } else {
+        sliceAppender->Update();
+        outputImage->DeepCopy( sliceAppender->GetOutput() );
+    }
+
     window->RemoveRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     window->RemoveRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     this->plotController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
@@ -428,11 +592,83 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
     window->Delete();
 }
 
-
 /*!
  *
  */
 void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber ) 
+{
+    // Here are all the frames we may want to look at....
+    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
+    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) { 
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
+
+    // Lets figure out which are our starting and ending frames
+    int i = firstFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+        i++;
+    }
+
+    firstFrame = i; 
+    firstFrame = firstFrame < 0 ? 0 : firstFrame;
+
+    // Now lets find the last slice inside the selection box...
+    i = lastFrame;
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+        i--;
+    }
+    lastFrame = i; 
+
+    //  Replace * with slice number in output file name: 
+    size_t pos = fileNameString.find_last_of("*");
+    if ( pos != string::npos) {
+        fileNameString.erase(pos);
+    } else {
+        pos = fileNameString.find_last_of(string("."));
+    }
+    string filePattern = "%s%d";
+    if ( pos != string::npos && pos > 0 ) {
+        writer->SetFilePrefix( fileNameString.substr(0,pos).c_str() );
+        filePattern.append( fileNameString.substr(pos).c_str() );
+    } else {
+        writer->SetFilePrefix( fileNameString.c_str() );
+    }
+    writer->SetFilePattern(filePattern.c_str());
+
+    bool flipImage = 0;
+    if( writer->IsA("svkImageWriter") ) {  
+        flipImage = 1;
+    } 
+
+    firstFrame = firstFrame-2 < 0 ? 0 : firstFrame;
+    this->RenderSummaryImage( firstFrame, lastFrame, outputImage, flipImage, print );
+    outputImage->Update();
+    
+    if( !writer->IsA("svkImageWriter") ) {  
+        vtkImageData* imageCopy = vtkImageData::New();
+        imageCopy->DeepCopy( outputImage );
+        imageCopy->Update();
+        writer->SetInput( imageCopy );
+        imageCopy->Delete();
+    } else {
+        writer->SetInput( outputImage );
+    }
+    writer->Write();
+
+    if( print ) {
+        this->PrintImages( fileNameString, firstFrame, lastFrame );
+    }
+}
+
+
+/*!
+ *
+ */
+void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print )
 {
 
     this->overlayController->GetView()->TurnRendererOff( svkOverlayView::PRIMARY );
@@ -451,27 +687,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 #endif 
     window->AddRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
 
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
-    
-    // Lets start by determining the first frame we want to show.
-    int i = 0;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
-        i++;
-    }
-    // We want to to start two frames before the start. This is the convention for mr.dev
-    firstFrame = i-2; 
-    firstFrame = firstFrame < 0 ? 0 : firstFrame;
-
-    // Now lets find the last slice inside the selection box...
-    i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation)  
-           && i >= firstFrame ) {
-        i--;
-    }
-
-    lastFrame = i; 
-
     int numFrames = lastFrame - firstFrame + 1;
     int numRows = 2;
     if( numRows > numFrames ) {
@@ -484,7 +699,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     sliceLocationActor->SetPosition(x/4,y-25);
 
     svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
-    string fileNameStringTmp = fileNameString; 
 
     vtkDataSetCollection* allImages = vtkDataSetCollection::New();
 
@@ -492,19 +706,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     colAppenders.reserve( (numFrames)/numCols ); 
     vtkImageAppend* rowAppender = vtkImageAppend::New();
     rowAppender->SetAppendAxis(1);
-    //  Replace * with slice number in output file name: 
-    ostringstream frameNum;
-    if( instanceNumber != 0 ) {
-        frameNum << instanceNumber;
-    }
-    size_t pos = fileNameStringTmp.find_last_of("*");
-    if ( pos != string::npos) {
-        fileNameStringTmp.replace(pos, 1, frameNum.str()); 
-    } else {
-        size_t pos = fileNameStringTmp.find_last_of(".");
-        fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
-    }
-
     for (int m = firstFrame; m <= lastFrame; m++) {
         vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
         double origin[3];
@@ -523,10 +724,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
         sliceLocationActor->SetInput( position.str().c_str() );
         vtkImageData* data = vtkImageData::New();
         allImages->AddItem( data );
-
-        cout << "FN: " << fileNameStringTmp.c_str() << endl;
-
-        writer->SetFileName( fileNameStringTmp.c_str() );
     
         // Now lets use the multiwindow to get the image of the spectroscopy
         rendererToImage->SetInput( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
@@ -551,12 +748,15 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
                 padder->SetInput(  colAppenders[(m-firstFrame)/numCols]->GetOutput() );
             }
             padder->SetOutputWholeExtent(0,x*numCols-1,0,y-1,0,0);
+            rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
+/*
             if( numCols == 1 ) {
                 //rowAppender->SetInput( (int)(numRows - 1 - (int)ceil((m-firstFrame)/((double)numRows))), padder->GetOutput() );
                 rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
             } else {
                 rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
             }
+*/
         } else {
             colAppenders[(m-firstFrame)/numCols]->SetInput((m-firstFrame) % numCols, data );
             colAppenders[(m-firstFrame)/numCols]->Update();
@@ -602,37 +802,20 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     padder->SetOutputWholeExtent(0,imageSize[0]-1,0,imageSize[1]-1,0,0);
     titleAppender->Delete();
 
-    if( writer->IsA("svkImageWriter") ) {  
-        if( instanceNumber == 0 ) {
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( 1 );
-        } else {
-            static_cast<svkImageWriter*>(writer)->SetInstanceNumber( instanceNumber );
-        }
-        double dcos[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+    if( flipImage ) {  
         vtkImageFlip* flipper = vtkImageFlip::New();
         flipper->SetFilteredAxis( 1 );
         flipper->SetInput( padder->GetOutput() );
         flipper->Update();
-        outputImage->CopyVtkImage( flipper->GetOutput(), dcos );
-        static_cast<svkImageWriter*>(writer)->SetInput( outputImage );
+        outputImage->DeepCopy( flipper->GetOutput() );
         flipper->Delete();
-        flipper = NULL;
     } else {
-        writer->SetInput( padder->GetOutput() );
+        padder->Update();
+        outputImage->DeepCopy( padder->GetOutput() );
     }
 
-    writer->Write();
     this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->RemoveViewProp( sliceLocationActor );
 
-    if( print ) {
-        stringstream printCommand;
-        printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << this->sivicController->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-        cout<< printCommand.str().c_str() << endl;
-        system( printCommand.str().c_str() ); 
-        stringstream removeCommand;
-        removeCommand << "rm " << fileNameStringTmp.c_str(); 
-        system( removeCommand.str().c_str() ); 
-    }
     padder->Delete();
     window->Delete();
     titleWindow->Delete();
@@ -846,5 +1029,29 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     specText1->SetInput( specInfo1.str().c_str() ) ;
     specText2->SetInput( specInfo2.str().c_str() ) ;
     point->Delete();
+
+}
+
+void svkSecondaryCaptureFormatter::PrintImages( string fileNameString, int startImage, int endImage ) 
+{
+    for (int m = startImage; m <= endImage; m++) {
+        string fileNameStringTmp = fileNameString; 
+        size_t pos = fileNameStringTmp.find_last_of("*");
+        ostringstream frameNum;
+        frameNum <<   m-startImage;
+        if ( pos != string::npos) {
+             fileNameStringTmp.replace(pos, 1, frameNum.str()); 
+        } else {
+            size_t pos = fileNameStringTmp.find_last_of(".");
+            fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
+        }
+        stringstream printCommand;
+        printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << this->sivicController->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
+        cout<< printCommand.str().c_str() << endl;
+        system( printCommand.str().c_str() ); 
+        stringstream removeCommand;
+        removeCommand << "rm " << fileNameStringTmp.c_str(); 
+        system( removeCommand.str().c_str() ); 
+    }
 
 }

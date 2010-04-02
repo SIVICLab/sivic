@@ -111,9 +111,14 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void SetAspect( CaptureAspect aspect);
         void SetOrientation( svkDcmHeader::Orientation orientation );
         void WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void RenderSpectraImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage );
         void WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         void WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
+        void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
+        void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
         void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
+        void PrintImages( string fileNameString, int startImage, int endImage );
 
     protected:
 
