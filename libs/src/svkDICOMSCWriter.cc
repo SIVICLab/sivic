@@ -64,6 +64,7 @@ svkDICOMSCWriter::svkDICOMSCWriter()
 
     this->seriesNumber = 0; 
     this->instanceNumber = 1; 
+    this->useInstanceNumber = true; 
     this->isGray = false;
 
 }
@@ -92,17 +93,60 @@ void svkDICOMSCWriter::Write()
         return;
     }
 
-    if (! this->FileName ) {
+    if ( this->FileName ) { 
+        string fileNameString( this->FileName );
+        size_t pos = fileNameString.rfind(".dcm");
+        if( pos == string::npos ) {
+            pos = fileNameString.rfind(".DCM");
+            if( pos == string::npos ) {
+                fileNameString+=".dcm";
+                delete this->FileName;
+                this->FileName = new char[fileNameString.size() + 1];
+                strcpy(this->FileName, fileNameString.c_str());
+            }
+        }
+    } else if ( this->FilePattern ) {
+        string filePatternString( this->FilePattern );
+        size_t pos = filePatternString.rfind(".dcm");
+        if( pos == string::npos ) {
+            pos = filePatternString.rfind(".DCM");
+            if( pos == string::npos ) {
+                filePatternString+=".dcm";
+                delete this->FilePattern;
+                this->FilePattern = new char[filePatternString.size() + 1];
+                strcpy(this->FilePattern, filePatternString.c_str());
+            }
+        } 
+        if( this->FilePrefix ) {
+            string filePrefixString( this->FilePrefix );
+            size_t pos = filePrefixString.rfind(".dcm");
+            if( pos != string::npos ) {
+                filePrefixString.replace(pos, pos + 4, "");
+                delete this->FilePrefix;
+                this->FilePrefix = new char[filePrefixString.size() + 1];
+                strcpy(this->FilePrefix, filePrefixString.c_str());
+            }
+            pos = filePrefixString.rfind(".DCM");
+            if( pos != string::npos ) {
+                filePrefixString.replace(pos, pos + 4, "");
+                delete this->FilePrefix;
+                this->FilePrefix = new char[filePrefixString.size() + 1];
+                strcpy(this->FilePrefix, filePrefixString.c_str());
+            }
+        }
+    } else {
         vtkErrorMacro(<<"Write:Please specify either a FileName or a file prefix and pattern");
         this->SetErrorCode(vtkErrorCode::NoFileNameError);
         return;
     }
-
+   
+     
     // Make sure the file name is allocated
     this->InternalFileName =
         new char[(this->FileName ? strlen(this->FileName) : 1) +
             (this->FilePrefix ? strlen(this->FilePrefix) : 1) +
             (this->FilePattern ? strlen(this->FilePattern) : 1) + 10];
+    
 
     // Fill in image information.
     this->GetImageDataInput(0)->UpdateInformation();
@@ -116,16 +160,24 @@ void svkDICOMSCWriter::Write()
 
 
     this->InitDcmHeader();
-
-
+    if( useInstanceNumber ) {
+        this->instanceNumber = this->dcmHeaderTemplate->GetIntValue("InstanceNumber");
+    }
+ 
     // loop over the z axis and write the slices
     for (this->FileNumber = wExtent[4]; this->FileNumber <= wExtent[5]; ++this->FileNumber) {
 
-        cout << "FileNumber: " << this->FileNumber << endl; 
-        this->dcmHeader->SetValue(
-            "InstanceNumber",
-            this->instanceNumber 
-        );
+        if( useInstanceNumber ) {
+            this->dcmHeader->SetValue(
+                "InstanceNumber",
+                this->instanceNumber + this->FileNumber
+            );
+        } else {
+            this->dcmHeader->SetValue(
+                "InstanceNumber",
+                this->FileNumber 
+            );
+        }
 
         this->MaximumFileNumber = this->FileNumber;
         this->GetImageDataInput(0)->SetUpdateExtent(
@@ -140,13 +192,21 @@ void svkDICOMSCWriter::Write()
             sprintf(this->InternalFileName,"%s",this->FileName);
         } else {
             if (this->FilePrefix) {
-                sprintf(this->InternalFileName, this->FilePattern,
-                    this->FilePrefix, this->FileNumber);
+                if( useInstanceNumber ) {
+                    sprintf(this->InternalFileName, this->FilePattern,
+                        this->FilePrefix, this->instanceNumber + this->FileNumber);
+                } else {
+                    sprintf(this->InternalFileName, this->FilePattern,
+                        this->FilePrefix, this->FileNumber );
+                }
             } else {
-                sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
+                if( useInstanceNumber ) {
+                    sprintf(this->InternalFileName, this->FilePattern, this->instanceNumber + this->FileNumber);
+                } else {
+                    sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
+                }
             }
         }
-
         this->GetImageDataInput(0)->Update();
         this->WriteSlice();
         if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
@@ -193,7 +253,7 @@ void svkDICOMSCWriter::WriteSlice()
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
                 pixelsBW[index++] 
-                    = static_cast<unsigned short>( luminance->GetOutput()->GetScalarComponentAsFloat(x, y, 0, 0));
+                    = static_cast<unsigned short>( luminance->GetOutput()->GetScalarComponentAsFloat(x, y, this->FileNumber, 0));
             }
         }
         
@@ -210,10 +270,12 @@ void svkDICOMSCWriter::WriteSlice()
 
     } else {
 
-        unsigned char* pixelsRGB = 
-            static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-
+        int sizeX = (this->GetImageDataInput(0)->GetDimensions())[0]; 
+        int sizeY = (this->GetImageDataInput(0)->GetDimensions())[1]; 
         int numRGBComponents = 3; 
+        unsigned char* pixelsRGB = 
+            static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer( this->FileNumber*sizeX*sizeY*numRGBComponents );
+
         this->dcmHeader->SetValue(
             "PixelData",
             pixelsRGB, 
@@ -433,4 +495,11 @@ void svkDICOMSCWriter::CreateNewSeries( )
 void svkDICOMSCWriter::SetOutputToGrayscale( bool isOutputGray )
 {
     this->isGray = isOutputGray;
+}
+/*!
+ *  Set to true if you want to use the instance number as the file number.
+ */
+void svkDICOMSCWriter::SetUseInstanceNumber( bool useInstanceNumber )
+{
+    this->useInstanceNumber = useInstanceNumber;
 }

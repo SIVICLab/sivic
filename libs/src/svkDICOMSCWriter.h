@@ -55,6 +55,7 @@
 #include <svkImageData.h>
 #include <svkIOD.h>
 #include <svkSCIOD.h>
+#include <string>
 
 #include <sys/stat.h>
 
@@ -92,8 +93,12 @@ class svkDICOMSCWriter : public svkImageWriter
         virtual void    Write();
 
         //  Return the default file name pattern
+        static string   GetFilePattern( svkImageData* imageData ); 
         void            CreateNewSeries();
         void            SetOutputToGrayscale( bool isOutputGray ); 
+
+        //! Set to true if you want to use the instance number as the file number
+        void            SetUseInstanceNumber( bool useInstanceNumber );
 
 
     protected:
@@ -113,6 +118,7 @@ class svkDICOMSCWriter : public svkImageWriter
         svkDcmHeader*   dcmHeader;
         svkDcmHeader*   dcmHeaderTemplate;
         bool            isGray; 
+        bool            useInstanceNumber; 
         
 
 };
