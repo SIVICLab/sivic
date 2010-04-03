@@ -167,6 +167,8 @@ void svkDICOMSCWriter::Write()
     // loop over the z axis and write the slices
     for (this->FileNumber = wExtent[4]; this->FileNumber <= wExtent[5]; ++this->FileNumber) {
 
+        this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
+
         if( useInstanceNumber ) {
             this->dcmHeader->SetValue(
                 "InstanceNumber",
