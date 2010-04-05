@@ -393,7 +393,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
         outputImageCopy2->SetDcmHeader( outputImage->GetDcmHeader() );
         outputImageCopy2->GetDcmHeader()->Register( outputImageCopy2 );
         this->RenderSummaryImage( firstFrame, firstFrame+5, outputImageCopy2, flipImage, print );
-        firstFrame+=5;
+        firstFrame+=6;
         numSummaryImages = lastFrame-firstFrame+1;
         sliceAppender->SetInput(currentSummaryImage, outputImageCopy2 );
         currentSummaryImage++;
