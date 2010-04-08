@@ -50,6 +50,12 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkImageFourierFilter.h>
 #include <vtkImageFFT.h>
+#include <vtkImageRFFT.h>
+#include <vtkImageViewer2.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkImageActor.h>
+#include <vtkImageFourierCenter.h>
 
 #include <svkImageInPlaceFilter.h>
 
@@ -72,8 +78,21 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         static svkMrsImageFFT* New();
         vtkTypeRevisionMacro( svkMrsImageFFT, svkImageInPlaceFilter);
 
+        typedef enum {
+            SPECTRAL = 0, 
+            SPATIAL 
+        } FFTDomain;
+
+        typedef enum {
+            FORWARD = 0, 
+            REVERSE 
+        } FFTMode;
+
         void             SetUpdateExtent(int* start, int* end);
         void             ConvertArrayToImageComplex( vtkDataArray* array, vtkImageComplex* imageComplexArray);
+        void             SetFFTDomain( FFTDomain domain );
+        void             SetFFTMode( FFTMode mode );
+
 
 
     protected:
@@ -90,15 +109,32 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+
         virtual int     RequestData(
                             vtkInformation* request, 
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
 
+        virtual int     RequestDataSpatial(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector,
+                            vtkImageFourierFilter* fourierFilter
+                        );
+
+        virtual int     RequestDataSpectral(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector,
+                            vtkImageFourierFilter* fourierFilter
+                        );
+
 
     private:
         int             updateExtent[6]; 
+        FFTDomain       domain; 
+        FFTMode         mode; 
 
 };
 

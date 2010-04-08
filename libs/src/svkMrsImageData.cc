@@ -303,6 +303,7 @@ void svkMrsImageData::UpdateRange()
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = this->GetDcmHeader()->GetNumberOfTimePoints();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
+    double* tuple;
     for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {
             for (int x = extent[0]; x <= extent[1]-1; x++) {
@@ -310,7 +311,7 @@ void svkMrsImageData::UpdateRange()
                     for( int timePoint = 0; timePoint < numTimePoints; timePoint++ ) {
                         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( this->GetSpectrum( x, y, z, timePoint, channel ) );
                         for (int i = 0; i < numFrequencyPoints; i++) {
-                            double* tuple = spectrum->GetTuple( i );
+                            tuple = spectrum->GetTuple( i );
                             realRange[0] = tuple[0] < realRange[0]
                                 ? tuple[0] : realRange[0];
                             realRange[1] = tuple[0] > realRange[1] 
@@ -713,30 +714,33 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
 {
     if( image != NULL ) {
         // Setup image dimensions
-        image->SetExtent( Extent[0]-1, Extent[1]-1, Extent[2]-1, Extent[3]-1, Extent[4]-1, Extent[5]-1);
+        image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
         image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
-        image->SetScalarType(this->GetScalarType() );
+        image->SetScalarTypeToDouble( );
 
         // Create a float array to hold the pixel data
-        vtkFloatArray* pixelData = vtkFloatArray::New();
+        vtkDoubleArray* pixelData = vtkDoubleArray::New();
         pixelData->SetNumberOfComponents( 2 );
-        pixelData->SetNumberOfTuples( (Dimensions[0]-1)*(Dimensions[1]-1)*(Dimensions[2]-1) );
+        pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
         int linearIndex = 0;
-        float tuple[2];
+        double* tuple;
         for (int z = Extent[4]; z < Extent[5]; z++) {
             for (int y = Extent[2]; y < Extent[3]; y++) {
                 for (int x = Extent[0]; x < Extent[1]; x++) {
                     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( 
                                            this->GetSpectrum( x, y, z, timePoint, channel ) );
 
-                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
-                    spectrum->GetTupleValue( point, tuple );
+                    linearIndex = ( z * (image->GetDimensions()[0]) * (image->GetDimensions()[1]) ) 
+                                      + ( y * (image->GetDimensions()[1]) ) + x; 
+
+                    tuple = spectrum->GetTuple( point );
                     pixelData->SetComponent( linearIndex, 0, tuple[0] );
                     pixelData->SetComponent( linearIndex, 1, tuple[1] );
                 }
             }
         }
         image->GetPointData()->SetScalars( pixelData );
+        image->SetNumberOfScalarComponents(2);
         pixelData->Delete();
     }
 }
@@ -755,23 +759,21 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
  */
 void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, int channel ) 
 {
-
     if( image != NULL ) {
         int linearIndex = 0;
-        float value[2];
+        double* value;
+        double range[2];
         for (int z = Extent[4]; z < Extent[5]; z++) {
             for (int y = Extent[2]; y < Extent[3]; y++) {
                 for (int x = Extent[0]; x < Extent[1]; x++) {
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( 
-                                           this->GetSpectrum( x, y, z, timePoint, channel ) );
+                    vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
 
                     linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
-                    static_cast<vtkFloatArray*>(image->GetPointData()->GetScalars())->GetTupleValue( linearIndex, value );
-                    spectrum->SetTuple( point, value );
-                    
+                    value = image->GetPointData()->GetScalars()->GetTuple2( linearIndex );
+                    spectrum->SetTuple2( point, value[0], value[1] );
+                   
                 }
             }
         }
-        this->Modified();
     }
 }

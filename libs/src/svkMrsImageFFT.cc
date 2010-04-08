@@ -67,6 +67,8 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->updateExtent[3] = -1;  
     this->updateExtent[4] = -1;  
     this->updateExtent[5] = -1;  
+    this->domain = SPECTRAL;
+    this->mode   = FORWARD;
 }
 
 
@@ -128,11 +130,126 @@ int svkMrsImageFFT::RequestInformation( vtkInformation* request, vtkInformationV
     return 1;
 }
 
-
 /*! 
  *
  */
 int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+    int returnValue;
+    vtkImageFourierFilter* fourierFilter = NULL;
+    if( this->mode == REVERSE ) {
+        fourierFilter = vtkImageRFFT::New();
+    } else {
+        fourierFilter = vtkImageFFT::New();
+    }
+    fourierFilter->SetDimensionality(3);
+    if( this->domain == SPECTRAL ) {
+        returnValue = RequestDataSpectral( request, inputVector, outputVector, fourierFilter ); 
+    } else if ( this->domain == SPATIAL ) {
+        returnValue = RequestDataSpatial( request, inputVector, outputVector, fourierFilter ); 
+    }
+    fourierFilter->Delete();
+    return returnValue;
+}
+
+
+/*! 
+ *
+ */
+int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector, vtkImageFourierFilter* fourierFilter )
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
+    double range[2];
+    double fullRange[2];
+    vtkImageFFT* fft = vtkImageFFT::New();
+    vtkImageRFFT* rfft = vtkImageRFFT::New();
+    vtkImageFourierCenter* ifc = vtkImageFourierCenter::New();
+    ifc->SetDimensionality(3);
+
+    for( int i = 0; i < numberOfPoints; i++ ) {
+        vtkImageData* tempData = vtkImageData::New();
+        data->GetImage( tempData, i );
+        tempData->Modified();
+        tempData->Update();
+
+// Just Center
+/*
+        ifc->SetInput( tempData );
+        ifc->Update();
+        data->SetImage( ifc->GetOutput(), i );
+*/
+// Just Center
+
+// PHASE SHIFT
+        fft->SetInput( tempData );
+        ifc->SetInput( fft->GetOutput() );
+        rfft->SetInput( ifc->GetOutput());
+        fourierFilter->SetInput(rfft->GetOutput());
+        fourierFilter->Update();
+        data->SetImage( fourierFilter->GetOutput(), i );
+// PHASE SHIFT
+
+
+// Data Reorder:
+/*
+        fourierFilter->SetInput(tempData);
+        fourierFilter->Update();
+        ifc->SetInput( fourierFilter->GetOutput() );
+        ifc->Update( );
+        data->SetImage( ifc->GetOutput(), i );
+// DataReorder
+*/
+
+// Fourier-- no Center
+/*
+        fourierFilter->SetInput(tempData);
+        fourierFilter->Update();
+        fourierFilter->Update( );
+        data->SetImage( fourierFilter->GetOutput(), i );
+*/
+// Fourier-- no Center
+
+// Fourier-- with Center
+/*
+        if( this->mode == REVERSE ) {
+            ifc->SetInput( tempData );
+            ifc->Update( );
+            fourierFilter->SetInput(ifc->GetOutput());
+            fourierFilter->Update();
+            data->SetImage( fourierFilter->GetOutput(), i );
+        } else {
+            fourierFilter->SetInput(tempData);
+            fourierFilter->Update();
+            ifc->SetInput( fourierFilter->GetOutput() );
+            ifc->Update( );
+            data->SetImage( fourierFilter->GetOutput(), i );
+        }
+*/
+// Fourier-- with Center
+        tempData->Delete();
+    }
+
+    //  Update the DICOM header to reflect the spectral domain changes:
+    if( this->mode == REVERSE ) {
+        string domain("SPATIAL");
+        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+    } else {
+        string domain("FREQUENCY");
+        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+    }
+
+    //  Trigger observer update via modified event:
+    this->GetInput()->Modified();
+    this->GetInput()->Update();
+    return 1; 
+}
+
+
+/*! 
+ *
+ */
+int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector, vtkImageFourierFilter* fourierFilter )
 {
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
 
@@ -150,8 +267,6 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
-    vtkImageFourierFilter* vtkFTFilter = vtkImageFFT::New();
-
     for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
         for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
             for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
@@ -165,7 +280,7 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
                         this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
     
                         vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
-                        vtkFTFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+                        fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
     
                         // Lets modify the data, putting 0 frequency at the center
                         for (int i = 0; i < numFrequencyPoints; i++) {
@@ -187,17 +302,38 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
         }
     }
 
-    vtkFTFilter->Delete();
-
     //  Update the DICOM header to reflect the spectral domain changes:
-    string domain("FREQUENCY");
-    data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+    if( this->mode == REVERSE ) {
+        string domain("TIME");
+        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+    } else {
+        string domain("FREQUENCY");
+        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+    }
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
     return 1; 
 } 
+
+
+/*!
+ *
+ */
+void svkMrsImageFFT::SetFFTDomain( FFTDomain domain )
+{
+    this->domain = domain;
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageFFT::SetFFTMode( FFTMode mode )
+{
+    this->mode = mode;
+}
 
 
 /*! 
