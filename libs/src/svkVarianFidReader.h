@@ -46,22 +46,13 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkFloatArray.h>
-#include <vtkPointData.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
 #include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
 
 #include <svkVarianReader.h>
+#include <svkVarianFidMapper.h>
+#include <svkVarianCSFidMapper.h>
 #include <svkByteSwap.h>
 
-#include <sys/stat.h>
 #include <map>
 
 
@@ -72,7 +63,10 @@ using namespace std;
 
 
 /*! 
- *  Reader for varian FID files. 
+ *  Reader for varian FID files.  Parses the procpar file to create a map of header values which 
+ *  are used to initialize the DICOM header through the mapper object.  The specific mapper instance
+ *  is likely a function of the acquisition type / pulse sequence and is obtained from a mapper factory
+ *  with rules TBD. 
  */
 class svkVarianFidReader : public svkVarianReader
 {
@@ -100,56 +94,15 @@ class svkVarianFidReader : public svkVarianReader
 
         //  Methods:
         virtual void                     InitDcmHeader();
-        void                             InitPatientModule();
-        void                             InitGeneralStudyModule();
-        void                             InitGeneralSeriesModule();
-        void                             InitGeneralEquipmentModule();
-        void                             InitMultiFrameFunctionalGroupsModule();
-        void                             InitMultiFrameDimensionModule();
-        void                             InitAcquisitionContextModule();
-        void                             InitSharedFunctionalGroupMacros();
-        void                             InitPerFrameFunctionalGroupMacros();
-        void                             InitFrameContentMacro();
-        void                             InitPlanePositionMacro();
-        void                             InitPixelMeasuresMacro();
-        void                             InitPlaneOrientationMacro();
-        void                             InitMREchoMacro(); 
-        void                             InitMRTimingAndRelatedParametersMacro();
-        void                             InitMRReceiveCoilMacro();
-        void                             InitMRSpectroscopyPulseSequenceModule(); 
-        void                             InitMRSpectroscopyModule(); 
-        void                             InitMRSpectroscopyFOVGeometryMacro(); 
-        void                             InitMRSpectroscopyDataModule();
-        void                             ReadFidFiles( vtkImageData* data );
-        void                             SetCellSpectrum(
-                                            vtkImageData* data, int x, int y, int z, int timePt, int coilNum
-                                         ); 
+
         svkDcmHeader::DcmPixelDataFormat GetFileType();
-        string                           VarianToDicomDate(string* volumeDate);
-        string                           GetDcmPatientPositionString(string patientPosition);
         void                             ParseFid();
         void                             GetFidKeyValuePair( vtkStringArray* keySet = NULL);
-        void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);
-        int                              GetDataBufferSize();
-        int                              GetHeaderValueAsInt(
-                                            string keyString, int valueIndex = 0, int procparRow = 0
-                                         ); 
-        float                            GetHeaderValueAsFloat(
-                                            string keyString, int valueIndex = 0, int procparRow = 0 
-                                         ); 
-        string                           GetHeaderValueAsString(
-                                            string keyString, int valueIndex = 0, int procparRow = 0
-                                         ); 
-        void                             ParseAndSetStringElements(string key, string valueArrayString);
-        void                             AddDimensionTo2DData();
-        void                             PrintKeyValuePairs();
-
 
         //  Members:
-        float*                                      specData; 
-        ifstream*                                   fidFile;
-        map <string, vector<string> >               fidMap; 
-        long                                        fileSize; 
+        ifstream*                       fidFile;
+        map <string, vector<string> >   fidMap; 
+        svkVarianFidMapper*             mapper;
 
 };
 
