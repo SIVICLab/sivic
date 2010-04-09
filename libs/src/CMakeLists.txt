@@ -116,6 +116,8 @@ ADD_LIBRARY(
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc
+    svkVarianCSFidMapper.cc
+    svkVarianFidMapper.cc
     svkDataView.cc
     svkDataViewController.cc
     svkImageView2D.cc
