@@ -533,7 +533,8 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         double level = 0.1*(range[1] + range[0]);
         this->colorTransfer->SetRange( level - window/2.0, level + window/2.0);
 
-        this->colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
+        //this->colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
+        this->colorTransfer->SetLUTType( svkLookupTable::COLOR );
         this->colorTransfer->SetAlphaThreshold( 0.9 );
 
         windowLevel->SetLookupTable( this->colorTransfer );
@@ -557,7 +558,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->GetRenderer( svkPlotGridView::PRIMARY)->Render();
         this->UpdateMetaboliteText(this->tlcBrc);
         this->plotGrid->AlignCamera();
-        this->SetOverlayOpacity(0.5);
+        this->SetOverlayOpacity(0.35);
         this->Refresh();
 
     } 

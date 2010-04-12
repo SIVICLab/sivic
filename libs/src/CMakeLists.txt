@@ -162,6 +162,7 @@ ADD_LIBRARY(
     svkCoilCombine.cc
     svkSpecUtils.cc
     svkUCSFUtils.cc
+    svkImageFourierCenter.cc
 )
 
 

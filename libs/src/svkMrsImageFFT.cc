@@ -69,6 +69,8 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->updateExtent[5] = -1;  
     this->domain = SPECTRAL;
     this->mode   = FORWARD;
+    this->preCorrectCenter = false;
+    this->postCorrectCenter = false;
 }
 
 
@@ -160,74 +162,28 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
-    double range[2];
-    double fullRange[2];
-    vtkImageFFT* fft = vtkImageFFT::New();
-    vtkImageRFFT* rfft = vtkImageRFFT::New();
-    vtkImageFourierCenter* ifc = vtkImageFourierCenter::New();
-    ifc->SetDimensionality(3);
 
     for( int i = 0; i < numberOfPoints; i++ ) {
-        vtkImageData* tempData = vtkImageData::New();
-        data->GetImage( tempData, i );
-        tempData->Modified();
-        tempData->Update();
-
-// Just Center
-/*
-        ifc->SetInput( tempData );
-        ifc->Update();
-        data->SetImage( ifc->GetOutput(), i );
-*/
-// Just Center
-
-// PHASE SHIFT
-        fft->SetInput( tempData );
-        ifc->SetInput( fft->GetOutput() );
-        rfft->SetInput( ifc->GetOutput());
-        fourierFilter->SetInput(rfft->GetOutput());
-        fourierFilter->Update();
-        data->SetImage( fourierFilter->GetOutput(), i );
-// PHASE SHIFT
-
-
-// Data Reorder:
-/*
-        fourierFilter->SetInput(tempData);
-        fourierFilter->Update();
-        ifc->SetInput( fourierFilter->GetOutput() );
-        ifc->Update( );
-        data->SetImage( ifc->GetOutput(), i );
-// DataReorder
-*/
-
-// Fourier-- no Center
-/*
-        fourierFilter->SetInput(tempData);
-        fourierFilter->Update();
-        fourierFilter->Update( );
-        data->SetImage( fourierFilter->GetOutput(), i );
-*/
-// Fourier-- no Center
-
-// Fourier-- with Center
-/*
-        if( this->mode == REVERSE ) {
-            ifc->SetInput( tempData );
-            ifc->Update( );
-            fourierFilter->SetInput(ifc->GetOutput());
-            fourierFilter->Update();
-            data->SetImage( fourierFilter->GetOutput(), i );
+        vtkImageData* tempDataIn = vtkImageData::New();
+        vtkImageData* tempDataOut = vtkImageData::New();
+        data->GetImage( tempDataIn, i );
+        tempDataIn->Modified();
+        tempDataIn->Update();
+        if( preCorrectCenter ) {
+            this->UnCenterData( tempDataIn, tempDataOut );
+            fourierFilter->SetInput(tempDataOut);
         } else {
-            fourierFilter->SetInput(tempData);
-            fourierFilter->Update();
-            ifc->SetInput( fourierFilter->GetOutput() );
-            ifc->Update( );
+            fourierFilter->SetInput(tempDataIn);
+        }
+        fourierFilter->Update();
+        if( postCorrectCenter ) {
+            this->CenterData( fourierFilter->GetOutput(), tempDataOut );
+            data->SetImage( tempDataOut, i );
+        } else {
             data->SetImage( fourierFilter->GetOutput(), i );
         }
-*/
-// Fourier-- with Center
-        tempData->Delete();
+        tempDataIn->Delete();
+        tempDataOut->Delete();
     }
 
     //  Update the DICOM header to reflect the spectral domain changes:
@@ -335,6 +291,54 @@ void svkMrsImageFFT::SetFFTMode( FFTMode mode )
     this->mode = mode;
 }
 
+
+/*!
+ *
+ */
+void svkMrsImageFFT::UnCenterData( vtkImageData* inputData, vtkImageData* outputData )
+{
+    svkImageFourierCenter* ifc = svkImageFourierCenter::New();
+    ifc->SetReverseCenter( true );
+    ifc->SetDimensionality(3);
+    ifc->SetInput(inputData);
+    ifc->Update();
+    outputData->DeepCopy( ifc->GetOutput() ); 
+    outputData->Update();
+    ifc->Delete();
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageFFT::CenterData( vtkImageData* inputData, vtkImageData* outputData )
+{
+    svkImageFourierCenter* ifc = svkImageFourierCenter::New();
+    ifc->SetDimensionality(3);
+    ifc->SetInput(inputData);
+    ifc->Update();
+    outputData->DeepCopy( ifc->GetOutput() ); 
+    outputData->Update();
+    ifc->Delete();
+}
+
+
+/*!
+ *  Should we correct for an offset center before FT? 
+ */
+void svkMrsImageFFT::SetPreCorrectCenter( bool preCorrectCenter )
+{
+    this->preCorrectCenter = preCorrectCenter;
+}
+
+
+/*!
+ *  Should we correct for an offset center after FT? 
+ */
+void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
+{
+    this->postCorrectCenter = postCorrectCenter;
+}
 
 /*! 
  *  Sets the extent over which the phasing should be applied.      

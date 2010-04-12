@@ -246,7 +246,8 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     edgeExtractor->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();
-    vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );
+    //vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );
+    vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 0, 0 );
 
     // Now we need to grab the selection box
     vtkActorCollection* selectionTopo = dataVector[MRS]->GetTopoActorCollection( 1 );
@@ -1095,7 +1096,7 @@ void svkOverlayView::SetupOverlay()
                                    )->SetInput( this->windowLevelerSagittal->GetOutput() );
 
     this->SetInterpolationType( NEAREST );
-    this->SetOverlayOpacity( 0.5 );
+    this->SetOverlayOpacity( 0.35 );
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                    )->HasViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) ) ) {
