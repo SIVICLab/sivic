@@ -477,6 +477,46 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    test_svkMrsImageFFTSpatial
+    test_svkMrsImageFFTSpatial.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_svkMrsImageFFTSpatial
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_svkMrsImageExtract
+    test_svkMrsImageExtract.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_svkMrsImageExtract
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_vtkImageFFT
+    test_vtkImageFFT.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_vtkImageFFT
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_vtkImageFourierCenter
+    test_vtkImageFourierCenter.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_vtkImageFourierCenter
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     test_svkMCPhase
     test_svkMCPhase.cc
 )
