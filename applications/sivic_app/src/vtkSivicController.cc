@@ -695,6 +695,23 @@ void vtkSivicController::SetPreferencesFromRegistry( )
         }
     }
 
+    char plotGridRed[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "red", plotGridRed );
+    char plotGridBlue[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "blue", plotGridBlue );
+    char plotGridGreen[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "green", plotGridGreen );
+    if( string(plotGridRed) != "" && string(plotGridBlue) != "" && string(plotGridGreen) != "" ) {
+        double rgb[3];
+        rgb[0] = atof( plotGridRed );
+        rgb[1] = atof( plotGridGreen );
+        rgb[2] = atof( plotGridBlue );
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::PLOT_GRID ))
+                                   ->GetProperty()->SetDiffuseColor( rgb );
+    }
+
+
 }
 
 
@@ -2041,6 +2058,21 @@ void vtkSivicController::PushToPACS()
         }
     } 
 
+    // Lets locate a local directory to make a copy of the images being push to pacs
+    string spectraFileName = this->model->GetDataFileName( "SpectroscopicData" );
+
+    // Parse for directory name
+    size_t found;
+    found = spectraFileName.find_last_of("/");
+
+    string localDirectory = spectraFileName.substr(0,found); 
+    found = localDirectory.find_last_of("/");
+
+    // We want to put the DICOM folder one above the spectra location
+    if( localDirectory.substr(found+1) == "images" || localDirectory.substr(found+1) == "spectra" ) {
+        localDirectory = localDirectory.substr(0,found); 
+    }
+
     // Lets make sure the dicom file exists, this implies the studyUID and Accession number or correct
     if( stat(dcmFileName.c_str(),&st) != 0 && !imageIsDICOM ) {
 
@@ -2061,6 +2093,7 @@ void vtkSivicController::PushToPACS()
             dlg->SetApplication(app);
             dlg->Create();
             dlg->SetFileTypes("{{DICOM Image} {.dcm .DCM}}");
+            dlg->SetLastPath( localDirectory.c_str() );
             dlg->Invoke();
             string filename = dlg->GetFileName(); 
             struct stat buffer;
@@ -2106,11 +2139,7 @@ void vtkSivicController::PushToPACS()
 
     // Set PACS directory
     string pacsDirectory( "/data/dicom_mb/export/PACS/" );
-    char cwd[MAXPATHLEN];
-    getcwd(cwd, MAXPATHLEN);
 
-    // Lets Create a local directory to make a copy of the images
-    string localDirectory( cwd );
     localDirectory.append( "/DICOM/" );
     if(stat(localDirectory.c_str(),&st) != 0) {
         stringstream mkdirCommand;

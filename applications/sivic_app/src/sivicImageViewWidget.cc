@@ -335,7 +335,7 @@ void sivicImageViewWidget::CreateWidget()
     this->overlayOpacitySlider->SetEntryWidth( 3 );
     this->overlayOpacitySlider->SetOrientationToHorizontal();
     this->overlayOpacitySlider->SetLabelText("Opacity   ");
-    this->overlayOpacitySlider->SetValue(50);
+    this->overlayOpacitySlider->SetValue(35);
     this->overlayOpacitySlider->SetRange( 0, 100 );
     this->overlayOpacitySlider->SetBalloonHelpString("Adjusts the opacity of image overlay.");
     this->overlayOpacitySlider->EnabledOff();

@@ -478,6 +478,16 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     rotateButton->SetBalloonHelpString( "Switch to 3D rotation interactor." );
     toolbar->AddWidget( rotateButton );
 
+    // Create Open image Button
+    vtkKWPushButton* reloadPreferences = vtkKWPushButton::New();
+    reloadPreferences->SetParent( toolbar->GetFrame() );
+    reloadPreferences->Create();
+    reloadPreferences->SetCompoundModeToLeft();
+    reloadPreferences->SetImageToPredefinedIcon( vtkKWIcon::IconHSVDiagram );
+    reloadPreferences->SetCommand( this->sivicController, "SetPreferencesFromRegistry");
+    reloadPreferences->SetBalloonHelpString( "Reload Preferences." );
+    //toolbar->AddWidget( reloadPreferences );
+
 #if defined(Darwin)
     //  Create OsiriX buttons
     vtkKWPushButton* osirixSCButton = vtkKWPushButton::New();

@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 #include <vtkJPEGReader.h>
 
-#define MINIMUM_RANGE_FACTOR 100
+#define MINIMUM_RANGE_FACTOR 100000
 
 vtkStandardNewMacro( sivicSpectraRangeWidget );
 vtkCxxRevisionMacro( sivicSpectraRangeWidget, "$Revision$");
