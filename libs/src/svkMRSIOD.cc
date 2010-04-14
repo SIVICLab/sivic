@@ -149,3 +149,25 @@ void svkMRSIOD::InitSOPCommonModule()
     this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
 }
 
+
+/*!
+ *  Initializes the MREchoMacro: 
+ */
+void svkMRSIOD::InitMREchoMacro(float TE) 
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MREchoSequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MREchoSequence",
+        0,
+        "EffectiveEchoTime",
+        TE,  
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+

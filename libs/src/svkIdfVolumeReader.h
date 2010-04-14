@@ -136,7 +136,6 @@ class svkIdfVolumeReader : public svkImageReader2
         void            ParseIdf();
         string          ReadLineSubstr(istringstream* iss, int start, int stop);
         void            ReadLineIgnore(istringstream* iss, char delim); 
-        void            ReadLine(istringstream* iss);
         void            PrintKeyValuePairs();
 
 

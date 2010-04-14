@@ -68,6 +68,7 @@ class svkMRSIOD : public svkIOD
 
         //  Methods:
         virtual void  InitDcmHeader();
+        void          InitMREchoMacro(float TE); 
 
 
     protected:

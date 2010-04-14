@@ -819,7 +819,7 @@ void svkIdfVolumeReader::ParseIdf()
 
         // IDF_VERSION 
         int idfVersion;
-        this->ReadLine(iss);
+        this->ReadLine(this->volumeHdr, iss);
         iss->ignore(29);
         *iss>>idfVersion;
 
@@ -938,11 +938,11 @@ void svkIdfVolumeReader::ParseIdf()
         *iss>>sliceSkip;
 
         //  LOCATION DATA IN LPS COORDINATES
-        this->ReadLine(iss);
+        this->ReadLine(this->volumeHdr, iss);
         
         //  CENTER(LPS): 
         float center[numDimensions];
-        this->ReadLine(iss);
+        this->ReadLine(this->volumeHdr, iss);
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
@@ -954,7 +954,7 @@ void svkIdfVolumeReader::ParseIdf()
         //  TOPLC(LPS): 
         //      -> DCM_ImagePositionPatient for image0 (sorted?)
         //      Varies for each DICOM image in volume!
-        this->ReadLine(iss);
+        this->ReadLine(this->volumeHdr, iss);
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
@@ -968,7 +968,7 @@ void svkIdfVolumeReader::ParseIdf()
             ostringstream ossIndexI;
             ossIndexI << i;     
             string indexStringI(ossIndexI.str());
-            this->ReadLine(iss);
+            this->ReadLine(this->volumeHdr, iss);
             for (int j = 0; j < numDimensions; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;     
@@ -999,7 +999,7 @@ void svkIdfVolumeReader::ParseIdf()
  */
 void svkIdfVolumeReader::ReadLineIgnore(istringstream* iss, char delim)    
 {
-    this->ReadLine(iss);
+    this->ReadLine(this->volumeHdr, iss);
     iss->ignore(256, delim);
 }
 
@@ -1012,7 +1012,7 @@ string svkIdfVolumeReader::ReadLineSubstr(istringstream* iss, int start, int sto
     string temp;
     string lineSubStr;
     size_t firstNonSpace;
-    this->ReadLine(iss);
+    this->ReadLine(this->volumeHdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');
@@ -1023,18 +1023,6 @@ string svkIdfVolumeReader::ReadLineSubstr(istringstream* iss, int start, int sto
         cout <<  e.what() << endl;
     }
     return lineSubStr;
-}
-
-
-/*! 
- *  Utility function to read a single line from the volume file.
- */
-void svkIdfVolumeReader::ReadLine(istringstream* iss)    
-{
-    char line[256];
-    iss->clear();    
-    this->volumeHdr->getline(line, 256);
-    iss->str(string(line));
 }
 
 
