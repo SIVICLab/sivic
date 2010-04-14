@@ -121,7 +121,6 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         virtual void    InitMRAveragesMacro(); 
         virtual void    InitMRSpectroscopyFrameTypeMacro(); 
         virtual void    InitPixelMeasuresMacro();
-        virtual void    InitMREchoMacro();
         virtual void    InitMRTimingAndRelatedParametersMacro();
         virtual void    InitMRReceiveCoilMacro();
         virtual void    InitMRSpectroscopyPulseSequenceModule();

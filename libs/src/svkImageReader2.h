@@ -84,23 +84,26 @@ class svkImageReader2 : public vtkImageReader2
         ~svkImageReader2();
 
         //  Methods:
-        virtual int FillOutputPortInformation(int port, vtkInformation* info);
+        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType() = 0;
-        void        SetupOutputInformation(); 
-        void        SetupOutputExtent(); 
-        void        SetupOutputScalarData(); 
-        string      GetFileRoot(const char* fname);
-        string      GetFileExtension(const char* fname);
-        string      GetFilePath(const char* fname);
-        string      StripWhite(string in);
-        string      RemoveSlashesFromDate(string* volumeDate); 
+        void                                     SetupOutputInformation(); 
+        void                                     SetupOutputExtent(); 
+        void                                     SetupOutputScalarData(); 
+        string                                   GetFileRoot(const char* fname);
+        string                                   GetFileExtension(const char* fname);
+        string                                   GetFilePath(const char* fname);
+        long                                     GetFileSize(ifstream* fs); 
+        string                                   StripWhite(string in);
+        string                                   RemoveSlashesFromDate(string* volumeDate); 
+        virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
 
+        //  Members:
+        vtkDataArray*                            dataArray;
 
-        vtkDataArray*           dataArray;
 
     private:
 
-        virtual void            InitDcmHeader() = 0;
+        virtual void                            InitDcmHeader() = 0;
 
 
 };

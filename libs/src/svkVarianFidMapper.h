@@ -51,6 +51,7 @@
 
 #include <svkDcmHeader.h>
 #include <svkVarianReader.h>
+#include <svkMRSIOD.h>
 #include <svkByteSwap.h>
 
 #include <map>
@@ -86,7 +87,8 @@ class svkVarianFidMapper : public vtkObject
 
         virtual void    InitializeDcmHeader(
                             map <string, vector < vector<string> > >    procparMap, 
-                            svkDcmHeader* header 
+                            svkDcmHeader* header, 
+                            svkMRSIOD* iod 
                         );
 
         virtual void    ReadFidFile( string fidFileName, vtkImageData* data );
@@ -147,6 +149,7 @@ class svkVarianFidMapper : public vtkObject
         float*                                      specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
+        svkMRSIOD*                                  iod; 
 
 };
 

@@ -86,6 +86,17 @@ svkDdfVolumeReader::~svkDdfVolumeReader()
         delete ddfHdr;
         this->ddfHdr = NULL;
     }
+
+    if ( this->specData != NULL )  {
+        delete [] specData;
+        this->specData = NULL;
+    }
+
+    if ( this->iod != NULL )  {
+        iod->Delete();
+        this->iod = NULL;
+    }
+
 }
 
 
@@ -125,19 +136,6 @@ int svkDdfVolumeReader::CanReadFile(const char* fname)
         vtkDebugMacro(<< this->GetClassName() <<"::CanReadFile(): It's NOT a valid file name : " << fileToCheck);
         return 0;
     }
-}
-
-
-/*!
- *
- */
-int svkDdfVolumeReader::GetNumVoxelsInVol()
-{
-    return (
-        ( (this->GetDataExtent())[1] + 1 ) * 
-        ( (this->GetDataExtent())[3] + 1 ) * 
-        ( (this->GetDataExtent())[5] + 1 )  
-    );
 }
 
 
@@ -343,10 +341,9 @@ void svkDdfVolumeReader::InitDcmHeader()
 {
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRSIOD::New();
-    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
-    iod->InitDcmHeader();
-    iod->Delete();
+    this->iod = svkMRSIOD::New();
+    this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
+    this->iod->InitDcmHeader();
 
     this->ParseDdf(); 
     this->PrintKeyValuePairs();
@@ -366,6 +363,8 @@ void svkDdfVolumeReader::InitDcmHeader()
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+
+    this->iod->Delete();
 }
 
 
@@ -430,11 +429,11 @@ void svkDdfVolumeReader::ParseDdf()
         istringstream* iss = new istringstream();
 
         //  Skip first line: 
-        this->ReadLine(iss);
+        this->ReadLine(this->ddfHdr, iss);
 
         // DDF_VERSION
         int ddfVersion;
-        this->ReadLine(iss);
+        this->ReadLine(this->ddfHdr, iss);
         iss->ignore(29);
         *iss>>ddfVersion;
 
@@ -527,8 +526,8 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //MR Parameters 
-        this->ReadLine(iss);
-        this->ReadLine(iss);
+        this->ReadLine(this->ddfHdr, iss);
+        this->ReadLine(this->ddfHdr, iss);
         
         ddfMap["coilName"] = this->ReadLineValue(iss, ':');
         ddfMap["sliceGap"] = this->ReadLineValue(iss, ':');
@@ -572,8 +571,8 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //Spectroscopy Parameters 
-        this->ReadLine(iss);
-        this->ReadLine(iss);
+        this->ReadLine(this->ddfHdr, iss);
+        this->ReadLine(this->ddfHdr, iss);
         ddfMap["localizationType"] = this->ReadLineValue(iss, ':');
         ddfMap["centerFrequency"] = this->ReadLineValue(iss, ':');
         ddfMap["ppmReference"] = this->ReadLineValue(iss, ':');
@@ -1619,20 +1618,9 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkDdfVolumeReader::InitMREchoMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MREchoSequence"
-    );
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MREchoSequence",        
-        0,                        
-        "EffectiveEchoTime",       
-        this->GetHeaderValueAsFloat(ddfMap, "echoTime"), 
-        "SharedFunctionalGroupsSequence",    
-        0
-    );
+    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat(ddfMap, "TE") );
+
 }
 
 
@@ -2348,7 +2336,7 @@ void svkDdfVolumeReader::PrintKeyValuePairs()
 
 string svkDdfVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
 {
-    this->ReadLine(iss);
+    this->ReadLine(this->ddfHdr, iss);
     iss->ignore(256, delim);
     string value;
     *iss >> value; 
@@ -2363,7 +2351,7 @@ string svkDdfVolumeReader::ReadLineValue(istringstream* iss, char delim)
 {
 
     string value;
-    this->ReadLine(iss);
+    this->ReadLine(this->ddfHdr, iss);
     try {
 
         string line;
@@ -2394,20 +2382,6 @@ string svkDdfVolumeReader::ReadLineValue(istringstream* iss, char delim)
 }
 
 
-
-
-/*!
- *  Utility function to read a single line from the volume file.
- */
-void svkDdfVolumeReader::ReadLine(istringstream* iss)
-{
-    char line[256];
-    iss->clear();
-    this->ddfHdr->getline(line, 256);
-    iss->str(string(line));
-}
-
-
 /*!
  *  Utility function for extracting a substring with white space removed from LHS.
  */
@@ -2416,7 +2390,7 @@ string svkDdfVolumeReader::ReadLineSubstr(istringstream* iss, int start, int sto
     string temp;
     string lineSubStr;
     size_t firstNonSpace;
-    this->ReadLine(iss);
+    this->ReadLine(this->ddfHdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');

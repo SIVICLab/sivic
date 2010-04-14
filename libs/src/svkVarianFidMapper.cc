@@ -83,10 +83,11 @@ svkVarianFidMapper::~svkVarianFidMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkVarianFidMapper::InitializeDcmHeader(map <string, vector < vector<string> > >    procparMap, svkDcmHeader* header) 
+void svkVarianFidMapper::InitializeDcmHeader(map <string, vector < vector<string> > >  procparMap, svkDcmHeader* header, svkMRSIOD* iod) 
 {
     this->procparMap = procparMap; 
     this->dcmHeader = header; 
+    this->iod = iod;   
 
     this->ConvertCmToMm(); 
 
@@ -882,20 +883,8 @@ void svkVarianFidMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkVarianFidMapper::InitMREchoMacro()
 {
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "MREchoSequence"
-    );
+    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
 
-    this->dcmHeader->AddSequenceItemElement(
-        "MREchoSequence",
-        0,
-        "EffectiveEchoTime",
-        this->GetHeaderValueAsFloat( "te" ) * 1000,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
 }
 
 

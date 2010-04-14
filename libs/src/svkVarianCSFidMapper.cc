@@ -698,29 +698,6 @@ void svkVarianCSFidMapper::InitMRSpectroscopyFOVGeometryMacro()
 
 
 /*!
- *
- */
-void svkVarianCSFidMapper::InitMREchoMacro()
-{
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "MREchoSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MREchoSequence",
-        0,
-        "EffectiveEchoTime",
-        this->GetHeaderValueAsFloat( "te" ) * 1000,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-}
-
-
-
-/*!
  *  Override in concrete mapper for specific acquisitino
  */
 void svkVarianCSFidMapper::InitMRModifierMacro()

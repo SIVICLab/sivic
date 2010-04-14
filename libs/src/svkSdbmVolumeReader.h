@@ -139,7 +139,6 @@ class svkSdbmVolumeReader : public svkImageReader2
         string          ReadLineSubstr(istringstream* iss, int start, int stop);
         string          ReadLineValue(istringstream* iss, char delim);
         string          ReadLineIgnore(istringstream* iss, char delim);
-        void            ReadLine(istringstream* iss);
         void            PrintKeyValuePairs(); 
         int             GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
         float           GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
@@ -158,6 +157,7 @@ class svkSdbmVolumeReader : public svkImageReader2
         ifstream*                               shfHdr;
         map <string, string>                    shfMap; 
         vtkStringArray*                         tmpFileNames;
+        svkMRSIOD*                              iod; 
 
 
 };

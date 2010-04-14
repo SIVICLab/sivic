@@ -92,7 +92,8 @@ class svkDcmHeader: public vtkObject
             UNSIGNED_INT_1 = 0,
             UNSIGNED_INT_2, 
             SIGNED_INT_2, 
-            SIGNED_FLOAT_4 
+            SIGNED_FLOAT_4, 
+            SIGNED_FLOAT_8 
         } DcmPixelDataFormat;
 
         typedef enum {

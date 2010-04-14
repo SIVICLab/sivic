@@ -224,23 +224,6 @@ void svkVarianReader::ReadLine(ifstream* fs, istringstream* iss)
 
 
 /*!
- *  Return the fdf file size. 
- */
-long svkVarianReader::GetFileSize(ifstream* fs)
-{
-
-    long begin;
-    long end;
-    fs->seekg(ios::beg);     
-    begin = fs->tellg();
-    fs->seekg (0, ios::end);
-    end = fs->tellg();
-    fs->seekg(ios::beg);     
-    return end - begin; 
-}
-
-
-/*!
  *  Push key value pairs into the map's value vector: 
  *  mapFor values that are space delimited lists, put each element into the value 
  *  vector. 

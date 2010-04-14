@@ -95,7 +95,6 @@ class svkVarianReader : public svkImageReader2
         void                             ParseProcpar( string path );
         int                              GetProcparKeyValuePair();
         void                             ReadLine(ifstream* fs, istringstream* iss);
-        long                             GetFileSize(ifstream* fs);
         void                             ParseAndSetProcparStringElements(
                                             string key, 
                                             string valueArray1, 

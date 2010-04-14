@@ -197,10 +197,9 @@ void svkVarianFidReader::InitDcmHeader()
 
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRSIOD::New();
+    svkMRSIOD* iod = svkMRSIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->InitDcmHeader();
-    iod->Delete();
 
     //  Read the fid header into a map of values used to initialize the
     //  DICOM header. 
@@ -213,12 +212,15 @@ void svkVarianFidReader::InitDcmHeader()
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
         procparMap,
-        this->GetOutput()->GetDcmHeader()
+        this->GetOutput()->GetDcmHeader(), 
+        iod     
     );
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+
+    iod->Delete();
 }
 
 

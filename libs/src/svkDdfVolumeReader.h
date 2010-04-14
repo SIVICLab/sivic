@@ -131,14 +131,12 @@ class svkDdfVolumeReader : public svkImageReader2
         void            InitVolumeLocalizationSeq();
         void            InitMRSpectroscopyDataModule();
         void            ReadComplexFile( vtkImageData* data );
-        int             GetNumVoxelsInVol();
         int             GetNumSlices();
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseDdf();
         string          ReadLineSubstr(istringstream* iss, int start, int stop);
         string          ReadLineValue(istringstream* iss, char delim);
         string          ReadLineIgnore(istringstream* iss, char delim);
-        void            ReadLine(istringstream* iss);
         void            PrintKeyValuePairs(); 
         int             GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
         float           GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
@@ -159,6 +157,7 @@ class svkDdfVolumeReader : public svkImageReader2
         ifstream*                               ddfHdr;
         map <string, string>                    ddfMap; 
         vtkStringArray*                         tmpFileNames;
+        svkMRSIOD*                              iod; 
 
 
 };

@@ -134,6 +134,22 @@ string svkImageReader2::GetFilePath(const char* fname)
 }
 
 
+/*!
+ *  Return the fdf file size.
+ */
+long svkImageReader2::GetFileSize(ifstream* fs)
+{
+    long begin;
+    long end;
+    fs->seekg(ios::beg);
+    begin = fs->tellg();
+    fs->seekg (0, ios::end);
+    end = fs->tellg();
+    fs->seekg(ios::beg);
+    return end - begin;
+}
+
+
 /*
  *  Strips leading and trailing white space from string
  */
@@ -343,6 +359,18 @@ string svkImageReader2::RemoveSlashesFromDate(string* volumeDate)
         year = StripWhite(year);
 
         return year+month+day;
+}
+
+
+/*!
+ *  Utility function to read a single line from the volume file.
+ */
+void svkImageReader2::ReadLine(ifstream* hdr, istringstream* iss)
+{
+    char line[256];
+    iss->clear();
+    hdr->getline(line, 256);
+    iss->str(string(line));
 }
 
 

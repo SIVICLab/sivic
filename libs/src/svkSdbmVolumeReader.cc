@@ -68,6 +68,7 @@ svkSdbmVolumeReader::svkSdbmVolumeReader()
     this->specData = NULL; 
     this->shfHdr = NULL; 
     this->numCoils = 1; 
+    this->iod = NULL; 
 }
 
 
@@ -84,6 +85,17 @@ svkSdbmVolumeReader::~svkSdbmVolumeReader()
         delete shfHdr;
         this->shfHdr = NULL;
     }
+
+    if ( this->specData != NULL )  {
+        delete [] specData;
+        this->specData = NULL;
+    }
+
+    if ( this->iod != NULL )  {
+        iod->Delete();
+        this->iod = NULL;
+    }
+
 }
 
 
@@ -340,10 +352,9 @@ void svkSdbmVolumeReader::InitDcmHeader()
 {
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRSIOD::New();
-    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
-    iod->InitDcmHeader();
-    iod->Delete();
+    this->iod = svkMRSIOD::New();
+    this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
+    this->iod->InitDcmHeader();
 
     this->ParseShf(); 
     this->PrintKeyValuePairs();
@@ -363,6 +374,8 @@ void svkSdbmVolumeReader::InitDcmHeader()
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+
+    iod->Delete();
 }
 
 
@@ -424,7 +437,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip first 25 lines: 
         for (int i = 0; i < 24; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         shfMap["header_name"] = this->ReadLineValue(iss, ' ');
@@ -440,7 +453,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 10 lines: 
         for (int i = 0; i < 10; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
         shfMap["site"] = this->ReadLineValue(iss, ' ');
         shfMap["patient_id"] = this->ReadLineValue(iss, ' ');
@@ -454,7 +467,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 14 lines: 
         for (int i = 0; i < 14; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         shfMap["psd_name"] = this->ReadLineValue(iss, ' ');
@@ -470,17 +483,17 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 12 lines: 
         for (int i = 0; i < 12; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         //  Display type info,  Skip 5 lines for now: 
         for (int i = 0; i < 5; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         //  Display type info,  Skip 32 lines for now: 
         for (int i = 0; i < 32; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         shfMap["magstrength"] = this->ReadLineValue(iss, ' ');
@@ -512,7 +525,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 10 lines: 
         for (int i = 0; i < 10; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         shfMap["tlhc_R"] = this->ReadLineValue(iss, ' ');
@@ -529,7 +542,7 @@ void svkSdbmVolumeReader::ParseShf()
         while ( tmp.find("sagekey_opuserinfo") == string::npos)  {
             tmp = this->ReadLineValue(iss, ' ');
         }
-        this->ReadLine(iss);
+        this->ReadLine(this->shfHdr, iss);
 
         shfMap["num_opuserfields"] = this->ReadLineValue(iss, ' ');
 
@@ -544,7 +557,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 9 lines: 
         for (int i = 0; i < 9; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         shfMap["num_rhuserfields"] = this->ReadLineValue(iss, ' ');
@@ -560,7 +573,7 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 36 lines: 
         for (int i = 0; i < 36; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
 
         //  DIM 0
@@ -568,21 +581,21 @@ void svkSdbmVolumeReader::ParseShf()
 
         //  Skip 5 lines: 
         for (int i = 0; i < 5; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
         //  DIM 1
         this->ParseShfDim(); 
 
         //  Skip 5 lines: 
         for (int i = 0; i < 5; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
         //  DIM 2
         this->ParseShfDim(); 
 
         //  Skip 5 lines: 
         for (int i = 0; i < 5; i++) {
-            this->ReadLine(iss);
+            this->ReadLine(this->shfHdr, iss);
         }
         //  DIM 3
         this->ParseShfDim(); 
@@ -1417,20 +1430,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkSdbmVolumeReader::InitMREchoMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MREchoSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MREchoSequence",        
-        0,                        
-        "EffectiveEchoTime",       
-        this->GetHeaderValueAsFloat(shfMap, "TE"), 
-        "SharedFunctionalGroupsSequence",    
-        0
-    );
+    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat( shfMap, "TE") );
 }
 
 
@@ -2020,7 +2020,7 @@ void svkSdbmVolumeReader::PrintKeyValuePairs()
 
 string svkSdbmVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
 {
-    this->ReadLine(iss);
+    this->ReadLine(this->shfHdr, iss);
     iss->ignore(256, delim);
     string value;
     *iss >> value; 
@@ -2035,7 +2035,7 @@ string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
 {
 
     string value;
-    this->ReadLine(iss);
+    this->ReadLine(this->shfHdr, iss);
     try {
 
         string line;
@@ -2066,20 +2066,6 @@ string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
 }
 
 
-
-
-/*!
- *  Utility function to read a single line from the volume file.
- */
-void svkSdbmVolumeReader::ReadLine(istringstream* iss)
-{
-    char line[256];
-    iss->clear();
-    this->shfHdr->getline(line, 256);
-    iss->str(string(line));
-}
-
-
 /*!
  *  Utility function for extracting a substring with white space removed from LHS.
  */
@@ -2088,7 +2074,7 @@ string svkSdbmVolumeReader::ReadLineSubstr(istringstream* iss, int start, int st
     string temp;
     string lineSubStr;
     size_t firstNonSpace;
-    this->ReadLine(iss);
+    this->ReadLine(this->shfHdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');
