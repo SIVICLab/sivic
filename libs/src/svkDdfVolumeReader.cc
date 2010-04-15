@@ -92,11 +92,6 @@ svkDdfVolumeReader::~svkDdfVolumeReader()
         this->specData = NULL;
     }
 
-    if ( this->iod != NULL )  {
-        iod->Delete();
-        this->iod = NULL;
-    }
-
 }
 
 
