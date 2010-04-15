@@ -422,25 +422,20 @@ void svkFdfVolumeReader::InitGeneralStudyModule()
 void svkFdfVolumeReader::InitGeneralSeriesModule()
 {
 
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "PatientPosition",
-        "UNKNOWN" 
+        this->GetDcmPatientPositionString()
     );
-
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesNumber",
         0 
     );
 
-
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SeriesDescription",
         "Varian Image"
     );
-
-
 }
 
 
@@ -775,13 +770,32 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     //  HF vs FF should flip both RL and AP.  Supine/Prone should flip 
     //  RL and AP.  
     //  FF + Prone should flip AP + SI relative to HF + Supine 
-    float dcos[6];
+    float dcos[9];
     dcos[0] =      GetHeaderValueAsFloat("orientation[]", 0);
     dcos[1] = -1 * GetHeaderValueAsFloat("orientation[]", 1);
     dcos[2] = -1 * GetHeaderValueAsFloat("orientation[]", 2);
     dcos[3] =      GetHeaderValueAsFloat("orientation[]", 3);
     dcos[4] = -1 * GetHeaderValueAsFloat("orientation[]", 4);
     dcos[5] = -1 * GetHeaderValueAsFloat("orientation[]", 5);
+    dcos[6] =      GetHeaderValueAsFloat("orientation[]", 5);
+    dcos[7] =      GetHeaderValueAsFloat("orientation[]", 5);
+    dcos[8] =      GetHeaderValueAsFloat("orientation[]", 5);
+
+    //  If feet first, swap LR, SI
+    string position1 = GetHeaderValueAsString("position1", 0);
+//  comment this out for now.  it seems like Varian may be reordering the data 
+//  to account for the entry already. 
+/*
+    if( position1.find("feet first") != string::npos ) {
+        dcos[0] *=-1; 
+        dcos[3] *=-1; 
+        dcos[6] *=-1; 
+
+        dcos[2] *=-1; 
+        dcos[5] *=-1; 
+        dcos[8] *=-1; 
+    }
+*/
 
     for (int i = 0; i < 6; i++) {
         ostringstream dcosOSS;
@@ -791,17 +805,6 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
             orientationString.append( "\\");
         }
     }
- 
-/*
-
-    //  FOR HF,SUPINE with LPS along XYZ, this seems to work:     
-    for (int i = 0; i < 6; i++) {
-        orientationString.append( GetHeaderValueAsString("orientation[]", i) );
-        if (i < 5) {
-            orientationString.append( "\\");
-        }
-    }
-*/
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "PlaneOrientationSequence",
@@ -812,15 +815,14 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
         0
     );
 
-
     //  Determine whether the data is ordered with or against the slice normal direction.
     double normal[3];
     this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
 
     double dcosSliceOrder[3];
-    for (int j = 0; j < 3; j++) {
-        dcosSliceOrder[j] =  this->GetHeaderValueAsFloat("orientation[]", j + 6 );
-    }
+    dcosSliceOrder[0] = dcos[6];
+    dcosSliceOrder[1] = dcos[7];
+    dcosSliceOrder[2] = dcos[8];
 
     //  Use the scalar product to determine whether the data in the .cmplx
     //  file is ordered along the slice normal or antiparalle to it.
@@ -830,7 +832,6 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
-
 
 }
 
@@ -863,37 +864,27 @@ void svkFdfVolumeReader::InitMRReceiveCoilMacro()
 /*! 
  *  Use the FDF patient position string to set the DCM_PatientPosition data element.
  */
-string svkFdfVolumeReader::GetDcmPatientPositionString(string patientPosition)
+string svkFdfVolumeReader::GetDcmPatientPositionString()
 {
-    size_t delim = patientPosition.find_first_of(',');
-    string headFeetFirst( patientPosition.substr(0, delim) );
-
-    for(int i = 0; i < headFeetFirst.size(); i++){
-        headFeetFirst[i] = tolower( headFeetFirst[i] );
-    }
-
     string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != string::npos ) {
+
+    string position1 = GetHeaderValueAsString("position1", 0);
+    if( position1.find("head first") != string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != string::npos ) {
+    } else if( position1.find("feet first") != string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
-    //  skip ", ":
-    string spd( patientPosition.substr(delim + 2) );
-    for(int i = 0; i < spd.size(); i++){
-        spd[i] = tolower( spd[i] );
-    }
-
-    if( spd.find("supine") != string::npos ) {
+    string position2 = GetHeaderValueAsString("position2", 0);
+    if( position2.find("supine") != string::npos ) {
         dcmPatientPosition += "S";
-    } else if( spd.find("prone") != string::npos ) {
+    } else if( position2.find("prone") != string::npos ) {
         dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != string::npos ) {
+    } else if( position2.find("decubitus left") != string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != string::npos ) {
+    } else if( position2.find("decubitus right") != string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -1166,9 +1157,8 @@ void svkFdfVolumeReader::ParseAndSetStringElements(string key, string valueArray
 
         valueArrayString.assign( valueArrayString.substr(pos + 1) ); 
     }
-    iss->str( valueArrayString );
-    *iss >> tmpString;
-    fdfMap[key].push_back(tmpString); 
+
+    fdfMap[key].push_back(valueArrayString); 
     delete iss; 
 }
 
