@@ -198,15 +198,28 @@ void svkVarianCSFidMapper::InitPlaneOrientationMacro()
 
     //Reorder since the readout represents the slice: 
     double dcosArray[3][3]; 
-    dcosArray[0][0] = -1 * dcosArrayTmp[0][0]; 
-    dcosArray[0][1] = -1 * dcosArrayTmp[0][1]; 
-    dcosArray[0][2] = -1 * dcosArrayTmp[0][2]; 
+    dcosArray[0][0] = dcosArrayTmp[0][0]; 
+    dcosArray[0][1] = dcosArrayTmp[0][1]; 
+    dcosArray[0][2] = dcosArrayTmp[0][2]; 
     dcosArray[1][0] = dcosArrayTmp[2][0]; 
     dcosArray[1][1] = dcosArrayTmp[2][1]; 
     dcosArray[1][2] = dcosArrayTmp[2][2]; 
     dcosArray[2][0] = dcosArrayTmp[1][0]; 
     dcosArray[2][1] = dcosArrayTmp[1][1]; 
     dcosArray[2][2] = dcosArrayTmp[1][2]; 
+
+    //  If feet first, swap LR, SI
+    string position1 = this->GetHeaderValueAsString("position1", 0);
+    if( position1.find("feet first") != string::npos ) {
+        dcosArray[0][0] *=-1;
+        dcosArray[1][0] *=-1;
+        dcosArray[2][0] *=-1;
+
+        dcosArray[0][2] *=-1;
+        dcosArray[1][2] *=-1;
+        dcosArray[2][2] *=-1;
+    }
+
 
     string orientationString;
 
