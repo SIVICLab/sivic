@@ -158,7 +158,7 @@ void svkVarianFidMapper::InitGeneralSeriesModule()
 
     this->dcmHeader->SetValue(
         "PatientPosition",
-        "UNKNOWN"
+        this->GetDcmPatientPositionString()
     );
 
 }
@@ -1394,6 +1394,38 @@ void svkVarianFidMapper::ConvertCmToMm()
 
 }
 
+
+/*!
+ *  Use the Procpar patient position string to set the DCM_PatientPosition data element.
+ */
+string svkVarianFidMapper::GetDcmPatientPositionString()
+{
+    string dcmPatientPosition;
+
+    string position1 = this->GetHeaderValueAsString("position1", 0);
+    if( position1.find("head first") != string::npos ) {
+        dcmPatientPosition.assign("HF");
+    } else if( position1.find("feet first") != string::npos ) {
+        dcmPatientPosition.assign("FF");
+    } else {
+        dcmPatientPosition.assign("UNKNOWN");
+    }
+
+    string position2 = this->GetHeaderValueAsString("position2", 0);
+    if( position2.find("supine") != string::npos ) {
+        dcmPatientPosition += "S";
+    } else if( position2.find("prone") != string::npos ) {
+        dcmPatientPosition += "P";
+    } else if( position2.find("decubitus left") != string::npos ) {
+        dcmPatientPosition += "DL";
+    } else if( position2.find("decubitus right") != string::npos ) {
+        dcmPatientPosition += "DR";
+    } else {
+        dcmPatientPosition += "UNKNOWN";
+    }
+
+    return dcmPatientPosition;
+}
 
 
 /*!

@@ -123,6 +123,7 @@ class svkVarianFidMapper : public vtkObject
         virtual void    InitMRSpectroscopyModule();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();
         virtual void    InitMRSpectroscopyDataModule();
+        string          GetDcmPatientPositionString(); 
 
         virtual void    ConvertCmToMm();
 
