@@ -51,6 +51,7 @@
 #include <vtkImageFourierFilter.h>
 #include <vtkImageFFT.h>
 #include <vtkImageRFFT.h>
+#include <svkImageRFFT.h>
 #include <vtkImageViewer2.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -96,6 +97,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         static void      UnCenterData( vtkImageData* inputData, vtkImageData* outputData );
         void             SetPreCorrectCenter( bool preCorrectCenter );
         void             SetPostCorrectCenter( bool postCorrectCenter );
+        bool phaseOnly;
 
 
 

@@ -71,6 +71,7 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->mode   = FORWARD;
     this->preCorrectCenter = false;
     this->postCorrectCenter = false;
+    this->phaseOnly = false;
 }
 
 
@@ -140,7 +141,9 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
     int returnValue;
     vtkImageFourierFilter* fourierFilter = NULL;
     if( this->mode == REVERSE ) {
-        fourierFilter = vtkImageRFFT::New();
+        fourierFilter = svkImageRFFT::New();
+        svkImageRFFT::SafeDownCast( fourierFilter )->SetPostPhaseShift(-1/2.0 );
+        svkImageRFFT::SafeDownCast( fourierFilter )->phaseOnly = this->phaseOnly;
     } else {
         fourierFilter = vtkImageFFT::New();
     }
