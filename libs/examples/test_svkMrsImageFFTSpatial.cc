@@ -96,7 +96,7 @@ int main (int argc, char** argv)
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
-    
+    svkImageData* outputData;
     cout << "Instantiating the algorithm..." << endl;
     svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
    
@@ -104,14 +104,30 @@ int main (int argc, char** argv)
     imageFFT->SetInput( data );
     imageFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     imageFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
-    imageFFT->SetPostCorrectCenter( true );
     imageFFT->SetPreCorrectCenter( true );
+    imageFFT->SetPostCorrectCenter( true );
     
     cout << "Getting the output of the algorithm..." << endl;
-    svkImageData* outputData = imageFFT->GetOutput();
+    outputData = imageFFT->GetOutput();
 
     cout << "Updating the output of the algorithm..." << endl;
     imageFFT->Update();
+    outputData->Modified();
+    outputData->Update(); 
+
+    svkMrsImageFFT* imageFFT2 = svkMrsImageFFT::New();
+   
+    cout << "Setting input to the algorithm..." << endl;
+    imageFFT2->SetInput( data );
+    imageFFT2->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+    imageFFT2->SetFFTMode( svkMrsImageFFT::REVERSE );
+    imageFFT2->phaseOnly = true;;
+    
+    cout << "Getting the output of the algorithm..." << endl;
+    outputData = imageFFT2->GetOutput();
+
+    cout << "Updating the output of the algorithm..." << endl;
+    imageFFT2->Update();
     outputData->Modified();
     outputData->Update(); 
 
@@ -149,7 +165,7 @@ int main (int argc, char** argv)
     outputData->Update(); 
 
     svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
-    writer->SetFileName( "testerCenterStatic.dcm" );    
+    writer->SetFileName( "svk_recon_phase_neg_half_new.dcm" );    
     writer->SetInput( outputData );
     writer->Write();
 
