@@ -783,19 +783,18 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
 
     //  If feet first, swap LR, SI
     string position1 = GetHeaderValueAsString("position1", 0);
-//  comment this out for now.  it seems like Varian may be reordering the data 
-//  to account for the entry already. 
-/*
+
     if( position1.find("feet first") != string::npos ) {
+        //  swap L
         dcos[0] *=-1; 
         dcos[3] *=-1; 
         dcos[6] *=-1; 
 
+        //  swap S
         dcos[2] *=-1; 
         dcos[5] *=-1; 
         dcos[8] *=-1; 
     }
-*/
 
     for (int i = 0; i < 6; i++) {
         ostringstream dcosOSS;
