@@ -767,7 +767,7 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
  
     //  varian appears to be LAI coords (rather than LPS), 
     //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
-    //  HF vs FF should flip both RL and AP.  Supine/Prone should flip 
+    //  HF vs FF should flip both RL and SI.  Supine/Prone should flip 
     //  RL and AP.  
     //  FF + Prone should flip AP + SI relative to HF + Supine 
     float dcos[9];

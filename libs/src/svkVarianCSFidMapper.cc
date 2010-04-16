@@ -1189,6 +1189,7 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
 #endif
 
     this->ZeroPadCompressedSensingData( numBytesInVol/pixelWordSize ); 
+
     this->ReOrderFlyback(); 
 
     // Loop over reordered rectlinear dimensionality
@@ -1269,11 +1270,20 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
     //  59 samples, 16 flyback phase encodes:
     int specPts = 59*16;
 
-    this->paddedData = new float**[lengthY];  
+    this->paddedData       = new float**[lengthY];  
+    float*** paddedDataTmp = new float**[lengthY];  
+    int*** xBlips          = new int**[lengthY];  
+    int*** yBlips          = new int**[lengthY];  
     for (int y = 0; y < lengthY; y++ ) {
         this->paddedData[y] = new float*[lengthX]; 
+        paddedDataTmp[y]    = new float*[lengthX]; 
+        xBlips[y]           = new int*[lengthX]; 
+        yBlips[y]           = new int*[lengthX]; 
         for (int x = 0; x < lengthX; x++ ) {
             this->paddedData[y][x] = new float[ specPts * 2 ]; 
+            paddedDataTmp[y][x]    = new float[ specPts * 2 ]; 
+            xBlips[y][x]           = new int[ lengthF ];  
+            yBlips[y][x]           = new int[ lengthF ];  
         }
     }
 
@@ -1281,14 +1291,44 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
         for (int x = 0; x < lengthX; x++ ) {
             for (int s = 0; s < specPts * 2; s++ ) {
                 this->paddedData[y][x][s] = 0.;
+                paddedDataTmp[y][x][s]    = 0.;
+            }
+            for (int s = 0; s < lengthF; s++ ) {
+                xBlips[y][x][s]    = 0;
+                yBlips[y][x][s]    = 0;
             }
         }
     }
 
+    //  Initialze xBlips and yBlips: 
+    int xBlipIndex = 4; 
+    int yBlipIndex = 4 + lengthX * lengthY * lengthF ; 
+
+    for (int y = 0; y < lengthY; y++) {
+        for (int x = 0; x < lengthX; x++) {
+
+            int counter = 0;     
+            for (int sx = xBlipIndex; sx < xBlipIndex + lengthF; sx++) {
+                xBlips[y][x][counter] = blipVector[sx];
+                counter++; 
+            }
+            xBlipIndex = xBlipIndex + lengthF; 
+
+            counter = 0;     
+            for (int sb = yBlipIndex; sb < yBlipIndex + lengthF; sb++) {
+                yBlips[y][x][counter] = blipVector[sb];
+                counter++; 
+            }
+            yBlipIndex = yBlipIndex + lengthF; 
+
+        }   
+    }   
+    
+
     //  Check, can I write out zero data array
     //  next, fill in with real values: 
     int startIndex = 0;
-    int lengthZ= 16;
+    int lengthZ = 16;
     int numSkip = 0;
     int counter = 0;
 
@@ -1307,12 +1347,9 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
                     int counter2 = dataIndStart; 
 
                     for (int s = padIndStart; s < padIndStart + lengthZ * 2; s += 2) {
-                        //cout << y << " " << x << " " << f << " " << s << " " << counter2 << endl;  
                         //  real and imaginary values: 
-                        this->paddedData[y][x][s]       =  specDataReordered[ counter2 ]; 
-                        this->paddedData[y][x][ s + 1 ] =  specDataReordered[ counter2 + 1]; 
-                        //cout << "SDR: " <<  specDataReordered[ counter2 ] << " " << specDataReordered[ counter2 + 1] << endl;
-                        //cout << "pd (y x s): " << y << " " << x << " " <<  s << " " << paddedData[y][x][s] << " " << paddedData[y][x][s+1] << endl;
+                        paddedDataTmp[y][x][s]       =  specDataReordered[ counter2 ]; 
+                        paddedDataTmp[y][x][ s + 1 ] =  specDataReordered[ counter2 + 1]; 
                         counter2 = counter2 + 2; 
                     } 
                 }
@@ -1321,10 +1358,61 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
         } 
     } 
 
+
+    /*! 
+     *  The next block of code is reimplemented from Simon Hu's func_reorder_blipped_data.m
+     *  Takes blipped data, presumably something like (16*59)x16x16 flyback data,
+     *  and based on the blips used, puts the data into the correct view
+     *  locations.
+     *  Note that unlike the matlab implementation, this version does not artificially zero
+     *  zero fill the flyback plateau to 43 points.   
+     *
+     *  This just reorders where the x and y phase encodes locations, but leaves the 
+     *  flyback ordering as is. 
+     *  matlab function: ordered_data = 
+     *      orderData(data, specpts, xlen, ylen, flen, pts_lobe, 
+     *                encodeMatrix, xblips, yblips, blip_phase_correct, phi_x, phi_y);
+     */ 
+    int ptsPerLobe = this->GetHeaderValueAsInt("np", 0)/2; 
+
+    for (int y = 0; y < lengthY; y++) {
+        for (int x = 0; x < lengthX; x++) {
+            if ( encodeMatrix[x][y] > 0) {
+
+                int prevStateX = 0;
+                int prevStateY = 0;
+
+                int numComponents = 2; 
+
+                for (int f = 0; f < lengthF; f++) {
+    
+                    int currStateX = prevStateX - xBlips[y][x][f];
+                    int currStateY = prevStateY - yBlips[y][x][f]; 
+                   
+                    index =  f * (ptsPerLobe * numComponents);
+
+                    for (int s = index; s < (index + (ptsPerLobe * numComponents)) ; s += 2) {
+
+                        this->paddedData[y + currStateY][x + currStateX][s] =  
+                                                                paddedDataTmp[y][x][s]; 
+                        this->paddedData[y + currStateY][x + currStateX][s+1] =  
+                                                                paddedDataTmp[y][x][s+1]; 
+
+                    }
+
+                    prevStateX = currStateX;
+                    prevStateY = currStateY;
+
+                }
+            }
+        }
+    }
+
     //++++++++++++++++++++++++++++++++++++
 
     delete [] specDataReordered; 
     delete [] encodeMatrix; 
+    delete [] paddedDataTmp; 
 
 
     //  Now, reset the DICOM header to refect the data reorganization:
