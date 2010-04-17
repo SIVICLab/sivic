@@ -51,7 +51,7 @@
 #include <vtkImageFourierFilter.h>
 #include <vtkImageFFT.h>
 #include <vtkImageRFFT.h>
-#include <svkImageRFFT.h>
+#include <svkImageLinearPhase.h>
 #include <vtkImageViewer2.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -93,11 +93,10 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void             ConvertArrayToImageComplex( vtkDataArray* array, vtkImageComplex* imageComplexArray);
         void             SetFFTDomain( FFTDomain domain );
         void             SetFFTMode( FFTMode mode );
-        static void      CenterData( vtkImageData* inputData, vtkImageData* outputData );
-        static void      UnCenterData( vtkImageData* inputData, vtkImageData* outputData );
         void             SetPreCorrectCenter( bool preCorrectCenter );
         void             SetPostCorrectCenter( bool postCorrectCenter );
-        bool phaseOnly;
+        void             SetPrePhaseShift( double prePhaseShift );
+        void             SetPostPhaseShift( double postPhaseShift );
 
 
 
@@ -140,6 +139,8 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
     private:
         bool            preCorrectCenter;
         bool            postCorrectCenter;
+        double          prePhaseShift;
+        double          postPhaseShift;
         int             updateExtent[6]; 
         FFTDomain       domain; 
         FFTMode         mode; 

@@ -144,7 +144,7 @@ ADD_LIBRARY(
     svkImageInPlaceFilter.cc    
     svkPhaseSpec.cc
     svkMrsImageFFT.cc
-    svkImageRFFT.cc
+    svkImageLinearPhase.cc
     svkImageMapToWindowLevelColors.cc
     svkImageMapToColors.cc
     svkImageAlgorithm.cc

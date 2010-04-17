@@ -71,7 +71,8 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->mode   = FORWARD;
     this->preCorrectCenter = false;
     this->postCorrectCenter = false;
-    this->phaseOnly = false;
+    this->prePhaseShift = 0;
+    this->postPhaseShift = 0;
 }
 
 
@@ -141,9 +142,7 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
     int returnValue;
     vtkImageFourierFilter* fourierFilter = NULL;
     if( this->mode == REVERSE ) {
-        fourierFilter = svkImageRFFT::New();
-        svkImageRFFT::SafeDownCast( fourierFilter )->SetPostPhaseShift(-1/2.0 );
-        svkImageRFFT::SafeDownCast( fourierFilter )->phaseOnly = this->phaseOnly;
+        fourierFilter = vtkImageRFFT::New();
     } else {
         fourierFilter = vtkImageFFT::New();
     }
@@ -167,26 +166,84 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
 
     for( int i = 0; i < numberOfPoints; i++ ) {
-        vtkImageData* tempDataIn = vtkImageData::New();
-        vtkImageData* tempDataOut = vtkImageData::New();
-        data->GetImage( tempDataIn, i );
-        tempDataIn->Modified();
-        tempDataIn->Update();
-        if( preCorrectCenter ) {
-            this->UnCenterData( tempDataIn, tempDataOut );
-            fourierFilter->SetInput(tempDataOut);
-        } else {
-            fourierFilter->SetInput(tempDataIn);
+
+        vtkImageData* currentData = NULL;
+        vtkImageData* preCenterData = NULL;
+        vtkImageData* postCenterData = NULL;
+        svkImageLinearPhase* prePhaseShifter = NULL;                
+        svkImageLinearPhase* postPhaseShifter = NULL;                
+        svkImageFourierCenter* preIfc = NULL; 
+        svkImageFourierCenter* postIfc = NULL;
+
+        vtkImageData* pointImage = vtkImageData::New();
+        data->GetImage( pointImage, i );
+
+        pointImage->Modified();
+        pointImage->Update();
+
+        currentData = pointImage;
+
+        // Lets apply a phase shift....
+        if( this->prePhaseShift != 0 ) {
+            prePhaseShifter = svkImageLinearPhase::New();                
+            prePhaseShifter->SetShiftWindow( this->prePhaseShift );
+            prePhaseShifter->SetInput( currentData ); 
+            currentData = prePhaseShifter->GetOutput();
+            currentData->Update();
+            currentData->Modified();
         }
+
+        // And correct the center....
+        if( this->preCorrectCenter ) {
+            preIfc = svkImageFourierCenter::New();
+            preIfc->SetReverseCenter( true );
+            preIfc->SetInput(currentData);
+            preIfc->Update();
+            currentData = preIfc->GetOutput();
+            currentData->Update();
+            currentData->Modified();
+        }
+
+        fourierFilter->SetInput(currentData);
         fourierFilter->Update();
-        if( postCorrectCenter ) {
-            this->CenterData( fourierFilter->GetOutput(), tempDataOut );
-            data->SetImage( tempDataOut, i );
-        } else {
-            data->SetImage( fourierFilter->GetOutput(), i );
+        currentData = fourierFilter->GetOutput();
+        currentData->Update();
+        currentData->Modified();
+
+        if( this->postCorrectCenter ) {
+            postIfc = svkImageFourierCenter::New();
+            postIfc->SetInput(currentData);
+            postIfc->Update();
+            currentData = postIfc->GetOutput();
+            currentData->Update();
+            currentData->Modified();
         }
-        tempDataIn->Delete();
-        tempDataOut->Delete();
+
+        if( this->postPhaseShift != 0 ) {
+            postPhaseShifter = svkImageLinearPhase::New();                
+            postPhaseShifter->SetShiftWindow( this->postPhaseShift );
+            postPhaseShifter->SetInput( currentData ); 
+            currentData = postPhaseShifter->GetOutput();
+            currentData->Update();
+            currentData->Modified();
+        }
+
+        data->SetImage( currentData, i );
+
+        if( preCenterData != NULL ) {
+            preCenterData->Delete(); 
+            preCenterData = NULL; 
+        }
+        if( postCenterData != NULL ) {
+            postCenterData->Delete(); 
+            postCenterData = NULL; 
+        }
+        if( prePhaseShifter != NULL ) {
+            prePhaseShifter->Delete(); 
+        }
+        if( postPhaseShifter != NULL ) {
+            postPhaseShifter->Delete(); 
+        }
     }
 
     //  Update the DICOM header to reflect the spectral domain changes:
@@ -296,37 +353,6 @@ void svkMrsImageFFT::SetFFTMode( FFTMode mode )
 
 
 /*!
- *
- */
-void svkMrsImageFFT::UnCenterData( vtkImageData* inputData, vtkImageData* outputData )
-{
-    svkImageFourierCenter* ifc = svkImageFourierCenter::New();
-    ifc->SetReverseCenter( true );
-    ifc->SetDimensionality(3);
-    ifc->SetInput(inputData);
-    ifc->Update();
-    outputData->DeepCopy( ifc->GetOutput() ); 
-    outputData->Update();
-    ifc->Delete();
-}
-
-
-/*!
- *
- */
-void svkMrsImageFFT::CenterData( vtkImageData* inputData, vtkImageData* outputData )
-{
-    svkImageFourierCenter* ifc = svkImageFourierCenter::New();
-    ifc->SetDimensionality(3);
-    ifc->SetInput(inputData);
-    ifc->Update();
-    outputData->DeepCopy( ifc->GetOutput() ); 
-    outputData->Update();
-    ifc->Delete();
-}
-
-
-/*!
  *  Should we correct for an offset center before FT? 
  */
 void svkMrsImageFFT::SetPreCorrectCenter( bool preCorrectCenter )
@@ -342,6 +368,25 @@ void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
 {
     this->postCorrectCenter = postCorrectCenter;
 }
+
+
+/*!
+ *
+ */
+void svkMrsImageFFT::SetPrePhaseShift( double prePhaseShift )
+{
+    this->prePhaseShift = prePhaseShift;
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageFFT::SetPostPhaseShift( double postPhaseShift )
+{
+    this->postPhaseShift = postPhaseShift;
+}
+
 
 /*! 
  *  Sets the extent over which the phasing should be applied.      

@@ -87,51 +87,22 @@ namespace svk {
 
 using namespace std;
 
-class svkImageRFFT : public vtkImageRFFT
+class svkImageLinearPhase : public vtkImageFourierFilter
 {
     public:
-        static svkImageRFFT *New();
-        vtkTypeRevisionMacro(svkImageRFFT,vtkImageRFFT);
+        static svkImageLinearPhase *New();
+        vtkTypeRevisionMacro(svkImageLinearPhase,vtkImageFourierFilter);
+        void SetShiftWindow( double shiftWindow );
+        void ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N );
         
-        void SetPrePhaseShift( double prePhaseShift );
-        void SetPostPhaseShift( double postPhaseShift );
-
-        double prePhaseShift;
-        double postPhaseShift;
-        
-        void ApplyPhaseShift( vtkImageComplex* data, int N, double shift );
-        void CopyComplex( vtkImageComplex* in, vtkImageComplex* out, int N );
-        bool phaseOnly;
-  
-  // Description:
-  // For streaming and threads.  Splits output update extent into num pieces.
-  // This method needs to be called num times.  Results must not overlap for
-  // consistent starting extent.  Subclass can override this method.  This
-  // method returns the number of pieces resulting from a successful split.
-  // This can be from 1 to "total".  If 1 is returned, the extent cannot be
-  // split.
-/*
-  int SplitExtent(int splitExt[6], int startExt[6], 
-                  int num, int total);
-*/
-
     protected:
-        svkImageRFFT();
-        ~svkImageRFFT();
-/*
-  virtual int IterativeRequestInformation(vtkInformation* in,
-                                          vtkInformation* out);
-  virtual int IterativeRequestUpdateExtent(vtkInformation* in,
-                                           vtkInformation* out);
-*/
+        svkImageLinearPhase();
+        ~svkImageLinearPhase();
     private:
-
 
         void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
                        int outExt[6], int threadId);
-        
-
-
+        double shiftWindow;
 };
 
 } // svk
