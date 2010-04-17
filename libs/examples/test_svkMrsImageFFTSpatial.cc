@@ -85,97 +85,82 @@ int main (int argc, char** argv)
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
     plotGridInput->GetView()->SetOrientation(svkDcmHeader::AXIAL);
     plotGridInput->SetComponent(svkPlotLine::MAGNITUDE);
-    //plotGridInput->SetWindowLevelRange(0, 1023, svkPlotGridView::FREQUENCY);
     plotGridInput->GetView()->Refresh();
     window->Render();
 
 
-    //cout << "Printing output data: " << *data << endl;
     window->GetInteractor()->Start();
+
+    // Display Input:
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
     svkImageData* outputData;
     cout << "Instantiating the algorithm..." << endl;
-    svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
+    svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
    
     cout << "Setting input to the algorithm..." << endl;
-    imageFFT->SetInput( data );
-    imageFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-    imageFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
-    imageFFT->SetPreCorrectCenter( true );
-    imageFFT->SetPostCorrectCenter( true );
+    spatialRFFT->SetInput( data );
+    spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+    spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+    spatialRFFT->SetPreCorrectCenter( true );
+    spatialRFFT->SetPrePhaseShift( -0.5 );
+    spatialRFFT->SetPostCorrectCenter( true );
+    spatialRFFT->SetPostPhaseShift( -0.5 );
     
     cout << "Getting the output of the algorithm..." << endl;
-    outputData = imageFFT->GetOutput();
+    outputData = spatialRFFT->GetOutput();
 
     cout << "Updating the output of the algorithm..." << endl;
-    imageFFT->Update();
+    spatialRFFT->Update();
     outputData->Modified();
     outputData->Update(); 
-
-    svkMrsImageFFT* imageFFT2 = svkMrsImageFFT::New();
-   
-    cout << "Setting input to the algorithm..." << endl;
-    imageFFT2->SetInput( data );
-    imageFFT2->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-    imageFFT2->SetFFTMode( svkMrsImageFFT::REVERSE );
-    imageFFT2->phaseOnly = true;;
-    
-    cout << "Getting the output of the algorithm..." << endl;
-    outputData = imageFFT2->GetOutput();
-
-    cout << "Updating the output of the algorithm..." << endl;
-    imageFFT2->Update();
-    outputData->Modified();
-    outputData->Update(); 
-
-    //Lets write out the volume:
-    ///svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
-
 
     cout << "Now lets visualize the output." << endl;
     outputData->GetDataRange( range, 0 );
     cout << "range: " << range[0] << " " << range[1] << endl;
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
-    //plotGridInput->SetWindowLevelRange(0, 1023, svkPlotGridView::FREQUENCY);
     plotGridInput->GetView()->Refresh();
     window->Render();
     window->GetInteractor()->Start();
+
+    // Display Spatial Reconstructed
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
 
     cout << "Instantiating the algorithm..." << endl;
-    svkMrsImageFFT* imageRFFT = svkMrsImageFFT::New();
+    svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
    
     cout << "Setting input to the algorithm..." << endl;
-    imageRFFT->SetInput( data );
-    imageRFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
-    imageRFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
+    spectralFFT->SetInput( data );
+    spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
     
     cout << "Getting the output of the algorithm..." << endl;
-    outputData = imageRFFT->GetOutput();
+    outputData = spectralFFT->GetOutput();
 
     cout << "Updating the output of the algorithm..." << endl;
-    imageRFFT->Update();
+    spectralFFT->Update();
     outputData->Modified();
     outputData->Update(); 
 
     svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
-    writer->SetFileName( "svk_recon_phase_neg_half_new.dcm" );    
+    writer->SetFileName( "svk_recon_phase_test2.dcm" );    
     writer->SetInput( outputData );
     writer->Write();
 
 
     outputData->GetDataRange( range, 0 );
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
-    //plotGridInput->SetWindowLevelRange(0, 1023, svkPlotGridView::FREQUENCY);
     plotGridInput->GetView()->Refresh();
     window->Render();
     window->GetInteractor()->Start();
+
+
+    // Display Final Spectra 
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
