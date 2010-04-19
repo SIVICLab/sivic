@@ -171,3 +171,301 @@ void svkMRSIOD::InitMREchoMacro(float TE)
     );
 }
 
+
+/*!
+ *
+ */
+void svkMRSIOD::InitMRAveragesMacro(int numAverages)
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRAveragesSequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRAveragesSequence",
+        0,
+        "NumberOfAverages",
+        numAverages,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+}
+
+
+/*!
+ *
+ */
+void svkMRSIOD::InitMRSpectroscopyFrameTypeMacro()
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRSpectroscopyFrameTypeSequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFrameTypeSequence",
+        0,
+        "FrameType",
+        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFrameTypeSequence",
+        0,
+        "VolumetricProperties",
+        string("VOLUME"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFrameTypeSequence",
+        0,
+        "VolumeBasedCalculationTechnique",
+        string("NONE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFrameTypeSequence",
+        0,
+        "ComplexImageComponent",
+        string("COMPLEX"), 
+        "SharedFunctionalGroupsSequence",  
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFrameTypeSequence",
+        0,
+        "AcquisitionContrast",
+        "UNKNOWN",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *
+ */
+void svkMRSIOD::InitFrameAnatomyMacro()
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "FrameAnatomySequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "FrameAnatomySequence",
+        0,
+        "FrameLaterality",
+        string("U"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "FrameAnatomySequence",
+        0,
+        "AnatomicRegionSequence"
+    );
+
+
+    this->dcmHeader->AddSequenceItemElement(
+        "AnatomicRegionSequence",
+        0,
+        "CodeValue",
+        1,
+        "FrameAnatomySequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "AnatomicRegionSequence",
+        0,
+        "CodingSchemeDesignator",
+        0,
+        "FrameAnatomySequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "AnatomicRegionSequence",
+        0,
+        "CodeMeaning",
+        0,
+        "FrameAnatomySequence",
+        0
+    );
+}
+
+
+/*!
+ *
+ */
+void svkMRSIOD::InitMRTimingAndRelatedParametersMacro(float tr, float flipAngle)
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRTimingAndRelatedParametersSequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RepetitionTime",    
+        tr, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "FlipAngle",
+        flipAngle, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "EchoTrainLength",   
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RFEchoTrainLength", 
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "GradientEchoTrainLength",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "GradientEchoTrainLength",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *
+ */
+void svkMRSIOD::InitMRModifierMacro(float inversionTime)
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRModifierSequence"
+    );
+
+    string invRecov = "NO";
+    if ( inversionTime >= 0 ) {
+        invRecov.assign("YES");
+        this->dcmHeader->AddSequenceItemElement(
+            "MRModifierSequence",
+            0,
+            "InversionTimes",
+            inversionTime,
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    }
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "InversionRecovery", 
+        invRecov,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "SpatialPreSaturation",
+        string("SLAB"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "ParallelAcquisition",
+        string("NO"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *
+ */
+void svkMRSIOD::InitMRTransmitCoilMacro(string coilName, string coilMfg, string coilType)
+{
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRTransmitCoilSequence"
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilName",
+        coilName,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilManufacturerName",
+        coilMfg,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilType",    
+        coilType,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+}
+

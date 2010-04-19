@@ -69,6 +69,12 @@ class svkMRSIOD : public svkIOD
         //  Methods:
         virtual void  InitDcmHeader();
         void          InitMREchoMacro(float TE); 
+        void          InitMRAveragesMacro(int numAverages); 
+        void          InitMRSpectroscopyFrameTypeMacro(); 
+        void          InitFrameAnatomyMacro(); 
+        void          InitMRTimingAndRelatedParametersMacro(float tr, float flipAngle); 
+        void          InitMRModifierMacro(float inversionTime); 
+        void          InitMRTransmitCoilMacro(string coilName, string coilMfg, string coilType); 
 
 
     protected:
