@@ -63,13 +63,15 @@ class svkByteSwap : public vtkObject
         // vtk type revision macro
         vtkTypeRevisionMacro( svkByteSwap, vtkObject );
         
-        static void SwapBufferEndianness(short* data, int size);
-        static void SwapBufferEndianness(int*   data, int size);
-        static void SwapBufferEndianness(float* data, int size);
-
-        static void SwapEndianness(short* data);
-        static void SwapEndianness(int*   data);
-        static void SwapEndianness(float* data);
+        static void SwapBufferEndianness(short*  data, int size);
+        static void SwapBufferEndianness(int*    data, int size);
+        static void SwapBufferEndianness(float*  data, int size);
+        static void SwapBufferEndianness(double* data, int size);
+ 
+        static void SwapEndianness(short*  data);
+        static void SwapEndianness(int*    data);
+        static void SwapEndianness(float*  data);
+        static void SwapEndianness(double* data);
         
 };
 

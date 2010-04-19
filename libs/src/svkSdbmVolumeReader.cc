@@ -1166,63 +1166,12 @@ void svkSdbmVolumeReader::InitPlaneOrientationMacro()
 }
 
 
-
-
-
 /*!
  *
  */
 void svkSdbmVolumeReader::InitFrameAnatomyMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "FrameAnatomySequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "FrameAnatomySequence",       
-        0,                             
-        "FrameLaterality",              
-        string("U"),                     
-        "SharedFunctionalGroupsSequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "FrameAnatomySequence",      
-        0,                          
-        "AnatomicRegionSequence"   
-    );
-
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeValue",              
-        1,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodingSchemeDesignator",              
-        0,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeMeaning",              
-        0,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
+    this->iod->InitFrameAnatomyMacro();
 }
 
 
@@ -1231,56 +1180,7 @@ void svkSdbmVolumeReader::InitFrameAnatomyMacro()
  */
 void svkSdbmVolumeReader::InitMRSpectroscopyFrameTypeMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRSpectroscopyFrameTypeSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",
-        0,                               
-        "FrameType",                    
-        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE"),  
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "VolumetricProperties",           
-        string("VOLUME"),  
-        "SharedFunctionalGroupsSequence",
-        0                              
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "VolumeBasedCalculationTechnique",
-        string("NONE"),
-        "SharedFunctionalGroupsSequence",
-        0                              
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",
-        0,                                
-        "ComplexImageComponent",           
-        string("COMPLEX"),  
-        "SharedFunctionalGroupsSequence",   
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "AcquisitionContrast",            
-        "UNKNOWN",
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
+    this->iod->InitMRSpectroscopyFrameTypeMacro();
 }
 
 
@@ -1289,65 +1189,10 @@ void svkSdbmVolumeReader::InitMRSpectroscopyFrameTypeMacro()
  */
 void svkSdbmVolumeReader::InitMRTimingAndRelatedParametersMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTimingAndRelatedParametersSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "RepetitionTime",                     
+    this->iod->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat(shfMap, "TR"), 
-        "SharedFunctionalGroupsSequence",  
-        0 
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "FlipAngle",                     
-        999, 
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "EchoTrainLength",                     
-        1,
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "RFEchoTrainLength",                     
-        1,
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "GradientEchoTrainLength",                     
-        1,
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "GradientEchoTrainLength",                     
-        1,
-        "SharedFunctionalGroupsSequence",  
-        0                                  
-    );
+        999
+    ); 
 }
 
 
@@ -1434,38 +1279,8 @@ void svkSdbmVolumeReader::InitMREchoMacro()
  */
 void svkSdbmVolumeReader::InitMRModifierMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRModifierSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "InversionRecovery",       
-        string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "SpatialPreSaturation",       
-        string("SLAB"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "ParallelAcquisition",       
-        string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
+    float inversionTime = 0;  
+    this->iod->InitMREchoMacro( inversionTime );
 }
 
 
@@ -1572,39 +1387,7 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkSdbmVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTransmitCoilSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilName",       
-        "coil name",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilManufacturerName",       
-        "GE",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilType",       
-        "BODY",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
+    this->iod->InitMRTransmitCoilMacro("UNKNOWN", "GE", "BODY");
 }
 
 
@@ -1613,21 +1396,8 @@ void svkSdbmVolumeReader::InitMRTransmitCoilMacro()
  */
 void svkSdbmVolumeReader::InitMRAveragesMacro()
 {
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRAveragesSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRAveragesSequence",
-        0,                        
-        "NumberOfAverages",       
-        "1",
-        "SharedFunctionalGroupsSequence",    
-        0
-    );
-
+    int numAverages = 1; 
+    this->iod->InitMRAveragesMacro(numAverages);
 }
 
 

@@ -88,6 +88,18 @@ void svkByteSwap::SwapBufferEndianness(float* data, int size)
 /*!
  *
  */
+void svkByteSwap::SwapBufferEndianness(double* data, int size)
+{
+    int i;
+    for( i = 0; i < size; i++ ) {
+        svkByteSwap::SwapEndianness(&data[i]);
+    }
+}
+
+
+/*!
+ *
+ */
 void svkByteSwap::SwapEndianness(short* data)
 {
     char* buf;
@@ -144,6 +156,39 @@ void svkByteSwap::SwapEndianness(float* data)
     buf[3] = c0;
 }
 
+
+/*!
+ *
+ */
+void svkByteSwap::SwapEndianness(double* data)
+{
+    char* buf;
+    char  c0; 
+    char  c1; 
+    char  c2; 
+    char  c3; 
+    char  c4; 
+    char  c5; 
+    char  c6; 
+    char  c7; 
+    buf = (char*)data;
+    c0 = buf[0];
+    c1 = buf[1];
+    c2 = buf[2];
+    c3 = buf[3];
+    c4 = buf[4];
+    c5 = buf[5];
+    c6 = buf[6];
+    c7 = buf[7];
+    buf[0] = c7;
+    buf[1] = c6;
+    buf[2] = c5;
+    buf[3] = c4;
+    buf[4] = c3;
+    buf[5] = c2;
+    buf[6] = c1;
+    buf[7] = c0;
+}
 
 
 
