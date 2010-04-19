@@ -116,12 +116,7 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         virtual void    InitPlaneOrientationMacro(); 
         virtual void    InitSharedFunctionalGroupMacros();
         virtual void    InitPerFrameFunctionalGroupMacros();
-        virtual void    InitMRModifierMacro(); 
-        virtual void    InitMRTransmitCoilMacro(); 
-        virtual void    InitMRAveragesMacro(); 
-        virtual void    InitMRSpectroscopyFrameTypeMacro(); 
         virtual void    InitPixelMeasuresMacro();
-        virtual void    InitMRTimingAndRelatedParametersMacro();
         virtual void    InitMRReceiveCoilMacro();
         virtual void    InitMRSpectroscopyPulseSequenceModule();
         virtual void    InitMRSpectroscopyModule();
