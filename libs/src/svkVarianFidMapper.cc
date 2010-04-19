@@ -217,7 +217,7 @@ void svkVarianFidMapper::InitSharedFunctionalGroupMacros()
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
 
-    //this->InitFrameAnatomyMacro();
+    this->InitFrameAnatomyMacro();
     this->InitMRSpectroscopyFrameTypeMacro();
 
     this->InitMRTimingAndRelatedParametersMacro();
@@ -587,56 +587,7 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
  */
 void svkVarianFidMapper::InitMRSpectroscopyFrameTypeMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRSpectroscopyFrameTypeSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",
-        0,                               
-        "FrameType",                    
-        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE"),  
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "VolumetricProperties",           
-        string("VOLUME"),  
-        "SharedFunctionalGroupsSequence",
-        0                              
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "VolumeBasedCalculationTechnique",
-        string("NONE"),
-        "SharedFunctionalGroupsSequence",
-        0                              
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",
-        0,                                
-        "ComplexImageComponent",           
-        string("COMPLEX"),  
-        "SharedFunctionalGroupsSequence",   
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFrameTypeSequence",  
-        0,                                 
-        "AcquisitionContrast",            
-        "UNKNOWN",
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
+    this->iod->InitMRSpectroscopyFrameTypeMacro();
 }
 
 
@@ -645,64 +596,10 @@ void svkVarianFidMapper::InitMRSpectroscopyFrameTypeMacro()
  */
 void svkVarianFidMapper::InitMRTimingAndRelatedParametersMacro()
 {
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "MRTimingAndRelatedParametersSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "RepetitionTime",
+    this->iod->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat( "tr" ),
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "FlipAngle",
-        this->GetHeaderValueAsFloat("fliplist", 0),
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "EchoTrainLength",
-        1,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "RFEchoTrainLength",
-        1,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "GradientEchoTrainLength",
-        1,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence",
-        0,
-        "GradientEchoTrainLength",
-        1,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
+        this->GetHeaderValueAsFloat("fliplist", 0)
+    ); 
 }
 
 
@@ -884,9 +781,16 @@ void svkVarianFidMapper::InitMRSpectroscopyFOVGeometryMacro()
 void svkVarianFidMapper::InitMREchoMacro()
 {
     this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
-
 }
 
+
+/*!
+ *
+ */
+void svkVarianFidMapper::InitFrameAnatomyMacro()
+{
+    this->iod->InitFrameAnatomyMacro();
+}
 
 
 /*!
@@ -894,38 +798,8 @@ void svkVarianFidMapper::InitMREchoMacro()
  */
 void svkVarianFidMapper::InitMRModifierMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRModifierSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "InversionRecovery",       
-        string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "SpatialPreSaturation",       
-        string("SLAB"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "ParallelAcquisition",       
-        string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
+    float inversionTime = 0; 
+    this->iod->InitMREchoMacro( inversionTime );
 }
 
 
@@ -934,39 +808,7 @@ void svkVarianFidMapper::InitMRModifierMacro()
  */
 void svkVarianFidMapper::InitMRTransmitCoilMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTransmitCoilSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilName",       
-        "coil name",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilManufacturerName",       
-        "GE",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilType",       
-        "BODY",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
+    this->iod->InitMRTransmitCoilMacro("UNKNOWN", "Varian", "BODY");
 }
 
 
@@ -999,21 +841,8 @@ void svkVarianFidMapper::InitMRReceiveCoilMacro()
  */
 void svkVarianFidMapper::InitMRAveragesMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRAveragesSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRAveragesSequence",
-        0,                        
-        "NumberOfAverages",       
-        "1",
-        "SharedFunctionalGroupsSequence",    
-        0
-    );
-
+    int numAverages = 1; 
+    this->iod->InitMRAveragesMacro(numAverages);
 }
 
 
