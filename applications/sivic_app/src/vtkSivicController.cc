@@ -71,11 +71,6 @@ vtkSivicController::vtkSivicController()
 //! Destructor
 vtkSivicController::~vtkSivicController()
 {
-    char cwd[MAXPATHLEN];
-    getcwd(cwd, MAXPATHLEN);
-    string pathName(cwd);
-    this->app->SetRegistryValue( 0, "RunTime", "lastPath", pathName.c_str());
-
     if( this->overlayController != NULL ) {
         this->overlayController->Delete();
         this->overlayController = NULL;
@@ -810,16 +805,6 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     struct stat st;
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
-
-    /* The following line is a catch for what appears to be a KWWidgets bug. If we try
-     * to get the last path from the registry, or even check to see if the last path
-     * exists in the registry and the registry does not exist, the application returns 
-     * from this function before finishing. Saving a dummy value into the registry 
-     * guarantees that it exists before we try to get
-     * the last path.
-     */
-    this->app->SetRegistryValue( 0, "DONOTUSE", "REGISTRYEXISTS","1");
-
 
     string openTypeString( openType ); 
     size_t pos;
