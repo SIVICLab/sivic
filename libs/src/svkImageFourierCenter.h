@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkMrsImageFFT.cc $
- *  $Rev: 256 $
- *  $Author: beckn8tor $
- *  $Date: 2010-04-08 09:53:21 -0700 (Thu, 08 Apr 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

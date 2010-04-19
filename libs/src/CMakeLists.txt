@@ -107,6 +107,7 @@ ADD_LIBRARY(
     svkMultiWindowToImageFilter.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc
+    svkSiemensRdaReader.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
     svkSdbmVolumeReader.cc

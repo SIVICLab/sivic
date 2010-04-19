@@ -537,7 +537,13 @@ double svkDcmtkAdapter::GetDoubleValue(const char* name)
  */
 string svkDcmtkAdapter::GetStringValue(const char* name)
 {
-    return this->dcmFile->getStringValue( GetDcmTagKey(name) ); 
+    try {
+        return this->dcmFile->getStringValue( GetDcmTagKey(name) ); 
+    } catch (const exception& e) {
+        cerr << "ERROR: " << e.what() << endl;
+        return string(""); 
+    }
+
 }
 
 

@@ -67,6 +67,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->fdfVolReader    = svkFdfVolumeReader::New();
     this->fidVolReader    = svkVarianFidReader::New();
     this->sdbmVolReader   = svkSdbmVolumeReader::New();
+    this->rdaVolReader       = svkSiemensRdaReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -75,6 +76,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->fdfVolReader );
     vtkImageReader2Factory::RegisterReader( this->fidVolReader );
     vtkImageReader2Factory::RegisterReader( this->sdbmVolReader );
+    vtkImageReader2Factory::RegisterReader( this->rdaVolReader );
 
 }
 

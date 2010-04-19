@@ -645,8 +645,6 @@ void svkSdbmVolumeReader::ParseShfDim()
 void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
 {
 
-    this->GetOutput()->GetDcmHeader()->InsertEmptyElement( "VolumeLocalizationSequence" );
-
     //  Get Thickness Values
     float selBoxSize[3]; 
     selBoxSize[0] = this->GetHeaderValueAsFloat(shfMap, "sl_thick_1"); 
@@ -658,16 +656,6 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
     selBoxCenter[0] = this->GetHeaderValueAsFloat(shfMap, "sl_loc_1"); 
     selBoxCenter[1] = this->GetHeaderValueAsFloat(shfMap, "sl_loc_2"); 
     selBoxCenter[2] = this->GetHeaderValueAsFloat(shfMap, "sl_loc_3"); 
-
-    string midSlabPosition;
-    for (int i = 0; i < 3; i++) {
-        ostringstream oss;
-        oss << selBoxCenter[i];
-        midSlabPosition += oss.str();
-        if (i < 2) {
-            midSlabPosition += '\\';
-        }
-    }
 
     //  Get Orientation Values 
     float selBoxOrientation[3][3]; 
@@ -681,42 +669,11 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
     selBoxOrientation[2][1] = this->dcos[2][1]; 
     selBoxOrientation[2][2] = this->dcos[2][2]; 
 
-    //  Volume Localization (PRESS BOX)
-    for (int i = 0; i < 3; i++) {
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "VolumeLocalizationSequence", 
-            i,
-            "SlabThickness",
-            selBoxSize[i] 
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "VolumeLocalizationSequence", 
-            i,
-            "MidSlabPosition",
-            midSlabPosition
-        );
-
-
-        string slabOrientation;
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss << selBoxOrientation[i][j];
-            slabOrientation += oss.str();
-            if (j < 2) {
-                slabOrientation += '\\';
-            }
-        }
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "VolumeLocalizationSequence", 
-            i,
-            "SlabOrientation",
-            slabOrientation 
-        );
-
-    }
+    this->iod->InitVolumeLocalizationSeq(
+        selBoxSize,
+        selBoxCenter,
+        selBoxOrientation 
+    );
 
 }
 

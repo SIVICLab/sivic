@@ -26,10 +26,10 @@
  *  OF SUCH DAMAGE.
  */ 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkMrsImageFFT.cc $
- *  $Rev: 259 $
- *  $Author: beckn8tor $
- *  $Date: 2010-04-12 16:51:07 -0700 (Mon, 12 Apr 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

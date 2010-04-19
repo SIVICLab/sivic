@@ -54,6 +54,7 @@
 #include <svkFdfVolumeReader.h>
 #include <svkVarianFidReader.h>
 #include <svkSdbmVolumeReader.h>
+#include <svkSiemensRdaReader.h>
 
 
 namespace svk {
@@ -89,11 +90,12 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         //  Members:
         svkDcmMriVolumeReader* dcmMriVolReader;
         svkDcmMrsVolumeReader* dcmMrsVolReader;
-        svkIdfVolumeReader* idfVolReader;
-        svkDdfVolumeReader* ddfVolReader;
-        svkFdfVolumeReader* fdfVolReader;
-        svkVarianFidReader* fidVolReader;
-        svkSdbmVolumeReader* sdbmVolReader;
+        svkIdfVolumeReader*    idfVolReader;
+        svkDdfVolumeReader*    ddfVolReader;
+        svkFdfVolumeReader*    fdfVolReader;
+        svkVarianFidReader*    fidVolReader;
+        svkSdbmVolumeReader*   sdbmVolReader;
+        svkSiemensRdaReader*   rdaVolReader;
 
 };
 

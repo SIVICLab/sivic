@@ -75,6 +75,7 @@ class svkMRSIOD : public svkIOD
         void          InitMRTimingAndRelatedParametersMacro(float tr, float flipAngle); 
         void          InitMRModifierMacro(float inversionTime); 
         void          InitMRTransmitCoilMacro(string coilName, string coilMfg, string coilType); 
+        void          InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]); 
 
 
     protected:
