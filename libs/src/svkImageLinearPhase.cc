@@ -254,8 +254,7 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
 
 void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N )
 {
-    //int origin = N/2 + 1;
-    int origin = 0;
+    int origin = N/2 + 1;
     double phaseIncrement;
     double oldReal;
     double newReal;
@@ -264,10 +263,9 @@ void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageCompl
     double phaseReal;
     double phaseImag;
     double mult;
-    double shift = -0.5;
     for( int i=0; i < N; i++ ) {
         phaseIncrement = (i - origin)/((double)(N));
-        mult = -2 * vtkMath::Pi() * phaseIncrement * shift;
+        mult = -2 * vtkMath::Pi() * phaseIncrement * this->shiftWindow;
         oldReal = in[i].Real;
         oldImag = in[i].Imag;
         
