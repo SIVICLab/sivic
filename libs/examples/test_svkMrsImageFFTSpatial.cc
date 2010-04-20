@@ -92,10 +92,12 @@ int main (int argc, char** argv)
     window->GetInteractor()->Start();
 
     // Display Input:
+/*
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
+*/
     svkImageData* outputData;
     cout << "Instantiating the algorithm..." << endl;
     svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
@@ -126,11 +128,13 @@ int main (int argc, char** argv)
     window->GetInteractor()->Start();
 
     // Display Spatial Reconstructed
+/*
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
 
+*/
     cout << "Instantiating the algorithm..." << endl;
     svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
    
@@ -148,7 +152,7 @@ int main (int argc, char** argv)
     outputData->Update(); 
 
     svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
-    writer->SetFileName( "svk_recon_phase_test2.dcm" );    
+    writer->SetFileName( "svk_recon.dcm" );    
     writer->SetInput( outputData );
     writer->Write();
 
@@ -161,10 +165,12 @@ int main (int argc, char** argv)
 
 
     // Display Final Spectra 
+/*
     for( int i = 0; i < 8; i++ ) {
         plotGridInput->SetSlice(i);
         window->GetInteractor()->Start();
     }
+*/
     
     
      
