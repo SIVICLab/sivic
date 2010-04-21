@@ -164,85 +164,92 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
+    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
+    
+    for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
+        for( int channel = 0; channel < numChannels; channel++ ) {
+            for( int point = 0; point < numberOfPoints; point++ ) {
+                cout << "Executing : point:" << point << " timePt: " << timePt << " channel: " << channel << endl;
+                vtkImageData* currentData = NULL;
+                svkImageLinearPhase* prePhaseShifter = NULL;                
+                svkImageLinearPhase* postPhaseShifter = NULL;                
+                svkImageFourierCenter* preIfc = NULL; 
+                svkImageFourierCenter* postIfc = NULL;
 
-    for( int i = 0; i < numberOfPoints; i++ ) {
+                vtkImageData* pointImage = vtkImageData::New();
+                data->GetImage( pointImage, point, timePt, channel );
 
-        vtkImageData* currentData = NULL;
-        vtkImageData* preCenterData = NULL;
-        vtkImageData* postCenterData = NULL;
-        svkImageLinearPhase* prePhaseShifter = NULL;                
-        svkImageLinearPhase* postPhaseShifter = NULL;                
-        svkImageFourierCenter* preIfc = NULL; 
-        svkImageFourierCenter* postIfc = NULL;
+                pointImage->Modified();
+                pointImage->Update();
 
-        vtkImageData* pointImage = vtkImageData::New();
-        data->GetImage( pointImage, i );
+                currentData = pointImage;
 
-        pointImage->Modified();
-        pointImage->Update();
+                // Lets apply a phase shift....
+                if( this->prePhaseShift != 0 ) {
+                    prePhaseShifter = svkImageLinearPhase::New();                
+                    prePhaseShifter->SetShiftWindow( this->prePhaseShift );
+                    prePhaseShifter->SetInput( currentData ); 
+                    currentData = prePhaseShifter->GetOutput();
+                    currentData->Update();
+                    currentData->Modified();
+                }
 
-        currentData = pointImage;
+                // And correct the center....
+                if( this->preCorrectCenter ) {
+                    preIfc = svkImageFourierCenter::New();
+                    preIfc->SetReverseCenter( true );
+                    preIfc->SetInput(currentData);
+                    preIfc->Update();
+                    currentData = preIfc->GetOutput();
+                    currentData->Update();
+                    currentData->Modified();
+                }
 
-        // Lets apply a phase shift....
-        if( this->prePhaseShift != 0 ) {
-            prePhaseShifter = svkImageLinearPhase::New();                
-            prePhaseShifter->SetShiftWindow( this->prePhaseShift );
-            prePhaseShifter->SetInput( currentData ); 
-            currentData = prePhaseShifter->GetOutput();
-            currentData->Update();
-            currentData->Modified();
-        }
+                fourierFilter->SetInput(currentData);
+                fourierFilter->Update();
+                currentData = fourierFilter->GetOutput();
+                currentData->Update();
+                currentData->Modified();
 
-        // And correct the center....
-        if( this->preCorrectCenter ) {
-            preIfc = svkImageFourierCenter::New();
-            preIfc->SetReverseCenter( true );
-            preIfc->SetInput(currentData);
-            preIfc->Update();
-            currentData = preIfc->GetOutput();
-            currentData->Update();
-            currentData->Modified();
-        }
+                if( this->postCorrectCenter ) {
+                    postIfc = svkImageFourierCenter::New();
+                    postIfc->SetInput(currentData);
+                    postIfc->Update();
+                    currentData = postIfc->GetOutput();
+                    currentData->Update();
+                    currentData->Modified();
+                }
 
-        fourierFilter->SetInput(currentData);
-        fourierFilter->Update();
-        currentData = fourierFilter->GetOutput();
-        currentData->Update();
-        currentData->Modified();
+                if( this->postPhaseShift != 0 ) {
+                    postPhaseShifter = svkImageLinearPhase::New();                
+                    postPhaseShifter->SetShiftWindow( this->postPhaseShift );
+                    postPhaseShifter->SetInput( currentData ); 
+                    currentData = postPhaseShifter->GetOutput();
+                    currentData->Update();
+                    currentData->Modified();
+                }
 
-        if( this->postCorrectCenter ) {
-            postIfc = svkImageFourierCenter::New();
-            postIfc->SetInput(currentData);
-            postIfc->Update();
-            currentData = postIfc->GetOutput();
-            currentData->Update();
-            currentData->Modified();
-        }
+                data->SetImage( currentData, point, timePt, channel );
+                pointImage->Delete();
 
-        if( this->postPhaseShift != 0 ) {
-            postPhaseShifter = svkImageLinearPhase::New();                
-            postPhaseShifter->SetShiftWindow( this->postPhaseShift );
-            postPhaseShifter->SetInput( currentData ); 
-            currentData = postPhaseShifter->GetOutput();
-            currentData->Update();
-            currentData->Modified();
-        }
-
-        data->SetImage( currentData, i );
-
-        if( preCenterData != NULL ) {
-            preCenterData->Delete(); 
-            preCenterData = NULL; 
-        }
-        if( postCenterData != NULL ) {
-            postCenterData->Delete(); 
-            postCenterData = NULL; 
-        }
-        if( prePhaseShifter != NULL ) {
-            prePhaseShifter->Delete(); 
-        }
-        if( postPhaseShifter != NULL ) {
-            postPhaseShifter->Delete(); 
+                if( preIfc != NULL ) {
+                    preIfc->Delete(); 
+                    preIfc = NULL; 
+                }
+                if( postIfc != NULL ) {
+                    postIfc->Delete(); 
+                    postIfc = NULL; 
+                }
+                if( prePhaseShifter != NULL ) {
+                    prePhaseShifter->Delete(); 
+                    prePhaseShifter = NULL; 
+                }
+                if( postPhaseShifter != NULL ) {
+                    postPhaseShifter->Delete(); 
+                    postPhaseShifter = NULL; 
+                }
+            }
         }
     }
 

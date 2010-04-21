@@ -44,7 +44,8 @@
 
 
 #include <svkSatBandSet.h>
-#define CLIP_TOLERANCE -0.45
+#define CLIP_TOLERANCE 0
+#define IMAGE_CLIP_TOLERANCE 0.05
 #define PROJECTION_MULTIPLIER 4
 using namespace svk;
 
@@ -731,13 +732,13 @@ void svkSatBandSet::GenerateSliceClippingPlanes( )
     if( spectra != NULL ) {
         if( image != NULL ) {
             if( slice >= 0 ) {
-                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice - 0.5 - CLIP_TOLERANCE),
-                                          origin[1] + this->deltaAP * ( slice - 0.5 - CLIP_TOLERANCE),
-                                          origin[2] + this->deltaSI * ( slice - 0.5 - CLIP_TOLERANCE) );
+                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice - IMAGE_CLIP_TOLERANCE),
+                                              origin[1] + this->deltaAP * ( slice - IMAGE_CLIP_TOLERANCE),
+                                              origin[2] + this->deltaSI * ( slice  - IMAGE_CLIP_TOLERANCE) );
 
-                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 + CLIP_TOLERANCE ),
-                                          origin[1] + this->deltaAP * ( slice + 0.5 + CLIP_TOLERANCE ),
-                                          origin[2] + this->deltaSI * ( slice + 0.5 + CLIP_TOLERANCE ) );
+                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + IMAGE_CLIP_TOLERANCE ),
+                                              origin[1] + this->deltaAP * ( slice + IMAGE_CLIP_TOLERANCE ),
+                                              origin[2] + this->deltaSI * ( slice + IMAGE_CLIP_TOLERANCE ) );
             }
         } else {
             if( slice >= 0 ) {
