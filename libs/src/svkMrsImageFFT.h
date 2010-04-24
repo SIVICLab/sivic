@@ -70,6 +70,12 @@ using namespace std;
 
 /*! 
  *  Class to apply an FFT to all voxels 
+ *  
+ *  Based on reconstruction methods developed by Sarah J. Nelson, Ph.D (UCSF).  
+ *  1. Nelson S.J, "Analysis of volume MRI and MR spectroscopic imaging data for the evaluation 
+ *  of patients with brain tumors",  Magnetic Resonance in Medicine, 46(2), p228-239 (2001). 
+ * 
+ *  In development!
  */
 class svkMrsImageFFT : public svkImageInPlaceFilter
 {
