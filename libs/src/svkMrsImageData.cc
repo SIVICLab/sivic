@@ -59,6 +59,8 @@ svkMrsImageData::svkMrsImageData()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
+    this->numTimePoints = 0;
+    this->numChannels = 0;
 
 }
 
@@ -278,9 +280,15 @@ vtkDataArray* svkMrsImageData::GetSpectrumFromID( int index, int timePoint, int 
  */
 vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, int channel)
 {
-    char arrayName[30];
-    sprintf(arrayName, "%d %d %d %d %d", i, j, k, timePoint, channel);
-    return this->GetCellData()->GetArray( arrayName );
+
+    // We are getting the number of dimensions and numtimepoints to make sure the variables are up to date
+    int* dims = this->GetDimensions();
+    int numTimePoints = this->GetNumberOfTimePoints();
+
+    int linearIndex = i + j * (dims[0]-1) + k * (dims[0]-1) * (dims[1]-1) 
+                        + timePoint * (dims[0]-1) * (dims[1]-1) * (dims[2]-1)
+                        + channel   * (dims[0]-1) * (dims[1]-1) * (dims[2]-1) * numTimePoints;
+    return this->GetCellData()->GetArray( linearIndex );
 }
 
 
@@ -517,6 +525,35 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
     double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
     int slice = (int) floor( idealCenter );
     return slice;
+}
+
+
+
+/*! 
+ * Gets the number of timepoints in the dataset. The first time it is called
+ * it gets the number of timepoints from the header, after that it stores
+ * the value in a member variable.
+ */
+int svkMrsImageData::GetNumberOfTimePoints()
+{
+    if( this->numTimePoints == 0 ) {
+        this->numTimePoints = this->GetDcmHeader()->GetNumberOfTimePoints();
+    }
+    return this->numTimePoints;
+}
+
+
+/*! 
+ * Gets the number of channels in the dataset. The first time it is called
+ * it gets the number of channels from the header, after that it stores
+ * the value in a member variable.
+ */
+int svkMrsImageData::GetNumberOfChannels()
+{
+    if( this->numChannels == 0 ) {
+        this->numChannels = this->GetDcmHeader()->GetNumberOfCoils();
+    }
+    return this->numChannels;
 }
 
 
