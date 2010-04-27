@@ -63,8 +63,11 @@ vtkStandardNewMacro(svkImageLinearPhase);
  */
 svkImageLinearPhase::svkImageLinearPhase() 
 {
-    this->SetNumberOfThreads(1);
+    //this->SetNumberOfThreads(1);
+   // this->SetDimensionality(1);
     this->shiftWindow = 0;
+    this->phaseArray = NULL;
+    this->pie = vtkMath::Pi();
 }
 
 
@@ -132,6 +135,8 @@ void vtkImageLinearPhaseExecute(svkImageLinearPhase *self,
 
   
   inSize0 = inMax0 - inMin0 + 1;
+  vtkImageComplex* phaseArray = new vtkImageComplex[inSize0];
+  self->CreatePhaseArray( inSize0, phaseArray );
   
   // Input has to have real components at least.
   numberOfComponents = inData->GetNumberOfScalarComponents();
@@ -182,7 +187,7 @@ void vtkImageLinearPhaseExecute(svkImageLinearPhase *self,
         }
      
       // Call the method that performs the RFFT
-        self->ExecuteLinearPhase(inComplex, outComplex, inSize0);
+      self->ExecuteLinearPhase(inComplex, outComplex, inSize0, phaseArray);
 
       // copy into output
       outPtr0 = outPtr1;
@@ -203,6 +208,7 @@ void vtkImageLinearPhaseExecute(svkImageLinearPhase *self,
     
   delete [] inComplex;
   delete [] outComplex;
+  delete [] phaseArray;
 }
 
 
@@ -252,34 +258,26 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
 }
 
 
-void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N )
+void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N, vtkImageComplex* phaseArray )
 {
+    for( int i=0; i < N; i++ ) {
+        out[i].Real = ( phaseArray[i].Real*in[i].Real - phaseArray[i].Imag*in[i].Imag );
+        out[i].Imag = ( phaseArray[i].Real*in[i].Imag + phaseArray[i].Imag*in[i].Real );
+    }
+
+}
+
+
+void svkImageLinearPhase::CreatePhaseArray(int N, vtkImageComplex* phaseArray) 
+{ 
     int origin = N/2 + 1;
     double phaseIncrement;
-    double oldReal;
-    double newReal;
-    double oldImag;
-    double newImag;
-    double phaseReal;
-    double phaseImag;
     double mult;
     for( int i=0; i < N; i++ ) {
         phaseIncrement = (i - origin)/((double)(N));
-        mult = -2 * vtkMath::Pi() * phaseIncrement * this->shiftWindow;
-        oldReal = in[i].Real;
-        oldImag = in[i].Imag;
-        
-        //phase = exp( j * mult);
-        phaseReal = cos(mult);
-        phaseImag = sin(mult);
-
-        // complex multiplication: (x + yi)(u + vi) = (xu – yv) + (xv + yu)i
-        newReal = ( phaseReal*oldReal - phaseImag*oldImag );
-        newImag = ( phaseReal*oldImag + phaseImag*oldReal );
-
-        out[i].Real = newReal;
-        out[i].Imag = newImag;
-
+        mult = -2 * this->pie * phaseIncrement * this->shiftWindow;
+        phaseArray[i].Real = cos(mult);
+        phaseArray[i].Imag = sin(mult);
     }
 
 }

@@ -166,100 +166,85 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
+    vtkImageData* currentData = NULL;
+    svkImageLinearPhase* prePhaseShifter = svkImageLinearPhase::New();                
+    svkImageLinearPhase* postPhaseShifter = svkImageLinearPhase::New();                
+    svkImageFourierCenter* preIfc = svkImageFourierCenter::New(); 
+    svkImageFourierCenter* postIfc = svkImageFourierCenter::New();
     
+    vtkImageData* pointImage = vtkImageData::New();
     for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
         for( int channel = 0; channel < numChannels; channel++ ) {
             for( int point = 0; point < numberOfPoints; point++ ) {
-                cout << "Executing : point:" << point << " timePt: " << timePt << " channel: " << channel << endl;
-                vtkImageData* currentData = NULL;
-                svkImageLinearPhase* prePhaseShifter = NULL;                
-                svkImageLinearPhase* postPhaseShifter = NULL;                
-                svkImageFourierCenter* preIfc = NULL; 
-                svkImageFourierCenter* postIfc = NULL;
 
-                vtkImageData* pointImage = vtkImageData::New();
                 data->GetImage( pointImage, point, timePt, channel );
-
                 pointImage->Modified();
-                pointImage->Update();
 
                 currentData = pointImage;
 
                 // Lets apply a phase shift....
                 if( this->prePhaseShift != 0 ) {
-                    prePhaseShifter = svkImageLinearPhase::New();                
                     prePhaseShifter->SetShiftWindow( this->prePhaseShift );
                     prePhaseShifter->SetInput( currentData ); 
                     currentData = prePhaseShifter->GetOutput();
-                    currentData->Update();
-                    currentData->Modified();
                 }
 
                 // And correct the center....
                 if( this->preCorrectCenter ) {
-                    preIfc = svkImageFourierCenter::New();
                     preIfc->SetReverseCenter( true );
                     preIfc->SetInput(currentData);
-                    preIfc->Update();
                     currentData = preIfc->GetOutput();
-                    currentData->Update();
-                    currentData->Modified();
                 }
 
+                // Do the Fourier Transfort
                 fourierFilter->SetInput(currentData);
-                fourierFilter->Update();
                 currentData = fourierFilter->GetOutput();
-                currentData->Update();
-                currentData->Modified();
 
+                // And correct the center....
                 if( this->postCorrectCenter ) {
-                    postIfc = svkImageFourierCenter::New();
                     postIfc->SetInput(currentData);
-                    postIfc->Update();
                     currentData = postIfc->GetOutput();
-                    currentData->Update();
-                    currentData->Modified();
                 }
 
+                // Lets apply a phase shift....
                 if( this->postPhaseShift != 0 ) {
-                    postPhaseShifter = svkImageLinearPhase::New();                
                     postPhaseShifter->SetShiftWindow( this->postPhaseShift );
                     postPhaseShifter->SetInput( currentData ); 
                     currentData = postPhaseShifter->GetOutput();
-                    currentData->Update();
-                    currentData->Modified();
                 }
-
+                currentData->Update();
                 data->SetImage( currentData, point, timePt, channel );
-                pointImage->Delete();
-
-                if( preIfc != NULL ) {
-                    preIfc->Delete(); 
-                    preIfc = NULL; 
-                }
-                if( postIfc != NULL ) {
-                    postIfc->Delete(); 
-                    postIfc = NULL; 
-                }
-                if( prePhaseShifter != NULL ) {
-                    prePhaseShifter->Delete(); 
-                    prePhaseShifter = NULL; 
-                }
-                if( postPhaseShifter != NULL ) {
-                    postPhaseShifter->Delete(); 
-                    postPhaseShifter = NULL; 
-                }
             }
         }
     }
+    if( preIfc != NULL ) {
+        preIfc->Delete(); 
+        preIfc = NULL; 
+    }
+    if( postIfc != NULL ) {
+        postIfc->Delete(); 
+        postIfc = NULL; 
+    }
+    if( prePhaseShifter != NULL ) {
+        prePhaseShifter->Delete(); 
+        prePhaseShifter = NULL; 
+    }
+    if( postPhaseShifter != NULL ) {
+        postPhaseShifter->Delete(); 
+        postPhaseShifter = NULL; 
+    }
+    pointImage->Delete();
 
     //  Update the DICOM header to reflect the spectral domain changes:
     if( this->mode == REVERSE ) {
-        string domain("SPATIAL");
-        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+        data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
+        data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
+        data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "SPACE" );
+
     } else {
-        string domain("FREQUENCY");
-        data->GetDcmHeader()->SetValue( "SignalDomainColumns", domain );
+        data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
+        data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
+        data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
     }
 
     //  Trigger observer update via modified event:

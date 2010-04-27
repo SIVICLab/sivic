@@ -263,6 +263,7 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         cmplxDataIn->close(); 
         delete cmplxDataIn;
         delete [] specData; 
+        specData = NULL;
     }
 }
 

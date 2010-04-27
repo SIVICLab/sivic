@@ -93,7 +93,8 @@ class svkImageLinearPhase : public vtkImageFourierFilter
         static svkImageLinearPhase *New();
         vtkTypeRevisionMacro(svkImageLinearPhase,vtkImageFourierFilter);
         void SetShiftWindow( double shiftWindow );
-        void ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N );
+        void ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N, vtkImageComplex* phaseArray );
+        void CreatePhaseArray( int N, vtkImageComplex* phaseArray );
         
     protected:
         svkImageLinearPhase();
@@ -103,6 +104,8 @@ class svkImageLinearPhase : public vtkImageFourierFilter
         void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
                        int outExt[6], int threadId);
         double shiftWindow;
+        vtkImageComplex* phaseArray;
+        double pie;
 };
 
 } // svk

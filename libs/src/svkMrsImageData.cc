@@ -759,20 +759,20 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         vtkDoubleArray* pixelData = vtkDoubleArray::New();
         pixelData->SetNumberOfComponents( 2 );
         pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
+        double* pixels = pixelData->GetPointer(0);
         int linearIndex = 0;
+        int* dims = image->GetDimensions();
         double* tuple;
+        vtkDataArray* spectrum;
         for (int z = Extent[4]; z < Extent[5]; z++) {
             for (int y = Extent[2]; y < Extent[3]; y++) {
                 for (int x = Extent[0]; x < Extent[1]; x++) {
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( 
-                                           this->GetSpectrum( x, y, z, timePoint, channel ) );
+                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
 
-                    linearIndex = ( z * (image->GetDimensions()[0]) * (image->GetDimensions()[1]) ) 
-                                      + ( y * (image->GetDimensions()[1]) ) + x; 
-
+                    linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[1]) ) + x; 
                     tuple = spectrum->GetTuple( point );
-                    pixelData->SetComponent( linearIndex, 0, tuple[0] );
-                    pixelData->SetComponent( linearIndex, 1, tuple[1] );
+                    pixels[2*linearIndex] = tuple[0];
+                    pixels[2*linearIndex+1] = tuple[1];
                 }
             }
         }
@@ -800,13 +800,13 @@ void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, 
         int linearIndex = 0;
         double* value;
         double range[2];
+        vtkDataArray* scalars = image->GetPointData()->GetScalars();
         for (int z = Extent[4]; z < Extent[5]; z++) {
             for (int y = Extent[2]; y < Extent[3]; y++) {
                 for (int x = Extent[0]; x < Extent[1]; x++) {
                     vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-
                     linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
-                    value = image->GetPointData()->GetScalars()->GetTuple2( linearIndex );
+                    value = scalars->GetTuple2( linearIndex );
                     spectrum->SetTuple2( point, value[0], value[1] );
                    
                 }

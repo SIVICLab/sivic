@@ -72,14 +72,14 @@ int main (int argc, char** argv)
     }
 
     // Lets look at the data...
-
+    double range[2];
+/*
     svkPlotGridViewController* plotGridInput = svkPlotGridViewController::New(); 
     vtkRenderWindow* window = vtkRenderWindow::New();
     window->SetSize(800,800);
     plotGridInput->SetRWInteractor( window->MakeRenderWindowInteractor() );
     plotGridInput->SetInput( data, svkPlotGridView::MRS);
     plotGridInput->SetSlice(3);
-    double range[2];
     data->GetDataRange( range, 0 );
     cout << "range: " << range[0] << " " << range[1] << endl;
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
@@ -90,6 +90,7 @@ int main (int argc, char** argv)
 
 
     window->GetInteractor()->Start();
+*/
 
     // Display Input:
 /*
@@ -99,6 +100,7 @@ int main (int argc, char** argv)
     }
 */
     svkImageData* outputData;
+    svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
     cout << "Instantiating the algorithm..." << endl;
     svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
    
@@ -119,13 +121,20 @@ int main (int argc, char** argv)
     outputData->Modified();
     outputData->Update(); 
 
+    writer->SetFileName( "svk_spatial_recon.dcm" );    
+    writer->SetInput( outputData );
+    writer->Write();
+    writer->Delete();
+
     cout << "Now lets visualize the output." << endl;
     outputData->GetDataRange( range, 0 );
     cout << "range: " << range[0] << " " << range[1] << endl;
+/*
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
     plotGridInput->GetView()->Refresh();
     window->Render();
     window->GetInteractor()->Start();
+*/
 
     // Display Spatial Reconstructed
 /*
@@ -151,17 +160,18 @@ int main (int argc, char** argv)
     outputData->Modified();
     outputData->Update(); 
 
-    svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
-    writer->SetFileName( "svk_recon.dcm" );    
+    writer = svkDICOMMRSWriter::New();
+    writer->SetFileName( "svk_full_recon.dcm" );    
     writer->SetInput( outputData );
     writer->Write();
 
-
+/*
     outputData->GetDataRange( range, 0 );
     plotGridInput->SetWindowLevelRange(range[0], range[1], svkPlotGridView::AMPLITUDE);
     plotGridInput->GetView()->Refresh();
     window->Render();
     window->GetInteractor()->Start();
+*/
 
 
     // Display Final Spectra 

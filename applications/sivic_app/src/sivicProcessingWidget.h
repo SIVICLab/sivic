@@ -95,6 +95,7 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         void                        UpdatePhaseSliderBindings();
         bool                        phaseChangeInProgress;
         void                        ExecuteFFT();
+        void                        ExecuteRecon();
         void                        ExecutePhase();
         void                        ExecuteCombine();
 

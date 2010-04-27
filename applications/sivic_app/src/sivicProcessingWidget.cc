@@ -130,7 +130,7 @@ void sivicProcessingWidget::CreateWidget()
     this->fftButton->SetParent( this );
     this->fftButton->Create( );
     this->fftButton->EnabledOff();
-    this->fftButton->SetText( "FFT");
+    this->fftButton->SetText( "Recon");
     this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
 
     this->phaseButton = vtkKWPushButton::New();
@@ -224,7 +224,7 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
     } else if( caller == this->phaseAllVoxelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         this->SetPhaseUpdateExtent();
     } else if( caller == this->fftButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteFFT();
+        this->ExecuteRecon();
     } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
     } else if( caller == this->combineButton && event == vtkKWPushButton::InvokedEvent ) {
@@ -308,6 +308,50 @@ void sivicProcessingWidget::ExecuteFFT()
         this->sivicController->EnableWidgets( );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
+    }
+
+}
+
+
+/*!
+ *  Executes the Recon.
+ */
+void sivicProcessingWidget::ExecuteRecon() 
+{
+    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+    if( data != NULL ) {
+
+        svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
+
+        spatialRFFT->SetInput( data );
+        spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+        spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+        spatialRFFT->SetPreCorrectCenter( true );
+        spatialRFFT->SetPrePhaseShift( -0.5 );
+        spatialRFFT->SetPostCorrectCenter( true );
+        spatialRFFT->SetPostPhaseShift( -0.5 );
+
+        svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
+        spatialRFFT->Update();
+        spectralFFT->SetInput( spatialRFFT->GetOutput() );
+        spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+        spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
+        spectralFFT->Update();
+        data->Modified();
+        data->Update();
+        
+
+        bool useFullFrequencyRange = 1;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 1;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+                                           resetAmplitude, resetFrequency );
+        this->sivicController->EnableWidgets( );
+        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
+        this->plotController->GetView()->Refresh();
+        spatialRFFT->Delete();
+        spectralFFT->Delete();
     }
 
 }
