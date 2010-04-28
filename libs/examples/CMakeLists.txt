@@ -10,8 +10,6 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(testing)
 
-FIND_PACKAGE(KWWidgets REQUIRED)
-INCLUDE(${KWWidgets_USE_FILE})
 
 
 #
@@ -93,7 +91,6 @@ SET(SVK_LIBS
     svkadapt 
     dcmdata
     ofstd 
-    ${KWWidgets_LIBRARIES}
     z
 )
 

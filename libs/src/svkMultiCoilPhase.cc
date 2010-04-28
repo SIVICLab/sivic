@@ -60,6 +60,7 @@ svkMultiCoilPhase::svkMultiCoilPhase()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
     this->phaseAlgo = svkPhaseSpec::New();
+    this->useCenterVoxels = true;
 }
 
 
@@ -106,8 +107,6 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
     svkImageData* data = this->GetImageDataInput(0); 
 
-    int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
-    int numComponents = data->GetCellData()->GetNumberOfComponents();
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
@@ -115,51 +114,84 @@ int svkMultiCoilPhase::RequestData( vtkInformation* request, vtkInformationVecto
     data->GetNumberOfVoxels(numVoxels); 
 
     this->phaseAlgo->SetInput( data );
+    float phase; 
+    int index[3]; 
+    int denominator = numVoxels[2] * numVoxels[0] * numVoxels[1] + numVoxels[1] * numVoxels[0] + numVoxels[0];
+    double progress = 0;
     
+    //svkPhaseSpec* pa = svkPhaseSpec::New();
+    //pa->SetInput(data); 
     for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
+        //pa->SetChannel( coilNum); 
         for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
-            for (int z = 0; z < numVoxels[2]; z++) {
-                for (int y = 0; y < numVoxels[1]; y++) {
-                    for (int x = 0; x < numVoxels[0]; x++) {
+            ostringstream progressStream;
+            progressStream <<"Phasing Time Point " << timePt+1 << "/"
+                           << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
+            this->SetProgressText( progressStream.str().c_str() );
+            if( this->useCenterVoxels ) {
+                phase = this->CalculateCenterPhase( timePt, coilNum );
+            }
+            if( !this->useCenterVoxels ) {
+                for (int z = 0; z < numVoxels[2]; z++) {
+                    for (int y = 0; y < numVoxels[1]; y++) {
+                        for (int x = 0; x < numVoxels[0]; x++) {
+                            progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ) + x )
+                                       /((double)denominator);
+                            this->UpdateProgress( progress );
 
-                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
 
-                        int h2oPeakPos = this->FindMagnitudeSpecPeak( spectrum ); 
+                             vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                                              svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
+                             int h2oPeakPos = this->FindMagnitudeSpecPeak( spectrum ); 
 
-                        //  Need to implement dynamic peak width determiniation.   hardcode for now: 
-                        float phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 ); 
+                              //  Need to implement dynamic peak width determiniation.   hardcode for now: 
+                              phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 ); 
+                            //cout << "PEAK MAX PT: " << x << " " << y << " " << z << " " << coilNum << " -> " 
+                            ////        << h2oPeakPos << " Phase: " << phase << endl; 
 
-                        //cout << "PEAK MAX PT: " << x << " " << y << " " << z << " " << coilNum << " -> " 
-                        ////        << h2oPeakPos << " Phase: " << phase << endl; 
-
-                        //  Apply algo to data from reader:
-                        int index[3]; 
-                        index[0] = x; 
-                        index[1] = y; 
-                        index[2] = z; 
+                            //  Apply algo to data from reader:
+                            svkPhaseSpec* pa = svkPhaseSpec::New();
+                            pa->SetInput(data); 
+                            pa->SetChannel( coilNum); 
+                            index[0] = x; 
+                            index[1] = y; 
+                            index[2] = z; 
+                            pa->SetUpdateExtent(index, index); 
+                            pa->SetPhase0( phase ); 
+                            pa->Update( ); 
+                            pa->GetOutput()->Modified();
+                            data->Update();
+                            pa->Delete(); 
     
-                        svkPhaseSpec* pa = svkPhaseSpec::New();
-                        pa->SetInput(data); 
-                        pa->SetUpdateExtent(index, index); 
-                        pa->SetChannel( coilNum); 
-                        pa->SetPhase0( phase ); 
-                        pa->Update( ); 
-                        pa->Delete(); 
-    
-                        // SetPhase is relative to the previous value.  Probably need to add a SetPhase, vs 
-                        // SetAbsolutePhase method to get this to work in this context. otherwise adjacent
-                        //  voxels only get a relative phase applied. 
-                        //this->phaseAlgo->SetUpdateExtent( index, index );
-                        //this->phaseAlgo->SetChannel( coilNum);
-                        //this->phaseAlgo->SetPhase0( 0. );
-                        //this->phaseAlgo->SetPhase0( phase );
-                        //this->phaseAlgo->Update();
+                            // SetPhase is relative to the previous value.  Probably need to add a SetPhase, vs 
+                            // SetAbsolutePhase method to get this to work in this context. otherwise adjacent
+                            //  voxels only get a relative phase applied. 
+                            //this->phaseAlgo->SetUpdateExtent( index, index );
+                            //this->phaseAlgo->SetChannel( coilNum);
+                            //this->phaseAlgo->SetPhase0( 0. );
+                            //this->phaseAlgo->SetPhase0( phase );
+                            //this->phaseAlgo->Update();
+                        }
                     }
                 }
+            } else {
+                svkPhaseSpec* pa = svkPhaseSpec::New();
+                pa->SetInput(data); 
+                pa->SetChannel( coilNum ); 
+                index[0] = numVoxels[0]-1; 
+                index[1] = numVoxels[1]-1; 
+                index[2] = numVoxels[2]-1; 
+                int start[3] = {0,0,0};
+                pa->SetUpdateExtent(start, index); 
+                pa->SetPhase0( phase ); 
+                pa->Update( ); 
+                pa->GetOutput()->Modified();
+                data->Update();
+                pa->Delete(); 
             }
         }
     }
+    //pa->Delete(); 
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -205,6 +237,38 @@ int svkMultiCoilPhase::FindMagnitudeSpecPeak( vtkFloatArray* spectrum, int smoot
     return peakPtPos;
 }
 
+
+/*!
+ *  Finds the average phase of the center 8 voxels.
+ */
+float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum ) 
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+
+    int numCoils = data->GetNumberOfChannels();
+    int numTimePts = data->GetNumberOfTimePoints();
+
+    int numVoxels[3];
+    data->GetNumberOfVoxels(numVoxels);
+    float phaseTotal = 0;
+    
+    for (int z = numVoxels[2]/2-1; z <= numVoxels[2]/2; z++) {
+        for (int y = numVoxels[1]/2-1; y <= numVoxels[1]/2; y++) {
+            for (int x = numVoxels[0]/2-1; x <= numVoxels[0]/2; x++) {
+
+                vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                                    svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
+
+                int h2oPeakPos = this->FindMagnitudeSpecPeak( spectrum );
+
+                //  Need to implement dynamic peak width determiniation.   hardcode for now: 
+                float phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 );
+                phaseTotal += phase;
+            }
+        }
+    }
+    return phaseTotal/8.0;
+}
 
 /*!
  *  Returns the phase of the peak at the specified position determined by

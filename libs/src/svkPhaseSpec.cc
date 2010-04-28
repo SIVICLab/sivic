@@ -138,7 +138,7 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
 
-    svkImageData* data = this->GetImageDataInput(0); 
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
     //  Extent initially, and catch up with invisible extents after rerendering (modified update).    
     int spatialDims[3]; 
@@ -149,12 +149,12 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
   
     vtkCellData* cellData = data->GetCellData();   
     int numFrequencyPoints = cellData->GetNumberOfTuples();
-    int numComponents = cellData->GetNumberOfComponents();
-    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    int numChannels  = data->GetNumberOfChannels();
+    int numTimePts = data->GetNumberOfTimePoints();
 
     float re;
     float im;
+    float* specPtr;
 
     int firstChannel = 0; 
     int lastChannel = numChannels; 
@@ -169,20 +169,20 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
             for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
                 for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
                     for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
-                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
+                        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
+                        specPtr = spectrum->GetPointer(0); 
 
                         //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
                         for (int i = 0; i < numFrequencyPoints; i++) {
 
-                            spectrum->GetTupleValue(i, this->cmplxSpec);
+                            //spectrum->GetTupleValue(i, this->cmplxSpec);
 
-                            re = (this->cmplxSpec)[0] * cosPhase - (this->cmplxSpec)[1] * sinPhase;
-                            im = (this->cmplxSpec)[0] * sinPhase + (this->cmplxSpec)[1] * cosPhase;
-                            (this->cmplxSpec)[0] = re; 
-                            (this->cmplxSpec)[1] = im; 
+                            re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
+                            im = specPtr[2*i] * sinPhase + specPtr[2*i+1] * cosPhase;
+                            specPtr[2*i] = re; 
+                            specPtr[2*i+1] = im; 
 
-                            spectrum->SetTuple( i, this->cmplxSpec );
+                            //spectrum->SetTuple( i, this->cmplxSpec );
 
                         }
                     }

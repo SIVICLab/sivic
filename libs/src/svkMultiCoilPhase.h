@@ -75,6 +75,7 @@ class svkMultiCoilPhase : public svkImageInPlaceFilter
         vtkTypeRevisionMacro( svkMultiCoilPhase, svkImageInPlaceFilter);
 
         float   PhaseBySymmetry( vtkFloatArray* spectrum, int peakMaxPtIn, int peakStartPtIn, int peakStopPtIn); 
+        float   CalculateCenterPhase( int timePt, int coilNum );
 
 
 
@@ -103,6 +104,7 @@ class svkMultiCoilPhase : public svkImageInPlaceFilter
 
         int             FindMagnitudeSpecPeak( vtkFloatArray* spectrum, int smoothSize = 0 ); 
         svkPhaseSpec*   phaseAlgo; 
+        bool            useCenterVoxels;
 
 };
 

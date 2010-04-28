@@ -64,6 +64,10 @@ vtkSivicController::vtkSivicController()
     this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
     this->secondaryCaptureFormatter->SetDetailedPlotController( this->detailedPlotController );
     this->secondaryCaptureFormatter->SetSivicController( this );
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgress );
+    this->progressCallback->SetClientData( (void*)this );
+
     
 }
 
@@ -363,6 +367,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename );
+    model->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+
 
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -2246,3 +2252,12 @@ void vtkSivicController::RunTestingSuite()
     sivicTestSuite* suite = new sivicTestSuite( this );
     suite->RunTests();
 }
+
+void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
+    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+                  static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
+
+}
+

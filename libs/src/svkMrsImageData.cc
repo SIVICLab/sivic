@@ -769,7 +769,7 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
                 for (int x = Extent[0]; x < Extent[1]; x++) {
                     spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
 
-                    linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[1]) ) + x; 
+                    linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[0]) ) + x; 
                     tuple = spectrum->GetTuple( point );
                     pixels[2*linearIndex] = tuple[0];
                     pixels[2*linearIndex+1] = tuple[1];
@@ -781,7 +781,55 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         pixelData->Delete();
     }
 }
+/*
+void  svkMrsImageData::GetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
+{
+    if( imageCollection != NULL ) {
+        // Setup image dimensions
+        imageCollection->RemoveAllItems();
+        int* dims = this->GetDimensions();
 
+        // Create a float array to hold the pixel data
+        int linearIndex = 0;
+        int* dims;
+        double* tuple;
+        double* pixels;
+        vtkDataArray* spectrum;
+        vtkImageData* image;
+        vtkDoubleArray* pixelData;
+        int numPoints = this->GetCellData()->GetArray(0)->GetNumberOfTuples();
+        for (int z = Extent[4]; z < Extent[5]; z++) {
+            for (int y = Extent[2]; y < Extent[3]; y++) {
+                for (int x = Extent[0]; x < Extent[1]; x++) {
+                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
+                    image = vtkImageData::New();
+                    image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+                    image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
+                    image->SetScalarTypeToDouble( );
+                    dims = image->GetDimensions();
+                    pixelData = vtkDoubleArray::New();
+                    pixelData->SetNumberOfComponents( 2 );
+                    pixelData->SetNumberOfTuples( (dims[0])*(dims[1])*(dims[2]) );
+                    pixels = pixelData->GetPointer(0);
+
+                    for( int point = 0; point < numPoints; point++ ) {
+                        linearIndex = i + j * (dims[0]-1) + k * (dims[0]-1) * (dims[1]-1);
+                        tuple = spectrum->GetTuple( point );
+                        pixels[2*linearIndex] = tuple[0];
+                        pixels[2*linearIndex+1] = tuple[1];
+                    }
+
+                    image->GetPointData()->SetScalars( pixelData );
+                    image->SetNumberOfScalarComponents(2);
+                    imageCollection->AddItem( image );
+                    image->Delete();
+                    pixelData->Delete();
+                }
+            }
+        }
+    }
+}
+*/
 
 /*!
  *   Method will set a spectral point from a vtkImageData object representing
@@ -814,3 +862,29 @@ void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, 
         }
     }
 }
+
+/*
+void  svkMrsImageData::SetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
+{
+    if( image != NULL ) {
+        int linearIndex = 0;
+        double* value;
+        double range[2];
+        int numPoints = this->GetCellData()->GetArray(0)->GetNumberOfTuples();
+        vtkDataArray* scalars = image->GetPointData()->GetScalars();
+        for (int z = Extent[4]; z < Extent[5]; z++) {
+            for (int y = Extent[2]; y < Extent[3]; y++) {
+                for (int x = Extent[0]; x < Extent[1]; x++) {
+                    vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
+                    for( int point = 0; point < numPoints; point++ ) {
+                        linearIndex = x + y * (dims[0]-1) + z * (dims[0]-1) * (dims[1]-1);
+                        value = scalars->GetTuple2( linearIndex );
+                        spectrum->SetTuple2( point, value[0], value[1] );
+                    }
+                   
+                }
+            }
+        }
+    }
+}
+*/

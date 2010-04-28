@@ -65,15 +65,16 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+/*
     svkPlotGridViewController* plotGridInput = svkPlotGridViewController::New(); 
     vtkRenderWindow* window = vtkRenderWindow::New();
     plotGridInput->SetRWInteractor( window->MakeRenderWindowInteractor() );
-/*
     plotGridInput->SetInput( data, svkPlotGridView::MRS);
     plotGridInput->SetSlice(3);
     plotGridInput->SetWindowLevelRange(-10000000, 26000000, svkPlotGridView::AMPLITUDE);
     window->GetInteractor()->Start();
 */   
+    data->Update();
     svkMultiCoilPhase* mcPhase = svkMultiCoilPhase::New();
     mcPhase->SetInput( data );
     cout << "UPDATE IT: " << endl;
@@ -81,7 +82,7 @@ int main (int argc, char** argv)
     
     svkImageData* outputData = mcPhase->GetOutput();
     outputData->Update(); 
-
+/*
     plotGridInput->SetInput( data, svkPlotGridView::MRS);
     plotGridInput->SetSlice(3);
     plotGridInput->SetComponent(svkPlotLine::MAGNITUDE);
@@ -97,6 +98,7 @@ int main (int argc, char** argv)
 
     writer->Delete();
     writerFactory->Delete();
+*/
      
     return 0; 
 }

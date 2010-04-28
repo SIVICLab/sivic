@@ -91,6 +91,8 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
     private:
 
         svkPhaseSpec*               phaser;
+        vtkCallbackCommand*         progressCallback;
+
         void                        SetPhaseUpdateExtent();
         void                        UpdatePhaseSliderBindings();
         bool                        phaseChangeInProgress;
@@ -98,6 +100,7 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         void                        ExecuteRecon();
         void                        ExecutePhase();
         void                        ExecuteCombine();
+        static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 
 

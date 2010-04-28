@@ -189,7 +189,8 @@ class vtkSivicController : public vtkObject
         //svkInspectingWidget*        inspectingWidget;
          
     private:
-    
+        static void                    UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        vtkCallbackCommand*            progressCallback;
         string                         thresholdType;
         string                         orientation; 
         svkDataModel*                  model; 

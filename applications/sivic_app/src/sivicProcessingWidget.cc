@@ -27,6 +27,10 @@ sivicProcessingWidget::sivicProcessingWidget()
     this->phaseButton = NULL;
     this->combineButton = NULL;
     this->phaseChangeInProgress = 0;
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgress );
+    this->progressCallback->SetClientData( (void*)this );
+
 
 }
 
@@ -330,28 +334,36 @@ void sivicProcessingWidget::ExecuteRecon()
         spatialRFFT->SetPrePhaseShift( -0.5 );
         spatialRFFT->SetPostCorrectCenter( true );
         spatialRFFT->SetPostPhaseShift( -0.5 );
+        spatialRFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Spatial Recon...");
+        spatialRFFT->Update();
+        spatialRFFT->RemoveObserver( progressCallback );
 
         svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
-        spatialRFFT->Update();
+        spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
         spectralFFT->SetInput( spatialRFFT->GetOutput() );
         spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
         spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
         spectralFFT->Update();
         data->Modified();
         data->Update();
+        spectralFFT->RemoveObserver( progressCallback);
         
 
         bool useFullFrequencyRange = 1;
         bool useFullAmplitudeRange = 1;
         bool resetAmplitude = 1;
         bool resetFrequency = 1;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
+        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+        //                                   resetAmplitude, resetFrequency );
         this->sivicController->EnableWidgets( );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
         spatialRFFT->Delete();
         spectralFFT->Delete();
+        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
+        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
     }
 
 }
@@ -367,18 +379,22 @@ void sivicProcessingWidget::ExecutePhase()
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
         svkMultiCoilPhase* multiCoilPhase = svkMultiCoilPhase::New();
+        multiCoilPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         multiCoilPhase->SetInput( data );
         multiCoilPhase->Update();
         data->Modified();
+        multiCoilPhase->RemoveObserver( progressCallback);
         multiCoilPhase->Delete();
         bool useFullFrequencyRange = 0;
         bool useFullAmplitudeRange = 1;
         bool resetAmplitude = 1;
         bool resetFrequency = 0;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
+        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+        //                                   resetAmplitude, resetFrequency );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
+        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
+        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
     }
 }
 
@@ -409,3 +425,13 @@ void sivicProcessingWidget::ExecuteCombine()
         this->plotController->GetView()->Refresh();
     }
 }
+
+
+void sivicProcessingWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
+    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+                  static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
+
+}
+

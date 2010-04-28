@@ -171,12 +171,20 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     svkImageLinearPhase* postPhaseShifter = svkImageLinearPhase::New();                
     svkImageFourierCenter* preIfc = svkImageFourierCenter::New(); 
     svkImageFourierCenter* postIfc = svkImageFourierCenter::New();
+    double progress = 0;
     
     vtkImageData* pointImage = vtkImageData::New();
     for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
         for( int channel = 0; channel < numChannels; channel++ ) {
+            ostringstream progressStream;
+            progressStream <<"Executing Spatial Recon for Time Point " << timePt+1 << "/"
+                           << numTimePoints << " and Channel: " << channel+1 << "/" << numChannels;
+            this->SetProgressText( progressStream.str().c_str() );
             for( int point = 0; point < numberOfPoints; point++ ) {
-
+                if( point%16==0 ) {
+                    progress = (point+1)/((double)numberOfPoints);
+                    this->UpdateProgress( progress );
+                }
                 data->GetImage( pointImage, point, timePt, channel );
                 pointImage->Modified();
 
@@ -269,15 +277,26 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     spatialDims[0] -= 1;
     spatialDims[1] -= 1;
     spatialDims[2] -= 1;
-  
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    double progress = 0;
+    int ranges[3];
+    ranges[0] = this->updateExtent[1]-this->updateExtent[0]+1;
+    ranges[1] = this->updateExtent[3]-this->updateExtent[2]+1;
+    ranges[2] = this->updateExtent[5]-this->updateExtent[4]+1;
+    int denominator = ranges[2] * ranges[0] * ranges[1] + ranges[1] * ranges[0] + ranges[0];
 
     for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
         for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
+            ostringstream progressStream;
+            progressStream <<"Executing FFT for Time Point " << timePt+1 << "/"
+                           << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
+            this->SetProgressText( progressStream.str().c_str() );
             for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
+                progress = (((z-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
+                this->UpdateProgress( progress );
                 for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
                     for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
 
