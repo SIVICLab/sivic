@@ -65,7 +65,25 @@ using namespace std;
 
 
 /*! 
- *  Reader for GE P-files 
+ *  ############################## 
+ *  BETA RELEASE!!!!!  DEV DEV DEV
+ *  ############################## 
+ *
+ *  This is an svkImareReader2 for reading GE P-files.  
+ *  The reader supports 9.x - 20.x raw file versions.  The reader
+ *  reads fields from GE P-files, putting the content into a string map.
+ *  The reader then obtains a svkGEPFileMapper for the specific PSD in order to map 
+ *  that content to an svkMrsImageData object (and svkDcmHeader representing 
+ *  a DICOM MR Spectroscopy SOP Class UID).  The mapping will depend on the
+ *  specific psd context, for example because of variability in meaning of 
+ *  user cvs.  
+ *  
+ *  A mapper factory will ultimatly be developed to obtain the appropriate svkPFileMapper
+ *  for a given Pfile.  
+ *       
+ *  Thanks to Mike Figueira of GE Medical for helful discussions about the class design. 
+ *  Many thanks also to Sanjay Joshi( GE Medical recon ), Mike Figueira (GEMS) and Katie McMillan (GEMS) 
+ *  for their help making this possible.   
  */
 class svkGEPFileReader : public svkImageReader2 
 {
