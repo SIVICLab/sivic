@@ -257,15 +257,6 @@ svkImageData* svkDataModel::LoadFile( string fileName )
 
     if (reader != NULL) {
 
-        size_t pos = fileName.find(".");
-        if (pos == string::npos) {
-            fileName.append("_1.ddf");
-            size_t found; 
-            found = fileName.find_last_of("/\\");
-            fileName = fileName.substr(found+1);
-            cout << "it's a ddf from RAW FILE: " << fileName << endl;
-        }
-
         reader->SetFileName( fileName.c_str() );
         reader->Update();
     

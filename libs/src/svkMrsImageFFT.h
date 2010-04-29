@@ -143,6 +143,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
 
 
     private:
+
         bool            preCorrectCenter;
         bool            postCorrectCenter;
         double          prePhaseShift[3];
@@ -150,6 +151,9 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         int             updateExtent[6]; 
         FFTDomain       domain; 
         FFTMode         mode; 
+
+        int             UpdateOrigin(); 
+
 
 };
 

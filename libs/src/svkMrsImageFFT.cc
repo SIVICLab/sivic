@@ -256,17 +256,68 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "SPACE" );
-
     } else {
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
     }
 
+    //  Update Origin and Per Frame Functional Groups for voxel shift:
+    this->UpdateOrigin(); 
+
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
     return 1; 
+}
+
+
+/*! 
+ *  Given a fractional voxel shift (prePhaseShift)  along each of the axes, 
+ *  calculate a new TOPLC and reset the PerFrameFunctionalGroups:
+ */
+int svkMrsImageFFT::UpdateOrigin() 
+{
+
+    svkImageData* data = this->GetImageDataInput(0);
+
+    int numSlices = data->GetDcmHeader()->GetNumberOfSlices();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    double dcos[3][3]; 
+    data->GetDcmHeader()->GetDataDcos( dcos ); 
+
+    double pixelSpacing[3]; 
+    data->GetDcmHeader()->GetPixelSpacing( pixelSpacing ); 
+
+    double toplc[3]; 
+    data->GetDcmHeader()->GetOrigin( toplc, 0 ); 
+
+    //  Calculate new toplc
+    //  This is so far specific to GE RECON which has 1/2 voxel shift by default
+    double shift[3]; 
+    for (int i = 0; i < 3; i++ ){
+        shift[i] = this->prePhaseShift[i] + 0.5; 
+        for(int j = 0; j < 3; j++ ){
+            toplc[i] -= ( dcos[j][i] * shift[j] * pixelSpacing[j] );
+        }
+    }
+
+    data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSpacing, dcos, numSlices, numTimePts, numCoils 
+    );
+    data->GetDcmHeader()->PrintDcmHeader(); 
+
+    //  Now displace by 1/2 voxel to get Cell corner for svkImageDataOrigin:
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            toplc[i] -= ( pixelSpacing[j]/2 ) * dcos[j][i];
+        }
+    }
+cout << *data << endl;
+    data->SetOrigin( toplc );
+cout << *data << endl;
+
 }
 
 
