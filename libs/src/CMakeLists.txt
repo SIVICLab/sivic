@@ -108,6 +108,8 @@ ADD_LIBRARY(
     svkImageReaderFactory.cc
     svkImageReader2.cc
     svkSiemensRdaReader.cc
+    svkGEPFileReader.cc
+    svkGEPFileMapper.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
     svkSdbmVolumeReader.cc

@@ -55,6 +55,7 @@
 #include <svkVarianFidReader.h>
 #include <svkSdbmVolumeReader.h>
 #include <svkSiemensRdaReader.h>
+#include <svkGEPFileReader.h>
 
 
 namespace svk {
@@ -96,6 +97,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkVarianFidReader*    fidVolReader;
         svkSdbmVolumeReader*   sdbmVolReader;
         svkSiemensRdaReader*   rdaVolReader;
+        svkGEPFileReader*      gePFileReader;
 
 };
 

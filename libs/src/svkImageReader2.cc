@@ -167,12 +167,16 @@ string svkImageReader2::StripWhite(string in)
     }
 
     //  Remove trailing spaces:
-    while (lastWhite = stripped_leading.find_last_of(" \t") != string::npos && (lastWhite = stripped_leading.find_last_of(" \t")) == stripped.length() ) {
+    lastWhite = stripped_leading.find_last_of(" \t");
+    while ( (lastWhite != string::npos) && (lastWhite  == stripped_leading.length() - 1) ) {
         stripped_leading.assign( stripped_leading.substr(0, lastWhite) );
+        lastWhite = stripped_leading.find_last_of(" \t");
     }
+
     stripped = stripped_leading;
 
     return stripped;
+
 }
 
 
