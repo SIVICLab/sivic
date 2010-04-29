@@ -306,7 +306,6 @@ int svkMrsImageFFT::UpdateOrigin()
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSpacing, dcos, numSlices, numTimePts, numCoils 
     );
-    data->GetDcmHeader()->PrintDcmHeader(); 
 
     //  Now displace by 1/2 voxel to get Cell corner for svkImageDataOrigin:
     for (int i = 0; i < 3; i++) {
@@ -314,9 +313,7 @@ int svkMrsImageFFT::UpdateOrigin()
             toplc[i] -= ( pixelSpacing[j]/2 ) * dcos[j][i];
         }
     }
-cout << *data << endl;
     data->SetOrigin( toplc );
-cout << *data << endl;
 
 }
 
