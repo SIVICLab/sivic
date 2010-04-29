@@ -169,7 +169,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
             plotGrid->AlignCamera(); 
-            this->plotGrid->plotGridActor->GetProperty()->SetLineWidth( 2 );
+            //this->plotGrid->plotGridActor->GetProperty()->SetLineWidth( 2 );
             this->GeneratePlotGridActor();
             this->HighlightSelectionVoxels();
             this->SetSlice( slice );
@@ -190,6 +190,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             }
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
             this->TurnPropOn( svkPlotGridView::PLOT_LINES );
+            this->SetOrientation( this->orientation );
 
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
