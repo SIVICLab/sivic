@@ -52,6 +52,7 @@
 #include <vtkImageData.h>
 #include <vtkObjectFactory.h>
 #include <vtkImageFlip.h>
+#include <vtkCallbackCommand.h>
 #include <svkImageReaderFactory.h>
 
 #include <vtkImageViewer2.h>
@@ -60,6 +61,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkCamera.h>
 #include <vtkImageActor.h>
+#include <vtkAlgorithm.h>
 #include <vtkImageReader2.h>
 
 
@@ -120,6 +122,8 @@ class svkDataModel : public vtkObject
         // Existence checks for objects and states
         virtual bool            DataExists( string objectName );
         virtual bool            StateExists( string stateName );
+        string                  GetProgressText( );
+        void                    SetProgressText( string progressText );
     
 
     private:
@@ -131,6 +135,8 @@ class svkDataModel : public vtkObject
          */
         map<string, svkImageData*> allDataObjectsByKeyName;
         map<string, string       > allDataFileNamesByKeyName;
+        static void UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        void UpdateProgress(double amount);
 
 
         /*! 
@@ -142,7 +148,9 @@ class svkDataModel : public vtkObject
         svkImageReader2* reader;
 
         svkImageData* data;
-        //string progressText;
+    
+        string progressText;
+        vtkCallbackCommand* progressCallback;
 
 };
 

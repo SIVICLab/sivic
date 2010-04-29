@@ -65,6 +65,10 @@ svkGEPFileReader::svkGEPFileReader()
 
     this->gepf= NULL; 
     this->mapper = NULL; 
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgressCallback );
+    this->progressCallback->SetClientData( (void*)this );
+
 }
 
 
@@ -86,6 +90,11 @@ svkGEPFileReader::~svkGEPFileReader()
         mapper->Delete();
         this->mapper = NULL;
     }
+    if( this->progressCallback != NULL ) {
+        this->progressCallback->Delete();
+        this->progressCallback = NULL;
+    }
+
 }
 
 
@@ -183,7 +192,10 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
     vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
+    this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+
     this->mapper->ReadData(this->GetFileName(), data);
+    this->mapper->RemoveObserver(progressCallback);
 
     //  Set the orientation in the svkImageData object, synchronized from the dcm header:
     double dcos[3][3];
@@ -1659,3 +1671,13 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
 
 }
 
+
+/*!
+ *
+ */
+void svkGEPFileReader::UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    static_cast<svkGEPFileReader*>(thisObject)->SetProgressText( ( static_cast<svkGEPFileMapper*>(subject)->GetProgressText()).c_str() );
+    static_cast<svkGEPFileReader*>(thisObject)->UpdateProgress(*(double*)(callData));
+
+}

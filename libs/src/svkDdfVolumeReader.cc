@@ -249,13 +249,25 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 #if defined (linux) || defined(Darwin)
         svkByteSwap::SwapBufferEndianness(this->specData, numBytesInVol/4);
 #endif
+        int numVoxels[3] = { this->GetDataExtent()[1], this->GetDataExtent()[3], this->GetDataExtent()[5] }; 
+        int denominator = numVoxels[2] * numVoxels[1]  * numVoxels[0] + numVoxels[1]*numVoxels[0] + numVoxels[0];
+        double progress = 0;
+
 
         for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
+            ostringstream progressStream;
+            progressStream <<"Reading Time Point " << timePt+1 << "/"
+                           << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
+            this->SetProgressText( progressStream.str().c_str() );
             for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
                 for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
+
                     for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
                         SetCellSpectrum(data, x, y, z, timePt, coilNum);
                     }
+                    progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
+                                       /((double)denominator);
+                    this->UpdateProgress( progress );
                 }
             }
         }

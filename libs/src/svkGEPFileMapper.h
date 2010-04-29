@@ -53,6 +53,7 @@
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkDebugLeaks.h>
+#include <vtkCallbackCommand.h>
 
 #include <svkDcmHeader.h>
 #include <svkByteSwap.h>
@@ -84,6 +85,9 @@ class svkGEPFileMapper : public vtkObject
                             float pfileVersion
                         );
         void            ReadData( string pFileName, vtkImageData* data );
+        string          GetProgressText( );
+        void            SetProgressText( string progressText );
+
 
 
     protected:
@@ -133,6 +137,8 @@ class svkGEPFileMapper : public vtkObject
         bool            IsSwapOn(); 
         bool            Is2D(); 
         bool            IsChopOn(); 
+        void            UpdateProgress(double amount);
+
 
         void            SetCellSpectrum( 
                             vtkImageData* data, 
@@ -146,7 +152,9 @@ class svkGEPFileMapper : public vtkObject
         float           GetHeaderValueAsFloat(string key);
         string          GetHeaderValueAsString(string key);
 
+        string          progressText;
 
+        vtkCallbackCommand*                     progressCallback;
         map <string, vector< string > >         pfMap;
         svkDcmHeader*                           dcmHeader; 
         float                                   pfileVersion; 

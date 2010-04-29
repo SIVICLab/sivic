@@ -1148,6 +1148,7 @@ void svkImageData::GetDataRange( double range[2], int component )
 {
     if ( this->WasModified() ) {
         this->UpdateSvkParams();
+        this->UpdateRange( component );
     }
 
     range[0] = this->range[component][0];
@@ -1679,14 +1680,13 @@ void svkImageData::GetImageCenter( double* posLPS)
 void svkImageData::UpdateSvkParams()
 {
     this->lastUpdateTime = this->GetMTime();
-    this->UpdateRange();
 }
 
 
 /*! 
  *
  */     
-void svkImageData::UpdateRange()
+void svkImageData::UpdateRange( int component )
 {
 }
 

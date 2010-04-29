@@ -64,6 +64,7 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
+
 }
 
 
@@ -73,6 +74,11 @@ svkGEPFileMapper::svkGEPFileMapper()
 svkGEPFileMapper::~svkGEPFileMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+    if( this->progressCallback != NULL ) {
+        this->progressCallback->Delete();
+        this->progressCallback = NULL;
+    }
+
 }
 
 
@@ -2165,12 +2171,20 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
     if ( IsChopOn() ) {
         this->chopVal = -1; 
     }
+    int denominator = numVoxels[2] * numVoxels[1]  * numVoxels[0] + numVoxels[1]*numVoxels[0] + numVoxels[0];
+    double progress = 0;
+
 
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
 
         offset += dummyOffset;  
 
         for (int timePt = 0; timePt < numTimePts; timePt++) {
+            ostringstream progressStream;
+            progressStream <<"Reading Time Point " << timePt+1 << "/"
+                           << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
+            this->SetProgressText( progressStream.str().c_str() );
+
             for (int z = 0; z < numVoxels[2] ; z++) {
                 for (int y = 0; y < numVoxels[1]; y++) {
                     for (int x = 0; x < numVoxels[0]; x++) {
@@ -2179,6 +2193,10 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
                         offset += numPtsPerSpectrum; 
 
                     }
+                    progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
+                                       /((double)denominator);
+                    this->UpdateProgress( progress );
+
                 }
             }
         }
@@ -2240,3 +2258,20 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int x, in
     return;
 }
 
+
+void svkGEPFileMapper::SetProgressText( string progressText )
+{
+    this->progressText = progressText;
+}
+
+
+string svkGEPFileMapper::GetProgressText( )
+{
+    return this->progressText;
+}
+
+
+void svkGEPFileMapper::UpdateProgress(double amount)
+{
+    this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+}

@@ -267,7 +267,7 @@ class svkImageData: public vtkImageData
         double                          range[3][2];
         bool                            WasModified();
         virtual void                    UpdateSvkParams();
-        virtual void                    UpdateRange();
+        virtual void                    UpdateRange( int component );
 
     
     private:

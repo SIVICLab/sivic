@@ -47,6 +47,7 @@
 #include <vtkGlobFileNames.h>
 #include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
+#include <vtkCallbackCommand.h>
 
 #include <svkImageReader2.h>
 #include <svkIOD.h>
@@ -95,6 +96,7 @@ class svkGEPFileReader : public svkImageReader2
         virtual int         CanReadFile( const char* fname );
 
 
+
     protected:
 
         svkGEPFileReader();
@@ -127,6 +129,10 @@ class svkGEPFileReader : public svkImageReader2
         ifstream*           gepf;
         svkGEPFileMapper*   mapper;
         float               pfileVersion;
+        static void         UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        vtkCallbackCommand* progressCallback;
+
+
 
 };
 

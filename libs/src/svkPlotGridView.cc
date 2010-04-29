@@ -169,6 +169,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
             plotGrid->AlignCamera(); 
+            this->plotGrid->plotGridActor->GetProperty()->SetLineWidth( 2 );
             this->GeneratePlotGridActor();
             this->HighlightSelectionVoxels();
             this->SetSlice( slice );
@@ -707,12 +708,12 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
     } 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
     this->plotGrid->plotGridActor->GetProperty()->SetColor( foregroundColor );
-   
+
     if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         vtkLabeledDataMapper::SafeDownCast( 
-                            vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
-                            ->GetLabelTextProperty()->SetColor(textColor);
+                vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
+            ->GetLabelTextProperty()->SetColor(textColor);
     }
 }
 

@@ -57,6 +57,9 @@ vtkStandardNewMacro(svkDataModel);
 svkDataModel::svkDataModel()
 {
     reader = NULL;
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgressCallback );
+    this->progressCallback->SetClientData( (void*)this );
 }
 
 
@@ -73,6 +76,10 @@ svkDataModel::~svkDataModel()
     if( reader != NULL ) {
         reader->Delete();
         reader = NULL;
+    }
+    if( this->progressCallback != NULL ) {
+        this->progressCallback->Delete();
+        this->progressCallback = NULL;
     }
 }
 
@@ -256,12 +263,13 @@ svkImageData* svkDataModel::LoadFile( string fileName )
     readerFactory->Delete();
 
     if (reader != NULL) {
-
+        reader->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         reader->SetFileName( fileName.c_str() );
         reader->Update();
     
         myData = reader->GetOutput();
 
+        reader->RemoveObserver(progressCallback);
     } else {
     
         vtkWarningWithObjectMacro( this, "Can not find appropriate reader for " << fileName );   
@@ -440,20 +448,27 @@ bool svkDataModel::StateExists( string stateName )
     }
 }
 
-/*
+void svkDataModel::SetProgressText( string progressText ) 
+{
+    this->progressText = progressText;
+}
+
+string svkDataModel::GetProgressText( ) 
+{
+    return this->progressText;
+}
+
 void svkDataModel::UpdateProgress(double amount)
 {
-  this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+    this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
 }   
 
-void svkDataModel::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+void svkDataModel::UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
-    this->InvokeEvent(vtkCommand::ProgressEvent,callData);
-    //static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
-    //static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
-    //              static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
-    this->progressText = static_cast<vtkAlgorithm*>(subject)->GetProgressText() 
+    if( vtkAlgorithm::SafeDownCast(subject)->GetProgressText() != NULL ) {
+        static_cast<svkDataModel*>(thisObject)->SetProgressText( string( static_cast<vtkAlgorithm*>(subject)->GetProgressText()) );
+    }
+    static_cast<svkDataModel*>(thisObject)->UpdateProgress(*(double*)(callData)); 
 
 }
-*/
 

@@ -296,7 +296,7 @@ vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, 
  *  Makes sure the range gets updated when the object is modified. It searches all arrays for each
  *  component to determine maximum and minimums
  */     
-void svkMrsImageData::UpdateRange()
+void svkMrsImageData::UpdateRange( int component )
 {
     int* extent = this->GetExtent(); 
     double realRange[2];
@@ -311,32 +311,37 @@ void svkMrsImageData::UpdateRange()
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = this->GetDcmHeader()->GetNumberOfTimePoints();
     int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
-    double* tuple;
+    float* tuple;
+    double magnitude;
     for (int z = extent[4]; z <= extent[5]-1; z++) {
         for (int y = extent[2]; y <= extent[3]-1; y++) {
             for (int x = extent[0]; x <= extent[1]-1; x++) {
                 for( int channel = 0; channel < numChannels; channel++ ) {
                     for( int timePoint = 0; timePoint < numTimePoints; timePoint++ ) {
                         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( this->GetSpectrum( x, y, z, timePoint, channel ) );
+                        float* spectrumPtr = spectrum->GetPointer(0);
                         for (int i = 0; i < numFrequencyPoints; i++) {
-                            tuple = spectrum->GetTuple( i );
-                            realRange[0] = tuple[0] < realRange[0]
-                                ? tuple[0] : realRange[0];
-                            realRange[1] = tuple[0] > realRange[1] 
-                                ? tuple[0] : realRange[1];
+                            tuple = spectrumPtr + 2*i;
+                            if( component == 0 ){
+                                realRange[0] = tuple[0] < realRange[0]
+                                    ? tuple[0] : realRange[0];
+                                realRange[1] = tuple[0] > realRange[1] 
+                                    ? tuple[0] : realRange[1];
+                            } else if (component == 1 ) {
+                                imagRange[0] = tuple[1] < imagRange[0]
+                                    ? tuple[1] : imagRange[0];
+                                imagRange[1] = tuple[1] > imagRange[1]
+                                    ? tuple[1] : imagRange[1];
+                            } else if (component == 2 ) {
 
-                            imagRange[0] = tuple[1] < imagRange[0]
-                                ? tuple[1] : imagRange[0];
-                            imagRange[1] = tuple[1] > imagRange[1]
-                                ? tuple[1] : imagRange[1];
+                                magnitude = pow( pow(tuple[0],2)
+                                        + pow(tuple[1],2),0.5);
 
-                            double magnitude = pow( pow(tuple[0],2)
-                                    + pow(tuple[1],2),0.5);
-
-                            magRange[0] = magnitude < magRange[0]
-                                ? magnitude : magRange[0];
-                            magRange[1] = magnitude > magRange[1]
-                                ? magnitude : magRange[1];
+                                magRange[0] = magnitude < magRange[0]
+                                    ? magnitude : magRange[0];
+                                magRange[1] = magnitude > magRange[1]
+                                    ? magnitude : magRange[1];
+                            }
                         }
                     }
                 }
