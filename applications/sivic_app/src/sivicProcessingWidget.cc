@@ -362,6 +362,9 @@ void sivicProcessingWidget::ExecuteRecon()
         //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
         //                                   resetAmplitude, resetFrequency );
         this->sivicController->EnableWidgets( );
+
+        // We are resetting the input to make sure the actors get updated
+        this->plotController->SetInput(data);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
         spatialRFFT->Delete();
