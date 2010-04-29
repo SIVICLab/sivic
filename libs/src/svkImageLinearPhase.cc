@@ -65,7 +65,9 @@ svkImageLinearPhase::svkImageLinearPhase()
 {
     //this->SetNumberOfThreads(1);
    // this->SetDimensionality(1);
-    this->shiftWindow = 0;
+    this->shiftWindow[0] = 0;
+    this->shiftWindow[1] = 0;
+    this->shiftWindow[2] = 0;
     this->phaseArray = NULL;
     this->pie = vtkMath::Pi();
 }
@@ -83,9 +85,11 @@ svkImageLinearPhase::~svkImageLinearPhase()
 /*!
  *
  */
-void svkImageLinearPhase::SetShiftWindow( double shiftWindow )
+void svkImageLinearPhase::SetShiftWindow( double shiftWindow[3] )
 {
-    this->shiftWindow = shiftWindow;
+    this->shiftWindow[0] = shiftWindow[0];
+    this->shiftWindow[1] = shiftWindow[1];
+    this->shiftWindow[2] = shiftWindow[2];
 }
 
 
@@ -275,7 +279,7 @@ void svkImageLinearPhase::CreatePhaseArray(int N, vtkImageComplex* phaseArray)
     double mult;
     for( int i=0; i < N; i++ ) {
         phaseIncrement = (i - origin)/((double)(N));
-        mult = -2 * this->pie * phaseIncrement * this->shiftWindow;
+        mult = -2 * this->pie * phaseIncrement * this->shiftWindow[this->Iteration];
         phaseArray[i].Real = cos(mult);
         phaseArray[i].Imag = sin(mult);
     }

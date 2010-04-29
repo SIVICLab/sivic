@@ -448,3 +448,21 @@ bool svkDataModel::StateExists( string stateName )
         return 1;
     }
 }
+
+/*
+void svkDataModel::UpdateProgress(double amount)
+{
+  this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+}   
+
+void svkDataModel::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    this->InvokeEvent(vtkCommand::ProgressEvent,callData);
+    //static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
+    //static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+    //              static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
+    this->progressText = static_cast<vtkAlgorithm*>(subject)->GetProgressText() 
+
+}
+*/
+

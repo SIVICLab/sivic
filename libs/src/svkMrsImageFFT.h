@@ -101,8 +101,8 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void             SetFFTMode( FFTMode mode );
         void             SetPreCorrectCenter( bool preCorrectCenter );
         void             SetPostCorrectCenter( bool postCorrectCenter );
-        void             SetPrePhaseShift( double prePhaseShift );
-        void             SetPostPhaseShift( double postPhaseShift );
+        void             SetPrePhaseShift( double prePhaseShift[3] );
+        void             SetPostPhaseShift( double postPhaseShift[3] );
 
 
 
@@ -145,8 +145,8 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
     private:
         bool            preCorrectCenter;
         bool            postCorrectCenter;
-        double          prePhaseShift;
-        double          postPhaseShift;
+        double          prePhaseShift[3];
+        double          postPhaseShift[3];
         int             updateExtent[6]; 
         FFTDomain       domain; 
         FFTMode         mode; 

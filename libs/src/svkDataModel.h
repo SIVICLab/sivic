@@ -142,6 +142,7 @@ class svkDataModel : public vtkObject
         svkImageReader2* reader;
 
         svkImageData* data;
+        //string progressText;
 
 };
 

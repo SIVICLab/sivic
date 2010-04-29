@@ -71,8 +71,12 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->mode   = FORWARD;
     this->preCorrectCenter = false;
     this->postCorrectCenter = false;
-    this->prePhaseShift = 0;
-    this->postPhaseShift = 0;
+    this->prePhaseShift[0] = 0;
+    this->prePhaseShift[1] = 0;
+    this->prePhaseShift[2] = 0;
+    this->postPhaseShift[0] = 0;
+    this->postPhaseShift[1] = 0;
+    this->postPhaseShift[2] = 0;
 }
 
 
@@ -191,7 +195,9 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 currentData = pointImage;
 
                 // Lets apply a phase shift....
-                if( this->prePhaseShift != 0 ) {
+                if( this->prePhaseShift[0] != 0 
+                    && this->prePhaseShift[1] != 0 
+                    && this->prePhaseShift[2] != 0 ) {
                     prePhaseShifter->SetShiftWindow( this->prePhaseShift );
                     prePhaseShifter->SetInput( currentData ); 
                     currentData = prePhaseShifter->GetOutput();
@@ -215,7 +221,9 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 }
 
                 // Lets apply a phase shift....
-                if( this->postPhaseShift != 0 ) {
+                if( this->postPhaseShift[0] != 0 
+                    && this->postPhaseShift[1] != 0 
+                    && this->postPhaseShift[2] != 0 ) {
                     postPhaseShifter->SetShiftWindow( this->postPhaseShift );
                     postPhaseShifter->SetInput( currentData ); 
                     currentData = postPhaseShifter->GetOutput();
@@ -384,18 +392,22 @@ void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
 /*!
  *
  */
-void svkMrsImageFFT::SetPrePhaseShift( double prePhaseShift )
+void svkMrsImageFFT::SetPrePhaseShift( double prePhaseShift[3] )
 {
-    this->prePhaseShift = prePhaseShift;
+    this->prePhaseShift[0] = prePhaseShift[0];
+    this->prePhaseShift[1] = prePhaseShift[1];
+    this->prePhaseShift[2] = prePhaseShift[2];
 }
 
 
 /*!
  *
  */
-void svkMrsImageFFT::SetPostPhaseShift( double postPhaseShift )
+void svkMrsImageFFT::SetPostPhaseShift( double postPhaseShift[3] )
 {
-    this->postPhaseShift = postPhaseShift;
+    this->postPhaseShift[0] = postPhaseShift[0];
+    this->postPhaseShift[1] = postPhaseShift[1];
+    this->postPhaseShift[2] = postPhaseShift[2];
 }
 
 
