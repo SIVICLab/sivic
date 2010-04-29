@@ -176,10 +176,19 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
     this->overlayController->GetView()->Refresh();
     this->plotController->GetView()->Refresh();
 }
+
+
 //! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetApplication( vtkKWApplication* app)
 {
     this->app = app;
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+vtkKWApplication* vtkSivicController::GetApplication( )
+{
+    return this->app;
 }
 
 
@@ -366,8 +375,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     }
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
-    svkImageData* newData = model->LoadFile( stringFilename );
     model->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+    svkImageData* newData = model->LoadFile( stringFilename );
 
 
     if (newData == NULL) {
@@ -492,6 +501,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 //this->plotController->GetRWInteractor()->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New());
     // Lets update the metabolite menu for the current spectra
     this->globalWidget->PopulateMetaboliteMenu();
+    this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
+    this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
 }
 
 
@@ -2255,9 +2266,9 @@ void vtkSivicController::RunTestingSuite()
 
 void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
-    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
-    static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
-                  static_cast<vtkAlgorithm*>(subject)->GetProgressText() );
+    static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
+    static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+                  static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
 
 }
 

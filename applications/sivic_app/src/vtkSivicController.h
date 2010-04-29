@@ -107,6 +107,7 @@ class vtkSivicController : public vtkObject
 
 
         void                       SetApplication( vtkKWApplication* app );
+        vtkKWApplication*          GetApplication( );
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
