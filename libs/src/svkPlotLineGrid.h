@@ -167,7 +167,10 @@ class svkPlotLineGrid : public vtkObject
         int                         ampSelectionUpToDate[2];
 
         //! Has the channel been modified since the last slice update 
-        bool                        channelChanged;
+        bool*                        channelUpToDate;
+
+        //! Has the timePoint been modified since the last slice update 
+        bool*                        timePtUpToDate;
 
         //! The bounds of the camera that this will be rendered in
         double*                     viewBounds;

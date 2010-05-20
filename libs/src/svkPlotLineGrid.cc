@@ -68,6 +68,8 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->appender = NULL;
     this->freqUpToDate = NULL;
     this->ampUpToDate = NULL;
+    this->channelUpToDate = NULL;
+    this->timePtUpToDate = NULL;
     this->orientation = svkDcmHeader::AXIAL;
 
 
@@ -145,6 +147,8 @@ svkPlotLineGrid::~svkPlotLineGrid()
     delete[] viewBounds;
     delete[] freqUpToDate;
     delete[] ampUpToDate;
+    delete[] channelUpToDate;
+    delete[] timePtUpToDate;
 }
 
 
@@ -197,12 +201,22 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     if( this->ampUpToDate != NULL ) {
         delete[] this->ampUpToDate;
     }
+    if( this->channelUpToDate != NULL ) {
+        delete[] this->channelUpToDate;
+    }
+    if( this->timePtUpToDate != NULL ) {
+        delete[] this->timePtUpToDate;
+    }
 
     this->ampSelectionUpToDate[0] = -1;
     this->ampSelectionUpToDate[1] = -1;
     this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+    this->channelUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+    this->timePtUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
     for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
         this->ampUpToDate[i] = 0;
+        this->channelUpToDate[i] = 0;
+        this->timePtUpToDate[i] = 0;
     }
 
     //  Set default plot range to full scale:
@@ -267,6 +281,19 @@ void svkPlotLineGrid::SetSlice(int slice)
         brcIndex[ this->data->GetOrientationIndex( this->orientation ) ] = slice;
         this->tlcBrc[0] = this->data->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
         this->tlcBrc[1] = this->data->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
+        if( !channelUpToDate[slice] || !timePtUpToDate[slice] ) {
+            int minIndex[3] = {0,0,0};
+            int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+            int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+
+            minIndex[ orientationIndex ] = slice;
+            maxIndex[ orientationIndex ] = slice;
+            int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+            int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+            this->UpdateDataArrays( minID, maxID);
+            this->timePtUpToDate[slice] = 1;
+            this->channelUpToDate[slice] = 1;
+        }
         this->UpdatePlotRange();
         this->Update();
         this->SetSliceAppender();
@@ -1084,6 +1111,9 @@ void svkPlotLineGrid::SetChannel( int channel )
 {
     this->channel = channel;
     if( this->data != NULL ) {
+        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
+            this->channelUpToDate[i] = 0;
+        }
         int numChannels = this->data->GetDcmHeader()->GetNumberOfCoils();
         if ( channel >= numChannels ) {
             channel = numChannels -1;
@@ -1099,6 +1129,7 @@ void svkPlotLineGrid::SetChannel( int channel )
         int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
         int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
         this->UpdateDataArrays( minID, maxID);
+        this->channelUpToDate[this->slice] = 1;
     }
 }
 
@@ -1109,15 +1140,21 @@ void svkPlotLineGrid::SetChannel( int channel )
 void svkPlotLineGrid::SetTimePoint( int timePoint )
 {
     this->timePoint = timePoint;
-    int minIndex[3] = {0,0,0};
-    int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
-    int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+    if( this->data != NULL ) {
+        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
+            this->timePtUpToDate[i] = 0;
+        }
+        int minIndex[3] = {0,0,0};
+        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
 
-    minIndex[ orientationIndex ] = this->slice;
-    maxIndex[ orientationIndex ] = this->slice;
-    int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
-    int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
-    this->UpdateDataArrays( minID, maxID);
+        minIndex[ orientationIndex ] = this->slice;
+        maxIndex[ orientationIndex ] = this->slice;
+        int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+        this->UpdateDataArrays( minID, maxID);
+        this->timePtUpToDate[this->slice] = 1;
+    }
 }
 
 
