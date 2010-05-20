@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGEPFileMapper.cc $
- *  $Rev: 17 $
- *  $Author: jccrane $
- *  $Date: 2009-12-08 20:50:30 -0800 (Tue, 08 Dec 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapper, "$Rev: 17 $");
+vtkCxxRevisionMacro(svkGEPFileMapper, "$Rev$");
 vtkStandardNewMacro(svkGEPFileMapper);
 
 

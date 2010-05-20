@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGEPFileReader.cc $
- *  $Rev: 17 $
- *  $Author: jccrane $
- *  $Date: 2009-12-08 20:50:30 -0800 (Tue, 08 Dec 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileReader, "$Rev: 17 $");
+vtkCxxRevisionMacro(svkGEPFileReader, "$Rev$");
 vtkStandardNewMacro(svkGEPFileReader);
 
 
