@@ -74,6 +74,7 @@ svkGEPFileMapper::svkGEPFileMapper()
 svkGEPFileMapper::~svkGEPFileMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+
     if( this->progressCallback != NULL ) {
         this->progressCallback->Delete();
         this->progressCallback = NULL;
@@ -754,9 +755,8 @@ bool svkGEPFileMapper::IsSwapOn()
 
     if ( this->GetHeaderValueAsInt( "rhi.freq_dir" ) != 1 ) {
         swap = true; 
-        vtkErrorMacro( << "GE PFile Mapper, Swap Freq Dir not supported yet.  Can't load data.");
-        exit(1); 
     }
+
     return swap; 
 }
 
@@ -999,7 +999,7 @@ void svkGEPFileMapper::InitMRTimingAndRelatedParametersMacro()
         "MRTimingAndRelatedParametersSequence", 
         0,                                
         "RepetitionTime",                     
-        this->GetHeaderValueAsFloat( "rhi.tr" ), 
+        this->GetHeaderValueAsFloat( "rhi.tr" ) / 1000, 
         "SharedFunctionalGroupsSequence",  
         0 
     );
@@ -2162,7 +2162,17 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
     int timePtOffset = cols * rows * slices;
 
 
+    //  Preallocate data arrays. The API only permits dynamic assignmet at end of CellData, so for
+    //  swapped cases where we need to insert data out of order they need to be preallocated.
+    for (int arrayNumber = 0; arrayNumber < cols * rows * slices * numTimePts * numCoils; arrayNumber++) { 
+        vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+        data->GetCellData()->AddArray(dataArray); 
+        dataArray->Delete(); 
+    }
+    cout << *(data->GetCellData()) << endl;
+
     int offset = 0; 
+    //  Blank scan, one spectrum per channel.
     int dummyOffset = 0; 
     int numPtsPerSpectrum = numSpecPts * numComponents;
     dummyOffset = numPtsPerSpectrum; 
@@ -2174,25 +2184,40 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
     int denominator = numVoxels[2] * numVoxels[1]  * numVoxels[0] + numVoxels[1]*numVoxels[0] + numVoxels[0];
     double progress = 0;
 
+    int x; 
+    int y; 
+    int z; 
+    int index; 
 
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
 
         offset += dummyOffset;  
 
         for (int timePt = 0; timePt < numTimePts; timePt++) {
+
             ostringstream progressStream;
             progressStream <<"Reading Time Point " << timePt+1 << "/"
                            << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
             this->SetProgressText( progressStream.str().c_str() );
 
-            for (int z = 0; z < numVoxels[2] ; z++) {
-                for (int y = 0; y < numVoxels[1]; y++) {
-                    for (int x = 0; x < numVoxels[0]; x++) {
+            for (int index2 = 0; index2 < numVoxels[2] ; index2++) {
+                for (int index1 = 0; index1 < numVoxels[1]; index1++) {
+                    for (int index0 = 0; index0 < numVoxels[0]; index0++) {
+                        
+                        this->GetXYZIndices(index0, index1, index2, &x, &y, &z);  
 
-                        SetCellSpectrum(data, offset, x, y, z, timePt, coilNum);
+                        //  Linear index of current cell in target svkImageData 
+                        int index =  x 
+                                   + ( numVoxels[0] ) * y  
+                                   + ( numVoxels[0] * numVoxels[1] ) * z  
+                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt  
+                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts ) * coilNum; 
+
+                        SetCellSpectrum(data, offset, index, x, y, z, timePt, coilNum);
                         offset += numPtsPerSpectrum; 
 
                     }
+
                     progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
                                        /((double)denominator);
                     this->UpdateProgress( progress );
@@ -2209,15 +2234,50 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
 }
 
 
+/*! 
+ *  If swapping is turned on, the data will need to get mapped correctly 
+ *  from the input data buffer read from disk (specData) to the correct 
+ *  svkImageData arrays. If swap is true, then the data indices are swapped 
+ *  and ky is flipped. 
+ */
+void svkGEPFileMapper::GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z)
+{
+    if ( this->IsSwapOn() ) {
+
+        int numVoxels[3]; 
+        this->GetNumVoxels( numVoxels ); 
+
+        *x = index1; 
+        *y = numVoxels[1] - index0 - 1; 
+        *z = index2; 
+
+    } else {
+
+        *x = index0; 
+        *y = index1; 
+        *z = index2; 
+
+    }
+
+    return; 
+}
+
 
 /*!
- *
+ *  
  */
-void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int x, int y, int z, int timePoint, int coilNum)
+void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int index, int x, int y, int z, int timePoint, int coilNum)
 {
 
     //  Set XY points to plot 
-    vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+    //vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+
+    //  Add the spectrum's dataArray to the CellData:
+    //  vtkCellData is a subclass of vtkFieldData
+    //  If the data is swapped, the array index needs 
+    //  to be set correctly too.  The following index
+    //  formula should be general:
+    vtkDataArray* dataArray = data->GetCellData()->GetArray(index); 
 
     string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
     int numComponents;
@@ -2249,22 +2309,22 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int x, in
 
     }
 
-    //  Add the spectrum's dataArray to the CellData:
-    //  vtkCellData is a subclass of vtkFieldData
-    data->GetCellData()->AddArray(dataArray);
-
-    dataArray->Delete();
-
     return;
 }
 
 
+/*!
+ *
+ */
 void svkGEPFileMapper::SetProgressText( string progressText )
 {
     this->progressText = progressText;
 }
 
 
+/*!
+ *
+ */
 string svkGEPFileMapper::GetProgressText( )
 {
     return this->progressText;

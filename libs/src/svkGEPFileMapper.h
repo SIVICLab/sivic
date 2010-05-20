@@ -137,12 +137,13 @@ class svkGEPFileMapper : public vtkObject
         bool            IsSwapOn(); 
         bool            Is2D(); 
         bool            IsChopOn(); 
+        void            GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z); 
         void            UpdateProgress(double amount);
-
 
         void            SetCellSpectrum( 
                             vtkImageData* data, 
                             int offset, 
+                            int index, 
                             int x, int y, int z, 
                             int timePoint = 0, 
                             int channel = 0

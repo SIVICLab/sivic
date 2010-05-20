@@ -90,6 +90,7 @@ svkGEPFileReader::~svkGEPFileReader()
         mapper->Delete();
         this->mapper = NULL;
     }
+
     if( this->progressCallback != NULL ) {
         this->progressCallback->Delete();
         this->progressCallback = NULL;
@@ -229,18 +230,13 @@ void svkGEPFileReader::InitDcmHeader()
     //  the svkImageData's DICOM header.
     this->ReadGEPFile(); 
 
-    //  Fill in data set specific values:
-    //  This might be better done via a mapper obtained
-    //  from a factory method, for example to provide flexibility 
-    //  for MRI vs MRS and version or psd specific differences. 
-    //
 
-    // svkGEPFileMapper* mapper = getPfileToDcmMapper(  argument )
-    this->mapper = svkGEPFileMapper::New(); 
+    //  Fill in data set specific values using the appropriate mapper type:
+    this->mapper = this->GetPFileMapper(); 
 
     //  all the IE initialization modules would be contained within the 
     this->mapper->InitializeDcmHeader( 
-        pfMap, 
+        this->pfMap, 
         this->GetOutput()->GetDcmHeader(), 
         this->pfileVersion 
     ); 
@@ -248,6 +244,26 @@ void svkGEPFileReader::InitDcmHeader()
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+}
+
+
+/*!
+ *  Create an svkGEPFileMapper of the appropriate type for the present pfile 
+ */
+svkGEPFileMapper* svkGEPFileReader::GetPFileMapper() 
+{
+    svkGEPFileMapper* aMapper = NULL; 
+
+    string psd = this->pfMap["rhi.psdname"][3];
+
+    if ( psd.compare("PROBE-P") == 0 ) {
+        aMapper = svkGEPFileMapper::New();
+    } else {
+        vtkErrorMacro("No PFile mapper available for " << psd );
+        exit(1);
+    }
+
+    return aMapper;          
 }
 
 
@@ -342,12 +358,12 @@ void svkGEPFileReader::PrintKeyValuePairs()
 
     //  Print out key value pairs parsed from header:
     map< string, vector<string> >::iterator mapIter;
-    for ( mapIter = pfMap.begin(); mapIter != pfMap.end(); ++mapIter ) {
+    for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
 
         cout << this->GetClassName() << " " << mapIter->first << " = ";
 
         vector<string>::iterator it;
-        for ( it = pfMap[mapIter->first].begin() ; it < pfMap[mapIter->first].end(); it++ ) {
+        for ( it = this->pfMap[mapIter->first].begin() ; it < this->pfMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }
         cout << endl;

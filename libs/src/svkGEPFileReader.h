@@ -124,6 +124,8 @@ class svkGEPFileReader : public svkImageReader2
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 
         string              UncompressUID(const char* compressedUID); 
         float               GetPFileVersion(); 
+        svkGEPFileMapper*   GetPFileMapper(); 
+
 
         //  Members:
         ifstream*           gepf;
