@@ -134,8 +134,6 @@ class svkIdfVolumeReader : public svkImageReader2
                         );
         string          GetDcmPatientPositionString(string patientPosition);
         void            ParseIdf();
-        string          ReadLineSubstr(istringstream* iss, int start, int stop);
-        void            ReadLineIgnore(istringstream* iss, char delim); 
         void            PrintKeyValuePairs();
 
 

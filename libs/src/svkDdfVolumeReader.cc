@@ -445,27 +445,27 @@ void svkDdfVolumeReader::ParseDdf()
         iss->ignore(29);
         *iss>>ddfVersion;
 
-        ddfMap["objectType"] = this->ReadLineValue(iss, ':');
-        ddfMap["patientId"] = this->ReadLineValue(iss, ':');
-        ddfMap["patientName"] = this->ReadLineValue(iss, ':');
-        ddfMap["patientCode"] = this->ReadLineValue(iss, ':');
-        ddfMap["dateOfBirth"] = this->ReadLineValue(iss, ':');
-        ddfMap["sex"] = this->ReadLineValue(iss, ':');
-        ddfMap["studyId"] = this->ReadLineValue(iss, ':');
-        ddfMap["studyCode"] = this->ReadLineValue(iss, ':');
-        ddfMap["studyDate"] = this->ReadLineValue(iss, ':');
-        ddfMap["accessionNumber"] = this->ReadLineValue(iss, ':');
-        ddfMap["rootName"] = this->ReadLineValue(iss, ':');
-        ddfMap["seriesNumber"] = this->ReadLineValue(iss, ':');
-        ddfMap["seriesDescription"] = this->StripWhite( this->ReadLineValue(iss, ':') );
-        ddfMap["comment"] = this->ReadLineValue(iss, ':');
-        ddfMap["patientEntry"] = this->ReadLineValue(iss, ':');
-        ddfMap["patientPosition"] = this->ReadLineValue(iss, ':');
-        ddfMap["orientation"] = this->ReadLineValue(iss, ':');
-        ddfMap["dataType"] = this->ReadLineValue(iss, ':');
-        ddfMap["numberOfComponents"] = this->ReadLineValue(iss, ':');
-        ddfMap["sourceDescription"] = this->ReadLineValue(iss, ':');
-        ddfMap["numberOfDimensions"] = this->ReadLineValue(iss, ':');
+        ddfMap["objectType"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["patientId"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["patientName"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["patientCode"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["dateOfBirth"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["sex"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["studyId"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["studyCode"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["studyDate"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["accessionNumber"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["rootName"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["seriesNumber"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["seriesDescription"] = this->StripWhite( this->ReadLineValue( this->ddfHdr, iss, ':') );
+        ddfMap["comment"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["patientEntry"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["patientPosition"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["orientation"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["dataType"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["numberOfComponents"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["sourceDescription"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["numberOfDimensions"] = this->ReadLineValue( this->ddfHdr, iss, ':');
  
         // DIMENSIONS AND SPACING
         int numDimensions = this->GetHeaderValueAsInt(ddfMap, "numberOfDimensions"); 
@@ -477,7 +477,7 @@ void svkDdfVolumeReader::ParseDdf()
 
             //  Type
             string dimensionTypeString = "dimensionType" + indexString; 
-            string dimensionLine( this->ReadLineSubstr(iss, 0, 100) );
+            string dimensionLine( this->ReadLineSubstr(this->ddfHdr, iss, 0, 100) );
             size_t start = dimensionLine.find( "type:" ); 
             string tmp   = dimensionLine.substr( start + 6 ); 
             size_t end   = tmp.find( "npoints" ); 
@@ -499,7 +499,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  CENTER(LPS):
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -509,7 +509,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  TOPLC(LPS):
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -523,7 +523,7 @@ void svkDdfVolumeReader::ParseDdf()
             ostringstream ossIndexI;
             ossIndexI << i;
             string indexStringI(ossIndexI.str());
-            this->ReadLineIgnore( iss, 's' );
+            this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -537,27 +537,27 @@ void svkDdfVolumeReader::ParseDdf()
         this->ReadLine(this->ddfHdr, iss);
         this->ReadLine(this->ddfHdr, iss);
         
-        ddfMap["coilName"] = this->ReadLineValue(iss, ':');
-        ddfMap["sliceGap"] = this->ReadLineValue(iss, ':');
-        ddfMap["echoTime"] = this->ReadLineValue(iss, ':');
-        ddfMap["repetitionTime"] = this->ReadLineValue(iss, ':');
-        ddfMap["inversionTime"] = this->ReadLineValue(iss, ':');
-        ddfMap["flipAngle"] = this->ReadLineValue(iss, ':');
-        ddfMap["pulseSequenceName"] = this->ReadLineValue(iss, ':');
-        ddfMap["transmitterFrequency"] = this->ReadLineValue(iss, ':');
-        ddfMap["isotope"] = this->ReadLineValue(iss, ':');
-        ddfMap["fieldStrength"] = this->ReadLineValue(iss, ':');
+        ddfMap["coilName"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["sliceGap"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["echoTime"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["repetitionTime"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["inversionTime"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["flipAngle"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["pulseSequenceName"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["transmitterFrequency"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["isotope"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["fieldStrength"] = this->ReadLineValue( this->ddfHdr, iss, ':');
 
-        ddfMap["numberOfSatBands"] = this->ReadLineValue(iss, ':');
+        ddfMap["numberOfSatBands"] = this->ReadLineValue( this->ddfHdr, iss, ':');
         for (int i = 0; i < this->GetHeaderValueAsInt( ddfMap, "numberOfSatBands" ); i++) {
 
             ostringstream ossIndex;
             ossIndex << i;
             string indexString(ossIndex.str());
-            ddfMap["satBand" + indexString + "Thickness"] = this->ReadLineValue(iss, ':');
+            ddfMap["satBand" + indexString + "Thickness"] = this->ReadLineValue( this->ddfHdr, iss, ':');
 
             //  Orientation:
-            this->ReadLineIgnore( iss, 'r' );
+            this->ReadLineIgnore( this->ddfHdr, iss, 'r' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -567,7 +567,7 @@ void svkDdfVolumeReader::ParseDdf()
             }
 
             //  position:
-            this->ReadLineIgnore( iss, ')' );
+            this->ReadLineIgnore( this->ddfHdr, iss, ')' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -581,22 +581,22 @@ void svkDdfVolumeReader::ParseDdf()
         //Spectroscopy Parameters 
         this->ReadLine(this->ddfHdr, iss);
         this->ReadLine(this->ddfHdr, iss);
-        ddfMap["localizationType"] = this->ReadLineValue(iss, ':');
-        ddfMap["centerFrequency"] = this->ReadLineValue(iss, ':');
-        ddfMap["ppmReference"] = this->ReadLineValue(iss, ':');
-        ddfMap["sweepwidth"] = this->ReadLineValue(iss, ':');
-        ddfMap["dwelltime"] = this->ReadLineValue(iss, ':');
-        ddfMap["frequencyOffset"] = this->ReadLineValue(iss, ':');
-        ddfMap["centeredOnWater"] = this->ReadLineValue(iss, ':');
-        ddfMap["suppressionTechnique"] = this->ReadLineValue(iss, ':');
-        ddfMap["residualWater"] = this->ReadLineValue(iss, ':');
-        ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');
-        ddfMap["chop"] = this->ReadLineValue(iss, ':');
-        ddfMap["evenSymmetry"] = this->ReadLineValue(iss, ':');
-        ddfMap["dataReordered"] = this->ReadLineValue(iss, ':');
+        ddfMap["localizationType"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["centerFrequency"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["ppmReference"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["sweepwidth"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["dwelltime"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["frequencyOffset"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["centeredOnWater"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["suppressionTechnique"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["residualWater"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["numberOfAcquisitions"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["chop"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["evenSymmetry"] = this->ReadLineValue( this->ddfHdr, iss, ':');
+        ddfMap["dataReordered"] = this->ReadLineValue( this->ddfHdr, iss, ':');
 
         //  ACQ TOPLC(LPS):
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -606,7 +606,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  ACQ Spacing:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -615,10 +615,10 @@ void svkDdfVolumeReader::ParseDdf()
             *iss >> ddfMap[string("acqSpacing" + indexString)];
         }
 
-        ddfMap["acqNumberOfDataPoints"] = this->ReadLineValue(iss, ':');
+        ddfMap["acqNumberOfDataPoints"] = this->ReadLineValue( this->ddfHdr, iss, ':');
 
         //  Acq Num Data Pts:
-        this->ReadLineIgnore( iss, 's' );
+        this->ReadLineIgnore( this->ddfHdr, iss, 's' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -632,7 +632,7 @@ void svkDdfVolumeReader::ParseDdf()
             ostringstream ossIndexI;
             ossIndexI << i;
             string indexStringI(ossIndexI.str());
-            this->ReadLineIgnore( iss, 's' );
+            this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -643,7 +643,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Selection Center:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -653,7 +653,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Selection Size:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -667,7 +667,7 @@ void svkDdfVolumeReader::ParseDdf()
             ostringstream ossIndexI;
             ossIndexI << i;
             string indexStringI(ossIndexI.str());
-            this->ReadLineIgnore( iss, 'd' );
+            this->ReadLineIgnore( this->ddfHdr, iss, 'd' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -678,7 +678,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Reordered :
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -688,7 +688,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Reordered:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -698,7 +698,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Reordered:
-        this->ReadLineIgnore( iss, ')' );
+        this->ReadLineIgnore( this->ddfHdr, iss, ')' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -708,7 +708,7 @@ void svkDdfVolumeReader::ParseDdf()
         }
 
         //  Reordered:
-        this->ReadLineIgnore( iss, 's' );
+        this->ReadLineIgnore( this->ddfHdr, iss, 's' );
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
@@ -722,7 +722,7 @@ void svkDdfVolumeReader::ParseDdf()
             ostringstream ossIndexI;
             ossIndexI << i;
             string indexStringI(ossIndexI.str());
-            this->ReadLineIgnore( iss, 's' );
+            this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
@@ -2053,76 +2053,6 @@ void svkDdfVolumeReader::PrintKeyValuePairs()
             cout << ddfMap[mapIter->first] << endl;
         }
     }
-}
-
-
-string svkDdfVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
-{
-    this->ReadLine(this->ddfHdr, iss);
-    iss->ignore(256, delim);
-    string value;
-    *iss >> value; 
-    return value; 
-}
-
-
-/*! 
- *  Read the value part of a delimited key value line in a file: 
- */
-string svkDdfVolumeReader::ReadLineValue(istringstream* iss, char delim)
-{
-
-    string value;
-    this->ReadLine(this->ddfHdr, iss);
-    try {
-
-        string line;
-        line.assign( iss->str() );
-
-        size_t delimPos = line.find_first_of(delim);
-        string delimitedLine; 
-        if (delimPos != string::npos) {
-            delimitedLine.assign( line.substr( delimPos + 1 ) );
-        } else {
-            delimitedLine.assign( line );
-        }
-   
-        // remove leading white space: 
-        size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );  
-        if ( firstNonSpace != string::npos) {
-            value.assign( delimitedLine.substr( firstNonSpace ) );
-        } else {
-            value.assign( delimitedLine ); 
-        }
-
-    } catch (const exception& e) {
-        cout <<  e.what() << endl;
-    }
-
-    return value;
-
-}
-
-
-/*!
- *  Utility function for extracting a substring with white space removed from LHS.
- */
-string svkDdfVolumeReader::ReadLineSubstr(istringstream* iss, int start, int stop)
-{
-    string temp;
-    string lineSubStr;
-    size_t firstNonSpace;
-    this->ReadLine(this->ddfHdr, iss);
-    try {
-        temp.assign(iss->str().substr(start,stop));
-        firstNonSpace = temp.find_first_not_of(' ');
-        if (firstNonSpace != string::npos) {
-            lineSubStr.assign( temp.substr(firstNonSpace) );
-        }
-    } catch (const exception& e) {
-        cout <<  e.what() << endl;
-    }
-    return lineSubStr;
 }
 
 

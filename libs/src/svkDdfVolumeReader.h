@@ -135,9 +135,6 @@ class svkDdfVolumeReader : public svkImageReader2
         int             GetNumSlices();
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseDdf();
-        string          ReadLineSubstr(istringstream* iss, int start, int stop);
-        string          ReadLineValue(istringstream* iss, char delim);
-        string          ReadLineIgnore(istringstream* iss, char delim);
         void            PrintKeyValuePairs(); 
         int             GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
         float           GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex = 0); 

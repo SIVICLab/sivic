@@ -379,6 +379,77 @@ void svkImageReader2::ReadLine(ifstream* hdr, istringstream* iss)
 
 
 /*!
+ *  Utility function to read a single line from the volume file.
+ *  and ignore all characters up to the specified delimiting character.
+ */
+void svkImageReader2::ReadLineIgnore(ifstream* hdr, istringstream* iss, char delim)
+{
+    this->ReadLine(hdr, iss);
+    iss->ignore(256, delim);
+}
+
+
+/*!
+ *  Utility function for extracting a substring with white space removed from LHS.
+ */
+string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int start, int stop)
+{
+    string temp;
+    string lineSubStr;
+    size_t firstNonSpace;
+    this->ReadLine(hdr, iss);
+    try {
+        temp.assign(iss->str().substr(start,stop));
+        firstNonSpace = temp.find_first_not_of(' ');
+        if (firstNonSpace != string::npos) {
+            lineSubStr.assign( temp.substr(firstNonSpace) );
+        }
+    } catch (const exception& e) {
+        cout <<  e.what() << endl;
+    }
+    return lineSubStr;
+}
+
+
+/*!
+ *  Read the value part of a delimited key value line in a file:
+ */
+string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char delim)
+{
+
+    string value;
+    this->ReadLine( hdr, iss );
+    try {
+
+        string line;
+        line.assign( iss->str() );
+
+        size_t delimPos = line.find_first_of(delim);
+        string delimitedLine;
+        if (delimPos != string::npos) {
+            delimitedLine.assign( line.substr( delimPos + 1 ) );
+        } else {
+            delimitedLine.assign( line );
+        }
+
+        // remove leading white space:
+        size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );
+        if ( firstNonSpace != string::npos) {
+            value.assign( delimitedLine.substr( firstNonSpace ) );
+        } else {
+            value.assign( delimitedLine );
+        }
+
+    } catch (const exception& e) {
+        cout <<  e.what() << endl;
+    }
+
+    return value;
+
+}
+
+
+/*!
  *
  */
 svkDcmHeader* svkImageReader2::GetDcmHeader( const char* fileName)

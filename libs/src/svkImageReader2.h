@@ -96,6 +96,23 @@ class svkImageReader2 : public vtkImageReader2
         string                                   StripWhite(string in);
         string                                   RemoveSlashesFromDate(string* volumeDate); 
         virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
+        void                                     ReadLineIgnore(
+                                                    ifstream* hdr, 
+                                                    istringstream* iss, 
+                                                    char delim
+                                                 ); 
+        string                                   ReadLineSubstr(
+                                                    ifstream* hdr, 
+                                                    istringstream* iss, 
+                                                    int start, 
+                                                    int stop
+                                                 ); 
+        string                                   ReadLineValue( 
+                                                    ifstream* hdr, 
+                                                    istringstream* iss, 
+                                                    char delim
+                                                 ); 
+
 
         //  Members:
         vtkDataArray*                            dataArray;

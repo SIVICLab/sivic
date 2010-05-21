@@ -824,51 +824,44 @@ void svkIdfVolumeReader::ParseIdf()
         *iss>>idfVersion;
 
         // STUDY_ID
-        string studyId(this->ReadLineSubstr(iss, 8, 10));
-        idfMap["studyId"] = studyId; 
+        idfMap["studyId"] = this->ReadLineValue( this->volumeHdr, iss, ':'); 
 
         // STUDY #
-        string studyNum(this->ReadLineSubstr(iss, 8, 10));
-        idfMap["studyNum"] = studyNum; 
+        idfMap["studyNum"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // SERIES #
-        this->ReadLineIgnore(iss, ':');
-        *iss >> idfMap["seriesNum"]; 
+        idfMap["seriesNum"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // POSITION
-        string patientPosition( this->ReadLineSubstr(iss, 10, 256) );
-        idfMap["patientPosition"] = patientPosition; 
+        idfMap["patientPosition"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // COILNAME
-        string coilName(this->ReadLineSubstr(iss, 5, 256));
-        idfMap["coilName"] = coilName; 
+        idfMap["coilName"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // ORIENTATION
         int orientation;
-        this->ReadLineIgnore(iss, ':');
+        this->ReadLineIgnore(this->volumeHdr, iss, ':');
         *iss>>orientation;
 
         // ECHO/TIME/MET INDEX
         // This appears to be hardcoded in volume write function      
-        string echoTimeMetIndex(this->ReadLineSubstr(iss, 0, 256));
-        idfMap["echoTimeMetIndex"] = echoTimeMetIndex; 
+        idfMap["echoTimeMetIndex"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // ROOTNAME
-        string rootName(this->ReadLineSubstr(iss, 10, 256));
+        string rootname = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // COMMENT 
         string* patientName = new string(); 
         string* seriesDescription = new string(); 
         string* studyDate = new string(); 
-        string  comment( ReadLineSubstr(iss, 8, 256) );
+        string  comment = this->ReadLineValue( this->volumeHdr, iss, ':');
         ParseIdfComment(comment, patientName, seriesDescription, studyDate);
         idfMap["patientName"] = *patientName; 
         idfMap["seriesDescription"] = *seriesDescription; 
         idfMap["studyDate"] = *studyDate; 
 
         // FILETYPE / ENTRY NUM / PIXEL
-        string fileType(this->ReadLineSubstr(iss, 10, 256));
-        idfMap["fileType"] = fileType; 
+        idfMap["fileType"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // DIMENSIONS AND SPACING 
         const int numDimensions = 3;    
@@ -878,8 +871,8 @@ void svkIdfVolumeReader::ParseIdf()
             ostringstream ossIndex;
             ossIndex << i;     
             string indexString(ossIndex.str());
-            dimensionString[i] = this->ReadLineSubstr(iss, 10, 256);
-            this->ReadLineIgnore(iss, ':');
+            dimensionString[i] = this->ReadLineSubstr(this->volumeHdr, iss, 10, 256);
+            this->ReadLineIgnore(this->volumeHdr, iss, ':');
             *iss >> idfMap[ string( "numPixels_" + indexString ) ];
             iss->ignore(256, ':');
             *iss >> fov[i];
@@ -892,11 +885,10 @@ void svkIdfVolumeReader::ParseIdf()
         //setDcmPixelSpacing(pixelSize, dcmImage);
 
         //  SLICE THICKNESS -> DCM_SliceThickness;
-        this->ReadLineIgnore(iss, ':');
-        *iss >> idfMap["sliceThickness"];
+        idfMap["sliceThickness"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         //  MIN + MAX 
-        this->ReadLineIgnore(iss, ':');
+        this->ReadLineIgnore(this->volumeHdr, iss, ':');
         *iss >> idfMap["minIntensity"];
         iss->ignore(256, ':');
         *iss >> idfMap["maxIntensity"];
@@ -920,7 +912,7 @@ void svkIdfVolumeReader::ParseIdf()
 
         //  SCALE
         float scale;
-        this->ReadLineIgnore(iss, ':');
+        this->ReadLineIgnore(this->volumeHdr, iss, ':');
         *iss>>scale;
 
         //  FIRST, LAST, SKIP 
@@ -930,7 +922,7 @@ void svkIdfVolumeReader::ParseIdf()
         int firstSlice;
         int lastSlice;
         int sliceSkip;
-        this->ReadLineIgnore(iss, ':');
+        this->ReadLineIgnore(this->volumeHdr, iss, ':');
         *iss>>firstSlice;
         iss->ignore(256, ':');
         *iss>>lastSlice;
@@ -990,39 +982,6 @@ void svkIdfVolumeReader::ParseIdf()
         cerr << "ERROR opening or reading volume file (" << idfFileName << "): " << e.what() << endl;
     }
 
-}
-
-
-/*! 
- *  Utility function to read a single line from the volume file.
- *  and ignore all characters up to the specified delimiting character. 
- */
-void svkIdfVolumeReader::ReadLineIgnore(istringstream* iss, char delim)    
-{
-    this->ReadLine(this->volumeHdr, iss);
-    iss->ignore(256, delim);
-}
-
-
-/*! 
- *  Utility function for extracting a substring with white space removed from LHS.
- */
-string svkIdfVolumeReader::ReadLineSubstr(istringstream* iss, int start, int stop)    
-{
-    string temp;
-    string lineSubStr;
-    size_t firstNonSpace;
-    this->ReadLine(this->volumeHdr, iss);
-    try {
-        temp.assign(iss->str().substr(start,stop));
-        firstNonSpace = temp.find_first_not_of(' ');
-        if (firstNonSpace != string::npos) {
-            lineSubStr.assign( temp.substr(firstNonSpace) );
-        } 
-    } catch (const exception& e) {
-        cout <<  e.what() << endl;
-    }
-    return lineSubStr;
 }
 
 
