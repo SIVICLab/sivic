@@ -34,6 +34,8 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
+ *
+ *  TODO: REFACTOR COMMON CODE
  */
 
 
@@ -645,9 +647,33 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     } 
 
     firstFrame = firstFrame-2 < 0 ? 0 : firstFrame;
-    this->RenderSummaryImage( firstFrame, lastFrame, outputImage, flipImage, print );
+    vtkImageAppend* sliceAppender = vtkImageAppend::New();
+    sliceAppender->SetAppendAxis(2);
+    firstFrame = firstFrame-2 < 0 ? 0 : firstFrame-2;
+    int numSummaryImages = lastFrame-firstFrame+1;
+    int remainingSummaryImages = lastFrame-firstFrame+1;
+    int currentSummaryImage = 0;
+    while( remainingSummaryImages > 6 ) {
+        svkImageData* outputImageCopy = svkMriImageData::New();
+        outputImageCopy->SetDcmHeader( outputImage->GetDcmHeader() );
+        outputImageCopy->GetDcmHeader()->Register( outputImageCopy );
+        this->RenderSummaryImage( firstFrame, firstFrame+5, outputImageCopy, flipImage, print );
+        firstFrame+=6;
+        remainingSummaryImages = lastFrame-firstFrame+1;
+        sliceAppender->SetInput(currentSummaryImage, outputImageCopy );
+        currentSummaryImage++;
+        outputImageCopy->Delete();
+    }
+    if( remainingSummaryImages > 0 ) {
+        svkImageData* outputImageCopy = svkMriImageData::New();
+        outputImageCopy->SetDcmHeader( outputImage->GetDcmHeader() );
+        outputImageCopy->GetDcmHeader()->Register( outputImageCopy );
+        this->RenderSummaryImage( firstFrame, lastFrame, outputImageCopy, flipImage, print );
+        sliceAppender->SetInput(currentSummaryImage, outputImageCopy );
+    }
+    sliceAppender->Update();
+    outputImage->DeepCopy( sliceAppender->GetOutput() );
     outputImage->Update();
-    
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
@@ -658,9 +684,8 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
         writer->SetInput( outputImage );
     }
     writer->Write();
-
     if( print ) {
-        this->PrintImages( fileNameString, firstFrame, lastFrame );
+        this->PrintImages( fileNameString, 0, (numSummaryImages-1)/6 );
     }
 }
 
@@ -680,6 +705,9 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     // We want to add text to the top of each image
     vtkTextActor* sliceLocationActor = vtkTextActor::New();
     this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->AddActor( sliceLocationActor );
+    if( print ) {
+        sliceLocationActor->GetProperty()->SetColor(0.5,0.5,0.5);
+    }
 
     vtkRenderWindow* window = vtkRenderWindow::New();
 #if defined(linux)
@@ -1020,10 +1048,6 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
             specInfo2 << "Overlay Threshold: " << this->overlayController->GetOverlayThresholdValue() << endl;
         }
     } 
-
-
-
-
 
     imageText->SetInput( imageInfo.str().c_str() ) ;
     specText1->SetInput( specInfo1.str().c_str() ) ;

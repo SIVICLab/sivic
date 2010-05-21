@@ -1591,7 +1591,7 @@ void vtkSivicController::SetLUTCallback( int type )
 /*!
  *
  */
-void vtkSivicController::Print( int outputOption )
+void vtkSivicController::Print(char* captureType, int outputOption )
 {
     if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
         this->PopupMessage( "NO SPECTRA LOADED!");
@@ -1602,7 +1602,7 @@ void vtkSivicController::Print( int outputOption )
         model->GetDataObject( "SpectroscopicData" ) ,
         &defaultNamePattern
     );
-    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, "COMBINED_CAPTURE", outputOption, 1 );
+    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, captureType, outputOption, 1 );
 }
 
 

@@ -154,7 +154,7 @@ class vtkSivicController : public vtkObject
         void                       SetComponentCallback( int targetComponent );
         void                       SetInterpolationCallback( int interpolationType );
         void                       SetLUTCallback( int type );
-        void                       Print( int outputOption = 0);
+        void                       Print( char* captureType, int outputOption = 0);
         void                       PopupMessage( string message );
         void                       SaveSession( );
         void                       RestoreSession( );

@@ -343,17 +343,19 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             4, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Print Current Slice", this->sivicController, "Print 1");
+            5, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            6, "&Print All Slices", this->sivicController, "Print 0");
+            6, "&Print All Slices", this->sivicController, "Print COMBINED_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            7, "&Save Session", this->sivicController, "SaveSession");
+            7, "&Print Images Only", this->sivicController, "Print IMAGE_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            8, "&Restore Session", this->sivicController, "RestoreSession");
+            8, "&Save Session", this->sivicController, "SaveSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            9, "&Close All", this->sivicController, "ResetApplication");
+            9, "&Restore Session", this->sivicController, "RestoreSession");
+    this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
+            10, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            10, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
+            11, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");
