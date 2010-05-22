@@ -334,8 +334,8 @@ void svkMrsImageData::UpdateRange( int component )
                                     ? tuple[1] : imagRange[1];
                             } else if (component == 2 ) {
 
-                                magnitude = pow( pow(tuple[0],2)
-                                        + pow(tuple[1],2),0.5);
+                                magnitude = pow( pow(static_cast<double>(tuple[0]), static_cast<double>(2) )
+                                        + pow( static_cast<double>(tuple[1]), static_cast<double>(2)),0.5);
 
                                 magRange[0] = magnitude < magRange[0]
                                     ? magnitude : magRange[0];
