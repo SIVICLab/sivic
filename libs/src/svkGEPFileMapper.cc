@@ -1638,7 +1638,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ApplicableSafetyStandardAgency", 
-        "FDA" 
+        "Research" 
     );
 
     this->dcmHeader->SetValue(

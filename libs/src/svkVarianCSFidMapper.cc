@@ -703,7 +703,7 @@ void svkVarianCSFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ApplicableSafetyStandardAgency",
-        "FDA"
+        "Research"
     );
 
     //  B0 in Gauss?

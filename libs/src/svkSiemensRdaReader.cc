@@ -1068,7 +1068,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ApplicableSafetyStandardAgency",
-        "FDA"
+        "Research"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
