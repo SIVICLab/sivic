@@ -276,7 +276,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
  *  Given a fractional voxel shift (prePhaseShift)  along each of the axes, 
  *  calculate a new TOPLC and reset the PerFrameFunctionalGroups:
  */
-int svkMrsImageFFT::UpdateOrigin() 
+void svkMrsImageFFT::UpdateOrigin() 
 {
 
     svkImageData* data = this->GetImageDataInput(0);
@@ -314,7 +314,6 @@ int svkMrsImageFFT::UpdateOrigin()
         }
     }
     data->SetOrigin( toplc );
-
 }
 
 

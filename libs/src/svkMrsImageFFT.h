@@ -152,7 +152,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         FFTDomain       domain; 
         FFTMode         mode; 
 
-        int             UpdateOrigin(); 
+        void            UpdateOrigin(); 
 
 
 };
