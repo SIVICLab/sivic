@@ -366,9 +366,9 @@ void svkDdfVolumeWriter::WriteHeader()
             " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[2] << endl;
     
         if ( numDims == 5 ) {    
-            out << "dimension 5: type: time" << endl ; 
+            out << "dimension 5: type: time npoints: " << hdr->GetNumberOfTimePoints() << endl ; 
         }
-    
+        
         float center[3];
         this->GetDDFCenter( center );
         out << "center(lps, mm): " << fixed << right << setw(14) << setprecision(5) << center[0]
