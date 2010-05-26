@@ -57,6 +57,7 @@
 
 #include <svkDcmHeader.h>
 #include <svkByteSwap.h>
+#include <svkSpecUtils.h>
 
 #include <map>
 #include <vector>
@@ -131,7 +132,7 @@ class svkGEPFileMapper : public vtkObject
         void            GetFOV( float fov[3] ); 
         int             GetNumCoils(); 
         int             GetNumFrames(); 
-        int             GetNumTimePoints(); 
+        virtual int     GetNumTimePoints(); 
         void            GetDcos( double dcos[3][3] ); 
         float           GetPPMRef(); 
         bool            IsSwapOn(); 

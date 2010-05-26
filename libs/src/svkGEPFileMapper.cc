@@ -1777,14 +1777,9 @@ float svkGEPFileMapper::GetPPMRef()
 
     float transmitFreq = this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7; 
 
-    float ZERO_KELVIN       = 273.; 
-    float H20_Y_INTERCEPT   = 7.83; 
-    float H20_SLOPE         = 96.9; 
-    float BODY_TEMPERATURE  = 36.6; 
-    float ppmRef = H20_Y_INTERCEPT - ( (BODY_TEMPERATURE + ZERO_KELVIN)/H20_SLOPE ) - (freqOffset / transmitFreq );
+    float ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
 
     return ppmRef; 
-        
 }
 
 
@@ -1911,9 +1906,15 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
         signalDomain 
     );
 
-    this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
-    this->dcmHeader->SetValue( "SVK_RowsDomain", "KSPACE" );
-    this->dcmHeader->SetValue( "SVK_SliceDomain", "KSPACE" );
+    //  Single Voxel doesn't require spatial tranform 
+    string spatialDomain = "KSPACE"; 
+    if ( numVoxels[0] * numVoxels[1] * numVoxels[2] == 1 ) {
+        spatialDomain = "SPACE"; 
+    } 
+
+    this->dcmHeader->SetValue( "SVK_ColumnsDomain", spatialDomain );
+    this->dcmHeader->SetValue( "SVK_RowsDomain", spatialDomain);
+    this->dcmHeader->SetValue( "SVK_SliceDomain", spatialDomain );
 
 }
 
