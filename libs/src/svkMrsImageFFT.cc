@@ -166,7 +166,25 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
  */
 int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector, vtkImageFourierFilter* fourierFilter )
 {
+
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+
+    //  First check to see if the transform is required. If not just return: 
+    string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+    string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+    string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+    if( this->mode == REVERSE ) {
+        if ( !domainCol.compare("SPACE") || !domainRow.compare("SPACE") || !domainSlice.compare("SPACE") ) {
+            cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
+            return 1; 
+        }; 
+    } else {
+        if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
+            cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
+            return 1; 
+        }; 
+    }
+
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
