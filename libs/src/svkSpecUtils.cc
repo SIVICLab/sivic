@@ -81,3 +81,23 @@ void svkSpecUtils::PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point
     phasedPoint[1] = imaginaryValue;
 
 }
+
+
+/*!
+ *  Returns the proton chemical shift of the center of the spectrum at given frequency and 
+ *  temperature (default is body temperature).  Based on the linear relationship between 
+ *  the chemical shift of water and temperature.
+ *      freqOffset is the number of Hz that the center is offset from water 
+ *      transmitFreq is in Hz. 
+ */
+float svkSpecUtils::GetPPMRef(float transmitFreq, float freqOffset, float temp )
+{
+
+    float ZERO_KELVIN       = 273.;
+    float H20_Y_INTERCEPT   = 7.83;
+    float H20_SLOPE         = 96.9;
+    float BODY_TEMPERATURE  = 36.6;
+    float ppmRef = H20_Y_INTERCEPT - ( (BODY_TEMPERATURE + ZERO_KELVIN)/H20_SLOPE ) - (freqOffset / transmitFreq );
+
+    return ppmRef;
+}
