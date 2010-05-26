@@ -1130,7 +1130,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference",
-        0 
+        this->GetPPMRef()     
    );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1309,20 +1309,21 @@ void svkSiemensRdaReader::InitMRSpectroscopyDataModule()
         "TIME"
     );
 
-    //  Private Attributes for spatial domain encoding:
+    //  Private Attributes for spatial domain encoding.  rda data is already
+    //  spatially reconstructed
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_ColumnsDomain",
-        "KSPACE" 
+        "SPACE" 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_RowsDomain",
-        "KSPACE" 
+        "SPACE" 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_SliceDomain",
-        "KSPACE" 
+        "SPACE" 
     );
 }
 
@@ -1690,6 +1691,21 @@ slope = 1;
         //cout << specDataDbl[i] << " -> " << specData[i] << endl;
     } 
 
+}
+
+
+/*!
+ *
+ */
+float svkSiemensRdaReader::GetPPMRef()
+{
+    float freqOffset = 0;
+
+    float transmitFreq = this->GetHeaderValueAsFloat( "MRFrequency" ); 
+
+    float ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
+
+    return ppmRef;
 }
 
 

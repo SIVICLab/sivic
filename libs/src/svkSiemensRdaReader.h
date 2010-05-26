@@ -60,6 +60,7 @@
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
 #include <svkByteSwap.h>
+#include <svkSpecUtils.h>
 
 #include <sys/stat.h>
 #include <limits>
@@ -160,6 +161,7 @@ class svkSiemensRdaReader : public svkImageReader2
         void            MapDoubleValuesToFloat(double* specDataDbl, float* specData, int numVals); 
         void            GetDcosFromRda(double dcos[3][3]); 
         void            GetDcosFromRda(float dcos[3][3]); 
+        float           GetPPMRef(); 
 
 
         //  Members:
