@@ -55,6 +55,8 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkBMPWriter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkTIFFWriter.h>
 #include <vtkDataObjectTypes.h>
 
 using namespace svk;
@@ -434,10 +436,18 @@ void RepeatedRenderTest()
     }
     vtkWindowToImageFilter* w2if = vtkWindowToImageFilter::New();
     w2if->SetInput( window );
-    vtkBMPWriter* writer = vtkBMPWriter::New();
-    writer->SetInput( w2if->GetOutput() );
-    writer->SetFileName( "test.bmp" );
-    writer->Write();
+    vtkBMPWriter* writerBMP = vtkBMPWriter::New();
+    writerBMP->SetInput( w2if->GetOutput() );
+    writerBMP->SetFileName( "test.bmp" );
+    writerBMP->Write();
+    vtkJPEGWriter* writerJPEG = vtkJPEGWriter::New();
+    writerJPEG->SetInput( w2if->GetOutput() );
+    writerJPEG->SetFileName( "test.JPEG" );
+    writerJPEG->Write();
+    vtkTIFFWriter* writerTIFF = vtkTIFFWriter::New();
+    writerTIFF->SetInput( w2if->GetOutput() );
+    writerTIFF->SetFileName( "test.TIFF" );
+    writerTIFF->Write();
 }
 
 void DisplayUsage( void )
