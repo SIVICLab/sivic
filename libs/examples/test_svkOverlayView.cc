@@ -58,6 +58,7 @@
 #include <vtkJPEGWriter.h>
 #include <vtkTIFFWriter.h>
 #include <vtkDataObjectTypes.h>
+#include <vtkRenderLargeImage.h>
 
 using namespace svk;
 
@@ -448,6 +449,13 @@ void RepeatedRenderTest()
     writerTIFF->SetInput( w2if->GetOutput() );
     writerTIFF->SetFileName( "test.TIFF" );
     writerTIFF->Write();
+
+    vtkRenderLargeImage* rli = vtkRenderLargeImage::New();
+    rli->SetInput(overlayController->GetView()->GetRenderer(svkOverlayView::PRIMARY));
+    vtkBMPWriter* writerBMP2 = vtkBMPWriter::New();
+    writerBMP2->SetInput( w2if->GetOutput() );
+    writerBMP2->SetFileName( "testRenderer.bmp" );
+    writerBMP2->Write();
 }
 
 void DisplayUsage( void )
