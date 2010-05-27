@@ -53,12 +53,15 @@
 #include <svkDataModel.h>
 #include <vtkAxesActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkBMPWriter.h>
 #include <vtkDataObjectTypes.h>
 
 using namespace svk;
 
 void DefaultTest( );
 void MemoryTest( );
+void RepeatedRenderTest( );
 void DisplayUsage( );
 
 struct globalArgs_t {
@@ -107,6 +110,9 @@ int main ( int argc, char** argv )
                     if( strcmp( optarg, "MemoryTest" ) == 0 ) {
                         testFunction = MemoryTest;
                         cout<<" Executing Memory Check... "<<endl;
+                    } else if( strcmp( optarg, "RepeatedRenderTest" ) == 0 ) {
+                        testFunction = RepeatedRenderTest;
+                        cout<<" Executing RepeatedRenderTest... "<<endl;
                     } 
                     break;
                 case 'i':
@@ -291,6 +297,8 @@ void DefaultTest()
         overlayController->SetInput( spectra, 1  );
     }
     overlayController->SetInput( image, 0  );
+    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
     overlayController->SetSlice(slice);
     overlayController->SetSlice( 5 );
     overlayController->UseWindowLevelStyle( );
@@ -301,28 +309,34 @@ void DefaultTest()
         overlayController->SetInput( overlay, 2 );
     }
     overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
     overlayController->SetSlice( 0 );
     overlayController->HighlightSelectionVoxels();
     overlayController->GetView()->Refresh();
     for( int i = 0; i < 8; i++ ) {
         overlayController->SetSlice( i );
+        overlayController->GetView()->Refresh();
         window->Render();
         rwi->Start();
     }
     overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
     overlayController->HighlightSelectionVoxels();
     overlayController->GetView()->Refresh();
     for( int i = 0; i < 12 ; i++ ) {
         overlayController->SetSlice( i );
+        overlayController->GetView()->Refresh();
         window->Render();
         rwi->Start();
     }
 
     overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
     overlayController->HighlightSelectionVoxels();
     overlayController->GetView()->Refresh();
     for( int i = 0; i < 12; i++ ) {
         overlayController->SetSlice( i );
+        overlayController->GetView()->Refresh();
         window->Render();
         rwi->Start();
     }
@@ -337,6 +351,93 @@ void DefaultTest()
     model->Delete();
     overlayController->Delete();
     window->Delete();
+}
+
+
+void RepeatedRenderTest()
+{
+    int slice =4 ;
+    if( globalArgs.firstImageName     == NULL  ) {
+        DisplayUsage();
+        cout << endl << " ERROR: ";
+        cout << "At least an image must be specified to run this test! " << endl; 
+    }
+
+    svkDataModel* model = svkDataModel::New();
+    
+
+    svkImageData* spectra = NULL; 
+    if( globalArgs.firstSpectraName != NULL ) {
+        spectra = model->LoadFile( globalArgs.firstSpectraName );
+        spectra->Register(NULL);
+        spectra->Update();
+    }
+
+    svkImageData* image = NULL; 
+    if( globalArgs.firstImageName != NULL ) {
+        image = model->LoadFile( globalArgs.firstImageName );
+        image->Register(NULL);
+        image->Update();
+    }
+
+    svkImageData* overlay = NULL; 
+    if( globalArgs.firstOverlayName != NULL ) {
+        overlay = model->LoadFile( globalArgs.firstOverlayName );
+        overlay->Register(NULL);
+        overlay->Update();
+    }
+
+    
+    vtkRenderWindow* window = vtkRenderWindow::New(); 
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkOverlayViewController* overlayController = svkOverlayViewController::New();
+
+    overlayController->SetRWInteractor( rwi );
+
+    window->SetSize(600,600);
+
+    if( spectra != NULL ) {
+        overlayController->SetInput( spectra, 1  );
+    }
+    overlayController->SetInput( image, 0  );
+    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+    overlayController->SetSlice(slice);
+    overlayController->UseWindowLevelStyle( );
+    overlayController->UseRotationStyle();
+    overlayController->HighlightSelectionVoxels();
+    overlayController->ResetWindowLevel();
+    if( overlay != NULL ) {
+        overlayController->SetInput( overlay, 2 );
+    }
+    window->Render();
+    rwi->Start();
+    vtkUnsignedCharArray* renderOneData = vtkUnsignedCharArray::New();
+    window->GetPixelData(0,0,600,600,true,  renderOneData);     
+    overlayController->SetSlice(slice);
+    window->Render();
+    rwi->Start();
+    vtkUnsignedCharArray* renderTwoData = vtkUnsignedCharArray::New();
+    window->GetPixelData(0,0,600,600, true,  renderTwoData);     
+    cout << "Render one is: " << *renderOneData << endl;
+    for( int i = 0; i < renderOneData->GetNumberOfTuples(); i++) {
+        unsigned char ren1[3];
+        unsigned char ren2[3];
+        renderOneData->GetTupleValue(i,ren1);
+        renderTwoData->GetTupleValue(i,ren2);
+        if( ren1[0] != ren2[0] || ren1[1] != ren2[1] || ren1[2] != ren2[2] ) {
+            cout << "NO MATCH!!! " << endl;
+            exit(0);
+        } else {
+            cout << "MATCH!!! " << endl;
+        }
+    }
+    vtkWindowToImageFilter* w2if = vtkWindowToImageFilter::New();
+    w2if->SetInput( window );
+    vtkBMPWriter* writer = vtkBMPWriter::New();
+    writer->SetInput( w2if->GetOutput() );
+    writer->SetFileName( "test.bmp" );
+    writer->Write();
 }
 
 void DisplayUsage( void )
