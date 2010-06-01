@@ -255,8 +255,13 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     svkGEPFileMapper* aMapper = NULL; 
 
     string psd = this->pfMap["rhi.psdname"][3];
+    //convert to lower case:
+    string::iterator it;
+    for ( it = psd.begin(); it < psd.end(); it++ ) {
+        *it = (char)tolower(*it);
+    }
 
-    if ( psd.compare("PROBE-P") == 0 ) {
+    if ( psd.compare("probe-p") == 0 ) {
         aMapper = svkGEPFileMapper::New();
     } else if ( psd.compare("jpress") == 0 ) {
         aMapper = svkGEPFileMapperMBrease::New();
