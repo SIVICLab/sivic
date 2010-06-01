@@ -54,6 +54,7 @@
 #include <svkMRSIOD.h>
 #include <svkByteSwap.h>
 #include <svkGEPFileMapper.h>
+#include <svkGEPFileMapperMBrease.h>
 
 #include <sys/stat.h>
 #include <map>

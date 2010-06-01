@@ -258,6 +258,8 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
 
     if ( psd.compare("PROBE-P") == 0 ) {
         aMapper = svkGEPFileMapper::New();
+    } else if ( psd.compare("jpress") == 0 ) {
+        aMapper = svkGEPFileMapperMBrease::New();
     } else {
         vtkErrorMacro("No PFile mapper available for " << psd );
         exit(1);

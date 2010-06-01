@@ -110,6 +110,7 @@ ADD_LIBRARY(
     svkSiemensRdaReader.cc
     svkGEPFileReader.cc
     svkGEPFileMapper.cc
+    svkGEPFileMapperMBrease.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
     svkSdbmVolumeReader.cc
