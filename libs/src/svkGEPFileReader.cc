@@ -68,7 +68,6 @@ svkGEPFileReader::svkGEPFileReader()
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
-
 }
 
 
@@ -271,6 +270,15 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     }
 
     return aMapper;          
+}
+
+
+/*!
+ *  returns the mapper 
+ */
+svkGEPFileMapper* svkGEPFileReader::GetMapper() 
+{
+    return this->mapper; 
 }
 
 
