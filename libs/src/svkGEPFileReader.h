@@ -95,8 +95,7 @@ class svkGEPFileReader : public svkImageReader2
         vtkTypeRevisionMacro( svkGEPFileReader, svkImageReader2 );
         static              svkGEPFileReader* New();
         virtual int         CanReadFile( const char* fname );
-
-
+        svkGEPFileMapper*   GetMapper(); 
 
     protected:
 
@@ -110,7 +109,6 @@ class svkGEPFileReader : public svkImageReader2
         void                                     ReadGEPFile();
         void                                     ParsePFile();
         void                                     InitOffsetsMap( float pfileVersion );
-
         map <string, vector< string > >          pfMap;
 
 
@@ -132,9 +130,13 @@ class svkGEPFileReader : public svkImageReader2
         ifstream*           gepf;
         svkGEPFileMapper*   mapper;
         float               pfileVersion;
-        static void         UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        static void         UpdateProgressCallback(
+                                vtkObject* subject, 
+                                unsigned long, 
+                                void* thisObject, 
+                                void* callData
+                            );
         vtkCallbackCommand* progressCallback;
-
 
 
 };
