@@ -82,12 +82,12 @@ class svkMrsImageData: public svkImageData
         void           GetSelectionBoxDimensions( float* dims );
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );
+        vtkDataArray*  GetSpectrum( int linearIndex ); 
         bool           SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN );
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         void           GetSelectionBoxSpacing( double spacing[3] );
         void           GetSelectionBoxOrigin(  double origin[3] );
         int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
-        int            GetNumberOfTimePoints();
         int            GetNumberOfChannels();
         void           GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );
         void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.5 );
@@ -106,7 +106,6 @@ class svkMrsImageData: public svkImageData
 
     private:
         int numChannels;
-        int numTimePoints;
     
 };
 

@@ -58,6 +58,8 @@
 #include <svkDcmHeader.h>
 #include <svkByteSwap.h>
 #include <svkSpecUtils.h>
+#include <svkImageData.h>
+#include <svkMrsImageData.h>
 
 #include <map>
 #include <vector>
@@ -80,15 +82,35 @@ class svkGEPFileMapper : public vtkObject
         vtkTypeRevisionMacro( svkGEPFileMapper, vtkObject );
         static          svkGEPFileMapper* New();
 
+        /*!
+         *  Data Loading Behavior options:
+         */
+        typedef enum {
+            UNDEFINED = 0, 
+            // load the entire data set as is, no averaging or data extraction.
+            LOAD_RAW, 
+            // if suppressed and unsuppressed data, load only the unsuppressed acquisitions
+            LOAD_RAW_UNSUPPRESSED, 
+            // if suppressed and unsuppressed data, load only the suppressed acquisitions
+            LOAD_RAW_SUPPRESSED,       
+            // if suppressed and unsuppressed data, load only the average of the unsuppressed acquisitions
+            LOAD_AVG_UNSUPPRESSED, 
+            // if suppressed and unsuppressed data, load only the average of the suppressed acquisitions
+            LOAD_AVG_SUPPRESSED    
+        } MapperBehavior;
+
+        void                SetMapperBehavior(MapperBehavior behaviorFlag);
+
+
         virtual void    InitializeDcmHeader(
                             map <string, vector< string > >  pfMap, 
                             svkDcmHeader* header, 
                             float pfileVersion
                         );
-        void            ReadData( string pFileName, vtkImageData* data );
+        void            ReadData( string pFileName, svkImageData* data );
         string          GetProgressText( );
         void            SetProgressText( string progressText );
-
+        void            SetBehavior(MapperBehavior behaviorFlag);
 
 
     protected:
@@ -140,6 +162,10 @@ class svkGEPFileMapper : public vtkObject
         bool            IsChopOn(); 
         void            GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z); 
         void            UpdateProgress(double amount);
+        virtual void    ModifyBehavior( svkImageData* data ); 
+        void            RedimensionModifiedSVData( svkImageData* data ); 
+        virtual int     GetNumberUnsuppressedAcquisitions(); 
+        virtual int     GetNumberSuppressedAcquisitions(); 
 
         void            SetCellSpectrum( 
                             vtkImageData* data, 
@@ -162,8 +188,8 @@ class svkGEPFileMapper : public vtkObject
         float                                   pfileVersion; 
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
-
         int                                     chopVal; 
+        MapperBehavior                          behaviorFlag;
 
 };
 

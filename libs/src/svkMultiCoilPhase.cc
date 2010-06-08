@@ -246,7 +246,7 @@ float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum )
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
     int numCoils = data->GetNumberOfChannels();
-    int numTimePts = data->GetNumberOfTimePoints();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
     int numVoxels[3];
     data->GetNumberOfVoxels(numVoxels);

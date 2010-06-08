@@ -64,7 +64,7 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
-
+    this->SetBehavior( svkGEPFileMapper::UNDEFINED );
 }
 
 
@@ -108,6 +108,14 @@ void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMa
     this->InitMRSpectroscopyDataModule(); 
 }
 
+
+/*!
+ *  Sets data loading behavior.  
+ */
+void svkGEPFileMapper::SetBehavior(MapperBehavior behaviorFlag)
+{
+    this->behaviorFlag = behaviorFlag;
+}
 
 
 /*!
@@ -2125,7 +2133,7 @@ int svkGEPFileMapper::GetNumKSpacePoints()
 /*!
  *
  */
-void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
+void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
 {
 
     ifstream* pFile = new ifstream();
@@ -2232,6 +2240,8 @@ void svkGEPFileMapper::ReadData(string pFileName, vtkImageData* data)
     delete pFile;
     delete [] specData; 
 
+    this->ModifyBehavior( data );
+
 }
 
 
@@ -2311,6 +2321,186 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int index
     }
 
     return;
+}
+
+
+/*!
+ *  Modify the data loading behavior.  For single voxel multi-acq data 
+ *  this means return the averaged (suppresssed data, if applicable). 
+ */
+void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
+{
+
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( data );  
+
+    int numVoxels[3]; 
+    this->GetNumVoxels( numVoxels ); 
+    int numTimePts = this->GetNumTimePoints();
+    int numUnsuppressed;
+    int numSuppressed;
+
+    //  
+    //  If behavior flag isn't set then use default behaviors:
+    //
+    if ( this->behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
+
+        numUnsuppressed = this->GetNumberUnsuppressedAcquisitions(); 
+        numSuppressed = this->GetNumberSuppressedAcquisitions(); 
+
+        if ( (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) 
+            && (numTimePts > 1) 
+            && (numSuppressed > 1) 
+        ) {
+            this->behaviorFlag = svkGEPFileMapper::LOAD_AVG_SUPPRESSED; 
+        } else {
+            this->behaviorFlag = svkGEPFileMapper::LOAD_RAW; 
+        }
+    }
+
+    if ( this->behaviorFlag == svkGEPFileMapper::LOAD_RAW ) {
+
+        //  no need to modiy anything:
+        return; 
+
+    } else if ( this->behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED ) {
+
+        cout << "LOAD_AVG_SUPPRESSED" << endl;
+
+        float cmplxPt[2];
+        float cmplxPtAv[2];
+
+        int numFreqPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
+        for ( int freq = 0; freq < numFreqPts; freq++ ) { 
+
+            int numCoils = this->GetNumCoils(); 
+            for ( int coil = 0; coil < numCoils; coil++ ) { 
+
+                cmplxPtAv[0] = 0; 
+                cmplxPtAv[1] = 0; 
+
+                //  start averaging after unsuppressed acquisitions:   
+                for ( int acq = numUnsuppressed; acq < numTimePts; acq++ ) { 
+
+                    //  Average the suppressed time points
+                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                        mrsData->GetSpectrum( 0, 0, 0, acq, coil)
+                    ); 
+                    spectrum->GetTupleValue(freq, cmplxPt);
+                    cmplxPtAv[0] += cmplxPt[0]; 
+                    cmplxPtAv[1] += cmplxPt[1]; 
+    
+                }
+
+                cmplxPtAv[0] /= numSuppressed; 
+                cmplxPtAv[1] /= numSuppressed; 
+            
+                //  Output only has numCoil spectra
+                vtkFloatArray* spectrumOut = static_cast<vtkFloatArray*>(
+                    mrsData->GetSpectrum( coil )
+                ); 
+
+                spectrumOut->SetTuple( freq, cmplxPtAv );
+            }
+        }
+
+        //  delete the unnecessary data arrays  and
+        //  reset header to indicate only 1 time point of data in output
+        this->RedimensionModifiedSVData( data ); 
+    }
+                    
+}
+
+
+/*!
+ *  Remove extra arrays and redimension the DICOM frames. 
+ */
+void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
+{
+
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = this->GetNumTimePoints(); 
+
+    int numVoxels[3];
+    data->GetNumberOfVoxels(numVoxels);
+
+    int numArraysOriginal = numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts * numCoils; 
+
+    numTimePts = 1;  
+    int numArraysOut      = numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts * numCoils; 
+
+    //  Modified data is set in first N arrays.  Remove all other arrays with higher index: 
+    //for (int i = numArraysOut; i < numArraysOriginal; i++) {
+    for (int i = numArraysOriginal - 1; i >= numArraysOut; i--) {
+        cout << "BOINK " <<  i << " " << data->GetCellData()->GetArrayName( i ) << endl;
+        data->GetCellData()->RemoveArray( 
+            data->GetCellData()->GetArrayName( i ) 
+        );
+    }
+        //data->GetCellData()->RemoveArray( 
+            //data->GetCellData()->GetArrayName( numArraysOriginal-1 ) 
+        //);
+cout << "removed: " << *data << endl;
+
+    for (int coilNum = 0; coilNum < numArraysOut; coilNum++) {
+        char arrayName[30];
+        sprintf(arrayName, "%d %d %d %d %d", 0, 0, 0, 0, coilNum);
+        vtkDataArray* dataArray = data->GetCellData()->GetArray(coilNum); 
+        dataArray->SetName(arrayName);
+    }
+
+    double origin[3];
+    data->GetDcmHeader()->GetOrigin( origin, 0 );
+
+    double voxelSpacing[3];
+    data->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
+
+    double dcos[3][3];
+    data->GetDcmHeader()->GetDataDcos( dcos );
+
+    data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+        origin,
+        voxelSpacing,
+        dcos,
+        data->GetDcmHeader()->GetNumberOfSlices(),
+        numTimePts,
+        numCoils 
+    );
+
+cout << *data << endl;
+    //if ( this->GetDebug() ) {
+        data->GetDcmHeader()->PrintDcmHeader( );
+    //}
+    //data->Modified();
+  cout << "TPS: " << data->GetDcmHeader()->GetNumberOfTimePoints() << endl;
+
+    //data->Update();
+  //cout << "done updating" << endl;
+
+}
+
+
+/*!
+ *  For single voxel acquisitions, return the number of 
+ *  unsuppressed acquisitions. 
+ */
+int svkGEPFileMapper::GetNumberUnsuppressedAcquisitions( )
+{
+    float nex = this->GetHeaderValueAsFloat( "rhi.nex" ); 
+    int numUnsuppressed = static_cast< int > (16 / nex ); 
+    return numUnsuppressed; 
+}
+
+
+/*!
+ *  For single voxel acquisitions, return the number of 
+ *  suppressed acquisitions. 
+ */
+int svkGEPFileMapper::GetNumberSuppressedAcquisitions( )
+{
+    float nex = this->GetHeaderValueAsFloat( "rhi.nex" ); 
+    float user4 = this->GetHeaderValueAsFloat( "rhi.user4" ) ; 
+    int numSuppressed = static_cast< int > ( user4 / nex ); 
+    return numSuppressed; 
 }
 
 

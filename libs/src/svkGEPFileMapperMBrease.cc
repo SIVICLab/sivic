@@ -84,8 +84,8 @@ svkGEPFileMapperMBrease::~svkGEPFileMapperMBrease()
  */
 int svkGEPFileMapperMBrease::GetNumTimePoints()
 {
-    int numSuppressedScans = this->GetHeaderValueAsInt( "rhr.rh_user4" ); 
-    int numUnsuppressedScans = this->GetHeaderValueAsInt( "rhr.rh_user44" ); 
+    int numSuppressedScans = this->GetNumberSuppressedAcquisitions(); 
+    int numUnsuppressedScans = this->GetNumberUnsuppressedAcquisitions(); 
 
     int numTimePoints = numUnsuppressedScans + numSuppressedScans; 
 
@@ -94,5 +94,27 @@ int svkGEPFileMapperMBrease::GetNumTimePoints()
     }
 
     return numTimePoints; 
+}
+
+
+/*!
+ *  For single voxel acquisitions, return the number of
+ *  unsuppressed acquisitions.
+ */
+int svkGEPFileMapperMBrease::GetNumberUnsuppressedAcquisitions()
+{
+    int numUnsuppressed = this->GetHeaderValueAsInt( "rhr.rh_user44" ); 
+    return numUnsuppressed;
+}
+
+
+/*!
+ *  For single voxel acquisitions, return the number of
+ *  suppressed acquisitions.
+ */
+int svkGEPFileMapperMBrease::GetNumberSuppressedAcquisitions()
+{
+    int numSuppressed = this->GetHeaderValueAsInt( "rhr.rh_user4" ); 
+    return numSuppressed;
 }
 

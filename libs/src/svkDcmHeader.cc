@@ -63,6 +63,7 @@ svkDcmHeader::svkDcmHeader()
 
     this->lastUpdateTime = this->GetMTime(); 
     this->dataSliceOrder = SLICE_ORDER_UNDEFINED;
+    this->numTimePts = 1;
 }
 
 
@@ -406,6 +407,7 @@ void svkDcmHeader::UpdateSpatialParams()
     this->UpdatePixelSize();
     this->UpdateOrigin0();
     this->UpdatePixelSpacing();
+    this->UpdateNumTimePoints();
 }
 
 
@@ -588,15 +590,29 @@ int svkDcmHeader::GetNumberOfCoils()
  */
 int svkDcmHeader::GetNumberOfTimePoints()
 {
-    int numTimePts = 1;
+
+    if ( this->WasModified() ) {
+        this->UpdateSpatialParams();
+    }
+
+    return this->numTimePts; 
+}
+
+
+/*!
+ *
+ */
+void svkDcmHeader::UpdateNumTimePoints()
+{
+    this->numTimePts = 1;
     int numberOfFrames = this->GetIntValue("NumberOfFrames");
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
     int timeIndexNumber = GetDimensionIndexPosition( "Time Point" ); 
-    numTimePts = GetNumberOfFramesInDimension( timeIndexNumber ); 
-
-    return numTimePts;
+    if (timeIndexNumber != -1 ) {
+        this->numTimePts = GetNumberOfFramesInDimension( timeIndexNumber ); 
+    }
 }
 
 

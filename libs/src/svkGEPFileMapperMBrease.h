@@ -77,6 +77,8 @@ class svkGEPFileMapperMBrease : public svkGEPFileMapper
         ~svkGEPFileMapperMBrease();
 
         virtual int     GetNumTimePoints(); 
+        virtual int     GetNumberUnsuppressedAcquisitions(); 
+        virtual int     GetNumberSuppressedAcquisitions(); 
 
 };
 
