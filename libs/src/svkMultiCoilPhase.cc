@@ -239,7 +239,8 @@ int svkMultiCoilPhase::FindMagnitudeSpecPeak( vtkFloatArray* spectrum, int smoot
 
 
 /*!
- *  Finds the average phase of the center 8 voxels.
+ *  Finds the average phase of the center 8 voxels (or 1 
+ *  voxel for single voxel data). 
  */
 float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum ) 
 {
@@ -251,11 +252,22 @@ float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum )
     int numVoxels[3];
     data->GetNumberOfVoxels(numVoxels);
     float phaseTotal = 0;
-    
+
+    bool singleVoxel = false; 
+    if (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) {
+        singleVoxel = true; 
+    }
+
     for (int z = numVoxels[2]/2-1; z <= numVoxels[2]/2; z++) {
         for (int y = numVoxels[1]/2-1; y <= numVoxels[1]/2; y++) {
             for (int x = numVoxels[0]/2-1; x <= numVoxels[0]/2; x++) {
 
+                //  if sv, numVoxels is negative so set to 0 here:
+                if ( singleVoxel ) {
+                    x = 0; 
+                    y = 0; 
+                    z = 0; 
+                }
                 vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                                     svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
 
@@ -263,6 +275,11 @@ float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum )
 
                 //  Need to implement dynamic peak width determiniation.   hardcode for now: 
                 float phase = this->PhaseBySymmetry( spectrum, h2oPeakPos, h2oPeakPos - 10, h2oPeakPos + 10 );
+
+                if ( singleVoxel ) {
+                    return phase; 
+                }
+
                 phaseTotal += phase;
             }
         }
