@@ -398,16 +398,21 @@ bool svkDcmHeader::WasModified()
 
 
 /*!
- *
+ *  
  */
 void svkDcmHeader::UpdateSpatialParams()
 {
+
+    //  
+    //  Note:
+    //      that this is sensitive to the order of operations!!!!!    
+    //  
     this->lastUpdateTime = this->GetMTime();
+    this->UpdateNumTimePoints();
     this->UpdateOrientation();
     this->UpdatePixelSize();
     this->UpdateOrigin0();
     this->UpdatePixelSpacing();
-    this->UpdateNumTimePoints();
 }
 
 
@@ -605,7 +610,6 @@ int svkDcmHeader::GetNumberOfTimePoints()
 void svkDcmHeader::UpdateNumTimePoints()
 {
     this->numTimePts = 1;
-    int numberOfFrames = this->GetIntValue("NumberOfFrames");
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
@@ -798,48 +802,50 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
     int frame = 0;
 
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
 
-        float displacement[3];
-        float frameLPSPosition[3];
+            float displacement[3];
+            float frameLPSPosition[3];
 
-        for (int i = 0; i < numSlices; i++) {
+            for (int i = 0; i < numSlices; i++) {
 
-            this->AddSequenceItemElement(
-                "PerFrameFunctionalGroupsSequence",
-                i,
-                "PlanePositionSequence"
-            );
+                this->AddSequenceItemElement(
+                    "PerFrameFunctionalGroupsSequence",
+                    i,
+                    "PlanePositionSequence"
+                );
 
-            //add displacement along normal vector:
-            for (int j = 0; j < 3; j++) {
-                displacement[j] = dcos[2][j] * voxelSpacing[2] * i;
-            }
-            for(int j = 0; j < 3; j++) { //L, P, S
-                frameLPSPosition[j] = toplc[j] +  displacement[j] ;
-            }
-
-            string imagePositionPatient;
-            for (int j = 0; j < 3; j++) {
-                ostringstream oss;
-                oss.setf(ios::fixed);
-                oss.precision(5);
-                oss << frameLPSPosition[j];
-                imagePositionPatient += oss.str();
-                if (j < 2) {
-                    imagePositionPatient += '\\';
+                //add displacement along normal vector:
+                for (int j = 0; j < 3; j++) {
+                    displacement[j] = dcos[2][j] * voxelSpacing[2] * i;
                 }
+                for(int j = 0; j < 3; j++) { //L, P, S
+                    frameLPSPosition[j] = toplc[j] +  displacement[j] ;
+                }
+    
+                string imagePositionPatient;
+                for (int j = 0; j < 3; j++) {
+                    ostringstream oss;
+                    oss.setf(ios::fixed);
+                    oss.precision(5);
+                    oss << frameLPSPosition[j];
+                    imagePositionPatient += oss.str();
+                    if (j < 2) {
+                        imagePositionPatient += '\\';
+                    }
+                }
+    
+                this->AddSequenceItemElement(
+                    "PlanePositionSequence",
+                    0,
+                    "ImagePositionPatient",
+                    imagePositionPatient,
+                    "PerFrameFunctionalGroupsSequence",
+                    frame
+                );
+
+                frame++;
             }
-
-            this->AddSequenceItemElement(
-                "PlanePositionSequence",
-                0,
-                "ImagePositionPatient",
-                imagePositionPatient,
-                "PerFrameFunctionalGroupsSequence",
-                frame
-            );
-
-            frame++;
         }
     }
 }
