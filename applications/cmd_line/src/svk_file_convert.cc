@@ -65,7 +65,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_convert_file -i input_file_name -o output_file_name -t output_data_type [-h] \n";
+    usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type [-h] \n";
     usemsg += "\n";  
     usemsg += "   -i input_file_name      name of file to convert. \n"; 
     usemsg += "   -o output_file_name     name of outputfile. \n";  
