@@ -2429,17 +2429,11 @@ void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
     int numArraysOut      = numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts * numCoils; 
 
     //  Modified data is set in first N arrays.  Remove all other arrays with higher index: 
-    //for (int i = numArraysOut; i < numArraysOriginal; i++) {
     for (int i = numArraysOriginal - 1; i >= numArraysOut; i--) {
-        cout << "BOINK " <<  i << " " << data->GetCellData()->GetArrayName( i ) << endl;
         data->GetCellData()->RemoveArray( 
             data->GetCellData()->GetArrayName( i ) 
         );
     }
-        //data->GetCellData()->RemoveArray( 
-            //data->GetCellData()->GetArrayName( numArraysOriginal-1 ) 
-        //);
-cout << "removed: " << *data << endl;
 
     for (int coilNum = 0; coilNum < numArraysOut; coilNum++) {
         char arrayName[30];
@@ -2466,16 +2460,9 @@ cout << "removed: " << *data << endl;
         numCoils 
     );
 
-cout << *data << endl;
-    //if ( this->GetDebug() ) {
+    if ( this->GetDebug() ) {
         data->GetDcmHeader()->PrintDcmHeader( );
-    //}
-    //data->Modified();
-  cout << "TPS: " << data->GetDcmHeader()->GetNumberOfTimePoints() << endl;
-
-    //data->Update();
-  //cout << "done updating" << endl;
-
+    }
 }
 
 
