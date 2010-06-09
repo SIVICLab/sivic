@@ -65,6 +65,7 @@ svkGEPFileReader::svkGEPFileReader()
 
     this->gepf= NULL; 
     this->mapper = NULL; 
+    this->mapperBehavior = svkGEPFileMapper::UNDEFINED; 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
@@ -229,9 +230,11 @@ void svkGEPFileReader::InitDcmHeader()
     //  the svkImageData's DICOM header.
     this->ReadGEPFile(); 
 
-
     //  Fill in data set specific values using the appropriate mapper type:
     this->mapper = this->GetPFileMapper(); 
+    if (this->mapperBehavior != svkGEPFileMapper::UNDEFINED) {
+        this->mapper->SetMapperBehavior(this->mapperBehavior); 
+    }
 
     //  all the IE initialization modules would be contained within the 
     this->mapper->InitializeDcmHeader( 
@@ -243,6 +246,15 @@ void svkGEPFileReader::InitDcmHeader()
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+}
+
+
+/*!
+ *  Sets mapper's data loading behavior.  
+ */
+void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type) 
+{
+    this->mapperBehavior = type; 
 }
 
 

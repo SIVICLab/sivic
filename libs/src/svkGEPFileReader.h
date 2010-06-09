@@ -96,6 +96,8 @@ class svkGEPFileReader : public svkImageReader2
         static              svkGEPFileReader* New();
         virtual int         CanReadFile( const char* fname );
         svkGEPFileMapper*   GetMapper(); 
+        void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type); 
+
 
     protected:
 
@@ -124,20 +126,19 @@ class svkGEPFileReader : public svkImageReader2
         string              UncompressUID(const char* compressedUID); 
         float               GetPFileVersion(); 
         svkGEPFileMapper*   GetPFileMapper(); 
-
-
-        //  Members:
-        ifstream*           gepf;
-        svkGEPFileMapper*   mapper;
-        float               pfileVersion;
         static void         UpdateProgressCallback(
                                 vtkObject* subject, 
                                 unsigned long, 
                                 void* thisObject, 
                                 void* callData
                             );
-        vtkCallbackCommand* progressCallback;
 
+        //  Members:
+        ifstream*                        gepf;
+        float                            pfileVersion;
+        svkGEPFileMapper*                mapper;
+        svkGEPFileMapper::MapperBehavior mapperBehavior;
+        vtkCallbackCommand*              progressCallback;
 
 };
 
