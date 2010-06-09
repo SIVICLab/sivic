@@ -131,7 +131,6 @@ ADD_EXECUTABLE(
     svk_file_convert.cc
 )
 
-
 TARGET_LINK_LIBRARIES(
     svk_file_convert 
 	${SVK_LIBS}
@@ -147,14 +146,28 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_gepfile_reader
+    svk_gepfile_reader.cc 
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_gepfile_reader
+	${SVK_LIBS}
+)
+
+
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS 
     "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
     SET_TARGET_PROPERTIES (svk_quick_view PROPERTIES LINK_FLAGS 
+    "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
+    SET_TARGET_PROPERTIES (svk_gepfile_reader PROPERTIES LINK_FLAGS 
     "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
     SET(VTK_USE_PARALLEL "OFF")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
 
 IF (CMAKE_SYSTEM_NAME MATCHES SunOS)
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS "")
+    SET_TARGET_PROPERTIES (svk_gepfile_reader PROPERTIES LINK_FLAGS "")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES SunOS)
