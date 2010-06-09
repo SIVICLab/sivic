@@ -64,7 +64,7 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
-    this->SetBehavior( svkGEPFileMapper::UNDEFINED );
+    this->SetMapperBehavior( svkGEPFileMapper::UNDEFINED );
 }
 
 
@@ -112,7 +112,7 @@ void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMa
 /*!
  *  Sets data loading behavior.  
  */
-void svkGEPFileMapper::SetBehavior(MapperBehavior behaviorFlag)
+void svkGEPFileMapper::SetMapperBehavior(MapperBehavior behaviorFlag)
 {
     this->behaviorFlag = behaviorFlag;
 }

@@ -85,7 +85,7 @@ class svkGEPFileMapper : public vtkObject
         /*!
          *  Data Loading Behavior options:
          */
-        typedef enum {
+        enum MapperBehavior {
             UNDEFINED = 0, 
             // load the entire data set as is, no averaging or data extraction.
             LOAD_RAW, 
@@ -97,9 +97,9 @@ class svkGEPFileMapper : public vtkObject
             LOAD_AVG_UNSUPPRESSED, 
             // if suppressed and unsuppressed data, load only the average of the suppressed acquisitions
             LOAD_AVG_SUPPRESSED    
-        } MapperBehavior;
+        };
 
-        void                SetMapperBehavior(MapperBehavior behaviorFlag);
+        void            SetMapperBehavior(MapperBehavior behaviorFlag);
 
 
         virtual void    InitializeDcmHeader(
@@ -110,7 +110,6 @@ class svkGEPFileMapper : public vtkObject
         void            ReadData( string pFileName, svkImageData* data );
         string          GetProgressText( );
         void            SetProgressText( string progressText );
-        void            SetBehavior(MapperBehavior behaviorFlag);
 
 
     protected:
