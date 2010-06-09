@@ -2239,7 +2239,6 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
     pFile->close(); 
     delete pFile;
     delete [] specData; 
-
     this->ModifyBehavior( data );
 
 }
@@ -2336,16 +2335,13 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
     int numVoxels[3]; 
     this->GetNumVoxels( numVoxels ); 
     int numTimePts = this->GetNumTimePoints();
-    int numUnsuppressed;
-    int numSuppressed;
+    int numUnsuppressed = this->GetNumberUnsuppressedAcquisitions(); 
+    int numSuppressed = this->GetNumberSuppressedAcquisitions(); 
 
     //  
     //  If behavior flag isn't set then use default behaviors:
     //
     if ( this->behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
-
-        numUnsuppressed = this->GetNumberUnsuppressedAcquisitions(); 
-        numSuppressed = this->GetNumberSuppressedAcquisitions(); 
 
         if ( (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) 
             && (numTimePts > 1) 
@@ -2380,7 +2376,6 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
 
                 //  start averaging after unsuppressed acquisitions:   
                 for ( int acq = numUnsuppressed; acq < numTimePts; acq++ ) { 
-
                     //  Average the suppressed time points
                     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                         mrsData->GetSpectrum( 0, 0, 0, acq, coil)
@@ -2406,8 +2401,12 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
         //  delete the unnecessary data arrays  and
         //  reset header to indicate only 1 time point of data in output
         this->RedimensionModifiedSVData( data ); 
+
+    } else {
+
+        cout << "UNSUPPORTED BEHAVIOR" << endl;
     }
-                    
+
 }
 
 
@@ -2430,6 +2429,7 @@ void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
 
     //  Modified data is set in first N arrays.  Remove all other arrays with higher index: 
     for (int i = numArraysOriginal - 1; i >= numArraysOut; i--) {
+            cout << " removing array: " << data->GetCellData()->GetArrayName( i )  << endl;
         data->GetCellData()->RemoveArray( 
             data->GetCellData()->GetArrayName( i ) 
         );
