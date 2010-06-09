@@ -90,7 +90,7 @@ int main (int argc, char** argv)
     *   Process flags and arguments
     */
     int i;
-    while ((i = getopt(argc, argv, "i:o:u:s:a:h")) != EOF) {
+    while ((i = getopt(argc, argv, "i:o:usah")) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -138,22 +138,23 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
-    reader->Update(); 
 
     //  Set Behavior if not default
     if ( unsuppressed ) { 
-        reader->GetMapper()->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW_UNSUPPRESSED ); 
+        reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW_UNSUPPRESSED ); 
         if ( average ) {
-            reader->GetMapper()->SetMapperBehavior( svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ); 
+            reader->SetMapperBehavior( svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ); 
         }
     } else if ( suppressed ) { 
-        reader->GetMapper()->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW_SUPPRESSED ); 
+        reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW_SUPPRESSED ); 
         if ( average ) {
-            reader->GetMapper()->SetMapperBehavior( svkGEPFileMapper::LOAD_AVG_SUPPRESSED ); 
+            reader->SetMapperBehavior( svkGEPFileMapper::LOAD_AVG_SUPPRESSED ); 
         }
     } else {
-        reader->GetMapper()->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW ); 
+        reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW ); 
     }
+
+    reader->Update(); 
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRS ) );
