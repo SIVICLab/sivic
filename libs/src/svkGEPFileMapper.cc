@@ -694,10 +694,6 @@ void svkGEPFileMapper::GetNumVoxels( int numVoxels[3] )
         numVoxels[0] = numVoxels[1];
         numVoxels[1] = temp;
     }
-
-    if (this->GetDebug()) {
-        cout << "NUM VOXELS: " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
-    }
 }
 
 
@@ -2014,10 +2010,6 @@ int svkGEPFileMapper::GetNumTimePoints()
     int numTimePoints = static_cast<int>(
         static_cast<float>( passSize ) / static_cast<float>( numCoils * 2 * dataWordSize * numFreqPoints )  - 1 
     ) / this->GetNumKSpacePoints(); 
-
-    if ( this->GetDebug() ) {
-        cout << "NUM TIME POINTS: " <<  numTimePoints << endl;
-    }
 
     return numTimePoints; 
 }
