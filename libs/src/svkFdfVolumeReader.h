@@ -133,6 +133,7 @@ class svkFdfVolumeReader : public svkVarianReader
         int                              GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
         float                            GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
         string                           GetHeaderValueAsString(string keyString, int valueIndex = 0);
+        bool                             IsKeyInHeader(string keyString); 
         void                             ParseAndSetStringElements(string key, string valueArrayString);
         void                             ConvertCmToMm();  
         void                             ConvertUserToMagnetFrame(); 

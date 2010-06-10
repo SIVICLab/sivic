@@ -1199,7 +1199,22 @@ float svkFdfVolumeReader::GetHeaderValueAsFloat(string keyString, int valueIndex
 
     iss->str( (fdfMap[keyString])[valueIndex]);
     *iss >> value;
+
     return value; 
+}
+
+
+/*!
+ *  Checks to see if the specified header key is defined. 
+ */
+bool svkFdfVolumeReader::IsKeyInHeader( string keyString ) 
+{
+
+    if ( (fdfMap.find( keyString )) != fdfMap.end() ) {
+        return true; 
+    } else {
+        return false; 
+    }
 }
 
 
@@ -1277,8 +1292,12 @@ void svkFdfVolumeReader::ConvertCmToMm()
     }
 
     //  GAP 
-    tmp = cmToMm * this->GetHeaderValueAsFloat("gap", 0); 
-    (fdfMap["gap"])[0] = this->GetStringFromFloat( tmp ); 
+    if ( this->IsKeyInHeader( "gap" ) ) {
+        tmp = cmToMm * this->GetHeaderValueAsFloat("gap", 0); 
+        (fdfMap["gap"])[0] = this->GetStringFromFloat( tmp ); 
+    } else {
+        (fdfMap["gap"])[0] = "0";
+    }
 }
 
 
