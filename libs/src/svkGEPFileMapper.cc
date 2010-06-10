@@ -94,7 +94,6 @@ void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMa
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
-
     this->InitPatientModule(); 
     this->InitGeneralStudyModule(); 
     this->InitGeneralSeriesModule(); 
@@ -1225,9 +1224,6 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         "SharedFunctionalGroupsSequence",
         0
     );
-
-
-
 }
 
 
