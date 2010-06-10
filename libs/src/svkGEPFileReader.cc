@@ -483,6 +483,10 @@ string svkGEPFileReader::GetFieldAsString( string key )
         unsigned short ushortVal; 
         this->gepf->read( (char*)(&ushortVal), 2 * numElements );
         ossValue << ushortVal;
+    } else if ( type.compare("UINT_4") == 0 ) {
+        unsigned int uintVal; 
+        this->gepf->read( (char*)(&uintVal), 4 * numElements );
+        ossValue << uintVal;
     } else if ( type.compare("INT_4") == 0) {
         int intVal; 
         this->gepf->read( (char*)(&intVal), 4 * numElements );
@@ -492,9 +496,9 @@ string svkGEPFileReader::GetFieldAsString( string key )
         this->gepf->read( (char*)(&intVal), 4 * numElements );
         ossValue << intVal;
     } else if ( type.compare("ULINT_4") == 0) {
-        unsigned int uintVal; 
-        this->gepf->read( (char*)(&uintVal), 4 * numElements );
-        ossValue << uintVal;
+        unsigned int ulintVal; 
+        this->gepf->read( (char*)(&ulintVal), 4 * numElements );
+        ossValue << ulintVal;
     } else if ( type.compare("CHAR") == 0) {
         char* charVal = new char[numElements];  
         this->gepf->read( charVal, 1 * numElements );
