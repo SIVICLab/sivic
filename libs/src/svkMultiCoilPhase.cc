@@ -262,11 +262,22 @@ float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum )
         for (int y = numVoxels[1]/2-1; y <= numVoxels[1]/2; y++) {
             for (int x = numVoxels[0]/2-1; x <= numVoxels[0]/2; x++) {
 
-                //  if sv, numVoxels is negative so set to 0 here:
+                //  if sv, numVoxels is negative so set to 0 here
+                //  or if single slice (e.g. 2D) set dimension to 0 also
                 if ( singleVoxel ) {
                     x = 0; 
                     y = 0; 
                     z = 0; 
+                } else if (numVoxels[0] == 1 || numVoxels[1] == 1 || numVoxels[2] == 1 ) {
+                    if (numVoxels[0] == 1) {
+                        x = 0; 
+                    }
+                    if (numVoxels[1] == 1) {
+                        y = 0; 
+                    }
+                    if (numVoxels[2] == 1) {
+                        z = 0; 
+                    }
                 }
                 vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                                     svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
