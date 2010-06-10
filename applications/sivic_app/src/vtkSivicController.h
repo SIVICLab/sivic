@@ -155,7 +155,7 @@ class vtkSivicController : public vtkObject
         void                       SetInterpolationCallback( int interpolationType );
         void                       SetLUTCallback( int type );
         void                       Print( char* captureType, int outputOption = 0);
-        void                       PopupMessage( string message );
+        int                        PopupMessage( string message, int style = 0 );
         void                       SaveSession( );
         void                       RestoreSession( );
         void                       ResetRange( bool useFullFrequencyRange = 0, bool useFullAmplitudeRange = 0,

@@ -279,6 +279,23 @@ void vtkSivicController::OpenImage( const char* fileName )
             }
         }
 
+
+        //  Precheck to see if valdation errors should be overridden:
+        if( resultInfo.compare("") != 0 ) {
+
+            resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
+            resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
+            resultInfo += "Info:\n"; 
+            resultInfo += "\tresultInfo";
+            int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
+
+            //  If user wants to continue anyway, unset the info results 
+            if ( dialogStatus == 2 ) {
+                resultInfo = "";      
+            }
+
+        } 
+
         if( strcmp( resultInfo.c_str(), "" ) == 0 && newData != NULL ) {
             int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
             if( toggleDraw ) {
@@ -351,10 +368,12 @@ void vtkSivicController::OpenImage( const char* fileName )
             this->plotController->GetView()->Refresh();
 
         } else {
-            string message = "ERROR: Dataset is not compatible and will not be loaded!\nInfo:\n"; 
-            message += resultInfo;
+
+            resultInfo = "ERROR: Could not load dataset!\nInfo:\n";
             this->PopupMessage( resultInfo ); 
+
         }
+
         if( oldData == NULL ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView() )->AlignCamera();
             this->UseSelectionStyle();
@@ -380,8 +399,11 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 
 
     if (newData == NULL) {
+
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
+
     } else {
+
         int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
         if( toggleDraw ) {
             this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
@@ -392,8 +414,29 @@ void vtkSivicController::OpenSpectra( const char* fileName )
         string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
         string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
 
-        if( strcmp( overlayViewResultInfo.c_str(), "" ) == 0 && 
-            strcmp( plotViewResultInfo.c_str(), "" ) == 0 && newData != NULL ) {
+        //  Precheck to see if valdation errors should be overridden:
+        if( overlayViewResultInfo.compare("") != 0 || 
+            plotViewResultInfo.compare("") != 0 ) {
+
+            resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
+            resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
+            resultInfo += "Info:\n"; 
+            resultInfo += "\tplotViewResultInfo";
+            resultInfo += "\toverlayViewResultInfo";
+            int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
+
+            //  If user wants to continue anyway, unset the info results 
+            if ( dialogStatus == 2 ) {
+                plotViewResultInfo = "";      
+                overlayViewResultInfo = "";      
+            }
+
+        } 
+
+        if ( overlayViewResultInfo.compare("") == 0 && 
+            plotViewResultInfo.compare("") == 0 && 
+            newData != NULL )  {
+
             // If the spectra file is already in the model
             int* tlcBrc = NULL; 
             if( oldData != NULL ) {
@@ -483,13 +526,13 @@ void vtkSivicController::OpenSpectra( const char* fileName )
                 this->SetComponentCallback( 2 );
             }
             this->viewRenderingWidget->ResetInfoText();
+
         } else {
-            resultInfo = "ERROR: Dataset is not compatible!\n"; 
-            resultInfo += "Info:\n"; 
-            resultInfo += plotViewResultInfo;
-            resultInfo += overlayViewResultInfo;
+
+            resultInfo = "ERROR: Could not load dataset!\nInfo:\n"; 
             this->PopupMessage( resultInfo ); 
         }
+
         if( toggleDraw ) {
             this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
             this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -498,7 +541,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
         this->plotController->GetView()->Refresh( );
 
     }
-//this->plotController->GetRWInteractor()->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New());
+
     // Lets update the metabolite menu for the current spectra
     this->globalWidget->PopulateMetaboliteMenu();
     this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
@@ -1607,17 +1650,23 @@ void vtkSivicController::Print(char* captureType, int outputOption )
 
 
 /*!
- *
+ *  style argument can be use to set the vtkKWMessageDialog style 
+ *  type  (default, yes/no, etc.)
+ *  returns the dialog status value. 
  */
-void vtkSivicController::PopupMessage( string message ) 
+int vtkSivicController::PopupMessage( string message, int style ) 
 {
     vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
     messageDialog->SetApplication(app);
+    messageDialog->SetStyle( style );
     messageDialog->Create();
     messageDialog->SetOptions( vtkKWMessageDialog::ErrorIcon );
     messageDialog->SetText(message.c_str());
     messageDialog->Invoke();
+    //  yes(2), no(1)
+    int status = messageDialog->GetStatus();
     messageDialog->Delete();
+    return status; 
 }
 
 
