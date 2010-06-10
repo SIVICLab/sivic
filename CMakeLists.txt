@@ -37,7 +37,7 @@ option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built 
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 
 
-ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.0\"' )
+ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.1\"' )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION='6' )
 
