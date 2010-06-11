@@ -1217,9 +1217,6 @@ void svkDdfVolumeReader::InitPlaneOrientationMacro()
 }
 
 
-
-
-
 /*!
  *
  */
