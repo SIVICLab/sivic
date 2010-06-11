@@ -292,6 +292,7 @@ void vtkSivicController::OpenImage( const char* fileName )
             //  If user wants to continue anyway, unset the info results 
             if ( dialogStatus == 2 ) {
                 resultInfo = "";      
+                this->overlayController->GetView()->ValidationOff();
             }
 
         } 
@@ -429,6 +430,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             if ( dialogStatus == 2 ) {
                 plotViewResultInfo = "";      
                 overlayViewResultInfo = "";      
+                this->overlayController->GetView()->ValidationOff();
             }
 
         } 
