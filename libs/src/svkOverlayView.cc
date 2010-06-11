@@ -467,7 +467,7 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
             if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL ) {
 
                 // If it is make it visible, otherwise hide it
-                if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
+                if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
                     this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
                 } else if( this->toggleSelBoxVisibility ) {
                     this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
@@ -1610,7 +1610,7 @@ void svkOverlayView::ToggleSelBoxVisibilityOn()
     if( this->GetProp( svkOverlayView::VOL_SELECTION ) == NULL ) {
         return;
     }
-    if( this->dataVector[MRS] != NULL && static_cast<svkMrsImageData*>(this->dataVector[MRS])->SliceInSelectionBox( this->slice, this->orientation ) ) {
+    if( this->dataVector[MRS] != NULL && static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
         this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
         this->TurnPropOn( svkOverlayView::VOL_SELECTION );
     } else {

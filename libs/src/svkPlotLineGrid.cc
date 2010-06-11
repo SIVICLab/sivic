@@ -300,7 +300,7 @@ void svkPlotLineGrid::SetSlice(int slice)
 
         // Case for no selection box
         if( this->selectionBoxActor != NULL ) {
-            if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
+            if( this->data->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
                 this->selectionBoxActor->SetVisibility(1);
             } else {
                 this->selectionBoxActor->SetVisibility(0);
@@ -793,7 +793,7 @@ void svkPlotLineGrid::AlignCamera( bool invertView )
                                 ,viewBounds[4] + (viewBounds[5] - viewBounds[4])/2.0 };
 
         this->renderer->ResetCamera( viewBounds );
-        if( this->data->SliceInSelectionBox( this->slice, this->orientation ) ) {
+        if( this->data->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
             double* selectionBoxBounds = selectionBoxActor->GetBounds();
             double tmpViewBounds[6];
             memcpy( tmpViewBounds, viewBounds, sizeof(double)*6 );

@@ -83,7 +83,7 @@ class svkMrsImageData: public svkImageData
         vtkDataArray*  GetSpectrum( int i, int j, int k, int timePoint = 0, int channel=0 );
         vtkDataArray*  GetSpectrumFromID( int index, int timePoint = 0, int channel = 0 );
         vtkDataArray*  GetSpectrum( int linearIndex ); 
-        bool           SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN );
+        bool           IsSliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN );
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
         void           GetSelectionBoxSpacing( double spacing[3] );
         void           GetSelectionBoxOrigin(  double origin[3] );

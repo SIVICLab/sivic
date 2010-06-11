@@ -225,7 +225,7 @@ void svkPlotGrid::SetSlice(int slice)
         int* extent = data->GetExtent();
         if( slice < extent[5] && slice >= extent[4] ) { 
             this->UpdateDataArrays( this->voxelIndexTLC, this->voxelIndexBRC);
-            if( this->data->SliceInSelectionBox( slice )  ) {
+            if( this->data->IsSliceInSelectionBox( slice )  ) {
                 this->projectedSelBoxActor->SetVisibility(1);
                 this->projectedSelBoxActor->SetPickable(0);
             } else {

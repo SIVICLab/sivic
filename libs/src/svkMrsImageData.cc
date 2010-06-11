@@ -368,7 +368,7 @@ void svkMrsImageData::UpdateRange( int component )
  *
  *  \return true if the slice is within the selection box, other wise false is returned
  */
-bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation )
+bool svkMrsImageData::IsSliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation )
 {
     orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
         this->GetDcmHeader()->GetOrientationType() : orientation;
@@ -417,16 +417,15 @@ bool svkMrsImageData::SliceInSelectionBox( int slice, svkDcmHeader::Orientation 
     sliceCell->Delete();
     double selBoxCenter = projectedSelBoxRange[0] +  (projectedSelBoxRange[1] - projectedSelBoxRange[0])/2;
     double sliceCenter = projectedSliceRange[0] + (projectedSliceRange[1] - projectedSliceRange[0])/2;
-    bool inSlice = 0;
+    bool inSlice = false;
     if( ( projectedSelBoxRange[0] > projectedSliceRange[0] && projectedSelBoxRange[0] < sliceCenter 
         )   || ( projectedSelBoxRange[1] > sliceCenter && projectedSelBoxRange[1] < projectedSliceRange[1]
             )   || ( sliceCenter > projectedSelBoxRange[0] && sliceCenter < projectedSelBoxRange[1]
                 ) ){
-        inSlice = 1;
+        inSlice = true;
     }
     uGrid->Delete();
     return inSlice;
-
 }
 
 
