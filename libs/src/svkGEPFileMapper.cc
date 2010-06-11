@@ -2166,7 +2166,6 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
         data->GetCellData()->AddArray(dataArray); 
         dataArray->Delete(); 
     }
-    cout << *(data->GetCellData()) << endl;
 
     int offset = 0; 
     //  Blank scan, one spectrum per channel.
@@ -2229,6 +2228,9 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
     delete [] specData; 
     this->ModifyBehavior( data );
 
+    if ( this->GetDebug() ) {
+        cout << *data << endl;
+    }
 }
 
 
@@ -2417,7 +2419,6 @@ void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
 
     //  Modified data is set in first N arrays.  Remove all other arrays with higher index: 
     for (int i = numArraysOriginal - 1; i >= numArraysOut; i--) {
-            cout << " removing array: " << data->GetCellData()->GetArrayName( i )  << endl;
         data->GetCellData()->RemoveArray( 
             data->GetCellData()->GetArrayName( i ) 
         );
