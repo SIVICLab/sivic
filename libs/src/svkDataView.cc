@@ -65,6 +65,7 @@ svkDataView::svkDataView()
 
     dataModifiedCallback = vtkCallbackCommand::New();
     this->orientation = svkDcmHeader::AXIAL;
+    this->isValidationOn = true;
 }
 
 
@@ -539,3 +540,13 @@ void svkDataView::ResetTlcBrcForNewOrientation( svkImageData* data, svkDcmHeader
         tlcBrc[1] = data->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
     } 
 }
+
+
+/*
+ *
+ */
+void svkDataView::ValidationOff()
+{
+    this->isValidationOn = false;
+}
+

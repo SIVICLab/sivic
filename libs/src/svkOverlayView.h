@@ -213,10 +213,12 @@ class svkOverlayView : public svkDataView
 
     private:
 
+        void                            SetSliceOverlay();
+        void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
+
         double                          overlayOpacity;
         double                          overlayThreshold;
 
-        void                            SetSliceOverlay();
         
         //! Stores the interpolation method of the overlay
         InterpolationType               interpolationType; 
@@ -226,7 +228,7 @@ class svkOverlayView : public svkDataView
         svkSatBandSet*                 satBandsCoronal;
         svkSatBandSet*                 satBandsSagittal;
 
-        void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
+
         
 };
 

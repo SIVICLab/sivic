@@ -144,6 +144,8 @@ class svkDataView : public vtkObject
         static bool             IsTlcBrcWithinData( svkImageData* data, int tlcID, int brcID);
         static void             ResetTlcBrcForNewOrientation( svkImageData* data, svkDcmHeader::Orientation orientation, int tlcBrc[2], int &slice);
 
+        void                    ValidationOff();
+
 
     protected:
 
@@ -163,6 +165,7 @@ class svkDataView : public vtkObject
         vector < bool >                 isPropOn;          //Is the actor turned on or off?
         vector < bool >                 isRendererOn;       //Is the renderer turned on or off?
         vector < bool >                 isPropVisible;     //Is the actor in the views FOV?
+        bool                            isValidationOn; 
 
         /*!
          *  Method to to get all actors from each svkImageData
@@ -181,6 +184,7 @@ class svkDataView : public vtkObject
                                             void* thisObject, 
                                             void *callData
                                         );
+
 };
 
 

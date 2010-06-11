@@ -1281,8 +1281,13 @@ void svkOverlayView::SetLUT( svkLookupTable::svkLookupTableType type )
  */
 string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex )
 {
-    svkDataValidator* validator = svkDataValidator::New();
+
     string resultInfo = "";
+    if ( !isValidationOn ) {
+        return resultInfo; 
+    } 
+
+    svkDataValidator* validator = svkDataValidator::New();
     
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
