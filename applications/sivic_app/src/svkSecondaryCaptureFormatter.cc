@@ -147,7 +147,7 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
         i++;
     }
 
@@ -156,7 +156,7 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
         i--;
     }
     lastFrame = i; 
@@ -275,7 +275,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
         i++;
     }
 
@@ -284,7 +284,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
         i--;
     }
     lastFrame = i; 
@@ -345,7 +345,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
         i++;
     }
 
@@ -354,7 +354,7 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
         i--;
     }
     lastFrame = i; 
@@ -611,7 +611,7 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
         i++;
     }
 
@@ -620,7 +620,7 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
         i--;
     }
     lastFrame = i; 
