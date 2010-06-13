@@ -2137,8 +2137,10 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
         
     int numBytesInVol = this->GetNumVoxelsInVol() * numSpecPts * numComponents * dataWordSize; 
     int numBytesInPFile = numBytesInVol * numTimePts * numCoils; 
-    int numDummyWords = numCoils * numSpecPts * numComponents; 
-    this->specData = new int[ numBytesInPFile / dataWordSize  + numDummyWords];  
+    //  one dummy spectrum per coil:
+    int numDummyBytes = numCoils * numSpecPts * numComponents * dataWordSize; 
+    numBytesInPFile += numDummyBytes;  
+    this->specData = new int[ numBytesInPFile / dataWordSize ];  
 
     pFile->seekg(0, ios::beg);
     int readOffset = this->GetHeaderValueAsInt( "rhr.rdb_hdr_off_data" );
@@ -2302,11 +2304,9 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int index
 
     float tuple[2];
     for (int i = 0; i < numFreqPts; i++) {
-
         tuple[0] = chopVal * specData[ offset + (i * numComponents) ]; 
         tuple[1] = chopVal * specData[ offset + (i * numComponents) + 1 ]; 
         dataArray->SetTuple( i, tuple);  
-
     }
 
     return;
