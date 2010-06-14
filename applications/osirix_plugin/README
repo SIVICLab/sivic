@@ -34,3 +34,6 @@ create_modified_libs_for_plugin.sh
 4.  create package:
 start packagemaker, load pmdoc and "build"    
     - change the title to reflect new version number. 
+
+note:  command line pkg installation:
+sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
