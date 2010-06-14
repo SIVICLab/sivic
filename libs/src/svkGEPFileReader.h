@@ -86,6 +86,9 @@ using namespace std;
  *  Thanks to Mike Figueira of GE Medical for helful discussions about the class design. 
  *  Many thanks also to Sanjay Joshi( GE Medical recon ), Mike Figueira (GEMS) and Katie McMillan (GEMS) 
  *  for their help making this possible.   
+ *       
+ *  Acknowledgments:  Dr. Ping-Hong Yeh for providing sample data for validating 21.x 
+ *  support. 
  */
 class svkGEPFileReader : public svkImageReader2 
 {
