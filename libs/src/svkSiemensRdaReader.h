@@ -151,7 +151,6 @@ class svkSiemensRdaReader : public svkImageReader2
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseRda();
         int             GetRdaKeyValuePair( );
-        int             GetDataBufferSize();
         int             GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
         float           GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
         string          GetHeaderValueAsString(string keyString, int valueIndex = 0);

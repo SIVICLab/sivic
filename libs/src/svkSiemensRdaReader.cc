@@ -1483,14 +1483,11 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
         size_t  position; 
         string  tmp; 
-        long    headerSize;
-
-        int dataBufferSize = this->GetDataBufferSize();
 
         //  Read only to the start of the pixel buffer, 
-        //  i.e. no more than the header size:     
-        headerSize = this->fileSize - dataBufferSize; 
-        if ( this->rdaFile->tellg() < headerSize - 1 ) {
+        //  i.e. no more than the header size, delimited 
+        //  by "End of header":     
+        if ( tmp.compare(">>> End of header <<<") != 0 ) {
 
             //  find first white space position before "key" string: 
             cout << "DBG: " << iss->str() << endl;
@@ -1525,26 +1522,6 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
     delete iss; 
     return status; 
-}
-
-
-/*!
- *  Attempts to determine the pixel data buffer size from the currently 
- *  available header information.  If the size can be determined return that, 
- *  otherwise return 0. 
- */
-int svkSiemensRdaReader::GetDataBufferSize()
-{
-    int bufferSize = 0; 
-
-    int wordSize = 8;
-    int numPixels = this->GetNumPixelsInVol(); 
-    int numComponents = 2; 
-    int numSpecPts = this->GetHeaderValueAsInt("VectorSize");
-
-    bufferSize = wordSize * numPixels * numComponents * numSpecPts; 
-
-    return bufferSize;
 }
 
 
