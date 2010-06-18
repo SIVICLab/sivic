@@ -164,6 +164,8 @@ class vtkSivicController : public vtkObject
         void                       ResetChannel( );
         string                     GetPrinterName( );
         void                       SetOrientation( const char*, bool alignOverlay = 0 );
+        void                       TurnOffPlotView();
+        void                       TurnOnPlotView();
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();

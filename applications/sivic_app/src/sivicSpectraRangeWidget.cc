@@ -117,16 +117,23 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
     if( data == NULL ) {
         return;
     }
+    double minValue = this->xSpecRange->GetEntry1()->GetValueAsDouble();
+    double maxValue = this->xSpecRange->GetEntry2()->GetValueAsDouble();
+
+    if( this->specUnits == svkSpecPoint::PTS ) {
+        minValue--;
+        maxValue--;
+    }
 
     //  Convert the current values to the target unit scale:
     float lowestPoint = this->point->ConvertPosUnits(
-        this->xSpecRange->GetEntry1()->GetValueAsDouble(),
+        minValue,
         this->specUnits, 
         targetUnits 
     );
 
     float highestPoint = this->point->ConvertPosUnits(
-        this->xSpecRange->GetEntry2()->GetValueAsDouble(),
+        maxValue,
         this->specUnits, 
         targetUnits 
     );
@@ -139,7 +146,7 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
     );
 
     float highestPointRange = this->point->ConvertPosUnits(
-        data->GetCellData()->GetArray(0)->GetNumberOfTuples(), 
+        data->GetCellData()->GetArray(0)->GetNumberOfTuples()-1, 
         svkSpecPoint::PTS, 
         targetUnits 
     );
@@ -156,16 +163,12 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
     } else if ( targetUnits == svkSpecPoint::PTS ) {
         this->xSpecRange->SetResolution( 1 );
         this->unitSelectBox->GetWidget()->SetValue( "PTS" );
-        lowestPoint = (float)(nearestInt(lowestPoint)); 
-        highestPoint = (float)(nearestInt(highestPoint)); 
-        lowestPointRange = (float)(nearestInt(lowestPointRange)); 
-        highestPointRange = (float)(nearestInt(highestPointRange)); 
-        if (lowestPoint == 0) {
-            lowestPoint = 1; 
-        }
-        if (lowestPointRange == 0) {
-            lowestPointRange = 1; 
-        }
+        // We add one to all parameters to so that the user sees a range of 1 to numPoints
+        // This will be deducted before being set into the views 
+        lowestPoint = (float)(nearestInt(lowestPoint))+1; 
+        highestPoint = (float)(nearestInt(highestPoint))+1; 
+        lowestPointRange = (float)(nearestInt(lowestPointRange))+1; 
+        highestPointRange = (float)(nearestInt(highestPointRange))+1; 
     }
 
     this->detailedPlotController->SetUnits( this->specUnits );
@@ -556,6 +559,10 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
         double minValue;
         double maxValue;
         xSpecRange->GetRange( minValue, maxValue ); 
+        if( this->specUnits == svkSpecPoint::PTS ) {
+            minValue--;
+            maxValue--;
+        }
         stringstream widenRange;
         widenRange << "SetRange " << minValue - xSpecRange->GetResolution() 
                                   << " " << maxValue + xSpecRange->GetResolution();
@@ -582,13 +589,13 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
         //  Convert Values to points before setting the plot controller's range
 
         float lowestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry1()->GetValueAsDouble(),
+            minValue,
             this->specUnits,
             svkSpecPoint::PTS 
         );
     
         float highestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry2()->GetValueAsDouble(),
+            maxValue,
             this->specUnits,
             svkSpecPoint::PTS 
         );

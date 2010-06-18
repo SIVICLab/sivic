@@ -128,6 +128,37 @@ void vtkSivicController::SetSlice( int slice, bool centerImage )
 }
 
 
+void vtkSivicController::TurnOffPlotView() 
+{
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::VOL_SELECTION));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+}
+
+
+void vtkSivicController::TurnOnPlotView() 
+{
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::VOL_SELECTION));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+
+}
+
+
 //! Set the slice of all Controllers
 void vtkSivicController::SetImageSlice( int slice, string orientation )
 {
@@ -145,24 +176,10 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
     }
         // Check to see if the image is inside the spectra
     if( !this->overlayController->IsImageInsideSpectra() ) {
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+        this->TurnOffPlotView();
     } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
                                            this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+        this->TurnOnPlotView();
     }
     if( this->overlayController->GetSlice() != this->plotController->GetSlice()) {
         this->spectraViewWidget->SetCenterImage(false);
@@ -395,7 +412,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     }
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
-    model->AddObserver(vtkCommand::ProgressEvent, progressCallback);
     svkImageData* newData = model->LoadFile( stringFilename );
 
 
@@ -546,8 +562,6 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 
     // Lets update the metabolite menu for the current spectra
     this->globalWidget->PopulateMetaboliteMenu();
-    this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
-    this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
 }
 
 
@@ -970,6 +984,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Enable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Enable();
     this->imageViewWidget->loadingLabel->SetText("");
+    //this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
+    //this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
     return dlgStatus;
 }
 
@@ -1404,6 +1420,9 @@ void vtkSivicController::SetModel( svkDataModel* model  )
     if( this->secondaryCaptureFormatter != NULL ) {
         secondaryCaptureFormatter->SetModel( model );
     }
+    if(!model->HasObserver(vtkCommand::ProgressEvent, progressCallback)) {
+        model->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+    }
 }
 
 
@@ -1749,7 +1768,21 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
         this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
         this->SetSlice( this->plotController->GetSlice());
+        string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
+                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        if( acquisitionType == "SINGLE VOXEL" ) {
+            // For single voxel always highlight the selection box voxels
+            this->overlayController->HighlightSelectionVoxels();
+            this->plotController->HighlightSelectionVoxels();
+        }
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
+        // Check to see if the image is inside the spectra
+        if( !this->overlayController->IsImageInsideSpectra() ) {
+            this->TurnOffPlotView();
+        } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
+                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
+            this->TurnOnPlotView();
+        }
     }
 
     if( toggleDraw ) {
@@ -2317,9 +2350,14 @@ void vtkSivicController::RunTestingSuite()
 
 void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
-    static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
-    static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+    if( (*(double*)(callData)) >= 1 ) {
+        static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue(0);
+        static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText("Done");
+    } else {
+        static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 
+                  100.0*(*(double*)(callData)) );
+        static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
                   static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
-
+    }
 }
 
