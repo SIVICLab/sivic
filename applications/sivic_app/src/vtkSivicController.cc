@@ -175,11 +175,13 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
         this->overlayController->SetSlice( slice, svkDcmHeader::SAGITTAL);
     }
         // Check to see if the image is inside the spectra
-    if( !this->overlayController->IsImageInsideSpectra() ) {
-        this->TurnOffPlotView();
-    } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
+    if( this->model->DataExists("AnatomicalData") ) {
+        if( !this->overlayController->IsImageInsideSpectra() ) {
+            this->TurnOffPlotView();
+        } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
                                            this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
-        this->TurnOnPlotView();
+            this->TurnOnPlotView();
+        }
     }
     if( this->overlayController->GetSlice() != this->plotController->GetSlice()) {
         this->spectraViewWidget->SetCenterImage(false);
@@ -1777,11 +1779,13 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         }
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
         // Check to see if the image is inside the spectra
-        if( !this->overlayController->IsImageInsideSpectra() ) {
-            this->TurnOffPlotView();
-        } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
+        if( this->model->DataExists("AnatomicalData") ) {
+            if( !this->overlayController->IsImageInsideSpectra() ) {
+                this->TurnOffPlotView();
+            } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
                                            this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
-            this->TurnOnPlotView();
+                this->TurnOnPlotView();
+            }
         }
     }
 
