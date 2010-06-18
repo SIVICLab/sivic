@@ -82,6 +82,7 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::PLOT_GRID, entirePlotGrid );
     entirePlotGrid->Delete();
 
+    this->SetProp( svkPlotGridView::VOL_SELECTION, this->plotGrid->GetSelectionBoxActor()  );
     this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
@@ -189,7 +190,9 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 this->TurnPropOn( svkPlotGridView::PLOT_GRID );
             }
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+            this->SetProp( svkPlotGridView::VOL_SELECTION, this->plotGrid->GetSelectionBoxActor()  );
             this->TurnPropOn( svkPlotGridView::PLOT_LINES );
+            this->TurnPropOn( svkPlotGridView::VOL_SELECTION );
             this->SetOrientation( this->orientation );
 
             if( toggleDraw ) {
@@ -323,21 +326,17 @@ void svkPlotGridView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
 
 /*!
  *  SetWindowLevel for spectral view;  index 0 is frequency, index 1 is intensity.
- *
- *  TODO: Currently the range is cast to ints, so that it can set the index
- *        in the arrays of the plotGrid object. This should be changed to
- *        to handle units other than points, OR set this to always take ints
- *        and handle unit conversion on the widget layer.
+ *  NOTE: Method assumes that frequency ranges are in integers (points).
  *
  *  \param lower the lower limit
  *  \param upper the upper limit
- *  \param index which dimension you wish to chhange, frequency or magnitude 
+ *  \param index which dimension you wish to change, frequency or magnitude 
  *
  */
 void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index)
 {
     if (index == FREQUENCY) {
-        this->plotGrid->SetFrequencyWLRange((int)lower, (int)upper);
+        this->plotGrid->SetFrequencyWLRange(static_cast<int>(lower), static_cast<int>(upper));
     } else if (index == AMPLITUDE) {
         this->plotGrid->SetIntensityWLRange(lower, upper);
     }
@@ -925,7 +924,7 @@ void svkPlotGridView::GenerateClippingPlanes()
             this->ClipMapperToTlcBrc( dataVector[MRS],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
             this->ClipMapperToTlcBrc( this->dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
-                                 tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
+                                 tlcBrc, 0, 0, 0 );
         }
     }
 }

@@ -364,7 +364,7 @@ void svkMrsImageData::UpdateRange( int component )
 
 
 /*!
- *  Method determines of the current slice is within the selection box.
+ *  Method determines if the given MRS slice is within the selection box.
  *
  *  \return true if the slice is within the selection box, other wise false is returned
  */
@@ -379,6 +379,9 @@ bool svkMrsImageData::IsSliceInSelectionBox( int slice, svkDcmHeader::Orientatio
     this->GetSliceNormal( normal, orientation );
     double sliceNormal[3] = { normal[0], normal[1], normal[2] };
     voxelIndex[ this->GetOrientationIndex( orientation ) ] = slice;
+    if( slice > this->GetLastSlice( orientation ) || slice < this->GetFirstSlice( orientation ) ) {
+        return false;
+    }
 
     vtkGenericCell* sliceCell = vtkGenericCell::New();
     this->GetCell( this->ComputeCellId(voxelIndex), sliceCell );
@@ -465,6 +468,10 @@ void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
 
 /*!
  *  Get the origin of the selection box as defined in the images coordinate system.
+ *  The origin is defined as the point minimum point in the dcos directions.
+ *  eg. 
+ *      For vector (0,0,1) the origin would be the most negative z value.
+ *      For vector (0,0,-1) the origin would be the most positive z value. 
  *
  *  \param orgin target array
  */
@@ -483,40 +490,37 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
 
     vtkPoints* selBoxPoints = uGrid->GetPoints();
     int originIndex;
-    double summedDistance;
-    double deltaRowMin;
-    double deltaColumnMin;
-    double deltaSliceMin;
-    double deltaRow;
-    double deltaColumn;
-    double deltaSlice;
+
+    // All distances are from the origin (0,0,0) to the point along the given normal vector.
+    double rowDistanceMin;
+    double columnDistanceMin;
+    double sliceDistanceMin;
+    double rowDistance;
+    double columnDistance;
+    double sliceDistance;
+
+    // Lets start by assuming the first point is the minimum, then compare
+    originIndex = 0;
+    rowDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), rowNormal );
+    columnDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), columnNormal );
+    sliceDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), sliceNormal );
 
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        if( i == 1 ) {
-            originIndex = 1;
-            deltaRowMin = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
-            deltaColumnMin = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
-            deltaSliceMin = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
-        } else { 
+        // Calculate the distance in the three directions of the dcos
+        rowDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
+        columnDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
+        sliceDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
 
-            // Calculate the distance in the three directions of the dcos
-            deltaRow = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
-            deltaColumn = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
-            deltaSlice = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
-
-            // If it is the minimum then that is the origin
-            if( deltaRow <= deltaRowMin && deltaColumn <= deltaColumnMin && deltaSlice <= deltaSliceMin ) {
-                originIndex = i;
-            }
-       }
+        // If it is the minimum then that is the origin
+        if( rowDistance <= rowDistanceMin && columnDistance <= columnDistanceMin && sliceDistance <= sliceDistanceMin ) {
+            originIndex = i;
+        }
 
     }
     origin[0] = selBoxPoints->GetPoint(originIndex)[0];
     origin[1] = selBoxPoints->GetPoint(originIndex)[1];
     origin[2] = selBoxPoints->GetPoint(originIndex)[2];
     uGrid->Delete();
-
-
 }
 
 
@@ -530,13 +534,26 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ?
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    double normal[3];
+    string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     double* origin = this->GetOrigin();
+    int index = this->GetOrientationIndex( sliceOrientation );
+    double* spacing = this->GetSpacing();
+    if( acquisitionType == "SINGLE VOXEL" ) {
+        origin = new double[3];
+        spacing = new double[3];
+        this->GetSelectionBoxOrigin( origin );
+        this->GetSelectionBoxSpacing( spacing );
+    } 
+    double normal[3];
     this->GetSliceNormal( normal, sliceOrientation );
     double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
     double imageCenter = vtkMath::Dot( posLPS, normal );
-    double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
+    double idealCenter = ( imageCenter-vtkMath::Dot( origin, normalDouble) )/(spacing[index] );
     int slice = (int) floor( idealCenter );
+    if( acquisitionType == "SINGLE VOXEL" ) {
+        delete[] origin;
+        delete[] spacing;
+    } 
     return slice;
 }
 

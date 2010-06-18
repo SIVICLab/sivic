@@ -510,6 +510,12 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
             this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
         }
         int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
+        if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( newSpectraSlice, orientation )                       && isPropOn[VOL_SELECTION] 
+                 && this->toggleSelBoxVisibility) {
+            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
+        } else if( this->toggleSelBoxVisibility ) {
+            this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
+        }
         if(  newSpectraSlice >= this->dataVector[MRS]->GetFirstSlice( this->orientation ) &&
              newSpectraSlice <=  this->dataVector[MRS]->GetLastSlice( this->orientation ) ) {
 
@@ -556,12 +562,9 @@ int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orient
 {
     int imageSlice;
     double spectraSliceCenter[3];
-    this->dataVector[MRS]->GetSliceOrigin( spectraSlice, spectraSliceCenter, orientation );
+    this->dataVector[MRS]->GetSliceCenter( spectraSlice, spectraSliceCenter, orientation );
     double normal[3];
     this->dataVector[MRS]->GetSliceNormal( normal, orientation );
-    spectraSliceCenter[0] += normal[0]*this->dataVector[MRS]->GetSpacing()[0]*0.5;
-    spectraSliceCenter[1] += normal[1]*this->dataVector[MRS]->GetSpacing()[1]*0.5;
-    spectraSliceCenter[2] += normal[2]*this->dataVector[MRS]->GetSpacing()[2]*0.5;
 
     imageSlice = this->dataVector[MRI]->GetClosestSlice( spectraSliceCenter, orientation );
     return imageSlice;

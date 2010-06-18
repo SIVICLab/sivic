@@ -578,7 +578,6 @@ void svkPlotLineGrid::GenerateActor()
                         vtkFloatArray::SafeDownCast(
                             this->data->GetSpectrum(xInd, yInd, zInd , 0, channel )) );
 
-                tmpXYPlot->GeneratePolyData();
                 tmpPolyData->InsertNextCell(tmpXYPlot->GetCellType(), tmpXYPlot->GetPointIds());
                 tmpPolyData->Update();
                 vtkGenericCell* myCell = vtkGenericCell::New();
@@ -1231,4 +1230,13 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
 vtkActor* svkPlotLineGrid::GetPlotGridActor()
 {
     return this->plotGridActor;
+}
+
+
+/*!
+ *
+ */
+vtkActor* svkPlotLineGrid::GetSelectionBoxActor()
+{
+    return this->selectionBoxActor;
 }

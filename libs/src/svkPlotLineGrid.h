@@ -114,6 +114,7 @@ class svkPlotLineGrid : public vtkObject
         void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
         vtkActor*               GetPlotGridActor();
+        vtkActor*               GetSelectionBoxActor();
 
     private:
 

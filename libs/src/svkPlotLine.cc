@@ -168,8 +168,15 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
  */
 void svkPlotLine::SetPointRange( int startPt, int endPt )
 {
+    
     this->startPt = startPt;
     this->endPt   = endPt; 
+    if( this->endPt > numPoints -1 ) {
+        this->endPt = numPoints -1;
+    }
+    if( this->startPt < 0 ) {
+        this->startPt = 0;
+    }
     this->RecalculateScale();
     this->GeneratePolyData();
 }
