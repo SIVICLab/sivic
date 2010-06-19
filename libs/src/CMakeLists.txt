@@ -152,6 +152,7 @@ ADD_LIBRARY(
     svkImageMapToWindowLevelColors.cc
     svkImageMapToColors.cc
     svkImageAlgorithm.cc
+    svkImageAlgorithmExecuter.cc
     svkImageCopy.cc
     svkImageClip.cc
     svkObliqueReslice.cc

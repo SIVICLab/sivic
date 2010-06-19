@@ -128,8 +128,9 @@ void svkImageData::PrintSelf( ostream &os, vtkIndent indent )
 
 
 /*!
- *  DeepCopy creates a deep copy of svkImageData, includeing orientation information.
- *  First calls vtkImageData's deep copy, then also copies the dcos.
+ *  DeepCopy creates a deep copy of svkImageData, including orientation information.
+ *  First calls vtkImageData's deep copy, then also copies the dcos, but does NOT copy the 
+ *  DICOM header.
  */
 void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
@@ -142,7 +143,8 @@ void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataForma
 
 
 /*!
- * ShallowCopy calls vtk's deep copy, then also copies the dcos
+ *  First calls vtkImageData's shallow copy, then also copies the dcos, but does NOT copy the 
+ *  DICOM header.
  */
 void svkImageData::ShallowCopy( vtkDataObject* src )
 {
@@ -152,7 +154,8 @@ void svkImageData::ShallowCopy( vtkDataObject* src )
 
 
 /*!
- *  ZeroCopy calls vtk's deep copy, then zeroes arrays 
+ *  First calls CopyStructure, then also copies the dcos, but does NOT copy the 
+ *  DICOM header.
  */
 void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
