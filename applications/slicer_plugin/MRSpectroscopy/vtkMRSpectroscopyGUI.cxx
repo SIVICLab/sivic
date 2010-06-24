@@ -144,6 +144,7 @@ vtkMRSpectroscopyGUI::vtkMRSpectroscopyGUI ( )
     // Locator  (MRML)
     //----------------------------------------------------------------
     this->TimerFlag = 0;
+    this->TimerFlag = 1;
 
     this->CurrentSpectra = NULL;
 }
@@ -254,7 +255,7 @@ void vtkMRSpectroscopyGUI::Enter()
     {
       this->TimerFlag = 1;
       this->TimerInterval = 100;  // 100 ms
-      ProcessTimerEvents();
+      //ProcessTimerEvents();
     }
 
 }
@@ -262,13 +263,17 @@ void vtkMRSpectroscopyGUI::Enter()
 
 void vtkMRSpectroscopyGUI::SplitWindow()
 {
-  vtkKWRenderWidget* rw = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer();
-  rw->GetNthRenderer(0)->SetViewport(0, 0, 0.5, 1);
-  vtkRenderer* r = vtkRenderer::New();
-  double rgb[3] = {1, 0, 0};
-  r->SetBackground(rgb);
-  r->SetViewport(0.5, 0, 1, 1);
-  rw->AddRenderer(r);
+    //  API is changing between slicer versions:
+    //change GetViewerWidget() to GetActiveViewerWidget()
+    //vtkKWRenderWidget* rw = this->GetActiveViewWidget()->GetMainViewer();
+    //vtkKWRenderWidget* rw = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer();
+    vtkKWRenderWidget* rw = this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer();
+    rw->GetNthRenderer(0)->SetViewport(0, 0, 0.5, 1);
+    vtkRenderer* r = vtkRenderer::New();
+    double rgb[3] = {1, 0, 0};
+    r->SetBackground(rgb);
+    r->SetViewport(0.5, 0, 1, 1);
+    rw->AddRenderer(r);
 }
   
 
@@ -385,9 +390,13 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
 
     this->AddLogicObservers();
 
-    this->RedScale    = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetOffsetScale()->GetScale();
-    this->YellowScale = appGUI->GetMainSliceGUI("Yellow")->GetSliceController()->GetOffsetScale()->GetScale();
-    this->GreenScale  = appGUI->GetMainSliceGUI("Green")->GetSliceController()->GetOffsetScale()->GetScale();
+    //  API is changing between slicer versions:
+    //this->RedScale    = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetOffsetScale()->GetScale();
+    //this->YellowScale = appGUI->GetMainSliceGUI("Yellow")->GetSliceController()->GetOffsetScale()->GetScale();
+    //this->GreenScale  = appGUI->GetMainSliceGUI("Green")->GetSliceController()->GetOffsetScale()->GetScale();
+    this->RedScale    = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetOffsetScale();
+    this->YellowScale = appGUI->GetMainSliceGUI("Yellow")->GetSliceController()->GetOffsetScale();
+    this->GreenScale  = appGUI->GetMainSliceGUI("Green")->GetSliceController()->GetOffsetScale();
 
     this->RedScale->AddObserver(vtkKWScale::ScaleValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
     this->RedScale->AddObserver(vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand);
@@ -405,7 +414,9 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
 void vtkMRSpectroscopyGUI::AddGridObserver( )
 {
     vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
-    this->Interactor = appGUI->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
+    //  API is changing between slicer versions:
+    //this->Interactor = appGUI->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
+    this->Interactor = appGUI->GetActiveViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
     this->Interactor
         ->AddObserver(vtkCommand::LeftButtonReleaseEvent, (vtkCommand *)this->GUICallbackCommand);
 }
@@ -607,31 +618,33 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
 
 void vtkMRSpectroscopyGUI::RenderActor(vtkProp* actor)
 {
-  this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
+    //  API is changing between slicer versions:
+    //this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
+    this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
 }
 
 
 void vtkMRSpectroscopyGUI::LoadSpectra( )
 {
     svkDataModel* model = svkDataModel::New();
-    svkImageData* ddfData = model->LoadFile("/Users/jasonc/data/slicer/t6273/t6273_lac_fbcomb_sum_cp_cor.ddf");
+    svkImageData* ddfData = model->LoadFile("/Users/jasonc/Desktop/menze/for_bjoern/data_for_sivic_module/spectra/abc_lac_fbcomb_sum_cp_cor.ddf");
     this->CurrentSpectra = ddfData;
     ddfData->Register(NULL);
 
-    cout << "DDF DATA: " << *(ddfData->GetImage()) << endl;
+    cout << "DDF DATA Loaded: " << *(ddfData) << endl;
 
     svkImageTopologyGenerator* gen = svkMrsTopoGenerator::New();
 
-    vtkActor *grid = vtkActor::New();
-    gen->GenerateVoxelGridActor(ddfData, grid);
-    grid->GetMapper()->Update();
-  
-    RenderActor(grid);
+    //vtkActor *grid = vtkActor::New();
+    //gen->GenerateVoxelGridActor(ddfData, grid);
+    //grid->GetMapper()->Update();
+    //RenderActor(grid);
 
     vtkSlicerSliceGUI* redgui = this->GetApplicationGUI()->GetMainSliceGUI("Red");
     vtkSlicerSliceGUI* yellowgui = this->GetApplicationGUI()->GetMainSliceGUI("Yellow");
     vtkSlicerSliceGUI* greengui = this->GetApplicationGUI()->GetMainSliceGUI("Green");
     
+    //RenderActor(grid);
     vtkSlicerSliceGUI* guis[3] = {redgui, yellowgui, greengui};
   
     for(int i = 0; i < 3; ++i) {
@@ -660,7 +673,6 @@ void vtkMRSpectroscopyGUI::LoadSpectra( )
         transform->Inverse();
         vtkTransformPolyDataFilter* filter = vtkTransformPolyDataFilter::New();
         filter->SetTransform(transform);
-
         vtkPolyData* pdata = gen->GenerateVoxelGridPolyData(ddfData);
 //diagnostics: 
 pdata->Update();
@@ -669,10 +681,13 @@ cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[0] 
 cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
 cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
 
+cout << "CHECK 2" << endl;
+
         filter->SetInput(pdata);
 
         vtkPolyData* ndata = filter->GetOutput();
         ndata->Update();
+cout << "CHECK 3" << endl;
 
         vtkDataSetAttributes* cd = ndata->GetCellData();
         cd->Initialize();
@@ -724,7 +739,8 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
                             );
 
     float highestPoint = point->ConvertPosUnits(
-                                ddfData->GetImage()->GetCellData()->GetArray(0)->GetNumberOfTuples(),
+                                //ddfData->GetImage()->GetCellData()->GetArray(0)->GetNumberOfTuples(),
+                                ddfData->GetCellData()->GetArray(0)->GetNumberOfTuples(),
                                 svkSpecPoint::PTS,
                                 svkSpecPoint::PPM
                             );
@@ -733,20 +749,15 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
     this->xSpecRange->EnabledOn();
     point->Delete();
 
-cout << "C1" << endl;
     double range[2];
     this->CurrentSpectra->GetDataRange( range, svkImageData::REAL  );
-cout << "C2" << endl;
     this->ySpecRange->SetWholeRange( range[0], range[1] );
-cout << "C3" << endl;
     //this->ySpecRange->SetRange( range[0]*NEG_RANGE_SCALE, range[1]*POS_RANGE_SCALE );
-cout << "C4" << endl;
     this->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
-cout << "C5" << endl;
     this->ySpecRange->EnabledOn();
-cout << "C6" << endl;
 
     DoOtherThing();
+
 }
 
 
@@ -757,10 +768,12 @@ void vtkMRSpectroscopyGUI::DoOtherThing( )
 {
     svkDataModel* model = svkDataModel::New();
     svkImageData* ddfData = this->CurrentSpectra;
-    ddfData->GetImage()->Update();
+    //ddfData->GetImage()->Update();
 
     vtkSlicerApplicationGUI* appgui = this->GetApplicationGUI();
-    vtkSlicerViewerWidget* viewer = appgui->GetViewerWidget();
+    //  API is changing between slicer versions:
+    //vtkSlicerViewerWidget* viewer = appgui->GetViewerWidget();
+    vtkSlicerViewerWidget* viewer = appgui->GetActiveViewerWidget();
     vtkKWRenderWidget* rwidget = viewer->GetMainViewer();
     vtkRenderWindowInteractor* rwi = rwidget->GetRenderWindowInteractor();
     this->PlotView = svkPlotGridViewController::New();
@@ -789,40 +802,50 @@ int vtkMRSpectroscopyGUI::GetAxialSlice()
     int voxelIndex = -1;
     double* bounds;
     double boundArray[6];
-    this->CurrentSpectra->GetImage()->GetBounds(boundArray);
+    //this->CurrentSpectra->GetImage()->GetBounds(boundArray);
+    this->CurrentSpectra->GetCellBounds(0,boundArray);
     std::cerr << "Bounds: " << boundArray[0] << " " << boundArray[1] << " "
 	    << boundArray[2] << " " << boundArray[3] << " " 
 	    << boundArray[4] << " " << boundArray[5] << std::endl;
 
     vtkPoints* pointsBuffer;
-    int cellCount = this->CurrentSpectra->GetImage()->GetNumberOfCells();
-    this->CurrentSpectra->GetImage()->GetCell(0, cellBuffer);
+    //int cellCount = this->CurrentSpectra->GetImage()->GetNumberOfCells();
+    int cellCount = this->CurrentSpectra->GetNumberOfCells();
+    //this->CurrentSpectra->GetImage()->GetCell(0, cellBuffer);
+    this->CurrentSpectra->GetCell(0, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell 0: " << *pointsBuffer << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    this->CurrentSpectra->GetImage()->GetCell(cellCount / 5, cellBuffer);
+    //this->CurrentSpectra->GetImage()->GetCell(cellCount / 5, cellBuffer);
+    this->CurrentSpectra->GetCell(cellCount / 5, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell " << cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    this->CurrentSpectra->GetImage()->GetCell(2 * cellCount / 5, cellBuffer);
+    //this->CurrentSpectra->GetImage()->GetCell(2 * cellCount / 5, cellBuffer);
+    this->CurrentSpectra->GetCell(2 * cellCount / 5, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell " << 2 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    this->CurrentSpectra->GetImage()->GetCell(3 * cellCount / 5, cellBuffer);
+    //this->CurrentSpectra->GetImage()->GetCell(3 * cellCount / 5, cellBuffer);
+    this->CurrentSpectra->GetCell(3 * cellCount / 5, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell " << 3 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    this->CurrentSpectra->GetImage()->GetCell(4 * cellCount / 5, cellBuffer);
+    //this->CurrentSpectra->GetImage()->GetCell(4 * cellCount / 5, cellBuffer);
+    this->CurrentSpectra->GetCell(4 * cellCount / 5, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell " << 4 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    this->CurrentSpectra->GetImage()->GetCell(5 * cellCount / 5, cellBuffer);
+    //this->CurrentSpectra->GetImage()->GetCell(5 * cellCount / 5, cellBuffer);
+    this->CurrentSpectra->GetCell(5 * cellCount / 5, cellBuffer);
     pointsBuffer = cellBuffer->GetPoints();
     pointsBuffer->ComputeBounds();
     std::cerr << "Cell " << 5 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
     
-    for(int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
-        this->CurrentSpectra->GetImage()->GetCell(i, cellBuffer);
+    //for(int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
+    for(int i = 0; i < this->CurrentSpectra->GetNumberOfCells(); ++i) {
+        //this->CurrentSpectra->GetImage()->GetCell(i, cellBuffer);
+        this->CurrentSpectra->GetCell(i, cellBuffer);
         bounds = cellBuffer->GetBounds();
         //    std::cerr << "Points " << i << ": " << *(cellBuffer->GetPoints()) << std::endl;
         if(bounds[4] <= sagittal && sagittal <= bounds[5]) {
@@ -865,7 +888,8 @@ cout << "max: " << maxPoints[0] << " " << maxPoints[1] <<  " " << maxPoints[2] <
     set<int> pointSet;
     vtkGenericCell* cellBuffer = vtkGenericCell::New();
 
-    for (int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
+    //for (int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
+    for (int i = 0; i < this->CurrentSpectra->GetNumberOfCells(); ++i) {
 
         this->CurrentSpectra->GetIndexFromID(i, curPoints);
 
@@ -873,7 +897,8 @@ cout << "max: " << maxPoints[0] << " " << maxPoints[1] <<  " " << maxPoints[2] <
             minPoints[1] <= curPoints[1]  && curPoints[1] <= maxPoints[1] &&
             minPoints[2] <= curPoints[2]  && curPoints[2] <= maxPoints[2]) 
         {
-            this->CurrentSpectra->GetImage()->GetCell(i, cellBuffer);
+            //this->CurrentSpectra->GetImage()->GetCell(i, cellBuffer);
+            this->CurrentSpectra->GetCell(i, cellBuffer);
             vtkIdList* pointIDs = cellBuffer->GetPointIds();
             for (int j = 0; j < pointIDs->GetNumberOfIds(); ++j) 
             {
@@ -926,8 +951,10 @@ void vtkMRSpectroscopyGUI::RefreshSliceWindows()
 
 void vtkMRSpectroscopyGUI::ResetStyle()
 {
-  this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->SetInteractorStyle(this->SlicerStyle);
-  this->HasStyle = 0;
+    //  API is changing between slicer versions:
+    //this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->SetInteractorStyle(this->SlicerStyle);
+    this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->SetInteractorStyle(this->SlicerStyle);
+    this->HasStyle = 0;
 }
 
 
