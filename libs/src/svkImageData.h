@@ -242,9 +242,6 @@ class svkImageData: public vtkImageData
         virtual void       GetDataBasis( double basisVector[3], DataBasis basis );
         virtual int        GetOrientationIndex( svkDcmHeader::Orientation orientation );
         virtual void       GetImageCenter( double* center );
-        virtual double     GetSliceSpacing( 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
-                           );
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
 

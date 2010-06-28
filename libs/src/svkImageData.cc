@@ -1335,10 +1335,12 @@ int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation slic
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     double normal[3];
     double* origin = this->GetOrigin();
+    double* spacing = this->GetSpacing();
+    int index = this->GetOrientationIndex( sliceOrientation );
     this->GetSliceNormal( normal, sliceOrientation );
     double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
     double imageCenter = vtkMath::Dot( posLPS, normal ); 
-    double idealCenter = ( imageCenter-vtkMath::Dot( this->GetOrigin(), normalDouble) )/this->GetSliceSpacing( sliceOrientation );
+    double idealCenter = ( imageCenter-vtkMath::Dot( origin, normalDouble) )/(spacing[index] );
     int slice = (int) floor( idealCenter + 0.5 );
     return slice; 
 }
@@ -1600,46 +1602,6 @@ int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
     }
     return index;
     
-}
-
-
-/*!
- *  Get the spacing for a given orientation.
- */
-double svkImageData::GetSliceSpacing( svkDcmHeader::Orientation sliceOrientation )
-{
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
-                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-
-    switch ( this->GetDcmHeader()->GetOrientationType() ) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    return this->GetSpacing()[2];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    return this->GetSpacing()[1];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    return this->GetSpacing()[0];
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    return this->GetSpacing()[1];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    return this->GetSpacing()[2];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    return this->GetSpacing()[0];
-                    break;
-            }
-            break;
-    }
-
 }
 
 
