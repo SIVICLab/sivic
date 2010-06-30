@@ -959,7 +959,7 @@ void svkPlotLineGrid::UpdateComponent()
 
 
 /*!
- *  Checks to see if the component has change, if it has it updates.
+ *  Updates plot lines orientation.
  */
 void svkPlotLineGrid::UpdateOrientation()
 {
@@ -982,6 +982,8 @@ void svkPlotLineGrid::UpdateOrientation()
         //TODO: Get rid of this nested switch, maybe by manipulating the dcos and/or origin of plotLines...
         switch( dataOrientation ) {
             case svkDcmHeader::AXIAL:
+                //  this->orientation is the orientation of the camera view, 
+                //  not the intrinsic data acquisition orientation.
                 switch( this->orientation ) {
                     case svkDcmHeader::AXIAL:
                         // LR/PA direction
