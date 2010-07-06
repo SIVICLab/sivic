@@ -81,7 +81,6 @@ svkPlotLine::svkPlotLine()
     this->origin[0] = 0;
     this->origin[1] = 0;
     this->origin[2] = 0;
-    this->offset = 0;
 }
 
 
@@ -144,7 +143,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
     }
 
     for( int i = 0; i < this->numPoints; i++ ) {
-        this->GetPointIds()->SetId(i,i+offset );
+        this->GetPointIds()->SetId(i,i);
     }
 
     dataPtr = this->plotData->GetPointer(0);
@@ -253,7 +252,7 @@ void svkPlotLine::GeneratePolyData()
 
         // All points before the start get moved to the same position
         for( int i = 0; i < this->startPt; i++ ) {
-            this->polyLinePoints->SetPoint(i+offset, posLPS );
+            this->polyLinePoints->SetPoint(i, posLPS );
         }
 
         // Now for visible Points
@@ -293,7 +292,7 @@ void svkPlotLine::GeneratePolyData()
             posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
             posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
 
-            this->polyLinePoints->SetPoint(i+offset, posLPS);
+            this->polyLinePoints->SetPoint(i, posLPS);
         }
 
         // And finally we set all points outside the range to the last value
@@ -329,7 +328,7 @@ void svkPlotLine::GeneratePolyData()
         posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
         posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
         for( int i = this->endPt+1; i < numPoints; i++ ) {
-            this->polyLinePoints->SetPoint(i+offset, posLPS );
+            this->polyLinePoints->SetPoint(i, posLPS );
         }
         polyLinePoints->Modified(); 
     }
@@ -518,13 +517,4 @@ void svkPlotLine::SetPlotDirection( PlotDirection plotDirection  )
             break;
     }
     this->RecalculateScale();
-}
-
-
-/*!
- *
- */
-void svkPlotLine::SetOffset( int offset  ) 
-{
-    this->offset = offset;
 }

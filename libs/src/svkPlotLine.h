@@ -101,7 +101,6 @@ class svkPlotLine : public vtkPolyLine
         void                SetInvertPlots( bool invertPlots );
         void                SetMirrorPlots( bool mirrorPlots );
         void                SetPlotDirection( PlotDirection plotDirection  );
-        void                SetOffset( int offset );
 
 
     protected:
@@ -151,9 +150,6 @@ class svkPlotLine : public vtkPolyLine
         bool                mirrorPlots;
 
         PlotDirection       plotDirection;
-
-        // Which is the first point we should use
-        int                 offset;
 
     private:
 

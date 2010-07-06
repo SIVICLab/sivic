@@ -74,7 +74,6 @@ svkPlotGridView::svkPlotGridView()
     vtkRenderer* nullRenderer = NULL;
     this->renCollection.assign(svkPlotGridView::LAST_RENDERER+1, nullRenderer);     //Is the actor in the views FOV?
 
-
     vtkProp* nullProp = NULL;
     this->propCollection.assign(svkPlotGridView::LAST_PROP+1, nullProp);     //Is the actor in the views FOV?n
    
@@ -82,7 +81,7 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::PLOT_GRID, entirePlotGrid );
     entirePlotGrid->Delete();
 
-    this->SetProp( svkPlotGridView::VOL_SELECTION, this->plotGrid->GetSelectionBoxActor()  );
+    this->SetProp( svkPlotGridView::VOL_SELECTION, NULL );
     this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
@@ -169,9 +168,31 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 slice = data->GetFirstSlice(); 
             }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
-            plotGrid->AlignCamera(); 
-            //this->plotGrid->plotGridActor->GetProperty()->SetLineWidth( 2 );
             this->GeneratePlotGridActor();
+            this->TurnPropOn( PLOT_LINES );
+            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+            this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_LINES ) );
+            string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+            if( acquisitionType == "SINGLE VOXEL" ) {
+                this->TurnPropOff( svkPlotGridView::PLOT_GRID );
+            } else {
+                this->TurnPropOn( svkPlotGridView::PLOT_GRID );
+            }
+            if( this->GetProp( VOL_SELECTION ) != NULL ) {
+                if( this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ) ) ) {
+                    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( VOL_SELECTION ) );
+                }
+                this->GetProp( VOL_SELECTION )->Delete();
+            }
+            vtkActorCollection* selectionBoxTopology = dataVector[MRS]->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
+        // Case for no selection Box
+            if( selectionBoxTopology != NULL ) {
+                selectionBoxTopology->InitTraversal();
+                this->SetProp( VOL_SELECTION , selectionBoxTopology->GetNextActor());
+                this->GetProp( VOL_SELECTION )->Register(this);
+                this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp( VOL_SELECTION ) );
+                selectionBoxTopology->Delete();
+            }
             this->HighlightSelectionVoxels();
             this->SetSlice( slice );
             this->satBands->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
@@ -183,17 +204,11 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(  this->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE));
             }
             this->SetProp( svkPlotGridView::SAT_BANDS, this->satBands->GetSatBandsActor() );
-            string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-            if( acquisitionType == "SINGLE VOXEL" ) {
-                this->TurnPropOff( svkPlotGridView::PLOT_GRID );
-            } else {
-                this->TurnPropOn( svkPlotGridView::PLOT_GRID );
-            }
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
-            this->SetProp( svkPlotGridView::VOL_SELECTION, this->plotGrid->GetSelectionBoxActor()  );
             this->TurnPropOn( svkPlotGridView::PLOT_LINES );
             this->TurnPropOn( svkPlotGridView::VOL_SELECTION );
             this->SetOrientation( this->orientation );
+            this->AlignCamera(); 
 
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
@@ -240,12 +255,21 @@ void svkPlotGridView::SetSlice(int slice)
         tlcBrc[0] = this->dataVector[MRS]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
         tlcBrc[1] = this->dataVector[MRS]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
         this->satBands->SetClipSlice( this->slice );
+                // Case for no selection box
+        if( this->GetProp( VOL_SELECTION ) != NULL ) {
+            if( svkMrsImageData::SafeDownCast( this->dataVector[MRS])
+                      ->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+                this->GetProp( VOL_SELECTION )->SetVisibility(1);
+            } else {
+                this->GetProp( VOL_SELECTION )->SetVisibility(0);
+            }
+        }
 
     }
     this->plotGrid->SetSlice(slice);
     this->plotGrid->SetTlcBrc(tlcBrc);
-    this->plotGrid->Update();
-    this->plotGrid->AlignCamera();
+    this->plotGrid->Update(tlcBrc);
+    this->AlignCamera();
     if( dataVector[MET] != NULL ) {
         this->UpdateMetaboliteText(tlcBrc);
         this->UpdateMetaboliteImage(tlcBrc);
@@ -287,14 +311,15 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
             this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
         }
         plotGrid->SetTlcBrc(this->tlcBrc);
-        plotGrid->Update();
+        plotGrid->Update(tlcBrc);
         this->UpdateMetaboliteText(tlcBrc);
         this->UpdateMetaboliteImage(tlcBrc);
         this->GenerateClippingPlanes();
-        plotGrid->AlignCamera(); 
+        this->AlignCamera(); 
         if( toggleDraw ) {
             this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn( );
         }
+        
         this->Refresh();
     }
 }
@@ -317,10 +342,8 @@ void svkPlotGridView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
     }
     this->rwi = rwi;
     this->rwi->Register( this );
-
-    this->rwi->GetRenderWindow()->AddRenderer( this->GetRenderer( svkPlotGridView::PRIMARY ) );
-    this->plotGrid->SetRenderer( this->GetRenderer( svkPlotGridView::PRIMARY) );
-
+    this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->ParallelProjectionOn();
+    this->TurnRendererOn( svkPlotGridView::PRIMARY );
 }
 
 
@@ -336,9 +359,9 @@ void svkPlotGridView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
 void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index)
 {
     if (index == FREQUENCY) {
-        this->plotGrid->SetFrequencyWLRange(static_cast<int>(lower), static_cast<int>(upper));
+        this->plotGrid->SetFrequencyWLRange(static_cast<int>(lower), static_cast<int>(upper), this->tlcBrc);
     } else if (index == AMPLITUDE) {
-        this->plotGrid->SetIntensityWLRange(lower, upper);
+        this->plotGrid->SetIntensityWLRange(lower, upper, this->tlcBrc);
     }
     this->Refresh();
 }
@@ -558,7 +581,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
         this->GetRenderer( svkPlotGridView::PRIMARY)->Render();
         this->UpdateMetaboliteText(this->tlcBrc);
-        this->plotGrid->AlignCamera();
+        this->AlignCamera();
         this->SetOverlayOpacity(0.35);
         this->Refresh();
 
@@ -707,7 +730,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
 
     } 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
-    this->plotGrid->plotGridActor->GetProperty()->SetColor( foregroundColor );
+    this->plotGrid->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
 
     if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
@@ -731,6 +754,9 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
 {
     svkDataValidator* validator = svkDataValidator::New();
     string resultInfo = "";
+    if( targetIndex == 2 ) {
+        return resultInfo;
+    }
 
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex > MET || targetIndex < 0 ) {
@@ -923,7 +949,7 @@ void svkPlotGridView::GenerateClippingPlanes()
         if( acquisitionType != "SINGLE VOXEL" ) {
             this->ClipMapperToTlcBrc( dataVector[MRS],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
-            this->ClipMapperToTlcBrc( this->dataVector[MRS], this->plotGrid->plotGridActor->GetMapper(),
+            this->ClipMapperToTlcBrc( this->dataVector[MRS], this->plotGrid->GetPlotGridActor()->GetMapper(),
                                  tlcBrc, 0, 0, 0 );
         }
     }
@@ -949,7 +975,131 @@ void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
             this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
         }
         this->SetSlice( this->plotGrid->GetSlice() );
+        this->AlignCamera();
         this->Refresh();
+
     }
 }
 
+
+//! Resets the camera to look at the new selection
+void svkPlotGridView::AlignCamera( ) 
+{  
+    if( this->GetRenderer( svkPlotGridView::PRIMARY) != NULL && this->dataVector[MRS] != NULL ) {
+        double bounds[6];
+        string acquisitionType = dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        double normal[3];
+        this->dataVector[MRS]->GetSliceNormal( normal, this->orientation );
+        double zoom;
+        if( acquisitionType == "SINGLE VOXEL" ) {
+            memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
+        } else {
+            this->plotGrid->CalculateTlcBrcBounds( bounds, this->tlcBrc );
+        }
+        double viewWidth =  bounds[1] - bounds[0];
+        double viewHeight = bounds[3] - bounds[2];
+        double viewDepth =  bounds[5] - bounds[4];
+
+        double diagonal = sqrt( pow(bounds[1] - bounds[0],2) 
+                              + pow(bounds[3] - bounds[2],2) 
+                              + pow(bounds[5] - bounds[4],2) );
+        double focalPoint[3] = { bounds[0] + (bounds[1] - bounds[0])/2.0 ,
+                                 bounds[2] + (bounds[3] - bounds[2])/2.0 ,
+                                 bounds[4] + (bounds[5] - bounds[4])/2.0 };
+
+        this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( bounds );
+        if( svkMrsImageData::SafeDownCast(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+            double* selectionBoxBounds = this->GetProp( VOL_SELECTION )->GetBounds();
+            double tmpViewBounds[6];
+            memcpy( tmpViewBounds, bounds, sizeof(double)*6 );
+            int orientationIndex = this->dataVector[MRS]->GetOrientationIndex( this->orientation ); 
+            tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
+            tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
+            diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
+                           + pow(tmpViewBounds[3] - tmpViewBounds[2],2) 
+                           + pow(tmpViewBounds[5] - tmpViewBounds[4],2) );
+            this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( tmpViewBounds );
+        }
+
+        int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY)->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
+        }
+
+        // if the data set is not axial, move the camera
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetFocalPoint( focalPoint );
+        double* cameraPosition = this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->GetPosition();
+        double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
+                                pow( focalPoint[1] - cameraPosition[1], 2 ) +
+                                pow( focalPoint[2] - cameraPosition[2], 2 ) );
+        
+        double newCameraPosition[3] = {0,0,0};
+
+        // Lets calculate the distance from the focal point to the selection box
+        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
+            distance *=-1;
+        } else if( this->orientation == svkDcmHeader::SAGITTAL && normal[0] < 0 ) { 
+            distance *=-1;
+        }
+         
+        newCameraPosition[0] = focalPoint[0] + distance*normal[0]; 
+        newCameraPosition[1] = focalPoint[1] + distance*normal[1];
+        newCameraPosition[2] = focalPoint[2] + distance*normal[2];
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetPosition( newCameraPosition );
+
+        double* visibleBounds  = this->GetRenderer( svkPlotGridView::PRIMARY)->ComputeVisiblePropBounds();
+        double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
+                                 pow( visibleBounds[3] - visibleBounds[2], 2 ) +
+                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) );
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetThickness( thickness );
+        double columnNormal[3];
+        double viewUp[3];
+        int inverter = -1;
+
+        switch ( this->orientation ) {
+            case svkDcmHeader::AXIAL:
+                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
+                if( viewUp[1] < 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::CORONAL:
+                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[2] > 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                if( viewUp[2] > 0 ) {
+                    inverter *=-1;
+                }
+                this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
+                                                              inverter*viewUp[1], 
+                                                              inverter*viewUp[2] );
+                break;
+        }
+
+        if( viewWidth >= viewHeight && viewWidth >= viewDepth ) {
+            zoom = diagonal/viewWidth;        
+        } else if( viewHeight >= viewWidth && viewHeight >= viewDepth ) {
+            zoom = diagonal/viewHeight;        
+        } else {
+            zoom = diagonal/viewDepth;        
+        }
+
+        // We'll back off the zoom to 95% to leave some edges
+        this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->Zoom(0.95*zoom);
+        if( toggleDraw ) {
+            this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
+        }
+    }
+}

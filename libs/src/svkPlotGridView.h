@@ -113,6 +113,7 @@ class svkPlotGridView : public svkDataView
         void                        GeneratePlotGridActor();  
         void                        GenerateClippingPlanes();
         virtual void                SetOrientation( svkDcmHeader::Orientation orientation );
+        virtual void                AlignCamera();
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -152,6 +153,7 @@ class svkPlotGridView : public svkDataView
 
         //  Members:
         svkPlotLineGrid*       plotGrid; 
+        svkPlotLineGrid*       plotGrid2; 
         vector<svkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );

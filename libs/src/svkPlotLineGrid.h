@@ -79,7 +79,6 @@ using namespace std;
  */
 class svkPlotLineGrid : public vtkObject
 {
-    friend class svkPlotGridView;
 
     public:
         // vtk type revision macro
@@ -93,19 +92,16 @@ class svkPlotLineGrid : public vtkObject
 
         //  Methods
         void                    SetInput( svkMrsImageData* data );
-        void                    Update();
+        void                    Update(int tlcBrc[2]);
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
         void                    SetSlice(int slice);
         void                    SetSliceAppender();
         int                     GetSlice( );
-        void                    SetRenderer(vtkRenderer* renderer);
-        //int*                    GetCurrentTlcBrc();
-        void                    SetFrequencyWLRange(int lower, int range); 
+        void                    SetFrequencyWLRange(int lower, int range, int tlcBrc[2]); 
         void                    GetFrequencyWLRange(int &lower, int &range); 
-        void                    SetIntensityWLRange(double lower, double range); 
+        void                    SetIntensityWLRange(double lower, double range, int tlcBrc[2]); 
         void                    GetIntensityWLRange(double &lower, double &range); 
-        //void                    SetSelection(int* selectionArea);
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         int                     GetComponent( );
@@ -114,13 +110,9 @@ class svkPlotLineGrid : public vtkObject
         void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
         vtkActor*               GetPlotGridActor();
-        vtkActor*               GetSelectionBoxActor();
+        void                    CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2]);
 
     private:
-
-        //  Members:
-
-        int                         tlcBrc[2];
 
         //! The current slice
         int                         slice;
@@ -132,7 +124,7 @@ class svkPlotLineGrid : public vtkObject
         int                         timePoint;
 
         //! The ID's of the top left corner, and bottom right corner cells 
-        //int                         tlcBrc[2];
+        int                         tlcBrc[2];
 
         //! Represents the current slice of plot lines
         vtkCollection*              xyPlots;
@@ -173,17 +165,8 @@ class svkPlotLineGrid : public vtkObject
         //! Has the timePoint been modified since the last slice update 
         bool*                        timePtUpToDate;
 
-        //! The bounds of the camera that this will be rendered in
-        double*                     viewBounds;
-
         //! The data
         svkMrsImageData*               data;
-
-        //! The context in which to render
-        vtkRenderer*                renderer; 
-
-        //! The selection box actor in LPS coordinates
-        vtkActor*                   selectionBoxActor;
 
         //! A callback to update the plot lines when the data changes
         vtkCallbackCommand*         dataModifiedCB;
@@ -197,8 +180,7 @@ class svkPlotLineGrid : public vtkObject
         void                        RegeneratePlots();
         static void                 UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
         void                        AllocateXYPlots();        
-        void                        RemoveActors();
-        void                        UpdatePlotRange();
+        void                        UpdatePlotRange(int tlcBrc[2]);
         void                        UpdateComponent();
         void                        UpdateOrientation();
         void                        GenerateActor();

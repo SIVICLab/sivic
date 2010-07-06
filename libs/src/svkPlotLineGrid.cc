@@ -59,33 +59,38 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->channel = 0;
     this->timePoint = 0;
     this->slice = 0;
-    this->renderer = NULL;
-    this->selectionBoxActor = NULL;
-    this->viewBounds = NULL;
     this->xyPlots = NULL;
-    this->renderer = NULL;
     this->plotGridActor = NULL;
     this->appender = NULL;
-    this->freqUpToDate = NULL;
-    this->ampUpToDate = NULL;
-    this->channelUpToDate = NULL;
-    this->timePtUpToDate = NULL;
     this->orientation = svkDcmHeader::AXIAL;
 
 
     /*
-     * This booleans are used for improving perforamce. They keep track
+     * This arrays are used for improving performance. They keep track
      * of whether modifications have been made on the current slice, so that
      * when the slice eventually does change the new slice can be updated
      * accordingly.
-     *
-     * To sum up the "Changed" variables keep track of whether or not
-     * things need to be changed at the next Update, and "ChangedThisSlice"
-     * keeps track of whether or not things need to be update at SetSlice.
+     * 
+     * The first element of the UpToDate array is the top left corner voxel
+     * of the currently updated voxels, and the second element is the bottom
+     * right corner.
      */
+    this->freqSelectionUpToDate[0] = -1;
+    this->freqSelectionUpToDate[1] = -1;
+    this->ampSelectionUpToDate[0] = -1;
+    this->ampSelectionUpToDate[1] = -1;
+
+    // These are per slice
+    this->freqUpToDate = NULL;
+    this->ampUpToDate = NULL;
+    this->channelUpToDate = NULL;
+    this->timePtUpToDate = NULL;
+
+    // This callback will catch changes to the dataset
     this->dataModifiedCB = vtkCallbackCommand::New();
     this->dataModifiedCB->SetCallback( UpdateData );
     this->dataModifiedCB->SetClientData( (void*)this );
+
     this->plotRangeX1 = 0;
     this->plotRangeX2 = 0;
     this->plotRangeY1 = 0;
@@ -93,10 +98,8 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->plotComponent = svkPlotLine::REAL; 
     this->tlcBrc[0] = 0;
     this->tlcBrc[1] = 0;
-    this->freqSelectionUpToDate[0] = -1;
-    this->freqSelectionUpToDate[1] = -1;
-    this->ampSelectionUpToDate[0] = -1;
-    this->ampSelectionUpToDate[1] = -1;
+
+    // holds the svkPlotLines
     this->polyDataCollection = vtkPolyDataCollection::New();
 
 }
@@ -105,12 +108,6 @@ svkPlotLineGrid::svkPlotLineGrid()
 //! Destructor
 svkPlotLineGrid::~svkPlotLineGrid()
 {
-    
-    if( selectionBoxActor != NULL ) {
-        selectionBoxActor->Delete();
-        selectionBoxActor = NULL;
-    }
-
     if( this->plotGridActor != NULL ) {
         this->plotGridActor->Delete();
         this->plotGridActor = NULL;
@@ -121,15 +118,16 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->appender = NULL;
     }
 
-    if( data != NULL ) {
-        data->Delete();
-        data = NULL;
+    if( this->data != NULL ) {
+        this->data->Delete();
+        this->data = NULL;
     }
     
-    if( dataModifiedCB != NULL ) {
-        dataModifiedCB->Delete();
-        dataModifiedCB = NULL;
+    if( this->dataModifiedCB != NULL ) {
+        this->dataModifiedCB->Delete();
+        this->dataModifiedCB = NULL;
     }
+
     if( this->xyPlots != NULL ) {
         this->xyPlots->Delete();
         this->xyPlots = NULL;
@@ -139,12 +137,6 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->polyDataCollection = NULL;
     }
 
-    if( this->renderer != NULL ) {
-        this->renderer->Delete();
-        this->renderer= NULL;
-    }
-
-    delete[] viewBounds;
     delete[] freqUpToDate;
     delete[] ampUpToDate;
     delete[] channelUpToDate;
@@ -170,33 +162,13 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
     // Getting the range modifies the object, so we get it before attaching callback
     this->data->GetDataRange( range, 0 );
     this->data->Register(this);
-    this->data->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
 
-    if( this->selectionBoxActor != NULL ) {
-        if( this->renderer->HasViewProp( selectionBoxActor ) ) {
-            this->renderer->RemoveViewProp( selectionBoxActor );
-        }
-        this->selectionBoxActor->Delete();
-        this->selectionBoxActor = NULL;
-    }
-    vtkActorCollection* selectionBoxTopology = data->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
-    // Case for no selection Box
-    if( selectionBoxTopology != NULL ) {
-        selectionBoxTopology->InitTraversal();
-        this->selectionBoxActor = selectionBoxTopology->GetNextActor();
-        this->selectionBoxActor->Register(this);
-        this->renderer->AddActor( selectionBoxActor );
-        selectionBoxTopology->Delete();
-    }
+    // Observe the data for changes
+    this->data->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
     int* extent = this->data->GetExtent(); 
+
     if( this->freqUpToDate != NULL ) {
         delete[] this->freqUpToDate;
-    }
-    this->freqSelectionUpToDate[0] = -1;
-    this->freqSelectionUpToDate[1] = -1;
-    this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
-    for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
-        this->freqUpToDate[i] = 0;
     }
     if( this->ampUpToDate != NULL ) {
         delete[] this->ampUpToDate;
@@ -208,12 +180,18 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
         delete[] this->timePtUpToDate;
     }
 
+    this->freqSelectionUpToDate[0] = -1;
+    this->freqSelectionUpToDate[1] = -1;
     this->ampSelectionUpToDate[0] = -1;
     this->ampSelectionUpToDate[1] = -1;
+    
     this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
     this->channelUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
     this->timePtUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+    this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
+
     for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
+        this->freqUpToDate[i] = 0;
         this->ampUpToDate[i] = 0;
         this->channelUpToDate[i] = 0;
         this->timePtUpToDate[i] = 0;
@@ -232,9 +210,10 @@ void svkPlotLineGrid::SetInput(svkMrsImageData* data)
         this->xyPlots = NULL;
     }
     this->GenerateActor();
+
+    // In case we already had the slice set
     this->SetSlice( this->slice );
-    this->Update();
-    this->AlignCamera();
+    this->Update(tlcBrc);
 }
 
 
@@ -271,8 +250,8 @@ void svkPlotLineGrid::SetSlice(int slice)
     if( data != NULL ) { 
         int tlcIndex[3];
         int brcIndex[3];
-        this->data->GetIndexFromID( tlcBrc[0], tlcIndex );
-        this->data->GetIndexFromID( tlcBrc[1], brcIndex );
+        this->data->GetIndexFromID( this->tlcBrc[0], tlcIndex );
+        this->data->GetIndexFromID( this->tlcBrc[1], brcIndex );
         int lastSlice  = this->data->GetLastSlice( this->orientation );
         int firstSlice = this->data->GetFirstSlice( this->orientation );
         slice = (slice > lastSlice) ? lastSlice:slice;
@@ -294,23 +273,15 @@ void svkPlotLineGrid::SetSlice(int slice)
             this->timePtUpToDate[slice] = 1;
             this->channelUpToDate[slice] = 1;
         }
-        this->UpdatePlotRange();
-        this->Update();
+        this->UpdatePlotRange(this->tlcBrc);
+        this->Update(this->tlcBrc);
         this->SetSliceAppender();
-
-        // Case for no selection box
-        if( this->selectionBoxActor != NULL ) {
-            if( this->data->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-                this->selectionBoxActor->SetVisibility(1);
-            } else {
-                this->selectionBoxActor->SetVisibility(0);
-            }
-        }
-
     }
 }
 
-
+/*!
+ *  Method appends all svkPolyLine objects into one large dataset. 
+ */
 void svkPlotLineGrid::SetSliceAppender() 
 {
 
@@ -364,15 +335,20 @@ int svkPlotLineGrid::GetSlice()
 void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
 {
     if( this->data != NULL ) { 
-        int minIndex[3] = {0,0,0};
-        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
-        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
+        // Get min/max indecies for this dataset
+        int minIndex[3] = { 0,0,0 };
+        int maxIndex[3] = { this->data->GetDimensions()[0]-2,
+                            this->data->GetDimensions()[1]-2,
+                            this->data->GetDimensions()[2]-2 };
 
+        // Find min/max indecies for this slice
+        int orientationIndex = this->data->GetOrientationIndex( this->orientation );
         minIndex[ orientationIndex ] = this->slice;
         maxIndex[ orientationIndex ] = this->slice;
         int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
         int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
 
+        // Check for out of bounds 
         if( tlcBrc[0] <= tlcBrc[1] ) {
             if( tlcBrc[0] >= minID && tlcBrc[0] <= maxID ) {
                 minID = tlcBrc[0];
@@ -381,62 +357,103 @@ void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
                 maxID = tlcBrc[1];
             }
         }
-
         this->tlcBrc[0] = minID;
         this->tlcBrc[1] = maxID;
-        this->UpdatePlotRange();
-        this->Update();
+
+        this->UpdatePlotRange(this->tlcBrc);
+        this->Update(this->tlcBrc);
     } 
 
 }
 
 
 /*!
- *
+ *  Return the indecies of the top left corner, and bottom right corner
  */
 int* svkPlotLineGrid::GetTlcBrc() 
 {
     return this->tlcBrc;
 }
 
-/*! 
- *  Sets the renderer to be used. Also repositions the camera
- *  and sets it to parallel projection mode.
+
+/*!
+ *  This calculates the boundaries for a given top left/ bottom right corners
  *
- *  \param renderer the renderer you wish this plotGrid to be presented in.
+ *  TODO: Make this a utility method in svkMrsImageData and make it use cell points
  *
- */
-void svkPlotLineGrid::SetRenderer(vtkRenderer* renderer)
+ *  \param bounds this is to be populated by the method
+ *  \param tlcBrc the top left/ bottom right corners of the query
+*/
+void svkPlotLineGrid::CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2])
 {
-    if( this->renderer != NULL ) {
-        this->renderer->Delete();
+    if( data == NULL ) {
+        return;
     }
-    this->renderer = renderer; 
-    this->renderer->Register( this );
-    renderer->GetActiveCamera()->Azimuth(180);
-    renderer->GetActiveCamera()->Roll(180);
-    this->renderer->GetActiveCamera()->ParallelProjectionOn();
-    this->renderer->RemoveAllLights();
+
+    // Initialize bounds
+    bounds[0] = VTK_DOUBLE_MAX;
+    bounds[1] = -VTK_DOUBLE_MAX;
+    bounds[2] = VTK_DOUBLE_MAX;
+    bounds[3] = -VTK_DOUBLE_MAX;
+    bounds[4] = VTK_DOUBLE_MAX;
+    bounds[5] = -VTK_DOUBLE_MAX;
+    svkPlotLine* tmpXYPlot;
+
+    int rowRange[2]    = {0,0};
+    int columnRange[2] = {0,0};
+    int sliceRange[2]  = {0,0};
+
+    // Get indecies from the tlcBrc
+    this->data->GetIndexFromID( tlcBrc[0], &rowRange[0], &columnRange[0], &sliceRange[0] );
+    this->data->GetIndexFromID( tlcBrc[1], &rowRange[1], &columnRange[1], &sliceRange[1] );
+
+    // cycle through all plot objects getting their bounds
+    int ID;
+    for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
+        for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
+            for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
+            
+                ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
+                tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
+
+                // We use the cellbounds to reset the camera's fov        
+                if( tmpXYPlot->plotAreaBounds[0] < bounds[0] ) {
+                    bounds[0] = tmpXYPlot->plotAreaBounds[0];
+                }
+                if( tmpXYPlot->plotAreaBounds[1] > bounds[1] ) {
+                    bounds[1] = tmpXYPlot->plotAreaBounds[1];
+                }
+                if( tmpXYPlot->plotAreaBounds[2] < bounds[2] ) {
+                    bounds[2] = tmpXYPlot->plotAreaBounds[2];
+                }
+                if( tmpXYPlot->plotAreaBounds[3] > bounds[3] ) {
+                    bounds[3] = tmpXYPlot->plotAreaBounds[3];
+                }
+                if( tmpXYPlot->plotAreaBounds[4] < bounds[4] ) {
+                    bounds[4] = tmpXYPlot->plotAreaBounds[4];
+                }
+                if( tmpXYPlot->plotAreaBounds[5] > bounds[5] ) {
+                    bounds[5] = tmpXYPlot->plotAreaBounds[5];
+                }
+            }
+        }
+    }
 }
 
 
-//! Update the view based on voxelIndexTLC/BRC
-void svkPlotLineGrid::Update()
+/*!
+ *  Update the view based on voxelIndexTLC/BRC. This regenerates
+ *  poly data if the anything has changed.
+ *
+ * \param tlcBrc the top left / bottom right corner range to update
+ */
+void svkPlotLineGrid::Update( int tlcBrc[2])
 {
     if( data == NULL ) {
         return;
     }
     int ID;
-    double* cellBounds;
-    double* tmpViewBounds = new double[6];
-    tmpViewBounds[0] = VTK_DOUBLE_MAX;
-    tmpViewBounds[1] = -VTK_DOUBLE_MAX;
-    tmpViewBounds[2] = VTK_DOUBLE_MAX;
-    tmpViewBounds[3] = -VTK_DOUBLE_MAX;
-    tmpViewBounds[4] = VTK_DOUBLE_MAX;
-    tmpViewBounds[5] = -VTK_DOUBLE_MAX;
     svkPlotLine* tmpXYPlot;
-    string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
 
     int rowRange[2] = {0,0};
     int columnRange[2] = {0,0};
@@ -459,78 +476,47 @@ void svkPlotLineGrid::Update()
                     cout << "Make Visible: " << ID << endl;
                 }
 
-                // We use the cellbounds to reset the camera's fov        
-                if( tmpXYPlot->plotAreaBounds[0] < tmpViewBounds[0] ) {
-                    tmpViewBounds[0] = tmpXYPlot->plotAreaBounds[0];
-                }
-                if( tmpXYPlot->plotAreaBounds[1] > tmpViewBounds[1] ) {
-                    tmpViewBounds[1] = tmpXYPlot->plotAreaBounds[1];
-                }
-                if( tmpXYPlot->plotAreaBounds[2] < tmpViewBounds[2] ) {
-                    tmpViewBounds[2] = tmpXYPlot->plotAreaBounds[2];
-                }
-                if( tmpXYPlot->plotAreaBounds[3] > tmpViewBounds[3] ) {
-                    tmpViewBounds[3] = tmpXYPlot->plotAreaBounds[3];
-                }
-                if( tmpXYPlot->plotAreaBounds[4] < tmpViewBounds[4] ) {
-                    tmpViewBounds[4] = tmpXYPlot->plotAreaBounds[4];
-                }
-                if( tmpXYPlot->plotAreaBounds[5] > tmpViewBounds[5] ) {
-                    tmpViewBounds[5] = tmpXYPlot->plotAreaBounds[5];
-                }
-                if( acquisitionType == "SINGLE VOXEL" ) {
-                    memcpy( tmpViewBounds, selectionBoxActor->GetBounds(), sizeof(double)*6 );
-                }
             }
         }
-    }
-
-    // verify camera positioning
-    if( viewBounds == NULL ) {
-        viewBounds = tmpViewBounds;
-        AlignCamera();
-    } else if(  viewBounds[0] != tmpViewBounds[0] ||
-                viewBounds[1] != tmpViewBounds[1] ||
-                viewBounds[2] != tmpViewBounds[2] ||
-                viewBounds[3] != tmpViewBounds[3] ||
-                viewBounds[4] != tmpViewBounds[4] ||
-                viewBounds[5] != tmpViewBounds[5] || acquisitionType == "SINGLE VOXEL") {
-        delete[] viewBounds;
-        viewBounds = tmpViewBounds; 
-        AlignCamera();
-    } else {
-        delete[] tmpViewBounds;
     }
 }
 
 
-//! Generate all of the actors to be used 
+//! Generate plot line grid actor to be used 
 void svkPlotLineGrid::GenerateActor()
 {
     int* voxelIndex = new int[3];
     int ID;
     double* cellBounds;
     svkPlotLine* tmpXYPlot;
-    this->RemoveActors();
-    this->renderer->AddActor( selectionBoxActor );
+    if( xyPlots != NULL ) {
+        xyPlots->Delete();   
+        xyPlots = NULL;
+    }
     string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
 
 
     if (DEBUG) {
-        cout << "Warning(svkPlotLineGrid::GenerateActor):  Stabilize conventions for data ordering CellID ordering and x,y sign convention, tlc, brc, etc. (TODO) " << endl;
+        cout << "Warning(svkPlotLineGrid::GenerateActor): " 
+             << " Stabilize conventions for data ordering CellID ordering" 
+             << " and x,y sign convention, tlc, brc, etc. (TODO) " << endl;
     }
 
-    //  Note that 2D selection range is defined from tlc to brc of rubber band with y 
-    //  increasing in negative direction.
     this->AllocateXYPlots();
-    double origin[3] = { this->data->GetOrigin()[0],this->data->GetOrigin()[1],this->data->GetOrigin()[2] };
-    double spacing[3] = { this->data->GetSpacing()[0],this->data->GetSpacing()[1],this->data->GetSpacing()[2] };
+    double origin[3] =  { this->data->GetOrigin()[0],
+                          this->data->GetOrigin()[1],
+                          this->data->GetOrigin()[2] };
+
+    double spacing[3] = { this->data->GetSpacing()[0],
+                          this->data->GetSpacing()[1],
+                          this->data->GetSpacing()[2] };
 
     // TODO: Generalize for oblique single voxel
     if( acquisitionType == "SINGLE VOXEL" ) {
         this->data->GetSelectionBoxSpacing( spacing );
         this->data->GetSelectionBoxOrigin( origin );
     } 
+
     int arrayLength = this->data->GetCellData()->GetArray(0)->GetNumberOfTuples();
     int* extent = this->data->GetExtent();
     double dcos[3][3];
@@ -543,9 +529,11 @@ void svkPlotLineGrid::GenerateActor()
         this->appender->Delete();
         this->appender = NULL;
     }
+
     this->appender = vtkAppendPolyData::New();
     this->polyDataCollection->RemoveAllItems();
 
+    // Create svkPlotLines
     for (int zInd = extent[4]; zInd < extent[5]; zInd++) {
         for (int yInd = extent[2]; yInd < extent[3]; yInd++) {
             for (int xInd = extent[0]; xInd < extent[1]; xInd++) {
@@ -573,19 +561,19 @@ void svkPlotLineGrid::GenerateActor()
                 }
                 tmpXYPlot->SetDcos( dcos );
                 tmpXYPlot->SetSpacing( spacing );
-                tmpXYPlot->SetOffset( 0 );
-                tmpXYPlot->SetData( 
-                        vtkFloatArray::SafeDownCast(
-                            this->data->GetSpectrum(xInd, yInd, zInd , 0, channel )) );
+                tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(
+                                    this->data->GetSpectrum(xInd, yInd, zInd , timePoint, channel )) );
 
                 tmpPolyData->InsertNextCell(tmpXYPlot->GetCellType(), tmpXYPlot->GetPointIds());
                 tmpPolyData->Update();
                 vtkGenericCell* myCell = vtkGenericCell::New();
                 this->data->GetCell( this->data->ComputeCellId(voxelIndex), myCell );   
                 cellBounds = myCell->GetBounds();
-                //double plotAreaBounds[6];
+
                 double plotOrigin[3];
                 myCell->Delete();
+        
+                // Offset origin for current voxel
                 plotOrigin[0] = origin[0] + xInd * spacing[0] * dcos[0][0]
                                           + yInd * spacing[1] * dcos[1][0]
                                           + zInd * spacing[2] * dcos[2][0];
@@ -606,38 +594,17 @@ void svkPlotLineGrid::GenerateActor()
             }
         }
     }
+
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( appender->GetOutput() );
 
-    if( this->plotGridActor != NULL) {
-        this->renderer->RemoveViewProp( plotGridActor );
-        this->plotGridActor->Delete(); 
-    }
     this->plotGridActor = vtkActor::New();
 
     plotGridActor->SetMapper( mapper );
     mapper->Delete();
 
-    renderer->AddActor( plotGridActor );
-
-
-    // Now lets generate the selection box actor
-
     delete[] voxelIndex;
 
-}
-
-
-
-
-//!  Remove Actors for updating view: 
-void svkPlotLineGrid::RemoveActors()
-{
-   // renderer->RemoveAllViewProps();
-    if( xyPlots != NULL ) {
-        xyPlots->Delete();   
-        xyPlots = NULL;
-    }
 }
 
 
@@ -650,16 +617,17 @@ void svkPlotLineGrid::RemoveActors()
  *  TODO: Currently this method only works with points, it
  *        should be modified for Hz, and PPM.
  */
-void svkPlotLineGrid::SetFrequencyWLRange(int lower, int upper)
+void svkPlotLineGrid::SetFrequencyWLRange(int lower, int upper, int tlcBrc[2])
 {
     this->plotRangeX1 = lower; 
     this->plotRangeX2 = upper; 
     if( this->data != NULL ) {
+        // Make all slices out of date
         for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->freqUpToDate[i] = 0;
         }
     }
-    this->UpdatePlotRange();
+    this->UpdatePlotRange(tlcBrc);
 }
 
 
@@ -680,21 +648,25 @@ void svkPlotLineGrid::GetFrequencyWLRange(int &lower, int &upper)
  *  \param upper the maximum amplitude
  *
  */
-void svkPlotLineGrid::SetIntensityWLRange(double lower, double upper)
+void svkPlotLineGrid::SetIntensityWLRange(double lower, double upper, int tlcBrc[2])
 {
     this->plotRangeY1 = lower;
     this->plotRangeY2 = upper;  
     if( this->data != NULL ) {
+        // Make all slices out of date 
         for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->ampUpToDate[i] = 0;
         }
     }
-    this->UpdatePlotRange();
+    this->UpdatePlotRange(tlcBrc);
 }
 
 
 /*!
+ *  Gets the current intensity range.
  *
+ *  \param lower output value
+ *  \param upper output value
  */
 void svkPlotLineGrid::GetIntensityWLRange(double &lower, double &upper)
 {
@@ -704,10 +676,15 @@ void svkPlotLineGrid::GetIntensityWLRange(double &lower, double &upper)
 
 
 /*!
- *  Sets the X,Y range for all plots in current slice.
+ *  Sets the X,Y range for all plots in the current selection.
+ *
+ *  \param tlcBrc range to update
  */
-void svkPlotLineGrid::UpdatePlotRange()
+void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2])
 {
+    if( data == NULL ) {
+        return;
+    }
     svkPlotLine* tmpXYPlot;
     int ID;
     int* extent = data->GetExtent();
@@ -773,121 +750,6 @@ void svkPlotLineGrid::RegeneratePlots()
 }
 
 
-//! Resets the camera to look at the new selection
-void svkPlotLineGrid::AlignCamera( bool invertView ) 
-{  
-    if( this->renderer != NULL && viewBounds != NULL ) {
-        string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        double normal[3];
-        this->data->GetSliceNormal( normal, this->orientation );
-        double zoom;
-        double viewWidth =  viewBounds[1] - viewBounds[0];
-        double viewHeight = viewBounds[3] - viewBounds[2];
-        double viewDepth =  viewBounds[5] - viewBounds[4];
-        double diagonal = sqrt( pow(viewBounds[1] - viewBounds[0],2) 
-                              + pow(viewBounds[3] - viewBounds[2],2) 
-                              + pow(viewBounds[5] - viewBounds[4],2) );
-        double focalPoint[3] = { viewBounds[0] + (viewBounds[1] - viewBounds[0])/2.0 
-                                ,viewBounds[2] + (viewBounds[3] - viewBounds[2])/2.0 
-                                ,viewBounds[4] + (viewBounds[5] - viewBounds[4])/2.0 };
-
-        this->renderer->ResetCamera( viewBounds );
-        if( this->data->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-            double* selectionBoxBounds = selectionBoxActor->GetBounds();
-            double tmpViewBounds[6];
-            memcpy( tmpViewBounds, viewBounds, sizeof(double)*6 );
-            int orientationIndex = this->data->GetOrientationIndex( this->orientation ); 
-            tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
-            tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
-            diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
-                           + pow(tmpViewBounds[3] - tmpViewBounds[2],2) 
-                           + pow(tmpViewBounds[5] - tmpViewBounds[4],2) );
-            this->renderer->ResetCamera( tmpViewBounds );
-        }
-
-        int toggleDraw = this->renderer->GetDraw();
-        if( toggleDraw ) {
-            this->renderer->DrawOff();
-        }
-        // if the data set is not axial, move the camera
-        this->renderer->GetActiveCamera()->SetFocalPoint( focalPoint );
-        double* cameraPosition = this->renderer->GetActiveCamera()->GetPosition();
-        double distance = sqrt( pow( focalPoint[0] - cameraPosition[0], 2 ) +
-                                pow( focalPoint[1] - cameraPosition[1], 2 ) +
-                                pow( focalPoint[2] - cameraPosition[2], 2 ) );
-        
-        double newCameraPosition[3] = {0,0,0};
-
-        // Lets calculate the distance from the focal point to the selection box
-        if( this->orientation == svkDcmHeader::AXIAL && normal[2] > 0 ) {
-            distance *=-1;
-        } else if( this->orientation == svkDcmHeader::CORONAL && normal[1] > 0 ) { 
-            distance *=-1;
-        } else if( this->orientation == svkDcmHeader::SAGITTAL && normal[0] < 0 ) { 
-            distance *=-1;
-        }
-         
-        newCameraPosition[0] = focalPoint[0] + distance*normal[0]; 
-        newCameraPosition[1] = focalPoint[1] + distance*normal[1];
-        newCameraPosition[2] = focalPoint[2] + distance*normal[2];
-        this->renderer->GetActiveCamera()->SetPosition( newCameraPosition );
-
-        double* visibleBounds  = this->renderer->ComputeVisiblePropBounds();
-        double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
-                                 pow( visibleBounds[3] - visibleBounds[2], 2 ) +
-                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) );
-        this->renderer->GetActiveCamera()->SetThickness( thickness );
-
-        double columnNormal[3];
-        double viewUp[3];
-        int inverter = -1;
-
-        switch ( this->orientation ) {
-            case svkDcmHeader::AXIAL:
-                this->data->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
-                if( viewUp[1] < 0 ) {
-                    inverter *=-1;
-                }
-                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                              inverter*viewUp[1], 
-                                                              inverter*viewUp[2] );
-                break;
-            case svkDcmHeader::CORONAL:
-                this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                if( viewUp[2] > 0 ) {
-                    inverter *=-1;
-                }
-                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                              inverter*viewUp[1], 
-                                                              inverter*viewUp[2] );
-                break;
-            case svkDcmHeader::SAGITTAL:
-                this->data->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
-                if( viewUp[2] > 0 ) {
-                    inverter *=-1;
-                }
-                this->renderer->GetActiveCamera()->SetViewUp( inverter*viewUp[0], 
-                                                              inverter*viewUp[1], 
-                                                              inverter*viewUp[2] );
-                break;
-        }
-
-        if( viewWidth >= viewHeight && viewWidth >= viewDepth ) {
-            zoom = diagonal/viewWidth;        
-        } else if( viewHeight >= viewWidth && viewHeight >= viewDepth ) {
-            zoom = diagonal/viewHeight;        
-        } else {
-            zoom = diagonal/viewDepth;        
-        }
-        // We'll back off the zoom to 95% to leave some edges
-        this->renderer->GetActiveCamera()->Zoom(0.95*zoom);
-        if( toggleDraw ) {
-            this->renderer->DrawOn();
-        }
-    }
-}
-
-
 //! Callback tied to data modified events. Regenerates plot data when the vtkImageData is modified.
 void svkPlotLineGrid::UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata)
 {
@@ -896,7 +758,7 @@ void svkPlotLineGrid::UpdateData(vtkObject* subject, unsigned long eid, void* th
 
 
 /*!
- *  Selects all voxels completely within the selection box.
+ *  Selects all voxels completely within selection box.
  *  
  */
 void svkPlotLineGrid::HighlightSelectionVoxels()
@@ -954,7 +816,7 @@ void svkPlotLineGrid::UpdateComponent()
         cout << " Reset component " << plotComponent << endl;
     }
     iterator->Delete();
-    this->Update();
+    this->Update(tlcBrc);
 }
 
 
@@ -969,6 +831,8 @@ void svkPlotLineGrid::UpdateOrientation()
         iterator->SetCollection(xyPlots);
         iterator->InitTraversal();
         svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
+
+        // Depending on orientation of camera plots will have to be inverter, mirrored
         bool mirrorPlots = false;
         bool invertPlots = false;
         double LRNormal[3];
@@ -979,7 +843,10 @@ void svkPlotLineGrid::UpdateOrientation()
         this->data->GetDataBasis(SINormal, svkImageData::SI );  
         svkPlotLine::PlotDirection plotDirection;
 
-        //TODO: Get rid of this nested switch, maybe by manipulating the dcos and/or origin of plotLines...
+        /*TODO: Get rid of this nested switch, maybe by manipulating the dcos and/or origin of plotLines...
+         *      It's purpose is to get the orientation of the plots correct with relation to the orientation
+         *      the camera.
+         */ 
         switch( dataOrientation ) {
             case svkDcmHeader::AXIAL:
                 //  this->orientation is the orientation of the camera view, 
@@ -1100,35 +967,50 @@ void svkPlotLineGrid::UpdateOrientation()
             iterator->GoToNextItem();
         }
         iterator->Delete();
-        this->Update();
+        this->Update(tlcBrc);
     }
 }
 
 
 /*!
- *
+ *  Sets the channel the grid is currently displaying.
+ *  
+ *  \param the channel to be viewed
  */
 void svkPlotLineGrid::SetChannel( int channel )
 {
     this->channel = channel;
     if( this->data != NULL ) {
+
+        // New channel makes all data no longer up to date
         for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->channelUpToDate[i] = 0;
         }
         int numChannels = this->data->GetDcmHeader()->GetNumberOfCoils();
+
+        // Catch out of bounds
         if ( channel >= numChannels ) {
-            channel = numChannels -1;
+            channel = numChannels -1; 
         } else if ( channel < 0 ) {
             channel = 0;
         }
-        int minIndex[3] = {0,0,0};
-        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+
+        // Find the the minimum and maximum indecies
+        int minIndex[3] = { 0,0,0 };
+        int maxIndex[3] = { this->data->GetDimensions()[0]-2,
+                            this->data->GetDimensions()[1]-2,
+                            this->data->GetDimensions()[2]-2 };
+
+        // Find the current orientation's slice dimension
         int orientationIndex = this->data->GetOrientationIndex( this->orientation );
 
+        // Find the min/max for this slice
         minIndex[ orientationIndex ] = this->slice;
         maxIndex[ orientationIndex ] = this->slice;
         int minID = this->data->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
         int maxID = this->data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+
+        // Update all arrays in the current slice
         this->UpdateDataArrays( minID, maxID);
         this->channelUpToDate[this->slice] = 1;
     }
@@ -1136,7 +1018,9 @@ void svkPlotLineGrid::SetChannel( int channel )
 
 
 /*!
+ *  Sets the current time point to be viewed.
  *
+ *  \param timePoint the timePoint to view
  */
 void svkPlotLineGrid::SetTimePoint( int timePoint )
 {
@@ -1146,7 +1030,10 @@ void svkPlotLineGrid::SetTimePoint( int timePoint )
             this->timePtUpToDate[i] = 0;
         }
         int minIndex[3] = {0,0,0};
-        int maxIndex[3] = {this->data->GetDimensions()[0]-2,this->data->GetDimensions()[1]-2,this->data->GetDimensions()[2]-2};
+        int maxIndex[3] = { this->data->GetDimensions()[0]-2,
+                            this->data->GetDimensions()[1]-2,
+                            this->data->GetDimensions()[2]-2};
+
         int orientationIndex = this->data->GetOrientationIndex( this->orientation );
 
         minIndex[ orientationIndex ] = this->slice;
@@ -1160,7 +1047,10 @@ void svkPlotLineGrid::SetTimePoint( int timePoint )
 
 
 /*!
+ *  Updates arrays for each svkPlotLine in the given range.
  *
+ *  \param tlc the index of the top left voxel
+ *  \param brc the index of the bottom right voxel
  */
 void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
 {
@@ -1178,9 +1068,12 @@ void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
                 
                     ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = static_cast<svkPlotLine*>( xyPlots->GetItemAsObject(ID) ); 
-                    tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(this->data->GetSpectrum(rowIndex, columnIndex, sliceIndex, this->timePoint, this->channel)));
+                    tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(
+                                         this->data->GetSpectrum(rowIndex, columnIndex, sliceIndex, 
+                                                                   this->timePoint, this->channel)));
                 }
             }
+            // Called modified on the points to trigger mapper update
             tmpXYPlot->polyLinePoints->Modified();
         }
     }
@@ -1188,7 +1081,9 @@ void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
 
 
 /*!
+ *  Sets the orientation of the plots.
  *
+ *  \param orientation orientation to be viewed
  */
 void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
 {
@@ -1211,7 +1106,7 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
         }
         svkDataView::ResetTlcBrcForNewOrientation( this->data, this->orientation, this->tlcBrc, this->slice );
 
-        if( !svkDataView::IsTlcBrcWithinData( this->data, tlcBrc ) ) {
+        if( !svkDataView::IsTlcBrcWithinData( this->data, this->tlcBrc ) ) {
             int lastSlice  = data->GetLastSlice( this->orientation );
             int firstSlice = data->GetFirstSlice( this->orientation );
             this->slice = (lastSlice-firstSlice)/2;
@@ -1220,25 +1115,17 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
         }
 
         this->UpdateOrientation();
-        this->UpdatePlotRange();
-        this->AlignCamera();
+        this->UpdatePlotRange(this->tlcBrc);
     }
 }
 
 
 /*!
+ *  Returns the plot grid actor
  *
+ *  \return the plot grid actor
  */
 vtkActor* svkPlotLineGrid::GetPlotGridActor()
 {
     return this->plotGridActor;
-}
-
-
-/*!
- *
- */
-vtkActor* svkPlotLineGrid::GetSelectionBoxActor()
-{
-    return this->selectionBoxActor;
 }
