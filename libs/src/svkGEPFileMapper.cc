@@ -705,7 +705,7 @@ void svkGEPFileMapper::GetDcos( double dcos[3][3] )
 
     dcos[0][0] = -( this->GetHeaderValueAsFloat( "rhi.trhc_R" ) - this->GetHeaderValueAsFloat( "rhi.tlhc_R" ) );
     dcos[0][1] = -( this->GetHeaderValueAsFloat( "rhi.trhc_A" ) - this->GetHeaderValueAsFloat( "rhi.tlhc_A" ) );
-    dcos[0][2] = -( this->GetHeaderValueAsFloat( "rhi.trhc_S" ) - this->GetHeaderValueAsFloat( "rhi.tlhc_S" ) );
+    dcos[0][2] =  ( this->GetHeaderValueAsFloat( "rhi.trhc_S" ) - this->GetHeaderValueAsFloat( "rhi.tlhc_S" ) );
 
     float dcosLengthX = sqrt( dcos[0][0] * dcos[0][0]
                             + dcos[0][1] * dcos[0][1]
@@ -718,7 +718,7 @@ void svkGEPFileMapper::GetDcos( double dcos[3][3] )
 
     dcos[1][0] = -( this->GetHeaderValueAsFloat( "rhi.brhc_R" ) - this->GetHeaderValueAsFloat( "rhi.trhc_R" ) );
     dcos[1][1] = -( this->GetHeaderValueAsFloat( "rhi.brhc_A" ) - this->GetHeaderValueAsFloat( "rhi.trhc_A" ) );
-    dcos[1][2] = -( this->GetHeaderValueAsFloat( "rhi.brhc_S" ) - this->GetHeaderValueAsFloat( "rhi.trhc_S" ) );
+    dcos[1][2] =  ( this->GetHeaderValueAsFloat( "rhi.brhc_S" ) - this->GetHeaderValueAsFloat( "rhi.trhc_S" ) );
 
     float dcosLengthY = sqrt( dcos[1][0] * dcos[1][0]
                             + dcos[1][1] * dcos[1][1]
