@@ -86,7 +86,9 @@ class svkDataValidator : public vtkObject
         };
         
         //! Check to see if two datasets are from the same scan
-        ValidationErrorStatus AreDataIncompatible( svkImageData* data1, svkImageData* data2 );
+        ValidationErrorStatus   AreDataIncompatible( svkImageData* data1, svkImageData* data2 );
+        bool                    AreDataOrientationsSame( svkImageData* data1, svkImageData* data2 ); 
+
 
         //! Holds the result of the last validation
         string resultInfo;
