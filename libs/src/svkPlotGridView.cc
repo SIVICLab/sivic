@@ -765,13 +765,12 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
     } else if( data->IsA("svkMriImageData") ) {
         if( dataVector[MRS] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 1" << endl;
-            svkDataValidator::ValidationErrorStatus status
-                = validator->AreDataIncompatible( data, dataVector[MRS] ); 
-            if( status == svkDataValidator::INVALID_DATA_ORIENTATION ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MRS] ); 
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 cout << "WARNING, reformatting images to spectroscopic orientation" << endl; 
                 resultInfo = "";
                 this->ResliceImage( data, dataVector[MRS] );
-            } else if( status ) {
+            } else if( !valid ) {
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             } 
@@ -793,14 +792,12 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
     } else if( data->IsA("svkMrsImageData") ) {
         if( dataVector[MET] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 2" << endl;
-            svkDataValidator::ValidationErrorStatus status
-                = validator->AreDataIncompatible( data, dataVector[MET] );  
-            if( status == svkDataValidator::INVALID_DATA_ORIENTATION ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MET] );  
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 cout << "WARNING, reformatting images to spectroscopic orientation" << endl; 
                 resultInfo = "";
                 this->ResliceImage( dataVector[MET], data );
-
-            } else if( status ) {
+            } else if( !valid ) {
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             }
