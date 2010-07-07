@@ -46,6 +46,7 @@
 
 #include <vtkObjectFactory.h>
 #include <svkImageData.h>
+#include <set>
 
 
 namespace svk {
@@ -86,12 +87,15 @@ class svkDataValidator : public vtkObject
         };
         
         //! Check to see if two datasets are from the same scan
-        ValidationErrorStatus   AreDataIncompatible( svkImageData* data1, svkImageData* data2 );
-        bool                    AreDataOrientationsSame( svkImageData* data1, svkImageData* data2 ); 
-
+        bool    AreDataCompatible( svkImageData* data1, svkImageData* data2 );
+        bool    AreDataOrientationsSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    IsInvalid( svkDataValidator::ValidationErrorStatus  error ); 
 
         //! Holds the result of the last validation
         string resultInfo;
+
+    private: 
+        set <svkDataValidator::ValidationErrorStatus> status; 
 };
 
 

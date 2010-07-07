@@ -68,44 +68,49 @@ svkDataValidator::~svkDataValidator()
 
 
 /*!
- * Check to see if two datasets are compatible. The resultInfo  will be an empty string if
- * they are compatible, otherwise it will contain an error message.
+ *  Check to see if two datasets are compatible. The resultInfo  will be an empty string if
+ *  they are compatible, otherwise it will contain an error message.
  *
- * SIDE EFFECT: resultInfo member variable will be changed.
+ *  SIDE EFFECT: resultInfo member variable will be changed.
  *
  *  \param data1 the first dataset to be compared
  *  \param data2 the second dataset to be compared
  *
+ *  \return bool (false, not compatible) 
  */
-svkDataValidator::ValidationErrorStatus svkDataValidator::AreDataIncompatible( svkImageData* data1, svkImageData* data2 )
+bool svkDataValidator::AreDataCompatible( svkImageData* data1, svkImageData* data2 )
 {
-    ValidationErrorStatus areDataIncompatible = svkDataValidator::VALID_DATA;
     double dcos1[3][3];
     double dcos2[3][3];
     int tol = 100;
     resultInfo = "";
+    this->status.clear(); 
 
     // First lets check the dcos. Parallel and anti-parallel are acceptible.
     if( data1 != NULL && data2 != NULL ) {
 
         if (! this->AreDataOrientationsSame( data1, data2 )) {
-            areDataIncompatible = svkDataValidator::INVALID_DATA_ORIENTATION;
+            this->status.insert(svkDataValidator::INVALID_DATA_ORIENTATION);
             resultInfo = "\tDcos matrices are not aligned!\n";
         }
 
         // Now lets check to see if the patient id's match
         if( strcmp( data1->GetDcmHeader()->GetStringValue("PatientID").c_str(), 
             data2->GetDcmHeader()->GetStringValue("PatientID").c_str() ) != 0 ) {
-            areDataIncompatible = svkDataValidator::INVALID_DATA_PATIENT_ID;
+            this->status.insert(svkDataValidator::INVALID_DATA_PATIENT_ID);
             resultInfo += "\tPatient ID does not match between datasets!\n";
         }
 
     } else {
-        areDataIncompatible = svkDataValidator::INVALID_DATA_CORRUPTED;
+        this->status.insert(svkDataValidator::INVALID_DATA_CORRUPTED);
         resultInfo += "\tAt least one dataset is corrupt (null)!\n";
     } 
 
-    return areDataIncompatible; 
+    if ( status.empty() ) {
+        return true; 
+    } else {
+        return false; 
+    }
 }
 
 
@@ -127,12 +132,12 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
 
     // First lets check the dcos. Parallel and anti-parallel are acceptible.
     if( data1 != NULL && data2 != NULL ) {
-        data1->GetDcos( dcos1 );
-        data2->GetDcos( dcos2 );
+        data1->GetDcmHeader()->GetDataDcos( dcos1 );
+        data2->GetDcmHeader()->GetDataDcos( dcos2 );
         for( int i = 0; i < 3; i++ ) {
             for( int j = 0; j < 3; j++ ) {
                 // Check the absolute value, with a tolerance in case of rounding errors
-                if( fabs(floor(tol*dcos1[i][j])) != fabs(floor(tol*dcos2[i][j])) ) {
+                if( floor(fabs(tol*dcos1[i][j])) != floor(fabs(tol*dcos2[i][j])) ) {
                     areOrientationsSame = false; 
                 }
             }
@@ -141,4 +146,17 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
     } 
 
     return areOrientationsSame; 
+}
+
+
+/*!
+ *  Returns true if the data sets are incompatible wrt the specified error check.
+ */
+bool svkDataValidator::IsInvalid( svkDataValidator::ValidationErrorStatus  error )
+{
+    if ( this->status.find( error ) != status.end() ){
+        return true; 
+    } else {
+        return false;
+    }
 }
