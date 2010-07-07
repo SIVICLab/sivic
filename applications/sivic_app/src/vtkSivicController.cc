@@ -439,8 +439,8 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
             resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
             resultInfo += "Info:\n"; 
-            resultInfo += "\tplotViewResultInfo";
-            resultInfo += "\toverlayViewResultInfo";
+            resultInfo += plotViewResultInfo;
+            resultInfo += overlayViewResultInfo;
             int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
 
             //  If user wants to continue anyway, unset the info results 
