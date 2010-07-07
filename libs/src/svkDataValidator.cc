@@ -68,7 +68,7 @@ svkDataValidator::~svkDataValidator()
 
 
 /*!
- *  Check to see if two datasets are compatible. The resultInfo  will be an empty string if
+ *  Check to see if two datasets are compatible. The resultInfo will be an empty string if
  *  they are compatible, otherwise it will contain an error message.
  *
  *  SIDE EFFECT: resultInfo member variable will be changed.
@@ -150,7 +150,8 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
 
 
 /*!
- *  Returns true if the data sets are incompatible wrt the specified error check.
+ *  Returns true if the data sets are incompatible wrt the specified error check
+ *  (svkDataValidator::ValidationErrorStatus).
  */
 bool svkDataValidator::IsInvalid( svkDataValidator::ValidationErrorStatus  error )
 {
