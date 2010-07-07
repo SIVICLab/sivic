@@ -94,7 +94,8 @@ class svkMrsImageData: public svkImageData
         void           GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );
         void           GetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 ); 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 ); 
-        virtual void      UpdateRange(int component );
+        virtual void       UpdateRange(int component );
+        int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);
 
 
 

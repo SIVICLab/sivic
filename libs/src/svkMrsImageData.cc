@@ -796,6 +796,59 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         pixelData->Delete();
     }
 }
+
+
+/*!
+ *  Determins the number of slices for a given orientation.
+ */
+int svkMrsImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
+{
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+    int numSlices;
+    switch ( this->GetDcmHeader()->GetOrientationType()) {
+        case svkDcmHeader::AXIAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[2]-1;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[1]-1;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[0]-1;
+                    break;
+            }
+            break;
+        case svkDcmHeader::CORONAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[1]-1;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[2]-1;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[0]-1;
+                    break;
+            }
+            break;
+        case svkDcmHeader::SAGITTAL:
+            switch ( sliceOrientation ) {
+                case svkDcmHeader::AXIAL:
+                    numSlices = this->GetDimensions()[1]-1;
+                    break;
+                case svkDcmHeader::CORONAL:
+                    numSlices = this->GetDimensions()[0]-1;
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    numSlices = this->GetDimensions()[2]-1;
+                    break;
+            }
+            break;
+    }
+    return numSlices;
+}
 /*
 void  svkMrsImageData::GetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
 {

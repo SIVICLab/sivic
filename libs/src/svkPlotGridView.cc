@@ -167,6 +167,11 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             } else if ( slice < data->GetFirstSlice() ) {
                 slice = data->GetFirstSlice(); 
             }
+            if( this->GetProp( PLOT_LINES ) != NULL ) {
+                if( this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( PLOT_LINES ) ) ) {
+                    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( PLOT_LINES ) );
+                }
+            }
             plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
             this->GeneratePlotGridActor();
             this->TurnPropOn( PLOT_LINES );

@@ -597,7 +597,9 @@ void svkPlotLineGrid::GenerateActor()
 
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( appender->GetOutput() );
-
+    if( this->plotGridActor != NULL ) {
+        this->plotGridActor->Delete();
+    }
     this->plotGridActor = vtkActor::New();
 
     plotGridActor->SetMapper( mapper );

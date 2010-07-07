@@ -1358,39 +1358,39 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
         case svkDcmHeader::AXIAL:
             switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[2]-1;
+                    numSlices = this->GetDimensions()[2];
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[1]-1;
+                    numSlices = this->GetDimensions()[1];
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0]-1;
+                    numSlices = this->GetDimensions()[0];
                     break;
             }
             break;
         case svkDcmHeader::CORONAL:
             switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1]-1;
+                    numSlices = this->GetDimensions()[1];
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[2]-1;
+                    numSlices = this->GetDimensions()[2];
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0]-1;
+                    numSlices = this->GetDimensions()[0];
                     break;
             }
             break;
         case svkDcmHeader::SAGITTAL:
             switch ( sliceOrientation ) {
                 case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1]-1;
+                    numSlices = this->GetDimensions()[1];
                     break;
                 case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[0]-1;
+                    numSlices = this->GetDimensions()[0];
                     break;
                 case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[2]-1;
+                    numSlices = this->GetDimensions()[2];
                     break;
             }
             break;
