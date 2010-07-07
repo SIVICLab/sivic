@@ -291,9 +291,8 @@ void vtkSivicController::OpenImage( const char* fileName )
         string resultInfo; 
         if( this->model->GetDataObject( "SpectroscopicData" ) != NULL ) {
             svkDataValidator* validator = svkDataValidator::New(); 
-            svkDataValidator::ValidationErrorStatus status = 
-                validator->AreDataIncompatible( newData, this->model->GetDataObject( "SpectroscopicData" )); 
-            if ( status >= 2 ) {
+            bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "SpectroscopicData" )); 
+            if ( !valid ) {
                 resultInfo = validator->resultInfo; 
             }
         }
