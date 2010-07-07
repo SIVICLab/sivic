@@ -1303,12 +1303,11 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
         } 
 
         if( dataVector[MRS] != NULL ) {
-            svkDataValidator::ValidationErrorStatus status 
-                = validator->AreDataIncompatible( data, dataVector[MRS] );
-            if( status == svkDataValidator::INVALID_DATA_ORIENTATION ) { 
+            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 resultInfo = ""; 
                 this->ResliceImage(data, dataVector[MRS], targetIndex); 
-            } else if (status) {
+            } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
@@ -1316,13 +1315,12 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
     } else if( data->IsA("svkMrsImageData") ) {
         if( dataVector[MRI] != NULL ) {
-            svkDataValidator::ValidationErrorStatus status 
-                = validator->AreDataIncompatible( data, dataVector[MRI] ); 
-            if( status  == svkDataValidator::INVALID_DATA_ORIENTATION ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 resultInfo = ""; 
                 //resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
                 this->ResliceImage(dataVector[MRI], data, targetIndex); 
-            } else if (status) {
+            } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
