@@ -67,9 +67,9 @@ svkPlotGridView::svkPlotGridView()
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);
 
-    this->isPropOn.assign(svkPlotGridView::LAST_PROP+1, FALSE);
-    this->isRendererOn.assign(svkPlotGridView::LAST_RENDERER+1, FALSE);
-    this->isPropVisible.assign(svkPlotGridView::LAST_PROP+1, FALSE);     //Is the actor in the views FOV?
+    this->isPropOn.assign(svkPlotGridView::LAST_PROP+1, flase);
+    this->isRendererOn.assign(svkPlotGridView::LAST_RENDERER+1, flase);
+    this->isPropVisible.assign(svkPlotGridView::LAST_PROP+1, flase);     //Is the actor in the views FOV?
 
     vtkRenderer* nullRenderer = NULL;
     this->renCollection.assign(svkPlotGridView::LAST_RENDERER+1, nullRenderer);     //Is the actor in the views FOV?
