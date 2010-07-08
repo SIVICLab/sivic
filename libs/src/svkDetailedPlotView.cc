@@ -60,9 +60,9 @@ svkDetailedPlotView::svkDetailedPlotView()
     this->rwi = NULL;
     this->dataVector.push_back(NULL);
 
-    this->isPropOn.assign(svkDetailedPlotView::LAST_PROP+1, FALSE);
-    this->isRendererOn.assign(svkDetailedPlotView::LAST_RENDERER+1, FALSE);
-    this->isPropVisible.assign(svkDetailedPlotView::LAST_PROP+1, FALSE);     //Is the actor in the views FOV?
+    this->isPropOn.assign(svkDetailedPlotView::LAST_PROP+1, false);
+    this->isRendererOn.assign(svkDetailedPlotView::LAST_RENDERER+1, false);
+    this->isPropVisible.assign(svkDetailedPlotView::LAST_PROP+1, false);     //Is the actor in the views FOV?
 
     vtkRenderer* nullRenderer = NULL;
     this->renCollection.assign(svkDetailedPlotView::LAST_RENDERER+1, nullRenderer);     //Is the actor in the views FOV?
