@@ -204,7 +204,7 @@ void svkDataView::SetPropState(int propIndex, bool visible)
 //!
 void svkDataView::TurnPropOn(int propIndex)
 {
-    this->isPropOn[propIndex] = TRUE; 
+    this->isPropOn[propIndex] = true; 
     if ( propIndex < this->propCollection.size() ) {
         if (this->propCollection[propIndex] != NULL) { 
             this->propCollection[propIndex]->VisibilityOn();
@@ -226,7 +226,7 @@ void svkDataView::TurnPropOn(int propIndex)
 //!
 void svkDataView::TurnPropOff(int propIndex)
 {
-    this->isPropOn[propIndex] = FALSE; 
+    this->isPropOn[propIndex] = false; 
     if ( propIndex < this->propCollection.size() ) {
         if (this->propCollection[propIndex] != NULL) { 
             this->propCollection[propIndex]->VisibilityOff();
@@ -261,7 +261,7 @@ void svkDataView::SetRendererState(int rendererIndex, bool visible)
 //!
 void svkDataView::TurnRendererOn(int rendererIndex)
 {
-    this->isRendererOn[rendererIndex] = TRUE; 
+    this->isRendererOn[rendererIndex] = true; 
     if( this->rwi != NULL && !(this->rwi->GetRenderWindow()->HasRenderer(this->renCollection[rendererIndex])) ) {
         if( this->rwi->GetRenderWindow()->GetNumberOfLayers()  < this->renCollection[rendererIndex]->GetLayer()+1 ) {
             this->rwi->GetRenderWindow()->SetNumberOfLayers( this->renCollection[rendererIndex]->GetLayer()+1);
@@ -275,7 +275,7 @@ void svkDataView::TurnRendererOn(int rendererIndex)
 //!
 void svkDataView::TurnRendererOff(int rendererIndex)
 {
-    this->isRendererOn[rendererIndex] = FALSE; 
+    this->isRendererOn[rendererIndex] = false; 
     if( this->rwi != NULL && this->rwi->GetRenderWindow()->HasRenderer(this->renCollection[rendererIndex]) ) {
         this->rwi->GetRenderWindow()->RemoveRenderer( this->renCollection[rendererIndex]);
     } 
