@@ -29,7 +29,7 @@
 cmake_minimum_required(VERSION 2.4)
 
 INCLUDE(CTest)
-ADD_TEST(test1 make)
+#ADD_TEST(test1 make)
 
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
