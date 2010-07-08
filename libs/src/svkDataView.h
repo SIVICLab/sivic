@@ -61,9 +61,6 @@
 namespace svk {
 
 
-#define TRUE 1
-#define FALSE 0
-
 using namespace std;
 
 
