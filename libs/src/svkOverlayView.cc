@@ -81,9 +81,9 @@ svkOverlayView::svkOverlayView()
 
     // Create a state vector for our images
 
-    this->isPropOn.assign(LAST_PROP+1, FALSE);
-    this->isRendererOn.assign(LAST_RENDERER+1, FALSE);
-    this->isPropVisible.assign(LAST_PROP+1, FALSE);     //Is the actor in the views FOV?
+    this->isPropOn.assign(LAST_PROP+1, false);
+    this->isRendererOn.assign(LAST_RENDERER+1, false);
+    this->isPropVisible.assign(LAST_PROP+1, false);     //Is the actor in the views FOV?
     
     // This fixes a compiler error in OS X, not sure why....
     vtkRenderer* nullRenderer = NULL;
