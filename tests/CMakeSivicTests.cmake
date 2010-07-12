@@ -25,6 +25,8 @@
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 #   OF SUCH DAMAGE.
 #
+SET( TEST_OUTPUT_DIR CACHE PATH "An output directory for tests." )
+SET( TEST_REFERENCE_DIR CACHE PATH "A directory that contains reference data for comparing tests." )
 ADD_TEST(TRUNK_TEST echo test)
 
 ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
@@ -34,7 +36,13 @@ ADD_TEST(ASSERT_FAILURE ${EXECUTABLE_OUTPUT_PATH}/assertFailTest)
 ADD_TEST(RETURN_FAILURE ${EXECUTABLE_OUTPUT_PATH}/returnFailure)
 #ADD_TEST(READ_WRITE_SIVIC_IMAGE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/idfReadWriteTest.pl
 #                                ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_DATA_ROOT}/sivic_out)
+#IF( TEST_OUTPUT_DIR )
+#    SET( TEST_OUTPUT_DIR -p${TEST_OUTPUT_DIR} )
+#ENDIF(TEST_OUTPUT_DIR)
+
+#ADD_TEST(PLOT_GRID_VIEW ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/plotGridViewRenderTest.pl
+#                                -t ${EXECUTABLE_OUTPUT_PATH}/svkPlotGridViewTest -s${SVK_DATA_ROOT}/t3148_2_cor.ddf 
+#                                ${TEST_OUTPUT_DIR} -r${TEST_REFERENCE_DIR})
+
 #ADD_TEST(READ_WRITE_NON_SIVIC_IMAGE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/idfReadWriteTest.pl
 #                                    ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_DATA_ROOT}/t0000_fla)
-
-#ADD_TEST(ECHO_TEST echo "test in test folder")

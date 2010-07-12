@@ -288,7 +288,9 @@ void RenderingTest()
 
     plotController->Delete();
     firstSpectra->Delete();
-    firstOverlay->Delete();
+    if( firstOverlay != NULL ) {
+        firstOverlay->Delete();
+    }
     model->Delete();
     window->Delete();
      
