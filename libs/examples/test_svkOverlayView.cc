@@ -418,6 +418,7 @@ void RepeatedRenderTest()
     vtkUnsignedCharArray* renderOneData = vtkUnsignedCharArray::New();
     window->GetPixelData(0,0,600,600,true,  renderOneData);     
     overlayController->SetSlice(slice);
+    overlayController->GetView()->Refresh();
     window->Render();
     rwi->Start();
     vtkUnsignedCharArray* renderTwoData = vtkUnsignedCharArray::New();
@@ -435,6 +436,9 @@ void RepeatedRenderTest()
             cout << "MATCH!!! " << endl;
         }
     }
+    overlayController->ResetWindowLevel();
+    overlayController->GetView()->Refresh();
+    window->Render();
     vtkWindowToImageFilter* w2if = vtkWindowToImageFilter::New();
     w2if->SetInput( window );
     vtkBMPWriter* writerBMP = vtkBMPWriter::New();

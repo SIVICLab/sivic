@@ -67,14 +67,22 @@ ADD_DEFINITIONS(-DHAVE_CONFIG_H)
 
 LINK_DIRECTORIES(
     ../${PLATFORM}
+    ../lib/${PLATFORM}
     ${DCMTK_DIR}/lib
 )
 
 INCLUDE_DIRECTORIES(
     ./
-    ../src
+    ../libs/src
     ${DCMTK_DIR}/include
 )
+
+ADD_LIBRARY( 
+    svkTest
+
+    svkTestUtils.cc
+)
+
 
 SET(SVK_LIBS
     vtkRendering
@@ -85,6 +93,7 @@ SET(SVK_LIBS
     vtkFiltering
     vtkCommon
     vtkVolumeRendering
+    svkTest
     svkadapt 
     svk 
     svkadapt 
@@ -92,6 +101,9 @@ SET(SVK_LIBS
     ofstd 
     z
 )
+
+
+
 
 ADD_EXECUTABLE(
     vtkRenderLoopTest
@@ -146,3 +158,15 @@ TARGET_LINK_LIBRARIES(
     svkIdfWriterTest
 	${SVK_LIBS}
 )
+
+ADD_EXECUTABLE(
+    svkPlotGridViewTest
+    svkPlotGridViewTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkPlotGridViewTest
+	${SVK_LIBS}
+)
+
+include( CMakeSivicTests.cmake )

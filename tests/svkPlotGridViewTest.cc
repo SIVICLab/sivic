@@ -42,6 +42,8 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkTIFFWriter.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGridView.h>
@@ -55,18 +57,21 @@
 #include <getopt.h>
 #include <string.h>
 #include <svkDataModel.h>
+#include <svkTestUtils.h>
 
 using namespace svk;
     
 void DefaultTest( );
 void MemoryTest( );
+void RenderingTest( );
 void DisplayUsage( );
 
 struct globalArgs_t {
-    char *firstSpectraName;    /* -s  option */
+    char *firstSpectraName;    /* -s option */
     char *secondSpectraName;   /* -S option */
-    char *firstOverlayName;     /* -o  option */
-    char *secondOverlayName;    /* -O option */
+    char *firstOverlayName;    /* -o option */
+    char *secondOverlayName;   /* -O option */
+    char *outputPath;          /* -p option */
 } globalArgs;
 
 static const struct option longOpts[] = {
@@ -75,9 +80,10 @@ static const struct option longOpts[] = {
     { "second_spectra", required_argument, NULL, 'S' },
     { "overlay",        required_argument, NULL, 'o' },
     { "second_overlay",  required_argument, NULL, 'O' },
+    { "output_path",  required_argument, NULL, 'p' },
     { NULL,             no_argument,       NULL,  0  }
 };
-static const char *optString = "t:s:S:o:O:";
+static const char *optString = "t:s:S:o:O:p:";
 
 
 int main ( int argc, char** argv )
@@ -102,6 +108,9 @@ int main ( int argc, char** argv )
                     if( strcmp( optarg, "MemoryTest" ) == 0 ) {
                         testFunction = MemoryTest;
                         cout<<" Executing Memory Check... "<<endl;
+                    } else if( strcmp( optarg, "RenderingTest" ) == 0 ) {
+                        testFunction = RenderingTest;
+                        cout<<" Executing Rendering Test... "<<endl;
                     }
                 case 's':
                     globalArgs.firstSpectraName = optarg;
@@ -114,6 +123,9 @@ int main ( int argc, char** argv )
                     break;
                 case 'O': 
                     globalArgs.secondOverlayName = optarg;
+                    break;
+                case 'p': 
+                    globalArgs.outputPath = optarg;
                     break;
                 default:
                     cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -208,6 +220,75 @@ void MemoryTest()
     secondSpectra->Delete();
     firstOverlay->Delete();
     secondOverlay->Delete();
+    model->Delete();
+    window->Delete();
+     
+}
+
+
+// Checks common operations. Saves images to disk.
+void RenderingTest()
+{   
+    if( globalArgs.firstSpectraName  == NULL ||
+        globalArgs.secondSpectraName != NULL ||
+        globalArgs.secondOverlayName != NULL || 
+        globalArgs.outputPath        == NULL ) {
+        cout << endl << " ERROR: ";
+        cout <<" Only one spectra and one metabolite files and an output path " 
+             <<" must be specified to run the rendering test! " << endl << endl; 
+        DisplayUsage();
+    }
+
+    string rootName = "";
+    string spectraRoot = string( globalArgs.firstSpectraName );
+    size_t ext = spectraRoot.find_last_of(".");
+    size_t path = spectraRoot.find_last_of("/");
+    rootName = spectraRoot.substr(path+1,ext-path-1);
+   
+
+    svkDataModel* model = svkDataModel::New();
+
+    svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
+    firstSpectra->Register(NULL);
+    firstSpectra->Update();
+    svkImageData* firstOverlay = NULL;
+    if( globalArgs.firstOverlayName != NULL ) {
+        string overlayRoot = string( globalArgs.firstOverlayName );
+        size_t ext = overlayRoot.find_last_of(".");
+        size_t path = spectraRoot.find_last_of("/");
+        rootName += overlayRoot.substr(path+1,ext-path-1);
+        firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
+        firstOverlay->Register(NULL);
+        firstOverlay->Update();
+    }
+
+    vtkRenderWindow* window = vtkRenderWindow::New(); 
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkPlotGridViewController* plotController = svkPlotGridViewController::New();
+
+    plotController->SetRWInteractor( rwi );
+
+    plotController->SetInput( firstSpectra, 0  );
+    if( firstOverlay != NULL ) {
+        plotController->SetInput( firstOverlay, 1 );
+    }
+    window->SetSize( 640, 640 );
+    window->Render();
+    plotController->HighlightSelectionVoxels();
+    window->Render();
+
+    for( int i = 0; i < firstSpectra->GetNumberOfSlices(); i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << ".tiff" ;
+
+        plotController->SetSlice( i );
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+
+    plotController->Delete();
+    firstSpectra->Delete();
+    firstOverlay->Delete();
     model->Delete();
     window->Delete();
      

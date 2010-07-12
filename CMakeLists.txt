@@ -28,7 +28,6 @@
 
 cmake_minimum_required(VERSION 2.4)
 
-INCLUDE(CTest)
 #ADD_TEST(test1 make)
 
 option( BUILD_LIBRARY "Build library." TRUE )
@@ -73,9 +72,8 @@ if( BUILD_EXAMPLES )
 endif ( BUILD_EXAMPLES )
 
 if( BUILD_TESTS )
-    add_subdirectory (libs/tests)
+    INCLUDE(CTest)
+    add_subdirectory (tests)
     FIND_PATH(SVK_DATA_ROOT "" )
     mark_as_advanced( SVK_DATA_ROOT )
-    enable_testing()
 endif ( BUILD_TESTS )
-

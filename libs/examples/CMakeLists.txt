@@ -170,17 +170,6 @@ TARGET_LINK_LIBRARIES(
 
 
 ADD_EXECUTABLE(
-    test_svkPlotGridView 
-    test_svkPlotGridView.cc
-)
-
-
-TARGET_LINK_LIBRARIES(
-    test_svkPlotGridView 
-	${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
     test_svkOverlayView 
     test_svkOverlayView.cc
 )
@@ -530,5 +519,15 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkUCSFUtils
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_svkImageAlgorithmExecuter
+    test_svkImageAlgorithmExecuter.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_svkImageAlgorithmExecuter
     ${SVK_LIBS}
 )

@@ -147,6 +147,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_multi_view
+    svk_multi_view.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_multi_view 
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_gepfile_reader
     svk_gepfile_reader.cc 
 )
