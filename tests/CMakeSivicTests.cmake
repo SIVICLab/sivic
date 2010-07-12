@@ -41,7 +41,7 @@ ADD_TEST(RETURN_FAILURE ${EXECUTABLE_OUTPUT_PATH}/returnFailure)
 #ENDIF(TEST_OUTPUT_DIR)
 
 #ADD_TEST(PLOT_GRID_VIEW ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/plotGridViewRenderTest.pl
-#                                -t ${EXECUTABLE_OUTPUT_PATH}/svkPlotGridViewTest -s${SVK_DATA_ROOT}/t3148_2_cor.ddf 
+#                                -t ${EXECUTABLE_OUTPUT_PATH}/svkPlotGridViewTest -s${SVK_DATA_ROOT}/t0000_1_cor.ddf 
 #                                ${TEST_OUTPUT_DIR} -r${TEST_REFERENCE_DIR})
 
 #ADD_TEST(READ_WRITE_NON_SIVIC_IMAGE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/idfReadWriteTest.pl
