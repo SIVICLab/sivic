@@ -28,13 +28,9 @@
 
 cmake_minimum_required(VERSION 2.4)
 
-#ADD_TEST(test1 make)
-
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
-option( BUILD_TESTS "Build tests." FALSE )
-mark_as_advanced( BUILD_TESTS )
 option( BUILD_APPS "Build mini-applications." FALSE )
 option( BUILD_OSIRIX "Build OsiriX Plugin." FALSE )
 option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
@@ -69,10 +65,3 @@ endif ( BUILD_APPS )
 if( BUILD_EXAMPLES )
     add_subdirectory (libs/examples)
 endif ( BUILD_EXAMPLES )
-
-if( BUILD_TESTS )
-    INCLUDE(CTest)
-    add_subdirectory (tests)
-    SET(SVK_DATA_ROOT CACHE PATH "The path containing the sivic test data." )
-    mark_as_advanced( SVK_DATA_ROOT )
-endif ( BUILD_TESTS )
