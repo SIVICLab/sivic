@@ -42,8 +42,6 @@
 
 #include <svkPlotLineGrid.h>
 
-#define DEBUG 0
-
 
 using namespace svk;
 using namespace std;
@@ -55,6 +53,11 @@ vtkStandardNewMacro(svkPlotLineGrid);
 //! Constructor 
 svkPlotLineGrid::svkPlotLineGrid()
 {
+
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     this->data = NULL;
     this->channel = 0;
     this->timePoint = 0;
@@ -472,7 +475,7 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
                     tmpXYPlot->GeneratePolyData();
                 }
 
-                if (DEBUG) {
+                if (this->GetDebug()) {
                     cout << "Make Visible: " << ID << endl;
                 }
 
@@ -495,8 +498,7 @@ void svkPlotLineGrid::GenerateActor()
     }
     string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
 
-
-    if (DEBUG) {
+    if (this->GetDebug()) {
         cout << "Warning(svkPlotLineGrid::GenerateActor): " 
              << " Stabilize conventions for data ordering CellID ordering" 
              << " and x,y sign convention, tlc, brc, etc. (TODO) " << endl;
@@ -555,7 +557,7 @@ void svkPlotLineGrid::GenerateActor()
                 tmpXYPlot->GetPointIds()->SetNumberOfIds(arrayLength);
                 tmpXYPlot->SetDataPoints( tmpPoints );
 
-                if (DEBUG) {
+                if (this->GetDebug()) {
                     cout << "CREATE: " << xInd << " " << yInd << " " << zInd;
                     cout << " True ID " << this->data->ComputeCellId( voxelIndex ) << endl;
                 }
@@ -814,7 +816,7 @@ void svkPlotLineGrid::UpdateComponent()
         iterator->GoToNextItem();
     }
 
-    if( DEBUG ){
+    if (this->GetDebug()) {
         cout << " Reset component " << plotComponent << endl;
     }
     iterator->Delete();

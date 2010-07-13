@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS
-#define SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS
+#ifndef SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
+#define SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
 
 
 #include <vtkObjectFactory.h>
@@ -94,4 +94,4 @@ class svkImageMapToWindowLevelColors : public vtkImageMapToWindowLevelColors
 }   //svk
 
 
-#endif //SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS
+#endif //SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H

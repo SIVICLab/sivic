@@ -40,13 +40,9 @@
  */
 
 
-#define DEBUG 0
-
-
 #include <svkSatBandSet.h>
-#define CLIP_TOLERANCE 0.05
-#define IMAGE_CLIP_TOLERANCE 0.05
-#define PROJECTION_MULTIPLIER 4
+
+
 using namespace svk;
 
 
@@ -54,9 +50,19 @@ vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
 vtkStandardNewMacro(svkSatBandSet);
 
 
+const double svkSatBandSet::CLIP_TOLERANCE = 0.05; 
+const double svkSatBandSet::IMAGE_CLIP_TOLERANCE = 0.05; 
+const int svkSatBandSet::PROJECTION_MULTIPLIER = 4;
+
+
 //! Constructor
 svkSatBandSet::svkSatBandSet()
 {
+
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     this->spectra = NULL;
     this->image = NULL;
     this->slice = 5;
@@ -717,7 +723,7 @@ void svkSatBandSet::GenerateClippingPlanes( )
 
 
     } else {
-        if( DEBUG ) {
+        if (this->GetDebug()) {
             cout<<"INPUT HAS NOT BEEN SET!!"<<endl;
         }
     }

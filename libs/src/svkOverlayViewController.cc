@@ -40,8 +40,6 @@
  */
 
 
-#define DEBUG 0
-
 #include <svkOverlayViewController.h>
 
 
@@ -57,6 +55,11 @@ vtkStandardNewMacro(svkOverlayViewController);
  */
 svkOverlayViewController::svkOverlayViewController()
 {
+
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     visualizationCreated = 0;
 
     // Create View 
@@ -385,7 +388,7 @@ void svkOverlayViewController::SetSlice( int slice )
 {
     if( visualizationCreated ) {
         this->view->SetSlice( slice );
-    } else if (DEBUG) {
+    } else if (this->GetDebug()) {
         cout<<"Visualization has not yet been created!!"<<endl;
     }
 }
@@ -402,7 +405,7 @@ void svkOverlayViewController::SetSlice( int slice, bool centerImage )
 {
     if( visualizationCreated ) {
         svkOverlayView::SafeDownCast( this->view )->SetSlice( slice, centerImage );
-    } else if (DEBUG) {
+    } else if (this->GetDebug()) {
         cout<<"Visualization has not yet been created!!"<<endl;
     }
 }
@@ -418,7 +421,7 @@ void svkOverlayViewController::SetSlice(int slice, svkDcmHeader::Orientation ori
 {
     if( visualizationCreated ) {
         static_cast<svkOverlayView*>(this->view)->SetSlice( slice, orientation );
-    } else if (DEBUG) {
+    } else if (this->GetDebug()) {
         cout<<"Visualization has not yet been created!!"<<endl;
     }
 }
@@ -860,7 +863,7 @@ void svkOverlayViewController::UpdateSelection(vtkObject* subject, unsigned long
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
     double* selectionArea = new double[4];
-    if( DEBUG ) {
+    if (dvController->GetDebug()) {
         cout<<"start position ="<<myRubberband->GetStartX()<<","<<myRubberband->GetStartY()<<endl;
         cout<<"end position ="<<myRubberband->GetEndX()<<","<<myRubberband->GetEndY()<<endl;
     }    

@@ -54,8 +54,8 @@
 
 =========================================================================*/
 
-#ifndef SVK_IMAGE_FOURIER_CENTER
-#define SVK_IMAGE_FOURIER_CENTER
+#ifndef SVK_IMAGE_FOURIER_CENTER_H
+#define SVK_IMAGE_FOURIER_CENTER_H
 
 
 #include <vtkImageDecomposeFilter.h>
@@ -87,14 +87,6 @@ class svkImageFourierCenter : public vtkImageDecomposeFilter
 };
 
 }   //svk
-#endif //SVK_IMAGE_FOURIER_CENTER
 
-
-
-
-
-
-
-
-
+#endif //SVK_IMAGE_FOURIER_CENTER_H
 

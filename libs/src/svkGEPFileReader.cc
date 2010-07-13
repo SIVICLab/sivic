@@ -529,52 +529,43 @@ string svkGEPFileReader::GetFieldAsString( string key )
  *  The following code for uncompressing the UIDs may be directly 
  *  from GE.  Get clearance.  
  */
-#define UID_FAIL 0
-#define UID_OK 1
-#define UID_LEN 64
-#define RT_FOUR_BITS        0x0f
-#define LT_FOUR_BITS        0xf0
-#define DB_UID_LEN 32
 int svkGEPFileReader::GEUncompressUID(unsigned char *short_uid, char *long_uid)
 {
+    const int UID_FAIL = 0;  
+    const int UID_OK = 1;
+    const int UID_LEN = 64;
+    const int RT_FOUR_BITS = 0x0f;
+    const int LT_FOUR_BITS = 0xf0;
+    const int DB_UID_LEN = 32;
+
     int i, len;
 
     memset(long_uid, '\0', UID_LEN + 1);
 
-    if((len = strlen((char *)short_uid)) > DB_UID_LEN)
-    {
+    if((len = strlen((char *)short_uid)) > DB_UID_LEN) {
         return(UID_FAIL);
     }
 
-    for(i = 0; i < len * 2; i++) /* expanding the uid */
-    {
+    /* expanding the uid */
+    for(i = 0; i < len * 2; i++) {
         /* get the proper value from the short_uid/compressed string */
-        if(i % 2 == 0) /* an even number */
-        {
+        /* an even number */
+        if(i % 2 == 0) { 
             long_uid[i] = short_uid[i/2] & LT_FOUR_BITS;
             long_uid[i] >>= 4;
             long_uid[i] &= 0x0f;
-        }
-        else
-        {
+        } else {
             long_uid[i] = short_uid[i/2] & RT_FOUR_BITS;
         }
 
         /* we have the proper value, now expand/decompress it */
-        if(0x1 <= long_uid[i] && long_uid[i] <= 0xa)
-        {
+        if(0x1 <= long_uid[i] && long_uid[i] <= 0xa) {
             long_uid[i] += '0' - 1;
-        }
-        else if (long_uid[i] == 0xb)
-        {
+        } else if (long_uid[i] == 0xb) {
             long_uid[i] = '.';
-        }
-        else if (long_uid[i] == 0x0)
-        {
+        } else if (long_uid[i] == 0x0) {
             break;  /* This is the end, no need to look further */
-        }
-        else
-        {
+        } else {
             memset(long_uid, '\0', UID_LEN + 1);
             return(UID_FAIL);
         }

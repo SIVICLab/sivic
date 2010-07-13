@@ -75,9 +75,6 @@
 namespace svk {
 
 
-// Determines how close to the voxels things are clipped
-#define CLIP_TOLERANCE 0.001
-
 class svkDataViewController;
 class svkOverlayViewController;
 
@@ -214,6 +211,7 @@ class svkOverlayView : public svkDataView
     private:
 
         void                            SetSliceOverlay();
+        void                            InitReslice( svkImageData* data, int targetIndex ); 
         void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
 
         double                          overlayOpacity;
@@ -228,6 +226,8 @@ class svkOverlayView : public svkDataView
         svkSatBandSet*                 satBandsCoronal;
         svkSatBandSet*                 satBandsSagittal;
 
+        // Determines how close to the voxels things are clipped
+        static const double            CLIP_TOLERANCE; 
 
         
 };

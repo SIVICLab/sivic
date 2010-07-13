@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_CLIP
-#define SVK_IMAGE_CLIP
+#ifndef SVK_IMAGE_CLIP_H
+#define SVK_IMAGE_CLIP_H
 
 
 #include <vtkObjectFactory.h>
@@ -94,4 +94,4 @@ class svkImageClip : public vtkImageClip
 }   //svk
 
 
-#endif //SVK_IMAGE_CLIP
+#endif //SVK_IMAGE_CLIP_H

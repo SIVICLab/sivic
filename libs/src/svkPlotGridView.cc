@@ -46,15 +46,21 @@
 using namespace svk;
 
 
-#define DEBUG 0
-
 vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
 vtkStandardNewMacro(svkPlotGridView);
+
+
+const double svkPlotGridView::CLIP_TOLERANCE = 0.001; 
 
 
 //! Constructor 
 svkPlotGridView::svkPlotGridView()
 {
+
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     this->plotGrid = svkPlotLineGrid::New();
     this->orientation = svkDcmHeader::AXIAL;
 
@@ -469,7 +475,7 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
 //! Method is called when data object is Modified. 
 void svkPlotGridView::Refresh()
 {
-    if (DEBUG) {
+    if (this->GetDebug()) {
         cout << "svkPlotGridView::Refresh calls plotGrid->Update() first " << endl; 
     }
 

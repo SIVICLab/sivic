@@ -51,6 +51,9 @@ vtkCxxRevisionMacro(svkLookupTable, "$Rev$");
 vtkStandardNewMacro(svkLookupTable);
 
 
+const int svkLookupTable::NUM_COLORS = 1024;
+
+
 //  Constructor:  gets range from ScalarImageData object.
 svkLookupTable::svkLookupTable()
 {
@@ -73,16 +76,16 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
 {
     if ( type == svkLookupTable::COLOR ) {
 
-        this->SetNumberOfColors(NUM_COLORS);
-        this->SetNumberOfTableValues(NUM_COLORS);
+        this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
+        this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
         this->SetValueRange(0,1);
         this->SetHueRange(0,1);
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
 
     } else if ( type == svkLookupTable::GREY_SCALE ) {
-        this->SetNumberOfColors(NUM_COLORS);
-        this->SetNumberOfTableValues(NUM_COLORS);
+        this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
+        this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
         this->SetValueRange(0,1);
         this->SetHueRange(0,0);
         this->SetSaturationRange(0,0);
@@ -643,7 +646,7 @@ double svkLookupTable::GetAlphaThreshold()
  */
 double svkLookupTable::GetAlphaThresholdValue() 
 {
-    int firstVisibleIndex = ceil( this->alphaThresholdPercentage * this->GetNumberOfTableValues());
+    int firstVisibleIndex = static_cast<int>( ceil( this->alphaThresholdPercentage * this->GetNumberOfTableValues()) );
     double trueThreshold = ((double)firstVisibleIndex)/ this->GetNumberOfTableValues();
     double thresholdValue = this->GetRange()[0] + (trueThreshold)*(this->GetRange()[1] - this->GetRange()[0]);
     return thresholdValue;
@@ -672,7 +675,7 @@ void svkLookupTable::ConfigureAlphaThreshold()
  */
 void svkLookupTable::PrintLUT()
 {
-    for (int i = 0; i < NUM_COLORS; i++) {
+    for (int i = 0; i < svkLookupTable::NUM_COLORS; i++) {
         cout << "LUT(" << i << ") = " << GetTableValue(i)[0] << " " ;
                                       cout << GetTableValue(i)[1] << " " ;
                                       cout << GetTableValue(i)[2] << " " ;

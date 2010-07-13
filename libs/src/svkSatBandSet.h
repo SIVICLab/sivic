@@ -91,7 +91,6 @@ class svkSatBandSet : public vtkObject
 
     private:
 
-
         // methods...
         void UpdateClippingParameters();
         void GenerateSatBandsActor();
@@ -121,6 +120,11 @@ class svkSatBandSet : public vtkObject
         double deltaLR; // spacing project into x/y/z
         double deltaAP;
         double deltaSI;
+
+        static const double CLIP_TOLERANCE;
+        static const double IMAGE_CLIP_TOLERANCE;
+        static const int    PROJECTION_MULTIPLIER;
+
 
 };
 

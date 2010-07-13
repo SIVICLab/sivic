@@ -47,8 +47,6 @@
 using namespace svk;
 
 
-#define DEBUG 0
-
 vtkCxxRevisionMacro(svkDetailedPlotView, "$Rev$");
 vtkStandardNewMacro(svkDetailedPlotView);
 
@@ -56,6 +54,10 @@ vtkStandardNewMacro(svkDetailedPlotView);
 //! Constructor 
 svkDetailedPlotView::svkDetailedPlotView()
 {
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     this->slice = 0;
     this->rwi = NULL;
     this->dataVector.push_back(NULL);
@@ -303,7 +305,8 @@ void svkDetailedPlotView::SetComponent( svkBoxPlot::PlotComponent component)
  */
 void svkDetailedPlotView::Refresh()
 {
-    if (DEBUG) {
+    if (this->GetDebug()) {
+
         cout << "svkDetailefPlotView::Refresh calls plotGrid->Update() first " << endl; 
     }
 

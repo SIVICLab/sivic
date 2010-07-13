@@ -27,7 +27,6 @@
  */
 
 
-
 /*
  *  $URL$
  *  $Rev$
@@ -38,9 +37,6 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  */
-
-
-#define DEBUG 0
 
 
 #include <svkDataModel.h>
@@ -56,6 +52,11 @@ vtkStandardNewMacro(svkDataModel);
 //! Constructor
 svkDataModel::svkDataModel()
 {
+
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     reader = NULL;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
@@ -413,12 +414,12 @@ void* svkDataModel::GetState( string stateName )
 bool svkDataModel::DataExists( string objectName )
 {
     if( allDataObjectsByKeyName.find( objectName ) == allDataObjectsByKeyName.end() ) {
-        if(DEBUG) {
+        if (this->GetDebug()) {
             cout << "Data Object \'" << objectName << "\' does not exist." << endl;
         }
         return 0;
     } else {
-        if(DEBUG) {
+        if (this->GetDebug()) {
             cout << "Data Object \'" << objectName << "\' exists." << endl;
         }
         return 1;
@@ -436,12 +437,12 @@ bool svkDataModel::DataExists( string objectName )
 bool svkDataModel::StateExists( string stateName )
 {
     if( modelState.find( stateName ) == modelState.end() ) {
-        if( DEBUG ) {
+        if (this->GetDebug()) {
             cout << "State \'" << stateName << "\' does not exist." << endl;
         } 
         return 0;
     } else {
-        if( DEBUG ) {
+        if (this->GetDebug()) {
             cout << "State \'" << stateName << "\' exists." << endl;
         }
         return 1;

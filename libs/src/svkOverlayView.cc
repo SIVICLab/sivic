@@ -39,7 +39,6 @@
  *      Beck Olson
  */
 
-#define DEBUG 0 
 
 #include <svkOverlayView.h>
 
@@ -49,6 +48,9 @@ using namespace svk;
 
 vtkCxxRevisionMacro(svkOverlayView, "$Rev$");
 vtkStandardNewMacro(svkOverlayView);
+
+
+const double svkOverlayView::CLIP_TOLERANCE = 0.001; 
 
 
 /*!
@@ -392,14 +394,15 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
 void svkOverlayView::SetInput(svkImageData* data, int index)
 {
     bool resetViewState = 1;
+
     // Check data compatiblity
     string resultInfo = this->GetDataCompatibility( data, index );
+    this->InitReslice( data, index ); 
+
     if( strcmp( resultInfo.c_str(), "" ) == 0 ) { 
     
         if( dataVector[index] != NULL ) {
-            //if( dataVector[MRI] != NULL && dataVector[MRS] != NULL ) {
-                resetViewState = 0; 
-            //}
+            resetViewState = 0; 
             dataVector[index]->Delete();
             dataVector[index] = NULL;
         }
@@ -416,12 +419,19 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
         } 
         this->Refresh();
         //this->SetOrientation( this->orientation );
+cout << "DATA LOADED " << endl; 
+cout << *data << endl; 
+cout << "DATA LOADED " << endl; 
+
     } else {
+
         string message = "ERROR: Dataset NOT loaded!!! \n";
         message += resultInfo;
         cout << message.c_str() << endl;
+
     }
 }
+
 
 /*!
  *   Sets the current slice.
@@ -433,6 +443,7 @@ void svkOverlayView::SetSlice(int slice)
     bool centerImage = true;
     this->SetSlice( slice, centerImage );
 }
+
 
 /*!
  *   Sets the current slice and centers the image to the voxel.
@@ -795,7 +806,8 @@ void svkOverlayView::GenerateClippingPlanes( )
     if( dataVector[MRS] != NULL ) {
         this->ClipMapperToTlcBrc( dataVector[MRS], 
                                  vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID ))->GetMapper(), 
-                                 tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
+                                 tlcBrc, svkOverlayView::CLIP_TOLERANCE, 
+                                 svkOverlayView::CLIP_TOLERANCE, svkOverlayView::CLIP_TOLERANCE );
     }
 }
 
@@ -1294,6 +1306,7 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
     
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
+
         resultInfo = "Data incompatible-- NULL or outside of input range.\n";
 
     } else if( data->IsA("svkMriImageData") ) {
@@ -1305,8 +1318,8 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
         if( dataVector[MRS] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
                 resultInfo = ""; 
-                this->ResliceImage(data, dataVector[MRS], targetIndex); 
             } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
@@ -1314,24 +1327,67 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
         } 
 
     } else if( data->IsA("svkMrsImageData") ) {
+
         if( dataVector[MRI] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
                 resultInfo = ""; 
-                //resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
-                this->ResliceImage(dataVector[MRI], data, targetIndex); 
             } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
         } 
+
     } else {
+
         resultInfo = "ERROR: Unrecognized data type!";
+
     } 
     cout<<resultInfo.c_str()<<endl;
   
     validator->Delete(); 
+
     return resultInfo; 
+}
+
+
+/*!
+ *  Reslice data if necessary: 
+ */
+void svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
+{
+
+    svkDataValidator* validator = svkDataValidator::New();
+    
+    // Check for null datasets and out of bound data sets...
+    if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
+
+        return; 
+
+    } else if( data->IsA("svkMriImageData") ) {
+        
+        if( dataVector[MRS] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                this->ResliceImage(data, dataVector[MRS], targetIndex); 
+            } 
+        } 
+
+    } else if( data->IsA("svkMrsImageData") ) {
+
+        if( dataVector[MRI] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                this->ResliceImage(dataVector[MRI], data, targetIndex); 
+            } 
+        } 
+
+    } 
+
+    validator->Delete(); 
+
+    return; 
 }
 
 
@@ -1340,6 +1396,11 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
  */
 void svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int targetIndex)    
 {
+cout << "RESLICE IMAGE" << endl;
+cout << "RESLICE IMAGE" << endl;
+cout << "RESLICE IMAGE" << endl;
+cout << "RESLICE IMAGE" << endl;
+cout << "RESLICE IMAGE" << endl;
     //  if (orthogonal orientations) {
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
     reslicer->SetInput( input );

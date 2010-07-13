@@ -40,10 +40,6 @@
  */
 
 
-
-#define DEBUG 0
-
-
 #include <svkDataValidator.h>
 
 
@@ -57,6 +53,10 @@ vtkStandardNewMacro(svkDataValidator);
 //! Constructor
 svkDataValidator::svkDataValidator()
 {
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+
     resultInfo = "";
 }
 

@@ -38,9 +38,6 @@
  */
 
 
-#define DEBUG 0
-
-
 #include <svkUCSFUtils.h>
 
 

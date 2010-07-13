@@ -41,8 +41,8 @@
 
 
 
-#ifndef SVK_IMAGE_MAP_TO_COLORS
-#define SVK_IMAGE_MAP_TO_COLORS
+#ifndef SVK_IMAGE_MAP_TO_COLORS_H
+#define SVK_IMAGE_MAP_TO_COLORS_H
 
 
 #include <vtkObjectFactory.h>
@@ -90,4 +90,4 @@ class svkImageMapToColors : public vtkImageMapToColors
 }   //svk
 
 
-#endif //SVK_IMAGE_MAP_TO_COLORS
+#endif //SVK_IMAGE_MAP_TO_COLORS_H

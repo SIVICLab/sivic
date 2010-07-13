@@ -71,10 +71,8 @@
 
 namespace svk {
 
-#define CLIP_TOLERANCE 0.001
 
 using namespace std;
-
 
 
 // Note forward declaration to avoid self refererncing includes. 
@@ -177,6 +175,7 @@ class svkPlotGridView : public svkDataView
         svkLookupTable*     colorTransfer;
         svkSatBandSet*      satBands;
 
+        static const double CLIP_TOLERANCE;
 
 
 };

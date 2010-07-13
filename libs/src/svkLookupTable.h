@@ -55,9 +55,6 @@ namespace svk{
 using namespace std;
 
 
-#define NUM_COLORS 1024 
-
-
 class svkLookupTable : public vtkLookupTable 
 { 
 
@@ -97,6 +94,8 @@ class svkLookupTable : public vtkLookupTable
         double      alphaThresholdPercentage;
 
         void        ConfigureAlphaThreshold();
+
+        static const int NUM_COLORS;    
 
 };
 
