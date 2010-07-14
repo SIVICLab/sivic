@@ -142,6 +142,8 @@ ADD_LIBRARY(
     svkOverlaySelector.cc
     svkOverlayView.cc
     svkOverlayViewController.cc
+    svkSpectraReferenceView.cc
+    svkSpectraReferenceViewController.cc
     svkImageTopologyGenerator.cc
     svkImageViewer2.cc
     svkMrsTopoGenerator.cc
