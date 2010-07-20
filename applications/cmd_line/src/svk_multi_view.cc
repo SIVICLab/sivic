@@ -125,17 +125,14 @@ int main ( int argc, char** argv )
         }
         windows[0]->GetInteractor()->Start();
     }
-/*
-    if( annotation != NULL ) {
-        annotation->Delete();
-        annotation = NULL;
-    }
-*/
     return 0;
   
 }
 
 
+/*!
+ * Display an image in the given window.
+ */
 void QuickView( vtkRenderWindow* window, svkDataModel* model, const char* filename, int id,  int xPos, int yPos )
 {
 
@@ -150,7 +147,14 @@ void QuickView( vtkRenderWindow* window, svkDataModel* model, const char* filena
         DisplayUsage();
         exit(0);
     }
-    numberOfSlices = data->GetNumberOfSlices();
+    if( id == 0 ) {
+        numberOfSlices = data->GetNumberOfSlices();
+    } else if (numberOfSlices != data->GetNumberOfSlices()){
+        cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+        cout << " ALL INPUTS MUST HAVE THE SAME NUMBER OF SLICES!!!" << endl;
+        cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+        exit(0);
+    }
     int* extent = data->GetExtent();
     svkDataViewController* dataViewer = viewers[id];
     
@@ -194,15 +198,20 @@ void QuickView( vtkRenderWindow* window, svkDataModel* model, const char* filena
     }
 }
 
+
+/*!
+ *  Display usage message.
+ */
 void DisplayUsage( void )
 {
     cout << endl << "############  USAGE  ############ " << endl << endl;
     cout << "NAME" << endl;
-    cout << "    svk_quick_view" << endl << endl;
+    cout << "    svk_multi_view" << endl << endl;
     cout << "SYNOPSIS" << endl;
-    cout << "    svk_quick_view fileName" << endl << endl;
+    cout << "    svk_multi_view imageOne imageTwo imageThree ..." << endl << endl;
     cout << "DESCRIPTION" << endl;
-    cout << "    svk_quick_view is used to give a quick way to load a volume file. Pressing + and - change the slice." << endl << endl;
+    cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number.";
+    cout << " Pressing + and - change the slice." << endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl; 
     cout << endl << "############  USAGE  ############ " << endl << endl;
@@ -217,7 +226,6 @@ void DisplayUsage( void )
 void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata)
 {
     svkDataViewController* dvController = (static_cast<svkDataViewController**>(thisObject))[0];
-    svkDataViewController* dvController2 = (static_cast<svkDataViewController**>(thisObject))[1];
     stringstream text;
     char keyPressed;
     int newSlice = -1;
