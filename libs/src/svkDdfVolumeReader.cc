@@ -396,7 +396,9 @@ void svkDdfVolumeReader::ParseDdf()
     sortFileNames->Update();
 
     //  If globed file names are not similar, use only the 0th group. 
-    int groupToUse = 0;     
+    //  If there is one group that group is used.
+    //  If there are multiple groups and the input file cannot be associated with a group then use input filename only.
+    int groupToUse = -1;     
     if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
         //  Get the group the selected file belongs to:
@@ -404,19 +406,28 @@ void svkDdfVolumeReader::ParseDdf()
         for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
             group = sortFileNames->GetNthGroup(k); 
             for (int i = 0; i < group->GetNumberOfValues(); i++) {
+                cout << "Group: " << group->GetValue(i) << endl;
                 if ( ddfFileName.compare( group->GetValue(i) ) == 0 ) {
                     groupToUse = k; 
                     break; 
                 }
             }
         }
+    } else {
+        int groupToUse = 0;     
     }
-
-    this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
-    vtkStringArray* fileNames =  sortFileNames->GetNthGroup( groupToUse );
+    
+    if( groupToUse != -1 ) {
+        this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+    } else {
+        vtkStringArray* inputFile = vtkStringArray::New();
+        inputFile->InsertNextValue( ddfFileName.c_str() );
+        this->SetFileNames( inputFile );
+        inputFile->Delete();
+    }
 #if VTK_DEBUG_ON
-    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        cout << "FN: " << fileNames->GetValue(i) << endl;
+    for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) {
+        cout << "FN: " << this->GetFileNames()->GetValue(i) << endl;
     }
 #endif
 

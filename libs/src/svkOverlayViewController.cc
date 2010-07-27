@@ -658,6 +658,7 @@ void svkOverlayViewController::UseRotationStyle()
     if( visualizationCreated ) {
         bool areSatBandsOn;
         bool areSatBandOutlinesOn;
+        bool areOrthogonalImagesOn = svkOverlayView::SafeDownCast(this->view)->AreOrthogonalImagesOn();
 
         switch( this->view->GetOrientation() ) {
             case svkDcmHeader::AXIAL:
@@ -673,17 +674,16 @@ void svkOverlayViewController::UseRotationStyle()
                  areSatBandOutlinesOn = view->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
                 break;
         }
-        if( areSatBandsOn ) {
+        if( areSatBandsOn && areOrthogonalImagesOn) {
             view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL); 
         }
-        if( areSatBandOutlinesOn ) {
+        if( areSatBandOutlinesOn && areOrthogonalImagesOn) {
             view->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
             view->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
         }
-        svkOverlayView* myView = static_cast<svkOverlayView*>(view);
         svkOverlayView::SafeDownCast(this->view)->ToggleSelBoxVisibilityOff();
         this->view->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );
         this->myRenderWindow->SetNumberOfLayers(1);
@@ -852,6 +852,38 @@ double svkOverlayViewController::GetOverlayThresholdValue(){
     return static_cast<svkOverlayView*>( view )->GetLookupTable( )->GetAlphaThresholdValue();
 }
 
+void svkOverlayViewController::SetLevel(double level, WindowLevelTarget target){
+    if( target == REFERENCE_IMAGE ) { 
+        static_cast<svkOverlayView*>( view )->SetLevel( level );
+    } else if ( target == IMAGE_OVERLAY ) {
+        static_cast<svkOverlayView*>( view )->SetColorOverlayLevel( level );
+    }
+}
+
+double svkOverlayViewController::GetLevel(WindowLevelTarget target){
+    if( target == REFERENCE_IMAGE ) { 
+        return static_cast<svkOverlayView*>( view )->GetLevel( );
+    } else if ( target == IMAGE_OVERLAY ) {
+        return static_cast<svkOverlayView*>( view )->GetColorOverlayLevel( );
+    }
+}
+
+void svkOverlayViewController::SetWindow(double window, WindowLevelTarget target){
+    if( target == REFERENCE_IMAGE ) { 
+        static_cast<svkOverlayView*>( view )->SetWindow( window );
+    } else if ( target == IMAGE_OVERLAY ) {
+        static_cast<svkOverlayView*>( view )->SetColorOverlayWindow( window );
+    }
+}
+
+double svkOverlayViewController::GetWindow(WindowLevelTarget target ){
+    if( target == REFERENCE_IMAGE ) { 
+        return static_cast<svkOverlayView*>( view )->GetWindow( );
+    } else if ( target == IMAGE_OVERLAY ) {
+        return static_cast<svkOverlayView*>( view )->GetColorOverlayWindow( );
+    }
+}
+
 /*!
  *  Updates the currently selected voxels. 
  */
@@ -915,10 +947,10 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
       
     // Compute normalized delta
 
-    double dx = 4.0 * 
+    double dx = 2.0 * 
         (isi->GetWindowLevelCurrentPosition()[0] - 
          isi->GetWindowLevelStartPosition()[0]) / size[0];
-    double dy = 4.0 * 
+    double dy = 2.0 * 
         (isi->GetWindowLevelStartPosition()[1] - 
          isi->GetWindowLevelCurrentPosition()[1]) / size[1];
       
@@ -975,6 +1007,32 @@ void svkOverlayViewController::ColorWindowLevel( vtkObject* subject, unsigned lo
     myView->Refresh();
 }
 
+/*
+void svkOverlayViewController::SetColorOverlayWindow( double window ) 
+{
+    static_cast<svkOverlayView*>(this->GetView())->SetColorOverlayWindow( window );
+
+}
+
+
+void svkOverlayViewController::SetColorOverlayLevel( double level ) 
+{
+    static_cast<svkOverlayView*>(this->GetView())->SetColorOverlayLevel( level );
+
+}
+
+
+double svkOverlayViewController::GetColorOverlayWindow( ) 
+{
+    return static_cast<svkOverlayView*>(this->GetView())->GetColorOverlayWindow( );
+}
+
+
+double svkOverlayViewController::GetColorOverlayLevel( ) 
+{
+    return static_cast<svkOverlayView*>(this->GetView())->GetColorOverlayLevel( );
+}
+*/
 
 void svkOverlayViewController::HighlightSelectionVoxels() 
 {

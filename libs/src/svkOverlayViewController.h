@@ -113,6 +113,13 @@ class svkOverlayViewController: public svkDataViewController
 
         enum InteractorStyle { SELECTION, WINDOW_LEVEL, COLOR_OVERLAY, ROTATION };
 
+        //! Enum for window level targets
+        typedef enum WindowLevelTarget{
+            REFERENCE_IMAGE = 0,
+            IMAGE_OVERLAY
+        };
+
+
         //  Methods
         virtual void              SetInput( svkImageData* data, int index = 0 );
         virtual void              SetSlice( int slice );
@@ -128,6 +135,10 @@ class svkOverlayViewController: public svkDataViewController
         void                      SetOverlayThreshold(double threshold);
         double                    GetOverlayThreshold();
         double                    GetOverlayThresholdValue();
+        void                      SetLevel(double level, WindowLevelTarget target = REFERENCE_IMAGE);
+        double                    GetLevel(WindowLevelTarget target = REFERENCE_IMAGE);
+        void                      SetWindow(double window, WindowLevelTarget target = REFERENCE_IMAGE);
+        double                    GetWindow(WindowLevelTarget target = REFERENCE_IMAGE);
         int                       GetCurrentStyle();
         void                      SetCurrentStyle( int style );
         void                      UseWindowLevelStyle();

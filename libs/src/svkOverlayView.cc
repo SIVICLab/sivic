@@ -795,6 +795,88 @@ double svkOverlayView::GetOverlayThreshold( )
 }
 
 
+//!
+void svkOverlayView::SetLevel(double level){
+    if( this->imageViewer != NULL ) {
+        this->imageViewer->SetColorLevel( level );
+        this->imageViewer->GetImageActor()->Modified();
+        this->imageViewer->Render();
+    }
+}
+
+
+//!
+void svkOverlayView::SetWindow(double window){
+    if( this->imageViewer != NULL ) {
+        this->imageViewer->SetColorWindow( window );
+        this->imageViewer->GetImageActor()->Modified();
+        this->imageViewer->Render();
+    }
+}
+
+
+//!
+double svkOverlayView::GetLevel( )
+{
+    return this->imageViewer->GetColorLevel( );
+}
+
+
+//!
+double svkOverlayView::GetWindow( )
+{
+    return this->imageViewer->GetColorWindow( );
+}
+
+
+//!
+void svkOverlayView::SetColorOverlayLevel( double level )
+{
+    if( this->colorTransfer != NULL ) {
+        double* range = this->colorTransfer->GetRange();
+        double window = range[1] - range [0];
+        this->colorTransfer->SetRange( level - window/2.0, level + window/2.0 );
+        this->Refresh();
+    }
+}
+
+
+//!
+void svkOverlayView::SetColorOverlayWindow( double window )
+{
+    if( this->colorTransfer != NULL ) {
+        double* range = this->colorTransfer->GetRange();
+        double oldWindow = range[1] - range [0];
+        double level = oldWindow/2.0;
+        this->colorTransfer->SetRange( level - window/2.0, level + window/2.0 );
+        this->Refresh();
+    }
+}
+
+
+//!
+double svkOverlayView::GetColorOverlayLevel()
+{
+    double level = 0;
+    if( this->colorTransfer != NULL ) {
+        double* range =  this->colorTransfer->GetRange( );
+        level = range[0] + (range[1]-range[0])/2.0;
+    } 
+    return level;
+}
+
+
+//!
+double svkOverlayView::GetColorOverlayWindow()
+{
+    double window = 0;
+    if( this->colorTransfer != NULL ) {
+        double* range =  this->colorTransfer->GetRange( );
+        window = range[1]-range[0];
+    }
+    return window;
+}
+
 /*!
  * Generates the clipping planes for the mMMapper. This is how the boundries
  * set are enforced, after the data is scaled, it is clipped so that data
@@ -1434,6 +1516,33 @@ void svkOverlayView::ResetWindowLevel()
 void svkOverlayView::TurnOrthogonalImagesOn()
 {
     this->imageViewer->TurnOrthogonalImagesOn();
+    bool areSatBandsOn;
+    bool areSatBandOutlinesOn;
+
+    switch( this->GetOrientation() ) {
+        case svkDcmHeader::AXIAL:
+             areSatBandsOn = this->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL);
+             areSatBandOutlinesOn = this->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+            break;
+        case svkDcmHeader::CORONAL:
+             areSatBandsOn = this->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL);
+             areSatBandOutlinesOn = this->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+            break;
+        case svkDcmHeader::SAGITTAL:
+             areSatBandsOn = this->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL);
+             areSatBandOutlinesOn = this->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+            break;
+    }
+    if( areSatBandsOn ) {
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL); 
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL); 
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL); 
+    }
+    if( areSatBandOutlinesOn ) {
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE); 
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+        this->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
+    }
 }
 
 
@@ -1443,8 +1552,62 @@ void svkOverlayView::TurnOrthogonalImagesOn()
 void svkOverlayView::TurnOrthogonalImagesOff()
 {
     this->imageViewer->TurnOrthogonalImagesOff();
+    bool satBandsOn = 0; 
+    bool satBandsOutlineOn = 0; 
+    if( this->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL) ||
+        this->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL) || 
+        this->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL) ) { 
+        satBandsOn = 1;
+    }
+    if( this->IsPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) ||
+        this->IsPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) || 
+        this->IsPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) ) { 
+        satBandsOutlineOn = 1;
+    }
+        
+    // Lets make sure orthogonal sat bands are off...
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL); 
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE); 
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL); 
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE); 
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL); 
+    this->TurnPropOff(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE); 
+
+    if( satBandsOn ) { 
+        switch( this->GetOrientation()) {
+            case svkDcmHeader::AXIAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL);
+                break;
+            case svkDcmHeader::CORONAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL);
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL);
+                break;
+        }
+    }
+    if( satBandsOutlineOn ) { 
+        switch( this->GetOrientation() ) {
+            case svkDcmHeader::AXIAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+                break;
+            case svkDcmHeader::CORONAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+                break;
+            case svkDcmHeader::SAGITTAL:
+                this->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+                break;
+        }
+    }
 }
 
+/*
+ *  Turns the orthogonal images off.
+ */
+bool svkOverlayView::AreOrthogonalImagesOn()
+{
+    return this->imageViewer->AreOrthogonalImagesOn();
+}
 
 /*!     
  *

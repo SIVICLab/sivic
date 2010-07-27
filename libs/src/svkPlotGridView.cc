@@ -408,6 +408,19 @@ void svkPlotGridView::SetOverlayWLRange( double* range )
 }
 
 
+/*!
+ *  Method gets the window level range for the overlay.
+ */
+double* svkPlotGridView::GetOverlayWLRange( )
+{
+    if( this->colorTransfer != NULL ) {
+        return this->colorTransfer->GetRange(); 
+    } else {
+        return NULL;
+    }
+}
+
+
 /*
  *  Set the component to display: 
  *

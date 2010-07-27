@@ -108,11 +108,21 @@ class svkOverlayView : public svkDataView
         string              GetDataCompatibility( svkImageData* data, int targetIndex );
         void                TurnOrthogonalImagesOn();
         void                TurnOrthogonalImagesOff();
+        bool                AreOrthogonalImagesOn();
         void                SetOrientation( svkDcmHeader::Orientation orientation );
         void                ToggleSelBoxVisibilityOn();
         void                ToggleSelBoxVisibilityOff();
         void                AlignCamera();
         bool                IsImageInsideSpectra();
+        void                SetLevel(double level);
+        double              GetLevel( );
+        void                SetWindow(double window );
+        double              GetWindow( );
+        void                SetColorOverlayWindow( double window ); 
+        void                SetColorOverlayLevel( double level ); 
+        double              GetColorOverlayWindow( ); 
+        double              GetColorOverlayLevel( );
+
         svkLookupTable*     GetLookupTable( );
 
         //! Enum represents input indecies
@@ -156,6 +166,8 @@ class svkOverlayView : public svkDataView
             MOUSE_LOCATION,
             LAST_RENDERER = MOUSE_LOCATION
         };
+
+
 
         //! Enum represents color schema, used for printing
         enum {

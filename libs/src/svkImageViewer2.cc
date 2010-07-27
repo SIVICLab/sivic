@@ -122,7 +122,7 @@ svkImageViewer2::~svkImageViewer2()
 }
 
 
-// Callback for our interactor. This has not been modified, but needs to be present.
+// Callback for our interactor. This has only been modified to reduce sensitivity.
 class vtkImageViewer2Callback : public vtkCommand
 {
 public:
@@ -172,10 +172,10 @@ public:
       
       // Compute normalized delta
 
-      double dx = 4.0 * 
+      double dx = 2.0 * 
         (isi->GetWindowLevelCurrentPosition()[0] - 
          isi->GetWindowLevelStartPosition()[0]) / size[0];
-      double dy = 4.0 * 
+      double dy = 2.0 * 
         (isi->GetWindowLevelStartPosition()[1] - 
          isi->GetWindowLevelCurrentPosition()[1]) / size[1];
       
@@ -229,6 +229,7 @@ public:
       this->IV->SetColorWindow(newWindow);
       this->IV->SetColorLevel(newLevel);
       this->IV->Render();
+      this->IV->GetRenderer()->GetRenderWindow()->GetInteractor()->InvokeEvent(vtkCommand::WindowLevelEvent);
     }
   
   vtkImageViewer2 *IV;
@@ -666,6 +667,22 @@ void svkImageViewer2::TurnOrthogonalImagesOff()
             this->coronalImageActor->Modified(); 
             break;
     }
+}
+
+
+/*!
+ *
+ */
+bool svkImageViewer2::AreOrthogonalImagesOn()
+{
+    if( this->axialImageActor->GetVisibility() 
+     && this->sagittalImageActor->GetVisibility() 
+     && this->coronalImageActor->GetVisibility() ) {
+        return true;
+    } else {
+        return false;
+    }
+        
 }
 
 
