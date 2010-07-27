@@ -59,6 +59,7 @@
 #include <sivicViewRenderingWidget.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicWindowLevelWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
 
@@ -100,6 +101,8 @@ class sivicApp
         sivicProcessingWidget*     processingWidget;
         sivicImageViewWidget*      imageViewWidget;
         sivicSpectraViewWidget*    spectraViewWidget;
+        sivicWindowLevelWidget*    windowLevelWidget;
+        sivicWindowLevelWidget*    overlayWindowLevelWidget;
         sivicSpectraRangeWidget*   spectraRangeWidget;
         sivicGlobalWidget*         globalWidget;
         vtkKWUserInterfacePanel*   uiPanel;

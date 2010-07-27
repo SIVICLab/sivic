@@ -53,6 +53,8 @@ sivicApp::sivicApp()
     this->processingWidget = sivicProcessingWidget::New();
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
+    this->windowLevelWidget = sivicWindowLevelWidget::New();
+    this->overlayWindowLevelWidget = sivicWindowLevelWidget::New();
     this->spectraRangeWidget = sivicSpectraRangeWidget::New();
     this->viewRenderingWidget = sivicViewRenderingWidget::New();
     this->globalWidget        = sivicGlobalWidget::New();
@@ -103,6 +105,16 @@ sivicApp::~sivicApp()
     if( this->spectraViewWidget != NULL ) {
         this->spectraViewWidget->Delete();
         this->spectraViewWidget = NULL;
+    }
+
+    if( this->windowLevelWidget != NULL ) {
+        this->windowLevelWidget->Delete();
+        this->windowLevelWidget = NULL;
+    }
+
+    if( this->overlayWindowLevelWidget != NULL ) {
+        this->overlayWindowLevelWidget->Delete();
+        this->overlayWindowLevelWidget = NULL;
     }
 
     if( this->spectraRangeWidget != NULL ) {
@@ -194,6 +206,7 @@ int sivicApp::Build( int argc, char* argv[] )
     // Add a Window to the application
     this->sivicWindow = vtkKWWindowBase::New();
     this->sivicKWApp->AddWindow(this->sivicWindow);
+    this->sivicController->SetMainWindow( this->sivicWindow );
     this->sivicWindow->Create();
     this->sivicWindow->SetSize( WINDOW_SIZE_X, WINDOW_SIZE_Y);
 
@@ -237,6 +250,18 @@ int sivicApp::Build( int argc, char* argv[] )
     this->spectraRangeWidget->SetSivicController(this->sivicController);
     this->spectraRangeWidget->Create();
 
+    this->windowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->windowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->windowLevelWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->windowLevelWidget->SetSivicController(this->sivicController);
+    this->windowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::REFERENCE_IMAGE );
+
+    this->overlayWindowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->overlayWindowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->overlayWindowLevelWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->overlayWindowLevelWidget->SetSivicController(this->sivicController);
+    this->overlayWindowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::IMAGE_OVERLAY );
+
     this->globalWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->globalWidget->SetPlotController(this->sivicController->GetPlotController());
     this->globalWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -249,6 +274,8 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
+    this->sivicController->SetWindowLevelWidget( windowLevelWidget );
+    this->sivicController->SetOverlayWindowLevelWidget( overlayWindowLevelWidget );
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetGlobalWidget( globalWidget );
 
@@ -356,6 +383,10 @@ int sivicApp::Build( int argc, char* argv[] )
             10, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             11, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
+
+    // Tools menu
+    this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
+            0, "&Show Window Level", this->sivicController, "DisplayWindowLevelWindow");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");

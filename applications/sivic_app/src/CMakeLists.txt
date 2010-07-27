@@ -162,6 +162,7 @@ ADD_LIBRARY(
     sivicSpectraRangeWidget.cc
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
+    sivicWindowLevelWidget.cc
     sivicKWCompositeWidget.cc
     vtkSivicController.cc
     sivicAppGUI.cc

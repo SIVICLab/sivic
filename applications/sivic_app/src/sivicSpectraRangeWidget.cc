@@ -67,6 +67,7 @@ sivicSpectraRangeWidget::sivicSpectraRangeWidget()
  */
 sivicSpectraRangeWidget::~sivicSpectraRangeWidget()
 {
+    vtkKWApplication *app = this->GetApplication();
 
     if( this->xSpecRange != NULL ) {
         this->xSpecRange->Delete();
@@ -103,6 +104,10 @@ sivicSpectraRangeWidget::~sivicSpectraRangeWidget()
     if( this->specRangeFrame != NULL ) {
         this->specRangeFrame->Delete();
         this->specRangeFrame = NULL;
+    }
+    if( this->detailedPlotWindow != NULL ) {
+        this->detailedPlotWindow->Delete();
+        this->detailedPlotWindow = NULL;
     }
 
 }
@@ -497,6 +502,9 @@ void sivicSpectraRangeWidget::CreateWidget()
     // Here we will add callbacks 
 
     this->AddCallbackCommandObserver(
+        this->GetApplication()->GetNthWindow(0), vtkKWWindowBase::WindowClosingEvent );
+
+    this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
 
     this->AddCallbackCommandObserver(
@@ -506,7 +514,13 @@ void sivicSpectraRangeWidget::CreateWidget()
         this->xSpecRange, vtkKWRange::RangeValueChangingEvent );
 
     this->AddCallbackCommandObserver(
+        this->xSpecRange, vtkKWRange::RangeValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->ySpecRange, vtkKWRange::RangeValueChangingEvent );
+
+    this->AddCallbackCommandObserver(
+        this->ySpecRange, vtkKWRange::RangeValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->unitSelectBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
@@ -529,7 +543,11 @@ void sivicSpectraRangeWidget::CreateWidget()
  */
 void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
- if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
+ if (  caller == this->GetApplication()->GetNthWindow(0) && event == vtkKWWindowBase::WindowClosingEvent ) {
+        if( this->detailedPlotWindow != NULL ) {
+            this->GetApplication()->RemoveWindow( this->detailedPlotWindow ); 
+        }
+ } else if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
         int * tlcBrc = overlayController->GetTlcBrc();
         string acquisitionType; 
         if( this->model->DataExists( "SpectroscopicData" ) ) {
@@ -555,7 +573,7 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
             this->detailedPlotButton->EnabledOff();
         }
     // Respond to a change in the x range (frequency)
-    } else if( caller == this->xSpecRange && event == vtkKWRange::RangeValueChangingEvent) {
+    } else if( caller == this->xSpecRange ) {
         double minValue;
         double maxValue;
         xSpecRange->GetRange( minValue, maxValue ); 
@@ -605,7 +623,7 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
 
 
     // Respond to a change in the y range (amplitude) 
-    } else if( caller == this->ySpecRange && event == vtkKWRange::RangeValueChangingEvent) {
+    } else if( caller == this->ySpecRange ) {
         double newMin = this->ySpecRange->GetEntry1()->GetValueAsDouble();
         double newMax = this->ySpecRange->GetEntry2()->GetValueAsDouble(); 
         double* wholeRange = ySpecRange->GetWholeRange( ); 
@@ -654,9 +672,9 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
             this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
         }
     } else if( caller == this->detailedPlotButton && event == vtkKWPushButton::InvokedEvent) {
+        vtkKWApplication *app = this->GetApplication();
         if( this->detailedPlotWindow == NULL ) {
             this->detailedPlotWindow = vtkKWWindowBase::New(); 
-            vtkKWApplication *app = this->GetApplication();
             app->AddWindow( this->detailedPlotWindow );
             this->detailedPlotWindow->Create(); 
             this->detailedPlotWindow->SetSize(500,250);
@@ -664,8 +682,18 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
             this->detailedPlotWidget->SetParent( this->detailedPlotWindow->GetViewFrame() );
             this->detailedPlotWidget->Create();
             detailedPlotController->SetRWInteractor(this->detailedPlotWidget->GetRenderWindowInteractor());
-            app->Script("pack %s -expand y -fill both -anchor c -expand y",
-            this->detailedPlotWidget->GetWidgetName());
+            app->Script("pack %s -expand y -fill both -anchor c",
+                    this->detailedPlotWidget->GetWidgetName());
+        }
+        bool foundDetailedWindow = false;
+        for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
+            if( app->GetNthWindow(i) == this->detailedPlotWindow ) {
+                foundDetailedWindow = true;
+            }
+        }
+
+        if( !foundDetailedWindow ) {
+            app->AddWindow( this->detailedPlotWindow );
         }
         int* tlcBrc = this->plotController->GetTlcBrc();
         this->detailedPlotController->SetUnits( this->specUnits );

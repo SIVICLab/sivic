@@ -506,16 +506,31 @@ void sivicImageViewWidget::CreateWidget()
         this->axialSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
+        this->axialSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->coronalSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->coronalSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->sagittalSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
+        this->sagittalSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->overlayOpacitySlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
+        this->overlayOpacitySlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->overlayThresholdSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->overlayThresholdSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->volSelButton, vtkKWCheckButton::SelectedStateChangedEvent );
@@ -561,13 +576,43 @@ void sivicImageViewWidget::CreateWidget()
 void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
-    if( caller == this->axialSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+   if( caller == this->axialSlider->GetWidget()) {
         this->sivicController->SetImageSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, string("AXIAL")); 
-    } else if( caller == this->coronalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        int imageSlice = static_cast<int>(this->axialSlider->GetValue()) - 1; 
+        stringstream increment;
+        increment << "SetValue " << imageSlice + 2;
+        stringstream decrement;
+        decrement << "SetValue " << imageSlice;
+        this->axialSlider->RemoveBinding( "<Left>");
+        this->axialSlider->AddBinding( "<Left>", this->axialSlider, decrement.str().c_str() );
+        this->axialSlider->RemoveBinding( "<Right>");
+        this->axialSlider->AddBinding( "<Right>", this->axialSlider, increment.str().c_str() );
+        this->axialSlider->Focus();
+    } else if( caller == this->coronalSlider->GetWidget() ) {
         this->sivicController->SetImageSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, string("CORONAL")); 
-    } else if( caller == this->sagittalSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        int imageSlice = static_cast<int>(this->coronalSlider->GetValue()) - 1; 
+        stringstream increment;
+        increment << "SetValue " << imageSlice + 2;
+        stringstream decrement;
+        decrement << "SetValue " << imageSlice;
+        this->coronalSlider->RemoveBinding( "<Left>");
+        this->coronalSlider->AddBinding( "<Left>", this->coronalSlider, decrement.str().c_str() );
+        this->coronalSlider->RemoveBinding( "<Right>");
+        this->coronalSlider->AddBinding( "<Right>", this->coronalSlider, increment.str().c_str() );
+        this->coronalSlider->Focus();
+    } else if( caller == this->sagittalSlider->GetWidget() ) {
         this->sivicController->SetImageSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, string("SAGITTAL")); 
-    } else if( caller == this->overlayOpacitySlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+        int imageSlice = static_cast<int>(this->sagittalSlider->GetValue()) - 1; 
+        stringstream increment;
+        increment << "SetValue " << imageSlice + 2;
+        stringstream decrement;
+        decrement << "SetValue " << imageSlice;
+        this->sagittalSlider->RemoveBinding( "<Left>");
+        this->sagittalSlider->AddBinding( "<Left>", this->sagittalSlider, decrement.str().c_str() );
+        this->sagittalSlider->RemoveBinding( "<Right>");
+        this->sagittalSlider->AddBinding( "<Right>", this->sagittalSlider, increment.str().c_str() );
+        this->sagittalSlider->Focus();
+    } else if( caller == this->overlayOpacitySlider->GetWidget() ) {
         this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
         this->plotController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
         stringstream increment;
@@ -582,7 +627,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayController->GetView()->Refresh();
         this->plotController->GetView()->Refresh();
 
-    } else if( caller == this->overlayThresholdSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+    } else if( caller == this->overlayThresholdSlider->GetWidget() ) {
 
         if( this->sivicController->GetThresholdType() == "Quantity" ) {
 

@@ -290,10 +290,19 @@ void sivicSpectraViewWidget::CreateWidget()
         this->sliceSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
+        this->sliceSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->channelSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     this->AddCallbackCommandObserver(
+        this->channelSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
         this->timePointSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->timePointSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -319,7 +328,7 @@ void sivicSpectraViewWidget::CreateWidget()
  */
 void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    if( caller == this->sliceSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
+    if( caller == this->sliceSlider->GetWidget()) {
         this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
         stringstream increment;
         increment << "SetValue " << this->overlayController->GetSlice() + 2;
@@ -330,25 +339,25 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->sliceSlider->RemoveBinding( "<Right>");
         this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
         this->sliceSlider->Focus();
-    } else if( caller == this->channelSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
+    } else if( caller == this->channelSlider->GetWidget() ) {   
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
         this->plotController->SetChannel( channel );
         stringstream increment;
-        increment << "SetValue " << channel + 1;
+        increment << "SetValue " << channel + 2;
         stringstream decrement;
-        decrement << "SetValue " << channel - 1;
+        decrement << "SetValue " << channel;
         this->channelSlider->RemoveBinding( "<Left>");
         this->channelSlider->AddBinding( "<Left>", this->channelSlider, decrement.str().c_str() );
         this->channelSlider->RemoveBinding( "<Right>");
         this->channelSlider->AddBinding( "<Right>", this->channelSlider, increment.str().c_str() );
         this->channelSlider->Focus(); 
-    } else if( caller == this->timePointSlider->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {   
+    } else if( caller == this->timePointSlider->GetWidget()) {   
         int timePoint = static_cast<int>(this->timePointSlider->GetValue()) - 1;
         this->plotController->SetTimePoint( timePoint );
         stringstream increment;
-        increment << "SetValue " << timePoint + 1;
+        increment << "SetValue " << timePoint + 2;
         stringstream decrement;
-        decrement << "SetValue " << timePoint - 1;
+        decrement << "SetValue " << timePoint;
         this->timePointSlider->RemoveBinding( "<Left>");
         this->timePointSlider->AddBinding( "<Left>", this->timePointSlider, decrement.str().c_str() );
         this->timePointSlider->RemoveBinding( "<Right>");
@@ -359,7 +368,6 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY && this->syncOverlayWL ) {
             double* range = svkOverlayView::SafeDownCast( this->overlayController->GetView())->GetLookupTable()->GetRange(); 
             svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range); 
-            
         }
     } else if( caller == this->overlayImageCheck && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->overlayImageCheck->GetSelectedState() ) {

@@ -77,6 +77,7 @@
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
+#include <sivicWindowLevelWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
 #if defined( SVK_USE_GL2PS )
@@ -108,12 +109,15 @@ class vtkSivicController : public vtkObject
 
         void                       SetApplication( vtkKWApplication* app );
         vtkKWApplication*          GetApplication( );
+        void                       SetMainWindow( vtkKWWindowBase* mainWindow );
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
+        void                       SetWindowLevelWidget( sivicWindowLevelWidget* windowLevelWidget );
+        void                       SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget );
         void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
         void                       SetSlice( int slice, bool centerImage = true );
         void                       SetImageSlice( int slice, string orientation );
@@ -149,6 +153,7 @@ class vtkSivicController : public vtkObject
         void                       ResetWindowLevel();
         void                       HighlightSelectionBoxVoxels();
         void                       DisplayInfo();
+        void                       DisplayWindowLevelWindow();
         void                       RunTestingSuite();
         void                       SetSpecUnitsCallback( int targetUnits );
         void                       SetComponentCallback( int targetComponent );
@@ -193,22 +198,29 @@ class vtkSivicController : public vtkObject
          
     private:
         static void                    UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        static void                    ExitSivic(vtkObject* subject, unsigned long, void* thisObject, void* callData);
         vtkCallbackCommand*            progressCallback;
+        vtkCallbackCommand*            exitSivicCallback;
         string                         thresholdType;
         string                         orientation; 
         svkDataModel*                  model; 
         vtkKWApplication*              app;
+        vtkKWWindowBase*               mainWindow;
         vtkImageData*                  spectraData;
         sivicViewRenderingWidget*      viewRenderingWidget;
         sivicProcessingWidget*         processingWidget;
         sivicImageViewWidget*          imageViewWidget;
         sivicSpectraRangeWidget*       spectraRangeWidget;
         sivicSpectraViewWidget*        spectraViewWidget;
+        sivicWindowLevelWidget*        windowLevelWidget;
+        sivicWindowLevelWidget*        overlayWindowLevelWidget;
         sivicGlobalWidget*             globalWidget;
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
         svkDetailedPlotViewController* detailedPlotController;
         svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
+        vtkKWWindowBase*               windowLevelWindow;
+
 
 };
 

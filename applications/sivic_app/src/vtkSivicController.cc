@@ -55,10 +55,14 @@ vtkSivicController::vtkSivicController()
     this->detailedPlotController = svkDetailedPlotViewController::New();
     this->imageViewWidget = NULL;
     this->spectraViewWidget = NULL;
+    this->windowLevelWidget = NULL;
+    this->overlayWindowLevelWidget = NULL;
     this->spectraRangeWidget = NULL;
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
+    this->windowLevelWindow = NULL;
     this->thresholdType = "Quantity";
+    this->mainWindow = NULL;
     this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
     this->secondaryCaptureFormatter->SetPlotController( this->plotController );
     this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
@@ -67,6 +71,9 @@ vtkSivicController::vtkSivicController()
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
+    this->exitSivicCallback = vtkCallbackCommand::New();
+    this->exitSivicCallback->SetCallback( ExitSivic );
+    this->exitSivicCallback->SetClientData( (void*)this );
 
     
 }
@@ -94,6 +101,12 @@ vtkSivicController::~vtkSivicController()
         this->secondaryCaptureFormatter->Delete();
         this->secondaryCaptureFormatter = NULL;
     }
+
+    if( this->windowLevelWindow != NULL ) {
+        this->windowLevelWindow->Delete();
+        this->windowLevelWindow = NULL;
+    }
+
 
 }
 
@@ -201,6 +214,18 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
 void vtkSivicController::SetApplication( vtkKWApplication* app)
 {
     this->app = app;
+    
+}
+
+
+//! Sets the main window. All other window will be closed when this window is closed
+void vtkSivicController::SetMainWindow( vtkKWWindowBase* mainWindow )
+{
+    this->mainWindow = mainWindow;
+    if(mainWindow != NULL &&  !mainWindow->HasObserver(vtkKWWindowBase::WindowClosingEvent,exitSivicCallback )) {
+        mainWindow->AddObserver(vtkKWWindowBase::WindowClosingEvent, exitSivicCallback);
+    }
+
 }
 
 
@@ -247,6 +272,22 @@ void vtkSivicController::SetSpectraViewWidget( sivicSpectraViewWidget* spectraVi
 {
     this->spectraViewWidget = spectraViewWidget;
     this->spectraViewWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetWindowLevelWidget( sivicWindowLevelWidget* windowLevelWidget )
+{
+    this->windowLevelWidget = windowLevelWidget;
+    this->windowLevelWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget )
+{
+    this->overlayWindowLevelWidget = overlayWindowLevelWidget;
+    this->overlayWindowLevelWidget->SetModel(this->model);
 }
 
 
@@ -378,6 +419,13 @@ void vtkSivicController::OpenImage( const char* fileName )
                         break;
                 }
             }
+            double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
+            double window = this->overlayController->GetWindow();
+            double level = this->overlayController->GetLevel();
+            this->windowLevelWidget->SetLevelRange( pixelRange ); 
+            this->windowLevelWidget->SetLevel( level ); 
+            this->windowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+            this->windowLevelWidget->SetWindow( window ); 
             this->viewRenderingWidget->ResetInfoText();
             if( toggleDraw ) {
                 this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -561,6 +609,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
 
     }
 
+    this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
     // Lets update the metabolite menu for the current spectra
     this->globalWidget->PopulateMetaboliteMenu();
 }
@@ -593,6 +642,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                 }
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
                 resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
+                string overlayDataName;
                 if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
                     this->plotController->SetInput( data, svkPlotGridView::MET );
                     if( this->model->DataExists( "MetaboliteData" ) ) {
@@ -602,7 +652,9 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                         this->model->AddDataObject( "MetaboliteData", data );
                         this->model->SetDataFileName( "MetaboliteData", stringFilename );
                     }
+                    overlayDataName = "MetaboliteData";
                     this->spectraViewWidget->SetSyncOverlayWL( true );
+                    this->overlayWindowLevelWidget->SetSyncPlotGrid( true );
                     // We are going to deselect the metabolites since we don't know where they were loaded from
                     this->globalWidget->DeselectMetabolites();
                     this->viewRenderingWidget->ResetInfoText();
@@ -616,6 +668,8 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                     }
                     this->viewRenderingWidget->ResetInfoText();
                     this->spectraViewWidget->SetSyncOverlayWL( false );
+                    this->overlayWindowLevelWidget->SetSyncPlotGrid( false );
+                    overlayDataName = "OverlayData";
                 }
                 string interp = (this->imageViewWidget->interpolationBox->GetWidget()->GetValue( ));
                 if( interp == "nearest neighbor" ) {
@@ -638,6 +692,14 @@ void vtkSivicController::OpenOverlay( const char* fileName )
                 this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayOpacitySlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
+                double* pixelRange = data->GetPointData()->GetArray(0)->GetRange();
+                double window = this->overlayController->GetWindow(svkOverlayViewController::IMAGE_OVERLAY);
+                double level = this->overlayController->GetLevel(svkOverlayViewController::IMAGE_OVERLAY);
+                this->overlayWindowLevelWidget->SetLevelRange( pixelRange ); 
+                this->overlayWindowLevelWidget->SetLevel( level ); 
+                this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+                this->overlayWindowLevelWidget->SetWindow( window ); 
+                this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
 
                 if( toggleDraw ) {
                     this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -650,6 +712,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
             }
         }
         this->SetThresholdType( this->thresholdType );
+        this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
     }
@@ -920,7 +983,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     
             }
         }
-        
+    
         // Check to see which extention to filter for.
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Volume Files} {.idf .fdf .dcm .DCM}} {{All files} {.*}}");
@@ -1020,7 +1083,7 @@ string vtkSivicController::GetUserName()
     psswd = getpwuid (uid);
     string userName;  
     if (psswd) {
-      userName.assign(psswd->pw_name);
+        userName.assign(psswd->pw_name);
     }
     return userName; 
 }
@@ -1078,7 +1141,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
     dlg->SetApplication(app);
     dlg->SaveDialogOn();
     dlg->Create();
-    
+
 
     string defaultNamePattern;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern( 
@@ -1169,7 +1232,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     //this->viewRenderingWidget->infoWidget->GetRenderWindow()->OffScreenRenderingOn();
     int currentSlice = this->plotController->GetSlice(); 
 
-    
+
 
     int firstFrame = 0;
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
@@ -1177,7 +1240,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
-    
+
     if( print ) {
         this->ToggleColorsForPrinting( svkSecondaryCaptureFormatter::DARK_ON_LIGHT );
     }
@@ -1193,9 +1256,9 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     if( writer->IsA("svkImageWriter") ) {  
         static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
-        
+
     }
-    
+
     if( strcmp(captureType,"COMBINED_CAPTURE") == 0 ) {
         this->WriteCombinedCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"IMAGE_CAPTURE") == 0 ) {
@@ -1204,7 +1267,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         this->WriteSpectraCapture( writer, fileNameString, outputOption, outputImage, print);
     } else if( strcmp(captureType,"SPECTRA_WITH_OVERVIEW_CAPTURE") == 0 ) {
         this->secondaryCaptureFormatter
-                  ->WriteCombinedWithSummaryCapture( writer, fileNameString, outputOption, outputImage, print );
+            ->WriteCombinedWithSummaryCapture( writer, fileNameString, outputOption, outputImage, print );
     }
 
 
@@ -1288,7 +1351,7 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
     } else if( type == ".tex" ) {
         gl2psExporter->SetFileFormatToTeX();
     }
- 
+
     int firstFrame = 0;
     int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
     if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
@@ -1366,7 +1429,7 @@ void vtkSivicController::ToggleColorsForPrinting( bool colorSchema )
     // Prepare the two Controllers for printing
     this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->SetBackground( backgroundColor );
     this->plotController->SetColorSchema( plotGridSchema );
-   
+
     // Now lets invert the colors of the text bar 
 /*
     vtkRenderer* tmpRenderer = this->viewRenderingWidget->specInfoWidget->GetRenderer();
@@ -1478,14 +1541,14 @@ void vtkSivicController::UseSelectionStyle()
         // This code snaps from 3D to the closest plane. Seems unnecessary now, but we might want it later. 
         /*
     if( model->DataExists( "SpectroscopicData" ) ) {
-       
+
         svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
         double* viewPlaneNormal =  this->overlayController->GetView()->
-                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewPlaneNormal();
+        GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetViewPlaneNormal();
         double* cameraPosition =  this->overlayController->GetView()->
-                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetPosition();
+        GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetPosition();
         double* cameraFocalPoint =  this->overlayController->GetView()->
-                                     GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetFocalPoint();
+        GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera()->GetFocalPoint();
         float viewNormal[3] = { viewPlaneNormal[0], viewPlaneNormal[1], viewPlaneNormal[2] };
         float axialNormal[3];
         data->GetSliceNormal( axialNormal, svkDcmHeader::AXIAL );
@@ -1539,7 +1602,7 @@ void vtkSivicController::UseSelectionStyle()
     this->EnableWidgets();
     this->imageViewWidget->orthImagesButton->EnabledOff();
 
-    
+
 
 }
 
@@ -1566,6 +1629,14 @@ void vtkSivicController::UseRotationStyle()
 void vtkSivicController::ResetWindowLevel()
 {
     this->overlayController->ResetWindowLevel();
+    double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
+    double window = this->overlayController->GetWindow();
+    double level = this->overlayController->GetLevel();
+    this->windowLevelWidget->SetLevelRange( pixelRange ); 
+    this->windowLevelWidget->SetLevel( level ); 
+    this->windowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+    this->windowLevelWidget->SetWindow( window ); 
+    this->viewRenderingWidget->ResetInfoText();
     this->viewRenderingWidget->specViewerWidget->Render();
     this->viewRenderingWidget->viewerWidget->Render();
 
@@ -1582,9 +1653,87 @@ void vtkSivicController::HighlightSelectionBoxVoxels()
 }
 
 
+//! Callback.
 void vtkSivicController::DisplayInfo()
 {
     app->DisplayHelpDialog( app->GetNthWindow(0) );
+}
+
+
+//! Callback.
+void vtkSivicController::DisplayWindowLevelWindow()
+{
+    if( this->windowLevelWindow == NULL ) {
+        this->windowLevelWindow = vtkKWWindowBase::New();
+        this->app->AddWindow( this->windowLevelWindow );
+        this->windowLevelWindow->Create();
+        int width;
+        int height;
+        this->mainWindow->GetSize(&width, &height);
+        this->windowLevelWindow->SetSize( width, 175);
+        this->windowLevelWidget->SetParent( this->windowLevelWindow->GetViewFrame() );
+        this->windowLevelWidget->Create();
+        this->overlayWindowLevelWidget->SetParent( this->windowLevelWindow->GetViewFrame() );
+        this->overlayWindowLevelWidget->Create();
+        this->app->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -pady 2 "
+                , this->windowLevelWidget->GetWidgetName(), this->windowLevelWindow->GetViewFrame()->GetWidgetName());
+        this->app->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -pady 2 "
+                , this->overlayWindowLevelWidget->GetWidgetName(), this->windowLevelWindow->GetViewFrame()->GetWidgetName());
+        this->app->Script("grid rowconfigure %s 0  -weight 1"
+                , this->windowLevelWindow->GetViewFrame()->GetWidgetName() );
+        this->app->Script("grid columnconfigure %s 0  -weight 1"
+                , this->windowLevelWindow->GetViewFrame()->GetWidgetName() );
+        this->app->Script("grid columnconfigure %s 1  -weight 1"
+                , this->windowLevelWindow->GetViewFrame()->GetWidgetName() );
+    }
+
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+    if( this->model->DataExists("AnatomicalData") ) {
+        double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
+        double window = this->overlayController->GetWindow(svkOverlayViewController::REFERENCE_IMAGE);
+        double level = this->overlayController->GetLevel(svkOverlayViewController::REFERENCE_IMAGE);
+        this->windowLevelWidget->SetLevelRange( pixelRange ); 
+        this->windowLevelWidget->SetLevel( level ); 
+        this->windowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+        this->windowLevelWidget->SetWindow( window ); 
+    }
+    if( this->model->DataExists("OverlayData") || this->model->DataExists("MetaboliteData") ) { 
+        double* pixelRange = NULL;
+        string overlayDataName;
+        if( this->model->DataExists("OverlayData") ) { 
+            pixelRange = this->model->GetDataObject("OverlayData")->GetPointData()->GetArray(0)->GetRange();
+            overlayDataName = "OverlayData"; 
+        } else {
+            pixelRange = this->model->GetDataObject("MetaboliteData")->GetPointData()->GetArray(0)->GetRange();
+            overlayDataName = "MetaboliteData"; 
+        }
+        double window = this->overlayController->GetWindow(svkOverlayViewController::IMAGE_OVERLAY);
+        double level = this->overlayController->GetLevel(svkOverlayViewController::IMAGE_OVERLAY);
+        this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
+        this->overlayWindowLevelWidget->SetLevelRange( pixelRange ); 
+        this->overlayWindowLevelWidget->SetLevel( level ); 
+        this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+        this->overlayWindowLevelWidget->SetWindow( window ); 
+    } 
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+    this->windowLevelWindow->Display();
+    bool foundDetailedWindow = false;
+    for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
+        if( app->GetNthWindow(i) == this->windowLevelWindow ) {
+            foundDetailedWindow = true;
+        }
+    }
+
+    if( !foundDetailedWindow ) {
+        app->AddWindow( this->windowLevelWindow );
+    }
 }
 
 
@@ -1612,7 +1761,7 @@ void vtkSivicController::SetComponentCallback( int targetComponent)
     }
     if( model->DataExists( "SpectroscopicData" ) ) {
         acquisitionType = model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+            GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
             this->ResetRange(1,1);
         } 
@@ -1664,9 +1813,9 @@ void vtkSivicController::Print(char* captureType, int outputOption )
     }
     string defaultNamePattern;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern( 
-        model->GetDataObject( "SpectroscopicData" ) ,
-        &defaultNamePattern
-    );
+            model->GetDataObject( "SpectroscopicData" ) ,
+            &defaultNamePattern
+            );
     this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, captureType, outputOption, 1 );
 }
 
@@ -1699,7 +1848,7 @@ string vtkSivicController::GetPrinterName( )
 {
     // Once we have the printer dialog working we can change this.
     string printerName = "jasmine";
-    
+
     return printerName;
 
 }
@@ -1801,13 +1950,13 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
 void vtkSivicController::SaveSession( )
 {
     this->app->SetRegistryValue( 0, "open_files", "image", 
-                                                     model->GetDataFileName("AnatomicalData").c_str());
+            model->GetDataFileName("AnatomicalData").c_str());
     this->app->SetRegistryValue( 0, "open_files", "spectra",
-                                                     model->GetDataFileName("SpectroscopicData").c_str());
+            model->GetDataFileName("SpectroscopicData").c_str());
     this->app->SetRegistryValue( 0, "open_files", "overlay",
-                                                     model->GetDataFileName("OverlayData").c_str());
+            model->GetDataFileName("OverlayData").c_str());
     this->app->SetRegistryValue( 0, "open_files", "metabolite",
-                                                     model->GetDataFileName("MetaboliteData").c_str());
+            model->GetDataFileName("MetaboliteData").c_str());
 
 }
 
@@ -1880,7 +2029,7 @@ void vtkSivicController::EnableWidgets()
     if ( model->DataExists("SpectroscopicData") && model->DataExists("AnatomicalData") ) {
         this->globalWidget->metaboliteSelect->EnabledOn();
         string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+                               GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
             this->imageViewWidget->plotGridButton->EnabledOff();
         } else {
@@ -1943,11 +2092,13 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->coronalSlider->EnabledOff();
             this->imageViewWidget->sagittalSlider->EnabledOn();
         }
+        this->windowLevelWidget->EnabledOn();
     }
 
     if ( model->DataExists("MetaboliteData")) {
         this->spectraViewWidget->overlayImageCheck->EnabledOn();
         this->spectraViewWidget->overlayTextCheck->EnabledOn();
+        this->overlayWindowLevelWidget->EnabledOn();
     } 
     if ( model->DataExists("OverlayData") ||  model->DataExists("MetaboliteData")) {
         this->imageViewWidget->interpolationBox->EnabledOn();
@@ -1957,6 +2108,7 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->overlayThresholdSlider->EnabledOn();
         this->imageViewWidget->overlayButton->EnabledOn();
         this->imageViewWidget->colorBarButton->EnabledOn();
+        this->overlayWindowLevelWidget->EnabledOn();
     }
 }
 
@@ -2001,6 +2153,8 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->colorBarButton->EnabledOff();
     this->imageViewWidget->satBandButton->EnabledOff();
     this->imageViewWidget->satBandOutlineButton->EnabledOff();
+    this->overlayWindowLevelWidget->EnabledOff();
+    this->windowLevelWidget->EnabledOff();
     this->globalWidget->metaboliteSelect->EnabledOff();
 }
 
@@ -2125,7 +2279,7 @@ void vtkSivicController::PushToPACS()
         PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
         return; 
     }
-    
+
     struct stat st;
 
     // Lets check to see if the original DICOM file can be found so we can get the studyUID and Accession number
@@ -2362,5 +2516,19 @@ void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void*
         static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
                   static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
     }
+}
+
+//! Exit the application
+void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    // To end a KWW application you close all of its windows.
+    
+    vtkKWApplication* app =static_cast<vtkSivicController*>(thisObject)->GetApplication();
+    for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
+        if( app->GetNthWindow(i) != subject ) {
+            app->GetNthWindow(i)->Close();
+        }
+    }
+
 }
 
