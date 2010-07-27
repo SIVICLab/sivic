@@ -111,6 +111,7 @@ ADD_LIBRARY(
     svkGEPFileReader.cc
     svkGEPFileMapper.cc
     svkGEPFileMapperMBrease.cc
+    svkGEPFileMapperPre11x.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
     svkSdbmVolumeReader.cc

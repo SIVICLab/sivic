@@ -51,6 +51,9 @@ vtkCxxRevisionMacro(svkDdfVolumeWriter, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeWriter);
 
 
+const int svkDdfVolumeWriter::ALL_TIME_PTS_IN_FILE = -1;
+
+
 /*!
  *
  */
@@ -63,6 +66,8 @@ svkDdfVolumeWriter::svkDdfVolumeWriter()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
+    //default value to indicate undefined, gets initialized in Write method  
+    this->numTimePtsPerFile = 0;    
 }
 
 
@@ -83,6 +88,11 @@ void svkDdfVolumeWriter::Write()
 
     vtkDebugMacro( << this->GetClassName() << "::Write()" );
     this->SetErrorCode(vtkErrorCode::NoError);
+
+    //  initialize number of time points per file (all time points in each file by default): 
+    if (numTimePtsPerFile == 0 ) { 
+        this->numTimePtsPerFile = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints(); 
+   }
 
     if (! this->FileName ) {
         vtkErrorMacro(<<"Write:Please specify either a FileName or a file prefix and pattern");
@@ -116,8 +126,7 @@ void svkDdfVolumeWriter::Write()
         }
     }
 
-    this->WriteData();
-    this->WriteHeader();
+    this->WriteFiles();
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
         vtkErrorMacro("Ran out of disk space; deleting file(s) already written");
@@ -131,24 +140,26 @@ void svkDdfVolumeWriter::Write()
 
 
 /*!
- *  Write the image data pixels to the DDF data file (.cmplx)
+ *  Write the image data pixels and header to the DDF data file (.cmplx) 
+ *  and .ddf header. 
  */
-void svkDdfVolumeWriter::WriteData()
+void svkDdfVolumeWriter::WriteFiles()
 {
     vtkDebugMacro( << this->GetClassName() << "::WriteData()" );
 
-    string extension = ".cmplx"; 
+    string dataExtension = ".cmplx"; 
+    string hdrExtension = ".ddf"; 
 
     string fileRoot = string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int dataWordSize = 4; 
-    int cols     = hdr->GetIntValue( "Columns" );
-    int rows     = hdr->GetIntValue( "Rows" );
-    int slices   = hdr->GetNumberOfSlices();  
-    int numCoils = hdr->GetNumberOfCoils();
+    int cols       = hdr->GetIntValue( "Columns" );
+    int rows       = hdr->GetIntValue( "Rows" );
+    int slices     = hdr->GetNumberOfSlices();  
+    int numCoils   = hdr->GetNumberOfCoils();
     int numTimePts = hdr->GetNumberOfTimePoints();  
-    int specPts  = hdr->GetIntValue( "DataPointColumns" );
+    int specPts    = hdr->GetIntValue( "DataPointColumns" );
     string representation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents = 1;
@@ -158,571 +169,627 @@ void svkDdfVolumeWriter::WriteData()
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents * numTimePts;
-    int dataLength = dataLengthPerCoil * numCoils;
+    int dataLengthPerFile = cols * rows * slices * specPts * numComponents * this->GetNumberTimePointsPerFile(); 
     int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
     int timePtOffset = cols * rows * slices; 
 
     // write out one coil per ddf file
-    float* specData = new float [ dataLengthPerCoil ];
+    float* specData = new float [ dataLengthPerFile ];
 
-    vtkFloatArray* fa;
-    float* dataTuple = new float[numComponents];
+    string fileName;
 
-    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+    //  looping varies depending on how many time points go into each file:
+    if ( this->AllTimePointsInEachFile() ) {
 
-        string fileName;
+        for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
 
-        if ( numCoils > 1 ) {
-            string coilString;
-            ostringstream oss;
-            oss << coilNum + 1;
-            fileName.assign( fileRoot + "_" + oss.str() ) ;
-        } else {
-            fileName.assign( fileRoot ); 
+            fileName = this->GetFileRootName(fileRoot, coilNum);
+
+            ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
+            ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
+            if( !cmplxOut || !hdrOut ) {
+                throw runtime_error("Cannot open .ddf or .cmplx file for writing");
+            }
+
+            for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+                this->InitSpecData(specData, coilNum, timePt); 
+                this->InitHeader( &hdrOut, fileName ); 
+
+            }
+
+            //  cmplx files are by definition big endian:
+            #if defined (linux) || defined (Darwin)
+                svkByteSwap::SwapBufferEndianness( static_cast<float*>(specData), dataLengthPerFile);
+            #endif
+
+            cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
+            cmplxOut.close();
+            hdrOut.close(); 
+
         }
 
-        ofstream cmplxOut( ( fileName + extension ).c_str(), ios::binary);
-        if( !cmplxOut ) {
-            throw runtime_error("Cannot open .cmplx file for writing");
-        }
+    } else if ( ! this->AllTimePointsInEachFile() ) {
 
+        for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
 
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-            for (int z = 0; z < slices; z++) {
-                for (int y = 0; y < rows; y++) {
-                    for (int x = 0; x < cols; x++) {
+            for (int timePt = 0; timePt < numTimePts; timePt++) {
 
-                        int offsetOut = ( cols * rows * z ) + ( cols * y ) + x
-                                     + ( timePt * timePtOffset );
-                        int offset = offsetOut + coilNum * coilOffset;
+                fileName = this->GetFileRootName(fileRoot, coilNum, timePt);
 
-                        fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
-
-                        for (int i = 0; i < specPts; i++) {
-
-                            fa->GetTupleValue(i, dataTuple);
-
-                            for (int j = 0; j < numComponents; j++) {
-                                specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
-                            }
-                        }
-                    }
+                ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
+                ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
+                if( !cmplxOut || !hdrOut ) {
+                    throw runtime_error("Cannot open .ddf or .cmplx file for writing");
                 }
+
+                this->InitSpecData(specData, coilNum, timePt); 
+                this->InitHeader( &hdrOut, fileName ); 
+
+                //  cmplx files are by definition big endian:
+                #if defined (linux) || defined (Darwin)
+                    svkByteSwap::SwapBufferEndianness( static_cast<float*>(specData), dataLengthPerFile);
+                #endif
+
+                cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
+                cmplxOut.close();
+                hdrOut.close(); 
             }
         }
-
-        //  cmplx files are by definition big endian:
-#if defined (linux) || defined (Darwin)
-        svkByteSwap::SwapBufferEndianness( (float*)specData, dataLengthPerCoil );
-#endif
-
-        cmplxOut.write( (char *)specData, dataLengthPerCoil * dataWordSize);
-        cmplxOut.close();
-
     }
-    delete [] dataTuple;
+
     delete [] specData;
 
 }
 
 
 /*!
- *  Write the DDF header.
-
+ *  Loops over x,y,z spatial indices to initialize the specData buffer from data in the 
+ *  svkImageData object.  The specData buffer is what gets written to the
+ *  cmplx file.  With the exception of the offsetOut, this is the same for both blocks of 
+ *  WriteData()
  */
-void svkDdfVolumeWriter::WriteHeader()
+void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt ) 
 {
 
-    //write the ddf file
-    string fileRoot = string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+    int cols       = hdr->GetIntValue( "Columns" );
+    int rows       = hdr->GetIntValue( "Rows" );
+    int slices     = hdr->GetNumberOfSlices();  
+    int numTimePts = hdr->GetNumberOfTimePoints();  
+    int specPts    = hdr->GetIntValue( "DataPointColumns" );
+
+    int numComponents = 1;
+    string representation = hdr->GetStringValue( "DataRepresentation" );
+    if (representation.compare("COMPLEX") == 0) {
+        numComponents = 2;
+    }
+
+    int dataLengthPerFile = cols * rows * slices * specPts * numComponents * this->GetNumberTimePointsPerFile(); 
+    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
+    int timePtOffset = cols * rows * slices; 
+
+    vtkFloatArray* fa;
+    float* dataTuple = new float[numComponents];
+
+    vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
+
+    for (int z = 0; z < slices; z++) {
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+
+                int offsetOut = ( cols * rows * z ) + ( cols * y ) + x; 
+                //  If all time points written to a single ddf file, then add the time
+                //  offset in the output file here, otherwise time doesn't 
+                //  affect the offset as each time point goes to a separate file
+                //  However, the input offset does get incremented
+                if (  this->AllTimePointsInEachFile() ) {
+                    offsetOut += ( timePt * timePtOffset );
+                }
+
+                int offset = offsetOut + coilNum * coilOffset;
+
+                if (  ! this->AllTimePointsInEachFile() ) {
+                    offset += timePt * timePtOffset;
+                }
+
+                fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+
+                for (int i = 0; i < specPts; i++) {
+
+                    fa->GetTupleValue(i, dataTuple);
+
+                    for (int j = 0; j < numComponents; j++) {
+                        specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+/*!
+ *  initializes the ofstream header content for the DDF header.
+ */
+void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
+{
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
-    int numCoils = hdr->GetNumberOfCoils();
-    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+    *out << "DATA DESCRIPTOR FILE" << endl;
+    *out << "version: 6.1" << endl;
+    *out << "object type: MR Spectroscopy" << endl;
+    *out << "patient id: " << setw(19) << left << hdr->GetStringValue( "PatientID" ) << endl;
+    *out << "patient name: " << setw(63) << left << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
+    *out << "patient code: " << endl;
+    *out << "date of birth: " << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
+    *out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
+    *out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
+    *out << "study code: " << "" <<  endl;
 
-        string fileName;
+    string date = hdr->GetStringValue( "StudyDate" );
+    if ( date.length() == 0 ) {
+        date.assign("        ");
+    }
 
-        if ( numCoils > 1 ) {
-            string coilString;
-            ostringstream oss;
-            oss << coilNum + 1;
-            fileName.assign( fileRoot + "_" + oss.str() ) ;
-        } else {
-            fileName.assign( fileRoot ); 
-        }
+    *out << "study date: " << 
+        date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
 
-        ofstream out( (  fileName + string(".ddf") ).c_str() );
-        if(!out) {
-            throw runtime_error("Cannot open .ddf file for writing");
-        }
+    *out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
+    *out << "root name: " << setw(7) << fileName <<  endl;
+    *out << "series number: " << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
+    *out << "series description: " << hdr->GetStringValue( "SeriesDescription" ) <<  endl;
+    *out << "comment: " << " " << endl;
 
+    *out << "patient entry: ";
+    string position_string = hdr->GetStringValue( "PatientPosition" );
+    if ( position_string.substr(0,2) == string( "HF" ) ){
+        *out << "head first";
+    } else if ( position_string.substr(0,2) == string( "FF" ) ) {
+        *out << "feet first";
+    } else {
+        *out << "UNKNOWN";
+    }
+    *out << endl;
 
-        out << "DATA DESCRIPTOR FILE" << endl;
-        out << "version: 6.1" << endl;
-        out << "object type: MR Spectroscopy" << endl;
-        out << "patient id: " << setw(19) << left << hdr->GetStringValue( "PatientID" ) << endl;
-        out << "patient name: " << setw(63) << left << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
-        out << "patient code: " << endl;
-        out << "date of birth: " << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
-        out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
-        out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
-        out << "study code: " << "" <<  endl;
+    *out << "patient position: ";
+    if ( position_string.substr(2) == string( "S" ) ) {
+        *out << "supine" << endl;
+    } else if ( position_string.substr(2) == string( "P" ) ) {
+        *out << "prone" << endl;
+    } else if ( position_string.substr(2) == string( "DL" ) ) {
+        *out << "decubitus left" << endl;
+    } else if ( position_string.substr(2) == string( "DR" ) ) {
+        *out << "decubitus right" << endl;
+    } else {
+        *out << "UNKNOWN" << endl;
+    }
 
-        string date = hdr->GetStringValue( "StudyDate" );
-        if ( date.length() == 0 ) {
-            date.assign("        ");
-        }
-    
-        out << "study date: " << 
-            date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
-    
-    
-        out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
-        out << "root name: " << setw(7) << fileName <<  endl;
-        out << "series number: " << hdr->GetStringValue( "SeriesNumber" ) <<  endl;
-        out << "series description: " << hdr->GetStringValue( "SeriesDescription" ) <<  endl;
-        out << "comment: " << " " << endl;
-    
-        out << "patient entry: ";
-        string position_string = hdr->GetStringValue( "PatientPosition" );
-        if ( position_string.substr(0,2) == string( "HF" ) ){
-            out << "head first";
-        } else if ( position_string.substr(0,2) == string( "FF" ) ) {
-            out << "feet first";
-        } else {
-            out << "UNKNOWN";
-        }
-        out << endl;
-    
-        out << "patient position: ";
-        if ( position_string.substr(2) == string( "S" ) ) {
-            out << "supine" << endl;
-        } else if ( position_string.substr(2) == string( "P" ) ) {
-            out << "prone" << endl;
-        } else if ( position_string.substr(2) == string( "DL" ) ) {
-            out << "decubitus left" << endl;
-        } else if ( position_string.substr(2) == string( "DR" ) ) {
-            out << "decubitus right" << endl;
-        } else {
-            out << "UNKNOWN" << endl;
-        }
-    
-        double orientation[2][3];
-        hdr->GetOrientation(orientation);
-        string orientationString; 
-    
-        if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) ||
-            ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) ) {
-            orientationString.assign( "axial" ); 
-        } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) ||
-            ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) ) {
-            orientationString.assign( "sagittal" ); 
-        } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) ||
-            ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) ) {
-            orientationString.assign( "coronal" ); 
-        } else {
-            orientationString.assign( "oblique" ); 
-        }
-    
-        out << "orientation: " << orientationString << endl;
-        out << "data type: floating point" << endl;
-    
-        int numComponents = 0;      
-        if ( hdr->GetStringValue("DataRepresentation").compare("COMPLEX") == 0 ) {
-            numComponents = 2;     
-        }
-        out << "number of components: " << numComponents << endl; 
-    
-        out << "source description: " << endl;
-    
-        int numDims = 4; 
+    double orientation[2][3];
+    hdr->GetOrientation(orientation);
+    string orientationString; 
+
+    if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) ||
+        ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) ) {
+        orientationString.assign( "axial" ); 
+    } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) ||
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) ) {
+        orientationString.assign( "sagittal" ); 
+    } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) ||
+        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) ) {
+        orientationString.assign( "coronal" ); 
+    } else {
+        orientationString.assign( "oblique" ); 
+    }
+
+    *out << "orientation: " << orientationString << endl;
+    *out << "data type: floating point" << endl;
+
+    int numComponents = 0;      
+    if ( hdr->GetStringValue("DataRepresentation").compare("COMPLEX") == 0 ) {
+        numComponents = 2;     
+    }
+    *out << "number of components: " << numComponents << endl; 
+
+    *out << "source description: " << endl;
+
+    int numDims = 4; 
+
+    // If all time points are written to a single file, then add the time dimension.
+    if (  this->AllTimePointsInEachFile() ) {
+
         if ( hdr->GetNumberOfTimePoints()  > 1 ) { 
             numDims = 5; 
         }
-        out << "number of dimensions: " << numDims << endl; 
-    
-        string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
-    
-        string spatialDomains[3];  
-        spatialDomains[0] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_ColumnsDomain") ); 
-        spatialDomains[1] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_RowsDomain") ); 
-        spatialDomains[2] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_SliceDomain") ); 
-    
-        int numVoxels[3];  
-        numVoxels[0] = hdr->GetIntValue( "Columns" ); 
-        numVoxels[1] = hdr->GetIntValue( "Rows" ); 
-        numVoxels[2] = hdr->GetNumberOfSlices(); 
-        
-        double voxelSpacing[3]; 
-        hdr->GetPixelSpacing( voxelSpacing );  
-        out << "dimension 1: type: " << specDomain << " npoints: " << setw(5) << left << hdr->GetIntValue( "DataPointColumns" ) << endl;
-        out << "dimension 2: type: " << spatialDomains[0] << " npoints: " << numVoxels[0] << 
-            " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[0] << endl;
-        out << "dimension 3: type: " << spatialDomains[1] << " npoints: " << numVoxels[1] << 
-            " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[1] << endl;
-        out << "dimension 4: type: " << spatialDomains[2] << " npoints: " << numVoxels[2] << 
-            " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[2] << endl;
-    
-        if ( numDims == 5 ) {    
-            out << "dimension 5: type: time npoints: " << hdr->GetNumberOfTimePoints() << endl ; 
-        }
-        
-        float center[3];
-        this->GetDDFCenter( center );
-        out << "center(lps, mm): " << fixed << right << setw(14) << setprecision(5) << center[0]
-            << setw(14) << center[1] << setw(14) << center[2] << endl;
-    
-        double positionFirst[3]; 
-        hdr->GetOrigin(positionFirst, 0);
-        out << "toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
-            << positionFirst[0]
-            << setw(14) << positionFirst[1]
-            << setw(14) << positionFirst[2] <<endl;
-    
-        double dcos[3][3];
-        this->GetImageDataInput(0)->GetDcos(dcos);
-        out << "dcos0: " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
-            << setw(14) << dcos[0][2] << endl;
-        out << "dcos1: " << fixed << setw(14) << setprecision(5) << dcos[1][0]
-            << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
-        out << "dcos2: " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
-            << dcos[2][1] << setw(14) << dcos[2][2] << endl;
-    
-        out << "===================================================" << endl; 
-        out << "MR Parameters" << endl; 
-    
-        string coilName = hdr->GetStringSequenceItemElement(
-            "MRReceiveCoilSequence",
-            0,
-            "ReceiveCoilName",
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-        out << "coil name: " << fixed << left << setw(15) << coilName << endl; 
-    
-        out << "slice gap(mm): " << endl;
-    
-        float TE = hdr->GetFloatSequenceItemElement(
-            "MREchoSequence",
-            0,
-            "EffectiveEchoTime",
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-        out << "echo time(ms): " << fixed << setprecision(6) << TE << endl; 
-    
-        float TR = hdr->GetFloatSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "RepetitionTime",
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-        out << "repetition time(ms): " << fixed << setprecision(6) << TR << endl;
-    
-        out << "inversion time(ms): " << fixed << setprecision(6) << endl; 
-        
-        float flipAngle =  hdr->GetFloatSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "FlipAngle",
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-        out << "flip angle: " << fixed << setprecision(6) << flipAngle << endl;
-    
-        out << "pulse sequence name: " << fixed << setw(15) << hdr->GetStringValue( "PulseSequenceName" ) << endl;
-        out << "transmitter frequency(MHz): " << hdr->GetFloatValue( "TransmitterFrequency" ) << endl; 
-        out << "isotope: " << hdr->GetStringValue( "ResonantNucleus" ) << endl;
-        out << "field strength(T): " <<  hdr->GetFloatValue( "MagneticFieldStrength" ) << endl; 
-        int numSatBands = hdr->GetNumberOfItemsInSequence("MRSpatialSaturationSequence");
-        out << "number of sat bands: " << numSatBands << endl;
-        for ( int satBand = 0; satBand < numSatBands; satBand++ ) {
-    
-            float thickness = hdr->GetFloatSequenceItemElement( 
-                "MRSpatialSaturationSequence", satBand, "SlabThickness", "SharedFunctionalGroupsSequence"
-            );
-                
-            float pos0 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 0
-            );
-            float pos1 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 1
-            );
-            float pos2 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 2
-            );
-    
-            float norm0 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 0
-            );
-            float norm1 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 1
-            );
-            float norm2 = hdr->GetFloatSequenceItemElement(
-                "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 2
-            );
-    
-            out << "sat band " << satBand + 1 << " thickness(mm): " << fixed << setprecision(6) << thickness << endl; 
-            out << "sat band " << satBand + 1 << " orientation: " << fixed << right << setw(21) << setprecision(5) << norm0 
-                                                              << fixed << right << setw(14) << setprecision(5) << norm1 
-                                                              << fixed << right << setw(14) << setprecision(5) << norm2 
-                                                              << endl;  
-
-            out << "sat band " << satBand + 1 << " position(lps, mm): " << fixed << right << setw(15) << setprecision(5) << pos0 
-                                                                    << fixed << right << setw(14) << setprecision(5) << pos1 
-                                                                    << fixed << right << setw(14) << setprecision(5) << pos2 
-                                                                    << endl;  
-
-        }
-                                       
-        out << "===================================================" << endl; 
-        out << "Spectroscopy Parameters" << endl; 
-    
-        out << "localization type: " << hdr->GetStringValue( "VolumeLocalizationTechnique" ) << endl;
-        out << "center frequency(MHz): " << fixed << setprecision(6) << hdr->GetFloatValue( "TransmitterFrequency" ) << endl;
-        out << "ppm reference: " << fixed << setprecision(6) << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
-        out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
-        out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
-        out << "frequency offset(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SVK_FrequencyOffset" ) << endl;
-        string onH20 = "yes"; 
-        if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
-            onH20.assign( "no" ); 
-        }
-        out << "centered on water: " << onH20 << endl;
-        out << "suppression technique: " << endl;
-        out << "residual water:" << endl;
-        out << "number of acquisitions: " << endl;
-        out << "chop: " << endl;
-        out << "even symmetry: " << endl;
-        out << "data reordered: " << endl;
-    
-        float acqTLC[3];
-        for (int i = 0; i < 3; i++) {
-            acqTLC[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionTLC", 
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-    
-        out << "acq. toplc(lps, mm):  " << fixed << right << setw(13) << setprecision(5)
-            << acqTLC[0]
-            << setw(14) << acqTLC[1]
-            << setw(14) << acqTLC[2] << endl;
-    
-        float acqSpacing[3];
-        for (int i = 0; i < 2; i++) {
-            acqSpacing[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionPixelSpacing", 
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-        acqSpacing[2] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
-            "SharedFunctionalGroupsSequence", 0
-        );
-    
-        out << "acq. spacing(mm):  " << fixed << right << setw(16) << setprecision(5)
-            << acqSpacing[0]
-            << setw(14) << acqSpacing[1]
-            << setw(14) << acqSpacing[2] << endl;
-    
-        out << "acq. number of data points: " << 
-            hdr->GetIntSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionDataColumns", 
-                "SharedFunctionalGroupsSequence", 0 
-            )
-        << endl;
-    
-        int acqPts1 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseColumns", 
-            "SharedFunctionalGroupsSequence", 0 
-        );
-        int acqPts2 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseRows", 
-            "SharedFunctionalGroupsSequence", 0 
-        );
-        int acqPts3 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionOutOfPlanePhaseSteps", 
-            "SharedFunctionalGroupsSequence", 0 
-        );
-        out << "acq. number of points: " << acqPts1 << " " << acqPts2 << " " << acqPts3 << endl;
-    
-        float acqDcos[9]; 
-        for (int i = 0; i < 9; i++) {
-            acqDcos[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionOrientation", 
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-    
-        out << "acq. dcos1: " << fixed << setw(14) << setprecision(5) << acqDcos[0] << setw(14) << acqDcos[1]
-            << setw(14) << acqDcos[2] << endl;
-        out << "acq. dcos2: " << fixed << setw(14) << setprecision(5) << acqDcos[3]
-            << setw(14) << acqDcos[4] << setw(14) << acqDcos[5] << endl;
-        out << "acq. dcos3: " << fixed << setw(14) << setprecision(5) << acqDcos[6] << setw(14)
-            << acqDcos[7] << setw(14) << acqDcos[8] << endl;
-    
-        float selBoxSize[3]; 
-        float selBoxCenter[3]; 
-    
-        if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
-    
-            for (int i = 0; i < 3; i++) {
-        
-                selBoxSize[i] = hdr->GetFloatSequenceItemElement(
-                    "VolumeLocalizationSequence",
-                    i,
-                    "SlabThickness"
-                );
-        
-                selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
-                    "VolumeLocalizationSequence",
-                    0,
-                    "MidSlabPosition", 
-                    NULL,      
-                    0,
-                    i 
-                );
-    
-            }
-        } else {
-    
-            selBoxSize[0] = 0.; 
-            selBoxSize[1] = 0.; 
-            selBoxSize[2] = 0.; 
-            selBoxCenter[0] = 0.; 
-            selBoxCenter[1] = 0.; 
-            selBoxCenter[2] = 0.; 
-        }
-    
-        out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
-                                             << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
-                                             << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
-                                             << endl;  
-    
-        out << "selection size(mm): " << fixed << setw(21) << setprecision(5) << selBoxSize[0] 
-                                      << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
-                                      << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
-                                      << endl;  
-    
-    
-        float selBoxOrientation[3][3]; 
-        if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-    
-                    selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
-                        "VolumeLocalizationSequence",
-                        i,
-                        "SlabOrientation",
-                        NULL, 
-                        0,    
-                        j 
-                    );
-                }
-            }
-        } else {
-            selBoxOrientation[0][0] = 0; 
-            selBoxOrientation[0][1] = 0; 
-            selBoxOrientation[0][2] = 0; 
-            selBoxOrientation[1][0] = 0; 
-            selBoxOrientation[1][1] = 0; 
-            selBoxOrientation[1][2] = 0; 
-            selBoxOrientation[2][0] = 0; 
-            selBoxOrientation[2][1] = 0; 
-            selBoxOrientation[2][2] = 0; 
-        }
-    
-        out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][2] 
-                                   << endl;  
-    
-        out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
-                                   << endl;  
-    
-        out << "selection dcos3: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
-                                   << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
-                                   << endl;  
-    
-        float reorderedTLC[3];
-        for (int i = 0; i < 3; i++) {
-            reorderedTLC[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedTLC",
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-    
-        out << "reordered toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
-            << reorderedTLC[0]
-            << setw(14) << reorderedTLC[1]
-            << setw(14) << reorderedTLC[2] << endl;
-    
-        float reorderedCenter[3]; 
-        this->GetDDFCenter( reorderedCenter, "reordered" );
-        out << "reordered center(lps, mm): " << fixed << setw(14) << setprecision(5) << reorderedCenter[0] 
-                                             << fixed << setw(14) << setprecision(5) << reorderedCenter[1]  
-                                             << fixed << setw(14) << setprecision(5) << reorderedCenter[2] 
-                                             << endl;  
-    
-        float reorderedSpacing[3];
-        for (int i = 0; i < 2; i++) {
-            reorderedSpacing[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPixelSpacing",
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-        reorderedSpacing[2] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
-            "SharedFunctionalGroupsSequence", 0
-        );
-    
-        out << "reordered spacing(mm):  " << fixed << right << setw(17) << setprecision(5)
-            << reorderedSpacing[0]
-            << setw(14) << reorderedSpacing[1]
-            << setw(14) << reorderedSpacing[2] << endl;
-    
-        int reorderedPts1 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
-            "SharedFunctionalGroupsSequence", 0
-        );
-        int reorderedPts2 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
-            "SharedFunctionalGroupsSequence", 0
-        );
-        int reorderedPts3 = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-            "SharedFunctionalGroupsSequence", 0
-        );
-        out << "reordered number of points: " << reorderedPts1 << " " << reorderedPts2 << " " << reorderedPts3 << endl;
-    
-        float reorderedDcos[9];
-        for (int i = 0; i < 9; i++) {
-            reorderedDcos[i] = hdr->GetFloatSequenceItemElement(
-                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOrientation",
-                "SharedFunctionalGroupsSequence", 0, i
-            );
-        }
-    
-        out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << reorderedDcos[0] << setw(14) << reorderedDcos[1]
-            << setw(14) << reorderedDcos[2] << endl;
-        out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << reorderedDcos[3]
-            << setw(14) << reorderedDcos[4] << setw(14) << reorderedDcos[5] << endl;
-        out << "reordered dcos3: " << fixed << setw(14) << setprecision(5) << reorderedDcos[6] << setw(14)
-            << reorderedDcos[7] << setw(14) << reorderedDcos[8] << endl;
-    
-        out << "===================================================" << endl; 
-    
-        out.close();
 
     }
+    *out << "number of dimensions: " << numDims << endl; 
+
+    string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
+
+    string spatialDomains[3];  
+    spatialDomains[0] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_ColumnsDomain") ); 
+    spatialDomains[1] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_RowsDomain") ); 
+    spatialDomains[2] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_SliceDomain") ); 
+
+    int numVoxels[3];  
+    numVoxels[0] = hdr->GetIntValue( "Columns" ); 
+    numVoxels[1] = hdr->GetIntValue( "Rows" ); 
+    numVoxels[2] = hdr->GetNumberOfSlices(); 
+    
+    double voxelSpacing[3]; 
+    hdr->GetPixelSpacing( voxelSpacing );  
+    *out << "dimension 1: type: " << specDomain << " npoints: " << setw(5) << left << hdr->GetIntValue( "DataPointColumns" ) << endl;
+    *out << "dimension 2: type: " << spatialDomains[0] << " npoints: " << numVoxels[0] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[0] << endl;
+    *out << "dimension 3: type: " << spatialDomains[1] << " npoints: " << numVoxels[1] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[1] << endl;
+    *out << "dimension 4: type: " << spatialDomains[2] << " npoints: " << numVoxels[2] << 
+        " pixel spacing(mm): " << fixed << left << setw(9) << setprecision(6) << voxelSpacing[2] << endl;
+
+    // If all time points are written to a single file, then add the time dimension.
+    if (  this->AllTimePointsInEachFile() ) {
+        if ( numDims == 5 ) {    
+            *out << "dimension 5: type: time npoints: " << hdr->GetNumberOfTimePoints() << endl ; 
+        }
+    }
+    
+    float center[3];
+    this->GetDDFCenter( center );
+    *out << "center(lps, mm): " << fixed << right << setw(14) << setprecision(5) << center[0]
+         << setw(14) << center[1] << setw(14) << center[2] << endl;
+
+    double positionFirst[3]; 
+    hdr->GetOrigin(positionFirst, 0);
+    *out << "toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
+         << positionFirst[0]
+         << setw(14) << positionFirst[1]
+         << setw(14) << positionFirst[2] <<endl;
+
+    double dcos[3][3];
+    this->GetImageDataInput(0)->GetDcos(dcos);
+    *out << "dcos0: " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
+         << setw(14) << dcos[0][2] << endl;
+    *out << "dcos1: " << fixed << setw(14) << setprecision(5) << dcos[1][0]
+         << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
+    *out << "dcos2: " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
+         << dcos[2][1] << setw(14) << dcos[2][2] << endl;
+
+    *out << "===================================================" << endl; 
+    *out << "MR Parameters" << endl; 
+
+    string coilName = hdr->GetStringSequenceItemElement(
+        "MRReceiveCoilSequence",
+        0,
+        "ReceiveCoilName",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    *out << "coil name: " << fixed << left << setw(15) << coilName << endl; 
+
+    double voxelSize[3]; 
+    hdr->GetPixelSize( voxelSize );  
+    *out << "slice gap(mm): " << voxelSpacing[2] - voxelSize[2] << endl;
+
+    float TE = hdr->GetFloatSequenceItemElement(
+        "MREchoSequence",
+        0,
+        "EffectiveEchoTime",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    *out << "echo time(ms): " << fixed << setprecision(6) << TE << endl; 
+
+    float TR = hdr->GetFloatSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RepetitionTime",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    *out << "repetition time(ms): " << fixed << setprecision(6) << TR << endl;
+
+    *out << "inversion time(ms): " << fixed << setprecision(6) << endl; 
+    
+    float flipAngle =  hdr->GetFloatSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "FlipAngle",
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+    *out << "flip angle: " << fixed << setprecision(6) << flipAngle << endl;
+
+    *out << "pulse sequence name: " << fixed << setw(15) << hdr->GetStringValue( "PulseSequenceName" ) << endl;
+    *out << "transmitter frequency(MHz): " << hdr->GetFloatValue( "TransmitterFrequency" ) << endl; 
+    *out << "isotope: " << hdr->GetStringValue( "ResonantNucleus" ) << endl;
+    *out << "field strength(T): " <<  hdr->GetFloatValue( "MagneticFieldStrength" ) << endl; 
+    int numSatBands = hdr->GetNumberOfItemsInSequence("MRSpatialSaturationSequence");
+    *out << "number of sat bands: " << numSatBands << endl;
+    for ( int satBand = 0; satBand < numSatBands; satBand++ ) {
+
+        float thickness = hdr->GetFloatSequenceItemElement( 
+            "MRSpatialSaturationSequence", satBand, "SlabThickness", "SharedFunctionalGroupsSequence"
+        );
+            
+        float pos0 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 0
+        );
+        float pos1 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 1
+        );
+        float pos2 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "MidSlabPosition", "SharedFunctionalGroupsSequence", 0, 2
+        );
+
+        float norm0 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 0
+        );
+        float norm1 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 1
+        );
+        float norm2 = hdr->GetFloatSequenceItemElement(
+            "MRSpatialSaturationSequence", satBand, "SlabOrientation", "SharedFunctionalGroupsSequence", 0, 2
+        );
+
+        *out << "sat band " << satBand + 1 << " thickness(mm): " << fixed << setprecision(6) << thickness << endl; 
+        *out << "sat band " << satBand + 1 << " orientation: " << fixed << right << setw(21) << setprecision(5) << norm0 
+                                                          << fixed << right << setw(14) << setprecision(5) << norm1 
+                                                          << fixed << right << setw(14) << setprecision(5) << norm2 
+                                                          << endl;  
+
+        *out << "sat band " << satBand + 1 << " position(lps, mm): " << fixed << right << setw(15) << setprecision(5) << pos0 
+                                                                << fixed << right << setw(14) << setprecision(5) << pos1 
+                                                                << fixed << right << setw(14) << setprecision(5) << pos2 
+                                                                << endl;  
+
+    }
+                                   
+    *out << "===================================================" << endl; 
+    *out << "Spectroscopy Parameters" << endl; 
+
+    *out << "localization type: " << hdr->GetStringValue( "VolumeLocalizationTechnique" ) << endl;
+    *out << "center frequency(MHz): " << fixed << setprecision(6) << hdr->GetFloatValue( "TransmitterFrequency" ) << endl;
+    *out << "ppm reference: " << fixed << setprecision(6) << hdr->GetFloatValue( "ChemicalShiftReference" ) << endl;
+    *out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
+    *out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
+    *out << "frequency offset(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SVK_FrequencyOffset" ) << endl;
+    string onH20 = "yes"; 
+    if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
+        onH20.assign( "no" ); 
+    }
+    *out << "centered on water: " << onH20 << endl;
+    *out << "suppression technique: " << endl;
+    *out << "residual water:" << endl;
+    *out << "number of acquisitions: " << endl;
+    *out << "chop: " << endl;
+    *out << "even symmetry: " << endl;
+    *out << "data reordered: " << endl;
+
+    float acqTLC[3];
+    for (int i = 0; i < 3; i++) {
+        acqTLC[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionTLC", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    *out << "acq. toplc(lps, mm):  " << fixed << right << setw(13) << setprecision(5)
+         << acqTLC[0]
+         << setw(14) << acqTLC[1]
+         << setw(14) << acqTLC[2] << endl;
+
+    float acqSpacing[3];
+    for (int i = 0; i < 2; i++) {
+        acqSpacing[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionPixelSpacing", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+    acqSpacing[2] = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
+        "SharedFunctionalGroupsSequence", 0
+    );
+
+    *out << "acq. spacing(mm):  " << fixed << right << setw(16) << setprecision(5)
+         << acqSpacing[0]
+         << setw(14) << acqSpacing[1]
+         << setw(14) << acqSpacing[2] << endl;
+
+    *out << "acq. number of data points: " << 
+        hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionDataColumns", 
+            "SharedFunctionalGroupsSequence", 0 
+        )
+    << endl;
+
+    int acqPts1 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseColumns", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    int acqPts2 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionPhaseRows", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    int acqPts3 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SpectroscopyAcquisitionOutOfPlanePhaseSteps", 
+        "SharedFunctionalGroupsSequence", 0 
+    );
+    *out << "acq. number of points: " << acqPts1 << " " << acqPts2 << " " << acqPts3 << endl;
+
+    float acqDcos[9]; 
+    for (int i = 0; i < 9; i++) {
+        acqDcos[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionOrientation", 
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    *out << "acq. dcos1: " << fixed << setw(14) << setprecision(5) << acqDcos[0] << setw(14) << acqDcos[1]
+         << setw(14) << acqDcos[2] << endl;
+    *out << "acq. dcos2: " << fixed << setw(14) << setprecision(5) << acqDcos[3]
+         << setw(14) << acqDcos[4] << setw(14) << acqDcos[5] << endl;
+    *out << "acq. dcos3: " << fixed << setw(14) << setprecision(5) << acqDcos[6] << setw(14)
+         << acqDcos[7] << setw(14) << acqDcos[8] << endl;
+
+    float selBoxSize[3]; 
+    float selBoxCenter[3]; 
+
+    if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
+
+        for (int i = 0; i < 3; i++) {
+    
+            selBoxSize[i] = hdr->GetFloatSequenceItemElement(
+                "VolumeLocalizationSequence",
+                i,
+                "SlabThickness"
+            );
+    
+            selBoxCenter[i] = hdr->GetFloatSequenceItemElement(
+                "VolumeLocalizationSequence",
+                0,
+                "MidSlabPosition", 
+                NULL,      
+                0,
+                i 
+            );
+
+        }
+    } else {
+
+        selBoxSize[0] = 0.; 
+        selBoxSize[1] = 0.; 
+        selBoxSize[2] = 0.; 
+        selBoxCenter[0] = 0.; 
+        selBoxCenter[1] = 0.; 
+        selBoxCenter[2] = 0.; 
+    }
+
+    *out << "selection center(lps, mm): " << fixed << setw(14) << setprecision(5) << selBoxCenter[0] 
+                                          << fixed << setw(14) << setprecision(5) << selBoxCenter[1]  
+                                          << fixed << setw(14) << setprecision(5) << selBoxCenter[2] 
+                                          << endl;  
+
+    *out << "selection size(mm): " << fixed << setw(21) << setprecision(5) << selBoxSize[0] 
+                                   << fixed << setw(14) << setprecision(5) << selBoxSize[1]  
+                                   << fixed << setw(14) << setprecision(5) << selBoxSize[2] 
+                                   << endl;  
+
+
+    float selBoxOrientation[3][3]; 
+    if( hdr->ElementExists( "VolumeLocalizationSequence" ) ) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+
+                selBoxOrientation[i][j] = hdr->GetFloatSequenceItemElement(
+                    "VolumeLocalizationSequence",
+                    i,
+                    "SlabOrientation",
+                    NULL, 
+                    0,    
+                    j 
+                );
+            }
+        }
+    } else {
+        selBoxOrientation[0][0] = 0; 
+        selBoxOrientation[0][1] = 0; 
+        selBoxOrientation[0][2] = 0; 
+        selBoxOrientation[1][0] = 0; 
+        selBoxOrientation[1][1] = 0; 
+        selBoxOrientation[1][2] = 0; 
+        selBoxOrientation[2][0] = 0; 
+        selBoxOrientation[2][1] = 0; 
+        selBoxOrientation[2][2] = 0; 
+    }
+
+    *out << "selection dcos1: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][0] 
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][1]  
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[0][2] 
+                                << endl;  
+
+    *out << "selection dcos2: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][0] 
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][1]  
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[1][2] 
+                                << endl;  
+
+    *out << "selection dcos3: " << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][0] 
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][1]  
+                                << fixed << setw(14) << setprecision(5) << selBoxOrientation[2][2] 
+                                << endl;  
+
+    float reorderedTLC[3];
+    for (int i = 0; i < 3; i++) {
+        reorderedTLC[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedTLC",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    *out << "reordered toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
+         << reorderedTLC[0]
+         << setw(14) << reorderedTLC[1]
+         << setw(14) << reorderedTLC[2] << endl;
+
+    float reorderedCenter[3]; 
+    this->GetDDFCenter( reorderedCenter, "reordered" );
+    *out << "reordered center(lps, mm): " << fixed << setw(14) << setprecision(5) << reorderedCenter[0] 
+                                          << fixed << setw(14) << setprecision(5) << reorderedCenter[1]  
+                                          << fixed << setw(14) << setprecision(5) << reorderedCenter[2] 
+                                          << endl;  
+
+    float reorderedSpacing[3];
+    for (int i = 0; i < 2; i++) {
+        reorderedSpacing[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPixelSpacing",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+    reorderedSpacing[2] = hdr->GetFloatSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
+        "SharedFunctionalGroupsSequence", 0
+    );
+
+    *out << "reordered spacing(mm):  " << fixed << right << setw(17) << setprecision(5)
+         << reorderedSpacing[0]
+         << setw(14) << reorderedSpacing[1]
+         << setw(14) << reorderedSpacing[2] << endl;
+
+    int reorderedPts1 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    int reorderedPts2 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    int reorderedPts3 = hdr->GetIntSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+        "SharedFunctionalGroupsSequence", 0
+    );
+    *out << "reordered number of points: " << reorderedPts1 << " " << reorderedPts2 << " " << reorderedPts3 << endl;
+
+    float reorderedDcos[9];
+    for (int i = 0; i < 9; i++) {
+        reorderedDcos[i] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOrientation",
+            "SharedFunctionalGroupsSequence", 0, i
+        );
+    }
+
+    *out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << reorderedDcos[0] << setw(14) << reorderedDcos[1]
+         << setw(14) << reorderedDcos[2] << endl;
+    *out << "reordered dcos2: " << fixed << setw(14) << setprecision(5) << reorderedDcos[3]
+         << setw(14) << reorderedDcos[4] << setw(14) << reorderedDcos[5] << endl;
+    *out << "reordered dcos3: " << fixed << setw(14) << setprecision(5) << reorderedDcos[6] << setw(14)
+         << reorderedDcos[7] << setw(14) << reorderedDcos[8] << endl;
+
+    *out << "===================================================" << endl; 
+
 }
+
 
 
 /*!
@@ -822,6 +889,84 @@ string svkDdfVolumeWriter::GetDimensionDomain( string dimensionDomainString )
     return domain;
 }
 
+
+/*!
+ *  Takes a file root name and appends the necessary numerical extension to 
+ *  indicate time_pt or coil number for multi-file output of dataset, e.g. 
+ *  each coil written to a separate ddf/cmplx file pair. 
+ */
+string svkDdfVolumeWriter::GetFileRootName(string fileRoot, int coilNum, int timePt)
+{
+
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
+    int numCoils   = hdr->GetNumberOfCoils();
+    int numTimePts = hdr->GetNumberOfTimePoints();
+    int fileNum = -1; 
+
+    //  construct file number.  By default this reflects the coil number, 
+    //  but dependeing on numTimePtsPerFile, may also reflect time point.
+    if ( numCoils > 1 &&  this->AllTimePointsInEachFile() ) {
+        fileNum = coilNum; 
+    } else if ( 
+        (numCoils > 1 || numTimePts > 1 ) 
+        && ! this->AllTimePointsInEachFile() ) 
+    {
+        fileNum = (coilNum * numTimePts) + timePt; 
+    } 
+
+    if ( fileNum >= 0 ) {
+        string coilString;
+        ostringstream oss;
+        //  Add 1 to the file number so indexing doesn't start at 0. 
+        oss << fileNum + 1;
+        fileRoot.assign( fileRoot + "_" + oss.str() ) ;
+    } else {
+        fileRoot.assign( fileRoot );  
+    }
+
+    return fileRoot;
+}
+
+
+/*!
+ *  Currently only 1 time pt or all time points is supported. 
+ */
+void svkDdfVolumeWriter::SetOneTimePointsPerFile()
+{
+    this->SetNumberTimePointsPerFile(1) ; 
+}
+
+
+/*!
+ *  Currently only 1 time pt or all time points is supported. 
+ */
+void svkDdfVolumeWriter::SetNumberTimePointsPerFile(int numTimePts)
+{
+    this->numTimePtsPerFile = numTimePts; 
+}
+
+
+/*!
+ *
+ */
+int svkDdfVolumeWriter::GetNumberTimePointsPerFile()
+{
+    return this->numTimePtsPerFile;
+}
+
+
+/*!
+ *  Method to check weather all time points are written to each file. 
+ */
+bool svkDdfVolumeWriter::AllTimePointsInEachFile()
+{
+    int numTimePts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    if ( this->GetNumberTimePointsPerFile() == numTimePts ) {
+        return true;  
+    } else {
+        return false; 
+    }
+}
 
 
 /*!

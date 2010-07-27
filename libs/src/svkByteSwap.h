@@ -69,7 +69,9 @@ class svkByteSwap : public vtkObject
         static void SwapBufferEndianness(double* data, int size);
  
         static void SwapEndianness(short*  data);
+        static void SwapEndianness(unsigned short*  data);
         static void SwapEndianness(int*    data);
+        static void SwapEndianness(unsigned int*    data);
         static void SwapEndianness(float*  data);
         static void SwapEndianness(double* data);
         

@@ -100,6 +100,15 @@ void svkByteSwap::SwapBufferEndianness(double* data, int size)
 /*!
  *
  */
+void svkByteSwap::SwapEndianness(unsigned short* data)
+{
+    svkByteSwap::SwapEndianness( reinterpret_cast<short*>(data) ); 
+}
+
+
+/*!
+ *
+ */
 void svkByteSwap::SwapEndianness(short* data)
 {
     char* buf;
@@ -110,6 +119,15 @@ void svkByteSwap::SwapEndianness(short* data)
     c1 = buf[1];
     buf[0] = c1;
     buf[1] = c0;
+}
+
+
+/*!
+ *
+ */
+void svkByteSwap::SwapEndianness(unsigned int* data)
+{
+    svkByteSwap::SwapEndianness( reinterpret_cast<int*>(data) ); 
 }
 
 

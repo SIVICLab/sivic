@@ -80,6 +80,8 @@ class svkDdfVolumeWriter : public svkImageWriter
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
+        void            SetOneTimePointsPerFile();
+        int             GetNumberTimePointsPerFile(); 
         virtual void    Write();
 
 
@@ -92,13 +94,20 @@ class svkDdfVolumeWriter : public svkImageWriter
 
 
     private:
-        void            InitImageData();
-        void            WriteData();
-        void            WriteHeader();
-        void            GetDDFCenter(float center[3], string centerType = "current" );
-        void            GetDDFOrientation(float orientation[6]);
-        string          GetDimensionDomain( string dimensionDomainString ); 
-        string          GetDDFPatientsName(string patientsName);
+        void             InitImageData();
+        void             WriteFiles();
+        void             GetDDFCenter(float center[3], string centerType = "current" );
+        void             GetDDFOrientation(float orientation[6]);
+        string           GetDimensionDomain( string dimensionDomainString ); 
+        string           GetDDFPatientsName(string patientsName);
+        string           GetFileRootName(string fileRoot, int coiNum, int timePt = 0); 
+        void             SetNumberTimePointsPerFile(int numTimePts);
+        bool             AllTimePointsInEachFile(); 
+        void             InitSpecData(float* specData, int coilNum, int timePt); 
+        void             InitHeader(ofstream* out, string fileName); 
+
+        int              numTimePtsPerFile; 
+        static const int ALL_TIME_PTS_IN_FILE; 
 
 };
 
