@@ -104,31 +104,30 @@ svkDdfVolumeReader::~svkDdfVolumeReader()
 int svkDdfVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
-
-    if( fileToCheck.size() > 4 ) {
+    //  If file has an extension then check it:
+    string fileExtension = this->GetFileExtension( fname );  
+    if( ! fileExtension.empty() ) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
         
-        
         if ( 
-            fileToCheck.substr( fileToCheck.size() - 6 ) == ".cmplx" || 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".ddf" 
+            fileExtension.compare( "cmplx" ) == 0 || 
+            fileExtension.compare( "ddf" ) == 0 
         )  {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
 
-                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's a UCSF Complex File: " << fileToCheck);
+                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's a UCSF Complex File: " << fname );
                 return 1;
             }
         } else {
-            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a UCSF Complex File: " << fileToCheck);
+            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a UCSF Complex File: " << fname );
             return 0;
         }
 
     } else {
-        vtkDebugMacro(<< this->GetClassName() <<"::CanReadFile(): It's NOT a valid file name : " << fileToCheck);
+        vtkDebugMacro(<< this->GetClassName() <<"::CanReadFile(): It's NOT a valid file name : " << fname );
         return 0;
     }
 }
