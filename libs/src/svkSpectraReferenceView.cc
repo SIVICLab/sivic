@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkSpectraReferenceView.cc $
- *  $Rev: 394 $
- *  $Author: jccrane $
- *  $Date: 2010-07-08 15:02:37 -0700 (Thu, 08 Jul 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkSpectraReferenceView, "$Rev: 394 $");
+vtkCxxRevisionMacro(svkSpectraReferenceView, "$Rev$");
 vtkStandardNewMacro(svkSpectraReferenceView);
 
 
