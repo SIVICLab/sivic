@@ -83,17 +83,17 @@ svkGEPFileMapper::~svkGEPFileMapper()
 }
 
 
-
 /*!
  *  Initializes the svkDcmHeader adapter to a specific IOD type      
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMap, svkDcmHeader* header, float pfileVersion) 
+void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMap, svkDcmHeader* header, float pfileVersion, bool swapBytes) 
 {
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
+    this->swapBytes = swapBytes; 
     this->InitPatientModule(); 
     this->InitGeneralStudyModule(); 
     this->InitGeneralSeriesModule(); 
@@ -287,9 +287,10 @@ void svkGEPFileMapper::InitGeneralStudyModule()
         this->GetHeaderValueAsString( "rhe.study_uid" )
     );
 
+    string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
     this->dcmHeader->SetValue(
         "StudyDate", 
-        this->GetHeaderValueAsString( "rhr.rh_scan_date" )
+        svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
     );
 
     this->dcmHeader->SetValue(
@@ -431,12 +432,11 @@ void svkGEPFileMapper::InitMultiFrameFunctionalGroupsModule()
         1 
     );
 
+    string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
     this->dcmHeader->SetValue( 
         "ContentDate", 
-        this->GetHeaderValueAsString( "rhr.rh_scan_date" ) 
-        //this->RemoveSlashesFromDate( this->GetHeaderValueAsString( "rhr.rh_scan_date" )  ) 
+        svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
     );
-
 
     this->dcmHeader->SetValue( 
         "NumberOfFrames", 
@@ -474,14 +474,8 @@ void svkGEPFileMapper::InitSharedFunctionalGroupMacros()
 void svkGEPFileMapper::InitPerFrameFunctionalGroupMacros()
 {
 
-    double center[3]; 
-    //toplc[0] = -1 * this->GetHeaderValueAsFloat( "rhi.tlhc_R" );
-    //toplc[1] = -1 * this->GetHeaderValueAsFloat( "rhi.tlhc_A" );
-    //toplc[2] = this->GetHeaderValueAsFloat( "rhi.tlhc_S" );
-
-    center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" );
-    center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" );
-    center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
+    double* center = new double[3]; 
+    this->GetCenterFromRawFile( center ); 
 
     double voxelSpacing[3]; 
     this->GetVoxelSpacing( voxelSpacing ); 
@@ -564,6 +558,26 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
         "SharedFunctionalGroupsSequence",   
         0                                 
     );
+}
+
+
+/*
+ *  Converts GE date year to 4 digit representation, i.e. 
+ *  converts year from 1XX to 20XX
+ */
+string svkGEPFileMapper::ConvertGEDateToDICOM( string geDate )
+{ 
+    size_t yearPos; 
+    string yearPrefix = "";  
+    if ( (yearPos = geDate.find_last_of("\\/") ) != string::npos ) { 
+        if ( geDate[yearPos + 1] == '1' ) { 
+            yearPrefix = "20";  
+        } else if ( geDate[yearPos + 1] == '0' ) { 
+            yearPrefix = "19";  
+        }
+    }
+    string dcmDate = geDate.replace(6, 1, yearPrefix);  
+    return dcmDate; 
 }
 
 
@@ -1692,10 +1706,9 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
         this->GetHeaderValueAsFloat( "rhr.spectral_width" )
     );
 
-
     this->dcmHeader->SetValue(
         "SVK_FrequencyOffset", 
-        0 
+        this->GetFrequencyOffset() 
     );
 
     this->dcmHeader->SetValue(
@@ -1761,6 +1774,14 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
     );
 }
 
+
+/*!
+ *  Returns the spectral frquency offset
+ */
+float svkGEPFileMapper::GetFrequencyOffset() 
+{
+    return 0.;
+}
 
 /*!
  *
@@ -1919,6 +1940,16 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
 }
 
 
+/*
+ *  Gets the center of the acquisition grid.  May vary between sequences.
+ */
+void svkGEPFileMapper::GetCenterFromRawFile( double* center )
+{   
+    center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" );
+    center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" );
+    center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
+}
+
 
 /*!
  *  returns the value for the specified key as an int. 
@@ -2055,7 +2086,7 @@ int svkGEPFileMapper::GetNumKSpacePoints()
 {
     int numKSpacePts;
 
-    //  Image user21 indicates that an elliptical k-space sampling radius is 
+    //  Image user21 indicates that an elliptical k-space sampling radius 
     //  was used.  If true, then number of k-space points differs from numVoxels
     //  in rectaliniear grid. 
     if (this->GetHeaderValueAsInt( "rhi.user21" ) != 0 ) { 
@@ -2119,7 +2150,87 @@ int svkGEPFileMapper::GetNumKSpacePoints()
 
 
 /*!
- *
+ *  Determines whether a voxel (index) was sampled, or not, i.e. was it within 
+ *  the elliptical sampling volume if reduced k-space elliptical sampling
+ *  was used.  Could be extended to support other sparse sampling 
+ *  trajectories.       
+ */
+bool svkGEPFileMapper::WasIndexSampled(int indexX, int indexY, int indexZ)
+{
+    bool wasSampled = true;
+
+    //  Image user21 indicates that an elliptical k-space sampling radius 
+    //  was used.  If true, then number of k-space points differs from numVoxels
+    //  in rectaliniear grid. 
+    if (this->GetHeaderValueAsInt( "rhi.user21" ) != 0 ) { 
+    
+        float ellipticalRad =  this->GetHeaderValueAsFloat( "rhi.user22" ); 
+
+        //  if ellipse is defined by bounding rectangle that 
+        //  defines k-space grid, then
+
+        int numVoxels[3]; 
+        this->GetNumVoxels( numVoxels ); 
+
+        /*  Get the origin of the ellipse
+         *  and length of principle axes defined by 
+         *  bounding box (acquisition grid)of ellipse
+         *  Also get the exterior corner of the voxel in question 
+         *  to see if it is 100% within the sampling ellipse 
+         *  radius. 
+         */
+        float ellipseOrigin[3]; 
+        float ellipseRadius[3]; 
+        float voxelCorner[3]; 
+        voxelCorner[0] = indexX; 
+        voxelCorner[1] = indexY; 
+        voxelCorner[2] = indexZ; 
+        for (int i = 0; i < 3; i++) {
+
+            ellipseOrigin[i] = ( static_cast<float>( numVoxels[i] ) - 1 ) / 2; 
+            ellipseRadius[i] =   static_cast<float>( numVoxels[i] ) / 2; 
+
+            if ( voxelCorner[i] < ellipseOrigin[i] ) {
+                voxelCorner[i] -= .5; 
+            } else {
+                voxelCorner[i] += .5; 
+            }
+
+        }
+
+        float voxelExteriorRadius = 0.;  
+        for (int i = 0; i < 3; i++) {
+            voxelExteriorRadius += pow( 
+                    ( (voxelCorner[i] - ellipseOrigin[i]) / ellipseRadius[i] ), 
+                    2 
+                ); 
+        }
+
+        /*  See if the exterior corner of the voxel is within the sampled elliptical radius. 
+         *   
+         *  The eqn of the ellips in a bounding box defined by the MRSI acquisition grid    
+         *  with center c (ellipseOrigin) and radius r (ellipseRadius) is if the size of the axes
+         *  are ordered correctly such that rx > ry > rz > 0:
+         *      (x-cx)^2 + (y-cy)^2 + (z-cz)^2
+         *      --------   --------   --------   
+         *        rx^2       ry^2       rz^2 
+         */
+        if ( voxelExteriorRadius <= ellipticalRad) {
+            wasSampled = true;  
+        } else { 
+            wasSampled = false;  
+        }
+
+    } 
+
+    return wasSampled; 
+}
+
+
+/*!
+ *  This method reads data from the pfile and puts the data into the CellData arrays.
+ *  if elliptical k-space sampling was used, the data is zero-padded.  Other reduced
+ *  k-space sampling strategies aren't supported yet. 
  */
 void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
 {
@@ -2135,7 +2246,7 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
     int numSpecPts = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 
     int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
         
-    int numBytesInVol = this->GetNumVoxelsInVol() * numSpecPts * numComponents * dataWordSize; 
+    int numBytesInVol = this->GetNumKSpacePoints() * numSpecPts * numComponents * dataWordSize; 
     int numBytesInPFile = numBytesInVol * numTimePts * numCoils; 
     //  one dummy spectrum per coil:
     int numDummyBytes = numCoils * numSpecPts * numComponents * dataWordSize; 
@@ -2147,9 +2258,9 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
     pFile->seekg(readOffset, ios::beg);
     pFile->read( (char*)(this->specData), numBytesInPFile);
 
-#if !defined (linux) && !defined(Darwin)
-    svkByteSwap::SwapBufferEndianness( specData, numBytesInPFile/dataWordSize );
-#endif
+    if ( this->swapBytes ) {
+        svkByteSwap::SwapBufferEndianness( this->specData, numBytesInPFile/dataWordSize );
+    }
 
     int numVoxels[3]; 
     this->GetNumVoxels( numVoxels ); 
@@ -2211,8 +2322,14 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
                                    + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt  
                                    + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts ) * coilNum; 
 
-                        SetCellSpectrum(data, offset, index, x, y, z, timePt, coilNum);
-                        offset += numPtsPerSpectrum; 
+                        //  if k-space sampling was used check if the point was sampled, or if it needs
+                        //  to be zero-padded in the grid. 
+                        //  if zero-padding don't increment the data pointer offset. 
+                        bool wasSampled = this->WasIndexSampled(x, y, z);
+                        SetCellSpectrum(data, wasSampled, offset, index, x, y, z, timePt, coilNum);
+                        if ( wasSampled ) {
+                            offset += numPtsPerSpectrum; 
+                        } 
 
                     }
 
@@ -2227,7 +2344,7 @@ void svkGEPFileMapper::ReadData(string pFileName, svkImageData* data)
 
     pFile->close(); 
     delete pFile;
-    delete [] specData; 
+    delete [] this->specData; 
     this->ModifyBehavior( data );
 
     if ( this->GetDebug() ) {
@@ -2268,7 +2385,7 @@ void svkGEPFileMapper::GetXYZIndices(int index0, int index1, int index2, int* x,
 /*!
  *  
  */
-void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int index, int x, int y, int z, int timePoint, int coilNum)
+void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int offset, int index, int x, int y, int z, int timePoint, int coilNum)
 {
 
     //  Set XY points to plot 
@@ -2298,15 +2415,24 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, int offset, int index
     dataArray->SetName(arrayName);
 
     //  Default, chop is off, so multiply all values by 1
-    if ( IsChopOn() ) {
+    //  Only chop sampled data points.
+    if ( IsChopOn() && wasSampled ) {
        chopVal *= -1;  
     }
 
     float tuple[2];
-    for (int i = 0; i < numFreqPts; i++) {
-        tuple[0] = chopVal * specData[ offset + (i * numComponents) ]; 
-        tuple[1] = chopVal * specData[ offset + (i * numComponents) + 1 ]; 
-        dataArray->SetTuple( i, tuple);  
+    if ( wasSampled ) {
+        for (int i = 0; i < numFreqPts; i++) {
+            tuple[0] = chopVal * this->specData[ offset + (i * numComponents) ]; 
+            tuple[1] = chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
+            dataArray->SetTuple( i, tuple );  
+        }
+    } else {
+        tuple[0] = 0;  
+        tuple[1] = 0; 
+        for (int i = 0; i < numFreqPts; i++) {
+            dataArray->SetTuple( i, tuple );  
+        }
     }
 
     return;

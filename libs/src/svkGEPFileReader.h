@@ -55,6 +55,7 @@
 #include <svkByteSwap.h>
 #include <svkGEPFileMapper.h>
 #include <svkGEPFileMapperMBrease.h>
+#include <svkGEPFileMapperPre11x.h>
 
 #include <sys/stat.h>
 #include <map>
@@ -113,14 +114,14 @@ class svkGEPFileReader : public svkImageReader2
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         void                                     ReadGEPFile();
         void                                     ParsePFile();
-        void                                     InitOffsetsMap( float pfileVersion );
+        void                                     InitOffsetsMap();
         map <string, vector< string > >          pfMap;
 
 
     private:
 
         //  Methods:
-        string              GetOffsetsString( float pfileVersion );
+        string              GetOffsetsString();
         virtual void        InitDcmHeader();
         void                PrintOffsets(); 
         void                PrintKeyValuePairs();
@@ -135,6 +136,9 @@ class svkGEPFileReader : public svkImageReader2
                                 void* thisObject, 
                                 void* callData
                             );
+        void                FillInMissingInfo(); 
+        void                SetByteSwapping(); 
+
 
         //  Members:
         ifstream*                        gepf;

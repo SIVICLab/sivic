@@ -112,7 +112,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
     this->gepf->open( fname, ios::binary);
     bool    isGEPFile = false; 
 
-    float pfileVersion = 0; 
+    this->pfileVersion = 0; 
 
     if ( this->gepf->is_open() ) {
 
@@ -120,7 +120,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         
         if ( this->pfileVersion ) {
 
-            this->InitOffsetsMap( this->pfileVersion ); 
+            this->InitOffsetsMap(); 
 
             if ( this->pfileVersion < 12 ) {
                 string geLogo = this->GetFieldAsString( "rhr.rh_logo" );
@@ -240,7 +240,8 @@ void svkGEPFileReader::InitDcmHeader()
     this->mapper->InitializeDcmHeader( 
         this->pfMap, 
         this->GetOutput()->GetDcmHeader(), 
-        this->pfileVersion 
+        this->pfileVersion, 
+        this->GetSwapBytes()
     ); 
 
     if (this->GetDebug()) { 
@@ -272,13 +273,24 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         *it = (char)tolower(*it);
     }
 
-    if ( psd.compare("probe-p") == 0 ) {
-        aMapper = svkGEPFileMapper::New();
+    
+    if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
+
+        if ( this->pfileVersion < 11 ) {   
+            aMapper = svkGEPFileMapperPre11x::New();
+        } else {
+            aMapper = svkGEPFileMapper::New();
+        }
+
     } else if ( psd.compare("jpress") == 0 ) {
+
         aMapper = svkGEPFileMapperMBrease::New();
+
     } else {
+
         vtkErrorMacro("No PFile mapper available for " << psd );
         exit(1);
+
     }
 
     return aMapper;          
@@ -335,7 +347,8 @@ void svkGEPFileReader::ParsePFile()
 {
 
     this->pfileVersion = this->GetPFileVersion(); 
-    this->InitOffsetsMap( this->pfileVersion ); 
+    this->SetByteSwapping(); 
+    this->InitOffsetsMap(); 
 
     map< string, vector<string> >::iterator mapIter;
     string key; 
@@ -344,6 +357,27 @@ void svkGEPFileReader::ParsePFile()
         this->pfMap[key].push_back( this->GetFieldAsString( key ) );
     }
 
+    this->FillInMissingInfo();
+    this->PrintKeyValuePairs(); 
+
+}
+
+
+/*!
+ *  Some earlier pfile versions don't have all information explicitly encoded, so add 
+ *  the known values to the pfMap here:
+ */
+void svkGEPFileReader::FillInMissingInfo()
+{
+
+    this->pfMap["rhr.rdb_hdr_off_data"].push_back( "INT_4" );  //type
+    this->pfMap["rhr.rdb_hdr_off_data"].push_back( "1" );      //num elements 
+    this->pfMap["rhr.rdb_hdr_off_data"].push_back( "" );       //offset
+    if ( (int)(this->pfileVersion) == 9 ) {
+        this->pfMap["rhr.rdb_hdr_off_data"].push_back( "39984" );  
+    } else if ( (int)(this->pfileVersion) == 11 ) {
+        this->pfMap["rhr.rdb_hdr_off_data"].push_back( "61464" ); 
+    }
 }
 
 
@@ -398,6 +432,37 @@ void svkGEPFileReader::PrintKeyValuePairs()
 }
 
 
+/*!
+ *  Sets byte swapping based on native platform of scanner version 
+ *  needs to be more granular for platform/arch. 
+ */
+void svkGEPFileReader::SetByteSwapping()
+{
+    //  These were acquired on SGI (bigendian)
+    if (this->pfileVersion < 12) {
+
+#if defined (linux) 
+        this->SwapBytesOn(); 
+#elif defined (Darwin) 
+        this->SwapBytesOn(); 
+#else
+        this->SwapBytesOff(); 
+#endif
+
+    //  These were acquired on linux (little endian)
+    } else if (this->pfileVersion >= 12) {
+
+#if defined (linux) 
+        this->SwapBytesOff(); 
+#elif defined (Darwin) 
+        this->SwapBytesOff(); 
+#else
+        this->SwapBytesOn(); 
+#endif
+    }
+        
+}
+
 
 /*!
  *  
@@ -410,9 +475,9 @@ void svkGEPFileReader::PrintKeyValuePairs()
  *  //  rhr.rh_logo       , CHAR   ,    10  ,       34      value
  * 
  */
-void svkGEPFileReader::InitOffsetsMap( float pfileVersion )
+void svkGEPFileReader::InitOffsetsMap()
 {
-    string offsets = this->GetOffsetsString( pfileVersion );
+    string offsets = this->GetOffsetsString();
 
     size_t delim;
 
@@ -474,30 +539,51 @@ string svkGEPFileReader::GetFieldAsString( string key )
     if ( type.compare("FLOAT_4") == 0) {
         float floatVal; 
         this->gepf->read( (char*)(&floatVal), 4 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &floatVal );
+        }
         ossValue << floatVal;
     } else if ( type.compare("INT_2") == 0 ) {
         short shortVal; 
         this->gepf->read( (char*)(&shortVal), 2 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &shortVal );
+        }
         ossValue << shortVal;
     } else if ( type.compare("UINT_2") == 0 ) {
         unsigned short ushortVal; 
         this->gepf->read( (char*)(&ushortVal), 2 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &ushortVal );
+        }
         ossValue << ushortVal;
     } else if ( type.compare("UINT_4") == 0 ) {
         unsigned int uintVal; 
         this->gepf->read( (char*)(&uintVal), 4 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &uintVal );
+        }
         ossValue << uintVal;
     } else if ( type.compare("INT_4") == 0) {
         int intVal; 
         this->gepf->read( (char*)(&intVal), 4 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &intVal );
+        }
         ossValue << intVal;
     } else if ( type.compare("LINT_4") == 0) {
         int intVal; 
         this->gepf->read( (char*)(&intVal), 4 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &intVal );
+        }
         ossValue << intVal;
     } else if ( type.compare("ULINT_4") == 0) {
         unsigned int ulintVal; 
         this->gepf->read( (char*)(&ulintVal), 4 * numElements );
+        if ( this->GetSwapBytes() ) {
+            svkByteSwap::SwapEndianness( &ulintVal );
+        }
         ossValue << ulintVal;
     } else if ( type.compare("CHAR") == 0) {
         char* charVal = new char[numElements];  
@@ -593,28 +679,33 @@ float svkGEPFileReader::GetPFileVersion()
 {
     
     float version = 0;
-    float rdbmRev;;
+    float rdbmRev;
+    float rdbmRevSwapped;
 
+    //  The byte ordering probably depends on the native platform for that 
+    //  revision, so we're guessing here initially.
     if ( this->gepf->is_open() ) {
         gepf->seekg( 0, ios_base::beg );
         gepf->read( (char*)(&rdbmRev), 4);
-        cout << "rdbm rev" << rdbmRev << endl;
+        rdbmRevSwapped = rdbmRev;
+        svkByteSwap::SwapEndianness( &rdbmRevSwapped );
+        cout << "rdbm rev" << rdbmRev << " " << rdbmRevSwapped <<  endl;
     }
 
     //  
     //  Map the rdbm revision to a platform number (e.g. 11.x, 12.x, etc.) 
     //
-    if ( rdbmRev > 6.95 && rdbmRev < 8.0 ) { 
+    if ( rdbmRev > 6.95 && rdbmRev < 8.0 ||  rdbmRevSwapped > 6.95 && rdbmRevSwapped < 8.0 ) { 
         version = 9.0; 
-    } else if ( rdbmRev == 9.0 ) { 
+    } else if ( rdbmRev == 9.0  || rdbmRevSwapped == 9.0  ) { 
         version = 11.0;
-    } else if ( rdbmRev == 11.0 ) { 
+    } else if ( rdbmRev == 11.0 || rdbmRevSwapped == 11.0 ) { 
         version = 12.0;
-    } else if ( (int)rdbmRev == 14 ) { 
+    } else if ( (int)rdbmRev == 14 || (int)rdbmRevSwapped == 14 ) { 
         version = 14.0;
-    } else if ( (int)rdbmRev == 15 ) { 
+    } else if ( (int)rdbmRev == 15 || (int)rdbmRevSwapped == 15 ) { 
         version = 15.0;
-    } else if ( (int)rdbmRev == 20 ) { 
+    } else if ( (int)rdbmRev == 20 || (int)rdbmRevSwapped == 20 ) { 
         version = 20.0;
     }
 
@@ -622,12 +713,11 @@ float svkGEPFileReader::GetPFileVersion()
 }
 
 
-
 /*!
  *  Get a string containing a mapping of offsets and datatype for pfile fields. 
  *  for the specified pfile version. 
  */
-string svkGEPFileReader::GetOffsetsString( float pfileVersion )
+string svkGEPFileReader::GetOffsetsString()
 {
 
     //  fieldName                           nativeType  numElements offset stringValue
@@ -637,7 +727,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
 
     string offsets; 
 
-    if ( (int)pfileVersion == 9 ) {
+    if ( (int)(this->pfileVersion) == 9 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
@@ -814,7 +904,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
             rhs.anref                          , CHAR   , 3   , 37996,\
         "); 
 
-    } else if ( (int)pfileVersion == 11 ) {
+    } else if ( (int)(this->pfileVersion) == 11 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
@@ -991,7 +1081,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
             rhs.anref                          , CHAR   , 3   , 58476,\
         "); 
 
-    } else if ( (int)pfileVersion == 12 ) {
+    } else if ( (int)(this->pfileVersion) == 12 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
@@ -1169,7 +1259,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
             rhs.anref                          , CHAR   , 3   , 62869,\
         "); 
 
-    } else if ( (int)pfileVersion == 14 ) {
+    } else if ( (int)(this->pfileVersion) == 14 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
@@ -1347,7 +1437,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
             rhs.anref                          , CHAR   , 3   , 142401,\
         "); 
 
-    } else if ( (int)pfileVersion == 15 ) {
+    } else if ( (int)(this->pfileVersion) == 15 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
@@ -1525,7 +1615,7 @@ string svkGEPFileReader::GetOffsetsString( float pfileVersion )
             rhs.anref                          , CHAR   , 3   , 142401,\
         "); 
 
-    } else if ( (int)pfileVersion == 20 ) {
+    } else if ( (int)(this->pfileVersion) == 20 ) {
 
         offsets.assign (" \
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\

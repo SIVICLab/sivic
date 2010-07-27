@@ -60,6 +60,7 @@
 #include <svkSpecUtils.h>
 #include <svkImageData.h>
 #include <svkMrsImageData.h>
+#include <svkImageReader2.h>
 
 #include <map>
 #include <vector>
@@ -105,7 +106,8 @@ class svkGEPFileMapper : public vtkObject
         virtual void    InitializeDcmHeader(
                             map <string, vector< string > >  pfMap, 
                             svkDcmHeader* header, 
-                            float pfileVersion
+                            float pfileVersion, 
+                            bool swapBytes
                         );
         void            ReadData( string pFileName, svkImageData* data );
         string          GetProgressText( );
@@ -146,6 +148,8 @@ class svkGEPFileMapper : public vtkObject
         virtual void    InitVolumeLocalizationSeq();
         virtual void    InitMRSpectroscopyDataModule();
 
+        virtual void    GetCenterFromRawFile( double* center );
+        virtual float   GetFrequencyOffset(); 
         int             GetNumVoxelsInVol();
         void            GetNumVoxels( int numVoxels[3] ); 
         int             GetNumKSpacePoints(); 
@@ -168,6 +172,7 @@ class svkGEPFileMapper : public vtkObject
 
         void            SetCellSpectrum( 
                             vtkImageData* data, 
+                            bool wasSampled, 
                             int offset, 
                             int index, 
                             int x, int y, int z, 
@@ -178,13 +183,16 @@ class svkGEPFileMapper : public vtkObject
         int             GetHeaderValueAsInt(string key);
         float           GetHeaderValueAsFloat(string key);
         string          GetHeaderValueAsString(string key);
+        bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
+        string          ConvertGEDateToDICOM( string geDate ); 
 
-        string          progressText;
 
+        string                                  progressText;
         vtkCallbackCommand*                     progressCallback;
         map <string, vector< string > >         pfMap;
         svkDcmHeader*                           dcmHeader; 
         float                                   pfileVersion; 
+        bool                                    swapBytes; 
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
