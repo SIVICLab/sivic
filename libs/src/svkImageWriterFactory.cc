@@ -70,7 +70,7 @@ svkImageWriterFactory::~svkImageWriterFactory()
 
 
 /*! 
- *
+ *  
  */
 vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory::WriterType writerType )
 {

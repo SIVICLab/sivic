@@ -76,6 +76,8 @@ class svkImageReader2 : public vtkImageReader2
         svkImageData*          GetOutput();
         svkImageData*          GetOutput(int);
         svkDcmHeader*          GetDcmHeader( const char* fileName );
+        static string          StripWhite(string in);
+        static string          RemoveSlashesFromDate(string* slashDate); 
 
 
     protected:
@@ -93,8 +95,6 @@ class svkImageReader2 : public vtkImageReader2
         string                                   GetFileExtension(const char* fname);
         string                                   GetFilePath(const char* fname);
         long                                     GetFileSize(ifstream* fs); 
-        string                                   StripWhite(string in);
-        string                                   RemoveSlashesFromDate(string* volumeDate); 
         virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
         void                                     ReadLineIgnore(
                                                     ifstream* hdr, 

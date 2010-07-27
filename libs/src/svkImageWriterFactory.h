@@ -65,12 +65,10 @@ using namespace std;
 
 /*! 
  *  Factory Base class.  
- *  Could consider writers in 2 classes: Screen captures (jpeg, 
- *  tiff, DICOM SCP) and data writers (DICOM MRI or MRS, COMPLEX, VOLUME). 
- *  The former captures screen from a RenderWindow.  The output from 
- *  the vtkWindow2ImageFilter is used as input to the writer, for 
+ *  Generates both vtk image writers ( JPEG, TIFF, etc.) and svk image writers. 
+ *  many of the vtk image writers are for screen captures from a vtkRenderWindow.  
+ *  The output from the vtkWindow2ImageFilter is used as input to the writer, for 
  *  writers that write out screen images. 
- *  
  */
 class svkImageWriterFactory : public vtkObject
 {
@@ -81,6 +79,7 @@ class svkImageWriterFactory : public vtkObject
         vtkTypeRevisionMacro( svkImageWriterFactory, vtkObject);
 
         enum WriterType {
+            UNDEFINED = -1, 
             JPEG = 0, 
             TIFF, 
             DDF, 
@@ -88,7 +87,8 @@ class svkImageWriterFactory : public vtkObject
             DICOM_MRS, 
             DICOM_MR, 
             DICOM_SC, 
-            PS
+            PS, 
+            LAST_TYPE = PS
         };
 
 

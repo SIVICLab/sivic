@@ -105,13 +105,17 @@ string svkImageReader2::GetFileRoot(const char* fname)
 
 /*!
  *  Returns the file root without extension
+ *  or NULL if no extension found.
  */
 string svkImageReader2::GetFileExtension(const char* fname)
 {
     string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "." );
-    string fileExtension( volumeFileName.substr(position + 1) );
+    string fileExtension(""); 
+    if ( position != string::npos ) {
+        fileExtension.assign( volumeFileName.substr(position + 1) );
+    } 
     return fileExtension;
 }
 
@@ -338,18 +342,18 @@ svkImageData* svkImageReader2::GetOutput(int port)
  *  Remove slashes from idf date and reorder for DICOM compliance:
  *  07/25/2007 -> 20070725
  */
-string svkImageReader2::RemoveSlashesFromDate(string* volumeDate)
+string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
 {
         size_t delim;
-        delim = volumeDate->find_first_of('/');
-        string month = volumeDate->substr(0, delim);
+        delim = slashDate->find_first_of('/');
+        string month = slashDate->substr(0, delim);
         month = StripWhite(month);
         if (month.size() != 2) {
             month = "0" + month;
         }
 
         string dateSub;
-        dateSub = volumeDate->substr(delim + 1);
+        dateSub = slashDate->substr(delim + 1);
         delim = dateSub.find_first_of('/');
         string day = dateSub.substr(0, delim);
         day = StripWhite(day);
