@@ -75,6 +75,7 @@ static void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisO
 // We are going to use this struct to hold our global vars. This makes it clearer which args are global.
 struct globalVariables {
     vtkCornerAnnotation** annotations;
+    vtkCornerAnnotation* spectraAnnotation;
     svkImageData* overlay; 
     svkImageData* spectra; 
     svkPlotGridViewController* spectraController; 
@@ -343,6 +344,16 @@ void DisplaySpectra( )
     int* extent = globalVars.spectra->GetExtent();
     globalVars.slice = (extent[5]-extent[4])/2;
     globalVars.spectraController->SetSlice( globalVars.slice );
+
+    globalVars.spectraAnnotation = GetNewAnnotation();
+    stringstream text;
+    text<< "USE + AND - TO CHANGE SLICE";
+    globalVars.spectraAnnotation->SetText(0, text.str().c_str() );
+    text.str("");
+    text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.spectra->GetNumberOfSlices();
+    globalVars.spectraAnnotation->SetText(1, text.str().c_str() );
+    globalVars.spectraWindow->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.spectraAnnotation );
+
     globalVars.spectraController->GetView()->Refresh();
     globalVars.spectraWindow->Render();
 
@@ -358,6 +369,7 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
 {
     svkDataViewController* dvController = (static_cast<svkDataViewController**>(thisObject))[0];
     stringstream text;
+    stringstream specText;
     char keyPressed;
     int newSlice = -1;
     vtkRenderWindowInteractor *rwi =
@@ -380,6 +392,9 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
         }
         if( globalVars.spectraController!=NULL) {
             globalVars.spectraController->SetSlice(  dvController->GetSlice() );
+            specText<< "SLICE: " << dvController->GetSlice() + 1 << "/" << globalVars.spectra->GetNumberOfSlices();
+            globalVars.spectraAnnotation->SetText(1, specText.str().c_str() ); 
+            globalVars.spectraController->GetView()->Refresh();
         }
     }
 }
@@ -453,6 +468,8 @@ void LoadSpectra( string spectraFileName ) {
         }
         globalVars.orientation=globalVars.spectra->GetDcmHeader()->GetOrientationType();
         DisplaySpectra();
+        globalVars.spectraAnnotation->SetText(2, spectraFileName.c_str() );
+
 
     }
 }
