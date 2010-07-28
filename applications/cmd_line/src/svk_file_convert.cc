@@ -80,7 +80,7 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName; 
-    svkImageWriterFactory::WriterType dataTypeOut; 
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
 
     /*
     *   Process flags and arguments
@@ -110,7 +110,7 @@ int main (int argc, char** argv)
     argv += optind;
 
     if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
-        dataTypeOut < 0) {
+        dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE ) {
         cout << usemsg << endl;
         exit(1); 
     }
