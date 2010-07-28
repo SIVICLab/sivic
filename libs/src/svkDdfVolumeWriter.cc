@@ -192,11 +192,10 @@ void svkDdfVolumeWriter::WriteFiles()
             }
 
             for (int timePt = 0; timePt < numTimePts; timePt++) {
-
                 this->InitSpecData(specData, coilNum, timePt); 
-                this->InitHeader( &hdrOut, fileName ); 
-
             }
+
+            this->InitHeader( &hdrOut, fileName ); 
 
             //  cmplx files are by definition big endian:
             #if defined (linux) || defined (Darwin)
@@ -563,7 +562,12 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "centered on water: " << onH20 << endl;
     *out << "suppression technique: " << endl;
     *out << "residual water:" << endl;
-    *out << "number of acquisitions: " << endl;
+    *out << "number of acquisitions: " << 
+        hdr->GetFloatSequenceItemElement(
+            "MRAveragesSequence", 0, "NumberOfAverages", 
+            "SharedFunctionalGroupsSequence", 0
+        ) << endl;
+
     *out << "chop: " << endl;
     *out << "even symmetry: " << endl;
     *out << "data reordered: " << endl;

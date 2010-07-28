@@ -1131,20 +1131,35 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         0
     );
 
-    this->dcmHeader->AddSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence",
-        0,
-        "SVK_SpectroscopyAcquisitionTLC",
-        "0\\0\\0",
-        "SharedFunctionalGroupsSequence",
-        0
-    );
+    double* center = new double[3]; 
+    this->GetCenterFromRawFile( center ); 
+
+    //===============================
+    //  Spacing
+    //===============================
+    double voxelAcqSpacing[3]; 
+    this->GetVoxelSpacing( voxelAcqSpacing ); 
+    if ( this->IsSwapOn() ) {
+        double tmp = voxelAcqSpacing[0];
+        voxelAcqSpacing[0] = voxelAcqSpacing[1];
+        voxelAcqSpacing[1] = tmp;
+    } 
+
+    ostringstream ossAcqSpacing;
+    ostringstream ossAcqSliceThickness;
+    for (int i = 0; i < 2; i++) {
+        ossAcqSpacing << voxelAcqSpacing[i];
+        if (i != 1 ) {
+            ossAcqSpacing << "\\";
+        }
+    }
+    ossAcqSliceThickness << voxelAcqSpacing[2];
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionPixelSpacing",
-        "0\\0", 
+        ossAcqSpacing.str(),
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -1153,30 +1168,90 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionSliceThickness",
-        "0", 
+        ossAcqSliceThickness.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
 
+    //===============================
+    //  DCOS 
+    //===============================
+    double acqDcos[3][3]; 
+    this->GetDcos(acqDcos); 
+    if ( this->IsSwapOn() ) {
+
+        for( int i = 0; i < 3; i++ ) {
+            if( acqDcos[1][i] != 0 ) {
+                acqDcos[1][i] = -1 * acqDcos[1][i];
+            }
+        }
+
+        double tmp;  
+        for(int i = 0; i < 3; i++){
+            tmp = acqDcos[0][i];
+            acqDcos[0][i] = acqDcos[1][i];
+            acqDcos[1][i] = tmp;
+        }
+    }
+
+    ostringstream ossAcqDcos;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            ossAcqDcos << acqDcos[i][j];
+            if (i * j != 4 ) {
+                ossAcqDcos<< "\\";
+            }
+        }
+    }
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcquisitionOrientation",
-        "0\\0\\0\\0\\0\\0\\0\\0\\0", 
+        ossAcqDcos.str(), 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    //===============================
+    // TLC 
+    //===============================
+    double acqToplc[3]; 
+    for( int i = 0; i < 3; i++ ) {
+        acqToplc[i] = center[i];
+        for( int j = 0; j < 3; j++ ) {
+            acqToplc[i] -= acqDcos[j][i] * voxelAcqSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
+        }    
+    }
+
+    ostringstream ossAcqTlc;
+    for (int i = 0; i < 3; i++) {
+        ossAcqTlc<< acqToplc[i];
+        if (i != 2 ) {
+            ossAcqTlc << "\\";
+        }
+    }
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcquisitionTLC",
+        ossAcqTlc.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
 
 
     // ==================================================
+    // ==================================================
     //  Reordered Params
+    // ==================================================
     // ==================================================
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedPhaseColumns",
-        0,  
+        numVoxels[0],  
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -1185,7 +1260,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedPhaseRows",
-        0, 
+        numVoxels[1], 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -1194,43 +1269,95 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-        0, 
+        numVoxels[2], 
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    double voxelSpacing[3]; 
+    this->GetVoxelSpacing( voxelSpacing ); 
+
+    double dcos[3][3];
+    this->GetDcos(dcos);   
+
+    //===============================
+    // TLC 
+    //===============================
+    double toplc[3]; 
+    for( int i = 0; i < 3; i++ ) {
+        toplc[i] = center[i];
+        for( int j = 0; j < 3; j++ ) {
+            toplc[i] -= dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
+        }    
+    }
+
+    ostringstream ossOrigin;
+    for (int i = 0; i < 3; i++) {
+        ossOrigin << toplc[i];
+        if (i != 2 ) {
+            ossOrigin << "\\";
+        }
+    }
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedTLC",
-        "0\\0\\0", 
+        ossOrigin.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    //===============================
+    //  Spacing
+    //===============================
+    ostringstream ossSpacing;
+    for (int i = 0; i < 2; i++) {
+        ossSpacing << voxelSpacing[i];
+        if (i != 1 ) {
+            ossSpacing << "\\";
+        }
+    }
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedPixelSpacing",
-        "0\\0", 
+        ossSpacing.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    ostringstream ossSliceThickness;
+    ossSliceThickness << voxelSpacing[2]; 
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedSliceThickness",
-        0, 
+        ossSliceThickness.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    //===============================
+    //  DCOS 
+    //===============================
+    ostringstream ossDcos;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            ossDcos << dcos[i][j];
+            if (i * j != 4 ) {
+                ossDcos<< "\\";
+            }
+        }
+    }
 
     this->dcmHeader->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SVK_SpectroscopyAcqReorderedOrientation",
-        "0\\0\\0\\0\\0\\0\\0\\0\\0", 
+        ossDcos.str(), 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -1454,7 +1581,7 @@ void svkGEPFileMapper::InitMRAveragesMacro()
         "MRAveragesSequence",
         0,                        
         "NumberOfAverages",       
-        "1",
+        this->GetHeaderValueAsInt( "rhi.nex" ), 
         "SharedFunctionalGroupsSequence",    
         0
     );
@@ -1872,9 +1999,16 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
         "SINGLE"
     );
 
+    string kspaceCoverage; 
+    if ( this->GetNumKSpacePoints() <  this->GetNumVoxelsInVol() ) {
+        kspaceCoverage = "ELLIPSOIDAL"; 
+    } else {
+        kspaceCoverage = "FULL"; 
+    }
+    
     this->dcmHeader->SetValue(
         "CoverageOfKSpace", 
-        "FULL" 
+        kspaceCoverage 
     );
 
     this->dcmHeader->SetValue( 
