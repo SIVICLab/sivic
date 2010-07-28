@@ -141,6 +141,7 @@ class svkDdfVolumeReader : public svkImageReader2
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
         string          GetDimensionDomain( string ddfDomainString ); 
+        void            GlobFileNames(); 
 
 
         //  Members:

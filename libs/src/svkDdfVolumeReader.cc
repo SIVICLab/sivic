@@ -382,53 +382,8 @@ void svkDdfVolumeReader::InitDcmHeader()
 void svkDdfVolumeReader::ParseDdf()
 {
 
-    string ddfFileName( this->GetFileName() );
-    string ddfFileExtension( this->GetFileExtension( this->GetFileName() ) );
-    string ddfFilePath( this->GetFilePath( this->GetFileName() ) );
-    vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( ddfFilePath + "/*." + ddfFileExtension).c_str() );
+    this->GlobFileNames(); 
 
-    vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
-    sortFileNames->GroupingOn();
-    sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
-    sortFileNames->NumericSortOn();
-    sortFileNames->Update();
-
-    //  If globed file names are not similar, use only the 0th group. 
-    //  If there is one group that group is used.
-    //  If there are multiple groups and the input file cannot be associated with a group then use input filename only.
-    int groupToUse = -1;     
-    if (sortFileNames->GetNumberOfGroups() > 1 ) {
-
-        //  Get the group the selected file belongs to:
-        vtkStringArray* group;
-        for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
-            group = sortFileNames->GetNthGroup(k); 
-            for (int i = 0; i < group->GetNumberOfValues(); i++) {
-                cout << "Group: " << group->GetValue(i) << endl;
-                if ( ddfFileName.compare( group->GetValue(i) ) == 0 ) {
-                    groupToUse = k; 
-                    break; 
-                }
-            }
-        }
-    } else {
-        int groupToUse = 0;     
-    }
-    
-    if( groupToUse != -1 ) {
-        this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
-    } else {
-        vtkStringArray* inputFile = vtkStringArray::New();
-        inputFile->InsertNextValue( ddfFileName.c_str() );
-        this->SetFileNames( inputFile );
-        inputFile->Delete();
-    }
-#if VTK_DEBUG_ON
-    for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) {
-        cout << "FN: " << this->GetFileNames()->GetValue(i) << endl;
-    }
-#endif
 
     try {
 
@@ -442,7 +397,7 @@ void svkDdfVolumeReader::ParseDdf()
         this->ddfHdr->open( currentDdfFileName.c_str(), ifstream::in );
 
         if ( ! this->ddfHdr->is_open() ) {
-            throw runtime_error( "Could not open volume file: " + ddfFileName );
+            throw runtime_error( "Could not open volume file: " + string( this->GetFileName() ) );
         }
         istringstream* iss = new istringstream();
 
@@ -745,10 +700,8 @@ void svkDdfVolumeReader::ParseDdf()
         delete iss;
 
     } catch (const exception& e) {
-        cerr << "ERROR opening or reading ddf file (" << ddfFileName << "): " << e.what() << endl;
+        cerr << "ERROR opening or reading ddf file (" << this->GetFileName() << "): " << e.what() << endl;
     }
-    sortFileNames->Delete();
-    globFileNames->Delete();
 
 }
 
@@ -2105,5 +2058,65 @@ bool svkDdfVolumeReader::IsMultiCoil()
         }
     //} 
     return isMultiCoil; 
+}
+
+
+/*
+ *  Globs file names for multi-file data formats and sets them into a vtkStringArray 
+ *  accessible via the GetFileNames() method. 
+ */
+void svkDdfVolumeReader::GlobFileNames()
+{
+    string fileName( this->GetFileName() );
+    string fileExtension( this->GetFileExtension( this->GetFileName() ) );
+    string filePath( this->GetFilePath( this->GetFileName() ) );
+    vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
+    globFileNames->AddFileNames( string( filePath + "/*." + fileExtension).c_str() );
+
+    vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
+    sortFileNames->GroupingOn();
+    sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
+    sortFileNames->NumericSortOn();
+    sortFileNames->Update();
+
+    //  If globed file names are not similar, use only the 0th group. 
+    //  If there is one group that group is used.
+    //  If there are multiple groups and the input file cannot be associated with a group then use input filename only.
+    int groupToUse = -1;     
+    if (sortFileNames->GetNumberOfGroups() > 1 ) {
+
+        //  Get the group the selected file belongs to:
+        vtkStringArray* group;
+        for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
+            group = sortFileNames->GetNthGroup(k); 
+            for (int i = 0; i < group->GetNumberOfValues(); i++) {
+                cout << "Group: " << group->GetValue(i) << endl;
+                if ( fileName.compare( group->GetValue(i) ) == 0 ) {
+                    groupToUse = k; 
+                    break; 
+                }
+            }
+        }
+    } else {
+        int groupToUse = 0;     
+    }
+    
+    if( groupToUse != -1 ) {
+        this->SetFileNames( sortFileNames->GetNthGroup( groupToUse ) );
+    } else {
+        vtkStringArray* inputFile = vtkStringArray::New();
+        inputFile->InsertNextValue( fileName.c_str() );
+        this->SetFileNames( inputFile );
+        inputFile->Delete();
+    }
+
+    if (this->GetDebug()) {
+        for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) {
+            cout << "FN: " << this->GetFileNames()->GetValue(i) << endl;
+        }
+    }
+
+    globFileNames->Delete(); 
+    sortFileNames->Delete(); 
 }
 
