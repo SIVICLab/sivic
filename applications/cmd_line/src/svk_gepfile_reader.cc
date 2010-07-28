@@ -46,17 +46,16 @@
 
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
-#include <svkIdfVolumeReader.h>
 #include <svkDdfVolumeReader.h>
 #include <svkDcmVolumeReader.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkDICOMMRSWriter.h>
-#include <svkIdfVolumeWriter.h>
 #include <svkDcmHeader.h>
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
 #include <vtkIndent.h>
+#include <getopt.h>
 
 
 using namespace svk;
@@ -67,36 +66,54 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -i input_file_name [ -u | -s ] [ -a ] [ -h ] \n";
+    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type [ -u | -s ] [ -anh ] \n";
     usemsg += "\n";  
     usemsg += "   -i  input_file_name   name of file to convert. \n"; 
     usemsg += "   -o  output_file_name  name of outputfile. \n";
+    usemsg += "   -t  output_data_type  target data type: \n";
+    usemsg += "                               2 = UCSF DDF      \n";
+    usemsg += "                               4 = DICOM_MRS (default)    \n";
     usemsg += "   -u                    if single voxel, write unsuppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -s                    if single voxel, write suppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -a                    if single voxel, write average of the specified data (e.g. all, suppressesd, unsuppressed) \n"; 
+    usemsg += "   --one_time_pt         if there are multiple time points, separate each into its own file. (supported only for ddf output) \n";
     usemsg += "   -h                    print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
     usemsg += "\n";  
+
 
     string inputFileName; 
     string outputFileName;
     bool unsuppressed = false; 
     bool suppressed = false; 
     bool average = false; 
-    svkImageWriterFactory::WriterType dataTypeOut; 
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
+    int oneTimePtPerFile = false; 
+
+
+    static struct option long_options[] =
+    {
+        /* This option sets a flag. */
+        {"one_time_pt", no_argument, &oneTimePtPerFile, 1},
+        {0, 0, 0, 0}
+    };
 
     /*
     *   Process flags and arguments
     */
     int i;
-    while ((i = getopt(argc, argv, "i:o:usah")) != EOF) {
+    int option_index = 0; 
+    while ( ( i = getopt_long(argc, argv, "i:o:t:usah", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case 't':
+                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
             case 'u':
                 unsuppressed = true;  
@@ -119,9 +136,25 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    if ( argc != 0 ||  inputFileName.length() == 0  
+    /*  validate that: 
+     *      an output name was supplied
+     *      that not suppresses and unsuppressed were both specified 
+     *      that only the supported output types was requested. 
+     */      
+    if ( 
+        argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
-        || ( suppressed && unsuppressed) ) { 
+        || ( suppressed && unsuppressed ) 
+        || ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) 
+    ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
+    //  validate that if oneTimePtPerFile was specified that the output type must be ddf 
+    if ( oneTimePtPerFile && dataTypeOut != svkImageWriterFactory::DDF ) {
+        cout << "Error: -n flag and -t flag conflict. " << endl;
+        cout << "        num time points option only supported for ddf output" << endl;
         cout << usemsg << endl;
         exit(1); 
     }
@@ -137,9 +170,13 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+
+    //  
+    //  Read the data into an svkMrsImageData object
+    //  
     reader->SetFileName( inputFileName.c_str() );
 
-    //  Set Behavior if not default
+    //  Set the svkGEPFileReader's behavior if not default
     if ( unsuppressed ) { 
         reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW_UNSUPPRESSED ); 
         if ( average ) {
@@ -156,8 +193,12 @@ int main (int argc, char** argv)
 
     reader->Update(); 
 
+
+    //  
+    //  Read the data into an svkMrsImageData object
+    //  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRS ) );
+    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
 
     if ( writer == NULL ) {
         cerr << "Can not determine writer of type: " << dataTypeOut << endl;
@@ -167,6 +208,9 @@ int main (int argc, char** argv)
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( reader->GetOutput() );
+    if ( oneTimePtPerFile ) { 
+        svkDdfVolumeWriter::SafeDownCast( writer )->SetOneTimePointsPerFile();
+    }
     writer->Write();
     writer->Delete();
     reader->Delete();
