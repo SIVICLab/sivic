@@ -39,13 +39,31 @@
  *      Beck Olson
  */
 
-#ifndef SVK_GE_PFILE_MAPPER_PRE_11X_H
-#define SVK_GE_PFILE_MAPPER_PRE_11X_H
+#ifndef SVK_GE_PFILE_MAPPER_UCSF_H
+#define SVK_GE_PFILE_MAPPER_UCSF_H
 
 
 #include <vtkObjectFactory.h>
+#include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkShortArray.h>
+#include <vtkCellData.h>
+#include <vtkFieldData.h>
+#include <vtkDataObject.h>
+#include <vtkPoints.h>
+#include <vtkPointData.h>
+#include <vtkDebugLeaks.h>
+#include <vtkCallbackCommand.h>
 
-#include <svkGEPFileMapper.h>
+#include <svkDcmHeader.h>
+#include <svkByteSwap.h>
+#include <svkSpecUtils.h>
+#include <svkImageData.h>
+#include <svkMrsImageData.h>
+#include <svkImageReader2.h>
+
+#include <map>
+#include <vector>
 
 
 namespace svk {
@@ -55,29 +73,29 @@ using namespace std;
 
 
 /*! 
- *  Mapper from pfile header to DICOM IOD/SOP Class instance for raw files prior to 11x. 
+ *  Mapper from pfile header to DICOM IOD/SOP Class instance, overrides
+ *  specific product logic with UCSF research sequence logic. 
  */
-class svkGEPFileMapperPre11x : public svkGEPFileMapper 
+class svkGEPFileMapperUCSF : public svkGEPFileMapper 
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperPre11x, svkGEPFileMapper );
-        static svkGEPFileMapperPre11x* New();
-
+        vtkTypeRevisionMacro( svkGEPFileMapperUCSF, svkGEPFileMapper );
+        static          svkGEPFileMapperUCSF* New();
 
     protected:
 
-        svkGEPFileMapperPre11x();
-        ~svkGEPFileMapperPre11x();
-
-        virtual void    GetCenterFromRawFile( double* center ); 
-        virtual float   GetFrequencyOffset(); 
+        svkGEPFileMapperUCSF();
+        ~svkGEPFileMapperUCSF();
+  
+        virtual int     GetNumKSpacePoints(); 
+        virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex);
 
 };
 
 
 }   //svk
 
-#endif //SVK_GE_PFILE_MAPPER_PRE_11X_H
+#endif //SVK_GE_PFILE_MAPPER_UCSF_H
 

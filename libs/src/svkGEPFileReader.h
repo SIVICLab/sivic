@@ -56,6 +56,8 @@
 #include <svkGEPFileMapper.h>
 #include <svkGEPFileMapperMBrease.h>
 #include <svkGEPFileMapperPre11x.h>
+#include <svkGEPFileMapperUCSF.h>
+#include <svkGEPFileMapperUCSFfidcsi.h>
 
 #include <sys/stat.h>
 #include <map>

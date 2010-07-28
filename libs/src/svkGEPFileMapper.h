@@ -152,7 +152,7 @@ class svkGEPFileMapper : public vtkObject
         virtual float   GetFrequencyOffset(); 
         int             GetNumVoxelsInVol();
         void            GetNumVoxels( int numVoxels[3] ); 
-        int             GetNumKSpacePoints(); 
+        virtual int     GetNumKSpacePoints(); 
         void            GetVoxelSpacing( double voxelSpacing[3] ); 
         void            GetFOV( float fov[3] ); 
         int             GetNumCoils(); 
@@ -169,6 +169,7 @@ class svkGEPFileMapper : public vtkObject
         void            RedimensionModifiedSVData( svkImageData* data ); 
         virtual int     GetNumberUnsuppressedAcquisitions(); 
         virtual int     GetNumberSuppressedAcquisitions(); 
+        virtual void    GetSelBoxCenter( float selBoxCenter[3] ); 
 
         void            SetCellSpectrum( 
                             vtkImageData* data, 
@@ -183,7 +184,7 @@ class svkGEPFileMapper : public vtkObject
         int             GetHeaderValueAsInt(string key);
         float           GetHeaderValueAsFloat(string key);
         string          GetHeaderValueAsString(string key);
-        bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
+        virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex); 
         string          ConvertGEDateToDICOM( string geDate ); 
 
 

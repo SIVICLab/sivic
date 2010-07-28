@@ -273,14 +273,21 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         *it = (char)tolower(*it);
     }
 
-    
-    if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
+  
+    if ( psd.compare("PROBE-P") == 0 ) { 
 
-        if ( this->pfileVersion < 11 ) {   
-            aMapper = svkGEPFileMapperPre11x::New();
-        } else {
-            aMapper = svkGEPFileMapper::New();
-        }
+        // product GE sequence:  
+        aMapper = svkGEPFileMapper::New();
+
+    } else if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
+
+        //  Assume that if it's not an exact match that it is a UCSF research sequence. 
+        aMapper = svkGEPFileMapperUCSF::New();
+
+    } else if ( psd.find("fidcsi") ) {
+
+        //  fidcsi ucsf sequence 
+        aMapper = svkGEPFileMapperUCSFfidcsi::New();
 
     } else if ( psd.compare("jpress") == 0 ) {
 

@@ -128,23 +128,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
 
     //  Get Center Location Values
     float selBoxCenter[3]; 
-    if ( this->GetHeaderValueAsString( "rhi.psdname" ).compare( "fidcsi" ) == 0 )  {
-
-        selBoxCenter[0] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_R" );
-        selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_A" );
-        selBoxCenter[2] = this->GetHeaderValueAsFloat( "rhi.ctr_S" );
-
-    } else { 
-
-        //  Center position is taken from user variables.  The Z "slice"
-        //  position used to be taken from the image header "image.loc",
-        //  but with the LX architecture, this held the table position only,
-        //  so if Graphic RX was used to introduce an offset, it wouldn't
-        //  be successfully extracted.
-        selBoxCenter[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" ); 
-        selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" ); 
-        selBoxCenter[2] =  this->GetHeaderValueAsFloat( "rhi.user13" ); 
-    }
+    this->GetSelBoxCenter( selBoxCenter );
 
     string midSlabPosition;
     for (int i = 0; i < 3; i++) {
@@ -237,6 +221,23 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
         );
 
     }
+
+}
+
+
+/*
+ *
+ */
+void svkGEPFileMapper::GetSelBoxCenter( float selBoxCenter[3] )
+{
+    //  Center position is taken from user variables.  The Z "slice"
+    //  position used to be taken from the image header "image.loc",
+    //  but with the LX architecture, this held the table position only,
+    //  so if Graphic RX was used to introduce an offset, it wouldn't
+    //  be successfully extracted.
+    selBoxCenter[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" ); 
+    selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" ); 
+    selBoxCenter[2] =  this->GetHeaderValueAsFloat( "rhi.user13" ); 
 
 }
 
@@ -1907,7 +1908,12 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
  */
 float svkGEPFileMapper::GetFrequencyOffset() 
 {
-    return 0.;
+    if ( this->pfileVersion < 11  ) {
+        return this->GetHeaderValueAsFloat( "rhr.rh_user13" );
+    } else {
+        return 0.;
+    }
+
 }
 
 /*!
@@ -2079,9 +2085,15 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
  */
 void svkGEPFileMapper::GetCenterFromRawFile( double* center )
 {   
-    center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" );
-    center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" );
-    center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
+    if ( this->pfileVersion < 11  ) {
+        center[0] = 0;
+        center[1] = 0;
+        center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
+    } else {
+        center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.user11" );
+        center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" );
+        center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
+    }
 }
 
 
@@ -2214,66 +2226,14 @@ int svkGEPFileMapper::GetNumVoxelsInVol()
  *  Determine the number of sampled k-space points in the data set. 
  *  This may differ from the number of voxels in the rectalinear grid, 
  *  for example if elliptical or another non rectangular acquisition 
- *  sampling strategy was employed. 
+ *  sampling strategy was employed.  GE product sequences pad the
+ *  reduced k-space data with zeros so the number of k-space points 
+ *  is the same as the number of voxels, but that may not be true for
+ *  custom sequences.  
  */
 int svkGEPFileMapper::GetNumKSpacePoints()
 {
-    int numKSpacePts;
-
-    //  Image user21 indicates that an elliptical k-space sampling radius 
-    //  was used.  If true, then number of k-space points differs from numVoxels
-    //  in rectaliniear grid. 
-    if (this->GetHeaderValueAsInt( "rhi.user21" ) != 0 ) { 
-
-        float ellipticalRad =  this->GetHeaderValueAsFloat( "rhi.user22" ); 
-        numKSpacePts = 0; 
-
-        int numVoxels[3]; 
-        this->GetNumVoxels( numVoxels ); 
-
-        for( int z = 1; z <= numVoxels[2]; z++ ) {
-
-            float zCorner = 2.0 * z - numVoxels[2] - 1.0;
-            if (zCorner > 0) {
-                zCorner += 1.0;
-            } else {
-                zCorner -= 1.0;
-            }
-
-            for( int y = 1; y <= numVoxels[1]; y++ ) {
-
-                float yCorner = 2.0 * y - numVoxels[1] - 1.0;
-                if (yCorner > 0) {
-                    yCorner += 1.0;
-                } else {
-                    yCorner -= 1.0;
-                }
-
-                for( int x = 1; x <= numVoxels[0]; x++ ) {
-
-                    float xCorner = 2.0 * x - numVoxels[0] - 1.0;
-                    if (xCorner > 0) {
-                        xCorner += 1.0;
-                    } else {
-                        xCorner -= 1.0;
-                    }
-
-                    float test = 
-                        ( ( xCorner * xCorner ) / (float)( numVoxels[0] * numVoxels[0] ) )
-                      + ( ( yCorner * yCorner ) / (float)( numVoxels[1] * numVoxels[1] ) ) 
-                      + ( ( zCorner * zCorner ) / (float)( numVoxels[2] * numVoxels[2] ) );
-
-                    // is it inside ellipse?
-                    if ( test <= ellipticalRad ) {
-                        numKSpacePts++;
-                    }
-                }     // for xstep
-            }     // for ystep
-        }     // for zstep
-
-    } else {
-        numKSpacePts = GetNumVoxelsInVol(); 
-    }
+    int numKSpacePts = GetNumVoxelsInVol(); 
 
     if ( this->GetDebug() ) {
         cout << "NUM KSPACE PTS: " << numKSpacePts << endl; 
@@ -2284,79 +2244,16 @@ int svkGEPFileMapper::GetNumKSpacePoints()
 
 
 /*!
- *  Determines whether a voxel (index) was sampled, or not, i.e. was it within 
+ *  Determines whether a voxel (index) was sampled (or a zero padded
+ *  point is present in the data set), or not, i.e. was it within 
  *  the elliptical sampling volume if reduced k-space elliptical sampling
- *  was used.  Could be extended to support other sparse sampling 
- *  trajectories.       
+ *  was used. Could be extended to support other sparse sampling 
+ *  trajectories. Note that for product sequences this always returns true 
+ *  since GE  zero-pads reduced k-space data to a full rectilinear grid.  
  */
 bool svkGEPFileMapper::WasIndexSampled(int indexX, int indexY, int indexZ)
 {
     bool wasSampled = true;
-
-    //  Image user21 indicates that an elliptical k-space sampling radius 
-    //  was used.  If true, then number of k-space points differs from numVoxels
-    //  in rectaliniear grid. 
-    if (this->GetHeaderValueAsInt( "rhi.user21" ) != 0 ) { 
-    
-        float ellipticalRad =  this->GetHeaderValueAsFloat( "rhi.user22" ); 
-
-        //  if ellipse is defined by bounding rectangle that 
-        //  defines k-space grid, then
-
-        int numVoxels[3]; 
-        this->GetNumVoxels( numVoxels ); 
-
-        /*  Get the origin of the ellipse
-         *  and length of principle axes defined by 
-         *  bounding box (acquisition grid)of ellipse
-         *  Also get the exterior corner of the voxel in question 
-         *  to see if it is 100% within the sampling ellipse 
-         *  radius. 
-         */
-        float ellipseOrigin[3]; 
-        float ellipseRadius[3]; 
-        float voxelCorner[3]; 
-        voxelCorner[0] = indexX; 
-        voxelCorner[1] = indexY; 
-        voxelCorner[2] = indexZ; 
-        for (int i = 0; i < 3; i++) {
-
-            ellipseOrigin[i] = ( static_cast<float>( numVoxels[i] ) - 1 ) / 2; 
-            ellipseRadius[i] =   static_cast<float>( numVoxels[i] ) / 2; 
-
-            if ( voxelCorner[i] < ellipseOrigin[i] ) {
-                voxelCorner[i] -= .5; 
-            } else {
-                voxelCorner[i] += .5; 
-            }
-
-        }
-
-        float voxelExteriorRadius = 0.;  
-        for (int i = 0; i < 3; i++) {
-            voxelExteriorRadius += pow( 
-                    ( (voxelCorner[i] - ellipseOrigin[i]) / ellipseRadius[i] ), 
-                    2 
-                ); 
-        }
-
-        /*  See if the exterior corner of the voxel is within the sampled elliptical radius. 
-         *   
-         *  The eqn of the ellips in a bounding box defined by the MRSI acquisition grid    
-         *  with center c (ellipseOrigin) and radius r (ellipseRadius) is if the size of the axes
-         *  are ordered correctly such that rx > ry > rz > 0:
-         *      (x-cx)^2 + (y-cy)^2 + (z-cz)^2
-         *      --------   --------   --------   
-         *        rx^2       ry^2       rz^2 
-         */
-        if ( voxelExteriorRadius <= ellipticalRad) {
-            wasSampled = true;  
-        } else { 
-            wasSampled = false;  
-        }
-
-    } 
-
     return wasSampled; 
 }
 

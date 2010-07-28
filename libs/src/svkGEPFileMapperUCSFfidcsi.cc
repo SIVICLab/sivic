@@ -40,56 +40,50 @@
  */
 
 
-#include <svkGEPFileMapperPre11x.h>
+#include <svkGEPFileMapperUCSFfidcsi.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapperPre11x, "$Rev$");
-vtkStandardNewMacro(svkGEPFileMapperPre11x);
+vtkCxxRevisionMacro(svkGEPFileMapperUCSFfidcsi, "$Rev$");
+vtkStandardNewMacro(svkGEPFileMapperUCSFfidcsi);
 
 
 /*!
  *
  */
-svkGEPFileMapperPre11x::svkGEPFileMapperPre11x()
+svkGEPFileMapperUCSFfidcsi::svkGEPFileMapperUCSFfidcsi()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkGEPFileMapperPre11x");
+    vtkDebugLeaks::ConstructClass("svkGEPFileMapperUCSFfidcsi");
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
 }
 
 
 /*!
  *
  */
-svkGEPFileMapperPre11x::~svkGEPFileMapperPre11x()
+svkGEPFileMapperUCSFfidcsi::~svkGEPFileMapperUCSFfidcsi()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 }
 
 
 /*
- *  Gets the center of the acquisition grid.  May vary between sequences.
+ *
  */
-void svkGEPFileMapperPre11x::GetCenterFromRawFile( double* center )
+void svkGEPFileMapperUCSFfidcsi::GetSelBoxCenter( float selBoxCenter[3] )
 {
-    center[0] = 0; 
-    center[1] = 0; 
-    center[2] = this->GetHeaderValueAsFloat( "rhi.user13" );
-}
 
+    selBoxCenter[0] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_R" );
+    selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_A" );
+    selBoxCenter[2] = this->GetHeaderValueAsFloat( "rhi.ctr_S" );
 
-/*!
- *  Returns the spectral frquency offset
- */
-float svkGEPFileMapperPre11x::GetFrequencyOffset()
-{
-    return this->GetHeaderValueAsFloat( "rhr.rh_user13" );
-}
+} 
 
