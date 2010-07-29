@@ -48,6 +48,8 @@
 #include <vtkObjectFactory.h>
 #include <vtkImageWriter.h>
 
+#include <svkImageData.h>
+
 
 namespace svk {
 
@@ -84,7 +86,9 @@ class svkImageWriter : public vtkImageWriter
         svkImageWriter();
         ~svkImageWriter();
 
-    protected:
+        virtual void SetProvenance(); 
+
+
         int     seriesNumber;
         string  seriesDescription;
         int     instanceNumber;

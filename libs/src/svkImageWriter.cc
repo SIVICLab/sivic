@@ -112,3 +112,11 @@ void svkImageWriter::SetInstanceNumber(int number)
 }
 
 
+/*!
+ *  Appends algo info to provenance record.
+ */
+void svkImageWriter::SetProvenance()
+{
+    svkImageData::SafeDownCast( this->GetImageDataInput(0) )->GetProvenance()->AddAlgorithm( this->GetClassName() );
+}
+
