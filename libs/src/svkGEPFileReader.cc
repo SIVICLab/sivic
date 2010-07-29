@@ -207,6 +207,8 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
 
+    this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
+
 }
 
 
@@ -243,6 +245,7 @@ void svkGEPFileReader::InitDcmHeader()
         this->pfileVersion, 
         this->GetSwapBytes()
     ); 
+    this->GetOutput()->GetProvenance(); 
 
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
