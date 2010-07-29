@@ -61,6 +61,7 @@
 #include <svkImageData.h>
 #include <svkMrsImageData.h>
 #include <svkImageReader2.h>
+#include <svkGEPFileMapperUCSF.h>
 
 #include <map>
 #include <vector>
