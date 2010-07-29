@@ -59,9 +59,11 @@ svkProvenance::svkProvenance()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
+    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() );
 
-    cout << "WARNING(svkProvenance) - this is a blank stub.  isA type will change." << endl;
-
+    this->xmlProvenance = vtkXMLDataElement::New();
+    xmlProvenance->SetName("SVK_PROVENANCE");
+ 
 }
 
 
@@ -71,7 +73,70 @@ svkProvenance::svkProvenance()
 svkProvenance::~svkProvenance()
 {
 
-    vtkDebugMacro(<<"svkProvenance::~svkProvenance");
+    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() );
+
+    if ( this->xmlProvenance != NULL )  {
+        this->xmlProvenance->Delete();
+        this->xmlProvenance = NULL;
+    }
 
 }
 
+
+/*!
+ *  Adds a nested XML element to the provance as a container for 
+ *  representing a discrete algorithm applied to the svkImageData object. 
+ */
+void svkProvenance::AddAlgorithm(string algoName)
+{
+    vtkXMLDataElement* xmlAlgoElement = vtkXMLDataElement::New();
+    xmlAlgoElement->SetName("SVK_ALGORITHM");
+    xmlAlgoElement->SetAttribute( "algoName", algoName.c_str() );
+    xmlProvenance->AddNestedElement( xmlAlgoElement );
+    xmlAlgoElement->Delete(); 
+}
+
+
+/*!
+ *  Adds XML elements to represent an algorithm's input args.  These are 
+ *  added as elements within the named AlgorithmElement. 
+ *  argNumber, argName, argValue, argType?
+ */
+template <class ArgType> void svkProvenance::AddAlgorithmArg(string algoName, int argNumber, string argName, ArgType argValue)
+{
+
+    vtkXMLDataElement* xmlAlgoArgElement = vtkXMLDataElement::New();
+    xmlAlgoArgElement->SetName("SVK_ALGORITHM_ARG");
+    xmlAlgoArgElement->SetAttribute( "argName", argName.c_str() );
+    xmlAlgoArgElement->SetIntAttribute( "argNumber", argNumber );
+
+    std::ostringstream argValueOss;
+    argValueOss << argValue;
+    xmlAlgoArgElement->SetAttribute( "argValue", argValueOss.str().c_str() );
+
+    vtkXMLDataElement* xmlAlgoElement = xmlProvenance->FindNestedElementWithNameAndAttribute( 
+        "SVK_ALGORITHM", 
+        "algoName", 
+        algoName.c_str() 
+    );
+
+    xmlAlgoElement->AddNestedElement( xmlAlgoArgElement );
+    xmlAlgoArgElement->Delete(); 
+}
+
+
+/*!
+ *  Prints the XML Provenance object to stdout
+ */
+void svkProvenance::PrintXML(ostream& out)
+{
+    vtkIndent indent(0);
+    xmlProvenance->PrintXML(out, indent);
+}
+
+
+//  Explicit template specialization so compiler generates code and linker doesn't complain 
+template void svkProvenance::AddAlgorithmArg <bool>   ( string algoName, int argNumber, string argName, bool argValue ); 
+template void svkProvenance::AddAlgorithmArg <int>    ( string algoName, int argNumber, string argName, int argValue ); 
+template void svkProvenance::AddAlgorithmArg <float>  ( string algoName, int argNumber, string argName, float argValue ); 
+template void svkProvenance::AddAlgorithmArg <double> ( string algoName, int argNumber, string argName, double argValue ); 

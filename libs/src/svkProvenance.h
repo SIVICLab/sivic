@@ -46,7 +46,9 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkObject.h>
+#include <vtkXMLDataElement.h>
 
+#include <sstream>
 
 namespace svk {
 
@@ -55,12 +57,7 @@ using namespace std;
 
 
 /*!
- *  Class that represents an svkProvenanceObjet.  
- *      NOT IMPLEMENTED YET
- *      information:
- *          - vtkMutableDirectedGraph 
- *          - vtkXML* 
- *            pipelines from a provenance record in a standard way.  
+ *  Class that represents an XML svkProvenance objet.  
  */
 
 
@@ -72,11 +69,20 @@ class svkProvenance: public vtkObject
         static svkProvenance* New();
         vtkTypeRevisionMacro( svkProvenance, vtkObject );
 
+        void        AddAlgorithm(string algoName); 
+        //void        AddAlgorithmArg(string algoName, int argNumber, string argName, bool argValue); 
+        template<class ArgType> void AddAlgorithmArg(string algoName, int argNumber, string argName, ArgType argValue); 
+
+        void        PrintXML(ostream& out); 
+
 
     protected:
 
         svkProvenance();
         ~svkProvenance();
+
+    private:
+        vtkXMLDataElement* xmlProvenance;
 
 };
 
