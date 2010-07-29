@@ -337,13 +337,32 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
+    string deidMethod = hdr->GetStringValue( "DeIdentificationMethod" );
+    bool deidentified = false; 
+    if (  deidMethod.compare("DEIDENTIFIED") == 0 ){ 
+        deidentified = true; 
+    }
+
     *out << "DATA DESCRIPTOR FILE" << endl;
     *out << "version: 6.1" << endl;
     *out << "object type: MR Spectroscopy" << endl;
     *out << "patient id: " << setw(19) << left << hdr->GetStringValue( "PatientID" ) << endl;
     *out << "patient name: " << setw(63) << left << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
     *out << "patient code: " << endl;
-    *out << "date of birth: " << hdr->GetStringValue( "PatientsBirthDate" ) <<  endl;
+
+
+    string dob = hdr->GetStringValue( "PatientsBirthDate" ); 
+    if ( dob.length() == 0 ) {
+        dob.assign("        ");
+    }
+
+    if (  deidentified ) { 
+        *out << "date of birth: " << dob << endl; 
+    } else {
+        *out << "date of birth: " << 
+            dob[4] << dob[5] << "/" << dob[6] << dob[7] << "/" << dob[0] << dob[1] << dob[2] << dob[3] << endl;
+    }
+
     *out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
     *out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
     *out << "study code: " << "" <<  endl;
@@ -353,8 +372,12 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
         date.assign("        ");
     }
 
-    *out << "study date: " << 
-        date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
+    if (  deidentified ) { 
+        *out << "study date: " << date << endl;
+    } else {
+        *out << "study date: " << 
+            date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
+    }
 
     *out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
     *out << "root name: " << setw(7) << fileName <<  endl;

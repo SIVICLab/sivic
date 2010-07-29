@@ -63,7 +63,8 @@ svkProvenance::svkProvenance()
 
     this->xmlProvenance = vtkXMLDataElement::New();
     xmlProvenance->SetName("SVK_PROVENANCE");
- 
+    this->SetVersion(); 
+    this->CreateApplicationCommandElement(); 
 }
 
 
@@ -80,6 +81,47 @@ svkProvenance::~svkProvenance()
         this->xmlProvenance = NULL;
     }
 
+}
+
+
+/*!
+ *  Adds a nested XML element to the provance to indicate the svk version
+ *  and platform or other run-time information 
+ */
+void svkProvenance::SetVersion()
+{
+    vtkXMLDataElement* xmlVersion= vtkXMLDataElement::New();
+    xmlVersion->SetName("SVK_VERSION");
+    xmlVersion->SetAttribute( "version", SVK_RELEASE_VERSION );
+    xmlVersion->SetAttribute( "platform", "NA");
+    xmlProvenance->AddNestedElement( xmlVersion);
+    xmlVersion->Delete(); 
+}
+
+
+/*!
+ *  Creates an place holder element at the top of the object 
+ *  to represent the application level command line input.  
+ *  The cmdLine attribute gets filled in through a call to  
+ *  !SetApplicationCommand(). 
+ */
+void svkProvenance::CreateApplicationCommandElement()
+{
+    vtkXMLDataElement* xmlCmdLine = vtkXMLDataElement::New();
+    xmlCmdLine->SetName( "SVK_CMD_LINE" );
+    xmlProvenance->AddNestedElement( xmlCmdLine );
+    xmlCmdLine->Delete(); 
+}
+
+
+/*!
+ *  Adds a nested XML element to the provance to record the application level 
+ *  command line used to run the SIVIC application. 
+ */
+void svkProvenance::SetApplicationCommand( string cmdLine )
+{
+    vtkXMLDataElement* xmlCmdLine = xmlProvenance->FindNestedElementWithName( "SVK_CMD_LINE" ); 
+    xmlCmdLine->SetAttribute( "cmd", cmdLine.c_str() );
 }
 
 
@@ -135,8 +177,24 @@ void svkProvenance::PrintXML(ostream& out)
 }
 
 
+/*!
+ *  Converts argv into a string.  
+ */
+string svkProvenance::GetCommandLineString( int argc, char** argv )
+{
+    string cmdLine;
+    for (int i = 0; i < argc; i++) {
+        cmdLine.append( argv[i] );
+        cmdLine.append( " " );
+    }
+    return cmdLine; 
+}
+
+
 //  Explicit template specialization so compiler generates code and linker doesn't complain 
 template void svkProvenance::AddAlgorithmArg <bool>   ( string algoName, int argNumber, string argName, bool argValue ); 
 template void svkProvenance::AddAlgorithmArg <int>    ( string algoName, int argNumber, string argName, int argValue ); 
 template void svkProvenance::AddAlgorithmArg <float>  ( string algoName, int argNumber, string argName, float argValue ); 
 template void svkProvenance::AddAlgorithmArg <double> ( string algoName, int argNumber, string argName, double argValue ); 
+template void svkProvenance::AddAlgorithmArg <string> ( string algoName, int argNumber, string argName, string argValue ); 
+template void svkProvenance::AddAlgorithmArg <char*>  ( string algoName, int argNumber, string argName, char* argValue ); 

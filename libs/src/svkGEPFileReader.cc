@@ -65,7 +65,13 @@ svkGEPFileReader::svkGEPFileReader()
 
     this->gepf= NULL; 
     this->mapper = NULL; 
+
+    //  initialize algorithm input args: 
     this->mapperBehavior = svkGEPFileMapper::UNDEFINED; 
+    this->phiType = svkDcmHeader::PHI_IDENTIFIED; 
+    this->patientDeidentificationId = ""; 
+    this->studyDeidentificationId = ""; 
+
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
@@ -207,9 +213,68 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
 
+    this->SetProvenance(); 
+}
+
+
+/*!
+ *  Appends algo info to provenance record.
+ */
+void svkGEPFileReader::SetProvenance()
+{
+
+    cout << "This call to SetProvenance should be implicit in the executive" << endl; 
     this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
+    int argIndex = -1; 
+
+    if (this->mapperBehavior != svkGEPFileMapper::UNDEFINED) {
+
+        argIndex++; 
+
+        this->GetOutput()->GetProvenance()->AddAlgorithmArg(
+            this->GetClassName(),
+            argIndex,
+            "MapperBehavior",
+            static_cast<int>( this->mapperBehavior ) 
+        );
+
+    }
+
+    if ( this->phiType == svkDcmHeader::PHI_DEIDENTIFIED 
+        || this->phiType == svkDcmHeader::PHI_LIMITED ) 
+    {
+
+        argIndex++; 
+        this->GetOutput()->GetProvenance()->AddAlgorithmArg(
+            this->GetClassName(),
+            argIndex,
+            "PHIType",
+            static_cast<int>( this->phiType )
+        );
+
+        if ( this->patientDeidentificationId.size() > 0 ) {
+            argIndex++; 
+            this->GetOutput()->GetProvenance()->AddAlgorithmArg(
+                this->GetClassName(),
+                argIndex,
+                "patientDeidentificationId",
+                this->patientDeidentificationId 
+            );
+        }
+
+        if ( this->studyDeidentificationId.size() > 0 ) {
+            argIndex++; 
+            this->GetOutput()->GetProvenance()->AddAlgorithmArg(
+                this->GetClassName(),
+                argIndex,
+                "studyDeidentificationId",
+                this->studyDeidentificationId 
+            );
+        }
+    }
 }
+
 
 
 /*!
@@ -245,7 +310,14 @@ void svkGEPFileReader::InitDcmHeader()
         this->pfileVersion, 
         this->GetSwapBytes()
     ); 
-    this->GetOutput()->GetProvenance(); 
+
+
+    if ( this->phiType == svkDcmHeader::PHI_DEIDENTIFIED 
+        || this->phiType == svkDcmHeader::PHI_LIMITED ) 
+    {
+        this->DeidentifyData(); 
+    }
+
 
     if (this->GetDebug()) { 
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
@@ -260,6 +332,64 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 {
     this->mapperBehavior = type; 
 }
+
+
+/*!
+ *  Sets mapper's data deidentification behavior.  
+ */
+void svkGEPFileReader::SetDeidentify(svkDcmHeader::PHIType phiType) 
+{
+    this->phiType = phiType; 
+}
+
+
+/*!
+ *  Sets string to use for identification.  All PHI fields will be replace with this 
+ *  value. See !svkDcmHeader::Deidentify().  
+ */
+void svkGEPFileReader::SetDeidentify( string deidentificationId, svkDcmHeader::PHIType phiType ) 
+{
+    this->phiType = phiType; 
+    this->studyDeidentificationId = deidentificationId; 
+}
+
+
+/*!
+ *  Sets string to use for identification.  All PHI fields will be replace with this 
+ *  value. See !svkDcmHeader::Deidentify().  
+ */
+void svkGEPFileReader::SetDeidentify( string patientId, string studyId, svkDcmHeader::PHIType phiType ) 
+{
+    this->phiType = phiType; 
+    this->patientDeidentificationId = patientId; 
+    this->studyDeidentificationId = studyId; 
+}
+
+
+/*!
+ *  Sets up deidentification call based on user input. 
+ */ 
+void svkGEPFileReader::DeidentifyData()
+{
+
+    if ( this->studyDeidentificationId.size() > 0 && this->patientDeidentificationId.size() > 0 ) {
+        this->GetOutput()->GetDcmHeader()->Deidentify( 
+                                                this->patientDeidentificationId, 
+                                                this->studyDeidentificationId, 
+                                                this->phiType 
+                                           ); 
+    } else if ( this->studyDeidentificationId.size() > 0 ) {
+        this->GetOutput()->GetDcmHeader()->Deidentify( 
+                                                this->studyDeidentificationId, 
+                                                this->phiType 
+                                           ); 
+    } else {
+        this->GetOutput()->GetDcmHeader()->Deidentify( 
+                                                this->phiType 
+                                           ); 
+    }
+}
+
 
 
 /*!

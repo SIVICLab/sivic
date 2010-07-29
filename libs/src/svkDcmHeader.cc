@@ -937,3 +937,136 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
 
 }
 
+
+/*!
+ *  Replaces PHI field with "DEIDENTIFIED" string. If phiType is LIMITED, then 
+ *  dates are preserved. This method does not look at private
+ *  or nested tags.  
+ *      0008,0018 SOPInstanceUID=UIDROOT,SOPInstanceUID
+ *      0008,0020 StudyDate 
+ *      0008,0021 SeriesDate
+ *      0008,0022 AcquisitionDate
+ *      0008,0023 ContentDate
+ *      0008,0050 AccessionNumber
+ *      0008,0080 InstitutionName
+ *      0008,0090 ReferringPhysiciansName
+ *      0008,1155 RefSOPInstanceUID
+ *      0010,0010 PatientsName
+ *      0010,0020 PatientID
+ *      0010,0030 PatientBirthDate
+ *      0020,000D StudyInstanceUID
+ *      0020,000E SeriesInstanceUID
+ *      0020,0010 StudyID
+ *      0020,0052 FrameOfReferenceUID
+ *      0028,0301 BurnedInAnnotation
+ *      0040,A124 UID
+ *      0088,0140 StorageMediaFileSetUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
+ */
+void svkDcmHeader::Deidentify( PHIType phiType )
+{    
+    // set both patientId and studyId to DEIDENTIFIED:
+    this->Deidentify( "DEIDENTIFIED", phiType );
+}
+
+
+/*!
+ *  Replaces PHI field with id. If phiType is LIMITED, then 
+ *  dates are preserved. This method does not look at private
+ *  or nested tags.  
+ *      0008,0018 SOPInstanceUID=UIDROOT,SOPInstanceUID
+ *      0008,0020 StudyDate 
+ *      0008,0021 SeriesDate
+ *      0008,0022 AcquisitionDate
+ *      0008,0023 ContentDate
+ *      0008,0050 AccessionNumber
+ *      0008,0080 InstitutionName
+ *      0008,0090 ReferringPhysiciansName
+ *      0008,1155 RefSOPInstanceUID
+ *      0010,0010 PatientsName
+ *      0010,0020 PatientID
+ *      0010,0030 PatientBirthDate
+ *      0020,000D StudyInstanceUID
+ *      0020,000E SeriesInstanceUID
+ *      0020,0010 StudyID
+ *      0020,0052 FrameOfReferenceUID
+ *      0028,0301 BurnedInAnnotation
+ *      0040,A124 UID
+ *      0088,0140 StorageMediaFileSetUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
+ */
+void svkDcmHeader::Deidentify( string id, PHIType phiType )
+{    
+    // set both patientId and studyId to the same value:
+    this->Deidentify( id, id, phiType );
+}
+
+
+/*!
+ *  Replaces PHI patient fields with patientId, study fields and all other PHI fields 
+ *  with studyId.  If phiType is LIMITED, then dates are preserved. This
+ *  method does not look at private nested tags. 
+ *      0008,0018 SOPInstanceUID=UIDROOT,SOPInstanceUID
+ *      0008,0020 StudyDate 
+ *      0008,0021 SeriesDate
+ *      0008,0022 AcquisitionDate
+ *      0008,0023 ContentDate
+ *      0008,0050 AccessionNumber
+ *      0008,0080 InstitutionName
+ *      0008,0090 ReferringPhysiciansName
+ *      0008,1155 RefSOPInstanceUID
+ *      0010,0010 PatientsName
+ *      0010,0020 PatientID
+ *      0010,0030 PatientBirthDate
+ *      0020,000D StudyInstanceUID
+ *      0020,000E SeriesInstanceUID
+ *      0020,0010 StudyID
+ *      0020,0052 FrameOfReferenceUID
+ *      0028,0301 BurnedInAnnotation
+ *      0040,A124 UID
+ *      0088,0140 StorageMediaFileSetUID
+ *      3006,0024 ReferencedFrameOfReferenceUID
+ *      3006,00C2 RelatedFrameOfReferenceUID
+ */
+void svkDcmHeader::Deidentify( string patientId, string studyId, PHIType phiType )
+{     
+
+    //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
+    if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED || phiType == PHI_LIMITED ) {
+
+            this->SetValue( "SOPInstanceUID",                studyId); 
+            this->SetValue( "AccessionNumber",               studyId); 
+            this->SetValue( "InstitutionName",               studyId); 
+            this->SetValue( "ReferringPhysiciansName",       studyId); 
+            this->SetValue( "ReferencedSOPInstanceUID",      studyId); 
+            this->SetValue( "PatientsName",                  patientId); 
+            this->SetValue( "PatientID",                     patientId); 
+            this->SetValue( "StudyInstanceUID",              studyId); 
+            this->SetValue( "SeriesInstanceUID",             studyId); 
+            this->SetValue( "StudyID",                       studyId); 
+            this->SetValue( "FrameOfReferenceUID",           studyId); 
+            this->SetValue( "BurnedInAnnotation",            studyId); 
+            this->SetValue( "UID",                           studyId); 
+            this->SetValue( "StorageMediaFileSetUID",        studyId); 
+            this->SetValue( "ReferencedFrameOfReferenceUID", studyId); 
+            this->SetValue( "RelatedFrameOfReferenceUID",    studyId); 
+    }   
+
+    //  These fields are not removed from PHI_LIMITED data sets 
+    if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
+            this->SetValue( "StudyDate",                     studyId); 
+            this->SetValue( "SeriesDate",                    studyId); 
+            this->SetValue( "AcquisitionDate",               studyId); 
+            this->SetValue( "ContentDate",                   studyId); 
+            this->SetValue( "PatientsBirthDate",             patientId); 
+    }
+
+    if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
+        this->SetValue( "DeIdentificationMethod", "DEIDENTIFIED" ); 
+    } else if ( phiType == svkDcmHeader::PHI_LIMITED ) {
+        this->SetValue( "DeIdentificationMethod", "LIMITED" ); 
+    }
+}
+

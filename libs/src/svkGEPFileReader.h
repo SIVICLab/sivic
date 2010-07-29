@@ -102,6 +102,9 @@ class svkGEPFileReader : public svkImageReader2
         virtual int         CanReadFile( const char* fname );
         svkGEPFileMapper*   GetMapper(); 
         void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type); 
+        void                SetDeidentify(svkDcmHeader::PHIType phiType); 
+        void                SetDeidentify( string deidentificationId, svkDcmHeader::PHIType phiType ); 
+        void                SetDeidentify( string patientId, string studyId, svkDcmHeader::PHIType phiType); 
 
 
     protected:
@@ -116,6 +119,8 @@ class svkGEPFileReader : public svkImageReader2
         void                                     ReadGEPFile();
         void                                     ParsePFile();
         void                                     InitOffsetsMap();
+        virtual void                             SetProvenance(); 
+
         map <string, vector< string > >          pfMap;
 
 
@@ -139,14 +144,19 @@ class svkGEPFileReader : public svkImageReader2
                             );
         void                FillInMissingInfo(); 
         void                SetByteSwapping(); 
+        void                DeidentifyData(); 
 
 
         //  Members:
         ifstream*                        gepf;
         float                            pfileVersion;
         svkGEPFileMapper*                mapper;
-        svkGEPFileMapper::MapperBehavior mapperBehavior;
+        svkGEPFileMapper::MapperBehavior mapperBehavior;            //  input arg 
+        svkDcmHeader::PHIType            phiType;                   //  input arg
+        string                           patientDeidentificationId; //  input arg
+        string                           studyDeidentificationId;   //  input arg
         vtkCallbackCommand*              progressCallback;
+
 
 };
 

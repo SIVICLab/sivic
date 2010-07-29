@@ -60,7 +60,7 @@ svkImageReader2::svkImageReader2()
     this->DebugOn();
 #endif
 
-    vtkDebugMacro(<<"svkImageReader2::svkImageReader2()");
+    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() );
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
     vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
@@ -75,7 +75,8 @@ svkImageReader2::svkImageReader2()
  */
 svkImageReader2::~svkImageReader2()
 {
-    vtkDebugMacro(<<"svkImageReader2::~svkImageReader2()");
+    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() );
+
     if ( this->GetDebug() ) {
         cout << "+++++++++++++++++++++++++++++++++++++++++" << endl;
         cout << "delete image reader 2" << endl;
@@ -461,3 +462,13 @@ svkDcmHeader* svkImageReader2::GetDcmHeader( const char* fileName)
     this->SetFileName( fileName );
     return this->GetOutput()->GetDcmHeader();
 }
+
+
+/*!
+ *  Appends algo info to provenance record.
+ */
+void svkImageReader2::SetProvenance()
+{
+    svkImageData::SafeDownCast( this->GetOutput() )->GetProvenance()->AddAlgorithm( this->GetClassName() );
+}
+

@@ -112,6 +112,13 @@ class svkDcmHeader: public vtkObject
         } DcmDataOrderingDirection;
 
 
+        typedef enum {
+            PHI_IDENTIFIED = 0, 
+            PHI_LIMITED, 
+            PHI_DEIDENTIFIED 
+        } PHIType;
+
+
 #ifdef SVK_ADAPT_DCMTK
         static const int adapter_type = DCMTK_API;  
 #endif    
@@ -496,6 +503,11 @@ class svkDcmHeader: public vtkObject
                                             double toplc[3], double voxelSpacing[3],
                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils); 
 
+        void                Deidentify( PHIType phiType ); 
+        void                Deidentify( string id, PHIType phiType );   
+        void                Deidentify( string patientId, string studyId, PHIType phiType );   
+
+        
 
     protected:
 

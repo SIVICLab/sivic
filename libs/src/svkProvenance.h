@@ -59,8 +59,6 @@ using namespace std;
 /*!
  *  Class that represents an XML svkProvenance objet.  
  */
-
-
 class svkProvenance: public vtkObject
 {
 
@@ -69,11 +67,17 @@ class svkProvenance: public vtkObject
         static svkProvenance* New();
         vtkTypeRevisionMacro( svkProvenance, vtkObject );
 
-        void        AddAlgorithm(string algoName); 
-        //void        AddAlgorithmArg(string algoName, int argNumber, string argName, bool argValue); 
-        template<class ArgType> void AddAlgorithmArg(string algoName, int argNumber, string argName, ArgType argValue); 
+        void                            AddAlgorithm(string algoName); 
+        template <class ArgType> void   AddAlgorithmArg(
+                                            string algoName, 
+                                            int argNumber, 
+                                            string argName, 
+                                            ArgType argValue
+                                        ); 
+        void                            SetApplicationCommand( string cmdLine ); 
 
-        void        PrintXML(ostream& out); 
+        void                            PrintXML(ostream& out); 
+        static string                   GetCommandLineString( int argc, char** argv ); 
 
 
     protected:
@@ -83,6 +87,9 @@ class svkProvenance: public vtkObject
 
     private:
         vtkXMLDataElement* xmlProvenance;
+
+        void    SetVersion(); 
+        void    CreateApplicationCommandElement(); 
 
 };
 

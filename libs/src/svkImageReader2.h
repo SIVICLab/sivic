@@ -113,6 +113,8 @@ class svkImageReader2 : public vtkImageReader2
                                                     char delim
                                                  ); 
 
+        virtual void                             SetProvenance(); 
+
 
         //  Members:
         vtkDataArray*                            dataArray;
