@@ -124,8 +124,9 @@ void svkDdfVolumeWriter::Write()
         } else {
             sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
         }
-    }
+    } 
 
+    this->SetProvenance(); 
     this->WriteFiles();
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
@@ -136,6 +137,25 @@ void svkDdfVolumeWriter::Write()
 
     delete [] this->InternalFileName;
     this->InternalFileName = NULL;
+}
+
+
+/*!
+ *  Appends algo info to provenance record.  
+ */
+void svkDdfVolumeWriter::SetProvenance()
+{
+    this->GetImageDataInput(0)->GetProvenance()->AddAlgorithm( this->GetClassName() ); 
+
+    if (  !this->AllTimePointsInEachFile() ) {
+        this->GetImageDataInput(0)->GetProvenance()->AddAlgorithmArg( 
+            this->GetClassName(),  
+            0, 
+            "OneTimePointPerFile", 
+            true
+        ); 
+    }
+
 }
 
 
@@ -791,6 +811,8 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
          << reorderedDcos[7] << setw(14) << reorderedDcos[8] << endl;
 
     *out << "===================================================" << endl; 
+
+    this->GetImageDataInput(0)->GetProvenance()->PrintXML(*out); 
 
 }
 
