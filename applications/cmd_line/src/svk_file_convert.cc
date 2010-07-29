@@ -82,6 +82,8 @@ int main (int argc, char** argv)
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
 
+    string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
+
     /*
     *   Process flags and arguments
     */
@@ -142,6 +144,10 @@ int main (int argc, char** argv)
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( reader->GetOutput() );
+
+    //  Set the input command line into the data set provenance:
+    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
     writer->Write();
     writer->Delete();
     reader->Delete();

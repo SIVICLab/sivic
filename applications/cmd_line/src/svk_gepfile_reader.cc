@@ -61,18 +61,23 @@
 using namespace svk;
 
 
+
 int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type [ -u | -s ] [ -anh ] \n";
+    usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
     usemsg += "\n";  
     usemsg += "   -i  input_file_name   name of file to convert. \n"; 
     usemsg += "   -o  output_file_name  name of outputfile. \n";
     usemsg += "   -t  output_data_type  target data type: \n";
     usemsg += "                               2 = UCSF DDF      \n";
     usemsg += "                               4 = DICOM_MRS (default)    \n";
+    usemsg += "   --deid_type     type  Type of deidentification ( 1 = limited or 2 = deidentified ). \n";  
+    usemsg += "   --deid_pat_id   id    Use the specified patient id to deidentify patient level PHI fields. \n";          
+    usemsg += "   --deid_study_id id    Use the specified study id to deidentify study level PHI fields. \n";  
     usemsg += "   -u                    if single voxel, write unsuppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -s                    if single voxel, write suppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -a                    if single voxel, write average of the specified data (e.g. all, suppressesd, unsuppressed) \n"; 
@@ -90,12 +95,28 @@ int main (int argc, char** argv)
     bool average = false; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     int oneTimePtPerFile = false; 
+    svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED; 
+    string deidPatId = ""; 
+    string deidStudyId = ""; 
+
+    string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
+
+
+    enum FLAG_NAME {
+        FLAG_ONE_TIME_PT = 0, 
+        FLAG_DEID_TYPE, 
+        FLAG_DEID_PAT_ID, 
+        FLAG_DEID_STUDY_ID
+    }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"one_time_pt", no_argument, &oneTimePtPerFile, 1},
+        {"one_time_pt",   no_argument,       &oneTimePtPerFile, FLAG_ONE_TIME_PT},
+        {"deid_type",     required_argument, NULL,              FLAG_DEID_TYPE},
+        {"deid_pat_id",   required_argument, NULL,              FLAG_DEID_PAT_ID},
+        {"deid_study_id", required_argument, NULL,              FLAG_DEID_STUDY_ID},
         {0, 0, 0, 0}
     };
 
@@ -123,6 +144,18 @@ int main (int argc, char** argv)
                 break;
             case 'a':
                 average = true;  
+                break;
+            case FLAG_ONE_TIME_PT:
+                oneTimePtPerFile = true; 
+                break;
+            case FLAG_DEID_TYPE:
+                deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));  
+                break;
+            case FLAG_DEID_PAT_ID:
+                deidPatId.assign( optarg ); 
+                break;
+            case FLAG_DEID_STUDY_ID:
+                deidStudyId.assign( optarg ); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -159,7 +192,16 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    cout << inputFileName << endl;
+    //  validate deidentification args:  
+    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED && deidType != svkDcmHeader::PHI_LIMITED ) {
+        cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
+        cout << usemsg << endl;
+        exit(1); 
+    } else {
+        cout << "Deidentify data: type = " << deidType << endl; 
+    }
+
+    cout << "file name: " << inputFileName << endl;
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
@@ -191,6 +233,19 @@ int main (int argc, char** argv)
         reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW ); 
     }
 
+    //  Set up deidentification options: 
+    if ( deidType != svkDcmHeader::PHI_IDENTIFIED ) { 
+        if ( deidPatId.compare("") != 0 && deidStudyId.compare("") != 0 ) { 
+            reader->SetDeidentify(deidPatId, deidStudyId, deidType); 
+        } else if ( deidPatId.compare("") != 0 ) {
+            reader->SetDeidentify(deidPatId, deidType); 
+        } else if ( deidStudyId.compare("") != 0 ) {
+            reader->SetDeidentify(deidStudyId, deidType); 
+        } else {
+            reader->SetDeidentify(deidType); 
+        }
+    }
+    
     reader->Update(); 
 
 
@@ -211,6 +266,10 @@ int main (int argc, char** argv)
     if ( oneTimePtPerFile ) { 
         svkDdfVolumeWriter::SafeDownCast( writer )->SetOneTimePointsPerFile();
     }
+
+    //  Set the input command line into the data set provenance: 
+    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
     writer->Write();
     writer->Delete();
     reader->Delete();
