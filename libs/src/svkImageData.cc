@@ -75,7 +75,7 @@ svkImageData::svkImageData()
         this->dcmHeader = svkDcmtkAdapter::New();
     }
  
-    this->provenance = NULL; 
+    this->provenance = svkProvenance::New(); 
 
     this->range[0][0] = VTK_DOUBLE_MAX;
     this->range[0][1] = -VTK_DOUBLE_MAX;
@@ -85,7 +85,6 @@ svkImageData::svkImageData()
     this->range[2][1] = -VTK_DOUBLE_MAX;
 
     this->lastUpdateTime = this->GetMTime();
-
 
 }
 
@@ -994,7 +993,7 @@ void svkImageData::SetProvenance(svkProvenance* provenance)
 
 
 /*!
- * Pure getter method: returns provenance object.
+ *  Pure getter method: returns provenance object.
  *
  *  \return provenance the provenance for this svkImageData object
  */
@@ -1002,6 +1001,7 @@ svkProvenance* svkImageData::GetProvenance()
 {
     return this->provenance;
 }
+
 
 /*!
  *  Compute the plotID from the x, y, z index

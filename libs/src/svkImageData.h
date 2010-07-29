@@ -61,6 +61,8 @@
 #include <vtkFloatArray.h>
 #include <vtkActorCollection.h>
 #include <vtkDataSetAttributes.h>
+#include <vtkXMLDataElement.h>
+#include <vtkIndent.h>
 
 #include <svkDcmtkAdapter.h>
 #include <svkDcmHeader.h>
