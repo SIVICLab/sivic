@@ -43,12 +43,7 @@
 #define SVK_GE_PFILE_MAPPER_MBREASE_H
 
 
-#include <vtkObjectFactory.h>
-
 #include <svkGEPFileMapper.h>
-
-#include <map>
-#include <vector>
 
 
 namespace svk {

@@ -42,23 +42,12 @@
 #ifndef SVK_GE_PFILE_MAPPER_H
 #define SVK_GE_PFILE_MAPPER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkShortArray.h>
-#include <vtkCellData.h>
-#include <vtkFieldData.h>
-#include <vtkDataObject.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
 #include <vtkDebugLeaks.h>
 #include <vtkCallbackCommand.h>
 
 #include <svkDcmHeader.h>
 #include <svkByteSwap.h>
 #include <svkSpecUtils.h>
-#include <svkImageData.h>
 #include <svkMrsImageData.h>
 #include <svkImageReader2.h>
 
@@ -100,14 +89,12 @@ class svkGEPFileMapper : public vtkObject
             LOAD_AVG_SUPPRESSED    
         };
 
-        void            SetMapperBehavior(MapperBehavior behaviorFlag);
-
-
         virtual void    InitializeDcmHeader(
-                            map <string, vector< string > >  pfMap, 
+                            map < string, vector< string > >  pfMap, 
                             svkDcmHeader* header, 
                             float pfileVersion, 
-                            bool swapBytes
+                            bool swapBytes, 
+                            map < string, void* >  inputArgs
                         );
         void            ReadData( string pFileName, svkImageData* data );
         string          GetProgressText( );
@@ -197,7 +184,7 @@ class svkGEPFileMapper : public vtkObject
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
-        MapperBehavior                          behaviorFlag;
+        map < string, void* >                   inputArgs; 
 
 };
 

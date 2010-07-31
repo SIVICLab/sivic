@@ -86,6 +86,7 @@ svkGEPFileMapperUCSF::~svkGEPFileMapperUCSF()
  */
 int svkGEPFileMapperUCSF::GetNumKSpacePoints()
 {
+
     int numKSpacePts;
 
     //  Image user21 indicates that an elliptical k-space sampling radius 

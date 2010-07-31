@@ -49,6 +49,12 @@ using namespace svk;
 vtkCxxRevisionMacro(svkSpecUtils, "$Rev$");
 
 
+const float svkSpecUtils::ZERO_KELVIN = 273.0;       
+const float svkSpecUtils::H2O_Y_INTERCEPT = 7.83;  
+const float svkSpecUtils::H2O_SLOPE = 96.9;
+const float svkSpecUtils::BODY_TEMPERATURE = 36.6; 
+
+
 /*!
  *  Returns the magnitude of the complex spectrum at the specified point. 
  */
@@ -89,15 +95,17 @@ void svkSpecUtils::PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point
  *  the chemical shift of water and temperature.
  *      freqOffset is the number of Hz that the center is offset from water 
  *      transmitFreq is in Hz. 
+ *      temp is in degrees Celcius. 
  */
 float svkSpecUtils::GetPPMRef(float transmitFreq, float freqOffset, float temp )
 {
 
-    float ZERO_KELVIN       = 273.;
-    float H20_Y_INTERCEPT   = 7.83;
-    float H20_SLOPE         = 96.9;
-    float BODY_TEMPERATURE  = 36.6;
-    float ppmRef = H20_Y_INTERCEPT - ( (BODY_TEMPERATURE + ZERO_KELVIN)/H20_SLOPE ) - (freqOffset / transmitFreq );
+    float ZERO_KELVIN       = svkSpecUtils::ZERO_KELVIN;
+    float H2O_Y_INTERCEPT   = svkSpecUtils::H2O_Y_INTERCEPT;
+    float H2O_SLOPE         = svkSpecUtils::H2O_SLOPE;
+    float BODY_TEMPERATURE  = svkSpecUtils::BODY_TEMPERATURE;
+
+    float ppmRef = H2O_Y_INTERCEPT - ( (BODY_TEMPERATURE + ZERO_KELVIN)/H2O_SLOPE ) - (freqOffset / transmitFreq );
 
     return ppmRef;
 }

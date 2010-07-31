@@ -64,7 +64,6 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
-    this->SetMapperBehavior( svkGEPFileMapper::UNDEFINED );
 }
 
 
@@ -88,12 +87,13 @@ svkGEPFileMapper::~svkGEPFileMapper()
  *  and initizlizes the svkDcmHeader member of the svkImageData 
  *  object.    
  */
-void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMap, svkDcmHeader* header, float pfileVersion, bool swapBytes) 
+void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMap, svkDcmHeader* header, float pfileVersion, bool swapBytes, map < string, void* > inputArgs ) 
 {
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
     this->swapBytes = swapBytes; 
+    this->inputArgs = inputArgs; 
     this->InitPatientModule(); 
     this->InitGeneralStudyModule(); 
     this->InitGeneralSeriesModule(); 
@@ -107,14 +107,6 @@ void svkGEPFileMapper::InitializeDcmHeader(map <string, vector< string > >  pfMa
     this->InitMRSpectroscopyDataModule(); 
 }
 
-
-/*!
- *  Sets data loading behavior.  
- */
-void svkGEPFileMapper::SetMapperBehavior(MapperBehavior behaviorFlag)
-{
-    this->behaviorFlag = behaviorFlag;
-}
 
 
 /*!
@@ -1578,11 +1570,17 @@ void svkGEPFileMapper::InitMRAveragesMacro()
         "MRAveragesSequence"
     );
 
+    //  GE overloads the meaning of nex so that it also
+    //  implicitly reflects any reduced k-space sampling.  
+    //  for example 1 avererage with 50% of the rectilinear
+    //  k-space grid sampled would give nex = 0.5.  
+    //  for now I'm using ceil to round up, but may not be
+    //  accurate in all cases. 
     this->dcmHeader->AddSequenceItemElement(
         "MRAveragesSequence",
         0,                        
         "NumberOfAverages",       
-        this->GetHeaderValueAsInt( "rhi.nex" ), 
+        static_cast<int> ( ceil( this->GetHeaderValueAsFloat( "rhi.nex" ) ) ), 
         "SharedFunctionalGroupsSequence",    
         0
     );
@@ -1917,7 +1915,8 @@ float svkGEPFileMapper::GetFrequencyOffset()
 }
 
 /*!
- *
+ *  Gets the chemical shift reference taking into account acquisition frequency offset
+ *  and the acquisition sample temperature. 
  */
 float svkGEPFileMapper::GetPPMRef() 
 {
@@ -1931,7 +1930,17 @@ float svkGEPFileMapper::GetPPMRef()
 
     float transmitFreq = this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7; 
 
-    float ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
+    //  Get mapper behavior flag value:
+    map < string, void* >::iterator  it;
+    it = this->inputArgs.find( "temperature" );
+
+    float ppmRef;
+    if ( it != this->inputArgs.end() ) {
+        float temp = *( static_cast< float* >( this->inputArgs[ it->first ] ) );
+        ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset, temp);
+    } else {
+        ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
+    }
 
     return ppmRef; 
 }
@@ -2485,27 +2494,35 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
     int numUnsuppressed = this->GetNumberUnsuppressedAcquisitions(); 
     int numSuppressed = this->GetNumberSuppressedAcquisitions(); 
 
+    //  Get mapper behavior flag value: 
+    map < string, void* >::iterator  it;
+    it = this->inputArgs.find( "SetMapperBehavior" );
+    MapperBehavior behaviorFlag = svkGEPFileMapper::UNDEFINED;  
+    if ( it != this->inputArgs.end() ) {
+        behaviorFlag = *( static_cast< svkGEPFileMapper::MapperBehavior* >( this->inputArgs[ it->first ] ) ); 
+    }
+
     //  
     //  If behavior flag isn't set then use default behaviors:
     //
-    if ( this->behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
+    if ( behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
 
         if ( (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) 
             && (numTimePts > 1) 
             && (numSuppressed > 1) 
         ) {
-            this->behaviorFlag = svkGEPFileMapper::LOAD_AVG_SUPPRESSED; 
+            behaviorFlag = svkGEPFileMapper::LOAD_AVG_SUPPRESSED; 
         } else {
-            this->behaviorFlag = svkGEPFileMapper::LOAD_RAW; 
+            behaviorFlag = svkGEPFileMapper::LOAD_RAW; 
         }
     }
 
-    if ( this->behaviorFlag == svkGEPFileMapper::LOAD_RAW ) {
+    if ( behaviorFlag == svkGEPFileMapper::LOAD_RAW ) {
 
         //  no need to modiy anything:
         return; 
 
-    } else if ( this->behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED ) {
+    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED ) {
 
         cout << "LOAD_AVG_SUPPRESSED" << endl;
 

@@ -67,7 +67,12 @@ class svkSpecUtils : public vtkObject
         static float    GetMagnigutude(vtkFloatArray* spectrum, int point); 
         static void     PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point, float phasedPoint[2]); 
         static float    GetChemicalShiftReference(); 
-        static float    GetPPMRef(float transmitFreq, float freqOffset = 0, float temp = 36.6 ); 
+        static float    GetPPMRef(float transmitFreq, float freqOffset = 0, float temp = svkSpecUtils::BODY_TEMPERATURE ); 
+
+        static const float ZERO_KELVIN;
+        static const float H2O_Y_INTERCEPT; 
+        static const float H2O_SLOPE; 
+        static const float BODY_TEMPERATURE; 
 
 };
 

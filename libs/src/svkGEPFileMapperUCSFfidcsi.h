@@ -43,28 +43,7 @@
 #define SVK_GE_PFILE_MAPPER_UCSF_FIDCSI_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkShortArray.h>
-#include <vtkCellData.h>
-#include <vtkFieldData.h>
-#include <vtkDataObject.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkCallbackCommand.h>
-
-#include <svkDcmHeader.h>
-#include <svkByteSwap.h>
-#include <svkSpecUtils.h>
-#include <svkImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageReader2.h>
 #include <svkGEPFileMapperUCSF.h>
-
-#include <map>
-#include <vector>
 
 
 namespace svk {

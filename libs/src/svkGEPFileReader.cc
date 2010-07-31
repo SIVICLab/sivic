@@ -63,14 +63,8 @@ svkGEPFileReader::svkGEPFileReader()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    this->gepf= NULL; 
+    this->gepf = NULL; 
     this->mapper = NULL; 
-
-    //  initialize algorithm input args: 
-    this->mapperBehavior = svkGEPFileMapper::UNDEFINED; 
-    this->phiType = svkDcmHeader::PHI_IDENTIFIED; 
-    this->patientDeidentificationId = ""; 
-    this->studyDeidentificationId = ""; 
 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
@@ -102,6 +96,12 @@ svkGEPFileReader::~svkGEPFileReader()
         this->progressCallback = NULL;
     }
 
+    //  Now delete all the pointers to input args:  
+    map< string, void* >::iterator mapIter;
+    for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
+         //delete this->inputArgs[ mapIter->first ];  
+        cout << " need to clean up memory" << endl; 
+    }
 }
 
 
@@ -228,7 +228,10 @@ void svkGEPFileReader::SetProvenance()
 
     int argIndex = -1; 
 
-    if (this->mapperBehavior != svkGEPFileMapper::UNDEFINED) {
+    map < string, void* >::iterator  it;
+
+    it = this->inputArgs.find( "SetMapperBehavior" );
+    if ( it != this->inputArgs.end() ) {
 
         argIndex++; 
 
@@ -236,42 +239,54 @@ void svkGEPFileReader::SetProvenance()
             this->GetClassName(),
             argIndex,
             "MapperBehavior",
-            static_cast<int>( this->mapperBehavior ) 
+            *( static_cast<int*>( this->inputArgs[ it->first ] ) )
         );
 
     }
 
-    if ( this->phiType == svkDcmHeader::PHI_DEIDENTIFIED 
-        || this->phiType == svkDcmHeader::PHI_LIMITED ) 
-    {
+    it = this->inputArgs.find( "phiType" );
+    if ( it != this->inputArgs.end() ) {
 
         argIndex++; 
         this->GetOutput()->GetProvenance()->AddAlgorithmArg(
             this->GetClassName(),
             argIndex,
             "PHIType",
-            static_cast<int>( this->phiType )
+            *( static_cast<int*>( this->inputArgs[ it->first ] ) )
         );
 
-        if ( this->patientDeidentificationId.size() > 0 ) {
+        it = this->inputArgs.find( "patientDeidentificationId" );
+        if ( it != this->inputArgs.end() ) {
             argIndex++; 
             this->GetOutput()->GetProvenance()->AddAlgorithmArg(
                 this->GetClassName(),
                 argIndex,
                 "patientDeidentificationId",
-                this->patientDeidentificationId 
+                *( static_cast<string*>( this->inputArgs[ it->first ] ) )
             );
         }
 
-        if ( this->studyDeidentificationId.size() > 0 ) {
+        it = this->inputArgs.find( "studyDeidentificationId" );
+        if ( it != this->inputArgs.end() ) {
             argIndex++; 
             this->GetOutput()->GetProvenance()->AddAlgorithmArg(
                 this->GetClassName(),
                 argIndex,
                 "studyDeidentificationId",
-                this->studyDeidentificationId 
+                *( static_cast<string*>( this->inputArgs[ it->first ] ) )
             );
         }
+    }
+
+    it = this->inputArgs.find( "temperature" );
+    if ( it != this->inputArgs.end() ) {
+        argIndex++; 
+        this->GetOutput()->GetProvenance()->AddAlgorithmArg(
+            this->GetClassName(),
+            argIndex,
+            "temperature",
+            *( static_cast< float* >( this->inputArgs[ it->first ] ) )
+        );
     }
 }
 
@@ -299,22 +314,20 @@ void svkGEPFileReader::InitDcmHeader()
 
     //  Fill in data set specific values using the appropriate mapper type:
     this->mapper = this->GetPFileMapper(); 
-    if (this->mapperBehavior != svkGEPFileMapper::UNDEFINED) {
-        this->mapper->SetMapperBehavior(this->mapperBehavior); 
-    }
 
     //  all the IE initialization modules would be contained within the 
     this->mapper->InitializeDcmHeader( 
         this->pfMap, 
         this->GetOutput()->GetDcmHeader(), 
         this->pfileVersion, 
-        this->GetSwapBytes()
+        this->GetSwapBytes(), 
+        this->inputArgs
     ); 
 
-
-    if ( this->phiType == svkDcmHeader::PHI_DEIDENTIFIED 
-        || this->phiType == svkDcmHeader::PHI_LIMITED ) 
-    {
+    //  Deidentify data if necessary
+    map < string, void* >::iterator  it;
+    it = this->inputArgs.find( "phiType" );
+    if ( it != this->inputArgs.end() ) {
         this->DeidentifyData(); 
     }
 
@@ -330,7 +343,14 @@ void svkGEPFileReader::InitDcmHeader()
  */
 void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type) 
 {
-    this->mapperBehavior = type; 
+    svkGEPFileMapper::MapperBehavior* typeTmp = new svkGEPFileMapper::MapperBehavior(type); 
+    this->inputArgs[ "SetMapperBehavior" ] = static_cast<void*>( typeTmp );
+
+    map< string, void* >::iterator mapIter;
+    for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
+        cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
+    }
+
 }
 
 
@@ -339,7 +359,8 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
  */
 void svkGEPFileReader::SetDeidentify(svkDcmHeader::PHIType phiType) 
 {
-    this->phiType = phiType; 
+    svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
+    this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
 }
 
 
@@ -347,10 +368,12 @@ void svkGEPFileReader::SetDeidentify(svkDcmHeader::PHIType phiType)
  *  Sets string to use for identification.  All PHI fields will be replace with this 
  *  value. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( string deidentificationId, svkDcmHeader::PHIType phiType ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string deidentificationId ) 
 {
-    this->phiType = phiType; 
-    this->studyDeidentificationId = deidentificationId; 
+    svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
+    string* idTmp = new string(deidentificationId);
+    this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
+    this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( idTmp );
 }
 
 
@@ -358,11 +381,27 @@ void svkGEPFileReader::SetDeidentify( string deidentificationId, svkDcmHeader::P
  *  Sets string to use for identification.  All PHI fields will be replace with this 
  *  value. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( string patientId, string studyId, svkDcmHeader::PHIType phiType ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string studyId, string patientId ) 
 {
-    this->phiType = phiType; 
-    this->patientDeidentificationId = patientId; 
-    this->studyDeidentificationId = studyId; 
+    svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
+    string* patIdTmp = new string(patientId);
+    string* studyIdTmp = new string(studyId);
+    this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
+    this->inputArgs[ "patientDeidentificationId" ] = static_cast<void*>( patIdTmp );
+    this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( studyIdTmp);
+}
+
+
+/*!
+ *  Sets the acquisition temperature in degrees celcius.  
+ *  Used to set the chemcial shift of water for the PPM reference.  
+ */
+void svkGEPFileReader::SetTemperature( float temp )
+{
+    float* flagTemp = new float(temp);
+// possibly enforce use of vtk primitive types, everything is then a vtkObject and we have a pseudo homogeneous container.
+    this->inputArgs[ "temperature" ] = static_cast<void*>( flagTemp );
+
 }
 
 
@@ -372,20 +411,24 @@ void svkGEPFileReader::SetDeidentify( string patientId, string studyId, svkDcmHe
 void svkGEPFileReader::DeidentifyData()
 {
 
-    if ( this->studyDeidentificationId.size() > 0 && this->patientDeidentificationId.size() > 0 ) {
+    map < string, void* >::iterator itPhi     = this->inputArgs.find( "phiType" );
+    map < string, void* >::iterator itPatId   = this->inputArgs.find( "patientDeidentificationId" );
+    map < string, void* >::iterator itStudyId = this->inputArgs.find( "studyDeidentificationId" );
+
+    if ( itPatId != this->inputArgs.end() && itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
-                                                this->patientDeidentificationId, 
-                                                this->studyDeidentificationId, 
-                                                this->phiType 
+                                                *( static_cast< string* >( this->inputArgs[ itPatId->first ] ) ),
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ),
+                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
                                            ); 
-    } else if ( this->studyDeidentificationId.size() > 0 ) {
+    } else if ( itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
-                                                this->studyDeidentificationId, 
-                                                this->phiType 
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ),
+                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
                                            ); 
     } else {
         this->GetOutput()->GetDcmHeader()->Deidentify( 
-                                                this->phiType 
+                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
                                            ); 
     }
 }
@@ -579,7 +622,7 @@ void svkGEPFileReader::PrintKeyValuePairs()
 void svkGEPFileReader::SetByteSwapping()
 {
     //  These were acquired on SGI (bigendian)
-    if (this->pfileVersion < 12) {
+    if (this->pfileVersion < 11) {
 
 #if defined (linux) 
         this->SwapBytesOn(); 
@@ -590,7 +633,7 @@ void svkGEPFileReader::SetByteSwapping()
 #endif
 
     //  These were acquired on linux (little endian)
-    } else if (this->pfileVersion >= 12) {
+    } else if (this->pfileVersion >= 11) {
 
 #if defined (linux) 
         this->SwapBytesOff(); 
