@@ -57,6 +57,7 @@
 #include <vtkIndent.h>
 #include <getopt.h>
 
+#define UNDEFINED_TEMP -1111
 
 using namespace svk;
 
@@ -69,6 +70,7 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type [ -u | -s ] [ -anh ] \n";
     usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
+    usemsg += "                   [ --temp tmp ] \n";
     usemsg += "\n";  
     usemsg += "   -i  input_file_name   name of file to convert. \n"; 
     usemsg += "   -o  output_file_name  name of outputfile. \n";
@@ -98,6 +100,7 @@ int main (int argc, char** argv)
     svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED; 
     string deidPatId = ""; 
     string deidStudyId = ""; 
+    float temp = UNDEFINED_TEMP; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -106,7 +109,8 @@ int main (int argc, char** argv)
         FLAG_ONE_TIME_PT = 0, 
         FLAG_DEID_TYPE, 
         FLAG_DEID_PAT_ID, 
-        FLAG_DEID_STUDY_ID
+        FLAG_DEID_STUDY_ID, 
+        FLAG_TEMP 
     }; 
 
 
@@ -117,6 +121,7 @@ int main (int argc, char** argv)
         {"deid_type",     required_argument, NULL,              FLAG_DEID_TYPE},
         {"deid_pat_id",   required_argument, NULL,              FLAG_DEID_PAT_ID},
         {"deid_study_id", required_argument, NULL,              FLAG_DEID_STUDY_ID},
+        {"temp",          required_argument, NULL,              FLAG_TEMP},
         {0, 0, 0, 0}
     };
 
@@ -157,6 +162,9 @@ int main (int argc, char** argv)
             case FLAG_DEID_STUDY_ID:
                 deidStudyId.assign( optarg ); 
                 break;
+            case FLAG_TEMP:
+                temp = atof( optarg ); 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -193,7 +201,7 @@ int main (int argc, char** argv)
     }
 
     //  validate deidentification args:  
-    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED && deidType != svkDcmHeader::PHI_LIMITED ) {
+    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED && deidType != svkDcmHeader::PHI_LIMITED &&  deidType != svkDcmHeader::PHI_IDENTIFIED) {
         cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
         cout << usemsg << endl;
         exit(1); 
@@ -236,14 +244,18 @@ int main (int argc, char** argv)
     //  Set up deidentification options: 
     if ( deidType != svkDcmHeader::PHI_IDENTIFIED ) { 
         if ( deidPatId.compare("") != 0 && deidStudyId.compare("") != 0 ) { 
-            reader->SetDeidentify(deidPatId, deidStudyId, deidType); 
+            reader->SetDeidentify( deidType, deidPatId, deidStudyId ); 
         } else if ( deidPatId.compare("") != 0 ) {
-            reader->SetDeidentify(deidPatId, deidType); 
+            reader->SetDeidentify( deidType, deidPatId ); 
         } else if ( deidStudyId.compare("") != 0 ) {
-            reader->SetDeidentify(deidStudyId, deidType); 
+            reader->SetDeidentify( deidType, deidStudyId ); 
         } else {
-            reader->SetDeidentify(deidType); 
+            reader->SetDeidentify( deidType ); 
         }
+    }
+
+    if ( temp != UNDEFINED_TEMP ) { 
+        reader->SetTemperature( temp ); 
     }
     
     reader->Update(); 
