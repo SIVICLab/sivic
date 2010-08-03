@@ -1628,17 +1628,26 @@ void vtkSivicController::UseRotationStyle()
 //! Resets the window level to full range.
 void vtkSivicController::ResetWindowLevel()
 {
-    this->overlayController->ResetWindowLevel();
-    double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
-    double window = this->overlayController->GetWindow();
-    double level = this->overlayController->GetLevel();
-    this->windowLevelWidget->SetLevelRange( pixelRange ); 
-    this->windowLevelWidget->SetLevel( level ); 
-    this->windowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
-    this->windowLevelWidget->SetWindow( window ); 
-    this->viewRenderingWidget->ResetInfoText();
-    this->viewRenderingWidget->specViewerWidget->Render();
-    this->viewRenderingWidget->viewerWidget->Render();
+    if( this->model->DataExists("AnatomicalData") ) {
+        this->overlayController->ResetWindowLevel();
+        double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
+        double window = this->overlayController->GetWindow();
+        double level = this->overlayController->GetLevel();
+        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        }
+        this->windowLevelWidget->SetLevelRange( pixelRange ); 
+        this->windowLevelWidget->SetLevel( level ); 
+        this->windowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
+        this->windowLevelWidget->SetWindow( window ); 
+        this->viewRenderingWidget->ResetInfoText();
+        if( toggleDraw ) {
+            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        }
+        this->viewRenderingWidget->specViewerWidget->Render();
+        this->viewRenderingWidget->viewerWidget->Render();
+    }
 
 }
 
@@ -1702,18 +1711,10 @@ void vtkSivicController::DisplayWindowLevelWindow()
         this->windowLevelWidget->SetWindow( window ); 
     }
     if( this->model->DataExists("OverlayData") || this->model->DataExists("MetaboliteData") ) { 
-        double* pixelRange = NULL;
-        string overlayDataName;
-        if( this->model->DataExists("OverlayData") ) { 
-            pixelRange = this->model->GetDataObject("OverlayData")->GetPointData()->GetArray(0)->GetRange();
-            overlayDataName = "OverlayData"; 
-        } else {
-            pixelRange = this->model->GetDataObject("MetaboliteData")->GetPointData()->GetArray(0)->GetRange();
-            overlayDataName = "MetaboliteData"; 
-        }
+        string overlayDataName = this->overlayWindowLevelWidget->GetOverlayDataName();
+        double* pixelRange = this->model->GetDataObject(overlayDataName)->GetPointData()->GetArray(0)->GetRange();
         double window = this->overlayController->GetWindow(svkOverlayViewController::IMAGE_OVERLAY);
         double level = this->overlayController->GetLevel(svkOverlayViewController::IMAGE_OVERLAY);
-        this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
         this->overlayWindowLevelWidget->SetLevelRange( pixelRange ); 
         this->overlayWindowLevelWidget->SetLevel( level ); 
         this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 

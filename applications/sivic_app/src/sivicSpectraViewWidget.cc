@@ -329,7 +329,9 @@ void sivicSpectraViewWidget::CreateWidget()
 void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     if( caller == this->sliceSlider->GetWidget()) {
-        this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
+        }
         stringstream increment;
         increment << "SetValue " << this->overlayController->GetSlice() + 2;
         stringstream decrement;
@@ -341,7 +343,9 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->sliceSlider->Focus();
     } else if( caller == this->channelSlider->GetWidget() ) {   
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
-        this->plotController->SetChannel( channel );
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->plotController->SetChannel( channel );
+        }
         stringstream increment;
         increment << "SetValue " << channel + 2;
         stringstream decrement;
@@ -353,7 +357,9 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->channelSlider->Focus(); 
     } else if( caller == this->timePointSlider->GetWidget()) {   
         int timePoint = static_cast<int>(this->timePointSlider->GetValue()) - 1;
-        this->plotController->SetTimePoint( timePoint );
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->plotController->SetTimePoint( timePoint );
+        }
         stringstream increment;
         increment << "SetValue " << timePoint + 2;
         stringstream decrement;

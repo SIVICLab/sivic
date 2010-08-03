@@ -105,17 +105,18 @@ class sivicWindowLevelWidget : public sivicKWCompositeWidget
         static sivicWindowLevelWidget *New();
         vtkTypeRevisionMacro(sivicWindowLevelWidget,sivicKWCompositeWidget);
 
-        void SetWindow( double window );
-        void SetLevel(  double level );
-        void SetWindowRange( double windowMin, double windowMax );
-        void SetWindowRange( double* range );
-        void SetLevelRange( double levelMin, double levelMax );
-        void SetLevelRange( double* range );
-        void EnableUpdate();
-        void DisableUpdate();
-        void SetWindowLevelTarget(svkOverlayViewController::WindowLevelTarget target);
-        void SetOverlayDataName( string overlayDataName );
-        void SetSyncPlotGrid( bool syncPlotGrid );
+        void   SetWindow( double window );
+        void   SetLevel(  double level );
+        void   SetWindowRange( double windowMin, double windowMax );
+        void   SetWindowRange( double* range );
+        void   SetLevelRange( double levelMin, double levelMax );
+        void   SetLevelRange( double* range );
+        void   EnableUpdate();
+        void   DisableUpdate();
+        void   SetWindowLevelTarget(svkOverlayViewController::WindowLevelTarget target);
+        void   SetOverlayDataName( string overlayDataName );
+        string GetOverlayDataName( );
+        void   SetSyncPlotGrid( bool syncPlotGrid );
 
 
 

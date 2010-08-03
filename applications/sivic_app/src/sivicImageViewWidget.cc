@@ -577,7 +577,9 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
 {
     // Respond to a selection change in the overlay view
    if( caller == this->axialSlider->GetWidget()) {
-        this->sivicController->SetImageSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, string("AXIAL")); 
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->sivicController->SetImageSlice( static_cast<int>(this->axialSlider->GetValue()) - 1, string("AXIAL")); 
+        }
         int imageSlice = static_cast<int>(this->axialSlider->GetValue()) - 1; 
         stringstream increment;
         increment << "SetValue " << imageSlice + 2;
@@ -589,7 +591,9 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->axialSlider->AddBinding( "<Right>", this->axialSlider, increment.str().c_str() );
         this->axialSlider->Focus();
     } else if( caller == this->coronalSlider->GetWidget() ) {
-        this->sivicController->SetImageSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, string("CORONAL")); 
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->sivicController->SetImageSlice( static_cast<int>(this->coronalSlider->GetValue()) - 1, string("CORONAL")); 
+        }
         int imageSlice = static_cast<int>(this->coronalSlider->GetValue()) - 1; 
         stringstream increment;
         increment << "SetValue " << imageSlice + 2;
@@ -601,7 +605,9 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->coronalSlider->AddBinding( "<Right>", this->coronalSlider, increment.str().c_str() );
         this->coronalSlider->Focus();
     } else if( caller == this->sagittalSlider->GetWidget() ) {
-        this->sivicController->SetImageSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, string("SAGITTAL")); 
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->sivicController->SetImageSlice( static_cast<int>(this->sagittalSlider->GetValue()) - 1, string("SAGITTAL")); 
+        }
         int imageSlice = static_cast<int>(this->sagittalSlider->GetValue()) - 1; 
         stringstream increment;
         increment << "SetValue " << imageSlice + 2;
@@ -613,8 +619,10 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->sagittalSlider->AddBinding( "<Right>", this->sagittalSlider, increment.str().c_str() );
         this->sagittalSlider->Focus();
     } else if( caller == this->overlayOpacitySlider->GetWidget() ) {
-        this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
-        this->plotController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
+            this->plotController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
+        }
         stringstream increment;
         increment << "SetValue " << this->overlayOpacitySlider->GetValue() + 1;
         stringstream decrement;

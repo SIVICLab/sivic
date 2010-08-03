@@ -81,9 +81,9 @@ void sivicWindowLevelWidget::DisableUpdate( )
 //! Set the Window
 void sivicWindowLevelWidget::SetWindow( double window )
 {
-    if( this->window != window || this->window != this->windowSlider->GetValue() 
-                               || this->window != this->windowSlider->GetWidget()->GetValue() ) {
-        this->window = window;
+    this->window = window;
+    if( this->IsCreated() && (this->window != window || this->window != this->windowSlider->GetValue() 
+                               || this->window != this->windowSlider->GetWidget()->GetValue() )) {
         this->UpdateSliders();
     }
 }
@@ -109,9 +109,9 @@ void sivicWindowLevelWidget::SetWindowRange( double* range )
 //! Set the Level
 void sivicWindowLevelWidget::SetLevel(  double level ) 
 {
-    if( this->level != level || this->level != this->levelSlider->GetValue() 
-                             || this->level != this->levelSlider->GetWidget()->GetValue() ) {
-        this->level = level;
+    this->level = level;
+    if( this->IsCreated() && (this->level != level || this->level != this->levelSlider->GetValue() 
+                             || this->level != this->levelSlider->GetWidget()->GetValue() )) {
         this->UpdateSliders();
     }
 }
@@ -132,10 +132,17 @@ void sivicWindowLevelWidget::SetLevelRange( double* range )
 }
 
 
-//! Set the Window range for slider
+//! Set the data name 
 void sivicWindowLevelWidget::SetOverlayDataName( string overlayDataName)
 {
     this->overlayDataName = overlayDataName;
+}
+
+
+//! Get the data name
+string sivicWindowLevelWidget::GetOverlayDataName( )
+{
+    return this->overlayDataName;
 }
 
 
