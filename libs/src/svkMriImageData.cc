@@ -89,6 +89,79 @@ svkMriImageData::~svkMriImageData()
 
 
 /*!
+ *  Method attempts to determine the best default window/level values for the dataset. It does this by:
+ *    1. Create a histogram with the number of bins specified at input.
+ *    2. Determine the mode, excluding zero, and use that as the level.
+ *    3. Calculate the standard deviation excluding zero.
+ *    4. Use the input number of standard deviations to determine the window.
+ *    5. If the window extends outside the range, clip the window such that it is within range.
+ *
+ *  \param window output reference
+ *  \param level output reference 
+ *  \param numBins the number of bins used to make the histogram 
+ *  \param numStdDevs the number of standard deviations used to define the window 
+ *  
+ */
+void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int numBins, double numStdDevs )
+{
+    // Here are our parameters for the auto window level
+    double *range = this->GetScalarRange();
+    double fullWindow = range[1]-range[0];
+    double binSize = fullWindow/numBins; 
+    vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
+    accumulator->SetInput( this );
+
+    // Component origin is the position of the first bins. 3 Dimension correspond to up to 3 components
+    accumulator->SetComponentOrigin(range[0],0,0);
+   
+    // The bins we want to include in the output--- in this case all the bins 
+    accumulator->SetComponentExtent(0, numBins-1,0,0,0,0);
+
+    // Component Spacing is the binSize
+    accumulator->SetComponentSpacing(binSize,0,0);
+
+    // This ignores zero for staticstics (deviation and mean) but STILL PLACES ZERO IN A BIN!!
+    accumulator->IgnoreZeroOn();
+    accumulator->Update();
+
+    // The output of image accumulate is an image.
+    vtkImageData* histogramImage = accumulator->GetOutput();
+    histogramImage->Update();
+
+    // The "pixels" of the output are the values in the histogram
+    vtkDataArray* histogram = histogramImage->GetPointData()->GetScalars();
+    int maxIndex = -1;
+    double max = -VTK_DOUBLE_MAX;
+    for( int i = 0; i < histogram->GetNumberOfTuples(); i++ ) {
+
+        double binRange[2] = { range[0] + i*binSize, range[0] + (i+1)*binSize};
+
+        // Lets exclude the bin closests to zero....
+        if(  histogram->GetTuple(i)[0] > max && !(binRange[0] <= 0 && binRange[1] >= 0 ) ) {
+            max = histogram->GetTuple(i)[0];
+            maxIndex = i;
+        }
+    } 
+
+    // deviation EXCLUDES ZERO
+    double deviation = accumulator->GetStandardDeviation()[0]; 
+    double mode = range[0] + (maxIndex)*binSize + binSize/2.0; 
+    window = numStdDevs*deviation;
+    level = mode;
+
+    // If the window goes out of range clip the window such that it stops at zero, and still has the same level
+    if( level - window/2.0 < range[0] ) {
+        window = (level-range[0])*2.0;
+    }
+    if( level + window/2.0 > range[1] ) {
+        window = (range[1] - level)*2.0;
+    }
+    accumulator->Delete();
+
+}
+
+
+/*!
  *  Creates an array of doubles that is the pixels of image at slice "slice.
  *  Currently assumes 1 component data
  */

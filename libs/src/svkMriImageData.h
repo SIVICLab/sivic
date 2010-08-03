@@ -46,6 +46,7 @@
 
 #include <vtkObjectFactory.h>
 #include <svkImageData.h>
+#include <vtkImageAccumulate.h>
 
 
 namespace svk {
@@ -77,6 +78,7 @@ class svkMriImageData: public svkImageData
         void            SetImagePixel( int id, double value );
         void            SetImagePixel( int x, int y, int z, double value );
         virtual void    GetNumberOfVoxels(int numVoxels[3]); 
+        void            GetAutoWindowLevel( double& window, double& level, int numBins = 15, double numStdDevs = 6.0 );
 
 
     protected:

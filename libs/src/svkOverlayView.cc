@@ -1345,10 +1345,9 @@ void svkOverlayView::SetLUT( svkLookupTable::svkLookupTableType type )
     }
 
     this->colorTransfer = svkLookupTable::New();
-
-    double *range = dataVector[OVERLAY]->GetScalarRange();
-    double window = range[1] - range[0];
-    double level = 0.1*(range[1] + range[0]);
+    double window;
+    double level;
+    svkMriImageData::SafeDownCast(dataVector[OVERLAY])->GetAutoWindowLevel(window, level);
     this->colorTransfer->SetRange( level - window/2.0, level + window/2.0);
 
     this->colorTransfer->SetLUTType( type ); 
@@ -1501,10 +1500,19 @@ void svkOverlayView::ResetWindowLevel()
         this->imageViewer->GetInput()->SetUpdateExtent
            (this->imageViewer->GetInput()->GetWholeExtent());
         this->imageViewer->GetInput()->Update();
-        double *range = this->imageViewer->GetInput()->GetScalarRange();
-        this->imageViewer->SetColorWindow(range[1] - range[0]);
-        this->imageViewer->SetColorLevel(0.5 * (range[1] + range[0]));
+        double window;
+        double level;
+        svkMriImageData::SafeDownCast(dataVector[MRI])->GetAutoWindowLevel(window, level);
+        int toggleDraw = this->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        if( toggleDraw ) {
+            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
+        }
+        this->imageViewer->SetColorWindow(window);
+        this->imageViewer->SetColorLevel(level);
         this->imageViewer->GetImageActor()->Modified();
+        if( toggleDraw ) {
+            this->GetRenderer( svkOverlayView::PRIMARY)->DrawOn();
+        }
         this->imageViewer->Render();
    }
 }
