@@ -2215,6 +2215,7 @@ int vtkSivicController::GetFrequencyType()
  */
 void vtkSivicController::SetThresholdTypeToPercent()
 {
+    this->imageViewWidget->thresholdType->GetWidget()->SetValue("Percent");
     this->thresholdType = "Percent";
     svkImageData* overlay = this->model->GetDataObject("OverlayData");
     this->imageViewWidget->overlayThresholdSlider->SetResolution( 1 );
@@ -2236,6 +2237,7 @@ void vtkSivicController::SetThresholdTypeToPercent()
  */
 void vtkSivicController::SetThresholdTypeToQuantity()
 {
+    this->imageViewWidget->thresholdType->GetWidget()->SetValue("Quantity");
     this->thresholdType = "Quantity";
     svkImageData* overlay = this->model->GetDataObject("OverlayData");
     if( overlay == NULL ) {

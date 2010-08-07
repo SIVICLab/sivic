@@ -190,6 +190,10 @@ void sivicWindowLevelWidget::UpdateView()
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
     }
+    if( this->sivicController->GetThresholdType() == "Quantity" ) {
+        // This updates the threshold.
+        this->sivicController->SetThresholdTypeToPercent();
+    }
     
     double* range = NULL;
     // Here we are using the resolution to account for potential rounding errors thout could cause excesive refreshes
@@ -211,10 +215,6 @@ void sivicWindowLevelWidget::UpdateView()
         if( range[0] != plotGridRange[0] || range[1] != plotGridRange[1] ) {
             svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range);
         }
-    }
-    if( this->sivicController->GetThresholdType() == "Quantity" ) {
-        // This updates the threshold.
-        this->sivicController->UpdateThreshold();
     }
 
 
@@ -361,7 +361,7 @@ void sivicWindowLevelWidget::CreateWidget()
     this->Script("grid columnconfigure %s 0  -weight 1", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
-        this->overlayController->GetRWInteractor(), vtkCommand::WindowLevelEvent );
+        this->overlayController->GetRWInteractor(), vtkCommand::EndWindowLevelEvent );
 
     this->AddCallbackCommandObserver(
         this->windowSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -460,7 +460,7 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->windowSlider->RemoveBinding( "<Right>");
         this->windowSlider->AddBinding( "<Right>", this->windowSlider, increment.str().c_str() );
         this->windowSlider->Focus();
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::WindowLevelEvent ) {
+    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::EndWindowLevelEvent ) {
         if(   ( this->overlayController->GetCurrentStyle() == svkOverlayViewController::WINDOW_LEVEL  
               && this->target == svkOverlayViewController::REFERENCE_IMAGE)
            || ( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY  

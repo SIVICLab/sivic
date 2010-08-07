@@ -230,6 +230,9 @@ public:
       this->IV->SetColorLevel(newLevel);
       this->IV->Render();
       this->IV->GetRenderer()->GetRenderWindow()->GetInteractor()->InvokeEvent(vtkCommand::WindowLevelEvent);
+      if (event == vtkCommand::EndWindowLevelEvent) {
+          this->IV->GetRenderer()->GetRenderWindow()->GetInteractor()->InvokeEvent(vtkCommand::EndWindowLevelEvent);
+      }
     }
   
   vtkImageViewer2 *IV;
@@ -262,6 +265,8 @@ void svkImageViewer2::InstallPipeline()
         vtkCommand::StartWindowLevelEvent, cbk);
       this->InteractorStyle->AddObserver(
         vtkCommand::ResetWindowLevelEvent, cbk);
+      this->InteractorStyle->AddObserver(
+        vtkCommand::EndWindowLevelEvent, cbk);
       cbk->Delete();
       }
 
