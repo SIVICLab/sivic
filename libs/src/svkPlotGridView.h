@@ -164,8 +164,9 @@ class svkPlotGridView : public svkDataView
         void                   SetColorSchema( int colorSchema );                
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetChannel( int channel );
-        void                   SetTimePoint( int timePoint );
         int                    GetChannel( );
+        void                   SetTimePoint( int timePoint );
+        int                    GetTimePoint( );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
 

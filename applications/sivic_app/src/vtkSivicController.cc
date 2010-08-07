@@ -479,16 +479,26 @@ void vtkSivicController::OpenSpectra( const char* fileName )
         string resultInfo;
         string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
         string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
+        svkDataValidator* validator = svkDataValidator::New(); 
+        string validatorResultInfo;
+        if( this->model->DataExists( "AnatomicalData" ) ) {
+            bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "AnatomicalData" )); 
+            if ( !valid ) {
+                validatorResultInfo = validator->resultInfo; 
+            }
+        }
 
         //  Precheck to see if valdation errors should be overridden:
         if( overlayViewResultInfo.compare("") != 0 || 
-            plotViewResultInfo.compare("") != 0 ) {
+            plotViewResultInfo.compare("") != 0    || 
+            validatorResultInfo.compare("") != 0 ) {
 
             resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
             resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
             resultInfo += "Info:\n"; 
             resultInfo += plotViewResultInfo;
             resultInfo += overlayViewResultInfo;
+            resultInfo += validatorResultInfo;
             int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
 
             //  If user wants to continue anyway, unset the info results 
@@ -2157,6 +2167,12 @@ void vtkSivicController::DisableWidgets()
     this->overlayWindowLevelWidget->EnabledOff();
     this->windowLevelWidget->EnabledOff();
     this->globalWidget->metaboliteSelect->EnabledOff();
+}
+
+
+void vtkSivicController::UpdateThreshold( )
+{
+    this->imageViewWidget->UpdateThreshold();
 }
 
 

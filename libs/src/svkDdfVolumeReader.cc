@@ -2090,7 +2090,9 @@ void svkDdfVolumeReader::GlobFileNames()
         for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
             group = sortFileNames->GetNthGroup(k); 
             for (int i = 0; i < group->GetNumberOfValues(); i++) {
-                cout << "Group: " << group->GetValue(i) << endl;
+                if( this->GetDebug() ) {
+                    cout << "Group: " << group->GetValue(i) << endl;
+                }
                 if ( fileName.compare( group->GetValue(i) ) == 0 ) {
                     groupToUse = k; 
                     break; 

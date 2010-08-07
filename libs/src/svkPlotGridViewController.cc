@@ -334,6 +334,15 @@ void svkPlotGridViewController::SetTimePoint( int timePoint )
 /*!
  *
  */
+int svkPlotGridViewController::GetTimePoint( ) 
+{
+    return svkPlotGridView::SafeDownCast( this->view )->GetTimePoint();
+}
+
+
+/*!
+ *
+ */
 int svkPlotGridViewController::GetChannel( ) 
 {
     return svkPlotGridView::SafeDownCast( this->view )->GetChannel();

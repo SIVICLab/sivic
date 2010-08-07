@@ -154,6 +154,7 @@ void sivicSpectraViewWidget::CreateWidget()
     this->sliceSlider->SetEntryPositionToRight();
     this->sliceSlider->SetLabelPositionToLeft();
     this->sliceSlider->SetRange( 1, 1 );
+    this->sliceSlider->ClampValueOff();
     this->sliceSlider->EnabledOff();
 
     //channel slider 
@@ -170,6 +171,7 @@ void sivicSpectraViewWidget::CreateWidget()
     this->channelSlider->EnabledOff();
     this->channelSlider->SetEntryPositionToRight();
     this->channelSlider->SetLabelPositionToLeft();
+    this->channelSlider->ClampValueOff();
 
     //channel slider 
     this->timePointSlider = vtkKWScaleWithEntry::New();
@@ -329,19 +331,34 @@ void sivicSpectraViewWidget::CreateWidget()
 void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     if( caller == this->sliceSlider->GetWidget()) {
+
+        // Correct for out of bounds... not sure why KW doesn't correctly handle this.
+        if( this->sliceSlider->GetValue() < this->sliceSlider->GetRangeMin() ) {
+            this->sliceSlider->SetValue( this->sliceSlider->GetRangeMin());
+        } else if( this->sliceSlider->GetValue() > this->sliceSlider->GetRangeMax() ) {
+            this->sliceSlider->SetValue( this->sliceSlider->GetRangeMax());
+        }
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
             this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
         }
+        int decrementValue = this->plotController->GetSlice();
+        int incrementValue = this->plotController->GetSlice() + 2;
         stringstream increment;
-        increment << "SetValue " << this->overlayController->GetSlice() + 2;
+        increment << "SetValue " << incrementValue;
         stringstream decrement;
-        decrement << "SetValue " << this->overlayController->GetSlice();
+        decrement << "SetValue " << decrementValue;
         this->sliceSlider->RemoveBinding( "<Left>");
         this->sliceSlider->AddBinding( "<Left>", this->sliceSlider, decrement.str().c_str() );
         this->sliceSlider->RemoveBinding( "<Right>");
         this->sliceSlider->AddBinding( "<Right>", this->sliceSlider, increment.str().c_str() );
         this->sliceSlider->Focus();
     } else if( caller == this->channelSlider->GetWidget() ) {   
+        // Correct for out of bounds... not sure why KW doesn't correctly handle this.
+        if( this->channelSlider->GetValue() < this->channelSlider->GetRangeMin() ) {
+            this->channelSlider->SetValue( this->channelSlider->GetRangeMin());
+        } else if( this->channelSlider->GetValue() > this->channelSlider->GetRangeMax() ) {
+            this->channelSlider->SetValue( this->channelSlider->GetRangeMax());
+        }
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
             this->plotController->SetChannel( channel );
@@ -356,6 +373,12 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->channelSlider->AddBinding( "<Right>", this->channelSlider, increment.str().c_str() );
         this->channelSlider->Focus(); 
     } else if( caller == this->timePointSlider->GetWidget()) {   
+        // Correct for out of bounds... not sure why KW doesn't correctly handle this.
+        if( this->timePointSlider->GetValue() < this->timePointSlider->GetRangeMin() ) {
+            this->timePointSlider->SetValue( this->timePointSlider->GetRangeMin());
+        } else if( this->timePointSlider->GetValue() > this->timePointSlider->GetRangeMax() ) {
+            this->timePointSlider->SetValue( this->timePointSlider->GetRangeMax());
+        }
         int timePoint = static_cast<int>(this->timePointSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
             this->plotController->SetTimePoint( timePoint );

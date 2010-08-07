@@ -419,9 +419,6 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
         } 
         this->Refresh();
         //this->SetOrientation( this->orientation );
-cout << "DATA LOADED " << endl; 
-cout << *data << endl; 
-cout << "DATA LOADED " << endl; 
 
     } else {
 

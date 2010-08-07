@@ -136,10 +136,10 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
 
-
-
     private:
 
+        //! Holds the current full data range. Updated at ResetAmplitudeWholeRange 
+        double                      dataRange[2];
         svkSpecPoint*               point;
 
         sivicSpectraRangeWidget(const sivicSpectraRangeWidget&);   // Not implemented.

@@ -569,6 +569,58 @@ void sivicImageViewWidget::CreateWidget()
     
 }
 
+void sivicImageViewWidget::UpdateThreshold( )
+{
+    if( this->sivicController->GetThresholdType() == "Quantity" ) {
+
+        double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();
+
+        int numTableVals = svkOverlayView::SafeDownCast(
+                                  overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
+
+        double currentThreshold =  svkLookupTable::SafeDownCast( 
+                                      svkOverlayView::SafeDownCast(
+                                         overlayController->GetView())->GetLookupTable() )->GetAlphaThreshold();
+        double newThreshold = (this->overlayThresholdSlider->GetValue()-dataRange[0])/(dataRange[1]-dataRange[0]);
+
+        int firstVisibleIndex = (int)ceil( newThreshold * numTableVals );
+        double trueThreshold = ((double)firstVisibleIndex) / numTableVals;
+        double thresholdValue = dataRange[0] + (trueThreshold)*(dataRange[1] - dataRange[0]);
+        if( thresholdValue != this->overlayThresholdSlider->GetValue() ) {
+            this->overlayThresholdSlider->SetValue( thresholdValue );
+        } else {
+
+            this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
+            stringstream increment;
+            increment << "SetValue " 
+                      << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
+            stringstream decrement;
+            decrement << "SetValue " 
+                      << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
+            this->overlayThresholdSlider->RemoveBinding( "<Left>");
+            this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
+            this->overlayThresholdSlider->RemoveBinding( "<Right>");
+            this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
+            this->overlayThresholdSlider->Focus(); 
+        }
+    } else {
+
+        this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
+        stringstream increment;
+        increment << "SetValue " 
+                  << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
+        stringstream decrement;
+        decrement << "SetValue " 
+                  << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
+        this->overlayThresholdSlider->RemoveBinding( "<Left>");
+        this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
+        this->overlayThresholdSlider->RemoveBinding( "<Right>");
+        this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
+        this->overlayThresholdSlider->Focus(); 
+    }
+
+}
+
 
 /*! 
  *  Method responds to callbacks setup in CreateWidget
@@ -636,55 +688,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->plotController->GetView()->Refresh();
 
     } else if( caller == this->overlayThresholdSlider->GetWidget() ) {
-
-        if( this->sivicController->GetThresholdType() == "Quantity" ) {
-
-            double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();
-
-            int numTableVals = svkOverlayView::SafeDownCast(
-                                      overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
-
-            double currentThreshold =  svkLookupTable::SafeDownCast( 
-                                          svkOverlayView::SafeDownCast(
-                                             overlayController->GetView())->GetLookupTable() )->GetAlphaThreshold();
-            double newThreshold = (this->overlayThresholdSlider->GetValue()-dataRange[0])/(dataRange[1]-dataRange[0]);
-
-            int firstVisibleIndex = (int)ceil( newThreshold * numTableVals );
-            double trueThreshold = ((double)firstVisibleIndex) / numTableVals;
-            double thresholdValue = dataRange[0] + (trueThreshold)*(dataRange[1] - dataRange[0]);
-            if( thresholdValue != this->overlayThresholdSlider->GetValue() ) {
-                this->overlayThresholdSlider->SetValue( thresholdValue );
-            } else {
-
-                this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
-                stringstream increment;
-                increment << "SetValue " 
-                          << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
-                stringstream decrement;
-                decrement << "SetValue " 
-                          << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
-                this->overlayThresholdSlider->RemoveBinding( "<Left>");
-                this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
-                this->overlayThresholdSlider->RemoveBinding( "<Right>");
-                this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
-                this->overlayThresholdSlider->Focus(); 
-            }
-        } else {
-
-            this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
-            stringstream increment;
-            increment << "SetValue " 
-                      << this->overlayThresholdSlider->GetValue() + this->overlayThresholdSlider->GetResolution();
-            stringstream decrement;
-            decrement << "SetValue " 
-                      << this->overlayThresholdSlider->GetValue() - this->overlayThresholdSlider->GetResolution();
-            this->overlayThresholdSlider->RemoveBinding( "<Left>");
-            this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
-            this->overlayThresholdSlider->RemoveBinding( "<Right>");
-            this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
-            this->overlayThresholdSlider->Focus(); 
-        }
-
+        this->UpdateThreshold();
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
             this->overlayController->TurnPropOn( svkOverlayView::VOL_SELECTION );
@@ -784,8 +788,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->overlayController->GetView()->Refresh();
     // Respond to an overlay window level 
     }else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::EndWindowLevelEvent ) {
-        if( this->overlayController->GetCurrentStyle() == svkOverlayViewController::COLOR_OVERLAY &&
-                 this->sivicController->GetThresholdType() == "Quantity" ) {
+        if( this->sivicController->GetThresholdType() == "Quantity" ) {
             this->sivicController->SetThresholdTypeToQuantity();
         }
 

@@ -43,6 +43,8 @@
 #ifndef SVK_MRI_IMAGE_DATA_H
 #define SVK_MRI_IMAGE_DATA_H
 
+#define NUM_BINS 256 
+#define EXCLUDE_FACTOR 0.05 
 
 #include <vtkObjectFactory.h>
 #include <svkImageData.h>
@@ -78,7 +80,8 @@ class svkMriImageData: public svkImageData
         void            SetImagePixel( int id, double value );
         void            SetImagePixel( int x, int y, int z, double value );
         virtual void    GetNumberOfVoxels(int numVoxels[3]); 
-        void            GetAutoWindowLevel( double& window, double& level, int numBins = 15, double numStdDevs = 6.0 );
+        void            GetAutoWindowLevel( double& window, double& level, int numBins = NUM_BINS
+                                                                         , double excludeFactor = EXCLUDE_FACTOR );
 
 
     protected:

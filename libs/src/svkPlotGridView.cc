@@ -577,8 +577,9 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
             this->colorTransfer = svkLookupTable::New();
         }
 
-        double window = range[1] - range[0];
-        double level = 0.1*(range[1] + range[0]);
+        double window;
+        double level;
+        svkMriImageData::SafeDownCast(data)->GetAutoWindowLevel(window, level);
         this->colorTransfer->SetRange( level - window/2.0, level + window/2.0);
 
         //this->colorTransfer->SetLUTType( svkLookupTable::GREY_SCALE );
@@ -872,6 +873,16 @@ void svkPlotGridView::SetTimePoint( int timePoint )
     this->plotGrid->SetTimePoint( timePoint );
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
+
+}
+
+
+/*!
+ *
+ */
+int svkPlotGridView::GetTimePoint( )
+{
+    return this->timePoint;
 
 }
 

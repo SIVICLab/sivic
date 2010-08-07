@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 #include <vtkJPEGReader.h>
 
-#define MINIMUM_RANGE_FACTOR 100000
+#define MAXIMUM_RANGE_FACTOR 20 
 
 vtkStandardNewMacro( sivicSpectraRangeWidget );
 vtkCxxRevisionMacro( sivicSpectraRangeWidget, "$Revision$");
@@ -58,6 +58,8 @@ sivicSpectraRangeWidget::sivicSpectraRangeWidget()
     this->specViewFrame = NULL;
     this->specRangeFrame = NULL;
     this->detailedPlotWindow = NULL;
+    this->dataRange[0] = 0;
+    this->dataRange[1] = 1;
 
 }
 
@@ -210,20 +212,9 @@ void sivicSpectraRangeWidget::ResetAmplitudeWholeRange( )
 {
     svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
     if( data != NULL ) {
-        string domain = model->GetDataObject( "SpectroscopicData" )
-                                 ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
-        double range[2];
-        if( this->plotController->GetComponent() == svkBoxPlot::REAL ) {
-            data->GetDataRange( range, svkImageData::REAL  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::IMAGINARY ) {
-            data->GetDataRange( range, svkImageData::IMAGINARY  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::MAGNITUDE ) {
-            data->GetDataRange( range, svkImageData::MAGNITUDE  );
-        } else {
-            cout << "UNKNOWN COMPONENT: " << this->plotController->GetComponent() << endl; 
-        }
-        this->ySpecRange->SetWholeRange( range[0], range[1] );
-        this->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
+        data->GetDataRange( this->dataRange, this->plotController->GetComponent()  );
+        this->ySpecRange->SetWholeRange( this->dataRange[0], this->dataRange[1] );
+        this->ySpecRange->SetResolution( (this->dataRange[1] - this->dataRange[0])*SLIDER_RELATIVE_RESOLUTION );
     }
 }
 
@@ -233,25 +224,37 @@ void sivicSpectraRangeWidget::ResetAmplitudeWholeRange( )
  */
 void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->model->GetDataObject( "SpectroscopicData" ));
     if( data != NULL ) {
+        int component = this->plotController->GetComponent();
+        int channel = this->plotController->GetChannel();
+        int timePoint = this->plotController->GetTimePoint();
+        float lowestPoint = this->point->ConvertPosUnits(
+            this->xSpecRange->GetEntry1()->GetValueAsDouble(),
+            this->specUnits,
+            svkSpecPoint::PTS
+        );
+
+        float highestPoint = this->point->ConvertPosUnits(
+            this->xSpecRange->GetEntry2()->GetValueAsDouble(),
+            this->specUnits,
+            svkSpecPoint::PTS
+        );
+
         string domain = model->GetDataObject( "SpectroscopicData" )
                                  ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         double range[2];
-        if( this->plotController->GetComponent() == svkBoxPlot::REAL ) {
-            data->GetDataRange( range, svkImageData::REAL  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::IMAGINARY ) {
-            data->GetDataRange( range, svkImageData::IMAGINARY  );
-        } else if( this->plotController->GetComponent() == svkBoxPlot::MAGNITUDE ) {
-            data->GetDataRange( range, svkImageData::MAGNITUDE  );
-        } else {
-            cout << "UNKNOWN COMPONENT: " << this->plotController->GetComponent() << endl; 
-        }
+
         if ( useFullRange || domain == "TIME" ) {
-            this->ySpecRange->SetRange( range[0], range[1] );
+            data->GetDataRange( range, this->plotController->GetComponent());
         } else {
-            this->ySpecRange->SetRange( range[0]*NEG_RANGE_SCALE, range[1]*POS_RANGE_SCALE );
+            data->EstimateDataRange( range, static_cast<int>(lowestPoint), static_cast<int>(highestPoint)
+                                          , this->plotController->GetComponent(), timePoint, channel  );
+            double rangeWidth = range[1]-range[0];
+            range[0] -= 0.05 * rangeWidth;
+            range[1] += 0.05 * rangeWidth;
         }
+        this->ySpecRange->SetRange( range[0], range[1] );
         this->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
     }
 }
@@ -624,53 +627,54 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
 
     // Respond to a change in the y range (amplitude) 
     } else if( caller == this->ySpecRange ) {
-        double newMin = this->ySpecRange->GetEntry1()->GetValueAsDouble();
-        double newMax = this->ySpecRange->GetEntry2()->GetValueAsDouble(); 
-        double* wholeRange = ySpecRange->GetWholeRange( ); 
-        double newRangeMag = newMax-newMin;
-        double wholeRangeMag = wholeRange[1]-wholeRange[0];
-        if( wholeRangeMag/newRangeMag > MINIMUM_RANGE_FACTOR ) {
-            
-            double newCenter = (newMax-newMin)/2.0 + newMin;
-            newMin = newCenter-wholeRangeMag/(MINIMUM_RANGE_FACTOR*2); 
-            newMax = newCenter+wholeRangeMag/(MINIMUM_RANGE_FACTOR*2); 
-            if( newMin < wholeRange[0] ) {
-                newMin = wholeRange[0];
-                newMax = wholeRange[0] + wholeRangeMag/MINIMUM_RANGE_FACTOR; 
-            }
-            if( newMin > wholeRange[1] ) {
-                newMin = wholeRange[1];
-                newMax = wholeRange[1] - wholeRangeMag/MINIMUM_RANGE_FACTOR; 
-            }
-            this->ySpecRange->SetRange( newMin, newMax );
-            
-        } else { 
+        double min = this->ySpecRange->GetEntry1()->GetValueAsDouble();
+        double max = this->ySpecRange->GetEntry2()->GetValueAsDouble(); 
+        double* sliderRange = ySpecRange->GetWholeRange( ); 
+        double viewWidth = max-min;
+        double fullWidth = sliderRange[1]-sliderRange[0];
+        double dataRangeMag = this->dataRange[1]-this->dataRange[0];
+        
+        double viewCenter = min + (max-min)/2.0;
 
-            this->plotController->SetWindowLevelRange( newMin, newMax, 1 );
+        if( viewWidth > 0 && (fullWidth/viewWidth > MAXIMUM_RANGE_FACTOR || fullWidth < dataRangeMag) ) {
+            double viewRatio[2] = { (viewCenter - this->dataRange[0])/dataRangeMag, (this->dataRange[1]-viewCenter)/dataRangeMag };
+            double newWholeRangeMag = viewWidth * MAXIMUM_RANGE_FACTOR;
+            double newWholeRange[2] = { viewCenter - newWholeRangeMag*viewRatio[0]
+                                      , viewCenter + newWholeRangeMag*viewRatio[1] }; 
+            if( newWholeRange[0] < this->dataRange[0] ) {
+                newWholeRange[0] = this->dataRange[0];
+            }
+            if( newWholeRange[1] > this->dataRange[1] ) {
+                newWholeRange[1] = this->dataRange[1];
+            }
+            this->ySpecRange->SetWholeRange( newWholeRange ); 
+        } 
 
-            double minValue;
-            double maxValue;
-            ySpecRange->GetRange( minValue, maxValue ); 
-            double delta = (maxValue-minValue)/500;
-            stringstream widenRange;
-            widenRange << "SetRange " << minValue - delta << " " << maxValue + delta;
-            stringstream narrowRange;
-            narrowRange << "SetRange " << minValue + delta << " " << maxValue - delta;
-            stringstream incrementRange;
-            incrementRange << "SetRange " << minValue + delta << " " << maxValue + delta;
-            stringstream decrementRange;
-            decrementRange << "SetRange " << minValue - delta << " " << maxValue - delta;
-            this->ySpecRange->RemoveBinding( "<Left>");
-            this->ySpecRange->AddBinding( "<Left>", this->ySpecRange, decrementRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Right>");
-            this->ySpecRange->AddBinding( "<Right>", this->ySpecRange, incrementRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Up>");
-            this->ySpecRange->AddBinding( "<Up>", this->ySpecRange, narrowRange.str().c_str() );
-            this->ySpecRange->RemoveBinding( "<Down>");
-            this->ySpecRange->AddBinding( "<Down>", this->ySpecRange, widenRange.str().c_str() );
-            this->ySpecRange->Focus(); 
-            this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
-        }
+        this->plotController->SetWindowLevelRange( min, max, 1 );
+
+        double minValue;
+        double maxValue;
+        this->ySpecRange->GetRange( minValue, maxValue ); 
+        double delta = (maxValue-minValue)/500;
+        stringstream widenRange;
+        widenRange << "SetRange " << minValue - delta << " " << maxValue + delta;
+        stringstream narrowRange;
+        narrowRange << "SetRange " << minValue + delta << " " << maxValue - delta;
+        stringstream incrementRange;
+        incrementRange << "SetRange " << minValue + delta << " " << maxValue + delta;
+        stringstream decrementRange;
+        decrementRange << "SetRange " << minValue - delta << " " << maxValue - delta;
+        this->ySpecRange->RemoveBinding( "<Left>");
+        this->ySpecRange->AddBinding( "<Left>", this->ySpecRange, decrementRange.str().c_str() );
+        this->ySpecRange->RemoveBinding( "<Right>");
+        this->ySpecRange->AddBinding( "<Right>", this->ySpecRange, incrementRange.str().c_str() );
+        this->ySpecRange->RemoveBinding( "<Up>");
+        this->ySpecRange->AddBinding( "<Up>", this->ySpecRange, narrowRange.str().c_str() );
+        this->ySpecRange->RemoveBinding( "<Down>");
+        this->ySpecRange->AddBinding( "<Down>", this->ySpecRange, widenRange.str().c_str() );
+        this->ySpecRange->Focus(); 
+        this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
+        //}
     } else if( caller == this->detailedPlotButton && event == vtkKWPushButton::InvokedEvent) {
         vtkKWApplication *app = this->GetApplication();
         if( this->detailedPlotWindow == NULL ) {

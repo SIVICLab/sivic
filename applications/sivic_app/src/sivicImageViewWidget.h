@@ -103,6 +103,7 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicImageViewWidget,sivicKWCompositeWidget);
         
         void SetSyncOverlayWL( bool syncOverlayWL );
+        void UpdateThreshold( );
 
 
 

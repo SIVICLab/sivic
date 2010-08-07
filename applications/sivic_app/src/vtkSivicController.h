@@ -181,6 +181,7 @@ class vtkSivicController : public vtkObject
         vtkKWFileBrowserDialog*    myFileBrowser;
         void                       EnableWidgets();
         void                       DisableWidgets();
+        void                       UpdateThreshold( );
         void                       SetThresholdType( string thresholdType );
         string                     GetThresholdType( );
         int                        GetFrequencyType( );

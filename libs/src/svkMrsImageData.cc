@@ -849,6 +849,75 @@ int svkMrsImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientati
     }
     return numSlices;
 }
+
+
+/*!
+ *   Attempts to estimate the data range for a given frequency range. It finds the
+ *   average maximum/minimum then adds three standard deviations. This should cover
+ *   around 99% of the peaks.
+ *
+ *   \param min output variable-- the minimum value in the given pt range
+ *   \param max output variable-- the maximum value in the given pt range
+ *   \param minPt the start of the point range
+ *   \param maxPt the end of the point range
+ *   \param timePoint the timepoint to be looked at 
+ *   \param channel the timepoint to be looked at 
+ */
+void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, int component
+                                                                              , int timePoint
+                                                                              , int channel  )
+{
+        range[0] = VTK_DOUBLE_MAX;
+        range[1] = VTK_DOUBLE_MIN;
+        vtkDataArray* spectrum = NULL;
+        int min[3] = {Extent[0], Extent[2], Extent[4]}; 
+        int max[3] = {Extent[1], Extent[3], Extent[5]}; 
+        string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        if( acquisitionType != "SINGLE VOXEL" ) {
+            int tlcBrc[2];
+            this->GetTlcBrcInSelectionBox( tlcBrc );
+            this->GetIndexFromID( tlcBrc[0], min );
+            this->GetIndexFromID( tlcBrc[1], max );
+        }
+        double rangeAverage[2] = {0,0};
+        double stdDeviation[2] = {0,0};
+        int numVoxels = (max[0]-min[0]+1)*(max[1]-min[1]+1)*(max[2]-min[2]+1);
+        vector<double> maxValues;
+        vector<double> minValues;
+
+        // Find the average and the max/min for each voxel
+        for (int z = min[2]; z <= max[2]; z++) {
+            for (int y = min[1]; y <= max[1]; y++) {
+                for (int x = min[0]; x <= max[0]; x++) {
+                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
+                    if( spectrum != NULL ) {
+                        double localRange[2] = {VTK_DOUBLE_MAX, VTK_DOUBLE_MIN};
+                        for( int i = minPt; i < maxPt; i++ ) {
+                            double value = spectrum->GetTuple(i)[component];
+                            localRange[0] = value < localRange[0] ? value: localRange[0];
+                            localRange[1] = value > localRange[1] ? value: localRange[1];
+                        }
+                        rangeAverage[0]+=localRange[0] / numVoxels; 
+                        rangeAverage[1]+=localRange[1] / numVoxels; 
+                        minValues.push_back( localRange[0] );
+                        maxValues.push_back( localRange[1] );
+                    }
+                }
+            }
+        }
+
+        for( int i = 0; i < numVoxels; i++ ) {
+            stdDeviation[0] += pow(minValues[i]-rangeAverage[0],2 )/numVoxels;
+            stdDeviation[1] += pow(maxValues[i]-rangeAverage[1],2 )/numVoxels;
+        }
+        stdDeviation[0] = pow(stdDeviation[0], 0.5);
+        stdDeviation[1] = pow(stdDeviation[1], 0.5);
+        range[0] = rangeAverage[0] - 3*stdDeviation[0];
+        range[1] = rangeAverage[1] + 3*stdDeviation[1];
+
+}
+
+
 /*
 void  svkMrsImageData::GetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
 {

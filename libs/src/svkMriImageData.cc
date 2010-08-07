@@ -99,10 +99,10 @@ svkMriImageData::~svkMriImageData()
  *  \param window output reference
  *  \param level output reference 
  *  \param numBins the number of bins used to make the histogram 
- *  \param numStdDevs the number of standard deviations used to define the window 
+ *  \param excludeFactor the number of standard deviations used to define the window 
  *  
  */
-void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int numBins, double numStdDevs )
+void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int numBins, double excludeFactor )
 {
     // Here are our parameters for the auto window level
     double *range = this->GetScalarRange();
@@ -130,32 +130,39 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 
     // The "pixels" of the output are the values in the histogram
     vtkDataArray* histogram = histogramImage->GetPointData()->GetScalars();
-    int maxIndex = -1;
-    double max = -VTK_DOUBLE_MAX;
-    for( int i = 0; i < histogram->GetNumberOfTuples(); i++ ) {
-
-        double binRange[2] = { range[0] + i*binSize, range[0] + (i+1)*binSize};
-
+    int numPixels = accumulator->GetVoxelCount();
+    double lowSum  = 0; 
+    double highSum = 0; 
+    double excludeSum = 0;
+    double minSum = 0;
+    double maxSum = 0;
+    int minIndex = 0;
+    int maxIndex = numBins-1;
+    for( int i = 0; i < numBins; i++ ) {
+        int lowIndex = i;
+        double lowValue = histogram->GetTuple(lowIndex)[0];
+        int highIndex = numBins - i - 1;
+        double highValue = histogram->GetTuple(highIndex)[0];
+        double binRangeLow[2] = { range[0] + lowIndex*binSize, range[0] + (lowIndex+1)*binSize};
+        double binRangeHigh[2] = { range[0] + highIndex*binSize, range[0] + (highIndex+1)*binSize};
+        excludeSum = highSum+lowSum;
+        highSum += highValue;
+        lowSum += lowValue;
         // Lets exclude the bin closests to zero....
-        if(  histogram->GetTuple(i)[0] > max && !(binRange[0] <= 0 && binRange[1] >= 0 ) ) {
-            max = histogram->GetTuple(i)[0];
-            maxIndex = i;
+        if( (highSum+minSum)/numPixels < excludeFactor && !(binRangeHigh[0] <= 0 && binRangeHigh[1] >= 0 ) ) {
+            maxIndex = highIndex;
+            maxSum = highSum; 
+        }
+        if( (lowSum+maxSum)/numPixels < excludeFactor && !(binRangeLow[0] <= 0 && binRangeLow[1] >= 0 ) ) {
+            minIndex = lowIndex;
+            minSum = lowSum;
         }
     } 
 
-    // deviation EXCLUDES ZERO
-    double deviation = accumulator->GetStandardDeviation()[0]; 
-    double mode = range[0] + (maxIndex)*binSize + binSize/2.0; 
-    window = numStdDevs*deviation;
-    level = mode;
-
-    // If the window goes out of range clip the window such that it stops at zero, and still has the same level
-    if( level - window/2.0 < range[0] ) {
-        window = (level-range[0])*2.0;
-    }
-    if( level + window/2.0 > range[1] ) {
-        window = (range[1] - level)*2.0;
-    }
+    double min = range[0] + (minIndex)*binSize; 
+    double max = range[0] + (maxIndex+1)*(binSize); 
+    window = max-min;
+    level = min + window/2.0;
     accumulator->Delete();
 
 }

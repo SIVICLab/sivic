@@ -52,7 +52,7 @@ vtkStandardNewMacro(svkSatBandSet);
 
 const double svkSatBandSet::CLIP_TOLERANCE = 0.05; 
 const double svkSatBandSet::IMAGE_CLIP_TOLERANCE = 0.05; 
-const int svkSatBandSet::PROJECTION_MULTIPLIER = 4;
+const int svkSatBandSet::PROJECTION_MULTIPLIER = 15;
 
 
 //! Constructor

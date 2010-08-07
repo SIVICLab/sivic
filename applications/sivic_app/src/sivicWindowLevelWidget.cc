@@ -160,15 +160,19 @@ void sivicWindowLevelWidget::UpdateSliders()
         this->levelSlider->SetValue( this->level );
         this->levelSlider->GetWidget()->SetValue( this->level );
         this->levelSlider->SetRange( this->levelRange );
+        this->levelSlider->SetResolution( this->windowRange[1]/500.0 );
         this->windowSlider->SetValue( this->window );
         this->windowSlider->GetWidget()->SetValue( this->window );
         this->windowSlider->SetRange( this->windowRange );
+        this->windowSlider->SetResolution( this->windowRange[1]/500.0 );
         this->maxSlider->SetValue( this->level + this->window/2.0);
         this->maxSlider->SetRange( this->levelRange[0]
                                  , this->levelRange[1]);
+        this->maxSlider->SetResolution( this->windowRange[1]/500.0 );
         this->minSlider->SetValue( this->level - this->window/2.0);
         this->minSlider->SetRange( this->levelRange[0]
                                  , this->levelRange[1]);
+        this->minSlider->SetResolution( this->windowRange[1]/500.0 );
     }
 }
 
@@ -208,6 +212,11 @@ void sivicWindowLevelWidget::UpdateView()
             svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range);
         }
     }
+    if( this->sivicController->GetThresholdType() == "Quantity" ) {
+        // This updates the threshold.
+        this->sivicController->UpdateThreshold();
+    }
+
 
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
