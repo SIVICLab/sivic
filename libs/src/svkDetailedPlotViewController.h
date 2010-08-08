@@ -84,7 +84,7 @@ class svkDetailedPlotViewController : public svkDataViewController
         virtual void                    TurnPropOn(int propIndex);
         virtual void                    TurnPropOff(int propIndex);
                 void                    Reset();
-                void                    AddPlot( int index, int component, int channel=0 );
+                void                    AddPlot( int index, int component, int channel=0, int timePoint=0 );
                 void                    SetUnits( int units);
                 void                    Update();
 

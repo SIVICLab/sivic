@@ -187,6 +187,7 @@ void sivicSpectraViewWidget::CreateWidget()
     this->timePointSlider->EnabledOff();
     this->timePointSlider->SetEntryPositionToRight();
     this->timePointSlider->SetLabelPositionToLeft();
+    this->timePointSlider->ClampValueOff();
  
     //  ======================================================
 

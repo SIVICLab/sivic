@@ -1033,6 +1033,14 @@ void svkPlotLineGrid::SetTimePoint( int timePoint )
         for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->timePtUpToDate[i] = 0;
         }
+        int numTimePoints = this->data->GetDcmHeader()->GetNumberOfTimePoints();
+
+        // Catch out of bounds
+        if ( timePoint >= numTimePoints ) {
+            timePoint = timePoint -1; 
+        } else if ( timePoint < 0 ) {
+            timePoint = 0;
+        }
         int minIndex[3] = {0,0,0};
         int maxIndex[3] = { this->data->GetDimensions()[0]-2,
                             this->data->GetDimensions()[1]-2,
@@ -1047,6 +1055,7 @@ void svkPlotLineGrid::SetTimePoint( int timePoint )
         this->UpdateDataArrays( minID, maxID);
         this->timePtUpToDate[this->slice] = 1;
     }
+
 }
 
 

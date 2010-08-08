@@ -726,9 +726,13 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         }
         if( acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotController->AddPlot( 0, this->plotController->GetComponent(), this->plotController->GetChannel());
+            this->detailedPlotController->AddPlot( 0, this->plotController->GetComponent()
+                                                    , this->plotController->GetChannel()
+                                                    , this->plotController->GetTimePoint());
         } else {
-            this->detailedPlotController->AddPlot( tlcBrc[0], this->plotController->GetComponent(), this->plotController->GetChannel());
+            this->detailedPlotController->AddPlot( tlcBrc[0], this->plotController->GetComponent() 
+                                                    , this->plotController->GetChannel()
+                                                    , this->plotController->GetTimePoint());
         }
         this->detailedPlotController->GetView()->Refresh( );
         this->detailedPlotController->SetUnits( this->specUnits );

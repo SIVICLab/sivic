@@ -505,13 +505,15 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             if ( dialogStatus == 2 ) {
                 plotViewResultInfo = "";      
                 overlayViewResultInfo = "";      
+                validatorResultInfo = "";      
                 this->overlayController->GetView()->ValidationOff();
-            }
+            } 
 
-        } 
+        }  
 
         if ( overlayViewResultInfo.compare("") == 0 && 
             plotViewResultInfo.compare("") == 0 && 
+            validatorResultInfo.compare("") == 0 && 
             newData != NULL )  {
 
             // If the spectra file is already in the model
@@ -618,8 +620,9 @@ void vtkSivicController::OpenSpectra( const char* fileName )
         this->plotController->GetView()->Refresh( );
 
     }
-
-    this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+    if( this->spectraViewWidget->sliceSlider->GetEnabled() ) {
+        this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+    }
     // Lets update the metabolite menu for the current spectra
     this->globalWidget->PopulateMetaboliteMenu();
 }
@@ -918,8 +921,10 @@ void vtkSivicController::OpenExam( )
     } else { 
         status = this->OpenFile( "spectra", lastPathString.c_str() ); 
     }
-
-    if( status == vtkKWDialog::StatusCanceled ) {
+     
+    // If the dialog was cancelled, or if either load failed do not oven overlay
+    if( status == vtkKWDialog::StatusCanceled || !this->model->DataExists("SpectroscopicData") 
+                                              || !this->model->DataExists("AnatomicalData") ) {
         return;
     } 
 

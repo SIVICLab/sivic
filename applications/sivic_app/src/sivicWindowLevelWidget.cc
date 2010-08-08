@@ -297,21 +297,6 @@ void sivicWindowLevelWidget::CreateWidget()
     this->windowSlider->SetEntryPositionToRight();
     this->windowSlider->ClampValueOff();
 
-    this->maxSlider = this->imageSliders->GetWidget()->AddWidget(2);
-    this->maxSlider->SetParent(this);
-    this->maxSlider->ExpandWidgetOn();
-    this->maxSlider->Create();
-    this->maxSlider->SetEntryWidth( 10 );
-    this->maxSlider->SetLabelWidth( 10 );
-    this->maxSlider->SetOrientationToHorizontal();
-    this->maxSlider->SetLabelText("Max");
-    this->maxSlider->SetValue( this->level + this->window/2.0);
-    this->maxSlider->SetRange( this->levelRange[0], this->levelRange[1]);
-
-    this->maxSlider->SetBalloonHelpString("Adjusts Max.");
-    this->maxSlider->SetLabelPositionToLeft();
-    this->maxSlider->SetEntryPositionToRight();
-    this->maxSlider->ClampValueOff();
 
     this->minSlider = this->imageSliders->GetWidget()->AddWidget(3);
     this->minSlider->SetParent(this);
@@ -329,6 +314,23 @@ void sivicWindowLevelWidget::CreateWidget()
     this->minSlider->SetLabelPositionToLeft();
     this->minSlider->SetEntryPositionToRight();
     this->minSlider->ClampValueOff();
+
+    this->maxSlider = this->imageSliders->GetWidget()->AddWidget(2);
+    this->maxSlider->SetParent(this);
+    this->maxSlider->ExpandWidgetOn();
+    this->maxSlider->Create();
+    this->maxSlider->SetEntryWidth( 10 );
+    this->maxSlider->SetLabelWidth( 10 );
+    this->maxSlider->SetOrientationToHorizontal();
+    this->maxSlider->SetLabelText("Max");
+    this->maxSlider->SetValue( this->level + this->window/2.0);
+    this->maxSlider->SetRange( this->levelRange[0], this->levelRange[1]);
+
+    this->maxSlider->SetBalloonHelpString("Adjusts Max.");
+    this->maxSlider->SetLabelPositionToLeft();
+    this->maxSlider->SetEntryPositionToRight();
+    this->maxSlider->ClampValueOff();
+
 
     this->sliderType = vtkKWMenuButtonWithLabel::New();
     this->sliderType->SetParent(this);

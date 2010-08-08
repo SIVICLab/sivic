@@ -206,9 +206,9 @@ void svkDetailedPlotViewController::TurnPropOff(int propIndex)
  *   This method adds a plot to the detailed view given the index of
  *   the array, and the component you wish to plot.
  */
-void svkDetailedPlotViewController::AddPlot( int index, int component, int channel )
+void svkDetailedPlotViewController::AddPlot( int index, int component, int channel, int timePoint )
 {
-    static_cast<svkDetailedPlotView*>(this->GetView())->AddPlot( index, component, channel ); 
+    static_cast<svkDetailedPlotView*>(this->GetView())->AddPlot( index, component, channel, timePoint ); 
 }
 
 
