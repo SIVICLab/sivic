@@ -370,7 +370,10 @@ void svkPlotGridView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
 void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index)
 {
     if (index == FREQUENCY) {
-        this->plotGrid->SetFrequencyWLRange(static_cast<int>(lower), static_cast<int>(upper), this->tlcBrc);
+        // Round doubles to int.
+        int lowerInt = static_cast<int>(floor( lower + 0.5 ));
+        int upperInt = static_cast<int>(floor( upper + 0.5 ));
+        this->plotGrid->SetFrequencyWLRange(lowerInt, upperInt, this->tlcBrc);
     } else if (index == AMPLITUDE) {
         this->plotGrid->SetIntensityWLRange(lower, upper, this->tlcBrc);
     }
