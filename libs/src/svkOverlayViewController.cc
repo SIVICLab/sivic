@@ -736,10 +736,15 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI];
     }
     if( targetData != NULL ) {
+    
 
-        slice = dvController->GetView()->GetSlice(); 
         origin = targetData->GetOrigin();
         orientation = dvController->GetView()->GetOrientation();
+        if( targetData->IsA("svkMrsImageData") ) {
+            slice = dvController->GetView()->GetSlice(); 
+        } else {
+            slice = dvController->GetImageSlice();
+        }
         int index[3] = {0,0,0};
         index[ targetData->GetOrientationIndex( orientation ) ] = slice;
         double cellCenter[3];
