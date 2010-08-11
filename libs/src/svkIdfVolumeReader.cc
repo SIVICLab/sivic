@@ -41,6 +41,13 @@
 
 
 #include <svkIdfVolumeReader.h>
+#include <svkDcmMriVolumeReader.h>
+#include <vtkDebugLeaks.h>
+#include <vtkByteSwap.h>
+#include <svkIOD.h>
+#include <svkMRIIOD.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -69,6 +76,9 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     this->numSlices = -1; 
     this->onlyReadHeader = false;
 
+    // It appears like an IDF file is always big-endian.
+    this->SetDataByteOrderToBigEndian();
+
 }
 
 
@@ -96,7 +106,7 @@ svkIdfVolumeReader::~svkIdfVolumeReader()
 int svkIdfVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -143,7 +153,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
     vtkDebugMacro( << this->GetClassName() << "::ReadVolumeFile()" );
 
-    string volFileName( this->GetFileRoot( this->GetFileName() ) );
+    vtkstd::string volFileName( this->GetFileRoot( this->GetFileName() ) );
     int dataUnitSize; 
     if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
         volFileName.append( ".byt" );
@@ -171,13 +181,13 @@ void svkIdfVolumeReader::ReadVolumeFile()
         volumeDataIn->open( volFileName.c_str(), ios::binary);
         volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
 
-#if defined (linux) || defined(Darwin)
-        if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
-            svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
+        if ( this->GetSwapBytes() ) {
+            if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
+                vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(short));
+            } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
+                vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(float));
+            }
         }
-#endif
 
         volumeDataIn->close();
         delete volumeDataIn;
@@ -494,15 +504,15 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;     
-        string indexString(ossIndex.str());
+        vtkstd::string indexString(ossIndex.str());
         istringstream* iss = new istringstream();
         iss->setf(ios::fixed, ios::floatfield); 
         iss->precision(3);
-        iss->str( idfMap[ string("toplc_" + indexString) ] );  
+        iss->str( idfMap[ vtkstd::string("toplc_" + indexString) ] );  
         *iss >> setiosflags(std::ios::fixed) >> setprecision(3) >>  toplc[i]; 
         delete iss; 
-        //toplc[i] = strtod((idfMap[ string("toplc_" + indexString) ]).c_str(), NULL);
-        //toplc[i] = atof((idfMap[ string("toplc_" + indexString) ]).c_str());
+        //toplc[i] = strtod((idfMap[ vtkstd::string("toplc_" + indexString) ]).c_str(), NULL);
+        //toplc[i] = atof((idfMap[ vtkstd::string("toplc_" + indexString) ]).c_str());
     }
 
     double dcos[3][3];
@@ -511,19 +521,19 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 
         ostringstream ossIndexI;
         ossIndexI << i;
-        string indexStringI(ossIndexI.str());
+        vtkstd::string indexStringI(ossIndexI.str());
 
         istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ string( "pixelSize_" + indexStringI ) ] );
+        issSize->str( idfMap[ vtkstd::string( "pixelSize_" + indexStringI ) ] );
         *issSize >> pixelSize[i];
 
         for (int j = 0; j < 3; j++) {
             ostringstream ossIndexJ;
             ossIndexJ << j;
-            string indexStringJ(ossIndexJ.str());
+            vtkstd::string indexStringJ(ossIndexJ.str());
 
             istringstream* iss = new istringstream();
-            iss->str( idfMap[ string("dcos_" + indexStringI + "_" + indexStringJ)] ); 
+            iss->str( idfMap[ vtkstd::string("dcos_" + indexStringI + "_" + indexStringJ)] ); 
             *iss >> dcos[i][j];
             delete iss; 
         }
@@ -553,10 +563,10 @@ void svkIdfVolumeReader::InitPixelMeasuresMacro()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        string indexString(ossIndex.str());
+        vtkstd::string indexString(ossIndex.str());
 
         istringstream* issSize = new istringstream();
-        issSize->str( idfMap[ string( "pixelSize_" + indexString ) ] );
+        issSize->str( idfMap[ vtkstd::string( "pixelSize_" + indexString ) ] );
         *issSize >> pixelSize[i];
         delete issSize; 
     }
@@ -565,7 +575,7 @@ void svkIdfVolumeReader::InitPixelMeasuresMacro()
         "PixelMeasuresSequence",
         0,
         "PixelSpacing",
-        idfMap[ string( "pixelSize_0" ) ] + "\\" + idfMap[ string( "pixelSize_1" ) ],
+        idfMap[ vtkstd::string( "pixelSize_0" ) ] + "\\" + idfMap[ vtkstd::string( "pixelSize_1" ) ],
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -574,7 +584,7 @@ void svkIdfVolumeReader::InitPixelMeasuresMacro()
         "PixelMeasuresSequence",
         0,
         "SliceThickness",
-        idfMap[ string( "sliceThickness" ) ],
+        idfMap[ vtkstd::string( "sliceThickness" ) ],
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -593,15 +603,15 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    string orientationString;
+    vtkstd::string orientationString;
     for (int i = 0; i < 2; i++) {
         ostringstream ossIndexI;
         ossIndexI << i;
-        string indexStringI(ossIndexI.str());
+        vtkstd::string indexStringI(ossIndexI.str());
         for (int j = 0; j < 3; j++) {
             ostringstream ossIndexJ;
             ossIndexJ << j;
-            string indexStringJ(ossIndexJ.str());
+            vtkstd::string indexStringJ(ossIndexJ.str());
             orientationString.append( idfMap["dcos_" + indexStringI + "_" + indexStringJ ]) ;
             if (i < 2) {
                 orientationString.append( "\\") ;
@@ -624,15 +634,15 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
     this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
 
     double dcosSliceOrder[3];
-    string indexStringI("2");
+    vtkstd::string indexStringI("2");
     for (int j = 0; j < 3; j++) {
        
         ostringstream ossIndexJ;
         ossIndexJ << j;
-        string indexStringJ(ossIndexJ.str());
+        vtkstd::string indexStringJ(ossIndexJ.str());
 
         istringstream* iss = new istringstream();
-        string newone ("dcos_" + indexStringI + "_" + indexStringJ  );
+        vtkstd::string newone ("dcos_" + indexStringI + "_" + indexStringJ  );
         iss->str( idfMap["dcos_" + indexStringI + "_" + indexStringJ ] );
         *iss >> dcosSliceOrder[j];
         delete iss;
@@ -668,7 +678,7 @@ void svkIdfVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
-        idfMap[ string( "coilName" ) ],
+        idfMap[ vtkstd::string( "coilName" ) ],
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -686,20 +696,20 @@ void svkIdfVolumeReader::InitNonIdfTags()
 {
 
     // First we construct the filename of a .dcm file from the same series
-    string fileNameString(this->FileName);
+    vtkstd::string fileNameString(this->FileName);
     size_t pos;
     pos = fileNameString.find_last_of("/");
     pos = fileNameString.substr(0,pos).find_last_of("/");
     // First we construct the filename of a .dcm file from the same series
-    string dcmFileName(fileNameString.substr(0,pos).c_str());
+    vtkstd::string dcmFileName(fileNameString.substr(0,pos).c_str());
     dcmFileName += "/E";
-    dcmFileName += idfMap[ string( "studyNum") ];
+    dcmFileName += idfMap[ vtkstd::string( "studyNum") ];
     dcmFileName += "/";
-    dcmFileName += idfMap[ string( "seriesNum") ];
+    dcmFileName += idfMap[ vtkstd::string( "seriesNum") ];
     dcmFileName += "/E";
-    dcmFileName += idfMap[ string( "studyNum") ];
+    dcmFileName += idfMap[ vtkstd::string( "studyNum") ];
     dcmFileName += "S";
-    dcmFileName += idfMap[ string( "seriesNum") ];
+    dcmFileName += idfMap[ vtkstd::string( "seriesNum") ];
     dcmFileName += "I";
     dcmFileName += "1.DCM";
 
@@ -726,37 +736,37 @@ void svkIdfVolumeReader::InitNonIdfTags()
 /*! 
  *  Use the IDF patient position string to set the DCM_PatientPosition data element.
  */
-string svkIdfVolumeReader::GetDcmPatientPositionString(string patientPosition)
+vtkstd::string svkIdfVolumeReader::GetDcmPatientPositionString(vtkstd::string patientPosition)
 {
     size_t delim = patientPosition.find_first_of(',');
-    string headFeetFirst( patientPosition.substr(0, delim) );
+    vtkstd::string headFeetFirst( patientPosition.substr(0, delim) );
 
     for(int i = 0; i < headFeetFirst.size(); i++){
         headFeetFirst[i] = tolower( headFeetFirst[i] );
     }
 
-    string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != string::npos ) {
+    vtkstd::string dcmPatientPosition;
+    if( headFeetFirst.find("head first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != string::npos ) {
+    } else if( headFeetFirst.find("feet first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
     //  skip ", ":
-    string spd( patientPosition.substr(delim + 2) );
+    vtkstd::string spd( patientPosition.substr(delim + 2) );
     for(int i = 0; i < spd.size(); i++){
         spd[i] = tolower( spd[i] );
     }
 
-    if( spd.find("supine") != string::npos ) {
+    if( spd.find("supine") != vtkstd::string::npos ) {
         dcmPatientPosition += "S";
-    } else if( spd.find("prone") != string::npos ) {
+    } else if( spd.find("prone") != vtkstd::string::npos ) {
         dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != string::npos ) {
+    } else if( spd.find("decubitus left") != vtkstd::string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != string::npos ) {
+    } else if( spd.find("decubitus right") != vtkstd::string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -772,7 +782,8 @@ string svkIdfVolumeReader::GetDcmPatientPositionString(string patientPosition)
  *      seriesDescription
  *      studyDate
  */
-void svkIdfVolumeReader::ParseIdfComment(string comment, string* patientsName, string* seriesDescription, string* studyDate)
+void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string* patientsName, 
+    vtkstd::string* seriesDescription, vtkstd::string* studyDate)
 {
 
     patientsName->assign(""); 
@@ -780,12 +791,12 @@ void svkIdfVolumeReader::ParseIdfComment(string comment, string* patientsName, s
     seriesDescription->assign(""); 
 
     size_t delim;
-    if ( (delim = comment.find_first_of('-')) != string::npos)
+    if ( (delim = comment.find_first_of('-')) != vtkstd::string::npos)
     { 
         delim = delim -1;
         patientsName->assign( comment.substr(0, delim) );
 
-        string commentSub;
+        vtkstd::string commentSub;
         commentSub = comment.substr(delim + 3);
         delim = commentSub.find_last_of('-') - 1;
         seriesDescription->assign( commentSub.substr(0, delim) );
@@ -804,7 +815,7 @@ void svkIdfVolumeReader::ParseIdfComment(string comment, string* patientsName, s
 void svkIdfVolumeReader::ParseIdf()
 {
    
-    string idfFileName( this->GetFileRoot( this->GetFileName() ) + ".idf" );
+    vtkstd::string idfFileName( this->GetFileRoot( this->GetFileName() ) + ".idf" );
 
     try { 
 
@@ -848,13 +859,13 @@ void svkIdfVolumeReader::ParseIdf()
         idfMap["echoTimeMetIndex"] = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // ROOTNAME
-        string rootname = this->ReadLineValue( this->volumeHdr, iss, ':');
+        vtkstd::string rootname = this->ReadLineValue( this->volumeHdr, iss, ':');
 
         // COMMENT 
-        string* patientName = new string(); 
-        string* seriesDescription = new string(); 
-        string* studyDate = new string(); 
-        string  comment = this->ReadLineValue( this->volumeHdr, iss, ':');
+        vtkstd::string* patientName = new vtkstd::string(); 
+        vtkstd::string* seriesDescription = new vtkstd::string(); 
+        vtkstd::string* studyDate = new vtkstd::string(); 
+        vtkstd::string  comment = this->ReadLineValue( this->volumeHdr, iss, ':');
         ParseIdfComment(comment, patientName, seriesDescription, studyDate);
         idfMap["patientName"] = *patientName; 
         idfMap["seriesDescription"] = *seriesDescription; 
@@ -865,20 +876,20 @@ void svkIdfVolumeReader::ParseIdf()
 
         // DIMENSIONS AND SPACING 
         const int numDimensions = 3;    
-        string    dimensionString[numDimensions];
+        vtkstd::string    dimensionString[numDimensions];
         float     fov[numDimensions];
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             dimensionString[i] = this->ReadLineSubstr(this->volumeHdr, iss, 10, 256);
             this->ReadLineIgnore(this->volumeHdr, iss, ':');
-            *iss >> idfMap[ string( "numPixels_" + indexString ) ];
+            *iss >> idfMap[ vtkstd::string( "numPixels_" + indexString ) ];
             iss->ignore(256, ':');
             *iss >> fov[i];
             iss->ignore(256, ':');
             iss->ignore(256, ':');
-            *iss >> idfMap[ string( "pixelSize_" + indexString ) ];
+            *iss >> idfMap[ vtkstd::string( "pixelSize_" + indexString ) ];
         } 
 
         // Set DICOM Column and Row info:    
@@ -938,9 +949,9 @@ void svkIdfVolumeReader::ParseIdf()
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> idfMap[string("center_" + indexString)];
+            *iss >> idfMap[vtkstd::string("center_" + indexString)];
         }
 
         //  TOPLC(LPS): 
@@ -950,23 +961,23 @@ void svkIdfVolumeReader::ParseIdf()
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;     
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> idfMap[string("toplc_" + indexString)]; 
+            *iss >> idfMap[vtkstd::string("toplc_" + indexString)]; 
         }
 
         //  DCOS: 
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;     
-            string indexStringI(ossIndexI.str());
+            vtkstd::string indexStringI(ossIndexI.str());
             this->ReadLine(this->volumeHdr, iss);
             for (int j = 0; j < numDimensions; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;     
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> idfMap[string("dcos_" + indexStringI + "_" + indexStringJ)]; 
+                *iss >> idfMap[vtkstd::string("dcos_" + indexStringI + "_" + indexStringJ)]; 
             }
         }
 
@@ -991,7 +1002,7 @@ void svkIdfVolumeReader::ParseIdf()
 void svkIdfVolumeReader::PrintKeyValuePairs()
 {
     if (this->GetDebug()) {
-        map< string, string >::iterator mapIter;
+        vtkstd::map< vtkstd::string, vtkstd::string >::iterator mapIter;
         for ( mapIter = idfMap.begin(); mapIter != idfMap.end(); ++mapIter ) {
             cout << this->GetClassName() << " " << mapIter->first << " = ";
             cout << idfMap[mapIter->first] << endl;

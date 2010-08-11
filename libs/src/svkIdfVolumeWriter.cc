@@ -42,6 +42,14 @@
 
 
 #include <svkIdfVolumeWriter.h>
+#include <vtkExecutive.h>
+#include <vtkImageAccumulate.h>
+#include <vtkErrorCode.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedShortArray.h>
+#include <vtkShortArray.h>
+#include <vtkFloatArray.h>
+#include <vtkByteSwap.h>
 
 
 using namespace svk;
@@ -143,7 +151,7 @@ void svkIdfVolumeWriter::WriteData()
     int numSlices = hdr->GetNumberOfSlices();
 
     int dataWordSize = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "BitsAllocated" );
-    string extension; 
+    vtkstd::string extension; 
     int numBytesPerPixel; 
     void* pixels; 
     if ( dataWordSize == 8 ) {
@@ -171,13 +179,10 @@ void svkIdfVolumeWriter::WriteData()
         throw runtime_error("Cannot open .int2 file for writing");
     }
 
-
-#if defined (linux) || defined (Darwin)
-    //This works for int2, but cast to type for others:
-    if (numBytesPerPixel == 2) {
-        svkByteSwap::SwapBufferEndianness((short*)pixels, numPixelsPerSlice * numSlices);
-    } else if (numBytesPerPixel == 4) {
-        svkByteSwap::SwapBufferEndianness((float*)pixels, numPixelsPerSlice * numSlices);
+    // Swap bytes if the CPU is NOT big endian
+#ifndef VTK_WORDS_BIGENDIAN
+    if (numBytesPerPixel > 1) {
+        vtkByteSwap::SwapVoidRange(pixels, numPixelsPerSlice * numSlices, numBytesPerPixel);
     }
 #endif
 
@@ -193,7 +198,7 @@ void svkIdfVolumeWriter::WriteHeader()
 {
 
     //write the idf file
-    ofstream out( (this->InternalFileName+string(".idf")).c_str());
+    ofstream out( (this->InternalFileName+vtkstd::string(".idf")).c_str());
     if(!out) {
         throw runtime_error("Cannot open .idf file for writing");
     }
@@ -205,28 +210,28 @@ void svkIdfVolumeWriter::WriteHeader()
     out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
     out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
     out << "position: ";
-    string positionString = hdr->GetStringValue( "PatientPosition" );
-    if ( positionString.substr(0,2) == string( "HF" ) ){
+    vtkstd::string positionString = hdr->GetStringValue( "PatientPosition" );
+    if ( positionString.substr(0,2) == vtkstd::string( "HF" ) ){
         out << "Head First, ";
-    } else if ( positionString.substr(0,2) == string( "FF" ) ) {
+    } else if ( positionString.substr(0,2) == vtkstd::string( "FF" ) ) {
         out << "Feet First, ";
     } else {
         out << "UNKNOWN, ";
     }
 
-    if ( positionString.substr(2) == string( "S" ) ) {
+    if ( positionString.substr(2) == vtkstd::string( "S" ) ) {
         out << "Supine" << endl;
-    } else if ( positionString.substr(2) == string( "P" ) ) {
+    } else if ( positionString.substr(2) == vtkstd::string( "P" ) ) {
         out << "Prone" << endl;
-    } else if ( positionString.substr(2) == string( "DL" ) ) {
+    } else if ( positionString.substr(2) == vtkstd::string( "DL" ) ) {
         out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == string( "DR" ) ) {
+    } else if ( positionString.substr(2) == vtkstd::string( "DR" ) ) {
         out << "Decubitus Right" << endl;
     } else {
         out << "UNKNOWN" << endl;;
     }
 
-    string coilName = hdr->GetStringSequenceItemElement(
+    vtkstd::string coilName = hdr->GetStringSequenceItemElement(
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
@@ -274,10 +279,10 @@ void svkIdfVolumeWriter::WriteHeader()
     }
 
     out << "echo/time/met index:     1     value:       1.00" << endl;
-    out << "rootname: " << string(FileName).substr( string(FileName).rfind("/") + 1 ) << endl;
+    out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
 
 
-    string date = hdr->GetStringValue( "StudyDate" );
+    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
     if ( date.length() == 0 ) { 
         date.assign("        ");                
     }
@@ -411,7 +416,7 @@ void svkIdfVolumeWriter::GetIDFCenter(double center[3])
 /*!
  *   
  */
-string svkIdfVolumeWriter::GetIDFPatientsName(string patientsName)
+vtkstd::string svkIdfVolumeWriter::GetIDFPatientsName(vtkstd::string patientsName)
 {
 
     //  Remove DICOM delimiters:
@@ -423,7 +428,7 @@ string svkIdfVolumeWriter::GetIDFPatientsName(string patientsName)
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = patientsName.find("  ")) != string::npos) {
+    while ( (pos = patientsName.find("  ")) != vtkstd::string::npos) {
         patientsName.erase(pos, 1);     
     }
 

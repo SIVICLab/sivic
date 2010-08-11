@@ -41,6 +41,14 @@
 
 
 #include <svkVarianCSFidMapper.h>
+//#include <svkVarianReader.h>
+#include <vtkDebugLeaks.h>
+#include <vtkTransform.h>
+#include <vtkDataArray.h>
+#include <vtkCellData.h>
+#include <vtkMatrix4x4.h>
+#include <svkDcmHeader.h>
+#include <vtkByteSwap.h>
 
 
 using namespace svk;
@@ -62,6 +70,9 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
+    // Set the byte ordering, as big-endian.
+    this->SetDataByteOrderToBigEndian();
 
     this->specData = NULL;
     this->paddedData = NULL;
@@ -924,7 +935,7 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
     ifstream* fidDataIn = new ifstream();
     fidDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-    int pixelWordSize = 4;
+    int pixelWordSize = sizeof(float);
     int numComponents = 2;
     int numSpecPoints = this->dcmHeader->GetIntValue( "DataPointColumns" );
 
@@ -956,9 +967,9 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
     /*
      *  FID files are bigendian.
      */
-#if defined (linux) || defined(Darwin)
-    svkByteSwap::SwapBufferEndianness( (float*)specData, numBytesInVol/pixelWordSize );
-#endif
+    if ( this->GetSwapBytes() ) {
+        vtkByteSwap::SwapVoidRange((void *)specData, numBytesInVol/pixelWordSize, pixelWordSize);
+    }
 
     this->ZeroPadCompressedSensingData( numBytesInVol/pixelWordSize ); 
 
@@ -1004,7 +1015,7 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
 
     //  I think everything is ok up to here.  Not positive about the padding yet.
 
-    vector<int> blipVector = this->GetBlips(); 
+    vtkstd::vector<int> blipVector = this->GetBlips(); 
 
     int lengthX  = blipVector[0]; 
     int lengthY  = blipVector[1];
@@ -1391,13 +1402,13 @@ void svkVarianCSFidMapper::ReOrderFlyback( )
 /*!
  *
  */
-vector<int> svkVarianCSFidMapper::GetBlips()
+vtkstd::vector<int> svkVarianCSFidMapper::GetBlips()
 {
 
     string blipString; 
     this->GetBlipString( &blipString ); 
     
-    vector<int> blipVector; 
+    vtkstd::vector<int> blipVector; 
     istringstream* iss = new istringstream();
     int intVal; 
 

@@ -41,6 +41,12 @@
 
 
 #include <svkVarianReader.h>
+#include <vtkGlobFileNames.h>
+#include <vtkSortFileNames.h>
+#include <vtkStringArray.h>
+#include <vtkDebugLeaks.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -111,12 +117,12 @@ int svkVarianReader::GetNumSlices()
  *          numElements1 space_separated_values
  *          numElements2 space_separated_values
  */
-void svkVarianReader::ParseProcpar( string path )    
+void svkVarianReader::ParseProcpar( vtkstd::string path )    
 {
 
     //  If ONE procpar file is present, parse it as well:
     vtkGlobFileNames* procparGlob = vtkGlobFileNames::New();
-    procparGlob->AddFileNames( string( path + "/procpar" ).c_str() );
+    procparGlob->AddFileNames( vtkstd::string( path + "/procpar" ).c_str() );
 
     if ( procparGlob->GetFileNames()->GetNumberOfValues() == 1 ) {
 
@@ -125,7 +131,7 @@ void svkVarianReader::ParseProcpar( string path )
             this->procparFile = new ifstream();
             this->procparFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-            string procparFileName( path + "/procpar" ); 
+            vtkstd::string procparFileName( path + "/procpar" ); 
 
             this->procparFile->open( procparFileName.c_str(), ifstream::in );
             if ( ! this->procparFile->is_open() ) {
@@ -167,22 +173,22 @@ int svkVarianReader::GetProcparKeyValuePair( )
 
     istringstream* iss = new istringstream();
 
-    string keyString;
-    string* valueString1 = new string("");
-    string* valueString2 = new string("");
+    vtkstd::string keyString;
+    vtkstd::string* valueString1 = new vtkstd::string("");
+    vtkstd::string* valueString2 = new vtkstd::string("");
 
     try {
 
         this->ReadLine(this->procparFile, iss); 
 
         size_t  position; 
-        string  tmp; 
+        vtkstd::string  tmp; 
 
         if ( this->procparFile->tellg() < this->procparFileSize - 1 ) {
 
             //  find first white space position before "key" string: 
             position = iss->str().find_first_of(' ');
-            if (position != string::npos) {
+            if (position != vtkstd::string::npos) {
                 keyString.assign( iss->str().substr(0, position) );
             } 
             //cout << "PROCPAR KEY: " << keyString << endl;
@@ -219,7 +225,7 @@ void svkVarianReader::ReadLine(ifstream* fs, istringstream* iss)
     char line[2000];
     iss->clear();    
     fs->getline(line, 2000);
-    iss->str(string(line));
+    iss->str(vtkstd::string(line));
 }
 
 
@@ -228,10 +234,10 @@ void svkVarianReader::ReadLine(ifstream* fs, istringstream* iss)
  *  mapFor values that are space delimited lists, put each element into the value 
  *  vector. 
  */
-void svkVarianReader::ParseAndSetProcparStringElements(string key, string valueArray1, string valueArray2) 
+void svkVarianReader::ParseAndSetProcparStringElements(vtkstd::string key, vtkstd::string valueArray1, vtkstd::string valueArray2) 
 {
-    vector <string> vector1;
-    vector <string> vector2;
+    vtkstd::vector <vtkstd::string> vector1;
+    vtkstd::vector <vtkstd::string> vector2;
 
     this->AssignProcparVectorElements(&vector1, valueArray1);
     this->AssignProcparVectorElements(&vector2, valueArray2);
@@ -246,17 +252,17 @@ void svkVarianReader::ParseAndSetProcparStringElements(string key, string valueA
  *  Utility method to determine how many space delimited elements 
  *  are in current propcar string. 
  */
-int svkVarianReader::GetNumberOfProcparElements( string* valueString )
+int svkVarianReader::GetNumberOfProcparElements( vtkstd::string* valueString )
 {
     int numElementsParsed = 0; 
     size_t  position; 
-    string tmpString = string(*valueString);
+    vtkstd::string tmpString = vtkstd::string(*valueString);
 
 
     //  If it's a quoted string, ignore spaces:
     int endQuote = 1;
-    if ( ( position = tmpString.find('"') ) != string::npos) {
-        while ( ( position = tmpString.find('"') ) != string::npos) {
+    if ( ( position = tmpString.find('"') ) != vtkstd::string::npos) {
+        while ( ( position = tmpString.find('"') ) != vtkstd::string::npos) {
             endQuote *= -1;
             tmpString = tmpString.substr( position + 1 );
             if (endQuote == 1) {
@@ -266,12 +272,12 @@ int svkVarianReader::GetNumberOfProcparElements( string* valueString )
 
     } else {
     
-        if ( tmpString.find(' ')  == string::npos) {
+        if ( tmpString.find(' ')  == vtkstd::string::npos) {
             if (tmpString.length() >= 1) {
                 numElementsParsed++;  
             }
         } else {
-            while ( ( position = tmpString.find(' ') ) != string::npos) {
+            while ( ( position = tmpString.find(' ') ) != vtkstd::string::npos) {
                 tmpString.erase( position, 1 );
                 numElementsParsed++;  
             } 
@@ -285,14 +291,14 @@ int svkVarianReader::GetNumberOfProcparElements( string* valueString )
 /*!
  *  Read lines from propcar until all elements of value have been parsed. 
  */
-void svkVarianReader::GetProcparValueArray( string* valueString )
+void svkVarianReader::GetProcparValueArray( vtkstd::string* valueString )
 {
     istringstream* iss = new istringstream();
     this->ReadLine(this->procparFile, iss); 
 
     size_t  position; 
     position = iss->str().find_first_of(' ');
-    if (position != string::npos) {
+    if (position != vtkstd::string::npos) {
 
         istringstream* issTmp = new istringstream();
         issTmp->str( iss->str().substr(0, position) );
@@ -320,10 +326,10 @@ void svkVarianReader::GetProcparValueArray( string* valueString )
 /*!
  *  Remove any quotation marks from the string
  */
-void svkVarianReader::RemoveStringQuotes(string* input) 
+void svkVarianReader::RemoveStringQuotes(vtkstd::string* input) 
 {
     size_t  position; 
-    while ( ( position = input->find('"') ) != string::npos) {
+    while ( ( position = input->find('"') ) != vtkstd::string::npos) {
         input->erase( position, 1 );
     }
 }
@@ -332,31 +338,31 @@ void svkVarianReader::RemoveStringQuotes(string* input)
 /*!
  * 
  */
-void svkVarianReader::AssignProcparVectorElements(vector<string>* procparVector, string valueArray)
+void svkVarianReader::AssignProcparVectorElements(vtkstd::vector<vtkstd::string>* procparVector, vtkstd::string valueArray)
 {        
     size_t pos = 0;
     istringstream* iss = new istringstream();
-    string tmpString;     
+    vtkstd::string tmpString;     
 
     int endQuote = 1;
     //  Parse quoted strings separately from unquoted values:    
 
-    if ( ( pos = valueArray.find('"', pos) ) != string::npos) {
+    if ( ( pos = valueArray.find('"', pos) ) != vtkstd::string::npos) {
         endQuote *= -1; 
-        while ( ( pos = valueArray.find('"', pos + 1) ) != string::npos) {
+        while ( ( pos = valueArray.find('"', pos + 1) ) != vtkstd::string::npos) {
             endQuote *= -1; 
             if (endQuote == 1) {
                 tmpString.assign( valueArray.substr(0, pos) );
                 this->RemoveStringQuotes(&tmpString);
                 procparVector->push_back(tmpString); 
                 valueArray.assign( valueArray.substr(pos + 1) ); 
-                pos = -1; 
+                pos = vtkstd::string::npos; 
             }
         }
 
     } else {
 
-        while ( (pos = valueArray.find_first_of(' ')) != string::npos) {  
+        while ( (pos = valueArray.find_first_of(' ')) != vtkstd::string::npos) {  
     
             iss->str( valueArray.substr(0, pos) );
             *iss >> tmpString;
@@ -383,16 +389,16 @@ void svkVarianReader::PrintProcparKeyValuePairs()
 {
 
     //  Print out key value pairs parsed from header:
-    map< string, vector< vector<string> > >::iterator mapIter;
+    vtkstd::map< vtkstd::string, vtkstd::vector< vtkstd::vector<vtkstd::string> > >::iterator mapIter;
     for ( mapIter = procparMap.begin(); mapIter != procparMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = " << endl;
 
-        vector < vector<string> >::iterator it;
+        vtkstd::vector < vtkstd::vector<vtkstd::string> >::iterator it;
         for ( it = procparMap[mapIter->first].begin() ; it < procparMap[mapIter->first].end(); it++ ) {
 
-            vector<string> tmpVector = *it;  
-            vector<string>::iterator vecIter;
+            vtkstd::vector<vtkstd::string> tmpVector = *it;  
+            vtkstd::vector<vtkstd::string>::iterator vecIter;
 
             for ( vecIter = tmpVector.begin(); vecIter != tmpVector.end(); ++vecIter ) {
                 cout << "       ->" << *vecIter << endl ;
