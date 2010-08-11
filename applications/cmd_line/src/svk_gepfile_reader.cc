@@ -47,6 +47,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkDdfVolumeReader.h>
+#include <svkDdfVolumeWriter.h>
 #include <svkDcmVolumeReader.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
