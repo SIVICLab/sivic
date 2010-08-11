@@ -904,7 +904,7 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
                 this->AddSequenceItemElement(
                     "FrameContentSequence",
                     0,
-                    "FrameAcquisitionDateTime",
+                    "FrameAcquisitionDatetime",
                     "EMPTY_ELEMENT",
                     "PerFrameFunctionalGroupsSequence",
                     frame
@@ -913,7 +913,7 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
                 this->AddSequenceItemElement(
                     "FrameContentSequence",
                     0,
-                    "FrameReferenceDateTime",
+                    "FrameReferenceDatetime",
                     "EMPTY_ELEMENT",
                     "PerFrameFunctionalGroupsSequence",
                     frame
