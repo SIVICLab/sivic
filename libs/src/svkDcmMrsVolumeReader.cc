@@ -40,6 +40,9 @@
  */
 
 #include <svkDcmMrsVolumeReader.h>
+#include <vtkObjectFactory.h>
+#include <vtkDebugLeaks.h>
+#include <vtkInformation.h>
 
 
 using namespace svk;
@@ -78,30 +81,19 @@ svkDcmMrsVolumeReader::~svkDcmMrsVolumeReader()
 int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
-    if( fileToCheck.size() > 4 ) {
+    this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
+    vtkstd::string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
 
-        if ( 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".dcm"  || 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".DCM" 
-        )  {
+    if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
 
-            this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
-            string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRS File: " <<  fileToCheck << endl;
 
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
+        this->SetFileName(fname);
 
-                cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRS File: " <<  fileToCheck << endl;
-
-                SetFileName(fname);
-
-                return 1;
-            }
-
-        }
-
-    } 
+        return 1;
+    }
 
     vtkDebugMacro(<<this->GetClassName() << "::CanReadFile() It's Not a DICOM MRS file " << fileToCheck );
 
@@ -115,7 +107,7 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
 {
 
-    string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
+    vtkstd::string dataRepresentation = this->GetOutput()->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
     int numComponents; 
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2; 
