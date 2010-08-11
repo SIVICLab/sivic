@@ -41,6 +41,14 @@
 
 
 #include <svkImageWriterFactory.h>
+#include <vtkJPEGWriter.h>
+#include <vtkTIFFWriter.h>
+#include <vtkPostScriptWriter.h>
+#include <svkDICOMSCWriter.h>
+#include <svkDICOMMRSWriter.h>
+#include <svkDICOMMRWriter.h>
+#include <svkIdfVolumeWriter.h>
+#include <svkDdfVolumeWriter.h>
 
 
 using namespace svk;
@@ -85,6 +93,8 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
         return svkDICOMSCWriter::New();
     } else if ( writerType == svkImageWriterFactory::DICOM_MRS ) {
         return svkDICOMMRSWriter::New();
+    } else if ( writerType == svkImageWriterFactory::DICOM_MR ) {
+        return svkDICOMMRWriter::New();
     } else if ( writerType == svkImageWriterFactory::IDF ) {
         return svkIdfVolumeWriter::New();
     } else if ( writerType == svkImageWriterFactory::DDF ) {
@@ -92,11 +102,6 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
     } else {
         return NULL;  
     }
-
-/*
-    } else if ( writerType == DICOM_MR ) {
-        return svkDICOMMRWriter::New();
-*/
 
 
 } 
