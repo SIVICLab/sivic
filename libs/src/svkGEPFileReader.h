@@ -147,7 +147,6 @@ class svkGEPFileReader : public svkImageReader2
         void                SetByteSwapping(); 
         void                DeidentifyData(); 
 
-
         //  Members:
         ifstream*                        gepf;
         float                            pfileVersion;
@@ -156,7 +155,6 @@ class svkGEPFileReader : public svkImageReader2
         map < string, void* >            inputArgs; 
 
         vtkCallbackCommand*              progressCallback;
-
 
 };
 

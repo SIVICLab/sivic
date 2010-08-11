@@ -352,15 +352,16 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
 
 
     string dob = hdr->GetStringValue( "PatientsBirthDate" ); 
-    if ( dob.length() == 0 ) {
-        dob.assign("        ");
-    }
 
-    if (  deidentified ) { 
+    if ( deidentified ) { 
         *out << "date of birth: " << dob << endl; 
     } else {
-        *out << "date of birth: " << 
-            dob[4] << dob[5] << "/" << dob[6] << dob[7] << "/" << dob[0] << dob[1] << dob[2] << dob[3] << endl;
+        if ( dob.length() == 0 ) {
+            *out << "date of birth: " << endl; 
+        } else {
+            *out << "date of birth: " << 
+                dob[4] << dob[5] << "/" << dob[6] << dob[7] << "/" << dob[0] << dob[1] << dob[2] << dob[3] << endl;
+        }
     }
 
     *out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;

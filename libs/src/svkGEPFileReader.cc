@@ -202,7 +202,9 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
     this->mapper->ReadData(this->GetFileName(), data);
+
     this->mapper->RemoveObserver(progressCallback);
+
 
     //  Set the orientation in the svkImageData object, synchronized from the dcm header:
     double dcos[3][3];
