@@ -41,6 +41,21 @@
 
 
 #include <svkDcmMriVolumeReader.h>
+#include <svkMriImageData.h>
+//#include <vtkByteSwap.h>
+#include <vtkType.h>
+#include <vtkDebugLeaks.h>
+#include <vtkGlobFileNames.h>
+#include <vtkSortFileNames.h>
+#include <vtkStringArray.h>
+#include <vtkInformation.h>
+#include <vtkMath.h>
+#include <svkIOD.h>
+#include <svkMRIIOD.h>
+#include <vtkstd/vector>
+#include <vtkstd/utility>
+#include <vtkstd/algorithm>
+#include <sstream>
 
 
 using namespace svk;
@@ -60,7 +75,6 @@ svkDcmMriVolumeReader::svkDcmMriVolumeReader()
     vtkDebugLeaks::ConstructClass("svkDcmMriVolumeReader");
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
-    this->imageData = NULL;  
 }
 
 
@@ -80,42 +94,32 @@ svkDcmMriVolumeReader::~svkDcmMriVolumeReader()
 int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
-    if( fileToCheck.size() > 4 ) {
+    svkImageData* tmp = svkMriImageData::New(); 
+    bool isDcmMri = false; 
 
-        if ( 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".dcm"  || 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".DCM" 
-        )  {
+    if ( tmp->GetDcmHeader()->ReadDcmFile( fname ) == 0 ) {
 
-            svkImageData* tmp = svkMriImageData::New(); 
-            bool isDcmMri = false; 
+        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
 
-            if ( tmp->GetDcmHeader()->ReadDcmFile( fname ) == 0 ) {
-
-                string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
-
-                //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
-                if ( this->ContainsProprietaryContent( tmp ) == false ) {
-
-                    if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
-                        SetFileName(fname);
-                        isDcmMri = true; 
-                    }
+        //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
+        if ( this->ContainsProprietaryContent( tmp ) == false ) {
+                    
+            // Check for MR Image Storage
+            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
+                this->SetFileName(fname);
+                isDcmMri = true; 
+            }
         
-                }
-            }
+        }
+    }
 
-            tmp->Delete(); 
-            if ( isDcmMri ) {
-                cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
-                return 1;
-            }
-    
-        } 
-
-    } 
+    tmp->Delete(); 
+    if ( isDcmMri ) {
+        cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
+        return 1;
+    }
 
     vtkDebugMacro(<<this->GetClassName() << "::CanReadFile() It's Not a DICOM MRI file " << fileToCheck );
 
@@ -133,8 +137,8 @@ bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
     bool containsProprietaryContent = false; 
 
     if ( data->GetDcmHeader()->ElementExists("Manufacturer") == true && data->GetDcmHeader()->ElementExists("ImagedNucleus") == true ) {
-        string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
-        string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+        vtkstd::string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
+        vtkstd::string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
 
         if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
             containsProprietaryContent = true; 
@@ -144,6 +148,111 @@ bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
     return containsProprietaryContent; 
 }
 
+struct svkDcmMriVolumeReaderSort_lt_pair_double_string
+{
+  bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
+                  const vtkstd::pair<double, vtkstd::string> s2) const
+  {
+    return s1.first < s2.first;
+  }
+};
+
+struct svkDcmMriVolumeReaderSort_gt_pair_double_string
+{
+  bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
+                  const vtkstd::pair<double, vtkstd::string> s2) const
+  {
+    return s1.first > s2.first;
+  }
+};
+
+
+/*!
+ * Sort the list of files in either ascending or descending order by ImagePositionPatient
+ * and SeriesInstanceUID.  If the SeriesInstanceUID is not the same as the input, the file
+ * is removed from the list.  Also return true if this is a multi-volume series. 
+ */
+bool svkDcmMriVolumeReaderSortFilesByImagePositionPatient(const vtkstd::string & seriesInstanceUID, 
+    vtkStringArray* fileNames, bool ascending)
+{
+    bool multiVolumeSeries = false;
+    vtkstd::vector<vtkstd::pair<double, vtkstd::string> > positionFilePairVector;
+    double imagePosition = VTK_DOUBLE_MAX; // initialize to an "infinite" value
+    
+    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
+        svkImageData* tmp = svkMriImageData::New();
+        double position[3];
+        double row[3];
+        double col[3];
+        double normal[3];
+        double tmpImagePosition = 0;
+        tmp->GetDcmHeader()->ReadDcmFile(  fileNames->GetValue(i) );
+        vtkstd::string tmpSeriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
+        vtkstd::string xPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",0));
+        std::istringstream xPositionInString(xPosition);
+  	xPositionInString >> position[0];
+        vtkstd::string yPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",1));
+        std::istringstream yPositionInString(yPosition);
+  	yPositionInString >> position[1];
+        vtkstd::string zPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",2));
+        std::istringstream zPositionInString(zPosition);
+  	zPositionInString >> position[2];
+        vtkstd::string xRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",0));
+        std::istringstream xRowInString(xRow);
+  	xRowInString >> row[0];
+        vtkstd::string yRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",1));
+        std::istringstream yRowInString(yRow);
+  	yRowInString >> row[1];
+        vtkstd::string zRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",2));
+        std::istringstream zRowInString(zRow);
+  	zRowInString >> row[2];
+        vtkstd::string xCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",3));
+        std::istringstream xColInString(xCol);
+  	xColInString >> col[0];
+        vtkstd::string yCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",4));
+        std::istringstream yColInString(yCol);
+  	yColInString >> col[1];
+        vtkstd::string zCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",5));
+        std::istringstream zColInString(zCol);
+  	zColInString >> col[2];
+        tmp->Delete();
+        // Generate the normal.
+        vtkMath::Cross(row,col,normal);
+        // If input series UID matches this series UID, add to list for sorting later.
+        if ( seriesInstanceUID == tmpSeriesInstanceUID ) {
+            vtkstd::pair<double, vtkstd::string> positionFilePair;
+            tmpImagePosition = (normal[0]*position[0]) + (normal[1]*position[1]) 
+                + (normal[2]*position[2]);
+            // If the image position is the same for any given slice, then we have a multi-volume series.
+            if( tmpImagePosition == imagePosition ) {
+                multiVolumeSeries = true;
+                return multiVolumeSeries;
+            } else {
+                imagePosition = tmpImagePosition;
+            }
+            positionFilePair.first = imagePosition;
+            positionFilePair.second = fileNames->GetValue(i);
+            positionFilePairVector.push_back(positionFilePair);
+        } 
+    }
+    // Sort according to ascending/descending order.
+    if (ascending) {
+        vtkstd::sort(positionFilePairVector.begin(), 
+            positionFilePairVector.end(), svkDcmMriVolumeReaderSort_lt_pair_double_string());
+    } else {
+        vtkstd::sort(positionFilePairVector.begin(), 
+            positionFilePairVector.end(), svkDcmMriVolumeReaderSort_gt_pair_double_string());
+    }
+    // Finally, repopulate the file list.
+    fileNames->SetNumberOfValues(positionFilePairVector.size());
+    for (int i = 0; i < positionFilePairVector.size(); i++) {
+        fileNames->SetValue(i, positionFilePairVector[i].second.c_str() );
+#if VTK_DEBUG_ON
+        cout << "FN: " << fileNames->GetValue(i) << endl;
+#endif
+    } 
+    return multiVolumeSeries;
+}
 
 /*!
  *
@@ -151,43 +260,64 @@ bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
 void svkDcmMriVolumeReader::InitDcmHeader()
 {
 
-    string dcmFileName( this->GetFileName() );
-    string dcmFileExtension( this->GetFileExtension( this->GetFileName() ) );
-    string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
+    vtkstd::string dcmFileName( this->GetFileName() );
+    vtkstd::string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
     
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( dcmFilePath + "/*." + dcmFileExtension).c_str() );
+    globFileNames->AddFileNames( vtkstd::string( dcmFilePath + "/*").c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
-    sortFileNames->GroupingOn(); 
     sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
     sortFileNames->NumericSortOn();
+    sortFileNames->SkipDirectoriesOn();
     sortFileNames->Update();
-    
-    //  If globed file names are not similar, use only the specified file
-    if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
-        vtkWarningWithObjectMacro(this, "Found Multiple dcm file groups, using only specified file ");
-
-        vtkStringArray* fileNames = vtkStringArray::New(); 
-        fileNames->SetNumberOfValues(1);
-        fileNames->SetValue(0, this->GetFileName() );
-        sortFileNames->SetInputFileNames( fileNames );
-        fileNames->Delete(); 
-    }
-
-    this->SetFileNames( sortFileNames->GetFileNames() );
+    // If ImageOrientationPatient is not the same for all of the slices,
+    // then just use the specified file.
+    svkImageData* tmp = svkMriImageData::New(); 
+    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileName() );
+    vtkstd::string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
+    vtkstd::string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
+    tmp->Delete();
     vtkStringArray* fileNames =  sortFileNames->GetFileNames();
-#if VTK_DEBUG_ON
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        cout << "FN: " << fileNames->GetValue(i) << endl;
+        tmp = svkMriImageData::New(); 
+        tmp->GetDcmHeader()->ReadDcmFile(  fileNames->GetValue(i) );
+        vtkstd::string tmpImageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
+        tmp->Delete();
+        if ( imageOrientationPatient != tmpImageOrientationPatient ) {
+            
+            vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, using only specified file ");
+
+            vtkStringArray* tmpFileNames = vtkStringArray::New(); 
+            tmpFileNames->SetNumberOfValues(1);
+            tmpFileNames->SetValue(0, this->GetFileName() );
+            sortFileNames->SetInputFileNames( tmpFileNames );
+            tmpFileNames->Delete();
+            break; 
+        }
     }
-#endif
+
+    // Now sort the files according to SeriesInstanceUID and ImagePositionPatient.
+    fileNames =  sortFileNames->GetFileNames();
+    if ( svkDcmMriVolumeReaderSortFilesByImagePositionPatient(seriesInstanceUID, fileNames, true) ){
+        vtkWarningWithObjectMacro(this, "Multi-volume DICOM series are currently not supported, using only specified file ");
+
+        vtkStringArray* tmpFileNames = vtkStringArray::New(); 
+        tmpFileNames->SetNumberOfValues(1);
+        tmpFileNames->SetValue(0, this->GetFileName() );
+        sortFileNames->SetInputFileNames( tmpFileNames );
+        tmpFileNames->Delete();
+    }
+    // Calling this method will set the DataExtents for the slice direction
+    this->SetFileNames( sortFileNames->GetFileNames() );
 
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
 
-    string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+    vtkstd::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+    int rows    = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" ); // Y
+    int columns = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); // X
      
     //  Now override elements with Multi-Frame sequences and default details:
     svkIOD* iod = svkMRIIOD::New();
@@ -201,24 +331,21 @@ void svkDcmMriVolumeReader::InitDcmHeader()
 
 
     //  Now move info from original MRImageStorage header elements to flesh out enhanced
-    //  SOP class elements (often this is just a matter of coping elements from the top 
+    //  SOP class elements (often this is just a matter of copying elements from the top 
     //  level to a sequence item. 
     this->InitMultiFrameFunctionalGroupsModule(); 
 
     /*
      *  odds and ends: 
      */
-    svkImageData* tmp = svkMriImageData::New(); 
-    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileNames()->GetValue( 0 ) ); 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "Rows", 
-        tmp->GetDcmHeader()->GetIntValue( "Rows" ) 
+        rows 
     );
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "Columns", 
-        tmp->GetDcmHeader()->GetIntValue( "Columns" ) 
+        columns 
     );
-    tmp->Delete(); 
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
@@ -234,15 +361,7 @@ void svkDcmMriVolumeReader::InitDcmHeader()
  */
 void svkDcmMriVolumeReader::LoadData( svkImageData* data )
 {
-
-    int numComponents = 1; 
-
-    int numVoxels[3]; 
-    data->GetNumberOfVoxels(numVoxels); 
-
-    long unsigned int dataLength = numVoxels[0] * numVoxels[1] * numVoxels[2] * numComponents;
-
-    this->imageData = new short[ dataLength ];
+    void *imageData = data->GetScalarPointer();
 
     int rows    = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" ); 
     int columns = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); 
@@ -254,14 +373,12 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
     for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) { 
         svkImageData* tmpImage = svkMriImageData::New(); 
         tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( i ) ); 
-        tmpImage->GetDcmHeader()->GetShortValue( "PixelData", imageData + (i * numPixelsInSlice), numPixelsInSlice );  
+        tmpImage->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData) + (i * numPixelsInSlice), numPixelsInSlice );
+        // Do I need to byte swap?
+        //if ( this->GetSwapBytes() ) {
+	//    vtkByteSwap::SwapVoidRange((void *)((short *)imageData + (i * numPixelsInSlice)), numPixelsInSlice, sizeof(short));
+        //}  
     }
-
-    //vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_UNSIGNED_SHORT);
-    this->dataArray->SetNumberOfComponents( 1 );
-    dataArray->SetVoidArray( (void*)( imageData ), dataLength, 0 ); 
-
-    data->GetPointData()->SetScalars(this->dataArray);
 
     //this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
 }
@@ -417,7 +534,7 @@ void svkDcmMriVolumeReader::InitFrameContentMacro()
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "FrameContentSequence",
             0,
-            "FrameAcquisitionDateTime",
+            "FrameAcquisitionDatetime",
             "EMPTY_ELEMENT",
             "PerFrameFunctionalGroupsSequence",
             i
@@ -426,7 +543,7 @@ void svkDcmMriVolumeReader::InitFrameContentMacro()
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "FrameContentSequence",
             0,
-            "FrameReferenceDateTime",
+            "FrameReferenceDatetime",
             "EMPTY_ELEMENT",
             "PerFrameFunctionalGroupsSequence",
             i
