@@ -1001,11 +1001,11 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     
         // Check to see which extention to filter for.
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
-            dlg->SetFileTypes("{{Volume Files} {.idf .fdf .dcm .DCM}} {{All files} {.*}}");
+            dlg->SetFileTypes("{{Volume Files} {.idf .fdf .dcm .DCM .MR}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 ) {
             dlg->SetFileTypes("{{Complex Data} {.ddf .shf .rda .dcm}} {{All files} {.*}}");
         } else {
-            dlg->SetFileTypes("{{All files} {.*}} {{Volume Files} {.idf .fdf .dcm .DCM}} {{Complex Data} {.ddf .shf .rda .dcm}}");
+            dlg->SetFileTypes("{{All files} {.*}} {{Volume Files} {.idf .fdf .dcm .DCM .MR}} {{Complex Data} {.ddf .shf .rda .dcm}}");
         }
     
     
