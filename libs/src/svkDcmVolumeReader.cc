@@ -41,6 +41,9 @@
 
 
 #include <svkDcmVolumeReader.h>
+#include <vtkDebugLeaks.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -99,7 +102,7 @@ void svkDcmVolumeReader::ExecuteInformation()
             double origin0[3];
             this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
             double origin1[3];
-            this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, this->numFrames);
+            this->GetOutput()->GetDcmHeader()->GetOrigin(origin1, this->numFrames-1); // zero indexed!
 
             //  Determine whether the data is ordered with or against the slice normal direction.
             double normal[3];
@@ -119,6 +122,7 @@ void svkDcmVolumeReader::ExecuteInformation()
             } else {
                 this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
             }
+            math->Delete();
         } else {
             this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
         }
