@@ -42,6 +42,10 @@
 
 
 #include <svkImageReader2.h>
+#include <vtkInformation.h>
+#include <vtkInstantiator.h>
+#include <svkMriImageData.h>
+#include <svkMrsImageData.h>
 
 
 using namespace svk;
@@ -94,12 +98,12 @@ svkImageReader2::~svkImageReader2()
 /*!
  *  Returns the file root without extension (will include any path elements)
  */
-string svkImageReader2::GetFileRoot(const char* fname)
+vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
 {
-    string volumeFileName(fname);
+    vtkstd::string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "." );
-    string fileRoot( volumeFileName.substr(0, position) );
+    vtkstd::string fileRoot( volumeFileName.substr(0, position) );
     return fileRoot;
 }
 
@@ -108,12 +112,12 @@ string svkImageReader2::GetFileRoot(const char* fname)
  *  Returns the file root without extension
  *  or NULL if no extension found.
  */
-string svkImageReader2::GetFileExtension(const char* fname)
+vtkstd::string svkImageReader2::GetFileExtension(const char* fname)
 {
-    string volumeFileName(fname);
+    vtkstd::string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "." );
-    string fileExtension(""); 
+    vtkstd::string fileExtension(""); 
     if ( position != string::npos ) {
         fileExtension.assign( volumeFileName.substr(position + 1) );
     } 
@@ -124,13 +128,13 @@ string svkImageReader2::GetFileExtension(const char* fname)
 /*!
  *  Returns the file path:  everything before the last "/".   
  */
-string svkImageReader2::GetFilePath(const char* fname)
+vtkstd::string svkImageReader2::GetFilePath(const char* fname)
 {
-    string volumeFileName(fname);
+    vtkstd::string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "/" );
-    string filePath; 
-    if ( position != string::npos ) {
+    vtkstd::string filePath; 
+    if ( position != vtkstd::string::npos ) {
         filePath.assign( volumeFileName.substr(0, position) );
     } else {
         filePath.assign( "." );
@@ -158,22 +162,22 @@ long svkImageReader2::GetFileSize(ifstream* fs)
 /*
  *  Strips leading and trailing white space from string
  */
-string svkImageReader2::StripWhite(string in)
+vtkstd::string svkImageReader2::StripWhite(vtkstd::string in)
 {
-    string stripped;
-    string stripped_leading(in);
+    vtkstd::string stripped;
+    vtkstd::string stripped_leading(in);
     size_t firstNonWhite;
     size_t lastWhite;
 
     //  Remove leading spaces:
     firstNonWhite = in.find_first_not_of(" \t");
-    if (firstNonWhite != string::npos) {
+    if (firstNonWhite != vtkstd::string::npos) {
         stripped_leading.assign( in.substr(firstNonWhite) );
     }
 
     //  Remove trailing spaces:
     lastWhite = stripped_leading.find_last_of(" \t");
-    while ( (lastWhite != string::npos) && (lastWhite  == stripped_leading.length() - 1) ) {
+    while ( (lastWhite != vtkstd::string::npos) && (lastWhite  == stripped_leading.length() - 1) ) {
         stripped_leading.assign( stripped_leading.substr(0, lastWhite) );
         lastWhite = stripped_leading.find_last_of(" \t");
     }
@@ -343,20 +347,20 @@ svkImageData* svkImageReader2::GetOutput(int port)
  *  Remove slashes from idf date and reorder for DICOM compliance:
  *  07/25/2007 -> 20070725
  */
-string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
+vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
 {
         size_t delim;
         delim = slashDate->find_first_of('/');
-        string month = slashDate->substr(0, delim);
+        vtkstd::string month = slashDate->substr(0, delim);
         month = StripWhite(month);
         if (month.size() != 2) {
             month = "0" + month;
         }
 
-        string dateSub;
+        vtkstd::string dateSub;
         dateSub = slashDate->substr(delim + 1);
         delim = dateSub.find_first_of('/');
-        string day = dateSub.substr(0, delim);
+        vtkstd::string day = dateSub.substr(0, delim);
         day = StripWhite(day);
         if (day.size() != 2) {
             day = "0" + day;
@@ -364,7 +368,7 @@ string svkImageReader2::RemoveSlashesFromDate(string* slashDate)
 
         dateSub = dateSub.substr(delim + 1);
         delim = dateSub.find_first_of('/');
-        string year = dateSub.substr(0, delim);
+        vtkstd::string year = dateSub.substr(0, delim);
         year = StripWhite(year);
 
         return year+month+day;
@@ -379,7 +383,7 @@ void svkImageReader2::ReadLine(ifstream* hdr, istringstream* iss)
     char line[256];
     iss->clear();
     hdr->getline(line, 256);
-    iss->str(string(line));
+    iss->str(vtkstd::string(line));
 }
 
 
@@ -397,16 +401,16 @@ void svkImageReader2::ReadLineIgnore(ifstream* hdr, istringstream* iss, char del
 /*!
  *  Utility function for extracting a substring with white space removed from LHS.
  */
-string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int start, int stop)
+vtkstd::string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int start, int stop)
 {
-    string temp;
-    string lineSubStr;
+    vtkstd::string temp;
+    vtkstd::string lineSubStr;
     size_t firstNonSpace;
     this->ReadLine(hdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');
-        if (firstNonSpace != string::npos) {
+        if (firstNonSpace != vtkstd::string::npos) {
             lineSubStr.assign( temp.substr(firstNonSpace) );
         }
     } catch (const exception& e) {
@@ -419,19 +423,19 @@ string svkImageReader2::ReadLineSubstr(ifstream* hdr, istringstream* iss, int st
 /*!
  *  Read the value part of a delimited key value line in a file:
  */
-string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char delim)
+vtkstd::string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char delim)
 {
 
-    string value;
+    vtkstd::string value;
     this->ReadLine( hdr, iss );
     try {
 
-        string line;
+        vtkstd::string line;
         line.assign( iss->str() );
 
         size_t delimPos = line.find_first_of(delim);
-        string delimitedLine;
-        if (delimPos != string::npos) {
+        vtkstd::string delimitedLine;
+        if (delimPos != vtkstd::string::npos) {
             delimitedLine.assign( line.substr( delimPos + 1 ) );
         } else {
             delimitedLine.assign( line );
@@ -439,7 +443,7 @@ string svkImageReader2::ReadLineValue( ifstream* hdr, istringstream* iss, char d
 
         // remove leading white space:
         size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );
-        if ( firstNonSpace != string::npos) {
+        if ( firstNonSpace != vtkstd::string::npos) {
             value.assign( delimitedLine.substr( firstNonSpace ) );
         } else {
             value.assign( delimitedLine );
