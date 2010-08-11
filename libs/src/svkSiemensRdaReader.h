@@ -44,33 +44,19 @@
 #define SVK_SIEMENS_RDA_READER_H
 
 
-#include <vtkObjectFactory.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkFloatArray.h>
-#include <vtkPointData.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
-#include <vtkDebugLeaks.h>
 
 #include <svkImageReader2.h>
-#include <svkIOD.h>
 #include <svkMRSIOD.h>
-#include <svkByteSwap.h>
-#include <svkSpecUtils.h>
 
-#include <sys/stat.h>
-#include <limits>
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/vector>
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -96,6 +82,12 @@ class svkSiemensRdaReader : public svkImageReader2
 
         static svkSiemensRdaReader* New();
         vtkTypeRevisionMacro( svkSiemensRdaReader, svkImageReader2);
+
+         // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "Siemens RDA File";
+        }
 
         //  Methods:
         virtual int             CanReadFile(const char* fname);
@@ -147,15 +139,15 @@ class svkSiemensRdaReader : public svkImageReader2
 
         void            ReadRdaFiles(vtkImageData* data);
         int             GetNumPixelsInVol(); 
-        string          GetDcmPatientPositionString(string patientPosition);
+        vtkstd::string  GetDcmPatientPositionString(vtkstd::string patientPosition);
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseRda();
         int             GetRdaKeyValuePair( );
-        int             GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
-        float           GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
-        string          GetHeaderValueAsString(string keyString, int valueIndex = 0);
-        void            ParseAndSetStringElements(string key, string valueArrayString);
-        string          GetStringFromFloat(float floatValue); 
+        int             GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex = 0); 
+        float           GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex = 0); 
+        vtkstd::string  GetHeaderValueAsString(vtkstd::string keyString, int valueIndex = 0);
+        void            ParseAndSetStringElements(vtkstd::string key, vtkstd::string valueArrayString);
+        vtkstd::string  GetStringFromFloat(float floatValue); 
         void            PrintKeyValuePairs();
         void            MapDoubleValuesToFloat(double* specDataDbl, float* specData, int numVals); 
         void            GetDcosFromRda(double dcos[3][3]); 
@@ -166,7 +158,8 @@ class svkSiemensRdaReader : public svkImageReader2
         //  Members:
         float*                                  specData; 
         ifstream*                               rdaFile;
-        map <string, vector<string> >           rdaMap; 
+        vtkstd::map <vtkstd::string, 
+            vtkstd::vector<vtkstd::string> >    rdaMap; 
         long                                    fileSize; 
         vtkStringArray*                         tmpFileNames;
         int                                     numSlices;

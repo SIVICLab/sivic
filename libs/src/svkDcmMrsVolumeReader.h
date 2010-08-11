@@ -43,19 +43,10 @@
 #ifndef SVK_DCM_MRS_VOLUME_READER_H
 #define SVK_DCM_MRS_VOLUME_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-
 #include <svkDcmVolumeReader.h>
-
-#include <sys/stat.h>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -69,6 +60,13 @@ class svkDcmMrsVolumeReader : public svkDcmVolumeReader
 
         static svkDcmMrsVolumeReader* New();
         vtkTypeRevisionMacro( svkDcmMrsVolumeReader, svkDcmVolumeReader );
+
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "DICOM MRS File";
+        }
 
 
         //  Methods:

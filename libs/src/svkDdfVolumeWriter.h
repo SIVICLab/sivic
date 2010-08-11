@@ -43,26 +43,15 @@
 #ifndef SVK_DDF_VOLUME_WRITER_H
 #define SVK_DDF_VOLUME_WRITER_H
 
-
-#include <vtkErrorCode.h>
-#include <vtkObjectFactory.h>
-#include <vtkCellData.h>
-#include <vtkImageAccumulate.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkExecutive.h>
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>
-#include <svkByteSwap.h>
+
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -97,15 +86,15 @@ class svkDdfVolumeWriter : public svkImageWriter
     private:
         void             InitImageData();
         void             WriteFiles();
-        void             GetDDFCenter(float center[3], string centerType = "current" );
+        void             GetDDFCenter(float center[3], vtkstd::string centerType = "current" );
         void             GetDDFOrientation(float orientation[6]);
-        string           GetDimensionDomain( string dimensionDomainString ); 
-        string           GetDDFPatientsName(string patientsName);
-        string           GetFileRootName(string fileRoot, int coiNum, int timePt = 0); 
+        vtkstd::string   GetDimensionDomain( vtkstd::string dimensionDomainString ); 
+        vtkstd::string   GetDDFPatientsName(vtkstd::string patientsName);
+        vtkstd::string   GetFileRootName(vtkstd::string fileRoot, int coiNum, int timePt = 0); 
         void             SetNumberTimePointsPerFile(int numTimePts);
         bool             AllTimePointsInEachFile(); 
         void             InitSpecData(float* specData, int coilNum, int timePt); 
-        void             InitHeader(ofstream* out, string fileName); 
+        void             InitHeader(ofstream* out, vtkstd::string fileName);
 
         int              numTimePtsPerFile; 
         static const int ALL_TIME_PTS_IN_FILE; 

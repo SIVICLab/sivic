@@ -44,22 +44,14 @@
 #define SVK_IMAGE_READER_2_H
 
 
-#include <vtkObjectFactory.h>
+
 #include <vtkImageReader2.h>
 #include <vtkImageData.h>
-#include <vtkCompositeDataIterator.h>
-#include <vtkInformation.h>
-#include <vtkInstantiator.h>
 
 #include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -76,8 +68,8 @@ class svkImageReader2 : public vtkImageReader2
         svkImageData*          GetOutput();
         svkImageData*          GetOutput(int);
         svkDcmHeader*          GetDcmHeader( const char* fileName );
-        static string          StripWhite(string in);
-        static string          RemoveSlashesFromDate(string* slashDate); 
+        static vtkstd::string  StripWhite(string in);
+        static vtkstd::string  RemoveSlashesFromDate(vtkstd::string* slashDate); 
 
 
     protected:
@@ -91,9 +83,9 @@ class svkImageReader2 : public vtkImageReader2
         void                                     SetupOutputInformation(); 
         void                                     SetupOutputExtent(); 
         void                                     SetupOutputScalarData(); 
-        string                                   GetFileRoot(const char* fname);
-        string                                   GetFileExtension(const char* fname);
-        string                                   GetFilePath(const char* fname);
+        vtkstd::string                           GetFileRoot(const char* fname);
+        vtkstd::string                           GetFileExtension(const char* fname);
+        vtkstd::string                           GetFilePath(const char* fname);
         long                                     GetFileSize(ifstream* fs); 
         virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
         void                                     ReadLineIgnore(
@@ -101,13 +93,13 @@ class svkImageReader2 : public vtkImageReader2
                                                     istringstream* iss, 
                                                     char delim
                                                  ); 
-        string                                   ReadLineSubstr(
+        vtkstd::string                           ReadLineSubstr(
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     int start, 
                                                     int stop
                                                  ); 
-        string                                   ReadLineValue( 
+        vtkstd::string                           ReadLineValue( 
                                                     ifstream* hdr, 
                                                     istringstream* iss, 
                                                     char delim

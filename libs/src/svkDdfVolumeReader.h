@@ -42,34 +42,20 @@
 #ifndef SVK_DDF_VOLUME_READER_H
 #define SVK_DDF_VOLUME_READER_H
 
-
-#include <vtkObjectFactory.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkShortArray.h>
-#include <vtkCellData.h>
-#include <vtkFieldData.h>
 #include <vtkDataObject.h>
-#include <vtkPoints.h>
 #include <vtkPointData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
 
 #include <svkImageReader2.h>
-#include <svkIOD.h>
 #include <svkMRSIOD.h>
-#include <svkByteSwap.h>
 
-#include <sys/stat.h>
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -82,6 +68,12 @@ class svkDdfVolumeReader : public svkImageReader2
 
         static svkDdfVolumeReader* New();
         vtkTypeRevisionMacro( svkDdfVolumeReader, svkImageReader2 );
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "UCSF DDF Spectroscopy File";
+        }
 
         //  Methods:
         virtual int     CanReadFile( const char* fname );
@@ -136,11 +128,13 @@ class svkDdfVolumeReader : public svkImageReader2
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseDdf();
         void            PrintKeyValuePairs(); 
-        int             GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
-        float           GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex = 0); 
+        int             GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+                            vtkstd::string keyString, int valueIndex = 0); 
+        float           GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+                            vtkstd::string keyString, int valueIndex = 0); 
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
-        string          GetDimensionDomain( string ddfDomainString ); 
+        vtkstd::string  GetDimensionDomain( vtkstd::string ddfDomainString ); 
         void            GlobFileNames(); 
 
 
@@ -150,11 +144,12 @@ class svkDdfVolumeReader : public svkImageReader2
         int                                     numSlices;
         int                                     numCoils;
         int                                     numTimePts;
-        static const string                     MFG_STRING;
+        static const vtkstd::string             MFG_STRING;
         double                                  dcos[3][3];
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         ifstream*                               ddfHdr;
-        map <string, string>                    ddfMap; 
+        vtkstd::map <vtkstd::string, vtkstd::string>                    
+                                                ddfMap; 
         vtkStringArray*                         tmpFileNames;
         svkMRSIOD*                              iod; 
 

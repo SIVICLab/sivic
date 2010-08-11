@@ -43,27 +43,14 @@
 #ifndef SVK_IDF_VOLUME_WRITER_H
 #define SVK_IDF_VOLUME_WRITER_H
 
-
-#include <vtkErrorCode.h>
-#include <vtkObjectFactory.h>
-#include <vtkCellData.h>
-#include <vtkImageAccumulate.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkShortArray.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkExecutive.h>
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>
-#include <svkByteSwap.h>
 
+#include <vtkstd/string>
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -99,7 +86,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            WriteData();
         void            WriteHeader();
         void            GetIDFCenter(double center[3]);
-        string          GetIDFPatientsName(string patientsName);
+        vtkstd::string  GetIDFPatientsName(vtkstd::string patientsName);
         void            MapUnsignedToSigned( void* pixels, int numPixels ); 
 
 
