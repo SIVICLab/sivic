@@ -72,7 +72,8 @@ int main (int argc, char** argv)
     usemsg += "   -t output_data_type     target data type: \n";  
     usemsg += "                               2 = UCSF DDF      \n";  
     usemsg += "                               3 = UCSF IDF      \n";  
-    usemsg += "                               4 = DICOM_MRS     \n";  
+    usemsg += "                               4 = DICOM_MRS     \n";
+    usemsg += "                               5 = DICOM_MR      \n";  
     usemsg += "   -h                      print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Converts the input file to the specified target file type \n";  
