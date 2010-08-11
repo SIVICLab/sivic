@@ -39,7 +39,10 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDarwin -arch i386 -arch x86_64")
         ENDIF (CMAKE_UNIVERSAL MATCHES TRUE)
     ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+        ADD_DEFINITIONS(-D__GNU_LIBRARY__) 
         SET(PLATFORM SunOS_sparc)
+        SET(GNU_LIB_PATH CACHE PATH "The path containing the gnu library for solaris." )
+        SET(PLATFORM_LIBS gnu)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
         SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "-xO3 -DNDEBUG")
@@ -98,6 +101,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${GNU_LIB_PATH}
 )
 
 INCLUDE_DIRECTORIES(
@@ -122,6 +126,7 @@ SET(SVK_LIBS
     dcmdata
     ofstd 
     z
+    ${PLATFORM_LIBS}
 )
 
 
