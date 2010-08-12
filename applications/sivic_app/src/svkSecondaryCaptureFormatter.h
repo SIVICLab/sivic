@@ -116,10 +116,11 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void RenderCombinedImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
         void WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
         void RenderSummaryImage( int firstFrame, int lastFrame, svkImageData* outputImage, bool flipImage, bool print );
-        void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, bool preview = 0 );
         void PopulateInfoText( vtkTextActor* specText1, vtkTextActor* specText2, vtkTextActor* imageText );
         void PrintImages( string fileNameString, int startImage, int endImage );
 
+        static void PreviewImage( svkImageData* image ); 
     protected:
 
         vtkSivicController*            sivicController;
@@ -130,7 +131,7 @@ class svkSecondaryCaptureFormatter : public vtkObject
         CaptureAspect                  aspect;
 
     private:
-    
+   
         svkDcmHeader::Orientation      orientation;
         vtkRenderWindow*               captureWindow;
         int imageSize[2];

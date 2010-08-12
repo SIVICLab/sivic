@@ -92,6 +92,10 @@ void sivicWindowLevelWidget::SetWindow( double window )
 //! Set the Window range for slider
 void sivicWindowLevelWidget::SetWindowRange( double windowMin, double windowMax )
 {
+    // Window cannot ever be exactly or less than zero.
+    if( windowMin <= 0 ) {
+        windowMin = (windowMax-windowMin)/1000.0;
+    }
     this->windowRange[0] = windowMin;
     this->windowRange[1] = windowMax;
     this->UpdateSliders();
@@ -190,10 +194,6 @@ void sivicWindowLevelWidget::UpdateView()
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
     }
-    if( this->sivicController->GetThresholdType() == "Quantity" ) {
-        // This updates the threshold.
-        this->sivicController->SetThresholdTypeToPercent();
-    }
     
     double* range = NULL;
     // Here we are using the resolution to account for potential rounding errors thout could cause excesive refreshes
@@ -215,6 +215,11 @@ void sivicWindowLevelWidget::UpdateView()
         if( range[0] != plotGridRange[0] || range[1] != plotGridRange[1] ) {
             svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayWLRange(range);
         }
+    }
+
+    if( this->sivicController->GetThresholdType() == "Quantity" ) {
+        // This updates the threshold. This does not update the value the slider represents so it can
+        this->sivicController->UpdateThreshold();
     }
 
 

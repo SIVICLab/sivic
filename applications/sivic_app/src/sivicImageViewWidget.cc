@@ -569,6 +569,11 @@ void sivicImageViewWidget::CreateWidget()
     
 }
 
+
+/*!
+ * Update the threshold value and correct for the discrete bin size of the
+ * thresholding algorithm.
+ */
 void sivicImageViewWidget::UpdateThreshold( )
 {
     if( this->sivicController->GetThresholdType() == "Quantity" ) {
@@ -577,15 +582,17 @@ void sivicImageViewWidget::UpdateThreshold( )
 
         int numTableVals = svkOverlayView::SafeDownCast(
                                   overlayController->GetView())->GetLookupTable()->GetNumberOfTableValues();
-
-        double currentThreshold =  svkLookupTable::SafeDownCast( 
-                                      svkOverlayView::SafeDownCast(
-                                         overlayController->GetView())->GetLookupTable() )->GetAlphaThreshold();
-        double newThreshold = (this->overlayThresholdSlider->GetValue()-dataRange[0])/(dataRange[1]-dataRange[0]);
+        double currentValue = this->overlayThresholdSlider->GetValue();
+        double newThreshold = ((currentValue - dataRange[0])/(dataRange[1]-dataRange[0]));
+        // Negative threshold makes no sense since it is a percentage.
+        if( newThreshold < 0 ) {
+            newThreshold = 0;
+        }
 
         int firstVisibleIndex = (int)ceil( newThreshold * numTableVals );
         double trueThreshold = ((double)firstVisibleIndex) / numTableVals;
         double thresholdValue = dataRange[0] + (trueThreshold)*(dataRange[1] - dataRange[0]);
+
         if( thresholdValue != this->overlayThresholdSlider->GetValue() ) {
             this->overlayThresholdSlider->SetValue( thresholdValue );
         } else {
@@ -601,7 +608,6 @@ void sivicImageViewWidget::UpdateThreshold( )
             this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
             this->overlayThresholdSlider->RemoveBinding( "<Right>");
             this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
-            this->overlayThresholdSlider->Focus(); 
         }
     } else {
 
@@ -616,7 +622,6 @@ void sivicImageViewWidget::UpdateThreshold( )
         this->overlayThresholdSlider->AddBinding( "<Left>", this->overlayThresholdSlider, decrement.str().c_str() );
         this->overlayThresholdSlider->RemoveBinding( "<Right>");
         this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
-        this->overlayThresholdSlider->Focus(); 
     }
 
 }
@@ -689,6 +694,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
 
     } else if( caller == this->overlayThresholdSlider->GetWidget() ) {
         this->UpdateThreshold();
+        this->overlayThresholdSlider->Focus(); 
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
             this->overlayController->TurnPropOn( svkOverlayView::VOL_SELECTION );

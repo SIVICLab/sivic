@@ -331,7 +331,9 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 /*!
  *
  */
-void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
+void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWriter* writer, string fileNameString, 
+                                                                   int outputOption, svkImageData* outputImage, 
+                                                                   bool print, bool preview ) 
 {
     // Here are all the frames we may want to look at....
     int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
@@ -411,6 +413,9 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
     sliceAppender->Update();
     outputImage->DeepCopy( sliceAppender->GetOutput() );
     outputImage->Update();
+    if( preview ) {
+        this->PreviewImage( outputImage );
+    }
     if( !writer->IsA("svkImageWriter") ) {  
         vtkImageData* imageCopy = vtkImageData::New();
         imageCopy->DeepCopy( outputImage );
@@ -1079,3 +1084,47 @@ void svkSecondaryCaptureFormatter::PrintImages( string fileNameString, int start
     }
 
 }
+
+
+/*!
+ *  Preview an image.
+ */
+void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
+{
+    vtkRenderer* ren = vtkRenderer::New();
+    ren->SetBackground(0.1,0.2,0.4);
+    vtkRenderWindow* window = vtkRenderWindow::New();
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkImageViewer2* viewer = svkImageViewer2::New(); 
+    viewer->SetRenderWindow( window );
+    viewer->SetRenderer( ren );
+    window->AddRenderer( ren);  
+    window->SetSize(600,600); 
+    viewer->SetInput( image );
+    viewer->SetupInteractor( rwi );
+    viewer->SetSliceOrientationToXY();
+    viewer->GetImageActor()->InterpolateOff();
+    viewer->GetRenderer()->ResetCamera();
+    viewer->ResetCamera();
+    int* extent = image->GetExtent();
+    vtkTextActor* textActor = vtkTextActor::New();
+    textActor->ScaledTextOn();
+    textActor->SetTextScaleModeToViewport();
+    textActor->GetTextProperty()->SetFontSize(15);
+    textActor->GetTextProperty()->SetColor(1,0.5,0);
+    textActor->GetTextProperty()->BoldOn();
+    ren->AddActor( textActor );
+    for( int i=extent[4]; i <= extent[5]; i++ ) {
+        stringstream textString;
+        textString << " PREVIEW SLICE: " << i+1 << "/" << extent[5]+1 <<". Close window to continue....   " << endl;
+        textActor->SetInput( textString.str().c_str() );
+        viewer->SetSlice(i);
+        window->Render();
+        rwi->Start();
+    }
+    
+    window->Delete();
+    viewer->Delete();
+    ren->Delete();
+    textActor->Delete();
+}    

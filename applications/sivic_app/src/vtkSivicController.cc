@@ -1268,6 +1268,9 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
      */
     outputImage = svkMriImageData::New();
     outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+    //Give it a default dcos so it can be viewed in an image viewer
+    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+    outputImage->SetDcos(dcos);
     this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     if( writer->IsA("svkImageWriter") ) {  
         static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
@@ -2175,9 +2178,12 @@ void vtkSivicController::DisableWidgets()
 }
 
 
+/*!
+ * Update the threshold to the current value. This is used when window levelling.
+ */
 void vtkSivicController::UpdateThreshold( )
 {
-    this->imageViewWidget->UpdateThreshold();
+    this->SetOverlayThreshold( this->imageViewWidget->overlayThresholdSlider->GetValue() );
 }
 
 
@@ -2313,6 +2319,9 @@ void vtkSivicController::PushToPACS()
     // Lets create image to write out, and attach the image's header to get study info
     svkImageData* outputImage = svkMriImageData::New();
     outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+    // Give it a default dcos so it can be viewed in an image viewer
+    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+    outputImage->SetDcos(dcos);
     this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     string sourceImageName = this->model->GetDataFileName("AnatomicalData"); 
     size_t pos = sourceImageName.find_last_of(".");
@@ -2392,17 +2401,6 @@ void vtkSivicController::PushToPACS()
     }
 
 
-    // Verify the user wants to push to pacs
-    vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
-    messageDialog->SetApplication(app);
-    messageDialog->Create();
-    messageDialog->SetText( "Are you sure you want to push to PACS?" );
-    messageDialog->SetStyle( vtkKWMessageDialog::StyleOkCancel);
-    messageDialog->Invoke();
-    if ( messageDialog->GetStatus() != vtkKWDialog::StatusOK ) {
-        return;
-    }
-    messageDialog->Delete();
 
     // Set PACS directory
     string pacsDirectory( "/data/dicom_mb/export/PACS/" );
@@ -2471,36 +2469,54 @@ void vtkSivicController::PushToPACS()
     int currentSlice = this->plotController->GetSlice(); 
      
     bool print = 0; 
+    bool preview = 1; 
 
     this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
-                               writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print );
+                               writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print, preview );
 
     // Reset the slice
     this->SetSlice(currentSlice);
 
+    // Verify the user wants to push to pacs
+    vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
+    messageDialog->SetApplication(app);
+    messageDialog->Create();
+    stringstream textString;
+    textString <<"Are you sure you want to push to PACS?\nImages will be copied to " << pacsDirectory << "." << endl; 
+    messageDialog->SetText( textString.str().c_str() );
+    messageDialog->SetStyle( vtkKWMessageDialog::StyleOkCancel);
+    messageDialog->Invoke();
+    bool confirmSend = false;
+    if ( messageDialog->GetStatus() == vtkKWDialog::StatusOK ) {
+        confirmSend = true;
+    }
+    messageDialog->Delete();
+
     // Now we copy the local images to PACS
-    for( int i = outputImage->GetExtent()[4]; i <= outputImage->GetExtent()[5]; i++ ) {
-        string sourceImageName = fileNameString;
+    if( confirmSend ) {
+        for( int i = outputImage->GetExtent()[4]; i <= outputImage->GetExtent()[5]; i++ ) {
+            string sourceImageName = fileNameString;
 
-        ostringstream frameNum;
-        frameNum <<  i+1;
+            ostringstream frameNum;
+            frameNum <<  i+1;
 
-        //  Replace * with slice number in output file name: 
-        size_t pos = sourceImageName.find_last_of("*");
-        if ( pos != string::npos) {
-            sourceImageName.replace(pos, 1, frameNum.str());
-        } else {
-            size_t pos = sourceImageName.find_last_of(".");
-            sourceImageName.replace(pos, 1, frameNum.str() + ".");
+            //  Replace * with slice number in output file name: 
+            size_t pos = sourceImageName.find_last_of("*");
+            if ( pos != string::npos) {
+                sourceImageName.replace(pos, 1, frameNum.str());
+            } else {
+                size_t pos = sourceImageName.find_last_of(".");
+                sourceImageName.replace(pos, 1, frameNum.str() + ".");
+            }
+            string targetImageName = sourceImageName;
+            pos = targetImageName.find( localDirectory.c_str() ); 
+            targetImageName.replace( pos, localDirectory.size(), pacsDirectory.c_str(), pos, pacsDirectory.size());
+
+            stringstream copyCommand;
+            copyCommand << "cp " << sourceImageName.c_str() <<" "<< targetImageName.c_str();
+            //cout<< copyCommand.str().c_str() << endl;
+            system( copyCommand.str().c_str() );
         }
-        string targetImageName = sourceImageName;
-        pos = targetImageName.find( localDirectory.c_str() ); 
-        targetImageName.replace( pos, localDirectory.size(), pacsDirectory.c_str(), pos, pacsDirectory.size());
-
-        stringstream copyCommand;
-        copyCommand << "cp " << sourceImageName.c_str() <<" "<< targetImageName.c_str();
-        //cout<< copyCommand.str().c_str() << endl;
-        system( copyCommand.str().c_str() );
     }
 
     if (outputImage != NULL) {
