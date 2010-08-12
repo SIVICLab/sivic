@@ -532,28 +532,29 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
  */
 int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ?
-                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    double* origin = this->GetOrigin();
-    int index = this->GetOrientationIndex( sliceOrientation );
+
+    double* origin  = new double[3];
+    this->GetDcmHeader()->GetOrigin(origin, 0);
     double* spacing = this->GetSpacing();
+
+    //  this should be the origin of the selection box 
+    //  (i.e. treat as a single slice). 
+    string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     if( acquisitionType == "SINGLE VOXEL" ) {
         origin = new double[3];
         spacing = new double[3];
-        this->GetSelectionBoxOrigin( origin );
+        this->GetSelectionBoxCenter( origin ); 
         this->GetSelectionBoxSpacing( spacing );
     } 
-    double normal[3];
-    this->GetSliceNormal( normal, sliceOrientation );
-    double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
-    double imageCenter = vtkMath::Dot( posLPS, normal );
-    double idealCenter = ( imageCenter-vtkMath::Dot( origin, normalDouble) )/(spacing[index] );
-    int slice = (int) floor( idealCenter );
+
+    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing ); 
+
     if( acquisitionType == "SINGLE VOXEL" ) {
-        delete[] origin;
         delete[] spacing;
     } 
+
+    delete[] origin;
+
     return slice;
 }
 

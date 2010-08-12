@@ -1331,18 +1331,49 @@ void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation slic
  */
 int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
 {
+
+    double* origin  = new double[3]; 
+    this->GetDcmHeader()->GetOrigin(origin, 0); 
+    double* spacing = this->GetSpacing();
+
+    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing ); 
+    
+    delete[] origin; 
+    
+    return slice; 
+}
+
+
+/*!
+ *  This projects a posLPS onto a normal vector through the real world origin.  This is a common reference vector for 
+ *  both the MRI and MRS data.  The projection is normalized by the relevant data slice spacing to get the nearest 
+ *  slice.
+ */
+int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation sliceOrientation, double* origin, double* spacing ) 
+{
+
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
+
     double normal[3];
-    double* origin = this->GetOrigin();
-    double* spacing = this->GetSpacing();
-    int index = this->GetOrientationIndex( sliceOrientation );
     this->GetSliceNormal( normal, sliceOrientation );
-    double normalDouble[3] = { (double)normal[0], (double)normal[1], (double)normal[2] };
+
+    //  Project posLPS onto the normal vector through the 
+    //  origin of world coordinate space (this is the same 
+    //  reference for both data sets (e.g MRI and MRS). 
     double imageCenter = vtkMath::Dot( posLPS, normal ); 
-    double idealCenter = ( imageCenter-vtkMath::Dot( origin, normalDouble) )/(spacing[index] );
-    int slice = (int) floor( idealCenter + 0.5 );
-    return slice; 
+
+    //  Which index (0,1,2) represents the 
+    //  coordinate specified by sliceOrientation
+    int index = this->GetOrientationIndex( sliceOrientation );
+
+    //  Origin here is the center of the toplc slice (DICOM origin). 
+    //  This is fractional and needs to be rounded to get the integer 
+    //  slice value. 
+    double exactSlice = ( imageCenter - vtkMath::Dot( origin, normal ) )/(spacing[index] );
+
+    //  floor 0.5 is a nint implementation to get the nearest int slice.  
+    return (int) floor( exactSlice + 0.5 );
 }
 
 

@@ -267,6 +267,11 @@ class svkImageData: public vtkImageData
         bool                            WasModified();
         virtual void                    UpdateSvkParams();
         virtual void                    UpdateRange( int component );
+        int     FindMatchingSlice( double* posLPS, 
+                                   svkDcmHeader::Orientation sliceOrientation, 
+                                   double* origin, 
+                                   double* spacing 
+                                 ); 
 
     
     private:
@@ -274,7 +279,7 @@ class svkImageData: public vtkImageData
         double             dcos[3][3];
         unsigned long      lastUpdateTime;
 
-        void CastDataArrays( int vtkDataArrayType, vtkDataSetAttributes* fieldData );
+        void    CastDataArrays( int vtkDataArrayType, vtkDataSetAttributes* fieldData );
 
 
 };
