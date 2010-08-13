@@ -100,12 +100,12 @@ void svkSpecUtils::PhaseSpectrum(vtkFloatArray* spectrum, float phase, int point
 float svkSpecUtils::GetPPMRef(float transmitFreq, float freqOffset, float temp )
 {
 
-    float ZERO_KELVIN       = svkSpecUtils::ZERO_KELVIN;
+    float ZERO_KELVIN       = svkSpecUtils::ZERO_KELVIN;    // 0C in kelvin scale 
     float H2O_Y_INTERCEPT   = svkSpecUtils::H2O_Y_INTERCEPT;
     float H2O_SLOPE         = svkSpecUtils::H2O_SLOPE;
     float BODY_TEMPERATURE  = svkSpecUtils::BODY_TEMPERATURE;
 
-    float ppmRef = H2O_Y_INTERCEPT - ( (BODY_TEMPERATURE + ZERO_KELVIN)/H2O_SLOPE ) - (freqOffset / transmitFreq );
+    float ppmRef = H2O_Y_INTERCEPT - ( (temp + ZERO_KELVIN)/H2O_SLOPE ) - (freqOffset / transmitFreq );
 
     return ppmRef;
 }
