@@ -401,7 +401,7 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string stud
 void svkGEPFileReader::SetTemperature( float temp )
 {
     float* flagTemp = new float(temp);
-// possibly enforce use of vtk primitive types, everything is then a vtkObject and we have a pseudo homogeneous container.
+    // possibly enforce use of vtk primitive types, everything is then a vtkObject and we have a pseudo homogeneous container.
     this->inputArgs[ "temperature" ] = static_cast<void*>( flagTemp );
 
 }
