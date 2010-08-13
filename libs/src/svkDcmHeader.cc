@@ -367,6 +367,16 @@ void svkDcmHeader::GetDataDcos(double dcos[3][3], DcmDataOrderingDirection slice
     for (int j = 0; j < 3; j++) {
         dcos[2][j] = normal[j]; 
     }
+
+    //
+    //  change -0.0000 to 0.0000
+    //
+    for( int i = 0; i <= 2; i++ ) {
+        for( int j = 0; j <= 2; j++ ) {
+            dcos[i][j] = (dcos[i][j] == 0.0)? 0.0 : dcos[i][j];
+        }
+    }
+
 }
 
 
