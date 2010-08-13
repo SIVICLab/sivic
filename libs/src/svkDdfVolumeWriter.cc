@@ -606,14 +606,31 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "centered on water: " << onH20 << endl;
     *out << "suppression technique: " << endl;
     *out << "residual water:" << endl;
-    *out << "number of acquisitions: " << 
+   
+    int numAcqs = static_cast< int > (   
         hdr->GetFloatSequenceItemElement(
             "MRAveragesSequence", 0, "NumberOfAverages", 
             "SharedFunctionalGroupsSequence", 0
-        ) << endl;
+        )
+    ); 
+    *out << "number of acquisitions: " << numAcqs << endl; 
 
-    *out << "chop: " << endl;
-    *out << "even symmetry: " << endl;
+    string chop = hdr->GetStringValue( "SVK_AcquisitionChop" );
+    if ( chop.compare( "YES" ) == 0 ) {
+        chop = "yes"; 
+    } else {
+        chop = "no"; 
+    }
+    *out << "chop: " << chop << endl;
+
+    string symmetry = hdr->GetStringValue( "SVK_KSpaceSymmetry" );
+    string evenSymmetry; 
+    if ( symmetry.compare( "EVEN" ) == 0 ) {
+        evenSymmetry = "yes"; 
+    } else {
+        evenSymmetry = "no"; 
+    }
+    *out << "even symmetry: " << evenSymmetry << endl;
     *out << "data reordered: " << endl;
 
     float acqTLC[3];
