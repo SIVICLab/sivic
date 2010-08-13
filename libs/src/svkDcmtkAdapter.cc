@@ -226,11 +226,32 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
-    //ddfMap["numberOfAcquisitions"] = this->ReadLineValue(iss, ':');   -> nex?
-    //ddfMap["chop"] = this->ReadLineValue(iss, ':'); -> can be derived from nex
-    //ddfMap["evenSymmetry"] = this->ReadLineValue(iss, ':'); ->user15
-    //ddfMap["dataReordered"] = this->ReadLineValue(iss, ':'); -> derived (swap, flip_kx, flip_ky)
-    
+
+    // ===================================================
+    //  Private Additions to:  
+    //  MR Spectroscopy Pulse Sequence Module
+    //  (DICOM PT 3: C.8.14.2)
+    // ===================================================
+
+    //  defined terms specify whether k-space was sampled 
+    //  symmetrically or not.  E.g., for an even number of 
+    //  phase encodes, if even sampling, then k=0 was not 
+    //  sampled . 
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1016, EVR_CS, 
+            "SVK_KSpaceSymmetry", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    //  Specifies (True/False) if acquired data was chopped
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x101y, EVR_CS, 
+            "SVK_AcquisitionChop", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
     dcmDataDict.unlock();
 }
 
