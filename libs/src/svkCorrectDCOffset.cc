@@ -65,13 +65,27 @@ svkCorrectDCOffset::svkCorrectDCOffset()
 }
 
 
-
 /*!
  *
  */
 svkCorrectDCOffset::~svkCorrectDCOffset()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+}
+
+
+/*!
+ *
+ */ 
+int svkCorrectDCOffset::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+    this->CorrectDCOffset(); 
+    this->SetProvenance(); 
+
+    //  Trigger observer update via modified event:
+    this->GetInput()->Modified();
+    this->GetInput()->Update();
+
 }
 
 
@@ -87,7 +101,7 @@ svkCorrectDCOffset::~svkCorrectDCOffset()
 void svkCorrectDCOffset::CorrectDCOffset()
 {
 
-    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) );
 
     int cols               = mrsData->GetDcmHeader()->GetIntValue( "Columns" );
     int rows               = mrsData->GetDcmHeader()->GetIntValue( "Rows" );
@@ -111,13 +125,14 @@ void svkCorrectDCOffset::CorrectDCOffset()
     float cmplxPt[2]; 
     int numSampledFIDs = 0; 
 
+    int channelVoxelIndex0 = 0;
     for ( int coil = 0; coil < numCoils; coil++ ) {
 
         offset[0] = 0.0;    // real
         offset[1] = 0.0;    // imaginary
         numSampledFIDs = 0; 
 
-        for( int voxelId = 0; voxelId < numVoxelsPerVolume; voxelId++ ) {
+        for( int voxelId = channelVoxelIndex0; voxelId < channelVoxelIndex0 + numVoxelsPerVolume; voxelId++ ) {
 
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( voxelId) );
 
@@ -135,27 +150,30 @@ void svkCorrectDCOffset::CorrectDCOffset()
 
         offset[0] = offset[0] / ( numSampledFIDs * fractionOfSpectrum );
         offset[1] = offset[1] / ( numSampledFIDs * fractionOfSpectrum );
-        cout << "NUMSAMPLED: " << numSampledFIDs << endl;
-        cout << "fraction: " << fractionOfSpectrum << endl;
-        cout << "DC OFFSET = " << offset[0] << endl;
-        cout << "DC OFFSET = " << offset[1] << endl << endl;
 
         //  correct the spectra from this coil; 
-        for( int voxelId = 0; voxelId < numVoxelsPerVolume; voxelId++ ) {
+        for( int voxelId = channelVoxelIndex0; voxelId < (channelVoxelIndex0 + numVoxelsPerVolume); voxelId++ ) {
 
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( voxelId) );
 
             if ( this->WasKSpacePtSampled( spectrum, numSpecPts * numComponents  ) ) {
 
                 for (int freq = 0; freq < numSpecPts; freq++ ) {
+
                     spectrum->GetTupleValue( freq, cmplxPt );
+
                     cmplxPt[0] -= offset[0];
                     cmplxPt[1] -= offset[1];
                     spectrum->SetTuple( freq, cmplxPt);
+
                 }
             }
         }
+        channelVoxelIndex0 = channelVoxelIndex0 + numVoxelsPerVolume; 
     }
+
+    this->GetInput()->Modified();
+    this->GetInput()->Update();
 }
 
 
@@ -186,6 +204,25 @@ bool svkCorrectDCOffset::WasKSpacePtSampled( vtkFloatArray* spectrum, int numPts
     return wasSampled; 
 
 } 
+
+
+/*!
+ *
+ */
+void svkCorrectDCOffset::SetProvenance()
+{
+    this->GetImageDataInput(0)->GetProvenance()->AddAlgorithm( this->GetClassName() );
+}
+
+
+/*!
+ *
+ */
+int svkCorrectDCOffset::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+{
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMrsImageData");
+    return 1;
+}
 
 
 /*!
