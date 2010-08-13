@@ -246,7 +246,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
     //  Specifies (True/False) if acquired data was chopped
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x101y, EVR_CS, 
+            0x7777, 0x1017, EVR_CS, 
             "SVK_AcquisitionChop", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
