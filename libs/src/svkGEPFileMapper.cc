@@ -1906,10 +1906,10 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
  */
 float svkGEPFileMapper::GetFrequencyOffset() 
 {
-    if ( this->pfileVersion < 11  ) {
-        return this->GetHeaderValueAsFloat( "rhr.rh_user13" );
-    } else {
+    if ( this->pfileVersion > 9  ) {
         return 0.;
+    } else {
+        return this->GetHeaderValueAsFloat( "rhr.rh_user13" );
     }
 
 }
@@ -1963,56 +1963,17 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
+    this->dcmHeader->SetValue( "MRSpectroscopyAcquisitionType", acqType ); 
 
-    this->dcmHeader->SetValue(
-        "MRSpectroscopyAcquisitionType", 
-        acqType 
-    );
-
-    this->dcmHeader->SetValue(
-        "EchoPulseSequence", 
-        "SPIN" 
-    );
-
-    this->dcmHeader->SetValue(
-        "MultipleSpinEcho", 
-        "NO" 
-    );
-
-    this->dcmHeader->SetValue(
-        "MultiPlanarExcitation", 
-        "NO" 
-    );
-
-    this->dcmHeader->SetValue(
-        "SteadyStatePulseSequence", 
-        "NONE" 
-    );
-
-    this->dcmHeader->SetValue(
-        "EchoPlanarPulseSequence", 
-        "NO" 
-    );
-
-    this->dcmHeader->SetValue(
-        "SpectrallySelectedSuppression", 
-        "WATER" 
-    );
-
-    this->dcmHeader->SetValue(
-        "GeometryOfKSpaceTraversal", 
-        "RECTILINEAR" 
-    );
-
-    this->dcmHeader->SetValue( 
-        "RectilinearPhaseEncodeReordering",
-        "LINEAR"
-    );
-
-    this->dcmHeader->SetValue( 
-        "SegmentedKSpaceTraversal", 
-        "SINGLE"
-    );
+    this->dcmHeader->SetValue( "EchoPulseSequence", "SPIN" ); 
+    this->dcmHeader->SetValue( "MultipleSpinEcho", "NO" );   
+    this->dcmHeader->SetValue( "MultiPlanarExcitation", "NO" ); 
+    this->dcmHeader->SetValue( "SteadyStatePulseSequence", "NONE" ); 
+    this->dcmHeader->SetValue( "EchoPlanarPulseSequence", "NO" );  
+    this->dcmHeader->SetValue( "SpectrallySelectedSuppression", "WATER" ); 
+    this->dcmHeader->SetValue( "GeometryOfKSpaceTraversal", "RECTILINEAR" ); 
+    this->dcmHeader->SetValue( "RectilinearPhaseEncodeReordering", "LINEAR" );  
+    this->dcmHeader->SetValue( "SegmentedKSpaceTraversal", "SINGLE" ); 
 
     string kspaceCoverage; 
     if ( this->GetNumKSpacePoints() <  this->GetNumVoxelsInVol() ) {
@@ -2020,17 +1981,23 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
     } else {
         kspaceCoverage = "FULL"; 
     }
-    
-    this->dcmHeader->SetValue(
-        "CoverageOfKSpace", 
-        kspaceCoverage 
-    );
+    this->dcmHeader->SetValue( "CoverageOfKSpace", kspaceCoverage ); 
 
-    this->dcmHeader->SetValue( 
-        "NumberOfKSpaceTrajectories", 
-        1 
-    );
+    this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1); 
 
+    string kSpaceSymmetry; 
+    if ( this->pfileVersion > 9 ) {
+        kSpaceSymmetry = "EVEN"; 
+    } else {
+        kSpaceSymmetry = this->GetHeaderValueAsString( "rhr.rh_user15" );
+    }
+    this->dcmHeader->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry ); 
+
+    string chop = "NO"; 
+    if ( IsChopOn() ) {
+        chop = "YES"; 
+    }
+    this->dcmHeader->SetValue( "SVK_AcquisitionChop", chop ); 
 }
 
 
