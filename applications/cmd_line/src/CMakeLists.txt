@@ -170,6 +170,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_spec_diff
+    svk_spec_diff.cc 
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_spec_diff
+    ${SVK_LIBS}
+)
+
 
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS 

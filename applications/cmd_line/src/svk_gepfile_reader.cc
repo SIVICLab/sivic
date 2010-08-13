@@ -43,6 +43,7 @@
  *
  */
 
+#include <vtkSmartPointer.h>
 
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
@@ -51,10 +52,12 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkDICOMMRSWriter.h>
+#include <svkCorrectDCOffset.h>
 #include <svkDcmHeader.h>
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
-#include <vtkIndent.h>
+#include <svkImageAlgorithm.h>
+
 #include <getopt.h>
 
 #define UNDEFINED_TEMP -1111
@@ -68,24 +71,32 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type [ -u | -s ] [ -anh ] \n";
+    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type \n"; 
     usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
-    usemsg += "                   [ --temp tmp ] \n";
+    usemsg += "                   [ -u | -s ] [ -anh ] \n";
+    usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
     usemsg += "\n";  
-    usemsg += "   -i  input_file_name   name of file to convert. \n"; 
-    usemsg += "   -o  output_file_name  name of outputfile. \n";
-    usemsg += "   -t  output_data_type  target data type: \n";
-    usemsg += "                               2 = UCSF DDF      \n";
-    usemsg += "                               4 = DICOM_MRS (default)    \n";
-    usemsg += "   --deid_type     type  Type of deidentification ( 1 = limited or 2 = deidentified ). \n";  
-    usemsg += "   --deid_pat_id   id    Use the specified patient id to deidentify patient level PHI fields. \n";          
-    usemsg += "   --deid_study_id id    Use the specified study id to deidentify study level PHI fields. \n";  
-    usemsg += "   -u                    if single voxel, write unsuppressed data (individual acqs. preserved) \n"; 
-    usemsg += "   -s                    if single voxel, write suppressed data (individual acqs. preserved) \n"; 
-    usemsg += "   -a                    if single voxel, write average of the specified data (e.g. all, suppressesd, unsuppressed) \n"; 
-    usemsg += "   --one_time_pt         if there are multiple time points, separate each into its own file. (supported only for ddf output) \n";
-    usemsg += "   -h                    print help mesage. \n";  
-    usemsg += " \n";  
+    usemsg += "   -i                name   Name of file to convert. \n"; 
+    usemsg += "   -o                name   Name of outputfile. \n";
+    usemsg += "   -t                type   Target data type: \n";
+    usemsg += "                                 2 = UCSF DDF      \n";
+    usemsg += "                                 4 = DICOM_MRS (default)    \n";
+    usemsg += "   --deid_type       type   Type of deidentification: \n";  
+    usemsg += "                                 1 = limited (default) \n";  
+    usemsg += "                                 2 = deidentified \n";  
+    usemsg += "   --deid_pat_id     id     Use the specified patient id to deidentify patient level PHI fields. \n";          
+    usemsg += "   --deid_study_id   id     Use the specified study id to deidentify study level PHI fields. \n";  
+    usemsg += "   -u                       If single voxel, write only unsuppressed data (individual acqs. preserved) \n"; 
+    usemsg += "   -s                       If single voxel, write only suppressed data (individual acqs. preserved) \n"; 
+    usemsg += "   -a                       If single voxel, write average of the specified data  \n"; 
+    usemsg += "                            (e.g. all, suppressesd, unsuppressed) \n"; 
+    usemsg += "   --one_time_pt            If there are multiple time points, separate each into its own file.  \n";
+    usemsg += "                            (supported only for ddf output) \n";
+    usemsg += "   --temp             temp  Set the temp (celcius) of the acquisition.  Default is body temperature. Used to \n"; 
+    usemsg += "                            set the chemical shift of water. \n"; 
+    usemsg += "   --no_dc_correction       Turns DC Offset correction off. \n"; 
+    usemsg += "   -h                       Print this help mesage. \n";  
+    usemsg += "\n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
     usemsg += "\n";  
 
@@ -101,33 +112,36 @@ int main (int argc, char** argv)
     string deidPatId = ""; 
     string deidStudyId = ""; 
     float temp = UNDEFINED_TEMP; 
+    bool dcCorrection = true; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
 
     enum FLAG_NAME {
         FLAG_ONE_TIME_PT = 0, 
+        FLAG_DC_CORRECTION, 
         FLAG_DEID_TYPE, 
         FLAG_DEID_PAT_ID, 
         FLAG_DEID_STUDY_ID, 
-        FLAG_TEMP 
+        FLAG_TEMP
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"one_time_pt",   no_argument,       &oneTimePtPerFile, FLAG_ONE_TIME_PT},
-        {"deid_type",     required_argument, NULL,              FLAG_DEID_TYPE},
-        {"deid_pat_id",   required_argument, NULL,              FLAG_DEID_PAT_ID},
-        {"deid_study_id", required_argument, NULL,              FLAG_DEID_STUDY_ID},
-        {"temp",          required_argument, NULL,              FLAG_TEMP},
+        {"one_time_pt",      no_argument,       NULL,  FLAG_ONE_TIME_PT},
+        {"no_dc_correction", no_argument,       NULL,  FLAG_DC_CORRECTION},
+        {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE},
+        {"deid_pat_id",      required_argument, NULL,  FLAG_DEID_PAT_ID},
+        {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
+        {"temp",             required_argument, NULL,  FLAG_TEMP},
         {0, 0, 0, 0}
     };
 
-    /*
-    *   Process flags and arguments
-    */
+    // ===============================================  
+    //  Process flags and arguments
+    // ===============================================  
     int i;
     int option_index = 0; 
     while ( ( i = getopt_long(argc, argv, "i:o:t:usah", long_options, &option_index) ) != EOF) {
@@ -153,6 +167,9 @@ int main (int argc, char** argv)
             case FLAG_ONE_TIME_PT:
                 oneTimePtPerFile = true; 
                 break;
+            case FLAG_DC_CORRECTION:
+                dcCorrection = false; 
+                break;
             case FLAG_DEID_TYPE:
                 deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));  
                 break;
@@ -177,11 +194,13 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    /*  validate that: 
-     *      an output name was supplied
-     *      that not suppresses and unsuppressed were both specified 
-     *      that only the supported output types was requested. 
-     */      
+    // ===============================================  
+    //  validate that: 
+    //      an output name was supplied
+    //      that not suppresses and unsuppressed were both specified 
+    //      that only the supported output types was requested. 
+    //      
+    // ===============================================  
     if ( 
         argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
@@ -192,7 +211,10 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    //  validate that if oneTimePtPerFile was specified that the output type must be ddf 
+    // ===============================================  
+    //  validate that if oneTimePtPerFile was specified 
+    //  that the output type must be ddf 
+    // ===============================================  
     if ( oneTimePtPerFile && dataTypeOut != svkImageWriterFactory::DDF ) {
         cout << "Error: -n flag and -t flag conflict. " << endl;
         cout << "        num time points option only supported for ddf output" << endl;
@@ -200,8 +222,13 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    // ===============================================  
     //  validate deidentification args:  
-    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED && deidType != svkDcmHeader::PHI_LIMITED &&  deidType != svkDcmHeader::PHI_IDENTIFIED) {
+    // ===============================================  
+    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED &&
+         deidType != svkDcmHeader::PHI_LIMITED &&
+         deidType != svkDcmHeader::PHI_IDENTIFIED) 
+    {
         cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
         cout << usemsg << endl;
         exit(1); 
@@ -211,9 +238,12 @@ int main (int argc, char** argv)
 
     cout << "file name: " << inputFileName << endl;
 
-    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    // ===============================================  
+    //  Use a reader factory to get the correct reader  
+    //  type . 
+    // ===============================================  
+    vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
     svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
-    readerFactory->Delete(); 
 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
@@ -221,9 +251,11 @@ int main (int argc, char** argv)
     }
 
 
-    //  
-    //  Read the data into an svkMrsImageData object
-    //  
+    // ===============================================  
+    //  Use the reader to read the data into an 
+    //  svkMrsImageData object and set any reading
+    //  behaviors (e.g. average suppressed data). 
+    // ===============================================  
     reader->SetFileName( inputFileName.c_str() );
 
     //  Set the svkGEPFileReader's behavior if not default
@@ -241,7 +273,9 @@ int main (int argc, char** argv)
         reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW ); 
     }
 
+    // ===============================================  
     //  Set up deidentification options: 
+    // ===============================================  
     if ( deidType != svkDcmHeader::PHI_IDENTIFIED ) { 
         if ( deidPatId.compare("") != 0 && deidStudyId.compare("") != 0 ) { 
             reader->SetDeidentify( deidType, deidPatId, deidStudyId ); 
@@ -260,11 +294,27 @@ int main (int argc, char** argv)
     
     reader->Update(); 
 
+    svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
 
-    //  
-    //  Read the data into an svkMrsImageData object
-    //  
-    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    // ===============================================  
+    //  Optionally perform the DC offset correction
+    // ===============================================  
+    vtkSmartPointer< svkCorrectDCOffset > dc = vtkSmartPointer< svkCorrectDCOffset >::New(); 
+    if ( dcCorrection ) {
+        dc->SetInput( reader->GetOutput() ); 
+        dc->Update(); 
+
+        //  if this step is included, then reset the current algo to be 
+        //  passed to the writer. 
+        currentImage = svkMrsImageData::SafeDownCast( dc->GetOutput() ); 
+    }
+
+    // ===============================================  
+    //  Write the data out to the specified file type.  
+    //  Use an svkImageWriterFactory to obtain the
+    //  correct writer type. 
+    // ===============================================  
+    vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
     svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
 
     if ( writer == NULL ) {
@@ -272,20 +322,28 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( reader->GetOutput() );
+    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
     if ( oneTimePtPerFile ) { 
         svkDdfVolumeWriter::SafeDownCast( writer )->SetOneTimePointsPerFile();
     }
 
-    //  Set the input command line into the data set provenance: 
+    // ===============================================  
+    //  Set the input command line into the data set 
+    //  provenance: 
+    // ===============================================  
     reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
+    // ===============================================  
+    //  Write data to file: 
+    // ===============================================  
     writer->Write();
+
+    // ===============================================  
+    //  Clean up: 
+    // ===============================================  
     writer->Delete();
     reader->Delete();
-
 
     return 0; 
 }
