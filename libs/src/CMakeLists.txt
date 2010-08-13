@@ -170,6 +170,7 @@ ADD_LIBRARY(
     svkByteSwap.cc
     svkMultiCoilPhase.cc
     svkCoilCombine.cc
+    svkCorrectDCOffset.cc
     svkSpecUtils.cc
     svkUCSFUtils.cc
     svkImageFourierCenter.cc
