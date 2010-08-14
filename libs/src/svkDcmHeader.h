@@ -504,8 +504,8 @@ class svkDcmHeader: public vtkObject
                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils); 
 
         void                Deidentify( PHIType phiType ); 
-        void                Deidentify( string id, PHIType phiType );   
-        void                Deidentify( string patientId, string studyId, PHIType phiType );   
+        void                Deidentify( PHIType phiType, string id );   
+        void                Deidentify( PHIType phyType, string patientId, string studyId );   
 
         
 

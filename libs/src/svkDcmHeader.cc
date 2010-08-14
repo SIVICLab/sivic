@@ -977,7 +977,7 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
 void svkDcmHeader::Deidentify( PHIType phiType )
 {    
     // set both patientId and studyId to DEIDENTIFIED:
-    this->Deidentify( "DEIDENTIFIED", phiType );
+    this->Deidentify( phiType, "DEIDENTIFIED" );
 }
 
 
@@ -1007,10 +1007,10 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      3006,0024 ReferencedFrameOfReferenceUID
  *      3006,00C2 RelatedFrameOfReferenceUID
  */
-void svkDcmHeader::Deidentify( string id, PHIType phiType )
+void svkDcmHeader::Deidentify( PHIType phiType, string id )
 {    
     // set both patientId and studyId to the same value:
-    this->Deidentify( id, id, phiType );
+    this->Deidentify( phiType, id, id );
 }
 
 
@@ -1040,7 +1040,7 @@ void svkDcmHeader::Deidentify( string id, PHIType phiType )
  *      3006,0024 ReferencedFrameOfReferenceUID
  *      3006,00C2 RelatedFrameOfReferenceUID
  */
-void svkDcmHeader::Deidentify( string patientId, string studyId, PHIType phiType )
+void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId )
 {     
 
     //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
