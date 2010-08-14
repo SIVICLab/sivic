@@ -123,6 +123,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
     if ( this->gepf->is_open() ) {
 
         this->pfileVersion = this->GetPFileVersion(); 
+        this->SetByteSwapping(); 
         
         if ( this->pfileVersion ) {
 
