@@ -383,7 +383,7 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string deid
  *  Sets string to use for identification.  All PHI fields will be replace with this 
  *  value. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string studyId, string patientId ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string patientId, string studyId ) 
 {
     svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
     string* patIdTmp = new string(patientId);
@@ -419,14 +419,14 @@ void svkGEPFileReader::DeidentifyData()
 
     if ( itPatId != this->inputArgs.end() && itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
+                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) ), 
                                                 *( static_cast< string* >( this->inputArgs[ itPatId->first ] ) ),
-                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ),
-                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ) 
                                            ); 
     } else if ( itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
-                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ),
-                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
+                                                *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) ), 
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) )
                                            ); 
     } else {
         this->GetOutput()->GetDcmHeader()->Deidentify( 
