@@ -86,6 +86,7 @@ int svkCorrectDCOffset::RequestData( vtkInformation* request, vtkInformationVect
     this->GetInput()->Modified();
     this->GetInput()->Update();
 
+    return 1; 
 }
 
 
