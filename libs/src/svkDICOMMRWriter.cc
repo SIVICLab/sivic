@@ -29,7 +29,7 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDICOMMRWriter.cc $
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDICOMMRIWriter.cc $
  *  $Rev: 153 $
  *  $Author: beckn8tor $
  *  $Date: 2010-02-16 22:34:03 -0500 (Tue, 16 Feb 2010) $
@@ -40,7 +40,7 @@
  */
 
 
-#include <svkDICOMMRWriter.h>
+#include <svkDICOMMRIWriter.h>
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
@@ -49,21 +49,22 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMMRWriter, "$Rev: 153 $");
-vtkStandardNewMacro(svkDICOMMRWriter);
+vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev: 153 $");
+vtkStandardNewMacro(svkDICOMMRIWriter);
 
 
 /*!
  *
  */
-svkDICOMMRWriter::svkDICOMMRWriter()
+svkDICOMMRIWriter::svkDICOMMRIWriter()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
 
-    vtkDebugMacro(<< "svkDICOMMRWriter::svkDICOMMRWriter");
+    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
 
 }
 
@@ -71,17 +72,16 @@ svkDICOMMRWriter::svkDICOMMRWriter()
 /*!
  *
  */
-svkDICOMMRWriter::~svkDICOMMRWriter()
+svkDICOMMRIWriter::~svkDICOMMRIWriter()
 {
 }
 
 
 
 /*!
- *  Write the DICOM MR Spectroscopy multi-frame file.   Also initializes the 
- *  DICOM SpectroscopyData element from the svkImageData object. 
+ *  Write the DICOM Enahnced MR Image multi-frame file.   Also initializes the 
  */
-void svkDICOMMRWriter::Write()
+void svkDICOMMRIWriter::Write()
 {
 
     this->SetErrorCode(vtkErrorCode::NoError);
@@ -138,9 +138,9 @@ void svkDICOMMRWriter::Write()
 /*!
  *
  */
-int svkDICOMMRWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDICOMMRIWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set(svkDICOMMRWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+    info->Set(svkDICOMMRIWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     return 1;
 }
 
@@ -148,7 +148,7 @@ int svkDICOMMRWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInforma
 /*!
  *
  */
-void svkDICOMMRWriter::SetInput( vtkDataObject* input )
+void svkDICOMMRIWriter::SetInput( vtkDataObject* input )
 {
     this->SetInput(0, input);
 }
@@ -157,7 +157,7 @@ void svkDICOMMRWriter::SetInput( vtkDataObject* input )
 /*!
  *
  */
-void svkDICOMMRWriter::SetInput(int index, vtkDataObject* input)
+void svkDICOMMRIWriter::SetInput(int index, vtkDataObject* input)
 {
     if(input) {
         this->SetInputConnection(index, input->GetProducerPort());
@@ -171,7 +171,7 @@ void svkDICOMMRWriter::SetInput(int index, vtkDataObject* input)
 /*!
  *
  */
-vtkDataObject* svkDICOMMRWriter::GetInput(int port)
+vtkDataObject* svkDICOMMRIWriter::GetInput(int port)
 {
     return this->GetExecutive()->GetInputData(port, 0);
 }
@@ -180,19 +180,19 @@ vtkDataObject* svkDICOMMRWriter::GetInput(int port)
 /*!
  *
  */
-svkImageData* svkDICOMMRWriter::GetImageDataInput(int port)
+svkImageData* svkDICOMMRIWriter::GetImageDataInput(int port)
 {
     return svkImageData::SafeDownCast( this->GetInput(port) );
 }
 
 
 /*!
- *  Write the spectral data points to the PixelData DICOM element.       
+ *  Write the pixel data to the PixelData DICOM element.       
  */
-void svkDICOMMRWriter::InitPixelData()
+void svkDICOMMRIWriter::InitPixelData()
 {
 
-    vtkDebugMacro(<<"svkDICOMMRWriter::InitPixelData()");
+    vtkDebugMacro(<<"svkDICOMMRIWriter::InitPixelData()");
     int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
     int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;

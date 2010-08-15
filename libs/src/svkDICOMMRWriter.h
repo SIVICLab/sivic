@@ -29,7 +29,7 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDICOMMRWriter.h $
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDICOMMRIWriter.h $
  *  $Rev: 76 $
  *  $Author: jccrane $
  *  $Date: 2010-01-26 14:05:15 -0500 (Tue, 26 Jan 2010) $
@@ -55,13 +55,13 @@ namespace svk {
 /*! 
  *  Concrete writer instance for DICOM MRI SOP class.  
  */
-class svkDICOMMRWriter : public svkImageWriter
+class svkDICOMMRIWriter : public svkImageWriter
 {
 
     public:
 
-        static svkDICOMMRWriter* New();
-        vtkTypeRevisionMacro( svkDICOMMRWriter, svkImageWriter);
+        static svkDICOMMRIWriter* New();
+        vtkTypeRevisionMacro( svkDICOMMRIWriter, svkImageWriter);
 
         //  Methods:
         void            SetInput( vtkDataObject* input );
@@ -73,8 +73,8 @@ class svkDICOMMRWriter : public svkImageWriter
 
     protected:
 
-        svkDICOMMRWriter();
-        ~svkDICOMMRWriter();
+        svkDICOMMRIWriter();
+        ~svkDICOMMRIWriter();
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
