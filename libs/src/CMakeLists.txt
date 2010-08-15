@@ -103,6 +103,7 @@ ADD_LIBRARY(
     svkDdfVolumeWriter.cc
     svkDICOMSCWriter.cc
     svkDICOMMRSWriter.cc
+    svkDICOMMRIWriter.cc
     svkImageWriterFactory.cc
     svkMultiWindowToImageFilter.cc
     svkImageReaderFactory.cc
