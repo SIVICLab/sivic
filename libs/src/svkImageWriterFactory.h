@@ -85,7 +85,8 @@ class svkImageWriterFactory : public vtkObject
             DDF, 
             IDF, 
             DICOM_MRS, 
-            DICOM_MR, 
+            DICOM_MRI, 
+            DICOM_ENHANCED_MRI, 
             DICOM_SC, 
             PS, 
             LAST_TYPE = PS
