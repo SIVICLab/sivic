@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGESigna5XReader.cc $
- *  $Rev: 76 $
- *  $Author: dbigler $
- *  $Date: 2010-01-26 14:05:15 -0500 (Tue, 26 Jan 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Don C. Bigler, Ph.D.
@@ -65,7 +65,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev: 76 $");
+vtkCxxRevisionMacro(svkGESigna5XReader, "$Rev$");
 vtkStandardNewMacro(svkGESigna5XReader);
 
 

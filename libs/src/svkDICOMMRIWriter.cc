@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDICOMMRIWriter.cc $
- *  $Rev: 153 $
- *  $Author: beckn8tor $
- *  $Date: 2010-02-16 22:34:03 -0500 (Tue, 16 Feb 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -49,7 +49,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev: 153 $");
+vtkCxxRevisionMacro(svkDICOMMRIWriter, "$Rev$");
 vtkStandardNewMacro(svkDICOMMRIWriter);
 
 
