@@ -41,6 +41,7 @@
 
 
 #include <svkImageReaderFactory.h>
+#include <vtkstd/string>
 
 
 using namespace svk;
@@ -60,15 +61,17 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->DebugOn();
 #endif
 
-    this->dcmMriVolReader = svkDcmMriVolumeReader::New();
-    this->dcmMrsVolReader = svkDcmMrsVolumeReader::New();
-    this->idfVolReader    = svkIdfVolumeReader::New();
-    this->ddfVolReader    = svkDdfVolumeReader::New();
-    this->fdfVolReader    = svkFdfVolumeReader::New();
-    this->fidVolReader    = svkVarianFidReader::New();
-    this->sdbmVolReader   = svkSdbmVolumeReader::New();
-    this->rdaVolReader    = svkSiemensRdaReader::New();
-    this->gePFileReader   = svkGEPFileReader::New();
+    this->dcmMriVolReader  = svkDcmMriVolumeReader::New();
+    this->dcmMrsVolReader  = svkDcmMrsVolumeReader::New();
+    this->idfVolReader     = svkIdfVolumeReader::New();
+    this->ddfVolReader     = svkDdfVolumeReader::New();
+    this->fdfVolReader     = svkFdfVolumeReader::New();
+    this->fidVolReader     = svkVarianFidReader::New();
+    this->sdbmVolReader    = svkSdbmVolumeReader::New();
+    this->rdaVolReader     = svkSiemensRdaReader::New();
+    this->gePFileReader    = svkGEPFileReader::New();
+    this->geSigna5XReader  = svkGESigna5XReader::New();
+    this->geSignaLX2Reader = svkGESignaLX2Reader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -79,6 +82,8 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->sdbmVolReader );
     vtkImageReader2Factory::RegisterReader( this->rdaVolReader );
     vtkImageReader2Factory::RegisterReader( this->gePFileReader );
+    vtkImageReader2Factory::RegisterReader( this->geSigna5XReader );
+    vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
 }
 
 
@@ -125,6 +130,26 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->sdbmVolReader = NULL;
     }
 
+    if (this->rdaVolReader != NULL) {
+        this->rdaVolReader->Delete();
+        this->rdaVolReader = NULL;
+    }
+
+    if (this->gePFileReader != NULL) {
+        this->gePFileReader->Delete();
+        this->gePFileReader = NULL;
+    }
+
+    if (this->geSigna5XReader != NULL) {
+        this->geSigna5XReader->Delete();
+        this->geSigna5XReader = NULL;
+    }
+
+    if (this->geSignaLX2Reader != NULL) {
+        this->geSignaLX2Reader->Delete();
+        this->geSignaLX2Reader = NULL;
+    }
+
 }
 
 
@@ -133,5 +158,15 @@ svkImageReaderFactory::~svkImageReaderFactory()
  */
 svkImageReader2* svkImageReaderFactory::CreateImageReader2(const char* path)
 {
-    return static_cast<svkImageReader2*>( this->Superclass::CreateImageReader2( path ) );
+    // The vtkGESignaReader conflicts with the newly added svkGESigna5XReader.
+    // If the Superclass returns GESigna, then return svkGESigna5XReader instead.
+    svkImageReader2* ret = static_cast<svkImageReader2*>( this->Superclass::CreateImageReader2( path ) );
+    if ( ret != NULL ) {
+        vtkstd::string descriptiveName = ret->GetDescriptiveName();
+        if ( descriptiveName == "GESigna" ) {
+            ret->Delete();
+            ret = static_cast<svkImageReader2*>( svkGESigna5XReader::New() );
+        }
+    }
+    return ret;
 }
