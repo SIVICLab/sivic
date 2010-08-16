@@ -57,7 +57,6 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
-    SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -103,16 +102,14 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 ###################################
 #   VTK
 ###################################
-INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
-IF (USE_VTK_FILE)
-    INCLUDE(${USE_VTK_FILE})
-ENDIF (USE_VTK_FILE)
+IF(VTK_FOUND)
+  INCLUDE(${VTK_USE_FILE})
+ENDIF(VTK_FOUND)
 
 
 ###################################
 #   KWWidgets
 ###################################
-FIND_PACKAGE(KWWidgets REQUIRED)
 INCLUDE(${KWWidgets_USE_FILE})
 
 
@@ -129,8 +126,7 @@ target_link_libraries(${LIB_NAME} ${KWWidgets_LIBRARIES})
 ###################################
 #   DCMTK (DCMTK_DIR is the root include dir
 ###################################
-ADD_DEFINITIONS(-DHAVE_CONFIG_H) 
-FIND_PATH(DCMTK_DIR dctk.h)
+ADD_DEFINITIONS(-DHAVE_CONFIG_H)
 
 
 
