@@ -1108,7 +1108,6 @@ void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
     viewer->ResetCamera();
     int* extent = image->GetExtent();
     vtkTextActor* textActor = vtkTextActor::New();
-    textActor->ScaledTextOn();
     textActor->SetTextScaleModeToViewport();
     textActor->GetTextProperty()->SetFontSize(15);
     textActor->GetTextProperty()->SetColor(1,0.5,0);
