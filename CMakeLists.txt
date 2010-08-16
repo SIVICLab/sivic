@@ -26,7 +26,11 @@
 #   OF SUCH DAMAGE.
 #
 
-cmake_minimum_required(VERSION 2.4)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
+IF(COMMAND CMAKE_POLICY)
+    CMAKE_POLICY(SET CMP0005 OLD)
+ENDIF(COMMAND CMAKE_POLICY)
 
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
@@ -40,6 +44,25 @@ option( BUILD_PROFILER "Build stand-alone application." FALSE)
 ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.4\"' )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION='6' )
+
+###################################
+#   VTK
+###################################
+FIND_PACKAGE(VTK)
+IF(NOT VTK_FOUND)
+  MESSAGE(FATAL_ERROR
+    "VTK not found. Please set VTK_DIR.")
+ENDIF(NOT VTK_FOUND)
+
+###################################
+#   KWWidgets
+###################################
+FIND_PACKAGE(KWWidgets REQUIRED)
+
+###################################
+#   DCMTK (DCMTK_DIR is the root include dir
+###################################
+FIND_PATH(DCMTK_DIR dctk.h)
 
 if( BUILD_PROFILER)
     ADD_DEFINITIONS( -pg )
