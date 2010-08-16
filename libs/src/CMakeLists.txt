@@ -21,7 +21,6 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../Linux_x86_64)
         SET(LIBRARY_OUTPUT_PATH ../Linux_x86_64)
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
-    SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-deprecated")
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(EXECUTABLE_OUTPUT_PATH ../Darwin_i386)
@@ -60,16 +59,13 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 ###################################
 #   VTK
 ###################################
-INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
-SET(VTK_WRAP_TCL ON)
-IF (USE_VTK_FILE)
-    INCLUDE(${USE_VTK_FILE})
-ENDIF (USE_VTK_FILE)
+IF(VTK_FOUND)
+  INCLUDE(${VTK_USE_FILE})
+ENDIF(VTK_FOUND)
 
 ###################################
 #   KWWidgets
 ###################################
-FIND_PACKAGE(KWWidgets REQUIRED)
 INCLUDE(${KWWidgets_USE_FILE})
 
 
@@ -77,8 +73,6 @@ INCLUDE(${KWWidgets_USE_FILE})
 #   DCMTK (DCMTK_DIR is the root include dir
 ###################################
 ADD_DEFINITIONS(-DHAVE_CONFIG_H -DSVK_ADAPT_DCMTK) 
-
-FIND_PATH(DCMTK_DIR dctk.h)
 
 
 INCLUDE_DIRECTORIES(
@@ -125,6 +119,8 @@ ADD_LIBRARY(
     svkVarianFidReader.cc
     svkVarianCSFidMapper.cc
     svkVarianFidMapper.cc
+    svkGESigna5XReader.cc
+    svkGESignaLX2Reader.cc
     svkDataView.cc
     svkDataViewController.cc
     svkImageView2D.cc
