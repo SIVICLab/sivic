@@ -45,16 +45,8 @@
 
 
 #include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
 #include <vtkImageWriter.h>
-#include <vtkJPEGWriter.h>
-#include <vtkTIFFWriter.h>
-#include <vtkPostScriptWriter.h>
-#include <svkDICOMSCWriter.h>
-#include <svkDICOMMRSWriter.h>
-#include <svkIdfVolumeWriter.h>
-#include <svkDdfVolumeWriter.h>
+#include <svkImageData.h>
 
 
 namespace svk {
