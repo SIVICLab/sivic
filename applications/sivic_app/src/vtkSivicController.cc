@@ -2318,11 +2318,9 @@ void vtkSivicController::PushToPACS()
 
     // Lets create image to write out, and attach the image's header to get study info
     svkImageData* outputImage = svkMriImageData::New();
-    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
     // Give it a default dcos so it can be viewed in an image viewer
     double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
     outputImage->SetDcos(dcos);
-    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     string sourceImageName = this->model->GetDataFileName("AnatomicalData"); 
     size_t pos = sourceImageName.find_last_of(".");
 
@@ -2371,34 +2369,36 @@ void vtkSivicController::PushToPACS()
             dlg->SetFileTypes("{{DICOM Image} {.dcm .DCM}}");
             dlg->SetLastPath( localDirectory.c_str() );
             dlg->Invoke();
-            string filename = dlg->GetFileName(); 
-            struct stat buffer;
-            svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
             int dialogStatus = dlg->GetStatus();
+            dcmFileName = string(dlg->GetFileName());
             dlg->Delete();
-            if ( dialogStatus == vtkKWDialog::StatusOK ) {
-                if( stat( filename.c_str(), &buffer ) == 0 && dcmReader->CanReadFile( filename.c_str() ) ){
-
-                    dcmReader->SetFileName( filename.c_str() );
-                    dcmReader->UpdateInformation();
-                    svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
-                    outputImage->GetDcmHeader()->SetValue(
-                          "StudyInstanceUID", dcmHeader->GetStringValue("StudyInstanceUID") );
-                    outputImage->GetDcmHeader()->SetValue(
-                          "AccessionNumber", dcmHeader->GetStringValue("AccessionNumber") );
-                } else {
-                    string errorMessage2("NOT A VALID DICOM IMAGE:");
-                    errorMessage2.append( dcmFileName );
-                    PopupMessage( errorMessage2 );
-                    return; 
-                }
-            } else { // Dialog was canceled 
+            if ( dialogStatus != vtkKWDialog::StatusOK ) { // Dialog was canceled
                 return;
             } 
         } else { // User did not want to choose an image
             return;
         }
+    } 
+    svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
+    struct stat buffer;
+    if( !imageIsDICOM && stat( dcmFileName.c_str(), &buffer ) == 0 && dcmReader->CanReadFile( dcmFileName.c_str() ) ){
+        dcmReader->SetFileName( dcmFileName.c_str() );
+        dcmReader->UpdateInformation();
+        svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
+        outputImage->SetDcmHeader( dcmHeader );
+        dcmHeader->Register(this);
+
+    } else if( !imageIsDICOM ) {
+        string errorMessage2("NOT A VALID DICOM IMAGE:");
+        errorMessage2.append( dcmFileName );
+        PopupMessage( errorMessage2 );
+        return; 
+    }  
+    if( imageIsDICOM ) {
+        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     }
+    dcmReader->Delete();
 
 
 
@@ -2413,6 +2413,12 @@ void vtkSivicController::PushToPACS()
         system( mkdirCommand.str().c_str() );
     }
 
+    if ( access( localDirectory.c_str(), W_OK) != 0 ) { // Can the user write to the local directory
+        string errorMessage2("COULD NOT WRITE TO PATH: ");
+        errorMessage2.append( localDirectory );
+        PopupMessage( errorMessage2 );
+        return; 
+    }
 
     // Lets create a name for the images that uses the series ID of the image, and the spectra
     string filePattern;
