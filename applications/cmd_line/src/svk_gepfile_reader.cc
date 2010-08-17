@@ -52,6 +52,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkDICOMMRSWriter.h>
+#include <svkDdfVolumeWriter.h>
 #include <svkCorrectDCOffset.h>
 #include <svkDcmHeader.h>
 #include <svkGEPFileReader.h>
