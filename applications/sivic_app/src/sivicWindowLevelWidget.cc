@@ -413,6 +413,7 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         increment << "SetValue " << level + 1;
         stringstream decrement;
         decrement << "SetValue " << level - 1;
+        this->UpdateSliders();
         this->levelSlider->RemoveBinding( "<Left>");
         this->levelSlider->AddBinding( "<Left>", this->levelSlider, decrement.str().c_str() );
         this->levelSlider->RemoveBinding( "<Right>");
@@ -426,6 +427,7 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         increment << "SetValue " << window + 1;
         stringstream decrement;
         decrement << "SetValue " << window - 1;
+        this->UpdateSliders();
         this->windowSlider->RemoveBinding( "<Left>");
         this->windowSlider->AddBinding( "<Left>", this->windowSlider, decrement.str().c_str() );
         this->windowSlider->RemoveBinding( "<Right>");
