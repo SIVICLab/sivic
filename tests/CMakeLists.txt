@@ -81,7 +81,7 @@ LINK_DIRECTORIES(
 
 INCLUDE_DIRECTORIES(
     ./
-    ../trunk/libs/src
+    ../libs/src
     ${DCMTK_DIR}/include
 )
 
