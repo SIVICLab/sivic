@@ -66,7 +66,7 @@ ENDIF(VTK_FOUND)
 ###################################
 #   KWWidgets
 ###################################
-INCLUDE(${KWWidgets_USE_FILE})
+#INCLUDE(${KWWidgets_USE_FILE})
 
 
 ###################################
