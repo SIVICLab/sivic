@@ -72,7 +72,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name -t output_data_type \n"; 
+    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
     usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
     usemsg += "                   [ -u | -s ] [ -anh ] \n";
     usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
@@ -107,7 +107,7 @@ int main (int argc, char** argv)
     bool unsuppressed = false; 
     bool suppressed = false; 
     bool average = false; 
-    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     int oneTimePtPerFile = false; 
     svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED; 
     string deidPatId = ""; 
