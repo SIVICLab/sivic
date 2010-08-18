@@ -31,7 +31,7 @@ SET( TEST_REFERENCE_DIR CACHE PATH "A directory that contains reference data for
 ADD_TEST(TRUNK_TEST echo test)
 ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
 ADD_TEST(RUNTIME_EXCEPTION ${EXECUTABLE_OUTPUT_PATH}/runtimeException)
-ADD_TEST(READ_PFILE ../../applications/cmd_line/${PLATFORM}/svk_gepfile_reader -h)
+ADD_TEST(READ_PFILE ../../applications/cmd_line/src/${PLATFORM}/svk_gepfile_reader -h)
 #ADD_TEST(SCRIPT_FAILURE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/scriptFailTest)
 #ADD_TEST(ASSERT_FAILURE ${EXECUTABLE_OUTPUT_PATH}/assertFailTest)
 #ADD_TEST(RETURN_FAILURE ${EXECUTABLE_OUTPUT_PATH}/returnFailure)
