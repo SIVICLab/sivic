@@ -64,6 +64,7 @@ FIND_PACKAGE(KWWidgets REQUIRED)
 ###################################
 FIND_PATH(DCMTK_DIR dctk.h)
 
+
 if( BUILD_PROFILER)
     ADD_DEFINITIONS( -pg )
 endif( BUILD_PROFILER )
@@ -88,3 +89,8 @@ endif ( BUILD_APPS )
 if( BUILD_EXAMPLES )
     add_subdirectory (libs/examples)
 endif ( BUILD_EXAMPLES )
+
+if( BUILD_TESTING)
+    add_subdirectory (tests/src)
+endif ( BUILD_TESTING)
+
