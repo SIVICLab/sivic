@@ -26,6 +26,17 @@
 #   OF SUCH DAMAGE.
 #
 
+#
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+#
+#   Authors:
+#       Jason C. Crane, Ph.D.
+#       Beck Olson
+
+
 SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
 SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 
