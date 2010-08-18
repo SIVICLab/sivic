@@ -1,8 +1,8 @@
 #
-#   $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/CMakeLists.txt $
-#   $Rev: 504 $
-#   $Author: jccrane $
-#   $Date: 2010-08-17 12:48:29 -0700 (Tue, 17 Aug 2010) $
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
 #
 
 cmake_minimum_required(VERSION 2.6)
@@ -180,4 +180,3 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
-include( CMakeSivicTests.cmake )

@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/examples/test_svkSpectraReferenceView.cc $ 
- *  $Rev: 397 $
- *  $Author: beckn8tor $
- *  $Date: 2010-07-12 09:41:52 -0700 (Mon, 12 Jul 2010) $
+ *  $URL$ 
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

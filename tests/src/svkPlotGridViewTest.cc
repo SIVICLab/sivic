@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/svkPlotGridViewTest.cc $ 
- *  $Rev: 399 $
- *  $Author: beckn8tor $
- *  $Date: 2010-07-12 12:30:24 -0700 (Mon, 12 Jul 2010) $
+ *  $URL$ 
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/assertFailTest.cc $
- *  $Rev: 364 $
- *  $Author: beckn8tor $
- *  $Date: 2010-06-15 18:12:14 -0700 (Tue, 15 Jun 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
