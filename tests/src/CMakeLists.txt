@@ -180,3 +180,5 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+include(CMakeSivicTests.cmake)
+

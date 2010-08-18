@@ -91,6 +91,6 @@ if( BUILD_EXAMPLES )
 endif ( BUILD_EXAMPLES )
 
 if( BUILD_TESTING)
-    add_subdirectory (tests/src)
+    #add_subdirectory (tests/src)
 endif ( BUILD_TESTING)
 
