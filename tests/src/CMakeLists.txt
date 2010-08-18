@@ -7,9 +7,9 @@
 
 cmake_minimum_required(VERSION 2.6)
 
+#cmake_policy(SET CMP0002 OLD)
 
 PROJECT(svk_test)
-
 
 #
 #   Set build dir:
@@ -53,10 +53,13 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 ###################################
 #   VTK
 ###################################
+FIND_PACKAGE(VTK)
+
 IF (USE_VTK_FILE)
     INCLUDE(${USE_VTK_FILE})
 ENDIF (USE_VTK_FILE)
 
+FIND_PATH(DCMTK_DIR dctk.h)
 ADD_DEFINITIONS(-DHAVE_CONFIG_H) 
 
 
@@ -181,4 +184,3 @@ TARGET_LINK_LIBRARIES(
 )
 
 include(CMakeSivicTests.cmake)
-
