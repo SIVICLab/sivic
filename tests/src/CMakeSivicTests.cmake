@@ -25,27 +25,41 @@
 #   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 #   OF SUCH DAMAGE.
 #
-SET( TEST_OUTPUT_DIR CACHE PATH "An output directory for tests." )
-SET( TEST_REFERENCE_DIR CACHE PATH "A directory that contains reference data for comparing tests." )
 
-ADD_TEST(TRUNK_TEST echo test)
-ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
-ADD_TEST(RUNTIME_EXCEPTION ${EXECUTABLE_OUTPUT_PATH}/runtimeException)
-ADD_TEST(READ_PFILE ../../applications/cmd_line/src/${PLATFORM}/svk_gepfile_reader -i /data/lhst3/sivic/test_data/ge_pfiles/20x/20_x_raw -o out )
+SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
+SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
+
+
+########################
+#   20X GE Raw to DDF
+########################
+ADD_TEST(CONVERT_1  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name convert_1 --baseline_path ${SVK_TEST_ROOT}/ge_pfiles/20x/ --opts "-i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o 20x -t 2" )
+
+
+########################
+#   svk_gepfile_reader:   
+########################
+#ADD_TEST(READ_PFILE ../../applications/cmd_line/src/${PLATFORM}/svk_gepfile_reader -i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o ${SVK_TEST_ROOT}/output/out )
+
+
+
+
+#ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
+#ADD_TEST(RUNTIME_EXCEPTION ${EXECUTABLE_OUTPUT_PATH}/runtimeException)
 
 #ADD_TEST(SCRIPT_FAILURE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/scriptFailTest)
 #ADD_TEST(ASSERT_FAILURE ${EXECUTABLE_OUTPUT_PATH}/assertFailTest)
 #ADD_TEST(RETURN_FAILURE ${EXECUTABLE_OUTPUT_PATH}/returnFailure)
 
 #ADD_TEST(READ_WRITE_SIVIC_IMAGE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/idfReadWriteTest.pl
-#                                ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_DATA_ROOT}/sivic_out)
+#                                ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_TEST_ROOT}/sivic_out)
 #IF( TEST_OUTPUT_DIR )
 #    SET( TEST_OUTPUT_DIR -p${TEST_OUTPUT_DIR} )
 #ENDIF(TEST_OUTPUT_DIR)
 
 #ADD_TEST(PLOT_GRID_VIEW ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/plotGridViewRenderTest.pl
-#                                -t ${EXECUTABLE_OUTPUT_PATH}/svkPlotGridViewTest -s${SVK_DATA_ROOT}/t0000_1_cor.ddf 
+#                                -t ${EXECUTABLE_OUTPUT_PATH}/svkPlotGridViewTest -s${SVK_TEST_ROOT}/t0000_1_cor.ddf 
 #                                ${TEST_OUTPUT_DIR} -r${TEST_REFERENCE_DIR})
 
 #ADD_TEST(READ_WRITE_NON_SIVIC_IMAGE ${EXECUTABLE_OUTPUT_PATH}/../tests/scripts/idfReadWriteTest.pl
-#                                    ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_DATA_ROOT}/t0000_fla)
+#                                    ${EXECUTABLE_OUTPUT_PATH}/svkIdfWriterTest ${SVK_TEST_ROOT}/t0000_fla)
