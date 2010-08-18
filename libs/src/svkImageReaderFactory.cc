@@ -162,8 +162,7 @@ svkImageReader2* svkImageReaderFactory::CreateImageReader2(const char* path)
     // If the Superclass returns GESigna, then return svkGESigna5XReader instead.
     svkImageReader2* ret = static_cast<svkImageReader2*>( this->Superclass::CreateImageReader2( path ) );
     if ( ret != NULL ) {
-        vtkstd::string descriptiveName = ret->GetDescriptiveName();
-        if ( descriptiveName == "GESigna" ) {
+        if ( ret->IsA("vtkGESignaReader") {
             ret->Delete();
             ret = static_cast<svkImageReader2*>( svkGESigna5XReader::New() );
         }
