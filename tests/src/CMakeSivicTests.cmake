@@ -44,7 +44,12 @@ SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 ########################
 #   20X GE Raw to DDF
 ########################
-ADD_TEST(TEST_1  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name convert_1 --baseline_path ${SVK_TEST_ROOT}/ge_pfiles/20x/ --opts "-i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o 20x -t 2" )
+ADD_TEST(TEST_1  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name test_1 --baseline_path ${SVK_TEST_ROOT}/ge_pfiles/20x/ --opts "-i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o 20x -t 2" )
+
+########################
+#   UCSF ddf to ddf 
+########################
+ADD_TEST(TEST_2  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name test_2 --baseline_path ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf/ --opts "-i ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf/20x_1.ddf -o 20x -t 2" )
 
 
 ########################
