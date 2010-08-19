@@ -1391,7 +1391,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkDdfVolumeReader::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat(ddfMap, "TE") );
+    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat(ddfMap, "echoTime") );
 }
 
 
@@ -1401,7 +1401,7 @@ void svkDdfVolumeReader::InitMREchoMacro()
 void svkDdfVolumeReader::InitMRModifierMacro()
 {
     float inversionTime = this->GetHeaderValueAsFloat( ddfMap, "inversionTime");
-    this->iod->InitMREchoMacro( inversionTime );
+    this->iod->InitMRModifierMacro( inversionTime );
 }
 
 
@@ -1892,6 +1892,23 @@ void svkDdfVolumeReader::InitMRSpectroscopyPulseSequenceModule()
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfKSpaceTrajectories", 1 );
+
+    //  Assume EVEN, if evenSymmetry is not "yes" then set to ODD
+    string kSpaceSymmetry = "EVEN";
+    if ( ( this->ddfMap[ "evenSymmetry" ] ).compare("yes") != 0 ) {
+        kSpaceSymmetry = "ODD";
+    } 
+    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry );
+
+    string chop = "no";
+    if ( (this->ddfMap[ "chop" ] ).compare("yes") == 0 ) {
+        chop = "YES";
+    }
+    this->GetOutput()->GetDcmHeader()->SetValue( 
+        "SVK_AcquisitionChop", 
+        chop 
+    );
+
 }
 
 
