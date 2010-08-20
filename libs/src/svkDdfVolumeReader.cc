@@ -41,6 +41,13 @@
 
 
 #include <svkDdfVolumeReader.h>
+#include <vtkCellData.h>
+#include <vtkDebugLeaks.h>
+#include <vtkGlobFileNames.h>
+#include <vtkSortFileNames.h>
+#include <vtkByteSwap.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -50,7 +57,7 @@ vtkCxxRevisionMacro(svkDdfVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkDdfVolumeReader);
 
 
-const string svkDdfVolumeReader::MFG_STRING = "GE MEDICAL SYSTEMS";
+const vtkstd::string svkDdfVolumeReader::MFG_STRING = "GE MEDICAL SYSTEMS";
 
 
 /*!
@@ -69,7 +76,10 @@ svkDdfVolumeReader::svkDdfVolumeReader()
     this->specData = NULL; 
     this->ddfHdr = NULL; 
     this->numCoils = 1; 
-    this->numTimePts = 1; 
+    this->numTimePts = 1;
+
+    // Set the byte ordering, as big-endian.
+    this->SetDataByteOrderToBigEndian(); 
 }
 
 
@@ -105,7 +115,7 @@ int svkDdfVolumeReader::CanReadFile(const char* fname)
 {
 
     //  If file has an extension then check it:
-    string fileExtension = this->GetFileExtension( fname );  
+    vtkstd::string fileExtension = this->GetFileExtension( fname );  
     if( ! fileExtension.empty() ) {
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
@@ -201,7 +211,7 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
         struct stat fs;
         if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
+            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
             return;
         }
         this->ReadComplexFile(data);
@@ -234,20 +244,21 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         ifstream* cmplxDataIn = new ifstream();
         cmplxDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        string cmplxFile = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".cmplx"; 
+        vtkstd::string cmplxFile = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".cmplx"; 
 
         cmplxDataIn->open( cmplxFile.c_str(), ios::binary);
 
         //  Read in data from 1 coil:
         int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
         int numPts = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints0"); 
-        int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 4 * this->numTimePts; 
-        this->specData = new float[ numBytesInVol/4 ];  
+        int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * sizeof(float) * this->numTimePts; 
+        this->specData = new float[ numBytesInVol/sizeof(float) ];  
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
-#if defined (linux) || defined(Darwin)
-        svkByteSwap::SwapBufferEndianness(this->specData, numBytesInVol/4);
-#endif
+        if ( this->GetSwapBytes() ) {
+            vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInVol/sizeof(float), sizeof(float));
+        }
+
         int numVoxels[3] = { this->GetDataExtent()[1], this->GetDataExtent()[3], this->GetDataExtent()[5] }; 
         int denominator = numVoxels[2] * numVoxels[1]  * numVoxels[0] + numVoxels[1]*numVoxels[0] + numVoxels[0];
         double progress = 0;
@@ -382,7 +393,7 @@ void svkDdfVolumeReader::InitDcmHeader()
 void svkDdfVolumeReader::ParseDdf()
 {
 
-    this->GlobFileNames(); 
+    this->GlobFileNames();
 
 
     try {
@@ -392,7 +403,7 @@ void svkDdfVolumeReader::ParseDdf()
         this->ddfHdr->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         int fileIndex = 0; 
-        string currentDdfFileName( this->GetFileNames()->GetValue( fileIndex ) );
+        vtkstd::string currentDdfFileName( this->GetFileNames()->GetValue( fileIndex ) );
 
         this->ddfHdr->open( currentDdfFileName.c_str(), ifstream::in );
 
@@ -438,27 +449,27 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < numDimensions; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
 
             //  Type
-            string dimensionTypeString = "dimensionType" + indexString; 
-            string dimensionLine( this->ReadLineSubstr(this->ddfHdr, iss, 0, 100) );
+            vtkstd::string dimensionTypeString = "dimensionType" + indexString; 
+            vtkstd::string dimensionLine( this->ReadLineSubstr(this->ddfHdr, iss, 0, 100) );
             size_t start = dimensionLine.find( "type:" ); 
-            string tmp   = dimensionLine.substr( start + 6 ); 
+            vtkstd::string tmp   = dimensionLine.substr( start + 6 ); 
             size_t end   = tmp.find( "npoints" ); 
             ddfMap[dimensionTypeString] = dimensionLine.substr( start + 6, end - 1); 
 
             // npoints 
-            string nptsString = "dimensionNumberOfPoints" + indexString; 
+            vtkstd::string nptsString = "dimensionNumberOfPoints" + indexString; 
             start = dimensionLine.find( "npoints:" ); 
             start += 8; 
             end   = dimensionLine.find( "pixel" ); 
             ddfMap[nptsString] = dimensionLine.substr( start , end - start ); 
 
             //  PixelSpacing
-            string pixelSpacingString = "pixelSpacing" + indexString; 
+            vtkstd::string pixelSpacingString = "pixelSpacing" + indexString; 
             start = dimensionLine.find( "(mm):" ); 
-            if (start != string::npos) {
+            if (start != vtkstd::string::npos) {
                 ddfMap[pixelSpacingString] = dimensionLine.substr( start + 5 ); 
             }
         }
@@ -468,9 +479,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("centerLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("centerLPS" + indexString)];
         }
 
         //  TOPLC(LPS):
@@ -478,23 +489,23 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("toplcLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("toplcLPS" + indexString)];
         }
 
         //  DCOS:  
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;
-            string indexStringI(ossIndexI.str());
+            vtkstd::string indexStringI(ossIndexI.str());
             this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("dcos" + indexStringI + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("dcos" + indexStringI + indexStringJ)];
             }
         }
 
@@ -518,7 +529,7 @@ void svkDdfVolumeReader::ParseDdf()
 
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             ddfMap["satBand" + indexString + "Thickness"] = this->ReadLineValue( this->ddfHdr, iss, ':');
 
             //  Orientation:
@@ -526,9 +537,9 @@ void svkDdfVolumeReader::ParseDdf()
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("satBand" + indexString + "Orientation" + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("satBand" + indexString + "Orientation" + indexStringJ)];
             }
 
             //  position:
@@ -536,9 +547,9 @@ void svkDdfVolumeReader::ParseDdf()
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("satBand" + indexString + "PositionLPS" + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("satBand" + indexString + "PositionLPS" + indexStringJ)];
             }
 
         }
@@ -565,9 +576,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("acqToplcLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("acqToplcLPS" + indexString)];
         }
 
         //  ACQ Spacing:
@@ -575,9 +586,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("acqSpacing" + indexString)];
+            *iss >> ddfMap[vtkstd::string("acqSpacing" + indexString)];
         }
 
         ddfMap["acqNumberOfDataPoints"] = this->ReadLineValue( this->ddfHdr, iss, ':');
@@ -587,23 +598,23 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("acqNumberOfPoints" + indexString)];
+            *iss >> ddfMap[vtkstd::string("acqNumberOfPoints" + indexString)];
         }
 
         //  ACQ DCOS:  
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;
-            string indexStringI(ossIndexI.str());
+            vtkstd::string indexStringI(ossIndexI.str());
             this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("acqDcos" + indexStringI + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("acqDcos" + indexStringI + indexStringJ)];
             }
         }
 
@@ -612,9 +623,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("selectionCenterLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("selectionCenterLPS" + indexString)];
         }
 
         //  Selection Size:
@@ -622,23 +633,23 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("selectionSize" + indexString)];
+            *iss >> ddfMap[vtkstd::string("selectionSize" + indexString)];
         }
 
         //  Selection DCOS:  
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;
-            string indexStringI(ossIndexI.str());
+            vtkstd::string indexStringI(ossIndexI.str());
             this->ReadLineIgnore( this->ddfHdr, iss, 'd' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("selectionDcos" + indexStringI + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("selectionDcos" + indexStringI + indexStringJ)];
             }
         }
 
@@ -647,9 +658,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("reorderedToplcLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("reorderedToplcLPS" + indexString)];
         }
 
         //  Reordered:
@@ -657,9 +668,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("reorderedCenterLPS" + indexString)];
+            *iss >> ddfMap[vtkstd::string("reorderedCenterLPS" + indexString)];
         }
 
         //  Reordered:
@@ -667,9 +678,9 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("reorderedSpacing" + indexString)];
+            *iss >> ddfMap[vtkstd::string("reorderedSpacing" + indexString)];
         }
 
         //  Reordered:
@@ -677,23 +688,23 @@ void svkDdfVolumeReader::ParseDdf()
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
             iss->ignore(256, ' ');
-            *iss >> ddfMap[string("reorderedNumberOfPoints" + indexString)];
+            *iss >> ddfMap[vtkstd::string("reorderedNumberOfPoints" + indexString)];
         }
 
         //  Selection DCOS:  
         for (int i = 0; i < 3; i++) {
             ostringstream ossIndexI;
             ossIndexI << i;
-            string indexStringI(ossIndexI.str());
+            vtkstd::string indexStringI(ossIndexI.str());
             this->ReadLineIgnore( this->ddfHdr, iss, 's' );
             for (int j = 0; j < 3; j++) {
                 ostringstream ossIndexJ;
                 ossIndexJ << j;
-                string indexStringJ(ossIndexJ.str());
+                vtkstd::string indexStringJ(ossIndexJ.str());
                 iss->ignore(256, ' ');
-                *iss >> ddfMap[string("reorderedDcos" + indexStringI + indexStringJ)];
+                *iss >> ddfMap[vtkstd::string("reorderedDcos" + indexStringI + indexStringJ)];
             }
         }
 
@@ -811,15 +822,15 @@ void svkDdfVolumeReader::InitGeneralSeriesModule()
         ddfMap["seriesDescription"] 
     );
 
-    string patientEntryPos; 
-    string patientEntry( ddfMap["patientEntry"]); 
+    vtkstd::string patientEntryPos; 
+    vtkstd::string patientEntry( ddfMap["patientEntry"]); 
     if ( patientEntry.compare("head first") == 0) {
         patientEntryPos = "HF";
     } else if ( patientEntry.compare("feet first") == 0) {
         patientEntryPos = "FF";
     }
 
-    string patientPosition( ddfMap["patientPosition"]); 
+    vtkstd::string patientPosition( ddfMap["patientPosition"]); 
     if ( patientPosition.compare("supine") == 0 ) {
         patientEntryPos.append("S");
     } else if ( patientPosition.compare("prone") == 0 ) {
@@ -931,7 +942,7 @@ void svkDdfVolumeReader::InitPixelMeasuresMacro()
     float rowSpacing = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
     float sliceThickness = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
-    string pixelSpacing;
+    vtkstd::string pixelSpacing;
     ostringstream oss;
     oss << colSpacing;
     oss << '\\';
@@ -1088,7 +1099,7 @@ void svkDdfVolumeReader::InitPlanePositionMacro()
                     frameLPSPosition[j] = toplc[j] +  displacement[j] ;
                 }
     
-                string imagePositionPatient;
+                vtkstd::string imagePositionPatient;
                 for (int j = 0; j < 3; j++) {
                     ostringstream oss;
                     oss.precision(8);
@@ -1429,12 +1440,12 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "ReceiveCoilManufacturerName",       
-        string("GE"),
+        vtkstd::string("GE"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
 
-    string coilType("VOLUME"); 
+    vtkstd::string coilType("VOLUME"); 
     if ( this->IsMultiCoil() ) {
         coilType.assign("MULTICOIL"); 
     }
@@ -1452,7 +1463,7 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "QuadratureReceiveCoil",       
-        string("YES"),
+        vtkstd::string("YES"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -1475,7 +1486,7 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
 
             ostringstream ossIndex;
             ossIndex << coilIndex;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
 
             this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
                 "MultiCoilDefinitionSequence",
@@ -1541,7 +1552,7 @@ void svkDdfVolumeReader::InitMRSpatialSaturationMacro()
 
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
 
             this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
                 "MRSpatialSaturationSequence",
@@ -1557,7 +1568,7 @@ void svkDdfVolumeReader::InitMRSpatialSaturationMacro()
             orientation[1] = this->GetHeaderValueAsFloat(ddfMap, "satBand" + indexString + "Orientation1");     
             orientation[2] = this->GetHeaderValueAsFloat(ddfMap, "satBand" + indexString + "Orientation2");     
 
-            string slabOrientation;
+            vtkstd::string slabOrientation;
             for (int j = 0; j < 3; j++) {
                 ostringstream ossOrientation;
                 ossOrientation << orientation[j];
@@ -1580,7 +1591,7 @@ void svkDdfVolumeReader::InitMRSpatialSaturationMacro()
             position[1] = this->GetHeaderValueAsFloat(ddfMap, "satBand" + indexString + "PositionLPS1");     
             position[2] = this->GetHeaderValueAsFloat(ddfMap, "satBand" + indexString + "PositionLPS2");     
 
-            string slabPosition;
+            vtkstd::string slabPosition;
             for (int j = 0; j < 3; j++) {
                 ostringstream ossPosition;
                 ossPosition << position[j];
@@ -1719,7 +1730,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ImageType", 
-        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
+        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
     );
 
 
@@ -1728,17 +1739,17 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
      *  ======================================= */
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumetricProperties", 
-        string("VOLUME")  
+        vtkstd::string("VOLUME")  
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumeBasedCalculationTechnique", 
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ComplexImageComponent", 
-        string("COMPLEX")  
+        vtkstd::string("COMPLEX")  
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1796,7 +1807,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "BaselineCorrection", 
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1806,12 +1817,12 @@ void svkDdfVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "FirstOrderPhaseCorrection", 
-        string("NO")
+        vtkstd::string("NO")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "WaterReferencedPhaseCorrection", 
-        string("NO")
+        vtkstd::string("NO")
     );
 }
 
@@ -1831,7 +1842,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyPulseSequenceModule()
     numVoxels[1] = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints2"); 
     numVoxels[2] = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints3"); 
 
-    string acqType = "VOLUME"; 
+    vtkstd::string acqType = "VOLUME"; 
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
@@ -1943,7 +1954,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyDataModule()
     );
 
     int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
-    string representation; 
+    vtkstd::string representation; 
     if (numComponents == 1) {
         representation = "REAL";
     } else if (numComponents == 2) {
@@ -1992,9 +2003,9 @@ svkDcmHeader::DcmPixelDataFormat svkDdfVolumeReader::GetFileType()
 /*! 
  *  Converts the ddf dimension type to a string for DICOM domain tags: 
  */
-string svkDdfVolumeReader::GetDimensionDomain( string ddfDomainString )
+vtkstd::string svkDdfVolumeReader::GetDimensionDomain( vtkstd::string ddfDomainString )
 {
-    string domain;  
+    vtkstd::string domain;  
     if ( ddfDomainString.compare("time") == 0 )  { 
         domain.assign("TIME"); 
     } else if ( ddfDomainString.compare("frequency") == 0 )  { 
@@ -2024,7 +2035,7 @@ int svkDdfVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInfo
 void svkDdfVolumeReader::PrintKeyValuePairs()
 {
     if (this->GetDebug()) {
-        map< string, string >::iterator mapIter;
+        vtkstd::map< vtkstd::string, vtkstd::string >::iterator mapIter;
         for ( mapIter = ddfMap.begin(); mapIter != ddfMap.end(); ++mapIter ) {
             cout << this->GetClassName() << " " << mapIter->first << " = ";
             cout << ddfMap[mapIter->first] << endl;
@@ -2036,7 +2047,8 @@ void svkDdfVolumeReader::PrintKeyValuePairs()
 /*!
  *
  */
-int svkDdfVolumeReader::GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex)
+int svkDdfVolumeReader::GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+    vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
     int value;
@@ -2051,7 +2063,8 @@ int svkDdfVolumeReader::GetHeaderValueAsInt(map <string, string> hdrMap, string 
 /*!
  *
  */
-float svkDdfVolumeReader::GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex)
+float svkDdfVolumeReader::GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+    vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
     float value;
@@ -2069,11 +2082,10 @@ bool svkDdfVolumeReader::IsMultiCoil()
 {
     bool isMultiCoil = false; 
 
-    //if ( ddfMap["coilName"].find("8HRBRAIN") != string::npos || ddfMap["coilName"].find("HDBreastRight") != string::npos )  { 
-        if (this->GetFileNames()->GetNumberOfValues() > 1 ) { 
-            isMultiCoil = true; 
-        }
-    //} 
+    if (this->GetFileNames()->GetNumberOfValues() > 1 ) { 
+        isMultiCoil = true; 
+    }
+   
     return isMultiCoil; 
 }
 

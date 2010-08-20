@@ -42,6 +42,11 @@
 
 
 #include <svkDdfVolumeWriter.h>
+#include <vtkErrorCode.h>
+#include <vtkCellData.h>
+#include <vtkExecutive.h>
+#include <vtkFloatArray.h>
+#include <vtkByteSwap.h>
 
 
 using namespace svk;
@@ -167,10 +172,10 @@ void svkDdfVolumeWriter::WriteFiles()
 {
     vtkDebugMacro( << this->GetClassName() << "::WriteData()" );
 
-    string dataExtension = ".cmplx"; 
-    string hdrExtension = ".ddf"; 
+    vtkstd::string dataExtension = ".cmplx"; 
+    vtkstd::string hdrExtension = ".ddf"; 
 
-    string fileRoot = string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
+    vtkstd::string fileRoot = vtkstd::string(this->InternalFileName).substr( 0, vtkstd::string(this->InternalFileName).rfind(".") );
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int dataWordSize = 4; 
@@ -180,7 +185,7 @@ void svkDdfVolumeWriter::WriteFiles()
     int numCoils   = hdr->GetNumberOfCoils();
     int numTimePts = hdr->GetNumberOfTimePoints();  
     int specPts    = hdr->GetIntValue( "DataPointColumns" );
-    string representation = hdr->GetStringValue( "DataRepresentation" );
+    vtkstd::string representation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents = 1;
     if (representation.compare("COMPLEX") == 0) {
@@ -196,11 +201,10 @@ void svkDdfVolumeWriter::WriteFiles()
     // write out one coil per ddf file
     float* specData = new float [ dataLengthPerFile ];
 
-    string fileName;
+    vtkstd::string fileName;
 
     //  looping varies depending on how many time points go into each file:
     if ( this->AllTimePointsInEachFile() ) {
-
         for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
 
             fileName = this->GetFileRootName(fileRoot, coilNum);
@@ -218,8 +222,8 @@ void svkDdfVolumeWriter::WriteFiles()
             this->InitHeader( &hdrOut, fileName ); 
 
             //  cmplx files are by definition big endian:
-            #if defined (linux) || defined (Darwin)
-                svkByteSwap::SwapBufferEndianness( static_cast<float*>(specData), dataLengthPerFile);
+            #ifndef VTK_WORDS_BIGENDIAN
+                    vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
             #endif
 
             cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
@@ -243,11 +247,11 @@ void svkDdfVolumeWriter::WriteFiles()
                 }
 
                 this->InitSpecData(specData, coilNum, timePt); 
-                this->InitHeader( &hdrOut, fileName ); 
+                this->InitHeader( &hdrOut, fileName );
 
                 //  cmplx files are by definition big endian:
-                #if defined (linux) || defined (Darwin)
-                    svkByteSwap::SwapBufferEndianness( static_cast<float*>(specData), dataLengthPerFile);
+                #ifndef VTK_WORDS_BIGENDIAN
+                    vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
                 #endif
 
                 cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
@@ -279,7 +283,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
     int specPts    = hdr->GetIntValue( "DataPointColumns" );
 
     int numComponents = 1;
-    string representation = hdr->GetStringValue( "DataRepresentation" );
+    vtkstd::string representation = hdr->GetStringValue( "DataRepresentation" );
     if (representation.compare("COMPLEX") == 0) {
         numComponents = 2;
     }
@@ -332,12 +336,12 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
 /*!
  *  initializes the ofstream header content for the DDF header.
  */
-void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
+void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
-    string deidMethod = hdr->GetStringValue( "DeIdentificationMethod" );
+    vtkstd::string deidMethod = hdr->GetStringValue( "DeIdentificationMethod" );
     bool deidentified = false; 
     if (  deidMethod.compare("DEIDENTIFIED") == 0 ){ 
         deidentified = true; 
@@ -351,7 +355,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "patient code: " << endl;
 
 
-    string dob = hdr->GetStringValue( "PatientsBirthDate" ); 
+    vtkstd::string dob = hdr->GetStringValue( "PatientsBirthDate" ); 
 
     if ( deidentified ) { 
         *out << "date of birth: " << dob << endl; 
@@ -368,7 +372,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
     *out << "study code: " << "" <<  endl;
 
-    string date = hdr->GetStringValue( "StudyDate" );
+    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
     if ( date.length() == 0 ) {
         date.assign("        ");
     }
@@ -387,10 +391,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "comment: " << " " << endl;
 
     *out << "patient entry: ";
-    string position_string = hdr->GetStringValue( "PatientPosition" );
-    if ( position_string.substr(0,2) == string( "HF" ) ){
+    vtkstd::string position_string = hdr->GetStringValue( "PatientPosition" );
+    if ( position_string.substr(0,2) == vtkstd::string( "HF" ) ){
         *out << "head first";
-    } else if ( position_string.substr(0,2) == string( "FF" ) ) {
+    } else if ( position_string.substr(0,2) == vtkstd::string( "FF" ) ) {
         *out << "feet first";
     } else {
         *out << "UNKNOWN";
@@ -398,13 +402,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << endl;
 
     *out << "patient position: ";
-    if ( position_string.substr(2) == string( "S" ) ) {
+    if ( position_string.substr(2) == vtkstd::string( "S" ) ) {
         *out << "supine" << endl;
-    } else if ( position_string.substr(2) == string( "P" ) ) {
+    } else if ( position_string.substr(2) == vtkstd::string( "P" ) ) {
         *out << "prone" << endl;
-    } else if ( position_string.substr(2) == string( "DL" ) ) {
+    } else if ( position_string.substr(2) == vtkstd::string( "DL" ) ) {
         *out << "decubitus left" << endl;
-    } else if ( position_string.substr(2) == string( "DR" ) ) {
+    } else if ( position_string.substr(2) == vtkstd::string( "DR" ) ) {
         *out << "decubitus right" << endl;
     } else {
         *out << "UNKNOWN" << endl;
@@ -412,7 +416,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
 
     double orientation[2][3];
     hdr->GetOrientation(orientation);
-    string orientationString; 
+    vtkstd::string orientationString; 
 
     if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) ||
         ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) ) {
@@ -450,9 +454,9 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     }
     *out << "number of dimensions: " << numDims << endl; 
 
-    string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
+    vtkstd::string specDomain = this->GetDimensionDomain( hdr->GetStringValue( "SignalDomainColumns") ); 
 
-    string spatialDomains[3];  
+    vtkstd::string spatialDomains[3];  
     spatialDomains[0] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_ColumnsDomain") ); 
     spatialDomains[1] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_RowsDomain") ); 
     spatialDomains[2] = this->GetDimensionDomain( hdr->GetStringValue( "SVK_SliceDomain") ); 
@@ -503,7 +507,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "===================================================" << endl; 
     *out << "MR Parameters" << endl; 
 
-    string coilName = hdr->GetStringSequenceItemElement(
+    vtkstd::string coilName = hdr->GetStringSequenceItemElement(
         "MRReceiveCoilSequence",
         0,
         "ReceiveCoilName",
@@ -599,7 +603,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     *out << "sweepwidth(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SpectralWidth" ) << endl;
     *out << "dwelltime(ms): " << fixed << setprecision(6) << 1000/( hdr->GetFloatValue( "SpectralWidth" ) ) << endl;
     *out << "frequency offset(Hz): " << fixed << setprecision(6) << hdr->GetFloatValue( "SVK_FrequencyOffset" ) << endl;
-    string onH20 = "yes"; 
+    vtkstd::string onH20 = "yes"; 
     if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
         onH20.assign( "no" ); 
     }
@@ -615,7 +619,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     ); 
     *out << "number of acquisitions: " << numAcqs << endl; 
 
-    string chop = hdr->GetStringValue( "SVK_AcquisitionChop" );
+    vtkstd::string chop = hdr->GetStringValue( "SVK_AcquisitionChop" );
     if ( chop.compare( "YES" ) == 0 ) {
         chop = "yes"; 
     } else {
@@ -623,8 +627,8 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
     }
     *out << "chop: " << chop << endl;
 
-    string symmetry = hdr->GetStringValue( "SVK_KSpaceSymmetry" );
-    string evenSymmetry; 
+    vtkstd::string symmetry = hdr->GetStringValue( "SVK_KSpaceSymmetry" );
+    vtkstd::string evenSymmetry; 
     if ( symmetry.compare( "EVEN" ) == 0 ) {
         evenSymmetry = "yes"; 
     } else {
@@ -858,11 +862,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, string fileName)
 }
 
 
-
 /*!
  *   
  */
-void svkDdfVolumeWriter::GetDDFCenter(float center[3], string centerType)
+void svkDdfVolumeWriter::GetDDFCenter(float center[3], vtkstd::string centerType)
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -918,7 +921,7 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3], string centerType)
 /*!
  *   
  */
-string svkDdfVolumeWriter::GetDDFPatientsName(string patientsName)
+vtkstd::string svkDdfVolumeWriter::GetDDFPatientsName(vtkstd::string patientsName)
 {
 
     //  Remove DICOM delimiters:
@@ -930,7 +933,7 @@ string svkDdfVolumeWriter::GetDDFPatientsName(string patientsName)
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = patientsName.find("  ")) != string::npos) {
+    while ( (pos = patientsName.find("  ")) != vtkstd::string::npos) {
         patientsName.erase(pos, 1);     
     }
 
@@ -941,9 +944,9 @@ string svkDdfVolumeWriter::GetDDFPatientsName(string patientsName)
 /*!
  *  Converts the DICOM dimension domain type to a ddf dimension type string:
  */
-string svkDdfVolumeWriter::GetDimensionDomain( string dimensionDomainString )
+vtkstd::string svkDdfVolumeWriter::GetDimensionDomain( vtkstd::string dimensionDomainString )
 {
-    string domain;
+    vtkstd::string domain;
     if ( dimensionDomainString.compare("TIME") == 0 )  {
         domain.assign("time");
     } else if ( dimensionDomainString.compare("FREQUENCY") == 0 )  {
@@ -962,7 +965,7 @@ string svkDdfVolumeWriter::GetDimensionDomain( string dimensionDomainString )
  *  indicate time_pt or coil number for multi-file output of dataset, e.g. 
  *  each coil written to a separate ddf/cmplx file pair. 
  */
-string svkDdfVolumeWriter::GetFileRootName(string fileRoot, int coilNum, int timePt)
+vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, int coilNum, int timePt)
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
@@ -982,7 +985,7 @@ string svkDdfVolumeWriter::GetFileRootName(string fileRoot, int coilNum, int tim
     } 
 
     if ( fileNum >= 0 ) {
-        string coilString;
+        vtkstd::string coilString;
         ostringstream oss;
         //  Add 1 to the file number so indexing doesn't start at 0. 
         oss << fileNum + 1;

@@ -44,18 +44,10 @@
 #define SVK_DCM_VOLUME_READER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-
 #include <svkImageReader2.h>
-
-#include <sys/stat.h>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -68,6 +60,7 @@ class svkDcmVolumeReader : public svkImageReader2
     public:
 
         vtkTypeRevisionMacro( svkDcmVolumeReader, svkImageReader2);
+
 
 
     protected:

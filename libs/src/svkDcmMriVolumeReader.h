@@ -44,23 +44,10 @@
 #define SVK_DCM_MRI_VOLUME_READER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkDebugLeaks.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
-
 #include <svkDcmVolumeReader.h>
-#include <svkIOD.h>
-#include <svkMRIIOD.h>
-
-#include <sys/stat.h>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -75,6 +62,11 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         static svkDcmMriVolumeReader* New();
         vtkTypeRevisionMacro( svkDcmMriVolumeReader, svkDcmVolumeReader );
 
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "DICOM MRI File";
+        }
 
         //  Methods:
         virtual int CanReadFile(const char* fname);
@@ -84,7 +76,7 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
 
         svkDcmMriVolumeReader();
         ~svkDcmMriVolumeReader();
-
+      
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual void                             InitDcmHeader();
@@ -105,7 +97,6 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         bool            ContainsProprietaryContent( svkImageData* data ); 
 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
-        short*          imageData;
 
 };
 
