@@ -83,17 +83,20 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 
     vtkstd::string fileToCheck(fname);
 
-    this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
-    vtkstd::string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+    if ( tmp->GetDcmHeader()->IsFileDICOM( fname ) ) {
+ 
+        this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
+        vtkstd::string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
 
-    if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
+        if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
 
-        cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRS File: " <<  fileToCheck << endl;
+            cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRS File: " <<  fileToCheck << endl;
 
-        this->SetFileName(fname);
+            this->SetFileName(fname);
 
-        return 1;
-    }
+            return 1;
+        }
+    } 
 
     vtkDebugMacro(<<this->GetClassName() << "::CanReadFile() It's Not a DICOM MRS file " << fileToCheck );
 
