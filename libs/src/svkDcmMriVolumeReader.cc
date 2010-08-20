@@ -149,6 +149,10 @@ bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
     return containsProprietaryContent; 
 }
 
+
+/*!
+ *
+ */
 struct svkDcmMriVolumeReaderSort_lt_pair_double_string
 {
   bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
@@ -158,6 +162,10 @@ struct svkDcmMriVolumeReaderSort_lt_pair_double_string
   }
 };
 
+
+/*!
+ *
+ */
 struct svkDcmMriVolumeReaderSort_gt_pair_double_string
 {
   bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
@@ -191,31 +199,31 @@ bool svkDcmMriVolumeReaderSortFilesByImagePositionPatient(const vtkstd::string &
         vtkstd::string tmpSeriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
         vtkstd::string xPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",0));
         std::istringstream xPositionInString(xPosition);
-  	xPositionInString >> position[0];
+  	    xPositionInString >> position[0];
         vtkstd::string yPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",1));
         std::istringstream yPositionInString(yPosition);
-  	yPositionInString >> position[1];
+  	    yPositionInString >> position[1];
         vtkstd::string zPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",2));
         std::istringstream zPositionInString(zPosition);
-  	zPositionInString >> position[2];
+  	    zPositionInString >> position[2];
         vtkstd::string xRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",0));
         std::istringstream xRowInString(xRow);
-  	xRowInString >> row[0];
+  	    xRowInString >> row[0];
         vtkstd::string yRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",1));
         std::istringstream yRowInString(yRow);
-  	yRowInString >> row[1];
+  	    yRowInString >> row[1];
         vtkstd::string zRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",2));
         std::istringstream zRowInString(zRow);
-  	zRowInString >> row[2];
+  	    zRowInString >> row[2];
         vtkstd::string xCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",3));
         std::istringstream xColInString(xCol);
-  	xColInString >> col[0];
+  	    xColInString >> col[0];
         vtkstd::string yCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",4));
         std::istringstream yColInString(yCol);
-  	yColInString >> col[1];
+  	    yColInString >> col[1];
         vtkstd::string zCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",5));
         std::istringstream zColInString(zCol);
-  	zColInString >> col[2];
+  	    zColInString >> col[2];
         tmp->Delete();
         // Generate the normal.
         vtkMath::Cross(row,col,normal);
