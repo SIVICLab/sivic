@@ -101,7 +101,8 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 
     if ( tmp->GetDcmHeader()->IsFileDICOM( fname ) ) {
 
-        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        tmp->GetDcmHeader()->ReadDcmFile( fname );
+        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
 
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
         if ( this->ContainsProprietaryContent( tmp ) == false ) {

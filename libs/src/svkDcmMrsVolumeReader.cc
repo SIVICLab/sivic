@@ -83,7 +83,7 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 
     vtkstd::string fileToCheck(fname);
 
-    if ( tmp->GetDcmHeader()->IsFileDICOM( fname ) ) {
+    if ( this->GetOutput()->GetDcmHeader()->IsFileDICOM( fname ) ) {
  
         this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
         vtkstd::string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
