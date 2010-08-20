@@ -99,7 +99,7 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
     svkImageData* tmp = svkMriImageData::New(); 
     bool isDcmMri = false; 
 
-    if ( tmp->GetDcmHeader()->ReadDcmFile( fname ) == 0 ) {
+    if ( tmp->GetDcmHeader()->IsFileDICOM( fname ) ) {
 
         vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
 

@@ -506,7 +506,7 @@ class svkDcmHeader: public vtkObject
         void                Deidentify( PHIType phiType ); 
         void                Deidentify( PHIType phiType, string id );   
         void                Deidentify( PHIType phyType, string patientId, string studyId );   
-
+        static bool         IsFileDICOM( vtkstd::string fname); 
         
 
     protected:

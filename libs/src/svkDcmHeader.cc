@@ -1080,3 +1080,33 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
     }
 }
 
+
+/*!
+ *  Check for magic DICM chars at byte 128 to test if the file is a DICOM file. 
+ */
+bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
+{
+    bool isDICOM = false; 
+
+    ifstream* file = new ifstream();
+    file->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    file->open( fname.c_str(), ios::binary ); 
+    file->seekg(128, ios::beg);
+
+    char magicDICOMChars[5]; 
+    file->read( magicDICOMChars, 4);
+    //  terminate
+    magicDICOMChars[4] = '\0'; 
+   
+    vtkstd::string magicString( magicDICOMChars ); 
+
+    if ( magicString.compare("DICM") == 0 ) {
+        isDICOM = true;
+    }
+
+    file->close(); 
+
+    return isDICOM;
+}
+
+
