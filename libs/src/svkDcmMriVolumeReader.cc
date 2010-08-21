@@ -96,10 +96,11 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 
     vtkstd::string fileToCheck(fname);
 
-    svkImageData* tmp = svkMriImageData::New(); 
     bool isDcmMri = false; 
 
-    if ( tmp->GetDcmHeader()->IsFileDICOM( fname ) ) {
+    if ( svkDcmHeader::IsFileDICOM( fname ) ) {
+
+        svkImageData* tmp = svkMriImageData::New(); 
 
         tmp->GetDcmHeader()->ReadDcmFile( fname );
         vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
@@ -114,9 +115,10 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
             }
         
         }
+
+        tmp->Delete(); 
     }
 
-    tmp->Delete(); 
     if ( isDcmMri ) {
         cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
         return 1;

@@ -83,10 +83,12 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 
     vtkstd::string fileToCheck(fname);
 
-    if ( this->GetOutput()->GetDcmHeader()->IsFileDICOM( fname ) ) {
+    if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
-        this->GetOutput()->GetDcmHeader()->ReadDcmFile( fname ); 
-        vtkstd::string SOPClassUID = this->GetOutput()->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        svkImageData* tmp = svkMrsImageData::New(); 
+        tmp->GetDcmHeader()->ReadDcmFile( fname ); 
+        vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
+        tmp->Delete(); 
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
 
