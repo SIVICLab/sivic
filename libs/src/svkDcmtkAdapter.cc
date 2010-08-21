@@ -497,7 +497,7 @@ float svkDcmtkAdapter::GetFloatValue(const char* name)
 void svkDcmtkAdapter::GetFloatValue(const char* name, float* values, long unsigned int numValues)
 {
     DcmElement* of;
-    float* floatArray = new float[numValues]; 
+    float* floatArray;
     OFCondition status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( name ), of);
     if (status.bad()) {
         cerr << "Error: cannot get element(" << status.text() << ")" << endl;
@@ -521,7 +521,7 @@ void svkDcmtkAdapter::GetFloatValue(const char* name, float* values, long unsign
 void svkDcmtkAdapter::GetShortValue(const char* name, short* values, long unsigned int numValues)
 {
     DcmElement* of;
-    Uint16* shortArray = new Uint16[numValues]; 
+    Uint16* shortArray;
     OFCondition status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( name ), of);
     if (status.bad()) {
         cerr << "Error: cannot get element(" << status.text() << ")" << endl;
