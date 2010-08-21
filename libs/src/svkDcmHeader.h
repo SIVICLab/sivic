@@ -541,7 +541,7 @@ class svkDcmHeader: public vtkObject
                                         int numTimePts = -1, 
                                         int numCoils  = -1
                                     ); 
-
+        int                         GetNumberOfFrames(); 
 
 };
 

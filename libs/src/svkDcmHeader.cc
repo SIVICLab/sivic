@@ -437,17 +437,28 @@ void svkDcmHeader::UpdateOrientation()
 
     //  The 6 elements of the ImageOrientationPatient are the in plance vectors along the
     //  row and column directions:
+
+    //  for multi-frame objects, orientation is in shared functional group sequence: 
+    bool inSharedFunctionalGroup = false; 
+    if( this->ElementExists( "ImageOrientationPatient", "SharedFunctionalGroupsSequence") ) {
+        inSharedFunctionalGroup = true; 
+    } 
+
     int linearIndex = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
-            orientationString = this->GetStringSequenceItemElement(
-                "PlaneOrientationSequence",
-                0,
-                "ImageOrientationPatient",
-                linearIndex,
-                "SharedFunctionalGroupsSequence",
-                0
-            );
+            if ( inSharedFunctionalGroup ) {
+                orientationString = this->GetStringSequenceItemElement(
+                    "PlaneOrientationSequence",
+                    0,
+                    "ImageOrientationPatient",
+                    linearIndex,
+                    "SharedFunctionalGroupsSequence",
+                    0
+                );
+            } else {
+                orientationString = this->GetStringValue( "ImageOrientationPatient", linearIndex ); 
+            }
             iss->str(orientationString);
             *iss >> this->orientation[i][j];
             iss->clear();
@@ -467,20 +478,32 @@ void svkDcmHeader::UpdatePixelSize()
 
     istringstream* iss = new istringstream();
     string sizeString;
-    string parentSequence("SharedFunctionalGroupsSequence");
-    if( !this->ElementExists( "PixelSpacing", parentSequence.c_str()) ) {
+    string parentSequence;
+
+    //  for multi-frame objects, orientation is in shared functional group sequence: 
+    bool inFunctionalGroup = false; 
+    if( this->ElementExists( "PixelSpacing", "PerFrameFunctionalGroupsSequence" ) ) {
         parentSequence = "PerFrameFunctionalGroupsSequence";
-    }
+        inFunctionalGroup = true; 
+    } else if( this->ElementExists( "PixelSpacing", "SharedFunctionalGroupsSequence" ) ) {
+        parentSequence = "SharedFunctionalGroupsSequence";
+        inFunctionalGroup = true; 
+    } 
+
 
     for (int i = 0; i < 2; i++ ) {
-        sizeString = this->GetStringSequenceItemElement(
-            "PixelMeasuresSequence",
-            0,
-            "PixelSpacing",
-            i,
-            parentSequence.c_str(),
-            0
-        );
+        if ( inFunctionalGroup ) {
+            sizeString = this->GetStringSequenceItemElement(
+                "PixelMeasuresSequence",
+                0,
+                "PixelSpacing",
+                i,
+                parentSequence.c_str(),
+                0
+            );
+        } else {
+            sizeString = this->GetStringValue( "PixelSpacing", i ); 
+        }
         iss->str(sizeString);
         *iss >> pixelSize[i];
         iss->clear();
@@ -551,16 +574,25 @@ void svkDcmHeader::UpdateOrigin0()
         string originString; 
         int frameNumber = 0; 
 
+        bool inFunctionalGroup = false; 
+        if( this->ElementExists( "ImagePositionPatient", "PerFrameFunctionalGroupsSequence") ) {
+            inFunctionalGroup = true; 
+        } 
+
         //  Iterate of all 3 positions of the ImagePositionPatient element;
         for (int i = 0; i < 3; i++) {
-            originString = this->GetStringSequenceItemElement(
-                "PlanePositionSequence",
-                0,
-                "ImagePositionPatient",
-                i, 
-                "PerFrameFunctionalGroupsSequence",
-                frameNumber
-            );
+            if ( inFunctionalGroup ) {
+                originString = this->GetStringSequenceItemElement(
+                    "PlanePositionSequence",
+                    0,
+                    "ImagePositionPatient",
+                    i, 
+                    "PerFrameFunctionalGroupsSequence",
+                    frameNumber
+                );
+            } else {
+                originString = this->GetStringValue( "ImagePositionPatient", i ); 
+            } 
             iss->str(originString);
             *iss >> this->origin0[i];
             iss->clear();
@@ -588,7 +620,6 @@ void svkDcmHeader::UpdateOrigin0()
 int svkDcmHeader::GetNumberOfCoils()
 {
     int numCoils = 1;
-    int numberOfFrames = this->GetIntValue("NumberOfFrames");
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
@@ -665,7 +696,7 @@ int svkDcmHeader::GetDimensionIndexPosition(string indexLabel)
  */
 int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
 {
-    int numberOfFrames = this->GetIntValue("NumberOfFrames");
+    int numberOfFrames = this->GetNumberOfFrames();
 
     int numFramesInDimension; 
 
@@ -700,7 +731,7 @@ int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
  */
 int svkDcmHeader::GetNumberOfSlices()
 {
-    int numberOfFrames = this->GetIntValue( "NumberOfFrames" );
+    int numberOfFrames = this->GetNumberOfFrames();
     int numberOfCoils = this->GetNumberOfCoils();
     int numberOfTimePts = this->GetNumberOfTimePoints();
     return numberOfFrames/(numberOfCoils * numberOfTimePts ) ;
@@ -1091,22 +1122,49 @@ bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
     ifstream* file = new ifstream();
     file->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
     file->open( fname.c_str(), ios::binary ); 
-    file->seekg(128, ios::beg);
 
-    char magicDICOMChars[5]; 
-    file->read( magicDICOMChars, 4);
-    //  terminate
-    magicDICOMChars[4] = '\0'; 
+    // get length of file:
+    file->seekg (0, ios::end);
+    int fileLength = file->tellg();
+
+    if ( fileLength >= 131 ) {
+
+        file->seekg (0, ios::beg);
+        //  try to read if not eof
+        file->seekg(128, ios::beg); 
+
+        char magicDICOMChars[5]; 
+        file->read( magicDICOMChars, 4); 
+        //  terminate
+        magicDICOMChars[4] = '\0'; 
    
-    vtkstd::string magicString( magicDICOMChars ); 
+        vtkstd::string magicString( magicDICOMChars ); 
 
-    if ( magicString.compare("DICM") == 0 ) {
-        isDICOM = true;
+        if ( magicString.compare("DICM") == 0 ) {
+            isDICOM = true;
+        }
     }
 
     file->close(); 
 
+    delete file; 
+
     return isDICOM;
 }
 
+
+/*!
+ *  Gets number of frames.  Since this isn't necessarily present for single frame objects, 
+ *  default to 1: 
+ */
+int svkDcmHeader::GetNumberOfFrames()
+{
+    int numberOfFrames;
+    if ( this->ElementExists("NumberOfFrames") ) {
+        numberOfFrames = this->GetIntValue( "NumberOfFrames" );
+    } else {
+        numberOfFrames = 1;
+    }
+    return numberOfFrames; 
+}
 
