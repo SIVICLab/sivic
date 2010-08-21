@@ -151,127 +151,63 @@ bool svkDcmMriVolumeReader::ContainsProprietaryContent( svkImageData* data )
 
 
 /*!
- *
+ *  sort compare utility method 
  */
-struct svkDcmMriVolumeReaderSort_lt_pair_double_string
+float GetFloatVal( vtkstd::vector< vtkstd::string > vec ) 
 {
-  bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
-                  const vtkstd::pair<double, vtkstd::string> s2) const
-  {
-    return s1.first < s2.first;
-  }
-};
+    istringstream* posString = new istringstream();
 
+    //  4th element of vector is the projection of the 
+    //  ImagePositionPatient on the normal through the origin
+    posString->str( vec[4] );    
+    float floatPosition; 
+    *posString >> floatPosition; 
 
-/*!
- *
- */
-struct svkDcmMriVolumeReaderSort_gt_pair_double_string
-{
-  bool operator()(const vtkstd::pair<double, vtkstd::string> s1, 
-                  const vtkstd::pair<double, vtkstd::string> s2) const
-  {
-    return s1.first > s2.first;
-  }
-};
+    delete posString; 
 
-
-/*!
- * Sort the list of files in either ascending or descending order by ImagePositionPatient
- * and SeriesInstanceUID.  If the SeriesInstanceUID is not the same as the input, the file
- * is removed from the list.  Also return true if this is a multi-volume series. 
- */
-bool svkDcmMriVolumeReaderSortFilesByImagePositionPatient(const vtkstd::string & seriesInstanceUID, 
-    vtkStringArray* fileNames, bool ascending)
-{
-    bool multiVolumeSeries = false;
-    vtkstd::vector<vtkstd::pair<double, vtkstd::string> > positionFilePairVector;
-    double imagePosition = VTK_DOUBLE_MAX; // initialize to an "infinite" value
-    
-    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        svkImageData* tmp = svkMriImageData::New();
-        double position[3];
-        double row[3];
-        double col[3];
-        double normal[3];
-        double tmpImagePosition = 0;
-        tmp->GetDcmHeader()->ReadDcmFile(  fileNames->GetValue(i) );
-        vtkstd::string tmpSeriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
-        vtkstd::string xPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",0));
-        std::istringstream xPositionInString(xPosition);
-  	    xPositionInString >> position[0];
-        vtkstd::string yPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",1));
-        std::istringstream yPositionInString(yPosition);
-  	    yPositionInString >> position[1];
-        vtkstd::string zPosition( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient",2));
-        std::istringstream zPositionInString(zPosition);
-  	    zPositionInString >> position[2];
-        vtkstd::string xRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",0));
-        std::istringstream xRowInString(xRow);
-  	    xRowInString >> row[0];
-        vtkstd::string yRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",1));
-        std::istringstream yRowInString(yRow);
-  	    yRowInString >> row[1];
-        vtkstd::string zRow( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",2));
-        std::istringstream zRowInString(zRow);
-  	    zRowInString >> row[2];
-        vtkstd::string xCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",3));
-        std::istringstream xColInString(xCol);
-  	    xColInString >> col[0];
-        vtkstd::string yCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",4));
-        std::istringstream yColInString(yCol);
-  	    yColInString >> col[1];
-        vtkstd::string zCol( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient",5));
-        std::istringstream zColInString(zCol);
-  	    zColInString >> col[2];
-        tmp->Delete();
-        // Generate the normal.
-        vtkMath::Cross(row,col,normal);
-        // If input series UID matches this series UID, add to list for sorting later.
-        if ( seriesInstanceUID == tmpSeriesInstanceUID ) {
-            vtkstd::pair<double, vtkstd::string> positionFilePair;
-            tmpImagePosition = (normal[0]*position[0]) + (normal[1]*position[1]) 
-                + (normal[2]*position[2]);
-            // If the image position is the same for any given slice, then we have a multi-volume series.
-            if( tmpImagePosition == imagePosition ) {
-                multiVolumeSeries = true;
-                return multiVolumeSeries;
-            } else {
-                imagePosition = tmpImagePosition;
-            }
-            positionFilePair.first = imagePosition;
-            positionFilePair.second = fileNames->GetValue(i);
-            positionFilePairVector.push_back(positionFilePair);
-        } 
-    }
-    // Sort according to ascending/descending order.
-    if (ascending) {
-        vtkstd::sort(positionFilePairVector.begin(), 
-            positionFilePairVector.end(), svkDcmMriVolumeReaderSort_lt_pair_double_string());
-    } else {
-        vtkstd::sort(positionFilePairVector.begin(), 
-            positionFilePairVector.end(), svkDcmMriVolumeReaderSort_gt_pair_double_string());
-    }
-    // Finally, repopulate the file list.
-    fileNames->SetNumberOfValues(positionFilePairVector.size());
-    for (int i = 0; i < positionFilePairVector.size(); i++) {
-        fileNames->SetValue(i, positionFilePairVector[i].second.c_str() );
-#if VTK_DEBUG_ON
-        cout << "FN: " << fileNames->GetValue(i) << endl;
-#endif
-    } 
-    return multiVolumeSeries;
+    return floatPosition; 
 }
 
+
+//  sort ascending slice order
+bool SortAscend( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+{
+    return GetFloatVal( first ) < GetFloatVal( second );  
+}
+
+
+//  sort descending slice order
+bool SortDescend( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+{
+    return GetFloatVal( first ) > GetFloatVal( second );  
+}
+
+
 /*!
- *
+ *  Sort the list of files in either ascending or descending order by ImagePositionPatient
  */
-void svkDcmMriVolumeReader::InitDcmHeader()
+void svkDcmMriVolumeReader::SortFilesByImagePositionPatient(
+        vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes, 
+        bool ascending
+    )
 {
 
+    if ( ascending ) {
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscend ); 
+    } else {
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescend ); 
+    }
+
+    return;
+}
+
+
+
+void svkDcmMriVolumeReader::InitFileNames()
+{
     vtkstd::string dcmFileName( this->GetFileName() );
     vtkstd::string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
-    
+
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
     globFileNames->AddFileNames( vtkstd::string( dcmFilePath + "/*").c_str() );
 
@@ -281,45 +217,170 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     sortFileNames->SkipDirectoriesOn();
     sortFileNames->Update();
 
-    // If ImageOrientationPatient is not the same for all of the slices,
-    // then just use the specified file.
+    //  Get the reference file's SeriesInstanceUID, ImageOrientationPatient and slice normal.
+    //  These are used for parsing the glob'd files.  
     svkImageData* tmp = svkMriImageData::New(); 
     tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileName() );
     vtkstd::string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
     vtkstd::string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
+    double normal[3]; 
+    tmp->GetDcmHeader()->GetNormalVector( normal );
     tmp->Delete();
-    vtkStringArray* fileNames =  sortFileNames->GetFileNames();
-    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        tmp = svkMriImageData::New(); 
-        tmp->GetDcmHeader()->ReadDcmFile(  fileNames->GetValue(i) );
-        vtkstd::string tmpImageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
-        tmp->Delete();
-        if ( imageOrientationPatient != tmpImageOrientationPatient ) {
-            
-            vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, using only specified file ");
 
-            vtkStringArray* tmpFileNames = vtkStringArray::New(); 
-            tmpFileNames->SetNumberOfValues(1);
-            tmpFileNames->SetValue(0, this->GetFileName() );
-            sortFileNames->SetInputFileNames( tmpFileNames );
-            tmpFileNames->Delete();
-            break; 
+    vtkStringArray* fileNames =  sortFileNames->GetFileNames();
+
+    //  1.  Select only DICOM images from glob.  Non-DICOM image parsing will cause problems
+    //  2.  Ensure that the list of files all belong to the same series (have the same 
+    //      SeriesInstanceUID) as the selected input image. 
+    //  3.  Run some checks to ensure that the series comprises data from a single volume: 
+    //          - all have same ImageOrientationPatient.
+    //          - no duplicated ImagePositionPatient values
+    //  4.  Sort the resulting list of files by location (ascending/descending). 
+
+
+    //  create a container to hold file names and dcm attributes, so 
+    //  DCM parsing is only done once: 
+    //  fileName, SeriesInstanceUID, ImageOrientationPatient, ImagePositionPatient, projectionOnNormal 
+    //      the projection onto the normal of the input image orientation is used for sorting slice 
+    //      order. 
+    vtkstd::vector < vtkstd::vector< vtkstd::string > > dcmSeriesAttributes; 
+
+    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
+
+        //
+        //  1.  only include DICOM files 
+        //
+        if (  svkDcmHeader::IsFileDICOM( fileNames->GetValue(i) ) ) {
+
+            vtkstd::vector< vtkstd::string > dcmFileAttributes;  
+
+            tmp = svkMriImageData::New(); 
+            tmp->GetDcmHeader()->ReadDcmFile( fileNames->GetValue(i) );
+            dcmFileAttributes.push_back( fileNames->GetValue(i) ); 
+            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "SeriesInstanceUID" ) );
+            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImageOrientationPatient" ) );
+            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImagePositionPatient" ) );
+
+            double position[3];   
+            for (int i = 0; i < 3; i++ ) {
+                vtkstd::string pos( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
+                std::istringstream positionInString(pos);
+                positionInString >> position[i];
+            }
+
+            //  Project posLPS onto the normal vector through the
+            //  origin of world coordinate space (this is the same
+            //  reference for both data sets (e.g MRI and MRS).
+            double projectionOnNormal = vtkMath::Dot( position, normal );
+            ostringstream projectionOss;
+            projectionOss << projectionOnNormal;
+            dcmFileAttributes.push_back( projectionOss.str() ); 
+
+            //  add the file attributes to the series attribute vector:
+            dcmSeriesAttributes.push_back( dcmFileAttributes ); 
+
+            tmp->Delete();
+
         }
     }
 
-    // Now sort the files according to SeriesInstanceUID and ImagePositionPatient.
-    fileNames =  sortFileNames->GetFileNames();
-    if ( svkDcmMriVolumeReaderSortFilesByImagePositionPatient(seriesInstanceUID, fileNames, true) ){
-        vtkWarningWithObjectMacro(this, "Multi-volume DICOM series are currently not supported, using only specified file ");
+    //  ======================================================================
+    //  Now validate that the DICOM files comprise a single volumetric series
+    //  wrt seriesUID and orientation: 
+    //  ======================================================================
+    vtkstd::vector < vtkstd::vector< vtkstd::string > >::iterator seriesIt; 
+    seriesIt = dcmSeriesAttributes.begin(); 
 
-        vtkStringArray* tmpFileNames = vtkStringArray::New(); 
-        tmpFileNames->SetNumberOfValues(1);
-        tmpFileNames->SetValue(0, this->GetFileName() );
-        sortFileNames->SetInputFileNames( tmpFileNames );
-        tmpFileNames->Delete();
+    while ( seriesIt != dcmSeriesAttributes.end() ) { 
+
+        vtkstd::string tmpSeriesInstanceUID = (*seriesIt)[1]; 
+        vtkstd::string tmpImageOrientationPatient = (*seriesIt)[2]; 
+        //  if seriesUID doesnt match, remove it:
+        if ( tmpImageOrientationPatient == imageOrientationPatient ) {
+
+            if ( tmpSeriesInstanceUID != seriesInstanceUID ) {
+                vtkWarningWithObjectMacro(
+                    this, 
+                    "SeriesInstanceUID is not the same for all slices in directory , using only specified file "
+                );
+                seriesIt = dcmSeriesAttributes.erase( seriesIt ); 
+            } else {
+                seriesIt++; 
+            }
+
+        } else {
+
+            //  Orientations don't match, set series to one input file
+            vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, using only specified file ");
+            this->OnlyReadInputFile(); 
+            return; 
+        }
     }
+
+    //  ============================
+    //  Is Data multi-volumetric:
+    //  ============================
+    set < vtkstd::string > uniqueSlices;
+    seriesIt = dcmSeriesAttributes.begin(); 
+    while ( seriesIt != dcmSeriesAttributes.end() ) { 
+        uniqueSlices.insert( (*seriesIt)[3] ); 
+        seriesIt++ ;
+    }
+    if ( dcmSeriesAttributes.size() > uniqueSlices.size() ) {
+        //  More than one file per slice:  
+        vtkWarningWithObjectMacro(this, "Multi-volumetric data, repeated slice locations"); 
+        this->OnlyReadInputFile(); 
+        return; 
+    }
+
+    //  ======================================================================
+    //  Now sort the files according to ImagePositionPatient.
+    //  ======================================================================
+    this->SortFilesByImagePositionPatient( dcmSeriesAttributes, false); 
+
+    // Finally, repopulate the file list.
+    fileNames->SetNumberOfValues( dcmSeriesAttributes.size() );
+    for ( int i = 0; i < dcmSeriesAttributes.size(); i++ ) { 
+        if (this->GetDebug()) {
+            cout << "FNS in series: " << dcmSeriesAttributes[i][0] << endl; 
+        }
+        fileNames->SetValue( i, dcmSeriesAttributes[i][0] ); 
+    }
+
     // Calling this method will set the DataExtents for the slice direction
+    //  should set these from the sorted dcmSeriesAttributes: 
     this->SetFileNames( sortFileNames->GetFileNames() );
+
+    globFileNames->Delete();
+    sortFileNames->Delete();
+
+} 
+
+
+/*!
+ *  Reset file names to only the single input file name
+ */
+void svkDcmMriVolumeReader::OnlyReadInputFile()
+{
+    vtkStringArray* tmpFileNames = vtkStringArray::New();
+    tmpFileNames->SetNumberOfValues(1);
+    tmpFileNames->SetValue(0, this->GetFileName() );
+    tmpFileNames->Delete();
+
+    // Calling this method will set the DataExtents for the slice direction
+    this->SetFileNames( tmpFileNames );
+
+    tmpFileNames->Delete(); 
+}
+
+
+/*!
+ *
+ */
+void svkDcmMriVolumeReader::InitDcmHeader()
+{
+
+    this->InitFileNames(); 
 
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
@@ -360,8 +421,6 @@ void svkDcmMriVolumeReader::InitDcmHeader()
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
     }
     
-    globFileNames->Delete();
-    sortFileNames->Delete();
 }
 
 
@@ -383,13 +442,9 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
         svkImageData* tmpImage = svkMriImageData::New(); 
         tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( i ) ); 
         tmpImage->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData) + (i * numPixelsInSlice), numPixelsInSlice );
-        // Do I need to byte swap?
-        //if ( this->GetSwapBytes() ) {
-	//    vtkByteSwap::SwapVoidRange((void *)((short *)imageData + (i * numPixelsInSlice)), numPixelsInSlice, sizeof(short));
-        //}  
+        tmpImage->Delete(); 
     }
 
-    //this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
 }
 
 
