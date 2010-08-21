@@ -772,8 +772,10 @@ string svkGEPFileReader::GetFieldAsString( string key )
         }
         ossValue << ulintVal;
     } else if ( type.compare("CHAR") == 0) {
-        char* charVal = new char[numElements];  
+        //  null terminate char array: 
+        char* charVal = new char[numElements + 1];  
         this->gepf->read( charVal, 1 * numElements );
+        charVal[numElements] = '\0';
         ossValue << charVal;
         delete [] charVal; 
     } else if ( type.compare("UID") == 0) {

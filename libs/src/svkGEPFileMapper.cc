@@ -73,12 +73,6 @@ svkGEPFileMapper::svkGEPFileMapper()
 svkGEPFileMapper::~svkGEPFileMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-
-    if( this->progressCallback != NULL ) {
-        this->progressCallback->Delete();
-        this->progressCallback = NULL;
-    }
-
 }
 
 
@@ -499,6 +493,8 @@ void svkGEPFileMapper::InitPerFrameFunctionalGroupMacros()
             numTimePts, 
             numCoils
     );
+
+    delete[] center; 
 
 }
 
@@ -1354,6 +1350,8 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    delete[] center; 
 }
 
 

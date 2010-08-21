@@ -330,6 +330,8 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
         }
     }
 
+    delete[] dataTuple; 
+
 }
 
 
