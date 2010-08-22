@@ -54,7 +54,12 @@ ADD_TEST(TEST_2  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM
 ########################
 #   DICOM MRI to UCSF IDF 
 ########################
-ADD_TEST(TEST_3  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name test_3 --baseline_path ${SVK_TEST_ROOT}/DICOM/mri_phantom/ --opts "-i ${SVK_TEST_ROOT}/DICOM/mri_phantom/E0000S4I1.DCM -o mri.dcm -t 3" )
+ADD_TEST(TEST_3  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name test_3 --baseline_path ${SVK_TEST_ROOT}/DICOM/mri_phantom/ --opts "-i ${SVK_TEST_ROOT}/DICOM/mri_phantom/E0000S4I1.DCM -o vol -t 3" )
+
+########################
+#   UCSF IDF to UCSF IDF 
+########################
+ADD_TEST(TEST_4  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name test_4 --baseline_path ${SVK_TEST_ROOT}/idf/idf_to_idf/ --opts "-i ${SVK_TEST_ROOT}/idf/idf_to_idf/vol.idf -o out -t 3" )
 
 
 ########################
