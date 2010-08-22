@@ -113,36 +113,42 @@ svkGEPFileReader::~svkGEPFileReader()
 int svkGEPFileReader::CanReadFile(const char* fname)
 {
 
-    this->gepf = new ifstream();
-    this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-    this->gepf->open( fname, ios::binary);
     bool    isGEPFile = false; 
 
-    this->pfileVersion = 0; 
+    try {
+        this->gepf = new ifstream();
+        this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        this->gepf->open( fname, ios::binary);
 
-    if ( this->gepf->is_open() ) {
+        this->pfileVersion = 0; 
 
-        this->pfileVersion = this->GetPFileVersion(); 
-        this->SetByteSwapping(); 
+        if ( this->gepf->is_open() ) {
+
+            this->pfileVersion = this->GetPFileVersion(); 
+            this->SetByteSwapping(); 
         
-        if ( this->pfileVersion ) {
+            if ( this->pfileVersion ) {
 
-            this->InitOffsetsMap(); 
+                this->InitOffsetsMap(); 
 
-            if ( this->pfileVersion < 12 ) {
-                string geLogo = this->GetFieldAsString( "rhr.rh_logo" );
-                if ( geLogo.find("GE") != string::npos) {
-                    isGEPFile = true; 
-                }
-            } else {
-                string offset = this->GetFieldAsString( "rhr.rdb_hdr_off_data" );
-                if ( offset.compare("66072") == 0 || offset.compare("145908") == 0 || offset.compare("149788") == 0 ) {
-                    isGEPFile = true; 
+                if ( this->pfileVersion < 12 ) {
+                    string geLogo = this->GetFieldAsString( "rhr.rh_logo" );
+                    if ( geLogo.find("GE") != string::npos) {
+                        isGEPFile = true; 
+                    }
+                } else {
+                    string offset = this->GetFieldAsString( "rhr.rdb_hdr_off_data" );
+                    if ( offset.compare("66072") == 0 || offset.compare("145908") == 0 || offset.compare("149788") == 0 ) {
+                        isGEPFile = true; 
+                    }
                 }
             }
-        }
         
-        this->gepf->close();
+            this->gepf->close();
+        }
+
+    } catch (const exception& e) {
+        cerr << "ERROR(svkGEPFileReader::CanReadFile opening or reading file (" << fname << "): " << e.what() << endl;
     }
 
     if ( isGEPFile ) {

@@ -1119,35 +1119,41 @@ bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
 {
     bool isDICOM = false; 
 
-    ifstream* file = new ifstream();
-    file->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-    file->open( fname.c_str(), ios::binary ); 
+    try {
+        ifstream* file = new ifstream();
+        file->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-    // get length of file:
-    file->seekg (0, ios::end);
-    int fileLength = file->tellg();
+        file->open( fname.c_str(), ios::binary ); 
 
-    if ( fileLength >= 131 ) {
+        // get length of file:
+        file->seekg (0, ios::end);
+        int fileLength = file->tellg();
 
-        file->seekg (0, ios::beg);
-        //  try to read if not eof
-        file->seekg(128, ios::beg); 
+        if ( fileLength >= 131 ) {
 
-        char magicDICOMChars[5]; 
-        file->read( magicDICOMChars, 4); 
-        //  terminate
-        magicDICOMChars[4] = '\0'; 
+            file->seekg (0, ios::beg);
+            //  try to read if not eof
+            file->seekg(128, ios::beg); 
+
+            char magicDICOMChars[5]; 
+            file->read( magicDICOMChars, 4); 
+            //  terminate
+            magicDICOMChars[4] = '\0'; 
    
-        vtkstd::string magicString( magicDICOMChars ); 
+            vtkstd::string magicString( magicDICOMChars ); 
 
-        if ( magicString.compare("DICM") == 0 ) {
-            isDICOM = true;
+            if ( magicString.compare("DICM") == 0 ) {
+                isDICOM = true;
+            }
         }
+
+        file->close(); 
+
+        delete file; 
+
+    } catch (const exception& e) {
+        cerr << "ERROR(svkDcmHeader::IsFileDICOM opening or reading file (" << fname << "): " << e.what() << endl;
     }
-
-    file->close(); 
-
-    delete file; 
 
     return isDICOM;
 }
