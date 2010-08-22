@@ -116,6 +116,7 @@ chdir ( "$test_results_dir" ) || die "Can't cd to $test_results_dir: $!\n";
 #   Run svk_file_convert with the specified opts: 
 #####################################################
 $cmd = "${bin_path}/svk_file_convert $opts"; 
+print "cmd:         : $cmd\n\n"; 
 #   Run the test and check output:
 if ( system($cmd) ) {
     exit 1; 
