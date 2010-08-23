@@ -701,6 +701,9 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
             i
         );
     }
+
+    delete[] volumeTlcLPSFrame;
+
 }
 
 
@@ -831,6 +834,7 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
+    math->Delete(); 
 
 }
 
@@ -971,6 +975,8 @@ void svkFdfVolumeReader::ParseFdf()
                 }
             }
 
+            keysToFind->Delete(); 
+
             this->fdfFile->close();
         }
 
@@ -1062,6 +1068,7 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
                     } 
                 }
                 if ( !parseValue )  {
+                    delete iss; 
                     return status; 
                 }   
 
@@ -1184,6 +1191,9 @@ int svkFdfVolumeReader::GetHeaderValueAsInt(string keyString, int valueIndex)
 
     iss->str( (fdfMap[keyString])[valueIndex]);
     *iss >> value;
+
+    delete iss; 
+
     return value; 
 }
 
@@ -1199,6 +1209,8 @@ float svkFdfVolumeReader::GetHeaderValueAsFloat(string keyString, int valueIndex
 
     iss->str( (fdfMap[keyString])[valueIndex]);
     *iss >> value;
+
+    delete iss; 
 
     return value; 
 }
@@ -1296,7 +1308,7 @@ void svkFdfVolumeReader::ConvertCmToMm()
         tmp = cmToMm * this->GetHeaderValueAsFloat("gap", 0); 
         (fdfMap["gap"])[0] = this->GetStringFromFloat( tmp ); 
     } else {
-        (fdfMap["gap"])[0] = "0";
+        fdfMap["gap"].push_back("0");
     }
 }
 
