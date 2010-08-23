@@ -44,30 +44,37 @@ SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 ########################
 #   20X GE Raw to DDF
 ########################
-SET( TEST_NAME test_1)
+SET( TEST_NAME TEST_1)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
-ADD_TEST(TEST_1  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20_x_raw -o 20x -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20_x_raw -o 20x -t 2" )
 
 ########################
 #   UCSF ddf to UCSF DDF
 ########################
-SET( TEST_NAME test_2)
+SET( TEST_NAME TEST_2)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf)
-ADD_TEST(TEST_2  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20x_1.ddf -o 20x -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20x_1.ddf -o 20x -t 2" )
 
 ########################
 #   DICOM MRI to UCSF IDF 
 ########################
-SET( TEST_NAME test_3)
+SET( TEST_NAME TEST_3)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
-ADD_TEST(TEST_3  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/E0000S4I1.DCM -o vol -t 3" )
+ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/E0000S4I1.DCM -o vol -t 3" )
 
 ########################
 #   UCSF IDF to UCSF IDF 
 ########################
-SET( TEST_NAME test_4)
+SET( TEST_NAME TEST_4)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
-ADD_TEST(TEST_4  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/vol.idf -o out -t 3" )
+ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/vol.idf -o out -t 3" )
+
+########################
+#   VARIAN fdf to UCSF IDF 
+########################
+SET( TEST_NAME TEST_5)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fdf)
+ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/inputlac.0001.fdf -o out -t 3" )
 
 
 ########################
