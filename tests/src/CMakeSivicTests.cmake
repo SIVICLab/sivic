@@ -83,13 +83,18 @@ SET( TEST_NAME TEST_6)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/fid -o out -t 2" )
 
+########################
+#   GE Signa 5x to UCSF IDF 
+########################
+SET( TEST_NAME TEST_7)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5x)
+ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/E8668S3I1.MR -o out -t 3" )
+
 
 ########################
 #   svk_gepfile_reader:   
 ########################
 #ADD_TEST(READ_PFILE ../../applications/cmd_line/src/${PLATFORM}/svk_gepfile_reader -i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o ${SVK_TEST_ROOT}/output/out )
-
-
 
 
 #ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
