@@ -73,6 +73,12 @@ svkVarianFidMapper::svkVarianFidMapper()
 svkVarianFidMapper::~svkVarianFidMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+
+    if ( this->specData != NULL )  {
+        delete [] specData;
+        this->specData = NULL;
+    }
+
 }
 
 
@@ -488,6 +494,8 @@ void svkVarianFidMapper::InitPlanePositionMacro()
             i
         );
     }
+
+    delete volumeTlcLPSFrame;
 }
 
 
@@ -799,7 +807,7 @@ void svkVarianFidMapper::InitFrameAnatomyMacro()
 void svkVarianFidMapper::InitMRModifierMacro()
 {
     float inversionTime = 0; 
-    this->iod->InitMREchoMacro( inversionTime );
+    this->iod->InitMRModifierMacro( inversionTime );
 }
 
 
@@ -1124,7 +1132,6 @@ void svkVarianFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
         }
     }
 
-    delete [] this->specData;
     fidDataIn->close();
     delete fidDataIn;
 
@@ -1268,6 +1275,9 @@ int svkVarianFidMapper::GetHeaderValueAsInt(string keyString, int valueIndex, in
 
     iss->str( (this->procparMap[keyString])[procparRow][valueIndex]);
     *iss >> value;
+
+    delete iss; 
+
     return value;
 }
 
@@ -1280,9 +1290,11 @@ float svkVarianFidMapper::GetHeaderValueAsFloat(string keyString, int valueIndex
 
     istringstream* iss = new istringstream();
     float value;
-
     iss->str( (this->procparMap[keyString])[procparRow][valueIndex]);
     *iss >> value;
+
+    delete iss; 
+
     return value;
 }
 

@@ -63,7 +63,6 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    this->specData = NULL;
     this->paddedData = NULL;
 
 }
@@ -75,11 +74,6 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
 svkVarianCSFidMapper::~svkVarianCSFidMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-
-    if ( this->specData != NULL ) {
-        delete [] this->specData; 
-        this->specData = NULL; 
-    }
 
     if ( this->paddedData != NULL ) {
         delete [] this->paddedData; 
@@ -889,6 +883,11 @@ void svkVarianCSFidMapper::InitMRSpectroscopyPulseSequenceModule()
     );
 
     this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1 );
+
+    //  Assume EVEN sampling about k=0: 
+    string kSpaceSymmetry = "EVEN";
+    this->dcmHeader->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry );
+
 }
 
 
@@ -982,7 +981,6 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
         }
     }
 
-    delete [] this->specData;
     fidDataIn->close();
     delete fidDataIn;
 

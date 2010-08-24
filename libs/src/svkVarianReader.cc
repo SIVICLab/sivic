@@ -252,7 +252,6 @@ int svkVarianReader::GetNumberOfProcparElements( string* valueString )
     size_t  position; 
     string tmpString = string(*valueString);
 
-
     //  If it's a quoted string, ignore spaces:
     int endQuote = 1;
     if ( ( position = tmpString.find('"') ) != string::npos) {
@@ -265,12 +264,17 @@ int svkVarianReader::GetNumberOfProcparElements( string* valueString )
         } 
 
     } else {
-    
-        if ( tmpString.find(' ')  == string::npos) {
+   
+        //  If no space delimiter is found and the string has content, then
+        //  assume 1 element.  Otherwise, iterate through space delimited 
+        //  elements:
+        if ( tmpString.find(' ') == string::npos) {
             if (tmpString.length() >= 1) {
                 numElementsParsed++;  
             }
         } else {
+            //  if a space was found increment by 1, then see how many more spaces can be found:
+            numElementsParsed++;  
             while ( ( position = tmpString.find(' ') ) != string::npos) {
                 tmpString.erase( position, 1 );
                 numElementsParsed++;  
@@ -303,14 +307,18 @@ void svkVarianReader::GetProcparValueArray( string* valueString )
         //  Now parse that many elements: 
         if ( position != iss->str().length() ) {
             valueString->append( iss->str().substr(position + 1) );
+
         }
 
         valueString->assign( this->StripWhite(*valueString) );
+
+        //  parse additional lines if num elements in value hasn't been extracted yet:
         while ( this->GetNumberOfProcparElements( valueString ) < numElements ) {
             this->ReadLine(this->procparFile, iss); 
             valueString->append( " " );
             valueString->append( iss->str() );
             valueString->assign( this->StripWhite(*valueString) );
+
         }
     } 
     delete iss;     
