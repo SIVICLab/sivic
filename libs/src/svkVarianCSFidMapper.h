@@ -43,25 +43,13 @@
 #define SVK_VARIAN_CS_FID_MAPPER_H
 
 
-#include <vtkObjectFactory.h>
 #include <vtkImageData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
-
-#include <svkDcmHeader.h>
-#include <svkVarianReader.h>
-#include <svkByteSwap.h>
 #include <svkVarianFidMapper.h>
 
-#include <map>
-#include <vector>
+#include <vtkstd/vector>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -132,13 +120,13 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
 
     private:
 
-        float***        paddedData; 
-        float****       rectilinearData; 
-        void            ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile ); 
-        void            ReOrderFlyback(); 
-        void            ZeroPadCompressedSensingData( int numberDataPointsInFIDFile ); 
-        vector<int>     GetBlips(); 
-        void            GetBlipString(string* blipString);
+        float***            paddedData; 
+        float****           rectilinearData; 
+        void                ReOrderSamples( float* specDataReordered, int numberDataPointsInFIDFile ); 
+        void                ReOrderFlyback(); 
+        void                ZeroPadCompressedSensingData( int numberDataPointsInFIDFile ); 
+        vtkstd::vector<int> GetBlips(); 
+        void                GetBlipString(string* blipString);
 
 };
 

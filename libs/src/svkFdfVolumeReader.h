@@ -43,30 +43,18 @@
 #ifndef SVK_FDF_VOLUME_READER_H
 #define SVK_FDF_VOLUME_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
 #include <vtkFloatArray.h>
-#include <vtkPointData.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
-#include <vtkDebugLeaks.h>
 
 #include <svkVarianReader.h>
-#include <svkByteSwap.h>
 
-#include <sys/stat.h>
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/string>
+#include <vtkstd/vector>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -87,6 +75,12 @@ class svkFdfVolumeReader : public svkVarianReader
 
         static svkFdfVolumeReader* New();
         vtkTypeRevisionMacro( svkFdfVolumeReader, svkVarianReader);
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "Varian FDF File";
+        }
 
         //  Methods:
         virtual int             CanReadFile(const char* fname);
@@ -124,20 +118,20 @@ class svkFdfVolumeReader : public svkVarianReader
         void                             InitPlaneOrientationMacro();
         void                             InitMRReceiveCoilMacro();
         void                             ReadFdfFiles();
-        string                           VarianToDicomDate(string* volumeDate);
-        string                           GetDcmPatientPositionString();
+        vtkstd::string                   VarianToDicomDate(vtkstd::string* volumeDate);
+        vtkstd::string                   GetDcmPatientPositionString();
         void                             ParseFdf();
         int                              GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
         void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);
         int                              GetDataBufferSize();
-        int                              GetHeaderValueAsInt(string keyString, int valueIndex = 0); 
-        float                            GetHeaderValueAsFloat(string keyString, int valueIndex = 0); 
-        string                           GetHeaderValueAsString(string keyString, int valueIndex = 0);
-        bool                             IsKeyInHeader(string keyString); 
-        void                             ParseAndSetStringElements(string key, string valueArrayString);
+        int                              GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex = 0); 
+        float                            GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex = 0); 
+        vtkstd::string                   GetHeaderValueAsString(vtkstd::string keyString, int valueIndex = 0);
+        bool                             IsKeyInHeader(vtkstd::string keyString); 
+        void                             ParseAndSetStringElements(vtkstd::string key, vtkstd::string valueArrayString);
         void                             ConvertCmToMm();  
         void                             ConvertUserToMagnetFrame(); 
-        string                           GetStringFromFloat(float floatValue); 
+        vtkstd::string                   GetStringFromFloat(float floatValue); 
         void                             AddDimensionTo2DData();
         void                             PrintKeyValuePairs();
         void                             MapFloatValuesTo16Bit(
@@ -148,7 +142,8 @@ class svkFdfVolumeReader : public svkVarianReader
         //  Members:
         void*                                       pixelData; 
         ifstream*                                   fdfFile;
-        map <string, vector<string> >               fdfMap; 
+        vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >       
+                                                    fdfMap; 
         long                                        fileSize; 
         vtkStringArray*                             tmpFileNames;
         bool                                        scaleTo16Bit;

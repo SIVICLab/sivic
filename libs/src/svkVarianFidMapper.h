@@ -43,25 +43,17 @@
 #define SVK_VARIAN_FID_MAPPER_H
 
 
-#include <vtkObjectFactory.h>
 #include <vtkImageData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkTransform.h>
-#include <vtkMatrix4x4.h>
 
 #include <svkDcmHeader.h>
-#include <svkVarianReader.h>
 #include <svkMRSIOD.h>
-#include <svkByteSwap.h>
 
-#include <map>
-#include <vector>
+#include <vtkstd/map>
+#include <vtkstd/string>
+#include <vtkstd/vector>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -86,12 +78,34 @@ class svkVarianFidMapper : public vtkObject
         vtkTypeRevisionMacro( svkVarianFidMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            map <string, vector < vector<string> > >    procparMap, 
+                            vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    procparMap, 
                             svkDcmHeader* header, 
                             svkMRSIOD* iod 
                         );
 
-        virtual void    ReadFidFile( string fidFileName, vtkImageData* data );
+        virtual void    ReadFidFile( vtkstd::string fidFileName, vtkImageData* data );
+        
+        // Description:
+        // These methods should be used instead of the SwapBytes methods.
+        // They indicate the byte ordering of the file you are trying
+        // to read in. These methods will then either swap or not swap
+        // the bytes depending on the byte ordering of the machine it is
+        // being run on. For example, reading in a BigEndian file on a
+        // BigEndian machine will result in no swapping. Trying to read
+        // the same file on a LittleEndian machine will result in swapping.
+        // As a quick note most UNIX machines are BigEndian while PC's
+        // and VAX tend to be LittleEndian. So if the file you are reading
+        // in was generated on a VAX or PC, SetDataByteOrderToLittleEndian 
+        // otherwise SetDataByteOrderToBigEndian. 
+        virtual void SetDataByteOrderToBigEndian();
+        virtual void SetDataByteOrderToLittleEndian();
+        virtual const char *GetDataByteOrderAsString();
+
+        // Description:
+        // Set/Get the byte swapping to explicitly swap the bytes of a file.
+        vtkSetMacro(SwapBytes,int);
+        virtual int GetSwapBytes() {return this->SwapBytes;}
+        vtkBooleanMacro(SwapBytes,int);
 
 
     protected:
@@ -124,18 +138,18 @@ class svkVarianFidMapper : public vtkObject
         virtual void    InitMRSpectroscopyModule();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();
         virtual void    InitMRSpectroscopyDataModule();
-        string          GetDcmPatientPositionString(); 
+        vtkstd::string  GetDcmPatientPositionString(); 
 
         virtual void    ConvertCmToMm();
 
         int             GetHeaderValueAsInt(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
                         );
         float           GetHeaderValueAsFloat(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
                         );
-        string          GetHeaderValueAsString(
-                            string keyString, int valueIndex = 0, int procparRow = 0
+        vtkstd::string  GetHeaderValueAsString(
+                            vtkstd::string keyString, int valueIndex = 0, int procparRow = 0
                         );
 
         virtual void    SetCellSpectrum(
@@ -146,12 +160,14 @@ class svkVarianFidMapper : public vtkObject
                         );
 
 
-        map <string, vector < vector<string> > >    procparMap;
+        vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    
+                                                    procparMap;
         svkDcmHeader*                               dcmHeader; 
         float*                                      specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
-        svkMRSIOD*                                  iod; 
+        svkMRSIOD*                                  iod;
+        int                                         SwapBytes; 
 
 };
 

@@ -44,22 +44,19 @@
 #define SVK_VARIAN_FID_READER_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkDebugLeaks.h>
+
 
 #include <svkVarianReader.h>
 #include <svkVarianFidMapper.h>
-#include <svkVarianCSFidMapper.h>
-#include <svkByteSwap.h>
+#include <vtkInformation.h>
+#include <vtkStringArray.h>
 
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/string>
+#include <vtkstd/vector>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -75,6 +72,12 @@ class svkVarianFidReader : public svkVarianReader
 
         static svkVarianFidReader* New();
         vtkTypeRevisionMacro( svkVarianFidReader, svkVarianReader);
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "Varian FID File";
+        }
 
         //  Methods:
         virtual int             CanReadFile(const char* fname);
@@ -101,7 +104,8 @@ class svkVarianFidReader : public svkVarianReader
 
         //  Members:
         ifstream*                       fidFile;
-        map <string, vector<string> >   fidMap; 
+        vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >   
+                                        fidMap; 
         svkVarianFidMapper*             mapper;
 
 };

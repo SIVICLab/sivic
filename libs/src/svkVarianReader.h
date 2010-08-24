@@ -43,32 +43,13 @@
 #ifndef SVK_VARIAN_READER_H
 #define SVK_VARIAN_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkFloatArray.h>
-#include <vtkPointData.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDebugLeaks.h>
-
 #include <svkImageReader2.h>
-#include <svkIOD.h>
-#include <svkMRIIOD.h>
-#include <svkMRSIOD.h>
 
-#include <sys/stat.h>
-#include <map>
-
+#include <vtkstd/map>
+#include <vtkstd/vector>
+#include <vtkstd/string>
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -92,26 +73,27 @@ class svkVarianReader : public svkImageReader2
         //  Methods:
         int                              GetNumPixelsInVol();
         int                              GetNumSlices();
-        void                             ParseProcpar( string path );
+	    void                             ParseProcpar( vtkstd::string path );
         int                              GetProcparKeyValuePair();
         void                             ReadLine(ifstream* fs, istringstream* iss);
         void                             ParseAndSetProcparStringElements(
-                                            string key, 
-                                            string valueArray1, 
-                                            string valueArray2
+                                             vtkstd::string key, 
+                                             vtkstd::string valueArray1, 
+                                             vtkstd::string valueArray2
                                          );
         void                             PrintProcparKeyValuePairs();
-        int                              GetNumberOfProcparElements( string* valueString );
-        void                             GetProcparValueArray( string* valueString );
-        void                             RemoveStringQuotes(string* input); 
-        void                             AssignProcparVectorElements( 
-                                            vector<string>* procparVector, 
-                                            string valueArray
+        int                              GetNumberOfProcparElements( vtkstd::string* valueString );
+        void                             GetProcparValueArray( vtkstd::string* valueString );
+        void                             RemoveStringQuotes(vtkstd::string* input); 
+        void                             AssignProcparVectorElements(
+                                             vtkstd::vector<vtkstd::string>* procparVector,
+                                             vtkstd::string valueArray
                                             );
 
         //  Members:
         ifstream*                                   procparFile;
-        map <string, vector < vector<string> > >    procparMap; 
+        vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    
+                                                    procparMap; 
         int                                         numSlices; 
         long                                        procparFileSize; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;

@@ -43,31 +43,14 @@
 #ifndef SVK_IDF_VOLUME_READER_H
 #define SVK_IDF_VOLUME_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkFloatArray.h>
-#include <vtkPointData.h>
-#include <vtkDebugLeaks.h>
-#include <vtkStringArray.h>
 
 #include <svkImageReader2.h>
-#include <svkDcmMriVolumeReader.h>
-#include <svkIOD.h>
-#include <svkMRIIOD.h>
-#include <svkByteSwap.h>
-
-#include <sys/stat.h>
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -80,6 +63,12 @@ class svkIdfVolumeReader : public svkImageReader2
 
         static svkIdfVolumeReader* New();
         vtkTypeRevisionMacro( svkIdfVolumeReader, svkImageReader2);
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "IDF File";
+        }
 
         //  Methods:
         virtual int             CanReadFile(const char* fname);
@@ -127,12 +116,12 @@ class svkIdfVolumeReader : public svkImageReader2
         int             GetNumPixelsInVol();
         int             GetNumSlices();
         void            ParseIdfComment(
-                            string comment, 
-                            string* patientsName, 
-                            string* seriesDescription, 
-                            string* studyDate
+                            vtkstd::string comment, 
+                            vtkstd::string* patientsName, 
+                            vtkstd::string* seriesDescription, 
+                            vtkstd::string* studyDate
                         );
-        string          GetDcmPatientPositionString(string patientPosition);
+        vtkstd::string  GetDcmPatientPositionString(vtkstd::string patientPosition);
         void            ParseIdf();
         void            PrintKeyValuePairs();
 
@@ -140,7 +129,8 @@ class svkIdfVolumeReader : public svkImageReader2
         //  Members:
         void*                                   pixelData; 
         ifstream*                               volumeHdr;
-        map <string, string>                    idfMap; 
+        vtkstd::map <vtkstd::string, vtkstd::string>                    
+                                                idfMap; 
         int                                     numSlices; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         bool                                    onlyReadHeader; 

@@ -41,8 +41,15 @@
 
 
 #include <svkFdfVolumeReader.h>
-#include <vtkImageAccumulate.h>
+#include <vtkShortArray.h>
+#include <vtkUnsignedShortArray.h>
+#include <vtkGlobFileNames.h>
+#include <vtkSortFileNames.h>
+#include <vtkDebugLeaks.h>
+#include <vtkByteSwap.h>
+#include <svkMRIIOD.h>
 
+#include <sys/stat.h>
 
 using namespace svk;
 
@@ -69,7 +76,10 @@ svkFdfVolumeReader::svkFdfVolumeReader()
     this->fdfFile = NULL;
     this->procparFile = NULL;
     this->fileSize = 0;
-    this->ScaleTo16Bit( true, true, true); 
+    this->ScaleTo16Bit( true, true, true);
+
+    // Set the byte ordering, as little-endian by default.
+    this->SetDataByteOrderToLittleEndian(); 
 
 }
 
@@ -122,7 +132,7 @@ void svkFdfVolumeReader::ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShor
 int svkFdfVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -186,28 +196,17 @@ void svkFdfVolumeReader::ReadFdfFiles()
         delete volumeDataIn;
     }
 
-    /*  
-     *  If this is running on linux, and the input is bigendian, then swap bytes:
-     *  Otherwise, if this is runnin on Solaris/Sparc and the input is NOT bigendian
-     *  also swap bytes: 
-     */
-#if defined (linux) || defined(Darwin)
     if ( this->GetHeaderValueAsInt("bigendian") != 0 ) {
+        this->SetDataByteOrderToBigEndian();
+    }
+    
+    if ( this->GetSwapBytes() ) {
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2) {
-            svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
+            vtkByteSwap::SwapVoidRange(this->pixelData, this->GetNumPixelsInVol(), sizeof(short));
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4) {
-            svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
+            vtkByteSwap::SwapVoidRange(this->pixelData, this->GetNumPixelsInVol(), sizeof(float));
         }
     }
-#else
-    if ( this->GetHeaderValueAsInt("bigendian") != 1 ) {
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2) {
-            svkByteSwap::SwapBufferEndianness( (short *)pixelData, this->GetNumPixelsInVol() );
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4) {
-            svkByteSwap::SwapBufferEndianness( (float*)pixelData, this->GetNumPixelsInVol() );
-        }
-    }
-#endif
   
 }
 
@@ -232,7 +231,7 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
         struct stat fs;
         if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
+            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
             return;
         }
 
@@ -375,7 +374,7 @@ svkDcmHeader::DcmPixelDataFormat svkFdfVolumeReader::GetFileType()
     int numBitsPerByte = 8;
     int pixelWordSize = this->GetHeaderValueAsInt("bits")/numBitsPerByte;
 
-    string storage = this->GetHeaderValueAsString("storage");
+    vtkstd::string storage = this->GetHeaderValueAsString("storage");
 
     svkDcmHeader::DcmPixelDataFormat format = svkDcmHeader::UNDEFINED;
     if ( pixelWordSize == 4 && storage == "float" ) {
@@ -650,7 +649,7 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
             displacement[j] = dcos[2][j] * pixelSpacing[2] * i;
         }
 
-        string imagePositionPatient;
+        vtkstd::string imagePositionPatient;
 
         if (GetHeaderValueAsInt("rank") == 2) {
 
@@ -721,7 +720,7 @@ void svkFdfVolumeReader::InitPixelMeasuresMacro()
     float fov[3]; 
     float numPixels[3]; 
     float pixelSize[3]; 
-    string pixelSizeString[3]; 
+    vtkstd::string pixelSizeString[3]; 
 
     //  These are in the user frame: (cols, rows, slice) 
     for (int i = 0; i < 3; i++) {
@@ -765,7 +764,7 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    string orientationString;
+    vtkstd::string orientationString;
  
     //  varian appears to be LAI coords (rather than LPS), 
     //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
@@ -784,9 +783,9 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     dcos[8] =      GetHeaderValueAsFloat("orientation[]", 5);
 
     //  If feet first, swap LR, SI
-    string position1 = GetHeaderValueAsString("position1", 0);
+    vtkstd::string position1 = GetHeaderValueAsString("position1", 0);
 
-    if( position1.find("feet first") != string::npos ) {
+    if( position1.find("feet first") != vtkstd::string::npos ) {
         //  swap L
         dcos[0] *=-1; 
         dcos[3] *=-1; 
@@ -866,27 +865,27 @@ void svkFdfVolumeReader::InitMRReceiveCoilMacro()
 /*! 
  *  Use the FDF patient position string to set the DCM_PatientPosition data element.
  */
-string svkFdfVolumeReader::GetDcmPatientPositionString()
+vtkstd::string svkFdfVolumeReader::GetDcmPatientPositionString()
 {
-    string dcmPatientPosition;
+    vtkstd::string dcmPatientPosition;
 
-    string position1 = GetHeaderValueAsString("position1", 0);
-    if( position1.find("head first") != string::npos ) {
+    vtkstd::string position1 = GetHeaderValueAsString("position1", 0);
+    if( position1.find("head first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( position1.find("feet first") != string::npos ) {
+    } else if( position1.find("feet first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
-    string position2 = GetHeaderValueAsString("position2", 0);
-    if( position2.find("supine") != string::npos ) {
+    vtkstd::string position2 = GetHeaderValueAsString("position2", 0);
+    if( position2.find("supine") != vtkstd::string::npos ) {
         dcmPatientPosition += "S";
-    } else if( position2.find("prone") != string::npos ) {
+    } else if( position2.find("prone") != vtkstd::string::npos ) {
         dcmPatientPosition += "P";
-    } else if( position2.find("decubitus left") != string::npos ) {
+    } else if( position2.find("decubitus left") != vtkstd::string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( position2.find("decubitus right") != string::npos ) {
+    } else if( position2.find("decubitus right") != vtkstd::string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -905,12 +904,12 @@ string svkFdfVolumeReader::GetDcmPatientPositionString()
 void svkFdfVolumeReader::ParseFdf()
 {
 
-    string fdfFileName( this->GetFileName() );  
-    string fdfFileExtension( this->GetFileExtension( this->GetFileName() ) );  
-    string fdfFilePath( this->GetFilePath( this->GetFileName() ) );  
+    vtkstd::string fdfFileName( this->GetFileName() );  
+    vtkstd::string fdfFileExtension( this->GetFileExtension( this->GetFileName() ) );  
+    vtkstd::string fdfFilePath( this->GetFilePath( this->GetFileName() ) );  
 
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( fdfFilePath + "/*." + fdfFileExtension).c_str() );
+    globFileNames->AddFileNames( vtkstd::string( fdfFilePath + "/*." + fdfFileExtension).c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->GroupingOn(); 
@@ -935,8 +934,7 @@ void svkFdfVolumeReader::ParseFdf()
     vtkStringArray* fileNames =  sortFileNames->GetFileNames();
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
         cout << "FN: " << fileNames->GetValue(i) << endl; 
-    } 
-    //this->SetDataByteOrderToLittleEndian
+    }
 
     try { 
 
@@ -951,7 +949,7 @@ void svkFdfVolumeReader::ParseFdf()
 
         for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-            string currentFdfFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
+            vtkstd::string currentFdfFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
 
             this->fdfFile->open( currentFdfFileName.c_str(), ifstream::in );
             if ( ! this->fdfFile->is_open() ) {
@@ -1017,16 +1015,16 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
 
     istringstream* iss = new istringstream();
 
-    string keyString;
-    string valueString;
+    vtkstd::string keyString;
+    vtkstd::string valueString;
 
     try {
 
         this->ReadLine(this->fdfFile, iss); 
 
-        size_t  position; 
-        string  tmp; 
-        string  dataType; 
+        vtkstd::size_t  position; 
+        vtkstd::string  tmp; 
+        vtkstd::string  dataType; 
         long    headerSize;
 
         int dataBufferSize = this->GetDataBufferSize();
@@ -1038,20 +1036,20 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
 
             //  find first white space position before "key" string: 
             position = iss->str().find_first_of(' ');
-            if (position != string::npos) {
+            if (position != vtkstd::string::npos) {
                 tmp.assign( iss->str().substr(position) );
                 dataType.assign( iss->str().substr(0, position) ) ; 
             } 
     
             //  If necessary, remove pointer indicator: 
             position = tmp.find_first_of('*');
-            if (position != string::npos) {
+            if (position != vtkstd::string::npos) {
                 tmp.assign( tmp.substr(position + 1) );
             } 
     
             //  Extract key and value strings:
             position = tmp.find_first_of('=');
-            if (position != string::npos) {
+            if (position != vtkstd::string::npos) {
                 keyString.assign( tmp.substr(0, position - 1) );
                 keyString = StripWhite(keyString); 
                 // Check for key match if doing a limited search: 
@@ -1078,19 +1076,19 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
 
                 // Remove string quotes
                 this->RemoveStringQuotes( &valueString );
-                while ( ( position = valueString.find('"') ) != string::npos) {
+                while ( ( position = valueString.find('"') ) != vtkstd::string::npos) {
                     valueString.erase( position, 1 );
                 }
     
                 //  Parse elements into vector: remove matrix brackets 
                 //  and assign elements to vector: 
                 position = valueString.find_first_of('{');
-                if (position != string::npos) {
+                if (position != vtkstd::string::npos) {
 
                     valueString.assign( valueString.substr(position + 1) );
                     position = valueString.find_first_of('}');
 
-                    if (position != string::npos) {
+                    if (position != vtkstd::string::npos) {
                         valueString.assign( valueString.substr(0, position) );
                     } 
                 } 
@@ -1121,7 +1119,7 @@ int svkFdfVolumeReader::GetFdfKeyValuePair( vtkStringArray* keySet )
 int svkFdfVolumeReader::GetDataBufferSize()
 {
     int bufferSize = 0; 
-    map<string, string>::iterator it;
+    vtkstd::map<vtkstd::string, vtkstd::string>::iterator it;
 
     if (fdfMap.find("bits") != fdfMap.end() && 
         fdfMap.find("rank") != fdfMap.end() && 
@@ -1147,13 +1145,14 @@ int svkFdfVolumeReader::GetDataBufferSize()
  *  mapFor values that are comma separated lists, put each element into the value 
  *  vector. 
  */
-void svkFdfVolumeReader::ParseAndSetStringElements(string key, string valueArrayString) 
+void svkFdfVolumeReader::ParseAndSetStringElements(vtkstd::string key, 
+    vtkstd::string valueArrayString) 
 {
-    size_t pos;
+    vtkstd::size_t pos;
     istringstream* iss = new istringstream();
-    string tmpString;     
+    vtkstd::string tmpString;     
 
-    while ( (pos = valueArrayString.find_first_of(',')) != string::npos) {  
+    while ( (pos = valueArrayString.find_first_of(',')) != vtkstd::string::npos) {  
 
         iss->str( valueArrayString.substr(0, pos) );
         *iss >> tmpString;
@@ -1171,7 +1170,7 @@ void svkFdfVolumeReader::ParseAndSetStringElements(string key, string valueArray
 /*!
  *
  */
-string svkFdfVolumeReader::GetStringFromFloat(float floatValue) 
+vtkstd::string svkFdfVolumeReader::GetStringFromFloat(float floatValue) 
 {
     ostringstream tmpOss;
     tmpOss << floatValue; 
@@ -1182,7 +1181,7 @@ string svkFdfVolumeReader::GetStringFromFloat(float floatValue)
 /*!
  *
  */
-int svkFdfVolumeReader::GetHeaderValueAsInt(string keyString, int valueIndex) 
+int svkFdfVolumeReader::GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
@@ -1200,7 +1199,7 @@ int svkFdfVolumeReader::GetHeaderValueAsInt(string keyString, int valueIndex)
 /*!
  *
  */
-float svkFdfVolumeReader::GetHeaderValueAsFloat(string keyString, int valueIndex) 
+float svkFdfVolumeReader::GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
@@ -1218,7 +1217,7 @@ float svkFdfVolumeReader::GetHeaderValueAsFloat(string keyString, int valueIndex
 /*!
  *  Checks to see if the specified header key is defined. 
  */
-bool svkFdfVolumeReader::IsKeyInHeader( string keyString ) 
+bool svkFdfVolumeReader::IsKeyInHeader( vtkstd::string keyString ) 
 {
 
     if ( (fdfMap.find( keyString )) != fdfMap.end() ) {
@@ -1232,7 +1231,7 @@ bool svkFdfVolumeReader::IsKeyInHeader( string keyString )
 /*!
  *
  */
-string svkFdfVolumeReader::GetHeaderValueAsString(string keyString, int valueIndex) 
+vtkstd::string svkFdfVolumeReader::GetHeaderValueAsString(vtkstd::string keyString, int valueIndex) 
 {
     return (fdfMap[keyString])[valueIndex];
 }
@@ -1319,12 +1318,12 @@ void svkFdfVolumeReader::PrintKeyValuePairs()
 {
 
     //  Print out key value pairs parsed from header:
-    map< string, vector<string> >::iterator mapIter;
+    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
     for ( mapIter = fdfMap.begin(); mapIter != fdfMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = ";
 
-        vector<string>::iterator it;
+        vtkstd::vector<vtkstd::string>::iterator it;
         for ( it = fdfMap[mapIter->first].begin() ; it < fdfMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }

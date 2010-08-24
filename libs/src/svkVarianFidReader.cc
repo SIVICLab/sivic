@@ -41,7 +41,10 @@
 
 
 #include <svkVarianFidReader.h>
+#include <svkVarianCSFidMapper.h>
+#include <vtkDebugLeaks.h>
 
+#include <sys/stat.h>
 
 using namespace svk;
 
@@ -104,7 +107,7 @@ svkVarianFidReader::~svkVarianFidReader()
 int svkVarianFidReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
     if( fileToCheck.size() >= 3 ) {
 
@@ -243,8 +246,8 @@ svkDcmHeader::DcmPixelDataFormat svkVarianFidReader::GetFileType()
 void svkVarianFidReader::ParseFid()
 {
 
-    string fidFileName( this->GetFileName() );  
-    string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
+    vtkstd::string fidFileName( this->GetFileName() );  
+    vtkstd::string fidFilePath( this->GetFilePath( this->GetFileName() ) );  
 
     try { 
 
