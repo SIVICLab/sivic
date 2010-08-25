@@ -336,7 +336,6 @@ void svkSiemensRdaReader::ExecuteData(vtkDataObject* output)
     //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
-    this->GetOutput()->Update();
 
     if (this->GetDebug()) {
         cout << "SIEMENS RDA READER HEADER " << *data << endl;
