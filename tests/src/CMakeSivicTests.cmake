@@ -104,6 +104,13 @@ SET( TEST_NAME TEST_9)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/SignaLX2)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/E12916S3I1.MR -o out -t 3" )
 
+########################
+#   SIEMENS RDA to DICOM DDF
+########################
+SET( TEST_NAME TEST_10)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/siemens_rda/sv)
+ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/siemens_rda/sv -o out -t 2" )
+
 
 
 ########################
