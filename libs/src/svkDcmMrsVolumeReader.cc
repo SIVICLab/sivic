@@ -44,6 +44,8 @@
 #include <vtkDebugLeaks.h>
 #include <vtkInformation.h>
 
+#include <svkMrsImageData.h>
+
 
 using namespace svk;
 

@@ -45,6 +45,8 @@
 
 
 #include <svkDcmVolumeReader.h>
+#include <vtkstd/vector>
+#include <vtkstd/string>
 
 
 namespace svk {

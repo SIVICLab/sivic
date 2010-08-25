@@ -41,6 +41,12 @@
 
 
 #include <svkGEPFileReader.h>
+#include <svkIOD.h>
+#include <svkMRSIOD.h>
+#include <vtkDebugLeaks.h>
+#include <vtkByteSwap.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;

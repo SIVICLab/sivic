@@ -41,7 +41,12 @@
 
 
 #include <svkSiemensRdaReader.h>
-#include <vtkImageAccumulate.h>
+#include <svkSpecUtils.h>
+#include <vtkDebugLeaks.h>
+#include <vtkByteSwap.h>
+
+#include <limits>
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -63,6 +68,9 @@ svkSiemensRdaReader::svkSiemensRdaReader()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
+    // Set the byte ordering, as little-endian.
+    this->SetDataByteOrderToLittleEndian();
 
     this->specData = NULL;
     this->dataArray = NULL; 
@@ -103,7 +111,7 @@ svkSiemensRdaReader::~svkSiemensRdaReader()
 int svkSiemensRdaReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -114,9 +122,72 @@ int svkSiemensRdaReader::CanReadFile(const char* fname)
 
             if (fp) {
                 fclose(fp);
+                // Adding some more smarts to this function.
+                // Check for the existence of ">>> Begin of header <<<"
+                // and ">>> End of header <<<" text values in the rda
+                // file.  If they don't exist, then this is not an 
+                // rda file!
+
+                ifstream* tempRdaFile = new ifstream();
+                tempRdaFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+                istringstream* iss = new istringstream();
+                try {
+
+                    tempRdaFile->open( fname, ifstream::in );
+                    if ( ! tempRdaFile->is_open() ) {
+                        throw runtime_error( "Could not open rda file: " + fileToCheck );
+                    }
+
+                    // First line should be ">>> Begin of header <<<".
+                    this->ReadLine(tempRdaFile, iss);
+                    if ( iss->str().find(">>> Begin of header <<<") 
+                      == vtkstd::string::npos ) {
+                        vtkDebugMacro(
+                          << this->GetClassName() << "::CanReadFile(): It's NOT a Siemens RDA File: " << fileToCheck << 
+                          ": Could not find >>> Begin of header <<< text"
+                        );
+                        tempRdaFile->close();
+                        delete tempRdaFile;
+                        delete iss;
+                        return 0;
+                    } 
+                    // Read until ">>> End of header <<<" is found or EOF.
+                    while (! tempRdaFile->eof() ) {
+                        this->ReadLine(tempRdaFile, iss);
+                        if ( iss->str().find(">>> End of header <<<") 
+                        != vtkstd::string::npos ) {
+                            break; 
+                        }
+                    }
+                    
+                    // Was ">>> End of header <<<" found?
+                    if ( tempRdaFile->eof() ) {
+                        vtkDebugMacro(
+                          << this->GetClassName() << "::CanReadFile(): It's NOT a Siemens RDA File: " << fileToCheck << 
+                          ": Could not find >>> End of header <<< text"
+                        );
+                        tempRdaFile->close();
+                        delete tempRdaFile;
+                        delete iss;
+                        return 0;
+                    } 
+
+                    tempRdaFile->close();
+
+                } catch (const exception& e) {
+                    vtkDebugMacro(
+                        << this->GetClassName() << "::CanReadFile(): It's NOT a Siemens RDA File: " << fileToCheck << 
+                        ": " << e.what()
+                    );
+                    delete tempRdaFile;
+                    delete iss;
+                    return 0;
+                }
                 vtkDebugMacro(
                     << this->GetClassName() << "::CanReadFile(): It's a Siemens RDA File: " << fileToCheck
                 );
+                delete tempRdaFile;
+                delete iss;
                 return 1;
             }
 
@@ -149,46 +220,41 @@ void svkSiemensRdaReader::ReadRdaFiles(vtkImageData* data)
 
     vtkDebugMacro( << this->GetClassName() << "::ReadRdaFiles()" );
 
-    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+    int coilNum = 0;
 
-        int coilNum = 0;
-        if ( this->numCoils > 1 ) {
-            coilNum = fileIndex;
-        }
+    //  Read in data from 1 coil:
+    int numComponents =  2;
+    int numPts = this->GetHeaderValueAsInt( "VectorSize" );
+    int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * sizeof(double) * this->numTimePts;
+    this->specData      = new float[ numBytesInVol/sizeof(float) ];
+    double* specDataDbl = new double[ numBytesInVol/sizeof(double) ];
 
-        //  Read in data from 1 coil:
-        int numComponents =  2;
-        int numPts = this->GetHeaderValueAsInt( "VectorSize" );
-        int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 8 * this->numTimePts;
-        this->specData      = new float[ numBytesInVol/4 ];
-        double* specDataDbl = new double[ numBytesInVol/8 ];
+    ifstream* rdaDataIn = new ifstream();
+    rdaDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    rdaDataIn->open( this->FileName, ios::binary );
+    rdaDataIn->seekg(-1 * numBytesInVol, ios::end);//skip header
+    rdaDataIn->read( (char*)(specDataDbl), numBytesInVol );
 
-        ifstream* rdaDataIn = new ifstream();
-        rdaDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-        rdaDataIn->open( this->GetFileNames()->GetValue( fileIndex ), ios::binary );
-        rdaDataIn->seekg(-1 * numBytesInVol, ios::end);//skip header
-        rdaDataIn->read( (char*)(specDataDbl), numBytesInVol );
+    if ( this->GetSwapBytes() ) {
+        vtkByteSwap::SwapVoidRange((void *)specDataDbl, numBytesInVol/sizeof(double), sizeof(double));
+    }
 
-#if !defined(linux) &&  !defined(Darwin)
-        svkByteSwap::SwapBufferEndianness(specDataDbl, numBytesInVol/8);
-#endif
-        this->MapDoubleValuesToFloat( specDataDbl, this->specData, numBytesInVol/8);
+    this->MapDoubleValuesToFloat( specDataDbl, this->specData, numBytesInVol/sizeof(double));
 
-        for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
-            for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
-                for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
-                    for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
-                        SetCellSpectrum(data, x, y, z, timePt, coilNum);
-                    }
+    for (int timePt = 0; timePt < this->numTimePts ; timePt++) {
+        for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
+            for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
+                for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
+                    SetCellSpectrum(data, x, y, z, timePt, coilNum);
                 }
             }
         }
-
-        rdaDataIn->close();
-        delete rdaDataIn;
-        delete [] specData;
-        delete [] specDataDbl;
     }
+
+    rdaDataIn->close();
+    delete rdaDataIn;
+    delete [] specData;
+    delete [] specDataDbl;
 }
 
 
@@ -246,25 +312,22 @@ void svkSiemensRdaReader::SetCellSpectrum(vtkImageData* data, int x, int y, int 
 void svkSiemensRdaReader::ExecuteData(vtkDataObject* output)
 {
 
-    this->FileNames = vtkStringArray::New(); 
-    this->FileNames->DeepCopy(this->tmpFileNames); 
-    this->tmpFileNames->Delete(); 
-    this->tmpFileNames = NULL; 
-
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    if ( this->GetFileNames()->GetNumberOfValues() ) {
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
-        struct stat fs;
-        if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
-            return;
-        }
-        this->ReadRdaFiles( data );
-
+    if (!this->FileName) {
+        vtkErrorMacro("A valid FileName must be specified.");
+        return;
     }
+
+    vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
+    struct stat fs;
+    if ( stat(this->FileName, &fs) ) {
+        vtkErrorMacro("Unable to open file " << vtkstd::string(this->FileName) );
+        return;
+    }
+    this->ReadRdaFiles( data );
 
     double dcos[3][3];
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
@@ -309,15 +372,6 @@ void svkSiemensRdaReader::ExecuteInformation()
         this->SetupOutputInformation();
     }
 
-    //  This is a workaround required since the vtkImageAlgo executive 
-    //  for the reder resets the Extent[5] value to the number of files
-    //  which is not correct for 3D multislice volume files. So store
-    //  the files in a temporary array until after ExecuteData has been 
-    //  called, then reset the array.  
-    this->tmpFileNames = vtkStringArray::New(); 
-    this->tmpFileNames->DeepCopy(this->FileNames); 
-    this->FileNames->Delete(); 
-    this->FileNames = NULL; 
 }
 
 
@@ -522,7 +576,7 @@ void svkSiemensRdaReader::InitPerFrameFunctionalGroupMacros()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        string indexString(ossIndex.str());
+        vtkstd::string indexString(ossIndex.str());
         toplc[i] = this->GetHeaderValueAsFloat( "PositionVector[" + indexString + "]" );
     }
 
@@ -639,7 +693,7 @@ void svkSiemensRdaReader::InitPlaneOrientationMacro()
         "PlaneOrientationSequence"
     );
 
-    string orientationString;
+    vtkstd::string orientationString;
  
     //  varian appears to be LAI coords (rather than LPS), 
     //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
@@ -906,11 +960,11 @@ void svkSiemensRdaReader::InitMRSpectroscopyFOVGeometryMacro()
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
         ossIndex << i;
-        string indexString(ossIndex.str());
+        vtkstd::string indexString(ossIndex.str());
         toplc[i] = this->GetHeaderValueAsFloat( "PositionVector[" + indexString + "]" );
     }
 
-    string acqTlc = this->GetHeaderValueAsString( "PositionVector[0]" ) 
+    vtkstd::string acqTlc = this->GetHeaderValueAsString( "PositionVector[0]" ) 
                     + '\\' + this->GetHeaderValueAsString( "PositionVector[1]" ) 
                     + '\\' + this->GetHeaderValueAsString( "PositionVector[2]" ) ;
     
@@ -1082,7 +1136,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ImageType",
-        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
+        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
     );
 
     /*  =======================================
@@ -1090,17 +1144,17 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
      *  ======================================= */
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumetricProperties",
-        string("VOLUME")
+        vtkstd::string("VOLUME")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumeBasedCalculationTechnique",
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ComplexImageComponent",
-        string("COMPLEX")
+        vtkstd::string("COMPLEX")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1138,7 +1192,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
         "PRESS"
     );
 
-    string volLocType = "UNKNOWN"; 
+    vtkstd::string volLocType = "UNKNOWN"; 
 
     if ( this->GetHeaderValueAsFloat( "VOIPhaseFOV" ) !=0 
         && this->GetHeaderValueAsFloat( "VOIReadoutFOV" ) !=0 
@@ -1170,7 +1224,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "BaselineCorrection",
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1180,12 +1234,12 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "FirstOrderPhaseCorrection",
-        string("NO")
+        vtkstd::string("NO")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "WaterReferencedPhaseCorrection",
-        string("NO")
+        vtkstd::string("NO")
     );
 }
 
@@ -1205,7 +1259,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyPulseSequenceModule()
     numVoxels[1] = this->GetHeaderValueAsInt( "CSIMatrixSize[1]" );
     numVoxels[2] = this->GetHeaderValueAsInt( "CSIMatrixSize[2]" );
 
-    string acqType = "VOLUME";
+    vtkstd::string acqType = "VOLUME";
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
@@ -1329,39 +1383,39 @@ void svkSiemensRdaReader::InitMRSpectroscopyDataModule()
 
 
 /*! 
- *  Use the FDF patient position string to set the DCM_PatientPosition data element.
+ *  Use the RDA patient position string to set the DCM_PatientPosition data element.
  */
-string svkSiemensRdaReader::GetDcmPatientPositionString(string patientPosition)
+vtkstd::string svkSiemensRdaReader::GetDcmPatientPositionString(vtkstd::string patientPosition)
 {
-    size_t delim = patientPosition.find_first_of(',');
-    string headFeetFirst( patientPosition.substr(0, delim) );
+    vtkstd::size_t delim = patientPosition.find_first_of(',');
+    vtkstd::string headFeetFirst( patientPosition.substr(0, delim) );
 
     for(int i = 0; i < headFeetFirst.size(); i++){
         headFeetFirst[i] = tolower( headFeetFirst[i] );
     }
 
-    string dcmPatientPosition;
-    if( headFeetFirst.find("head first") != string::npos ) {
+    vtkstd::string dcmPatientPosition;
+    if( headFeetFirst.find("head first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("HF");
-    } else if( headFeetFirst.find("feet first") != string::npos ) {
+    } else if( headFeetFirst.find("feet first") != vtkstd::string::npos ) {
         dcmPatientPosition.assign("FF");
     } else {
         dcmPatientPosition.assign("UNKNOWN");
     }
 
     //  skip ", ":
-    string spd( patientPosition.substr(delim + 2) );
+    vtkstd::string spd( patientPosition.substr(delim + 2) );
     for(int i = 0; i < spd.size(); i++){
         spd[i] = tolower( spd[i] );
     }
 
-    if( spd.find("supine") != string::npos ) {
+    if( spd.find("supine") != vtkstd::string::npos ) {
         dcmPatientPosition += "S";
-    } else if( spd.find("prone") != string::npos ) {
+    } else if( spd.find("prone") != vtkstd::string::npos ) {
         dcmPatientPosition += "P";
-    } else if( spd.find("decubitus left") != string::npos ) {
+    } else if( spd.find("decubitus left") != vtkstd::string::npos ) {
         dcmPatientPosition += "DL";
-    } else if( spd.find("decubitus right") != string::npos ) {
+    } else if( spd.find("decubitus right") != vtkstd::string::npos ) {
         dcmPatientPosition += "DR";
     } else {
         dcmPatientPosition += "UNKNOWN";
@@ -1372,82 +1426,41 @@ string svkSiemensRdaReader::GetDcmPatientPositionString(string patientPosition)
 
 
 /*
- *  Read FDF header fields into a string STL map for use during initialization 
+ *  Read RDA header fields into a string STL map for use during initialization 
  *  of DICOM header by Init*Module methods. 
- *  The fdf header consists of a list of "=" delimited key/value pairs. 
- *  If a procpar file is present in the directory, parse that as well. 
+ *  The RDA header consists of a list of "=" delimited key/value pairs. 
  */
 void svkSiemensRdaReader::ParseRda()
 {
 
-    string rdaFileName( this->GetFileName() );  
-    string rdaFileExtension( this->GetFileExtension( this->GetFileName() ) );  
-    string rdaFilePath( this->GetFilePath( this->GetFileName() ) );  
-
-    vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( rdaFilePath + "/*." + rdaFileExtension).c_str() );
-
-    vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
-    sortFileNames->GroupingOn(); 
-    sortFileNames->SetInputFileNames( globFileNames->GetFileNames() );
-    sortFileNames->NumericSortOn();
-    sortFileNames->Update();
-
-    //  If globed file names are not similar, use only the specified file
-    if (sortFileNames->GetNumberOfGroups() > 1 ) {
-
-        vtkWarningWithObjectMacro(this, "Found Multiple fdf file groups, using only specified file ");   
-
-        vtkStringArray* fileNames = vtkStringArray::New(); 
-        fileNames->SetNumberOfValues(1);  
-        fileNames->SetValue(0, this->GetFileName() ); 
-        sortFileNames->SetInputFileNames( fileNames ); 
-        fileNames->Delete(); 
-
-    } 
-
-    this->SetFileNames( sortFileNames->GetFileNames() );
-    vtkStringArray* fileNames =  sortFileNames->GetFileNames();
-    for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
-        cout << "FN: " << fileNames->GetValue(i) << endl; 
-    } 
-
+    vtkstd::string rdaFileName( this->GetFileName() );
 
     try { 
 
-        /*  Read in the FDF Header:
-         *  for image 1 read everything.  
-         *  for subsequent images in the series get "slice_no" and "location[]" elements
-         *  and append these to the existing map value in the order read.  Also, add a 
-         *  file name element to map also in this order. 
+        /*  Read in the RDA Header:
          */
         this->rdaFile = new ifstream();
         this->rdaFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+        this->rdaFile->open( rdaFileName.c_str(), ifstream::in );
+        if ( ! this->rdaFile->is_open() ) {
+            throw runtime_error( "Could not open rda file: " + rdaFileName );
+        } 
 
-            string currentRdaFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
+        this->ParseAndSetStringElements("FileName", rdaFileName);
 
-            this->rdaFile->open( currentRdaFileName.c_str(), ifstream::in );
-            if ( ! this->rdaFile->is_open() ) {
-                throw runtime_error( "Could not open fdf file: " + currentRdaFileName );
-            } 
+        // determine how big the data buffer is (num pts * word size).  
+        // header key-value pairs use total_bytes_in_file - sizeof_data_buffer
+        // read key-value pairs from the top until start of data buffer. 
+        this->fileSize = this->GetFileSize( this->rdaFile );
 
-            this->ParseAndSetStringElements("FileName", currentRdaFileName);
-
-            // determine how big the data buffer is (num pts * word size).  
-            // header key-value pairs use total_bytes_in_file - sizeof_data_buffer
-            // read key-value pairs from the top until start of data buffer. 
-            this->fileSize = this->GetFileSize( this->rdaFile );
-
-            while (! this->rdaFile->eof() ) {
-                if ( this->GetRdaKeyValuePair() != 0 ) {
-                    break; 
-                }
+        while (! this->rdaFile->eof() ) {
+            if ( this->GetRdaKeyValuePair() != 0 ) {
+                break; 
             }
-
-            this->rdaFile->close();
         }
+
+        this->rdaFile->close();
 
         if (this->GetDebug()) {
             this->PrintKeyValuePairs(); 
@@ -1456,14 +1469,11 @@ void svkSiemensRdaReader::ParseRda()
     } catch (const exception& e) {
         cerr << "ERROR opening or reading Siemens RDA file (" << rdaFileName << "): " << e.what() << endl;
     }
-
-    globFileNames->Delete();
-    sortFileNames->Delete();
 }
 
 
 /*! 
- *  Utility function to read a single line from the fdf file and return 
+ *  Utility function to read a single line from the RDA file and return 
  *  set the delimited key/value pair into the stl map.  
  *  Returns -1 if reading isn't successful. 
  */
@@ -1474,15 +1484,15 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
     istringstream* iss = new istringstream();
 
-    string keyString;
-    string valueString;
+    vtkstd::string keyString;
+    vtkstd::string valueString;
 
     try {
 
         this->ReadLine(this->rdaFile, iss); 
 
-        size_t  position; 
-        string  tmp; 
+        vtkstd::size_t  position; 
+        vtkstd::string  tmp; 
 
         //  Read only to the start of the pixel buffer, 
         //  i.e. no more than the header size, delimited 
@@ -1495,7 +1505,7 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
     
             //  Extract key and value strings:
             position = tmp.find_first_of(':');
-            if (position != string::npos) {
+            if (position != vtkstd::string::npos) {
 
                 keyString.assign( tmp.substr(0, position) );
                 keyString = StripWhite(keyString); 
@@ -1527,27 +1537,27 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
 /*!
  *  Push key value pairs into the map's value vector: 
- *  mapFor values that are comma separated lists, put each element into the value 
+ *  For values that are comma separated lists, put each element into the value 
  *  vector. 
  */
-void svkSiemensRdaReader::ParseAndSetStringElements(string key, string valueArrayString) 
+void svkSiemensRdaReader::ParseAndSetStringElements(vtkstd::string key, vtkstd::string valueArrayString) 
 {
-    size_t pos;
+    vtkstd::size_t pos;
     istringstream* iss = new istringstream();
-    string tmpString;     
+    vtkstd::string tmpString;     
 
-    while ( (pos = valueArrayString.find_first_of(',')) != string::npos) {  
+    while ( (pos = valueArrayString.find_first_of(',')) != vtkstd::string::npos) {  
 
         iss->str( valueArrayString.substr(0, pos) );
         *iss >> tmpString;
-        rdaMap[key].push_back(tmpString); 
+        this->rdaMap[key].push_back(tmpString); 
         iss->clear();
 
         valueArrayString.assign( valueArrayString.substr(pos + 1) ); 
     }
     iss->str( valueArrayString );
     *iss >> tmpString;
-    rdaMap[key].push_back(tmpString); 
+    this->rdaMap[key].push_back(tmpString); 
     delete iss; 
 }
 
@@ -1555,7 +1565,7 @@ void svkSiemensRdaReader::ParseAndSetStringElements(string key, string valueArra
 /*!
  *
  */
-string svkSiemensRdaReader::GetStringFromFloat(float floatValue) 
+vtkstd::string svkSiemensRdaReader::GetStringFromFloat(float floatValue) 
 {
     ostringstream tmpOss;
     tmpOss << floatValue; 
@@ -1566,13 +1576,13 @@ string svkSiemensRdaReader::GetStringFromFloat(float floatValue)
 /*!
  *
  */
-int svkSiemensRdaReader::GetHeaderValueAsInt(string keyString, int valueIndex) 
+int svkSiemensRdaReader::GetHeaderValueAsInt(vtkstd::string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
     int value;
 
-    iss->str( (rdaMap[keyString])[valueIndex]);
+    iss->str( (this->rdaMap[keyString])[valueIndex]);
     *iss >> value;
     return value; 
 }
@@ -1581,13 +1591,13 @@ int svkSiemensRdaReader::GetHeaderValueAsInt(string keyString, int valueIndex)
 /*!
  *
  */
-float svkSiemensRdaReader::GetHeaderValueAsFloat(string keyString, int valueIndex) 
+float svkSiemensRdaReader::GetHeaderValueAsFloat(vtkstd::string keyString, int valueIndex) 
 {
     
     istringstream* iss = new istringstream();
     float value;
 
-    iss->str( (rdaMap[keyString])[valueIndex]);
+    iss->str( (this->rdaMap[keyString])[valueIndex]);
     *iss >> value;
     return value; 
 }
@@ -1596,9 +1606,9 @@ float svkSiemensRdaReader::GetHeaderValueAsFloat(string keyString, int valueInde
 /*!
  *
  */
-string svkSiemensRdaReader::GetHeaderValueAsString(string keyString, int valueIndex) 
+vtkstd::string svkSiemensRdaReader::GetHeaderValueAsString(vtkstd::string keyString, int valueIndex) 
 {
-    return (rdaMap[keyString])[valueIndex];
+    return (this->rdaMap[keyString])[valueIndex];
 }
 
 
@@ -1609,13 +1619,13 @@ void svkSiemensRdaReader::PrintKeyValuePairs()
 {
 
     //  Print out key value pairs parsed from header:
-    map< string, vector<string> >::iterator mapIter;
-    for ( mapIter = rdaMap.begin(); mapIter != rdaMap.end(); ++mapIter ) {
+    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    for ( mapIter = this->rdaMap.begin(); mapIter != this->rdaMap.end(); ++mapIter ) {
      
         cout << this->GetClassName() << " " << mapIter->first << " = ";
 
-        vector<string>::iterator it;
-        for ( it = rdaMap[mapIter->first].begin() ; it < rdaMap[mapIter->first].end(); it++ ) {
+        vtkstd::vector<vtkstd::string>::iterator it;
+        for ( it = this->rdaMap[mapIter->first].begin() ; it < this->rdaMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }
         cout << endl;
@@ -1630,7 +1640,7 @@ void svkSiemensRdaReader::MapDoubleValuesToFloat(double* specDataDbl, float* spe
 {
     //  Get the input range for scaling: 
     double inputRange[2];
-    inputRange[1] = numeric_limits<double>::max(); 
+    inputRange[1] = std::numeric_limits<double>::max(); 
     inputRange[0] = -1 * inputRange[1];  
     inputRange[1] = 0; 
     inputRange[0] = 0;  
@@ -1647,7 +1657,7 @@ void svkSiemensRdaReader::MapDoubleValuesToFloat(double* specDataDbl, float* spe
 
     //  Map to full dynamic range of target type:
     double outputRange[2];
-    outputRange[1] = numeric_limits<float>::max(); 
+    outputRange[1] = std::numeric_limits<float>::max(); 
     outputRange[0] = -1 * outputRange[1];  
     double deltaRangeOut = outputRange[1];// - outputRange[0];  
 cout << "RO: " << deltaRangeOut<< endl;

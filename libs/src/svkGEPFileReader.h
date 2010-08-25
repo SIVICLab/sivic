@@ -48,6 +48,7 @@
 #include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
 #include <vtkCallbackCommand.h>
+#include <vtkInformation.h>
 
 #include <svkImageReader2.h>
 #include <svkIOD.h>
