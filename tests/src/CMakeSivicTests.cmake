@@ -49,80 +49,111 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
 ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20_x_raw -o 20x -t 2" )
 
 ########################
-#   UCSF ddf to UCSF DDF
+#   15X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_2)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/15x_raw -o out -t 2" )
+
+########################
+#   14X GE Raw to DDF
+########################
+SET( TEST_NAME TEST_3)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/14x_raw -o out -t 2" )
+
+########################
+#   12X GE Raw to DDF
+########################
+SET( TEST_NAME TEST_4)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/12x_raw -o out -t 2" )
+
+########################
+#   11X GE Raw to DDF
+########################
+SET( TEST_NAME TEST_5)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/11x)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/11x_raw -o out -t 2" )
+
+########################
+#   9X GE Raw to DDF
+########################
+#SET( TEST_NAME TEST_6)
+#SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/9x)
+#ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/9x_raw -o out -t 2" )
+
+
+########################
+#   UCSF ddf to UCSF DDF
+########################
+SET( TEST_NAME TEST_7)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf)
 ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20x_1.ddf -o 20x -t 2" )
 
 ########################
 #   DICOM MRI to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_3)
+SET( TEST_NAME TEST_8)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/E0000S4I1.DCM -o vol -t 3" )
 
 ########################
 #   UCSF IDF to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_4)
+SET( TEST_NAME TEST_9)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/vol.idf -o out -t 3" )
 
 ########################
 #   VARIAN fdf to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_5)
+SET( TEST_NAME TEST_10)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fdf)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/lac.0001.fdf -o out -t 3" )
 
 ########################
 #   VARIAN fid to UCSF DDF 
 ########################
-SET( TEST_NAME TEST_6)
+SET( TEST_NAME TEST_11)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/fid -o out -t 2" )
 
 ########################
 #   GE Signa 5x to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_7)
+SET( TEST_NAME TEST_12)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5x)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/E8668S3I1.MR -o out -t 3" )
 
 ########################
 #   GE Signa 5x V2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_8)
+SET( TEST_NAME TEST_13)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5XVersion2)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/E18636S3I1.MR -o out -t 3" )
 
 ########################
 #   GE Signa 5x V2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_9)
+SET( TEST_NAME TEST_14)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/SignaLX2)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/E12916S3I1.MR -o out -t 3" )
 
 ########################
 #   SIEMENS RDA to DICOM DDF
 ########################
-SET( TEST_NAME TEST_10)
+SET( TEST_NAME TEST_15)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/siemens_rda/sv)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/sample.rda -o out -t 2" )
 
 ########################
 #   DICOM MRS to DICOM MRS 
 ########################
-SET( TEST_NAME TEST_11)
+SET( TEST_NAME TEST_16)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/mrs.dcm -o out.dcm -t 4" )
 
-
-########################
-#   svk_gepfile_reader:   
-########################
-#ADD_TEST(READ_PFILE ../../applications/cmd_line/src/${PLATFORM}/svk_gepfile_reader -i ${SVK_TEST_ROOT}/ge_pfiles/20x/20_x_raw -o ${SVK_TEST_ROOT}/output/out )
 
 
 #ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
