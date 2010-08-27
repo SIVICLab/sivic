@@ -46,42 +46,42 @@ SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 ########################
 SET( TEST_NAME TEST_1)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/20_x_raw -o 20x -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/20_x_raw -o 20x -t 2" )
 
 ########################
 #   15X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_2)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/15x_raw -o out -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/15x_raw -o out -t 2" )
 
 ########################
 #   14X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_3)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/14x_raw -o out -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/14x_raw -o out -t 2" )
 
 ########################
 #   12X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_4)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/12x_raw -o out -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/12x_raw -o out -t 2" )
 
 ########################
 #   11X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_5)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/11x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/11x_raw -o out -t 2" )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/11x_raw -o out -t 2" )
 
 ########################
 #   9X GE Raw to DDF
 ########################
 #SET( TEST_NAME TEST_6)
 #SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/9x)
-#ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/9x_raw -o out -t 2" )
+#ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/9x_raw -o out -t 2" )
 
 
 ########################
