@@ -161,6 +161,13 @@ SET( TEST_NAME TEST_17)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/mrs.dcm -o /tmp/out.dcm -t 4 )
 
+########################
+#   VALGRIND TEST BINARY DIRECTLY
+########################
+SET( TEST_NAME TEST_18)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
+ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o ${TEST_CASE_ROOT}/tmp/out -t 4 )
+
 
 
 #ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
