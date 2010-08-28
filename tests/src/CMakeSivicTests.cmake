@@ -154,6 +154,13 @@ SET( TEST_NAME TEST_16)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME} ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/mrs.dcm -o out.dcm -t 4" )
 
+########################
+#   VALGRIND TEST BINARY DIRECTLY
+########################
+SET( TEST_NAME TEST_17)
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
+ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/mrs.dcm -o /tmp/out.dcm -t 4 )
+
 
 
 #ADD_TEST(VTK_RENDER_LOOP ${EXECUTABLE_OUTPUT_PATH}/vtkRenderLoopTest)
