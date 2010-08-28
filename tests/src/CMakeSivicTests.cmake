@@ -163,10 +163,13 @@ ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/inp
 
 ########################
 #   VALGRIND TEST BINARY DIRECTLY
+#   otherwise valgrind tries to analyse perl script, etc.
+#   seems like it's necessary to run mem test as a separate
+#   test.
 ########################
 SET( TEST_NAME TEST_18)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
-ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o ${TEST_CASE_ROOT}/tmp/out -t 4 )
+ADD_TEST(${TEST_NAME} ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o ${SVK_TEST_ROOT}/tmp/out -t 4 )
 
 
 
