@@ -79,7 +79,6 @@ class svkDdfVolumeReader : public svkImageReader2
         virtual int     CanReadFile( const char* fname );
 
 
-
     protected:
 
         svkDdfVolumeReader();

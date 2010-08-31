@@ -141,7 +141,7 @@ int svkDdfVolumeReader::CanReadFile(const char* fname)
         return 0;
     }
 }
-
+ 
 
 /*!
  *  Not sure if this is always extent 5 if the data is coronal and sagital for example
@@ -235,6 +235,10 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
 {
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+
+        if (this->GetDebug()) { 
+            cout << "read data from file " << fileIndex << " / " << this->GetFileNames()->GetNumberOfValues() << endl;
+        }
 
         int coilNum = 0; 
         if ( this->numCoils > 1 ) {
@@ -2100,7 +2104,8 @@ void svkDdfVolumeReader::GlobFileNames()
     string fileExtension( this->GetFileExtension( this->GetFileName() ) );
     string filePath( this->GetFilePath( this->GetFileName() ) );
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( filePath + "/*." + fileExtension).c_str() );
+    globFileNames->SetDirectory( filePath.c_str() ); 
+    globFileNames->AddFileNames( string( "*." + fileExtension).c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->GroupingOn();
@@ -2111,25 +2116,32 @@ void svkDdfVolumeReader::GlobFileNames()
     //  If globed file names are not similar, use only the 0th group. 
     //  If there is one group that group is used.
     //  If there are multiple groups and the input file cannot be associated with a group then use input filename only.
+    //  If readOneInputFile is set, the groupsToUse remains -1 and only the literal input file is read.  
     int groupToUse = -1;     
-    if (sortFileNames->GetNumberOfGroups() > 1 ) {
+    if ( this->readOneInputFile == false ) {
+        if (sortFileNames->GetNumberOfGroups() > 1 ) {
 
-        //  Get the group the selected file belongs to:
-        vtkStringArray* group;
-        for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
-            group = sortFileNames->GetNthGroup(k); 
-            for (int i = 0; i < group->GetNumberOfValues(); i++) {
-                if( this->GetDebug() ) {
-                    cout << "Group: " << group->GetValue(i) << endl;
-                }
-                if ( fileName.compare( group->GetValue(i) ) == 0 ) {
-                    groupToUse = k; 
-                    break; 
+            //  Get the group the selected file belongs to:
+            vtkStringArray* group;
+            for (int k = 0; k < sortFileNames->GetNumberOfGroups(); k++ ) {
+                group = sortFileNames->GetNthGroup(k); 
+                for (int i = 0; i < group->GetNumberOfValues(); i++) {
+                    //  The glob was already limited to the directory where the input file was located
+                    //  so to avoid any further relative vs absolute path issues just compare the
+                    //  returned file names without path:
+                    string groupFile ( this->GetFileNameWithoutPath( group->GetValue(i) ) ); 
+                    if( this->GetDebug() ) {
+                        cout << "Group: " << groupFile << endl;
+                    }
+                    if ( fileName.compare( groupFile ) == 0 ) {
+                        groupToUse = k; 
+                        break; 
+                    }
                 }
             }
+        } else {
+            int groupToUse = 0;     
         }
-    } else {
-        int groupToUse = 0;     
     }
     
     if( groupToUse != -1 ) {

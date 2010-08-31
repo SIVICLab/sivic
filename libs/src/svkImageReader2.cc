@@ -70,6 +70,7 @@ svkImageReader2::svkImageReader2()
     vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
 
     this->dataArray = NULL;
+    this->readOneInputFile = false;
 
 }
 
@@ -92,6 +93,15 @@ svkImageReader2::~svkImageReader2()
         this->dataArray = NULL;
     }
 
+}
+
+
+/*!
+ *  Only read the one specified input file.  Otherwise the default behavior is to read all the files in the group.
+ */
+void svkImageReader2::OnlyReadOneInputFile()
+{
+    this->readOneInputFile = true;
 }
 
 
@@ -140,6 +150,24 @@ vtkstd::string svkImageReader2::GetFilePath(const char* fname)
         filePath.assign( "." );
     }
     return filePath;
+}
+
+
+/*!
+ *  Returns the file name without path:  everything after the last "/".   
+ */
+vtkstd::string svkImageReader2::GetFileNameWithoutPath(const char* fname)
+{
+    vtkstd::string volumeFileName(fname);
+    size_t position;
+    position = volumeFileName.find_last_of( "/" );
+    vtkstd::string fileNameNoPath; 
+    if ( position != vtkstd::string::npos ) {
+        fileNameNoPath.assign( volumeFileName.substr(position + 1) );
+    } else {
+        fileNameNoPath.assign( fname );
+    }
+    return fileNameNoPath;
 }
 
 

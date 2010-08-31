@@ -70,6 +70,7 @@ class svkImageReader2 : public vtkImageReader2
         svkDcmHeader*          GetDcmHeader( const char* fileName );
         static vtkstd::string  StripWhite(string in);
         static vtkstd::string  RemoveSlashesFromDate(vtkstd::string* slashDate); 
+        void                   OnlyReadOneInputFile();
 
 
     protected:
@@ -86,6 +87,7 @@ class svkImageReader2 : public vtkImageReader2
         vtkstd::string                           GetFileRoot(const char* fname);
         vtkstd::string                           GetFileExtension(const char* fname);
         vtkstd::string                           GetFilePath(const char* fname);
+        vtkstd::string                           GetFileNameWithoutPath(const char* fname); 
         long                                     GetFileSize(ifstream* fs); 
         virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
         void                                     ReadLineIgnore(
@@ -110,12 +112,12 @@ class svkImageReader2 : public vtkImageReader2
 
         //  Members:
         vtkDataArray*                            dataArray;
+        bool                                     readOneInputFile;
 
 
     private:
 
         virtual void                            InitDcmHeader() = 0;
-
 
 };
 

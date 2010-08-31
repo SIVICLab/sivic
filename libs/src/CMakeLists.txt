@@ -171,6 +171,7 @@ ADD_LIBRARY(
     svkSpecUtils.cc
     svkUCSFUtils.cc
     svkImageFourierCenter.cc
+    svkIntegratePeak.cc
 )
 
 
