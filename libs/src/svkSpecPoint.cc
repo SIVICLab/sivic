@@ -77,7 +77,7 @@ svkSpecPoint::~svkSpecPoint()
 /*!
  *
  */
-void svkSpecPoint::SetDataHdr(svkDcmHeader* hdr)
+void svkSpecPoint::SetDcmHeader(svkDcmHeader* hdr)
 {
     this->sweepWidth   = hdr->GetFloatValue( "SpectralWidth" );
     this->numPts       = hdr->GetIntValue( "DataPointColumns" );

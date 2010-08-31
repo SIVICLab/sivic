@@ -64,7 +64,7 @@ class svkSpecPoint : public vtkObject
         static svkSpecPoint* New();
         vtkTypeRevisionMacro( svkSpecPoint, vtkObject);
 
-        void    SetDataHdr(svkDcmHeader* hdr);
+        void    SetDcmHeader(svkDcmHeader* hdr);
 
         typedef enum {
             PPM = 0, 

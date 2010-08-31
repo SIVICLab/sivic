@@ -139,7 +139,7 @@ void svkDetailedPlotView::SetInput(svkImageData* data, int index)
         data->Register( this );
         this->dataVector[index] = data;
         data->Update();
-        this->point->SetDataHdr( data->GetDcmHeader() );
+        this->point->SetDcmHeader( data->GetDcmHeader() );
         this->CreateFrequencyArray();
         
         this->CreateXYPlot(); 
