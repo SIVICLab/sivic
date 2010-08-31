@@ -879,7 +879,7 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     size_t pos2;
     
     svkSpecPoint* point = svkSpecPoint::New();
-    point->SetDataHdr( model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
+    point->SetDcmHeader( model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
 
     if( model->DataExists( "AnatomicalData" ) ) {
 

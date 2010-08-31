@@ -304,7 +304,7 @@ void sivicAppGUI::SetMRSData( svkImageData* mrsData )
     {
         this->mrsImageData = mrsData; 
         this->point = svkSpecPoint::New();
-        this->point->SetDataHdr( mrsData->GetDcmHeader() ); 
+        this->point->SetDcmHeader( mrsData->GetDcmHeader() ); 
         this->EnableMRSWidgets();
     }
 }

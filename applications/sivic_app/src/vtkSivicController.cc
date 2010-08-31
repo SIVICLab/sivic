@@ -558,7 +558,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
             this->processingWidget->phaseSlider->SetValue(0.0); 
             this->processingWidget->phaser->SetInput( newData );
     
-            this->spectraRangeWidget->point->SetDataHdr( newData->GetDcmHeader() );
+            this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
    
             if( oldData != NULL ) {
                 bool useFullFrequencyRange = 0;
