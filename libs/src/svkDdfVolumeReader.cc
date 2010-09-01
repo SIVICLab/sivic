@@ -2140,7 +2140,7 @@ void svkDdfVolumeReader::GlobFileNames()
                 }
             }
         } else {
-            int groupToUse = 0;     
+            groupToUse = 0;     
         }
     }
     
