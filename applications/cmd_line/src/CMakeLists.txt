@@ -177,6 +177,17 @@ TARGET_LINK_LIBRARIES(
 )
 
 
+ADD_EXECUTABLE(
+    svk_integrate_dynamic
+    svk_integrate_dynamic.cc
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_integrate_dynamic
+    ${SVK_LIBS}
+)
+
+
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS 
     "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
