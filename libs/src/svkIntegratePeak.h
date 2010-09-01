@@ -94,7 +94,7 @@ class svkIntegratePeak : public svkImageInPlaceFilter
 
     private:
 
-        void            RedimensionData( svkImageData* data ); 
+        void            UpdateHeader(svkImageData* data); 
         float           peakCenterPPM; 
         float           peakWidthPPM; 
         bool            magnitudeIntegration;

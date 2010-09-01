@@ -44,6 +44,11 @@
 #include <svkIntegratePeak.h>
 #include <svkSpecPoint.h>
 
+#include <vtkImageWeightedSum.h>
+#include <vtkImageMathematics.h>
+#include <vtkImageMagnitude.h>
+
+
 
 using namespace svk;
 
@@ -102,12 +107,13 @@ void svkIntegratePeak::SetMagnitudeIntegration()
 
 
 /*! 
- *
+ *  Generates a metabolite map from the integral over the specified range.  Currently the data struct is an MRS object with 
+ *  one frequency pt, but should be a metabolite map. 
  */
 int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    svkImageData* data = this->GetImageDataInput(0); 
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
 
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
@@ -123,65 +129,80 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
 
     int startPoint =  static_cast< int > (
                         point->ConvertPosUnits(
-                            this->peakCenterPPM - (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
+                            this->peakCenterPPM + (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
                       );   
     int endPoint   =  static_cast< int > (
                         point->ConvertPosUnits(
-                            this->peakCenterPPM + (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
+                            this->peakCenterPPM - (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
                       );   
+
+    point->Delete();
 
     // For each voxel, add frequency points.
     float cmplxPt[2];
     float integral[2];
 
-    for( int channel = 0; channel < numChannels; channel++ ) { 
+    vtkImageData* ptImage = vtkImageData::New();
+    vtkImageData* sumImage = vtkImageData::New();
+
+    for( int channel = 0; channel < numChannels; channel++ ) {
         for (int timePt = 0; timePt < numTimePts; timePt++) {
-            cout << "channel_number time" << channel << " " << timePt << endl; 
-            for (int z = 0; z < numVoxels[2]; z++) {
-                for (int y = 0; y < numVoxels[1]; y++) {
-                    for (int x = 0; x < numVoxels[0]; x++) {
-            
-               
-                        integral[0] = 0;
-                        integral[1] = 0; 
-          
-                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel) );
 
-                        for (int i = startPoint; i <= endPoint; i++) {
+            for (int i = startPoint; i <= endPoint; i++) {
 
-                            spectrum->GetTupleValue(i, cmplxPt);
+                data->GetImage( ptImage, i, timePt, channel );
+                //cout << " freq: " << i << " " << ( ptImage->GetPointData()->GetScalars()->GetComponent(0,0) ) << endl;;
+                //cout << " freq: " << i << " " << ( ptImage->GetPointData()->GetScalars()->GetComponent(0,1) ) << endl;;
+                ptImage->Modified();
 
-                            if ( this->magnitudeIntegration ) {
-                                integral[0] += pow( 
-                                                ( ( cmplxPt[0] * cmplxPt[0] ) + ( cmplxPt[1] * cmplxPt[1] ) ), 0.5 ) ; 
-                                integral[1] += 0;  
-                            } else {
-                                integral[0] += cmplxPt[0]; 
-                                integral[1] += cmplxPt[1]; 
-                            }
+                if ( this->magnitudeIntegration ) {
+                    vtkImageMagnitude* mag = vtkImageMagnitude::New();
+                    mag->SetInput( ptImage ); 
+                    mag->Update(); 
 
+                    double sumTuple[2];  
+                    double magTuple[1];  
+                    if ( i == startPoint ) {
+                        // Initialize it
+                        sumImage->DeepCopy( ptImage ); 
+                        // Zero it
+                        for ( int j=0; j<sumImage->GetPointData()->GetScalars()->GetNumberOfTuples(); j++ ) {
+                            sumImage->GetPointData()->GetScalars()->GetTuple(j, sumTuple);
+                            sumTuple[0] = 0; 
+                            sumTuple[1] = 0; 
+                            sumImage->GetPointData()->GetScalars()->SetTuple(j, sumTuple);
                         }
-
-                        //  Shrink the array to one point:
-                        if ( spectrum->Resize(1) ) { 
-                            spectrum->SetTuple(0, cmplxPt);
-                        } else {
-                            cout << "svkIntegratePeak: ERROR resizing array " << endl;
-                        }
-
+                    } else {
+                        for ( int j=0; j<sumImage->GetPointData()->GetScalars()->GetNumberOfTuples(); j++ ) {
+                            sumImage->GetPointData()->GetScalars()->GetTuple(j, sumTuple);
+                            mag->GetOutput()->GetPointData()->GetScalars()->GetTuple(j, magTuple);
+                            sumTuple[0] += magTuple[0];
+                            sumTuple[1] = 0; 
+                            sumImage->GetPointData()->GetScalars()->SetTuple(j, sumTuple);
+                        }      
                     }
+                    
+                    mag->Delete();
                 }
+
             }
+
+            //Set this image as the first frequency point in the MRS object: 
+            data->SetImage( sumImage, 0, timePt, channel );
+
         }
     }
 
     //  Redimension data set:
-    this->RedimensionData( data ); 
+    this->UpdateHeader(data); 
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
+
+    ptImage->Delete(); 
+    sumImage->Delete(); 
+
     return 1; 
 } 
 
@@ -190,15 +211,19 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
  *  Modify the number of frequency points in the data set. 
  *  Also set the ppm value to the peak center. 
  */
-void svkIntegratePeak::RedimensionData( svkImageData* data )
+void svkIntegratePeak::UpdateHeader(svkImageData* data)
 {
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
+    data->GetDcmHeader()->SetValue(
         "DataPointColumns",
         1
     );
 
-    data->GetDcmHeader()->PrintDcmHeader( ); 
+    data->GetDcmHeader()->SetValue(
+        "ChemicalShiftReference",
+        this->peakCenterPPM
+    );
+
 }
 
 
