@@ -253,6 +253,11 @@ int main (int argc, char** argv)
                 "ChemicalShiftReference",
                 peak_center_ppm
             );   
+            dynamicImage->GetDcmHeader()->SetValue(
+                "SignalDomainColumns",
+                "TIME"
+            );
+
         }
 
         dynamicImage->SetImage( tmpImage, fileNum, 0, 0);
