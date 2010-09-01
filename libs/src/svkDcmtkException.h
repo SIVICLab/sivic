@@ -59,9 +59,9 @@ using namespace std;
 class svkDicomRunTimeError : public runtime_error
 {  
     public:
-        svkDicomRunTimeError (const string& msg) : runtime_error("DICOM Runtime Error: " + msg) {};                                                                     
+        svkDicomRunTimeError (const string& msg) : runtime_error("WARNING: DICOM Runtime Error: " + msg) {};                                                                     
         svkDicomRunTimeError (const DcmTagKey& tag, const string& msg) : 
-            runtime_error("DICOM Runtime Error: " + msg + " tag: " + DcmTag(tag).toString().c_str() +" "+
+            runtime_error("WARNING: DICOM Runtime Error: " + msg + " tag: " + DcmTag(tag).toString().c_str() +" "+
                         ((DcmTag)tag).getTagName()) {
                         };                                                                     
 };                                                                                                                            
