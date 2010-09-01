@@ -77,6 +77,7 @@ class svkDdfVolumeReader : public svkImageReader2
 
         //  Methods:
         virtual int     CanReadFile( const char* fname );
+        void            GlobFileNames(); 
 
 
     protected:
@@ -134,7 +135,6 @@ class svkDdfVolumeReader : public svkImageReader2
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
         vtkstd::string  GetDimensionDomain( vtkstd::string ddfDomainString ); 
-        void            GlobFileNames(); 
 
 
         //  Members:
