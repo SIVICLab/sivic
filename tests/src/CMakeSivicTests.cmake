@@ -39,6 +39,9 @@
 
 SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
 SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
+SET( TEST_RESULTS_ROOT ${SVK_TEST_ROOT}/results_tmp)
+SET( DIFF_OPT --ignore-matching-lines=SVK_CMD --ignore-matching-lines=root)
+
 
 
 ########################
@@ -46,26 +49,34 @@ SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 ########################
 SET( TEST_NAME TEST_1)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/20_x_raw -o 20x -t 2" )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20_x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
+
+SET( TEST_NAME TEST_2)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 ########################
 #   15X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_2)
+SET( TEST_NAME TEST_3)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/15x_raw -o out -t 2" )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/15x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
+
+SET( TEST_NAME TEST_4)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 ########################
 #   14X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_3)
+SET( TEST_NAME TEST_3b)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
 ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/14x_raw -o out -t 2" )
 
 ########################
 #   12X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_4)
+SET( TEST_NAME TEST_4b)
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
 ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/12x_raw -o out -t 2" )
 
