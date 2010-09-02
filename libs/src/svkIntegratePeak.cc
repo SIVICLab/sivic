@@ -224,6 +224,12 @@ void svkIntegratePeak::UpdateHeader(svkImageData* data)
         this->peakCenterPPM
     );
 
+    //data->GetDcmHeader()->SetValue(
+        //"DataRepresentation",
+        //"MAGNITUDE" 
+    //);
+
+
 }
 
 

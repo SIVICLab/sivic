@@ -975,7 +975,6 @@ void  svkMrsImageData::GetAllImages( vtkDataSetCollection* imageCollection, int 
  *
  *  \param image the point image 
  *  \param point the point in the array you wish operate on 
- *  \param component the component to operate on 
  *  \param timePoint the time point to operate on 
  *  \param channel the the channel to operate on 
  *
