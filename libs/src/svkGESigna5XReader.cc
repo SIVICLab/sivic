@@ -279,7 +279,7 @@ GESignaHeader* svkGESigna5XReader::ReadHeader(const char *FileNameToRead)
         << signaHeader->Suite_Product_ID);
 
     // Create a buffer to read the exam header.
-    char *buffer = new char[signaHeader->mainHeader.Length_Exam];
+    char* buffer = new char[signaHeader->mainHeader.Length_Exam];
     if ( buffer == NULL ) {
         fclose(fp);
         delete signaHeader;
@@ -440,7 +440,7 @@ GESignaHeader* svkGESigna5XReader::ReadHeader(const char *FileNameToRead)
         << signaHeader->Exam_Unique_System_ID);
 
     // Done with exam, delete buffer.
-    delete buffer;
+    delete[] buffer;
     buffer = NULL;
     
     // Check if this is a MR file.  If not exit!
@@ -517,7 +517,7 @@ GESignaHeader* svkGESigna5XReader::ReadHeader(const char *FileNameToRead)
         << signaHeader->Series_Scan_Potocol_Name);
 
     // Done with series, delete buffer and allocate for MR header.
-    delete buffer;
+    delete[] buffer;
     buffer = NULL;
     buffer = new char[signaHeader->mainHeader.Length_Image];
     if ( buffer == NULL ) {
@@ -977,7 +977,7 @@ GESignaHeader* svkGESigna5XReader::ReadHeader(const char *FileNameToRead)
     // Delete the buffer and return the pointer to the header.
     // The function that receives the pointer must do memory
     // cleanup or a memory leak will occur. 
-    delete buffer;
+    delete[] buffer;
 
     return signaHeader;
 }
