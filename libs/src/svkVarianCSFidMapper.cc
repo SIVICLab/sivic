@@ -200,6 +200,7 @@ void svkVarianCSFidMapper::InitPlaneOrientationMacro()
             dcosArrayTmp[i][j] = dcos->GetElement(i,j); 
         }
     }
+    dcos->Delete(); 
 
     //Reorder since the readout represents the slice: 
     double dcosArray[3][3]; 
@@ -267,6 +268,8 @@ void svkVarianCSFidMapper::InitPlaneOrientationMacro()
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
 
+    math->Delete(); 
+
 }
 
 
@@ -328,6 +331,8 @@ void svkVarianCSFidMapper::InitPerFrameFunctionalGroupMacros()
         volumeTlcUserFrame, pixelSpacing, dcos, numSlices, 1, 1
         //volumeTlcMagnetFrame, pixelSpacing, dcos, numSlices, 1, 1
     ); 
+    delete[] volumeTlcUserFrame; 
+    delete[] volumeTlcMagnetFrame; 
 }
 
 
