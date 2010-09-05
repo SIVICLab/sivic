@@ -566,7 +566,7 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
         //  Convert Values to points before setting the plot controller's range
 
         svkSpecPoint* point = svkSpecPoint::New();
-        point->SetDataHdr( this->CurrentSpectra->GetDcmHeader() ); 
+        point->SetDcmHeader( this->CurrentSpectra->GetDcmHeader() ); 
         int specUnits = svkSpecPoint::PPM;
 
         float lowestPoint = point->ConvertPosUnits(
@@ -731,7 +731,7 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
     //  Initialize Widgets:
     //------------------------
     svkSpecPoint* point = svkSpecPoint::New();
-    point->SetDataHdr( this->CurrentSpectra->GetDcmHeader() ); 
+    point->SetDcmHeader( this->CurrentSpectra->GetDcmHeader() ); 
     float lowestPoint = point->ConvertPosUnits(
                                 0,
                                 svkSpecPoint::PTS,
@@ -766,9 +766,8 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
  */
 void vtkMRSpectroscopyGUI::DoOtherThing( )
 {
-    svkDataModel* model = svkDataModel::New();
     svkImageData* ddfData = this->CurrentSpectra;
-    //ddfData->GetImage()->Update();
+    ddfData->Update();
 
     vtkSlicerApplicationGUI* appgui = this->GetApplicationGUI();
     //  API is changing between slicer versions:
