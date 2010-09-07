@@ -475,7 +475,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 
         aMapper = svkGEPFileMapperUCSF::New();
 
-    } else if ( psd.find("fidcsi") ) {
+    } else if ( psd.find("fidcsi") != string::npos ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsi::New();
