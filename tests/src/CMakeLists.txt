@@ -174,6 +174,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svkPlotGridViewMultiTraceTest
+    svkPlotGridViewMultiTraceTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkPlotGridViewMultiTraceTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svkSpectraReferenceViewTest
     svkSpectraReferenceViewTest.cc
 )
