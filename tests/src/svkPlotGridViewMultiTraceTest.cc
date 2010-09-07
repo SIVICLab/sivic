@@ -214,10 +214,10 @@ void DisplayUsage( void )
     cout << "   svkPlotGridViewMultiTraceTest" << endl << endl;
     cout << "SYNOPSIS" << endl;
     cout << "    test_svkPlotGridView [-s filename] [-S filename] [-c filename] [-o filename] [-O filename]" << endl << endl;
-    cout << "        -f --first_spectra           A spectroscopy file. " << endl;
-    cout << "        -s --second_spectra    A second spectroscopy file. " << endl;
-    cout << "        -t --third_spectra     A third spectroscopy file. " << endl;
-    cout << "        -o --overlay            An overlay (metabolite) file. " << endl;
+    cout << "        -f --first_spectra     The first spectroscopy file. " << endl;
+    cout << "        -s --second_spectra    The second spectroscopy file. " << endl;
+    cout << "        -t --third_spectra     The third spectroscopy file. " << endl;
+    cout << "        -o --overlay           An overlay (metabolite) file. " << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    Testing harness for svkPlotGridView with multiple plots. " << endl << endl;
     cout << endl << "############  USAGE  ############ " << endl << endl;
