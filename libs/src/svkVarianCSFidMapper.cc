@@ -92,6 +92,19 @@ svkVarianCSFidMapper::~svkVarianCSFidMapper()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->paddedData != NULL ) {
+        vtkstd::vector<int> blipVector = this->GetBlips(); 
+        int lengthX  = blipVector[0]; 
+        int lengthY  = blipVector[1];
+        int lengthF  = blipVector[2]; 
+        int numTRs   = blipVector[3]; 
+
+        for (int y = 0; y < lengthY; y++ ) {
+            for (int x = 0; x < lengthX; x++ ) {
+                delete [] this->paddedData[y][x];
+            }
+            delete [] this->paddedData[y];
+        }
+
         delete [] this->paddedData; 
         this->paddedData = NULL; 
     }
@@ -295,6 +308,7 @@ void svkVarianCSFidMapper::InitPlaneOrientationMacro()
     }
 
     math->Delete(); 
+    eulerTransform->Delete(); 
 
 }
 

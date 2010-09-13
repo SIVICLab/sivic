@@ -212,6 +212,8 @@ int svkVarianReader::GetProcparKeyValuePair( )
         status = -1;  
     }
 
+    delete valueString1; 
+    delete valueString2; 
     delete iss; 
     return status; 
 }
