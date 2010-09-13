@@ -1227,7 +1227,6 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
         delete [] encodeMatrix[i];
     }
     delete [] encodeMatrix; 
-    delete [] paddedDataTmp; 
 
 
     //  Now, reset the DICOM header to refect the data reorganization:
