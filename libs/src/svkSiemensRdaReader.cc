@@ -746,6 +746,7 @@ void svkSiemensRdaReader::InitPlaneOrientationMacro()
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
+    math->Delete();
 
 }
 
@@ -1583,6 +1584,8 @@ int svkSiemensRdaReader::GetHeaderValueAsInt(vtkstd::string keyString, int value
 
     iss->str( (this->rdaMap[keyString])[valueIndex]);
     *iss >> value;
+
+    delete iss; 
     return value; 
 }
 
@@ -1598,6 +1601,7 @@ float svkSiemensRdaReader::GetHeaderValueAsFloat(vtkstd::string keyString, int v
 
     iss->str( (this->rdaMap[keyString])[valueIndex]);
     *iss >> value;
+    delete iss; 
     return value; 
 }
 

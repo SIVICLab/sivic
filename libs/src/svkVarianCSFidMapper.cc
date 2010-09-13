@@ -76,6 +76,11 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
 
     this->paddedData = NULL;
 
+    this->numXReordered = 16;
+    this->numYReordered = 16;
+    this->numZReordered = 16;
+    this->numTReordered = 59;
+
 }
 
 
@@ -89,6 +94,27 @@ svkVarianCSFidMapper::~svkVarianCSFidMapper()
     if ( this->paddedData != NULL ) {
         delete [] this->paddedData; 
         this->paddedData = NULL; 
+    }
+
+    if ( this->specData != NULL ) {
+        delete [] this->specData; 
+        this->specData = NULL; 
+    }
+
+
+    if ( this->rectilinearData != NULL ) {
+        for (int z = 0; z < this->numZReordered; z++ ) {
+            for (int y = 0; y < this->numYReordered; y++ ) {
+                for (int x = 0; x < this->numXReordered; x++ ) {
+                    delete [] this->rectilinearData[z][y][x];
+                }
+                delete [] this->rectilinearData[z][y];
+            }
+            delete [] this->rectilinearData[z];
+        }
+        delete [] this->rectilinearData;
+
+        this->rectilinearData = NULL; 
     }
 }
 
@@ -1197,6 +1223,9 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
     //++++++++++++++++++++++++++++++++++++
 
     delete [] specDataReordered; 
+    for (int i = 0; i < lengthX; i++ ) {
+        delete [] encodeMatrix[i];
+    }
     delete [] encodeMatrix; 
     delete [] paddedDataTmp; 
 
@@ -1209,6 +1238,22 @@ void svkVarianCSFidMapper::ZeroPadCompressedSensingData( int numberDataPointsInF
                 this->GetHeaderValueAsInt("nv", 0) 
             *   this->GetHeaderValueAsInt("np", 0)/2
     );
+
+
+    for (int y = 0; y < lengthY; y++ ) {
+        for (int x = 0; x < lengthX; x++ ) {
+            delete [] paddedDataTmp[y][x];
+            delete [] xBlips[y][x];
+            delete [] yBlips[y][x];
+        }
+        delete [] paddedDataTmp[y];
+        delete [] xBlips[y];
+        delete [] yBlips[y];
+    }
+
+    delete [] paddedDataTmp; 
+    delete [] xBlips;     
+    delete [] yBlips;     
 
 
 }
@@ -1363,10 +1408,10 @@ void svkVarianCSFidMapper::ReOrderSamples( float* specDataReordered, int numberD
 void svkVarianCSFidMapper::ReOrderFlyback( ) 
 {
 
-    int numX = 16; 
-    int numY = 16; 
-    int numZ = 16; 
-    int numT = 59; 
+    int numX = this->numXReordered; 
+    int numY = this->numYReordered; 
+    int numZ = this->numZReordered; 
+    int numT = this->numTReordered; 
 
     this->rectilinearData = new float***[numZ];  
     for (int z = 0; z < numZ; z++ ) {

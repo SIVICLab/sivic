@@ -366,6 +366,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
         cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
 
+    delete typeTmp; 
 }
 
 

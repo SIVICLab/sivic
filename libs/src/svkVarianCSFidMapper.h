@@ -128,6 +128,11 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         vtkstd::vector<int> GetBlips(); 
         void                GetBlipString(string* blipString);
 
+        int                 numXReordered; 
+        int                 numYReordered; 
+        int                 numZReordered; 
+        int                 numTReordered; 
+
 };
 
 
