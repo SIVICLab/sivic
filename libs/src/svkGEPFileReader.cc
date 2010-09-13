@@ -105,7 +105,7 @@ svkGEPFileReader::~svkGEPFileReader()
     //  Now delete all the pointers to input args:  
     map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
-         //delete this->inputArgs[ mapIter->first ];  
+         delete this->inputArgs[ mapIter->first ];  
         cout << " need to clean up memory" << endl; 
     }
 }
@@ -366,7 +366,6 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
         cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
 
-    delete typeTmp; 
 }
 
 
