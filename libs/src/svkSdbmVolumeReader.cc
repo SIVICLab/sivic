@@ -40,6 +40,14 @@
 
 
 #include <svkSdbmVolumeReader.h>
+#include <vtkCellData.h>
+#include <vtkDebugLeaks.h>
+#include <vtkGlobFileNames.h>
+#include <vtkSortFileNames.h>
+#include <svkMRSIOD.h>
+#include <vtkByteSwap.h>
+
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -49,7 +57,7 @@ vtkCxxRevisionMacro(svkSdbmVolumeReader, "$Rev$");
 vtkStandardNewMacro(svkSdbmVolumeReader);
 
 
-const string svkSdbmVolumeReader::MFG_STRING = "GE MEDICAL SYSTEMS";
+const vtkstd::string svkSdbmVolumeReader::MFG_STRING = "GE MEDICAL SYSTEMS";
 
 
 /*!
@@ -69,6 +77,9 @@ svkSdbmVolumeReader::svkSdbmVolumeReader()
     this->shfHdr = NULL; 
     this->numCoils = 1; 
     this->iod = NULL; 
+
+    // Set the byte ordering, as big-endian.
+    this->SetDataByteOrderToBigEndian();
 }
 
 
@@ -102,7 +113,7 @@ svkSdbmVolumeReader::~svkSdbmVolumeReader()
 int svkSdbmVolumeReader::CanReadFile(const char* fname)
 {
 
-    string fileToCheck(fname);
+    vtkstd::string fileToCheck(fname);
 
     if( fileToCheck.size() > 4 ) {
 
@@ -210,7 +221,7 @@ void svkSdbmVolumeReader::ExecuteData(vtkDataObject* output)
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
         struct stat fs;
         if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << string(this->GetFileNames()->GetValue(0)) );
+            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
             return;
         }
         this->ReadComplexFile(data);
@@ -237,14 +248,14 @@ void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
     ifstream* cmplxDataIn = new ifstream();
     cmplxDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-    string shfFilePath( this->GetFilePath( this->GetFileNames()->GetValue(0) ) );
-    string cmplxFile = shfFilePath + "/" +  shfMap["data_file_name"]; 
+    vtkstd::string shfFilePath( this->GetFilePath( this->GetFileNames()->GetValue(0) ) );
+    vtkstd::string cmplxFile = shfFilePath + "/" +  shfMap["data_file_name"]; 
 
     cmplxDataIn->open( cmplxFile.c_str(), ios::binary);
 
     int numComponents = 2;
     int numPts = this->GetHeaderValueAsInt(shfMap, "num_pts_0"); 
-    int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * 4 ; 
+    int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * sizeof(float) ; 
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
@@ -253,15 +264,15 @@ void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
             coilNum = fileIndex;     
         }
 
-        this->specData = new float[ numBytesInVol/4 ];  
+        this->specData = new float[ numBytesInVol/sizeof(float) ];  
         int offsetToData = this->GetHeaderValueAsInt(shfMap, "offset_to_data"); 
         
         cmplxDataIn->seekg(offsetToData);
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
-#if defined (linux) || defined(Darwin)
-        svkByteSwap::SwapBufferEndianness( specData, this->GetNumPixelsInVol() * numPts * numComponents);
-#endif
+        if ( this->GetSwapBytes() ) {
+            vtkByteSwap::SwapVoidRange((void *)this->specData, this->GetNumPixelsInVol() * numPts * numComponents, sizeof(float));
+        }
 
         for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
             for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
@@ -381,11 +392,11 @@ void svkSdbmVolumeReader::InitDcmHeader()
 void svkSdbmVolumeReader::ParseShf()
 {
 
-    string shfFileName( this->GetFileName() );
-    string shfFileExtension( this->GetFileExtension( this->GetFileName() ) );
-    string shfFilePath( this->GetFilePath( this->GetFileName() ) );
+    vtkstd::string shfFileName( this->GetFileName() );
+    vtkstd::string shfFileExtension( this->GetFileExtension( this->GetFileName() ) );
+    vtkstd::string shfFilePath( this->GetFilePath( this->GetFileName() ) );
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
-    globFileNames->AddFileNames( string( shfFilePath + "/*." + shfFileExtension).c_str() );
+    globFileNames->AddFileNames( vtkstd::string( shfFilePath + "/*." + shfFileExtension).c_str() );
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->GroupingOn();
@@ -421,7 +432,7 @@ void svkSdbmVolumeReader::ParseShf()
         this->shfHdr->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         int fileIndex = 0; 
-        string currentShfFileName( this->GetFileNames()->GetValue( fileIndex ) );
+        vtkstd::string currentShfFileName( this->GetFileNames()->GetValue( fileIndex ) );
 
         this->shfHdr->open( currentShfFileName.c_str(), ifstream::in );
 
@@ -533,8 +544,8 @@ void svkSdbmVolumeReader::ParseShf()
         shfMap["brhc_A"] = this->ReadLineValue(iss, ' ');
         shfMap["brhc_S"] = this->ReadLineValue(iss, ' ');
 
-        string tmp = this->ReadLineValue(iss, ' ');
-        while ( tmp.find("sagekey_opuserinfo") == string::npos)  {
+        vtkstd::string tmp = this->ReadLineValue(iss, ' ');
+        while ( tmp.find("sagekey_opuserinfo") == vtkstd::string::npos)  {
             tmp = this->ReadLineValue(iss, ' ');
         }
         this->ReadLine(this->shfHdr, iss);
@@ -545,8 +556,8 @@ void svkSdbmVolumeReader::ParseShf()
         for (int i = 0; i < numOU; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
-            string ouString = "opuser" + indexString; 
+            vtkstd::string indexString(ossIndex.str());
+            vtkstd::string ouString = "opuser" + indexString; 
             shfMap[ouString] = this->ReadLineValue(iss, ' ');
         }
 
@@ -561,8 +572,8 @@ void svkSdbmVolumeReader::ParseShf()
         for (int i = 0; i < numOU; i++) {
             ostringstream ossIndex;
             ossIndex << i;
-            string indexString(ossIndex.str());
-            string ruString = "rhuser" + indexString; 
+            vtkstd::string indexString(ossIndex.str());
+            vtkstd::string ruString = "rhuser" + indexString; 
             shfMap[ruString] = this->ReadLineValue(iss, ' ');
         }
 
@@ -618,8 +629,8 @@ void svkSdbmVolumeReader::ParseShfDim()
     int dimNum = this->GetHeaderValueAsInt(shfMap, "dimen_num"); 
     ostringstream ossIndex;
     ossIndex << dimNum;
-    string indexString(ossIndex.str());
-    string ruString = "rhuser" + indexString; 
+    vtkstd::string indexString(ossIndex.str());
+    vtkstd::string ruString = "rhuser" + indexString; 
 
     shfMap["domain_" + indexString] = this->ReadLineValue(iss, ' ');
     shfMap["num_pts_" + indexString] = this->ReadLineValue(iss, ' ');
@@ -727,7 +738,7 @@ void svkSdbmVolumeReader::InitGeneralSeriesModule()
         "SDBM MRSI"
     );
 
-    string patientEntryPos; 
+    vtkstd::string patientEntryPos; 
 
     //  entry:       Patient Entry, 1=head first, 2=feet first.
     int entry = this->GetHeaderValueAsInt(shfMap, "entry"); 
@@ -846,7 +857,7 @@ void svkSdbmVolumeReader::InitPixelMeasuresMacro()
     float rowSpacing = this->GetHeaderValueAsInt(shfMap, "width_2") / this->GetHeaderValueAsInt(shfMap, "num_pts_2"); 
     float sliceThickness = this->GetHeaderValueAsInt(shfMap, "width_3") / this->GetHeaderValueAsInt(shfMap, "num_pts_3"); 
 
-    string pixelSpacing;
+    vtkstd::string pixelSpacing;
     ostringstream oss;
     oss << colSpacing;
     oss << '\\';
@@ -994,7 +1005,7 @@ void svkSdbmVolumeReader::InitPlanePositionMacro()
                 frameLPSPosition[j] = toplc[j] +  displacement[j] ;
             }
 
-            string imagePositionPatient;
+            vtkstd::string imagePositionPatient;
             for (int j = 0; j < 3; j++) {
                 ostringstream oss;
                 oss.precision(8);
@@ -1169,7 +1180,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                    
         "InPlanePhaseEncodingDirection",     
-        string("COLUMN"),
+        vtkstd::string("COLUMN"),
         "SharedFunctionalGroupsSequence",   
         0                                 
     );
@@ -1265,12 +1276,12 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "ReceiveCoilManufacturerName",       
-        string("GE"),
+        vtkstd::string("GE"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
 
-    string coilType("VOLUME"); 
+    vtkstd::string coilType("VOLUME"); 
     this->numCoils =  this->GetHeaderValueAsInt(shfMap, "num_coils");  
     if ( this->numCoils > 1 ) {
         coilType.assign("MULTICOIL"); 
@@ -1289,7 +1300,7 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
         "MRReceiveCoilSequence",
         0,                        
         "QuadratureReceiveCoil",       
-        string("YES"),
+        vtkstd::string("YES"),
         "SharedFunctionalGroupsSequence",    
         0                      
     );
@@ -1312,7 +1323,7 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
 
             ostringstream ossIndex;
             ossIndex << coilIndex;
-            string indexString(ossIndex.str());
+            vtkstd::string indexString(ossIndex.str());
 
             this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
                 "MultiCoilDefinitionSequence",
@@ -1444,8 +1455,8 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
         0
     );
 
-    string isotope; 
-    if ( ( shfMap["ppm_offset"] ).find("127") != string::npos) { 
+    vtkstd::string isotope; 
+    if ( ( shfMap["ppm_offset"] ).find("127") != vtkstd::string::npos) { 
         isotope.assign("1H"); 
     }
     
@@ -1474,7 +1485,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ImageType", 
-        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
+        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE") 
     );
 
 
@@ -1483,16 +1494,16 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
      *  ======================================= */
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumetricProperties", 
-        string("VOLUME")  
+        vtkstd::string("VOLUME")  
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "VolumeBasedCalculationTechnique", 
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
-    string dataType; 
-    if ( ( shfMap["data_type"] ).find("Complex") != string::npos) { 
+    vtkstd::string dataType; 
+    if ( ( shfMap["data_type"] ).find("Complex") != vtkstd::string::npos) { 
         dataType.assign("COMPLEX"); 
     }
     
@@ -1549,7 +1560,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "BaselineCorrection", 
-        string("NONE")
+        vtkstd::string("NONE")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1559,12 +1570,12 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "FirstOrderPhaseCorrection", 
-        string("NO")
+        vtkstd::string("NO")
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "WaterReferencedPhaseCorrection", 
-        string("NO")
+        vtkstd::string("NO")
     );
 }
 
@@ -1584,7 +1595,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyPulseSequenceModule()
     numVoxels[1] = this->GetHeaderValueAsInt(shfMap, "num_pts_2"); 
     numVoxels[2] = this->GetHeaderValueAsInt(shfMap, "num_pts_3"); 
 
-    string acqType = "VOLUME"; 
+    vtkstd::string acqType = "VOLUME"; 
     if (numVoxels[0] == 1 && numVoxels[1] == 1 &&  numVoxels[2] == 1) {
         acqType = "SINGLE VOXEL";
     }
@@ -1678,8 +1689,8 @@ void svkSdbmVolumeReader::InitMRSpectroscopyDataModule()
         this->GetHeaderValueAsInt(shfMap, "num_pts_0") 
     );
 
-    string dataType; 
-    if ( ( shfMap["data_type"] ).find("Complex") != string::npos) { 
+    vtkstd::string dataType; 
+    if ( ( shfMap["data_type"] ).find("Complex") != vtkstd::string::npos) { 
         dataType.assign("COMPLEX"); 
     } else {
         dataType.assign("REAL"); 
@@ -1690,7 +1701,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyDataModule()
         dataType 
     );
 
-    string signalDomain; 
+    vtkstd::string signalDomain; 
     if ( strcmp(shfMap["domain_0"].c_str(), "Time") == 0)  { 
         signalDomain.assign("TIME"); 
     } else if ( strcmp(shfMap["dimensionType0"].c_str(), "Frequency") == 0)  { 
@@ -1731,7 +1742,7 @@ int svkSdbmVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInf
 void svkSdbmVolumeReader::PrintKeyValuePairs()
 {
     if (this->GetDebug()) {
-        map< string, string >::iterator mapIter;
+        vtkstd::map< vtkstd::string, vtkstd::string >::iterator mapIter;
         for ( mapIter = shfMap.begin(); mapIter != shfMap.end(); ++mapIter ) {
             cout << this->GetClassName() << " " << mapIter->first << " = ";
             cout << shfMap[mapIter->first] << endl;
@@ -1740,11 +1751,11 @@ void svkSdbmVolumeReader::PrintKeyValuePairs()
 }
 
 
-string svkSdbmVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
+vtkstd::string svkSdbmVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
 {
     this->ReadLine(this->shfHdr, iss);
     iss->ignore(256, delim);
-    string value;
+    vtkstd::string value;
     *iss >> value; 
     return value; 
 }
@@ -1753,27 +1764,27 @@ string svkSdbmVolumeReader::ReadLineIgnore(istringstream* iss, char delim)
 /*! 
  *  Read the value part of a delimited key value line in a file: 
  */
-string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
+vtkstd::string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
 {
 
-    string value;
+    vtkstd::string value;
     this->ReadLine(this->shfHdr, iss);
     try {
 
-        string line;
+        vtkstd::string line;
         line.assign( iss->str() );
 
-        size_t delimPos = line.find_first_of(delim);
-        string delimitedLine; 
-        if (delimPos != string::npos) {
+        vtkstd::size_t delimPos = line.find_first_of(delim);
+        vtkstd::string delimitedLine; 
+        if (delimPos != vtkstd::string::npos) {
             delimitedLine.assign( line.substr( delimPos + 1 ) );
         } else {
             delimitedLine.assign( line );
         }
    
         // remove leading white space: 
-        size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );  
-        if ( firstNonSpace != string::npos) {
+        vtkstd::size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );  
+        if ( firstNonSpace != vtkstd::string::npos) {
             value.assign( delimitedLine.substr( firstNonSpace ) );
         } else {
             value.assign( delimitedLine ); 
@@ -1791,16 +1802,16 @@ string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
 /*!
  *  Utility function for extracting a substring with white space removed from LHS.
  */
-string svkSdbmVolumeReader::ReadLineSubstr(istringstream* iss, int start, int stop)
+vtkstd::string svkSdbmVolumeReader::ReadLineSubstr(istringstream* iss, int start, int stop)
 {
-    string temp;
-    string lineSubStr;
-    size_t firstNonSpace;
+    vtkstd::string temp;
+    vtkstd::string lineSubStr;
+    vtkstd::size_t firstNonSpace;
     this->ReadLine(this->shfHdr, iss);
     try {
         temp.assign(iss->str().substr(start,stop));
         firstNonSpace = temp.find_first_not_of(' ');
-        if (firstNonSpace != string::npos) {
+        if (firstNonSpace != vtkstd::string::npos) {
             lineSubStr.assign( temp.substr(firstNonSpace) );
         }
     } catch (const exception& e) {
@@ -1813,7 +1824,8 @@ string svkSdbmVolumeReader::ReadLineSubstr(istringstream* iss, int start, int st
 /*!
  *
  */
-int svkSdbmVolumeReader::GetHeaderValueAsInt(map <string, string> hdrMap, string keyString, int valueIndex)
+int svkSdbmVolumeReader::GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+    vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
     int value;
@@ -1828,7 +1840,8 @@ int svkSdbmVolumeReader::GetHeaderValueAsInt(map <string, string> hdrMap, string
 /*!
  *
  */
-float svkSdbmVolumeReader::GetHeaderValueAsFloat(map <string, string> hdrMap, string keyString, int valueIndex)
+float svkSdbmVolumeReader::GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
+    vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
     float value;

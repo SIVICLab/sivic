@@ -49,8 +49,6 @@
 namespace svk {
 
 
-using namespace std;
-
 
 /*! 
  *  Mapper from pfile header to DICOM IOD/SOP Class instance for mbrease psd.  
@@ -63,7 +61,7 @@ class svkGEPFileMapperMBrease : public svkGEPFileMapper
         vtkTypeRevisionMacro( svkGEPFileMapperMBrease, svkGEPFileMapperMBrease);
         static          svkGEPFileMapperMBrease* New();
 
-        void            ReadData( string pFileName, vtkImageData* data );
+        void            ReadData( vtkstd::string pFileName, vtkImageData* data );
 
 
     protected:

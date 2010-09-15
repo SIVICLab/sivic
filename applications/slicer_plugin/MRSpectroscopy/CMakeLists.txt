@@ -132,21 +132,27 @@ FIND_PATH(DCMTK_DIR dctk.h)
 
 
 
-
 #############################################
 #    Build Test Application
 #############################################
 
 LINK_DIRECTORIES(
-    ../../../libs/${PLATFORM}
-    ../${PLATFORM}
+    /Users/jasonc/sivic/trunk/libs/Darwin_i386_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/../${PLATFORM}_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/${PLATFORM}_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/../${PLATFORM}_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/${PLATFORM}_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/../${PLATFORM}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/${PLATFORM}
     ${DCMTK_DIR}/lib
+/usr/local/dicom/lib
 )
 
 INCLUDE_DIRECTORIES(
     ./
     ../../../libs/src
     ${DCMTK_DIR}/include
+/usr/local/dicom/include
     ${Slicer3_Libs_INCLUDE_DIRS}
     ${Slicer3_Base_INCLUDE_DIRS}
 )

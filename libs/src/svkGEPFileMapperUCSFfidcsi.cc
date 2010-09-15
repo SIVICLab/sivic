@@ -41,6 +41,7 @@
 
 
 #include <svkGEPFileMapperUCSFfidcsi.h>
+#include <vtkDebugLeaks.h>
 
 
 using namespace svk;

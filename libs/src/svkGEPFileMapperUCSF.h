@@ -49,9 +49,6 @@
 namespace svk {
 
 
-using namespace std;
-
-
 /*! 
  *  Mapper from pfile header to DICOM IOD/SOP Class instance, overrides
  *  specific product logic with UCSF research sequence logic. 
