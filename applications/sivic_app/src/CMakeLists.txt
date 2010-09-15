@@ -159,6 +159,7 @@ ADD_LIBRARY(
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
     sivicWindowLevelWidget.cc
+    sivicPreferencesWidget.cc
     sivicKWCompositeWidget.cc
     vtkSivicController.cc
     sivicAppGUI.cc

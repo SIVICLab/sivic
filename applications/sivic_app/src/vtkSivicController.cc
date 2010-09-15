@@ -57,10 +57,12 @@ vtkSivicController::vtkSivicController()
     this->spectraViewWidget = NULL;
     this->windowLevelWidget = NULL;
     this->overlayWindowLevelWidget = NULL;
+    this->preferencesWidget = NULL;
     this->spectraRangeWidget = NULL;
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
     this->windowLevelWindow = NULL;
+    this->preferencesWindow = NULL;
     this->thresholdType = "Quantity";
     this->mainWindow = NULL;
     this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
@@ -105,6 +107,11 @@ vtkSivicController::~vtkSivicController()
     if( this->windowLevelWindow != NULL ) {
         this->windowLevelWindow->Delete();
         this->windowLevelWindow = NULL;
+    }
+
+    if( this->preferencesWindow != NULL ) {
+        this->preferencesWindow->Delete();
+        this->preferencesWindow = NULL;
     }
 
 
@@ -282,6 +289,12 @@ void vtkSivicController::SetWindowLevelWidget( sivicWindowLevelWidget* windowLev
     this->windowLevelWidget->SetModel(this->model);
 }
 
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetPreferencesWidget( sivicPreferencesWidget* preferencesWidget )
+{
+    this->preferencesWidget = preferencesWidget;
+    this->preferencesWidget->SetModel(this->model);
+}
 
 //! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget )
@@ -451,7 +464,7 @@ void vtkSivicController::OpenImage( const char* fileName )
 }
 
 
-void vtkSivicController::OpenSpectra( const char* fileName )
+void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInputFile )
 {
     struct stat st;
     // Lets check to see if the file exists 
@@ -461,7 +474,7 @@ void vtkSivicController::OpenSpectra( const char* fileName )
     }
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
-    svkImageData* newData = model->LoadFile( stringFilename );
+    svkImageData* newData = model->LoadFile( stringFilename, onlyReadOneInputFile );
 
 
     if (newData == NULL) {
@@ -989,7 +1002,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
                 if( stat( lastPathString.c_str(),&st) == 0) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
-            } else if ( strcmp( openType, "spectra" ) == 0 ) {
+            } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "spectra_one_channel") == 0 ) {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/spectra";
                 if( stat( lastPathString.c_str(),&st) == 0) {
@@ -1002,7 +1015,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         // Check to see which extention to filter for.
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Volume Files} {.idf .fdf .dcm .DCM}} {{All files} {.*}}");
-        } else if( strcmp( openType,"spectra" ) == 0 ) {
+        } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 ) {
             dlg->SetFileTypes("{{Complex Data} {.ddf .shf .rda .dcm}} {{All files} {.*}}");
         } else {
             dlg->SetFileTypes("{{All files} {.*}} {{Volume Files} {.idf .fdf .dcm .DCM}} {{Complex Data} {.ddf .shf .rda .dcm}}");
@@ -1048,6 +1061,9 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             this->OpenOverlay( dlg->GetFileName() );
         } else if( openTypeString.compare( "spectra" ) == 0 ) {
             this->OpenSpectra( dlg->GetFileName() );
+        } else if( openTypeString.compare( "spectra_one_channel" ) == 0 ) {
+            bool onlyReadOneInputFile = true;
+            this->OpenSpectra( dlg->GetFileName(), onlyReadOneInputFile );
         } 
     }
 
@@ -1684,6 +1700,53 @@ void vtkSivicController::HighlightSelectionBoxVoxels()
 void vtkSivicController::DisplayInfo()
 {
     app->DisplayHelpDialog( app->GetNthWindow(0) );
+}
+
+//! Callback.
+void vtkSivicController::DisplayPreferencesWindow()
+{
+    if( this->preferencesWindow == NULL ) {
+        this->preferencesWindow = vtkKWWindowBase::New();
+        this->app->AddWindow( this->preferencesWindow );
+        this->preferencesWindow->SetTitle("SIVIC Preferences");
+        this->preferencesWindow->Create();
+        int width;
+        int height;
+        this->mainWindow->GetSize(&width, &height);
+        this->preferencesWindow->SetSize( width, 175);
+        this->preferencesWidget->SetParent( this->preferencesWindow->GetViewFrame() );
+        this->preferencesWidget->Create();
+        this->app->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -pady 2 "
+                , this->preferencesWidget->GetWidgetName(), this->preferencesWindow->GetViewFrame()->GetWidgetName());
+        this->app->Script("grid rowconfigure %s 0  -weight 1"
+                , this->preferencesWindow->GetViewFrame()->GetWidgetName() );
+        this->app->Script("grid columnconfigure %s 0  -weight 1"
+                , this->preferencesWindow->GetViewFrame()->GetWidgetName() );
+    }
+
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+    this->preferencesWindow->Display();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+
+    // Check to see if the window has already been added
+    bool foundPreferencesWindow = false;
+    for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
+        if( app->GetNthWindow(i) == this->preferencesWindow ) {
+            foundPreferencesWindow = true;
+        }
+    }
+
+    // Add Window if not found.
+    if( !foundPreferencesWindow ) {
+        app->AddWindow( this->preferencesWindow );
+    }
 }
 
 

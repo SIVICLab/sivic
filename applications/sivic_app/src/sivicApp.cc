@@ -55,6 +55,7 @@ sivicApp::sivicApp()
     this->spectraViewWidget = sivicSpectraViewWidget::New();
     this->windowLevelWidget = sivicWindowLevelWidget::New();
     this->overlayWindowLevelWidget = sivicWindowLevelWidget::New();
+    this->preferencesWidget = sivicPreferencesWidget::New();
     this->spectraRangeWidget = sivicSpectraRangeWidget::New();
     this->viewRenderingWidget = sivicViewRenderingWidget::New();
     this->globalWidget        = sivicGlobalWidget::New();
@@ -110,6 +111,11 @@ sivicApp::~sivicApp()
     if( this->windowLevelWidget != NULL ) {
         this->windowLevelWidget->Delete();
         this->windowLevelWidget = NULL;
+    }
+
+    if( this->preferencesWidget != NULL ) {
+        this->preferencesWidget->Delete();
+        this->preferencesWidget = NULL;
     }
 
     if( this->overlayWindowLevelWidget != NULL ) {
@@ -256,6 +262,11 @@ int sivicApp::Build( int argc, char* argv[] )
     this->windowLevelWidget->SetSivicController(this->sivicController);
     this->windowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::REFERENCE_IMAGE );
 
+    this->preferencesWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->preferencesWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->preferencesWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->preferencesWidget->SetSivicController(this->sivicController);
+
     this->overlayWindowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
     this->overlayWindowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
     this->overlayWindowLevelWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
@@ -276,6 +287,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
     this->sivicController->SetWindowLevelWidget( windowLevelWidget );
     this->sivicController->SetOverlayWindowLevelWidget( overlayWindowLevelWidget );
+    this->sivicController->SetPreferencesWidget( preferencesWidget );
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetGlobalWidget( globalWidget );
 
@@ -358,17 +370,16 @@ int sivicApp::Build( int argc, char* argv[] )
 #endif
 
 
-    // Now we add the "open" callback
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            0, "&Open", this->sivicController, "OpenFile .* NULL");
+            0, "&Save Data", this->sivicController, "SaveData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            1, "&Save Data", this->sivicController, "SaveData");
+            1, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            2, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
+            2, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            3, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE");
+            3, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            4, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
+            4, "&Open 1 Channel of Spectra", this->sivicController, "OpenFile spectra_one_channel NULL 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             5, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
@@ -387,6 +398,8 @@ int sivicApp::Build( int argc, char* argv[] )
     // Tools menu
     this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
             0, "&Show Window Level", this->sivicController, "DisplayWindowLevelWindow");
+    //this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
+    //        1, "&Preferences", this->sivicController, "DisplayPreferencesWindow");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
             1, "&Run Tests", this->sivicController, "RunTestingSuite");

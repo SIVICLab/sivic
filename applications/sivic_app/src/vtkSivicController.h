@@ -78,6 +78,7 @@
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
 #include <sivicWindowLevelWidget.h>
+#include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
 #if defined( SVK_USE_GL2PS )
@@ -118,6 +119,7 @@ class vtkSivicController : public vtkObject
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
         void                       SetWindowLevelWidget( sivicWindowLevelWidget* windowLevelWidget );
         void                       SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget );
+        void                       SetPreferencesWidget( sivicPreferencesWidget* preferencesWidget );
         void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
         void                       SetSlice( int slice, bool centerImage = true );
         void                       SetImageSlice( int slice, string orientation );
@@ -125,7 +127,7 @@ class vtkSivicController : public vtkObject
         void                       OpenExam( );
         int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);
         void                       OpenImage(   const char* fileName );
-        void                       OpenSpectra( const char* fileName );
+        void                       OpenSpectra( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenOverlay( const char* fileName );
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
@@ -154,6 +156,7 @@ class vtkSivicController : public vtkObject
         void                       HighlightSelectionBoxVoxels();
         void                       DisplayInfo();
         void                       DisplayWindowLevelWindow();
+        void                       DisplayPreferencesWindow();
         void                       RunTestingSuite();
         void                       SetSpecUnitsCallback( int targetUnits );
         void                       SetComponentCallback( int targetComponent );
@@ -215,12 +218,14 @@ class vtkSivicController : public vtkObject
         sivicSpectraViewWidget*        spectraViewWidget;
         sivicWindowLevelWidget*        windowLevelWidget;
         sivicWindowLevelWidget*        overlayWindowLevelWidget;
+        sivicPreferencesWidget*        preferencesWidget;
         sivicGlobalWidget*             globalWidget;
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
         svkDetailedPlotViewController* detailedPlotController;
         svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
         vtkKWWindowBase*               windowLevelWindow;
+        vtkKWWindowBase*               preferencesWindow;
 
 
 };
