@@ -42,31 +42,21 @@
 #ifndef SVK_GE_PFILE_READER_H
 #define SVK_GE_PFILE_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkGlobFileNames.h>
-#include <vtkSortFileNames.h>
-#include <vtkStringArray.h>
 #include <vtkCallbackCommand.h>
 #include <vtkInformation.h>
 
 #include <svkImageReader2.h>
-#include <svkIOD.h>
-#include <svkMRSIOD.h>
-#include <svkByteSwap.h>
 #include <svkGEPFileMapper.h>
 #include <svkGEPFileMapperMBrease.h>
 #include <svkGEPFileMapperUCSF.h>
 #include <svkGEPFileMapperUCSFfidcsi.h>
 
-#include <sys/stat.h>
-#include <map>
+#include <vtkstd/map>
+#include <vtkstd/vector>
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -74,7 +64,7 @@ using namespace std;
  *  BETA RELEASE!!!!!  DEV DEV DEV
  *  ############################## 
  *
- *  This is an svkImareReader2 for reading GE P-files.  
+ *  This is an svkImageReader2 for reading GE P-files.  
  *  The reader supports 9.x - 20.x raw file versions.  The reader
  *  reads fields from GE P-files, putting the content into a string map.
  *  The reader then obtains a svkGEPFileMapper for the specific PSD in order to map 
@@ -102,11 +92,17 @@ class svkGEPFileReader : public svkImageReader2
         static              svkGEPFileReader* New();
         virtual int         CanReadFile( const char* fname );
         svkGEPFileMapper*   GetMapper(); 
-        void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type); 
+        void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type);
         void                SetDeidentify( svkDcmHeader::PHIType phiType ); 
-        void                SetDeidentify( svkDcmHeader::PHIType phiType, string deidentificationId ); 
-        void                SetDeidentify( svkDcmHeader::PHIType phiType, string patientId, string studyId ); 
+        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ); 
+        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ); 
         void                SetTemperature( float temp ); 
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "GE pfile";
+        } 
 
 
     protected:
@@ -123,19 +119,20 @@ class svkGEPFileReader : public svkImageReader2
         void                                     InitOffsetsMap();
         virtual void                             SetProvenance(); 
 
-        map <string, vector< string > >          pfMap;
+        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
+                                                 pfMap;
 
 
     private:
 
         //  Methods:
-        string              GetOffsetsString();
+        vtkstd::string      GetOffsetsString();
         virtual void        InitDcmHeader();
         void                PrintOffsets(); 
         void                PrintKeyValuePairs();
-        string              GetFieldAsString(string key); 
+        vtkstd::string      GetFieldAsString(vtkstd::string key); 
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 
-        string              UncompressUID(const char* compressedUID); 
+        vtkstd::string      UncompressUID(const char* compressedUID); 
         float               GetPFileVersion(); 
         svkGEPFileMapper*   GetPFileMapper(); 
         static void         UpdateProgressCallback(
@@ -153,7 +150,8 @@ class svkGEPFileReader : public svkImageReader2
         float                            pfileVersion;
         svkGEPFileMapper*                mapper;
        
-        map < string, void* >            inputArgs; 
+        vtkstd::map < vtkstd::string, void* >            
+                                         inputArgs; 
 
         vtkCallbackCommand*              progressCallback;
 

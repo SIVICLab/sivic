@@ -41,6 +41,7 @@
 
 
 #include <svkGEPFileMapperMBrease.h>
+#include <vtkDebugLeaks.h>
 
 
 using namespace svk;

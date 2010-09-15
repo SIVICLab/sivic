@@ -42,23 +42,19 @@
 #ifndef SVK_GE_PFILE_MAPPER_H
 #define SVK_GE_PFILE_MAPPER_H
 
-#include <vtkDebugLeaks.h>
+
+#include <vtkImageData.h>
 #include <vtkCallbackCommand.h>
 
 #include <svkDcmHeader.h>
-#include <svkByteSwap.h>
-#include <svkSpecUtils.h>
-#include <svkMrsImageData.h>
 #include <svkImageReader2.h>
 
-#include <map>
-#include <vector>
+#include <vtkstd/map>
+#include <vtkstd/vector>
+#include <vtkstd/string>
 
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*! 
@@ -90,15 +86,37 @@ class svkGEPFileMapper : public vtkObject
         };
 
         virtual void    InitializeDcmHeader(
-                            map < string, vector< string > >  pfMap, 
+                            vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
                             svkDcmHeader* header, 
                             float pfileVersion, 
-                            bool swapBytes, 
-                            map < string, void* >  inputArgs
+                            int swapBytes, 
+                            vtkstd::map < vtkstd::string, void* >  inputArgs
                         );
-        void            ReadData( string pFileName, svkImageData* data );
-        string          GetProgressText( );
-        void            SetProgressText( string progressText );
+        void            ReadData( vtkstd::string pFileName, svkImageData* data );
+        vtkstd::string  GetProgressText( );
+        void            SetProgressText( vtkstd::string progressText );
+
+        // Description:
+        // These methods should be used instead of the SwapBytes methods.
+        // They indicate the byte ordering of the file you are trying
+        // to read in. These methods will then either swap or not swap
+        // the bytes depending on the byte ordering of the machine it is
+        // being run on. For example, reading in a BigEndian file on a
+        // BigEndian machine will result in no swapping. Trying to read
+        // the same file on a LittleEndian machine will result in swapping.
+        // As a quick note most UNIX machines are BigEndian while PC's
+        // and VAX tend to be LittleEndian. So if the file you are reading
+        // in was generated on a VAX or PC, SetDataByteOrderToLittleEndian 
+        // otherwise SetDataByteOrderToBigEndian. 
+        virtual void SetDataByteOrderToBigEndian();
+        virtual void SetDataByteOrderToLittleEndian();
+        virtual const char *GetDataByteOrderAsString();
+
+        // Description:
+        // Set/Get the byte swapping to explicitly swap the bytes of a file.
+        vtkSetMacro(SwapBytes,int);
+        virtual int GetSwapBytes() {return this->SwapBytes;}
+        vtkBooleanMacro(SwapBytes,int);
 
 
     protected:
@@ -168,23 +186,24 @@ class svkGEPFileMapper : public vtkObject
                             int channel = 0
                         );
 
-        int             GetHeaderValueAsInt(string key);
-        float           GetHeaderValueAsFloat(string key);
-        string          GetHeaderValueAsString(string key);
+        int             GetHeaderValueAsInt(vtkstd::string key);
+        float           GetHeaderValueAsFloat(vtkstd::string key);
+        vtkstd::string  GetHeaderValueAsString(vtkstd::string key);
         virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex); 
-        string          ConvertGEDateToDICOM( string geDate ); 
+        vtkstd::string  ConvertGEDateToDICOM( vtkstd::string geDate ); 
 
 
-        string                                  progressText;
+        vtkstd::string                          progressText;
         vtkCallbackCommand*                     progressCallback;
-        map <string, vector< string > >         pfMap;
+        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >         
+                                                pfMap;
         svkDcmHeader*                           dcmHeader; 
-        float                                   pfileVersion; 
-        bool                                    swapBytes; 
+        float                                   pfileVersion;
         int*                                    specData; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         int                                     chopVal; 
-        map < string, void* >                   inputArgs; 
+        vtkstd::map < vtkstd::string, void* >   inputArgs; 
+        int                                     SwapBytes;
 
 };
 
