@@ -80,12 +80,6 @@ svkGEPFileMapper::svkGEPFileMapper()
 svkGEPFileMapper::~svkGEPFileMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-
-    if( this->progressCallback != NULL ) {
-        this->progressCallback->Delete();
-        this->progressCallback = NULL;
-    }
-
 }
 
 //----------------------------------------------------------------------------

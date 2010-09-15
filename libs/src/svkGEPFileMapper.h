@@ -194,7 +194,6 @@ class svkGEPFileMapper : public vtkObject
 
 
         vtkstd::string                          progressText;
-        vtkCallbackCommand*                     progressCallback;
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >         
                                                 pfMap;
         svkDcmHeader*                           dcmHeader; 
