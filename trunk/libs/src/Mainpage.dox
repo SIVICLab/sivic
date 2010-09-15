@@ -1,0 +1,22 @@
+/**
+
+\mainpage
+
+<hr>
+<b>SIVIC -  Spectroscopic Imaging VIsualization and Computing </b>
+
+SIVIC is an open-source standards-based software framework and application suite for processing and visualization of DICOM MR Spectroscopy data. 
+
+<b>Links:</b> 
+<ul>
+    <li>
+        <a href="http://sivic.sourceforge.net/libsvk/html/classes.html"/>SIVIC C++ API.</a>
+    </li>
+    <li>
+        <a href=" https://sourceforge.net/apps/trac/sivic/">Main SIVIC Project Page with links to downloads and applications build from the SIVIC API. </a> 
+    </li>
+</ul>
+
+
+
+*/
