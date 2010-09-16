@@ -407,7 +407,7 @@ void svkDdfVolumeReader::ParseDdf()
         this->ddfHdr->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         int fileIndex = 0; 
-        vtkstd::string currentDdfFileName( this->GetFileNames()->GetValue( fileIndex ) );
+        vtkstd::string currentDdfFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".ddf";
 
         this->ddfHdr->open( currentDdfFileName.c_str(), ifstream::in );
 
