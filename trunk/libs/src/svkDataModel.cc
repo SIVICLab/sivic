@@ -244,7 +244,7 @@ string svkDataModel::GetDataFileName(string objectName)
  *  \return an svkImageData pointer to the loaded object or NULL if 
  *          file could not be loaded. 
  */
-svkImageData* svkDataModel::LoadFile( string fileName )
+svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
 {
     float* imageOrigin;
     svkImageData* myData = NULL;
@@ -259,11 +259,13 @@ svkImageData* svkDataModel::LoadFile( string fileName )
         reader->Delete();
         reader = NULL;
     }
-
     reader = readerFactory->CreateImageReader2(fileName.c_str());
     readerFactory->Delete();
 
     if (reader != NULL) {
+        if( onlyOneInputFile ) {
+            reader->OnlyReadOneInputFile();
+        }
         reader->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         reader->SetFileName( fileName.c_str() );
         reader->Update();

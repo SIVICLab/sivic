@@ -47,8 +47,6 @@
 #include <vtkMatrix4x4.h>
 #include <vtkByteSwap.h>
 
-#define SVK_FILE_BYTE_ORDER_BIG_ENDIAN 0
-#define SVK_FILE_BYTE_ORDER_LITTLE_ENDIAN 1
 
 using namespace svk;
 
@@ -71,9 +69,6 @@ svkVarianFidMapper::svkVarianFidMapper()
 
     this->specData = NULL;
 
-    // Set the byte ordering, as big-endian.
-    this->SetDataByteOrderToBigEndian();
-
 }
 
 
@@ -91,49 +86,6 @@ svkVarianFidMapper::~svkVarianFidMapper()
 
 }
 
-//----------------------------------------------------------------------------
-void svkVarianFidMapper::SetDataByteOrderToBigEndian()
-{
-#ifndef VTK_WORDS_BIGENDIAN
-  this->SwapBytesOn();
-#else
-  this->SwapBytesOff();
-#endif
-}
-
-//----------------------------------------------------------------------------
-void svkVarianFidMapper::SetDataByteOrderToLittleEndian()
-{
-#ifdef VTK_WORDS_BIGENDIAN
-  this->SwapBytesOn();
-#else
-  this->SwapBytesOff();
-#endif
-}
-
-//----------------------------------------------------------------------------
-const char *svkVarianFidMapper::GetDataByteOrderAsString()
-{
-#ifdef VTK_WORDS_BIGENDIAN
-  if ( this->SwapBytes )
-    {
-    return "LittleEndian";
-    }
-  else
-    {
-    return "BigEndian";
-    }
-#else
-  if ( this->SwapBytes )
-    {
-    return "BigEndian";
-    }
-  else
-    {
-    return "LittleEndian";
-    }
-#endif
-}
 
 /*!
  *  Initializes the svkDcmHeader adapter to a specific IOD type      
@@ -141,11 +93,12 @@ const char *svkVarianFidMapper::GetDataByteOrderAsString()
  *  object.    
  */
 void svkVarianFidMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >  procparMap, 
-    svkDcmHeader* header, svkMRSIOD* iod) 
+    svkDcmHeader* header, svkMRSIOD* iod, int swapBytes) 
 {
     this->procparMap = procparMap; 
     this->dcmHeader = header; 
     this->iod = iod;   
+    this->swapBytes = swapBytes; 
 
     this->ConvertCmToMm(); 
 
@@ -1166,7 +1119,7 @@ void svkVarianFidMapper::ReadFidFile( vtkstd::string fidFileName, vtkImageData* 
     /*
      *  FID files are bigendian.
      */
-    if ( this->GetSwapBytes() ) {
+    if ( this->swapBytes ) {
         vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInVol/pixelWordSize, pixelWordSize);
     }
 

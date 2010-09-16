@@ -71,9 +71,6 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-    // Set the byte ordering, as big-endian.
-    this->SetDataByteOrderToBigEndian();
-
     this->paddedData = NULL;
 
     this->numXReordered = 16;
@@ -1011,7 +1008,7 @@ void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
     /*
      *  FID files are bigendian.
      */
-    if ( this->GetSwapBytes() ) {
+    if ( this->swapBytes ) {
         vtkByteSwap::SwapVoidRange((void *)specData, numBytesInVol/pixelWordSize, pixelWordSize);
     }
 

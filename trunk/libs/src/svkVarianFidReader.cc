@@ -70,6 +70,8 @@ svkVarianFidReader::svkVarianFidReader()
     this->procparFile = NULL;
     this->mapper = NULL;
 
+    //  data is written as big endian:
+    this->SetDataByteOrderToBigEndian();
 }
 
 
@@ -215,8 +217,9 @@ void svkVarianFidReader::InitDcmHeader()
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
         procparMap,
-        this->GetOutput()->GetDcmHeader(), 
-        iod     
+        this->GetOutput()->GetDcmHeader(),
+        iod,
+        this->GetSwapBytes()
     );
 
     if (this->GetDebug()) {

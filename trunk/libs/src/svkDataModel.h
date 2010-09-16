@@ -105,7 +105,7 @@ class svkDataModel : public vtkObject
         virtual string          GetDataFileName( string objectName );
 
         // File loaders 
-        virtual svkImageData*   LoadFile( string fileName );
+        virtual svkImageData*   LoadFile( string fileName, bool onlyOneInputFile = false );
         svkDcmHeader*           GetDcmHeader( string fileName );
         virtual svkImageData*   AddFileToModel(string objectName, string fileName);
        
