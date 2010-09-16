@@ -142,7 +142,7 @@ class svkGEPFileReader : public svkImageReader2
                                 void* callData
                             );
         void                FillInMissingInfo(); 
-        void                SetByteSwapping(); 
+        void                SetDataByteOrder(); 
         void                DeidentifyData(); 
 
         //  Members:

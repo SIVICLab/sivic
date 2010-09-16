@@ -131,7 +131,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         if ( this->gepf->is_open() ) {
 
             this->pfileVersion = this->GetPFileVersion(); 
-            this->SetByteSwapping(); 
+            this->SetDataByteOrder(); 
         
             if ( this->pfileVersion ) {
 
@@ -329,6 +329,8 @@ void svkGEPFileReader::InitDcmHeader()
 
     //  Fill in data set specific values using the appropriate mapper type:
     this->mapper = this->GetPFileMapper(); 
+
+    cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
 
     //  all the IE initialization modules would be contained within the 
     this->mapper->InitializeDcmHeader( 
@@ -545,7 +547,7 @@ void svkGEPFileReader::ParsePFile()
 {
 
     this->pfileVersion = this->GetPFileVersion(); 
-    this->SetByteSwapping(); 
+    this->SetDataByteOrder();
     this->InitOffsetsMap(); 
 
     vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
@@ -631,34 +633,21 @@ void svkGEPFileReader::PrintKeyValuePairs()
 
 
 /*!
- *  Sets byte swapping based on native platform of scanner version 
+ *  Sets the byte order of the raw file based on it's version 
  *  needs to be more granular for platform/arch. 
  */
-void svkGEPFileReader::SetByteSwapping()
+void svkGEPFileReader::SetDataByteOrder()
 {
     //  These were acquired on SGI (bigendian)
     if (this->pfileVersion < 11) {
 
-#if defined (linux) 
-        this->SwapBytesOn(); 
-#elif defined (Darwin) 
-        this->SwapBytesOn(); 
-#else
-        this->SwapBytesOff(); 
-#endif
+        this->SetDataByteOrderToBigEndian();
 
-    //  These were acquired on linux (little endian)
     } else if (this->pfileVersion >= 11) {
 
-#if defined (linux) 
-        this->SwapBytesOff(); 
-#elif defined (Darwin) 
-        this->SwapBytesOff(); 
-#else
-        this->SwapBytesOn(); 
-#endif
+        this->SetDataByteOrderToLittleEndian();
+
     }
-        
 }
 
 

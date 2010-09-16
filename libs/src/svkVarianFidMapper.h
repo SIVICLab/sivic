@@ -78,36 +78,14 @@ class svkVarianFidMapper : public vtkObject
         vtkTypeRevisionMacro( svkVarianFidMapper, vtkObject );
 
         virtual void    InitializeDcmHeader(
-                            vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    procparMap, 
-                            svkDcmHeader* header, 
-                            svkMRSIOD* iod 
+                            vtkstd::map <vtkstd::string, vtkstd::vector < vtkstd::vector<vtkstd::string> > >    procparMap,
+                            svkDcmHeader* header,
+                            svkMRSIOD* iod,
+                            int        swapBytes  
                         );
 
         virtual void    ReadFidFile( vtkstd::string fidFileName, vtkImageData* data );
         
-        // Description:
-        // These methods should be used instead of the SwapBytes methods.
-        // They indicate the byte ordering of the file you are trying
-        // to read in. These methods will then either swap or not swap
-        // the bytes depending on the byte ordering of the machine it is
-        // being run on. For example, reading in a BigEndian file on a
-        // BigEndian machine will result in no swapping. Trying to read
-        // the same file on a LittleEndian machine will result in swapping.
-        // As a quick note most UNIX machines are BigEndian while PC's
-        // and VAX tend to be LittleEndian. So if the file you are reading
-        // in was generated on a VAX or PC, SetDataByteOrderToLittleEndian 
-        // otherwise SetDataByteOrderToBigEndian. 
-        virtual void SetDataByteOrderToBigEndian();
-        virtual void SetDataByteOrderToLittleEndian();
-        virtual const char *GetDataByteOrderAsString();
-
-        // Description:
-        // Set/Get the byte swapping to explicitly swap the bytes of a file.
-        vtkSetMacro(SwapBytes,int);
-        virtual int GetSwapBytes() {return this->SwapBytes;}
-        vtkBooleanMacro(SwapBytes,int);
-
-
     protected:
 
         svkVarianFidMapper();
@@ -167,7 +145,7 @@ class svkVarianFidMapper : public vtkObject
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
         svkMRSIOD*                                  iod;
-        int                                         SwapBytes; 
+        int                                         swapBytes; 
 
 };
 

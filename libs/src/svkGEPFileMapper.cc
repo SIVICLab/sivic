@@ -68,9 +68,6 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
-
-    // Set the byte ordering, as little-endian.
-    this->SetDataByteOrderToLittleEndian();
 }
 
 
@@ -80,50 +77,6 @@ svkGEPFileMapper::svkGEPFileMapper()
 svkGEPFileMapper::~svkGEPFileMapper()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-}
-
-//----------------------------------------------------------------------------
-void svkGEPFileMapper::SetDataByteOrderToBigEndian()
-{
-#ifndef VTK_WORDS_BIGENDIAN
-  this->SwapBytesOn();
-#else
-  this->SwapBytesOff();
-#endif
-}
-
-//----------------------------------------------------------------------------
-void svkGEPFileMapper::SetDataByteOrderToLittleEndian()
-{
-#ifdef VTK_WORDS_BIGENDIAN
-  this->SwapBytesOn();
-#else
-  this->SwapBytesOff();
-#endif
-}
-
-//----------------------------------------------------------------------------
-const char *svkGEPFileMapper::GetDataByteOrderAsString()
-{
-#ifdef VTK_WORDS_BIGENDIAN
-  if ( this->SwapBytes )
-    {
-    return "LittleEndian";
-    }
-  else
-    {
-    return "BigEndian";
-    }
-#else
-  if ( this->SwapBytes )
-    {
-    return "BigEndian";
-    }
-  else
-    {
-    return "LittleEndian";
-    }
-#endif
 }
 
 
@@ -138,7 +91,7 @@ void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
-    this->SwapBytes = swapBytes;
+    this->swapBytes = swapBytes;
     this->inputArgs = inputArgs;
     this->InitPatientModule();
     this->InitGeneralStudyModule();
@@ -2315,7 +2268,7 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
     pFile->seekg(readOffset, ios::beg);
     pFile->read( (char*)(this->specData), numBytesInPFile);
     
-    if ( this->GetSwapBytes() ) {
+    if ( this->swapBytes ) {
         vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInPFile/dataWordSize, dataWordSize);
     }
 
