@@ -223,7 +223,7 @@ void svkDdfVolumeWriter::WriteFiles()
 
             //  cmplx files are by definition big endian:
             #ifndef VTK_WORDS_BIGENDIAN
-                    vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
+                vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
             #endif
 
             cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
