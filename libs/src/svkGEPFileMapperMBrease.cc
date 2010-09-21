@@ -77,7 +77,7 @@ svkGEPFileMapperMBrease::~svkGEPFileMapperMBrease()
 
 /*!
  *  Determine number of time points in the PFile. 
- *  For mbrease, there are suppressed, unsupporesed 
+ *  For mbrease, there are suppressed, unsuppressed 
  *  acquisitions in the same data set.  There is 1 dummy
  *  scan before each coil:
  *      coil 1: dummy + unsuppressed_scans + suppressed_scans
