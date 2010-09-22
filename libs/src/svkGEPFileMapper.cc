@@ -2529,10 +2529,6 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
             tuple[1] = chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
             dataArray->SetTuple( i, tuple );  
         }
-if ( (x == 0 || x == 17) && ( y == 0 || y == 17) && z == 0 ) {
-    cout << "value(coil = " << coilNum << " ,time = " << timePoint << " ) = " << specData[offset] << endl;
-    cout << "value(coil = " << coilNum << " ,time = " << timePoint << " ) = " << specData[offset + 1] << endl;
-}
     } else {
         tuple[0] = 0;  
         tuple[1] = 0; 
@@ -2540,13 +2536,6 @@ if ( (x == 0 || x == 17) && ( y == 0 || y == 17) && z == 0 ) {
             dataArray->SetTuple( i, tuple );  
         }
     }
-
-if ( (x == 0 || x == 17) && ( y == 0 || y == 17) && z == 0 ) {
-    cout << "CHECK IT: " << endl;
-    vtkDataArray* dataArrayTmp = data->GetCellData()->GetArray(index); 
-    cout << "tuple: " << ( dataArrayTmp->GetTuple(0) )[0] << endl;
-    cout << "tuple: " << ( dataArrayTmp->GetTuple(0) )[1] << endl;
-}
 
     return;
 }
