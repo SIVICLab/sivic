@@ -141,6 +141,8 @@ class svkGEPFileMapper : public vtkObject
         int             GetNumCoils(); 
         int             GetNumFrames(); 
         virtual int     GetNumTimePoints(); 
+        int             GetNumDummyScans(); 
+        bool            AddDummy( int offset, int coilNum, int timePt ); 
         void            GetDcos( double dcos[3][3] ); 
         float           GetPPMRef(); 
         bool            IsSwapOn(); 

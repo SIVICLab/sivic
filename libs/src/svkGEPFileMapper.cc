@@ -2172,6 +2172,89 @@ int svkGEPFileMapper::GetNumTimePoints()
 
 
 /*!
+ *  Determine whether to add a dummy scan. The assumption is that
+ *  the number of dummy scans should be equal to the number of coils 
+ *  or numCoils * numTimePts (e.g. for a spectral editing sequence). 
+ *  If true, then the an FID worth of data should be skipped over when 
+ *  reading data (e.g. frame_size * numComponents, or numFreqPts * numComponents) 
+ */
+bool svkGEPFileMapper::AddDummy( int offset, int coilNum, int timePt ) 
+{
+
+    int numDummyScans = this->GetNumDummyScans();  
+    int numCoils = this->GetNumCoils(); 
+    int numTimePoints = this->GetNumTimePoints();
+    int numSampledVoxels = this->GetNumKSpacePoints(); 
+    int numFreqPoints = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 
+    int numComponents = 2; 
+    int numPointsPerFID = numFreqPoints * numComponents; 
+
+    int numWordsBetweenDummies; 
+    //  subtract the number of dummy words from the current offset to see if another 
+    //  dummy scan should be skipped or not 
+    if ( numDummyScans == numCoils )  {
+        numWordsBetweenDummies = numSampledVoxels * numPointsPerFID * numTimePoints;  
+        offset = offset - (coilNum * numPointsPerFID);
+        //  additional time points have an offset that includes the 
+        //  per-coil dummy 
+        if (timePt > 1 ) {
+            offset = offset - (numPointsPerFID);
+        }
+    } else if ( numDummyScans == (numCoils * numTimePoints) )  {
+        numWordsBetweenDummies = numSampledVoxels * numPointsPerFID;
+        offset = offset - (coilNum * numPointsPerFID) - ( ( coilNum + timePt ) * numPointsPerFID );
+    } else {
+        cerr << "ERROR: Can not determine placement of dummy scans in raw file reader. \n"; 
+        exit(1); 
+    }
+
+    bool addDummy = false; 
+    if ( ( offset % numWordsBetweenDummies ) == 0 ) {
+        addDummy = true; 
+    }
+
+    return addDummy; 
+
+}
+
+
+/*!
+ *  Determine number of dummy scans (FIDs) in the data block. 
+ *  This is the difference between the raw pass size and the 
+ *  expected size of the data based on numCoils, numTimePts, numKSpacePts
+ *  and numFreqPts. 
+ */
+int svkGEPFileMapper::GetNumDummyScans()
+{
+
+    int passSize = this->GetHeaderValueAsInt( "rhr.rh_raw_pass_size" ); 
+    int numCoils = this->GetNumCoils(); 
+    int numTimePoints = this->GetNumTimePoints();
+    int numSampledVoxels = this->GetNumKSpacePoints(); 
+    int numFreqPoints = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 
+    int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
+
+    vtkstd::string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
+    int numComponents;
+    if ( dataRepresentation == "COMPLEX" ) {
+        numComponents = 2;
+    } else {
+        numComponents = 1;
+    }
+
+    //  Calc the diff between the size of the data buffer and the number of real data points
+    //  then divide by the number of bytes in a single fid to get the number of dummy FIDs
+    int numDummyScans =
+         passSize  - ( numCoils * numTimePoints * numSampledVoxels * numFreqPoints * numComponents * dataWordSize ); 
+
+    numDummyScans = numDummyScans / ( numFreqPoints * numComponents * dataWordSize);
+
+    return numDummyScans; 
+
+}
+
+
+/*!
  *   Number of frames is number of slices * numCoils * numTimePoints
  */
 int svkGEPFileMapper::GetNumFrames()
@@ -2245,28 +2328,38 @@ bool svkGEPFileMapper::WasIndexSampled(int indexX, int indexY, int indexZ)
 void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
 {
 
-    ifstream* pFile = new ifstream();
-    pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-
-    pFile->open( pFileName.c_str(), ios::binary);
-
-    int numComponents =  2; 
     int numCoils = this->GetNumCoils(); 
     int numTimePts = this->GetNumTimePoints(); 
     int numSpecPts = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 
+    int numComponents =  2; 
     int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
         
     int numBytesInVol = this->GetNumKSpacePoints() * numSpecPts * numComponents * dataWordSize; 
     int numBytesInPFile = numBytesInVol * numTimePts * numCoils; 
-    //  one dummy spectrum per coil:
-    int numDummyBytes = numCoils * numSpecPts * numComponents * dataWordSize; 
+
+    int numPtsPerSpectrum = numSpecPts * numComponents;
+
+    //  one dummy spectrum per volume/coil:
+    int numDummyBytes = this->GetNumDummyScans() * numPtsPerSpectrum * dataWordSize; 
+
     numBytesInPFile += numDummyBytes;  
     this->specData = new int[ numBytesInPFile / dataWordSize ];  
 
-    pFile->seekg(0, ios::beg);
-    int readOffset = this->GetHeaderValueAsInt( "rhr.rdb_hdr_off_data" );
-    pFile->seekg(readOffset, ios::beg);
-    pFile->read( (char*)(this->specData), numBytesInPFile);
+    ifstream* pFile = new ifstream();
+    pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+
+    try {
+        pFile->open( pFileName.c_str(), ios::binary);
+    
+        pFile->seekg(0, ios::beg);
+        int readOffset = this->GetHeaderValueAsInt( "rhr.rdb_hdr_off_data" );
+        pFile->seekg(readOffset, ios::beg);
+        pFile->read( (char*)(this->specData), numBytesInPFile);
+
+    } catch (ifstream::failure e) {
+        cout << "ERROR: Exception opening/reading file " << pFileName << " => " << e.what() << endl;
+        exit(1); 
+    }
     
     if ( this->swapBytes ) {
         vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInPFile/dataWordSize, dataWordSize);
@@ -2291,9 +2384,8 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
     }
 
     int offset = 0; 
-    //  Blank scan, one spectrum per channel.
+    //  Blank scan prepended to data blocks.
     int dummyOffset = 0; 
-    int numPtsPerSpectrum = numSpecPts * numComponents;
     dummyOffset = numPtsPerSpectrum; 
 
     //  If Chop On, then reinitialize chopVal:
@@ -2310,9 +2402,12 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
 
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
 
-        offset += dummyOffset;  
-
         for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+            //  Should a dummy scan be skipped over? 
+            if ( this->AddDummy( offset, coilNum, timePt ) ) {
+                offset += dummyOffset;  
+            }
 
             ostringstream progressStream;
             progressStream <<"Reading Time Point " << timePt+1 << "/"
@@ -2398,9 +2493,6 @@ void svkGEPFileMapper::GetXYZIndices(int index0, int index1, int index2, int* x,
 void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int offset, int index, int x, int y, int z, int timePoint, int coilNum)
 {
 
-    //  Set XY points to plot 
-    //vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
-
     //  Add the spectrum's dataArray to the CellData:
     //  vtkCellData is a subclass of vtkFieldData
     //  If the data is swapped, the array index needs 
@@ -2437,6 +2529,10 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
             tuple[1] = chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
             dataArray->SetTuple( i, tuple );  
         }
+if ( (x == 0 || x == 17) && ( y == 0 || y == 17) && z == 0 ) {
+    cout << "value(coil = " << coilNum << " ,time = " << timePoint << " ) = " << specData[offset] << endl;
+    cout << "value(coil = " << coilNum << " ,time = " << timePoint << " ) = " << specData[offset + 1] << endl;
+}
     } else {
         tuple[0] = 0;  
         tuple[1] = 0; 
@@ -2444,6 +2540,13 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
             dataArray->SetTuple( i, tuple );  
         }
     }
+
+if ( (x == 0 || x == 17) && ( y == 0 || y == 17) && z == 0 ) {
+    cout << "CHECK IT: " << endl;
+    vtkDataArray* dataArrayTmp = data->GetCellData()->GetArray(index); 
+    cout << "tuple: " << ( dataArrayTmp->GetTuple(0) )[0] << endl;
+    cout << "tuple: " << ( dataArrayTmp->GetTuple(0) )[1] << endl;
+}
 
     return;
 }
