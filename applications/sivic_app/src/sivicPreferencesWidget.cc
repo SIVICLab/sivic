@@ -76,7 +76,7 @@ void sivicPreferencesWidget::RestorePreferencesFromRegistry( )
  */
 bool sivicPreferencesWidget::GetReadOnlyOneInputFile()
 {
-
+    return false; 
 }
 
 /*! 
