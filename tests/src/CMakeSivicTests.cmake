@@ -51,9 +51,9 @@ SET( TEST_RESULTS_ROOT ${SVK_TEST_ROOT}/results_tmp)
 
 #############################################################
 #   Flags for diff to avoid errors from minor differences in 
-#   paths and rootnames in header files. 
+#   paths and rootnames in header files and provenance. 
 #############################################################
-SET( DIFF_OPT --ignore-matching-lines=SVK_CMD --ignore-matching-lines=root)
+SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
 
 
 #############################################################
