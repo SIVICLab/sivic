@@ -398,7 +398,7 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::str
  *  Sets string to use for identification.  All PHI fields will be replace with this 
  *  value. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string studyId, vtkstd::string patientId ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ) 
 {
     svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
     vtkstd::string* patIdTmp = new vtkstd::string(patientId);
