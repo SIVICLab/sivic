@@ -45,6 +45,8 @@
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageData.h>
+#include <svkMriImageData.h>
+#include <svkMrsImageData.h>
 #include <vtkCamera.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
