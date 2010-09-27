@@ -87,7 +87,7 @@ void svkTestUtils::SaveWindow( vtkWindow* window, string fileName )
         vtkJPEGWriter* tmp = vtkJPEGWriter::SafeDownCast( writer );
         tmp->SetQuality(100);
     }
-
+    writerFactory->Delete();
     vtkWindowToImageFilter* w2i = vtkWindowToImageFilter::New();
     w2i->SetInput(window);
 
