@@ -42,6 +42,7 @@
 
 #include <svkImageReaderFactory.h>
 #include <svkImageData.h>
+#include <svkMrsImageData.h>
 using namespace svk;
 
 
