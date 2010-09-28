@@ -176,7 +176,7 @@ void DefaultTest()
     plotController->SetRWInteractor( rwi );
 
     svkSpecPoint* point = svkSpecPoint::New();
-    point->SetDataHdr( spectra->GetDcmHeader() );
+    //point->SetDataHdr( spectra->GetDcmHeader() );
 
     window->SetSize(600,600);
     //plotController->SetUnits( svkSpecPoint::PPM);
