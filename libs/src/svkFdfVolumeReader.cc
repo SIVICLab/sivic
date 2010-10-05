@@ -110,7 +110,7 @@ svkFdfVolumeReader::~svkFdfVolumeReader()
 
 
 /*!
- *
+ *  Sets options for scaling input floating point data to 16 bit integers.
  */
 void svkFdfVolumeReader::ScaleTo16Bit( bool scaleTo16Bit, bool scaleToSignedShort, bool scaleToPositiveRange )
 {
@@ -1333,7 +1333,8 @@ void svkFdfVolumeReader::PrintKeyValuePairs()
 
 
 /*!
- *  Map 
+ *  Performs a linear mapping of floating point image values to 16 bit integer dynamic range, either
+ *  signed or unsigned and using the full or positive only dynamic range. 
  */
 void svkFdfVolumeReader::MapFloatValuesTo16Bit(vtkFloatArray* fltArray, vtkDataArray* dataArray)
 {
