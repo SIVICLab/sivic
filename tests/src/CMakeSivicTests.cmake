@@ -69,7 +69,7 @@ SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
 ########################
 #   20X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_1)
+SET( TEST_NAME TEST_MCHK_1)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20_x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -81,7 +81,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   15X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_3)
+SET( TEST_NAME TEST_MCHK_3)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/15x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -93,7 +93,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   14X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_5)
+SET( TEST_NAME TEST_MCHK_5)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/14x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -105,7 +105,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   12X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_7)
+SET( TEST_NAME TEST_MCHK_7)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/12x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -117,7 +117,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   11X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_9)
+SET( TEST_NAME TEST_MCHK_9)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/11x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/11x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -129,7 +129,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   9X GE Raw to DDF
 ########################
-#SET( TEST_NAME TEST_6)
+#SET( TEST_NAME TEST_MCHK_6)
 #SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/9x)
 #ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/9x_raw -o out -t 2" )
 
@@ -137,7 +137,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   UCSF ddf to UCSF DDF
 ########################
-SET( TEST_NAME TEST_11)
+SET( TEST_NAME TEST_MCHK_11)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20x_1.ddf -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -149,7 +149,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   DICOM MRI to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_13)
+SET( TEST_NAME TEST_MCHK_13)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E0000S4I1.DCM -o${TEST_RESULTS_PATH}/out -t 3 )
@@ -161,19 +161,19 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   UCSF IDF to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_15)
+SET( TEST_NAME TEST_MCHK_15)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol.idf -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_16)
+SET( TEST_NAME TEST_MCHK_16)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   VARIAN fdf to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_17)
+SET( TEST_NAME TEST_MCHK_17)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fdf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/lac.0001.fdf -o${TEST_RESULTS_PATH}/out -t 3 )
@@ -185,7 +185,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   VARIAN fid to UCSF DDF 
 ########################
-SET( TEST_NAME TEST_19)
+SET( TEST_NAME TEST_MCHK_19)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -197,7 +197,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   GE Signa 5x to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_21)
+SET( TEST_NAME TEST_MCHK_21)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E8668S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
@@ -209,7 +209,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   GE Signa 5x V2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_23)
+SET( TEST_NAME TEST_MCHK_23)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5XVersion2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E18636S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
@@ -221,7 +221,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   GE Signa 5x V2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_25)
+SET( TEST_NAME TEST_MCHK_25)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/SignaLX2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E12916S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
@@ -233,7 +233,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   SIEMENS RDA to DICOM DDF
 ########################
-SET( TEST_NAME TEST_27)
+SET( TEST_NAME TEST_MCHK_27)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/siemens_rda/sv)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/sample.rda -o${TEST_RESULTS_PATH}/out -t 2 )
@@ -245,7 +245,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   DICOM MRS to DICOM MRS 
 ########################
-SET( TEST_NAME TEST_29)
+SET( TEST_NAME TEST_MCHK_29)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/mrs.dcm -o${TEST_RESULTS_PATH}/out.dcm -t 4 )
@@ -257,8 +257,8 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   PFile Reader Tests: 
 ########################
-SET( TEST_NAME TEST_31)
-SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/out_4)
+SET( TEST_NAME TEST_MCHK_31)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/ )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -as )
 
@@ -269,8 +269,8 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   PFile Reader Tests: 
 ########################
-SET( TEST_NAME TEST_33)
-SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/out_6)
+SET( TEST_NAME TEST_MCHK_33)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID )
 
@@ -281,8 +281,8 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   PFile Reader Tests: 
 ########################
-SET( TEST_NAME TEST_35)
-SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/out)
+SET( TEST_NAME TEST_MCHK_35)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_lac_flyback)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/14x_lac_flyback -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID )
 
