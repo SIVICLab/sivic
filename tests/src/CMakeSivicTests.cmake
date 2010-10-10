@@ -166,7 +166,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol.idf -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_MCHK_16)
+SET( TEST_NAME TEST_16)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
@@ -284,7 +284,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 SET( TEST_NAME TEST_MCHK_35)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_lac_flyback)
-ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/14x_lac_flyback -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID )
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/14x_lac_flyback -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID --one_time_pt)
 
 SET( TEST_NAME TEST_36)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
