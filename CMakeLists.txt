@@ -41,7 +41,7 @@ option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
 option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 
-ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.6\"' )
+ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.7\"' )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION='6' )
 
