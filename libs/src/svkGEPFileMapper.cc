@@ -2519,14 +2519,14 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
     //  Default, chop is off, so multiply all values by 1
     //  Only chop sampled data points.
     if ( IsChopOn() && wasSampled ) {
-       chopVal *= -1;  
+       this->chopVal *= -1;  
     }
 
     float tuple[2];
     if ( wasSampled ) {
         for (int i = 0; i < numFreqPts; i++) {
-            tuple[0] = chopVal * this->specData[ offset + (i * numComponents) ]; 
-            tuple[1] = chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
+            tuple[0] = this->chopVal * this->specData[ offset + (i * numComponents) ]; 
+            tuple[1] = this->chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
             dataArray->SetTuple( i, tuple );  
         }
     } else {

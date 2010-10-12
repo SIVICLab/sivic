@@ -119,3 +119,15 @@ int svkGEPFileMapperMBrease::GetNumberSuppressedAcquisitions()
     return numSuppressed;
 }
 
+
+/*!
+ *  Is data chopped?
+ *  suppressed data:  yes
+ */
+bool svkGEPFileMapperMBrease::IsChopOn()
+{
+    bool chop = true ;
+
+    return chop;
+}
+
