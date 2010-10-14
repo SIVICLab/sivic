@@ -494,6 +494,7 @@ class svkDcmHeader: public vtkObject
                             ); 
         int                 GetNumberOfTimePoints(); 
         void                UpdateNumTimePoints(); 
+        void                UpdateNumCoils();
 
         int                 GetDimensionIndexPosition(string indexLabel); 
         int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
@@ -522,6 +523,7 @@ class svkDcmHeader: public vtkObject
         double                      origin0[3]; 
         double                      orientation[2][3]; 
         int                         numTimePts;
+        int                         numCoils;
         unsigned long               lastUpdateTime; 
         DcmDataOrderingDirection    dataSliceOrder;
 

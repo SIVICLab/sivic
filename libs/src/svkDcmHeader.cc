@@ -419,6 +419,7 @@ void svkDcmHeader::UpdateSpatialParams()
     //  
     this->lastUpdateTime = this->GetMTime();
     this->UpdateNumTimePoints();
+    this->UpdateNumCoils();
     this->UpdateOrientation();
     this->UpdatePixelSize();
     this->UpdateOrigin0();
@@ -619,13 +620,27 @@ void svkDcmHeader::UpdateOrigin0()
  */
 int svkDcmHeader::GetNumberOfCoils()
 {
-    int numCoils = 1;
+
+    if ( this->WasModified() ) {
+        this->UpdateSpatialParams();
+    }
+
+    return this->numCoils; 
+
+}
+
+
+/*!
+ *
+ */
+void svkDcmHeader::UpdateNumCoils()
+{
+    this->numCoils = 1;
 
     //  Determine which index in the DimensionIndexValues attribute represents
     //  the coil number index.  Should use "DimensionIndexPointer" (to do).
     int coilIndexNumber = this->GetDimensionIndexPosition( "Coil Number" ); 
-    numCoils = this->GetNumberOfFramesInDimension( coilIndexNumber ); 
-    return numCoils;
+    this->numCoils = this->GetNumberOfFramesInDimension( coilIndexNumber ); 
 }
 
 
