@@ -2180,7 +2180,6 @@ int svkGEPFileMapper::GetNumTimePoints()
  */
 bool svkGEPFileMapper::AddDummy( int offset, int coilNum, int timePt ) 
 {
-
     int numDummyScans = this->GetNumDummyScans();  
     int numCoils = this->GetNumCoils(); 
     int numTimePoints = this->GetNumTimePoints();
@@ -2335,15 +2334,19 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
     int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
         
     int numBytesInVol = this->GetNumKSpacePoints() * numSpecPts * numComponents * dataWordSize; 
-    int numBytesInPFile = numBytesInVol * numTimePts * numCoils; 
+    int numBytesPerCoil = numBytesInVol * numTimePts; 
+    int numBytesInPFile = numBytesInVol * numCoils; 
 
     int numPtsPerSpectrum = numSpecPts * numComponents;
 
     //  one dummy spectrum per volume/coil:
     int numDummyBytes = this->GetNumDummyScans() * numPtsPerSpectrum * dataWordSize; 
+    int numDummyBytesPerCoil = numDummyBytes/numCoils;  
 
-    numBytesInPFile += numDummyBytes;  
-    this->specData = new int[ numBytesInPFile / dataWordSize ];  
+    numBytesPerCoil += numDummyBytesPerCoil;  
+
+    //  Only read in one coil at a time to reduce memory footprint
+    this->specData = new int[ numBytesPerCoil / dataWordSize ];  
 
     ifstream* pFile = new ifstream();
     pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
@@ -2354,17 +2357,12 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
         pFile->seekg(0, ios::beg);
         int readOffset = this->GetHeaderValueAsInt( "rhr.rdb_hdr_off_data" );
         pFile->seekg(readOffset, ios::beg);
-        pFile->read( (char*)(this->specData), numBytesInPFile);
 
     } catch (ifstream::failure e) {
         cout << "ERROR: Exception opening/reading file " << pFileName << " => " << e.what() << endl;
         exit(1); 
     }
     
-    if ( this->swapBytes ) {
-        vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesInPFile/dataWordSize, dataWordSize);
-    }
-
     int numVoxels[3]; 
     this->GetNumVoxels( numVoxels ); 
 
@@ -2383,6 +2381,8 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
         dataArray->Delete(); 
     }
 
+    //  Offset is the offset within the current block of loaded data (i.e. within
+    //  a given coil.  
     int offset = 0; 
     //  Blank scan prepended to data blocks.
     int dummyOffset = 0; 
@@ -2400,13 +2400,24 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
     int z; 
     int index; 
 
+    //  pFileOOffset is the offset of the current data set within the pFile (i.e. a global data offset). 
+    //  a given coil.  
+    int pFileOffset = 0;  
+
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        offset = 0; 
+
+        pFile->read( (char*)(this->specData), numBytesPerCoil);
+        if ( this->swapBytes ) {
+            vtkByteSwap::SwapVoidRange((void *)this->specData, numBytesPerCoil / dataWordSize, dataWordSize);
+        }
 
         for (int timePt = 0; timePt < numTimePts; timePt++) {
 
             //  Should a dummy scan be skipped over? 
-            if ( this->AddDummy( offset, coilNum, timePt ) ) {
+            if ( this->AddDummy( pFileOffset, coilNum, timePt ) ) {
                 offset += dummyOffset;  
+                pFileOffset += dummyOffset;
             }
 
             ostringstream progressStream;
@@ -2434,6 +2445,7 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
                         SetCellSpectrum(data, wasSampled, offset, index, x, y, z, timePt, coilNum);
                         if ( wasSampled ) {
                             offset += numPtsPerSpectrum; 
+                            pFileOffset += numPtsPerSpectrum;
                         } 
 
                     }

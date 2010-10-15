@@ -48,6 +48,7 @@ SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
 #   are written to. 
 #############################################################
 SET( TEST_RESULTS_ROOT ${SVK_TEST_ROOT}/results_tmp)
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_ROOT} ] )
 
 #############################################################
 #   Flags for diff to avoid errors from minor differences in 
@@ -71,6 +72,7 @@ SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
 ########################
 SET( TEST_NAME TEST_MCHK_1)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20_x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -83,6 +85,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_3)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/15x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -95,6 +98,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_5)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/14x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -107,6 +111,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_7)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/12x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -119,6 +124,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_9)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/11x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/11x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -139,6 +145,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_11)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20x_1.ddf -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -151,6 +158,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_13)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E0000S4I1.DCM -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -163,6 +171,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_15)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol.idf -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -175,6 +184,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_17)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fdf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/lac.0001.fdf -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -187,6 +197,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_19)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -199,6 +210,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_21)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E8668S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -211,6 +223,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_23)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5XVersion2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E18636S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -223,6 +236,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_25)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/SignaLX2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E12916S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
@@ -235,6 +249,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_27)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/siemens_rda/sv)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/sample.rda -o${TEST_RESULTS_PATH}/out -t 2 )
 
@@ -247,6 +262,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_29)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/mrs.dcm -o${TEST_RESULTS_PATH}/out.dcm -t 4 )
 
@@ -259,6 +275,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 SET( TEST_NAME TEST_MCHK_31)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/ )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -as )
 
@@ -268,9 +285,12 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 
 ########################
 #   PFile Reader Tests: 
+#   this one is too large for valgrind 
+#   so turn off MCHK for now:
 ########################
-SET( TEST_NAME TEST_MCHK_33)
+SET( TEST_NAME TEST_33)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID )
 
@@ -280,9 +300,12 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 
 ########################
 #   PFile Reader Tests: 
+#   this one is too large for valgrind 
+#   so turn off MCHK for now:
 ########################
-SET( TEST_NAME TEST_MCHK_35)
+SET( TEST_NAME TEST_35)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_lac_flyback)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/14x_lac_flyback -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID --one_time_pt)
 
