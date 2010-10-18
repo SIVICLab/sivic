@@ -444,6 +444,26 @@ void svkDcmtkAdapter::SetValue(const char* name, unsigned short* values, int num
  *
  * \param numValues the number of elements in the array of values
  */
+void svkDcmtkAdapter::SetValue(const char* name, short* values, int numValues)
+{
+    this->dcmFile->getDataset()->putAndInsertSint16Array(
+        GetDcmTag(name), 
+        values,
+        numValues
+    );
+    this->Modified();
+}
+
+
+/*!
+ * Sets the array of value for a given tag.
+ *
+ * \param name the name of the tag whose value you wish to set
+ *
+ * \param values the pointer to the array of values you wish the tag to have 
+ *
+ * \param numValues the number of elements in the array of values
+ */
 void svkDcmtkAdapter::SetValue(const char* name, float* values, int numValues)
 {
     DcmElement* of;

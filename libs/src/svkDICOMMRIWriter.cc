@@ -131,7 +131,7 @@ void svkDICOMMRIWriter::Write()
     this->InternalFileName = NULL;
 
     //  Clear the PixelData element: 
-    this->GetImageDataInput(0)->GetDcmHeader()->ClearElement( "PixelData" ); 
+    //this->GetImageDataInput(0)->GetDcmHeader()->ClearElement( "PixelData" ); 
 }
 
 
@@ -203,36 +203,44 @@ void svkDICOMMRIWriter::InitPixelData()
 
     switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType() ) {
         case svkDcmHeader::UNSIGNED_INT_1:
-          {
-              unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();
-              this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
+        {
+            unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();
+            this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
                   "PixelData",
                   pixelData, 
                   dataLength 
-              );
-          }
-          break;
+            );
+        }
+        break;
         case svkDcmHeader::UNSIGNED_INT_2:
-          {
-              unsigned short *pixelData = (unsigned short *)this->GetImageDataInput(0)->GetScalarPointer();
-              this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
+        {
+            unsigned short *pixelData = static_cast<unsigned short *>( this->GetImageDataInput(0)->GetScalarPointer() );
+            this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
                   "PixelData",
                   pixelData, 
                   dataLength 
-              );
-          }
-          break; 
+            );
+        }
+        break; 
         case svkDcmHeader::SIGNED_FLOAT_4:
-          {
-              float *pixelData = (float *)this->GetImageDataInput(0)->GetScalarPointer();
-              this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
+        {
+            float *pixelData = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
+            this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
                   "PixelData",
                   pixelData, 
                   dataLength 
-              );
-          }
-          break;
+            );
+        }
+        break;
         case svkDcmHeader::SIGNED_INT_2: 
+        {
+            short *pixelData = static_cast<short *>( this->GetImageDataInput(0)->GetScalarPointer() );
+            this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
+                  "PixelData",
+                  pixelData, 
+                  dataLength 
+            );
+        }
         case svkDcmHeader::SIGNED_FLOAT_8:
         default:
           vtkErrorMacro("Undefined or unsupported pixel data type");
