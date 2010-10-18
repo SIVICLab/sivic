@@ -73,6 +73,7 @@ int main (int argc, char** argv)
     usemsg += "                               2 = UCSF DDF      \n";  
     usemsg += "                               3 = UCSF IDF      \n";  
     usemsg += "                               4 = DICOM_MRS     \n";  
+    usemsg += "                               6 = DICOM_MRS     \n";  
     usemsg += "   -h                      print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Converts the input file to the specified target file type \n";  
@@ -111,7 +112,7 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
+    if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE ) {
         cout << usemsg << endl;
         exit(1); 
