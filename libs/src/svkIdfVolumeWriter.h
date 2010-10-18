@@ -88,6 +88,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            GetIDFCenter(double center[3]);
         vtkstd::string  GetIDFPatientsName(vtkstd::string patientsName);
         void            MapUnsignedToSigned( void* pixels, int numPixels ); 
+        void            MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels);
 
 
 };

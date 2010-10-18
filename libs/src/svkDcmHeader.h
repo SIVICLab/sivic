@@ -476,11 +476,11 @@ class svkDcmHeader: public vtkObject
 
 
 
-        void                SetDcmPatientsName(string patientsName);
-        void                SetPixelDataType(DcmPixelDataFormat dataType);
-        int                 GetPixelDataType();
+        void                SetDcmPatientsName( string patientsName );
+        void                SetPixelDataType( DcmPixelDataFormat dataType );
+        int                 GetPixelDataType( int vtkDataType );
 
-        int                 GetOrigin(double origin[3], int frameNumber = 0);
+        int                 GetOrigin( double origin[3], int frameNumber = 0 );
         void                GetPixelSpacing(double spacing[3]);
         void                GetPixelSize(double size[3]);
         void                GetOrientation(double orientation[2][3]);

@@ -201,7 +201,7 @@ void svkDICOMMRIWriter::InitPixelData()
 
     int dataLength = cols * rows * slices * numComponents;
 
-    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType() ) {
+    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
         case svkDcmHeader::UNSIGNED_INT_1:
         {
             unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();

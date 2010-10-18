@@ -141,6 +141,7 @@ void svkIdfVolumeWriter::Write()
 
 /*!
  *  Write the image data pixels to the IDF data file (.int2, .real, .byt).       
+ *  int2 is unsigned short.  
  */
 void svkIdfVolumeWriter::WriteData()
 {
@@ -150,28 +151,33 @@ void svkIdfVolumeWriter::WriteData()
     int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
     int numSlices = hdr->GetNumberOfSlices();
 
-    int dataWordSize = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "BitsAllocated" );
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
     vtkstd::string extension; 
     int numBytesPerPixel; 
     void* pixels; 
-    if ( dataWordSize == 8 ) {
+    float* floatPixels = NULL;
+    if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
         extension = ".byt"; 
         numBytesPerPixel = 1; 
         pixels = static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if ( dataWordSize == 16 ) {
+    } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
         extension = ".int2"; 
         numBytesPerPixel = 2; 
-        //  If input pixels are unsigned (PixelRepresentation = 0), then convert to signed values: 
-        if ( this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "PixelRepresentation" ) == 0 ) {
-            pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-            this->MapUnsignedToSigned(pixels, numSlices * numPixelsPerSlice); 
-        } else {
-            pixels = static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-        }
-    } else if ( dataWordSize == 32) {
+        pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || dataType == svkDcmHeader::SIGNED_INT_2 ) {
         extension = ".real"; 
         numBytesPerPixel = 4; 
-        pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
+            pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        }
+        //  If input pixels are signed ints, convert them to reals : 
+        if ( dataType == svkDcmHeader::SIGNED_INT_2 ) {
+            short* shortPixels; 
+            shortPixels = static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+            floatPixels = new float[ numSlices * numPixelsPerSlice ];     
+            this->MapSignedIntToFloat(shortPixels, floatPixels, numSlices * numPixelsPerSlice); 
+            pixels = floatPixels;
+        }
     }
 
     ofstream pixelsOut( (this->InternalFileName + extension).c_str(), ios::binary);
@@ -187,6 +193,10 @@ void svkIdfVolumeWriter::WriteData()
 #endif
 
     pixelsOut.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
+
+    if (floatPixels != NULL) {
+        delete[] floatPixels; 
+    }
 
 }
 
@@ -292,7 +302,7 @@ void svkIdfVolumeWriter::WriteHeader()
         << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
         << endl;
     
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType();
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
     if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
         out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
@@ -433,6 +443,18 @@ vtkstd::string svkIdfVolumeWriter::GetIDFPatientsName(vtkstd::string patientsNam
     }
 
     return patientsName;
+}
+
+
+/*!
+ *  converts signed shorts to float for writing as .real files.  This enables signed data to be
+ *  preserved. 
+ */
+void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels)
+{
+    for (int i = 0; i < numPixels; i++) {
+        floatPixels[i] = static_cast<float>( shortPixels[i] );
+    }
 }
 
 

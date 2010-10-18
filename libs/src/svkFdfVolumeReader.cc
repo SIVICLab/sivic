@@ -76,7 +76,7 @@ svkFdfVolumeReader::svkFdfVolumeReader()
     this->fdfFile = NULL;
     this->procparFile = NULL;
     this->fileSize = 0;
-    this->ScaleTo16Bit( true, true, true);
+    this->ScaleTo16Bit( false, false, false);
 
     // Set the byte ordering, as little-endian by default.
     this->SetDataByteOrderToLittleEndian(); 

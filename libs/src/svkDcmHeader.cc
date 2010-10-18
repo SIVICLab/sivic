@@ -141,20 +141,24 @@ void svkDcmHeader::SetPixelDataType(DcmPixelDataFormat dataType)
 
 /*!
  *  Get the format that specifies the word size and representation in the DICOM PixelData.
+ *  4Byte representations are ambiguous and can be float or int, thus the vtkDataType arg.   
  */
-int svkDcmHeader::GetPixelDataType()
+int svkDcmHeader::GetPixelDataType( int vtkDataType )
 {
     int bitsPerWord = this->GetIntValue( "BitsAllocated" );
     int pixRep = this->GetIntValue( "PixelRepresentation");
-    if (bitsPerWord == 8 && pixRep == 0) {
+    if ( bitsPerWord == 8 && pixRep == 0 ) {
         return UNSIGNED_INT_1;
-    } else if (bitsPerWord == 16 && pixRep == 0) {
+    } else if ( bitsPerWord == 16 && pixRep == 0 ) {
         return UNSIGNED_INT_2;
-    } else if (bitsPerWord == 16 && pixRep == 1) {
+    } else if ( bitsPerWord == 16 && pixRep == 1 ) {
         return SIGNED_INT_2;
-    } else if (bitsPerWord == 32 && pixRep == 1) {
+    } else if ( bitsPerWord == 32 && pixRep == 1 && vtkDataType == VTK_FLOAT ) {
         return SIGNED_FLOAT_4;
-    } 
+    } else {
+        cout << "Unknown Pixel Data Type " << endl;
+        return -1;
+    }
 }
 
 
