@@ -662,7 +662,7 @@ void svkDcmMriVolumeReader::InitPlanePositionMacro()
 
 
 /*!
- *  Returns the file root without extension
+ *  Returns the pixel type 
  */
 svkDcmHeader::DcmPixelDataFormat svkDcmMriVolumeReader::GetFileType()
 {
