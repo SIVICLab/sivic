@@ -2055,7 +2055,7 @@ int svkDdfVolumeReader::GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd:
     vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
-    int value;
+    int value = 0;
 
     iss->str( hdrMap[keyString] );
     *iss >> value;
@@ -2071,7 +2071,7 @@ float svkDdfVolumeReader::GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtk
     vtkstd::string keyString, int valueIndex)
 {
     istringstream* iss = new istringstream();
-    float value;
+    float value = 0;
     iss->str( hdrMap[keyString] );
     *iss >> value;
     delete iss; 

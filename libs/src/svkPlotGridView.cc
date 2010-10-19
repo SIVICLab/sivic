@@ -200,7 +200,6 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             if( selectionBoxTopology != NULL ) {
                 selectionBoxTopology->InitTraversal();
                 this->SetProp( VOL_SELECTION , selectionBoxTopology->GetNextActor());
-                this->GetProp( VOL_SELECTION )->Register(this);
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp( VOL_SELECTION ) );
                 selectionBoxTopology->Delete();
             }

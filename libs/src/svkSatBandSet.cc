@@ -207,7 +207,6 @@ void svkSatBandSet::UpdateClippingParameters()
             this->image->GetDataBasis(LRNormal, svkImageData::LR );
             this->image->GetDataBasis(PANormal, svkImageData::PA );
             this->image->GetDataBasis(SINormal, svkImageData::SI );
-            this->image->Register( this );
         } else {
             // These member variables are to speed up slicing...
             this->spacing = this->spectra->GetSpacing();

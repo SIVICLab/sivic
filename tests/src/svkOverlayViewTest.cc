@@ -51,29 +51,24 @@
 #include <getopt.h>
 #include <string.h>
 #include <svkDataModel.h>
-#include <vtkAxesActor.h>
-#include <vtkInteractorStyleTrackballCamera.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkBMPWriter.h>
-#include <vtkJPEGWriter.h>
-#include <vtkTIFFWriter.h>
 #include <vtkDataObjectTypes.h>
-#include <vtkRenderLargeImage.h>
+#include <svkTestUtils.h>
 
 using namespace svk;
 
 void DefaultTest( );
 void MemoryTest( );
-void RepeatedRenderTest( );
+void RenderingTest( );
 void DisplayUsage( );
 
 struct globalArgs_t {
-    char *firstImageName;       /* -i  option */
-    char *secondImageName;      /* -I option */
-    char *firstSpectraName;    /* -s  option */
-    char *secondSpectraName;   /* -S option */
-    char *firstOverlayName;     /* -o  option */
-    char *secondOverlayName;    /* -O option */
+    char *firstImageName;     /* -i  option */
+    char *secondImageName;    /* -I option */
+    char *firstSpectraName;   /* -s  option */
+    char *secondSpectraName;  /* -S option */
+    char *firstOverlayName;   /* -o  option */
+    char *secondOverlayName;  /* -O option */
+    char *outputPath;         /* -p option */
 } globalArgs;
 
 static const struct option longOpts[] = {
@@ -84,9 +79,10 @@ static const struct option longOpts[] = {
     { "second_spectra",  required_argument, NULL, 'S' },
     { "overlay",         required_argument, NULL, 'o' },
     { "second_overlay",  required_argument, NULL, 'O' },
+    { "output_path",     required_argument, NULL, 'p' },
     { NULL,              no_argument,       NULL,  0  }
 };
-static const char *optString = "t:i:I:s:S:o:O:";
+static const char *optString = "t:i:I:s:S:o:O:p:";
 
 
 int main ( int argc, char** argv )
@@ -97,10 +93,11 @@ int main ( int argc, char** argv )
     /* Initialize globalArgs before we get to work. */
     globalArgs.firstImageName = NULL;       /* -i  option */
     globalArgs.secondImageName = NULL;      /* -I option */
-    globalArgs.firstSpectraName = NULL;    /* -s  option */
-    globalArgs.secondSpectraName = NULL;   /* -S option */
+    globalArgs.firstSpectraName = NULL;     /* -s  option */
+    globalArgs.secondSpectraName = NULL;    /* -S option */
     globalArgs.firstOverlayName = NULL;     /* -o  option */
     globalArgs.secondOverlayName = NULL;    /* -O option */
+    globalArgs.outputPath = NULL;           /* -p option */
     testFunction = DefaultTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
@@ -113,9 +110,9 @@ int main ( int argc, char** argv )
                     if( strcmp( optarg, "MemoryTest" ) == 0 ) {
                         testFunction = MemoryTest;
                         cout<<" Executing Memory Check... "<<endl;
-                    } else if( strcmp( optarg, "RepeatedRenderTest" ) == 0 ) {
-                        testFunction = RepeatedRenderTest;
-                        cout<<" Executing RepeatedRenderTest... "<<endl;
+                    } else if( strcmp( optarg, "RenderingTest" ) == 0 ) {
+                        testFunction = RenderingTest;
+                        cout<<" Executing Rendering Test... "<<endl;
                     } 
                     break;
                 case 'i':
@@ -135,6 +132,9 @@ int main ( int argc, char** argv )
                     break;
                 case 'O': 
                     globalArgs.secondOverlayName = optarg;
+                    break;
+                case 'p': 
+                    globalArgs.outputPath = optarg;
                     break;
                 default:
                     cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -357,18 +357,23 @@ void DefaultTest()
 }
 
 
-void RepeatedRenderTest()
+void RenderingTest()
 {
-    int slice =4 ;
-    if( globalArgs.firstImageName     == NULL  ) {
+    if( globalArgs.firstImageName == NULL  ) {
         DisplayUsage();
         cout << endl << " ERROR: ";
         cout << "At least an image must be specified to run this test! " << endl; 
     }
 
+    string rootName = "";
+    string imageRoot = string( globalArgs.firstImageName );
+    size_t ext = imageRoot.find_last_of(".");
+    size_t path = imageRoot.find_last_of("/");
+    rootName = imageRoot.substr(path+1,ext-path-1);
+
+
     svkDataModel* model = svkDataModel::New();
     
-
     svkImageData* spectra = NULL; 
     if( globalArgs.firstSpectraName != NULL ) {
         spectra = model->LoadFile( globalArgs.firstSpectraName );
@@ -382,7 +387,6 @@ void RepeatedRenderTest()
         image->Register(NULL);
         image->Update();
     }
-
     svkImageData* overlay = NULL; 
     if( globalArgs.firstOverlayName != NULL ) {
         overlay = model->LoadFile( globalArgs.firstOverlayName );
@@ -399,68 +403,40 @@ void RepeatedRenderTest()
 
     window->SetSize(600,600);
 
+    overlayController->GetView()->ValidationOff();
+    overlayController->SetInput( image, 0  );
+
     if( spectra != NULL ) {
         overlayController->SetInput( spectra, 1  );
     }
-    overlayController->SetInput( image, 0  );
-    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+
+    overlayController->GetView()->SetOrientation( image->GetDcmHeader()->GetOrientationType());
     svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
-    overlayController->SetSlice(slice);
-    overlayController->UseWindowLevelStyle( );
-    overlayController->UseRotationStyle();
-    overlayController->HighlightSelectionVoxels();
-    overlayController->ResetWindowLevel();
+
     if( overlay != NULL ) {
         overlayController->SetInput( overlay, 2 );
     }
-    window->Render();
-    rwi->Start();
-    vtkUnsignedCharArray* renderOneData = vtkUnsignedCharArray::New();
-    window->GetPixelData(0,0,600,600,true,  renderOneData);     
-    overlayController->SetSlice(slice);
-    overlayController->GetView()->Refresh();
-    window->Render();
-    rwi->Start();
-    vtkUnsignedCharArray* renderTwoData = vtkUnsignedCharArray::New();
-    window->GetPixelData(0,0,600,600, true,  renderTwoData);     
-    cout << "Render one is: " << *renderOneData << endl;
-    for( int i = 0; i < renderOneData->GetNumberOfTuples(); i++) {
-        unsigned char ren1[3];
-        unsigned char ren2[3];
-        renderOneData->GetTupleValue(i,ren1);
-        renderTwoData->GetTupleValue(i,ren2);
-        if( ren1[0] != ren2[0] || ren1[1] != ren2[1] || ren1[2] != ren2[2] ) {
-            cout << "NO MATCH!!! " << endl;
-            exit(0);
-        } else {
-            cout << "MATCH!!! " << endl;
-        }
+    
+    for( int i = 0; i < image->GetNumberOfSlices(); i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << ".tiff" ;
+        overlayController->SetSlice( i, image->GetDcmHeader()->GetOrientationType() );
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
     }
-    overlayController->ResetWindowLevel();
-    overlayController->GetView()->Refresh();
-    window->Render();
-    vtkWindowToImageFilter* w2if = vtkWindowToImageFilter::New();
-    w2if->SetInput( window );
-    vtkBMPWriter* writerBMP = vtkBMPWriter::New();
-    writerBMP->SetInput( w2if->GetOutput() );
-    writerBMP->SetFileName( "test.bmp" );
-    writerBMP->Write();
-    vtkJPEGWriter* writerJPEG = vtkJPEGWriter::New();
-    writerJPEG->SetInput( w2if->GetOutput() );
-    writerJPEG->SetFileName( "test.JPEG" );
-    writerJPEG->Write();
-    vtkTIFFWriter* writerTIFF = vtkTIFFWriter::New();
-    writerTIFF->SetInput( w2if->GetOutput() );
-    writerTIFF->SetFileName( "test.TIFF" );
-    writerTIFF->Write();
-
-    vtkRenderLargeImage* rli = vtkRenderLargeImage::New();
-    rli->SetInput(overlayController->GetView()->GetRenderer(svkOverlayView::PRIMARY));
-    vtkBMPWriter* writerBMP2 = vtkBMPWriter::New();
-    writerBMP2->SetInput( w2if->GetOutput() );
-    writerBMP2->SetFileName( "testRenderer.bmp" );
-    writerBMP2->Write();
+    if( spectra != NULL ) {
+        spectra->Delete();
+    }
+    if( overlay != NULL ) {
+        overlay->Delete();
+    }
+    model->Delete();
+    window->Delete();
+    overlayController->Delete();
+    image->Delete();
+    
 }
+
 
 void DisplayUsage( void )
 {

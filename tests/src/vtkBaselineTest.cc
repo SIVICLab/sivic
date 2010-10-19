@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/vtkRenderLoopTest.cc $
+ *  $Rev: 513 $
+ *  $Author: jccrane $
+ *  $Date: 2010-08-17 20:59:32 -0700 (Tue, 17 Aug 2010) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -41,20 +41,67 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkConeSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkRenderWindow.h>
+#include <vtkActor.h>
+#include <vtkTextActor.h>
+#include <vtkRenderer.h>
+#include <vtkTIFFWriter.h>
+#include <svkTestUtils.h>
+
+using namespace svk;
 
 int main ( int argc, char** argv )
 {
-    vtkRenderer* renderer = vtkRenderer::New();
-    vtkRenderWindow* window = vtkRenderWindow::New(); 
-    vtkRenderWindowInteractor* rwi = vtkRenderWindowInteractor::New();
-
-    window->SetInteractor( rwi );
-    window->AddRenderer( renderer );
-    window->Render();
     
-    renderer->Delete();
-    window->Delete();
-    rwi->Delete();
+    vtkConeSource *cone = vtkConeSource::New();
+    cone->SetHeight( 3.0 );
+    cone->SetRadius( 1.0 );
+    cone->SetResolution( 10 );
+  
+    vtkPolyDataMapper *coneMapper = vtkPolyDataMapper::New();
+    coneMapper->SetInput( cone->GetOutput() );
+
+    vtkActor *coneActor = vtkActor::New();
+    coneActor->SetMapper( coneMapper );
+
+    vtkTextActor* text = vtkTextActor::New();
+    text->SetTextScaleModeToProp();
+    text->SetInput("x: null \ny: null \n z: null");
+    text->SetLayerNumber(1);
+
+    text->SetPosition(0.1,0.1);
+    text->SetPosition2(0.9,0.9);
+    text->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    text->GetPosition2Coordinate()->SetCoordinateSystemToNormalizedViewport();
+
+
+
+    vtkRenderer *ren= vtkRenderer::New();
+    ren->AddActor( coneActor );
+    ren->AddActor(text);
+    ren->SetBackground( 0.1, 0.2, 0.4 );
+
+    vtkRenderWindow *renWin = vtkRenderWindow::New();
+    renWin->AddRenderer( ren );
+    renWin->SetSize( 300, 300 );
+    renWin->SetNumberOfLayers(2);
+
+    for( int i = 0; i < 100; i++ ) {
+
+        renWin->Render();
+    
+    }
+    svkTestUtils::SaveWindow( renWin, argv[1] );
+
+  
+    cone->Delete();
+    coneMapper->Delete();
+    coneActor->Delete();
+    ren->Delete();
+    renWin->Delete();
+    text->Delete();
 
     return 0;
 }

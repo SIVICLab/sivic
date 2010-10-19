@@ -75,12 +75,12 @@ struct globalArgs_t {
 } globalArgs;
 
 static const struct option longOpts[] = {
-    { "test_name",       required_argument, NULL, 't' },
-    { "spectra",       required_argument, NULL, 's' },
+    { "test_name",      required_argument, NULL, 't' },
+    { "spectra",        required_argument, NULL, 's' },
     { "second_spectra", required_argument, NULL, 'S' },
     { "overlay",        required_argument, NULL, 'o' },
-    { "second_overlay",  required_argument, NULL, 'O' },
-    { "output_path",  required_argument, NULL, 'p' },
+    { "second_overlay", required_argument, NULL, 'O' },
+    { "output_path",    required_argument, NULL, 'p' },
     { NULL,             no_argument,       NULL,  0  }
 };
 static const char *optString = "t:s:S:o:O:p:";

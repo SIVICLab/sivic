@@ -11,6 +11,8 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(svk_test)
 
+option( BUILD_GRAPHICS_TESTING "Run graphics test." FALSE )
+
 #
 #   Set build dir:
 #
@@ -109,12 +111,12 @@ SET(SVK_LIBS
 
 
 ADD_EXECUTABLE(
-    vtkRenderLoopTest
-    vtkRenderLoopTest.cc
+    vtkBaselineTest
+    vtkBaselineTest.cc
 )
 
 TARGET_LINK_LIBRARIES(
-    vtkRenderLoopTest
+    vtkBaselineTest
 	${SVK_LIBS}
 )
 
@@ -174,6 +176,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svkOverlayViewTest
+    svkOverlayViewTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkOverlayViewTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svkPlotGridViewMultiTraceTest
     svkPlotGridViewMultiTraceTest.cc
 )
@@ -194,3 +206,7 @@ TARGET_LINK_LIBRARIES(
 )
 
 include(CMakeSivicTests.cmake)
+
+IF (BUILD_GRAPHICS_TESTING)
+    include(CMakeSivicGraphicsTests.cmake)
+ENDIF (BUILD_GRAPHICS_TESTING)
