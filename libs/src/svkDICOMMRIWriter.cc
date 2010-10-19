@@ -44,6 +44,7 @@
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
+#include <vtkImageAccumulate.h>
 
 
 using namespace svk;
@@ -202,6 +203,7 @@ void svkDICOMMRIWriter::InitPixelData()
     int dataLength = cols * rows * slices * numComponents;
 
     switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
+
         case svkDcmHeader::UNSIGNED_INT_1:
         {
             unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();
@@ -212,6 +214,7 @@ void svkDICOMMRIWriter::InitPixelData()
             );
         }
         break;
+
         case svkDcmHeader::UNSIGNED_INT_2:
         {
             unsigned short *pixelData = static_cast<unsigned short *>( this->GetImageDataInput(0)->GetScalarPointer() );
@@ -222,16 +225,31 @@ void svkDICOMMRIWriter::InitPixelData()
             );
         }
         break; 
+
         case svkDcmHeader::SIGNED_FLOAT_4:
         {
-            float *pixelData = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
+            short* pixelData = new short[dataLength];  
+            float slope; 
+            float intercept; 
+            this->GetShortScaledPixels( pixelData, slope, intercept ); 
+            
             this->GetImageDataInput(0)->GetDcmHeader()->SetValue(
                   "PixelData",
                   pixelData, 
                   dataLength 
             );
+
+            //  Fix BitsAllocated, etc to be represent 
+            //  signed short data
+            this->GetImageDataInput(0)->GetDcmHeader()->SetPixelDataType(svkDcmHeader::SIGNED_INT_2);
+
+            //  Init Rescale Attributes:    
+            this->InitPixelValueTransformationMacro(slope, intercept); 
+
+            delete[] pixelData; 
         }
         break;
+
         case svkDcmHeader::SIGNED_INT_2: 
         {
             short *pixelData = static_cast<short *>( this->GetImageDataInput(0)->GetScalarPointer() );
@@ -245,5 +263,92 @@ void svkDICOMMRIWriter::InitPixelData()
         default:
           vtkErrorMacro("Undefined or unsupported pixel data type");
     }
+}
+
+
+/*!
+ *  Performs a linear mapping of floating point image values to 16 bit integer dynamic range. 
+ *  Returns a signed short array, together with the intercept and slope of the linear scaling 
+ *  transformation ( shortVal = floatVal * slope + intercept).    
+ */
+void svkDICOMMRIWriter::GetShortScaledPixels( short* shortPixels, float& slope, float& intercept )
+{
+
+    //  Scale this to 16 bit values and init RescaleIntercept and RescaleSlope:
+    vtkImageAccumulate* histo = vtkImageAccumulate::New();
+    histo->SetInput( this->GetImageDataInput(0) );
+    histo->Update();
+
+    //  Get the input range for scaling:
+    double inputRangeMin = *( histo->GetMin() ); 
+    double inputRangeMax = *( histo->GetMax() ); 
+    double deltaRangeIn = inputRangeMax - inputRangeMin;
+
+    //  Get the output range for scaling:
+    int shortMin = VTK_SHORT_MIN; 
+    int shortMax = VTK_SHORT_MAX; 
+    double deltaRangeOut = shortMax - shortMin;
+
+    //  apply linear mapping from float range to signed short range; 
+    //  shortMax = inputRangeMax * m + b;
+    //  shortMin = inputRangeMin * m + b; 
+    slope = deltaRangeOut/deltaRangeIn; 
+    intercept = shortMin - inputRangeMin * ( deltaRangeOut/deltaRangeIn ); 
+    if (this->GetDebug()) {
+        cout << "DICOM MRI Writer float to int scaling (slope, intercept): " << slope << " " << intercept << endl;     
+    }
+    
+    int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
+    int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
+    int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
+    int numPixels = cols * rows * slices; 
+    float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
+
+    for (int i = 0; i < numPixels; i++) {
+        shortPixels[i] = static_cast<short> ( slope * floatPixels[i] + intercept ); 
+    }
+
+}
+
+
+/*!
+ *
+ */
+void svkDICOMMRIWriter::InitPixelValueTransformationMacro(float slope, float intercept)
+{
+
+    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PixelValueTransformationSequence"
+    );
+
+    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleIntercept",
+        intercept, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleSlope",
+        slope, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleType",
+        "US",   //enum unspecified required for MR modality 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
 }
 
