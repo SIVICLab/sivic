@@ -109,6 +109,9 @@ void svkDcmHeader::SetDcmPatientsName(string patientsName)
 
 /*!
  *  Set the format that specifies the word size and representation in the DICOM PixelData.
+ *  Note that this represents the in-memory pixel representation and supports 8, 16 and 32 bit
+ *  char, int and float representations.  When writing to DICOM MRI only 8 and 16 bit ints are 
+ *  supported, so data may require scaling (see DICOM RescaleIntercept and RescaleSlope attributes).   
  */
 void svkDcmHeader::SetPixelDataType(DcmPixelDataFormat dataType)
 {
@@ -127,7 +130,7 @@ void svkDcmHeader::SetPixelDataType(DcmPixelDataFormat dataType)
         this->SetValue( "BitsAllocated", 16 );
         this->SetValue( "BitsStored", 16 );
         this->SetValue( "HighBit", 15 );
-        this->SetValue( "PixelRepresentation", 1 ); //unsigned
+        this->SetValue( "PixelRepresentation", 1 ); //signed
     } else if ( dataType == SIGNED_FLOAT_4 ) {
         this->SetValue( "BitsAllocated", 32 );
         this->SetValue( "BitsStored", 32 );
