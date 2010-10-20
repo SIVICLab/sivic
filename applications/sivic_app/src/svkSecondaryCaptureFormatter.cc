@@ -1102,7 +1102,7 @@ void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
     window->SetSize(600,600); 
     viewer->SetInput( image );
     viewer->SetupInteractor( rwi );
-    viewer->SetSliceOrientationToXY();
+    viewer->SetOrientation(image->GetDcmHeader()->GetOrientationType());
     viewer->GetImageActor()->InterpolateOff();
     viewer->GetRenderer()->ResetCamera();
     viewer->ResetCamera();

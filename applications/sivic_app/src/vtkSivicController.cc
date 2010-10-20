@@ -1286,6 +1286,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
     outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
     //Give it a default dcos so it can be viewed in an image viewer
     double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+    this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
     outputImage->SetDcos(dcos);
     this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     if( writer->IsA("svkImageWriter") ) {  
@@ -2379,11 +2380,6 @@ void vtkSivicController::PushToPACS()
     string dcmFileName = svkUCSFUtils::GetDICOMFileName( this->model->GetDataFileName( "AnatomicalData" ), 
                                                          this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader());
 
-    // Lets create image to write out, and attach the image's header to get study info
-    svkImageData* outputImage = svkMriImageData::New();
-    // Give it a default dcos so it can be viewed in an image viewer
-    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
-    outputImage->SetDcos(dcos);
     string sourceImageName = this->model->GetDataFileName("AnatomicalData"); 
     size_t pos = sourceImageName.find_last_of(".");
 
@@ -2406,9 +2402,8 @@ void vtkSivicController::PushToPACS()
     found = localDirectory.find_last_of("/");
 
     // We want to put the DICOM folder one above the spectra location
-    if( localDirectory.substr(found+1) == "images" || localDirectory.substr(found+1) == "spectra" ) {
-        localDirectory = localDirectory.substr(0,found); 
-    }
+    found = localDirectory.find_last_of("/");
+    localDirectory = localDirectory.substr(0,found); 
 
     // Lets make sure the dicom file exists, this implies the studyUID and Accession number or correct
     if( stat(dcmFileName.c_str(),&st) != 0 && !imageIsDICOM ) {
@@ -2444,11 +2439,17 @@ void vtkSivicController::PushToPACS()
     } 
     svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
     struct stat buffer;
+    // Lets create image to write out, and attach the image's header to get study info
+    svkImageData* outputImage = svkMriImageData::New();
+    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+    // Give it a default dcos so it can be viewed in an image viewer
     if( !imageIsDICOM && stat( dcmFileName.c_str(), &buffer ) == 0 && dcmReader->CanReadFile( dcmFileName.c_str() ) ){
         dcmReader->SetFileName( dcmFileName.c_str() );
         dcmReader->UpdateInformation();
         svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
         outputImage->SetDcmHeader( dcmHeader );
+        dcmReader->GetOutput()->GetDcos(dcos);
+        outputImage->SetDcos(dcos);
         dcmHeader->Register(this);
 
     } else if( !imageIsDICOM ) {
@@ -2460,6 +2461,8 @@ void vtkSivicController::PushToPACS()
     if( imageIsDICOM ) {
         outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
         this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+        this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
+        outputImage->SetDcos(dcos );
     }
     dcmReader->Delete();
 
