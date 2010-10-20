@@ -64,6 +64,9 @@
 #include <vtkAlgorithm.h>
 #include <vtkImageReader2.h>
 
+#include <svkImageWriterFactory.h>
+#include <svkImageWriter.h>
+
 
 namespace svk {
 
@@ -111,6 +114,9 @@ class svkDataModel : public vtkObject
        
         // File writers 
         virtual bool            WriteToFile( string objectName, string fileName);
+
+        // File writers 
+        virtual bool		WriteToFile(svkImageData *data, const char *fileName);
        
         // State manipulators 
         virtual map < string, void* > GetModelState();

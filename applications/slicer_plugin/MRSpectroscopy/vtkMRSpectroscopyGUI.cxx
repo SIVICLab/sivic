@@ -84,7 +84,8 @@
 #include "vtkKWLabel.h"
 #include "vtkKWEvent.h"
 #include "vtkKWScale.h"
-#include <vtkKWRange.h>
+#include "vtkKWRange.h"
+#include "vtkKWLoadSaveButtonWithLabel.h"
 
 #include "vtkKWPushButton.h"
 
@@ -95,6 +96,9 @@
 #include "svkImageTopologyGenerator.h"
 #include "svkPlotGridViewController.h"
 #include "svkSpecPoint.h"
+#include "vtkMRMLScalarVolumeDisplayNode.h"
+#include "vtkMRMLImageDataNode.h"
+#include "vtkMRMLImageDataStorageNode.h"
 
 #include "cmath"
 #include "set"
@@ -116,7 +120,6 @@ vtkCxxRevisionMacro ( vtkMRSpectroscopyGUI, "$Revision: 15111 $");
 //---------------------------------------------------------------------------
 vtkMRSpectroscopyGUI::vtkMRSpectroscopyGUI ( )
 {
-
     //----------------------------------------------------------------
     // Logic values
     //----------------------------------------------------------------
@@ -132,10 +135,7 @@ vtkMRSpectroscopyGUI::vtkMRSpectroscopyGUI ( )
     // GUI widgets
     //----------------------------------------------------------------
     this->VolumeSelector = NULL;
-    this->TestButton11   = NULL;
-    this->TestButton12   = NULL;
-    this->TestButton21   = NULL;
-    this->TestButton22   = NULL;
+    this->LoadSpectraButton = NULL;
     this->SpectraSlider  = NULL;
     this->xSpecRange     = NULL;
     this->ySpecRange     = NULL;
@@ -153,7 +153,6 @@ vtkMRSpectroscopyGUI::vtkMRSpectroscopyGUI ( )
 //---------------------------------------------------------------------------
 vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
 {
-
     //----------------------------------------------------------------
     // Remove Callbacks
     
@@ -175,24 +174,9 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
         this->VolumeSelector->Delete();
     }
    
-    if (this->TestButton11) {
-        this->TestButton11->SetParent(NULL);
-        this->TestButton11->Delete();
-    }
-
-    if (this->TestButton12) {
-        this->TestButton12->SetParent(NULL);
-        this->TestButton12->Delete();
-    }
-
-    if (this->TestButton21)  {
-        this->TestButton21->SetParent(NULL);
-        this->TestButton21->Delete();
-    }
-    
-    if (this->TestButton22) {
-        this->TestButton22->SetParent(NULL);
-        this->TestButton22->Delete();
+    if (this->LoadSpectraButton) {
+        this->LoadSpectraButton->SetParent(NULL);
+        this->LoadSpectraButton->Delete();
     }
 
     if (this->SpectraSlider) {
@@ -215,6 +199,26 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
         ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
     }
 
+    if (this->Grids[0]) {
+        this->Grids[0]->Delete();
+    }
+
+    if (this->Grids[1]) {
+        this->Grids[1]->Delete();
+    }
+
+    if (this->PlotView) {
+        this->PlotView->Delete();
+    }
+
+    if (this->CurrentSpectra) {
+        this->CurrentSpectra->Delete();
+    }
+
+    if (this->SpectraSlider) {
+        this->SpectraSlider->Delete();
+    }
+
     if (this->xSpecRange) {
         this->xSpecRange->SetParent(NULL);
         this->xSpecRange->Delete();
@@ -228,7 +232,23 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
     //----------------------------------------------------------------
     // Unregister Logic class
     
-    this->SetModuleLogic ( NULL );
+    this->SetModuleLogic ( NULL );    
+
+    if (this->DataCallbackCommand) {
+        this->DataCallbackCommand->Delete();
+    }
+
+    if (this->SlicerStyle) {
+        this->SlicerStyle->Delete();
+    }
+
+    if (this->Interactor) {
+        this->Interactor->Delete();
+    }
+
+    if (this->Style) {
+        this->Style->Delete();
+    }
 
 }
 
@@ -236,18 +256,30 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::Init()
 {
+  //std::cout << "init" << std::endl;
+  vtkMRMLScene* scene = this->GetMRMLScene();
+
+  vtkMRMLImageDataNode* imageDataNode = vtkMRMLImageDataNode::New();
+  scene->RegisterNodeClass(imageDataNode);
+  imageDataNode->Delete();
+
+  vtkMRMLImageDataStorageNode* imageDataStorageNode = vtkMRMLImageDataStorageNode::New();
+  scene->RegisterNodeClass(imageDataStorageNode);
+  imageDataStorageNode->Delete();
+  //std::cout << "finish init" << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::Enter()
 {
+
+  //std::cout << "enter" << std::endl;
   // Fill in
   //vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
   
   //this->SlicerStyle = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->GetInteractorStyle();
   //this->SplitWindow();
-  //this->DoOtherThing();
   vtkRenderer* ren = this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->GetRenderWidget()->GetRenderer();
   ren->Render();
 
@@ -257,12 +289,14 @@ void vtkMRSpectroscopyGUI::Enter()
       this->TimerInterval = 100;  // 100 ms
       //ProcessTimerEvents();
     }
-
+  //std::cout << "finish enter" << std::endl;
 }
 
 
 void vtkMRSpectroscopyGUI::SplitWindow()
 {
+
+    //std::cout << "SplitWindow" << std::endl;
     //  API is changing between slicer versions:
     //change GetViewerWidget() to GetActiveViewerWidget()
     //vtkKWRenderWidget* rw = this->GetActiveViewWidget()->GetMainViewer();
@@ -274,6 +308,7 @@ void vtkMRSpectroscopyGUI::SplitWindow()
     r->SetBackground(rgb);
     r->SetViewport(0.5, 0, 1, 1);
     rw->AddRenderer(r);
+    //std::cout << "finish SplitWindow" << std::endl;
 }
   
 
@@ -281,6 +316,7 @@ void vtkMRSpectroscopyGUI::SplitWindow()
 void vtkMRSpectroscopyGUI::Exit ( )
 {
   // Fill in
+  std::cout << "exit" << std::endl;
 }
 
 
@@ -297,37 +333,17 @@ void vtkMRSpectroscopyGUI::PrintSelf ( ostream& os, vtkIndent indent )
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::RemoveGUIObservers ( )
 {
-
+    //std::cout << "RemoveGUIObservers" << std::endl;
     //vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
 
     if (this->VolumeSelector) {
         this->VolumeSelector->
             RemoveObservers (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );
-    }  
-
-    if (this->TestButton11) {
-        this->TestButton11
-            ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
     }
 
-    if (this->TestButton11) {
-        this->TestButton11
-            ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
-    }
-
-    if (this->TestButton12) {
-        this->TestButton12
-            ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
-    }
-
-    if (this->TestButton21) {
-        this->TestButton21
-            ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
-    }
-
-    if (this->TestButton22) {
-        this->TestButton22
-            ->RemoveObserver((vtkCommand *)this->GUICallbackCommand);
+    if (this->LoadSpectraButton)
+    {
+        this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RemoveObservers (vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand );
     }
 
     if (this->SpectraSlider) {
@@ -346,12 +362,17 @@ void vtkMRSpectroscopyGUI::RemoveGUIObservers ( )
     }
 
     this->RemoveLogicObservers();
+    this->RemoveMRMLObservers();
+
+    //std::cout << "finish RemoveGUIObservers" << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::AddGUIObservers ( )
 {
+
+    //std::cout << "AddGUIObservers" << std::endl;
     this->RemoveGUIObservers();
 
     vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
@@ -376,14 +397,8 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
 
     this->VolumeSelector
         ->AddObserver(vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand);
-
-    this->TestButton11
-        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
-    this->TestButton12
-        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
-    this->TestButton21
-        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
-    this->TestButton22
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->AddObserver (vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->DisplayButton
         ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
     this->SpectraSlider
         ->AddObserver(vtkKWScale::ScaleValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
@@ -408,6 +423,11 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
     this->xSpecRange->AddObserver( vtkKWRange::RangeValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
     this->ySpecRange->AddObserver( vtkKWRange::RangeValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
 
+
+  this->AddMRMLObservers();
+
+  //std::cout << "finish AddGUIObservers" << std::endl;
+  //std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
 }
 
 
@@ -419,12 +439,37 @@ void vtkMRSpectroscopyGUI::AddGridObserver( )
     this->Interactor = appGUI->GetActiveViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
     this->Interactor
         ->AddObserver(vtkCommand::LeftButtonReleaseEvent, (vtkCommand *)this->GUICallbackCommand);
+
+    //std::cout << "finish AddGridObserver" << std::endl;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRSpectroscopyGUI::RemoveMRMLObservers(void)
+{
+    //std::cout << "RemoveMRMLObservers" << std::endl;
+  //Remove the MRML observer
+  if ( this->GetApplicationGUI() )
+  {
+    this->GetApplicationGUI()->GetMRMLScene()->RemoveObservers(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
+  }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRSpectroscopyGUI::AddMRMLObservers(void)
+{
+    //std::cout << "AddMRMLObservers" << std::endl;
+  //Remove the MRML observer
+  if ( this->GetApplicationGUI() )
+  {
+    this->GetApplicationGUI()->GetMRMLScene()->AddObserver(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
+  }
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::RemoveLogicObservers ( )
 {
+    //std::cout << "RemoveLogicObservers" << std::endl;
     if (this->GetLogic())
     {
         this->GetLogic()->RemoveObservers(vtkCommand::ModifiedEvent,
@@ -445,19 +490,21 @@ void vtkMRSpectroscopyGUI::AddLogicObservers ( )
         this->GetLogic()->AddObserver(vtkMRSpectroscopyLogic::StatusUpdateEvent,
                                   (vtkCommand *)this->LogicCallbackCommand);
     }
+  //std::cout << "finish AddLogicObservers" << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::HandleMouseEvent(vtkSlicerInteractorStyle *style)
-{
+{  std::cout << "HandleMouseEvent" << std::endl;
+  std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
                                          unsigned long event, void *callData)
-{
+{ //std::cout << "ProcessGUIEvents" << std::endl;
 
     const char *eventName = vtkCommand::GetStringFromEventId(event);
     vtkSlicerNodeSelectorWidget *selector = vtkSlicerNodeSelectorWidget::SafeDownCast(caller);
@@ -471,7 +518,7 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
 
     if (this->HasStyle && strcmp(eventName, "LeftButtonReleaseEvent") == 0) {
         std::cerr << "Left Button Released" << std::endl;
-        UpdateGridScalars();
+        //UpdateGridScalars();
     }
 
     if (selector == this->VolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent &&
@@ -481,27 +528,22 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
         std::cerr << *vtkMRMLScalarVolumeNode::SafeDownCast(this->VolumeSelector->GetSelected())->GetImageData() << std::endl;
         std::cerr << "Meta Data!" << std::endl;
     }
-    else if (this->TestButton11 == vtkKWPushButton::SafeDownCast(caller) 
-      && event == vtkKWPushButton::InvokedEvent)
+    else   if (this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog() == vtkKWLoadSaveDialog::SafeDownCast(caller) && event == vtkKWTopLevel::WithdrawEvent )
     {
-        std::cerr << "TestButton11 is pressed." << std::endl;
-        LoadSpectra();
+	std::cerr << "LoadSpectraButton is pressed." << std::endl;
+        const char * filename = this->LoadSpectraButton->GetWidget()->GetFileName();
+        if (filename) {
+          LoadSpectraFromFile(filename);
+	}
     }
-    else if (this->TestButton12 == vtkKWPushButton::SafeDownCast(caller)
+    else if (this->DisplayButton == vtkKWPushButton::SafeDownCast(caller) 
       && event == vtkKWPushButton::InvokedEvent)
     {
-        std::cerr << "TestButton12 is pressed." << std::endl;
-        DoOtherThing();
-    }
-    else if (this->TestButton21 == vtkKWPushButton::SafeDownCast(caller)
-      && event == vtkKWPushButton::InvokedEvent)
-    {
-        std::cerr << "TestButton21 is pressed." << std::endl;
-    }
-    else if (this->TestButton22 == vtkKWPushButton::SafeDownCast(caller)
-      && event == vtkKWPushButton::InvokedEvent)
-    {
-        std::cerr << "TestButton22 is pressed." << std::endl;
+        std::cerr << "DisplayButton is pressed." << std::endl;
+        const char * filename = this->LoadSpectraButton->GetWidget()->GetFileName();
+        if (filename) {
+          LoadSpectraFromFile(filename);
+	}
     }
     else if (this->SpectraSlider == vtkKWScale::SafeDownCast(caller)
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
@@ -623,11 +665,27 @@ void vtkMRSpectroscopyGUI::RenderActor(vtkProp* actor)
     this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
 }
 
-
-void vtkMRSpectroscopyGUI::LoadSpectra( )
-{
+void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
+{  
     svkDataModel* model = svkDataModel::New();
-    svkImageData* ddfData = model->LoadFile("/Users/jasonc/Desktop/menze/for_bjoern/data_for_sivic_module/spectra/abc_lac_fbcomb_sum_cp_cor.ddf");
+    svkImageData* ddfData = //model->LoadFile("/afs/csail.mit.edu/u/m/mangpo/Sample/Data/sample_data/brain_recon/spectra/t6457_1comb_9_cor.ddf");
+    model->LoadFile(filename);
+
+    vtkMRMLImageDataNode* ImageDataNode = vtkMRMLImageDataNode::New();
+    ImageDataNode->SetData(ddfData);
+    //TODO: how to add?
+    //this->VolumeSelector->AddNodeClass("vtkMRMLImageDataNode", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1");
+    //this->VolumeSelector->SetSelected(ImageDataNode);
+    if (this->GetMRMLScene() != NULL) {
+        this->GetMRMLScene()->AddNodeNoNotify(ImageDataNode);
+    }
+
+    SetSpectraData(ddfData);
+}
+
+
+void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
+{   
     this->CurrentSpectra = ddfData;
     ddfData->Register(NULL);
 
@@ -756,7 +814,7 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
     this->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
     this->ySpecRange->EnabledOn();
 
-    DoOtherThing();
+    DisplaySpectra();
 
 }
 
@@ -764,10 +822,10 @@ cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] 
 /*!
  *
  */
-void vtkMRSpectroscopyGUI::DoOtherThing( )
+void vtkMRSpectroscopyGUI::DisplaySpectra( )
 {
     svkImageData* ddfData = this->CurrentSpectra;
-    ddfData->Update();
+    //ddfData->Update();
 
     vtkSlicerApplicationGUI* appgui = this->GetApplicationGUI();
     //  API is changing between slicer versions:
@@ -775,18 +833,20 @@ void vtkMRSpectroscopyGUI::DoOtherThing( )
     vtkSlicerViewerWidget* viewer = appgui->GetActiveViewerWidget();
     vtkKWRenderWidget* rwidget = viewer->GetMainViewer();
     vtkRenderWindowInteractor* rwi = rwidget->GetRenderWindowInteractor();
+
     this->PlotView = svkPlotGridViewController::New();
     this->PlotView->SetRWInteractor(rwi);
-    this->PlotView->SetInput( ddfData );                                                                                                                                                                                                              
-    this->PlotView->SetSlice( 4 );                                                                                                                                                                                                                 
-    this->PlotView->HighlightSelectionVoxels( );                                                                                                                                                                                                   
-    this->PlotView->SetWindowLevelRange(150, 350, 0 );                                                                                                                                                                                             
+    this->PlotView->SetInput( ddfData );
+    this->PlotView->SetSlice( 4 );
+    this->PlotView->HighlightSelectionVoxels( );
+    this->PlotView->SetWindowLevelRange(150, 350, 0 );
     this->PlotView->SetWindowLevelRange(-98000000, 200000000, 1);
     AddGridObserver();
     int axialSlice = GetAxialSlice();
     if(axialSlice != -1)
         this->PlotView->SetSlice(axialSlice);
     this->HasStyle = 1;
+
 } 
 
 
@@ -795,7 +855,6 @@ int vtkMRSpectroscopyGUI::GetAxialSlice()
     double sagittal = this->RedScale->GetValue();
     std::cerr << "Sagittal: " << sagittal << std::endl;
 
-    svkImageTopologyGenerator* gen = svkMrsTopoGenerator::New();
     vtkGenericCell* cellBuffer = vtkGenericCell::New();
 
     int voxelIndex = -1;
@@ -969,7 +1028,8 @@ void vtkMRSpectroscopyGUI::DataCallback(vtkObject *caller,
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::ProcessLogicEvents ( vtkObject *caller,
                                              unsigned long event, void *callData )
-{
+{std::cout << "ProcessLogicEvents" << std::endl;
+  std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
 
   if (this->GetLogic() == vtkMRSpectroscopyLogic::SafeDownCast(caller))
     {
@@ -985,11 +1045,24 @@ void vtkMRSpectroscopyGUI::ProcessLogicEvents ( vtkObject *caller,
 void vtkMRSpectroscopyGUI::ProcessMRMLEvents ( vtkObject *caller,
                                             unsigned long event, void *callData )
 {
-  // Fill in
-
-  if (event == vtkMRMLScene::SceneCloseEvent)
+  if (event == vtkMRMLScene::SceneLoadStartEvent)
+  {
+    return;
+  }
+  if (event == vtkMRMLScene::SceneLoadEndEvent)
+  {
+    if (this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") > 0)
     {
+	// TODO: should GetNodesByClass, but don't know how to do so.
+	vtkCollection* collection = this->GetMRMLScene()->GetNodesByName("vtkMRMLImageDataNode1");
+	vtkObject* object = collection->GetItemAsObject(0);
+	vtkMRMLImageDataNode* dataNode = vtkMRMLImageDataNode::SafeDownCast(object);
+	SetSpectraData(dataNode->GetData());
     }
+    return;
+  }
+
+
 }
 
 
@@ -1016,9 +1089,7 @@ void vtkMRSpectroscopyGUI::BuildGUI ( )
   this->UIPanel->AddPage ( "SIVIC MR Spectroscopy", "SIVIC MR Spectroscopy", NULL );
 
   BuildGUIForHelpFrame();
-  BuildGUIForTestFrame1();
-  BuildGUIForTestFrame2();
-
+  BuildGUIForSpectraFrame();
 }
 
 
@@ -1037,7 +1108,7 @@ void vtkMRSpectroscopyGUI::BuildGUIForHelpFrame ()
 
 
 //---------------------------------------------------------------------------
-void vtkMRSpectroscopyGUI::BuildGUIForTestFrame1()
+void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
 {
 
     vtkSlicerApplication *app = (vtkSlicerApplication *)this->GetApplication();
@@ -1065,30 +1136,23 @@ void vtkMRSpectroscopyGUI::BuildGUIForTestFrame1()
     // -----------------------------------------
     // Test push button
 
-    this->VolumeSelector = vtkSlicerNodeSelectorWidget::New();
-    this->VolumeSelector->SetNodeClass("vtkMRMLScalarVolumeNode", NULL, NULL, NULL);
-    this->VolumeSelector->SetParent(conBrowsFrame->GetFrame() );
-    this->VolumeSelector->Create();
-    this->VolumeSelector->SetMRMLScene(this->Logic->GetMRMLScene());
-    this->VolumeSelector->UpdateMenu();
-    
-    this->VolumeSelector->SetBorderWidth(2);
-    this->VolumeSelector->SetLabelText( "Input Volume: ");
-    this->VolumeSelector->SetBalloonHelpString("select an input volume from the current mrml scene.");
-    app->Script("pack %s -side top -anchor e -padx 20 -pady 4",
-	        this->VolumeSelector->GetWidgetName());
+    // File browser
+    this->LoadSpectraButton = vtkKWLoadSaveButtonWithLabel::New();
+    this->LoadSpectraButton->SetParent ( frame->GetFrame() );
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetMasterWindow ( this->GetApplicationGUI()->GetMainSlicerWindow() );
+    this->LoadSpectraButton->Create ( );
+    this->LoadSpectraButton->SetWidth(20);
+    this->LoadSpectraButton->GetWidget()->SetText ("Select Volume File");
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetTitle("Open Volume File");
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetFileTypes("{ {Spectra} {*} }");
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RetrieveLastPathFromRegistry("OpenPath");
 
-    this->TestButton11 = vtkKWPushButton::New ( );
-    this->TestButton11->SetParent ( frame->GetFrame() );
-    this->TestButton11->Create ( );
-    this->TestButton11->SetText ("Load MRS Data");
-    this->TestButton11->SetWidth (12);
-    
-    this->TestButton12 = vtkKWPushButton::New ( );
-    this->TestButton12->SetParent ( frame->GetFrame() );
-    this->TestButton12->Create ( );
-    this->TestButton12->SetText ("Test 12");
-    this->TestButton12->SetWidth (12);
+    // Display button
+    this->DisplayButton = vtkKWPushButton::New();
+    this->DisplayButton->SetParent(frame->GetFrame());
+    this->DisplayButton->Create();
+    this->DisplayButton->SetText("Display");
+    this->DisplayButton->SetWidth(10);
     
     // Create the x range widget
     this->xSpecRange = vtkKWRange::New();
@@ -1113,88 +1177,106 @@ void vtkMRSpectroscopyGUI::BuildGUIForTestFrame1()
     this->ySpecRange->SetParent( frame->GetFrame() );
     this->ySpecRange->SetLabelText( "Amplitude" );
     this->ySpecRange->SetBalloonHelpString("Adjusts y range of the spectroscopic data.");
-    this->ySpecRange->SetWholeRange(0, 1);
+    this->ySpecRange->SetWholeRange(-150000000, 150000000);
     this->ySpecRange->SetResolution(1.0);
     this->ySpecRange->Create();
-    this->ySpecRange->SetRange(0, 1);
+    this->ySpecRange->SetRange(-150000000, 150000000);
     this->ySpecRange->EnabledOff();
     this->ySpecRange->SetSliderSize(3);
     this->ySpecRange->SetEntry1PositionToTop();
     this->ySpecRange->SetEntry2PositionToTop();
     this->ySpecRange->SetLabelPositionToTop();
 
-    this->ySpecRange->SetWholeRange(0, 1);
-    this->ySpecRange->SetRange(0, 1);
+    //this->ySpecRange->SetWholeRange(0, 1);
+    //this->ySpecRange->SetRange(0, 1);
     this->ySpecRange->ClampRangeOff();
 
+    // display spectra button
+    this->checkBoxOrginal = vtkKWCheckButton::New();
+    this->checkBoxOrginal->SetParent(frame->GetFrame());
+    this->checkBoxOrginal->Create();
+    this->checkBoxOrginal->SelectedStateOff();
+    this->checkBoxOrginal->SetText("Original Spectra");
+
+    // display channel2 button
+    this->checkBoxChannel2 = vtkKWCheckButton::New();
+    this->checkBoxChannel2->SetParent(frame->GetFrame());
+    this->checkBoxChannel2->Create();
+    this->checkBoxChannel2->SelectedStateOff();
+    this->checkBoxChannel2->SetText("Channel 2");
+
+    // display channel3 button
+    this->checkBoxChannel3 = vtkKWCheckButton::New();
+    this->checkBoxChannel3->SetParent(frame->GetFrame());
+    this->checkBoxChannel3->Create();
+    this->checkBoxChannel3->SelectedStateOff();
+    this->checkBoxChannel3->SetText("Channel 3");
+
+    // display channel4 button
+    this->checkBoxChannel4 = vtkKWCheckButton::New();
+    this->checkBoxChannel4->SetParent(frame->GetFrame());
+    this->checkBoxChannel4->Create();
+    this->checkBoxChannel4->SelectedStateOff();
+    this->checkBoxChannel4->SetText("Channel 4");
+
+    // display metabolite map
+    this->checkBoxMetMap = vtkKWCheckButton::New();
+    this->checkBoxMetMap->SetParent(frame->GetFrame());
+    this->checkBoxMetMap->Create();
+    this->checkBoxMetMap->SelectedStateOff();
+    this->checkBoxMetMap->SetText("Metabolite Map");
 
     int row = 0;
-    this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky ewns", this->TestButton11->GetWidgetName(), row );
+    this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky ewns", this->LoadSpectraButton->GetWidgetName(), row);
+
+/*    row++;
+    this->Script("grid %s -row %d -column 0 -sticky ewns -pady 4", this->DisplayButton->GetWidgetName(), row);
+*/
 
     row++;
-    this->Script("grid %s -row %d -column 0 -sticky nsew -columnspan 2", this->xSpecRange->GetWidgetName(), row );
+    this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky nsew", this->xSpecRange->GetWidgetName(), row );
 
     row++;
-    this->Script("grid %s -row %d -column 0 -sticky nsew -columnspan 2", this->ySpecRange->GetWidgetName(), row );
+    this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky nsew", this->ySpecRange->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxOrginal->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxChannel2->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxChannel3->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxChannel4->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxMetMap->GetWidgetName(), row );
 
 
     this->SpectraSlider = vtkKWScale::New ( );
+
+
+    // Test push button
+    this->VolumeSelector = vtkSlicerNodeSelectorWidget::New();
+    this->VolumeSelector->SetNodeClass("vtkMRMLScalarVolumeNode", NULL, NULL, NULL);
+    this->VolumeSelector->SetParent(conBrowsFrame->GetFrame() );
+    this->VolumeSelector->Create();
+    this->VolumeSelector->SetMRMLScene(this->Logic->GetMRMLScene());
+    this->VolumeSelector->UpdateMenu();
+    
+    this->VolumeSelector->SetBorderWidth(2);
+    this->VolumeSelector->SetLabelText( "Input Volume: ");
+    this->VolumeSelector->SetBalloonHelpString("select an input volume from the current mrml scene.");
+    app->Script("pack %s -side top -anchor e -padx 20 -pady 4",
+	        this->VolumeSelector->GetWidgetName());
+
   
     conBrowsFrame->Delete();
     frame->Delete();
 
 }
-
-
-//---------------------------------------------------------------------------
-void vtkMRSpectroscopyGUI::BuildGUIForTestFrame2 ()
-{
-  vtkSlicerApplication *app = (vtkSlicerApplication *)this->GetApplication();
-  vtkKWWidget *page = this->UIPanel->GetPageWidget ("SIVIC MR Spectroscopy");
-  
-  vtkSlicerModuleCollapsibleFrame *conBrowsFrame = vtkSlicerModuleCollapsibleFrame::New();
-
-  conBrowsFrame->SetParent(page);
-  conBrowsFrame->Create();
-  conBrowsFrame->SetLabelText("Test Frame 2");
-  //conBrowsFrame->CollapseFrame();
-  //app->Script ("pack %s -side top -anchor nw -fill x -padx 2 -pady 2 -in %s",
-               //conBrowsFrame->GetWidgetName(), page->GetWidgetName());
-
-  // -----------------------------------------
-  // Test child frame
-
-  vtkKWFrameWithLabel *frame = vtkKWFrameWithLabel::New();
-  frame->SetParent(conBrowsFrame->GetFrame());
-  frame->Create();
-  frame->SetLabelText ("SIVIC MRS Module");
-  //this->Script ( "pack %s -side top -fill x -expand y -anchor w -padx 2 -pady 2",
-                 //frame->GetWidgetName() );
-  
-  // -----------------------------------------
-  // Test push button
-
-  this->TestButton21 = vtkKWPushButton::New ( );
-  this->TestButton21->SetParent ( frame->GetFrame() );
-  this->TestButton21->Create ( );
-  this->TestButton21->SetText ("Test 21");
-  this->TestButton21->SetWidth (12);
-
-  this->TestButton22 = vtkKWPushButton::New ( );
-  this->TestButton22->SetParent ( frame->GetFrame() );
-  this->TestButton22->Create ( );
-  this->TestButton22->SetText ("Test 22");
-  this->TestButton22->SetWidth (12);
-
-  //this->Script("pack %s %s -side left -padx 2 -pady 2", 
-               //this->TestButton21->GetWidgetName(),
-               //this->TestButton22->GetWidgetName());
-
-
-  conBrowsFrame->Delete();
-  frame->Delete();
-}
-
 
 //----------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::UpdateAll()

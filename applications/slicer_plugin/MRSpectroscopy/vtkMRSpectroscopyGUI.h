@@ -75,8 +75,10 @@
 using namespace svk; 
 
 class vtkKWPushButton;
+class vtkKWLoadSaveButtonWithLabel;
 class vtkKWRange;
 class vtkKWRadioButton;
+class vtkKWCheckButton;
 class vtkSlicerNodeSelectorWidget;
 class vtkInteractorObserver;
 
@@ -86,6 +88,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
     public:
 
         vtkTypeRevisionMacro ( vtkMRSpectroscopyGUI, vtkSlicerModuleGUI );
+    	vtkGetObjectMacro ( LoadSpectraButton, vtkKWLoadSaveButtonWithLabel );
 
         //----------------------------------------------------------------
         // Set/Get Methods
@@ -133,6 +136,8 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         virtual void RemoveGUIObservers ( );
         virtual void AddLogicObservers ( );
         virtual void RemoveLogicObservers ( );
+        virtual void AddMRMLObservers ( ); 
+        virtual void RemoveMRMLObservers ( );
         
         //----------------------------------------------------------------
         // Event Handlers
@@ -157,8 +162,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         
     protected:
         void BuildGUIForHelpFrame();
-        void BuildGUIForTestFrame1();
-        void BuildGUIForTestFrame2();
+        void BuildGUIForSpectraFrame();
 
         void ProcessTimerEvents();
         void HandleMouseEvent(vtkSlicerInteractorStyle *style);
@@ -176,10 +180,8 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         //----------------------------------------------------------------
     
         vtkSlicerNodeSelectorWidget*    VolumeSelector;
-        vtkKWPushButton*                TestButton11;
-        vtkKWPushButton*                TestButton12;
-        vtkKWPushButton*                TestButton21;
-        vtkKWPushButton*                TestButton22;
+    	vtkKWLoadSaveButtonWithLabel*	LoadSpectraButton;
+        vtkKWPushButton*                DisplayButton;
         vtkKWScale*                     RedScale;
         vtkKWScale*                     YellowScale;
         vtkKWScale*                     GreenScale;
@@ -189,6 +191,11 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         vtkKWScale*                     SpectraSlider;
         vtkKWRange*                     xSpecRange;
         vtkKWRange*                     ySpecRange;
+	vtkKWCheckButton*		checkBoxOrginal;
+	vtkKWCheckButton*		checkBoxChannel2;
+	vtkKWCheckButton*		checkBoxChannel3;
+	vtkKWCheckButton*		checkBoxChannel4;
+	vtkKWCheckButton*		checkBoxMetMap;
 
     
         //----------------------------------------------------------------
@@ -204,8 +211,9 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         vtkInteractorObserver*          Style;
         int                             HasStyle;
         void                            SplitWindow();
-        void                            LoadSpectra();
-        void                            DoOtherThing();
+        void                            LoadSpectraFromFile(const char *filename);
+        void                            SetSpectraData(svkImageData* ddfData);
+        void                            DisplaySpectra();
         void                            ResetStyle();
         void                            RenderActor(vtkProp* actor);
         void                            UpdateGridScalars();

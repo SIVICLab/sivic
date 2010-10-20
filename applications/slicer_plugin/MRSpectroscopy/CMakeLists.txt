@@ -182,6 +182,8 @@ install(FILES
 set(MRSpectroscopy_SRCS 
     vtkMRSpectroscopyLogic.cxx
     vtkMRSpectroscopyGUI.cxx
+    vtkMRMLImageDataNode.cxx
+    vtkMRMLImageDataStorageNode.cxx
 )
 
 

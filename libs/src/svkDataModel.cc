@@ -269,13 +269,12 @@ svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
         reader->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         reader->SetFileName( fileName.c_str() );
         reader->Update();
-    
         myData = reader->GetOutput();
 
         reader->RemoveObserver(progressCallback);
     } else {
     
-        vtkWarningWithObjectMacro( this, "Can not find appropriate reader for " << fileName );   
+        vtkWarningWithObjectMacro( this, "Can not find appropriate reader for " << fileName );
 
     }
     
@@ -311,7 +310,7 @@ svkImageData* svkDataModel::AddFileToModel(string objectName, string fileName)
         return myData;
     }
 }
-   
+
 
 /*!
  *  Not yet implemented, returns 0.
@@ -320,7 +319,32 @@ bool svkDataModel::WriteToFile( string objectName, string fileName)
 {
     return 0;
 }
-   
+
+/*!
+ *  Not yet implemented, returns 0.
+ */ 
+bool svkDataModel::WriteToFile(svkImageData *data, const char *fileName)
+{
+    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    svkImageWriter* writer;
+
+    string fileNameString = string( fileName);
+    size_t pos = fileNameString.find(".");
+    if( strcmp( fileNameString.substr(pos).c_str(), ".ddf" ) == 0 ) {
+        writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DDF));
+    } else {
+        writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_MRS));
+    }
+    cout << "FN: " << fileName << endl;
+    writer->SetFileName(fileName);
+    writerFactory->Delete();
+
+    writer->SetInput(data);
+
+    writer->Write();
+    writer->Delete();
+    return 0;
+}
 
 /*!
  *  Gets the entire state hash.

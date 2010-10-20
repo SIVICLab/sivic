@@ -28,6 +28,12 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
+INCLUDE(CheckCCompilerFlag)
+IF(UNIX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+ENDIF(UNIX)
+
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF(COMMAND CMAKE_POLICY)
@@ -37,6 +43,7 @@ option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
 option( BUILD_APPS "Build mini-applications." FALSE )
 option( BUILD_OSIRIX "Build OsiriX Plugin." FALSE )
+option( BUILD_SLICER "Build Slicer Plugin." TRUE )
 option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
 option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
@@ -73,6 +80,10 @@ if( BUILD_OSIRIX)
 #    ADD_DEFINITIONS(-DCMAKE_UNIVERSAL=TRUE)
     SET (CMAKE_UNIVERSAL TRUE)
 endif (BUILD_OSIRIX)
+
+if( BUILD_SLICER)
+    add_subdirectory (applications/slicer_plugin/MRSpectroscopy)
+endif (BUILD_SLICER)
 
 if( BUILD_LIBRARY )
     add_subdirectory (libs/src)
