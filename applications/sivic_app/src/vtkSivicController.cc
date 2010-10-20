@@ -1164,8 +1164,8 @@ void vtkSivicController::SaveData( char* fileName )
 //! Saves a secondary capture.
 void vtkSivicController::SaveSecondaryCapture( char* captureType )
 {
-    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
-        PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
+    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
+        PopupMessage( "SPECTRA MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
         return; 
     }
     vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
@@ -1283,12 +1283,23 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
      * the original header.
      */
     outputImage = svkMriImageData::New();
-    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+
+    
+    if( this->model->GetDataObject( "AnatomicalData" ) != NULL ) {
+        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+    } else { // If only spectra are loaded
+        outputImage->SetDcmHeader( this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
+        this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->Register(this);
+    }
     //Give it a default dcos so it can be viewed in an image viewer
     double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
-    this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
+    if( this->model->GetDataObject( "AnatomicalData" ) != NULL ) {
+        this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
+    } else { //If only spectra are loaded
+        this->model->GetDataObject( "SpectroscopicData" )->GetDcos(dcos);
+    }
     outputImage->SetDcos(dcos);
-    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     if( writer->IsA("svkImageWriter") ) {  
         static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
 
