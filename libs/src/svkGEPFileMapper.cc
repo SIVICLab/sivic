@@ -88,14 +88,15 @@ svkGEPFileMapper::~svkGEPFileMapper()
 void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
     svkDcmHeader* header, float pfileVersion, int swapBytes, vtkstd::map < vtkstd::string, void* > inputArgs)
 {
-    this->iod = svkMRSIOD::New();
-    this->iod->SetDcmHeader( this->dcmHeader ); 
-
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
     this->swapBytes = swapBytes;
     this->inputArgs = inputArgs;
+
+    this->iod = svkMRSIOD::New();
+    this->iod->SetDcmHeader( this->dcmHeader ); 
+
     this->InitPatientModule();
     this->InitGeneralStudyModule();
     this->InitGeneralSeriesModule();
