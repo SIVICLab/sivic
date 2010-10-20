@@ -55,6 +55,7 @@ file( MAKE_DIRECTORY [ ${TEST_RESULTS_ROOT} ] )
 #   paths and rootnames in header files and provenance. 
 #############################################################
 SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
+SET( DIFF_OPT_DCM --ignore-matching-lines=UID)
 
 
 #############################################################
@@ -70,113 +71,121 @@ SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
 ########################
 #   20X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_1)
+SET( TEST_NAME TEST_MCHK_20XPF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/20x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20_x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_2)
+SET( TEST_NAME TEST_20XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   15X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_3)
+SET( TEST_NAME TEST_MCHK_15XPF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/15x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/15x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_4)
+SET( TEST_NAME TEST_15XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   14X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_5)
+SET( TEST_NAME TEST_MCHK_14XPF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/14x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_6)
+SET( TEST_NAME TEST_14XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   12X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_7)
+SET( TEST_NAME TEST_MCHK_12XPF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/12x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/12x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_8)
+SET( TEST_NAME TEST_12XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   11X GE Raw to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_9)
+SET( TEST_NAME TEST_MCHK_11XPF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/11x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/11x_raw -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_10)
+SET( TEST_NAME TEST_11XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
-
-
-########################
-#   9X GE Raw to DDF
-########################
-#SET( TEST_NAME TEST_MCHK_6)
-#SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/9x)
-#ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/test_svk_file_convert --platform ${PLATFORM} --bin_path ${TEST_BIN_PATH} --test_path ${SVK_TEST_ROOT} --test_name ${TEST_NAME} --baseline_path ${TEST_CASE_ROOT} --opts "-i ${TEST_CASE_ROOT}/input/9x_raw -o out -t 2" )
 
 
 ########################
 #   UCSF ddf to UCSF DDF
 ########################
-SET( TEST_NAME TEST_MCHK_11)
+SET( TEST_NAME TEST_MCHK_DDF_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/20x_1.ddf -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_12)
+SET( TEST_NAME TEST_DDF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   DICOM MRI to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_MCHK_13)
+SET( TEST_NAME TEST_MCHK_DCMMRI_2_IDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E0000S4I1.DCM -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_14)
-ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
+SET( TEST_NAME TEST_DCMMRI_2_IDF_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_1 )
+
+
+########################
+#   DICOM MRI to DICOM MRI 
+########################
+SET( TEST_NAME TEST_MCHK_DCMMRI_2_DCMMRI)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mri_phantom)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E0000S4I1.DCM -o${TEST_RESULTS_PATH}/out.dcm -t 6 )
+
+SET( TEST_NAME TEST_DCMMRI_2_DCMMRI_XML)
+ADD_TEST(${TEST_NAME} dcm2xml +M +Wb ${TEST_RESULTS_PATH}/out.dcm ${TEST_RESULTS_PATH}/out.xml ) 
+   
+SET( TEST_NAME TEST_DCMMRI_2_DCMMRI_DIFF)
+ADD_TEST(${TEST_NAME} diff ${DIFF_OPT_DCM} -r ${TEST_RESULTS_PATH}/out.xml ${TEST_CASE_ROOT}/out_2/out.xml ) 
 
 
 ########################
 #   UCSF IDF to UCSF IDF 
 #   int2
 ########################
-SET( TEST_NAME TEST_MCHK_IDF2IDFINT2)
+SET( TEST_NAME TEST_MCHK_IDF_2_IDF_INT2)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf_int2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol.idf -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_IDF2IDFINT2_DIFF)
+SET( TEST_NAME TEST_IDF_2_IDF_INT2_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
@@ -184,117 +193,117 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 #   UCSF IDF to UCSF IDF 
 #   real 
 ########################
-SET( TEST_NAME TEST_MCHK_IDF2IDFREAL)
+SET( TEST_NAME TEST_MCHK_IDF_2_IDF_REAL)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf_real)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol.idf -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_IDF2IDFREAL_DIFF)
+SET( TEST_NAME TEST_IDF_2_IDF_REAL_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
 
 
 ########################
 #   VARIAN fdf to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_MCHK_FDF2IDF)
+SET( TEST_NAME TEST_MCHK_FDF_2_IDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fdf)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/lac.0001.fdf -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_FDF2IDF_DIFF)
+SET( TEST_NAME TEST_FDF_2_IDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   VARIAN fid to UCSF DDF 
 ########################
-SET( TEST_NAME TEST_MCHK_19)
+SET( TEST_NAME TEST_MCHK_VARIANFID_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/varian/fid_cs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/fid -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_20)
+SET( TEST_NAME TEST_VARIANFID_2_DDF_DIFF )
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   GE Signa 5x to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_MCHK_21)
+SET( TEST_NAME TEST_MCHK_SIGNA5X_2_IDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5x)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E8668S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_22)
+SET( TEST_NAME TEST_SIGNA5X_2_IDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   GE Signa 5x V2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_MCHK_23)
+SET( TEST_NAME TEST_MCHK_SIG5XV2_2_IDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/Signa5XVersion2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E18636S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_24)
+SET( TEST_NAME TEST_SIG5XV2_2_IDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
-#   GE Signa 5x V2 to UCSF IDF 
+#   GE Signa LX2 to UCSF IDF 
 ########################
-SET( TEST_NAME TEST_MCHK_25)
+SET( TEST_NAME TEST_MCHK_SIGLX2_2_IDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_signa_files/SignaLX2)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/E12916S3I1.MR -o${TEST_RESULTS_PATH}/out -t 3 )
 
-SET( TEST_NAME TEST_26)
+SET( TEST_NAME TEST_SIGLX2_2_IDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
-#   SIEMENS RDA to DICOM DDF
+#   SIEMENS RDA to DDF
 ########################
-SET( TEST_NAME TEST_MCHK_27)
+SET( TEST_NAME TEST_MCHK_RDA_2_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/siemens_rda/sv)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/sample.rda -o${TEST_RESULTS_PATH}/out -t 2 )
 
-SET( TEST_NAME TEST_28)
+SET( TEST_NAME TEST_RDA_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   DICOM MRS to DICOM MRS 
 ########################
-SET( TEST_NAME TEST_MCHK_29)
+SET( TEST_NAME TEST_MCHK_DCMMRS_2_DCMMRS)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/DICOM/mrs)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_file_convert -i ${TEST_CASE_ROOT}/input/mrs.dcm -o${TEST_RESULTS_PATH}/out.dcm -t 4 )
 
-SET( TEST_NAME TEST_30)
+SET( TEST_NAME TEST_DCMMRS_2_DCMMRS )
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
 
 ########################
 #   PFile Reader Tests: 
 ########################
-SET( TEST_NAME TEST_MCHK_31)
+SET( TEST_NAME TEST_MCHK_GEPFILE_2_DDF_1)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME}/ )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -as )
 
-SET( TEST_NAME TEST_32)
+SET( TEST_NAME TEST_GEPFILE_2_DDF_1_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_4 )
 
 
@@ -303,13 +312,13 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 #   this one is too large for valgrind 
 #   so turn off MCHK for now:
 ########################
-SET( TEST_NAME TEST_33)
+SET( TEST_NAME TEST_GEPFILE_2_DDF_2)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_mbrease)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/mbrease_teavg -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID )
 
-SET( TEST_NAME TEST_34)
+SET( TEST_NAME TEST_GEPFILE_2_DDF_2_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_6 )
 
 
@@ -318,12 +327,12 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 #   this one is too large for valgrind 
 #   so turn off MCHK for now:
 ########################
-SET( TEST_NAME TEST_35)
+SET( TEST_NAME TEST_GEPFILE_2_DDF_LAC)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/14x_lac_flyback)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/14x_lac_flyback -o${TEST_RESULTS_PATH}/out -t 2 -a -u --deid_type 1 --deid_pat_id DEID_PATID --deid_study_id DEID_STUDYID --one_time_pt)
 
-SET( TEST_NAME TEST_36)
+SET( TEST_NAME TEST_GEPFILE_2_DDF_LC_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
 
