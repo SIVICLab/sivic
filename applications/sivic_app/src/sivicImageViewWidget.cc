@@ -698,8 +698,10 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->volSelButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         if ( this->volSelButton->GetSelectedState() ) {
             this->overlayController->TurnPropOn( svkOverlayView::VOL_SELECTION );
+            this->plotController->TurnPropOn( svkPlotGridView::VOL_SELECTION );
         } else {
             this->overlayController->TurnPropOff( svkOverlayView::VOL_SELECTION );
+            this->plotController->TurnPropOff( svkPlotGridView::VOL_SELECTION );
         }
         this->overlayController->GetView()->Refresh();
 

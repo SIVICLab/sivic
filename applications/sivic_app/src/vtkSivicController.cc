@@ -2117,7 +2117,6 @@ void vtkSivicController::EnableWidgets()
         } else {
             this->imageViewWidget->plotGridButton->EnabledOn();
         }
-        this->imageViewWidget->volSelButton->EnabledOn();
     }
 
     if ( model->DataExists("SpectroscopicData") ) {
@@ -2154,6 +2153,7 @@ void vtkSivicController::EnableWidgets()
         if( numTimePoints > 1 ) {
             this->spectraViewWidget->timePointSlider->EnabledOn();
         }
+        this->imageViewWidget->volSelButton->EnabledOn();
     }
 
     if ( model->DataExists("AnatomicalData") ) {

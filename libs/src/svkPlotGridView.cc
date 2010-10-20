@@ -269,9 +269,17 @@ void svkPlotGridView::SetSlice(int slice)
         if( this->GetProp( VOL_SELECTION ) != NULL ) {
             if( svkMrsImageData::SafeDownCast( this->dataVector[MRS])
                       ->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-                this->GetProp( VOL_SELECTION )->SetVisibility(1);
+                if( !this->GetRenderer( svkPlotGridView::PRIMARY)
+                            ->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) ) ) {
+                    this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( 
+                                   this->GetProp( svkPlotGridView::VOL_SELECTION) );
+                }
             } else {
-                this->GetProp( VOL_SELECTION )->SetVisibility(0);
+                if( this->GetRenderer( svkPlotGridView::PRIMARY)
+                            ->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) ) ) {
+                    this->GetRenderer( svkPlotGridView::PRIMARY)
+                            ->RemoveActor(this->GetProp( svkPlotGridView::VOL_SELECTION) );
+                }
             }
         }
 
