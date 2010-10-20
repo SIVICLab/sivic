@@ -188,22 +188,24 @@ void sivicWindowLevelWidget::SetSyncPlotGrid( bool syncPlotGrid )
 void sivicWindowLevelWidget::UpdateSliders() 
 {
     if( this->IsCreated() && this->updateEnabled) {
+        this->levelSlider->SetResolution( this->windowRange[1]/500.0 );
+        this->levelSlider->SetRange( this->levelRange );
         this->levelSlider->SetValue( this->level );
         this->levelSlider->GetWidget()->SetValue( this->level );
-        this->levelSlider->SetRange( this->levelRange );
-        this->levelSlider->SetResolution( this->windowRange[1]/500.0 );
+        this->windowSlider->SetResolution( this->windowRange[1]/500.0 );
+        this->windowSlider->SetRange( this->windowRange );
         this->windowSlider->SetValue( this->window );
         this->windowSlider->GetWidget()->SetValue( this->window );
-        this->windowSlider->SetRange( this->windowRange );
-        this->windowSlider->SetResolution( this->windowRange[1]/500.0 );
-        this->maxSlider->SetValue( this->level + this->window/2.0);
+
+        this->maxSlider->SetResolution( this->windowRange[1]/500.0 );
         this->maxSlider->SetRange( this->levelRange[0]
                                  , this->levelRange[1]);
-        this->maxSlider->SetResolution( this->windowRange[1]/500.0 );
-        this->minSlider->SetValue( this->level - this->window/2.0);
+        this->maxSlider->SetValue( this->level + this->window/2.0);
+
+        this->minSlider->SetResolution( this->windowRange[1]/500.0 );
         this->minSlider->SetRange( this->levelRange[0]
                                  , this->levelRange[1]);
-        this->minSlider->SetResolution( this->windowRange[1]/500.0 );
+        this->minSlider->SetValue( this->level - this->window/2.0);
     }
 }
 
@@ -307,11 +309,12 @@ void sivicWindowLevelWidget::CreateWidget()
     this->levelSlider->SetLabelWidth( 10 );
     this->levelSlider->SetOrientationToHorizontal();
     this->levelSlider->SetLabelText("Level");
-    this->levelSlider->SetValue( this->level );
-    this->levelSlider->SetRange( this->levelRange );
     this->levelSlider->SetBalloonHelpString("Adjusts Level.");
     this->levelSlider->SetLabelPositionToLeft();
     this->levelSlider->SetEntryPositionToRight();
+    this->levelSlider->SetResolution( this->windowRange[1]/500.0 );
+    this->levelSlider->SetRange( this->levelRange );
+    this->levelSlider->SetValue( this->level );
     this->levelSlider->ClampValueOff();
 
     this->windowSlider = this->imageSliders->GetWidget()->AddWidget(1);
@@ -322,11 +325,12 @@ void sivicWindowLevelWidget::CreateWidget()
     this->windowSlider->SetLabelWidth( 10 );
     this->windowSlider->SetOrientationToHorizontal();
     this->windowSlider->SetLabelText("Window");
-    this->windowSlider->SetValue( this->window );
-    this->windowSlider->SetRange( this->windowRange );
     this->windowSlider->SetBalloonHelpString("Adjusts Level.");
     this->windowSlider->SetLabelPositionToLeft();
     this->windowSlider->SetEntryPositionToRight();
+    this->windowSlider->SetResolution( this->windowRange[1]/500.0 );
+    this->windowSlider->SetRange( this->windowRange );
+    this->windowSlider->SetValue( this->window );
     this->windowSlider->ClampValueOff();
 
 
@@ -338,13 +342,14 @@ void sivicWindowLevelWidget::CreateWidget()
     this->minSlider->SetLabelWidth( 10 );
     this->minSlider->SetOrientationToHorizontal();
     this->minSlider->SetLabelText("Min");
-    this->minSlider->SetValue( this->level - this->window/2.0);
-    this->minSlider->SetRange( this->levelRange[0]
-                             , this->levelRange[1]);
 
     this->minSlider->SetBalloonHelpString("Adjusts Min.");
     this->minSlider->SetLabelPositionToLeft();
     this->minSlider->SetEntryPositionToRight();
+    this->minSlider->SetResolution( this->windowRange[1]/500.0 );
+    this->minSlider->SetRange( this->levelRange[0]
+                             , this->levelRange[1]);
+    this->minSlider->SetValue( this->level - this->window/2.0);
     this->minSlider->ClampValueOff();
 
     this->maxSlider = this->imageSliders->GetWidget()->AddWidget(2);
@@ -355,12 +360,14 @@ void sivicWindowLevelWidget::CreateWidget()
     this->maxSlider->SetLabelWidth( 10 );
     this->maxSlider->SetOrientationToHorizontal();
     this->maxSlider->SetLabelText("Max");
-    this->maxSlider->SetValue( this->level + this->window/2.0);
-    this->maxSlider->SetRange( this->levelRange[0], this->levelRange[1]);
 
     this->maxSlider->SetBalloonHelpString("Adjusts Max.");
     this->maxSlider->SetLabelPositionToLeft();
     this->maxSlider->SetEntryPositionToRight();
+    this->maxSlider->SetResolution( this->windowRange[1]/500.0 );
+    this->maxSlider->SetRange( this->levelRange[0]
+                             , this->levelRange[1]);
+    this->maxSlider->SetValue( this->level + this->window/2.0);
     this->maxSlider->ClampValueOff();
 
 
@@ -437,9 +444,9 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->SetLevel( level );
         this->UpdateView();
         stringstream increment;
-        increment << "SetValue " << level + 1;
+        increment << "SetValue " << level + this->levelSlider->GetResolution();
         stringstream decrement;
-        decrement << "SetValue " << level - 1;
+        decrement << "SetValue " << level - this->levelSlider->GetResolution();
         this->UpdateSliders();
         this->levelSlider->RemoveBinding( "<Left>");
         this->levelSlider->AddBinding( "<Left>", this->levelSlider, decrement.str().c_str() );
@@ -451,9 +458,9 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->SetWindow( window );
         this->UpdateView();
         stringstream increment;
-        increment << "SetValue " << window + 1;
+        increment << "SetValue " << window + this->windowSlider->GetResolution();
         stringstream decrement;
-        decrement << "SetValue " << window - 1;
+        decrement << "SetValue " << window - this->windowSlider->GetResolution();
         this->UpdateSliders();
         this->windowSlider->RemoveBinding( "<Left>");
         this->windowSlider->AddBinding( "<Left>", this->windowSlider, decrement.str().c_str() );
@@ -470,14 +477,15 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->level = level;
         this->UpdateSliders();
         stringstream increment;
-        increment << "SetValue " << min + 1;
+        increment << "SetValue " << min + this->minSlider->GetResolution();
         stringstream decrement;
-        decrement << "SetValue " << min - 1;
-        this->windowSlider->RemoveBinding( "<Left>");
-        this->windowSlider->AddBinding( "<Left>", this->windowSlider, decrement.str().c_str() );
-        this->windowSlider->RemoveBinding( "<Right>");
-        this->windowSlider->AddBinding( "<Right>", this->windowSlider, increment.str().c_str() );
-        this->windowSlider->Focus();
+        decrement << "SetValue " << min - this->minSlider->GetResolution();
+        this->UpdateSliders();
+        this->minSlider->RemoveBinding( "<Left>");
+        this->minSlider->AddBinding( "<Left>", this->minSlider, decrement.str().c_str() );
+        this->minSlider->RemoveBinding( "<Right>");
+        this->minSlider->AddBinding( "<Right>", this->minSlider, increment.str().c_str() );
+        this->minSlider->Focus();
     } else if( caller == this->maxSlider->GetWidget() ) {
         double max = this->maxSlider->GetValue(); 
         double min = this->level - this->window/2.0;
@@ -488,14 +496,15 @@ void sivicWindowLevelWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         this->level = level;
         this->UpdateSliders();
         stringstream increment;
-        increment << "SetValue " << max + 1;
+        increment << "SetValue " << max + this->maxSlider->GetResolution();
         stringstream decrement;
-        decrement << "SetValue " << max - 1;
-        this->windowSlider->RemoveBinding( "<Left>");
-        this->windowSlider->AddBinding( "<Left>", this->windowSlider, decrement.str().c_str() );
-        this->windowSlider->RemoveBinding( "<Right>");
-        this->windowSlider->AddBinding( "<Right>", this->windowSlider, increment.str().c_str() );
-        this->windowSlider->Focus();
+        decrement << "SetValue " << max - this->maxSlider->GetResolution();
+        this->UpdateSliders();
+        this->maxSlider->RemoveBinding( "<Left>");
+        this->maxSlider->AddBinding( "<Left>", this->maxSlider, decrement.str().c_str() );
+        this->maxSlider->RemoveBinding( "<Right>");
+        this->maxSlider->AddBinding( "<Right>", this->maxSlider, increment.str().c_str() );
+        this->maxSlider->Focus();
     } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::EndWindowLevelEvent ) {
         if(   ( this->overlayController->GetCurrentStyle() == svkOverlayViewController::WINDOW_LEVEL  
               && this->target == svkOverlayViewController::REFERENCE_IMAGE)

@@ -180,22 +180,23 @@ public:
          isi->GetWindowLevelCurrentPosition()[1]) / size[1];
       
       // Scale by current values
+      double dMin = 1.0/VTK_DOUBLE_MAX;
 
-      if (fabs(window) > 0.01)
+      if (fabs(window) > dMin )
         {
         dx = dx * window;
         }
       else
         {
-        dx = dx * (window < 0 ? -0.01 : 0.01);
+        dx = dx * (window < 0 ? -dMin : dMin);
         }
-      if (fabs(level) > 0.01)
+      if (fabs(level) > dMin)
         {
         dy = dy * level;
         }
       else
         {
-        dy = dy * (level < 0 ? -0.01 : 0.01);
+        dy = dy * (level < 0 ? -dMin : dMin);
         }
       
       // Abs so that direction does not flip
@@ -217,13 +218,13 @@ public:
       
       // Stay away from zero and really
 
-      if (fabs(newWindow) < 0.01)
+      if (fabs(newWindow) < dMin)
         {
-        newWindow = 0.01*(newWindow < 0 ? -1 : 1);
+        newWindow = dMin*(newWindow < 0 ? -1 : 1);
         }
-      if (fabs(newLevel) < 0.01)
+      if (fabs(newLevel) < dMin)
         {
-        newLevel = 0.01*(newLevel < 0 ? -1 : 1);
+        newLevel = dMin*(newLevel < 0 ? -1 : 1);
         }
       
       this->IV->SetColorWindow(newWindow);
