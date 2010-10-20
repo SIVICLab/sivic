@@ -1673,11 +1673,10 @@ void svkGESigna5XReader::InitDcmHeader()
     }
 
     //  Now override elements with Multi-Frame sequences and default details:
-    svkIOD* iod = svkMRIIOD::New();
+    this->iod = svkMRIIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->SetReplaceOldElements(false); 
     iod->InitDcmHeader();
-    iod->Delete();
 
     //  Now set DICOM header according to GE header.
     this->InitEnhancedMRImageModule();
@@ -1707,6 +1706,8 @@ void svkGESigna5XReader::InitDcmHeader()
     
     globFileNames->Delete();
     sortFileNames->Delete();
+
+    this->iod->Delete();
 }
 
 
@@ -2470,6 +2471,7 @@ void svkGESigna5XReader::InitMRImageFrameTypeMacro()
     );
 }
 
+
 /*!
  *
  *    
@@ -2526,30 +2528,6 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
             break;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTimingAndRelatedParametersSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "RepetitionTime",                     
-        (float)((double)this->imageHeader->MR_Pulse_Repetition_Time / 1000.0), 
-        "SharedFunctionalGroupsSequence",  
-        0 
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "FlipAngle",                     
-        (float)this->imageHeader->MR_Flip_Angle, 
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
     int etl = this->imageHeader->MR_Echo_Train_Length;
     int numecho = this->imageHeader->MR_Number_Of_Echoes;
     int useetl = etl ? etl : numecho;
@@ -2557,13 +2535,11 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
         useetl = 1;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "EchoTrainLength",                     
-        useetl, 
-        "SharedFunctionalGroupsSequence",  
-        0
+
+    this->iod->InitMRTimingAndRelatedParametersMacro(
+        (float)((double)this->imageHeader->MR_Pulse_Repetition_Time / 1000.0), 
+        (float)this->imageHeader->MR_Flip_Angle, 
+        useetl 
     );
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
@@ -2584,15 +2560,6 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
         0
     );
 
-    //this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-    //    "MRTimingAndRelatedParametersSequence", 
-    //    0,                                
-    //    "SpecificAbsorptionRateValue",                     
-    //    this->imageHeader->MR_Average_SAR,
-    //    "SharedFunctionalGroupsSequence",  
-    //    0
-    //);
-
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRTimingAndRelatedParametersSequence",      
         0,                          
@@ -2605,6 +2572,7 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
         "OperatingModeSequence"   
     );
 }
+
 
 /*!
  *
@@ -2738,19 +2706,8 @@ void svkGESigna5XReader::InitMREchoMacro()
         return;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MREchoSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MREchoSequence",        
-        0,                        
-        "EffectiveEchoTime",       
-        (float)((double)this->imageHeader->MR_Pulse_Echo_Time/1000.0), 
-        "SharedFunctionalGroupsSequence",    
-        0
+    this->iod->InitMREchoMacro(
+        (float)((double)this->imageHeader->MR_Pulse_Echo_Time/1000.0) 
     );
 }
 
@@ -2759,39 +2716,16 @@ void svkGESigna5XReader::InitMREchoMacro()
  */
 void svkGESigna5XReader::InitMRModifierMacro()
 {
-     if ( this->imageHeader == NULL ) {
+
+    if ( this->imageHeader == NULL ) {
         return;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRModifierSequence"
+    this->iod->InitMRModifierMacro(
+        (float)((double)this->imageHeader->MR_Pulse_Inversion_Time/1000.0)
     );
 
-    vtkstd::string str = "NO";
-    if ( this->imageHeader->MR_Pulse_Inversion_Time != 0 ) {
-        str = "YES";
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "MRModifierSequence",
-            0,
-            "InversionTimes",
-            (float)((double)this->imageHeader->MR_Pulse_Inversion_Time/1000.0),
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-    }
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "InversionRecovery",       
-        str,
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    str = "NONE";
+    vtkstd::string str = "NONE";
     if (this->imageHeader->MR_Imaging_Options & (1<<3)) {       // FC - Flow Compensated
         str = "OTHER"; // no way of knowing correct value
     }
@@ -2915,6 +2849,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
     );
 }
 
+
 /*!
  * 
  */
@@ -2924,58 +2859,17 @@ void svkGESigna5XReader::InitMRImagingModifierMacro()
         return;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRImagingModifierSequence"
+    float transmitFreq = (float)((double)this->imageHeader->MR_Center_Frequency/10000000.0);
+    float pixelBandwidth =  (float)((this->imageHeader->MR_Variable_Bandwidth*2.0*1000.0)
+                            /this->imageHeader->MR_Image_Dimension_X);
+
+    this->iod->InitMRImagingModifierMacro(
+        transmitFreq, 
+        pixelBandwidth
     );
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,                        
-        "MagnetizationTransfer",       
-        vtkstd::string("NONE"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,                        
-        "BloodSignalNulling",       
-        vtkstd::string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,                        
-        "Tagging",       
-        vtkstd::string("NONE"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,                        
-        "TransmitterFrequency",       
-        (float)((double)this->imageHeader->MR_Center_Frequency/10000000.0),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,                        
-        "PixelBandwidth",       
-        (float)((this->imageHeader->MR_Variable_Bandwidth*2.0*1000.0)
-           /this->imageHeader->MR_Image_Dimension_X),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
 }
+
 
 /*!
  *  Should work for single vs multi-coil, but will not currently 
@@ -3044,39 +2938,10 @@ void svkGESigna5XReader::InitMRTransmitCoilMacro()
         return;
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTransmitCoilSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilName",       
+    this->iod->InitMRTransmitCoilMacro(
+        "GE",
         vtkstd::string(this->imageHeader->MR_Receive_Coil_Name),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilManufacturerName",       
-        vtkstd::string(""),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    vtkstd::string coilType( "VOLUME" ); 
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilType",       
-        coilType,
-        "SharedFunctionalGroupsSequence",    
-        0                      
+        "VOLME"
     );
 
 }

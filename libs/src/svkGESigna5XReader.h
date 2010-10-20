@@ -43,9 +43,11 @@
 #define SVK_GE_SIGNA_5X_READER_H
 
 
-#include <svkImageReader2.h>
 #include <vtkStringArray.h>
+
+#include <svkImageReader2.h>
 #include <svkGEImageHeader.h>
+#include <svkMRIIOD.h>
 
 
 namespace svk {
@@ -140,6 +142,8 @@ class svkGESigna5XReader : public svkImageReader2
         void            InitMRTransmitCoilMacro();
         void            InitMRAveragesMacro();
         GESignaHeader*  imageHeader;
+        svkMRIIOD*      iod;
+
          
 
 };

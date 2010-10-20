@@ -44,10 +44,11 @@
 #define SVK_IDF_VOLUME_READER_H
 
 #include <vtkInformation.h>
-
-#include <svkImageReader2.h>
 #include <vtkstd/map>
 #include <vtkstd/string>
+
+#include <svkImageReader2.h>
+#include <svkMRIIOD.h>
 
 
 namespace svk {
@@ -110,7 +111,9 @@ class svkIdfVolumeReader : public svkImageReader2
         void            InitPlanePositionMacro();
         void            InitPixelMeasuresMacro();
         void            InitPlaneOrientationMacro();
+        void            InitMRImagingModifierMacro(); 
         void            InitMRReceiveCoilMacro();
+        void            InitMRTransmitCoilMacro(); 
         void            InitNonIdfTags();
         void            ReadVolumeFile();
         int             GetNumPixelsInVol();
@@ -134,6 +137,7 @@ class svkIdfVolumeReader : public svkImageReader2
         int                                     numSlices; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         bool                                    onlyReadHeader; 
+        svkMRIIOD*                              iod; 
 
 };
 

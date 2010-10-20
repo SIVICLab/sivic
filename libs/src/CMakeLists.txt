@@ -158,6 +158,7 @@ ADD_LIBRARY(
     svkImageClip.cc
     svkObliqueReslice.cc
     svkIOD.cc
+    svkEnhancedIOD.cc
     svkSCIOD.cc
     svkMRSIOD.cc
     svkMRIIOD.cc

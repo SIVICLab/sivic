@@ -118,6 +118,9 @@ void svkDICOMMRIWriter::Write()
         }
     }
 
+    this->iod = svkMRIIOD::New(); 
+    this->iod->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
+
     this->InitPixelData();
 
     this->GetImageDataInput(0)->GetDcmHeader()->WriteDcmFile(this->InternalFileName); 
@@ -130,6 +133,7 @@ void svkDICOMMRIWriter::Write()
 
     delete [] this->InternalFileName;
     this->InternalFileName = NULL;
+    this->iod->Delete();
 
     //  Clear the PixelData element: 
     //this->GetImageDataInput(0)->GetDcmHeader()->ClearElement( "PixelData" ); 
@@ -244,7 +248,7 @@ void svkDICOMMRIWriter::InitPixelData()
             this->GetImageDataInput(0)->GetDcmHeader()->SetPixelDataType(svkDcmHeader::SIGNED_INT_2);
 
             //  Init Rescale Attributes:    
-            this->InitPixelValueTransformationMacro(slope, intercept); 
+            this->iod->InitPixelValueTransformationMacro( slope, intercept ); 
 
             delete[] pixelData; 
         }
@@ -307,48 +311,6 @@ void svkDICOMMRIWriter::GetShortScaledPixels( short* shortPixels, float& slope, 
     for (int i = 0; i < numPixels; i++) {
         shortPixels[i] = static_cast<short> ( slope * floatPixels[i] + intercept ); 
     }
-
-}
-
-
-/*!
- *
- */
-void svkDICOMMRIWriter::InitPixelValueTransformationMacro(float slope, float intercept)
-{
-
-    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelValueTransformationSequence"
-    );
-
-    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleIntercept",
-        intercept, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleSlope",
-        slope, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetImageDataInput(0)->GetDcmHeader()->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleType",
-        "US",   //enum unspecified required for MR modality 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
 
 }
 

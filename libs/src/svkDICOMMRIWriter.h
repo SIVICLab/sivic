@@ -47,6 +47,7 @@
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>
+#include <svkMRIIOD.h>
 
 
 namespace svk {
@@ -81,8 +82,8 @@ class svkDICOMMRIWriter : public svkImageWriter
     private:
         void            InitPixelData();
         void            GetShortScaledPixels( short* shortPixels, float& slope, float& intercept ); 
-        void            InitPixelValueTransformationMacro(float slope, float intercept); 
-
+        
+        svkMRIIOD*      iod; 
 
 };
 

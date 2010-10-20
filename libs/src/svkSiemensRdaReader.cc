@@ -816,8 +816,8 @@ void svkSiemensRdaReader::InitMRModifierMacro()
 void svkSiemensRdaReader::InitMRTransmitCoilMacro()
 {
     this->iod->InitMRTransmitCoilMacro(
-        "UNKNOWN", 
         "Siemens", 
+        "UNKNOWN", 
         this->GetHeaderValueAsString("TransmitCoil")
     );
 }

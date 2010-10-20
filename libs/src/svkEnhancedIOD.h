@@ -40,12 +40,13 @@
  */
 
 
-#ifndef SVK_MRI_IOD_H
-#define SVK_MRI_IOD_H
+#ifndef SVK_ENHANCED_IOD_H
+#define SVK_ENHANCED_IOD_H
 
+#define UNKNOWN_TIME -1
 
 #include <vtkObjectFactory.h>
-#include <svkEnhancedIOD.h>
+#include <svkIOD.h>
 
 
 namespace svk {
@@ -55,38 +56,31 @@ using namespace std;
 
 
 /*! 
- *  Base class of static methods for default MRIIOD initialization 
- *  using svkDcmHeader adapter interface. 
+ *  Base class of static methods for modules shared between MRI and MRS ENHANCED_IODs. 
  */
-class svkMRIIOD : public svkEnhancedIOD 
+class svkEnhancedIOD : public svkIOD 
 {
 
     public:
 
-        static svkMRIIOD* New();
-        vtkTypeRevisionMacro( svkMRIIOD, svkEnhancedIOD);
+        vtkTypeRevisionMacro( svkEnhancedIOD, svkIOD);
 
-        //  Methods:
-        virtual void  InitDcmHeader();
-                void  InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
-                void  InitMRImagingModifierMacro(
-                            float transmitFreq, 
-                            float pixelBandwidth, 
-                            vtkstd::string magTransfer = "NONE", 
-                            vtkstd::string bloodNulling = "NO" 
-                        ); 
+        //  Methods Shared between Enhanced MRI and MRS IODs:
+        //void          InitPixelMeasuresMacro();  
+        //void          InitPlaneOrientationMacro(); 
+        void          InitFrameAnatomyMacro(); 
+        void          InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1); 
+        void          InitMREchoMacro(float TE = UNKNOWN_TIME ); 
+        void          InitMRModifierMacro(float inversionTime = UNKNOWN_TIME); 
+        //void          InitMRReceiveCoilMacro(); 
+        void          InitMRTransmitCoilMacro(string coilMfg = "UNKNOWN", string coilName = "UNKNOWN", string coilType = "UNKNOWN"); 
+        void          InitMRAveragesMacro(int numAverages = 1); 
 
 
     protected:
 
-        svkMRIIOD();
-        ~svkMRIIOD();
-
-        //  Methods:
-        void            InitEnhancedMRImageModule();
-        void            InitMRImageFrameTypeMacro(); 
-
-        virtual void    InitSOPCommonModule(); 
+        svkEnhancedIOD();
+        ~svkEnhancedIOD();
 
 };
 
@@ -94,5 +88,5 @@ class svkMRIIOD : public svkEnhancedIOD
 }   //svk
 
 
-#endif //SVK_MRI_IOD_H
+#endif //SVK_ENHANCED_IOD_H
 

@@ -821,7 +821,7 @@ void svkVarianFidMapper::InitMRModifierMacro()
  */
 void svkVarianFidMapper::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("UNKNOWN", "Varian", "BODY");
+    this->iod->InitMRTransmitCoilMacro("Varian", "UNKNOWN", "BODY");
 }
 
 

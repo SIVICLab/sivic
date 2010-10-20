@@ -45,7 +45,7 @@
 
 
 #include <vtkObjectFactory.h>
-#include <svkIOD.h>
+#include <svkEnhancedIOD.h>
 
 
 namespace svk {
@@ -58,23 +58,17 @@ using namespace std;
  *  Base class of static methods for default MRSIOD initialization 
  *  using svkDcmHeader adapter interface. 
  */
-class svkMRSIOD : public svkIOD 
+class svkMRSIOD : public svkEnhancedIOD 
 {
 
     public:
 
         static svkMRSIOD* New();
-        vtkTypeRevisionMacro( svkMRSIOD, svkIOD);
+        vtkTypeRevisionMacro( svkMRSIOD, svkEnhancedIOD);
 
         //  Methods:
         virtual void  InitDcmHeader();
-        void          InitMREchoMacro(float TE); 
-        void          InitMRAveragesMacro(int numAverages); 
         void          InitMRSpectroscopyFrameTypeMacro(); 
-        void          InitFrameAnatomyMacro(); 
-        void          InitMRTimingAndRelatedParametersMacro(float tr, float flipAngle); 
-        void          InitMRModifierMacro(float inversionTime); 
-        void          InitMRTransmitCoilMacro(string coilName, string coilMfg, string coilType); 
         void          InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]); 
 
 

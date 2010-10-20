@@ -1522,7 +1522,7 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkDdfVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("UNKNOWN", "GE", "BODY");
+    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
 }
 
 

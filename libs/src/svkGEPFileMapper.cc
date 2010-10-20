@@ -88,6 +88,9 @@ svkGEPFileMapper::~svkGEPFileMapper()
 void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
     svkDcmHeader* header, float pfileVersion, int swapBytes, vtkstd::map < vtkstd::string, void* > inputArgs)
 {
+    this->iod = svkMRSIOD::New();
+    this->iod->SetDcmHeader( this->dcmHeader ); 
+
     this->pfMap = pfMap; 
     this->dcmHeader = header; 
     this->pfileVersion = pfileVersion; 
@@ -104,6 +107,8 @@ void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
     this->InitMRSpectroscopyDataModule();
+
+    this->iod->Delete();
 }
 
 
@@ -1000,55 +1005,10 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
  */
 void svkGEPFileMapper::InitMRTimingAndRelatedParametersMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTimingAndRelatedParametersSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "RepetitionTime",                     
+    this->iod->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat( "rhi.tr" ) / 1000, 
-        "SharedFunctionalGroupsSequence",  
-        0 
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "FlipAngle",                     
         this->GetHeaderValueAsFloat( "rhi.mr_flip" ), 
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "EchoTrainLength",                     
-        this->GetHeaderValueAsInt( "rhi.numecho" ), 
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "RFEchoTrainLength",                     
-        this->GetHeaderValueAsInt( "rhi.numecho" ), 
-        "SharedFunctionalGroupsSequence",  
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTimingAndRelatedParametersSequence", 
-        0,                                
-        "GradientEchoTrainLength",                     
-        0,
-        "SharedFunctionalGroupsSequence",  
-        0
+        this->GetHeaderValueAsInt( "rhi.numecho" ) 
     );
 }
 
@@ -1365,59 +1325,20 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkGEPFileMapper::InitMREchoMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MREchoSequence"
+    this->iod->InitMREchoMacro(
+        this->GetHeaderValueAsFloat("rhi.te")/1000 
     );
 
-    this->dcmHeader->AddSequenceItemElement(
-        "MREchoSequence",        
-        0,                        
-        "EffectiveEchoTime",       
-        this->GetHeaderValueAsFloat("rhi.te")/1000, 
-        "SharedFunctionalGroupsSequence",    
-        0
-    );
 }
 
 
 /*!
- *  Override in concrete mapper for specific acquisitino
+ *  Inversion timing and other acquisition params 
  */
 void svkGEPFileMapper::InitMRModifierMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRModifierSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "InversionRecovery",       
-        vtkstd::string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "SpatialPreSaturation",       
-        vtkstd::string("SLAB"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRModifierSequence",
-        0,                        
-        "ParallelAcquisition",       
-        vtkstd::string("NO"),
-        "SharedFunctionalGroupsSequence",    
-        0                      
+    this->iod->InitMRModifierMacro(
+        this->GetHeaderValueAsFloat("rhi.ti")
     );
 }
 
@@ -1526,37 +1447,11 @@ void svkGEPFileMapper::InitMRReceiveCoilMacro()
  */
 void svkGEPFileMapper::InitMRTransmitCoilMacro()
 {
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "MRTransmitCoilSequence"
-    );
 
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilName",       
-        "coil name",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilManufacturerName",       
+    this->iod->InitMRTransmitCoilMacro(
         "GE",
-        "SharedFunctionalGroupsSequence",    
-        0                      
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRTransmitCoilSequence",
-        0,                        
-        "TransmitCoilType",       
-        "BODY",
-        "SharedFunctionalGroupsSequence",    
-        0                      
+        "UNKNOWN",
+        "BODY"
     );
 
 }

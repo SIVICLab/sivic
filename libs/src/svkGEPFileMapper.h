@@ -48,6 +48,7 @@
 
 #include <svkDcmHeader.h>
 #include <svkImageReader2.h>
+#include <svkMRSIOD.h>
 
 #include <vtkstd/map>
 #include <vtkstd/vector>
@@ -183,6 +184,8 @@ class svkGEPFileMapper : public vtkObject
         int                                     chopVal; 
         vtkstd::map < vtkstd::string, void* >   inputArgs; 
         int                                     swapBytes;
+        svkMRSIOD*                              iod;
+
 
 };
 

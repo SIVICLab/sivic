@@ -44,7 +44,6 @@
 #include <vtkDebugLeaks.h>
 #include <vtkGlobFileNames.h>
 #include <vtkSortFileNames.h>
-#include <svkMRSIOD.h>
 #include <vtkByteSwap.h>
 
 #include <sys/stat.h>
@@ -1355,7 +1354,7 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkSdbmVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("UNKNOWN", "GE", "BODY");
+    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
 }
 
 

@@ -44,8 +44,6 @@
 #include <svkDcmMriVolumeReader.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
-#include <svkIOD.h>
-#include <svkMRIIOD.h>
 
 #include <sys/stat.h>
 
@@ -311,10 +309,9 @@ void svkIdfVolumeReader::InitDcmHeader()
 
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRIIOD::New();
-    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
-    iod->InitDcmHeader();
-    iod->Delete();
+    this->iod = svkMRIIOD::New();
+    this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
+    this->iod->InitDcmHeader();
 
     this->ParseIdf(); 
     this->PrintKeyValuePairs(); 
@@ -332,6 +329,8 @@ void svkIdfVolumeReader::InitDcmHeader()
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
+
+    this->iod->Delete();
 }
 
 
@@ -486,7 +485,9 @@ void svkIdfVolumeReader::InitAcquisitionContextModule()
 void svkIdfVolumeReader::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
+    this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
+    this->InitMRImagingModifierMacro(); 
     this->InitMRReceiveCoilMacro();
 }
 
@@ -611,7 +612,7 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
             ossIndexJ << j;
             vtkstd::string indexStringJ(ossIndexJ.str());
             orientationString.append( idfMap["dcos_" + indexStringI + "_" + indexStringJ ]) ;
-            if (i < 2) {
+            if (i + j < 3) {
                 orientationString.append( "\\") ;
             }
         }
@@ -657,6 +658,28 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
     this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
     math->Delete();
 
+}
+
+
+/*!
+ *
+ */
+void svkIdfVolumeReader::InitMRTransmitCoilMacro()
+{
+    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
+}
+
+
+/*!
+ *
+ */
+void svkIdfVolumeReader::InitMRImagingModifierMacro()
+{
+
+    float transmitFreq = -1;
+    float pixelBandwidth = -1; 
+
+    this->iod->InitMRImagingModifierMacro( transmitFreq, pixelBandwidth ); 
 }
 
 
