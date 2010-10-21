@@ -120,8 +120,10 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 {
 
     bool    isGEPFile = false; 
+    bool    isKnownPSD = false; 
 
     try {
+
         this->gepf = new ifstream();
         this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
         this->gepf->open( fname, ios::binary);
@@ -134,7 +136,6 @@ int svkGEPFileReader::CanReadFile(const char* fname)
             this->SetDataByteOrder(); 
         
             if ( this->pfileVersion ) {
-
                 this->InitOffsetsMap(); 
 
                 if ( this->pfileVersion < 12 ) {
@@ -148,6 +149,14 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                         isGEPFile = true; 
                     }
                 }
+
+                if ( isGEPFile ) { 
+                    this->SetFileName( fname ); 
+                    this->ReadGEPFile(); 
+                    if ( this->GetPFileMapper() != NULL ) {
+                        isKnownPSD = true;
+                    }
+                }
             }
         
             this->gepf->close();
@@ -157,14 +166,14 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         cerr << "ERROR(svkGEPFileReader::CanReadFile opening or reading file (" << fname << "): " << e.what() << endl;
     }
 
-    if ( isGEPFile ) {
+    if ( isGEPFile && isKnownPSD ) {
         vtkDebugMacro(
-            << this->GetClassName() << "::CanReadFile(): It's a GE " 
+            << this->GetClassName() << "::CanReadFile(): It's a GE and recognized PSD" 
             << this->pfileVersion << " PFile: " << fname 
         );
         return 1;
     } else {
-        vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a GE PFile: " << fname);
+        vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a GE PFile, or the psd is not recognized: " << fname);
         return 0;
     }
 
@@ -329,6 +338,7 @@ void svkGEPFileReader::InitDcmHeader()
 
     //  Fill in data set specific values using the appropriate mapper type:
     this->mapper = this->GetPFileMapper(); 
+    
 
     cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
 
@@ -489,7 +499,6 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     } else {
 
         vtkErrorMacro("No PFile mapper available for " << psd );
-        exit(1);
 
     }
 
@@ -600,7 +609,7 @@ void svkGEPFileReader::PrintOffsets()
     vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
 
-        cout << this->GetClassName() << " " << mapIter->first << " = ";
+        cout << "OFFSETS " << " " << mapIter->first << " = ";
     
         vtkstd::vector<vtkstd::string>::iterator it;
         for ( it = this->pfMap[mapIter->first].begin() ; it < this->pfMap[mapIter->first].end(); it++ ) {
@@ -621,7 +630,7 @@ void svkGEPFileReader::PrintKeyValuePairs()
     vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
 
-        cout << this->GetClassName() << " " << mapIter->first << " = ";
+        cout << "KEY:VALUE: " << " " << mapIter->first << " = ";
 
         vtkstd::vector<vtkstd::string>::iterator it;
         for ( it = this->pfMap[mapIter->first].begin() ; it < this->pfMap[mapIter->first].end(); it++ ) {
@@ -671,6 +680,12 @@ void svkGEPFileReader::InitOffsetsMap()
     vtkstd::string fieldName;
     vtkstd::string val;
 
+    //  If pfMap has already been initialized with offsets, 
+    //  then just return 
+    if ( this->pfMap.size() > 0 ) {
+        return; 
+    }
+
     while ( (delim = offsets.find(",")) != vtkstd::string::npos ) {
 
         fieldName = this->StripWhite( offsets.substr( 0, delim ) );
@@ -686,7 +701,6 @@ void svkGEPFileReader::InitOffsetsMap()
     }
 
     this->PrintOffsets();
-    this->PrintKeyValuePairs(); 
 }
 
 
