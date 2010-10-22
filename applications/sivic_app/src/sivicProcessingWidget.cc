@@ -267,8 +267,8 @@ void sivicProcessingWidget::SetPhaseUpdateExtent()
         this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[1], end);
         this->phaser->SetUpdateExtent(start, end );
     }
-    delete start;
-    delete end;
+    delete[] start;
+    delete[] end;
 }
 
 
