@@ -496,6 +496,10 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
 
         aMapper = svkGEPFileMapperMBrease::New();
 
+    } else if ( psd.compare("mpcsiobl") == 0  ) {
+
+        aMapper = svkGEPFileMapperMPCSIOBL::New();
+
     } else {
 
         vtkErrorMacro("No PFile mapper available for " << psd );

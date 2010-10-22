@@ -50,6 +50,7 @@
 #include <svkGEPFileMapperMBrease.h>
 #include <svkGEPFileMapperUCSF.h>
 #include <svkGEPFileMapperUCSFfidcsi.h>
+#include <svkGEPFileMapperMPCSIOBL.h>
 
 #include <vtkstd/map>
 #include <vtkstd/vector>
@@ -60,9 +61,6 @@ namespace svk {
 
 
 /*! 
- *  ############################## 
- *  BETA RELEASE!!!!!  DEV DEV DEV
- *  ############################## 
  *
  *  This is an svkImageReader2 for reading GE P-files.  
  *  The reader supports 9.x - 20.x raw file versions.  The reader
