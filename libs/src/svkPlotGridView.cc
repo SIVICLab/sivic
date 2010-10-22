@@ -193,7 +193,6 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 if( this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ) ) ) {
                     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( VOL_SELECTION ) );
                 }
-                this->GetProp( VOL_SELECTION )->Delete();
             }
             vtkActorCollection* selectionBoxTopology = dataVector[MRS]->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
         // Case for no selection Box
