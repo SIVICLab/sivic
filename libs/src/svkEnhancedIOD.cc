@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkEnhancedIOD.cc $
- *  $Rev: 282 $
- *  $Author: jccrane $
- *  $Date: 2010-04-19 13:38:22 -0700 (Mon, 19 Apr 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkEnhancedIOD, "$Rev: 282 $");
+vtkCxxRevisionMacro(svkEnhancedIOD, "$Rev$");
 
 
 /*!

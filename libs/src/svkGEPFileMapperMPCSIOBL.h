@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGEPFileMapperMPCSIOBL.h $
- *  $Rev: 643 $
- *  $Author: jccrane $
- *  $Date: 2010-10-12 15:20:15 -0700 (Tue, 12 Oct 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

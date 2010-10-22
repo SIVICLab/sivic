@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGEPFileMapperMBrease.cc $
- *  $Rev: 643 $
- *  $Author: jccrane $
- *  $Date: 2010-10-12 15:20:15 -0700 (Tue, 12 Oct 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,26 +40,26 @@
  */
 
 
-#include <svkGEPFileMapperMBrease.h>
+#include <svkGEPFileMapperMPCSIOBL.h>
 #include <vtkDebugLeaks.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGEPFileMapperMBrease, "$Rev: 643 $");
-vtkStandardNewMacro(svkGEPFileMapperMBrease);
+vtkCxxRevisionMacro(svkGEPFileMapperMPCSIOBL, "$Rev$");
+vtkStandardNewMacro(svkGEPFileMapperMPCSIOBL);
 
 
 /*!
  *
  */
-svkGEPFileMapperMBrease::svkGEPFileMapperMBrease()
+svkGEPFileMapperMPCSIOBL::svkGEPFileMapperMPCSIOBL()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkGEPFileMapperMBrease");
+    vtkDebugLeaks::ConstructClass("svkGEPFileMapperMPCSIOBL");
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
@@ -69,7 +69,7 @@ svkGEPFileMapperMBrease::svkGEPFileMapperMBrease()
 /*!
  *
  */
-svkGEPFileMapperMBrease::~svkGEPFileMapperMBrease()
+svkGEPFileMapperMPCSIOBL::~svkGEPFileMapperMPCSIOBL()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 }
@@ -83,7 +83,7 @@ svkGEPFileMapperMBrease::~svkGEPFileMapperMBrease()
  *      coil 1: dummy + unsuppressed_scans + suppressed_scans
  *      coil 2: ""
  */
-int svkGEPFileMapperMBrease::GetNumTimePoints()
+int svkGEPFileMapperMPCSIOBL::GetNumTimePoints()
 {
     int numSuppressedScans = this->GetNumberSuppressedAcquisitions(); 
     int numUnsuppressedScans = this->GetNumberUnsuppressedAcquisitions(); 
@@ -102,7 +102,7 @@ int svkGEPFileMapperMBrease::GetNumTimePoints()
  *  For single voxel acquisitions, return the number of
  *  unsuppressed acquisitions.
  */
-int svkGEPFileMapperMBrease::GetNumberUnsuppressedAcquisitions()
+int svkGEPFileMapperMPCSIOBL::GetNumberUnsuppressedAcquisitions()
 {
     int numUnsuppressed = this->GetHeaderValueAsInt( "rhr.rh_user44" ); 
     return numUnsuppressed;
@@ -113,7 +113,7 @@ int svkGEPFileMapperMBrease::GetNumberUnsuppressedAcquisitions()
  *  For single voxel acquisitions, return the number of
  *  suppressed acquisitions.
  */
-int svkGEPFileMapperMBrease::GetNumberSuppressedAcquisitions()
+int svkGEPFileMapperMPCSIOBL::GetNumberSuppressedAcquisitions()
 {
     int numSuppressed = this->GetHeaderValueAsInt( "rhr.rh_user4" ); 
     return numSuppressed;
@@ -124,7 +124,7 @@ int svkGEPFileMapperMBrease::GetNumberSuppressedAcquisitions()
  *  Is data chopped?
  *  suppressed data:  yes
  */
-bool svkGEPFileMapperMBrease::IsChopOn()
+bool svkGEPFileMapperMPCSIOBL::IsChopOn()
 {
     bool chop = true ;
 
