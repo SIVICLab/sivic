@@ -525,8 +525,17 @@ bool svkDataView::IsTlcBrcWithinData( svkImageData* data, int tlcID, int brcID)
         int* extent = data->GetExtent();
         int maxIndex[3] = {data->GetDimensions()[0]-2,data->GetDimensions()[1]-2,data->GetDimensions()[2]-2};
         int maxID = data->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+        int rowRange[2]    = {0,0};
+        int columnRange[2] = {0,0};
+        int sliceRange[2]  = {0,0};
 
-        if( tlcID >= 0 && brcID >= 0 && tlcID <= maxID && brcID <= maxID && tlcID <= brcID ) {
+        // Get indecies from the tlcBrc
+        data->GetIndexFromID( tlcID, &rowRange[0], &columnRange[0], &sliceRange[0] );
+        data->GetIndexFromID( brcID, &rowRange[1], &columnRange[1], &sliceRange[1] );
+
+        // Fist we make sure that the indecies are greater then zero and within the range of a single slice
+        if( tlcID >= 0 && brcID >= 0 && tlcID <= maxID && brcID <= maxID && tlcID <= brcID 
+            && rowRange[0] <= rowRange[1] && columnRange[0] <= columnRange[1] && sliceRange[0] <= sliceRange[1] ) {
             isWithinData = true; 
         }
     }

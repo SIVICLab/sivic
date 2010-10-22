@@ -633,7 +633,7 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
                 } 
             }
 
-            if( tlcBrc == NULL ) {
+            if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
                 this->plotController->HighlightSelectionVoxels();
                 this->overlayController->HighlightSelectionVoxels();
             } else {
