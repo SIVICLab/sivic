@@ -115,6 +115,10 @@ void QuickView( const char* filename)
     svkDataModel* model = svkDataModel::New();
     
     data = model->LoadFile(filename );
+    if( data == NULL ) {
+        cerr << "ERROR: Could not read input file: " << filename << endl;
+        exit(1);
+    }
     data->Register(NULL);
     data->Update();
     int* extent = data->GetExtent();

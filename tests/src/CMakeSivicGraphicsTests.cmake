@@ -57,7 +57,10 @@ SET( TEST_RESULTS_ROOT ${SVK_TEST_ROOT}/results_tmp)
 SET( DIFF_OPT --ignore-matching-lines=SVK_CMD --ignore-matching-lines=root)
 
 
-SET( TEST_NAME VTK_RENDER_MCHK)
+#############################################################
+# This is a basic test to see if VTK is working
+#############################################################
+SET( TEST_NAME VTK_RENDER)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
@@ -67,6 +70,9 @@ ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/vtkBaselineTest ${TEST_RESULTS
 SET( TEST_NAME VTK_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${PLATFORM} )
 
+#############################################################
+# Check to see if you can render spectra from a phantom 
+#############################################################
 SET( TEST_NAME PHANTOM_SPECTRA_RENDER_MCHK)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
@@ -78,22 +84,85 @@ ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t Renderi
 SET( TEST_NAME PHANTOM_SPECTRA_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${PLATFORM} )
 
+#############################################################
+# Check to see if you can render an image from a phantom 
+#############################################################
 SET( TEST_NAME PHANTOM_IMAGE_RENDER_MCHK)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
-ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -t RenderingTest --image ${TEST_CASE_ROOT}/input/vol.idf -p ${TEST_RESULTS_PATH} )
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t RenderingTest --image ${TEST_CASE_ROOT}/input/vol.idf -p ${TEST_RESULTS_PATH} )
 
 SET( TEST_NAME PHANTOM_IMAGE_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_1/${PLATFORM} )
 
+#############################################################
+# Check to see if you can render an image and spectra from a 
+# phantom.
+#############################################################
 SET( TEST_NAME PHNTM_IMG_SPEC_RENDER_MCHK)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/idf_files/idf_to_idf)
-ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -t RenderingTest --image ${TEST_CASE_ROOT}/input/vol.idf --spectra ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf/input/20x_1.ddf -p ${TEST_RESULTS_PATH} )
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t RenderingTest --image ${TEST_CASE_ROOT}/input/vol.idf --spectra ${SVK_TEST_ROOT}/ddf_files/ddf_to_ddf/input/20x_1.ddf -p ${TEST_RESULTS_PATH} )
 
 SET( TEST_NAME PHNTM_IMG_SPEC_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_2/${PLATFORM} )
+
+#############################################################
+# Check to see if you can render an image with spectra and an 
+# overlay from a phantom.
+#############################################################
+SET( TEST_NAME OVERLAY_MET_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t RenderingTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME OVERLAY_MET_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_3/${PLATFORM} )
+
+#############################################################
+# Check to see if the validation will catch the origin shift
+# in the overlay-- no overlay should be rendered. 
+#############################################################
+SET( TEST_NAME OVERLAY_MET_SHIFT_RENDER)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -t RenderingTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met_shifted.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME OVERLAY_MET_SHIFT_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_4/${PLATFORM} )
+
+#############################################################
+# Check to see if you can render spectra and an overlay from
+# a phantom.
+#############################################################
+SET( TEST_NAME PLOT_GRID_MET_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t RenderingTest --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME PLOT_GRID_MET_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_5/${PLATFORM} )
+
+#############################################################
+# Check to see if the validation will catch the origin shift
+# in the overlay-- no overlay should be rendered. 
+#############################################################
+SET( TEST_NAME PLOT_GRID_MET_SHIFT_RENDER)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t RenderingTest --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met_shifted.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME PLOT_GRID_MET_SHIFT_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_6/${PLATFORM} )

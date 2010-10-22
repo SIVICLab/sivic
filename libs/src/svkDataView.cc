@@ -104,6 +104,19 @@ svkDataView::~svkDataView()
 
 }
 
+
+/*!
+ * Removes the input.
+ */
+void svkDataView::RemoveInput(  int index ) 
+{
+    if( this->dataVector[index] != NULL ) {
+        this->dataVector[index]->Delete();
+        this->dataVector[index] = NULL;
+    }
+}
+
+
 /*
  *
  */

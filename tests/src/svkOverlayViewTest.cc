@@ -69,20 +69,22 @@ struct globalArgs_t {
     char *firstOverlayName;   /* -o  option */
     char *secondOverlayName;  /* -O option */
     char *outputPath;         /* -p option */
+    bool disableValidation;  /* -d option */
 } globalArgs;
 
 static const struct option longOpts[] = {
-    { "test_name",       required_argument, NULL, 't' },
-    { "image",           required_argument, NULL, 'i' },
-    { "second_image",    required_argument, NULL, 'I' },
-    { "spectra",         required_argument, NULL, 's' },
-    { "second_spectra",  required_argument, NULL, 'S' },
-    { "overlay",         required_argument, NULL, 'o' },
-    { "second_overlay",  required_argument, NULL, 'O' },
-    { "output_path",     required_argument, NULL, 'p' },
-    { NULL,              no_argument,       NULL,  0  }
+    { "test_name",          required_argument, NULL, 't' },
+    { "image",              required_argument, NULL, 'i' },
+    { "second_image",       required_argument, NULL, 'I' },
+    { "spectra",            required_argument, NULL, 's' },
+    { "second_spectra",     required_argument, NULL, 'S' },
+    { "overlay",            required_argument, NULL, 'o' },
+    { "second_overlay",     required_argument, NULL, 'O' },
+    { "output_path",        required_argument, NULL, 'p' },
+    { "disable_validation", no_argument,       NULL, 'd' },
+    { NULL,                 no_argument,       NULL,  0  }
 };
-static const char *optString = "t:i:I:s:S:o:O:p:";
+static const char *optString = "t:i:I:s:S:o:O:p:d";
 
 
 int main ( int argc, char** argv )
@@ -98,6 +100,7 @@ int main ( int argc, char** argv )
     globalArgs.firstOverlayName = NULL;     /* -o  option */
     globalArgs.secondOverlayName = NULL;    /* -O option */
     globalArgs.outputPath = NULL;           /* -p option */
+    globalArgs.disableValidation = false;
     testFunction = DefaultTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
@@ -135,6 +138,9 @@ int main ( int argc, char** argv )
                     break;
                 case 'p': 
                     globalArgs.outputPath = optarg;
+                    break;
+                case 'd': 
+                    globalArgs.disableValidation = true;
                     break;
                 default:
                     cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -403,7 +409,9 @@ void RenderingTest()
 
     window->SetSize(600,600);
 
-    overlayController->GetView()->ValidationOff();
+    if( globalArgs.disableValidation ) {
+        overlayController->GetView()->ValidationOff();
+    }
     overlayController->SetInput( image, 0  );
 
     if( spectra != NULL ) {

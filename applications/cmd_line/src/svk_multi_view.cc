@@ -231,6 +231,10 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
 {
 
     svkImageData* data = globalVars.model->LoadFile( filename );
+    if( data == NULL ) {
+        cerr << "ERROR: Could not read input file: " << filename << endl;
+        exit(1);
+    }
     data->Register(NULL);
     data->Update();
     if( globalVars.debug ) {
@@ -432,6 +436,10 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
 void LoadOverlay( string overlayFileName ) {
     if( !overlayFileName.empty() ) {
         globalVars.overlay = globalVars.model->LoadFile( overlayFileName );
+        if( globalVars.overlay == NULL ) {
+            cerr << "ERROR: Could not read input file: " << overlayFileName << endl;
+            exit(1);
+        }
         globalVars.overlay->Register(NULL);
         globalVars.overlay->Update();
         if( !globalVars.overlay->IsA("svkMriImageData")) {
@@ -454,6 +462,10 @@ void LoadOverlay( string overlayFileName ) {
 void LoadSpectra( string spectraFileName ) {
     if( !spectraFileName.empty() ) {
         globalVars.spectra = globalVars.model->LoadFile( spectraFileName );
+        if( globalVars.spectra == NULL ) {
+            cerr << "ERROR: Could not read input file: " << spectraFileName << endl;
+            exit(1);
+        }
         if( globalVars.spectra == NULL || !globalVars.spectra->IsA("svkMrsImageData")) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
             cout << "Error: -s flag must be followed by a spectra file!" << endl;

@@ -89,6 +89,10 @@ class svkDataValidator : public vtkObject
         //! Check to see if two datasets are from the same scan
         bool    AreDataCompatible( svkImageData* data1, svkImageData* data2 );
         bool    AreDataOrientationsSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    AreDataGeometriesSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    AreDataExtentsSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    AreDataSpacingsSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    AreDataOriginsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    IsInvalid( svkDataValidator::ValidationErrorStatus  error ); 
 
         //! Holds the result of the last validation

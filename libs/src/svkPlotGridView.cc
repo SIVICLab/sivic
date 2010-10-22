@@ -238,6 +238,35 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
 
 
 /*!
+ * Removes a data input and the associated actors. Currently only implemented for overlay.
+ */
+void svkPlotGridView::RemoveInput(int index)
+{
+    if( index == MET ) {
+        Superclass::RemoveInput(index);
+        if( this->GetProp( svkPlotGridView::OVERLAY_TEXT) != NULL ) {
+            vtkRenderer* ren = this->GetRenderer( svkPlotGridView::PRIMARY );
+            if( ren->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT )) ) {
+                ren->RemoveActor(this->GetProp( svkPlotGridView::OVERLAY_TEXT) );
+            }
+            vtkProp* nullProp = NULL; // Mac compiler error fix
+            this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
+        }
+
+        if( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) != NULL ) {
+            vtkRenderer* ren = this->GetRenderer( svkPlotGridView::PRIMARY );
+            if( ren->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE )) ) {
+                ren->RemoveActor(this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
+            }
+            svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+            this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
+            overlayActor->InterpolateOff();
+            overlayActor->Delete();
+        }
+    } 
+}
+
+/*!
  *   Sets the slice.
  *  
  *  \param slice the new slice
@@ -808,17 +837,11 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             } 
-            int* overlayExtent = data->GetExtent();
-            int* spectraExtent = dataVector[MRS]->GetExtent();
 
-            // If its on overlay it must have the same extent as our spectra
-            //  SHOULDN'T THIS BE IN VALIDATOR CLASS?
-            if( overlayExtent[0] != spectraExtent[0] || overlayExtent[1] != spectraExtent[1]-1 || 
-                    overlayExtent[2] != spectraExtent[2] || overlayExtent[3] != spectraExtent[3]-1 ||
-                    overlayExtent[4] != spectraExtent[4] || overlayExtent[5] != spectraExtent[5]-1 ) { 
-
-                resultInfo += "Mismatched extents.\n";
-
+            bool geometriesMatch = validator->AreDataGeometriesSame( data, dataVector[MRS] );
+            if( !geometriesMatch ) {
+                resultInfo += validator->resultInfo.c_str();
+                resultInfo += "\n";
             }
         } else {
             resultInfo += "Spectra must be loaded before overlays!\n";

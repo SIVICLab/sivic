@@ -101,6 +101,7 @@ class svkOverlayView : public svkDataView
 
         // Methods:
         virtual void        SetInput( svkImageData* data, int index = 0);
+        virtual void        RemoveInput( int index );
         virtual void        SetSlice(int slice);
         virtual void        SetSlice(int slice, bool centerImage );
         virtual void        SetSlice(int slice, svkDcmHeader::Orientation orientation);

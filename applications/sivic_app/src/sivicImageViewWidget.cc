@@ -576,6 +576,9 @@ void sivicImageViewWidget::CreateWidget()
  */
 void sivicImageViewWidget::UpdateThreshold( )
 {
+    if( svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable() == NULL ) {
+        return;
+    }
     if( this->sivicController->GetThresholdType() == "Quantity" ) {
 
         double* dataRange = svkOverlayView::SafeDownCast(overlayController->GetView())->GetLookupTable()->GetRange();

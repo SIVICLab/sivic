@@ -600,6 +600,39 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
                         break;
                 }
             }
+
+            svkImageData* metData = this->model->GetDataObject("MetaboliteData");
+            svkImageData* overlayData = this->model->GetDataObject("OverlayData");
+
+            // Check to see if any currently loaded overlays are invalid in the overlayController
+
+            string compatibility = ""; 
+            if( overlayData != NULL ) {
+                compatibility = this->overlayController->GetDataCompatibility( overlayData, svkOverlayView::OVERLAY );
+            } else if( metData != NULL ) { // If there was no overlay data check the metabolite data
+                compatibility = this->overlayController->GetDataCompatibility( metData, svkOverlayView::OVERLAY );
+            }
+            if( compatibility.compare("") != 0 ) {
+                string message =  "Closing image overlay due to geometric incompatibility.\n";
+                message.append(compatibility);
+                this->PopupMessage( message );
+                overlayController->GetView()->RemoveInput(svkOverlayView::OVERLAY);                    
+                this->model->RemoveDataObject("OverlayData");
+            } 
+
+            // Check to see if any currently loaded metabolites are invalid in the plotController
+            if( metData != NULL ) {
+                compatibility = ""; 
+                compatibility = this->plotController->GetDataCompatibility( metData, svkPlotGridView::MET );
+                if( compatibility.compare("") != 0 ) {
+                    string message =  "Closing spectra overlay due to geometric incompatibility.\n";
+                    message.append(compatibility);
+                    this->PopupMessage( message );
+                    plotController->GetView()->RemoveInput( svkPlotGridView::MET );                    
+                    this->model->RemoveDataObject("MetaboliteData");
+                } 
+            }
+
             if( tlcBrc == NULL ) {
                 this->plotController->HighlightSelectionVoxels();
                 this->overlayController->HighlightSelectionVoxels();
@@ -633,6 +666,8 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
         this->plotController->GetView()->Refresh( );
 
     }
+    this->DisableWidgets();
+    this->EnableWidgets();
     if( this->spectraViewWidget->sliceSlider->GetEnabled() ) {
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
     }
@@ -742,6 +777,8 @@ void vtkSivicController::OpenOverlay( const char* fileName )
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
     }
+    this->DisableWidgets();
+    this->EnableWidgets();
 }
 
 
@@ -770,6 +807,8 @@ void vtkSivicController::OpenMetabolites( const char* metabolites )
             } 
         }
     }
+    this->DisableWidgets();
+    this->EnableWidgets();
 }
 
 

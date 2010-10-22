@@ -99,6 +99,7 @@ class svkPlotGridView : public svkDataView
 
         //  Methods:
         virtual void                SetInput( svkImageData* data, int index );
+        virtual void                RemoveInput( int index );
         virtual void                SetSlice( int slice );
         virtual void                SetTlcBrc( int tlcBrc[2] );
         virtual void                SetTlcBrc( int tlcID, int brcID );

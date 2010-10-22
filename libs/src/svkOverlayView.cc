@@ -431,6 +431,18 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
 
 
 /*!
+ * Removes a data input and the associated actors. Currently only implemented for overlay.
+ */
+void svkOverlayView::RemoveInput(int index)
+{
+    if( index == OVERLAY ) {
+        Superclass::RemoveInput(index);
+        this->SetupOverlay();
+    }
+}
+
+
+/*!
  *   Sets the current slice.
  *
  *   \param slice the slice you want to view
@@ -1152,6 +1164,32 @@ void svkOverlayView::SetupOverlay()
     overlayActorBack = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
+    
+    if( this->windowLevelerAxial != NULL ) {
+        this->windowLevelerAxial->Delete();
+        this->windowLevelerAxial= NULL;
+    }
+    if( this->windowLevelerCoronal != NULL ) {
+        this->windowLevelerCoronal->Delete();
+        this->windowLevelerCoronal= NULL;
+    }
+    if( this->windowLevelerSagittal != NULL ) {
+        this->windowLevelerSagittal->Delete();
+        this->windowLevelerSagittal= NULL;
+    }
+    if( this->GetProp( svkOverlayView::COLOR_BAR ) != NULL ) {
+        this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::COLOR_BAR ) );
+        this->TurnPropOff( svkOverlayView::COLOR_BAR );
+        vtkScalarBarActor* bar = vtkScalarBarActor::New();
+        this->SetProp( svkOverlayView::COLOR_BAR, bar );
+        bar->Delete();
+    }
+
+    // IF the data is NULL we can now return
+    if( this->dataVector[OVERLAY] == NULL ) {
+        return; 
+    }
+    
     this->windowLevelerAxial = svkImageMapToColors::New();
     this->windowLevelerCoronal = svkImageMapToColors::New();
     this->windowLevelerSagittal = svkImageMapToColors::New();
@@ -1399,6 +1437,12 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
                 resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
                 resultInfo = ""; 
             } else if ( !valid ) {
+                resultInfo += validator->resultInfo.c_str();
+                resultInfo += "\n";
+            }
+            bool imgGeomMatch  = validator->AreDataGeometriesSame( data, dataVector[MRI] );
+            bool specGeomMatch = validator->AreDataGeometriesSame( data, dataVector[MRS] );
+            if( !imgGeomMatch && !specGeomMatch ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
