@@ -29,18 +29,18 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkGEPFileMapperMPCSIOBL.h $
+ *  $Rev: 643 $
+ *  $Author: jccrane $
+ *  $Date: 2010-10-12 15:20:15 -0700 (Tue, 12 Oct 2010) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  */
 
-#ifndef SVK_GE_PFILE_MAPPER_MBREASE_H
-#define SVK_GE_PFILE_MAPPER_MBREASE_H
+#ifndef SVK_GE_PFILE_MAPPER_MPCSIOBL_H
+#define SVK_GE_PFILE_MAPPER_MPCSIOBL_H
 
 
 #include <svkGEPFileMapper.h>
@@ -51,23 +51,24 @@ namespace svk {
 
 
 /*! 
- *  Mapper from pfile header to DICOM IOD/SOP Class instance for mbrease psd.  
+ *  Mapper from pfile header to DICOM IOD/SOP Class instance for NIH mpcsiobl 
+ *  multi-planar CSI psd.  
  */
-class svkGEPFileMapperMBrease : public svkGEPFileMapper 
+class svkGEPFileMapperMPCSIOBL : public svkGEPFileMapper 
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkGEPFileMapperMBrease, svkGEPFileMapper );
-        static          svkGEPFileMapperMBrease* New();
+        vtkTypeRevisionMacro( svkGEPFileMapperMPCSIOBL, svkGEPFileMapper );
+        static          svkGEPFileMapperMPCSIOBL* New();
 
         void            ReadData( vtkstd::string pFileName, vtkImageData* data );
 
 
     protected:
 
-        svkGEPFileMapperMBrease();
-        ~svkGEPFileMapperMBrease();
+        svkGEPFileMapperMPCSIOBL();
+        ~svkGEPFileMapperMPCSIOBL();
 
         virtual int     GetNumTimePoints(); 
         virtual int     GetNumberUnsuppressedAcquisitions(); 
@@ -79,5 +80,5 @@ class svkGEPFileMapperMBrease : public svkGEPFileMapper
 
 }   //svk
 
-#endif //SVK_GE_PFILE_MAPPER_MBREASE_H
+#endif //SVK_GE_PFILE_MAPPER_MPCSIOBL_H
 
