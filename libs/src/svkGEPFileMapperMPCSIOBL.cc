@@ -85,10 +85,8 @@ svkGEPFileMapperMPCSIOBL::~svkGEPFileMapperMPCSIOBL()
  */
 int svkGEPFileMapperMPCSIOBL::GetNumTimePoints()
 {
-    int numSuppressedScans = this->GetNumberSuppressedAcquisitions(); 
-    int numUnsuppressedScans = this->GetNumberUnsuppressedAcquisitions(); 
 
-    int numTimePoints = numUnsuppressedScans + numSuppressedScans; 
+    int numTimePoints = 1; 
 
     if ( this->GetDebug() ) {
         cout << "NUM TIME POINTS: " <<  numTimePoints << endl;
@@ -99,35 +97,30 @@ int svkGEPFileMapperMPCSIOBL::GetNumTimePoints()
 
 
 /*!
- *  For single voxel acquisitions, return the number of
- *  unsuppressed acquisitions.
+ *  Get the 3D spatial dimensionality of the data set
+ *  Returns an int array with 3 dimensions.  Swaps
+ *  if necessary based on freq_dir setting.
  */
-int svkGEPFileMapperMPCSIOBL::GetNumberUnsuppressedAcquisitions()
+void svkGEPFileMapperMPCSIOBL::GetNumVoxels( int numVoxels[3] )
 {
-    int numUnsuppressed = this->GetHeaderValueAsInt( "rhr.rh_user44" ); 
-    return numUnsuppressed;
+        numVoxels[0] = 20;
+        numVoxels[1] = 20;
+        numVoxels[2] = 4;
+
+    //  Swap dimensions if necessary:
+    if ( this->IsSwapOn() ) {
+        int temp = numVoxels[0];
+        numVoxels[0] = numVoxels[1];
+        numVoxels[1] = temp;
+    }
 }
 
 
-/*!
- *  For single voxel acquisitions, return the number of
- *  suppressed acquisitions.
+/*! 
+ *  just for testing
  */
-int svkGEPFileMapperMPCSIOBL::GetNumberSuppressedAcquisitions()
+int svkGEPFileMapperMPCSIOBL::GetNumDummyScans()
 {
-    int numSuppressed = this->GetHeaderValueAsInt( "rhr.rh_user4" ); 
-    return numSuppressed;
-}
-
-
-/*!
- *  Is data chopped?
- *  suppressed data:  yes
- */
-bool svkGEPFileMapperMPCSIOBL::IsChopOn()
-{
-    bool chop = true ;
-
-    return chop;
+    return 32;  
 }
 

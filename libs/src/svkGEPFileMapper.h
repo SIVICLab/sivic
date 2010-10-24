@@ -135,14 +135,14 @@ class svkGEPFileMapper : public vtkObject
         virtual void    GetCenterFromRawFile( double* center );
         virtual float   GetFrequencyOffset(); 
         int             GetNumVoxelsInVol();
-        void            GetNumVoxels( int numVoxels[3] ); 
+        virtual void    GetNumVoxels( int numVoxels[3] ); 
         virtual int     GetNumKSpacePoints(); 
         void            GetVoxelSpacing( double voxelSpacing[3] ); 
         void            GetFOV( float fov[3] ); 
         int             GetNumCoils(); 
         int             GetNumFrames(); 
         virtual int     GetNumTimePoints(); 
-        int             GetNumDummyScans(); 
+        virtual int     GetNumDummyScans(); 
         bool            AddDummy( int offset, int coilNum, int timePt ); 
         void            GetDcos( double dcos[3][3] ); 
         float           GetPPMRef(); 

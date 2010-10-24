@@ -71,9 +71,8 @@ class svkGEPFileMapperMPCSIOBL : public svkGEPFileMapper
         ~svkGEPFileMapperMPCSIOBL();
 
         virtual int     GetNumTimePoints(); 
-        virtual int     GetNumberUnsuppressedAcquisitions(); 
-        virtual int     GetNumberSuppressedAcquisitions(); 
-        virtual bool    IsChopOn(); 
+        virtual void    GetNumVoxels( int numVoxels[3] ); 
+        virtual int     GetNumDummyScans(); 
 
 };
 
