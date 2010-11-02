@@ -200,6 +200,17 @@ void vtkMRMLImageDataStorageNode::ProcessMRMLEvents(vtkObject *caller, unsigned 
   //TODO(mangpo): implement
 }
 
+void vtkMRMLImageDataStorageNode::SetInputFile(const char* fileName) {
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    cout << "vtkMRMLImageDataStorageNode:: SetInputFile  NEEDS DEFINITION " << endl;
+    // needs definition
+}
+
+
 //----------------------------------------------------------------------------
 void vtkMRMLImageDataStorageNode::InitializeSupportedWriteFileTypes()
 {

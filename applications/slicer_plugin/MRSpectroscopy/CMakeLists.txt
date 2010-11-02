@@ -138,6 +138,7 @@ FIND_PATH(DCMTK_DIR dctk.h)
 
 LINK_DIRECTORIES(
     /Users/jasonc/sivic/trunk/libs/Darwin_i386_debug
+    /Users/jasonc/sivic/trunk/libs/Darwin_i386
     ${CMAKE_CURRENT_SOURCE_DIR}/../${PLATFORM}_debug
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs/${PLATFORM}_debug
     ${CMAKE_CURRENT_SOURCE_DIR}/../${PLATFORM}_debug
