@@ -156,6 +156,7 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageCopy.cc
+    svkExtractMRIFromMRS.cc
     svkImageClip.cc
     svkObliqueReslice.cc
     svkIOD.cc
