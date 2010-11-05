@@ -560,6 +560,7 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
             int axialSlice = GetAxialSlice();
             if(axialSlice != -1) 
             {
+	            std::cerr << "Closest MRS Slice " << axialSlice << std::endl;
 	            this->PlotView->SetSlice(axialSlice);
 	            std::cerr << "New Axial Slice " << axialSlice << std::endl;
             }
@@ -732,29 +733,23 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
         vtkTransformPolyDataFilter* filter = vtkTransformPolyDataFilter::New();
         filter->SetTransform(transform);
         vtkPolyData* pdata = gen->GenerateVoxelGridPolyData(ddfData);
-//diagnostics: 
-pdata->Update();
-cout << "num cells (pdata): " << pdata->GetNumberOfCells() << endl;
-cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[0] << endl; 
-cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
-cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
-
-cout << "CHECK 2" << endl;
+        //diagnostics: 
+        pdata->Update();
+        cout << "num cells (pdata): " << pdata->GetNumberOfCells() << endl;
+        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[0] << endl; 
+        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
+        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
 
         filter->SetInput(pdata);
 
         vtkPolyData* ndata = filter->GetOutput();
         ndata->Update();
-cout << "CHECK 3" << endl;
 
         vtkDataSetAttributes* cd = ndata->GetCellData();
         cd->Initialize();
         //ndata->Update();
         int cellcount = ndata->GetNumberOfCells();
-cout << "num cells (ndata): " << cellcount << endl;
-cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[0] << endl; 
-cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
-cout << "cell 0, POINT 0: " << (ndata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
+        cout << "num cells (ndata): " << cellcount << endl;
 
         vtkUnsignedCharArray* newScalars = vtkUnsignedCharArray::New(); 
         newScalars->SetNumberOfTuples(cellcount); 
@@ -853,74 +848,38 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
 int vtkMRSpectroscopyGUI::GetAxialSlice() 
 {
     double sagittal = this->RedScale->GetValue();
-    std::cerr << "Sagittal: " << sagittal << std::endl;
+    std::cerr << "Red Slice Value: " << sagittal << std::endl;
 
-    vtkGenericCell* cellBuffer = vtkGenericCell::New();
+    vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
+    //  Debugging:
+    //  cout << "PRINT MRML NODE: " << endl;
+    //  //                                                    vtkMRMLSliceNode
+    //  vtkIndent ident; 
+    //  appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->PrintSelf(cout, ident); 
+    //  cout << "XYRAS: " << *(appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetXYToRAS()) << endl; 
+    cout << "slicetoRAS: " << *(appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetSliceToRAS()) << endl; 
 
-    int voxelIndex = -1;
-    double* bounds;
-    double boundArray[6];
-    //this->CurrentSpectra->GetImage()->GetBounds(boundArray);
-    this->CurrentSpectra->GetCellBounds(0,boundArray);
-    std::cerr << "Bounds: " << boundArray[0] << " " << boundArray[1] << " "
-	    << boundArray[2] << " " << boundArray[3] << " " 
-	    << boundArray[4] << " " << boundArray[5] << std::endl;
+    //  see which spectral slice intersects with the last column 
+    //  of SliceToRAS matrix.
+    vtkMatrix4x4* sliceCenterRASMatrix = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetSliceToRAS(); 
+    double redImageSliceCenterRAS[3]; 
+    redImageSliceCenterRAS[0] = sliceCenterRASMatrix->GetElement(0,3); 
+    redImageSliceCenterRAS[1] = sliceCenterRASMatrix->GetElement(1,3); 
+    redImageSliceCenterRAS[2] = sliceCenterRASMatrix->GetElement(2,3); 
 
-    vtkPoints* pointsBuffer;
-    //int cellCount = this->CurrentSpectra->GetImage()->GetNumberOfCells();
-    int cellCount = this->CurrentSpectra->GetNumberOfCells();
-    //this->CurrentSpectra->GetImage()->GetCell(0, cellBuffer);
-    this->CurrentSpectra->GetCell(0, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell 0: " << *pointsBuffer << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    //this->CurrentSpectra->GetImage()->GetCell(cellCount / 5, cellBuffer);
-    this->CurrentSpectra->GetCell(cellCount / 5, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell " << cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    //this->CurrentSpectra->GetImage()->GetCell(2 * cellCount / 5, cellBuffer);
-    this->CurrentSpectra->GetCell(2 * cellCount / 5, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell " << 2 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    //this->CurrentSpectra->GetImage()->GetCell(3 * cellCount / 5, cellBuffer);
-    this->CurrentSpectra->GetCell(3 * cellCount / 5, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell " << 3 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    //this->CurrentSpectra->GetImage()->GetCell(4 * cellCount / 5, cellBuffer);
-    this->CurrentSpectra->GetCell(4 * cellCount / 5, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell " << 4 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    //this->CurrentSpectra->GetImage()->GetCell(5 * cellCount / 5, cellBuffer);
-    this->CurrentSpectra->GetCell(5 * cellCount / 5, cellBuffer);
-    pointsBuffer = cellBuffer->GetPoints();
-    pointsBuffer->ComputeBounds();
-    std::cerr << "Cell " << 5 * cellCount / 5 << ": " << *(pointsBuffer->GetPoint(0)) << " " << cellBuffer->GetPointIds()->GetId(0) << std::endl;
-    
-    //for(int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
-    for(int i = 0; i < this->CurrentSpectra->GetNumberOfCells(); ++i) {
-        //this->CurrentSpectra->GetImage()->GetCell(i, cellBuffer);
-        this->CurrentSpectra->GetCell(i, cellBuffer);
-        bounds = cellBuffer->GetBounds();
-        //    std::cerr << "Points " << i << ": " << *(cellBuffer->GetPoints()) << std::endl;
-        if(bounds[4] <= sagittal && sagittal <= bounds[5]) {
-            voxelIndex = i;
-            break;
-        }
-    }
+    //  Transform RAS to LPS (Slicer to SIVIC convention transformation):
+    double redImageSliceCenterLPS[3]; 
+    redImageSliceCenterLPS[0] = -1 * redImageSliceCenterRAS[0];
+    redImageSliceCenterLPS[1] = -1 * redImageSliceCenterRAS[1];
+    redImageSliceCenterLPS[2] = redImageSliceCenterRAS[2];
 
-    std::cerr << std::endl;
-    if (voxelIndex == -1) {
-        std::cerr << "Voxel Out of Bounds!!!!" << std::endl;
-        return -1;
-    }
-    int coordinates[3];
-    this->CurrentSpectra->GetIndexFromID(voxelIndex, coordinates);
-    std::cerr << "Axial Slice! " << coordinates[2] << std::endl;
-    return coordinates[2];
+    cout << "slice center LPS" << redImageSliceCenterLPS[0] << " " << redImageSliceCenterLPS[1] << " " << redImageSliceCenterLPS[2] << endl;
+
+    //  Determine which MRS slice contains these coordinates:
+    int mrsSlice = this->CurrentSpectra->GetClosestSlice(redImageSliceCenterLPS, svkDcmHeader::AXIAL);
+    cout << "Get MRS Slice: " << mrsSlice << endl;
+
+    return mrsSlice;
 }
 
 
@@ -937,11 +896,11 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
     const unsigned char OPAQUE[4] = {0, 255, 0, 255};   //Green, Opaque
     const unsigned char TRANSPARENT[4] = {255, 255, 0, 0};
 
-cout << "corners: " << corners[0] << " " << corners[1] << endl;
+    cout << "corners: " << corners[0] << " " << corners[1] << endl;
     this->CurrentSpectra->GetIndexFromID(corners[0], minPoints); 
     this->CurrentSpectra->GetIndexFromID(corners[1], maxPoints); 
-cout << "min: " << minPoints[0] << " " << minPoints[1] <<  " " << minPoints[2] << endl;
-cout << "max: " << maxPoints[0] << " " << maxPoints[1] <<  " " << maxPoints[2] << endl;
+    cout << "min: " << minPoints[0] << " " << minPoints[1] <<  " " << minPoints[2] << endl;
+    cout << "max: " << maxPoints[0] << " " << maxPoints[1] <<  " " << maxPoints[2] << endl;
 
     set<int> pointSet;
     vtkGenericCell* cellBuffer = vtkGenericCell::New();
@@ -1001,9 +960,9 @@ cout << "max: " << maxPoints[0] << " " << maxPoints[1] <<  " " << maxPoints[2] <
 
 void vtkMRSpectroscopyGUI::RefreshSliceWindows()
 {
-  this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->Render();
-  this->GetApplicationGUI()->GetMainSliceGUI("Yellow")->GetSliceViewer()->Render();
-  this->GetApplicationGUI()->GetMainSliceGUI("Green")->GetSliceViewer()->Render();
+    this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->Render();
+    this->GetApplicationGUI()->GetMainSliceGUI("Yellow")->GetSliceViewer()->Render();
+    this->GetApplicationGUI()->GetMainSliceGUI("Green")->GetSliceViewer()->Render();
 }
 
 
@@ -1019,9 +978,9 @@ void vtkMRSpectroscopyGUI::ResetStyle()
 void vtkMRSpectroscopyGUI::DataCallback(vtkObject *caller, 
                                      unsigned long eid, void *clientData, void *callData)
 {
-  vtkMRSpectroscopyGUI *self = reinterpret_cast<vtkMRSpectroscopyGUI *>(clientData);
-  vtkDebugWithObjectMacro(self, "In vtkMRSpectroscopyGUI DataCallback");
-  self->UpdateAll();
+    vtkMRSpectroscopyGUI *self = reinterpret_cast<vtkMRSpectroscopyGUI *>(clientData);
+    vtkDebugWithObjectMacro(self, "In vtkMRSpectroscopyGUI DataCallback");
+    self->UpdateAll();
 }
 
 
@@ -1045,34 +1004,32 @@ void vtkMRSpectroscopyGUI::ProcessLogicEvents ( vtkObject *caller,
 void vtkMRSpectroscopyGUI::ProcessMRMLEvents ( vtkObject *caller,
                                             unsigned long event, void *callData )
 {
-  if (event == vtkMRMLScene::SceneLoadStartEvent)
-  {
-    return;
-  }
-  if (event == vtkMRMLScene::SceneLoadEndEvent)
-  {
-    if (this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") > 0)
+    if (event == vtkMRMLScene::SceneLoadStartEvent)
     {
-	// TODO: should GetNodesByClass, but don't know how to do so.
-	vtkCollection* collection = this->GetMRMLScene()->GetNodesByName("vtkMRMLImageDataNode1");
-	vtkObject* object = collection->GetItemAsObject(0);
-	vtkMRMLImageDataNode* dataNode = vtkMRMLImageDataNode::SafeDownCast(object);
-	SetSpectraData(dataNode->GetData());
+        return;
     }
-    return;
-  }
-
-
+    if (event == vtkMRMLScene::SceneLoadEndEvent)
+    {
+        if (this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") > 0)
+        {
+	        // TODO: should GetNodesByClass, but don't know how to do so.
+	        vtkCollection* collection = this->GetMRMLScene()->GetNodesByName("vtkMRMLImageDataNode1");
+	        vtkObject* object = collection->GetItemAsObject(0);
+	        vtkMRMLImageDataNode* dataNode = vtkMRMLImageDataNode::SafeDownCast(object);
+	        SetSpectraData(dataNode->GetData());
+        }
+        return;
+    }
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::ProcessTimerEvents()
 {
-  if (this->TimerFlag)
+    if (this->TimerFlag)
     {
-    // update timer
-    vtkKWTkUtilities::CreateTimerHandler(vtkKWApplication::GetMainInterp(), 
+        // update timer
+        vtkKWTkUtilities::CreateTimerHandler(vtkKWApplication::GetMainInterp(), 
                                          this->TimerInterval,
                                          this, "ProcessTimerEvents");        
     }
@@ -1083,13 +1040,13 @@ void vtkMRSpectroscopyGUI::ProcessTimerEvents()
 void vtkMRSpectroscopyGUI::BuildGUI ( )
 {
 
-  // ---
-  // MODULE GUI FRAME 
-  // create a page
-  this->UIPanel->AddPage ( "SIVIC MR Spectroscopy", "SIVIC MR Spectroscopy", NULL );
+    // ---
+    // MODULE GUI FRAME 
+    // create a page
+    this->UIPanel->AddPage ( "SIVIC MR Spectroscopy", "SIVIC MR Spectroscopy", NULL );
 
-  BuildGUIForHelpFrame();
-  BuildGUIForSpectraFrame();
+    BuildGUIForHelpFrame();
+    BuildGUIForSpectraFrame();
 }
 
 
