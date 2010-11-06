@@ -84,9 +84,9 @@ int main (int argc, char** argv)
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    float peak_center_ppm;
-    float peak_width_ppm;
-    string peak_name;
+    float peakCenterPpm;
+    float peakWidthPpm;
+    string peakName;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -124,13 +124,13 @@ int main (int argc, char** argv)
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
            case FLAG_PEAK_CENTER:
-                peak_center_ppm = atof( optarg);
+                peakCenterPpm = atof( optarg);
                 break;
            case FLAG_PEAK_WIDTH:
-                peak_width_ppm = atof( optarg);
+                peakWidthPpm = atof( optarg);
                 break;
            case FLAG_PEAK_NAME:
-                peak_name.assign( optarg);
+                peakName.assign( optarg);
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -146,13 +146,13 @@ int main (int argc, char** argv)
     cout << inputFileName << endl;
     cout << outputFileName << endl;
     cout << dataTypeOut << endl;
-    cout << peak_center_ppm << endl;
-    cout << peak_width_ppm << endl;
-    cout << peak_name<< endl;
+    cout << peakCenterPpm << endl;
+    cout << peakWidthPpm << endl;
+    cout << peakName<< endl;
 
     if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE || 
-        peak_center_ppm == UNDEFINED_VAL || peak_width_ppm == UNDEFINED_VAL || peak_name.length() == 0 ) {
+        peakCenterPpm == UNDEFINED_VAL || peakWidthPpm == UNDEFINED_VAL || peakName.length() == 0 ) {
         cout << usemsg << endl;
         exit(1); 
     }
@@ -160,9 +160,9 @@ int main (int argc, char** argv)
     cout << inputFileName << endl;
     cout << outputFileName << endl;
     cout << dataTypeOut << endl;
-    cout << peak_center_ppm << endl;
-    cout << peak_width_ppm << endl;
-    cout << peak_name<< endl;
+    cout << peakCenterPpm << endl;
+    cout << peakWidthPpm << endl;
+    cout << peakName<< endl;
 
 
     // ===============================================
@@ -190,7 +190,11 @@ int main (int argc, char** argv)
 
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
     quant->SetInput( reader->GetOutput() ); 
-    quant->Delete();
+    quant->SetSeriesDescription( peakName + " Metabolite Map" ); 
+    quant->Update();
+
+    quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    cout << *( quant->GetOutput() ) << endl;
 
     // ===============================================  
     //  Write the data out to the specified file type.  
