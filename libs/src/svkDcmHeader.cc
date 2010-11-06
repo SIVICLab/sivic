@@ -136,6 +136,11 @@ void svkDcmHeader::SetPixelDataType(DcmPixelDataFormat dataType)
         this->SetValue( "BitsStored", 32 );
         this->SetValue( "HighBit", 31 );
         this->SetValue( "PixelRepresentation", 1 ); //signed
+    } else if ( dataType == SIGNED_FLOAT_8 ) {
+        this->SetValue( "BitsAllocated", 64 );
+        this->SetValue( "BitsStored", 64 );
+        this->SetValue( "HighBit", 63 );
+        this->SetValue( "PixelRepresentation", 1 ); //signed
     } else {
         throw runtime_error("Unsupported data type representation.");
     }
@@ -158,6 +163,8 @@ int svkDcmHeader::GetPixelDataType( int vtkDataType )
         return SIGNED_INT_2;
     } else if ( bitsPerWord == 32 && pixRep == 1 && vtkDataType == VTK_FLOAT ) {
         return SIGNED_FLOAT_4;
+    } else if ( bitsPerWord == 64 && pixRep == 1 && vtkDataType == VTK_DOUBLE ) {
+        return SIGNED_FLOAT_8;
     } else {
         cout << "Unknown Pixel Data Type " << endl;
         return -1;

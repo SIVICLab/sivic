@@ -117,7 +117,6 @@ void svkExtractMRIFromMRS::SetZeroCopy(bool zeroCopy)
  */
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    this->UpdateHeader(); 
 
     this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
 
@@ -126,6 +125,8 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
         this->GetOutput(), 
         0
     );
+
+    this->UpdateHeader(); 
 
     //  Initialize to Zero:
     return 1; 
@@ -201,8 +202,16 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
 
     //
     //  Image Pixel Module 
+    //  Set DCM data type based on vtkImageData Scalar type:
     //
-    this->dataType = svkDcmHeader::SIGNED_FLOAT_4; 
+    if ( this->GetOutput()->GetScalarType() == VTK_DOUBLE ) {
+        dataType = svkDcmHeader::SIGNED_FLOAT_8; 
+    } else if ( this->GetOutput()->GetScalarType() == VTK_FLOAT ) {
+        dataType = svkDcmHeader::SIGNED_FLOAT_4; 
+    } else {
+        cout << this->GetClassName() << ": Unsupported ScalarType " << endl;
+        exit(1); 
+    }
     this->iod->InitImagePixelModule( 
             mrs->GetIntValue( "Rows"), 
             mrs->GetIntValue( "Columns"), 

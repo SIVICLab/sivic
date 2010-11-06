@@ -65,8 +65,6 @@ class svkIdfVolumeWriter : public svkImageWriter
         vtkTypeRevisionMacro( svkIdfVolumeWriter, svkImageWriter);
 
         //  Methods:
-        //void            SetInput( vtkDataObject* input ); 
-        //void            SetInput(int index, vtkDataObject* input); 
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
@@ -89,7 +87,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         vtkstd::string  GetIDFPatientsName(vtkstd::string patientsName);
         void            MapUnsignedToSigned( void* pixels, int numPixels ); 
         void            MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels);
-
+        void            MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels); 
 
 };
 

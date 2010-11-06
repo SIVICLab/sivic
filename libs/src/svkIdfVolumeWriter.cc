@@ -49,6 +49,7 @@
 #include <vtkUnsignedShortArray.h>
 #include <vtkShortArray.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkByteSwap.h>
 
 
@@ -172,7 +173,11 @@ void svkIdfVolumeWriter::WriteData()
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
             //scale to float: 
             cout << "SCALE Double to Float" << endl;
-            exit(1); 
+            double* doublePixels; 
+            doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+            floatPixels = new float[ numSlices * numPixelsPerSlice ];     
+            this->MapDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+            pixels = floatPixels;
         }
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
             pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
@@ -470,6 +475,42 @@ void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPix
     for (int i = 0; i < numPixels; i++) {
         floatPixels[i] = static_cast<float>( shortPixels[i] );
     }
+}
+
+
+/*!
+ *
+ */
+void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels) 
+{
+    //  Scale this to 32 bit values and init RescaleIntercept and RescaleSlope:
+    vtkImageAccumulate* histo = vtkImageAccumulate::New();
+    histo->SetInput( this->GetImageDataInput(0) );
+    histo->Update();
+
+    //  Get the input range for scaling:
+    double inputRangeMin = *( histo->GetMin() );
+    double inputRangeMax = *( histo->GetMax() );
+    double deltaRangeIn = inputRangeMax - inputRangeMin;
+
+    //  Get the output range for scaling:
+    float floatMin = VTK_FLOAT_MIN;
+    float floatMax = VTK_FLOAT_MAX;
+    double deltaRangeOut = floatMax - floatMin;
+
+    //  apply linear mapping from float range to signed short range;
+    //  floatMax = inputRangeMax * m + b;
+    //  floatMin = inputRangeMin * m + b;
+    double slope = deltaRangeOut/deltaRangeIn;
+    double intercept = floatMin - inputRangeMin * ( deltaRangeOut/deltaRangeIn );
+    if (this->GetDebug()) {
+        cout << "IDF Writer double to float scaling (slope, intercept): " << slope << " " << intercept << endl;
+    }
+
+    for (int i = 0; i < numPixels; i++) {
+        floatPixels[i] = static_cast<float>( slope * doublePixels[i] + intercept );
+    }
+
 }
 
 
