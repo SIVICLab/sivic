@@ -65,6 +65,7 @@ svkExtractMRIFromMRS::svkExtractMRIFromMRS()
     this->dataType = svkDcmHeader::UNDEFINED; 
     this->newSeriesDescription = ""; 
     this->zeroCopy = false; 
+    this->iod = NULL;
 }
 
 
@@ -73,33 +74,20 @@ svkExtractMRIFromMRS::svkExtractMRIFromMRS()
  */
 svkExtractMRIFromMRS::~svkExtractMRIFromMRS()
 {
-    vtkDebugMacro(<<this->GetClassName()<<"::~svkExtractMRIFromMRS()");
+    vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
+
+    if ( this->iod != NULL )  {
+        iod->Delete();
+        this->iod = NULL;
+    }
+
 }
-
-
-/*!
- *
- */
-//void svkExtractMRIFromMRS::SetInput(svkImageData* image, int index)
-//{
-//    this->imageCopy = svkImageDataFactory::CreateInstance( image->GetClassName() );  
-//}
-
-
-/*!
- *  This is an in-place filter, so just pass original 
- *  svkImageData input back out:
- */
-//svkImageData* svkExtractMRIFromMRS::GetOutput(int index)
-//{
-    //return this->imageCopy;
-//}
 
 
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkExtractMRIFromMRS::SetSeriesDescription( string newSeriesDescription )
+void svkExtractMRIFromMRS::SetSeriesDescription( vtkstd::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
 }
@@ -130,6 +118,8 @@ void svkExtractMRIFromMRS::SetZeroCopy(bool zeroCopy)
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     this->UpdateHeader(); 
+
+    this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
 
     //  Extract svkMriImageData from svkMrsImageData
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
@@ -163,14 +153,105 @@ void svkExtractMRIFromMRS::UpdateHeader()
     }
 
     //  Copy the DICOM header:     
-    this->GetImageDataInput(0)->GetDcmHeader()->MakeDerivedDcmHeader( 
+    //  Create an MRI header template to initialize the output object DcmHeader:
+    this->iod = svkMRIIOD::New();
+    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader() );
+    iod->InitDcmHeader();
+
+    this->GetOutput()->GetDcmHeader()->MakeDerivedDcmHeader( 
         this->GetOutput()->GetDcmHeader(), 
         this->newSeriesDescription
     );
 
-    if ( this->dataType != svkDcmHeader::UNDEFINED ) {
-        this->GetOutput()->GetDcmHeader()->SetPixelDataType(this->dataType); 
-    }
+
+
+    this->ConvertDcmMrsToMri(); 
+
+}
+
+
+/*!
+ *
+ */
+int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
+{
+    svkDcmHeader* mrs = this->GetImageDataInput(0)->GetDcmHeader();
+    svkDcmHeader* mri = this->GetOutput()->GetDcmHeader(); 
+
+    //
+    //  Study IE requires modification
+    //
+    this->iod->InitGeneralStudyModule(
+                        mrs->GetStringValue("StudyDate"), 
+                        mrs->GetStringValue("StudyTime"), 
+                        mrs->GetStringValue("ReferringPhysiciansName"), 
+                        mrs->GetStringValue("StudyID"), 
+                        mrs->GetStringValue("AccessionNumber") 
+                      );
+
+    //
+    //  General Series Module
+    //
+    this->iod->InitGeneralSeriesModule(
+                        "77", 
+                        "", 
+                        mrs->GetStringValue("PatientPosition") 
+                      ); 
+
+
+    //
+    //  Image Pixel Module 
+    //
+    this->dataType = svkDcmHeader::SIGNED_FLOAT_4; 
+    this->iod->InitImagePixelModule( 
+            mrs->GetIntValue( "Rows"), 
+            mrs->GetIntValue( "Columns"), 
+            dataType 
+    ); 
+
+    //
+    //  Per Frame Functinal Groups Module 
+    //
+    int numSlices = mrs->GetNumberOfSlices();
+    double dcos[3][3];
+    mrs->GetDataDcos( dcos );
+
+    double pixelSpacing[3];
+    mrs->GetPixelSpacing( pixelSpacing );
+
+    double toplc[3];
+    mrs->GetOrigin( toplc, 0 );
+
+    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 ); 
+
+    this->iod->InitPlaneOrientationMacro(
+        mrs->GetStringSequenceItemElement( 
+            "PlaneOrientationSequence",
+            0,
+            "ImageOrientationPatient",
+            "SharedFunctionalGroupsSequence"
+        )
+    );
+ 
+    //mri->SetSliceOrder( mrs->GetSliceOrder() );
+
+    // Add Pixel Spacing
+    vtkstd::string pixelSizes = mrs->GetStringSequenceItemElement ( 
+                                        "PixelMeasuresSequence",
+                                        0,
+                                        "PixelSpacing",
+                                        "SharedFunctionalGroupsSequence"
+                                    ); 
+
+    vtkstd::string sliceThickness = mrs->GetStringSequenceItemElement ( 
+                                        "PixelMeasuresSequence",
+                                        0,
+                                        "SliceThickness",
+                                        "SharedFunctionalGroupsSequence"
+                                    ); 
+
+    this->iod->InitPixelMeasuresMacro(  pixelSizes, sliceThickness ); 
+
 }
 
 
@@ -180,6 +261,16 @@ void svkExtractMRIFromMRS::UpdateHeader()
 int svkExtractMRIFromMRS::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
+    return 1;
+}
+
+
+/*!
+ *  Output from this algo is an svkMriImageData object. 
+ */
+int svkExtractMRIFromMRS::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+{
+    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
     return 1;
 }
 

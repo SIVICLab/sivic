@@ -231,6 +231,7 @@ void svkDICOMMRIWriter::InitPixelData()
         break; 
 
         case svkDcmHeader::SIGNED_FLOAT_4:
+        case svkDcmHeader::SIGNED_FLOAT_8:
         {
             short* pixelData = new short[dataLength];  
             float slope; 
@@ -263,7 +264,6 @@ void svkDICOMMRIWriter::InitPixelData()
                   dataLength 
             );
         }
-        case svkDcmHeader::SIGNED_FLOAT_8:
         default:
           vtkErrorMacro("Undefined or unsupported pixel data type");
     }
@@ -306,10 +306,20 @@ void svkDICOMMRIWriter::GetShortScaledPixels( short* shortPixels, float& slope, 
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
     int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
     int numPixels = cols * rows * slices; 
-    float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
 
-    for (int i = 0; i < numPixels; i++) {
-        shortPixels[i] = static_cast<short> ( slope * floatPixels[i] + intercept ); 
+    int dataType = 
+            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
+
+    if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
+        float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
+        for (int i = 0; i < numPixels; i++) {
+            shortPixels[i] = static_cast<short> ( slope * floatPixels[i] + intercept ); 
+        }
+    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+        double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
+        for (int i = 0; i < numPixels; i++) {
+            shortPixels[i] = static_cast<short> ( slope * doublePixels[i] + intercept ); 
+        }
     }
 
 }

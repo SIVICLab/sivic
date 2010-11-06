@@ -164,9 +164,16 @@ void svkIdfVolumeWriter::WriteData()
         extension = ".int2"; 
         numBytesPerPixel = 2; 
         pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || dataType == svkDcmHeader::SIGNED_INT_2 ) {
+    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || 
+                 dataType == svkDcmHeader::SIGNED_INT_2 || 
+                dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         extension = ".real"; 
         numBytesPerPixel = 4; 
+        if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
+            //scale to float: 
+            cout << "SCALE Double to Float" << endl;
+            exit(1); 
+        }
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
             pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
         }
@@ -241,13 +248,18 @@ void svkIdfVolumeWriter::WriteHeader()
         out << "UNKNOWN" << endl;;
     }
 
-    vtkstd::string coilName = hdr->GetStringSequenceItemElement(
-        "MRReceiveCoilSequence",
-        0,
-        "ReceiveCoilName",
-        "SharedFunctionalGroupsSequence",
-        0
-    );
+    vtkstd::string coilName; 
+    if ( hdr->ElementExists( "ReceiveCoilName" ) ) {
+        coilName = hdr->GetStringSequenceItemElement(
+            "MRReceiveCoilSequence",
+            0,
+            "ReceiveCoilName",
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    } else {
+        coilName = ""; 
+    }
 
     out << "coil: " << coilName << endl; 
 
@@ -308,8 +320,11 @@ void svkIdfVolumeWriter::WriteHeader()
     } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
         out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::SIGNED_INT_2) {
-        out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
+        //  SIGNED_INT_2 gets converted to reals
+        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
+        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
     }
 

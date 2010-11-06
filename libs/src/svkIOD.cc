@@ -116,6 +116,49 @@ void svkIOD::InitGeneralStudyModule()
 
 
 /*!
+ *  Initialize the General Study Module (Study IE):
+ */
+void svkIOD::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::string studyTime, vtkstd::string referringPhysiciansName, vtkstd::string studyID, vtkstd::string accessionNumber)
+{
+
+    if ( !studyDate.empty() ) {
+        this->dcmHeader->SetValue(
+            "StudyDate",
+            studyDate
+        );
+    }
+
+    if ( !studyTime.empty() ) {
+        this->dcmHeader->SetValue(
+            "StudyTime",
+            studyTime
+        );
+    }
+
+    if ( !referringPhysiciansName.empty() ) {
+        this->dcmHeader->SetValue(
+            "ReferringPhysiciansName",
+            referringPhysiciansName
+        );
+    }
+
+    if ( !studyID.empty() ) {
+        this->dcmHeader->SetValue(
+            "StudyID",
+            studyID 
+        );
+    }
+
+    if ( !accessionNumber.empty() ) {
+        this->dcmHeader->SetValue(
+            "AccessionNumber",
+            accessionNumber 
+        );
+    }
+}
+
+
+/*!
  *
  */
 void svkIOD::InitGeneralSeriesModule()
@@ -128,6 +171,36 @@ void svkIOD::InitGeneralSeriesModule()
     this->dcmHeader->InsertEmptyElement( "SeriesNumber" );
     if (this->GetModality() == "MR") {
         this->dcmHeader->InsertEmptyElement( "PatientPosition" );
+    }
+}
+
+
+/*!
+ *  Initialize the General Series Module (Series IE):
+ *  Modality is set on initialztion of IOD type   
+ */
+void svkIOD::InitGeneralSeriesModule(vtkstd::string seriesNumber, vtkstd::string seriesDescription, vtkstd::string patientPosition)
+{
+
+    if ( !seriesNumber.empty() ) {
+        this->dcmHeader->SetValue(
+            "SeriesNumber",
+            seriesNumber
+        );
+    }
+
+    if ( !seriesDescription.empty() ) {
+        this->dcmHeader->SetValue(
+            "SeriesDescription",
+            seriesDescription
+        );
+    }
+
+    if ( !patientPosition.empty() ) {
+        this->dcmHeader->SetValue(
+            "PatientPosition",
+            patientPosition 
+        );
     }
 }
 
@@ -193,11 +266,86 @@ void svkIOD::InitMultiFrameFunctionalGroupsModule()
 /*!
  *
  */
+void svkIOD::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], int numSlices, int numTimePts, int numCoils)
+{
+
+    this->dcmHeader->ClearSequence( "PerFrameFunctionalGroupsSequence" );
+    this->dcmHeader->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );
+
+    //this->dcmHeader->InitMultiFrameDimensionModule( numSlices, numTimePts, numCoils );
+    //this->dcmHeader->InitFrameContentMacro( numSlices, numTimePts, numCoils );
+    //this->dcmHeader->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils);
+
+}
+
+
+/*!
+ *
+ */
 void svkIOD::InitMultiFrameDimensionModule()
 {
     this->dcmHeader->InsertEmptyElement( "DimensionOrganizationSequence" );
     this->dcmHeader->InsertEmptyElement( "DimensionIndexSequence" );
 }
+
+
+/*!
+ *
+ */
+void svkIOD::InitPlaneOrientationMacro( vtkstd::string orientationString )
+{
+
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PlaneOrientationSequence"
+    );
+
+
+    this->dcmHeader->AddSequenceItemElement(
+        "PlaneOrientationSequence",
+        0,
+        "ImageOrientationPatient",
+        orientationString,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Pixel Spacing:
+ */
+void svkIOD::InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness )
+{
+
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PixelMeasuresSequence"
+    );
+
+
+    this->dcmHeader->AddSequenceItemElement(
+        "PixelMeasuresSequence",
+        0,
+        "PixelSpacing",
+        pixelSizes, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "PixelMeasuresSequence",
+        0,
+        "SliceThickness",
+        sliceThickness, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
 
 
 /*!
@@ -233,6 +381,17 @@ void svkIOD::InitImagePixelModule()
     this->dcmHeader->SetValue( "HighBit", 0 );
     this->dcmHeader->InsertEmptyElement( "PixelRepresentation" );
     this->dcmHeader->InsertEmptyElement( "PixelData" );
+}
+
+
+/*!
+ *
+ */
+void svkIOD::InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType)
+{
+    this->dcmHeader->SetValue( "Rows", rows );
+    this->dcmHeader->SetValue( "Columns", columns );
+    this->dcmHeader->SetPixelDataType( dataType );
 }
 
 

@@ -53,6 +53,7 @@
 #include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
+#include <svkMRIIOD.h>
 
 
 namespace svk {
@@ -74,7 +75,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         static svkExtractMRIFromMRS* New();
         vtkTypeRevisionMacro( svkExtractMRIFromMRS, svkImageAlgorithm);
 
-        void                    SetSeriesDescription(string newSeriesDescription);
+        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
 
@@ -90,7 +91,9 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
                                     vtkInformationVector* outputVector 
                                 );
 
-        virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
+
 
 
 
@@ -99,11 +102,15 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         //  Methods:
         virtual void                     UpdateProvenance();
         virtual void                     UpdateHeader();
+        int                              ConvertDcmMrsToMri(); 
+
 
         //  Members:
-        string                           newSeriesDescription; 
+        vtkstd::string                   newSeriesDescription; 
         svkDcmHeader::DcmPixelDataFormat dataType;
         bool                             zeroCopy;    
+        svkMRIIOD*                       iod;
+
 
 };
 

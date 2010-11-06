@@ -173,6 +173,9 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
         case svkDcmHeader::SIGNED_FLOAT_4:
             dataTypeVtk = VTK_FLOAT;
             break; 
+        case svkDcmHeader::SIGNED_FLOAT_8:
+            dataTypeVtk = VTK_DOUBLE;
+            break; 
     }
 
     // Now lets get the cell data structure 
@@ -286,6 +289,22 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
                  * potentially be two different types.
                  */
                 if( cellArrayType != VTK_UNSIGNED_CHAR && cellArrayType != VTK_UNSIGNED_SHORT  ) {
+                    cellArrayType = -1;
+                }
+                break;
+
+            case svkDcmHeader::SIGNED_FLOAT_8:
+                dataTypeVtk = VTK_DOUBLE;
+
+                // We only accept certain casts
+                if( pointArrayType != VTK_UNSIGNED_CHAR && pointArrayType != VTK_UNSIGNED_SHORT && pointArrayType != VTK_FLOAT) {
+                    pointArrayType = -1;
+                } 
+
+                /* Point and cell arrays are seperated because there could
+                 * potentially be two different types.
+                 */
+                if( cellArrayType != VTK_UNSIGNED_CHAR && cellArrayType != VTK_UNSIGNED_SHORT && cellArrayType != VTK_FLOAT ) {
                     cellArrayType = -1;
                 }
                 break;
