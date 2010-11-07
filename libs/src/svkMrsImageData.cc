@@ -793,9 +793,11 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
 
                     linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[0]) ) + x; 
                     tuple = spectrum->GetTuple( point );
-                    pixels[2*linearIndex] = tuple[0];
                     if ( numComponents == 2 ) {
+                        pixels[2*linearIndex] = tuple[0];
                         pixels[2*linearIndex+1] = tuple[1];
+                    } else {
+                        pixels[linearIndex] = tuple[0];
                     }
                 }
             }

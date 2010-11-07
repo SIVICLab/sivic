@@ -88,6 +88,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         void            MapUnsignedToSigned( void* pixels, int numPixels ); 
         void            MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels);
         void            MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels); 
+        void            GetDoublePixelRange(double* doublePixels, int numPixels, double& rangeMin, double& rangeMax); 
 
 };
 

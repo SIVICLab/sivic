@@ -368,13 +368,24 @@ void svkIdfVolumeWriter::WriteHeader()
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSize(pixelSize);
     out << "slice thickness (mm): " << setw(14) << setprecision(5) << pixelSize[2] << endl;
 
-    vtkImageAccumulate* histo = vtkImageAccumulate::New();
-    histo->SetInput( this->GetImageDataInput(0) );
-    histo->Update();
+    double inputRangeMin; 
+    double inputRangeMax; 
+    if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+        int numPixels = hdr->GetIntValue( "Columns" ) * hdr->GetIntValue( "Rows" ) * hdr->GetIntValue("NumberOfFrames"); 
+        double* doublePixels; 
+        doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+        this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
+    } else {
+        vtkImageAccumulate* histo = vtkImageAccumulate::New();
+        histo->SetInput( this->GetImageDataInput(0) );
+        histo->Update();
+        inputRangeMin = (histo->GetMin())[0]; 
+        inputRangeMax = (histo->GetMax())[0];
+        histo->Delete();
+    }
 
-    out << "minimum: " << scientific << setw(12) << setprecision(4) << (histo->GetMin())[0]
-    << "     maximum: " << scientific << setw(12) << setprecision(4) << (histo->GetMax())[0] << endl;
-    histo->Delete();
+    out << "minimum: " << scientific << setw(12) << setprecision(4) << inputRangeMin
+    << "     maximum: " << scientific << setw(12) << setprecision(4) << inputRangeMax << endl;
 
     out << "scale:     1.000" << endl;
     out << "first slice read: " << setw(4) << 1 
@@ -481,24 +492,32 @@ void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPix
 /*!
  *
  */
+void svkIdfVolumeWriter::GetDoublePixelRange(double* doublePixels, int numPixels, double& rangeMin, double& rangeMax)
+{
+    rangeMin = 0.; 
+    rangeMax = 0.; 
+    for (int i = 0; i < numPixels; i++ ) {
+        if ( doublePixels[i] > rangeMax ) {
+            rangeMax = doublePixels[i]; 
+        } 
+        if ( doublePixels[i] < rangeMin ) {
+            rangeMin = doublePixels[i]; 
+        } 
+    }
+}
+
+
+/*!
+ *
+ */
 void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels) 
 {
     //  Scale this to 32 bit values and init RescaleIntercept and RescaleSlope:
-    vtkImageAccumulate* histo = vtkImageAccumulate::New();
-    histo->SetInput( this->GetImageDataInput(0) );
-    histo->Update();
 
     //  Get the input range for scaling:
     double inputRangeMin = 0. ; 
     double inputRangeMax = 0. ; 
-    for (int i = 0; i < numPixels; i++ ) {
-        if ( doublePixels[i] > inputRangeMax ) {
-            inputRangeMax = doublePixels[i]; 
-        } 
-        if ( doublePixels[i] < inputRangeMin ) {
-            inputRangeMin = doublePixels[i]; 
-        } 
-    }
+    this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
     double deltaRangeIn = inputRangeMax - inputRangeMin;
     cout << "RANGE " << inputRangeMax << " " << inputRangeMin << endl;
 
