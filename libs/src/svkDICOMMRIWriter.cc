@@ -233,7 +233,11 @@ void svkDICOMMRIWriter::InitPixelData()
         case svkDcmHeader::SIGNED_FLOAT_4:
         case svkDcmHeader::SIGNED_FLOAT_8:
         {
-            short* pixelData = new short[dataLength];  
+            //  Fix BitsAllocated, etc to be represent 
+            //  signed short data
+            this->GetImageDataInput(0)->GetDcmHeader()->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
+
+            unsigned short* pixelData = new unsigned short[dataLength];  
             float slope; 
             float intercept; 
             this->GetShortScaledPixels( pixelData, slope, intercept ); 
@@ -243,10 +247,6 @@ void svkDICOMMRIWriter::InitPixelData()
                   pixelData, 
                   dataLength 
             );
-
-            //  Fix BitsAllocated, etc to be represent 
-            //  signed short data
-            this->GetImageDataInput(0)->GetDcmHeader()->SetPixelDataType(svkDcmHeader::SIGNED_INT_2);
 
             //  Init Rescale Attributes:    
             this->iod->InitPixelValueTransformationMacro( slope, intercept ); 
@@ -271,26 +271,66 @@ void svkDICOMMRIWriter::InitPixelData()
 
 
 /*!
+ *  vtkImageAccumulate doesn't seem to work for doubles, so need custom method for 
+ *  calculating pixel value ranges. 
+ */
+void svkDICOMMRIWriter::GetPixelRange(double& min, double& max)
+{
+    int dataType = 
+            this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
+
+    if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
+
+        vtkImageAccumulate* histo = vtkImageAccumulate::New();
+        histo->SetInput( this->GetImageDataInput(0) );
+        histo->Update();
+
+        //  Get the input range for scaling:
+        min = *( histo->GetMin() ); 
+        max = *( histo->GetMax() ); 
+
+        histo->Delete();
+
+    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+
+        int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
+        int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
+        int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
+        int numPixels = cols * rows * slices; 
+
+        min = 0.;
+        max = 0.;
+        double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
+        for (int i = 0; i < numPixels; i++ ) {
+            if ( doublePixels[i] > max ) {
+                max = doublePixels[i];
+            }
+            if ( doublePixels[i] < min ) {
+                min = doublePixels[i];
+            }
+        }
+    }
+}
+
+
+/*!
  *  Performs a linear mapping of floating point image values to 16 bit integer dynamic range. 
  *  Returns a signed short array, together with the intercept and slope of the linear scaling 
  *  transformation ( shortVal = floatVal * slope + intercept).    
  */
-void svkDICOMMRIWriter::GetShortScaledPixels( short* shortPixels, float& slope, float& intercept )
+void svkDICOMMRIWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept )
 {
 
-    //  Scale this to 16 bit values and init RescaleIntercept and RescaleSlope:
-    vtkImageAccumulate* histo = vtkImageAccumulate::New();
-    histo->SetInput( this->GetImageDataInput(0) );
-    histo->Update();
-
     //  Get the input range for scaling:
-    double inputRangeMin = *( histo->GetMin() ); 
-    double inputRangeMax = *( histo->GetMax() ); 
+    double inputRangeMin;
+    double inputRangeMax;
+
+    this->GetPixelRange(inputRangeMin, inputRangeMax);
     double deltaRangeIn = inputRangeMax - inputRangeMin;
 
     //  Get the output range for scaling:
-    int shortMin = VTK_SHORT_MIN; 
-    int shortMax = VTK_SHORT_MAX; 
+    int shortMin = VTK_UNSIGNED_SHORT_MIN; 
+    int shortMax = VTK_UNSIGNED_SHORT_MAX; 
     double deltaRangeOut = shortMax - shortMin;
 
     //  apply linear mapping from float range to signed short range; 
@@ -313,12 +353,12 @@ void svkDICOMMRIWriter::GetShortScaledPixels( short* shortPixels, float& slope, 
     if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
         float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
         for (int i = 0; i < numPixels; i++) {
-            shortPixels[i] = static_cast<short> ( slope * floatPixels[i] + intercept ); 
+            shortPixels[i] = static_cast<unsigned short> ( slope * floatPixels[i] + intercept ); 
         }
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
         for (int i = 0; i < numPixels; i++) {
-            shortPixels[i] = static_cast<short> ( slope * doublePixels[i] + intercept ); 
+            shortPixels[i] = static_cast<unsigned short> ( slope * doublePixels[i] + intercept ); 
         }
     }
 

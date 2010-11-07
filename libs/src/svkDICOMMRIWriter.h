@@ -81,7 +81,8 @@ class svkDICOMMRIWriter : public svkImageWriter
 
     private:
         void            InitPixelData();
-        void            GetShortScaledPixels( short* shortPixels, float& slope, float& intercept ); 
+        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept ); 
+        void            GetPixelRange(double& min, double& max); 
         
         svkMRIIOD*      iod; 
 

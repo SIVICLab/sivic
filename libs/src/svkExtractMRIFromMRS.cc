@@ -122,10 +122,12 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
     int endPt = 0; 
     this->GetIntegrationPtRange(startPt, endPt); 
 
+    cout << " GET POINT: " << static_cast<int>( (endPt+startPt)/2 ) << endl;
+
     //  Extract svkMriImageData from svkMrsImageData
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
         this->GetOutput(), 
-        static_cast<int>( (endPt-startPt)/2 ), 
+        static_cast<int>( (endPt + startPt)/2 ), 
         0, 
         0, 
         0 
@@ -139,11 +141,19 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     for (int i = 0; i < totalVoxels; i++ ) {
-        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, i*100);
-        //cout << "tuple(RD) " <<  (this->GetOutput()->GetPointData()->GetScalars()->GetTuple1(i)) << endl;
+
+        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+            svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
+        ); 
+        float* specPtr = spectrum->GetPointer(0);
+
+        double integral = 0;     
+        for ( int pt = startPt; pt <= endPt; pt ++ ) {
+            integral += specPtr[2*pt]; 
+        }
+        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
     }
 
-    //  Initialize to Zero:
     return 1; 
 }
 
