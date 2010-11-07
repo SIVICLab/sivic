@@ -191,10 +191,16 @@ int main (int argc, char** argv)
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
     quant->SetInput( reader->GetOutput() ); 
     quant->SetSeriesDescription( peakName + " Metabolite Map" ); 
+cout << "Check 1" << endl;
+    quant->SetPeakPosPPM( peakCenterPpm );     
+cout << "Check 2" << endl;
+    quant->SetPeakWidthPPM( peakWidthPpm );  
+cout << "Check 3" << endl;
     quant->Update();
+cout << "Check 4" << endl;
 
-    quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
-    cout << *( quant->GetOutput() ) << endl;
+    //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    //cout << *( quant->GetOutput() ) << endl;
 
     // ===============================================  
     //  Write the data out to the specified file type.  
@@ -219,6 +225,7 @@ int main (int argc, char** argv)
 
     writer->Delete();
     reader->Delete();
+    quant->Delete();
 
     return 0; 
 }
