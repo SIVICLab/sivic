@@ -78,6 +78,8 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
+        void                    SetPeakPosPPM( float peak_center_ppm );     
+        void                    SetPeakWidthPPM( float peak_width_ppm  );     
 
 
     protected:
@@ -95,14 +97,13 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
 
 
-
-
     private:
 
         //  Methods:
         virtual void                     UpdateProvenance();
         virtual void                     UpdateHeader();
         int                              ConvertDcmMrsToMri(); 
+        void                             GetIntegrationPtRange(int& startPt, int& endPt); 
 
 
         //  Members:
@@ -110,6 +111,8 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         svkDcmHeader::DcmPixelDataFormat dataType;
         bool                             zeroCopy;    
         svkMRIIOD*                       iod;
+        float                            peakCenterPPM;
+        float                            peakWidthPPM;
 
 
 };

@@ -166,8 +166,8 @@ void svkIdfVolumeWriter::WriteData()
         numBytesPerPixel = 2; 
         pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || 
-                 dataType == svkDcmHeader::SIGNED_INT_2 || 
-                dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+               dataType == svkDcmHeader::SIGNED_INT_2 || 
+               dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         extension = ".real"; 
         numBytesPerPixel = 4; 
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
@@ -489,9 +489,18 @@ void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixe
     histo->Update();
 
     //  Get the input range for scaling:
-    double inputRangeMin = *( histo->GetMin() );
-    double inputRangeMax = *( histo->GetMax() );
+    double inputRangeMin = 0. ; 
+    double inputRangeMax = 0. ; 
+    for (int i = 0; i < numPixels; i++ ) {
+        if ( doublePixels[i] > inputRangeMax ) {
+            inputRangeMax = doublePixels[i]; 
+        } 
+        if ( doublePixels[i] < inputRangeMin ) {
+            inputRangeMin = doublePixels[i]; 
+        } 
+    }
     double deltaRangeIn = inputRangeMax - inputRangeMin;
+    cout << "RANGE " << inputRangeMax << " " << inputRangeMin << endl;
 
     //  Get the output range for scaling:
     float floatMin = VTK_FLOAT_MIN;

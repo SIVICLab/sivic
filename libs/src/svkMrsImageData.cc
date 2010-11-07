@@ -761,10 +761,16 @@ void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelect
  *  \param component the component to operate on 
  *  \param timePoint the time point to operate on 
  *  \param channel the the channel to operate on 
+ *  \param component (0 = real, 1=im, 2=cmplx) 
  *
  */
-void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, int channel ) 
+void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, int channel, int component ) 
 {
+    int numComponents = 2; 
+    if ( component < 2 ) {
+        numComponents = 1; 
+    } 
+
     if( image != NULL ) {
         // Setup image dimensions
         image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
@@ -773,7 +779,7 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
 
         // Create a float array to hold the pixel data
         vtkDoubleArray* pixelData = vtkDoubleArray::New();
-        pixelData->SetNumberOfComponents( 2 );
+        pixelData->SetNumberOfComponents( numComponents );
         pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
         double* pixels = pixelData->GetPointer(0);
         int linearIndex = 0;
@@ -788,12 +794,14 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
                     linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[0]) ) + x; 
                     tuple = spectrum->GetTuple( point );
                     pixels[2*linearIndex] = tuple[0];
-                    pixels[2*linearIndex+1] = tuple[1];
+                    if ( numComponents == 2 ) {
+                        pixels[2*linearIndex+1] = tuple[1];
+                    }
                 }
             }
         }
         image->GetPointData()->SetScalars( pixelData );
-        image->SetNumberOfScalarComponents(2);
+        image->SetNumberOfScalarComponents( numComponents );
         pixelData->Delete();
     }
 }

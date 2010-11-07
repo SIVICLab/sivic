@@ -92,7 +92,7 @@ class svkMrsImageData: public svkImageData
         void           GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );
         void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.5 );
         void           GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN, int slice = -1 );
-        void           GetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 ); 
+        void           GetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0, int component = 2 ); 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 ); 
         virtual void   UpdateRange(int component );
         int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);

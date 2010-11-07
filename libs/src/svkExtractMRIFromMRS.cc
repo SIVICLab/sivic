@@ -40,8 +40,8 @@
  */
 
 
-
 #include <svkExtractMRIFromMRS.h>
+#include <svkSpecPoint.h>
 
 
 using namespace svk;
@@ -118,18 +118,74 @@ void svkExtractMRIFromMRS::SetZeroCopy(bool zeroCopy)
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
+    int startPt = 0; 
+    int endPt = 0; 
+    this->GetIntegrationPtRange(startPt, endPt); 
 
     //  Extract svkMriImageData from svkMrsImageData
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
         this->GetOutput(), 
-        0
+        static_cast<int>( (endPt-startPt)/2 ), 
+        0, 
+        0, 
+        0 
     );
+    this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
 
     this->UpdateHeader(); 
 
+    int numVoxels[3]; 
+    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+
+    for (int i = 0; i < totalVoxels; i++ ) {
+        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, i*100);
+        //cout << "tuple(RD) " <<  (this->GetOutput()->GetPointData()->GetScalars()->GetTuple1(i)) << endl;
+    }
+
     //  Initialize to Zero:
     return 1; 
+}
+
+
+/*!
+ *  Set the chemical shift of the peak position to integrate over.
+ */
+void svkExtractMRIFromMRS::SetPeakPosPPM( float centerPPM )
+{
+    this->peakCenterPPM = centerPPM;
+}
+
+
+/*!
+ *  Set the chemical shift range to integrate over.  Integration will be +/- 1/2 this
+ *  width about the peak position.
+ */
+void svkExtractMRIFromMRS::SetPeakWidthPPM( float widthPPM )
+{
+    this->peakWidthPPM = widthPPM;
+}
+
+
+/*!
+ *
+ */
+void svkExtractMRIFromMRS::GetIntegrationPtRange(int& startPt, int& endPt) 
+{
+
+    //  Get the integration range in points:
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
+    startPt =  static_cast< int > (
+                        point->ConvertPosUnits(
+                            this->peakCenterPPM + (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
+                      );
+    endPt   =  static_cast< int > (
+                        point->ConvertPosUnits(
+                            this->peakCenterPPM - (this->peakWidthPPM/2), svkSpecPoint::PPM, svkSpecPoint::PTS )
+                      );  
+
+    point->Delete();
 }
 
 
