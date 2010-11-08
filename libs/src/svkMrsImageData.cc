@@ -806,6 +806,10 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         image->SetNumberOfScalarComponents( numComponents );
         pixelData->Delete();
     }
+
+    double origin[3];
+    this->GetDcmHeader()->GetOrigin(origin);
+    image->SetOrigin( origin );
 }
 
 
