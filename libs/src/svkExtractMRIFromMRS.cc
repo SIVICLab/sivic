@@ -246,6 +246,17 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
     svkDcmHeader* mri = this->GetOutput()->GetDcmHeader(); 
 
     //
+    //  Patient IE requires modification
+    //
+    this->iod->InitPatientModule(
+            mrs->GetStringValue( "PatientsName" ), 
+            mrs->GetStringValue( "PatientID" ), 
+            mrs->GetStringValue( "PatientsBirthDate" ), 
+            mrs->GetStringValue( "PatientsSex" )
+    );
+
+
+    //
     //  Study IE requires modification
     //
     this->iod->InitGeneralStudyModule(

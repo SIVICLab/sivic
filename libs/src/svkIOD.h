@@ -69,6 +69,13 @@ class svkIOD : public vtkObject
         virtual void  InitDcmHeader() = 0;
         void          SetDcmHeader(svkDcmHeader* header);  
         void          SetReplaceOldElements( bool replaceElements );  
+        void          InitPatientModule(
+                        vtkstd::string patientsName, 
+                        vtkstd::string patientID, 
+                        vtkstd::string patientsBirthDate, 
+                        vtkstd::string patientsSex
+                      ); 
+
         void          InitGeneralStudyModule(
                         vtkstd::string studyDate, 
                         vtkstd::string studyTime, 

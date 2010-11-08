@@ -104,6 +104,39 @@ void svkIOD::InitPatientModule()
 /*!
  *
  */
+void svkIOD::InitPatientModule(vtkstd::string patientsName, vtkstd::string patientID, vtkstd::string patientsBirthDate, vtkstd::string patientsSex)
+{
+    if ( !patientsName.empty() ) {
+        this->dcmHeader->SetValue(
+            "PatientsName",
+            patientsName 
+        );
+    }
+
+    if ( !patientID.empty() ) {
+        this->dcmHeader->SetValue(
+            "PatientID",
+            patientID
+        );
+    }
+    if ( !patientsBirthDate.empty() ) {
+        this->dcmHeader->SetValue(
+            "PatientsBirthDate",
+            patientsBirthDate
+        );
+    }
+    if ( !patientsSex.empty() ) {
+        this->dcmHeader->SetValue(
+            "PatientsSex",
+            patientsSex
+        );
+    }
+}
+
+
+/*!
+ *
+ */
 void svkIOD::InitGeneralStudyModule()
 {
     this->dcmHeader->InsertUniqueUID( "StudyInstanceUID" );
