@@ -832,6 +832,16 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
     this->PlotView = svkPlotGridViewController::New();
     this->PlotView->SetRWInteractor(rwi);
     this->PlotView->SetInput( ddfData );
+
+svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
+quant->SetInput( ddfData );
+quant->SetSeriesDescription( " Metabolite Map" );
+quant->SetPeakPosPPM( 1.99 );
+quant->SetPeakWidthPPM( .4 );
+this->PlotView->SetInput( quant->GetOutput(), svkPlotGridView::MET );
+this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE ) ; 
+this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_TEXT ) ; 
+
     this->PlotView->SetSlice( 4 );
     this->PlotView->HighlightSelectionVoxels( );
     this->PlotView->SetWindowLevelRange(150, 350, 0 );
