@@ -433,7 +433,7 @@ void svkOverlayViewController::SetSlice(int slice, svkDcmHeader::Orientation ori
  */
 int svkOverlayViewController::GetImageSlice( svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? this->GetView()->GetOrientation() : sliceOrientation;
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? this->GetView()->GetOrientation() : sliceOrientation;
     return static_cast<svkOverlayView*>(this->GetView())->imageViewer->GetSlice( sliceOrientation ); 
 }
 

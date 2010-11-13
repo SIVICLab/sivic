@@ -322,7 +322,7 @@ void svkSpectraReferenceViewController::SetSlice(int slice, svkDcmHeader::Orient
  */
 int svkSpectraReferenceViewController::GetImageSlice( svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? this->GetView()->GetOrientation() : sliceOrientation;
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? this->GetView()->GetOrientation() : sliceOrientation;
     return static_cast<svkSpectraReferenceView*>(this->GetView())->imageViewer->GetSlice( sliceOrientation ); 
 }
 

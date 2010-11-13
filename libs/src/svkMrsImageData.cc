@@ -370,7 +370,7 @@ void svkMrsImageData::UpdateRange( int component )
  */
 bool svkMrsImageData::IsSliceInSelectionBox( int slice, svkDcmHeader::Orientation orientation )
 {
-    orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+    orientation = (orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
         this->GetDcmHeader()->GetOrientationType() : orientation;
 
     int voxelIndex[3] = {0,0,0};
@@ -656,7 +656,7 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
  */
 void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice )
 {
-        orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+        orientation = (orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
                                 this->GetDcmHeader()->GetOrientationType() : orientation;
         double minPoint[3];
         double maxPoint[3];
@@ -700,7 +700,7 @@ void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orie
 void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], 
                                                 svkDcmHeader::Orientation orientation, int slice )
 {
-    orientation = (orientation == svkDcmHeader::UNKNOWN ) ?
+    orientation = (orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
                                 this->GetDcmHeader()->GetOrientationType() : orientation;
     if( userSelection != NULL ) {
         double worldStart[3]; 
@@ -818,7 +818,7 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
  */
 int svkMrsImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int numSlices;
     switch ( this->GetDcmHeader()->GetOrientationType()) {

@@ -2039,7 +2039,6 @@ void svkGESigna5XReader::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitFrameAnatomyMacro();
     this->InitPixelValueTransformationMacro();
     this->InitMRImageFrameTypeMacro();
     this->InitMRTimingAndRelatedParametersMacro();
@@ -2131,63 +2130,6 @@ void svkGESigna5XReader::InitPlaneOrientationMacro()
         ost.str(), 
         "SharedFunctionalGroupsSequence",
         0
-    );
-
-}
-
-
-/*!
- *
- */
-void svkGESigna5XReader::InitFrameAnatomyMacro()
-{
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "FrameAnatomySequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "FrameAnatomySequence",       
-        0,                             
-        "FrameLaterality",              
-        vtkstd::string("U"),                     
-        "SharedFunctionalGroupsSequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "FrameAnatomySequence",      
-        0,                          
-        "AnatomicRegionSequence"   
-    );
-
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeValue",              
-        1,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodingSchemeDesignator",              
-        "DCM",
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeMeaning",              
-        0,
-        "FrameAnatomySequence", 
-        0                                  
     );
 
 }
@@ -2536,7 +2478,7 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
     }
 
 
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTimingAndRelatedParametersMacro(
         (float)((double)this->imageHeader->MR_Pulse_Repetition_Time / 1000.0), 
         (float)this->imageHeader->MR_Flip_Angle, 
         useetl 
@@ -2706,7 +2648,7 @@ void svkGESigna5XReader::InitMREchoMacro()
         return;
     }
 
-    this->iod->InitMREchoMacro(
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro(
         (float)((double)this->imageHeader->MR_Pulse_Echo_Time/1000.0) 
     );
 }
@@ -2721,7 +2663,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
         return;
     }
 
-    this->iod->InitMRModifierMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRModifierMacro(
         (float)((double)this->imageHeader->MR_Pulse_Inversion_Time/1000.0)
     );
 
@@ -2863,7 +2805,7 @@ void svkGESigna5XReader::InitMRImagingModifierMacro()
     float pixelBandwidth =  (float)((this->imageHeader->MR_Variable_Bandwidth*2.0*1000.0)
                             /this->imageHeader->MR_Image_Dimension_X);
 
-    this->iod->InitMRImagingModifierMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRImagingModifierMacro(
         transmitFreq, 
         pixelBandwidth
     );
@@ -2938,7 +2880,7 @@ void svkGESigna5XReader::InitMRTransmitCoilMacro()
         return;
     }
 
-    this->iod->InitMRTransmitCoilMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro(
         "GE",
         vtkstd::string(this->imageHeader->MR_Receive_Coil_Name),
         "VOLME"

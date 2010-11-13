@@ -132,6 +132,7 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
         0, 
         0 
     );
+
     this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
 
     this->UpdateHeader(); 
@@ -230,8 +231,6 @@ void svkExtractMRIFromMRS::UpdateHeader()
         this->newSeriesDescription
     );
 
-
-
     this->ConvertDcmMrsToMri(); 
 
 }
@@ -248,34 +247,33 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
     //
     //  Patient IE requires modification
     //
-    this->iod->InitPatientModule(
-            mrs->GetStringValue( "PatientsName" ), 
-            mrs->GetStringValue( "PatientID" ), 
-            mrs->GetStringValue( "PatientsBirthDate" ), 
-            mrs->GetStringValue( "PatientsSex" )
+    mri->InitPatientModule(
+        mrs->GetStringValue( "PatientsName" ), 
+        mrs->GetStringValue( "PatientID" ), 
+        mrs->GetStringValue( "PatientsBirthDate" ), 
+        mrs->GetStringValue( "PatientsSex" )
     );
 
 
     //
     //  Study IE requires modification
     //
-    this->iod->InitGeneralStudyModule(
-                        mrs->GetStringValue("StudyDate"), 
-                        mrs->GetStringValue("StudyTime"), 
-                        mrs->GetStringValue("ReferringPhysiciansName"), 
-                        mrs->GetStringValue("StudyID"), 
-                        mrs->GetStringValue("AccessionNumber") 
-                      );
+    mri->InitGeneralStudyModule(
+        mrs->GetStringValue("StudyDate"), 
+        mrs->GetStringValue("StudyTime"), 
+        mrs->GetStringValue("ReferringPhysiciansName"), 
+        mrs->GetStringValue("StudyID"), 
+        mrs->GetStringValue("AccessionNumber") 
+    );
 
     //
     //  General Series Module
     //
-    this->iod->InitGeneralSeriesModule(
-                        "77", 
-                        "", 
-                        mrs->GetStringValue("PatientPosition") 
-                      ); 
-
+    mri->InitGeneralSeriesModule(
+        "77", 
+        "", 
+        mrs->GetStringValue("PatientPosition") 
+    ); 
 
     //
     //  Image Pixel Module 
@@ -289,10 +287,10 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
         cout << this->GetClassName() << ": Unsupported ScalarType " << endl;
         exit(1); 
     }
-    this->iod->InitImagePixelModule( 
-            mrs->GetIntValue( "Rows"), 
-            mrs->GetIntValue( "Columns"), 
-            dataType 
+    mri->InitImagePixelModule( 
+        mrs->GetIntValue( "Rows"), 
+        mrs->GetIntValue( "Columns"), 
+        dataType 
     ); 
 
     //
@@ -310,7 +308,7 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
 
     mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 ); 
 
-    this->iod->InitPlaneOrientationMacro(
+    mri->InitPlaneOrientationMacro(
         mrs->GetStringSequenceItemElement( 
             "PlaneOrientationSequence",
             0,
@@ -336,7 +334,7 @@ int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
                                         "SharedFunctionalGroupsSequence"
                                     ); 
 
-    this->iod->InitPixelMeasuresMacro(  pixelSizes, sliceThickness ); 
+    mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness ); 
 
 }
 

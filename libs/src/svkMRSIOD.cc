@@ -90,6 +90,8 @@ void svkMRSIOD::InitDcmHeader()
     this->InitEnhancedGeneralEquipmentModule();
 
     this->InitMultiFrameFunctionalGroupsModule();
+    this->InitFrameAnatomyMacro();
+    this->InitMRSpectroscopyFrameTypeMacro(); 
     this->InitMultiFrameDimensionModule();
     this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyModule();
@@ -208,57 +210,3 @@ void svkMRSIOD::InitMRSpectroscopyFrameTypeMacro()
 }
 
 
-/*!
- *  Initializes the VolumeLocalizationSequence in the MRSpectroscopy
- *  DICOM object for PRESS excitation.
- */
-void svkMRSIOD::InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3])
-{
-
-    this->dcmHeader->InsertEmptyElement( "VolumeLocalizationSequence" );
-
-    string midSlabPosition;
-    for (int i = 0; i < 3; i++) {
-        ostringstream oss;
-        oss << center[i];
-        midSlabPosition += oss.str();
-        if (i < 2) {
-            midSlabPosition += '\\';
-        }
-    }
-
-    //  Volume Localization (PRESS BOX)
-    for (int i = 0; i < 3; i++) {
-
-        this->dcmHeader->AddSequenceItemElement(
-            "VolumeLocalizationSequence",
-            i,
-            "SlabThickness",
-            size[i]
-        );
-
-        this->dcmHeader->AddSequenceItemElement(
-            "VolumeLocalizationSequence",
-            i,
-            "MidSlabPosition",
-            midSlabPosition
-        );
-
-        string slabOrientation;
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss << dcos[i][j];
-            slabOrientation += oss.str();
-            if (j < 2) {
-                slabOrientation += '\\';
-            }
-        }
-        this->dcmHeader->AddSequenceItemElement(
-            "VolumeLocalizationSequence",
-            i,
-            "SlabOrientation",
-            slabOrientation
-        );
-
-    }
-}

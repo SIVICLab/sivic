@@ -716,7 +716,7 @@ svkDcmHeader::Orientation svkImageViewer2::GetOrientation( )
 svkOpenGLOrientedImageActor* svkImageViewer2::GetImageActor( svkDcmHeader::Orientation actorOrientation )
 {
     svkOpenGLOrientedImageActor* actor = NULL;
-    actorOrientation = (actorOrientation == svkDcmHeader::UNKNOWN ) ?
+    actorOrientation = (actorOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
                                 this->GetInput()->GetDcmHeader()->GetOrientationType() : actorOrientation;
     switch ( actorOrientation ) {
         case svkDcmHeader::AXIAL:

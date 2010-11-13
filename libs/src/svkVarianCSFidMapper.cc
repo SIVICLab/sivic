@@ -170,9 +170,6 @@ void svkVarianCSFidMapper::InitSharedFunctionalGroupMacros()
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
 
-    this->InitFrameAnatomyMacro();
-    this->InitMRSpectroscopyFrameTypeMacro();
-
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
     this->InitMREchoMacro();
@@ -379,12 +376,6 @@ void svkVarianCSFidMapper::InitPerFrameFunctionalGroupMacros()
 void svkVarianCSFidMapper::InitPixelMeasuresMacro()
 {
 
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
     //  Regrided dimensionality:
     float numPixels[3];
     numPixels[0] = this->GetHeaderValueAsInt("fullnv", 0);
@@ -405,23 +396,11 @@ void svkVarianCSFidMapper::InitPixelMeasuresMacro()
         pixelSizeString[i].assign( oss.str() );
     }
 
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->dcmHeader->InitPixelMeasuresMacro(
         pixelSizeString[0] + "\\" + pixelSizeString[1],
-        "SharedFunctionalGroupsSequence",
-        0
+        pixelSizeString[2]
     );
 
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        pixelSize[2],
-        "SharedFunctionalGroupsSequence",
-        0
-    );
 }
 
 

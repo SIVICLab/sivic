@@ -104,12 +104,10 @@ class svkVarianFidMapper : public vtkObject
         virtual void    InitMRModifierMacro(); 
         virtual void    InitMRTransmitCoilMacro(); 
         virtual void    InitMRAveragesMacro(); 
-        virtual void    InitMRSpectroscopyFrameTypeMacro(); 
         virtual void    InitPlanePositionMacro();
         virtual void    InitPixelMeasuresMacro();
         virtual void    InitPlaneOrientationMacro();
         virtual void    InitMREchoMacro();
-        virtual void    InitFrameAnatomyMacro(); 
         virtual void    InitMRTimingAndRelatedParametersMacro();
         virtual void    InitMRReceiveCoilMacro();
         virtual void    InitMRSpectroscopyPulseSequenceModule() = 0;

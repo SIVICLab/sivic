@@ -50,6 +50,11 @@ using namespace svk;
 vtkCxxRevisionMacro(svkDcmHeader, "$Rev$");
 
 
+const float svkDcmHeader::UNKNOWN_TIME = -1;
+const vtkstd::string svkDcmHeader::UNKNOWN_STRING = "UNKNOWN";
+
+
+
 /*!
  *
  */
@@ -77,13 +82,12 @@ svkDcmHeader::~svkDcmHeader()
 
 
 /*!
- *  Converts a string representation of a patient name to a DICOM VR = PN representation
- *  and sets the value in the DICOM header: 
+ *  Converts a string representation of a patient name to a DICOM VR = PN representation. 
  *      "[lastName[^firstName[^middleName[^namePrefix[^nameSuffix]]]]"
  *
  *      \param patientsName space delimited patient name string 
  */
-void svkDcmHeader::SetDcmPatientsName(string patientsName)
+vtkstd::string svkDcmHeader::GetDcmPatientsName(vtkstd::string patientsName)
 {
 
     size_t delim;
@@ -99,11 +103,27 @@ void svkDcmHeader::SetDcmPatientsName(string patientsName)
             patientsName.push_back('^');
         }
     }
+    return patientsName;
+}
+
+
+/*!
+ *  Converts a string representation of a patient name to a DICOM VR = PN representation
+ *  and sets the value in the DICOM header: 
+ *      "[lastName[^firstName[^middleName[^namePrefix[^nameSuffix]]]]"
+ *
+ *      \param patientsName space delimited patient name string 
+ */
+void svkDcmHeader::SetDcmPatientsName(vtkstd::string patientsName)
+{
+
+    vtkstd::string dcmPatientsName = this->GetDcmPatientsName( patientsName ); 
 
     this->SetValue(
         "PatientsName",
-        patientsName
+        dcmPatientsName
     );
+
 }
 
 
@@ -809,6 +829,181 @@ void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIn
 
 
 /*!
+ *  Initializes the DICOM Patient Module (Patient IE)
+ */
+void svkDcmHeader::InitPatientModule(vtkstd::string patientsName, vtkstd::string patientID, vtkstd::string patientsBirthDate, vtkstd::string patientsSex)
+{
+    if ( !patientsName.empty() ) {
+        this->SetValue(
+            "PatientsName",
+            patientsName
+        );
+    }
+
+    if ( !patientID.empty() ) {
+        this->SetValue(
+            "PatientID",
+            patientID
+        );
+    }
+    if ( !patientsBirthDate.empty() ) {
+        this->SetValue(
+            "PatientsBirthDate",
+            patientsBirthDate
+        );
+    }
+    if ( !patientsSex.empty() ) {
+        this->SetValue(
+            "PatientsSex",
+            patientsSex
+        );
+    }
+}
+
+
+/*!
+ *  Initializes the DICOM Patient Module (Patient IE)
+ */
+void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::string studyTime, vtkstd::string referringPhysiciansName, vtkstd::string studyID, vtkstd::string accessionNumber)
+{
+
+    if ( !studyDate.empty() ) {
+        this->SetValue(
+            "StudyDate",
+            studyDate
+        );
+    }
+
+    if ( !studyTime.empty() ) {
+        this->SetValue(
+            "StudyTime",
+            studyTime
+        );
+    }
+
+    if ( !referringPhysiciansName.empty() ) {
+        this->SetValue(
+            "ReferringPhysiciansName",
+            referringPhysiciansName
+        );
+    }
+
+    if ( !studyID.empty() ) {
+        this->SetValue(
+            "StudyID",
+            studyID
+        );
+    }
+
+    if ( !accessionNumber.empty() ) {
+        this->SetValue(
+            "AccessionNumber",
+            accessionNumber
+        );
+    }
+}
+
+
+/*!
+ *  Initializes the DICOM General Series Module (Series IE)
+ *  Modality is set on initialztion of IOD (svkIOD).  
+ */
+void svkDcmHeader::InitGeneralSeriesModule(vtkstd::string seriesNumber, vtkstd::string seriesDescription, vtkstd::string patientPosition)
+{
+
+    if ( !seriesNumber.empty() ) {
+        this->SetValue(
+            "SeriesNumber",
+            seriesNumber
+        );
+    }
+
+    if ( !seriesDescription.empty() ) {
+        this->SetValue(
+            "SeriesDescription",
+            seriesDescription
+        );
+    }
+
+    if ( !patientPosition.empty() ) {
+        this->SetValue(
+            "PatientPosition",
+            patientPosition
+        );
+    }
+}
+
+
+/*!
+ *  Initializes the DICOM Image Pixel Module
+ */
+void svkDcmHeader::InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType)
+{
+    this->SetValue( "Rows", rows );
+    this->SetValue( "Columns", columns );
+    this->SetPixelDataType( dataType );
+}
+
+
+/*!
+ *
+ */
+void svkDcmHeader::InitPlaneOrientationMacro( vtkstd::string orientationString )
+{
+
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PlaneOrientationSequence"
+    );
+
+
+    this->AddSequenceItemElement(
+        "PlaneOrientationSequence",
+        0,
+        "ImageOrientationPatient",
+        orientationString,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initialize the Pixel Measures Macro. 
+ */
+void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness )
+{
+
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PixelMeasuresSequence"
+    );
+
+
+    this->AddSequenceItemElement(
+        "PixelMeasuresSequence",
+        0,
+        "PixelSpacing",
+        pixelSizes,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "PixelMeasuresSequence",
+        0,
+        "SliceThickness",
+        sliceThickness,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+
+/*!
  *
  */
 void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
@@ -1004,8 +1199,390 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
     }
 
     delete[] indexValues;
-
 }
+
+
+/*!
+ *  Set the linear scaling factors in the Pixel Value Transformation Macro
+ */
+void svkDcmHeader::InitPixelValueTransformationMacro(float slope, float intercept)
+{
+
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "PixelValueTransformationSequence"
+    );
+
+    this->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleIntercept",
+        intercept,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleSlope",
+        slope,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "PixelValueTransformationSequence",
+        0,
+        "RescaleType",
+        "US",   //enum unspecified required for MR modality
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initialize MR Imaging Modifier Macro
+ */
+void svkDcmHeader::InitMRImagingModifierMacro(float transmitFreq, float pixelBandwidth, vtkstd::string magTransfer, vtkstd::string bloodNulling)
+{
+
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRImagingModifierSequence"
+    );
+
+    this->AddSequenceItemElement(
+        "MRImagingModifierSequence",
+        0,
+        "MagnetizationTransfer",
+        magTransfer,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRImagingModifierSequence",
+        0,
+        "BloodSignalNulling",
+        bloodNulling,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRImagingModifierSequence",
+        0,
+        "Tagging",
+        vtkstd::string("NONE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRImagingModifierSequence",
+        0,
+        "TransmitterFrequency",
+        transmitFreq,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRImagingModifierSequence",
+        0,
+        "PixelBandwidth",
+        pixelBandwidth, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+/*!
+ *  Initializes the Volume Localization Sequence in the MRSpectroscopy
+ *  DICOM object for PRESS excitation.
+ */
+void svkDcmHeader::InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3])
+{
+
+    this->InsertEmptyElement( "VolumeLocalizationSequence" );
+
+    string midSlabPosition;
+    for (int i = 0; i < 3; i++) {
+        ostringstream oss;
+        oss << center[i];
+        midSlabPosition += oss.str();
+        if (i < 2) {
+            midSlabPosition += '\\';
+        }
+    }
+
+    //  Volume Localization (PRESS BOX)
+    for (int i = 0; i < 3; i++) {
+
+        this->AddSequenceItemElement(
+            "VolumeLocalizationSequence",
+            i,
+            "SlabThickness",
+            size[i]
+        );
+
+        this->AddSequenceItemElement(
+            "VolumeLocalizationSequence",
+            i,
+            "MidSlabPosition",
+            midSlabPosition
+        );
+
+        string slabOrientation;
+        for (int j = 0; j < 3; j++) {
+            ostringstream oss;
+            oss << dcos[i][j];
+            slabOrientation += oss.str();
+            if (j < 2) {
+                slabOrientation += '\\';
+            }
+        }
+
+        this->AddSequenceItemElement(
+            "VolumeLocalizationSequence",
+            i,
+            "SlabOrientation",
+            slabOrientation
+        );
+
+    }
+}
+
+
+/*!
+ *  Initialize MR Timing and Related Parameters Macro. 
+ */
+void svkDcmHeader::InitMRTimingAndRelatedParametersMacro(float tr, float flipAngle, int numEchoes)
+{
+
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRTimingAndRelatedParametersSequence"
+    );
+
+    if ( tr == -1 ) {
+        this->AddSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence",
+            0,
+            "RepetitionTime",
+            "UNKNOWN", 
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    } else {
+        this->AddSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence",
+            0,
+            "RepetitionTime",
+            tr,
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    }
+
+    if ( flipAngle == -999 ) {
+        this->AddSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence",
+            0,
+            "FlipAngle",
+            "UNKNOWN",
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    } else {
+        this->AddSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence",
+            0,
+            "FlipAngle",
+            flipAngle,
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    }
+
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "EchoTrainLength",
+        numEchoes,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RFEchoTrainLength",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "GradientEchoTrainLength",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "GradientEchoTrainLength",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initializes the MR Echo Macro. 
+ */
+void svkDcmHeader::InitMREchoMacro(float TE)
+{
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MREchoSequence"
+    );
+    this->AddSequenceItemElement(
+        "MREchoSequence",
+        0,
+        "EffectiveEchoTime",
+        TE,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initialize MR Modifier Macro. 
+ */
+void svkDcmHeader::InitMRModifierMacro(float inversionTime)
+{   
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRModifierSequence"
+    );
+
+    string invRecov = "NO"; 
+    if ( inversionTime >= 0 ) {
+        invRecov.assign("YES");
+        this->AddSequenceItemElement(
+            "MRModifierSequence",
+            0,
+            "InversionTimes",
+            inversionTime,
+            "SharedFunctionalGroupsSequence",
+            0
+        );
+    }
+
+    this->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "InversionRecovery",
+        invRecov,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "SpatialPreSaturation",
+        string("SLAB"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRModifierSequence",
+        0,
+        "ParallelAcquisition",
+        string("NO"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initialize MR Transmit Coil Macro. 
+ */
+void svkDcmHeader::InitMRTransmitCoilMacro(string coilMfg, string coilName, string coilType)
+{   
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRTransmitCoilSequence"
+    );
+
+    this->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilName",
+        coilName,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilManufacturerName",
+        coilMfg,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->AddSequenceItemElement(
+        "MRTransmitCoilSequence",
+        0,
+        "TransmitCoilType",
+        coilType,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *  Initialize MR Averages Macro. 
+ */
+void svkDcmHeader::InitMRAveragesMacro(int numAverages)
+{
+    this->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRAveragesSequence"
+    );
+
+    this->AddSequenceItemElement(
+        "MRAveragesSequence",
+        0,
+        "NumberOfAverages",
+        numAverages,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
 
 
 /*!

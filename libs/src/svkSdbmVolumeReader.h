@@ -107,7 +107,6 @@ class svkSdbmVolumeReader : public svkImageReader2
         void            InitFrameContentMacro();
         void            InitPlanePositionMacro();
         void            InitPlaneOrientationMacro();
-        void            InitFrameAnatomyMacro();
         void            InitMRSpectroscopyFrameTypeMacro();
         void            InitMRTimingAndRelatedParametersMacro();
         void            InitMRSpectroscopyFOVGeometryMacro();

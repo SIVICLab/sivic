@@ -88,7 +88,7 @@ class svkImageViewer2 : public vtkImageViewer2
         virtual void SetColorWindow(double s);
         virtual void                      SetOrientation( svkDcmHeader::Orientation orientation );
         virtual svkDcmHeader::Orientation GetOrientation( );
-        virtual svkOpenGLOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN );
+        virtual svkOpenGLOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
         virtual svkImageData* GetInput();
         virtual bool          AreOrthogonalImagesOn();
 

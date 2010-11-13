@@ -679,7 +679,7 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
     selBoxOrientation[2][1] = this->dcos[2][1]; 
     selBoxOrientation[2][2] = this->dcos[2][2]; 
 
-    this->iod->InitVolumeLocalizationSeq(
+    this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
         selBoxSize,
         selBoxCenter,
         selBoxOrientation 
@@ -693,13 +693,11 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
  */
 void svkSdbmVolumeReader::InitPatientModule() 
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( 
-            shfMap["patient_name"] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientID", 
-        shfMap["patient_id"] 
+    this->GetOutput()->GetDcmHeader()->InitPatientModule(
+        shfMap["patient_name"], 
+        shfMap["patient_id"], 
+        NULL,
+        NULL
     );
 }
 
@@ -709,15 +707,15 @@ void svkSdbmVolumeReader::InitPatientModule()
  */
 void svkSdbmVolumeReader::InitGeneralStudyModule() 
 {
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyDate", 
-        this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) )
+
+    this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
+        this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ), 
+        NULL,
+        NULL,
+        shfMap["study_number"], 
+        NULL
     );
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyID", 
-        shfMap["study_number"]
-    );
 }
 
 
@@ -726,16 +724,6 @@ void svkSdbmVolumeReader::InitGeneralStudyModule()
  */
 void svkSdbmVolumeReader::InitGeneralSeriesModule() 
 {
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesNumber", 
-        shfMap["series_number"] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesDescription", 
-        "SDBM MRSI"
-    );
 
     vtkstd::string patientEntryPos; 
 
@@ -759,8 +747,9 @@ void svkSdbmVolumeReader::InitGeneralSeriesModule()
         patientEntryPos.append("DR");
     }
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition", 
+    this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        shfMap["series_number"], 
+        "SDBM MRSI",
         patientEntryPos 
     );
 
@@ -815,8 +804,6 @@ void svkSdbmVolumeReader::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitFrameAnatomyMacro();
-    this->InitMRSpectroscopyFrameTypeMacro();
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
     this->InitMREchoMacro();
@@ -844,12 +831,6 @@ void svkSdbmVolumeReader::InitPerFrameFunctionalGroupMacros()
 void svkSdbmVolumeReader::InitPixelMeasuresMacro()
 {
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "PixelMeasuresSequence"
-    );
-
     //  get the spacing for the specified index:
 
     float colSpacing = this->GetHeaderValueAsInt(shfMap, "width_1") / this->GetHeaderValueAsInt(shfMap, "num_pts_1"); 
@@ -863,23 +844,15 @@ void svkSdbmVolumeReader::InitPixelMeasuresMacro()
     oss << rowSpacing;
     pixelSpacing = oss.str();
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",            
-        0,                                 
-        "PixelSpacing",                   
-        pixelSpacing,                    
-        "SharedFunctionalGroupsSequence",   
-        0                                  
+    ostringstream ossThickness;
+    ossThickness << sliceThickness;
+    vtkstd::string sliceThicknessString = ossThickness.str();
+
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
+        pixelSpacing,
+        sliceThicknessString
     );
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",          
-        0,                               
-        "SliceThickness",               
-        sliceThickness, 
-        "SharedFunctionalGroupsSequence",   
-        0                                 
-    );
 }
 
 
@@ -1136,27 +1109,9 @@ void svkSdbmVolumeReader::InitPlaneOrientationMacro()
 /*!
  *
  */
-void svkSdbmVolumeReader::InitFrameAnatomyMacro()
-{
-    this->iod->InitFrameAnatomyMacro();
-}
-
-
-/*!
- *
- */
-void svkSdbmVolumeReader::InitMRSpectroscopyFrameTypeMacro()
-{
-    this->iod->InitMRSpectroscopyFrameTypeMacro();
-}
-
-
-/*!
- *
- */
 void svkSdbmVolumeReader::InitMRTimingAndRelatedParametersMacro()
 {
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat(shfMap, "TR"), 
         999
     ); 
@@ -1237,7 +1192,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkSdbmVolumeReader::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat( shfMap, "TE") );
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro( this->GetHeaderValueAsFloat( shfMap, "TE") );
 }
 
 
@@ -1247,7 +1202,7 @@ void svkSdbmVolumeReader::InitMREchoMacro()
 void svkSdbmVolumeReader::InitMRModifierMacro()
 {
     float inversionTime = 0;  
-    this->iod->InitMREchoMacro( inversionTime );
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro( inversionTime );
 }
 
 
@@ -1354,7 +1309,7 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkSdbmVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
 }
 
 
@@ -1364,7 +1319,7 @@ void svkSdbmVolumeReader::InitMRTransmitCoilMacro()
 void svkSdbmVolumeReader::InitMRAveragesMacro()
 {
     int numAverages = 1; 
-    this->iod->InitMRAveragesMacro(numAverages);
+    this->GetOutput()->GetDcmHeader()->InitMRAveragesMacro(numAverages);
 }
 
 

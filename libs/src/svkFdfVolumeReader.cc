@@ -392,8 +392,12 @@ svkDcmHeader::DcmPixelDataFormat svkFdfVolumeReader::GetFileType()
  */
 void svkFdfVolumeReader::InitPatientModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( this->GetHeaderValueAsString("storage") );
-    this->GetOutput()->GetDcmHeader()->SetValue( "PatientID", this->GetHeaderValueAsString("studyId"));
+    this->GetOutput()->GetDcmHeader()->InitPatientModule(
+        "", 
+        this->GetHeaderValueAsString("studyId"), 
+        "", 
+        "" 
+    );
 }
 
 
@@ -402,15 +406,15 @@ void svkFdfVolumeReader::InitPatientModule()
  */
 void svkFdfVolumeReader::InitGeneralStudyModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyDate",
-        this->GetHeaderValueAsString("studyDate") 
+
+    this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
+        this->GetHeaderValueAsString("studyDate"), 
+        "",
+        "",
+        this->GetHeaderValueAsString("studyID"), 
+        "" 
     );
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyID",
-        this->GetHeaderValueAsString("studyDate") 
-    );
 }
 
 
@@ -419,20 +423,10 @@ void svkFdfVolumeReader::InitGeneralStudyModule()
  */
 void svkFdfVolumeReader::InitGeneralSeriesModule()
 {
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition",
+    this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        "0", 
+        "Varian Image", 
         this->GetDcmPatientPositionString()
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesNumber",
-        0 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesDescription",
-        "Varian Image"
     );
 }
 
@@ -711,12 +705,6 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
 void svkFdfVolumeReader::InitPixelMeasuresMacro()
 {
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
     float fov[3]; 
     float numPixels[3]; 
     float pixelSize[3]; 
@@ -732,22 +720,9 @@ void svkFdfVolumeReader::InitPixelMeasuresMacro()
         pixelSizeString[i].assign( oss.str() );
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
         pixelSizeString[0] + "\\" + pixelSizeString[1], 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        pixelSize[2],
-        "SharedFunctionalGroupsSequence",
-        0
+        pixelSizeString[2]
     );
 }
 

@@ -69,39 +69,6 @@ class svkIOD : public vtkObject
         virtual void  InitDcmHeader() = 0;
         void          SetDcmHeader(svkDcmHeader* header);  
         void          SetReplaceOldElements( bool replaceElements );  
-        void          InitPatientModule(
-                        vtkstd::string patientsName, 
-                        vtkstd::string patientID, 
-                        vtkstd::string patientsBirthDate, 
-                        vtkstd::string patientsSex
-                      ); 
-
-        void          InitGeneralStudyModule(
-                        vtkstd::string studyDate, 
-                        vtkstd::string studyTime, 
-                        vtkstd::string referringPhysiciansName, 
-                        vtkstd::string studyID, 
-                        vtkstd::string accessionNumber
-                      ); 
-        void          InitGeneralSeriesModule(
-                        vtkstd::string seriesNumber, 
-                        vtkstd::string seriesDescription, 
-                        vtkstd::string patientPosition
-                      ); 
-        void          InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType); 
-        void          InitPerFrameFunctionalGroupSequence(
-                        double toplc[3], 
-                        double voxelSpacing[3],
-                        double dcos[3][3], 
-                        int numSlices, 
-                        int numTimePts, 
-                        int numCoils
-                      ); 
-        void          InitPlaneOrientationMacro( vtkstd::string orientationString ); 
-        void          InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness ); 
-
-
-
 
     protected:
 
@@ -141,6 +108,7 @@ class svkIOD : public vtkObject
         virtual void    InitMultiFrameFunctionalGroupsModule();
         virtual void    InitMultiFrameDimensionModule();
         virtual void    InitAcquisitionContextModule();
+        void            InitFrameAnatomyMacro();
         virtual void    InitSOPCommonModule() = 0; 
 
 

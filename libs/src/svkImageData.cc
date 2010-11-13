@@ -1225,7 +1225,7 @@ void svkImageData::GetPositionFromIndex(int* index, double* posLPS)
  */
 void svkImageData::GetSliceOrigin(int slice, double* sliceOrigin, svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int index = this->GetOrientationIndex( sliceOrientation );
     double normal[3];
@@ -1243,7 +1243,7 @@ void svkImageData::GetSliceOrigin(int slice, double* sliceOrigin, svkDcmHeader::
  */
 void svkImageData::GetSliceCenter(int slice, double* sliceCenter, svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     double origin[3] = {0,0,0};
     this->GetDcmHeader()->GetOrigin(origin);
@@ -1279,7 +1279,7 @@ void svkImageData::GetSliceCenter(int slice, double* sliceCenter, svkDcmHeader::
  */
 void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation sliceOrientation )
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
 
     switch ( this->GetDcmHeader()->GetOrientationType() ) {
@@ -1371,7 +1371,7 @@ int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation slic
 int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation sliceOrientation, double* origin, double* spacing ) 
 {
 
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
 
     double normal[3];
@@ -1401,7 +1401,7 @@ int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation s
  */
 int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int numSlices;
     switch ( this->GetDcmHeader()->GetOrientationType()) {
@@ -1454,7 +1454,7 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
  */
 int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int firstSlice;
     switch ( this->GetDcmHeader()->GetOrientationType()) {
@@ -1507,7 +1507,7 @@ int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
  */
 int svkImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation)
 {
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN ) ? 
+    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int lastSlice;
     switch ( this->GetDcmHeader()->GetOrientationType()) {

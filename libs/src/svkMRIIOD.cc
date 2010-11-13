@@ -102,13 +102,13 @@ void svkMRIIOD::InitDcmHeader()
     this->InitImagePixelModule();
     this->InitMultiFrameFunctionalGroupsModule();
     this->InitFrameAnatomyMacro(); 
-    this->InitMRAveragesMacro(); 
+    this->dcmHeader->InitMRAveragesMacro(); 
     this->InitMRImageFrameTypeMacro(); 
-    this->InitMRTimingAndRelatedParametersMacro(); 
-    this->InitMREchoMacro(); 
-    this->InitMRModifierMacro(); 
-    this->InitMRTransmitCoilMacro(); 
-    this->InitPixelValueTransformationMacro();
+    this->dcmHeader->InitMRTimingAndRelatedParametersMacro(); 
+    this->dcmHeader->InitMREchoMacro(); 
+    this->dcmHeader->InitMRModifierMacro(); 
+    this->dcmHeader->InitMRTransmitCoilMacro(); 
+    this->dcmHeader->InitPixelValueTransformationMacro();
     this->InitMultiFrameDimensionModule();
     this->InitAcquisitionContextModule();
     this->InitEnhancedMRImageModule();
@@ -142,110 +142,8 @@ void svkMRIIOD::InitMRImageFrameTypeMacro()
 /*!
  *
  */
-void svkMRIIOD::InitPixelValueTransformationMacro(float slope, float intercept)
-{
-
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelValueTransformationSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleIntercept",
-        intercept,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleSlope",
-        slope,
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelValueTransformationSequence",
-        0,
-        "RescaleType",
-        "US",   //enum unspecified required for MR modality
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-}
-
-
-/*!
- *
- */
 void svkMRIIOD::InitEnhancedMRImageModule()
 {
-}
-
-
-/*!
- *
- */
-void svkMRIIOD::InitMRImagingModifierMacro(float transmitFreq, float pixelBandwidth, vtkstd::string magTransfer, vtkstd::string bloodNulling)
-{
-
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "MRImagingModifierSequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,
-        "MagnetizationTransfer",
-        magTransfer, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,
-        "BloodSignalNulling",
-        bloodNulling, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,
-        "Tagging",      
-        vtkstd::string("NONE"),
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,
-        "TransmitterFrequency",
-        transmitFreq, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "MRImagingModifierSequence",
-        0,
-        "PixelBandwidth",
-        pixelBandwidth, 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
 }
 
 

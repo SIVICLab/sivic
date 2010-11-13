@@ -128,7 +128,6 @@ class svkGESigna5XReader : public svkImageReader2
         void            InitPixelMeasuresMacro();
         void            InitPlanePositionMacro(); 
         void            InitPlaneOrientationMacro(); 
-        void            InitFrameAnatomyMacro();
         void            InitPixelValueTransformationMacro(); 
         void            InitPerFrameFunctionalGroupMacros(); 
         void            InitFrameContentMacro();

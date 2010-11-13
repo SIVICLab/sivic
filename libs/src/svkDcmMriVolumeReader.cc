@@ -486,31 +486,12 @@ void svkDcmMriVolumeReader::InitSharedFunctionalGroupMacros()
 void svkDcmMriVolumeReader::InitPixelMeasuresMacro()
 {
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
     svkImageData* tmp = svkMriImageData::New(); 
     tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileNames()->GetValue( 0 ) ); 
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
         tmp->GetDcmHeader()->GetStringValue( "PixelSpacing" ), 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        tmp->GetDcmHeader()->GetStringValue( "SliceThickness" ), 
-        "SharedFunctionalGroupsSequence",
-        0
+        tmp->GetDcmHeader()->GetStringValue( "SliceThickness" ) 
     );
 
     tmp->Delete(); 

@@ -221,26 +221,26 @@ class svkImageData: public vtkImageData
         virtual void       GetSliceOrigin(
                                 int slice, 
                                 double* sliceOrigin, 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
                            );
         virtual void       GetSliceCenter(
                                 int slice, 
                                 double* sliceCenter, 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
                            );
         virtual void       GetSliceNormal(
                                 double* normal, 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
                            );
         virtual int        GetClosestSlice(
                                 double * posLPS, 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
                            );
         virtual int        GetNumberOfSlices( 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
                            );
-        virtual int        GetFirstSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
-        virtual int        GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN );
+        virtual int        GetFirstSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
+        virtual int        GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
         virtual void       GetDataBasis( double basisVector[3], DataBasis basis );
         virtual int        GetOrientationIndex( svkDcmHeader::Orientation orientation );
         virtual void       GetImageCenter( double* center );

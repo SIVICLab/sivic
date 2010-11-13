@@ -45,7 +45,7 @@
 
 
 #include <vtkObjectFactory.h>
-#include <svkEnhancedIOD.h>
+#include <svkIOD.h>
 
 
 namespace svk {
@@ -58,23 +58,16 @@ using namespace std;
  *  Base class of static methods for default MRIIOD initialization 
  *  using svkDcmHeader adapter interface. 
  */
-class svkMRIIOD : public svkEnhancedIOD 
+class svkMRIIOD : public svkIOD 
 {
 
     public:
 
         static svkMRIIOD* New();
-        vtkTypeRevisionMacro( svkMRIIOD, svkEnhancedIOD);
+        vtkTypeRevisionMacro( svkMRIIOD, svkIOD);
 
         //  Methods:
         virtual void  InitDcmHeader();
-                void  InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
-                void  InitMRImagingModifierMacro(
-                            float transmitFreq, 
-                            float pixelBandwidth, 
-                            vtkstd::string magTransfer = "NONE", 
-                            vtkstd::string bloodNulling = "NO" 
-                        ); 
 
 
     protected:

@@ -43,7 +43,7 @@
 #ifndef SVK_ENHANCED_IOD_H
 #define SVK_ENHANCED_IOD_H
 
-#define UNKNOWN_TIME -1
+//#define UNKNOWN_TIME -1
 
 #include <vtkObjectFactory.h>
 #include <svkIOD.h>
@@ -64,17 +64,6 @@ class svkEnhancedIOD : public svkIOD
     public:
 
         vtkTypeRevisionMacro( svkEnhancedIOD, svkIOD);
-
-        //  Methods Shared between Enhanced MRI and MRS IODs:
-        //void          InitPixelMeasuresMacro();  
-        //void          InitPlaneOrientationMacro(); 
-        void          InitFrameAnatomyMacro(); 
-        void          InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1); 
-        void          InitMREchoMacro(float TE = UNKNOWN_TIME ); 
-        void          InitMRModifierMacro(float inversionTime = UNKNOWN_TIME); 
-        //void          InitMRReceiveCoilMacro(); 
-        void          InitMRTransmitCoilMacro(string coilMfg = "UNKNOWN", string coilName = "UNKNOWN", string coilType = "UNKNOWN"); 
-        void          InitMRAveragesMacro(int numAverages = 1); 
 
 
     protected:

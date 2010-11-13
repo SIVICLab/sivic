@@ -428,8 +428,14 @@ svkDcmHeader::DcmPixelDataFormat svkSiemensRdaReader::GetFileType()
  */
 void svkSiemensRdaReader::InitPatientModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( this->GetHeaderValueAsString("PatientName") );
-    this->GetOutput()->GetDcmHeader()->SetValue( "PatientID", this->GetHeaderValueAsString("PatientID"));
+
+    this->GetOutput()->GetDcmHeader()->InitPatientModule(
+        this->GetHeaderValueAsString("PatientName"), 
+        this->GetHeaderValueAsString("PatientID"),
+        "", 
+        ""
+    );
+
 }
 
 
@@ -438,14 +444,12 @@ void svkSiemensRdaReader::InitPatientModule()
  */
 void svkSiemensRdaReader::InitGeneralStudyModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyDate",
-        this->GetHeaderValueAsString("StudyDate") 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyID",
-        this->GetHeaderValueAsString("PatientID") 
+    this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
+        this->GetHeaderValueAsString("StudyDate"), 
+        "",
+        "",
+        this->GetHeaderValueAsString("PatientID"), 
+        ""
     );
 }
 
@@ -455,25 +459,11 @@ void svkSiemensRdaReader::InitGeneralStudyModule()
  */
 void svkSiemensRdaReader::InitGeneralSeriesModule()
 {
-
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition",
+    this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        this->GetHeaderValueAsString("SeriesNumber"), 
+        this->GetHeaderValueAsString("SeriesDescription"), 
         this->GetHeaderValueAsString("PatientPosition") 
     );
-
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesNumber",
-        this->GetHeaderValueAsInt("SeriesNumber") 
-    );
-
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesDescription",
-        this->GetHeaderValueAsString("SeriesDescription") 
-    );
-
 }
 
 
@@ -547,8 +537,6 @@ void svkSiemensRdaReader::InitSharedFunctionalGroupMacros()
 
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitFrameAnatomyMacro();
-    this->InitMRSpectroscopyFrameTypeMacro();
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
     this->InitMREchoMacro();
@@ -653,29 +641,9 @@ void svkSiemensRdaReader::GetDcosFromRda(float dcos[3][3])
  */
 void svkSiemensRdaReader::InitPixelMeasuresMacro()
 {
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
         this->GetHeaderValueAsString( "PixelSpacingCol") + '\\' + this->GetHeaderValueAsString( "PixelSpacingRow"), 
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        this->GetHeaderValueAsString( "PixelSpacing3D"), 
-        "SharedFunctionalGroupsSequence",
-        0
+        this->GetHeaderValueAsString( "PixelSpacing3D") 
     );
 }
 
@@ -756,7 +724,7 @@ void svkSiemensRdaReader::InitPlaneOrientationMacro()
  */
 void svkSiemensRdaReader::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat("TE") ); 
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro( this->GetHeaderValueAsFloat("TE") ); 
 }
 
 
@@ -766,25 +734,7 @@ void svkSiemensRdaReader::InitMREchoMacro()
 void svkSiemensRdaReader::InitMRAveragesMacro()
 {
     int numAverages = 1; 
-    this->iod->InitMRAveragesMacro(numAverages);
-}
-
-
-/*!
- *
- */
-void svkSiemensRdaReader::InitFrameAnatomyMacro()
-{
-    this->iod->InitFrameAnatomyMacro();
-}
-
-
-/*!
- *
- */
-void svkSiemensRdaReader::InitMRSpectroscopyFrameTypeMacro()
-{
-    this->iod->InitMRSpectroscopyFrameTypeMacro();
+    this->GetOutput()->GetDcmHeader()->InitMRAveragesMacro(numAverages);
 }
 
 
@@ -793,7 +743,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyFrameTypeMacro()
  */
 void svkSiemensRdaReader::InitMRTimingAndRelatedParametersMacro()
 {
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat("TR"),
         this->GetHeaderValueAsFloat("FlipAngle")
     ); 
@@ -806,7 +756,7 @@ void svkSiemensRdaReader::InitMRTimingAndRelatedParametersMacro()
 void svkSiemensRdaReader::InitMRModifierMacro()
 {
     float inversionTime = this->GetHeaderValueAsFloat("TI");
-    this->iod->InitMREchoMacro( inversionTime );
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro( inversionTime );
 }
 
 
@@ -815,7 +765,7 @@ void svkSiemensRdaReader::InitMRModifierMacro()
  */
 void svkSiemensRdaReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro(
         "Siemens", 
         "UNKNOWN", 
         this->GetHeaderValueAsString("TransmitCoil")
@@ -861,7 +811,7 @@ void svkSiemensRdaReader::InitVolumeLocalizationSeq()
         //  to do...
     }
 
-    this->iod->InitVolumeLocalizationSeq(
+    this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
         size, 
         center, 
         dcos

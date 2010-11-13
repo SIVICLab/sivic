@@ -362,8 +362,14 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
  */
 void svkIdfVolumeReader::InitPatientModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( idfMap[ "patientName" ] );
-    this->GetOutput()->GetDcmHeader()->SetValue( "PatientID",  idfMap[ "studyId" ]);
+
+    this->GetOutput()->GetDcmHeader()->InitPatientModule(
+        this->GetOutput()->GetDcmHeader()->GetDcmPatientsName( idfMap["patientName"] ),
+        idfMap[ "studyId" ], 
+        "",
+        "" 
+    );
+
 }
 
 
@@ -372,15 +378,15 @@ void svkIdfVolumeReader::InitPatientModule()
  */
 void svkIdfVolumeReader::InitGeneralStudyModule()
 {
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyDate",
-        idfMap[ "studyDate" ] 
+
+    this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
+        idfMap[ "studyDate" ], 
+        "",
+        "",
+        idfMap[ "studyNum" ], 
+        "" 
     );
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyID",
-        idfMap[ "studyNum" ] 
-    );
 }
 
 
@@ -485,7 +491,6 @@ void svkIdfVolumeReader::InitAcquisitionContextModule()
 void svkIdfVolumeReader::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
-    this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
     this->InitMRImagingModifierMacro(); 
     this->InitMRReceiveCoilMacro();
@@ -550,14 +555,6 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
  */
 void svkIdfVolumeReader::InitPixelMeasuresMacro()
 {
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
-
     float pixelSize[3];
     for (int i = 0; i < 3; i++) {
         ostringstream ossIndex;
@@ -570,22 +567,9 @@ void svkIdfVolumeReader::InitPixelMeasuresMacro()
         delete issSize; 
     }
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
         idfMap[ vtkstd::string( "pixelSize_0" ) ] + "\\" + idfMap[ vtkstd::string( "pixelSize_1" ) ],
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        idfMap[ vtkstd::string( "sliceThickness" ) ],
-        "SharedFunctionalGroupsSequence",
-        0
+        idfMap[ vtkstd::string( "sliceThickness" ) ]
     );
 }
 
@@ -666,7 +650,7 @@ void svkIdfVolumeReader::InitPlaneOrientationMacro()
  */
 void svkIdfVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
 }
 
 
@@ -679,7 +663,7 @@ void svkIdfVolumeReader::InitMRImagingModifierMacro()
     float transmitFreq = -1;
     float pixelBandwidth = -1; 
 
-    this->iod->InitMRImagingModifierMacro( transmitFreq, pixelBandwidth ); 
+    this->GetOutput()->GetDcmHeader()->InitMRImagingModifierMacro( transmitFreq, pixelBandwidth ); 
 }
 
 

@@ -117,7 +117,6 @@ class svkGEPFileMapper : public vtkObject
         virtual void    InitPerFrameFunctionalGroupMacros();
         virtual void    InitPixelMeasuresMacro();
         virtual void    InitPlaneOrientationMacro();
-        virtual void    InitFrameAnatomyMacro();
         virtual void    InitMRSpectroscopyFrameTypeMacro();
         virtual void    InitMRTimingAndRelatedParametersMacro();
         virtual void    InitMRSpectroscopyFOVGeometryMacro();

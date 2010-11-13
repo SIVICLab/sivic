@@ -753,7 +753,7 @@ void svkDdfVolumeReader::InitVolumeLocalizationSeq()
     selBoxOrientation[2][1] = this->GetHeaderValueAsFloat(ddfMap, "selectionDcos21"); 
     selBoxOrientation[2][2] = this->GetHeaderValueAsFloat(ddfMap, "selectionDcos22"); 
 
-    this->iod->InitVolumeLocalizationSeq(
+    this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
         selBoxSize, 
         selBoxCenter, 
         selBoxOrientation
@@ -767,24 +767,14 @@ void svkDdfVolumeReader::InitVolumeLocalizationSeq()
  */
 void svkDdfVolumeReader::InitPatientModule() 
 {
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName( 
-            ddfMap["patientName"] 
-    );
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientID", 
-        ddfMap["patientId"] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientsBirthDate", 
-        ddfMap["dateOfBirth"] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientsSex", 
+    this->GetOutput()->GetDcmHeader()->InitPatientModule(
+        this->GetOutput()->GetDcmHeader()->GetDcmPatientsName(  ddfMap["patientName"] ),  
+        ddfMap["patientId"], 
+        ddfMap["dateOfBirth"], 
         ddfMap["sex"] 
     );
+
 }
 
 
@@ -793,19 +783,12 @@ void svkDdfVolumeReader::InitPatientModule()
  */
 void svkDdfVolumeReader::InitGeneralStudyModule() 
 {
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyDate", 
-        this->RemoveSlashesFromDate( &(ddfMap["studyDate"]) )
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "StudyID", 
-        ddfMap["studyId"]
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "AccessionNumber", 
-        ddfMap["accessionNumber"]
+    this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
+        this->RemoveSlashesFromDate( &(ddfMap["studyDate"]) ), 
+        "", 
+        "", 
+        ddfMap["studyId"], 
+        ddfMap["accessionNumber"] 
     );
 }
 
@@ -815,16 +798,6 @@ void svkDdfVolumeReader::InitGeneralStudyModule()
  */
 void svkDdfVolumeReader::InitGeneralSeriesModule() 
 {
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesNumber", 
-        ddfMap["seriesNumber"] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesDescription", 
-        ddfMap["seriesDescription"] 
-    );
 
     vtkstd::string patientEntryPos; 
     vtkstd::string patientEntry( ddfMap["patientEntry"]); 
@@ -841,8 +814,9 @@ void svkDdfVolumeReader::InitGeneralSeriesModule()
         patientEntryPos.append("P");
     }
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition", 
+    this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        ddfMap["seriesNumber"], 
+        ddfMap["seriesDescription"], 
         patientEntryPos 
     );
 
@@ -905,8 +879,6 @@ void svkDdfVolumeReader::InitSharedFunctionalGroupMacros()
 
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitFrameAnatomyMacro();
-    this->InitMRSpectroscopyFrameTypeMacro();
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
     this->InitMREchoMacro();
@@ -944,7 +916,6 @@ void svkDdfVolumeReader::InitPixelMeasuresMacro()
     //  get the spacing for the specified index:
     float colSpacing = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing1"); 
     float rowSpacing = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing2"); 
-    float sliceThickness = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
     vtkstd::string pixelSpacing;
     ostringstream oss;
@@ -953,22 +924,9 @@ void svkDdfVolumeReader::InitPixelMeasuresMacro()
     oss << rowSpacing;
     pixelSpacing = oss.str();
 
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",            
-        0,                                 
-        "PixelSpacing",                   
-        pixelSpacing,                    
-        "SharedFunctionalGroupsSequence",   
-        0                                  
-    );
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",          
-        0,                               
-        "SliceThickness",               
-        sliceThickness, 
-        "SharedFunctionalGroupsSequence",   
-        0                                 
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
+        pixelSpacing,
+        ddfMap["pixelSpacing3"] 
     );
 }
 
@@ -1198,27 +1156,9 @@ void svkDdfVolumeReader::InitPlaneOrientationMacro()
 /*!
  *
  */
-void svkDdfVolumeReader::InitFrameAnatomyMacro()
-{
-    this->iod->InitFrameAnatomyMacro();
-}
-
-
-/*!
- *
- */
-void svkDdfVolumeReader::InitMRSpectroscopyFrameTypeMacro()
-{
-    this->iod->InitMRSpectroscopyFrameTypeMacro();
-}
-
-
-/*!
- *
- */
 void svkDdfVolumeReader::InitMRTimingAndRelatedParametersMacro()
 {
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat(ddfMap, "repetitionTime"), 
         this->GetHeaderValueAsFloat(ddfMap, "flipAngle")
     ); 
@@ -1406,7 +1346,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkDdfVolumeReader::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat(ddfMap, "echoTime") );
+    this->GetOutput()->GetDcmHeader()->InitMREchoMacro( this->GetHeaderValueAsFloat(ddfMap, "echoTime") );
 }
 
 
@@ -1416,7 +1356,7 @@ void svkDdfVolumeReader::InitMREchoMacro()
 void svkDdfVolumeReader::InitMRModifierMacro()
 {
     float inversionTime = this->GetHeaderValueAsFloat( ddfMap, "inversionTime");
-    this->iod->InitMRModifierMacro( inversionTime );
+    this->GetOutput()->GetDcmHeader()->InitMRModifierMacro( inversionTime );
 }
 
 
@@ -1522,7 +1462,7 @@ void svkDdfVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkDdfVolumeReader::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
+    this->GetOutput()->GetDcmHeader()->InitMRTransmitCoilMacro("GE", "UNKNOWN", "BODY");
 }
 
 
@@ -1532,7 +1472,7 @@ void svkDdfVolumeReader::InitMRTransmitCoilMacro()
 void svkDdfVolumeReader::InitMRAveragesMacro()
 {
     int numAverages = 1; 
-    this->iod->InitMRAveragesMacro(numAverages);
+    this->GetOutput()->GetDcmHeader()->InitMRAveragesMacro(numAverages);
 }
 
 

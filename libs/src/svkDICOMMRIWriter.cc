@@ -249,7 +249,7 @@ void svkDICOMMRIWriter::InitPixelData()
             );
 
             //  Init Rescale Attributes:    
-            this->iod->InitPixelValueTransformationMacro( slope, intercept ); 
+            this->GetImageDataInput(0)->GetDcmHeader()->InitPixelValueTransformationMacro( slope, intercept ); 
 
             delete[] pixelData; 
         }

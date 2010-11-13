@@ -245,20 +245,6 @@ void svkGEPFileMapper::GetSelBoxCenter( float selBoxCenter[3] )
 void svkGEPFileMapper::InitPatientModule() 
 {
 
-    this->dcmHeader->SetDcmPatientsName( 
-            this->GetHeaderValueAsString( "rhe.patname" )
-    );
-
-    this->dcmHeader->SetValue(
-        "PatientID", 
-        this->GetHeaderValueAsString( "rhe.patid" )
-    );
-
-    this->dcmHeader->SetValue(
-        "PatientsBirthDate", 
-        this->GetHeaderValueAsString( "rhe.dateofbirth" )
-    );
-
     int patsex = this->GetHeaderValueAsInt( "rhe.patsex" ); 
     vtkstd::string gender("O"); 
     if ( patsex == 1 ) {
@@ -267,10 +253,13 @@ void svkGEPFileMapper::InitPatientModule()
         gender.assign("F"); 
     }
 
-    this->dcmHeader->SetValue(
-        "PatientsSex", 
+    this->dcmHeader->InitPatientModule(
+        this->GetHeaderValueAsString( "rhe.patname" ), 
+        this->GetHeaderValueAsString( "rhe.patid" ), 
+        this->GetHeaderValueAsString( "rhe.dateofbirth" ), 
         gender
     );
+
 }
 
 
@@ -319,16 +308,6 @@ void svkGEPFileMapper::InitGeneralStudyModule()
 void svkGEPFileMapper::InitGeneralSeriesModule() 
 {
 
-    this->dcmHeader->SetValue(
-        "SeriesNumber", 
-        this->GetHeaderValueAsString( "rhs.se_no" )
-    );
-
-    this->dcmHeader->SetValue(
-        "SeriesDescription", 
-        this->GetHeaderValueAsString( "rhs.se_desc" )
-    );
-
     vtkstd::string patientEntryPos; 
     int patientEntry( this->GetHeaderValueAsInt( "rhs.entry" ) ); 
     if ( patientEntry == 0) {
@@ -348,9 +327,11 @@ void svkGEPFileMapper::InitGeneralSeriesModule()
         patientEntryPos.append("P");
     }
 
-    this->dcmHeader->SetValue(
-        "PatientPosition", 
-        patientEntryPos 
+
+    this->dcmHeader->InitGeneralSeriesModule(
+        this->GetHeaderValueAsString( "rhs.se_no" ), 
+        this->GetHeaderValueAsString( "rhs.se_desc" ), 
+        patientEntryPos
     );
 
 }
@@ -453,7 +434,6 @@ void svkGEPFileMapper::InitSharedFunctionalGroupMacros()
 {
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
-    this->InitFrameAnatomyMacro();
     this->InitMRSpectroscopyFrameTypeMacro();
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
@@ -516,12 +496,6 @@ void svkGEPFileMapper::InitPerFrameFunctionalGroupMacros()
 void svkGEPFileMapper::InitPixelMeasuresMacro()
 {
 
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "PixelMeasuresSequence"
-    );
-
     //  rhi.scanspacing (space in mm between scans)
     //  Need to get the FOV and the number of phase encodes to get the spatial resolution:
     //  should the methods for obtaining the resolution and spacing be virtual in a subclass?
@@ -536,28 +510,16 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
     oss << voxelSpacing[1];
     pixelSpacing = oss.str();
 
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",            
-        0,                                 
-        "PixelSpacing",                   
-        pixelSpacing,                    
-        "SharedFunctionalGroupsSequence",   
-        0                                  
-    );
-
     vtkstd::string sliceThickness;
     oss.clear();
     oss.str( "" );
     oss << voxelSpacing[2];
 
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",          
-        0,                               
-        "SliceThickness",               
-        oss.str(),
-        "SharedFunctionalGroupsSequence",   
-        0                                 
+    this->dcmHeader->InitPixelMeasuresMacro(
+        pixelSpacing,                    
+        oss.str()
     );
+
 }
 
 
@@ -882,66 +844,6 @@ void svkGEPFileMapper::InitPlaneOrientationMacro()
 }
 
 
-
-
-
-/*!
- *
- */
-void svkGEPFileMapper::InitFrameAnatomyMacro()
-{
-    this->dcmHeader->AddSequenceItemElement( 
-        "SharedFunctionalGroupsSequence",
-        0, 
-        "FrameAnatomySequence"
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "FrameAnatomySequence",       
-        0,                             
-        "FrameLaterality",              
-        vtkstd::string("U"),                     
-        "SharedFunctionalGroupsSequence", 
-        0                                  
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "FrameAnatomySequence",      
-        0,                          
-        "AnatomicRegionSequence"   
-    );
-
-
-    this->dcmHeader->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeValue",              
-        1,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodingSchemeDesignator",              
-        0,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "AnatomicRegionSequence",       
-        0,                             
-        "CodeMeaning",              
-        0,
-        "FrameAnatomySequence", 
-        0                                  
-    );
-
-}
-
-
 /*!
  *
  */
@@ -1006,7 +908,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFrameTypeMacro()
  */
 void svkGEPFileMapper::InitMRTimingAndRelatedParametersMacro()
 {
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat( "rhi.tr" ) / 1000, 
         this->GetHeaderValueAsFloat( "rhi.mr_flip" ), 
         this->GetHeaderValueAsInt( "rhi.numecho" ) 
@@ -1326,7 +1228,7 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkGEPFileMapper::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro(
+    this->dcmHeader->InitMREchoMacro(
         this->GetHeaderValueAsFloat("rhi.te")/1000 
     );
 
@@ -1338,7 +1240,7 @@ void svkGEPFileMapper::InitMREchoMacro()
  */
 void svkGEPFileMapper::InitMRModifierMacro()
 {
-    this->iod->InitMRModifierMacro(
+    this->dcmHeader->InitMRModifierMacro(
         this->GetHeaderValueAsFloat("rhi.ti")
     );
 }
@@ -1449,7 +1351,7 @@ void svkGEPFileMapper::InitMRReceiveCoilMacro()
 void svkGEPFileMapper::InitMRTransmitCoilMacro()
 {
 
-    this->iod->InitMRTransmitCoilMacro(
+    this->dcmHeader->InitMRTransmitCoilMacro(
         "GE",
         "UNKNOWN",
         "BODY"

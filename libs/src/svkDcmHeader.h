@@ -97,13 +97,11 @@ class svkDcmHeader: public vtkObject
         } DcmPixelDataFormat;
 
         typedef enum {
-            UNKNOWN = -1,
+            UNKNOWN_ORIENTATION = -1,
             AXIAL      = 0,
             CORONAL, 
             SAGITTAL 
         } Orientation;
-
-        
 
         typedef enum{
             SLICE_ORDER_UNDEFINED = -1,
@@ -117,6 +115,9 @@ class svkDcmHeader: public vtkObject
             PHI_LIMITED, 
             PHI_DEIDENTIFIED 
         } PHIType;
+
+        static const float UNKNOWN_TIME;
+        static const vtkstd::string UNKNOWN_STRING;
 
 
 #ifdef SVK_ADAPT_DCMTK
@@ -475,8 +476,8 @@ class svkDcmHeader: public vtkObject
         virtual void        ReplaceOldElements( bool replaceElements ) = 0;
 
 
-
-        void                SetDcmPatientsName( string patientsName );
+        vtkstd::string      GetDcmPatientsName( vtkstd::string patientsName ); 
+        void                SetDcmPatientsName( vtkstd::string patientsName );
         void                SetPixelDataType( DcmPixelDataFormat dataType );
         int                 GetPixelDataType( int vtkDataType );
 
@@ -510,14 +511,67 @@ class svkDcmHeader: public vtkObject
         int                 GetDimensionIndexPosition(string indexLabel); 
         int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
 
+        //==================================================
+        //  DICOM IE and macro initialization methods:
+        //==================================================
+        void                InitPatientModule(
+                                vtkstd::string patientsName,
+                                vtkstd::string patientID,
+                                vtkstd::string patientsBirthDate,
+                                vtkstd::string patientsSex
+                            );
+
+        void                InitGeneralStudyModule(
+                                vtkstd::string studyDate,
+                                vtkstd::string studyTime,
+                                vtkstd::string referringPhysiciansName,
+                                vtkstd::string studyID,
+                                vtkstd::string accessionNumber
+                            );
+        void                InitGeneralSeriesModule(
+                                vtkstd::string seriesNumber,
+                                vtkstd::string seriesDescription,
+                                vtkstd::string patientPosition
+                            );
+        void                InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType);
+        void                InitPlaneOrientationMacro( vtkstd::string orientationString );
+        void                InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
         void                InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
         void                InitPerFrameFunctionalGroupSequence(
-                                            double toplc[3], double voxelSpacing[3],
-                                            double dcos[3][3], int numSlices, int numTimePts, int numCoils); 
+                                double toplc[3], 
+                                double voxelSpacing[3],
+                                double dcos[3][3], 
+                                int numSlices, 
+                                int numTimePts, 
+                                int numCoils
+                            ); 
+        void                InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
+        void                InitMRImagingModifierMacro(
+                                float transmitFreq,
+                                float pixelBandwidth,
+                                vtkstd::string magTransfer = "NONE",
+                                vtkstd::string bloodNulling = "NO"
+                            );
+        void                InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]);
+        void                InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1);
+        void                InitMREchoMacro(float TE = UNKNOWN_TIME );
+        void                InitMRModifierMacro(float inversionTime = UNKNOWN_TIME);
+        void                InitMRTransmitCoilMacro(
+                                string coilMfg = "UNKNOWN", 
+                                string coilName = "UNKNOWN", 
+                                string coilType = "UNKNOWN"
+                            );
+        void                InitMRAveragesMacro(int numAverages = 1);
 
+
+
+        //==================================================
+        //  Deidentification methods
+        //==================================================
         void                Deidentify( PHIType phiType ); 
         void                Deidentify( PHIType phiType, string id );   
         void                Deidentify( PHIType phyType, string patientId, string studyId );   
+
         static bool         IsFileDICOM( vtkstd::string fname); 
         
 

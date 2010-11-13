@@ -123,10 +123,14 @@ void svkVarianFidMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd
  */
 void svkVarianFidMapper::InitPatientModule()
 {
-    this->dcmHeader->SetDcmPatientsName( this->GetHeaderValueAsString("samplename") );
-    this->dcmHeader->SetValue( "PatientID", this->GetHeaderValueAsString("dataid"));
-    this->dcmHeader->SetValue( "PatientsBirthDate", this->GetHeaderValueAsString("birthday") );
-    this->dcmHeader->SetValue( "PatientsSex", this->GetHeaderValueAsString("gender") );
+
+    this->dcmHeader->InitPatientModule(
+        this->dcmHeader->GetDcmPatientsName( this->GetHeaderValueAsString("samplename") ),
+        this->GetHeaderValueAsString("dataid"), 
+        this->GetHeaderValueAsString("birthday"), 
+        this->GetHeaderValueAsString("gender") 
+    );
+
 }
 
 
@@ -139,15 +143,14 @@ void svkVarianFidMapper::InitGeneralStudyModule()
     size_t delim = timeDate.find("T"); 
     vtkstd::string date = timeDate.substr(0, delim); 
 
-    this->dcmHeader->SetValue(
-        "StudyDate",
-        date
+    this->dcmHeader->InitGeneralStudyModule(
+        date, 
+        "",
+        "",
+        this->GetHeaderValueAsString("studyid_"), 
+        ""
     );
 
-    this->dcmHeader->SetValue(
-        "StudyID",
-        this->GetHeaderValueAsString("studyid_")
-    );
 }
 
 
@@ -156,22 +159,11 @@ void svkVarianFidMapper::InitGeneralStudyModule()
  */
 void svkVarianFidMapper::InitGeneralSeriesModule()
 {
-
-    this->dcmHeader->SetValue(
-        "SeriesNumber",
-        0
-    );
-
-    this->dcmHeader->SetValue(
-        "SeriesDescription",
-        "Varian FID Data"
-    );
-
-    this->dcmHeader->SetValue(
-        "PatientPosition",
+    this->dcmHeader->InitGeneralSeriesModule(
+        "0", 
+        "Varian FID Data", 
         this->GetDcmPatientPositionString()
     );
-
 }
 
 
@@ -228,9 +220,6 @@ void svkVarianFidMapper::InitSharedFunctionalGroupMacros()
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
 
-    this->InitFrameAnatomyMacro();
-    this->InitMRSpectroscopyFrameTypeMacro();
-
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
     this->InitMREchoMacro();
@@ -262,13 +251,6 @@ void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
  */
 void svkVarianFidMapper::InitPixelMeasuresMacro()
 {
-
-    this->dcmHeader->AddSequenceItemElement(
-        "SharedFunctionalGroupsSequence",
-        0,
-        "PixelMeasuresSequence"
-    );
-
     float numPixels[3];
     numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
     numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
@@ -288,22 +270,9 @@ void svkVarianFidMapper::InitPixelMeasuresMacro()
         pixelSizeString[i].assign( oss.str() );
     }
 
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
+    this->dcmHeader->InitPixelMeasuresMacro(
         pixelSizeString[0] + "\\" + pixelSizeString[1],
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
-    this->dcmHeader->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        pixelSize[2],
-        "SharedFunctionalGroupsSequence",
-        0
+        pixelSizeString[2]
     );
 }
 
@@ -598,18 +567,9 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
 /*!
  *
  */
-void svkVarianFidMapper::InitMRSpectroscopyFrameTypeMacro()
-{
-    this->iod->InitMRSpectroscopyFrameTypeMacro();
-}
-
-
-/*!
- *
- */
 void svkVarianFidMapper::InitMRTimingAndRelatedParametersMacro()
 {
-    this->iod->InitMRTimingAndRelatedParametersMacro(
+    this->dcmHeader->InitMRTimingAndRelatedParametersMacro(
         this->GetHeaderValueAsFloat( "tr" ),
         this->GetHeaderValueAsFloat("fliplist", 0)
     ); 
@@ -793,16 +753,7 @@ void svkVarianFidMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkVarianFidMapper::InitMREchoMacro()
 {
-    this->iod->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
-}
-
-
-/*!
- *
- */
-void svkVarianFidMapper::InitFrameAnatomyMacro()
-{
-    this->iod->InitFrameAnatomyMacro();
+    this->dcmHeader->InitMREchoMacro( this->GetHeaderValueAsFloat( "te" ) * 1000. );
 }
 
 
@@ -812,7 +763,7 @@ void svkVarianFidMapper::InitFrameAnatomyMacro()
 void svkVarianFidMapper::InitMRModifierMacro()
 {
     float inversionTime = 0; 
-    this->iod->InitMRModifierMacro( inversionTime );
+    this->dcmHeader->InitMRModifierMacro( inversionTime );
 }
 
 
@@ -821,7 +772,7 @@ void svkVarianFidMapper::InitMRModifierMacro()
  */
 void svkVarianFidMapper::InitMRTransmitCoilMacro()
 {
-    this->iod->InitMRTransmitCoilMacro("Varian", "UNKNOWN", "BODY");
+    this->dcmHeader->InitMRTransmitCoilMacro("Varian", "UNKNOWN", "BODY");
 }
 
 
@@ -855,7 +806,7 @@ void svkVarianFidMapper::InitMRReceiveCoilMacro()
 void svkVarianFidMapper::InitMRAveragesMacro()
 {
     int numAverages = 1; 
-    this->iod->InitMRAveragesMacro(numAverages);
+    this->dcmHeader->InitMRAveragesMacro(numAverages);
 }
 
 
