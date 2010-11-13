@@ -128,7 +128,7 @@ int main ( int argc, char** argv )
     /* This varibale will change to a value of 1 if there is a spectra loaded */
     globalVars.imageWindowOffset = 0;
     globalVars.spectraController = NULL;
-    globalVars.orientation = svkDcmHeader::UNKNOWN;
+    globalVars.orientation = svkDcmHeader::UNKNOWN_ORIENTATION;
 
     int opt = 0;
     opt = getopt( argc, argv, optString);
@@ -274,7 +274,7 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     if( globalVars.overlay != NULL ) {
         dataViewer->SetInput( globalVars.overlay, 2  );
     }
-    if( globalVars.orientation == svkDcmHeader::UNKNOWN ) { 
+    if( globalVars.orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) { 
         globalVars.orientation = data->GetDcmHeader()->GetOrientationType();
     } else if ( globalVars.orientation != data->GetDcmHeader()->GetOrientationType() ) {
         cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;

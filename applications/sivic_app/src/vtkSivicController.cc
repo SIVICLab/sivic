@@ -1994,7 +1994,7 @@ string vtkSivicController::GetPrinterName( )
 void vtkSivicController::SetOrientation( const char* orientation, bool alignOverlay ) 
 {
     // Set Our orientation member variable
-    svkDcmHeader::Orientation newOrientation = svkDcmHeader::UNKNOWN;
+    svkDcmHeader::Orientation newOrientation = svkDcmHeader::UNKNOWN_ORIENTATION;
     this->orientation = orientation;
     int firstSlice;
     int lastSlice;
