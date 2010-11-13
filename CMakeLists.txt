@@ -55,11 +55,7 @@ ADD_DEFINITIONS( -DSVK_MINOR_VERSION='6' )
 ###################################
 #   VTK
 ###################################
-FIND_PACKAGE(VTK)
-IF(NOT VTK_FOUND)
-  MESSAGE(FATAL_ERROR
-    "VTK not found. Please set VTK_DIR.")
-ENDIF(NOT VTK_FOUND)
+FIND_PACKAGE(VTK REQUIRED)
 
 ###################################
 #   KWWidgets
@@ -81,9 +77,16 @@ if( BUILD_OSIRIX)
     SET (CMAKE_UNIVERSAL TRUE)
 endif (BUILD_OSIRIX)
 
-if( BUILD_SLICER)
+if( BUILD_SLICER )
     add_subdirectory (applications/slicer_plugin/MRSpectroscopy)
 endif (BUILD_SLICER)
+
+if( Slicer3_DIR )
+    SET(VTK_DIR FORCE)
+    SET(KWWidgets_DIR FORCE)
+    FIND_PACKAGE(VTK REQUIRED NO_DEFAULT_PATH PATHS ${Slicer3_DIR}/../Slicer3-lib/VTK-build)
+    FIND_PACKAGE(KWWidgets REQUIRED NO_DEFAULT_PATH PATHS ${Slicer3_DIR}/../Slicer3-lib/KWWidgets-build)
+endif ( Slicer3_DIR )
 
 if( BUILD_LIBRARY )
     add_subdirectory (libs/src)
