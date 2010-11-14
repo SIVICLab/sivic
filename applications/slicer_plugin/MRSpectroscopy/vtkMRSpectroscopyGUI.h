@@ -69,6 +69,8 @@
 
 #include <svkPlotGridViewController.h>
 #include <svkImageData.h>
+#include <svkMrsImageData.h>
+#include <svkDataModel.h>
 
 #include "vtkMRSpectroscopyLogic.h"
 
@@ -182,6 +184,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         vtkSlicerNodeSelectorWidget*    VolumeSelector;
     	vtkKWLoadSaveButtonWithLabel*	LoadSpectraButton;
         vtkKWPushButton*                DisplayButton;
+        vtkKWPushButton*                DisplayButton2;
         vtkKWScale*                     RedScale;
         vtkKWScale*                     YellowScale;
         vtkKWScale*                     GreenScale;
@@ -196,6 +199,9 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
 	vtkKWCheckButton*		checkBoxChannel3;
 	vtkKWCheckButton*		checkBoxChannel4;
 	vtkKWCheckButton*		checkBoxMetMap;
+    svkDataModel*           model;
+    svkMrsImageData*        ddfData;
+
 
     
         //----------------------------------------------------------------
@@ -212,6 +218,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         int                             HasStyle;
         void                            SplitWindow();
         void                            LoadSpectraFromFile(const char *filename);
+        void                            GenerateMetaboliteMap(float peak, float width);
         void                            SetSpectraData(svkImageData* ddfData);
         void                            DisplaySpectra();
         void                            ResetStyle();

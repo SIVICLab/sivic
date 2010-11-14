@@ -100,6 +100,8 @@
 #include "vtkMRMLImageDataNode.h"
 #include "vtkMRMLImageDataStorageNode.h"
 
+#include <svkExtractMRIFromMRS.h> 
+
 #include "cmath"
 #include "set"
 
@@ -130,6 +132,8 @@ vtkMRSpectroscopyGUI::vtkMRSpectroscopyGUI ( )
     this->Interactor = NULL;
     this->Style = NULL;
     this->HasStyle = 0;
+
+    this->model = NULL;
 
     //----------------------------------------------------------------
     // GUI widgets
@@ -250,6 +254,10 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
         this->Style->Delete();
     }
 
+    if ( this->model != NULL ) {
+        this->model->Delete();
+        this->model = NULL;
+    }
 }
 
 
@@ -400,6 +408,8 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->AddObserver (vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand );
     this->DisplayButton
         ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
+    this->DisplayButton2
+        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
     this->SpectraSlider
         ->AddObserver(vtkKWScale::ScaleValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
 
@@ -534,16 +544,17 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
         const char * filename = this->LoadSpectraButton->GetWidget()->GetFileName();
         if (filename) {
           LoadSpectraFromFile(filename);
-	}
+	    }
     }
     else if (this->DisplayButton == vtkKWPushButton::SafeDownCast(caller) 
       && event == vtkKWPushButton::InvokedEvent)
     {
-        std::cerr << "DisplayButton is pressed." << std::endl;
-        const char * filename = this->LoadSpectraButton->GetWidget()->GetFileName();
-        if (filename) {
-          LoadSpectraFromFile(filename);
-	}
+        this->GenerateMetaboliteMap(1.99, 0.4); 
+    }
+    else if (this->DisplayButton2 == vtkKWPushButton::SafeDownCast(caller) 
+      && event == vtkKWPushButton::InvokedEvent)
+    {
+        this->GenerateMetaboliteMap(3.0, 0.4); 
     }
     else if (this->SpectraSlider == vtkKWScale::SafeDownCast(caller)
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
@@ -666,14 +677,66 @@ void vtkMRSpectroscopyGUI::RenderActor(vtkProp* actor)
     this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
 }
 
+
+/*!
+ *
+ */
+void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width) 
+{
+
+    svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
+    //if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
+        //cout << "ERROR no data object" << endl; 
+        //return;
+    //}
+
+    quant->SetInput( this->ddfData ); 
+    //quant->SetInput( this->model->GetDataObject("SpectroscopicData") ); 
+    quant->SetSeriesDescription( " Metabolite Map" );
+    quant->SetPeakPosPPM( peak );
+    quant->SetPeakWidthPPM( width );
+    cout << "QUANTIFY" << endl;
+    cout << "QUANTIFY" << endl;
+    cout << "QUANTIFY" << endl;
+    cout << "QUANTIFY" << endl;
+    cout << "QUANTIFY" << endl;
+    quant->GetOutput()->GetIncrements();
+    quant->Update(); 
+    
+    svkMriImageData* outputData = svkMriImageData::New();
+    outputData->DeepCopy(quant->GetOutput());
+    outputData->SetDcmHeader(quant->GetOutput()->GetDcmHeader());
+    
+    //svkPlotGridViewController::SafeDownCast(dataViewer)->SetInput(
+        //outputData, svkPlotGridView::MET );
+    //svkPlotGridViewController::SafeDownCast(dataViewer)->TurnPropOn(
+        //svkPlotGridView::OVERLAY_IMAGE );
+    //svkPlotGridViewController::SafeDownCast(dataViewer)->TurnPropOn(
+        //svkPlotGridView::OVERLAY_TEXT );
+    
+    //this->PlotView->SetInput( quant->GetOutput(), svkPlotGridView::MET );
+    this->PlotView->SetInput( outputData, svkPlotGridView::MET );
+    this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE ) ; 
+    this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_TEXT ) ; 
+    this->PlotView->SetOverlayOpacity( .5 );
+    this->PlotView->GetView()->Refresh();
+    
+    //quant->Delete(); 
+
+}
+
+
+/*!
+ *
+ */
 void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
 {  
-    svkDataModel* model = svkDataModel::New();
-    svkImageData* ddfData = //model->LoadFile("/afs/csail.mit.edu/u/m/mangpo/Sample/Data/sample_data/brain_recon/spectra/t6457_1comb_9_cor.ddf");
-    model->LoadFile(filename);
+    this->model = svkDataModel::New();
+    this->model->SetDataFileName( "SpectroscopicData", filename );
+    this->ddfData = svkMrsImageData::SafeDownCast(this->model->LoadFile(filename));
 
     vtkMRMLImageDataNode* ImageDataNode = vtkMRMLImageDataNode::New();
-    ImageDataNode->SetData(ddfData);
+    ImageDataNode->SetData(this->ddfData);
     //TODO: how to add?
     //this->VolumeSelector->AddNodeClass("vtkMRMLImageDataNode", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1");
     //this->VolumeSelector->SetSelected(ImageDataNode);
@@ -681,7 +744,7 @@ void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
         this->GetMRMLScene()->AddNodeNoNotify(ImageDataNode);
     }
 
-    SetSpectraData(ddfData);
+    SetSpectraData(this->ddfData);
 }
 
 
@@ -833,14 +896,9 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
     this->PlotView->SetRWInteractor(rwi);
     this->PlotView->SetInput( ddfData );
 
-svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
-quant->SetInput( ddfData );
-quant->SetSeriesDescription( " Metabolite Map" );
-quant->SetPeakPosPPM( 1.99 );
-quant->SetPeakWidthPPM( .4 );
-this->PlotView->SetInput( quant->GetOutput(), svkPlotGridView::MET );
-this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE ) ; 
-this->PlotView->TurnPropOn( svkPlotGridView::OVERLAY_TEXT ) ; 
+
+//quant->Delete(); 
+
 
     this->PlotView->SetSlice( 4 );
     this->PlotView->HighlightSelectionVoxels( );
@@ -1109,7 +1167,7 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetMasterWindow ( this->GetApplicationGUI()->GetMainSlicerWindow() );
     this->LoadSpectraButton->Create ( );
     this->LoadSpectraButton->SetWidth(20);
-    this->LoadSpectraButton->GetWidget()->SetText ("Select Volume File");
+    this->LoadSpectraButton->GetWidget()->SetText ("Select MRS File");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetTitle("Open Volume File");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetFileTypes("{ {Spectra} {*} }");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RetrieveLastPathFromRegistry("OpenPath");
@@ -1118,8 +1176,14 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     this->DisplayButton = vtkKWPushButton::New();
     this->DisplayButton->SetParent(frame->GetFrame());
     this->DisplayButton->Create();
-    this->DisplayButton->SetText("Display");
+    this->DisplayButton->SetText("Generate NAA Map");
     this->DisplayButton->SetWidth(10);
+
+    this->DisplayButton2 = vtkKWPushButton::New();
+    this->DisplayButton2->SetParent(frame->GetFrame());
+    this->DisplayButton2->Create();
+    this->DisplayButton2->SetText("Generate NAA Map");
+    this->DisplayButton2->SetWidth(10);
     
     // Create the x range widget
     this->xSpecRange = vtkKWRange::New();
@@ -1196,9 +1260,11 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     int row = 0;
     this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky ewns", this->LoadSpectraButton->GetWidgetName(), row);
 
-/*    row++;
+    row++;
     this->Script("grid %s -row %d -column 0 -sticky ewns -pady 4", this->DisplayButton->GetWidgetName(), row);
-*/
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky ewns -pady 4", this->DisplayButton2->GetWidgetName(), row);
 
     row++;
     this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky nsew", this->xSpecRange->GetWidgetName(), row );
