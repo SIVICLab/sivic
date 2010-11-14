@@ -51,6 +51,7 @@ sivicApp::sivicApp()
     // For returnting the application status
     this->exitStatus = 0;
     this->processingWidget = sivicProcessingWidget::New();
+    this->quantificationWidget = sivicQuantificationWidget::New();
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
     this->windowLevelWidget = sivicWindowLevelWidget::New();
@@ -91,6 +92,11 @@ sivicApp::~sivicApp()
     if( this->processingWidget != NULL ) {
         this->processingWidget->Delete();
         this->processingWidget = NULL;
+    }
+
+    if( this->quantificationWidget != NULL ) {
+        this->quantificationWidget->Delete();
+        this->quantificationWidget = NULL;
     }
 
     if( this->imageViewWidget != NULL ) {
@@ -235,6 +241,13 @@ int sivicApp::Build( int argc, char* argv[] )
     this->processingWidget->SetSivicController(this->sivicController);
     this->processingWidget->Create();
 
+    this->quantificationWidget->SetParent(tabbedPanel );
+    this->quantificationWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->quantificationWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->quantificationWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->quantificationWidget->SetSivicController(this->sivicController);
+    this->quantificationWidget->Create();
+
     this->imageViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->imageViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->imageViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -283,6 +296,7 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
+    this->sivicController->SetQuantificationWidget( quantificationWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
     this->sivicController->SetWindowLevelWidget( windowLevelWidget );
@@ -294,8 +308,11 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
     vtkKWWidget* interactorPanel = tabbedPanel->GetFrame("Inspecting");
 
-    this->tabbedPanel->AddPage("SV Processing Demo", "Prototype multi-channel SV Data Processing.", NULL);
-    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("SV Processing Demo");
+    this->tabbedPanel->AddPage("MRS Recon Demo", "Prototype MRS recon Processing.", NULL);
+    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("MRS Recon Demo");
+
+    this->tabbedPanel->AddPage("MRS Quantification Demo", "Prototype MRS Quantification.", NULL);
+    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quantification Demo");
 
     vtkKWSeparator* separator = vtkKWSeparator::New();
     separator->SetParent(this->sivicWindow->GetViewFrame());
@@ -331,6 +348,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->spectraRangeWidget->GetWidgetName(), interactorPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
+              this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
 
     this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 100 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 -minsize 5 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );

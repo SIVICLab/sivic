@@ -61,6 +61,7 @@ vtkSivicController::vtkSivicController()
     this->spectraRangeWidget = NULL;
     this->viewRenderingWidget = NULL;
     this->processingWidget = NULL;
+    this->quantificationWidget = NULL;
     this->windowLevelWindow = NULL;
     this->preferencesWindow = NULL;
     this->thresholdType = "Quantity";
@@ -256,6 +257,14 @@ void vtkSivicController::SetProcessingWidget( sivicProcessingWidget* processingW
 {
     this->processingWidget = processingWidget;
     this->processingWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget)
+{
+    this->quantificationWidget = quantificationWidget;
+    this->quantificationWidget->SetModel(this->model);
 }
 
 

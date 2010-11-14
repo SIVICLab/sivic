@@ -26,10 +26,10 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/sivicWindowLevelWidget.h $
- *  $Rev: 229 $
- *  $Author: beckn8tor $
- *  $Date: 2010-03-16 19:18:12 -0700 (Tue, 16 Mar 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  */
 
 #ifndef SVK_WINDOW_LEVEL_WIDGET_H 

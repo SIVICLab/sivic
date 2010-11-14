@@ -73,6 +73,7 @@
 #include <svkLookupTable.h>
 #include <svkDataValidator.h>
 #include <sivicProcessingWidget.h>
+#include <sivicQuantificationWidget.h>
 
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
@@ -114,6 +115,7 @@ class vtkSivicController : public vtkObject
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
+        void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
@@ -213,6 +215,7 @@ class vtkSivicController : public vtkObject
         vtkImageData*                  spectraData;
         sivicViewRenderingWidget*      viewRenderingWidget;
         sivicProcessingWidget*         processingWidget;
+        sivicQuantificationWidget*     quantificationWidget;
         sivicImageViewWidget*          imageViewWidget;
         sivicSpectraRangeWidget*       spectraRangeWidget;
         sivicSpectraViewWidget*        spectraViewWidget;

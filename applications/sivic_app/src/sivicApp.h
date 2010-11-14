@@ -100,6 +100,7 @@ class sivicApp
         vtkSivicController*        sivicController;
         sivicViewRenderingWidget*  viewRenderingWidget;
         sivicProcessingWidget*     processingWidget;
+        sivicQuantificationWidget* quantificationWidget;
         sivicImageViewWidget*      imageViewWidget;
         sivicSpectraViewWidget*    spectraViewWidget;
         sivicWindowLevelWidget*    windowLevelWidget;

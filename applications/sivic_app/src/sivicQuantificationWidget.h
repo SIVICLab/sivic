@@ -32,61 +32,70 @@
  *  $Date$
  */
 
-#ifndef SVK_PREFERENCES_WIDGET_H 
-#define SVK_PREFERENCES_WIDGET_H 
+#ifndef SVK_QUANTIFICATION_WIDGET_H 
+#define SVK_QUANTIFICATION_WIDGET_H 
 
+#include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
 #include <vtkKWTkUtilities.h>
-#include <vtkKWApplication.h>
-#include <vtkKWTopLevel.h>
+#include <vtkKWScaleWithEntry.h>
 #include <vtkKWCheckButton.h>
-#include <vtkKWSeparator.h>
+#include <vtkKWPushButton.h>
 
-#include <svkDataView.h>
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkDetailedPlotViewController.h>
-#include <svkPlotGridView.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>
 
+
 using namespace svk; 
 
-class sivicPreferencesWidget : public sivicKWCompositeWidget
+
+class sivicQuantificationWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicPreferencesWidget *New();
-        vtkTypeRevisionMacro(sivicPreferencesWidget,sivicKWCompositeWidget);
-
-        void   RestorePreferencesFromRegistry( );
-        bool   GetReadOnlyOneInputFile();
+        static sivicQuantificationWidget *New();
+        vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
 
     protected:
 
-        sivicPreferencesWidget();
-        ~sivicPreferencesWidget();
-        
-        vtkKWCheckButton* testButton;        
 
+        sivicQuantificationWidget();
+        ~sivicQuantificationWidget();
+
+        vtkKWPushButton*                quantButton;
+
+        
         // Description:
         // Create the widget.
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
-
+        void            ResetRange();
 
 
     private:
 
-        sivicPreferencesWidget(const sivicPreferencesWidget&);   // Not implemented.
-        void operator=(const sivicPreferencesWidget&);  // Not implemented.
+        vtkCallbackCommand*         progressCallback;
+
+        void                        SetPhaseUpdateExtent();
+        void                        UpdatePhaseSliderBindings();
+        bool                        phaseChangeInProgress;
+        void                        ExecuteFFT();
+        void                        ExecuteRecon();
+        void                        ExecutePhase();
+        void                        ExecuteCombine();
+        static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+
+        sivicQuantificationWidget(const sivicQuantificationWidget&);   // Not implemented.
+        void operator=(const sivicQuantificationWidget&);  // Not implemented.
         
 };
 
-#endif //SVK_PREFERENCES_WIDGET_H 
+#endif //SVK_QUANTIFICATION_WIDGET_H 
