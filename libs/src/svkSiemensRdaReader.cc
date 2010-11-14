@@ -449,6 +449,7 @@ void svkSiemensRdaReader::InitGeneralStudyModule()
         "",
         "",
         this->GetHeaderValueAsString("PatientID"), 
+        "", 
         ""
     );
 }

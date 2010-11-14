@@ -41,6 +41,7 @@
 
 
 #include <svkMrsImageData.h>
+#include <svkMRIIOD.h>
 
 
 using namespace svk;
@@ -764,18 +765,63 @@ void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelect
  *  \param component (0 = real, 1=im, 2=cmplx) 
  *
  */
+void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, 
+int component, vtkstd::string seriesDescription ) 
+{
+    if( image != NULL ) {
+
+        svkMRIIOD* iod = svkMRIIOD::New();
+        iod->SetDcmHeader( image->GetDcmHeader() );
+        iod->InitDcmHeader();
+        iod->Delete(); 
+        
+        this->GetDcmHeader()->ConvertMrsToMriHeader( 
+            image->GetDcmHeader(), 
+            VTK_DOUBLE, 
+            seriesDescription
+        );
+
+        this->GetImage( image, point, timePoint, channel, component ); 
+    }
+}
+
+
+/*!
+ *   Method will extract a volume into a vtkImageData object representing
+ *   a single point in the spectra. This is usefull for spatial FFT's.
+ *
+ *  \param target image the point image (must be initialized)
+ *  \param point the point in the array you wish operate on 
+ *  \param component the component to operate on 
+ *  \param timePoint the time point to operate on 
+ *  \param channel the the channel to operate on 
+ *  \param component (0 = real, 1=im, 2=cmplx) 
+ *
+ */
 void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, int channel, int component ) 
 {
-    int numComponents = 2; 
-    if ( component < 2 ) {
-        numComponents = 1; 
-    } 
 
     if( image != NULL ) {
+
+        int numComponents = 2; 
+        if ( component < 2 ) {
+            numComponents = 1; 
+        } 
+
         // Setup image dimensions
         image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+        image->SetUpdateExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+        image->SetWholeExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
         image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
         image->SetScalarTypeToDouble( );
+        image->AllocateScalars();
+
+        double origin[3];
+        this->GetDcmHeader()->GetOrigin(origin);
+        image->SetOrigin( origin );
+
+        svkImageData::SafeDownCast( image )->CopyDcos( this );
+        image->GetIncrements();
 
         // Create a float array to hold the pixel data
         vtkDoubleArray* pixelData = vtkDoubleArray::New();
@@ -807,9 +853,6 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         pixelData->Delete();
     }
 
-    double origin[3];
-    this->GetDcmHeader()->GetOrigin(origin);
-    image->SetOrigin( origin );
 }
 
 

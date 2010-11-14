@@ -415,7 +415,9 @@ void svkDcmHeader::GetDataDcos(double dcos[3][3], DcmDataOrderingDirection slice
 
 
 /*!
- *  
+ *  Method that copies a DICOM heder to the input (headerCopy).  New instance UIDs are generated
+ *  for SeriesInstanceUID, SOPInstanceUID, MediaStorageSOPInstanceUID.  StudyInstanceuUID is  
+ *  preserved.  
  */
 void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesDescription)
 {
@@ -864,7 +866,7 @@ void svkDcmHeader::InitPatientModule(vtkstd::string patientsName, vtkstd::string
 /*!
  *  Initializes the DICOM Patient Module (Patient IE)
  */
-void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::string studyTime, vtkstd::string referringPhysiciansName, vtkstd::string studyID, vtkstd::string accessionNumber)
+void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::string studyTime, vtkstd::string referringPhysiciansName, vtkstd::string studyID, vtkstd::string accessionNumber, vtkstd::string studyInstanceUID)
 {
 
     if ( !studyDate.empty() ) {
@@ -899,6 +901,13 @@ void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::stri
         this->SetValue(
             "AccessionNumber",
             accessionNumber
+        );
+    }
+
+    if ( !studyInstanceUID.empty() ) {
+        this->SetValue(
+            "StudyInstanceUID",
+            studyInstanceUID
         );
     }
 }
@@ -1583,6 +1592,115 @@ void svkDcmHeader::InitMRAveragesMacro(int numAverages)
     );
 }
 
+
+/*!
+ *  Initializes an Enhanced MR Image header from an MR Spectroscopy header. 
+ *  This is a utility for extracting metabolite maps from MRS data, for example. 
+ *  Takes an initialized svkDcmHeader from an svkMriImageData object. 
+ */
+int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription)
+{
+
+    //"verify that "this" is an svkMRSpectroscopy Object"
+
+    mri->SetValue("ImageType", "DERIVED\\SECONDARY");
+
+    //
+    //  Patient IE requires modification
+    //
+    mri->InitPatientModule(
+        this->GetStringValue( "PatientsName" ),
+        this->GetStringValue( "PatientID" ),
+        this->GetStringValue( "PatientsBirthDate" ),
+        this->GetStringValue( "PatientsSex" )
+    );
+
+
+    //
+    //  General Study IE requires modification
+    //
+    mri->InitGeneralStudyModule(
+        this->GetStringValue("StudyDate"),
+        this->GetStringValue("StudyTime"),
+        this->GetStringValue("ReferringPhysiciansName"),
+        this->GetStringValue("StudyID"),
+        this->GetStringValue("AccessionNumber"), 
+        this->GetStringValue("StudyInstanceUID")
+    );
+
+    //
+    //  General Series Module
+    //
+    mri->InitGeneralSeriesModule(
+        "77",
+        seriesDescription,
+        this->GetStringValue("PatientPosition")
+    );
+
+    //
+    //  Image Pixel Module
+    //  Set DCM data type based on vtkImageData Scalar type:
+    //
+    svkDcmHeader::DcmPixelDataFormat dcmDataType; 
+
+    if ( dataType == VTK_DOUBLE ) {
+        dcmDataType = svkDcmHeader::SIGNED_FLOAT_8;
+    } else if ( dataType == VTK_FLOAT ) {
+        dcmDataType = svkDcmHeader::SIGNED_FLOAT_4;
+    } else {
+        cout << this->GetClassName() << ": Unsupported ScalarType " << dataType << endl;
+        exit(1);
+    }
+
+    mri->InitImagePixelModule(
+        this->GetIntValue( "Rows"),
+        this->GetIntValue( "Columns"),
+        dcmDataType
+    );
+
+    //
+    //  Per Frame Functinal Groups Module
+    //
+    int numSlices = this->GetNumberOfSlices();
+    double dcos[3][3];
+    this->GetDataDcos( dcos );
+
+    double pixelSpacing[3];
+    this->GetPixelSpacing( pixelSpacing );
+
+    double toplc[3];
+    this->GetOrigin( toplc, 0 );
+
+    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 );
+
+    mri->InitPlaneOrientationMacro(
+        this->GetStringSequenceItemElement(
+            "PlaneOrientationSequence",
+            0,
+            "ImageOrientationPatient",
+            "SharedFunctionalGroupsSequence"
+        )
+    );
+
+    //mri->SetSliceOrder( this->GetSliceOrder() );
+
+    // Add Pixel Spacing
+    vtkstd::string pixelSizes = this->GetStringSequenceItemElement (
+                                        "PixelMeasuresSequence",
+                                        0,
+                                        "PixelSpacing",
+                                        "SharedFunctionalGroupsSequence"
+                                    );
+
+    vtkstd::string sliceThickness = this->GetStringSequenceItemElement (
+                                        "PixelMeasuresSequence",
+                                        0,
+                                        "SliceThickness",
+                                        "SharedFunctionalGroupsSequence"
+                                    );
+
+    mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness );
+}
 
 
 /*!

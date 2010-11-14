@@ -148,6 +148,7 @@ void svkVarianFidMapper::InitGeneralStudyModule()
         "",
         "",
         this->GetHeaderValueAsString("studyid_"), 
+        "", 
         ""
     );
 

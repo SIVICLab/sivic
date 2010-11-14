@@ -710,12 +710,12 @@ void svkSdbmVolumeReader::InitGeneralStudyModule()
 
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
         this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ), 
-        NULL,
-        NULL,
+        "",
+        "",
         shfMap["study_number"], 
-        NULL
+        "", 
+        "" 
     );
-
 }
 
 

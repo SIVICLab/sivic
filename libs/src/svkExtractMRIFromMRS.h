@@ -101,10 +101,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
 
         //  Methods:
         virtual void                     UpdateProvenance();
-        virtual void                     UpdateHeader();
-        int                              ConvertDcmMrsToMri(); 
         void                             GetIntegrationPtRange(int& startPt, int& endPt); 
-
 
         //  Members:
         vtkstd::string                   newSeriesDescription; 
@@ -113,7 +110,6 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         svkMRIIOD*                       iod;
         float                            peakCenterPPM;
         float                            peakWidthPPM;
-
 
 };
 

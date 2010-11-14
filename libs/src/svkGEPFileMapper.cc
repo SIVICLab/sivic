@@ -269,36 +269,17 @@ void svkGEPFileMapper::InitPatientModule()
 void svkGEPFileMapper::InitGeneralStudyModule() 
 {
 
-    this->dcmHeader->SetValue(
-        "StudyInstanceUID", 
+    vtkstd::string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
+
+    this->dcmHeader->InitGeneralStudyModule(
+        svkImageReader2::RemoveSlashesFromDate( &dcmDate ),  
+        this->GetHeaderValueAsString( "rhr.rh_scan_time" ), 
+        this->GetHeaderValueAsString( "rhe.refphy" ), 
+        this->GetHeaderValueAsString( "rhe.ex_no" ), 
+        this->GetHeaderValueAsString( "rhe.reqnum" ), 
         this->GetHeaderValueAsString( "rhe.study_uid" )
     );
 
-    vtkstd::string dcmDate = this->ConvertGEDateToDICOM( this->GetHeaderValueAsString( "rhr.rh_scan_date" ) );
-    this->dcmHeader->SetValue(
-        "StudyDate", 
-        svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
-    );
-
-    this->dcmHeader->SetValue(
-        "StudyTime", 
-        this->GetHeaderValueAsString( "rhr.rh_scan_time" )
-    );
-
-    this->dcmHeader->SetValue(
-        "ReferringPhysiciansName", 
-        this->GetHeaderValueAsString( "rhe.refphy" )
-    );
-
-    this->dcmHeader->SetValue(
-        "StudyID", 
-        this->GetHeaderValueAsString( "rhe.ex_no" )
-    );
-
-    this->dcmHeader->SetValue(
-        "AccessionNumber", 
-        this->GetHeaderValueAsString( "rhe.reqnum" )
-    );
 }
 
 
@@ -326,7 +307,6 @@ void svkGEPFileMapper::InitGeneralSeriesModule()
     } else if ( patientPosition == 2 ) {
         patientEntryPos.append("P");
     }
-
 
     this->dcmHeader->InitGeneralSeriesModule(
         this->GetHeaderValueAsString( "rhs.se_no" ), 

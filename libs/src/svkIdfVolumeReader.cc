@@ -384,6 +384,7 @@ void svkIdfVolumeReader::InitGeneralStudyModule()
         "",
         "",
         idfMap[ "studyNum" ], 
+        "", 
         "" 
     );
 

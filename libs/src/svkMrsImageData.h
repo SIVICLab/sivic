@@ -45,16 +45,15 @@
 
 
 #include <vtkObjectFactory.h>
-#include <svkImageData.h>
-#include <svkMrsTopoGenerator.h>
 #include <vtkImageData.h>
 #include <vtkDoubleArray.h>
 
+#include <svkImageData.h>
+#include <svkMriImageData.h>
+#include <svkMrsTopoGenerator.h>
+
 
 namespace svk {
-
-
-using namespace std;
 
 
 /*!
@@ -91,8 +90,28 @@ class svkMrsImageData: public svkImageData
         int            GetNumberOfChannels();
         void           GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, int slice = -1 );
         void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.5 );
-        void           GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, int slice = -1 );
-        void           GetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0, int component = 2 ); 
+        void           GetTlcBrcInUserSelection( 
+                            int tlcBrc[2], 
+                            double userSelection[6], 
+                            svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, 
+                            int slice = -1 
+                       );
+        void           GetImage( 
+                            svkMriImageData* image, 
+                            int point, 
+                            int timePoint, 
+                            int channel, 
+                            int component, 
+                            vtkstd::string seriesDescription 
+                       ); 
+
+        void           GetImage( 
+                            vtkImageData* image, 
+                            int point, 
+                            int timePoint = 0, 
+                            int channel = 0, 
+                            int component = 2 
+                       ); 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 ); 
         virtual void   UpdateRange(int component );
         int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);

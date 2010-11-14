@@ -526,7 +526,8 @@ class svkDcmHeader: public vtkObject
                                 vtkstd::string studyTime,
                                 vtkstd::string referringPhysiciansName,
                                 vtkstd::string studyID,
-                                vtkstd::string accessionNumber
+                                vtkstd::string accessionNumber, 
+                                vtkstd::string studyInstanceUID
                             );
         void                InitGeneralSeriesModule(
                                 vtkstd::string seriesNumber,
@@ -563,6 +564,7 @@ class svkDcmHeader: public vtkObject
                             );
         void                InitMRAveragesMacro(int numAverages = 1);
 
+        int                 ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
 
 
         //==================================================

@@ -788,7 +788,8 @@ void svkDdfVolumeReader::InitGeneralStudyModule()
         "", 
         "", 
         ddfMap["studyId"], 
-        ddfMap["accessionNumber"] 
+        ddfMap["accessionNumber"], 
+        ""
     );
 }
 

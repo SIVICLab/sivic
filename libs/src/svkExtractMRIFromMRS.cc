@@ -121,26 +121,21 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
     int startPt = 0; 
     int endPt = 0; 
     this->GetIntegrationPtRange(startPt, endPt); 
-
     cout << " GET POINT: " << static_cast<int>( (endPt+startPt)/2 ) << endl;
 
     //  Extract svkMriImageData from svkMrsImageData
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
-        this->GetOutput(), 
+        svkMriImageData::SafeDownCast( this->GetOutput() ), 
         static_cast<int>( (endPt + startPt)/2 ), 
         0, 
         0, 
-        0 
+        0, 
+        this->newSeriesDescription 
     );
-
-    this->GetOutput()->CopyDcos( this->GetImageDataInput(0) ); 
-
-    this->UpdateHeader(); 
 
     int numVoxels[3]; 
     this->GetOutput()->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-
     for (int i = 0; i < totalVoxels; i++ ) {
 
         vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
@@ -206,136 +201,6 @@ void svkExtractMRIFromMRS::GetIntegrationPtRange(int& startPt, int& endPt)
 void svkExtractMRIFromMRS::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
-}
-
-
-/*!
- *
- */
-void svkExtractMRIFromMRS::UpdateHeader()
-{
-
-    if (this->newSeriesDescription == "") {
-        cout << "ERROR:  must set target image series description" << endl;
-        exit(1); 
-    }
-
-    //  Copy the DICOM header:     
-    //  Create an MRI header template to initialize the output object DcmHeader:
-    this->iod = svkMRIIOD::New();
-    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader() );
-    iod->InitDcmHeader();
-
-    this->GetOutput()->GetDcmHeader()->MakeDerivedDcmHeader( 
-        this->GetOutput()->GetDcmHeader(), 
-        this->newSeriesDescription
-    );
-
-    this->ConvertDcmMrsToMri(); 
-
-}
-
-
-/*!
- *
- */
-int svkExtractMRIFromMRS::ConvertDcmMrsToMri()
-{
-    svkDcmHeader* mrs = this->GetImageDataInput(0)->GetDcmHeader();
-    svkDcmHeader* mri = this->GetOutput()->GetDcmHeader(); 
-
-    //
-    //  Patient IE requires modification
-    //
-    mri->InitPatientModule(
-        mrs->GetStringValue( "PatientsName" ), 
-        mrs->GetStringValue( "PatientID" ), 
-        mrs->GetStringValue( "PatientsBirthDate" ), 
-        mrs->GetStringValue( "PatientsSex" )
-    );
-
-
-    //
-    //  Study IE requires modification
-    //
-    mri->InitGeneralStudyModule(
-        mrs->GetStringValue("StudyDate"), 
-        mrs->GetStringValue("StudyTime"), 
-        mrs->GetStringValue("ReferringPhysiciansName"), 
-        mrs->GetStringValue("StudyID"), 
-        mrs->GetStringValue("AccessionNumber") 
-    );
-
-    //
-    //  General Series Module
-    //
-    mri->InitGeneralSeriesModule(
-        "77", 
-        "", 
-        mrs->GetStringValue("PatientPosition") 
-    ); 
-
-    //
-    //  Image Pixel Module 
-    //  Set DCM data type based on vtkImageData Scalar type:
-    //
-    if ( this->GetOutput()->GetScalarType() == VTK_DOUBLE ) {
-        dataType = svkDcmHeader::SIGNED_FLOAT_8; 
-    } else if ( this->GetOutput()->GetScalarType() == VTK_FLOAT ) {
-        dataType = svkDcmHeader::SIGNED_FLOAT_4; 
-    } else {
-        cout << this->GetClassName() << ": Unsupported ScalarType " << endl;
-        exit(1); 
-    }
-    mri->InitImagePixelModule( 
-        mrs->GetIntValue( "Rows"), 
-        mrs->GetIntValue( "Columns"), 
-        dataType 
-    ); 
-
-    //
-    //  Per Frame Functinal Groups Module 
-    //
-    int numSlices = mrs->GetNumberOfSlices();
-    double dcos[3][3];
-    mrs->GetDataDcos( dcos );
-
-    double pixelSpacing[3];
-    mrs->GetPixelSpacing( pixelSpacing );
-
-    double toplc[3];
-    mrs->GetOrigin( toplc, 0 );
-
-    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 ); 
-
-    mri->InitPlaneOrientationMacro(
-        mrs->GetStringSequenceItemElement( 
-            "PlaneOrientationSequence",
-            0,
-            "ImageOrientationPatient",
-            "SharedFunctionalGroupsSequence"
-        )
-    );
- 
-    //mri->SetSliceOrder( mrs->GetSliceOrder() );
-
-    // Add Pixel Spacing
-    vtkstd::string pixelSizes = mrs->GetStringSequenceItemElement ( 
-                                        "PixelMeasuresSequence",
-                                        0,
-                                        "PixelSpacing",
-                                        "SharedFunctionalGroupsSequence"
-                                    ); 
-
-    vtkstd::string sliceThickness = mrs->GetStringSequenceItemElement ( 
-                                        "PixelMeasuresSequence",
-                                        0,
-                                        "SliceThickness",
-                                        "SharedFunctionalGroupsSequence"
-                                    ); 
-
-    mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness ); 
-
 }
 
 
