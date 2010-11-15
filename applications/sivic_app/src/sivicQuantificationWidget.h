@@ -45,6 +45,7 @@
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkExtractMriFromMrs.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>
@@ -84,14 +85,10 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*         progressCallback;
 
-        void                        SetPhaseUpdateExtent();
-        void                        UpdatePhaseSliderBindings();
-        bool                        phaseChangeInProgress;
-        void                        ExecuteFFT();
-        void                        ExecuteRecon();
-        void                        ExecutePhase();
-        void                        ExecuteCombine();
+        void                        ExecuteQuantification();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        svkExtractMRIFromMRS*       quant;
+
 
         sivicQuantificationWidget(const sivicQuantificationWidget&);   // Not implemented.
         void operator=(const sivicQuantificationWidget&);  // Not implemented.

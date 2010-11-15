@@ -20,7 +20,9 @@ vtkCxxRevisionMacro( sivicQuantificationWidget, "$Revision$");
  */
 sivicQuantificationWidget::sivicQuantificationWidget()
 {
+
     this->quantButton = NULL;
+    this->quant = NULL;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
@@ -36,6 +38,11 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
     if( this->quantButton != NULL ) {
         this->quantButton->Delete();
         this->quantButton= NULL;
+    }
+
+    if( this->quant != NULL ) {
+        this->quant->Delete();
+        this->quant= NULL;
     }
 
 }
@@ -64,7 +71,7 @@ void sivicQuantificationWidget::CreateWidget()
     this->quantButton->SetParent( this );
     this->quantButton->Create( );
     this->quantButton->EnabledOn();
-    this->quantButton->SetText( "QUANT");
+    this->quantButton->SetText( "NAA (Area)");
     this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification.");
 
     this->Script("grid %s -row 0 -column 0 -columnspan 2 -sticky nsew", this->quantButton->GetWidgetName() );
@@ -82,7 +89,8 @@ void sivicQuantificationWidget::CreateWidget()
     this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
-        this->quantButton, vtkKWPushButton::InvokedEvent );
+        this->quantButton, vtkKWPushButton::InvokedEvent 
+    );
 
 }
 
@@ -95,90 +103,53 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
     // Respond to a selection change in the overlay view
     if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
 
-        this->SetPhaseUpdateExtent();
-
     // Respond to a selection change in the plot grid view 
     } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
 
-        this->SetPhaseUpdateExtent();
     } else if( caller == this->quantButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine();
+
+        this->ExecuteQuantification();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
 
 
 /*!
- *  Sets the correct update extent for phasing
- */
-void sivicQuantificationWidget::SetPhaseUpdateExtent()
-{
-}
-
-
-/*!
- *  Updates/Adds keyboard bindings to the phase slider when it is in focus.
- */
-void sivicQuantificationWidget::UpdatePhaseSliderBindings()
-{
-}
-
-
-/*!
- *  Executes the FFT in place.
- */
-void sivicQuantificationWidget::ExecuteFFT() 
-{
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        bool useFullFrequencyRange = 1;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 1;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
-        this->sivicController->EnableWidgets( );
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-    }
-
-}
-
-
-/*!
- *  Executes the Recon.
- */
-void sivicQuantificationWidget::ExecuteRecon() 
-{
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-
-    }
-
-}
-
-
-/*!
- *  Executes the Phasing.
- */
-void sivicQuantificationWidget::ExecutePhase() 
-{
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-    }
-}
-
-
-
-/*!
  *  Executes the combining of the channels.
  */
-void sivicQuantificationWidget::ExecuteCombine() 
+void sivicQuantificationWidget::ExecuteQuantification() 
 {
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+
     if( data != NULL ) {
+
+        quant = svkExtractMRIFromMRS::New();
+
+        float peak  = 1.99; 
+        float width = 0.4;
+
+        quant->SetInput( data );
+        quant->SetSeriesDescription( "NAA Metabolite Map" );
+        quant->SetPeakPosPPM( peak );
+        quant->SetPeakWidthPPM( width );
+
+        svkImageData* metData = quant->GetOutput(); 
+
+        if( this->model->DataExists( "MetaboliteData" ) ) {
+            this->model->ChangeDataObject( "MetaboliteData", metData );
+        } else {
+            this->model->AddDataObject( "MetaboliteData", metData );
+        }
+
+        this->sivicController->EnableWidgets( );
+
+        this->plotController->SetInput( metData, svkPlotGridView::MET ); 
+        this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+        this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
+        this->plotController->SetOverlayOpacity( .5 );
+        this->plotController->GetView()->Refresh();
+
+
     }
 }
 
