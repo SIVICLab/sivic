@@ -45,7 +45,7 @@
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkExtractMriFromMrs.h>
+#include <svkExtractMRIFromMRS.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>
