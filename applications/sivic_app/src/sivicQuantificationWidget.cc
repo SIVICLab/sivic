@@ -132,6 +132,11 @@ void sivicQuantificationWidget::ExecuteQuantification()
         quant->SetSeriesDescription( "NAA Metabolite Map" );
         quant->SetPeakPosPPM( peak );
         quant->SetPeakWidthPPM( width );
+        quant->Update();
+
+        svkMriImageData* tmp = svkMriImageData::New();
+        tmp->DeepCopy(quant->GetOutput());
+        tmp->SetDcmHeader(quant->GetOutput()->GetDcmHeader());
 
         svkImageData* metData = quant->GetOutput(); 
 
@@ -143,7 +148,10 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
         this->sivicController->EnableWidgets( );
 
-        this->plotController->SetInput( metData, svkPlotGridView::MET ); 
+        this->plotController->SetInput( tmp, svkPlotGridView::MET ); 
+        this->overlayController->SetInput( tmp, svkOverlayView::OVERLAY );
+
+        //this->plotController->SetInput( metData, svkPlotGridView::MET ); 
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
         this->plotController->SetOverlayOpacity( .5 );
