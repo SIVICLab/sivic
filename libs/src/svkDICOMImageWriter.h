@@ -36,6 +36,8 @@
  *
  *  Authors:
  *      Don C. Bigler, Ph.D.
+ *      Jason C. Crane, Ph.D.
+ *      Beck Olson
  */
 
 
@@ -75,7 +77,7 @@ class svkDICOMImageWriter : public svkImageWriter
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         void            InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber = -1); 
-        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept ); 
+        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber ); 
         void            GetPixelRange(double& min, double& max); 
         virtual int     GetDataLength() = 0;
         

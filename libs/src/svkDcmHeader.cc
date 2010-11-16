@@ -1251,6 +1251,30 @@ void svkDcmHeader::InitFrameContentMacro( int numSlices, int numTimePts, int num
 
 
 /*!
+ *  Set the linear scaling factors in the VOI LUT Module.  These define the output range 
+ *  of pixel values to be displlayed. 
+ */
+void svkDcmHeader::InitVOILUTModule(float center, float width)
+{
+
+    this->SetValue(
+        "WindowCenter",
+        center 
+    );
+
+    this->SetValue(
+        "WindowWidth",
+        width 
+    );
+
+    this->SetValue(
+        "VOILUTFunction",
+        "LINEAR" 
+    );
+}
+
+
+/*!
  *  Set the linear scaling factors in the Pixel Value Transformation Macro
  */
 void svkDcmHeader::InitPixelValueTransformationMacro(float slope, float intercept)

@@ -553,6 +553,7 @@ class svkDcmHeader: public vtkObject
                                 int numTimePts, 
                                 int numCoils
                             ); 
+        void                InitVOILUTModule(float center, float width); 
         void                InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
         void                InitMRImagingModifierMacro(
                                 float transmitFreq,

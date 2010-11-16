@@ -177,16 +177,39 @@ void svkDICOMImageWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumbe
             unsigned short* pixelData = new unsigned short[dataLength];  
             float slope; 
             float intercept; 
-            this->GetShortScaledPixels( pixelData, slope, intercept ); 
+            this->GetShortScaledPixels( pixelData, slope, intercept, sliceNumber ); 
             
             dcmHeader->SetValue(
                   "PixelData",
-                  &(pixelData[offset]), 
+                  pixelData, 
                   dataLength 
             );
 
             //  Init Rescale Attributes:    
-            dcmHeader->InitPixelValueTransformationMacro( slope, intercept ); 
+            //  For Enhanced MR Image Storage use the PixelValueTransformation Macro
+            //  For MR Image Stroage use VOI LUT Module. 
+            double inputRangeMin;
+            double inputRangeMax;
+            this->GetPixelRange(inputRangeMin, inputRangeMax);
+            vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
+            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
+
+                // convert slope and intercept to center and width:     
+
+                //  Get the pixel value range (defines the WL of VOI LUT):
+                double width = inputRangeMax - inputRangeMin;
+                double center = (inputRangeMax + inputRangeMin)/2;
+                dcmHeader->InitVOILUTModule( center, width ); 
+
+            } else {
+                //  slope and intercept are for real -> short, we need the 
+                //  inverse transformation here that a downstream application:
+                //  can use to regenerate the original values:
+                float slopeReverse = 1/slope;  
+                int shortMin = VTK_UNSIGNED_SHORT_MIN; 
+                float interceptReverse = inputRangeMin - shortMin/slope;
+                dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse ); 
+            }
 
             delete[] pixelData; 
         }
@@ -255,7 +278,7 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max)
  *  Returns a signed short array, together with the intercept and slope of the linear scaling 
  *  transformation ( shortVal = floatVal * slope + intercept).    
  */
-void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept )
+void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber )
 {
 
     //  Get the input range for scaling:
@@ -279,23 +302,24 @@ void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, flo
         cout << "DICOM MRI Writer float to int scaling (slope, intercept): " << slope << " " << intercept << endl;     
     }
     
-    int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
-    int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
-    int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
-    int numPixels = cols * rows * slices; 
+    int dataLength = this->GetDataLength();
+    int offset = 0; 
+    if (sliceNumber >= 0 ) {
+        offset = dataLength * sliceNumber; 
+    }
 
     int dataType = 
             this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
 
     if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
         float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
-        for (int i = 0; i < numPixels; i++) {
-            shortPixels[i] = static_cast<unsigned short> ( slope * floatPixels[i] + intercept ); 
+        for (int i = 0; i < dataLength; i++) {
+            shortPixels[i] = static_cast<unsigned short> ( slope * floatPixels[offset + i] + intercept ); 
         }
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
-        for (int i = 0; i < numPixels; i++) {
-            shortPixels[i] = static_cast<unsigned short> ( slope * doublePixels[i] + intercept ); 
+        for (int i = 0; i < dataLength; i++) {
+            shortPixels[i] = static_cast<unsigned short> ( slope * doublePixels[offset + i] + intercept ); 
         }
     }
 
