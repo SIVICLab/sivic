@@ -48,7 +48,7 @@
 #include <vtkstd/string>
 
 #include <svkImageReader2.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 
 namespace svk {
@@ -137,7 +137,7 @@ class svkIdfVolumeReader : public svkImageReader2
         int                                     numSlices; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         bool                                    onlyReadHeader; 
-        svkMRIIOD*                              iod; 
+        svkEnhancedMRIIOD*                      iod; 
 
 };
 

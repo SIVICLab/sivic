@@ -175,7 +175,8 @@ void svkDdfVolumeWriter::WriteFiles()
     vtkstd::string dataExtension = ".cmplx"; 
     vtkstd::string hdrExtension = ".ddf"; 
 
-    vtkstd::string fileRoot = vtkstd::string(this->InternalFileName).substr( 0, vtkstd::string(this->InternalFileName).rfind(".") );
+    vtkstd::string fileRoot = 
+        vtkstd::string(this->InternalFileName).substr( 0, vtkstd::string(this->InternalFileName).rfind(".") );
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int dataWordSize = 4; 

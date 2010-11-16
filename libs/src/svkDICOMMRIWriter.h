@@ -45,9 +45,7 @@
 
 #include <vtkInformation.h>
 
-#include <svkImageWriter.h>
-#include <svkImageData.h>
-#include <svkMRIIOD.h>
+#include <svkDICOMImageWriter.h>
 
 
 namespace svk {
@@ -56,19 +54,15 @@ namespace svk {
 /*! 
  *  Concrete writer instance for DICOM MRI SOP class.  
  */
-class svkDICOMMRIWriter : public svkImageWriter
+class svkDICOMMRIWriter : public svkDICOMImageWriter
 {
 
     public:
 
         static svkDICOMMRIWriter* New();
-        vtkTypeRevisionMacro( svkDICOMMRIWriter, svkImageWriter);
+        vtkTypeRevisionMacro( svkDICOMMRIWriter, svkDICOMImageWriter);
 
         //  Methods:
-        void            SetInput( vtkDataObject* input );
-        void            SetInput(int index, vtkDataObject* input);
-        vtkDataObject*  GetInput(int port);
-        svkImageData*   GetImageDataInput(int port);
         virtual void    Write();
 
 
@@ -77,14 +71,7 @@ class svkDICOMMRIWriter : public svkImageWriter
         svkDICOMMRIWriter();
         ~svkDICOMMRIWriter();
 
-        virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-
-    private:
-        void            InitPixelData();
-        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept ); 
-        void            GetPixelRange(double& min, double& max); 
-        
-        svkMRIIOD*      iod; 
+        virtual int GetDataLength();
 
 };
 

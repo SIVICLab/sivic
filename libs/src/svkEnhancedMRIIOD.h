@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_MRI_IOD_H
-#define SVK_MRI_IOD_H
+#ifndef SVK_ENHANCED_MRI_IOD_H
+#define SVK_ENHANCED_MRI_IOD_H
 
 
 #include <vtkObjectFactory.h>
@@ -55,16 +55,16 @@ using namespace std;
 
 
 /*! 
- *  Base class of static methods for default MRIIOD initialization 
- *  using svkDcmHeader adapter interface. 
+ *  Base class of static methods for default Enhanced MRI 
+ *  IOD initialization using svkDcmHeader adapter interface. 
  */
-class svkMRIIOD : public svkIOD 
+class svkEnhancedMRIIOD : public svkIOD 
 {
 
     public:
 
-        static svkMRIIOD* New();
-        vtkTypeRevisionMacro( svkMRIIOD, svkIOD);
+        static svkEnhancedMRIIOD* New();
+        vtkTypeRevisionMacro( svkEnhancedMRIIOD, svkIOD);
 
         //  Methods:
         virtual void  InitDcmHeader();
@@ -72,13 +72,11 @@ class svkMRIIOD : public svkIOD
 
     protected:
 
-        svkMRIIOD();
-        ~svkMRIIOD();
+        svkEnhancedMRIIOD();
+        ~svkEnhancedMRIIOD();
 
-        //  Methods:
-        void            InitGeneralImageModule();    
-        void            InitImagePlaneModule();    
-        void            InitMRImageModule();    
+        void            InitEnhancedMRImageModule();
+        void            InitMRImageFrameTypeMacro();
         virtual void    InitSOPCommonModule(); 
 
 };
@@ -87,5 +85,5 @@ class svkMRIIOD : public svkIOD
 }   //svk
 
 
-#endif //SVK_MRI_IOD_H
+#endif //SVK_ENHANCED_MRI_IOD_H
 

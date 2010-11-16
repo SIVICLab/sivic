@@ -309,7 +309,7 @@ void svkIdfVolumeReader::InitDcmHeader()
 
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    this->iod = svkMRIIOD::New();
+    this->iod = svkEnhancedMRIIOD::New();
     this->iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     this->iod->InitDcmHeader();
 

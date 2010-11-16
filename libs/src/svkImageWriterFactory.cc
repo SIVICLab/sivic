@@ -46,6 +46,7 @@
 #include <vtkPostScriptWriter.h>
 #include <svkDICOMSCWriter.h>
 #include <svkDICOMMRSWriter.h>
+#include <svkDICOMEnhancedMRIWriter.h>
 #include <svkDICOMMRIWriter.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
@@ -94,6 +95,8 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
     } else if ( writerType == svkImageWriterFactory::DICOM_MRS ) {
         return svkDICOMMRSWriter::New();
     } else if ( writerType == svkImageWriterFactory::DICOM_ENHANCED_MRI ) {
+        return svkDICOMEnhancedMRIWriter::New();
+    } else if ( writerType == svkImageWriterFactory::DICOM_MRI ) {
         return svkDICOMMRIWriter::New();
     } else if ( writerType == svkImageWriterFactory::IDF ) {
         return svkIdfVolumeWriter::New();

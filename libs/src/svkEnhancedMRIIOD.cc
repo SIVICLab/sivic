@@ -41,20 +41,20 @@
 
 
 
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMRIIOD, "$Rev$");
-vtkStandardNewMacro(svkMRIIOD);
+vtkCxxRevisionMacro(svkEnhancedMRIIOD, "$Rev$");
+vtkStandardNewMacro(svkEnhancedMRIIOD);
 
 
 /*!
  *
  */
-svkMRIIOD::svkMRIIOD()
+svkEnhancedMRIIOD::svkEnhancedMRIIOD()
 {
 
 #if VTK_DEBUG_ON
@@ -68,7 +68,7 @@ svkMRIIOD::svkMRIIOD()
 /*!
  *
  */
-svkMRIIOD::~svkMRIIOD()
+svkEnhancedMRIIOD::~svkEnhancedMRIIOD()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 }
@@ -77,7 +77,7 @@ svkMRIIOD::~svkMRIIOD()
 /*!
  *
  */
-void svkMRIIOD::InitDcmHeader()
+void svkEnhancedMRIIOD::InitDcmHeader()
 {
 
     //  Patient IE
@@ -88,35 +88,38 @@ void svkMRIIOD::InitDcmHeader()
 
     //  Series IE
     this->InitGeneralSeriesModule();
+    this->InitMRSeriesModule();
 
     //  FrameOfReference IE
     this->InitFrameOfReferenceModule();
 
     //  Equipment IE
     this->InitGeneralEquipmentModule();
+    this->InitEnhancedGeneralEquipmentModule();
 
     //  Image IE
-    this->InitGeneralImageModule();
-    this->InitImagePlaneModule();
     this->InitImagePixelModule();
-    this->InitMRImageModule();
+    this->InitMultiFrameFunctionalGroupsModule();
+    this->InitFrameAnatomyMacro(); 
+    this->dcmHeader->InitMRAveragesMacro(); 
+    this->InitMRImageFrameTypeMacro(); 
+    this->dcmHeader->InitMRTimingAndRelatedParametersMacro(); 
+    this->dcmHeader->InitMREchoMacro(); 
+    this->dcmHeader->InitMRModifierMacro(); 
+    this->dcmHeader->InitMRTransmitCoilMacro(); 
+    this->dcmHeader->InitPixelValueTransformationMacro();
+    this->InitMultiFrameDimensionModule();
+    this->InitAcquisitionContextModule();
+    this->InitEnhancedMRImageModule();
     this->InitSOPCommonModule();
+
 }
 
 
 /*!
  *
  */
-void svkMRIIOD::InitGeneralImageModule()
-{
-    this->dcmHeader->InsertEmptyElement( "InstanceNumber" );
-}
-
-
-/*!
- *
- */
-void svkMRIIOD::InitImagePlaneModule()
+void svkEnhancedMRIIOD::InitEnhancedMRImageModule()
 {
 }
 
@@ -124,31 +127,31 @@ void svkMRIIOD::InitImagePlaneModule()
 /*!
  *
  */
-void svkMRIIOD::InitMRImageModule()
+void svkEnhancedMRIIOD::InitMRImageFrameTypeMacro()
 {
-
-    this->dcmHeader->SetValue(
-        "ImageType",
-        string("DERIVED\\SECONDARY")
+    this->dcmHeader->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRImageFrameTypeSequence"
     );
 
-    this->dcmHeader->InsertEmptyElement( "ScanningSequence" );
-    this->dcmHeader->InsertEmptyElement( "SequenceVariant" );
-    this->dcmHeader->InsertEmptyElement( "ScanOptions" );
-    this->dcmHeader->InsertEmptyElement( "MRAcquisitionType" );
-    this->dcmHeader->InsertEmptyElement( "RepetitionTime" );
-    this->dcmHeader->InsertEmptyElement( "EchoTime" );
-    this->dcmHeader->InsertEmptyElement( "EchoTrainLength" );
-
+    this->dcmHeader->AddSequenceItemElement(
+        "MRImageFrameTypeSequence",
+        0,
+        "FrameType",
+        string("ORIGINAL\\PRIMARY\\VOLUME\\NONE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 }
 
 
 /*!
  *  Initializes the SOP Class UID
  */
-void svkMRIIOD::InitSOPCommonModule()
+void svkEnhancedMRIIOD::InitSOPCommonModule()
 {
-    this->dcmHeader->SetSOPClassUID( svkDcmHeader::MR_IMAGE);
+    this->dcmHeader->SetSOPClassUID( svkDcmHeader::ENHANCED_MR_IMAGE );
     this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
 }
 

@@ -47,7 +47,7 @@
 
 #include <svkImageReader2.h>
 #include <svkGEImageHeader.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 
 namespace svk {
@@ -56,7 +56,7 @@ namespace svk {
 /*! 
  *  This is a SIVIC reader for GE Genesis *.MR Signa 5X files.  
  *  This class parses a GE MR header to initialize an svkMriImageData object 
- *  with an svkDcmHeader corresponding to a DICOM MRI Storage  
+ *  with an svkDcmHeader corresponding to a DICOM Enhanced MRI Storage  
  *  SOP class (SOP Class UID: 1.2.840.10008.5.1.4.1.1.4).
  *
  *  The ITK itkGE5ImageIO.cxx and VTK vtkGESignaReader.cxx files were used
@@ -114,34 +114,34 @@ class svkGESigna5XReader : public svkImageReader2
         
         
         // Methods for initializing the DICOM header.
-        void            InitDcmHeader();
-        void            InitEnhancedMRImageModule();
-        void            InitPatientModule();
-        void            InitGeneralStudyModule();
-        void            InitGeneralSeriesModule();
-        void            InitGeneralEquipmentModule();
-        void            InitEnhancedGeneralEquipmentModule();
-        void            InitMultiFrameFunctionalGroupsModule(); 
-        void            InitMRImageAndSpectroscopyInstanceMacro();
-        void            InitMRPulseSequenceModule();
-        void            InitSharedFunctionalGroupMacros(); 
-        void            InitPixelMeasuresMacro();
-        void            InitPlanePositionMacro(); 
-        void            InitPlaneOrientationMacro(); 
-        void            InitPixelValueTransformationMacro(); 
-        void            InitPerFrameFunctionalGroupMacros(); 
-        void            InitFrameContentMacro();
-        void            InitMRImageFrameTypeMacro(); 
-        void            InitMRTimingAndRelatedParametersMacro();
-        void            InitMRFOVGeometryMacro();
-        void            InitMREchoMacro();
-        void            InitMRModifierMacro();
-        void            InitMRImagingModifierMacro();
-        void            InitMRReceiveCoilMacro();
-        void            InitMRTransmitCoilMacro();
-        void            InitMRAveragesMacro();
-        GESignaHeader*  imageHeader;
-        svkMRIIOD*      iod;
+        void                InitDcmHeader();
+        void                InitEnhancedMRImageModule();
+        void                InitPatientModule();
+        void                InitGeneralStudyModule();
+        void                InitGeneralSeriesModule();
+        void                InitGeneralEquipmentModule();
+        void                InitEnhancedGeneralEquipmentModule();
+        void                InitMultiFrameFunctionalGroupsModule(); 
+        void                InitMRImageAndSpectroscopyInstanceMacro();
+        void                InitMRPulseSequenceModule();
+        void                InitSharedFunctionalGroupMacros(); 
+        void                InitPixelMeasuresMacro();
+        void                InitPlanePositionMacro(); 
+        void                InitPlaneOrientationMacro(); 
+        void                InitPixelValueTransformationMacro(); 
+        void                InitPerFrameFunctionalGroupMacros(); 
+        void                InitFrameContentMacro();
+        void                InitMRImageFrameTypeMacro(); 
+        void                InitMRTimingAndRelatedParametersMacro();
+        void                InitMRFOVGeometryMacro();
+        void                InitMREchoMacro();
+        void                InitMRModifierMacro();
+        void                InitMRImagingModifierMacro();
+        void                InitMRReceiveCoilMacro();
+        void                InitMRTransmitCoilMacro();
+        void                InitMRAveragesMacro();
+        GESignaHeader*      imageHeader;
+        svkEnhancedMRIIOD*  iod;
 
          
 

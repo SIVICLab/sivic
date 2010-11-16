@@ -1208,10 +1208,9 @@ void svkGEPFileMapper::InitMRSpectroscopyFOVGeometryMacro()
  */
 void svkGEPFileMapper::InitMREchoMacro()
 {
-    this->dcmHeader->InitMREchoMacro(
+    this->dcmHeader->InitMREchoMacro( 
         this->GetHeaderValueAsFloat("rhi.te")/1000 
-    );
-
+    ); 
 }
 
 
@@ -1221,7 +1220,7 @@ void svkGEPFileMapper::InitMREchoMacro()
 void svkGEPFileMapper::InitMRModifierMacro()
 {
     this->dcmHeader->InitMRModifierMacro(
-        this->GetHeaderValueAsFloat("rhi.ti")
+        this->GetHeaderValueAsFloat( "rhi.ti" )
     );
 }
 

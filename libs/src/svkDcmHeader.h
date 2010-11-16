@@ -535,6 +535,13 @@ class svkDcmHeader: public vtkObject
                                 vtkstd::string patientPosition
                             );
         void                InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType);
+        void                InitImagePlaneModule( 
+                                vtkstd::string imagePositionPatient, 
+                                vtkstd::string pixelSpacing = "", 
+                                vtkstd::string imageOrientationPatient = "", 
+                                vtkstd::string sliceThickness = ""
+                            );
+        void                InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime); 
         void                InitPlaneOrientationMacro( vtkstd::string orientationString );
         void                InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
         void                InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
@@ -565,6 +572,7 @@ class svkDcmHeader: public vtkObject
         void                InitMRAveragesMacro(int numAverages = 1);
 
         int                 ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
+        int                 ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
 
 
         //==================================================

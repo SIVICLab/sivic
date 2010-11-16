@@ -35,57 +35,54 @@
  *  $Date$
  *
  *  Authors:
- *      Jason C. Crane, Ph.D.
- *      Beck Olson
+ *      Don C. Bigler, Ph.D.
  */
 
 
-#ifndef SVK_MRI_IOD_H
-#define SVK_MRI_IOD_H
+#ifndef SVK_DICOM_IMAGE_WRITER_H
+#define SVK_DICOM_IMAGE_WRITER_H
 
 
-#include <vtkObjectFactory.h>
-#include <svkIOD.h>
+#include <vtkInformation.h>
+
+#include <svkImageWriter.h>
+#include <svkImageData.h>
 
 
 namespace svk {
 
 
-using namespace std;
-
-
 /*! 
- *  Base class of static methods for default MRIIOD initialization 
- *  using svkDcmHeader adapter interface. 
+ *  Base Class for DICOM MRI writers. 
  */
-class svkMRIIOD : public svkIOD 
+class svkDICOMImageWriter : public svkImageWriter
 {
 
     public:
 
-        static svkMRIIOD* New();
-        vtkTypeRevisionMacro( svkMRIIOD, svkIOD);
+        vtkTypeRevisionMacro( svkDICOMImageWriter, svkImageWriter);
 
         //  Methods:
-        virtual void  InitDcmHeader();
-
+        void            SetInput( vtkDataObject* input );
+        void            SetInput(int index, vtkDataObject* input);
+        vtkDataObject*  GetInput(int port);
+        svkImageData*   GetImageDataInput(int port);
 
     protected:
 
-        svkMRIIOD();
-        ~svkMRIIOD();
+        svkDICOMImageWriter();
+        ~svkDICOMImageWriter();
 
-        //  Methods:
-        void            InitGeneralImageModule();    
-        void            InitImagePlaneModule();    
-        void            InitMRImageModule();    
-        virtual void    InitSOPCommonModule(); 
-
+        virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        void            InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber = -1); 
+        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept ); 
+        void            GetPixelRange(double& min, double& max); 
+        virtual int     GetDataLength() = 0;
+        
 };
 
 
-}   //svk
+}   //svk 
 
-
-#endif //SVK_MRI_IOD_H
+#endif //SVK_DICOM_IMAGE_WRITER_H
 

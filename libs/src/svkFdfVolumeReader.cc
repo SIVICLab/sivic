@@ -47,7 +47,7 @@
 #include <vtkSortFileNames.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 #include <sys/stat.h>
 
@@ -337,7 +337,7 @@ void svkFdfVolumeReader::InitDcmHeader()
 
     vtkDebugMacro( << this->GetClassName() << "::InitDcmHeader()" );
 
-    svkIOD* iod = svkMRIIOD::New();
+    svkIOD* iod = svkEnhancedMRIIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->InitDcmHeader();
     iod->Delete();

@@ -51,7 +51,7 @@
 #include <vtkInformation.h>
 #include <vtkMath.h>
 #include <svkIOD.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 #include <vtkstd/vector>
 #include <vtkstd/utility>
 #include <vtkstd/algorithm>
@@ -392,7 +392,7 @@ void svkDcmMriVolumeReader::InitDcmHeader()
     int columns = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); // X
      
     //  Now override elements with Multi-Frame sequences and default details:
-    svkIOD* iod = svkMRIIOD::New();
+    svkIOD* iod = svkEnhancedMRIIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->SetReplaceOldElements(false); 
     iod->InitDcmHeader();

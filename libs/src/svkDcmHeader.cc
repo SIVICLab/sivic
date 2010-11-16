@@ -979,9 +979,48 @@ void svkDcmHeader::InitPlaneOrientationMacro( vtkstd::string orientationString )
 
 
 /*!
+ *  Initialize the MR Image Module. 
+ */
+void svkDcmHeader::InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime)
+{
+    if ( !repetitionTime.empty() ) {
+        this->SetValue( "RepetitionTime", repetitionTime);
+    }
+
+    if ( !echoTime.empty() ) {
+        this->SetValue( "EchoTime", echoTime);
+    }
+}
+
+
+/*!
+ *  Initialize the ImagePlane Module. 
+ *  For single frame objects this may be called repeatedly changing only the value of the current instance ImagePositionPatient value. 
+ */
+void svkDcmHeader::InitImagePlaneModule( vtkstd::string imagePositionPatient, vtkstd::string pixelSpacing, vtkstd::string imageOrientationPatient, vtkstd::string sliceThickness)
+{
+    if ( !pixelSpacing.empty() ) {
+        this->SetValue( "PixelSpacing", pixelSpacing);
+    }
+
+    if ( !imageOrientationPatient.empty() ) {
+        this->SetValue( "ImageOrientationPatient", imageOrientationPatient);
+    }
+
+    if ( !imagePositionPatient.empty() ) {
+        this->SetValue( "ImagePositionPatient", imagePositionPatient);
+    }
+
+    if ( !sliceThickness.empty() ) {
+        this->SetValue( "SliceThickness", sliceThickness);
+    }
+}
+
+
+/*!
  *  Initialize the Pixel Measures Macro. 
  */
-void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness )
+void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::string sliceThickness )
 {
 
     this->AddSequenceItemElement(
@@ -995,7 +1034,7 @@ void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::st
         "PixelMeasuresSequence",
         0,
         "PixelSpacing",
-        pixelSizes,
+        pixelSpacing,
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -1379,25 +1418,14 @@ void svkDcmHeader::InitMRTimingAndRelatedParametersMacro(float tr, float flipAng
         "MRTimingAndRelatedParametersSequence"
     );
 
-    if ( tr == -1 ) {
-        this->AddSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "RepetitionTime",
-            "UNKNOWN", 
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-    } else {
-        this->AddSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "RepetitionTime",
-            tr,
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-    }
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RepetitionTime",
+        tr,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 
     if ( flipAngle == -999 ) {
         this->AddSequenceItemElement(
@@ -1594,6 +1622,102 @@ void svkDcmHeader::InitMRAveragesMacro(int numAverages)
 
 
 /*!
+ *  Initializes an MR Image Storage header from an Enhanced  MRI Storage header. 
+ */
+int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dataType )
+{
+
+    //
+    //  Patient IE requires modification
+    //
+    mri->InitPatientModule(
+        this->GetStringValue( "PatientsName" ),
+        this->GetStringValue( "PatientID" ),
+        this->GetStringValue( "PatientsBirthDate" ),
+        this->GetStringValue( "PatientsSex" )
+    );
+
+
+    //
+    //  General Study IE requires modification
+    //
+    mri->InitGeneralStudyModule(
+        this->GetStringValue( "StudyDate" ),
+        this->GetStringValue( "StudyTime" ),
+        this->GetStringValue( "ReferringPhysiciansName" ),
+        this->GetStringValue( "StudyID" ),
+        this->GetStringValue( "AccessionNumber" ), 
+        this->GetStringValue( "StudyInstanceUID" )
+    );
+
+    //
+    //  General Series Module
+    //
+    mri->InitGeneralSeriesModule(
+        "77",
+        this->GetStringValue( "SeriesDescription" ),
+        this->GetStringValue( "PatientPosition" )
+    );
+
+    //  Note that the initial copy doesn't init the position value. 
+    //  Each file will need to do this for the appropriate frame
+    mri->InitImagePlaneModule( 
+        "", 
+        this->GetStringSequenceItemElement (
+            "PixelMeasuresSequence",
+            0,
+            "PixelSpacing",
+            "SharedFunctionalGroupsSequence"
+        ), 
+        this->GetStringSequenceItemElement(
+            "PlaneOrientationSequence",
+            0,
+            "ImageOrientationPatient",
+            "SharedFunctionalGroupsSequence"
+        ), 
+        this->GetStringSequenceItemElement (
+            "PixelMeasuresSequence",
+            0,
+            "SliceThickness",
+            "SharedFunctionalGroupsSequence"
+        )
+    );
+
+    //
+    //  Image Pixel Module
+    //  Set DCM data type based on vtkImageData Scalar type:
+    //
+    svkDcmHeader::DcmPixelDataFormat dcmDataType;
+    dcmDataType = static_cast< svkDcmHeader::DcmPixelDataFormat > (this->GetPixelDataType( dataType ) ); 
+
+    mri->InitImagePixelModule(
+        this->GetIntValue( "Rows"),
+        this->GetIntValue( "Columns"),
+        dcmDataType
+    );
+
+    //  Init MR Image Module
+    mri->InitMRImageModule( 
+        this->GetStringSequenceItemElement(
+            "MRTimingAndRelatedParametersSequence",
+            0,
+            "RepetitionTime",
+            "SharedFunctionalGroupsSequence"
+        ), 
+        this->GetStringSequenceItemElement(
+            "MREchoSequence",
+            0,
+            "EffectiveEchoTime",
+            "SharedFunctionalGroupsSequence"
+        )
+    ); 
+
+
+    return 0; 
+}
+
+
+/*!
  *  Initializes an Enhanced MR Image header from an MR Spectroscopy header. 
  *  This is a utility for extracting metabolite maps from MRS data, for example. 
  *  Takes an initialized svkDcmHeader from an svkMriImageData object. 
@@ -1700,6 +1824,8 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
                                     );
 
     mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness );
+
+    return 0; 
 }
 
 

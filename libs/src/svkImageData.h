@@ -247,8 +247,8 @@ class svkImageData: public vtkImageData
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
 
-    // REQUIRED?
-    virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);
+        // REQUIRED?
+        virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);
 
         
     protected:
@@ -267,11 +267,12 @@ class svkImageData: public vtkImageData
         bool                            WasModified();
         virtual void                    UpdateSvkParams();
         virtual void                    UpdateRange( int component );
-        int     FindMatchingSlice( double* posLPS, 
-                                   svkDcmHeader::Orientation sliceOrientation, 
-                                   double* origin, 
-                                   double* spacing 
-                                 ); 
+        int                             FindMatchingSlice( 
+                                            double* posLPS, 
+                                            svkDcmHeader::Orientation sliceOrientation, 
+                                            double* origin, 
+                                            double* spacing 
+                                        ); 
 
     
     private:
@@ -280,7 +281,6 @@ class svkImageData: public vtkImageData
         unsigned long      lastUpdateTime;
 
         void    CastDataArrays( int vtkDataArrayType, vtkDataSetAttributes* fieldData );
-
 
 };
 

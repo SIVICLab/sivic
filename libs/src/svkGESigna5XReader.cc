@@ -46,7 +46,7 @@
 #include <vtkSortFileNames.h>
 #include <vtkInformation.h>
 #include <svkIOD.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 #include <svkMriImageData.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -1673,7 +1673,7 @@ void svkGESigna5XReader::InitDcmHeader()
     }
 
     //  Now override elements with Multi-Frame sequences and default details:
-    this->iod = svkMRIIOD::New();
+    this->iod = svkEnhancedMRIIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
     iod->SetReplaceOldElements(false); 
     iod->InitDcmHeader();
@@ -2477,7 +2477,6 @@ void svkGESigna5XReader::InitMRTimingAndRelatedParametersMacro()
         useetl = 1;
     }
 
-
     this->GetOutput()->GetDcmHeader()->InitMRTimingAndRelatedParametersMacro(
         (float)((double)this->imageHeader->MR_Pulse_Repetition_Time / 1000.0), 
         (float)this->imageHeader->MR_Flip_Angle, 
@@ -2650,7 +2649,7 @@ void svkGESigna5XReader::InitMREchoMacro()
 
     this->GetOutput()->GetDcmHeader()->InitMREchoMacro(
         (float)((double)this->imageHeader->MR_Pulse_Echo_Time/1000.0) 
-    );
+    ); 
 }
 
 /*!
@@ -2663,9 +2662,9 @@ void svkGESigna5XReader::InitMRModifierMacro()
         return;
     }
 
-    this->GetOutput()->GetDcmHeader()->InitMRModifierMacro(
+    this->GetOutput()->GetDcmHeader()->InitMRModifierMacro( 
         (float)((double)this->imageHeader->MR_Pulse_Inversion_Time/1000.0)
-    );
+    ); 
 
     vtkstd::string str = "NONE";
     if (this->imageHeader->MR_Imaging_Options & (1<<3)) {       // FC - Flow Compensated

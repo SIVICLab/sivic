@@ -96,7 +96,9 @@ ADD_LIBRARY(
     svkIdfVolumeWriter.cc
     svkDdfVolumeWriter.cc
     svkDICOMSCWriter.cc
+    svkDICOMImageWriter.cc
     svkDICOMMRSWriter.cc
+    svkDICOMEnhancedMRIWriter.cc
     svkDICOMMRIWriter.cc
     svkImageWriterFactory.cc
     svkMultiWindowToImageFilter.cc
@@ -163,6 +165,7 @@ ADD_LIBRARY(
     svkSCIOD.cc
     svkMRSIOD.cc
     svkMRIIOD.cc
+    svkEnhancedMRIIOD.cc
     svkOpenGLOrientedImageActor.cc
     svkOrientedImageActorFactory.cc
     svkLookupTable.cc

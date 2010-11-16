@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkExtractMRIFromMRS.h $
- *  $Rev: 76 $
- *  $Author: jccrane $
- *  $Date: 2010-01-26 11:05:15 -0800 (Tue, 26 Jan 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -53,7 +53,7 @@
 #include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 
 namespace svk {
@@ -107,7 +107,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         vtkstd::string                   newSeriesDescription; 
         svkDcmHeader::DcmPixelDataFormat dataType;
         bool                             zeroCopy;    
-        svkMRIIOD*                       iod;
+        svkEnhancedMRIIOD*               iod;
         float                            peakCenterPPM;
         float                            peakWidthPPM;
 

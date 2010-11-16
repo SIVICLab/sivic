@@ -570,11 +570,11 @@ double svkDcmtkAdapter::GetDoubleValue(const char* name)
 
 
 /*!
- * Gets the value of a given tag as a string.
+ *  Gets the value of a given tag as a string.
  *
- * \param name the name of the tag whose value you wish to get
+ *  \param name the name of the tag whose value you wish to get
  *
- * \return the string value of the tag
+ *  \return the string value of the tag
  */
 string svkDcmtkAdapter::GetStringValue(const char* name)
 {
@@ -589,12 +589,12 @@ string svkDcmtkAdapter::GetStringValue(const char* name)
 
 
 /*!
- * Gets the value of a given tag, for a given position as a string.
+ *  Gets the value of a given tag, for a given position as a string.
  *
- * \param name the name of the tag whose value you wish to get
- * \param pos the position of the element in the string whose value you wish to get
+ *  \param name the name of the tag whose value you wish to get
+ *  \param pos the position of the element in the string whose value you wish to get
  *
- * \return the string value of the tag, for the given position
+ *  \return the string value of the tag, for the given position
  */
 string svkDcmtkAdapter::GetStringValue(const char* name, int pos)
 {

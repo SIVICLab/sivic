@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkExtractMRIFromMRS.cc $
- *  $Rev: 76 $
- *  $Author: jccrane $
- *  $Date: 2010-01-26 11:05:15 -0800 (Tue, 26 Jan 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkExtractMRIFromMRS, "$Rev: 76 $");
+vtkCxxRevisionMacro(svkExtractMRIFromMRS, "$Rev$");
 vtkStandardNewMacro(svkExtractMRIFromMRS);
 
 

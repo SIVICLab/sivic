@@ -35,57 +35,47 @@
  *  $Date$
  *
  *  Authors:
- *      Jason C. Crane, Ph.D.
- *      Beck Olson
+ *      Don C. Bigler, Ph.D.
  */
 
 
-#ifndef SVK_MRI_IOD_H
-#define SVK_MRI_IOD_H
+#ifndef SVK_DICOM_ENHANCED_MRI_WRITER_H
+#define SVK_DICOM_ENHANCED_MRI_WRITER_H
 
 
-#include <vtkObjectFactory.h>
-#include <svkIOD.h>
+#include <vtkInformation.h>
+
+#include <svkDICOMImageWriter.h>
 
 
 namespace svk {
 
 
-using namespace std;
-
-
 /*! 
- *  Base class of static methods for default MRIIOD initialization 
- *  using svkDcmHeader adapter interface. 
+ *  Concrete writer instance for DICOM MRI SOP class.  
  */
-class svkMRIIOD : public svkIOD 
+class svkDICOMEnhancedMRIWriter : public svkDICOMImageWriter
 {
 
     public:
 
-        static svkMRIIOD* New();
-        vtkTypeRevisionMacro( svkMRIIOD, svkIOD);
+        static svkDICOMEnhancedMRIWriter* New();
+        vtkTypeRevisionMacro( svkDICOMEnhancedMRIWriter, svkDICOMImageWriter);
 
         //  Methods:
-        virtual void  InitDcmHeader();
+        virtual void    Write();
 
 
     protected:
 
-        svkMRIIOD();
-        ~svkMRIIOD();
+        svkDICOMEnhancedMRIWriter();
+        ~svkDICOMEnhancedMRIWriter();
 
-        //  Methods:
-        void            InitGeneralImageModule();    
-        void            InitImagePlaneModule();    
-        void            InitMRImageModule();    
-        virtual void    InitSOPCommonModule(); 
-
+        virtual int GetDataLength(); 
 };
 
 
-}   //svk
+}   //svk 
 
-
-#endif //SVK_MRI_IOD_H
+#endif //SVK_DICOM_ENHANCED_MRI_WRITER_H
 

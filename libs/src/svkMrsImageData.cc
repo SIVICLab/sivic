@@ -41,7 +41,7 @@
 
 
 #include <svkMrsImageData.h>
-#include <svkMRIIOD.h>
+#include <svkEnhancedMRIIOD.h>
 
 
 using namespace svk;
@@ -770,7 +770,7 @@ int component, vtkstd::string seriesDescription )
 {
     if( image != NULL ) {
 
-        svkMRIIOD* iod = svkMRIIOD::New();
+        svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
         iod->SetDcmHeader( image->GetDcmHeader() );
         iod->InitDcmHeader();
         iod->Delete(); 
