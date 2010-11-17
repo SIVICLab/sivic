@@ -1442,25 +1442,14 @@ void svkDcmHeader::InitMRTimingAndRelatedParametersMacro(float tr, float flipAng
         "MRTimingAndRelatedParametersSequence"
     );
 
-    if ( tr == -1 ) {
-        this->AddSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "RepetitionTime",
-            "UNKNOWN", 
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-   } else {
-        this->AddSequenceItemElement(
-            "MRTimingAndRelatedParametersSequence",
-            0,
-            "RepetitionTime",
-            tr,
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-    }
+    this->AddSequenceItemElement(
+        "MRTimingAndRelatedParametersSequence",
+        0,
+        "RepetitionTime",
+        tr,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 
     if ( flipAngle == -999 ) {
         this->AddSequenceItemElement(

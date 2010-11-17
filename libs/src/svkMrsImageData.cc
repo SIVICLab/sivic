@@ -813,6 +813,7 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         image->SetUpdateExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
         image->SetWholeExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
         image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
+
         image->SetScalarTypeToDouble( );
         image->AllocateScalars();
 
@@ -850,6 +851,9 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         }
         image->GetPointData()->SetScalars( pixelData );
         image->SetNumberOfScalarComponents( numComponents );
+        image->Modified();
+        image->Update();    
+
         pixelData->Delete();
     }
 
