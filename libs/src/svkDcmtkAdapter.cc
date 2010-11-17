@@ -1159,18 +1159,26 @@ void svkDcmtkAdapter::CopyDcmHeader(svkDcmHeader* headerCopy)
 
 
 /*!
- *  Test for existence of a particular element. 
+ *  Test for existence of a particular element. If patentSeqName is set to "top" then only 
+ *  check top level attributes (i.e. searchIntoSub = false). 
  */
 bool svkDcmtkAdapter::ElementExists(const char* elementName, const char* parentSeqName)
 {
     DcmItem* dataset = this->dcmFile->getDataset();
-    bool elementExists = 0;
+    bool elementExists = false;
     DcmElement* tmpElement;
 
     if( parentSeqName == NULL ) {
         if ( dataset->findAndGetElement( GetDcmTagKey(elementName), tmpElement, OFTrue) == EC_Normal ) {
 
-            elementExists = 1;
+            elementExists = true;
+
+        }
+    } else if( parentSeqName == "top") {
+
+        if ( dataset->findAndGetElement( GetDcmTagKey(elementName), tmpElement, OFFalse) == EC_Normal ) {
+
+            elementExists = true;
 
         }
     } else {
@@ -1181,7 +1189,7 @@ bool svkDcmtkAdapter::ElementExists(const char* elementName, const char* parentS
         if( dataset->findAndGetSequence( GetDcmTagKey(parentSeqName), sequence, OFTrue ) == EC_Normal ) {
             DcmTagKey elementTag(GetDcmTagKey(elementName));
             if( sequence->search( elementTag, *searchStack, ESM_fromHere, OFTrue ) == EC_Normal ) {
-                elementExists = 1;
+                elementExists = true;
             }
 
         }
