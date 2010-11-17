@@ -595,19 +595,70 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
 int sivicApp::Start( int argc, char* argv[] )
 {
 
-    //  Check each argv and set the load file type 
+    //  Preparse the MR Image objects to try and detect which is an overlay:
+    //  Assume that the reference image is higher res than the overlay
+    int refImageIndex = -1; 
+    int overlayImageIndex = -1; 
+    int refRows = 0; 
+    int refColumns = 0; 
+    int overlayRows = 10000000; 
+    int overlayColumns = 10000000; 
     for (int i=1 ; i < argc; i++) {
 
         svkImageData* tmp = svkMriImageData::New();
         tmp->GetDcmHeader()->ReadDcmFile( argv[i] );
-        //tmp->GetDcmHeader()->PrintDcmHeader(); 
+        string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
+        //  Check MRImage Storage and Enhanced MRImage Storage
+        if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
+            int rows = tmp->GetDcmHeader()->GetIntValue( "Rows" ) ;
+            int columns = tmp->GetDcmHeader()->GetIntValue( "Columns" ) ;
+            cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
+            if ( rows > refRows && columns > refColumns) {
+                refRows = rows; 
+                refColumns = columns; 
+                refImageIndex = i; 
+            } 
+            if ( rows < overlayRows && columns < overlayColumns) {
+                overlayRows = rows; 
+                overlayColumns = columns; 
+                overlayImageIndex = i; 
+            }
+        }
+        tmp->Delete();
+    }
+
+    vtkstd::vector< int >   loadOrder; 
+    for (int i = 1; i < argc; i++) {
+        if ( i != overlayImageIndex ) {
+            loadOrder.push_back(i);
+        }
+    }
+    //  Load overlay last:
+    loadOrder.push_back(overlayImageIndex);
+
+    for (int i=1 ; i < argc; i++) {
+        cout << "loading order: " << loadOrder[i-1] << endl;
+    }
+
+    //  Check each argv and set the load file type 
+    for (int i=1 ; i < argc; i++) {
+
+        cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
+        svkImageData* tmp = svkMriImageData::New();
+        tmp->GetDcmHeader()->ReadDcmFile( argv[ loadOrder[i-1] ] );
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
         tmp->Delete();
 
-        if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
-            this->GetView()->OpenFile("command_line_image", argv[i]); 
+        if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
+
+            if ( loadOrder[i-1] == refImageIndex ) {
+                this->GetView()->OpenFile("command_line_image", argv[ loadOrder[i-1] ]); 
+            } else {
+                this->GetView()->OpenFile("command_line_overlay", argv[ loadOrder[i-1] ]); 
+            }
+
         } else if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {
-            this->GetView()->OpenFile("command_line_spectra", argv[i]); 
+            this->GetView()->OpenFile("command_line_spectra", argv[ loadOrder[i-1] ]); 
         }
     }
     

@@ -1031,7 +1031,6 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     //  specified file: 
     if ( openTypeString.find("command_line") == string::npos ) {
 
-
         dlg->SetApplication(this->app);
         dlg->Create();
         if( startPath != NULL && strcmp( startPath, "NULL")!=0) {
@@ -1056,7 +1055,6 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
                 if( stat( lastPathString.c_str(),&st) == 0) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
-    
             }
         }
     
