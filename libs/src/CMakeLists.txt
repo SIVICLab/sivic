@@ -117,6 +117,7 @@ ADD_LIBRARY(
     svkDcmVolumeReader.cc
     svkDcmMrsVolumeReader.cc
     svkDcmMriVolumeReader.cc
+    svkGEPostageStampReader.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc

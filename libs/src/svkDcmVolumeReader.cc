@@ -74,6 +74,27 @@ svkDcmVolumeReader::~svkDcmVolumeReader()
 }
 
 
+/*!
+ *
+ */
+bool svkDcmVolumeReader::ContainsProprietaryContent( svkImageData* data )
+{
+
+    // Check if it contains GE spectroscopy content:
+    bool containsProprietaryContent = false;
+
+    if ( data->GetDcmHeader()->ElementExists("Manufacturer") == true && data->GetDcmHeader()->ElementExists("ImagedNucleus") == true ) {
+        vtkstd::string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
+        vtkstd::string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
+
+        if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
+            containsProprietaryContent = true;
+        }
+    }
+
+    return containsProprietaryContent;
+}
+
 
 /*!
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData

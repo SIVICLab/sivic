@@ -58,6 +58,7 @@
 #include <svkGEPFileReader.h>
 #include <svkGESigna5XReader.h>
 #include <svkGESignaLX2Reader.h>
+#include <svkGEPostageStampReader.h>
 
 
 namespace svk {
@@ -91,17 +92,18 @@ class svkImageReaderFactory : public vtkImageReader2Factory
     private:
 
         //  Members:
-        svkDcmMriVolumeReader* dcmMriVolReader;
-        svkDcmMrsVolumeReader* dcmMrsVolReader;
-        svkIdfVolumeReader*    idfVolReader;
-        svkDdfVolumeReader*    ddfVolReader;
-        svkFdfVolumeReader*    fdfVolReader;
-        svkVarianFidReader*    fidVolReader;
-        svkSdbmVolumeReader*   sdbmVolReader;
-        svkSiemensRdaReader*   rdaVolReader;
-        svkGEPFileReader*      gePFileReader;
-        svkGESigna5XReader*    geSigna5XReader;
-        svkGESignaLX2Reader*   geSignaLX2Reader;
+        svkDcmMriVolumeReader*      dcmMriVolReader;
+        svkDcmMrsVolumeReader*      dcmMrsVolReader;
+        svkIdfVolumeReader*         idfVolReader;
+        svkDdfVolumeReader*         ddfVolReader;
+        svkFdfVolumeReader*         fdfVolReader;
+        svkVarianFidReader*         fidVolReader;
+        svkSdbmVolumeReader*        sdbmVolReader;
+        svkSiemensRdaReader*        rdaVolReader;
+        svkGEPFileReader*           gePFileReader;
+        svkGESigna5XReader*         geSigna5XReader;
+        svkGESignaLX2Reader*        geSignaLX2Reader;
+        svkGEPostageStampReader*    gePostageStampReader;
 
 };
 

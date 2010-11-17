@@ -101,7 +101,6 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         void            InitPerFrameFunctionalGroupMacros(); 
         void            InitFrameContentMacro(); 
         void            InitMRReceiveCoilMacro();
-        bool            ContainsProprietaryContent( svkImageData* data ); 
 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
 

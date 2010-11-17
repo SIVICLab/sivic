@@ -61,17 +61,18 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->DebugOn();
 #endif
 
-    this->dcmMriVolReader  = svkDcmMriVolumeReader::New();
-    this->dcmMrsVolReader  = svkDcmMrsVolumeReader::New();
-    this->idfVolReader     = svkIdfVolumeReader::New();
-    this->ddfVolReader     = svkDdfVolumeReader::New();
-    this->fdfVolReader     = svkFdfVolumeReader::New();
-    this->fidVolReader     = svkVarianFidReader::New();
-    this->sdbmVolReader    = svkSdbmVolumeReader::New();
-    this->rdaVolReader     = svkSiemensRdaReader::New();
-    this->gePFileReader    = svkGEPFileReader::New();
-    this->geSigna5XReader  = svkGESigna5XReader::New();
-    this->geSignaLX2Reader = svkGESignaLX2Reader::New();
+    this->dcmMriVolReader       = svkDcmMriVolumeReader::New();
+    this->dcmMrsVolReader       = svkDcmMrsVolumeReader::New();
+    this->idfVolReader          = svkIdfVolumeReader::New();
+    this->ddfVolReader          = svkDdfVolumeReader::New();
+    this->fdfVolReader          = svkFdfVolumeReader::New();
+    this->fidVolReader          = svkVarianFidReader::New();
+    this->sdbmVolReader         = svkSdbmVolumeReader::New();
+    this->rdaVolReader          = svkSiemensRdaReader::New();
+    this->gePFileReader         = svkGEPFileReader::New();
+    this->geSigna5XReader       = svkGESigna5XReader::New();
+    this->geSignaLX2Reader      = svkGESignaLX2Reader::New();
+    this->gePostageStampReader  = svkGEPostageStampReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -84,6 +85,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->gePFileReader );
     vtkImageReader2Factory::RegisterReader( this->geSigna5XReader );
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
+    vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
 }
 
 
@@ -148,6 +150,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->geSignaLX2Reader != NULL) {
         this->geSignaLX2Reader->Delete();
         this->geSignaLX2Reader = NULL;
+    }
+
+    if (this->gePostageStampReader != NULL) {
+        this->gePostageStampReader->Delete();
+        this->gePostageStampReader = NULL;
     }
 
 }

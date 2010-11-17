@@ -40,11 +40,10 @@
  */
 
 
-#ifndef SVK_DCM_VOLUME_READER_H
-#define SVK_DCM_VOLUME_READER_H
+#ifndef SVK_GE_POSTAGE_STAMP_READER_H
+#define SVK_GE_POSTAGE_STAMP_READER_H
 
-
-#include <svkImageReader2.h>
+#include <svkDcmVolumeReader.h>
 
 
 namespace svk {
@@ -54,32 +53,43 @@ namespace svk {
  *  
  */
 
-class svkDcmVolumeReader : public svkImageReader2 
+class svkGEPostageStampReader : public svkDcmVolumeReader 
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkDcmVolumeReader, svkImageReader2);
+        static svkGEPostageStampReader* New();
+        vtkTypeRevisionMacro( svkGEPostageStampReader, svkDcmVolumeReader );
 
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "GE Postage Stamp File";
+        }
+
+
+        //  Methods:
+        virtual int CanReadFile(const char* fname);
 
 
     protected:
 
-        svkDcmVolumeReader();
-        ~svkDcmVolumeReader();
+        svkGEPostageStampReader();
+        ~svkGEPostageStampReader();
 
-        virtual void                            ExecuteInformation();
-        virtual void                            ExecuteData(vtkDataObject* output); 
-        bool                                    ContainsProprietaryContent( svkImageData* data );
-
-        int                                     numFrames; 
-        svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
+        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
+        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
 
 
-    private: 
+    private:
 
-        virtual void                             InitDcmHeader();
-        virtual void                             LoadData(svkImageData* data) = 0; 
+        virtual void    LoadData(svkImageData* data); 
+        void            SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, float* specData); 
+
+        int             numFreqPts;
+        int             numTimePts;
+
 
 };
 
@@ -87,5 +97,5 @@ class svkDcmVolumeReader : public svkImageReader2
 }   //svk
 
 
-#endif //SVK_DCM_VOLUME_READER_H
+#endif //SVK_GE_POSTAGE_STAMP_READER_H
 
