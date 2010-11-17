@@ -232,20 +232,43 @@ void svkDcmMriVolumeReader::InitFileNames()
         //
         if (  svkDcmHeader::IsFileDICOM( fileNames->GetValue(i) ) ) {
 
+            if (this->GetDebug()) {
+                cout << "FN: " << fileNames->GetValue(i) << endl;
+            }
+
             vtkstd::vector< vtkstd::string > dcmFileAttributes;  
 
             tmp = svkMriImageData::New(); 
             tmp->GetDcmHeader()->ReadDcmFile( fileNames->GetValue(i) );
             dcmFileAttributes.push_back( fileNames->GetValue(i) ); 
-            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "SeriesInstanceUID" ) );
-            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImageOrientationPatient" ) );
-            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImagePositionPatient" ) );
+
+            if( tmp->GetDcmHeader()->ElementExists( "SeriesInstanceUID", "top" ) ) {
+                dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "SeriesInstanceUID" ) );
+            } else {
+                dcmFileAttributes.push_back( "" ); 
+            }
+            if( tmp->GetDcmHeader()->ElementExists( "ImageOrientationPatient", "top" ) ) {
+                dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImageOrientationPatient" ) );
+            } else {
+                dcmFileAttributes.push_back( "" ); 
+            }
+            if( tmp->GetDcmHeader()->ElementExists( "ImagePositionPatient", "top" ) ) {
+                dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImagePositionPatient" ) );
+            } else {
+                dcmFileAttributes.push_back( "" ); 
+            }
 
             double position[3];   
-            for (int i = 0; i < 3; i++ ) {
-                vtkstd::string pos( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
-                std::istringstream positionInString(pos);
-                positionInString >> position[i];
+            if( tmp->GetDcmHeader()->ElementExists( "ImagePositionPatient", "top" ) ) {
+                for (int i = 0; i < 3; i++ ) {
+                    vtkstd::string pos( tmp->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
+                    std::istringstream positionInString(pos);
+                    positionInString >> position[i];
+                }
+            } else {
+                position[0] = -1; 
+                position[1] = -1; 
+                position[2] = -1; 
             }
 
             //  Project posLPS onto the normal vector through the
@@ -266,7 +289,7 @@ void svkDcmMriVolumeReader::InitFileNames()
 
     //  ======================================================================
     //  Now validate that the DICOM files comprise a single volumetric series
-    //  wrt seriesUID and orientation: 
+    //  wrt seriesUID and orientation.  Pop files from vector that do not belong: 
     //  ======================================================================
     vtkstd::vector < vtkstd::vector< vtkstd::string > >::iterator seriesIt; 
     seriesIt = dcmSeriesAttributes.begin(); 
@@ -274,26 +297,29 @@ void svkDcmMriVolumeReader::InitFileNames()
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
 
         vtkstd::string tmpSeriesInstanceUID = (*seriesIt)[1]; 
-        vtkstd::string tmpImageOrientationPatient = (*seriesIt)[2]; 
+
         //  if seriesUID doesnt match, remove it:
-        if ( tmpImageOrientationPatient == imageOrientationPatient ) {
-
-            if ( tmpSeriesInstanceUID != seriesInstanceUID ) {
-                vtkWarningWithObjectMacro(
-                    this, 
-                    "SeriesInstanceUID is not the same for all slices in directory , using only specified file "
-                );
-                seriesIt = dcmSeriesAttributes.erase( seriesIt ); 
-            } else {
-                seriesIt++; 
-            }
-
+        if ( tmpSeriesInstanceUID != seriesInstanceUID ) {
+            vtkWarningWithObjectMacro(
+                this, 
+                "SeriesInstanceUID is not the same for all slices in directory, removing file from series."
+            );
+            seriesIt = dcmSeriesAttributes.erase( seriesIt ); 
         } else {
+            seriesIt++; 
+        }
+    }
 
+    seriesIt = dcmSeriesAttributes.begin(); 
+    while ( seriesIt != dcmSeriesAttributes.end() ) { 
+
+        vtkstd::string tmpImageOrientationPatient = (*seriesIt)[2]; 
+        if ( tmpImageOrientationPatient != imageOrientationPatient ) {
             //  Orientations don't match, set series to one input file
-            vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, using only specified file ");
-            this->OnlyReadInputFile(); 
-            return; 
+            vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, removing file from series");
+            seriesIt = dcmSeriesAttributes.erase( seriesIt ); 
+        } else {
+            seriesIt++; 
         }
     }
 
