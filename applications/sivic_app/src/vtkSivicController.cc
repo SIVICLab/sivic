@@ -1182,8 +1182,39 @@ void vtkSivicController::SaveDataOsiriX()
 }
 
 
+/*!
+ *
+ */
+void vtkSivicController::SaveMetMapDataOsiriX()
+{
+    string fname( this->GetOsiriXInDir() + "met_map" );
+    this->SaveMetMapData( const_cast<char*>( fname.c_str() ));
+}
+
 /*! 
- *  Writes data files 
+ *  Writes metabolite image files 
+ */
+void vtkSivicController::SaveMetMapData( char* fileName )
+{
+
+    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    svkImageWriter* writer;
+
+    string fileNameString = string( fileName);
+    writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_ENHANCED_MRI));
+    cout << "FN: " << fileName << endl;
+    writer->SetFileName(fileName);
+    writerFactory->Delete();
+
+    writer->SetInput( this->model->GetDataObject("MetaboliteData") );
+    writer->Write();
+
+    writer->Delete();
+}
+
+
+/*! 
+ *  Writes MRS data files 
  */
 void vtkSivicController::SaveData( char* fileName )
 {

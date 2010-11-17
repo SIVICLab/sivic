@@ -575,6 +575,14 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     osirixMRSButton->SetCommand( this->sivicController, "SaveDataOsiriX"); 
     osirixMRSButton->SetBalloonHelpString( "Save DICOM MRS data to OsiriX" );
     toolbar->AddWidget( osirixMRSButton );
+
+    vtkKWPushButton* osirixMetMapButton = vtkKWPushButton::New();
+    osirixMetMapButton->SetParent( toolbar->GetFrame() );
+    osirixMetMapButton->Create();
+    osirixMetMapButton->SetText( "OsiriX Met Maps");
+    osirixMetMapButton->SetCommand( this->sivicController, "SaveMetMapDataOsiriX"); 
+    osirixMetMapButton->SetBalloonHelpString( "Save DICOM metabolite map data to OsiriX" );
+    toolbar->AddWidget( osirixMetMapButton );
 #endif
 
 

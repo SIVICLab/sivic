@@ -134,11 +134,13 @@ class vtkSivicController : public vtkObject
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
         void                       SaveData();    
+        void                       SaveMetMapData( char* fileName );    
         void                       SaveData( char* fileName );    
         void                       SaveSecondaryCapture( char* captureType );    
         string                     GetUserName();
         string                     GetOsiriXInDir(); 
         void                       SaveSecondaryCaptureOsiriX();    
+        void                       SaveMetMapDataOsiriX(); 
         void                       SaveDataOsiriX(); 
         void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
                                                          int outputOption = 0, bool print = 0 );
