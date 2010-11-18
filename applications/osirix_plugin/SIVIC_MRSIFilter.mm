@@ -119,6 +119,8 @@
 		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], nil]];
 	} else if ( [myFNArray count] == 2 ) {
 		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], nil]];
+	} else if ( [myFNArray count] == 3 ) {
+		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], [myFNArray objectAtIndex:2], nil]];
 	} 
 			
 	return 0; // No Errors
