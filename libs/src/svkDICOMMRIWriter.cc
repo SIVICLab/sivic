@@ -156,6 +156,7 @@ void svkDICOMMRIWriter::Write()
         }
 
         mriHeader->SetValue( "InstanceNumber", this->FileNumber ); 
+        mriHeader->InsertUniqueUID( "SOPInstanceUID" );
 
         vtkstd::string imagePositionPatient = this->GetImageDataInput(0)->GetDcmHeader()->GetStringSequenceItemElement(
             "PlanePositionSequence",
