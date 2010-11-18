@@ -1198,8 +1198,8 @@ void vtkSivicController::SaveMetMapData( char* fileName )
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer;
 
-    string fileNameString = string( fileName);
-    writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_ENHANCED_MRI));
+    string fileNameString = string( fileName );
+    writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_MRI));
     cout << "FN: " << fileName << endl;
     writer->SetFileName(fileName);
     writerFactory->Delete();
