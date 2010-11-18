@@ -76,3 +76,12 @@ if [ $# == 2 ]; then
     echo "${plugin_path}/sivic" "${path1}" "${path2}"
     "${plugin_path}/sivic" "${path1}" "${path2}"
 fi
+
+
+if [ $# == 3 ]; then
+    path1=`echo $1 | sed 's/ /\\ /'`
+    path2=`echo $2 | sed 's/ /\\ /'`
+    path3=`echo $3 | sed 's/ /\\ /'`
+    echo "${plugin_path}/sivic" "${path1}" "${path2}" "${path3}"
+    "${plugin_path}/sivic" "${path1}" "${path2}" "${path3}"
+fi
