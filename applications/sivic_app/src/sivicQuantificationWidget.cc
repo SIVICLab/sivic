@@ -125,6 +125,7 @@ void sivicQuantificationWidget::CreateWidget()
         this->metRangeVector[i]->SetEntriesWidth(4);
         this->metRangeVector[i]->SetResolution(.01);
 
+        //  These are text labels for the range sliders
         this->metLabelVector.push_back( vtkKWLabel::New() );  
         this->metLabelVector[i]->SetText( (this->metNames[i]).c_str() );
         this->metLabelVector[i]->SetParent(this);
@@ -132,7 +133,6 @@ void sivicQuantificationWidget::CreateWidget()
         this->metLabelVector[i]->SetPadX(0);
         this->metLabelVector[i]->SetPadY(0);
         this->metLabelVector[i]->SetJustificationToLeft();
-        //this->metLabelVector[i]->SetAnchorToWest();
         this->metLabelVector[i]->Create();
 
         ostringstream mapNumArea;
@@ -250,6 +250,7 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
 
 /*!
  *  Executes the combining of the channels.
+ *  Generates peak area and peak ht maps for each metabolite defined in GUI.    
  */
 void sivicQuantificationWidget::ExecuteQuantification() 
 {
@@ -257,8 +258,8 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
     if( data != NULL ) {
 
-        quant = svkExtractMRIFromMRS::New();
-        quant->SetInput( data );
+        this->quant = svkExtractMRIFromMRS::New();
+        this->quant->SetInput( data );
 
 //generate pk ht, peak area and magnitude area met maps for the specified intervals
 //save each in the data model and through a drop down select which one to view (load as overlay)
@@ -269,7 +270,12 @@ void sivicQuantificationWidget::ExecuteQuantification()
         float width;
         svkMriImageData* tmp;
 
-        vtkstd::vector < vtkstd::string > modelMetNames; 
+        //
+        //  This is a vector of metabolite map names used in the svkDataModel: 
+        //  The names should appear in the same order in the vector as they do 
+        //  in the view selector 
+        //
+        int objectNumber= 0; 
         for (int i = 0; i < this->metRangeVector.size(); i++ ) {
 
             minValue = this->metRangeVector[i]->GetEntry1()->GetValueAsDouble();
@@ -279,48 +285,67 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
             cout << "QUANT THIS ONE: " << this->metNames[i] << " " << peak << " " << width << endl;
 
-            quant->SetSeriesDescription( this->metNames[i] + " Metabolite Map" );
-            quant->SetPeakPosPPM( peak );
-            quant->SetPeakWidthPPM( width );
-            quant->Update();
+            this->quant->SetPeakPosPPM( peak );
+            this->quant->SetPeakWidthPPM( width );
 
-            tmp = svkMriImageData::New();
-            tmp->DeepCopy(quant->GetOutput());
-            tmp->SetDcmHeader(quant->GetOutput()->GetDcmHeader());
+            for (int quantMethod = 0; quantMethod < 2; quantMethod++) {
 
-            //  Add met map to model 
-            vtkstd::string modelDataName = this->metNames[i] + "_area_MetaboliteMap";
-            modelMetNames.push_back( modelDataName ); 
-            //this->model->AddDataObject( modelDataName, tmp);
+                //  Add met map to model 
+                vtkstd::string modelDataName = this->metNames[i]; 
+                if (quantMethod == 0) {
+                    this->quant->SetSeriesDescription( this->metNames[i] + " area Metabolite Map" );
+                    this->quant->SetAlgorithmToIntegrate(); 
+                    modelDataName += "_area";
+                } else if (quantMethod == 1) {
+                    this->quant->SetSeriesDescription( this->metNames[i] + " peak ht Metabolite Map" );
+                    this->quant->SetAlgorithmToPeakHeight(); 
+                    modelDataName += "_ht";
+                }
+                this->modelMetNames.push_back( modelDataName ); 
 
-            if( this->model->DataExists( modelMetNames[i] ) ) {
-                //svkImageData* garbage = this->model->GetDataObject( modelMetNames[i] );
-                this->model->ChangeDataObject( modelMetNames[i], tmp); 
-                //garbage->Delete();
-            } else {
-                this->model->AddDataObject( modelMetNames[i], tmp );
+                this->quant->Update();
+
+                tmp = svkMriImageData::New();
+                tmp->DeepCopy(this->quant->GetOutput());
+                if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
+                    this->model->ChangeDataObject( this->modelMetNames[ objectNumber ], tmp); 
+                } else {
+                    this->model->AddDataObject( this->modelMetNames[ objectNumber ], tmp );
+                }
+                objectNumber++; 
             }
-
         }
 
         //  Initialize the overlay with the NAA met map
-        if( this->model->DataExists( "MetaboliteData" ) ) {
-            this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelMetNames[2] ) );
-        } else {
-            this->model->AddDataObject( "MetaboliteData", this->model->GetDataObject(modelMetNames[2]) );
-        }
-
-        this->sivicController->EnableWidgets( );
-
-        this->plotController->SetInput( this->model->GetDataObject( modelMetNames[2] ), svkPlotGridView::MET ); 
-        this->overlayController->SetInput( this->model->GetDataObject( modelMetNames[2] ), svkOverlayView::OVERLAY );
+        this->SetOverlay( this->modelMetNames[2] ); 
 
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
         this->plotController->SetOverlayOpacity( .5 );
         this->plotController->GetView()->Refresh();
 
+        this->sivicController->EnableWidgets( );
+
     }
+
+    this->mapViewSelector->EnabledOn();
+}
+
+
+/*!
+ *  Called by parent controller to enable this panel and initialize values
+ */
+void sivicQuantificationWidget::SetOverlay( vtkstd::string modelObjectName)
+{
+    //  Initialize the overlay with the NAA met map
+    if( this->model->DataExists( "MetaboliteData" ) ) {
+        this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelObjectName ) );
+    } else {
+        this->model->AddDataObject( "MetaboliteData", this->model->GetDataObject(modelObjectName ));
+    }
+
+    this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET ); 
+    this->overlayController->SetInput( this->model->GetDataObject( modelObjectName ), svkOverlayView::OVERLAY );
 }
 
 
@@ -351,7 +376,6 @@ void sivicQuantificationWidget::EnableWidgets()
         }
 
         this->quantButton->EnabledOn();
-        this->mapViewSelector->EnabledOn();
 
         this->isEnabled = true; 
     }

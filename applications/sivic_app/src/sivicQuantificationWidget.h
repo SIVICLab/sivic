@@ -67,7 +67,9 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         static sivicQuantificationWidget *New();
         vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
-        void        EnableWidgets(); 
+        void                                EnableWidgets(); 
+        vtkstd::vector < vtkstd::string >   modelMetNames;
+
 
 
     protected:
@@ -88,7 +90,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
-
+        void            SetOverlay( vtkstd::string modelObjectName ); 
 
     private:
 

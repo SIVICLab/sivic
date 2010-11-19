@@ -1181,18 +1181,27 @@ void vtkSivicController::SaveDataOsiriX()
 
 
 /*!
- *
+ *  Saves metabolite maps to OsiriX DB
  */
 void vtkSivicController::SaveMetMapDataOsiriX()
 {
-    string fname( this->GetOsiriXInDir() + "met_map" );
-    this->SaveMetMapData( const_cast<char*>( fname.c_str() ));
+    //  Loop over each of the metabolte maps and save to OsiriX: 
+    for (int i = 0; i < this->quantificationWidget->modelMetNames.size(); i++ ) {
+        cout << "Save mets to OsiriX: " << this->quantificationWidget->modelMetNames[i] << endl;
+        string fname( this->GetOsiriXInDir() + this->quantificationWidget->modelMetNames[i] );
+
+        this->SaveMetMapData( 
+            this->model->GetDataObject( this->quantificationWidget->modelMetNames[i] ),
+            const_cast<char*>( fname.c_str() ) 
+        );
+    }
 }
+
 
 /*! 
  *  Writes metabolite image files 
  */
-void vtkSivicController::SaveMetMapData( char* fileName )
+void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName )
 {
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
@@ -1204,7 +1213,7 @@ void vtkSivicController::SaveMetMapData( char* fileName )
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( this->model->GetDataObject("MetaboliteData") );
+    writer->SetInput( image ); 
     writer->Write();
 
     writer->Delete();
@@ -1977,20 +1986,10 @@ void vtkSivicController::SetLUTCallback( int type )
  */
 void vtkSivicController::MetMapViewCallback( int mapNumber)
 {
-    //if ( type == svkLookupTable::COLOR) {
-     //   static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::COLOR );
-    //} else if ( type == svkLookupTable::GREY_SCALE) {
-        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREY_SCALE );
-    //} else if ( type == svkLookupTable::HURD) {
-        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::HURD );
-    //} else if ( type == svkLookupTable::CYAN_HOT ) {
-        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CYAN_HOT );
-    //}
-cout << "CHANGE VIEW " << mapNumber<< endl;
-    cout << "CHANGE VIEW " << endl;
-    cout << "CHANGE VIEW " << endl;
-    cout << "CHANGE VIEW " << endl;
-
+    cout << "DISPLAY: " << this->quantificationWidget->modelMetNames[mapNumber] << endl;
+    this->quantificationWidget->SetOverlay( 
+        this->quantificationWidget->modelMetNames[mapNumber] 
+    ); 
 }
 
 

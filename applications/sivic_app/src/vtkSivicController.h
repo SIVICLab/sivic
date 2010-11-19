@@ -134,7 +134,7 @@ class vtkSivicController : public vtkObject
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
         void                       SaveData();    
-        void                       SaveMetMapData( char* fileName );    
+        void                       SaveMetMapData( svkImageData* image, char* fileName );    
         void                       SaveData( char* fileName );    
         void                       SaveSecondaryCapture( char* captureType );    
         string                     GetUserName();
