@@ -23,6 +23,9 @@ sivicQuantificationWidget::sivicQuantificationWidget()
 
     this->quantButton = NULL;
     this->quant = NULL;
+    this->mapViewSelector = NULL;   
+    this->numMets = 0; 
+    this->isEnabled = false; 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
@@ -45,6 +48,10 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
         this->quant= NULL;
     }
 
+    if( this->mapViewSelector != NULL ) {
+        this->mapViewSelector ->Delete();
+        this->mapViewSelector = NULL;
+    }
 }
 
 
@@ -53,9 +60,9 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
  */
 void sivicQuantificationWidget::CreateWidget()
 {
-/*  This method will create our main window. The main window is a 
- *  vtkKWCompositeWidget with a vtkKWRendWidget. 
-*/
+    /*  This method will create our main window. The main window is a 
+     *  vtkKWCompositeWidget with a vtkKWRendWidget. 
+     */
 
     // Check if already created
     if ( this->IsCreated() )
@@ -67,31 +74,164 @@ void sivicQuantificationWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
+    this->numMets = 4; 
+    this->metNames.push_back( "choline" ); 
+    this->metNames.push_back( "creatine" ); 
+    this->metNames.push_back( "NAA" ); 
+    this->metNames.push_back( "lipid" ); 
+
+    // this is a map of default metabolite names to ppm ranges: 
+    this->metQuantMap["choline"].push_back(4.5); 
+    this->metQuantMap["choline"].push_back(4.0); 
+    this->metQuantMap["creatine"].push_back(4.0); 
+    this->metQuantMap["creatine"].push_back(3.5); 
+    this->metQuantMap["NAA"].push_back(2.2); 
+    this->metQuantMap["NAA"].push_back(1.8); 
+    this->metQuantMap["lipid"].push_back(1.4); 
+    this->metQuantMap["lipid"].push_back(1.0); 
+
+
+    //  Map View Selector
+    this->mapViewSelector = vtkKWMenuButtonWithLabel::New();
+    this->mapViewSelector->SetParent(this);
+    this->mapViewSelector->Create();
+    this->mapViewSelector->SetLabelText("Met Map View");
+    this->mapViewSelector->SetLabelPositionToTop();
+    this->mapViewSelector->SetPadY(5);
+    this->mapViewSelector->EnabledOff();
+    vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
+
+    
+    double rangeMin; 
+    double rangeMax; 
+    this->GetMRSFrequencyRange( rangeMin, rangeMax, svkSpecPoint::PPM); 
+
+    stringstream invocation; 
+    vtkstd::string mapSelectLabel;
+
+    for ( int i = 0; i < this->numMets; i++ ) {
+        this->metRangeVector.push_back( vtkKWRange::New() ); 
+        this->metRangeVector[i]->SetParent(this);
+        this->metRangeVector[i]->SetLabelPositionToLeft();
+        this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
+        this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+        this->metRangeVector[i]->Create();
+        this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
+        this->metRangeVector[i]->EnabledOff();
+        this->metRangeVector[i]->SetSliderSize(2);
+        this->metRangeVector[i]->SetPadY(4);
+        this->metRangeVector[i]->SetEntry1PositionToLeft();
+        this->metRangeVector[i]->SetEntry2PositionToRight();
+        this->metRangeVector[i]->SetEntriesWidth(4);
+        this->metRangeVector[i]->SetResolution(.01);
+
+        this->metLabelVector.push_back( vtkKWLabel::New() );  
+        this->metLabelVector[i]->SetText( (this->metNames[i]).c_str() );
+        this->metLabelVector[i]->SetParent(this);
+        this->metLabelVector[i]->SetHeight(1);
+        this->metLabelVector[i]->SetPadX(0);
+        this->metLabelVector[i]->SetPadY(0);
+        this->metLabelVector[i]->SetJustificationToLeft();
+        //this->metLabelVector[i]->SetAnchorToWest();
+        this->metLabelVector[i]->Create();
+
+        ostringstream mapNumArea;
+        mapNumArea <<  i * 2;
+        mapSelectLabel = this->metNames[i] + "_area";
+        invocation.str("");
+        invocation << "MetMapViewCallback " << mapNumArea.str() << endl;
+        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+
+        ostringstream mapNumHt;
+        mapNumHt <<  (i * 2) + 1;
+        mapSelectLabel = this->metNames[i] + "_ht";
+        invocation.str("");
+        invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
+        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+
+/*
+        mapSelectLabel = this->metNames[i] + "_area"; 
+        invocation.str("");
+        invocation << "MetMapViewCallback " << mapSelectLabel << endl;
+        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicControlle, invocation.str().c_str());
+
+        mapSelectLabel = this->metNames[i] + "_ht"; 
+        invocation.str("");
+        invocation << "MetMapViewCallback" << mapSelectLabel << endl;
+        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+*/
+
+    }
+    mapSelectLabel = this->metNames[2] + "area"; 
+    this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
+
+
+    //  Generate button
     this->quantButton = vtkKWPushButton::New();
     this->quantButton->SetParent( this );
     this->quantButton->Create( );
-    this->quantButton->EnabledOn();
-    this->quantButton->SetText( "NAA (Area)");
-    this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification.");
+    this->quantButton->EnabledOff();
+    this->quantButton->SetText( "Generate Met. Maps");
+    this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
 
-    this->Script("grid %s -row 0 -column 0 -columnspan 2 -sticky nsew", this->quantButton->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -sticky nsew", this->quantButton->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 1 -sticky nsew", this->quantButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nsew", this->quantButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -columnspan 2 -sticky nsew", this->quantButton->GetWidgetName() );
-    this->Script("grid %s -row 4 -column 0 -columnspan 2 -sticky nsew", this->quantButton->GetWidgetName() );
 
-    this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 4  -weight 16", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
+    //  Format the GUI grid in this panel:
+    for ( int i = 0; i < this->numMets; i++ ) {
+        this->Script("grid %s -row %d -column 0 -sticky w", 
+                        this->metLabelVector[i]->GetWidgetName(), i);
+        this->Script("grid %s -row %d -column 1 -sticky wnse -padx 2", 
+                        this->metRangeVector[i]->GetWidgetName(), i);
+    };
+    this->Script("grid %s -row %d -column 2 -rowspan 2 -padx 2", this->mapViewSelector->GetWidgetName(), 0);
+    this->Script("grid %s -row %d -column 2 -padx 2", this->quantButton->GetWidgetName(), 2);
 
+
+    for ( int i = 0; i < this->numMets; i++ ) {
+        this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
+    }
+
+    this->Script("grid columnconfigure %s 0 -weight 20 -uniform 1 -minsize 20", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 65 -uniform 1 -minsize 65", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 45 -uniform 1 -minsize 45", this->GetWidgetName() );
+
+    //  Callbacks
     this->AddCallbackCommandObserver(
         this->quantButton, vtkKWPushButton::InvokedEvent 
     );
 
+    this->AddCallbackCommandObserver(
+        this->mapViewSelector->GetWidget(), vtkKWMenu::MenuItemInvokedEvent
+    );
+
+}
+
+
+/*
+ *  Gets the frequency range limits for range sliders in the specified units. 
+ */
+void sivicQuantificationWidget::GetMRSFrequencyRange( double& min, double& max, svkSpecPoint::UnitType units)
+{
+    min = 0.; 
+    max = 0.; 
+    if ( this->model != NULL ) {
+        svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
+
+        if( data != NULL ) {
+            min = 1;
+            max = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
+    
+            //  If the domain is frequency, then convert from point space to target units.
+            string domain = model->GetDataObject( "SpectroscopicData" )
+                                    ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+            if( domain == "FREQUENCY" ) {
+                svkSpecPoint* point = svkSpecPoint::New();
+                point->SetDcmHeader( data->GetDcmHeader() );
+                min = point->ConvertPosUnits( min, svkSpecPoint::PTS, units ); 
+                max = point->ConvertPosUnits( max, svkSpecPoint::PTS, units ); 
+                point->Delete();
+            }
+        } 
+    }
 }
 
 
@@ -100,17 +240,11 @@ void sivicQuantificationWidget::CreateWidget()
  */
 void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    // Respond to a selection change in the overlay view
-    if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-
-    // Respond to a selection change in the plot grid view 
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-
-    } else if( caller == this->quantButton && event == vtkKWPushButton::InvokedEvent ) {
-
+    if( caller == this->quantButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecuteQuantification();
-    }
+    } 
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
+
 }
 
 
@@ -124,44 +258,109 @@ void sivicQuantificationWidget::ExecuteQuantification()
     if( data != NULL ) {
 
         quant = svkExtractMRIFromMRS::New();
-
-        float peak  = 1.99; 
-        float width = 0.4;
-
         quant->SetInput( data );
-        quant->SetSeriesDescription( "NAA Metabolite Map" );
-        quant->SetPeakPosPPM( peak );
-        quant->SetPeakWidthPPM( width );
-        quant->Update();
 
-        svkMriImageData* tmp = svkMriImageData::New();
-        tmp->DeepCopy(quant->GetOutput());
-        tmp->SetDcmHeader(quant->GetOutput()->GetDcmHeader());
+//generate pk ht, peak area and magnitude area met maps for the specified intervals
+//save each in the data model and through a drop down select which one to view (load as overlay)
 
-        svkImageData* metData = quant->GetOutput(); 
+        double minValue;
+        double maxValue;
+        float peak;
+        float width;
+        svkMriImageData* tmp;
 
+        vtkstd::vector < vtkstd::string > modelMetNames; 
+        for (int i = 0; i < this->metRangeVector.size(); i++ ) {
+
+            minValue = this->metRangeVector[i]->GetEntry1()->GetValueAsDouble();
+            maxValue = this->metRangeVector[i]->GetEntry2()->GetValueAsDouble();
+            peak  = static_cast< float > ( (maxValue + minValue)/2 );
+            width = static_cast< float > ( fabs( ( maxValue - minValue ) ) ); 
+
+            cout << "QUANT THIS ONE: " << this->metNames[i] << " " << peak << " " << width << endl;
+
+            quant->SetSeriesDescription( this->metNames[i] + " Metabolite Map" );
+            quant->SetPeakPosPPM( peak );
+            quant->SetPeakWidthPPM( width );
+            quant->Update();
+
+            tmp = svkMriImageData::New();
+            tmp->DeepCopy(quant->GetOutput());
+            tmp->SetDcmHeader(quant->GetOutput()->GetDcmHeader());
+
+            //  Add met map to model 
+            vtkstd::string modelDataName = this->metNames[i] + "_area_MetaboliteMap";
+            modelMetNames.push_back( modelDataName ); 
+            //this->model->AddDataObject( modelDataName, tmp);
+
+            if( this->model->DataExists( modelMetNames[i] ) ) {
+                //svkImageData* garbage = this->model->GetDataObject( modelMetNames[i] );
+                this->model->ChangeDataObject( modelMetNames[i], tmp); 
+                //garbage->Delete();
+            } else {
+                this->model->AddDataObject( modelMetNames[i], tmp );
+            }
+
+        }
+
+        //  Initialize the overlay with the NAA met map
         if( this->model->DataExists( "MetaboliteData" ) ) {
-            this->model->ChangeDataObject( "MetaboliteData", metData );
+            this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelMetNames[2] ) );
         } else {
-            this->model->AddDataObject( "MetaboliteData", metData );
+            this->model->AddDataObject( "MetaboliteData", this->model->GetDataObject(modelMetNames[2]) );
         }
 
         this->sivicController->EnableWidgets( );
 
-        this->plotController->SetInput( tmp, svkPlotGridView::MET ); 
-        this->overlayController->SetInput( tmp, svkOverlayView::OVERLAY );
+        this->plotController->SetInput( this->model->GetDataObject( modelMetNames[2] ), svkPlotGridView::MET ); 
+        this->overlayController->SetInput( this->model->GetDataObject( modelMetNames[2] ), svkOverlayView::OVERLAY );
 
-        //this->plotController->SetInput( metData, svkPlotGridView::MET ); 
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
         this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
         this->plotController->SetOverlayOpacity( .5 );
         this->plotController->GetView()->Refresh();
 
-
     }
 }
 
 
+/*!
+ *  Called by parent controller to enable this panel and initialize values
+ */
+void sivicQuantificationWidget::EnableWidgets()
+{
+
+    //  If this is the first time through, initialize the ranges to the default 
+    //  values, otherwise leave them where the user set them. 
+    if ( this->isEnabled == false ) {
+
+        vtkstd::string metName;
+        float metMin;
+        float metMax;
+        double rangeMin; 
+        double rangeMax; 
+        this->GetMRSFrequencyRange( rangeMin, rangeMax, svkSpecPoint::PPM); 
+
+        for ( int i = 0; i < this->numMets; i++ ) {
+            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+            string metName = this->metNames[i]; 
+            metMin = this->metQuantMap[metName][0]; 
+            metMax = this->metQuantMap[metName][1]; 
+            this->metRangeVector[i]->SetRange(metMin, metMax);
+            this->metRangeVector[i]->EnabledOn();
+        }
+
+        this->quantButton->EnabledOn();
+        this->mapViewSelector->EnabledOn();
+
+        this->isEnabled = true; 
+    }
+}
+
+
+/*!
+ *
+ */
 void sivicQuantificationWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
     static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );

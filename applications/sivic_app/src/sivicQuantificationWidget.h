@@ -41,6 +41,9 @@
 #include <vtkKWScaleWithEntry.h>
 #include <vtkKWCheckButton.h>
 #include <vtkKWPushButton.h>
+#include <vtkKWRange.h>
+#include <vtkKWMenu.h>
+#include <vtkKWMenuButtonWithLabel.h>
 
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
@@ -64,16 +67,22 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         static sivicQuantificationWidget *New();
         vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
+        void        EnableWidgets(); 
+
 
     protected:
-
 
         sivicQuantificationWidget();
         ~sivicQuantificationWidget();
 
-        vtkKWPushButton*                quantButton;
+        vtkKWMenuButtonWithLabel*                               mapViewSelector;
+        vtkKWPushButton*                                        quantButton;
+        vtkstd::vector < vtkKWRange* >                          metRangeVector;         
+        vtkstd::vector < vtkKWLabel* >                          metLabelVector;  
 
-        
+        vtkstd::map <vtkstd::string, vtkstd::vector< float > >  metQuantMap;
+
+
         // Description:
         // Create the widget.
         virtual void    CreateWidget();
@@ -83,12 +92,15 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
 
     private:
 
-        vtkCallbackCommand*         progressCallback;
+        void                                ExecuteQuantification();
+        static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        void                                GetMRSFrequencyRange( double& min, double& max, svkSpecPoint::UnitType units); 
 
-        void                        ExecuteQuantification();
-        static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
-        svkExtractMRIFromMRS*       quant;
-
+        vtkCallbackCommand*                 progressCallback;
+        svkExtractMRIFromMRS*               quant;
+        vtkstd::vector < vtkstd::string >   metNames;
+        int                                 numMets; 
+        bool                                isEnabled; 
 
         sivicQuantificationWidget(const sivicQuantificationWidget&);   // Not implemented.
         void operator=(const sivicQuantificationWidget&);  // Not implemented.

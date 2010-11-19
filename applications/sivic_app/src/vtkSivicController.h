@@ -166,6 +166,7 @@ class vtkSivicController : public vtkObject
         void                       SetComponentCallback( int targetComponent );
         void                       SetInterpolationCallback( int interpolationType );
         void                       SetLUTCallback( int type );
+        void                       MetMapViewCallback(int mapNumber); 
         void                       Print( char* captureType, int outputOption = 0);
         int                        PopupMessage( string message, int style = 0 );
         void                       SaveSession( );

@@ -1972,6 +1972,27 @@ void vtkSivicController::SetLUTCallback( int type )
 }
 
 
+/*!
+ *
+ */
+void vtkSivicController::MetMapViewCallback( int mapNumber)
+{
+    //if ( type == svkLookupTable::COLOR) {
+     //   static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::COLOR );
+    //} else if ( type == svkLookupTable::GREY_SCALE) {
+        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREY_SCALE );
+    //} else if ( type == svkLookupTable::HURD) {
+        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::HURD );
+    //} else if ( type == svkLookupTable::CYAN_HOT ) {
+        //static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CYAN_HOT );
+    //}
+cout << "CHANGE VIEW " << mapNumber<< endl;
+    cout << "CHANGE VIEW " << endl;
+    cout << "CHANGE VIEW " << endl;
+    cout << "CHANGE VIEW " << endl;
+
+}
+
 
 /*!
  *
@@ -2243,6 +2264,7 @@ void vtkSivicController::EnableWidgets()
             this->spectraViewWidget->timePointSlider->EnabledOn();
         }
         this->imageViewWidget->volSelButton->EnabledOn();
+        this->quantificationWidget->EnableWidgets();
     }
 
     if ( model->DataExists("AnatomicalData") ) {
