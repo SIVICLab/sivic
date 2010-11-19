@@ -68,6 +68,7 @@
 #include <svkDataViewController.h>
 #include <svkDetailedPlotViewController.h>
 #include <svkSecondaryCaptureFormatter.h>
+#include <svkImageWriterFactory.h> 
 #include <sivicViewRenderingWidget.h>
 #include <svkDataModel.h>
 #include <svkLookupTable.h>
@@ -134,8 +135,10 @@ class vtkSivicController : public vtkObject
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
         void                       SaveData();    
-        void                       SaveMetMapData( svkImageData* image, char* fileName );    
         void                       SaveData( char* fileName );    
+        void                       SaveMetaboliteMaps();    
+        void                       SaveMetMapData( svkImageData* image, char* fileName, 
+                                        int writetType = 5); //svkImageWriterFactory::DICOM_MRI 
         void                       SaveSecondaryCapture( char* captureType );    
         string                     GetUserName();
         string                     GetOsiriXInDir(); 
@@ -144,12 +147,15 @@ class vtkSivicController : public vtkObject
         void                       SaveDataOsiriX(); 
         void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
                                                          int outputOption = 0, bool print = 0 );
-        void                       WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
-        void                       WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print );
+        void                       WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, 
+                                                         int outputOption, svkImageData* outputImage, bool print );
+        void                       WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, 
+                                                        int outputOption, svkImageData* outputImage, bool print );
 #if defined( SVK_USE_GL2PS )
         void                       ExportSpectraCapture( string fileNameString, int outputOption, string type );
 #endif
-        void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber = 0 );
+        void                       WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, 
+                                                      svkImageData* outputImage, bool print, int instanceNumber = 0 );
         void                       ToggleColorsForPrinting( bool colorSchema );
         void                       ResetApplication();    
         void                       UseWindowLevelStyle();

@@ -1197,19 +1197,70 @@ void vtkSivicController::SaveMetMapDataOsiriX()
     }
 }
 
+/*
+ *  Saves metabolite maps to user specified loction
+ */
+void vtkSivicController::SaveMetaboliteMaps()
+{
+    vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
+    dlg->SetApplication(app);
+    dlg->SaveDialogOn();
+    dlg->Create();
+    dlg->SetInitialFileName("");
+    //  kludge to differentiate between enhanced and multi-frame (dcm versus DCM)
+    dlg->SetFileTypes("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+    dlg->SetDefaultExtension("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+    dlg->Invoke();
+    if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
+        string filename = dlg->GetFileName();
+        char* cStrFilename = new char [filename.size()+1];
+        strcpy (cStrFilename, filename.c_str());
+
+        vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename ); 
+        vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename ); 
+        int fileType; 
+        if ( ext.compare("DCM") == 0 ) {
+            fileType = 5;       // MRI
+        } else if ( ext.compare("dcm") == 0 ) {
+            fileType = 6;       // Enhanced MRI
+        } else if ( ext.compare("idf") == 0 ) {
+            fileType = 3;    
+        }
+        //  Loop over each of the metabolte maps and save to OsiriX:
+        for (int i = 0; i < this->quantificationWidget->modelMetNames.size(); i++ ) {
+            cout << "Save mets to local fs: " << this->quantificationWidget->modelMetNames[i] << endl;
+            string fname( root + this->quantificationWidget->modelMetNames[i] );
+    
+            this->SaveMetMapData(
+                this->model->GetDataObject( this->quantificationWidget->modelMetNames[i] ),
+                const_cast<char*>( fname.c_str() ), 
+                fileType
+            );
+        }
+
+    }
+    dlg->Delete();
+
+}
+
+
 
 /*! 
  *  Writes metabolite image files 
  */
-void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName )
+void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, int writerType )
 {
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer;
 
     string fileNameString = string( fileName );
-    writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter(svkImageWriterFactory::DICOM_MRI));
+    writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( 
+        static_cast<svkImageWriterFactory::WriterType>( writerType) ) 
+    );
     cout << "FN: " << fileName << endl;
+    cout << "type: " << writerType << endl;
+
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
