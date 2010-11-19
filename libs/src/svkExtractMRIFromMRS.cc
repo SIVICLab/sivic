@@ -65,6 +65,7 @@ svkExtractMRIFromMRS::svkExtractMRIFromMRS()
     this->dataType = svkDcmHeader::UNDEFINED; 
     this->newSeriesDescription = ""; 
     this->zeroCopy = false; 
+    this->quantificationAlgorithm = svkExtractMRIFromMRS::INTEGRATE; 
     this->iod = NULL;
 }
 
@@ -117,21 +118,43 @@ void svkExtractMRIFromMRS::SetZeroCopy(bool zeroCopy)
  */
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
-    int startPt = 0; 
-    int endPt = 0; 
-    this->GetIntegrationPtRange(startPt, endPt); 
-    cout << " GET POINT: " << static_cast<int>( (endPt+startPt)/2 ) << endl;
-
-    //  Extract svkMriImageData from svkMrsImageData
+    //  Create the template data object by  
+    //  extractng an svkMriImageData from the input svkMrsImageData object
+    //  Use an arbitrary point for initialization of scalars.  Actual data 
+    //  will be overwritten by algorithm. 
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput() ), 
-        static_cast<int>( (endPt + startPt)/2 ), 
+        0, 
+        //static_cast<int>( (endPt + startPt)/2 ), 
         0, 
         0, 
         0, 
         this->newSeriesDescription 
     );
+
+    return 1; 
+};
+
+
+/*! 
+ *  Integrate spectra over specified limits. 
+ */
+void svkExtractMRIFromMRS::Integrate()
+{
+
+    this->ZeroData(); 
+
+    //  Get integration limits:
+    int startPt = 0; 
+    int endPt = 0; 
+    this->GetIntegrationPtRange(startPt, endPt); 
+
+    //  If integration limits are out of range just returned zero'd image.
+    int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
+    if ( startPt < 0 || endPt >= numSpecPoints ) {
+        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
+        return; 
+    }
 
     int numVoxels[3]; 
     this->GetOutput()->GetNumberOfVoxels(numVoxels);
@@ -150,9 +173,53 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
     }
 
-    return 1; 
 }
 
+
+/*! 
+ *  Zero data
+ */
+void svkExtractMRIFromMRS::ZeroData()
+{
+
+    int numVoxels[3]; 
+    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    double zeroValue = 0.;     
+    for (int i = 0; i < totalVoxels; i++ ) {
+        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
+    }
+
+}
+
+
+
+/*!
+ *
+ */
+int svkExtractMRIFromMRS::RequestInformation ( vtkInformation* request,  vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+    cout << "REQUEST INFO" << endl;
+}
+
+
+/*!
+ *  Triggers a reintegration over current limits and updates DCM header
+ *  with a new SeriesInstanceUID, SOPInstanceUID and the current SeriesDescription. 
+ */
+void svkExtractMRIFromMRS::Update()
+{
+    cout << "UPDATE" << endl;
+    this->Superclass::Update();
+    this->Integrate(); 
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    hdr->InsertUniqueUID("SeriesInstanceUID");
+    hdr->InsertUniqueUID("SOPInstanceUID");
+    hdr->InsertUniqueUID("MediaStorageSOPInstanceUID");
+    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
+
+}
 
 /*!
  *  Set the chemical shift of the peak position to integrate over.
@@ -192,6 +259,24 @@ void svkExtractMRIFromMRS::GetIntegrationPtRange(int& startPt, int& endPt)
                       );  
 
     point->Delete();
+}
+
+
+/*!
+ *
+ */
+void svkExtractMRIFromMRS::SetAlgorithmToIntegrate()
+{
+    this->quantificationAlgorithm = svkExtractMRIFromMRS::INTEGRATE; 
+}
+
+
+/*!
+ *
+ */
+void svkExtractMRIFromMRS::SetAlgorithmToPeakHeight()
+{
+    this->quantificationAlgorithm = svkExtractMRIFromMRS::PEAK_HT; 
 }
 
 

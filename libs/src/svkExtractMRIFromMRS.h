@@ -75,11 +75,20 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         static svkExtractMRIFromMRS* New();
         vtkTypeRevisionMacro( svkExtractMRIFromMRS, svkImageAlgorithm);
 
+        typedef enum {
+            INTEGRATE = 0, 
+            PEAK_HT = 1 
+        }algorithm;
+
+
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetPeakPosPPM( float peak_center_ppm );     
         void                    SetPeakWidthPPM( float peak_width_ppm  );     
+        void                    SetAlgorithmToIntegrate();     
+        void                    SetAlgorithmToPeakHeight();     
+        virtual void            Update(); 
 
 
     protected:
@@ -92,6 +101,13 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
                                     vtkInformationVector** inputVector, 
                                     vtkInformationVector* outputVector 
                                 );
+        virtual int             RequestInformation ( 
+                                    vtkInformation* request,  
+                                    vtkInformationVector** inputVector, 
+                                    vtkInformationVector* outputVector 
+                                ); 
+        void                    ZeroData(); 
+        void                    Integrate(); 
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
@@ -110,6 +126,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         svkEnhancedMRIIOD*               iod;
         float                            peakCenterPPM;
         float                            peakWidthPPM;
+        svkExtractMRIFromMRS::algorithm  quantificationAlgorithm;  
 
 };
 
