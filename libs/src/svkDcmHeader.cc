@@ -426,7 +426,9 @@ void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesD
     headerCopy->InsertUniqueUID("SOPInstanceUID");
     headerCopy->InsertUniqueUID("MediaStorageSOPInstanceUID");
     headerCopy->SetValue("ImageType", "DERIVED\\SECONDARY");
-    headerCopy->SetValue("SeriesDescription", seriesDescription);
+    if ( !seriesDescription.empty() ) {
+        headerCopy->SetValue("SeriesDescription", seriesDescription);
+    }
 }
 
 
