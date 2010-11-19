@@ -137,7 +137,48 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
 
 
 /*! 
- *  Integrate spectra over specified limits. 
+ *  Peak height of real spectra within specified limits. 
+ */
+void svkExtractMRIFromMRS::PeakHt()
+{
+
+    this->ZeroData(); 
+
+    //  Get integration limits:
+    int startPt = 0; 
+    int endPt = 0; 
+    this->GetIntegrationPtRange(startPt, endPt); 
+
+    //  If integration limits are out of range just returned zero'd image.
+    int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
+    if ( startPt < 0 || endPt >= numSpecPoints ) {
+        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
+        return; 
+    }
+
+    int numVoxels[3]; 
+    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    for (int i = 0; i < totalVoxels; i++ ) {
+
+        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+            svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
+        ); 
+        float* specPtr = spectrum->GetPointer(0);
+
+        double peakHt = specPtr[2*startPt];     
+        for ( int pt = startPt; pt <= endPt; pt ++ ) {
+            if ( specPtr[2*pt] > peakHt ) {
+                peakHt = specPtr[2*pt]; 
+            }
+        }
+        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, peakHt);
+    }
+}
+
+
+/*! 
+ *  Integrate real spectra over specified limits. 
  */
 void svkExtractMRIFromMRS::Integrate()
 {
@@ -211,7 +252,12 @@ void svkExtractMRIFromMRS::Update()
 {
     cout << "UPDATE" << endl;
     this->Superclass::Update();
-    this->Integrate(); 
+
+    if (this->quantificationAlgorithm == svkExtractMRIFromMRS::INTEGRATE) { 
+        this->Integrate(); 
+    } else if (this->quantificationAlgorithm == svkExtractMRIFromMRS::PEAK_HT) { 
+        this->PeakHt(); 
+    }
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");

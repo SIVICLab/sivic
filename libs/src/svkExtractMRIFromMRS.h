@@ -108,6 +108,8 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
                                 ); 
         void                    ZeroData(); 
         void                    Integrate(); 
+        void                    PeakHt(); 
+
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
