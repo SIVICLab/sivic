@@ -371,7 +371,6 @@ void svkDcmMriVolumeReader::OnlyReadInputFile()
     vtkStringArray* tmpFileNames = vtkStringArray::New();
     tmpFileNames->SetNumberOfValues(1);
     tmpFileNames->SetValue(0, this->GetFileName() );
-    tmpFileNames->Delete();
 
     // Calling this method will set the DataExtents for the slice direction
     this->SetFileNames( tmpFileNames );
