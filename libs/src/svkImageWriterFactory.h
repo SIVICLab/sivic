@@ -70,7 +70,7 @@ class svkImageWriterFactory : public vtkObject
         static svkImageWriterFactory* New();
         vtkTypeRevisionMacro( svkImageWriterFactory, vtkObject);
 
-        enum WriterType {
+        typedef enum {
             UNDEFINED = -1, 
             JPEG = 0, 
             TIFF, 
@@ -82,7 +82,7 @@ class svkImageWriterFactory : public vtkObject
             DICOM_SC, 
             PS, 
             LAST_TYPE = PS
-        };
+        } WriterType;
 
 
         //  Create a concrete reader based on the file extension 

@@ -41,6 +41,7 @@
 
 
 #include <svkDICOMEnhancedMRIWriter.h>
+#include <svkImageReader2.h>
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
@@ -123,6 +124,10 @@ void svkDICOMEnhancedMRIWriter::Write()
     );  
 
 
+    //  Make sure there is an extension:
+    vtkstd::string fileRoot = svkImageReader2::GetFileRoot( this->InternalFileName );
+    sprintf(this->InternalFileName, "%s.dcm", fileRoot.c_str() );
+     
     this->GetImageDataInput(0)->GetDcmHeader()->WriteDcmFile(this->InternalFileName); 
 
     if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
