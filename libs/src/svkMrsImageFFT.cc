@@ -195,7 +195,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     svkImageFourierCenter* postIfc = svkImageFourierCenter::New();
     double progress = 0;
     
-    vtkImageData* pointImage = vtkImageData::New();
+    svkMriImageData* pointImage = svkMriImageData::New();
     for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
         for( int channel = 0; channel < numChannels; channel++ ) {
             ostringstream progressStream;

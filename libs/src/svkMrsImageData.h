@@ -106,7 +106,7 @@ class svkMrsImageData: public svkImageData
                        ); 
 
         void           GetImage( 
-                            vtkImageData* image, 
+                            svkMriImageData* image, 
                             int point, 
                             int timePoint = 0, 
                             int channel = 0, 

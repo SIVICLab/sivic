@@ -798,7 +798,7 @@ int component, vtkstd::string seriesDescription )
  *  \param component (0 = real, 1=im, 2=cmplx) 
  *
  */
-void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, int channel, int component ) 
+void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, int component ) 
 {
 
     if( image != NULL ) {
@@ -821,7 +821,7 @@ void  svkMrsImageData::GetImage( vtkImageData* image, int point, int timePoint, 
         this->GetDcmHeader()->GetOrigin(origin);
         image->SetOrigin( origin );
 
-        svkImageData::SafeDownCast( image )->CopyDcos( this );
+        image->CopyDcos( this );
         image->GetIncrements();
 
         // Create a float array to hold the pixel data

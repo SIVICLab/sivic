@@ -142,8 +142,8 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
     float cmplxPt[2];
     float integral[2];
 
-    vtkImageData* ptImage = vtkImageData::New();
-    vtkImageData* sumImage = vtkImageData::New();
+    svkMriImageData* ptImage = svkMriImageData::New();
+    svkMriImageData* sumImage = svkMriImageData::New();
 
     for( int channel = 0; channel < numChannels; channel++ ) {
         for (int timePt = 0; timePt < numTimePts; timePt++) {
