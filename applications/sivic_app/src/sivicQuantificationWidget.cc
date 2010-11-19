@@ -78,7 +78,7 @@ void sivicQuantificationWidget::CreateWidget()
     this->metNames.push_back( "choline" ); 
     this->metNames.push_back( "creatine" ); 
     this->metNames.push_back( "NAA" ); 
-    this->metNames.push_back( "lipid" ); 
+    this->metNames.push_back( "lipid_lac" ); 
 
     // this is a map of default metabolite names to ppm ranges: 
     this->metQuantMap["choline"].push_back(3.358); 
