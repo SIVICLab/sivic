@@ -194,7 +194,7 @@ int main (int argc, char** argv)
     reader->OnlyReadOneInputFile(); 
 
     svkMrsImageData* dynamicImage = svkMrsImageData::New(); 
-    vtkImageData* tmpImage = vtkImageData::New(); 
+    svkMriImageData* tmpImage = svkMriImageData::New(); 
 
     for ( int fileNum = 0; fileNum < numFiles; fileNum++ ) {
 
