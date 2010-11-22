@@ -87,8 +87,8 @@ void sivicQuantificationWidget::CreateWidget()
     this->metQuantMap["creatine"].push_back(2.973); 
     this->metQuantMap["NAA"].push_back(2.164); 
     this->metQuantMap["NAA"].push_back(1.93); 
-    this->metQuantMap["lipid"].push_back(1.439); 
-    this->metQuantMap["lipid"].push_back(1.273); 
+    this->metQuantMap["lipid_lac"].push_back(1.439); 
+    this->metQuantMap["lipid_lac"].push_back(1.273); 
 
 
     //  Map View Selector
