@@ -199,6 +199,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_file_convert )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quick_view )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_multi_view )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_gepfile_reader )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_spec_diff )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_integrate_dynamic )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quantify )
+
+
 
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS 

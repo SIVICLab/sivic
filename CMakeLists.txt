@@ -38,6 +38,8 @@ IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF(COMMAND CMAKE_POLICY)
 
+INCLUDE( CMakeSivicInclude.cmake )
+
 option( BUILD_LIBRARY "Build library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
@@ -48,9 +50,9 @@ option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
 option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 
-ADD_DEFINITIONS( -DSVK_RELEASE_VERSION='\"0.6.7\"' )
-ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='0' )
-ADD_DEFINITIONS( -DSVK_MINOR_VERSION='6' )
+ADD_DEFINITIONS(-DSVK_RELEASE_VERSION='\"${SVK_RELEASE_VERSION}\"' )
+ADD_DEFINITIONS( -DSVK_MAJOR_VERSION='${SVK_MAJOR_VERSION}' )
+ADD_DEFINITIONS( -DSVK_MINOR_VERSION='${SVK_MINOR_VERSION}' )
 
 ###################################
 #   VTK
@@ -108,3 +110,4 @@ if( BUILD_TESTING)
     #add_subdirectory (tests/src)
 endif ( BUILD_TESTING)
 
+INSTALL_FILES( /local/sivic FILES README LICENSE)
