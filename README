@@ -1,4 +1,4 @@
-SIVIC 0.6.  
+SIVIC 0.7.0 
 
 This is an early stage relese of SIVIC.  All comments/questions are welcome.  This is a community project and 
 participation is encouraged.  Please see the following links for further information. 
@@ -18,4 +18,9 @@ participation is encouraged.  Please see the following links for further informa
 3.  Mail List:
     https://lists.sourceforge.net/lists/listinfo/sivic-users
     
-
+NOTES FOR WINDOWS USERS:
+    * To run sivic simply double click on sivic_windows/bin/sivic.bat, or run from the msdos prompt.
+    * This version of sivic should run on Windows Vista, Windows 7, and Windows 2003 Server.
+    * Some features are disabled in the Windows version (using the "exam" button and the quantification demo). These features should be available soon.
+    * Command line tools are not yet available, but also should be soon.
+    * Please contact us via the sourceforge site above if you have any problems.
