@@ -101,11 +101,6 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
                                     vtkInformationVector** inputVector, 
                                     vtkInformationVector* outputVector 
                                 );
-        virtual int             RequestInformation ( 
-                                    vtkInformation* request,  
-                                    vtkInformationVector** inputVector, 
-                                    vtkInformationVector* outputVector 
-                                ); 
         void                    ZeroData(); 
         void                    Integrate(); 
         void                    PeakHt(); 

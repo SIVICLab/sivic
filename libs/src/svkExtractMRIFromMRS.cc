@@ -234,16 +234,6 @@ void svkExtractMRIFromMRS::ZeroData()
 }
 
 
-
-/*!
- *
- */
-int svkExtractMRIFromMRS::RequestInformation ( vtkInformation* request,  vtkInformationVector** inputVector, vtkInformationVector* outputVector )
-{
-    cout << "REQUEST INFO" << endl;
-}
-
-
 /*!
  *  Triggers a reintegration over current limits and updates DCM header
  *  with a new SeriesInstanceUID, SOPInstanceUID and the current SeriesDescription. 
