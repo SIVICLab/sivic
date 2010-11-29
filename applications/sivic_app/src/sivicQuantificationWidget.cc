@@ -319,9 +319,9 @@ void sivicQuantificationWidget::ExecuteQuantification()
         //  Initialize the overlay with the NAA met map
         this->SetOverlay( this->modelMetNames[2] ); 
 
-        this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
-        this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
-        this->plotController->SetOverlayOpacity( .5 );
+        //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+        //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
+        //this->plotController->SetOverlayOpacity( .5 );
         this->plotController->GetView()->Refresh();
 
         this->sivicController->EnableWidgets( );
@@ -343,9 +343,18 @@ void sivicQuantificationWidget::SetOverlay( vtkstd::string modelObjectName)
     } else {
         this->model->AddDataObject( "MetaboliteData", this->model->GetDataObject(modelObjectName ));
     }
-
-    this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET ); 
-    this->overlayController->SetInput( this->model->GetDataObject( modelObjectName ), svkOverlayView::OVERLAY );
+    if( this->model->DataExists( "OverlayData" ) ) {
+        this->model->ChangeDataObject( "OverlayData", this->model->GetDataObject( modelObjectName ) );
+    } else {
+        this->model->AddDataObject( "OverlayData", this->model->GetDataObject(modelObjectName ));
+    }
+    string tmpFilename = "temporaryFile";
+    if( this->model->DataExists( "AnatomicalData" ) ) {
+        this->sivicController->OpenOverlay(this->model->GetDataObject(modelObjectName), tmpFilename );
+    } else {
+        this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET ); 
+        this->overlayController->SetInput( this->model->GetDataObject( modelObjectName ), svkOverlayView::OVERLAY );
+   }
 }
 
 

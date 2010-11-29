@@ -684,20 +684,9 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
     this->globalWidget->PopulateMetaboliteMenu();
 }
 
-
-void vtkSivicController::OpenOverlay( const char* fileName )
+void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename )
 {
-    struct stat st;
-    // Lets check to see if the file exists 
-    if(stat(fileName,&st) != 0) {
-        this->PopupMessage(" File does not exist!"); 
-        return;
-    }
-    string resultInfo = "";
-    string stringFilename( fileName );
-    if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
-
-        svkImageData* data = this->model->LoadFile( stringFilename );
+        string resultInfo = "";
 
         if (data == NULL) {
             this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -783,6 +772,21 @@ void vtkSivicController::OpenOverlay( const char* fileName )
         }
         this->SetThresholdType( this->thresholdType );
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+}
+
+void vtkSivicController::OpenOverlay( const char* fileName )
+{
+    struct stat st;
+    // Lets check to see if the file exists 
+    if(stat(fileName,&st) != 0) {
+        this->PopupMessage(" File does not exist!"); 
+        return;
+    }
+    string stringFilename( fileName );
+    if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
+
+        svkImageData* data = this->model->LoadFile( stringFilename );
+        this->OpenOverlay(data, stringFilename);
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
     }

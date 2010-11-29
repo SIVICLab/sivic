@@ -133,8 +133,10 @@ void svkImageData::PrintSelf( ostream &os, vtkIndent indent )
  */
 void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
-    svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
     this->Superclass::DeepCopy( src );
+    if( src->IsA("svkImageData") ) {
+        svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
+    }
     this->CopyDcos( src );
     if( castToFormat != svkDcmHeader::UNDEFINED ) {
         this->CastDataFormat( castToFormat );
