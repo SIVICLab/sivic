@@ -49,7 +49,7 @@ echo ${plugin_path}
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
 export DYLD_FRAMEWORK_PATH
 
-DYLD_LIBRARY_PATH="${plugin_path}/vtk-5.4:${plugin_path}/KWWidgets"
+DYLD_LIBRARY_PATH="${plugin_path}/Tcl.framework:${plugin_path}/Tk.framework:${plugin_path}/vtk-5.4:${plugin_path}/KWWidgets"
 export DYLD_LIBRARY_PATH
 set | grep  DYLD_FRAMEWORK_PATH
 set | grep  DYLD_LIBRARY_PATH
