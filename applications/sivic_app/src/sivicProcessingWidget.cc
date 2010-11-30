@@ -361,12 +361,15 @@ void sivicProcessingWidget::ExecuteRecon()
         bool resetFrequency = 1;
         //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
         //                                   resetAmplitude, resetFrequency );
+        string stringFilename = "Result";
+        this->sivicController->OpenSpectra( data, stringFilename);
         this->sivicController->EnableWidgets( );
 
         // We are resetting the input to make sure the actors get updated
-        this->plotController->SetInput(data);
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
+
+        //this->plotController->SetInput(data);
+        //this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
+        //this->plotController->GetView()->Refresh();
         spatialRFFT->Delete();
         spectralFFT->Delete();
         this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
@@ -396,6 +399,9 @@ void sivicProcessingWidget::ExecutePhase()
         bool useFullAmplitudeRange = 1;
         bool resetAmplitude = 1;
         bool resetFrequency = 0;
+        string stringFilename = "PhasedData";
+        this->sivicController->OpenSpectra( data, stringFilename);
+        this->sivicController->EnableWidgets( );
         //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
         //                                   resetAmplitude, resetFrequency );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
@@ -428,6 +434,8 @@ void sivicProcessingWidget::ExecuteCombine()
         this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
                                            resetAmplitude, resetFrequency );
         this->sivicController->ResetChannel( );
+        string stringFilename = "CombinedData";
+        this->sivicController->OpenSpectra( data, stringFilename);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }

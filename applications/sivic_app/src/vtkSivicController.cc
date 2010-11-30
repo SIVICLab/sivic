@@ -473,6 +473,194 @@ void vtkSivicController::OpenImage( const char* fileName )
 }
 
 
+void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilename, svkImageData* oldData, bool onlyReadOneInputFile )
+{
+
+    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+
+    string resultInfo;
+    string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
+    string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
+    svkDataValidator* validator = svkDataValidator::New(); 
+    string validatorResultInfo;
+    if( this->model->DataExists( "AnatomicalData" ) ) {
+        bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "AnatomicalData" )); 
+        if ( !valid ) {
+            validatorResultInfo = validator->resultInfo; 
+        }
+    }
+
+    //  Precheck to see if valdation errors should be overridden:
+    if( overlayViewResultInfo.compare("") != 0 || 
+        plotViewResultInfo.compare("") != 0    || 
+        validatorResultInfo.compare("") != 0 ) {
+
+        resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
+        resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
+        resultInfo += "Info:\n"; 
+        resultInfo += plotViewResultInfo;
+        resultInfo += overlayViewResultInfo;
+        resultInfo += validatorResultInfo;
+        int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
+
+        //  If user wants to continue anyway, unset the info results 
+        if ( dialogStatus == 2 ) {
+            plotViewResultInfo = "";      
+            overlayViewResultInfo = "";      
+            validatorResultInfo = "";      
+            this->overlayController->GetView()->ValidationOff();
+        } 
+
+    }  
+
+    if ( overlayViewResultInfo.compare("") == 0 && 
+        plotViewResultInfo.compare("") == 0 && 
+        validatorResultInfo.compare("") == 0 && 
+        newData != NULL )  {
+
+        // If the spectra file is already in the model
+        int* tlcBrc = NULL; 
+        if( oldData != NULL ) {
+            // We need to copy the tlc brc so it carries over to the new data set.
+            tlcBrc = new int[2];
+            memcpy( tlcBrc, this->plotController->GetTlcBrc(), 2*sizeof(int) );
+            this->model->ChangeDataObject( "SpectroscopicData", newData );
+            this->model->SetDataFileName( "SpectroscopicData", stringFilename );
+
+        } else {
+            this->model->AddDataObject( "SpectroscopicData", newData );
+            this->model->SetDataFileName( "SpectroscopicData", stringFilename );
+        }
+
+        // Now we can update the sliders based on the image data properties
+        spectraData = static_cast<vtkImageData*>(newData );
+        int* extent = newData->GetExtent();
+
+        if( tlcBrc == NULL ) {
+            int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
+            int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
+            this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
+            this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+            int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
+            this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
+            this->spectraViewWidget->channelSlider->SetValue( 1 );
+            int timePoints = newData->GetDcmHeader()->GetNumberOfTimePoints();
+            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints); 
+            this->spectraViewWidget->timePointSlider->SetValue( 1 );
+            this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
+            this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
+        }
+        this->plotController->SetInput( newData ); 
+
+        this->detailedPlotController->SetInput( newData ); 
+        this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
+
+        this->SetPreferencesFromRegistry();
+
+        this->processingWidget->phaseSlider->SetValue(0.0); 
+        this->processingWidget->phaser->SetInput( newData );
+
+        this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
+
+        if( oldData != NULL ) {
+            bool useFullFrequencyRange = 0;
+            bool useFullAmplitudeRange = 0;
+            bool resetAmplitude = 0;
+            bool resetFrequency = 0;
+            this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                       resetAmplitude, resetFrequency );
+            this->SetOrientation( this->orientation.c_str() );
+        } else {
+            bool useFullFrequencyRange = 0;
+            bool useFullAmplitudeRange = 0;
+            bool resetAmplitude = 1;
+            bool resetFrequency = 1;
+            this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                       resetAmplitude, resetFrequency );
+            switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                case svkDcmHeader::AXIAL:
+                    this->SetOrientation( "AXIAL" );
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->SetOrientation( "CORONAL" );
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->SetOrientation( "SAGITTAL" );
+                    break;
+            }
+        }
+
+        svkImageData* metData = this->model->GetDataObject("MetaboliteData");
+        svkImageData* overlayData = this->model->GetDataObject("OverlayData");
+
+        // Check to see if any currently loaded overlays are invalid in the overlayController
+
+        string compatibility = ""; 
+        if( overlayData != NULL ) {
+            compatibility = this->overlayController->GetDataCompatibility( overlayData, svkOverlayView::OVERLAY );
+        } else if( metData != NULL ) { // If there was no overlay data check the metabolite data
+            compatibility = this->overlayController->GetDataCompatibility( metData, svkOverlayView::OVERLAY );
+        }
+        if( compatibility.compare("") != 0 ) {
+            string message =  "Closing image overlay due to geometric incompatibility.\n";
+            message.append(compatibility);
+            this->PopupMessage( message );
+            overlayController->GetView()->RemoveInput(svkOverlayView::OVERLAY);                    
+            this->model->RemoveDataObject("OverlayData");
+        } 
+
+        // Check to see if any currently loaded metabolites are invalid in the plotController
+        if( metData != NULL ) {
+            compatibility = ""; 
+            compatibility = this->plotController->GetDataCompatibility( metData, svkPlotGridView::MET );
+            if( compatibility.compare("") != 0 ) {
+                string message =  "Closing spectra overlay due to geometric incompatibility.\n";
+                message.append(compatibility);
+                this->PopupMessage( message );
+                plotController->GetView()->RemoveInput( svkPlotGridView::MET );                    
+                this->model->RemoveDataObject("MetaboliteData");
+            } 
+        }
+
+        if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
+            this->plotController->HighlightSelectionVoxels();
+            this->overlayController->HighlightSelectionVoxels();
+        } else {
+            this->plotController->SetTlcBrc( tlcBrc ); 
+            this->overlayController->SetTlcBrc( tlcBrc ); 
+        }
+        this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
+        this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
+        string component = (this->spectraRangeWidget->componentSelectBox->GetWidget()->GetValue( ));
+        if( component == "read" ) {
+            this->SetComponentCallback( 0 );
+        } else if ( component == "imag" ) {
+            this->SetComponentCallback( 1 );
+        } else if ( component == "mag" ) {
+            this->SetComponentCallback( 2 );
+        }
+        this->viewRenderingWidget->ResetInfoText();
+
+    } else {
+
+        resultInfo = "ERROR: Could not load dataset!\nInfo:\n"; 
+        this->PopupMessage( resultInfo ); 
+    }
+
+    if( toggleDraw ) {
+        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    }
+    this->DisableWidgets();
+    this->EnableWidgets();
+    this->overlayController->GetView()->Refresh( );
+    this->plotController->GetView()->Refresh( );
+}
+
 void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInputFile )
 {
     struct stat st;
@@ -491,188 +679,7 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
 
     } else {
-
-        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
-        if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-            this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
-        }
-
-        string resultInfo;
-        string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
-        string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
-        svkDataValidator* validator = svkDataValidator::New(); 
-        string validatorResultInfo;
-        if( this->model->DataExists( "AnatomicalData" ) ) {
-            bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "AnatomicalData" )); 
-            if ( !valid ) {
-                validatorResultInfo = validator->resultInfo; 
-            }
-        }
-
-        //  Precheck to see if valdation errors should be overridden:
-        if( overlayViewResultInfo.compare("") != 0 || 
-            plotViewResultInfo.compare("") != 0    || 
-            validatorResultInfo.compare("") != 0 ) {
-
-            resultInfo  = "ERROR: Dataset is not compatible! \n\n"; 
-            resultInfo += "Do you want to attempt to display them anyway? \n\n"; 
-            resultInfo += "Info:\n"; 
-            resultInfo += plotViewResultInfo;
-            resultInfo += overlayViewResultInfo;
-            resultInfo += validatorResultInfo;
-            int dialogStatus = this->PopupMessage( resultInfo, vtkKWMessageDialog::StyleYesNo ); 
-
-            //  If user wants to continue anyway, unset the info results 
-            if ( dialogStatus == 2 ) {
-                plotViewResultInfo = "";      
-                overlayViewResultInfo = "";      
-                validatorResultInfo = "";      
-                this->overlayController->GetView()->ValidationOff();
-            } 
-
-        }  
-
-        if ( overlayViewResultInfo.compare("") == 0 && 
-            plotViewResultInfo.compare("") == 0 && 
-            validatorResultInfo.compare("") == 0 && 
-            newData != NULL )  {
-
-            // If the spectra file is already in the model
-            int* tlcBrc = NULL; 
-            if( oldData != NULL ) {
-                // We need to copy the tlc brc so it carries over to the new data set.
-                tlcBrc = new int[2];
-                memcpy( tlcBrc, this->plotController->GetTlcBrc(), 2*sizeof(int) );
-                this->model->ChangeDataObject( "SpectroscopicData", newData );
-                this->model->SetDataFileName( "SpectroscopicData", stringFilename );
-
-            } else {
-                this->model->AddDataObject( "SpectroscopicData", newData );
-                this->model->SetDataFileName( "SpectroscopicData", stringFilename );
-            }
-
-            // Now we can update the sliders based on the image data properties
-            spectraData = static_cast<vtkImageData*>(newData );
-            int* extent = newData->GetExtent();
-
-            if( tlcBrc == NULL ) {
-                int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
-                int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
-                this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-                this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
-                int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
-                this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
-                this->spectraViewWidget->channelSlider->SetValue( 1 );
-                int timePoints = newData->GetDcmHeader()->GetNumberOfTimePoints();
-                this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints); 
-                this->spectraViewWidget->timePointSlider->SetValue( 1 );
-                this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
-                this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
-            }
-            this->plotController->SetInput( newData ); 
-
-            this->detailedPlotController->SetInput( newData ); 
-            this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
-
-            this->SetPreferencesFromRegistry();
-    
-            this->processingWidget->phaseSlider->SetValue(0.0); 
-            this->processingWidget->phaser->SetInput( newData );
-    
-            this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
-   
-            if( oldData != NULL ) {
-                bool useFullFrequencyRange = 0;
-                bool useFullAmplitudeRange = 0;
-                bool resetAmplitude = 0;
-                bool resetFrequency = 0;
-                this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                           resetAmplitude, resetFrequency );
-                this->SetOrientation( this->orientation.c_str() );
-            } else {
-                bool useFullFrequencyRange = 0;
-                bool useFullAmplitudeRange = 0;
-                bool resetAmplitude = 1;
-                bool resetFrequency = 1;
-                this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                           resetAmplitude, resetFrequency );
-                switch( newData->GetDcmHeader()->GetOrientationType() ) {
-                    case svkDcmHeader::AXIAL:
-                        this->SetOrientation( "AXIAL" );
-                        break;
-                    case svkDcmHeader::CORONAL:
-                        this->SetOrientation( "CORONAL" );
-                        break;
-                    case svkDcmHeader::SAGITTAL:
-                        this->SetOrientation( "SAGITTAL" );
-                        break;
-                }
-            }
-
-            svkImageData* metData = this->model->GetDataObject("MetaboliteData");
-            svkImageData* overlayData = this->model->GetDataObject("OverlayData");
-
-            // Check to see if any currently loaded overlays are invalid in the overlayController
-
-            string compatibility = ""; 
-            if( overlayData != NULL ) {
-                compatibility = this->overlayController->GetDataCompatibility( overlayData, svkOverlayView::OVERLAY );
-            } else if( metData != NULL ) { // If there was no overlay data check the metabolite data
-                compatibility = this->overlayController->GetDataCompatibility( metData, svkOverlayView::OVERLAY );
-            }
-            if( compatibility.compare("") != 0 ) {
-                string message =  "Closing image overlay due to geometric incompatibility.\n";
-                message.append(compatibility);
-                this->PopupMessage( message );
-                overlayController->GetView()->RemoveInput(svkOverlayView::OVERLAY);                    
-                this->model->RemoveDataObject("OverlayData");
-            } 
-
-            // Check to see if any currently loaded metabolites are invalid in the plotController
-            if( metData != NULL ) {
-                compatibility = ""; 
-                compatibility = this->plotController->GetDataCompatibility( metData, svkPlotGridView::MET );
-                if( compatibility.compare("") != 0 ) {
-                    string message =  "Closing spectra overlay due to geometric incompatibility.\n";
-                    message.append(compatibility);
-                    this->PopupMessage( message );
-                    plotController->GetView()->RemoveInput( svkPlotGridView::MET );                    
-                    this->model->RemoveDataObject("MetaboliteData");
-                } 
-            }
-
-            if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
-                this->plotController->HighlightSelectionVoxels();
-                this->overlayController->HighlightSelectionVoxels();
-            } else {
-                this->plotController->SetTlcBrc( tlcBrc ); 
-                this->overlayController->SetTlcBrc( tlcBrc ); 
-            }
-            this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
-            this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
-            string component = (this->spectraRangeWidget->componentSelectBox->GetWidget()->GetValue( ));
-            if( component == "read" ) {
-                this->SetComponentCallback( 0 );
-            } else if ( component == "imag" ) {
-                this->SetComponentCallback( 1 );
-            } else if ( component == "mag" ) {
-                this->SetComponentCallback( 2 );
-            }
-            this->viewRenderingWidget->ResetInfoText();
-
-        } else {
-
-            resultInfo = "ERROR: Could not load dataset!\nInfo:\n"; 
-            this->PopupMessage( resultInfo ); 
-        }
-
-        if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-            this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        }
-        this->overlayController->GetView()->Refresh( );
-        this->plotController->GetView()->Refresh( );
+        this->OpenSpectra( newData,  stringFilename, oldData, onlyReadOneInputFile );
 
     }
     this->DisableWidgets();
@@ -2301,6 +2308,7 @@ void vtkSivicController::EnableWidgets()
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
+            this->quantificationWidget->EnableWidgets();
         }
         this->imageViewWidget->satBandButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
@@ -2318,7 +2326,6 @@ void vtkSivicController::EnableWidgets()
             this->spectraViewWidget->timePointSlider->EnabledOn();
         }
         this->imageViewWidget->volSelButton->EnabledOn();
-        this->quantificationWidget->EnableWidgets();
     }
 
     if ( model->DataExists("AnatomicalData") ) {

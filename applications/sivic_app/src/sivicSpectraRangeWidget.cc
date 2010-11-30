@@ -304,6 +304,7 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
         float min = 1;
         float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
         if( domain == "FREQUENCY" ) {
+            this->SetSpecUnitsCallback(svkSpecPoint::PPM);
             min = this->point->ConvertPosUnits(
                             0,
                             svkSpecPoint::PTS,

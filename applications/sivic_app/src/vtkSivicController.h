@@ -130,6 +130,7 @@ class vtkSivicController : public vtkObject
         void                       OpenExam( );
         int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);
         void                       OpenImage(   const char* fileName );
+        void                       OpenSpectra( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL ,bool onlyReadOneInputFile = false );
         void                       OpenSpectra( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenOverlay( svkImageData* data, string stringFilename );
         void                       OpenOverlay( const char* fileName );
