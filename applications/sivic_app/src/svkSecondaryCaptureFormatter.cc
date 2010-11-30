@@ -876,7 +876,6 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     stringstream specInfo2;
     stringstream imageInfo;
     size_t pos;
-    size_t pos2;
     
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
@@ -927,10 +926,10 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
             pos = currentOverlayName.find_last_of("/"); 
             if( pos == currentOverlayName.npos ) {
                 pos = 0;
-            } else if( pos2+1 < currentOverlayName.npos) {
+            } else if( pos+1 < currentOverlayName.npos) {
                 pos++;
             }
-            imageInfo << "Overlay File: " << endl << " " << currentOverlayName.substr(pos2) << endl;
+            imageInfo << "Overlay File: " << endl << " " << currentOverlayName.substr(pos) << endl;
         } else if( currentMetaboliteName != "" ) {
             pos = currentMetaboliteName.find_last_of("/"); 
             if( pos == currentMetaboliteName.npos ) {
