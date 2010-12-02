@@ -44,6 +44,7 @@
 
 #include <vtkImageAccumulate.h>
 #include <vtkImageChangeInformation.h>
+#include <vtkInformationVector.h>
 
 
 using namespace svk;
@@ -141,9 +142,14 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     );
     
     reslicer->Update();
-//cout << " OUTPUT VECT " << outputVector[0] << endl;  
-//this->SetInformation( reslicer->GetOutput()->GetInformation() ); 
-return 1; 
+
+    //cout << " OUTPUT VECT " << outputVector[0] << endl;  
+    //this->SetInformation( reslicer->GetOutput()->GetInformation() ); 
+    //outputVector->SetInformationObject(0, reslicer->GetOutput()->GetInformation()); 
+    //vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    //outInfo->Set(
+
+    return 1; 
 
 }
 
@@ -157,7 +163,7 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
 {
 
 
-    //  Get the allocated svk output image data: 
+    //  Get the allocated svk output image data (resliced image doesn't have a dcos yet): 
     this->GetOutput()->SetDcos( this->targetDcos ); 
 
     //  Copy the vtkImageAlgo output to the allocated svkImageData output image
@@ -249,6 +255,7 @@ void svkObliqueReslice::UpdateHeader()
 
     if ( this->GetDebug() ) {
         this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
+        cout << "OUTPUT IMAGE (updated header): " << *( this->reslicedImage ) << endl;
     }
     
 }
@@ -349,9 +356,6 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     double* tlc0 = new double[3]; 
     this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin(tlc0, 0);
 
-    this->reslicedImage->SetOrigin( tlc0 );
-
-    
     double* inputSpacing = new double[3]; 
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(inputSpacing); 
 
@@ -362,7 +366,6 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
 
     double dcosIn[3][3];
     this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
-
 
     //  Now calculate the volumetric center by displacing by 1/2 fov - 1/2 voxel from tlc position: 
     double origin[3]; 
@@ -390,6 +393,7 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
         }
     }
     cout << "new tlc: " << newTlc[0] << " " << newTlc[1] << " " << newTlc[2] << endl;
+    this->reslicedImage->SetOrigin( newTlc );
 
     float displacement[3];
     float frameLPSPosition[3];
