@@ -249,6 +249,8 @@ void svkImageReader2::SetupOutputInformation()
     double origin[3];
     dcmHdr->GetOrigin(origin);
 
+    //  For MRS data the vtk point origin (origin of first point in data set is corner of voxel) 
+    //  is 1/2 voxel away from DICOM origin. 
     if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
         double pixelSize[3];
         dcmHdr->GetPixelSize(pixelSize);

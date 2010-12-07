@@ -40,6 +40,10 @@
  */
 
 
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+
 #include <svkExtractMRIFromMRS.h>
 #include <svkSpecPoint.h>
 
@@ -114,6 +118,50 @@ void svkExtractMRIFromMRS::SetZeroCopy(bool zeroCopy)
 
 
 /*!
+ *  Resets the origin and extent for correct initialization of output svkMriImageData object from input 
+ *  svkMrsImageData object. 
+ */
+int svkExtractMRIFromMRS::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    int inWholeExt[6];
+    inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inWholeExt);
+    double inSpacing[3]; 
+    inInfo->Get(vtkDataObject::SPACING(), inSpacing);
+
+    //  MRI image data has a smaller extent than the input MRS 
+    //  image data (points vs cells):
+    int outUpExt[6];
+    int outWholeExt[6];
+    double outSpacing[3]; 
+    for (int i = 0; i < 3; i++) {
+        outUpExt[2*i]      = inWholeExt[2*i];
+        outUpExt[2*i+1]    = inWholeExt[2*i+1] - 1;
+        outWholeExt[2*i]   = inWholeExt[2*i];
+        outWholeExt[2*i+1] = inWholeExt[2*i+1] - 1;
+
+        outSpacing[i] = inSpacing[i];
+    }
+
+    //  MRS Input data has origin at first point (voxel corner).  Whereas output MRI image has origin at
+    //  center of a point (point data).  In both cases this is the DICOM origin, but needs to be represented
+    //  differently in VTK and DCM: 
+    double outOrigin[3];
+    svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetOrigin( outOrigin ); 
+
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt, 6);
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), outUpExt, 6);
+    outInfo->Set(vtkDataObject::SPACING(), outSpacing, 3);
+    outInfo->Set(vtkDataObject::ORIGIN(), outOrigin, 3);
+
+    return 1;
+}
+
+
+/*!
  *  Copy the Dcm Header and Provenance from the input to the output. 
  */
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
@@ -125,7 +173,6 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
     svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput() ), 
         0, 
-        //static_cast<int>( (endPt + startPt)/2 ), 
         0, 
         0, 
         0, 

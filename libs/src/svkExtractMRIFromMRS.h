@@ -96,6 +96,11 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         svkExtractMRIFromMRS();
         ~svkExtractMRIFromMRS();
 
+        virtual int             RequestInformation(
+                                    vtkInformation* request,
+                                    vtkInformationVector** inputVector,
+                                    vtkInformationVector* outputVector
+                                );
         virtual int             RequestData( 
                                     vtkInformation* request, 
                                     vtkInformationVector** inputVector, 
