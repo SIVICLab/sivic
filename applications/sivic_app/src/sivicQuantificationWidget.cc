@@ -305,6 +305,8 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
                 this->quant->Update();
 
+                //  Copy the data set so that the algo can be reused to generate a new map without
+                //  overwriting the previous map data. 
                 tmp = svkMriImageData::New();
                 tmp->DeepCopy(this->quant->GetOutput());
                 if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
