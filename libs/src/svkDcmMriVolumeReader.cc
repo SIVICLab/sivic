@@ -137,9 +137,9 @@ float GetFloatVal( vtkstd::vector< vtkstd::string > vec )
 {
     istringstream* posString = new istringstream();
 
-    //  4th element of vector is the projection of the 
+    //  7th element of attributes vector is the projection of the 
     //  ImagePositionPatient on the normal through the origin
-    posString->str( vec[4] );    
+    posString->str( vec[7] );    
     float floatPosition; 
     *posString >> floatPosition; 
 
@@ -182,12 +182,23 @@ void svkDcmMriVolumeReader::SortFilesByImagePositionPatient(
 }
 
 
-
+/*!
+ *  Parse through the DICOM images and determine which ones belong to the same series as the 
+ *  specified input file instances (StudyInstanceUID, SeriesInstanceUID), then also verify that 
+ *  each image has the  same orientation.  The orientation check is useful for cases when there
+ *  are multiple orientations in the same series (e.g. 3 plane localizer).  Since there may be 
+ *  slight diffs between the values in ImageOrientationPatient the check is performed to within
+ *  a tolerance.  
+ *       
+ *  Currently only supports single volume data, i.e. only one image at each location 
+ *  (ImagePositionPatient). 
+ */
 void svkDcmMriVolumeReader::InitFileNames()
 {
     vtkstd::string dcmFileName( this->GetFileName() );
     vtkstd::string dcmFilePath( this->GetFilePath( this->GetFileName() ) );  
 
+    //  Get all files in the directory of the specified input image file:
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
     globFileNames->AddFileNames( vtkstd::string( dcmFilePath + "/*").c_str() );
 
@@ -203,26 +214,38 @@ void svkDcmMriVolumeReader::InitFileNames()
     tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileName() );
     vtkstd::string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
     vtkstd::string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
-    double normal[3]; 
-    tmp->GetDcmHeader()->GetNormalVector( normal );
+    double referenceNormal[3]; 
+    tmp->GetDcmHeader()->GetNormalVector( referenceNormal );
     tmp->Delete();
 
     vtkStringArray* fileNames =  sortFileNames->GetFileNames();
 
-    //  1.  Select only DICOM images from glob.  Non-DICOM image parsing will cause problems
-    //  2.  Ensure that the list of files all belong to the same series (have the same 
-    //      SeriesInstanceUID) as the selected input image. 
-    //  3.  Run some checks to ensure that the series comprises data from a single volume: 
-    //          - all have same ImageOrientationPatient.
-    //          - no duplicated ImagePositionPatient values
-    //  4.  Sort the resulting list of files by location (ascending/descending). 
+    /*  
+     *  1.  Select only DICOM images from glob.  Non-DICOM image parsing will cause problems
+     *  2.  Ensure that the list of files all belong to the same series (have the same 
+     *      SeriesInstanceUID) as the selected input image. 
+     *  3.  Run some checks to ensure that the series comprises data from a single volume: 
+     *          - all have same ImageOrientationPatient.
+     *          - no duplicated ImagePositionPatient values
+     *  4.  Sort the resulting list of files by location (ascending/descending). 
+     */
 
 
-    //  create a container to hold file names and dcm attributes, so 
-    //  DCM parsing is only done once: 
-    //  fileName, SeriesInstanceUID, ImageOrientationPatient, ImagePositionPatient, projectionOnNormal 
-    //      the projection onto the normal of the input image orientation is used for sorting slice 
-    //      order. 
+    /*  
+     *  create a container to hold file names and dcm attributes, so 
+     *  DCM parsing is only done once. The vector contains the following fields: 
+     *      0 => fileName, 
+     *      1 => SeriesInstanceUID, 
+     *      2 => ImageOrientationPatient, 
+     *      3 => normalL
+     *      4 => normalP
+     *      5 => normalS
+     *      6 => ImagePositionPatient, 
+     *      7 => projectionOnNormal 
+     *
+     *  Note: the projection onto the normal of the input image orientation is 
+     *  used for sorting slice order.
+     */
     vtkstd::vector < vtkstd::vector< vtkstd::string > > dcmSeriesAttributes; 
 
     for (int i = 0; i < fileNames->GetNumberOfValues(); i++) {
@@ -247,11 +270,28 @@ void svkDcmMriVolumeReader::InitFileNames()
             } else {
                 dcmFileAttributes.push_back( "" ); 
             }
+
             if( tmp->GetDcmHeader()->ElementExists( "ImageOrientationPatient", "top" ) ) {
                 dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImageOrientationPatient" ) );
+
+                //  Add the 3 components of the normal vector:
+                double normal[3]; 
+                tmp->GetDcmHeader()->GetNormalVector( normal );
+                for (int n = 0; n < 3; n++) {
+                    ostringstream oss;
+                    oss << normal[n];
+                    dcmFileAttributes.push_back( oss.str() ); 
+                }
+
             } else {
                 dcmFileAttributes.push_back( "" ); 
+
+                //  Add the 3 components of the normal vector:
+                dcmFileAttributes.push_back( "" ); 
+                dcmFileAttributes.push_back( "" ); 
+                dcmFileAttributes.push_back( "" ); 
             }
+
             if( tmp->GetDcmHeader()->ElementExists( "ImagePositionPatient", "top" ) ) {
                 dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "ImagePositionPatient" ) );
             } else {
@@ -274,7 +314,7 @@ void svkDcmMriVolumeReader::InitFileNames()
             //  Project posLPS onto the normal vector through the
             //  origin of world coordinate space (this is the same
             //  reference for both data sets (e.g MRI and MRS).
-            double projectionOnNormal = vtkMath::Dot( position, normal );
+            double projectionOnNormal = vtkMath::Dot( position, referenceNormal );
             ostringstream projectionOss;
             projectionOss << projectionOnNormal;
             dcmFileAttributes.push_back( projectionOss.str() ); 
@@ -313,23 +353,48 @@ void svkDcmMriVolumeReader::InitFileNames()
     seriesIt = dcmSeriesAttributes.begin(); 
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
 
+        bool isOrientationOK = true; 
+
         vtkstd::string tmpImageOrientationPatient = (*seriesIt)[2]; 
+
+        //  Check the orientation.  If the orientation differs check by how much, permiting a small 
+        //  variance to within a tolerance: 
         if ( tmpImageOrientationPatient != imageOrientationPatient ) {
+
+            // is the difference within a small tolerance? compare normal vectors:
+
+            double normal[3];            
+            for (int n = 0; n < 3; n++) {
+                istringstream* normalString = new istringstream();
+                normalString->str( (*seriesIt)[n + 3] ); 
+                *normalString >> normal[n];
+                delete normalString;
+            }
+            //  If the normals are the same the dot product should be 1.  
+            //  Permit a small variance:
+            double dotNormals = vtkMath::Dot( normal, referenceNormal );
+            if ( dotNormals < .9999) {
+                isOrientationOK = false; 
+                cout << "DOT NORMAL: " << dotNormals << endl;
+            }
+        }
+        if ( isOrientationOK ) {
+            seriesIt++; 
+        } else {
             //  Orientations don't match, set series to one input file
             vtkWarningWithObjectMacro(this, "ImageOrientationPatient is not the same for all slices, removing file from series");
             seriesIt = dcmSeriesAttributes.erase( seriesIt ); 
-        } else {
-            seriesIt++; 
         }
     }
 
     //  ============================
-    //  Is Data multi-volumetric:
+    //  Is Data multi-volumetric (multiple 
+    //  instances of same ImagePositionPatient):
     //  ============================
     set < vtkstd::string > uniqueSlices;
     seriesIt = dcmSeriesAttributes.begin(); 
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
-        uniqueSlices.insert( (*seriesIt)[3] ); 
+        uniqueSlices.insert( (*seriesIt)[6] ); 
         seriesIt++ ;
     }
     if ( dcmSeriesAttributes.size() > uniqueSlices.size() ) {
