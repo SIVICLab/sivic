@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_quantify.cc $
- *  $Rev: 427 $
- *  $Author: jccrane $
- *  $Date: 2010-07-29 16:30:45 -0700 (Thu, 29 Jul 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

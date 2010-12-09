@@ -198,6 +198,15 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_reslice
+    svk_reslice.cc
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_reslice
+    ${SVK_LIBS}
+)
 
 INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_file_convert )
 INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quick_view )
@@ -206,6 +215,7 @@ INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_gepfile_reader )
 INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_spec_diff )
 INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_integrate_dynamic )
 INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quantify )
+INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_reslice )
 
 
 
