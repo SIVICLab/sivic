@@ -42,9 +42,9 @@
 
 #include <svkObliqueReslice.h>
 
-#include <vtkImageAccumulate.h>
 #include <vtkImageChangeInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 
 using namespace svk;
@@ -82,10 +82,6 @@ svkObliqueReslice::~svkObliqueReslice()
         this->reslicer = NULL; 
     }
 
-    if (this->reslicedImage != NULL) {
-        this->reslicedImage->Delete();
-        this->reslicedImage = NULL; 
-    }
 }
 
 
@@ -143,13 +139,24 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     
     reslicer->Update();
 
-    //cout << " OUTPUT VECT " << outputVector[0] << endl;  
-    //this->SetInformation( reslicer->GetOutput()->GetInformation() ); 
-    //outputVector->SetInformationObject(0, reslicer->GetOutput()->GetInformation()); 
-    //vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    //outInfo->Set(
+    vtkInformation* reslicedInfo = this->reslicer->GetOutput()->GetInformation(); 
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-    return 1; 
+    int outWholeExt[6];
+    reslicedInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt);
+
+    double outSpacing[3];
+    reslicedInfo->Get(vtkDataObject::SPACING(), outSpacing);
+
+    double outOrigin[3];
+    reslicedInfo->Get(vtkDataObject::ORIGIN(), outOrigin);
+
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt, 6);
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), outWholeExt, 6);
+    outInfo->Set(vtkDataObject::SPACING(), outSpacing, 3);
+    outInfo->Set(vtkDataObject::ORIGIN(), outOrigin, 3);
+
+    return 1;
 
 }
 
@@ -172,7 +179,7 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
     this->UpdateHeader(); 
 
     if ( this->GetDebug() ) {
-        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+        //this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
 
     return 1; 
@@ -225,12 +232,11 @@ void svkObliqueReslice::UpdateHeader()
     );
 
     if ( this->GetDebug() ) {
-        cout << "INPUT IMAGE: " << *( this->GetImageDataInput(0) ) << endl;
-        cout << "OUTPUT IMAGE: " << *( this->reslicedImage ) << endl;
+        //cout << "INPUT IMAGE: " << *( this->GetImageDataInput(0) ) << endl;
+        //cout << "OUTPUT IMAGE: " << *( this->reslicedImage ) << endl;
     }
 
-    int* extent = new int[6]; 
-    extent = this->reslicedImage->GetExtent(); 
+    int* extent = this->reslicedImage->GetExtent(); 
     this->newNumVoxels[0] =  extent[1] + 1; 
     this->newNumVoxels[1] =  extent[3] + 1; 
     this->newNumVoxels[2] =  extent[5] + 1; 
@@ -254,9 +260,10 @@ void svkObliqueReslice::UpdateHeader()
     this->SetReslicedHeaderOrientation();
 
     if ( this->GetDebug() ) {
-        this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
-        cout << "OUTPUT IMAGE (updated header): " << *( this->reslicedImage ) << endl;
+        //this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
+        //cout << "OUTPUT IMAGE (updated header): " << *( this->reslicedImage ) << endl;
     }
+
     
 }
 
@@ -309,6 +316,7 @@ void svkObliqueReslice::SetReslicedHeaderSpacing()
         axis[2] = newSpacingAxes[i][2]; 
         this->newSpacing[i] = vtkMath::Norm(axis); 
         cout << "new spacing axes norm : " << this->newSpacing[i] << endl;
+        delete[] axis; 
     }
 
     cout << endl;
@@ -342,6 +350,9 @@ void svkObliqueReslice::SetReslicedHeaderSpacing()
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    delete oss;
+    delete[] inputSpacing; 
 }
 
 
@@ -403,7 +414,7 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     this->reslicedImage->GetDcmHeader()->ClearSequence( "PerFrameFunctionalGroupsSequence" ); 
 
     if ( this->GetDebug() ) {
-        this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
+        //this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
     }
 
     for (int i = 0; i < numberOfFrames; i++) {
@@ -477,6 +488,9 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
         );
 
     }
+
+    delete[] tlc0;
+    delete[] inputSpacing;
 }
 
 
