@@ -557,7 +557,7 @@ void svkSiemensRdaReader::InitSharedFunctionalGroupMacros()
 void svkSiemensRdaReader::InitPerFrameFunctionalGroupMacros()
 {
 
-    //  Get toplc float array from idfMap and use that to generate
+    //  Get toplc float array from rdaMap and use that to generate
     //  frame locations:
     double toplc[3];
     int value;
@@ -780,8 +780,10 @@ void svkSiemensRdaReader::InitMRTransmitCoilMacro()
 void svkSiemensRdaReader::InitVolumeLocalizationSeq()
 {
     float size[3];     
-    size[0] = this->GetHeaderValueAsFloat( "VOIPhaseFOV" );
-    size[1] = this->GetHeaderValueAsFloat( "VOIReadoutFOV" );
+    //size[0] = this->GetHeaderValueAsFloat( "VOIPhaseFOV" );
+    //size[1] = this->GetHeaderValueAsFloat( "VOIReadoutFOV" );
+    size[1] = this->GetHeaderValueAsFloat( "VOIPhaseFOV" );
+    size[0] = this->GetHeaderValueAsFloat( "VOIReadoutFOV" );
     size[2] = this->GetHeaderValueAsFloat( "VOIThickness" );
 
     float center[3];     
