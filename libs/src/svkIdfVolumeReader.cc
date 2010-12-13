@@ -92,6 +92,11 @@ svkIdfVolumeReader::~svkIdfVolumeReader()
         delete volumeHdr; 
         this->volumeHdr = NULL; 
     }
+
+    if ( this->pixelData != NULL ) {
+        free( this->pixelData ); 
+        this->pixelData = NULL; 
+    }
 }
 
 
