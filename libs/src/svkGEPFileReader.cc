@@ -177,6 +177,9 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         return 0;
     }
 
+    delete this->gepf;
+    this->gepf = null; 
+
 }
 
 
