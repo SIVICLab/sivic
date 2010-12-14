@@ -108,8 +108,8 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
         if ( this->ContainsProprietaryContent( tmp ) == false ) {
                     
-            // Check for MR Image Storage
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {           
+            // Check for MR Image Storage (and for now CTImageStorage too, see SIVIC tickets in trac)
+            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.2") {           
                 this->SetFileName(fname);
                 isDcmMri = true; 
             }
