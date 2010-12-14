@@ -477,7 +477,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     }
 
   
-    if ( psd.compare("PROBE-P") == 0 ) { 
+    if ( psd.compare("probe-p") == 0 || psd.compare("presscsi") == 0) { 
 
         // product GE sequence:  
         aMapper = svkGEPFileMapper::New();
