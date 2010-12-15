@@ -153,7 +153,8 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                 if ( isGEPFile ) { 
                     this->SetFileName( fname ); 
                     this->ReadGEPFile(); 
-                    if ( this->GetPFileMapper() != NULL ) {
+                    this->mapper = this->GetPFileMapper(); 
+                    if ( this->mapper != NULL ) {
                         isKnownPSD = true;
                     }
                 }
