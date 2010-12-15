@@ -8,6 +8,7 @@
 
 
 #include <sivicQuantificationWidget.h>
+#include <svkImageCopy.h>
 #include <vtkSivicController.h>
 #include <vtkImageMathematics.h>
 
@@ -156,14 +157,14 @@ void sivicQuantificationWidget::CreateWidget()
     //  Add metabolie cho/naa ratios: 
     ostringstream mapNumArea;
     mapNumArea <<  i * 2;
-    mapSelectLabel = this->metNames[0] + "/" + this->metNames[3] + "_area_ratio";
+    mapSelectLabel = this->metNames[0] + "/" + this->metNames[2] + "_area_ratio";
     invocation.str("");
     invocation << "MetMapViewCallback " << mapNumArea.str() << endl;
     mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
 
     ostringstream mapNumHt;
     mapNumHt <<  (i * 2) + 1;
-    mapSelectLabel = this->metNames[0] + "/" + this->metNames[3] + "_ht_ratio";
+    mapSelectLabel = this->metNames[0] + "/" + this->metNames[2] + "_ht_ratio";
     invocation.str("");
     invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
     mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
@@ -330,14 +331,14 @@ void sivicQuantificationWidget::ExecuteQuantification()
         //  Generate Cho/NAA ratio map and add to model 
         //  Do not use quant algo, just divide two images. 
         //  -------------------------------------------------
-        vtkstd::string modelDataName = this->metNames[0] + "/" + this->metNames[3]; 
+        vtkstd::string modelDataName = this->metNames[0] + "/" + this->metNames[2]; 
         vtkstd::string seriesDescription;
         for (int quantMethod = 0; quantMethod < 2; quantMethod++) {
             if (quantMethod == 0) {
-                seriesDescription = this->metNames[0] + "/" + this->metNames[3] + " area ratio Metabolite Map";
+                seriesDescription = this->metNames[0] + "/" + this->metNames[2] + " area ratio Metabolite Map";
                 modelDataName += "_area_ratio";
             } else if (quantMethod == 1) {
-                seriesDescription = this->metNames[0] + "/" + this->metNames[3] + " peak ht ratio Metabolite Map";
+                seriesDescription = this->metNames[0] + "/" + this->metNames[2] + " peak ht ratio Metabolite Map";
                 modelDataName += "_ht_ratio";
             }
             this->modelMetNames.push_back( modelDataName ); 
@@ -345,14 +346,25 @@ void sivicQuantificationWidget::ExecuteQuantification()
             //get two images and divide and set new output into tmp svkMriImageData object:  
             vtkImageMathematics* divide = vtkImageMathematics::New();
             divide->SetOperationToDivide();
-            divide->SetInput( this->model->GetDataObject( this->metNames[0] ) ); 
-            divide->SetInput( this->model->GetDataObject( this->metNames[3] ) ); 
+            divide->DivideByZeroToCOn();
+            cout << "CHECK RATIO input: " << this->modelMetNames[0 + quantMethod]  << endl;
+            cout << "CHECK RATIO input: " << this->modelMetNames[4 + quantMethod ]  << endl;
+            cout << "CHECK RATIO input: " << *( this->model->GetDataObject( this->modelMetNames[0 + quantMethod] ) ) << endl;
+            cout << "CHECK RATIO input: " << *( this->model->GetDataObject( this->modelMetNames[4 + quantMethod] ) ) << endl;
+            divide->SetInput1( this->model->GetDataObject( this->modelMetNames[0 + quantMethod] ) ); 
+            divide->SetInput2( this->model->GetDataObject( this->modelMetNames[4 + quantMethod] ) ); 
             divide->Update();
             cout << "CHECK RATIO: " << *(divide->GetOutput() ) << endl;
 
             //  Copy the data set so that the algo can be reused to generate a new map without
             //  overwriting the previous map data. 
-            tmp = svkMriImageData::New();
+
+            svkImageCopy* copier = svkImageCopy::New();
+            copier->SetInput( this->model->GetDataObject( this->modelMetNames[0] ) );
+            copier->SetSeriesDescription( seriesDescription );
+            copier->Update();
+            tmp = static_cast<svkMriImageData*>( copier->GetOutput() );
+
             tmp->DeepCopy( divide->GetOutput() );
             if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
                 this->model->ChangeDataObject( this->modelMetNames[ objectNumber ], tmp); 
