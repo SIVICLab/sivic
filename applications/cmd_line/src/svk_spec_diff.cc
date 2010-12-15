@@ -37,9 +37,7 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  *
- *  License: TBD
- *
- *  Diffs two mrs files
+ *  Diffs two MRS files
  *
  */
 

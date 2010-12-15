@@ -37,8 +37,6 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  *
- *  License: TBD
- *
  *  Utility application for converting between supported file formats. 
  *
  */

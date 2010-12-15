@@ -39,46 +39,141 @@
  */
 
 
+#include <vtkSmartPointer.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkImageWriterFactory.h>
-#include <svkIdfVolumeWriter.h>
-#include <svkDcmHeader.h>
+#include <svkImageWriter.h>
 #include <svkObliqueReslice.h>
+#include <getopt.h>
 
 using namespace svk;
 
 int main (int argc, char** argv)
 {
 
-    vtkObject::SetGlobalWarningDisplay(2);
+    string usemsg("\n") ;
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
+    usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name -t output_data_type [-h] \n";
+    usemsg += "\n";
+    usemsg += "   -i input_file_name            name of file to resample. \n";
+    usemsg += "   --target  target_file_name    file to resample input to. \n";
+    usemsg += "   -o output_file_name           name of outputfile. \n";
+    usemsg += "   -t output_data_type           target data type: \n";
+    usemsg += "                                     3 = UCSF IDF               \n";
+    usemsg += "                                     5 = DICOM_MRI              \n";
+    usemsg += "                                     6 = DICOM_Enhanced MRI     \n";
+    usemsg += "   -h                            print help mesage. \n";
+    usemsg += " \n";
+    usemsg += "Resamples the input file to the orientation params specified in the target file.\n";
+    usemsg += "\n";
 
-    //  Input image and image with target orientation 
-    string fname(argv[1]);
-    string target(argv[2]);
+    string inputFileName;
+    string targetFileName;
+    string outputFileName;
 
-    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader = readerFactory->CreateImageReader2(fname.c_str());
-    reader->SetFileName( fname.c_str() );
-    reader->Update(); 
-cout << "READER OUTPUT: " << fname << " " << *( reader->GetOutput() ) << endl;
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
+    string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
+
+
+    enum FLAG_NAME {
+        FLAG_TARGET_FILE_NAME = 0 
+    }; 
+    
+    
+    static struct option long_options[] =
+    {
+        /* This option sets a flag. */
+        {"target",        required_argument, NULL,  FLAG_TARGET_FILE_NAME},
+        {0, 0, 0, 0}
+    };
+    
+    // ===============================================  
+    //  Process flags and arguments
+    // ===============================================  
+    int i;
+    int option_index = 0;
+    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+        switch (i) {
+            case 'i':
+                inputFileName.assign( optarg );
+                break;
+            case 'o':
+                outputFileName.assign(optarg);
+                break;
+            case 't':
+                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case FLAG_TARGET_FILE_NAME:
+                targetFileName.assign( optarg );
+                break;
+            case 'h':
+                cout << usemsg << endl;
+                exit(1);
+                break;
+            default:
+                ;
+        }
+    }
+
+    argc -= optind;
+    argv += optind;
+
+    // ===============================================
+    //  validate that: 
+    //      an input, target and output name was supplied
+    //      an output data type was supplied
+    // ===============================================
+    if (
+        argc != 0 ||  inputFileName.length() == 0
+        || targetFileName.length() == 0
+        || outputFileName.length() == 0
+        || ( dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+             && dataTypeOut != svkImageWriterFactory::IDF 
+             && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI )
+    ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
+    // ===============================================
+    //  Use a reader factory to get the correct reader
+    //  type .
+    // ===============================================
+    vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New();
+    svkImageReader2* inputReader = readerFactory->CreateImageReader2(inputFileName.c_str());
+
+    if ( inputReader == NULL ) { 
+        cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
+        exit(1);
+    }
+    inputReader->SetFileName( inputFileName.c_str() );
+    inputReader->Update();
+
 
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
-    reslicer->SetInput( reader->GetOutput() ); 
+    reslicer->SetInput( inputReader->GetOutput() ); 
 
-    reader = readerFactory->CreateImageReader2(target.c_str());
-    reader->SetFileName( target.c_str() );
-    reader->Update(); 
-    reslicer->SetTargetDcosFromImage( reader->GetOutput() ); 
+    svkImageReader2* targetReader = readerFactory->CreateImageReader2(targetFileName.c_str());
+    if ( targetReader == NULL ) { 
+        cerr << "Can not determine appropriate reader for: " << targetFileName << endl;
+        exit(1);
+    }
+    targetReader->SetFileName( targetFileName.c_str() );
+    targetReader->Update(); 
+    reslicer->SetTargetDcosFromImage( targetReader->GetOutput() ); 
     reslicer->Update();
 
-    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::IDF ));
-    writer->SetFileName("resliced_output" );
+    writer->SetFileName( outputFileName.c_str() );
 
     writer->SetInput( reslicer->GetOutput() );
     writer->Write();
-    writer->Delete();
+
+    inputReader->Delete();
+    targetReader->Delete();
+    reslicer->Delete();
 
     return 0; 
 }
