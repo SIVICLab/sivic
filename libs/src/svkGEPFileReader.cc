@@ -163,6 +163,9 @@ int svkGEPFileReader::CanReadFile(const char* fname)
             this->gepf->close();
         }
 
+        delete this->gepf;
+        this->gepf = NULL; 
+
     } catch (const exception& e) {
         cerr << "ERROR(svkGEPFileReader::CanReadFile opening or reading file (" << fname << "): " << e.what() << endl;
     }
@@ -177,9 +180,6 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a GE PFile, or the psd is not recognized: " << fname);
         return 0;
     }
-
-    delete this->gepf;
-    this->gepf = NULL; 
 
 }
 
