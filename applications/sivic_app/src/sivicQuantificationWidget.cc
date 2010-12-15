@@ -9,6 +9,7 @@
 
 #include <sivicQuantificationWidget.h>
 #include <vtkSivicController.h>
+#include <vtkImageMathematics.h>
 
 
 vtkStandardNewMacro( sivicQuantificationWidget );
@@ -109,7 +110,8 @@ void sivicQuantificationWidget::CreateWidget()
     stringstream invocation; 
     vtkstd::string mapSelectLabel;
 
-    for ( int i = 0; i < this->numMets; i++ ) {
+    int i; 
+    for ( i = 0; i < this->numMets; i++ ) {
         this->metRangeVector.push_back( vtkKWRange::New() ); 
         this->metRangeVector[i]->SetParent(this);
         this->metRangeVector[i]->SetLabelPositionToLeft();
@@ -149,20 +151,26 @@ void sivicQuantificationWidget::CreateWidget()
         invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
         mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
 
-/*
-        mapSelectLabel = this->metNames[i] + "_area"; 
-        invocation.str("");
-        invocation << "MetMapViewCallback " << mapSelectLabel << endl;
-        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicControlle, invocation.str().c_str());
-
-        mapSelectLabel = this->metNames[i] + "_ht"; 
-        invocation.str("");
-        invocation << "MetMapViewCallback" << mapSelectLabel << endl;
-        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
-*/
-
     }
-    mapSelectLabel = this->metNames[2] + "area"; 
+
+    //  Add metabolie cho/naa ratios: 
+    ostringstream mapNumArea;
+    mapNumArea <<  i * 2;
+    mapSelectLabel = this->metNames[0] + "/" + this->metNames[3] + "_area_ratio";
+    invocation.str("");
+    invocation << "MetMapViewCallback " << mapNumArea.str() << endl;
+    mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+
+    ostringstream mapNumHt;
+    mapNumHt <<  (i * 2) + 1;
+    mapSelectLabel = this->metNames[0] + "/" + this->metNames[3] + "_ht_ratio";
+    invocation.str("");
+    invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
+    mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+
+
+    //  Set default value
+    mapSelectLabel = this->metNames[2] + "_area"; 
     this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
 
 
@@ -261,8 +269,8 @@ void sivicQuantificationWidget::ExecuteQuantification()
         this->quant = svkExtractMRIFromMRS::New();
         this->quant->SetInput( data );
 
-//generate pk ht, peak area and magnitude area met maps for the specified intervals
-//save each in the data model and through a drop down select which one to view (load as overlay)
+        //generate pk ht, peak area and magnitude area met maps for the specified intervals
+        //save each in the data model and through a drop down select which one to view (load as overlay)
 
         double minValue;
         double maxValue;
@@ -317,6 +325,46 @@ void sivicQuantificationWidget::ExecuteQuantification()
                 objectNumber++; 
             }
         }
+
+        //  -------------------------------------------------
+        //  Generate Cho/NAA ratio map and add to model 
+        //  Do not use quant algo, just divide two images. 
+        //  -------------------------------------------------
+        vtkstd::string modelDataName = this->metNames[0] + "/" + this->metNames[3]; 
+        vtkstd::string seriesDescription;
+        for (int quantMethod = 0; quantMethod < 2; quantMethod++) {
+            if (quantMethod == 0) {
+                seriesDescription = this->metNames[0] + "/" + this->metNames[3] + " area ratio Metabolite Map";
+                modelDataName += "_area_ratio";
+            } else if (quantMethod == 1) {
+                seriesDescription = this->metNames[0] + "/" + this->metNames[3] + " peak ht ratio Metabolite Map";
+                modelDataName += "_ht_ratio";
+            }
+            this->modelMetNames.push_back( modelDataName ); 
+    
+            //get two images and divide and set new output into tmp svkMriImageData object:  
+            vtkImageMathematics* divide = vtkImageMathematics::New();
+            divide->SetOperationToDivide();
+            divide->SetInput( this->model->GetDataObject( this->metNames[0] ) ); 
+            divide->SetInput( this->model->GetDataObject( this->metNames[3] ) ); 
+            divide->Update();
+            cout << "CHECK RATIO: " << *(divide->GetOutput() ) << endl;
+
+            //  Copy the data set so that the algo can be reused to generate a new map without
+            //  overwriting the previous map data. 
+            tmp = svkMriImageData::New();
+            tmp->DeepCopy( divide->GetOutput() );
+            if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
+                this->model->ChangeDataObject( this->modelMetNames[ objectNumber ], tmp); 
+            } else {
+                this->model->AddDataObject( this->modelMetNames[ objectNumber ], tmp );
+            }
+            objectNumber++; 
+            divide->Delete();
+        }
+        //  -------------------------------------------------
+        //  End Ratio generation 
+        //  -------------------------------------------------
 
         //  Initialize the overlay with the NAA met map
         this->SetOverlay( this->modelMetNames[2] ); 
