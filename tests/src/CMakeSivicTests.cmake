@@ -336,3 +336,16 @@ ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/
 SET( TEST_NAME TEST_GEPFILE_2_DDF_LC_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
 
+
+########################
+#   Oblique Reslice: 
+########################
+SET( TEST_NAME TEST_OBLIQUE_RESLICE)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/reslicing/axial_to_oblique)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH}/svk_reslice -i ${TEST_CASE_ROOT}/input/axial_vol.idf --target ${TEST_CASE_ROOT}/input/oblique_mrsvol.ddf -o${TEST_RESULTS_PATH}/out -t 3 )
+
+SET( TEST_NAME TEST_OBLIQUE_RESLICE_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
+
