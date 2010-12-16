@@ -340,7 +340,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   Oblique Reslice: 
 ########################
-SET( TEST_NAME TEST_OBLIQUE_RESLICE)
+SET( TEST_NAME TEST_MCHK_OBLIQUE_RESLICE)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/reslicing/axial_to_oblique)
@@ -353,7 +353,7 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 ########################
 #   Metabolite Map Generation
 ########################
-SET( TEST_NAME TEST_INTEGRATE_MET_MAP)
+SET( TEST_NAME TEST_MCHK_INTEGRATE_MET_MAP)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration)
