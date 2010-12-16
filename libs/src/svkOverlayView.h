@@ -224,7 +224,7 @@ class svkOverlayView : public svkDataView
     private:
 
         void                            SetSliceOverlay();
-        void                            InitReslice( svkImageData* data, int targetIndex ); 
+        int                             InitReslice( svkImageData* data, int targetIndex ); 
         void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
 
         double                          overlayOpacity;

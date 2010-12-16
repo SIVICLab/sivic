@@ -397,12 +397,16 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
 
     // Check data compatiblity
     string resultInfo = this->GetDataCompatibility( data, index );
-    this->InitReslice( data, index ); 
-
+    int indexModified = this->InitReslice( data, index ); 
+    if( indexModified == index ) {
+        return; // Case where the reslice handled the current input target
+    }
     if( strcmp( resultInfo.c_str(), "" ) == 0 ) { 
     
         if( dataVector[index] != NULL ) {
-            resetViewState = 0; 
+            if( indexModified == -1 ) {// if the dataset was not resliced then do not reset view. 
+                //resetViewState = 0;
+            }
             dataVector[index]->Delete();
             dataVector[index] = NULL;
         }
@@ -1028,7 +1032,7 @@ void svkOverlayView::SetSliceOverlay() {
         sagittalDelta  = (vtkMath::Dot(imageOrigin, sagittalNormal )+(imageViewer->sagittalSlice)*imageSpacing[sagittalIndex] -                                 (vtkMath::Dot( overlayOrigin, sagittalNormal ) +
                                  overlaySpacing[sagittalIndex] * overlaySliceSagittal));
         // We need to guarantee that the overlay is between the image and the camera
-        // This is why 0.01 is added, just some small fraction so they don't overlap. 
+        // This is why 0.05 is added, just some small fraction so they don't overlap. 
         transformFrontAxial->Translate(
                                    (axialDelta+0.05)*axialNormal[0], 
                                    (axialDelta+0.05)*axialNormal[1], 
@@ -1476,16 +1480,18 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
 /*!
  *  Reslice data if necessary: 
+ *
+ * \return the index that was modified. Returns -1 if no reslice was done.
  */
-void svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
+int svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
 {
-
+    int indexModified = -1;
     svkDataValidator* validator = svkDataValidator::New();
     
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
 
-        return; 
+        return indexModified; 
 
     } else if( data->IsA("svkMriImageData") ) {
         
@@ -1493,6 +1499,7 @@ void svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
             bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 this->ResliceImage(data, dataVector[MRS], targetIndex); 
+                indexModified = targetIndex;
             } 
         } 
 
@@ -1501,15 +1508,15 @@ void svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
         if( dataVector[MRI] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                this->ResliceImage(dataVector[MRI], data, targetIndex); 
+                this->ResliceImage(dataVector[MRI], data, MRI); 
+                indexModified = MRI;
             } 
         } 
 
     } 
-
     validator->Delete(); 
 
-    return; 
+    return indexModified; 
 }
 
 

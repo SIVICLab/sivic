@@ -308,10 +308,13 @@ void svkImageViewer2::SetInput(svkImageData *in)
     this->data = in;
     this->data->Register(this);
     this->axialWinLevel->SetInput(in);
+    this->axialWinLevel->UpdateWholeExtent();
     this->axialWinLevel->SetNumberOfThreads(1);
     this->coronalWinLevel->SetInput(in);
+    this->coronalWinLevel->UpdateWholeExtent();
     this->coronalWinLevel->SetNumberOfThreads(1);
     this->sagittalWinLevel->SetInput(in);
+    this->sagittalWinLevel->UpdateWholeExtent();
     this->sagittalWinLevel->SetNumberOfThreads(1);
 
     //this->UpdateDisplayExtent();

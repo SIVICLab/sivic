@@ -1811,6 +1811,7 @@ void vtkSivicController::UseRotationStyle()
     if ( model->GetDataObject("AnatomicalData") ) {
 
         this->imageViewWidget->orthImagesButton->EnabledOn();
+        this->imageViewWidget->orthImagesButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->imageViewWidget->axialSlider->EnabledOn();
         this->imageViewWidget->coronalSlider->EnabledOn();
         this->imageViewWidget->sagittalSlider->EnabledOn();
@@ -2287,6 +2288,7 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->plotGridButton->EnabledOff();
         } else {
             this->imageViewWidget->plotGridButton->EnabledOn();
+            this->imageViewWidget->plotGridButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         }
     }
 
@@ -2311,7 +2313,9 @@ void vtkSivicController::EnableWidgets()
             this->quantificationWidget->EnableWidgets();
         }
         this->imageViewWidget->satBandButton->EnabledOn();
+        this->imageViewWidget->satBandButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
+        this->imageViewWidget->satBandOutlineButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->processingWidget->phaseSlider->EnabledOn(); 
         this->spectraRangeWidget->xSpecRange->EnabledOn();
         this->spectraRangeWidget->ySpecRange->EnabledOn();
@@ -2326,6 +2330,7 @@ void vtkSivicController::EnableWidgets()
             this->spectraViewWidget->timePointSlider->EnabledOn();
         }
         this->imageViewWidget->volSelButton->EnabledOn();
+        this->imageViewWidget->volSelButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
     }
 
     if ( model->DataExists("AnatomicalData") ) {
@@ -2356,12 +2361,17 @@ void vtkSivicController::EnableWidgets()
     } 
     if ( model->DataExists("OverlayData") ||  model->DataExists("MetaboliteData")) {
         this->imageViewWidget->interpolationBox->EnabledOn();
+        this->imageViewWidget->interpolationBox->GetWidget()->InvokeEvent( vtkKWMenu::MenuItemInvokedEvent );
         this->imageViewWidget->lutBox->EnabledOn();
+        this->imageViewWidget->lutBox->InvokeEvent( vtkKWMenu::MenuItemInvokedEvent );
         this->imageViewWidget->thresholdType->EnabledOn();
+        this->imageViewWidget->thresholdType->InvokeEvent( vtkKWMenu::MenuItemInvokedEvent );
         this->imageViewWidget->overlayOpacitySlider->EnabledOn();
         this->imageViewWidget->overlayThresholdSlider->EnabledOn();
         this->imageViewWidget->overlayButton->EnabledOn();
+        this->imageViewWidget->overlayButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->imageViewWidget->colorBarButton->EnabledOn();
+        this->imageViewWidget->colorBarButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->overlayWindowLevelWidget->EnabledOn();
     }
 }

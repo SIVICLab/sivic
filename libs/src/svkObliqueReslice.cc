@@ -145,16 +145,11 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     int outWholeExt[6];
     reslicedInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt);
 
-    double outSpacing[3];
-    reslicedInfo->Get(vtkDataObject::SPACING(), outSpacing);
-
-    double outOrigin[3];
-    reslicedInfo->Get(vtkDataObject::ORIGIN(), outOrigin);
-
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt, 6);
     outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), outWholeExt, 6);
-    outInfo->Set(vtkDataObject::SPACING(), outSpacing, 3);
-    outInfo->Set(vtkDataObject::ORIGIN(), outOrigin, 3);
+
+    // These values are not quite right... we only know the correct origin after request data is run
+    outInfo->Set(vtkDataObject::SPACING(), this->reslicer->GetOutput()->GetSpacing(), 3);
 
     return 1;
 
@@ -177,7 +172,10 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
     this->GetOutput()->DeepCopy( this->reslicer->GetOutput() ); 
 
     this->UpdateHeader(); 
-
+    outputVector->GetInformationObject(0)->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->GetOutput()->GetExtent(), 6);
+    
+    // When we updated the header we changed the origin and spacing so we have to update here...
+    outputVector->GetInformationObject(0)->Set(vtkDataObject::ORIGIN(), this->GetOutput()->GetOrigin(), 3);
     if ( this->GetDebug() ) {
         //this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     }
@@ -400,7 +398,7 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     for (int i = 0; i < 3; i++) {
         newTlc[i] = origin[i];  
         for (int j = 0; j < 3; j++) {
-            newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((newNumVoxels[j] - 1)/2.) );
+            newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
         }
     }
     cout << "new tlc: " << newTlc[0] << " " << newTlc[1] << " " << newTlc[2] << endl;
