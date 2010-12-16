@@ -268,54 +268,12 @@ void svkObliqueReslice::UpdateHeader()
 
 
 /*!
- *  Calculate the oblique spacing and reset header values: 
- *  This needs to be calculated since the input spacing may not have been correct for 
- *  obliquely oriented data sets. 
+ *  Sets the new spacing into DCM header.
  */
 void svkObliqueReslice::SetReslicedHeaderSpacing()
 {
-    double* inputSpacing = new double[3]; 
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(inputSpacing); 
 
-    //  Get the coordinate system with length representing the pixel spacing in each
-    //  dimension Just multiply each vector or input dcos, but the pixel spacing
-    //  in that direction: 
-    double dcosIn[3][3];   
-    this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
-
-    //  Normalize each of the input coordinate system axes to the length of the pixel spacing along
-    //  that axis: 
-    double spacingAxesIn[3][3];   
-    for (int i = 0; i < 3; i++) {
-        vtkMath::Normalize(dcosIn[i]);
-        for (int j = 0; j < 3; j++) {
-            spacingAxesIn[i][j] = inputSpacing[i] * dcosIn[i][j];
-        }
-    }
-
-    this->Print3x3(dcosIn, "dcosIn");
-    this->Print3x3(spacingAxesIn, "spacingAxesIn");
-
-    double calculatedTargetDcos[3][3]; 
-    this->RotateAxes(dcosIn, calculatedTargetDcos); 
-    this->Print3x3(calculatedTargetDcos, "caluclated target dcos");
-    this->Print3x3(targetDcos, "intended targetDcos");
-
-    double newSpacingAxes[3][3]; 
-    vtkMath::Multiply3x3(this->rotation, inputSpacing, this->newSpacing); 
-    cout << "new spacing: " << this->newSpacing[0] << " " << this->newSpacing[1] << " " << this->newSpacing[2] << endl;
-
-    this->RotateAxes(spacingAxesIn, newSpacingAxes); 
-
-    for (int i = 0; i < 3; i++) {
-        double* axis = new double[3]; 
-        axis[0] = newSpacingAxes[i][0]; 
-        axis[1] = newSpacingAxes[i][1]; 
-        axis[2] = newSpacingAxes[i][2]; 
-        this->newSpacing[i] = vtkMath::Norm(axis); 
-        cout << "new spacing axes norm : " << this->newSpacing[i] << endl;
-        delete[] axis; 
-    }
+    this->reslicedImage->GetSpacing(this->newSpacing);
 
     cout << endl;
     ostringstream* oss = new ostringstream();
@@ -327,30 +285,17 @@ void svkObliqueReslice::SetReslicedHeaderSpacing()
     *oss << this->newSpacing[1];
     pixelSpacingString.append( oss->str() );
     
-    this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "PixelSpacing",
-        pixelSpacingString,  
-        "SharedFunctionalGroupsSequence",
-        0
-    );
-
     delete oss;
     oss = new ostringstream();
     *oss << this->newSpacing[2];
     string sliceThicknessString( oss->str() );
-    this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-        "PixelMeasuresSequence",
-        0,
-        "SliceThickness",
-        sliceThicknessString,
-        "SharedFunctionalGroupsSequence",
-        0
+
+    this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
+        pixelSpacingString,
+        sliceThicknessString
     );
 
     delete oss;
-    delete[] inputSpacing; 
 }
 
 
@@ -401,91 +346,20 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
             newTlc[i] -= targetDcos[j][i] * (this->newSpacing[j] * ((this->newNumVoxels[j] - 1)/2.) );
         }
     }
+    double reslicedTlc[3]; 
+    this->reslicedImage->GetOrigin( reslicedTlc );
+    cout << "resliced tlc: " << reslicedTlc[0] << " " << reslicedTlc[1] << " " << reslicedTlc[2] << endl;
+
+    this->reslicedImage->SetOrigin( newTlc );
     cout << "new tlc: " << newTlc[0] << " " << newTlc[1] << " " << newTlc[2] << endl;
     this->reslicedImage->SetOrigin( newTlc );
 
-    float displacement[3];
-    float frameLPSPosition[3];
 
-    int numberOfFrames = this->reslicedImage->GetDcmHeader()->GetIntValue( "NumberOfFrames" ); 
-
-    this->reslicedImage->GetDcmHeader()->ClearSequence( "PerFrameFunctionalGroupsSequence" ); 
-
-    if ( this->GetDebug() ) {
-        //this->reslicedImage->GetDcmHeader()->PrintDcmHeader();
-    }
-
-    for (int i = 0; i < numberOfFrames; i++) {
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
-
-        //add displacement along normal vector:
-        for (int j = 0; j < 3; j++) {
-            displacement[j] = this->targetDcos[2][j] * this->newSpacing[2] * i;
-        }
-        for(int j = 0; j < 3; j++) { //L, P, S
-            frameLPSPosition[j] = newTlc[j] +  displacement[j] ;
-        }
-
-        string imagePositionPatient;
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss.precision(8);
-            oss << frameLPSPosition[j];
-            imagePositionPatient += oss.str();
-            if (j < 2) {
-               imagePositionPatient += '\\';
-            }
-        }
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient",
-            imagePositionPatient,
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->reslicedImage->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-    }
+    int numSlices = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
+    cout << "RESLICED NUM SLICES : " << numSlices << endl;
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+        newTlc, this->newSpacing, this->targetDcos, numSlices, 1, 1
+    );
 
     delete[] tlc0;
     delete[] inputSpacing;
