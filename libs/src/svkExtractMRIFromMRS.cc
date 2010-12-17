@@ -95,6 +95,7 @@ svkExtractMRIFromMRS::~svkExtractMRIFromMRS()
 void svkExtractMRIFromMRS::SetSeriesDescription( vtkstd::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
+    this->Modified(); 
 }
 
 
@@ -104,6 +105,7 @@ void svkExtractMRIFromMRS::SetSeriesDescription( vtkstd::string newSeriesDescrip
 void svkExtractMRIFromMRS::SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType)
 {
     this->dataType = dataType; 
+    this->Modified(); 
 }
 
 
@@ -166,6 +168,8 @@ int svkExtractMRIFromMRS::RequestInformation( vtkInformation* request, vtkInform
  */
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+    cout << "REQUEST DATA" << endl;
+
     //  Create the template data object by  
     //  extractng an svkMriImageData from the input svkMrsImageData object
     //  Use an arbitrary point for initialization of scalars.  Actual data 
@@ -178,6 +182,18 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
         0, 
         this->newSeriesDescription 
     );
+
+    if (this->quantificationAlgorithm == svkExtractMRIFromMRS::INTEGRATE) { 
+        this->Integrate(); 
+    } else if (this->quantificationAlgorithm == svkExtractMRIFromMRS::PEAK_HT) { 
+        this->PeakHt(); 
+    }
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    hdr->InsertUniqueUID("SeriesInstanceUID");
+    hdr->InsertUniqueUID("SOPInstanceUID");
+    hdr->InsertUniqueUID("MediaStorageSOPInstanceUID");
+    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
 
     return 1; 
 };
@@ -282,34 +298,12 @@ void svkExtractMRIFromMRS::ZeroData()
 
 
 /*!
- *  Triggers a reintegration over current limits and updates DCM header
- *  with a new SeriesInstanceUID, SOPInstanceUID and the current SeriesDescription. 
- */
-void svkExtractMRIFromMRS::Update()
-{
-    cout << "UPDATE" << endl;
-    this->Superclass::Update();
-
-    if (this->quantificationAlgorithm == svkExtractMRIFromMRS::INTEGRATE) { 
-        this->Integrate(); 
-    } else if (this->quantificationAlgorithm == svkExtractMRIFromMRS::PEAK_HT) { 
-        this->PeakHt(); 
-    }
-
-    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-    hdr->InsertUniqueUID("SeriesInstanceUID");
-    hdr->InsertUniqueUID("SOPInstanceUID");
-    hdr->InsertUniqueUID("MediaStorageSOPInstanceUID");
-    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
-
-}
-
-/*!
  *  Set the chemical shift of the peak position to integrate over.
  */
 void svkExtractMRIFromMRS::SetPeakPosPPM( float centerPPM )
 {
     this->peakCenterPPM = centerPPM;
+    this->Modified(); 
 }
 
 
@@ -320,6 +314,7 @@ void svkExtractMRIFromMRS::SetPeakPosPPM( float centerPPM )
 void svkExtractMRIFromMRS::SetPeakWidthPPM( float widthPPM )
 {
     this->peakWidthPPM = widthPPM;
+    this->Modified(); 
 }
 
 
@@ -351,6 +346,7 @@ void svkExtractMRIFromMRS::GetIntegrationPtRange(int& startPt, int& endPt)
 void svkExtractMRIFromMRS::SetAlgorithmToIntegrate()
 {
     this->quantificationAlgorithm = svkExtractMRIFromMRS::INTEGRATE; 
+    this->Modified(); 
 }
 
 
@@ -360,6 +356,7 @@ void svkExtractMRIFromMRS::SetAlgorithmToIntegrate()
 void svkExtractMRIFromMRS::SetAlgorithmToPeakHeight()
 {
     this->quantificationAlgorithm = svkExtractMRIFromMRS::PEAK_HT; 
+    this->Modified(); 
 }
 
 

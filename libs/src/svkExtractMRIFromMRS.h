@@ -88,7 +88,6 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         void                    SetPeakWidthPPM( float peak_width_ppm  );     
         void                    SetAlgorithmToIntegrate();     
         void                    SetAlgorithmToPeakHeight();     
-        virtual void            Update(); 
 
 
     protected:
