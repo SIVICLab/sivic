@@ -343,7 +343,6 @@ void svkGEPFileReader::InitDcmHeader()
     //  Fill in data set specific values using the appropriate mapper type:
     this->mapper = this->GetPFileMapper(); 
     
-
     cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
 
     //  all the IE initialization modules would be contained within the 
@@ -420,6 +419,16 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::str
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "patientDeidentificationId" ] = static_cast<void*>( patIdTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( studyIdTmp);
+}
+
+
+/*!
+ *  Prints the GE PFile Header to stdout
+ */
+void svkGEPFileReader::PrintHeader()
+{
+    cout << "PRINT HEADER" << endl;
+    this->DumpHeader(); 
 }
 
 
@@ -575,8 +584,10 @@ void svkGEPFileReader::ParsePFile()
     }
 
     this->FillInMissingInfo();
-    this->PrintKeyValuePairs(); 
 
+    if ( this->GetDebug() ) { 
+        this->PrintKeyValuePairs(); 
+    }
 }
 
 
@@ -624,6 +635,19 @@ void svkGEPFileReader::PrintOffsets()
             cout << " " << *it ;           
         }
         cout << endl;
+    }
+}
+
+
+/*!
+ *  Prints the key value pairs parsed from the header.
+ */
+void svkGEPFileReader::DumpHeader()
+{
+    //  Print out key value pairs parsed from header:
+    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
+        cout << setiosflags(ios::left) << setw(25) << mapIter->first << " = " <<  this->pfMap[mapIter->first][3] << endl;
     }
 }
 
@@ -708,7 +732,9 @@ void svkGEPFileReader::InitOffsetsMap()
         }
     }
 
-    this->PrintOffsets();
+    if (this->GetDebug()) { 
+        this->PrintOffsets();
+    }
 }
 
 
@@ -816,7 +842,10 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
     }
     
     delete iss; 
-    cout << key << ":" <<  ossValue.str() << endl; 
+
+    if (this->GetDebug()) { 
+        cout << key << ":" <<  ossValue.str() << endl; 
+    }
 
     return ossValue.str();
 }

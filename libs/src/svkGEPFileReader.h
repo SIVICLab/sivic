@@ -95,6 +95,7 @@ class svkGEPFileReader : public svkImageReader2
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ); 
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ); 
         void                SetTemperature( float temp ); 
+        void                PrintHeader();
 
         // Description: 
         // A descriptive name for this format
@@ -127,6 +128,7 @@ class svkGEPFileReader : public svkImageReader2
         vtkstd::string      GetOffsetsString();
         virtual void        InitDcmHeader();
         void                PrintOffsets(); 
+        void                DumpHeader();
         void                PrintKeyValuePairs();
         vtkstd::string      GetFieldAsString(vtkstd::string key); 
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 
