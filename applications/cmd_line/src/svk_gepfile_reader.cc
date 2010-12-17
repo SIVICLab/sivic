@@ -74,6 +74,7 @@ int main (int argc, char** argv)
     usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
     usemsg += "                   [ -u | -s ] [ -anh ] \n";
     usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
+    usemsg += "                   [ --print_header ] \n";
     usemsg += "\n";  
     usemsg += "   -i                name   Name of file to convert. \n"; 
     usemsg += "   -o                name   Name of outputfile. \n";
@@ -94,6 +95,7 @@ int main (int argc, char** argv)
     usemsg += "   --temp             temp  Set the temp (celcius) of the acquisition.  Default is body temperature. Used to \n"; 
     usemsg += "                            set the chemical shift of water. \n"; 
     usemsg += "   --no_dc_correction       Turns DC Offset correction off. \n"; 
+    usemsg += "   --print_header           Only prints the PFile header key-value pairs, does not load data \n";
     usemsg += "   -h                       Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
@@ -112,6 +114,7 @@ int main (int argc, char** argv)
     string deidStudyId = ""; 
     float temp = UNDEFINED_TEMP; 
     bool dcCorrection = true; 
+    bool printHeader = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -119,10 +122,11 @@ int main (int argc, char** argv)
     enum FLAG_NAME {
         FLAG_ONE_TIME_PT = 0, 
         FLAG_DC_CORRECTION, 
+        FLAG_PRINT_HEADER, 
         FLAG_DEID_TYPE, 
         FLAG_DEID_PAT_ID, 
         FLAG_DEID_STUDY_ID, 
-        FLAG_TEMP
+        FLAG_TEMP 
     }; 
 
 
@@ -131,6 +135,7 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"one_time_pt",      no_argument,       NULL,  FLAG_ONE_TIME_PT},
         {"no_dc_correction", no_argument,       NULL,  FLAG_DC_CORRECTION},
+        {"print_header",     no_argument,       NULL,  FLAG_PRINT_HEADER},
         {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE},
         {"deid_pat_id",      required_argument, NULL,  FLAG_DEID_PAT_ID},
         {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
@@ -169,6 +174,9 @@ int main (int argc, char** argv)
             case FLAG_DC_CORRECTION:
                 dcCorrection = false; 
                 break;
+            case FLAG_PRINT_HEADER:
+                printHeader = true; 
+                break;
             case FLAG_DEID_TYPE:
                 deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));  
                 break;
@@ -200,14 +208,19 @@ int main (int argc, char** argv)
     //      that only the supported output types was requested. 
     //      
     // ===============================================  
-    if ( 
-        argc != 0 ||  inputFileName.length() == 0  
-        || outputFileName.length() == 0 
-        || ( suppressed && unsuppressed ) 
-        || ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) 
-    ) {
-        cout << usemsg << endl;
+    if ( printHeader && inputFileName.length() == 0 ) {
+        cout << "An input file must be specified to print the header. " << endl; 
         exit(1); 
+    } else if (! printHeader) {
+        if ( 
+            argc != 0 ||  inputFileName.length() == 0  
+            || outputFileName.length() == 0 
+            || ( suppressed && unsuppressed ) 
+            || ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) 
+        ) {
+            cout << usemsg << endl;
+            exit(1); 
+        }
     }
 
     // ===============================================  
@@ -292,6 +305,12 @@ int main (int argc, char** argv)
     }
     
     reader->Update(); 
+
+    //  If printing header just print and return
+    if ( printHeader ) {
+        reader->PrintHeader();
+        exit(0);
+    }
 
     svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
 
