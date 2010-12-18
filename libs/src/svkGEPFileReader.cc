@@ -88,7 +88,7 @@ svkGEPFileReader::~svkGEPFileReader()
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 
     if ( this->gepf != NULL )  {
-        delete gepf;
+        delete this->gepf;
         this->gepf = NULL;
     }
 
@@ -167,6 +167,10 @@ int svkGEPFileReader::CanReadFile(const char* fname)
         this->gepf = NULL; 
 
     } catch (const exception& e) {
+        if ( this->gepf != NULL ) {
+            delete this->gepf;
+            this->gepf = NULL; 
+        }
         cerr << "ERROR(svkGEPFileReader::CanReadFile opening or reading file (" << fname << "): " << e.what() << endl;
     }
 
