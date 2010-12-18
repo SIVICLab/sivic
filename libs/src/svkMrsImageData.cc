@@ -845,7 +845,6 @@ void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoin
         }
         image->GetPointData()->SetScalars( pixelData );
         image->Modified();
-        image->Update();    
 
         pixelData->Delete();
     }
