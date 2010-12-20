@@ -1,5 +1,7 @@
 create pkg for OsiriX plugin
 
+0.  update project revision number
+
 1.  build sivic libs and sivic_app
 
 cd sivic/trunk
