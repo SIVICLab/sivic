@@ -127,6 +127,8 @@ class svkIdfVolumeReader : public svkImageReader2
         vtkstd::string  GetDcmPatientPositionString(vtkstd::string patientPosition);
         void            ParseIdf();
         void            PrintKeyValuePairs();
+        bool            IsIdfStudyIdAccessionNumber(); 
+
 
 
         //  Members:

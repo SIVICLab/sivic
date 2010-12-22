@@ -228,7 +228,11 @@ void svkIdfVolumeWriter::WriteHeader()
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
     out << "IMAGE DESCRIPTOR FILE version 5" << endl;
-    out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
+    if ( hdr->GetStringValue( "AccessionNumber" ).length() > 0 ) {
+        out << "studyid: t#_" << hdr->GetStringValue( "AccessionNumber" ) << endl;
+    } else {
+        out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
+    }
     out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
     out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
     out << "position: ";

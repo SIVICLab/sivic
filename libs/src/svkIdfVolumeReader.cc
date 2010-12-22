@@ -364,9 +364,16 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
 void svkIdfVolumeReader::InitPatientModule()
 {
 
+    vtkstd::string patientID;
+    if ( this->IsIdfStudyIdAccessionNumber() ) {
+        patientID = "";  
+    } else {
+        patientID = idfMap[ "studyId" ];  
+    }
+
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
         this->GetOutput()->GetDcmHeader()->GetDcmPatientsName( idfMap["patientName"] ),
-        idfMap[ "studyId" ], 
+        patientID, 
         "",
         "" 
     );
@@ -379,13 +386,22 @@ void svkIdfVolumeReader::InitPatientModule()
  */
 void svkIdfVolumeReader::InitGeneralStudyModule()
 {
+    vtkstd::string accessionNumber;
+    if ( this->IsIdfStudyIdAccessionNumber() ) {
+        accessionNumber = idfMap[ "studyId" ];  
+        //  remove leading t#_
+        accessionNumber = accessionNumber.substr(3); 
+    } else {
+        accessionNumber = ""; 
+    }
+
 
     this->GetOutput()->GetDcmHeader()->InitGeneralStudyModule(
         idfMap[ "studyDate" ], 
         "",
         "",
         idfMap[ "studyNum" ], 
-        "", 
+        accessionNumber, 
         "" 
     );
 
@@ -398,19 +414,10 @@ void svkIdfVolumeReader::InitGeneralStudyModule()
 void svkIdfVolumeReader::InitGeneralSeriesModule()
 {
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "PatientPosition",
+    this->GetOutput()->GetDcmHeader()->InitGeneralSeriesModule(
+        idfMap[ "seriesNum" ], 
+        idfMap[ "seriesDescription" ], 
         GetDcmPatientPositionString( idfMap[ "patientPosition" ] )
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesNumber",
-        idfMap[ "seriesNum" ] 
-    );
-
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "SeriesDescription",
-        idfMap[ "seriesDescription" ] 
     );
 
 }
@@ -1015,6 +1022,24 @@ void svkIdfVolumeReader::PrintKeyValuePairs()
             cout << idfMap[mapIter->first] << endl;
         }
     }
+}
+
+
+/*!
+ *  Tries to determine whether an idf studyId field is a t-number 
+ *  aka study id or a b# aka patient id based on a leading "t#_". 
+ */
+bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
+{
+    bool isAccession = false; 
+    vtkstd::string idfStudyId = idfMap[ "studyId" ]; 
+
+    size_t pos = idfStudyId.find( "t#_" ); 
+    if ( pos == 0 ) {
+        isAccession = true; 
+    }
+
+    return isAccession; 
 }
 
 
