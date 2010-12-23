@@ -427,10 +427,10 @@ int sivicApp::Build( int argc, char* argv[] )
 #endif
     this->sivicKWApp->SetHelpDialogStartingPage("http://sivic.sourceforge.net");
     this->sivicWindow->Display();
-    char cwd[MAXPATHLEN];
-    getcwd(cwd, MAXPATHLEN);
-    string pathName(cwd);
+
+	string pathName = svkUtils::GetCurrentWorkingDirectory();
     this->sivicKWApp->SetRegistryValue( 0, "RunTime", "lastPath", pathName.c_str() );
+
 
 }
 

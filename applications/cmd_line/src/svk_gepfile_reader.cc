@@ -56,9 +56,13 @@
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
 #include <svkImageAlgorithm.h>
-
+#ifdef WIN32
+extern "C" {
 #include <getopt.h>
-
+}
+#else
+#include <getopt.h>
+#endif
 #define UNDEFINED_TEMP -1111
 
 using namespace svk;

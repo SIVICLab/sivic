@@ -54,7 +54,13 @@
 #include <svkImageReaderFactory.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <svkDataModel.h>
 #include <vtkInteractorStyleTrackballCamera.h>
@@ -173,7 +179,7 @@ int main ( int argc, char** argv )
 
     globalVars.viewers = new svkDataViewController*[ globalVars.numberOfImages ];
     globalVars.annotations = new vtkCornerAnnotation*[ globalVars.numberOfImages ];
-    vtkRenderWindow** windows = new vtkRenderWindow*[ globalVars.numberOfImages ]; 
+    vtkRenderWindow** renderWindows = new vtkRenderWindow*[ globalVars.numberOfImages ]; 
 
     LoadOverlay( overlayFileName );
 
@@ -184,14 +190,14 @@ int main ( int argc, char** argv )
     for( int i= optind; i < argc; i++ ) {
         int index = i-optind;
         globalVars.annotations[index] = GetNewAnnotation();
-        windows[index] = vtkRenderWindow::New(); 
+        renderWindows[index] = vtkRenderWindow::New(); 
         globalVars.viewers[index] = svkOverlayViewController::New();
         if( globalVars.debug ) {
             cout <<"Loading image: " << argv[ i ] << endl;
         }
         int xPos = ((index+globalVars.imageWindowOffset)%3)*(globalVars.winSize+15);
         int yPos = ((index+globalVars.imageWindowOffset)/3)*(globalVars.winSize+20);
-        DisplayImage( windows[index], argv[i], index, xPos, yPos );    
+        DisplayImage( renderWindows[index], argv[i], index, xPos, yPos );    
         if( globalVars.spectraController != NULL ) {
             globalVars.viewers[i-optind]->SetSlice(globalVars.spectraController->GetSlice() );
             globalVars.slice = svkOverlayViewController::SafeDownCast(globalVars.viewers[i-optind])->GetImageSlice();
@@ -206,13 +212,13 @@ int main ( int argc, char** argv )
     if( globalVars.spectraWindow != NULL ) {
         globalVars.spectraWindow->GetInteractor()->Start();
     } else if ( globalVars.numberOfImages > 0 ) {
-        windows[0]->GetInteractor()->Start();
+        renderWindows[0]->GetInteractor()->Start();
     }
 
     for( int i= optind; i < argc; i++ ) {
         index = i-optind;
         globalVars.annotations[index]->Delete();
-        windows[index]->Delete();
+        renderWindows[index]->Delete();
         globalVars.viewers[index]->Delete();
     }
 

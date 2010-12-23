@@ -41,7 +41,13 @@
  *
  */
 
-
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
+#include <unistd.h>
+#endif
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkIdfVolumeReader.h>

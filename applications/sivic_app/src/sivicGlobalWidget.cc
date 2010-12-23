@@ -129,16 +129,15 @@ void sivicGlobalWidget::PopulateMetaboliteMenu( )
                 string metaboliteFileName;
                 metaboliteFileName = svkUCSFUtils::GetMetaboliteFileName(
                                         this->model->GetDataFileName("SpectroscopicData"), it->c_str(), includePath );
-
-                struct stat st;
-                // Lets check to see if the file exists 
-                if(stat(metaboliteFileName.c_str(),&st) == 0) {
+				if( svkUtils::FilePathExists(metaboliteFileName.c_str()) ) {
                     commandString = "OpenMetabolites";
                     commandString += " \""; 
                     commandString += *it;
                     commandString += "\""; 
                     metaboliteNames->AddRadioButton(it->c_str(), this->sivicController, commandString.c_str());
                 }
+
+
 
             }
             ++it;

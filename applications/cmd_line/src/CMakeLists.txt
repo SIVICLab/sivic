@@ -29,6 +29,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
+	SET(PLATFORM_LIBS z)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
@@ -37,11 +38,12 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         IF (CMAKE_UNIVERSAL MATCHES TRUE)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDarwin -arch i386 -arch x86_64")
         ENDIF (CMAKE_UNIVERSAL MATCHES TRUE)
-    ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    IF (CMAKE_SYSTEM_NAME MATCHES SunOS)
         ADD_DEFINITIONS(-D__GNU_LIBRARY__) 
         SET(PLATFORM SunOS_sparc)
         SET(GETOPT_LIB CACHE FILEPATH "Library containing getop_long for solaris (if you are not using glibc)." )
-        SET(PLATFORM_LIBS ${GETOPT_LIB})
+        SET(PLATFORM_LIBS z ${GETOPT_LIB})
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
         SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "-xO3 -DNDEBUG")
@@ -49,7 +51,7 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(CMAKE_CXX_LINK_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS "-xO3 -DNDEBUG")
-    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES SunOS)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 
@@ -84,8 +86,9 @@ INCLUDE(${KWWidgets_USE_FILE})
 ###################################
 #   DCMTK (DCMTK_DIR is the root include dir
 ###################################
-ADD_DEFINITIONS(-DHAVE_CONFIG_H)
-
+IF( NOT WIN32 )
+	ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+ENDIF( NOT WIN32 )
 
 
 
@@ -94,17 +97,29 @@ ADD_DEFINITIONS(-DHAVE_CONFIG_H)
 #############################################
 
 LINK_DIRECTORIES(
+	${LIBRARY_OUTPUT_PATH}
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
 )
-
+IF(WIN32)
+	SET(PLATFORM_INCLUDE getopt)
+ENDIF(WIN32)
 INCLUDE_DIRECTORIES(
     ./
     ../../../libs/src/
     ${DCMTK_DIR}/include
+    ${PLATFORM_INCLUDE}
 )
-
+IF(WIN32)
+	ADD_LIBRARY( getopt
+			     STATIC
+				 getopt/getopt.c
+				 getopt/getopt_long.c
+			    )
+	SET(PLATFORM_LIBS getopt
+	                  netapi32)
+ENDIF(WIN32)
 
 SET(SVK_LIBS
     vtkRendering
@@ -120,7 +135,6 @@ SET(SVK_LIBS
     svkadapt 
     dcmdata
     ofstd 
-    z
     ${PLATFORM_LIBS}
 )
 
@@ -208,14 +222,26 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_file_convert )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quick_view )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_multi_view )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_gepfile_reader )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_spec_diff )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_integrate_dynamic )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_quantify )
-INSTALL_PROGRAMS( /local/bin FILES ../${PLATFORM}/svk_reslice )
+
+IF (!WIN32)	
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_file_convert )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quick_view )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_multi_view )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_reader )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_spec_diff )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_integrate_dynamic )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quantify )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_reslice )
+ELSE (!WIN32)
+	INSTALL_TARGETS( /local/bin svk_file_convert )
+	INSTALL_TARGETS( /local/bin svk_quick_view )
+	INSTALL_TARGETS( /local/bin svk_multi_view )
+	INSTALL_TARGETS( /local/bin svk_gepfile_reader )
+	INSTALL_TARGETS( /local/bin svk_spec_diff )
+	INSTALL_TARGETS( /local/bin svk_integrate_dynamic )
+	INSTALL_TARGETS( /local/bin svk_quantify )
+	INSTALL_TARGETS( /local/bin svk_reslice )
+ENDIF (!WIN32)
 
 
 

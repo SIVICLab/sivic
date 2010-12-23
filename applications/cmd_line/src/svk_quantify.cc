@@ -50,8 +50,14 @@
 #include <svkImageWriter.h>
 #include <svkIntegratePeak.h>
 #include <svkExtractMRIFromMRS.h>
-
+#ifdef WIN32
+extern "C" {
 #include <getopt.h>
+}
+#else
+#include <getopt.h>
+#endif
+
 
 #define UNDEFINED_VAL -99999
 

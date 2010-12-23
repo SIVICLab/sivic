@@ -35,6 +35,10 @@
 #ifndef VTK_SIVIC_CONTROLLER_H
 #define VTK_SIVIC_CONTROLLER_H
 
+#ifdef WIN32
+    #include <windows.h>
+#endif
+
 #include <vtkObject.h>
 #include <vtkKWObject.h>
 #include <vector>
@@ -58,13 +62,16 @@
 #include <vtkKWMessageDialog.h>
 
 #include <math.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <unistd.h>    
+#ifndef WIN32
+    #include <sys/stat.h>
+    #include <sys/param.h>
+    #include <unistd.h>
+    #include <pwd.h>
+#endif
 #include <stdlib.h>
-#include <pwd.h>
 #include <stdio.h>
 
+#include <svkUtils.h>
 #include <svkDataViewController.h>
 #include <svkDetailedPlotViewController.h>
 #include <svkSecondaryCaptureFormatter.h>
@@ -83,6 +90,7 @@
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicGlobalWidget.h>
+#include <vtkDirectory.h>
 #if defined( SVK_USE_GL2PS )
     #include <vtkGL2PSExporter.h>
 #endif
@@ -142,7 +150,6 @@ class vtkSivicController : public vtkObject
         void                       SaveMetMapData( svkImageData* image, char* fileName, 
                                         int writetType = 5); //svkImageWriterFactory::DICOM_MRI 
         void                       SaveSecondaryCapture( char* captureType );    
-        string                     GetUserName();
         string                     GetOsiriXInDir(); 
         void                       SaveSecondaryCaptureOsiriX();    
         void                       SaveMetMapDataOsiriX(); 

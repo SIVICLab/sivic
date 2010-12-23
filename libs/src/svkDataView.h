@@ -56,8 +56,9 @@
 #include <svkDataViewController.h>
 
 #include <vector>
-
-
+#ifdef WIN32
+    #include <windows.h>
+#endif
 namespace svk {
 
 

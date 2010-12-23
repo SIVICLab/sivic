@@ -45,8 +45,13 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkObliqueReslice.h>
+#ifdef WIN32
+extern "C" {
 #include <getopt.h>
-
+}
+#else
+#include <getopt.h>
+#endif
 using namespace svk;
 
 int main (int argc, char** argv)

@@ -30,7 +30,8 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         IF (CMAKE_UNIVERSAL MATCHES TRUE)    
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch i386 -arch x86_64")
         ENDIF (CMAKE_UNIVERSAL MATCHES TRUE)    
-    ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    IF(CMAKE_SYSTEM_NAME MATCHES SunOS)    
         SET(EXECUTABLE_OUTPUT_PATH ../SunOS_sparc)
         SET(LIBRARY_OUTPUT_PATH ../SunOS_sparc)
         SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "-xO3 -DNDEBUG")
@@ -39,7 +40,7 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(CMAKE_CXX_FLAGS_RELEASE "-xO3 -DNDEBUG -Wno-deprecated")
         SET(CMAKE_CXX_FLAGS "-xO3 -DNDEBUG -Wno-deprecated")
         SET(CMAKE_CXX_DEBUG "-xO3 -DNDEBUG -Wno-deprecated")
-    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES SunOS)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 SET(CMAKE_VERBOSE_MAKEFILE TRUE)
@@ -71,8 +72,11 @@ ENDIF(VTK_FOUND)
 
 ###################################
 #   DCMTK (DCMTK_DIR is the root include dir
-###################################
-ADD_DEFINITIONS(-DHAVE_CONFIG_H -DSVK_ADAPT_DCMTK) 
+##################################
+IF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
+	ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+ENDIF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
+ADD_DEFINITIONS(-DSVK_ADAPT_DCMTK) 
 
 
 INCLUDE_DIRECTORIES(
@@ -176,6 +180,7 @@ ADD_LIBRARY(
     svkCorrectDCOffset.cc
     svkSpecUtils.cc
     svkUCSFUtils.cc
+    svkUtils.cc
     svkImageFourierCenter.cc
     svkIntegratePeak.cc
 )

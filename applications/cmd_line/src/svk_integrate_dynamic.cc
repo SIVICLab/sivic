@@ -49,8 +49,14 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkIntegratePeak.h>
-
+#ifdef WIN32
+extern "C" {
 #include <getopt.h>
+}
+#else
+#include <getopt.h>
+#endif
+
 
 #define UNDEFINED_VAL -99999
 

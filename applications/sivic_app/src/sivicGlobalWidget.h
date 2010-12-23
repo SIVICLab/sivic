@@ -79,6 +79,7 @@
 
 #include <vector>
 
+#include <svkUtils.h>
 #include <svkDataView.h>
 #include <svkDataModel.h>
 #include <svkImageWriterFactory.h>

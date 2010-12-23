@@ -338,14 +338,17 @@ void vtkSivicController::ResetApplication( )
 
 void vtkSivicController::OpenImage( const char* fileName )
 {
-    struct stat st;
+
+
     // Lets check to see if the file exists 
-    if(stat(fileName,&st) != 0) {
+	if(!svkUtils::FilePathExists(fileName)) {
         this->PopupMessage(" File does not exist!"); 
         return;
     }
+
     string stringFilename(fileName);
     svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
+		    cout << "Attempting to read  |" << stringFilename << "|" << endl;
     svkImageData* newData = this->model->LoadFile( stringFilename );
 
     if (newData == NULL) {
@@ -663,12 +666,13 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
 
 void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInputFile )
 {
-    struct stat st;
+
     // Lets check to see if the file exists 
-    if(stat(fileName,&st) != 0) {
+	if(!svkUtils::FilePathExists(fileName)) {
         this->PopupMessage(" File does not exist!"); 
         return;
     }
+
     string stringFilename(fileName);
     svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename, onlyReadOneInputFile );
@@ -783,12 +787,14 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 
 void vtkSivicController::OpenOverlay( const char* fileName )
 {
-    struct stat st;
+
     // Lets check to see if the file exists 
-    if(stat(fileName,&st) != 0) {
+
+	if(!svkUtils::FilePathExists(fileName)) {
         this->PopupMessage(" File does not exist!"); 
         return;
     }
+
     string stringFilename( fileName );
     if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
 
@@ -947,17 +953,15 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 */
 void vtkSivicController::OpenExam( )
 {
-    struct stat st;
+
     int status = -1;
-    char cwd[MAXPATHLEN];
-    char lastPath[MAXPATHLEN];
-    getcwd(cwd, MAXPATHLEN);
-    string imagePathName(cwd);
+
+	string imagePathName = svkUtils::GetCurrentWorkingDirectory();
 
     // First we open an image
 
     // Lets check for an images folder
-    if(stat("images",&st) == 0) {
+	if(svkUtils::FilePathExists("images")) {
         imagePathName+= "/images";
         //cout << "Switching to image path:" << imagePathName.c_str() << endl;
         status = this->OpenFile( "image", imagePathName.c_str(), true ); 
@@ -969,6 +973,7 @@ void vtkSivicController::OpenExam( )
         return;
     } 
 
+	char lastPath[MAXPATHLEN];
     // Lets retrieve the path used to open the image
     this->app->GetRegistryValue( 0, "RunTime", "lastPath", lastPath ); 
 
@@ -984,7 +989,7 @@ void vtkSivicController::OpenExam( )
         string spectraPathName;
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
-        if( stat(spectraPathName.c_str(),&st) == 0 ) {
+		if( svkUtils::FilePathExists(spectraPathName.c_str())) {
             status = this->OpenFile( "spectra", spectraPathName.c_str() ); 
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
@@ -1007,13 +1012,13 @@ void vtkSivicController::OpenExam( )
         spectraPathName += "/" + svkUCSFUtils::GetMetaboliteDirectoryName(this->model->GetDataFileName("SpectroscopicData"));
         bool includePath = true;
         string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI (ht)",includePath );
-        if( stat(cniFileName.c_str(),&st) == 0 ) {
+		if( svkUtils::FilePathExists(cniFileName.c_str()) ) {
             this->OpenOverlay( cniFileName.c_str() ); 
             this->EnableWidgets(); 
             this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
             this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
             this->SetOverlayThreshold( 2.0 );
-        } else if( stat(spectraPathName.c_str(),&st) == 0 ) {
+		} else if( svkUtils::FilePathExists(spectraPathName.c_str()) ) {
             this->OpenFile( "overlay", spectraPathName.c_str() ); 
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
@@ -1023,13 +1028,13 @@ void vtkSivicController::OpenExam( )
         this->OpenFile( "overlay", lastPathString.c_str() ); 
     }
 
+
 }
 
 
 /*!    Open a file.    */
 int vtkSivicController::OpenFile( char* openType, const char* startPath, bool resetBeforeLoad )
 {
-    struct stat st;
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
 
@@ -1054,19 +1059,22 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             } 
             size_t found;
             found = lastPathString.find_last_of("/");
+
             if( strcmp( openType, "image" ) == 0 || strcmp( openType, "overlay" ) == 0){
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
-                if( stat( lastPathString.c_str(),&st) == 0) {
+				if( svkUtils::FilePathExists(lastPathString.c_str())) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
             } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "spectra_one_channel") == 0 ) {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/spectra";
-                if( stat( lastPathString.c_str(),&st) == 0) {
+				if( svkUtils::FilePathExists( lastPathString.c_str()) ) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
+
             }
+
         }
     
         // Check to see which extention to filter for.
@@ -1163,23 +1171,9 @@ void vtkSivicController::SaveData()
 }
 
 
-string vtkSivicController::GetUserName()
-{
-    register struct passwd *psswd;
-    register uid_t uid;
-    uid = geteuid ();
-    psswd = getpwuid (uid);
-    string userName;  
-    if (psswd) {
-        userName.assign(psswd->pw_name);
-    }
-    return userName; 
-}
-
-
 string vtkSivicController::GetOsiriXInDir()
 {
-    string inDir("/Users/" + this->GetUserName() + "/Documents/OsiriX Data/INCOMING.noindex/");
+	string inDir("/Users/" + svkUtils::GetUserName() + "/Documents/OsiriX Data/INCOMING.noindex/");
     return inDir; 
 }
 
@@ -2310,7 +2304,9 @@ void vtkSivicController::EnableWidgets()
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
+
             this->quantificationWidget->EnableWidgets();
+
         }
         this->imageViewWidget->satBandButton->EnabledOn();
         this->imageViewWidget->satBandButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
@@ -2548,6 +2544,7 @@ void vtkSivicController::SetOverlayThreshold( double threshold )
 void vtkSivicController::PushToPACS()
 {
 #if defined( UCSF_INTERNAL )
+
     if(     this->model->GetDataObject( "SpectroscopicData" ) == NULL 
          || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
 
@@ -2555,7 +2552,6 @@ void vtkSivicController::PushToPACS()
         return; 
     }
 
-    struct stat st;
 
     // Lets check to see if the original DICOM file can be found so we can get the studyUID and Accession number
     string dcmFileName = svkUCSFUtils::GetDICOMFileName( this->model->GetDataFileName( "AnatomicalData" ), 
@@ -2587,7 +2583,8 @@ void vtkSivicController::PushToPACS()
     localDirectory = localDirectory.substr(0,found); 
 
     // Lets make sure the dicom file exists, this implies the studyUID and Accession number or correct
-    if( stat(dcmFileName.c_str(),&st) != 0 && !imageIsDICOM ) {
+
+	if( !svkUtils::FilePathExists(dcmFileName.c_str()) && !imageIsDICOM ) {
 
         // If the dicom file cannot be found, lets allow the user to choose one
         string errorMessage("CANNOT FIND DICOM FILE:");
@@ -2617,14 +2614,15 @@ void vtkSivicController::PushToPACS()
         } else { // User did not want to choose an image
             return;
         }
-    } 
+    }
+
     svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
     struct stat buffer;
     // Lets create image to write out, and attach the image's header to get study info
     svkImageData* outputImage = svkMriImageData::New();
     double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
     // Give it a default dcos so it can be viewed in an image viewer
-    if( !imageIsDICOM && stat( dcmFileName.c_str(), &buffer ) == 0 && dcmReader->CanReadFile( dcmFileName.c_str() ) ){
+	if( !imageIsDICOM && svkUtils::FilePathExists( dcmFileName.c_str()) && dcmReader->CanReadFile( dcmFileName.c_str() ) ){
         dcmReader->SetFileName( dcmFileName.c_str() );
         dcmReader->UpdateInformation();
         svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
@@ -2653,19 +2651,18 @@ void vtkSivicController::PushToPACS()
     string pacsDirectory( "/data/dicom_mb/export/PACS/" );
 
     localDirectory.append( "/DICOM/" );
-    if(stat(localDirectory.c_str(),&st) != 0) {
-        stringstream mkdirCommand;
-        mkdirCommand << "mkdir " << localDirectory.c_str();
-        //cout<< mkdirCommand.str().c_str() << endl;
-        system( mkdirCommand.str().c_str() );
+
+	if(!svkUtils::FilePathExists(localDirectory.c_str())) {
+		vtkDirectory::MakeDirectory( localDirectory.c_str() );
     }
 
-    if ( access( localDirectory.c_str(), W_OK) != 0 ) { // Can the user write to the local directory
+
+	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
         string errorMessage2("COULD NOT WRITE TO PATH: ");
         errorMessage2.append( localDirectory );
         PopupMessage( errorMessage2 );
         return; 
-    }
+	} 
 
     // Lets create a name for the images that uses the series ID of the image, and the spectra
     string filePattern;
@@ -2764,11 +2761,8 @@ void vtkSivicController::PushToPACS()
             string targetImageName = sourceImageName;
             pos = targetImageName.find( localDirectory.c_str() ); 
             targetImageName.replace( pos, localDirectory.size(), pacsDirectory.c_str(), pos, pacsDirectory.size());
-
-            stringstream copyCommand;
-            copyCommand << "cp " << sourceImageName.c_str() <<" "<< targetImageName.c_str();
-            //cout<< copyCommand.str().c_str() << endl;
-            system( copyCommand.str().c_str() );
+			
+			svkUtils::CopyFile(sourceImageName.c_str(), targetImageName.c_str());
         }
     }
 
@@ -2786,6 +2780,7 @@ void vtkSivicController::PushToPACS()
     this->overlayController->GetView()->Refresh();    
     this->plotController->GetView()->Refresh();    
     this->viewRenderingWidget->infoWidget->Render();    
+
 #endif
 }
 

@@ -1074,12 +1074,8 @@ void svkSecondaryCaptureFormatter::PrintImages( string fileNameString, int start
             fileNameStringTmp.replace(pos, 1, frameNum.str() + ".");
         }
         stringstream printCommand;
-        printCommand << "lpr -o fitplot -to-page -o landscape -h -P " << this->sivicController->GetPrinterName().c_str() <<" "<<fileNameStringTmp.c_str(); 
-        cout<< printCommand.str().c_str() << endl;
-        system( printCommand.str().c_str() ); 
-        stringstream removeCommand;
-        removeCommand << "rm " << fileNameStringTmp.c_str(); 
-        system( removeCommand.str().c_str() ); 
+		svkUtils::PrintFile(fileNameStringTmp.c_str(),this->sivicController->GetPrinterName().c_str()); 
+        remove( fileNameStringTmp.c_str()); 
     }
 
 }

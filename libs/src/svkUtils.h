@@ -25,32 +25,78 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
  *  OF SUCH DAMAGE.
  */
-/*   
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+
+
+
+/*
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkUCSFUtils.h $
+ *  $Rev: 248 $
+ *  $Author: beckn8tor $
+ *  $Date: 2010-03-30 14:12:39 -0700 (Tue, 30 Mar 2010) $
+ *
+ *  Authors:
+ *      Jason C. Crane, Ph.D.
+ *      Beck Olson
  */
 
-#include <sivicApp.h>
-#include <iostream>
 
-void *print_message_function( void *ptr );
-void *startApplication(void *ptr);
+#ifndef SVK_UTILS_H
+#define SVK_UTILS_H
+
+
+#include <string>
+#include <map>
+#include <vector>
+#include <stdio.h>
+#include <sstream>
+#include <vtkObjectFactory.h>
+#include <vtkObject.h>
+#include <vtkGlobFileNames.h>
+#include <vtkStringArray.h>
+#include <vtkDirectory.h>
+
+#ifdef WIN32
+#include <windows.h>
+#define MAXPATHLEN 260
+#else
+#include <sys/param.h>
+#include <pwd.h>
+#endif
+namespace svk {
+
 
 using namespace std;
-
 /*! 
- *  A prototype MR Spectroscopy viewer. The visualization compenent of a 
- *  new stardards-based open source project aimed at promoting the 
- *  integration and use of the DICOM MR Spectroscopy object within the 
- *  imaging community to facilitate medical research and clincial science.
+ *  UCSF specific utilities.
  */
-int main(int argc, char* argv[])
+class svkUtils : public vtkObject
 {
-	sivicApp* sivic = new sivicApp();
-    sivic->Build(argc, argv);
-    sivic->Start(argc, argv);
-    delete sivic;
-    return 0;
-} 
+
+    public:
+
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkUtils, vtkObject );
+  
+        // vtk initialization 
+        static svkUtils* New();  
+
+        //! Does the file or path exist:
+		static bool           FilePathExists( const char* path );
+		static string		  GetCurrentWorkingDirectory();
+		static string		  GetUserName();
+		static bool			  CanWriteToPath( const char* path );
+		static bool           CopyFile( const char* input, const char* output );
+		static bool           PrintFile( const char* fileName, const char* printerName );
+	protected:
+
+       svkUtils();
+       ~svkUtils();
+        
+};
+
+
+}   //svk
+
+
+
+#endif //SVK_UTILS

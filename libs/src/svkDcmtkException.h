@@ -82,8 +82,9 @@ class svkIncompatibleVR : public logic_error
     public:
         svkIncompatibleVR (const string& msg) : logic_error("Incompatible VR: "+msg) {};                                                                     
 };                                                                                                                            
-
-
+#ifdef WIN32
+#pragma warning( disable : 4290 )
+#endif
 /** handle return value of DcmTk functions.
   * if error is not ok, throws various exceptions 
   * @throws svkTagNotFound

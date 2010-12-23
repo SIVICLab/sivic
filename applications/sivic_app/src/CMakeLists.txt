@@ -65,7 +65,8 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         IF (CMAKE_UNIVERSAL MATCHES TRUE)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDarwin -arch i386 -arch x86_64")
         ENDIF (CMAKE_UNIVERSAL MATCHES TRUE)
-    ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    IF (CMAKE_SYSTEM_NAME MATCHES SunOS)
         SET(PLATFORM SunOS_sparc)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
@@ -74,7 +75,10 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(CMAKE_CXX_LINK_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS "-xO3 -DNDEBUG")
-    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES SunOS)
+    IF (WIN32)
+		SET(EXECUTABLE_OUTPUT_PATH Win32)
+	endif(WIN32)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 
@@ -110,7 +114,19 @@ ENDIF(VTK_FOUND)
 #   KWWidgets
 ###################################
 INCLUDE(${KWWidgets_USE_FILE})
+include("${KWWidgets_CMAKE_DIR}/KWWidgetsTclTkMacros.cmake")
 
+#
+#  This section creates a resource file that will be linked in to make static applications possible.
+#
+IF(WIN32 AND NOT BORLAND AND NOT CYGWIN)
+  INCLUDE("${KWWidgets_CMAKE_DIR}/KWWidgetsResourceMacros.cmake")
+  SET(RC_FILENAME "${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.rc")
+  kwwidgets_create_rc_file(
+    RC_FILENAME "${RC_FILENAME}"
+    RC_APPLICATION_NAME "${EXE_NAME}"
+    RC_COMPANY_NAME "Kitware, Inc.")
+ENDIF(WIN32 AND NOT BORLAND AND NOT CYGWIN)
 
 set(LIB_NAME "SivicKWCallbacksLib")
 set(LIB_SRCS
@@ -123,9 +139,14 @@ target_link_libraries(${LIB_NAME} ${KWWidgets_LIBRARIES})
 
 
 ###################################
-#   DCMTK (DCMTK_DIR is the root include dir
+#   Windows/Unix options
 ###################################
-ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+IF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
+	ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+    SET( ZLIB "z" )
+ELSE( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
+    SET( NETAPI "netapi32" )
+ENDIF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
 
 
 
@@ -150,6 +171,8 @@ INCLUDE_DIRECTORIES(
 ADD_LIBRARY( 
     sivicGUI
 
+    STATIC
+
     sivicApp.cc
     sivicGlobalWidget.cc
     sivicImageViewWidget.cc
@@ -173,6 +196,7 @@ ADD_LIBRARY(
 ADD_EXECUTABLE(
     sivic
     sivic.cc
+    ${RC_FILENAME}
 )
 
 
@@ -195,13 +219,23 @@ TARGET_LINK_LIBRARIES(
     ${KWWidgets_LIBRARIES}
     #KWCallbacksExampleLib
     SivicKWCallbacksLib
-    z
+	${ZLIB}
+    ${NETAPI}
+
 )
 
-INSTALL_PROGRAMS( /local/sivic FILES ../${PLATFORM}/sivic )
+IF (!WIN32)
+	INSTALL_PROGRAMS( /local/sivic FILES ../${EXECUTABLE_OUTPUT_PATH}/sivic )	
+ELSE (!WIN32)
+	INSTALL_TARGETS( /local/sivic sivic )
+ENDIF (!WIN32)
 INSTALL( DIRECTORY  ${VTK_DIR}/lib DESTINATION  local/sivic/vtk)
 INSTALL_FILES( /local/sivic/dcmtk/lib FILES ${DCMTK_DIR}/lib/dicom.dic )
-INSTALL_PROGRAMS( /local/bin FILES sivic )
+IF(WIN32)
+	INSTALL_PROGRAMS( /local/bin FILES sivic.bat )
+ELSE (WIN32)
+	INSTALL_PROGRAMS( /local/bin FILES sivic )
+ENDIF (WIN32)
 
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
     SET_TARGET_PROPERTIES (sivic PROPERTIES LINK_FLAGS 
