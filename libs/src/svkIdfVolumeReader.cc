@@ -359,7 +359,8 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
 
 
 /*!
- *
+ *  If the IDF studyID field contains an accession number/t-number than
+ *  we don't know the PatientID
  */
 void svkIdfVolumeReader::InitPatientModule()
 {
