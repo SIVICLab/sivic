@@ -159,19 +159,22 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                     }
                 }
             }
-        
-            this->gepf->close();
+
+
         }
 
-        delete this->gepf;
-        this->gepf = NULL; 
 
-    } catch (const exception& e) {
+    } catch ( ifstream::failure e ) {
+
+        cerr << "ERROR(svkGEPFileReader::CanReadFile():  Error opening or reading file (" << fname << "): " << e.what() << endl;
+    }
+
+    if ( this->gepf->is_open() ) {
+        this->gepf->close();
         if ( this->gepf != NULL ) {
             delete this->gepf;
             this->gepf = NULL; 
         }
-        cerr << "ERROR(svkGEPFileReader::CanReadFile opening or reading file (" << fname << "): " << e.what() << endl;
     }
 
     if ( isGEPFile && isKnownPSD ) {
