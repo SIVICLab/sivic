@@ -38,7 +38,7 @@
 /*
  * This code is derived from software contributed to The NetBSD Foundation.
  *
- *  Copyright © 2009-2010 The Regents of the University of California.
+ *  Copyright © 2009-2011 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -65,10 +65,10 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL:  $
- *  $Rev:  $
- *  $Author:  $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  This source has been modified from the BSD implementation to work independently of the BSD libraries.
  *  Macros and dependecy on sys/cdefs.h have been commented out.

@@ -1,5 +1,5 @@
 # 
-#   Copyright © 2009-2010 The Regents of the University of California.
+#   Copyright © 2009-2011 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,10 @@
 #
 
 #
-#   $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/CMakeSivicTests.cmake $
-#   $Rev: 608 $
-#   $Author: jccrane $
-#   $Date: 2010-09-11 00:01:42 -0700 (Sat, 11 Sep 2010) $
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
 #
 #   Authors:
 #       Jason C. Crane, Ph.D.

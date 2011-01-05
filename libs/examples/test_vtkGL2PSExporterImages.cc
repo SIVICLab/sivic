@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2010 The Regents of the University of California.
+ *  Copyright © 2009-2011 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without

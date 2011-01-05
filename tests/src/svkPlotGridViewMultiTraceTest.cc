@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2010 The Regents of the University of California.
+ *  Copyright © 2009-2011 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/svkPlotGridViewTest.cc $ 
- *  $Rev: 513 $
- *  $Author: jccrane $
- *  $Date: 2010-08-17 20:59:32 -0700 (Tue, 17 Aug 2010) $
+ *  $URL$ 
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
