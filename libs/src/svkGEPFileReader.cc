@@ -507,6 +507,11 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 
         aMapper = svkGEPFileMapperUCSF::New();
 
+    } else if ( psd.find("fidcsi_ucsf_dev0") != vtkstd::string::npos ) {
+
+        //  fidcsi ucsf sequence 
+        aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
+
     } else if ( psd.find("fidcsi") != vtkstd::string::npos ) {
 
         //  fidcsi ucsf sequence 
@@ -525,6 +530,8 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         vtkErrorMacro("No PFile mapper available for " << psd );
 
     }
+
+    cout << "PFile Mapper Type for: " << psd << " = " << aMapper->GetClassName() << endl;
 
     return aMapper;          
 }

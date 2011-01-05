@@ -139,48 +139,10 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
 
     //  Get Thickness Values
     float selBoxSize[3]; 
-    selBoxSize[0] = 0.0;
+    this->GetSelBoxSize( selBoxSize );
+
     double dcos[3][3]; 
     this->GetDcos(dcos); 
-    if ( this->pfileVersion > 9  ) {
-
-        float lMax = 0; 
-        float pMax = 0; 
-        float sMax = 0;
-        int lIndex; 
-        int pIndex; 
-        int sIndex;     
-        for ( int i = 0; i < 3; i++ ) {
-            if( fabs( dcos[i][0] ) > lMax ) {
-                lIndex = i;
-                lMax = fabs( dcos[i][0] );
-            }
-            if( fabs( dcos[i][1] ) > pMax) {
-                pIndex = i;
-                pMax = fabs( dcos[i][1] );
-            }
-            if( fabs( dcos[i][2] ) > sMax ) {
-                sIndex = i;
-                sMax = fabs( dcos[i][2] );
-            }
-        }
-        selBoxSize[ lIndex ] = this->GetHeaderValueAsFloat( "rhi.user8" ); 
-        selBoxSize[ pIndex ] = this->GetHeaderValueAsFloat( "rhi.user9" ); 
-        selBoxSize[ sIndex ] = this->GetHeaderValueAsFloat( "rhi.user10" ); 
-
-    } else {
-
-        selBoxSize[0] = this->GetHeaderValueAsFloat( "rhr.roilenx" );
-        selBoxSize[1] = this->GetHeaderValueAsFloat( "rhr.roileny" );
-        selBoxSize[2] = this->GetHeaderValueAsFloat( "rhr.roilenz" );
-
-        if ( this->IsSwapOn() ) {
-            float ftemp = selBoxSize[0];
-            selBoxSize[0] = selBoxSize[1];
-            selBoxSize[1] = ftemp;
-        }
-    }
-
 
     //  Volume Localization (PRESS BOX)
     for (int i = 0; i < 3; i++) {
@@ -236,6 +198,55 @@ void svkGEPFileMapper::GetSelBoxCenter( float selBoxCenter[3] )
     selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.user12" ); 
     selBoxCenter[2] =  this->GetHeaderValueAsFloat( "rhi.user13" ); 
 
+}
+
+
+/*
+ *
+ */
+void svkGEPFileMapper::GetSelBoxSize( float selBoxSize[3] )
+{
+    selBoxSize[0] = 0.0;
+    double dcos[3][3]; 
+    this->GetDcos(dcos); 
+    if ( this->pfileVersion > 9  ) {
+
+        float lMax = 0; 
+        float pMax = 0; 
+        float sMax = 0;
+        int lIndex; 
+        int pIndex; 
+        int sIndex;     
+        for ( int i = 0; i < 3; i++ ) {
+            if( fabs( dcos[i][0] ) > lMax ) {
+                lIndex = i;
+                lMax = fabs( dcos[i][0] );
+            }
+            if( fabs( dcos[i][1] ) > pMax) {
+                pIndex = i;
+                pMax = fabs( dcos[i][1] );
+            }
+            if( fabs( dcos[i][2] ) > sMax ) {
+                sIndex = i;
+                sMax = fabs( dcos[i][2] );
+            }
+        }
+        selBoxSize[ lIndex ] = this->GetHeaderValueAsFloat( "rhi.user8" ); 
+        selBoxSize[ pIndex ] = this->GetHeaderValueAsFloat( "rhi.user9" ); 
+        selBoxSize[ sIndex ] = this->GetHeaderValueAsFloat( "rhi.user10" ); 
+
+    } else {
+
+        selBoxSize[0] = this->GetHeaderValueAsFloat( "rhr.roilenx" );
+        selBoxSize[1] = this->GetHeaderValueAsFloat( "rhr.roileny" );
+        selBoxSize[2] = this->GetHeaderValueAsFloat( "rhr.roilenz" );
+
+        if ( this->IsSwapOn() ) {
+            float ftemp = selBoxSize[0];
+            selBoxSize[0] = selBoxSize[1];
+            selBoxSize[1] = ftemp;
+        }
+    }
 }
 
 

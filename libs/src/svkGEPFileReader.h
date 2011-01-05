@@ -50,6 +50,7 @@
 #include <svkGEPFileMapperMBrease.h>
 #include <svkGEPFileMapperUCSF.h>
 #include <svkGEPFileMapperUCSFfidcsi.h>
+#include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkGEPFileMapperMPCSIOBL.h>
 
 #include <vtkstd/map>

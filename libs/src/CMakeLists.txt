@@ -114,6 +114,7 @@ ADD_LIBRARY(
     svkGEPFileMapperMBrease.cc
     svkGEPFileMapperUCSF.cc
     svkGEPFileMapperUCSFfidcsi.cc
+    svkGEPFileMapperUCSFfidcsiDev0.cc
     svkGEPFileMapperMPCSIOBL.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
