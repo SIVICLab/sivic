@@ -27,10 +27,10 @@
  */
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkUCSFUtils.cc $
- *  $Rev: 403 $
- *  $Author: jccrane $
- *  $Date: 2010-07-13 15:44:31 -0700 (Tue, 13 Jul 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkUtils, "$Rev: 403 $");
+vtkCxxRevisionMacro(svkUtils, "$Rev$");
 vtkStandardNewMacro(svkUtils);
 
 //! Constructor

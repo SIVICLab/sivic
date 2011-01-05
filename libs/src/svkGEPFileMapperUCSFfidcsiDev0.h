@@ -39,64 +39,48 @@
  *      Beck Olson
  */
 
+#ifndef SVK_GE_PFILE_MAPPER_UCSF_FIDCSI_DEV0_H
+#define SVK_GE_PFILE_MAPPER_UCSF_FIDCSI_DEV0_H
 
-#ifndef SVK_UTILS_H
-#define SVK_UTILS_H
+
+#include <svkGEPFileMapperUCSF.h>
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
-
-#ifdef WIN32
-#include <windows.h>
-#define MAXPATHLEN 260
-#else
-#include <sys/param.h>
-#include <pwd.h>
-#endif
 namespace svk {
 
 
-using namespace std;
 /*! 
- *  UCSF specific utilities.
+ *  Mapper from pfile header to DICOM IOD/SOP Class instance, overrides
+ *  specific product logic with UCSF fidcsi_ucsf_dev0 research psd 
+ *  developed by Peder Larson, PhD UCSF Department of Radiology and Biomedical 
+ *  Imaging. 
+ *
+ *  Output will ultimately be regridded to rectaliniear 3D array of FIDs 
+ *  for output.   
+ *  
  */
-class svkUtils : public vtkObject
+class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF 
 {
 
     public:
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
+        vtkTypeRevisionMacro( svkGEPFileMapperUCSFfidcsiDev0, svkGEPFileMapperUCSF );
+        static svkGEPFileMapperUCSFfidcsiDev0* New();
+
+    protected:
+
+        svkGEPFileMapperUCSFfidcsiDev0();
+        ~svkGEPFileMapperUCSFfidcsiDev0();
   
-        // vtk initialization 
-        static svkUtils* New();  
+        virtual void    GetSelBoxCenter( float selBoxCenter[3] );
+        virtual void    GetSelBoxSize( float selBoxSize[3] );
+        virtual void    GetCenterFromRawFile( double* center ); 
+        virtual bool    IsChopOn(); 
 
-        //! Does the file or path exist:
-		static bool           FilePathExists( const char* path );
-		static string		  GetCurrentWorkingDirectory();
-		static string		  GetUserName();
-		static bool			  CanWriteToPath( const char* path );
-		static bool           CopyFile( const char* input, const char* output );
-		static bool           PrintFile( const char* fileName, const char* printerName );
-	protected:
-
-       svkUtils();
-       ~svkUtils();
-        
 };
 
 
 }   //svk
 
+#endif //SVK_GE_PFILE_MAPPER_UCSF_FIDCSI_DEV0_H
 
-
-#endif //SVK_UTILS

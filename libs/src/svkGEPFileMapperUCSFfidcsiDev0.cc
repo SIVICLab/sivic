@@ -40,63 +40,85 @@
  */
 
 
-#ifndef SVK_UTILS_H
-#define SVK_UTILS_H
+#include <svkGEPFileMapperUCSFfidcsiDev0.h>
+#include <vtkDebugLeaks.h>
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
-
-#ifdef WIN32
-#include <windows.h>
-#define MAXPATHLEN 260
-#else
-#include <sys/param.h>
-#include <pwd.h>
-#endif
-namespace svk {
+using namespace svk;
 
 
-using namespace std;
-/*! 
- *  UCSF specific utilities.
+vtkCxxRevisionMacro(svkGEPFileMapperUCSFfidcsiDev0, "$Rev$");
+vtkStandardNewMacro(svkGEPFileMapperUCSFfidcsiDev0);
+
+
+/*!
+ *
  */
-class svkUtils : public vtkObject
+svkGEPFileMapperUCSFfidcsiDev0::svkGEPFileMapperUCSFfidcsiDev0()
 {
 
-    public:
+#if VTK_DEBUG_ON
+    this->DebugOn();
+    vtkDebugLeaks::ConstructClass("svkGEPFileMapperUCSFfidcsiDev0");
+#endif
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
-  
-        // vtk initialization 
-        static svkUtils* New();  
+    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
-        //! Does the file or path exist:
-		static bool           FilePathExists( const char* path );
-		static string		  GetCurrentWorkingDirectory();
-		static string		  GetUserName();
-		static bool			  CanWriteToPath( const char* path );
-		static bool           CopyFile( const char* input, const char* output );
-		static bool           PrintFile( const char* fileName, const char* printerName );
-	protected:
+}
 
-       svkUtils();
-       ~svkUtils();
+
+/*!
+ *
+ */
+svkGEPFileMapperUCSFfidcsiDev0::~svkGEPFileMapperUCSFfidcsiDev0()
+{
+    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+}
+
+
+/*
+ *  Chop is off for UCSF fid dev0 (EPSI)
+ */
+bool svkGEPFileMapperUCSFfidcsiDev0::IsChopOn()
+{
+    return false; 
+}
+
+
+/*
+ *
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxCenter( float selBoxCenter[3] )
+{
+
+    selBoxCenter[0] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_R" );
+    selBoxCenter[1] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_A" );
+    selBoxCenter[2] = this->GetHeaderValueAsFloat( "rhi.ctr_S" );
+
+} 
+
+
+/*
+ *  For FIDCSI make the press box occupy the whole volume. 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxSize( float selBoxSize[3] )
+{
+
+    selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );
+    selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );
+    selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );
+
+}
+
+
+/*
+ *  Gets the center of the acquisition grid.  May vary between sequences.
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetCenterFromRawFile( double* center )
+{
+
+    center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_R" );
+    center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_A" );
+    center[2] = this->GetHeaderValueAsFloat( "rhi.ctr_S" );
         
-};
-
-
-}   //svk
-
-
-
-#endif //SVK_UTILS
+}
