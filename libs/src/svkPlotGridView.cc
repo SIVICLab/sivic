@@ -61,7 +61,7 @@ svkPlotGridView::svkPlotGridView()
     this->DebugOn();
 #endif
 
-    this->plotGrid = svkPlotLineGrid::New();
+    this->plotGrids.push_back(svkPlotLineGrid::New());
     this->orientation = svkDcmHeader::AXIAL;
 
     // Setting layers is key for solaris rendering
@@ -88,7 +88,7 @@ svkPlotGridView::svkPlotGridView()
     entirePlotGrid->Delete();
 
     this->SetProp( svkPlotGridView::VOL_SELECTION, NULL );
-    this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+    this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
@@ -119,10 +119,14 @@ svkPlotGridView::~svkPlotGridView()
         this->rwi->Delete();
         this->rwi = NULL;
     }
-    if( this->plotGrid != NULL ) {
-        this->plotGrid->Delete();
-        this->plotGrid = NULL;
+    for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+        iter != this->plotGrids.end(); ++iter) {
+        if( (*iter) != NULL ) {
+            (*iter)->Delete();
+            (*iter) = NULL;
+        }
     }
+
     if( this->colorTransfer != NULL ) {
         this->colorTransfer->Delete();
         this->colorTransfer = NULL;
@@ -178,10 +182,10 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( PLOT_LINES ) );
                 }
             }
-            plotGrid->SetInput(svkMrsImageData::SafeDownCast(data));
+            plotGrids[0]->SetInput(svkMrsImageData::SafeDownCast(data));
             this->GeneratePlotGridActor();
             this->TurnPropOn( PLOT_LINES );
-            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
             this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_LINES ) );
             string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
             if( acquisitionType == "SINGLE VOXEL" ) {
@@ -213,7 +217,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(  this->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE));
             }
             this->SetProp( svkPlotGridView::SAT_BANDS, this->satBands->GetSatBandsActor() );
-            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrid->GetPlotGridActor()  );
+            this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
             this->TurnPropOn( svkPlotGridView::PLOT_LINES );
             this->TurnPropOn( svkPlotGridView::VOL_SELECTION );
             this->SetOrientation( this->orientation );
@@ -223,7 +227,6 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
             }
 
-
         } else if( index == MET ) {
             if( dataVector[MET] != NULL  ) {
                 (dataVector[MET])->Delete();
@@ -232,7 +235,34 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             dataVector[MET] = data;
             data->Register( this );
             CreateMetaboliteOverlay( data );
-        } 
+        } else if( index > MET ) {
+            while( dataVector.size() < index + 1 ) {
+                dataVector.push_back(NULL);
+            }
+            if( dataVector[index] != NULL  ) {
+                (dataVector[index])->Delete();
+            }
+            ObserveData( data );
+            data->Register( this );
+            dataVector[index] = data;
+            plotGrids.push_back( svkPlotLineGrid::New() );
+            plotGrids[index-1]->SetInput(svkMrsImageData::SafeDownCast(data));
+            int minFreq;
+            int maxFreq;
+            plotGrids[0]->GetFrequencyWLRange(minFreq, maxFreq);
+            plotGrids[index-1]->SetFrequencyWLRange(minFreq, maxFreq, this->tlcBrc);
+            double minInt;
+            double maxInt;
+            plotGrids[0]->GetIntensityWLRange(minInt, maxInt);
+            plotGrids[index-1]->SetIntensityWLRange(minInt, maxInt, this->tlcBrc);
+            plotGrids[index-1]->SetComponent( plotGrids[0]->GetComponent() );
+            this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->plotGrids[index-1]->GetPlotGridActor() );
+            this->SetSlice( slice );
+            this->SetOrientation( this->orientation );
+            this->AlignCamera(); 
+
+        }
+
     }
 }
 
@@ -312,9 +342,15 @@ void svkPlotGridView::SetSlice(int slice)
         }
 
     }
-    this->plotGrid->SetSlice(slice);
-    this->plotGrid->SetTlcBrc(tlcBrc);
-    this->plotGrid->Update(tlcBrc);
+    
+    for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+        iter != this->plotGrids.end(); ++iter) {
+        if( (*iter) != NULL ) {
+            (*iter)->SetSlice(slice);
+            (*iter)->SetTlcBrc(tlcBrc);
+            (*iter)->Update(tlcBrc);
+        }
+    }
     this->AlignCamera();
     if( dataVector[MET] != NULL ) {
         this->UpdateMetaboliteText(tlcBrc);
@@ -356,8 +392,13 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
         if( toggleDraw ) {
             this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
         }
-        plotGrid->SetTlcBrc(this->tlcBrc);
-        plotGrid->Update(tlcBrc);
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetTlcBrc(this->tlcBrc);
+                (*iter)->Update(tlcBrc);
+            }
+        }
         this->UpdateMetaboliteText(tlcBrc);
         this->UpdateMetaboliteImage(tlcBrc);
         this->GenerateClippingPlanes();
@@ -370,6 +411,16 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
     }
 }
 
+
+/*!
+ * Sets the color for the given plot index.
+ */
+void svkPlotGridView::SetPlotColor(int index, double* rgb )
+{
+    if( this->plotGrids[index] != NULL ) {
+        this->plotGrids[index]->GetPlotGridActor()->GetProperty()->SetColor(rgb);
+    }
+}
 
 /*!
  *  Sets the interactor, and attach a renderer it its window.
@@ -408,9 +459,19 @@ void svkPlotGridView::SetWindowLevelRange( double lower, double upper, int index
         // Round doubles to int.
         int lowerInt = static_cast<int>(floor( lower + 0.5 ));
         int upperInt = static_cast<int>(floor( upper + 0.5 ));
-        this->plotGrid->SetFrequencyWLRange(lowerInt, upperInt, this->tlcBrc);
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetFrequencyWLRange(lowerInt, upperInt, this->tlcBrc);
+            }
+        }
     } else if (index == AMPLITUDE) {
-        this->plotGrid->SetIntensityWLRange(lower, upper, this->tlcBrc);
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetIntensityWLRange(lower, upper, this->tlcBrc);
+            }
+        }
     }
     this->Refresh();
 }
@@ -424,11 +485,11 @@ void svkPlotGridView::GetWindowLevelRange( double &lower, double &upper, int ind
     if (index == FREQUENCY) {
         int integerLower;
         int integerUpper;
-        this->plotGrid->GetFrequencyWLRange( integerLower, integerUpper );
+        this->plotGrids[0]->GetFrequencyWLRange( integerLower, integerUpper );
         lower = integerLower;
         upper = integerUpper;
     } else if (index == AMPLITUDE) {
-        this->plotGrid->GetIntensityWLRange(lower, upper);
+        this->plotGrids[0]->GetIntensityWLRange(lower, upper);
     }
 }
 
@@ -464,9 +525,11 @@ double* svkPlotGridView::GetOverlayWLRange( )
  *
  *  \param component the compent you wish to display, REAL, IMAGINARY, MAGNITUDE
  */
-void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component)
+void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component, int plotIndex)
 {
-    this->plotGrid->SetComponent( component ); 
+    if( this->plotGrids[plotIndex] != NULL ) {
+        plotGrids[plotIndex]->SetComponent( component );
+    }
     this->Refresh();
 }
 
@@ -793,7 +856,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
 
     } 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
-    this->plotGrid->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
+    this->plotGrids[0]->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
 
     if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
@@ -822,7 +885,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
     }
 
     // Check for null datasets and out of bound data sets...
-    if ( data == NULL || targetIndex > MET || targetIndex < 0 ) {
+    if ( data == NULL || targetIndex < 0 ) {
         resultInfo += "Data incompatible-- NULL or outside of input range!\n";
 
     } else if( data->IsA("svkMriImageData") ) {
@@ -887,10 +950,14 @@ void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
 /*!
  *
  */
-void svkPlotGridView::SetChannel( int channel )
+void svkPlotGridView::SetChannel( int channel, int plotIndex )
 {
-    this->channel = channel;
-    this->plotGrid->SetChannel( channel );
+    if( plotIndex == 0 ) {
+        this->channel = channel;
+    }
+    if( this->plotGrids[plotIndex] != NULL ) {
+        this->plotGrids[plotIndex]->SetChannel( channel );
+    }
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
 
@@ -899,10 +966,14 @@ void svkPlotGridView::SetChannel( int channel )
 /*!
  *
  */
-void svkPlotGridView::SetTimePoint( int timePoint )
+void svkPlotGridView::SetTimePoint( int timePoint, int plotIndex )
 {
-    this->timePoint = timePoint;
-    this->plotGrid->SetTimePoint( timePoint );
+    if( plotIndex == 0 ) {
+        this->timePoint = timePoint;
+    }
+    if( this->plotGrids[plotIndex] != NULL ) {
+        plotGrids[plotIndex]->SetTimePoint( timePoint );
+    }
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
 
@@ -1013,8 +1084,12 @@ void svkPlotGridView::GenerateClippingPlanes()
         if( acquisitionType != "SINGLE VOXEL" ) {
             this->ClipMapperToTlcBrc( dataVector[MRS],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
-            this->ClipMapperToTlcBrc( this->dataVector[MRS], this->plotGrid->GetPlotGridActor()->GetMapper(),
-                                 tlcBrc, 0, 0, 0 );
+            for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+                iter != this->plotGrids.end(); ++iter) {
+                if( (*iter) != NULL ) {
+                    this->ClipMapperToTlcBrc( this->dataVector[MRS], (*iter)->GetPlotGridActor()->GetMapper(), tlcBrc, 0, 0, 0 );
+                }
+            }
         }
     }
 }
@@ -1033,12 +1108,19 @@ void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
         }
         this->UpdateMetaboliteTextDisplacement();
         this->satBands->SetOrientation( this->orientation );
-        this->plotGrid->SetOrientation( this->orientation );
-        this->SetTlcBrc( this->plotGrid->GetTlcBrc()[0], this->plotGrid->GetTlcBrc()[1] );
+
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetOrientation( this->orientation );
+            }
+        }
+
+        this->SetTlcBrc( this->plotGrids[0]->GetTlcBrc()[0], this->plotGrids[0]->GetTlcBrc()[1] );
         if( toggleDraw ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
         }
-        this->SetSlice( this->plotGrid->GetSlice() );
+        this->SetSlice( this->plotGrids[0]->GetSlice() );
         this->AlignCamera();
         this->Refresh();
 
@@ -1058,7 +1140,7 @@ void svkPlotGridView::AlignCamera( )
         if( acquisitionType == "SINGLE VOXEL" ) {
             memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
         } else {
-            this->plotGrid->CalculateTlcBrcBounds( bounds, this->tlcBrc );
+            this->plotGrids[0]->CalculateTlcBrcBounds( bounds, this->tlcBrc );
         }
         double viewWidth =  bounds[1] - bounds[0];
         double viewHeight = bounds[3] - bounds[2];

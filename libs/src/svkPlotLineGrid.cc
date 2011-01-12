@@ -793,7 +793,7 @@ void svkPlotLineGrid::SetComponent( svkPlotLine::PlotComponent component )
  *
  *  \return component the current component: REAL, IMAGINARY, or MAGNITUDE
  */
-int svkPlotLineGrid::GetComponent( )
+svkPlotLine::PlotComponent svkPlotLineGrid::GetComponent( )
 {
     return this->plotComponent;
 }

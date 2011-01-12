@@ -104,7 +104,7 @@ class svkPlotLineGrid : public vtkObject
         void                    GetIntensityWLRange(double &lower, double &range); 
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
-        int                     GetComponent( );
+        svkPlotLine::PlotComponent                     GetComponent( );
         void                    SetChannel( int channel );
         void                    SetTimePoint( int timePoint );
         void                    UpdateDataArrays(int tlc, int brc);

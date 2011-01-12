@@ -107,8 +107,13 @@ class svkPlotGridView : public svkDataView
         virtual void                GetWindowLevelRange( double &lower, double &upper, int index );
         virtual void                SetOverlayWLRange( double* range );
         virtual double*             GetOverlayWLRange( );
-        void                        SetComponent( svkPlotLine::PlotComponent component );
+        void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = 0 );
+        void                        SetChannel( int channel, int plotIndex = 0 );
+        int                         GetChannel( );
+        void                        SetTimePoint( int timePoint, int plotIndex = 0 );
+        int                         GetTimePoint( );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
+        virtual void                SetPlotColor( int index, double* rgb );
         virtual void                Refresh();
         void                        GeneratePlotGridActor();  
         void                        GenerateClippingPlanes();
@@ -152,8 +157,7 @@ class svkPlotGridView : public svkDataView
 
 
         //  Members:
-        svkPlotLineGrid*       plotGrid; 
-        svkPlotLineGrid*       plotGrid2; 
+        vector<svkPlotLineGrid*> plotGrids; 
         vector<svkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
         void                   CreateMetaboliteOverlay( svkImageData* data );
@@ -164,10 +168,6 @@ class svkPlotGridView : public svkDataView
         int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
-        void                   SetChannel( int channel );
-        int                    GetChannel( );
-        void                   SetTimePoint( int timePoint );
-        int                    GetTimePoint( );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
 

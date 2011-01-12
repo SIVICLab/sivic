@@ -143,16 +143,17 @@ void svkPlotGridViewController::Reset()
 //! Set input data and initialize default range values.
 void svkPlotGridViewController::SetInput(svkImageData* data, int index)
 {
-    if( index == 0 || index == 1 ) {
-        if( dataVector[index] != NULL ) {
-            (dataVector[index])->Delete();
+    if( index > svkPlotGridView::MET ) {
+        while( dataVector.size() < index + 1 ) {
+            dataVector.push_back(NULL);
         }
-        data->Register(this);
-        dataVector[index] = data;
-        this->view->SetInput(data, index);
-    } else {
-        cout<<"WARNING: svkPlotGridViewController only takes one image input!"<<endl;
     }
+    if( dataVector[index] != NULL ) {
+        (dataVector[index])->Delete();
+    }
+    data->Register(this);
+    dataVector[index] = data;
+    this->view->SetInput(data, index);
 }
 
 
@@ -221,7 +222,7 @@ void svkPlotGridViewController::SetComponent( svkPlotLine::PlotComponent compone
  */
 int svkPlotGridViewController::GetComponent( )
 {
-    return (static_cast<svkPlotGridView*>(this->view))->plotGrid->GetComponent();
+    return (static_cast<svkPlotGridView*>(this->view))->plotGrids[0]->GetComponent();
 }
 
 
