@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDdfVolumeReader.cc $
- *  $Rev: 76 $
- *  $Author: jccrane $
- *  $Date: 2010-01-26 11:05:15 -0800 (Tue, 26 Jan 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -97,8 +97,10 @@
 #include "svkPlotGridViewController.h"
 #include "svkSpecPoint.h"
 #include "vtkMRMLScalarVolumeDisplayNode.h"
-#include "vtkMRMLImageDataNode.h"
-#include "vtkMRMLImageDataStorageNode.h"
+#include "vtkMRMLsvkImageDataNode.h"
+#include "vtkMRMLsvkImageDataStorageNode.h"
+#include "vtkMRMLScalarVolumeNode.h"
+#include "vtkMRMLLayoutNode.h"
 
 #include <svkExtractMRIFromMRS.h> 
 
@@ -115,7 +117,7 @@
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro (vtkMRSpectroscopyGUI );
-vtkCxxRevisionMacro ( vtkMRSpectroscopyGUI, "$Revision: 15111 $");
+vtkCxxRevisionMacro ( vtkMRSpectroscopyGUI, "$Revision$");
 //---------------------------------------------------------------------------
 
 
@@ -261,20 +263,20 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
 }
 
 
-//---------------------------------------------------------------------------
+/*!
+ *  Register the svkImageDataNode and svkImageDataStorageNode into the vtkMRMLScene:
+ */
 void vtkMRSpectroscopyGUI::Init()
 {
-  //std::cout << "init" << std::endl;
-  vtkMRMLScene* scene = this->GetMRMLScene();
+    vtkMRMLScene* scene = this->GetMRMLScene();
 
-  vtkMRMLImageDataNode* imageDataNode = vtkMRMLImageDataNode::New();
-  scene->RegisterNodeClass(imageDataNode);
-  imageDataNode->Delete();
+    vtkMRMLsvkImageDataNode* imageDataNode = vtkMRMLsvkImageDataNode::New();
+    scene->RegisterNodeClass(imageDataNode);
+    imageDataNode->Delete();
 
-  vtkMRMLImageDataStorageNode* imageDataStorageNode = vtkMRMLImageDataStorageNode::New();
-  scene->RegisterNodeClass(imageDataStorageNode);
-  imageDataStorageNode->Delete();
-  //std::cout << "finish init" << std::endl;
+    vtkMRMLsvkImageDataStorageNode* imageDataStorageNode = vtkMRMLsvkImageDataStorageNode::New();
+    scene->RegisterNodeClass(imageDataStorageNode);
+    imageDataStorageNode->Delete();
 }
 
 
@@ -282,22 +284,23 @@ void vtkMRSpectroscopyGUI::Init()
 void vtkMRSpectroscopyGUI::Enter()
 {
 
-  //std::cout << "enter" << std::endl;
-  // Fill in
-  //vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
+    //std::cout << "enter" << std::endl;
+    // Fill in
+    //vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
   
-  //this->SlicerStyle = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->GetInteractorStyle();
-  //this->SplitWindow();
-  vtkRenderer* ren = this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->GetRenderWidget()->GetRenderer();
-  ren->Render();
+    //this->SlicerStyle = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->GetInteractorStyle();
+    //this->SplitWindow();
 
-  if (this->TimerFlag == 0)
+    vtkRenderer* ren = this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->GetRenderWidget()->GetRenderer();
+    ren->Render();
+
+    if (this->TimerFlag == 0)
     {
-      this->TimerFlag = 1;
-      this->TimerInterval = 100;  // 100 ms
-      //ProcessTimerEvents();
+        this->TimerFlag = 1;
+        this->TimerInterval = 100;  // 100 ms
+        //ProcessTimerEvents();
     }
-  //std::cout << "finish enter" << std::endl;
+    //std::cout << "finish enter" << std::endl;
 }
 
 
@@ -434,13 +437,16 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
     this->ySpecRange->AddObserver( vtkKWRange::RangeValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
 
 
-  this->AddMRMLObservers();
+    this->AddMRMLObservers();
 
-  //std::cout << "finish AddGUIObservers" << std::endl;
-  //std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
+    //std::cout << "finish AddGUIObservers" << std::endl;
+    //std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLsvkImageDataNode") << std::endl;
 }
 
 
+/*
+ *
+ */
 void vtkMRSpectroscopyGUI::AddGridObserver( )
 {
     vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
@@ -452,6 +458,7 @@ void vtkMRSpectroscopyGUI::AddGridObserver( )
 
     //std::cout << "finish AddGridObserver" << std::endl;
 }
+
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::RemoveMRMLObservers(void)
@@ -468,11 +475,11 @@ void vtkMRSpectroscopyGUI::RemoveMRMLObservers(void)
 void vtkMRSpectroscopyGUI::AddMRMLObservers(void)
 {
     //std::cout << "AddMRMLObservers" << std::endl;
-  //Remove the MRML observer
-  if ( this->GetApplicationGUI() )
-  {
-    this->GetApplicationGUI()->GetMRMLScene()->AddObserver(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
-  }
+    //Remove the MRML observer
+    if ( this->GetApplicationGUI() )
+    {
+        this->GetApplicationGUI()->GetMRMLScene()->AddObserver(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
+    }
 }
 
 
@@ -506,15 +513,18 @@ void vtkMRSpectroscopyGUI::AddLogicObservers ( )
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::HandleMouseEvent(vtkSlicerInteractorStyle *style)
-{  std::cout << "HandleMouseEvent" << std::endl;
-  std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
+{  
+    std::cout << "HandleMouseEvent" << std::endl;
+    std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLsvkImageDataNode") << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
                                          unsigned long event, void *callData)
-{ //std::cout << "ProcessGUIEvents" << std::endl;
+{ 
+
+    //std::cout << "ProcessGUIEvents" << std::endl;
 
     const char *eventName = vtkCommand::GetStringFromEventId(event);
     vtkSlicerNodeSelectorWidget *selector = vtkSlicerNodeSelectorWidget::SafeDownCast(caller);
@@ -581,6 +591,16 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
     {
         std::cerr << "Green moved to " << this->GreenScale->GetValue() << std::endl;
+        if(this->CurrentSpectra != NULL) 
+        {
+            int axialSlice = GetMRSSlice("Green");
+            if(axialSlice != -1) 
+            {
+	            std::cerr << "Closest MRS Slice " << axialSlice << std::endl;
+	            //this->PlotView->SetSlice(axialSlice);
+	            std::cerr << "New Slice " << axialSlice << std::endl;
+            }
+        }
     }
     else if (this->YellowScale == vtkKWScale::SafeDownCast(caller)
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
@@ -723,33 +743,72 @@ void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width)
     
     //quant->Delete(); 
 
+    //  Register new svkMriImageData with scene: 
+    //  This pipeline is borrowed from vtkSlicerVolumesLogic::CloneVolume()
+    //  clone the volume node to represent the new Metabolite Map
+
+    //  Register the new class type with the scene:
+    vtkMRMLScalarVolumeNode *metMapNode = vtkMRMLScalarVolumeNode::New();
+    this->GetMRMLScene()->RegisterNodeClass(metMapNode);
+    metMapNode->Delete();
+
+    vtkMRMLScalarVolumeNode *clonedVolumeNode = vtkMRMLScalarVolumeNode::New();
+    //clonedVolumeNode->CopyWithScene(volumeNode);
+    clonedVolumeNode->SetAndObserveStorageNodeID(NULL);
+    //std::string uname = this->MRMLScene->GetUniqueNameByString(name);
+    //clonedVolumeNode->SetName(uname.c_str()); 
+    //clonedVolumeNode->SetAndObserveDisplayNodeID(clonedDisplayNode->GetID());
+  
+    // copy over the volume's data
+    vtkImageData* clonedVolumeData = vtkImageData::New();
+    clonedVolumeData->DeepCopy( outputData ); 
+    clonedVolumeNode->SetAndObserveImageData( clonedVolumeData );
+    clonedVolumeNode->SetModifiedSinceRead(1);
+  
+    // add the cloned volume to the scene
+    this->GetMRMLScene()->AddNode( clonedVolumeNode );
+  
+    // remove references
+    clonedVolumeNode->Delete(); 
+    clonedVolumeData->Delete();
+
+}
+
+
+/*!
+ *  Loads MRS dat file and puts it into 
+ */
+void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
+{  
+
+    this->model = svkDataModel::New();
+    this->model->SetDataFileName( "SpectroscopicData", filename );
+    this->ddfData = svkMrsImageData::SafeDownCast(this->model->LoadFile(filename));
+
+    vtkMRMLsvkImageDataNode* imageDataNode = vtkMRMLsvkImageDataNode::New();
+    imageDataNode->SetData( this->ddfData );
+
+    //TODO: how to add?
+    //this->VolumeSelector->AddNodeClass("vtkMRMLsvkImageDataNode", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1");
+    //this->VolumeSelector->SetSelected(ImageDataNode);
+
+    if (this->GetMRMLScene() != NULL) {
+        this->GetMRMLScene()->AddNodeNoNotify(imageDataNode);
+    }
+
+    //  Set new default layout for this module: 
+    this->GetApplicationGUI()->GetGUILayoutNode()->SetViewArrangement( vtkMRMLLayoutNode::SlicerLayoutDual3DView ) ; 
+
+    SetSpectraData(this->ddfData);
 }
 
 
 /*!
  *
  */
-void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
-{  
-    this->model = svkDataModel::New();
-    this->model->SetDataFileName( "SpectroscopicData", filename );
-    this->ddfData = svkMrsImageData::SafeDownCast(this->model->LoadFile(filename));
-
-    vtkMRMLImageDataNode* ImageDataNode = vtkMRMLImageDataNode::New();
-    ImageDataNode->SetData(this->ddfData);
-    //TODO: how to add?
-    //this->VolumeSelector->AddNodeClass("vtkMRMLImageDataNode", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1", "vtkMRMLImageDataNode1");
-    //this->VolumeSelector->SetSelected(ImageDataNode);
-    if (this->GetMRMLScene() != NULL) {
-        this->GetMRMLScene()->AddNodeNoNotify(ImageDataNode);
-    }
-
-    SetSpectraData(this->ddfData);
-}
-
-
 void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
 {   
+
     this->CurrentSpectra = ddfData;
     ddfData->Register(NULL);
 
@@ -799,9 +858,9 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
         //diagnostics: 
         pdata->Update();
         cout << "num cells (pdata): " << pdata->GetNumberOfCells() << endl;
-        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[0] << endl; 
-        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
-        cout << "cell 0, POINT 0: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
+        cout << "cell 0, POINT x: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[0] << endl; 
+        cout << "cell 0, POINT y: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[1] << endl; 
+        cout << "cell 0, POINT z: " << (pdata->GetCell(0)->GetPoints()->GetPoint(0))[2] << endl; 
 
         filter->SetInput(pdata);
 
@@ -834,9 +893,10 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
         actor2D->SetMapper(mapper);
         actor2D->Modified();
         actor2D->GetProperty()->SetColor(0, 1, 0);
+
         this->Grids[i] = ndata;
 
-        guis[i]->GetSliceViewer()->GetRenderWidget()->GetRenderer()->AddActor(actor2D);
+        //guis[i]->GetSliceViewer()->GetRenderWidget()->GetRenderer()->AddActor(actor2D);
     }
 
     redgui->GetSliceViewer()->Render();
@@ -897,7 +957,7 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
     this->PlotView->SetInput( ddfData );
 
 
-//quant->Delete(); 
+    //quant->Delete(); 
 
 
     this->PlotView->SetSlice( 4 );
@@ -913,18 +973,51 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
 } 
 
 
+int vtkMRSpectroscopyGUI::GetMRSSlice( vtkstd::string  windowColor) 
+{
+    
+    vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
+    cout << "SLICE ORIENTATION: " << appGUI->GetMainSliceGUI(windowColor.c_str())->GetSliceController()->GetSliceNode()->GetOrientationString() << endl; 
+    cout << "slicetoRAS: " << *(appGUI->GetMainSliceGUI(windowColor.c_str())->GetSliceController()->GetSliceNode()->GetSliceToRAS()) << endl; 
+
+    //  see which spectral slice intersects with the last column 
+    //  of SliceToRAS matrix.
+    vtkMatrix4x4* sliceCenterRASMatrix = appGUI->GetMainSliceGUI(windowColor.c_str())->GetSliceController()->GetSliceNode()->GetSliceToRAS(); 
+    double imageSliceCenterRAS[3]; 
+    imageSliceCenterRAS[0] = sliceCenterRASMatrix->GetElement(0,3); 
+    imageSliceCenterRAS[1] = sliceCenterRASMatrix->GetElement(1,3); 
+    imageSliceCenterRAS[2] = sliceCenterRASMatrix->GetElement(2,3); 
+
+    //  Transform RAS to LPS (Slicer to SIVIC convention transformation):
+    double imageSliceCenterLPS[3]; 
+    imageSliceCenterLPS[0] = -1 * imageSliceCenterRAS[0];
+    imageSliceCenterLPS[1] = -1 * imageSliceCenterRAS[1];
+    imageSliceCenterLPS[2] = imageSliceCenterRAS[2];
+
+    cout << "slice center LPS" << imageSliceCenterLPS[0] << " " << imageSliceCenterLPS[1] << " " << imageSliceCenterLPS[2] << endl;
+
+    //  Determine which MRS slice contains these coordinates:
+    int mrsSlice = this->CurrentSpectra->GetClosestSlice(imageSliceCenterLPS, svkDcmHeader::AXIAL);
+    cout << "Get MRS Slice: " << mrsSlice << endl;
+
+    return mrsSlice;
+
+}
+
+
 int vtkMRSpectroscopyGUI::GetAxialSlice() 
 {
-    double sagittal = this->RedScale->GetValue();
-    std::cerr << "Red Slice Value: " << sagittal << std::endl;
 
     vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
-    //  Debugging:
-    //  cout << "PRINT MRML NODE: " << endl;
-    //  //                                                    vtkMRMLSliceNode
+
+
+    //  Get slice orientation: axial, sag, cor
+    cout << "RED SLICE ORIENTATION: " << appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetOrientationString() << endl;; 
+
     //  vtkIndent ident; 
     //  appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->PrintSelf(cout, ident); 
     //  cout << "XYRAS: " << *(appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetXYToRAS()) << endl; 
+
     cout << "slicetoRAS: " << *(appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetSliceNode()->GetSliceToRAS()) << endl; 
 
     //  see which spectral slice intersects with the last column 
@@ -964,6 +1057,7 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
     const unsigned char OPAQUE[4] = {0, 255, 0, 255};   //Green, Opaque
     const unsigned char TRANSPARENT[4] = {255, 255, 0, 0};
 
+    //  This displays the i,j,k index of the tlc and brc cells selected (voxel indices)
     cout << "corners: " << corners[0] << " " << corners[1] << endl;
     this->CurrentSpectra->GetIndexFromID(corners[0], minPoints); 
     this->CurrentSpectra->GetIndexFromID(corners[1], maxPoints); 
@@ -974,6 +1068,7 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
     vtkGenericCell* cellBuffer = vtkGenericCell::New();
 
     //for (int i = 0; i < this->CurrentSpectra->GetImage()->GetNumberOfCells(); ++i) {
+    cout << "NUMBER OF CELLS in svkMRSIMageData: " <<  this->CurrentSpectra->GetNumberOfCells() << endl;
     for (int i = 0; i < this->CurrentSpectra->GetNumberOfCells(); ++i) {
 
         this->CurrentSpectra->GetIndexFromID(i, curPoints);
@@ -991,19 +1086,26 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
             }
         }
     }
+
+
     for (int i = 0; i < 3; ++i) 
     {
         vtkDataSetAttributes* cd = this->Grids[i]->GetCellData();
         vtkUnsignedCharArray* newScalars = vtkUnsignedCharArray::New(); 
         int cellcount = this->Grids[i]->GetNumberOfCells();
+cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
         newScalars->SetNumberOfTuples(cellcount); 
         newScalars->SetNumberOfComponents(4);
         for (int j = 0; j < cellcount; ++j) 
         {
             bool shouldPaint = true;
             vtkIdList* pointIDs = this->Grids[i]->GetCell(j)->GetPointIds();
+            //cout << "NUM POINTIDs to check for cell: "<<   pointIDs->GetNumberOfIds() << endl;
+            //  evalute this for both endpoints of line cell: 
             for (int k = 0; k < pointIDs->GetNumberOfIds(); ++k) 
             {
+	            //cout << "should paint? " << k<< " " << pointIDs->GetId(k) << " " <<  pointSet.count(pointIDs->GetId(k)) << endl; 
+                //  If the id is not in the point set then set to false
 	            if(!pointSet.count(pointIDs->GetId(k))) 
                 {
 	                shouldPaint = false;
@@ -1012,6 +1114,7 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
             }
             if(shouldPaint) 
             {
+	            cout << "should paint? " << j << endl; 
 	            newScalars->InsertTupleValue(j, OPAQUE);
             } else 
             {
@@ -1055,15 +1158,16 @@ void vtkMRSpectroscopyGUI::DataCallback(vtkObject *caller,
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::ProcessLogicEvents ( vtkObject *caller,
                                              unsigned long event, void *callData )
-{std::cout << "ProcessLogicEvents" << std::endl;
-  std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") << std::endl;
+{
+    std::cout << "ProcessLogicEvents" << std::endl;
+    std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLsvkImageDataNode") << std::endl;
 
-  if (this->GetLogic() == vtkMRSpectroscopyLogic::SafeDownCast(caller))
+    if (this->GetLogic() == vtkMRSpectroscopyLogic::SafeDownCast(caller))
     {
-    if (event == vtkMRSpectroscopyLogic::StatusUpdateEvent)
-      {
-      //this->UpdateDeviceStatus();
-      }
+        if (event == vtkMRSpectroscopyLogic::StatusUpdateEvent)
+        {
+            //this->UpdateDeviceStatus();
+        }
     }
 }
 
@@ -1078,12 +1182,12 @@ void vtkMRSpectroscopyGUI::ProcessMRMLEvents ( vtkObject *caller,
     }
     if (event == vtkMRMLScene::SceneLoadEndEvent)
     {
-        if (this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLImageDataNode") > 0)
+        if (this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLsvkImageDataNode") > 0)
         {
 	        // TODO: should GetNodesByClass, but don't know how to do so.
-	        vtkCollection* collection = this->GetMRMLScene()->GetNodesByName("vtkMRMLImageDataNode1");
+	        vtkCollection* collection = this->GetMRMLScene()->GetNodesByName("vtkMRMLsvkImageDataNode1");
 	        vtkObject* object = collection->GetItemAsObject(0);
-	        vtkMRMLImageDataNode* dataNode = vtkMRMLImageDataNode::SafeDownCast(object);
+	        vtkMRMLsvkImageDataNode* dataNode = vtkMRMLsvkImageDataNode::SafeDownCast(object);
 	        SetSpectraData(dataNode->GetData());
         }
         return;
@@ -1167,7 +1271,7 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetMasterWindow ( this->GetApplicationGUI()->GetMainSlicerWindow() );
     this->LoadSpectraButton->Create ( );
     this->LoadSpectraButton->SetWidth(20);
-    this->LoadSpectraButton->GetWidget()->SetText ("Select MRS File");
+    this->LoadSpectraButton->GetWidget()->SetText ("Select MRSI File");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetTitle("Open Volume File");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetFileTypes("{ {Spectra} {*} }");
     this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RetrieveLastPathFromRegistry("OpenPath");

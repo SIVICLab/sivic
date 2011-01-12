@@ -1,5 +1,5 @@
-#ifndef __vtkMRMLImageDataStorageNode_h
-#define __vtkMRMLImageDataStorageNode_h
+#ifndef __vtkMRMLsvkImageDataStorageNode_h
+#define __vtkMRMLsvkImageDataStorageNode_h
 
 #include "vtkMRSpectroscopyWin32Header.h"
 
@@ -17,11 +17,12 @@ using namespace svk;
 
 class vtkImageData;
 
-class VTK_MRSpectroscopy_EXPORT vtkMRMLImageDataStorageNode : public vtkMRMLStorageNode
+
+class VTK_MRSpectroscopy_EXPORT vtkMRMLsvkImageDataStorageNode : public vtkMRMLStorageNode
 {
   public:
-  static vtkMRMLImageDataStorageNode *New();
-  vtkTypeMacro(vtkMRMLImageDataStorageNode, vtkMRMLStorageNode);
+  static vtkMRMLsvkImageDataStorageNode *New();
+  vtkTypeMacro(vtkMRMLsvkImageDataStorageNode, vtkMRMLStorageNode);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -80,10 +81,10 @@ class VTK_MRSpectroscopy_EXPORT vtkMRMLImageDataStorageNode : public vtkMRMLStor
 
  
 protected:
-  vtkMRMLImageDataStorageNode();
-  ~vtkMRMLImageDataStorageNode();
-  vtkMRMLImageDataStorageNode(const vtkMRMLImageDataStorageNode&);
-  void operator=(const vtkMRMLImageDataStorageNode&);
+  vtkMRMLsvkImageDataStorageNode();
+  ~vtkMRMLsvkImageDataStorageNode();
+  vtkMRMLsvkImageDataStorageNode(const vtkMRMLsvkImageDataStorageNode&);
+  void operator=(const vtkMRMLsvkImageDataStorageNode&);
 
   char* id;
   vtkSetReferenceStringMacro(id);

@@ -6,9 +6,9 @@ See Doc/copyright/copyright.txt
 or http://www.slicer.org/copyright/copyright.txt for details.
 
 Program:   3D Slicer
-Module:    $HeadURL: https://intrarad.ucsf.edu/svn/rad_software/surbeck/brain/sivic/trunk/applications/slicer_plugin/MRSpectroscopy/vtkMRSpectroscopyConfigure.h.in $
-Date:      $Date: 2009-08-10 09:58:47 -0700 (Mon, 10 Aug 2009) $
-Version:   $Revision: 14451 $
+Module:    $HeadURL$
+Date:      $Date$
+Version:   $Revision$
 
 ==========================================================================*/
 

@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDdfVolumeReader.cc $
- *  $Rev: 76 $
- *  $Author: jccrane $
- *  $Date: 2010-01-26 11:05:15 -0800 (Tue, 26 Jan 2010) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -58,7 +58,7 @@
 
 #include "vtkMRSpectroscopyLogic.h"
 
-vtkCxxRevisionMacro(vtkMRSpectroscopyLogic, "$Revision: 14451 $");
+vtkCxxRevisionMacro(vtkMRSpectroscopyLogic, "$Revision$");
 vtkStandardNewMacro(vtkMRSpectroscopyLogic);
 
 //---------------------------------------------------------------------------

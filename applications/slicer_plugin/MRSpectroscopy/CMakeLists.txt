@@ -27,10 +27,10 @@
 ##
 
 #
-#   $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/CMakeLists.txt $
-#   $Rev: 10 $
-#   $Author: beckn8tor $
-#   $Date: 2009-12-02 15:08:59 -0800 (Wed, 02 Dec 2009) $
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
 #
 
 cmake_minimum_required(VERSION 2.4)
@@ -183,8 +183,8 @@ install(FILES
 set(MRSpectroscopy_SRCS 
     vtkMRSpectroscopyLogic.cxx
     vtkMRSpectroscopyGUI.cxx
-    vtkMRMLImageDataNode.cxx
-    vtkMRMLImageDataStorageNode.cxx
+    vtkMRMLsvkImageDataNode.cc
+    vtkMRMLsvkImageDataStorageNode.cc
 )
 
 
