@@ -101,6 +101,8 @@
 #include "vtkMRMLsvkImageDataStorageNode.h"
 #include "vtkMRMLScalarVolumeNode.h"
 #include "vtkMRMLLayoutNode.h"
+#include "vtkExtractUnstructuredGrid.h"
+#include "vtkMRMLUnstructuredGridNode.h"
 
 #include <svkExtractMRIFromMRS.h> 
 
@@ -538,7 +540,7 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
 
     if (this->HasStyle && strcmp(eventName, "LeftButtonReleaseEvent") == 0) {
         std::cerr << "Left Button Released" << std::endl;
-        //UpdateGridScalars();
+        UpdateGridScalars();
     }
 
     if (selector == this->VolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent &&
@@ -946,9 +948,9 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
     //ddfData->Update();
 
     vtkSlicerApplicationGUI* appgui = this->GetApplicationGUI();
-    //  API is changing between slicer versions:
-    //vtkSlicerViewerWidget* viewer = appgui->GetViewerWidget();
-    vtkSlicerViewerWidget* viewer = appgui->GetActiveViewerWidget();
+
+    vtkSlicerViewerWidget* viewer = appgui->GetNthViewerWidget(1);
+    
     vtkKWRenderWidget* rwidget = viewer->GetMainViewer();
     vtkRenderWindowInteractor* rwi = rwidget->GetRenderWindowInteractor();
 
@@ -1049,6 +1051,8 @@ int vtkMRSpectroscopyGUI::GetAxialSlice()
  */
 void vtkMRSpectroscopyGUI::UpdateGridScalars( )
 {
+
+/*
     int* corners = this->PlotView->GetTlcBrc();
     int minPoints[3];
     int maxPoints[3];
@@ -1126,6 +1130,21 @@ cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
         }
     }
     this->RefreshSliceWindows();
+*/
+    vtkExtractUnstructuredGrid* gridExtractor = vtkExtractUnstructuredGrid::New();
+    gridExtractor->SetInput( this->ddfData ); 
+   
+    vtkMRMLUnstructuredGridNode* gridNode = vtkMRMLUnstructuredGridNode::New(); 
+    gridNode->SetAndObserveUnstructuredGrid( gridExtractor->GetOutput() ); 
+
+    //  Register the new class type with the scene:
+    gridNode = vtkMRMLUnstructuredGridNode::New();
+    this->GetMRMLScene()->RegisterNodeClass(gridNode);
+    gridNode->Delete();
+
+    // add the cloned volume to the scene
+    this->GetMRMLScene()->AddNode( gridNode );
+    
 }
 
 
