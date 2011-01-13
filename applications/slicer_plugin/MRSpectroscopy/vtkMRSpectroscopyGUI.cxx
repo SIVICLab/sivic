@@ -417,6 +417,8 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
         ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
     this->SpectraSlider
         ->AddObserver(vtkKWScale::ScaleValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
+    this->DisplayFitButton
+        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
 
     this->AddLogicObservers();
 
@@ -567,6 +569,22 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
       && event == vtkKWPushButton::InvokedEvent)
     {
         this->GenerateMetaboliteMap(3.0, 0.4); 
+    }
+    else if (this->DisplayFitButton == vtkKWPushButton::SafeDownCast(caller) 
+      && event == vtkKWPushButton::InvokedEvent)
+    {
+        svkPhaseSpec* ps = svkPhaseSpec::New();
+        svkMrsImageData* phasedData = svkMrsImageData::New();
+        phasedData->DeepCopy(this->ddfData);
+        ps->SetInput(phasedData);
+        ps->SetPhase0(32);
+        ps->Update();
+        this->PlotView->SetInput( phasedData, svkPlotGridView::MET + 1 );
+        phasedData->Delete();
+        ps->Delete();
+        double color[3] = {1,0,0};
+        svkPlotGridView::SafeDownCast(this->PlotView->GetView())->SetPlotColor( 1, color );
+
     }
     else if (this->SpectraSlider == vtkKWScale::SafeDownCast(caller)
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
@@ -1307,6 +1325,12 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     this->DisplayButton2->Create();
     this->DisplayButton2->SetText("Generate NAA Map");
     this->DisplayButton2->SetWidth(10);
+
+    this->DisplayFitButton = vtkKWPushButton::New();
+    this->DisplayFitButton->SetParent(frame->GetFrame());
+    this->DisplayFitButton->Create();
+    this->DisplayFitButton->SetText("Display Fit");
+    this->DisplayFitButton->SetWidth(10);
     
     // Create the x range widget
     this->xSpecRange = vtkKWRange::New();
@@ -1394,6 +1418,9 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
 
     row++;
     this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky nsew", this->ySpecRange->GetWidgetName(), row );
+
+    row++;
+    this->Script("grid %s -row %d -column 0 -sticky ewns -pady 4", this->DisplayFitButton->GetWidgetName(), row);
 
     row++;
     this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxOrginal->GetWidgetName(), row );

@@ -71,6 +71,7 @@
 #include <svkImageData.h>
 #include <svkMrsImageData.h>
 #include <svkDataModel.h>
+#include <svkPhaseSpec.h>
 
 #include "vtkMRSpectroscopyLogic.h"
 
@@ -185,6 +186,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
     	vtkKWLoadSaveButtonWithLabel*	LoadSpectraButton;
         vtkKWPushButton*                DisplayButton;
         vtkKWPushButton*                DisplayButton2;
+        vtkKWPushButton*                DisplayFitButton;
         vtkKWScale*                     RedScale;
         vtkKWScale*                     YellowScale;
         vtkKWScale*                     GreenScale;
