@@ -272,33 +272,9 @@ void svkImageTopologyGenerator::GenerateVoxelGridActor( svkImageData* data, vtkA
 
 vtkPolyData* svkImageTopologyGenerator::GenerateVoxelGridPolyData( svkImageData* data) 
 {
-    vtkPolyDataMapper* entireGridMapper = vtkPolyDataMapper::New();
-cout<< "TOPO1" << endl;
-    entireGridMapper->ScalarVisibilityOff( );
-    entireGridMapper->InterpolateScalarsBeforeMappingOff();
-    entireGridMapper->ReleaseDataFlagOn();
-    entireGridMapper->ImmediateModeRenderingOn();
-cout<< "TOPO2" << endl;
-    
     // We need a filter to pull out the edges of the data cells (voxels)
     vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();
-    //double dcos[3][3];
-    
-    // Here we are making a copy of the image for the grid.
-    // For some reason valgrind reports massive read errors
-    // if the data arrays are present when passed to
-    // vtkExtractEdges.
-    //svkImageData* geometryData = svkMrsImageData::New();
-    //geometryData->SetOrigin( data->GetOrigin() );
-    //geometryData->SetSpacing( data->GetSpacing() );
-    //geometryData->SetExtent( data->GetExtent() );
-    //data->GetDcos(dcos);
-    //geometryData->SetDcos(dcos);
-    //edgeExtractor->SetInput( geometryData );
-cout <<"TOPO3" << endl;
     edgeExtractor->SetInput( data );
-cout <<"TOPO4" << endl;
-    //geometryData->Delete();
     
     vtkPolyData* pdata = edgeExtractor->GetOutput();
 cout <<"TOPO5" << endl;
