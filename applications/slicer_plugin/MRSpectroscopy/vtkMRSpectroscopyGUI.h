@@ -220,7 +220,7 @@ class VTK_MRSpectroscopy_EXPORT vtkMRSpectroscopyGUI : public vtkSlicerModuleGUI
         int                             HasStyle;
         void                            SplitWindow();
         void                            LoadSpectraFromFile(const char *filename);
-        void                            GenerateMetaboliteMap(float peak, float width);
+        void                            GenerateMetaboliteMap(float peak, float width, string mapName);
         void                            SetSpectraData(svkImageData* ddfData);
         void                            DisplaySpectra();
         void                            ResetStyle();

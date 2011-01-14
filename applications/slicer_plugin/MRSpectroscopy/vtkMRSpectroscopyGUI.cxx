@@ -102,7 +102,11 @@
 #include "vtkMRMLScalarVolumeNode.h"
 #include "vtkMRMLLayoutNode.h"
 #include "vtkExtractUnstructuredGrid.h"
+#include "vtkMRMLModelNode.h"
 #include "vtkMRMLUnstructuredGridNode.h"
+#include "vtkMRMLModelDisplayNode.h"
+#include "vtkMRMLUnstructuredGridDisplayNode.h"
+#include "vtkStructuredPointsToUnstructuredGridFilter.h" 
 
 #include <svkExtractMRIFromMRS.h> 
 
@@ -266,7 +270,9 @@ vtkMRSpectroscopyGUI::~vtkMRSpectroscopyGUI ( )
 
 
 /*!
- *  Register the svkImageDataNode and svkImageDataStorageNode into the vtkMRMLScene:
+ *  Register the svkImageDataNode and svkImageDataStorageNode into the 
+ *  vtkMRMLScene. These MRML Nodes are for the derived metabolite maps 
+ *  in the Slicer framework. 
  */
 void vtkMRSpectroscopyGUI::Init()
 {
@@ -285,61 +291,33 @@ void vtkMRSpectroscopyGUI::Init()
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::Enter()
 {
-
-    //std::cout << "enter" << std::endl;
-    // Fill in
-    //vtkSlicerApplicationGUI *appGUI = this->GetApplicationGUI();
-  
-    //this->SlicerStyle = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor()->GetInteractorStyle();
-    //this->SplitWindow();
-
     vtkRenderer* ren = this->GetApplicationGUI()->GetMainSliceGUI("Red")->GetSliceViewer()->GetRenderWidget()->GetRenderer();
     ren->Render();
 
-    if (this->TimerFlag == 0)
+    if (this->TimerFlag == 0) 
     {
         this->TimerFlag = 1;
         this->TimerInterval = 100;  // 100 ms
-        //ProcessTimerEvents();
     }
-    //std::cout << "finish enter" << std::endl;
 }
 
 
-void vtkMRSpectroscopyGUI::SplitWindow()
-{
-
-    //std::cout << "SplitWindow" << std::endl;
-    //  API is changing between slicer versions:
-    //change GetViewerWidget() to GetActiveViewerWidget()
-    //vtkKWRenderWidget* rw = this->GetActiveViewWidget()->GetMainViewer();
-    //vtkKWRenderWidget* rw = this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer();
-    vtkKWRenderWidget* rw = this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer();
-    rw->GetNthRenderer(0)->SetViewport(0, 0, 0.5, 1);
-    vtkRenderer* r = vtkRenderer::New();
-    double rgb[3] = {1, 0, 0};
-    r->SetBackground(rgb);
-    r->SetViewport(0.5, 0, 1, 1);
-    rw->AddRenderer(r);
-    //std::cout << "finish SplitWindow" << std::endl;
-}
-  
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::Exit ( )
 {
-  // Fill in
-  std::cout << "exit" << std::endl;
+    // Fill in
+    std::cout << "exit" << std::endl;
 }
 
 
 //---------------------------------------------------------------------------
 void vtkMRSpectroscopyGUI::PrintSelf ( ostream& os, vtkIndent indent )
 {
-  this->vtkObject::PrintSelf ( os, indent );
+    this->vtkObject::PrintSelf ( os, indent );
 
-  os << indent << "MRSpectroscopyGUI: " << this->GetClassName ( ) << "\n";
-  os << indent << "Logic: " << this->GetLogic ( ) << "\n";
+    os << indent << "MRSpectroscopyGUI: " << this->GetClassName ( ) << "\n";
+    os << indent << "Logic: " << this->GetLogic ( ) << "\n";
 }
 
 
@@ -356,7 +334,9 @@ void vtkMRSpectroscopyGUI::RemoveGUIObservers ( )
 
     if (this->LoadSpectraButton)
     {
-        this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RemoveObservers (vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand );
+        this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->RemoveObservers(
+            vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand 
+        );
     }
 
     if (this->SpectraSlider) {
@@ -392,7 +372,7 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
 
     //----------------------------------------------------------------
     // MRML
-
+    //----------------------------------------------------------------
     vtkIntArray* events = vtkIntArray::New();
     events->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
     events->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
@@ -404,28 +384,26 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
     }
     events->Delete();
 
+
     //----------------------------------------------------------------
     // GUI Observers
     //----------------------------------------------------------------
 
     this->VolumeSelector
         ->AddObserver(vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand);
-    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->AddObserver (vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->AddObserver(
+        vtkKWTopLevel::WithdrawEvent, (vtkCommand *)this->GUICallbackCommand 
+    );
     this->DisplayButton
         ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
     this->DisplayButton2
         ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
     this->SpectraSlider
         ->AddObserver(vtkKWScale::ScaleValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
-    this->DisplayFitButton
-        ->AddObserver(vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand);
 
     this->AddLogicObservers();
 
     //  API is changing between slicer versions:
-    //this->RedScale    = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetOffsetScale()->GetScale();
-    //this->YellowScale = appGUI->GetMainSliceGUI("Yellow")->GetSliceController()->GetOffsetScale()->GetScale();
-    //this->GreenScale  = appGUI->GetMainSliceGUI("Green")->GetSliceController()->GetOffsetScale()->GetScale();
     this->RedScale    = appGUI->GetMainSliceGUI("Red")->GetSliceController()->GetOffsetScale();
     this->YellowScale = appGUI->GetMainSliceGUI("Yellow")->GetSliceController()->GetOffsetScale();
     this->GreenScale  = appGUI->GetMainSliceGUI("Green")->GetSliceController()->GetOffsetScale();
@@ -440,10 +418,8 @@ void vtkMRSpectroscopyGUI::AddGUIObservers ( )
     this->xSpecRange->AddObserver( vtkKWRange::RangeValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
     this->ySpecRange->AddObserver( vtkKWRange::RangeValueChangingEvent, (vtkCommand *)this->GUICallbackCommand);
 
-
     this->AddMRMLObservers();
 
-    //std::cout << "finish AddGUIObservers" << std::endl;
     //std::cout << "dataNode = " << this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLsvkImageDataNode") << std::endl;
 }
 
@@ -457,10 +433,9 @@ void vtkMRSpectroscopyGUI::AddGridObserver( )
     //  API is changing between slicer versions:
     //this->Interactor = appGUI->GetViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
     this->Interactor = appGUI->GetActiveViewerWidget()->GetMainViewer()->GetRenderWindowInteractor();
-    this->Interactor
-        ->AddObserver(vtkCommand::LeftButtonReleaseEvent, (vtkCommand *)this->GUICallbackCommand);
-
-    //std::cout << "finish AddGridObserver" << std::endl;
+    this->Interactor->AddObserver(
+        vtkCommand::LeftButtonReleaseEvent, (vtkCommand *)this->GUICallbackCommand
+    );
 }
 
 
@@ -468,11 +443,13 @@ void vtkMRSpectroscopyGUI::AddGridObserver( )
 void vtkMRSpectroscopyGUI::RemoveMRMLObservers(void)
 {
     //std::cout << "RemoveMRMLObservers" << std::endl;
-  //Remove the MRML observer
-  if ( this->GetApplicationGUI() )
-  {
-    this->GetApplicationGUI()->GetMRMLScene()->RemoveObservers(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
-  }
+    //Remove the MRML observer
+    if ( this->GetApplicationGUI() )
+    {
+        this->GetApplicationGUI()->GetMRMLScene()->RemoveObservers(
+            vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand
+        );
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -482,7 +459,9 @@ void vtkMRSpectroscopyGUI::AddMRMLObservers(void)
     //Remove the MRML observer
     if ( this->GetApplicationGUI() )
     {
-        this->GetApplicationGUI()->GetMRMLScene()->AddObserver(vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand);
+        this->GetApplicationGUI()->GetMRMLScene()->AddObserver(
+            vtkMRMLScene::SceneLoadEndEvent, this->MRMLCallbackCommand
+        );
     }
 }
 
@@ -493,12 +472,11 @@ void vtkMRSpectroscopyGUI::RemoveLogicObservers ( )
     //std::cout << "RemoveLogicObservers" << std::endl;
     if (this->GetLogic())
     {
-        this->GetLogic()->RemoveObservers(vtkCommand::ModifiedEvent,
-                                      (vtkCommand *)this->LogicCallbackCommand);
+        this->GetLogic()->RemoveObservers(
+            vtkCommand::ModifiedEvent, (vtkCommand *)this->LogicCallbackCommand
+        );
     }
 }
-
-
 
 
 //---------------------------------------------------------------------------
@@ -511,7 +489,7 @@ void vtkMRSpectroscopyGUI::AddLogicObservers ( )
         this->GetLogic()->AddObserver(vtkMRSpectroscopyLogic::StatusUpdateEvent,
                                   (vtkCommand *)this->LogicCallbackCommand);
     }
-  //std::cout << "finish AddLogicObservers" << std::endl;
+    //std::cout << "finish AddLogicObservers" << std::endl;
 }
 
 
@@ -554,37 +532,21 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
     }
     else   if (this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog() == vtkKWLoadSaveDialog::SafeDownCast(caller) && event == vtkKWTopLevel::WithdrawEvent )
     {
-	std::cerr << "LoadSpectraButton is pressed." << std::endl;
+	    std::cerr << "LoadSpectraButton is pressed." << std::endl;
         const char * filename = this->LoadSpectraButton->GetWidget()->GetFileName();
         if (filename) {
-          LoadSpectraFromFile(filename);
+            LoadSpectraFromFile(filename);
 	    }
     }
     else if (this->DisplayButton == vtkKWPushButton::SafeDownCast(caller) 
       && event == vtkKWPushButton::InvokedEvent)
     {
-        this->GenerateMetaboliteMap(1.99, 0.4); 
+        this->GenerateMetaboliteMap(1.99, 0.4, "NAA Integraged Area"); 
     }
     else if (this->DisplayButton2 == vtkKWPushButton::SafeDownCast(caller) 
       && event == vtkKWPushButton::InvokedEvent)
     {
-        this->GenerateMetaboliteMap(3.0, 0.4); 
-    }
-    else if (this->DisplayFitButton == vtkKWPushButton::SafeDownCast(caller) 
-      && event == vtkKWPushButton::InvokedEvent)
-    {
-        svkPhaseSpec* ps = svkPhaseSpec::New();
-        svkMrsImageData* phasedData = svkMrsImageData::New();
-        phasedData->DeepCopy(this->ddfData);
-        ps->SetInput(phasedData);
-        ps->SetPhase0(32);
-        ps->Update();
-        this->PlotView->SetInput( phasedData, svkPlotGridView::MET + 1 );
-        phasedData->Delete();
-        ps->Delete();
-        double color[3] = {1,0,0};
-        svkPlotGridView::SafeDownCast(this->PlotView->GetView())->SetPlotColor( 1, color );
-
+        this->GenerateMetaboliteMap(3.0, 0.4, "CHO Integrated Area"); 
     }
     else if (this->SpectraSlider == vtkKWScale::SafeDownCast(caller)
 	   && (event == vtkKWScale::ScaleValueChangedEvent || event == vtkKWScale::ScaleValueChangingEvent)) 
@@ -710,18 +672,11 @@ void vtkMRSpectroscopyGUI::ProcessGUIEvents(vtkObject *caller,
 
 } 
 
-void vtkMRSpectroscopyGUI::RenderActor(vtkProp* actor)
-{
-    //  API is changing between slicer versions:
-    //this->GetApplicationGUI()->GetViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
-    this->GetApplicationGUI()->GetActiveViewerWidget()->GetMainViewer()->GetRenderer()->AddActor(actor);
-}
-
 
 /*!
  *
  */
-void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width) 
+void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width, string mapName) 
 {
 
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
@@ -735,11 +690,6 @@ void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width)
     quant->SetSeriesDescription( " Metabolite Map" );
     quant->SetPeakPosPPM( peak );
     quant->SetPeakWidthPPM( width );
-    cout << "QUANTIFY" << endl;
-    cout << "QUANTIFY" << endl;
-    cout << "QUANTIFY" << endl;
-    cout << "QUANTIFY" << endl;
-    cout << "QUANTIFY" << endl;
     quant->GetOutput()->GetIncrements();
     quant->Update(); 
     
@@ -776,12 +726,53 @@ void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width)
     //clonedVolumeNode->CopyWithScene(volumeNode);
     clonedVolumeNode->SetAndObserveStorageNodeID(NULL);
     //std::string uname = this->MRMLScene->GetUniqueNameByString(name);
-    //clonedVolumeNode->SetName(uname.c_str()); 
+    clonedVolumeNode->SetName( mapName.c_str()); 
     //clonedVolumeNode->SetAndObserveDisplayNodeID(clonedDisplayNode->GetID());
   
     // copy over the volume's data
     vtkImageData* clonedVolumeData = vtkImageData::New();
     clonedVolumeData->DeepCopy( outputData ); 
+
+    //  sivic dcos is i,j,k in LPS we want this in RAS, so mulitply first two
+    //  cols of dcos by -1:
+    double dcos[3][3]; 
+    this->ddfData->GetDcos( dcos ); 
+
+    for(int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+            if ( ( j < 2 ) ) {
+                dcos[j][k] = -1 * dcos[j][k]; 
+            } else {
+                dcos[j][k] = dcos[j][k]; 
+            }
+        }
+    }
+    cout << dcos[0][0] << " " << dcos[0][1] << " " << dcos[0][2] << endl;
+    cout << dcos[1][0] << " " << dcos[1][1] << " " << dcos[1][2] << endl;
+    cout << dcos[2][0] << " " << dcos[2][1] << " " << dcos[2][2] << endl;
+
+    clonedVolumeNode->SetIJKToRASDirections (dcos); 
+
+    //  Get the LPS origin values from the input image and convert them to RAS for 
+    //  use in Slicer MRML Node(clonedVolumeNode). The vtkImageData is generic based 
+    //  on unit spacing and 0 origin.  MRML manages the scaling and translation to real
+    //  RAS values: 
+    cout << "MET MAP ORIGIN" << endl;
+    double origin[3]; 
+    this->ddfData->GetDcmHeader()->GetOrigin(origin); 
+    origin[0] = -1 * origin[0]; 
+    origin[1] = -1 * origin[1]; 
+    clonedVolumeNode->SetOrigin(origin); 
+    clonedVolumeData->SetOrigin(0,0,0); 
+
+    //  Here too, set the vtkImageData spacing to 1,1,1, (in this case, but should be
+    //  generic for anisotropic aspect ratio
+    double spacing[3]; 
+    this->ddfData->GetDcmHeader()->GetPixelSpacing(spacing); 
+    clonedVolumeNode->SetSpacing(spacing); 
+    clonedVolumeData->SetSpacing(1,1,1); 
+
+
     clonedVolumeNode->SetAndObserveImageData( clonedVolumeData );
     clonedVolumeNode->SetModifiedSinceRead(1);
   
@@ -796,7 +787,7 @@ void vtkMRSpectroscopyGUI::GenerateMetaboliteMap(float peak, float width)
 
 
 /*!
- *  Loads MRS dat file and puts it into 
+ *  Loads MRS dat file and puts it into MRML scene
  */
 void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
 {  
@@ -809,7 +800,9 @@ void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
     imageDataNode->SetData( this->ddfData );
 
     //TODO: how to add?
-    //this->VolumeSelector->AddNodeClass("vtkMRMLsvkImageDataNode", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1");
+    //this->VolumeSelector->AddNodeClass(
+        //"vtkMRMLsvkImageDataNode", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1", "vtkMRMLsvkImageDataNode1"
+    //);
     //this->VolumeSelector->SetSelected(ImageDataNode);
 
     if (this->GetMRMLScene() != NULL) {
@@ -824,7 +817,8 @@ void vtkMRSpectroscopyGUI::LoadSpectraFromFile(const char *filename)
 
 
 /*!
- *
+ *  Should create a voxel grid for spatial referencing on anatomical data.  Should be a
+ *  MRML object in scene that could be turned on/off (data module visibility? )
  */
 void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
 {   
@@ -832,6 +826,7 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
     this->CurrentSpectra = ddfData;
     ddfData->Register(NULL);
 
+/*
     cout << "DDF DATA Loaded: " << *(ddfData) << endl;
 
     svkImageTopologyGenerator* gen = svkMrsTopoGenerator::New();
@@ -839,13 +834,11 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
     //vtkActor *grid = vtkActor::New();
     //gen->GenerateVoxelGridActor(ddfData, grid);
     //grid->GetMapper()->Update();
-    //RenderActor(grid);
 
     vtkSlicerSliceGUI* redgui = this->GetApplicationGUI()->GetMainSliceGUI("Red");
     vtkSlicerSliceGUI* yellowgui = this->GetApplicationGUI()->GetMainSliceGUI("Yellow");
     vtkSlicerSliceGUI* greengui = this->GetApplicationGUI()->GetMainSliceGUI("Green");
     
-    //RenderActor(grid);
     vtkSlicerSliceGUI* guis[3] = {redgui, yellowgui, greengui};
   
     for(int i = 0; i < 3; ++i) {
@@ -887,6 +880,60 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
         vtkPolyData* ndata = filter->GetOutput();
         ndata->Update();
 
+        //==============================================================
+        // Set Cell topology in unstructured grid
+        vtkExtractUnstructuredGrid* extractGrid = vtkExtractUnstructuredGrid::New();
+        extractGrid->SetInput( this->ddfData );
+        
+        //  Look at the cells in this unstructured grid:
+        vtkUnstructuredGrid* ug = extractGrid->GetOutput();
+        cout << "NUMBER OF CELLS: " << ug->GetNumberOfCells() << endl;
+        
+        int numCells = this->ddfData->GetNumberOfCells();
+        cout << "NUMBER OF vtkID CELLS: " << numCells << endl;
+        
+        //  Get Cells from vtkImageData (this->ddfData) and use the cell definitions to to set cells in UG using VTK_VOXEL
+        vtkCellArray * cellArray = vtkCellArray::New(); 
+        for (int cellID = 0; cellID < numCells; cellID++ ) {
+            cellArray->InsertNextCell( this->ddfData->GetCell( cellID ) );
+        }
+        ug->SetCells( VTK_VOXEL, cellArray );
+        cout << "NUMBER OF CELLS: " << ug->GetNumberOfCells() << endl;
+        
+        vtkMRMLUnstructuredGridNode* gridNode = vtkMRMLUnstructuredGridNode::New(); 
+        this->GetMRMLScene()->RegisterNodeClass(gridNode);
+        gridNode->Delete();
+        
+        //  Register the new class type with the scene:
+        gridNode = vtkMRMLUnstructuredGridNode::New();
+        gridNode->SetAndObserveUnstructuredGrid( ug ); 
+        
+        vtkMRMLUnstructuredGridDisplayNode* gridDisplayNode = vtkMRMLUnstructuredGridDisplayNode::New(); 
+        gridDisplayNode->SetUnstructuredGrid( ug ); 
+        
+        this->GetMRMLScene()->AddNode( gridNode );
+        this->GetMRMLScene()->AddNode( gridDisplayNode );
+        
+        //==============================================================
+        
+        vtkMRMLModelNode* modelNode = vtkMRMLModelNode::New(); 
+        this->GetMRMLScene()->RegisterNodeClass(modelNode);
+        modelNode->Delete();
+
+        //  Register the new class type with the scene:
+        modelNode = vtkMRMLModelNode::New();
+        modelNode->SetAndObservePolyData( ndata ); 
+        //gridNode->SetAndObserveStorageNodeID(NULL);
+
+        vtkMRMLModelDisplayNode* mdn = vtkMRMLModelDisplayNode::New();
+        mdn->SetPolyData( ndata ); 
+        mdn->SetScene( this->GetMRMLScene() ); 
+        modelNode->SetScene( this->GetMRMLScene() ); 
+
+        // add the model volume to the scene
+        this->GetMRMLScene()->AddNode( modelNode );
+        this->GetMRMLScene()->AddNode( mdn );
+
         vtkDataSetAttributes* cd = ndata->GetCellData();
         cd->Initialize();
         //ndata->Update();
@@ -922,6 +969,7 @@ void vtkMRSpectroscopyGUI::SetSpectraData(svkImageData* ddfData)
     redgui->GetSliceViewer()->Render();
     yellowgui->GetSliceViewer()->Render();
     greengui->GetSliceViewer()->Render();
+*/
 
     //------------------------
     //  Initialize Widgets:
@@ -967,6 +1015,8 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
 
     vtkSlicerApplicationGUI* appgui = this->GetApplicationGUI();
 
+    //  Set which Slicer 3D Window to put spectra into:
+    //vtkSlicerViewerWidget* viewer = appgui->GetNthViewerWidget(0);
     vtkSlicerViewerWidget* viewer = appgui->GetNthViewerWidget(1);
     
     vtkKWRenderWidget* rwidget = viewer->GetMainViewer();
@@ -976,9 +1026,24 @@ void vtkMRSpectroscopyGUI::DisplaySpectra( )
     this->PlotView->SetRWInteractor(rwi);
     this->PlotView->SetInput( ddfData );
 
+    // Set Cell topology in unstructured grid
+    vtkExtractUnstructuredGrid* extractGrid = vtkExtractUnstructuredGrid::New();
+    extractGrid->SetInput( this->ddfData ); 
 
-    //quant->Delete(); 
+    //  Look at the cells in this unstructured grid:
+    vtkUnstructuredGrid* ug = extractGrid->GetOutput(); 
+    cout << "NUMBER OF CELLS: " << ug->GetNumberOfCells() << endl;
 
+    int numCells = this->ddfData->GetNumberOfCells(); 
+    cout << "NUMBER OF vtkID CELLS: " << numCells << endl; 
+
+    //  Get Cells from vtkImageData (this->ddfData) and use the cell definitions to to set cells in UG using VTK_VOXEL
+    vtkCellArray * cellArray = vtkCellArray::New(); 
+    for (int i = 0; i < numCells; i++ ) {    
+        cellArray->InsertNextCell( this->ddfData->GetCell( i ) ); 
+    }
+    ug->SetCells( VTK_VOXEL, cellArray ); 
+    cout << "NUMBER OF CELLS: " << ug->GetNumberOfCells() << endl;
 
     this->PlotView->SetSlice( 4 );
     this->PlotView->HighlightSelectionVoxels( );
@@ -1071,6 +1136,13 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
 {
 
 /*
+    vtkExtractUnstructuredGrid* extractGrid = vtkExtractUnstructuredGrid::New();
+    extractGrid->SetInput( this->ddfData ); 
+    
+    //  Look at the cells in this unstructured grid:
+    vtkUnstructuredGrid* ug = extractGrid->GetOutput(); 
+    cout << "NUMBER OF CELLS: " << ug->GetNumberOfCells() << endl;
+
     int* corners = this->PlotView->GetTlcBrc();
     int minPoints[3];
     int maxPoints[3];
@@ -1115,7 +1187,7 @@ void vtkMRSpectroscopyGUI::UpdateGridScalars( )
         vtkDataSetAttributes* cd = this->Grids[i]->GetCellData();
         vtkUnsignedCharArray* newScalars = vtkUnsignedCharArray::New(); 
         int cellcount = this->Grids[i]->GetNumberOfCells();
-cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
+        cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
         newScalars->SetNumberOfTuples(cellcount); 
         newScalars->SetNumberOfComponents(4);
         for (int j = 0; j < cellcount; ++j) 
@@ -1126,7 +1198,6 @@ cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
             //  evalute this for both endpoints of line cell: 
             for (int k = 0; k < pointIDs->GetNumberOfIds(); ++k) 
             {
-	            //cout << "should paint? " << k<< " " << pointIDs->GetId(k) << " " <<  pointSet.count(pointIDs->GetId(k)) << endl; 
                 //  If the id is not in the point set then set to false
 	            if(!pointSet.count(pointIDs->GetId(k))) 
                 {
@@ -1149,19 +1220,7 @@ cout << "CELL COUNT IN OPACITY LOOP: " << cellcount << endl;
     }
     this->RefreshSliceWindows();
 */
-    vtkExtractUnstructuredGrid* gridExtractor = vtkExtractUnstructuredGrid::New();
-    gridExtractor->SetInput( this->ddfData ); 
    
-    vtkMRMLUnstructuredGridNode* gridNode = vtkMRMLUnstructuredGridNode::New(); 
-    gridNode->SetAndObserveUnstructuredGrid( gridExtractor->GetOutput() ); 
-
-    //  Register the new class type with the scene:
-    gridNode = vtkMRMLUnstructuredGridNode::New();
-    this->GetMRMLScene()->RegisterNodeClass(gridNode);
-    gridNode->Delete();
-
-    // add the cloned volume to the scene
-    this->GetMRMLScene()->AddNode( gridNode );
     
 }
 
@@ -1261,15 +1320,15 @@ void vtkMRSpectroscopyGUI::BuildGUI ( )
 
 void vtkMRSpectroscopyGUI::BuildGUIForHelpFrame ()
 {
-  // Define your help text here.
-  const char *help = 
-    "See "
-    "<a>http://www.slicer.org/slicerWiki/index.php/Modules:SIVIC</a> for details.";
-  const char *about =
-    "This work is supported by NCIGT, NA-MIC.";
+    // Define your help text here.
+    const char *help = 
+        "See "
+        "<a>http://www.slicer.org/slicerWiki/index.php/Modules:SIVIC</a> for details.";
+    const char *about =
+        "This work is supported by NCIGT, NA-MIC.";
 
-  vtkKWWidget *page = this->UIPanel->GetPageWidget ( "SIVIC MR Spectroscopy" );
-  this->BuildHelpAndAboutFrame (page, help, about);
+    vtkKWWidget *page = this->UIPanel->GetPageWidget ( "SIVIC MR Spectroscopy" );
+    this->BuildHelpAndAboutFrame (page, help, about);
 }
 
 
@@ -1305,7 +1364,9 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     // File browser
     this->LoadSpectraButton = vtkKWLoadSaveButtonWithLabel::New();
     this->LoadSpectraButton->SetParent ( frame->GetFrame() );
-    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetMasterWindow ( this->GetApplicationGUI()->GetMainSlicerWindow() );
+    this->LoadSpectraButton->GetWidget()->GetLoadSaveDialog()->SetMasterWindow ( 
+        this->GetApplicationGUI()->GetMainSlicerWindow() 
+    );
     this->LoadSpectraButton->Create ( );
     this->LoadSpectraButton->SetWidth(20);
     this->LoadSpectraButton->GetWidget()->SetText ("Select MRSI File");
@@ -1317,20 +1378,14 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
     this->DisplayButton = vtkKWPushButton::New();
     this->DisplayButton->SetParent(frame->GetFrame());
     this->DisplayButton->Create();
-    this->DisplayButton->SetText("Generate NAA Map");
+    this->DisplayButton->SetText("Generate NAA Integrated Area Map");
     this->DisplayButton->SetWidth(10);
 
     this->DisplayButton2 = vtkKWPushButton::New();
     this->DisplayButton2->SetParent(frame->GetFrame());
     this->DisplayButton2->Create();
-    this->DisplayButton2->SetText("Generate NAA Map");
+    this->DisplayButton2->SetText("Generate CHO Integrated Area Map");
     this->DisplayButton2->SetWidth(10);
-
-    this->DisplayFitButton = vtkKWPushButton::New();
-    this->DisplayFitButton->SetParent(frame->GetFrame());
-    this->DisplayFitButton->Create();
-    this->DisplayFitButton->SetText("Display Fit");
-    this->DisplayFitButton->SetWidth(10);
     
     // Create the x range widget
     this->xSpecRange = vtkKWRange::New();
@@ -1418,9 +1473,6 @@ void vtkMRSpectroscopyGUI::BuildGUIForSpectraFrame()
 
     row++;
     this->Script("grid %s -row %d -column 0 -columnspan 2 -sticky nsew", this->ySpecRange->GetWidgetName(), row );
-
-    row++;
-    this->Script("grid %s -row %d -column 0 -sticky ewns -pady 4", this->DisplayFitButton->GetWidgetName(), row);
 
     row++;
     this->Script("grid %s -row %d -column 0 -sticky nsew", this->checkBoxOrginal->GetWidgetName(), row );
