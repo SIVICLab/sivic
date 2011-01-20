@@ -58,6 +58,7 @@ extern "C" {
 #include <svkDICOMMRSWriter.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkDcmHeader.h>
+#include <svkBurnResearchPixels.h>
 #include <vtkIndent.h>
 
 
@@ -79,6 +80,9 @@ int main (int argc, char** argv)
     usemsg += "                               4 = DICOM_MRS              \n";  
     usemsg += "                               5 = DICOM_MRI              \n";  
     usemsg += "                               6 = DICOM_Enhanced MRI     \n";  
+#if defined( UCSF_INTERNAL )
+    usemsg += "   -b                      burn UCSF Radiology Research into pixels of each image. \n";  
+#endif
     usemsg += "   -h                      print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Converts the input file to the specified target file type \n";  
@@ -87,6 +91,7 @@ int main (int argc, char** argv)
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
+    bool   burnResearchHeader = false;  
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -105,6 +110,11 @@ int main (int argc, char** argv)
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
+#if defined( UCSF_INTERNAL )
+            case 'b':
+                burnResearchHeader = true; 
+                break;
+#endif
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -139,6 +149,26 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
+    svkImageData* currentImage =  reader->GetOutput();
+
+#if defined( UCSF_INTERNAL )
+
+    // ===============================================
+    //  If UCSF build and burn RESEARCH into pixels: 
+    // ===============================================
+    if ( burnResearchHeader ) {
+
+        svkBurnResearchPixels* burn = svkBurnResearchPixels::New(); 
+        burn->SetInput( currentImage );  
+        burn->Update(); 
+
+        //  if this step is included, then reset the current algo to be
+        //  passed to the writer.
+        currentImage = burn->GetOutput();
+    }
+
+#endif
+
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ) );
 
@@ -149,10 +179,10 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( reader->GetOutput() );
+    writer->SetInput( currentImage );
 
     //  Set the input command line into the data set provenance:
-    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    currentImage->GetProvenance()->SetApplicationCommand( cmdLine );
 
     writer->Write();
     writer->Delete();
