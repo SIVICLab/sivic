@@ -100,10 +100,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxCenter( float selBoxCenter[3] )
 
 /*
  *  For FIDCSI make the press box occupy the whole volume. 
+ *  There isnt't full 3D PRESS, just a single slab of selection 
+ *  (1D selective). 
  */
 void svkGEPFileMapperUCSFfidcsiDev0::GetSelBoxSize( float selBoxSize[3] )
 {
 
+    cout << "THIS IS NOT ENCODED CORRECTLY.  THE EPSI-AXIS Slab selection should be correctly encoded here" << endl;
     selBoxSize[ 0 ] = this->GetHeaderValueAsFloat( "rhr.rh_user24" );
     selBoxSize[ 1 ] = this->GetHeaderValueAsFloat( "rhr.rh_user25" );
     selBoxSize[ 2 ] = this->GetHeaderValueAsFloat( "rhr.rh_user26" );
