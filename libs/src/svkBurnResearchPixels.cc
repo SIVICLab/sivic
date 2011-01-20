@@ -40,7 +40,7 @@
  */
 
 
-
+#include <vtkImageAccumulate.h>
 #include <svkBurnResearchPixels.h>
 
 
@@ -86,13 +86,16 @@ int svkBurnResearchPixels::RequestData( vtkInformation* request, vtkInformationV
     int numHeaderPixels = this->GetNumHeaderPixels();  
 
     for (int slice = 0; slice < numSlices; slice++ ) {
-        //this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
         double* slicePixels = data->GetImagePixels( slice ); 
         for ( int pixelId = 0; pixelId < numHeaderPixels; pixelId++ ) {
+            //cout << "header " << header[pixelId] << endl; 
             if ( header[pixelId] != 0) { 
+                cout << "burn it" << endl; 
                 slicePixels[pixelId] = burnValue; 
+                data->GetPointData()->GetScalars()->SetTuple1(numVoxels[0] * numVoxels[1] * slice + pixelId, slicePixels[pixelId]);
             }
         }
+        //data->SetImagePixels( slicePixels, slice);
     }
 
     //  Trigger observer update via modified event:
@@ -112,11 +115,14 @@ int svkBurnResearchPixels::GetNumHeaderPixels()
 
 /*! 
  *  Returns the max pixel value for the burned in header.  This is a function of DCM_BitsStored
- *  and DCM_PixelRepresentation (signed vs unsigned value).
+ *  and DCM_PixelRepresentation (signed vs unsigned value).  
+ *  Try a new method based on acutal pixel values to avoid throwing off the W/L and dynamic range which 
+ *  may be less than the allocated bit depth. 
  */
 double svkBurnResearchPixels::GetBurnValue()
 {
     svkImageData* data = this->GetImageDataInput(0); 
+/*
     svkDcmHeader* hdr = data->GetDcmHeader(); 
 
     int bitsStored = hdr->GetIntValue("BitsStored");
@@ -126,7 +132,17 @@ double svkBurnResearchPixels::GetBurnValue()
     } else {
         return (double)( pow((double)2, bitsStored) ) - 1;
     }
+*/
+    vtkImageAccumulate* histo = vtkImageAccumulate::New();
+    histo->SetInput( data );
+    histo->Update();
 
+    //  Get the input range for scaling:
+    double max = static_cast<double> ( *( histo->GetMax() ) );
+
+    histo->Delete();
+
+    return max; 
 }
 
 
