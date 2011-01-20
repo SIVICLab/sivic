@@ -192,6 +192,25 @@ double* svkMriImageData::GetImagePixels( int slice)
 
 
 /*!
+ *  Sets a slice of pixels from a double array. 
+ *  Currently assumes 1 component data
+ */
+void svkMriImageData::SetImagePixels( double* pixels, int slice)
+{
+    int xpixels;
+    int ypixels;
+    int npixels;
+    xpixels = this->GetExtent()[1] - this->GetExtent()[0] + 1;
+    ypixels = this->GetExtent()[3] - this->GetExtent()[2] + 1;
+    npixels = xpixels * ypixels;
+    for( int i = 0; i < npixels; i++ ) {
+        this->GetPointData()->GetArray("pixels")->SetTuple( npixels * slice + i, &(pixels[i]) ); 
+    }
+
+}
+
+
+/*!
  *  Creates an array of doubles that is the pixels of image at slice "slice.
  *  Output goes into a vtkDataArray that matches the type of the pixel array in
  *  the original dataset. Currently assumes 1 component data.
@@ -252,7 +271,6 @@ void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
  */
 void svkMriImageData::SetImagePixel( int id , double value )
 {
-    double* pixel = NULL; 
     this->GetPointData()->GetArray("pixels")->SetTuple1( id, value );
 }
 

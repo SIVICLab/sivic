@@ -77,6 +77,7 @@ class svkMriImageData: public svkImageData
         vtkDataArray*   GetImagePixelsArray( int slice );
         double*         GetImagePixel( int id );
         double*         GetImagePixel( int x, int y, int z );
+        void            SetImagePixels( double* pixels, int slice); 
         void            SetImagePixel( int id, double value );
         void            SetImagePixel( int x, int y, int z, double value );
         virtual void    GetNumberOfVoxels(int numVoxels[3]); 
