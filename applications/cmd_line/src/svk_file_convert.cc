@@ -156,9 +156,9 @@ int main (int argc, char** argv)
     // ===============================================
     //  If UCSF build and burn RESEARCH into pixels: 
     // ===============================================
+    svkBurnResearchPixels* burn = svkBurnResearchPixels::New(); 
     if ( burnResearchHeader ) {
 
-        svkBurnResearchPixels* burn = svkBurnResearchPixels::New(); 
         burn->SetInput( currentImage );  
         burn->Update(); 
 
