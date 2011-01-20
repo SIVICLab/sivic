@@ -99,7 +99,7 @@ int main (int argc, char** argv)
     *   Process flags and arguments
     */
     int i;
-    while ((i = getopt(argc, argv, "i:o:t:h")) != EOF) {
+    while ((i = getopt(argc, argv, "i:o:t:bh")) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
