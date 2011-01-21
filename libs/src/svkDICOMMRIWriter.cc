@@ -155,13 +155,10 @@ void svkDICOMMRIWriter::Write()
             cout << this->GetClassName() << ": Writing DICOM file: " << this->InternalFileName << endl;
         }
 
-        // SOP Instance UID and Media Storage Instance UID need to be the same
+        //  SOP Instance UID and Media Storage Instance UID need to be the same, 
+        //  but DCMTK manages this on write: 
         mriHeader->SetValue( "InstanceNumber", this->FileNumber ); 
         mriHeader->InsertUniqueUID( "SOPInstanceUID" );
-        mriHeader->SetValue(
-            "MediaStorageSOPInstanceUID", 
-            mriHeader->GetStringValue( "SOPInstanceUID" )
-        );
 
         vtkstd::string imagePositionPatient = this->GetImageDataInput(0)->GetDcmHeader()->GetStringSequenceItemElement(
             "PlanePositionSequence",

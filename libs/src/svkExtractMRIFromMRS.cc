@@ -192,7 +192,6 @@ int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVe
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
     hdr->InsertUniqueUID("SOPInstanceUID");
-    hdr->InsertUniqueUID("MediaStorageSOPInstanceUID");
     hdr->SetValue("SeriesDescription", this->newSeriesDescription);
 
     return 1; 
