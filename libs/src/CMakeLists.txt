@@ -185,6 +185,7 @@ ADD_LIBRARY(
     svkMrsTopoGenerator.cc
     svkImageInPlaceFilter.cc    
     svkPhaseSpec.cc
+    svkAlgoTemplate.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkImageLinearPhase.cc
