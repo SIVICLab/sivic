@@ -254,6 +254,16 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+#   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
+ADD_EXECUTABLE(
+    svk_app_template
+    svk_app_template.cc
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_app_template
+    ${SVK_LIBS}
+)
 
 IF (!WIN32)	
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_file_convert )
