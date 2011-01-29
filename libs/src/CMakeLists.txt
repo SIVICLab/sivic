@@ -225,6 +225,7 @@ ADD_LIBRARY(
     svkDcmtkUtils.cc
     svkDcmtkException.cc
 )
+
 #IF (BUILD_TESTS)
 #    ENABLE_TESTING()
 #
