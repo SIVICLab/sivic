@@ -132,8 +132,8 @@ void svkMRIIOD::InitMRImageModule()
         string("DERIVED\\SECONDARY")
     );
 
-    this->dcmHeader->InsertEmptyElement( "ScanningSequence" );
-    this->dcmHeader->InsertEmptyElement( "SequenceVariant" );
+    this->dcmHeader->SetValue( "ScanningSequence", "RM" );
+    this->dcmHeader->InsertEmptyElement( "SequenceVariant", "NONE" );
     this->dcmHeader->InsertEmptyElement( "ScanOptions" );
     this->dcmHeader->InsertEmptyElement( "MRAcquisitionType" );
     this->dcmHeader->InsertEmptyElement( "RepetitionTime" );
