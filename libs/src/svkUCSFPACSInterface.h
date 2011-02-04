@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: $
- *  $Rev: $
- *  $Author: $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

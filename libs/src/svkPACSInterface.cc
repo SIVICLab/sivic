@@ -26,10 +26,10 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL: $
- *  $Rev: $
- *  $Author: $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -42,7 +42,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkPACSInterface, "$Rev: $");
+vtkCxxRevisionMacro(svkPACSInterface, "$Rev$");
 
 //! Constructor
 svkPACSInterface::svkPACSInterface()
