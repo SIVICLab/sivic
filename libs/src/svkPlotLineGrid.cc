@@ -475,10 +475,6 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
                     tmpXYPlot->GeneratePolyData();
                 }
 
-                if (this->GetDebug()) {
-                    cout << "Make Visible: " << ID << endl;
-                }
-
             }
         }
     }

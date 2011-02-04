@@ -261,3 +261,19 @@ string svkUCSFUtils::GetDICOMFileName( string fileName, svkDcmHeader* dcmHeader 
     dcmFileName.append( ss.str() );
     return dcmFileName;
 }
+
+
+/*
+ * Reidentifies images in the given directory using the ucsf database.
+ */
+int svkUCSFUtils::ReidentifyImages( string directory ) 
+{
+    int result = 1;  // this indicates failure
+#ifndef WIN32
+    stringstream reidentifyCommand;
+    reidentifyCommand << "reidentify_images --in_dir " << directory.c_str();
+    result = system( reidentifyCommand.str().c_str() );
+#endif
+    return result;
+}
+

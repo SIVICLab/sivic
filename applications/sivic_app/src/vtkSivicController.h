@@ -60,6 +60,8 @@
 #include <vtkKWWindowBase.h>
 #include <vtkImageFlip.h>
 #include <vtkKWMessageDialog.h>
+#include <svkUCSFPACSInterface.h>
+#include <svkPACSInterface.h>
 
 #include <math.h>
 #ifndef WIN32

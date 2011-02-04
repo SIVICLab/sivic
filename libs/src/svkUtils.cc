@@ -63,15 +63,22 @@ svkUtils::~svkUtils()
  */
 bool svkUtils::FilePathExists(const char* path)
 {
-	bool fileExists = false;
+	bool filePathExists = false;
 	vtkGlobFileNames* files = vtkGlobFileNames::New();
 	files->AddFileNames( path );
 	vtkStringArray* fileFound = files->GetFileNames();
-	if( fileFound != NULL && fileFound->GetNumberOfValues() == 1 ) {
-		fileExists = true;
-	}
+
+    // Check to see if it is a file
+	if( (fileFound != NULL && fileFound->GetNumberOfValues() == 1)) { 
+		filePathExists = true;
+	} else { // Check to see if it is a directory
+        vtkDirectory* directory = vtkDirectory::New();
+        if( directory->FileIsDirectory(path)) {
+            filePathExists = true; 
+        } 
+    }
 	files->Delete();
-	return fileExists;
+	return filePathExists;
 }
 
 
@@ -129,7 +136,7 @@ bool svkUtils::CanWriteToPath(const char* path)
 /*!
  * Copy a file.
  */
-bool svkUtils::CopyFile( const char* input, const char* output )
+int svkUtils::CopyFile( const char* input, const char* output )
 {
 	int result = 1; 
 #ifndef WIN32
@@ -142,6 +149,53 @@ bool svkUtils::CopyFile( const char* input, const char* output )
 	}
 #endif
 	return result;
+}
+
+
+/*!
+ * Move a file.
+ */
+int svkUtils::MoveFile( const char* input, const char* output )
+{
+	int result = 1; 
+#ifndef WIN32
+	stringstream moveCommand;
+    moveCommand << "mv " << input <<" "<< output;
+    result = system( moveCommand.str().c_str() );
+#else
+	if (::CopyFile( input, output,false ) ) {
+		result = 0;
+	}
+#endif
+	return result;
+}
+
+
+/*!
+ *  Moves all image slices from one location to another. Either * in the imageBaseName will be replaced with the slice number
+ *  or a number will be inserted before the extention.
+ */
+vector<string> svkUtils::GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice )
+{
+    vector<string> fileNames;
+    for( int i = startSlice; i <= endSlice; i++ ) {
+        string sourceImageName= string( imageBaseName );
+
+        ostringstream frameNum;
+        frameNum <<  i+1;
+
+        //  Replace asterix with slice number in output file name: 
+        size_t pos = sourceImageName.find_last_of( "*" );
+        if ( pos != string::npos) {
+            sourceImageName.replace(pos, 1, frameNum.str());
+        } else {
+            size_t pos = sourceImageName.find_last_of(".");
+            sourceImageName.replace(pos, 1, frameNum.str() + ".");
+        }
+        cout << "Source Images: " << sourceImageName << endl;
+        fileNames.push_back( sourceImageName );
+    }
+    return fileNames;
 }
 
 
@@ -166,5 +220,34 @@ bool svkUtils::PrintFile( const char* fileName, const char* printerName )
 	return false;
 #endif
 
+}
+
+/*!
+ * Generates a filename based on Accession and series number. Used for pushing to PACS.
+ */
+string svkUtils::GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra)
+{
+    string filePattern = "";
+    if( image != NULL && spectra != NULL ) {
+        string studyId = spectra->GetDcmHeader()->GetStringValue("AccessionNumber");
+        filePattern.append(studyId);
+        filePattern.append("_SIVIC_SC_S");
+        ostringstream ossSN;
+
+        ossSN << image->GetDcmHeader()->GetIntValue("SeriesNumber");
+        string imageSeriesNumber (ossSN.str());
+        filePattern.append(imageSeriesNumber);
+        filePattern.append("_");
+
+        ossSN.str("");
+        ossSN << spectra->GetDcmHeader()->GetIntValue("SeriesNumber");
+        string specSeriesNumber (ossSN.str());
+        filePattern.append(specSeriesNumber);
+        filePattern.append("I");
+
+        filePattern.append("*.dcm");
+    } 
+
+    return filePattern;
 }
 

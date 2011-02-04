@@ -114,7 +114,6 @@ class svkIdfVolumeReader : public svkImageReader2
         void            InitMRImagingModifierMacro(); 
         void            InitMRReceiveCoilMacro();
         void            InitMRTransmitCoilMacro(); 
-        void            InitNonIdfTags();
         void            ReadVolumeFile();
         int             GetNumPixelsInVol();
         int             GetNumSlices();

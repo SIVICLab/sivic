@@ -183,6 +183,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_dcmdump
+    svk_dcmdump.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_dcmdump 
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_quick_view
     svk_quick_view.cc
 )

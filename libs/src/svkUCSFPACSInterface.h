@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: $
+ *  $Rev: $
+ *  $Author: $
+ *  $Date: $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,71 +40,60 @@
  */
 
 
-#ifndef SVK_UTILS_H
-#define SVK_UTILS_H
+#ifndef SVK_UCSFPACS_INTERFACE_H
+#define SVK_UCSFPACS_INTERFACE_H
+
+#define PACS_DIRECTORY "/data/dicom_mb/export/PACS/"
+#define PACS_TEMP_DIRECTORY "SIVIC_TMP/"
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
 #include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
+#include <vtkObjectFactory.h>
+#include <svkPACSInterface.h>
+#include <svkUtils.h>
+#include <svkUCSFUtils.h>
 
-#ifdef WIN32
-#include <windows.h>
-#define MAXPATHLEN 260
-#else
-#include <sys/param.h>
-#include <pwd.h>
-#endif
 namespace svk {
 
 
 using namespace std;
-/*! 
- *  UCSF specific utilities.
+
+/*!
+ *   This is current for UCSF only. This method will do the following...
+ *   
+ *   1. Create a temporary directary in the pacsDirectory below. \n
+ *   2. Verify that it can write to this path. \n
+ *   3. Copy all images to the PACS temporary directory. \n
+ *   4. Reidentify these images in the temporary directory. \n
+ *   5. Move the images to the PACS directory. \n
+ *   6. Delete the temporary PACS directory. \n
  */
-class svkUtils : public vtkObject
+class svkUCSFPACSInterface : public svkPACSInterface 
 {
 
     public:
 
+        vtkTypeRevisionMacro( svkUCSFPACSInterface, svkPACSInterface);
+    
+        static svkUCSFPACSInterface* New();
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
   
-        // vtk initialization 
-        static svkUtils* New();  
+        bool Connect();
+        bool SendImagesToPACS( vector<string> files, string sourceDirectory );
+        bool Disconnect();
 
-        //! Does the file or path exist:
-		static bool           FilePathExists( const char* path );
-		static string		  GetCurrentWorkingDirectory();
-		static string		  GetUserName();
-		static bool			  CanWriteToPath( const char* path );
-		static int            CopyFile( const char* input, const char* output );
-		static int            MoveFile( const char* input, const char* output );
-		static bool           PrintFile( const char* fileName, const char* printerName );
-		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string         GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+    protected:
+    
+        string pacsTempDirectory;
 
+        svkUCSFPACSInterface();
+        ~svkUCSFPACSInterface();
 
-	protected:
-
-       svkUtils();
-       ~svkUtils();
-        
 };
 
 
 }   //svk
 
 
+#endif //SVK_UCSFPACS_INTERFACE_H
 
-#endif //SVK_UTILS

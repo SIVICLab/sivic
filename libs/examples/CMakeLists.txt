@@ -199,17 +199,6 @@ TARGET_LINK_LIBRARIES(
 
 
 ADD_EXECUTABLE(
-    test_svkOverlayView 
-    test_svkOverlayView.cc
-)
-
-
-TARGET_LINK_LIBRARIES(
-    test_svkOverlayView 
-	${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
     test_svkBoxPlot 
     test_svkBoxPlot.cc
 )

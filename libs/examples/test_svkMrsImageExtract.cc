@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     time_before = time (NULL);
 
     for( int i = 0; i < 512; i++ ) {
-        vtkImageData* pointImage =  vtkImageData::New();
+        svkMriImageData* pointImage =  svkMriImageData::New();
         svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, i );
     }
     time_after = time (NULL);
@@ -92,7 +92,7 @@ int main (int argc, char** argv)
     cout << "Time for get: " << time_after-time_before << endl;
 
     time_before = time (NULL);
-    vtkImageData* pointImage =  vtkImageData::New();
+    svkMriImageData* pointImage =  svkMriImageData::New();
     svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187 );
     for( int i = 0; i < 512; i++ ) {
         svkMrsImageData::SafeDownCast( data )->SetImage( pointImage, i );
@@ -120,7 +120,7 @@ int main (int argc, char** argv)
     imageFFT->Update( );
     viewer->SetInput( imageFFT->GetOutput() );
 
-    vtkImageData* pointImage2 =  vtkImageData::New();
+    svkMriImageData* pointImage2 =  svkMriImageData::New();
     svkMrsImageData::SafeDownCast( data )->GetImage( pointImage2, 90 );
     svkMrsImageData::SafeDownCast(data)->SetImage( pointImage, 90 );
     plotGridInput->GetView()->Refresh();

@@ -50,6 +50,9 @@
 #include <vtkObjectFactory.h>
 #include <vtkObject.h>
 #include <svkDcmHeader.h>
+#include <svkMriImageData.h>
+#include <svkMrsImageData.h>
+
 
 
 namespace svk {
@@ -97,6 +100,9 @@ class svkUCSFUtils : public vtkObject
         static vector<string> GetAllMetaboliteNames();
 
         static string         GetDICOMFileName( string fileName, svkDcmHeader* header );
+
+        //! Reidentify images in a given directory
+        static int            ReidentifyImages( string directory );
 
         //! Maps metabolite names to file extentions
         static map<string, string> metaboliteMap;

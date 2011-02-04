@@ -25,14 +25,11 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
  *  OF SUCH DAMAGE.
  */
-
-
-
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: $
+ *  $Rev: $
+ *  $Author: $
+ *  $Date: $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,71 +37,35 @@
  */
 
 
-#ifndef SVK_UTILS_H
-#define SVK_UTILS_H
+#include <svkPACSInterface.h>
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
+using namespace svk;
 
-#ifdef WIN32
-#include <windows.h>
-#define MAXPATHLEN 260
-#else
-#include <sys/param.h>
-#include <pwd.h>
-#endif
-namespace svk {
+vtkCxxRevisionMacro(svkPACSInterface, "$Rev: $");
 
-
-using namespace std;
-/*! 
- *  UCSF specific utilities.
- */
-class svkUtils : public vtkObject
+//! Constructor
+svkPACSInterface::svkPACSInterface()
 {
 
-    public:
+}
+
+//! Destructor
+svkPACSInterface::~svkPACSInterface()
+{
+
+}
 
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
-  
-        // vtk initialization 
-        static svkUtils* New();  
-
-        //! Does the file or path exist:
-		static bool           FilePathExists( const char* path );
-		static string		  GetCurrentWorkingDirectory();
-		static string		  GetUserName();
-		static bool			  CanWriteToPath( const char* path );
-		static int            CopyFile( const char* input, const char* output );
-		static int            MoveFile( const char* input, const char* output );
-		static bool           PrintFile( const char* fileName, const char* printerName );
-		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string         GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+//! Return pacs target string
+string svkPACSInterface::GetPACSTargetString() 
+{
+    return this->pacsTarget;
+}
 
 
-	protected:
-
-       svkUtils();
-       ~svkUtils();
-        
-};
-
-
-}   //svk
-
-
-
-#endif //SVK_UTILS
+//! Set the PACS target using a string
+void svkPACSInterface::SetPACSTargetString( string pacsTarget )
+{
+    this->pacsTarget = pacsTarget;
+}

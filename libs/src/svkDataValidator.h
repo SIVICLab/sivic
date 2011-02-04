@@ -84,6 +84,7 @@ class svkDataValidator : public vtkObject
             INVALID_DATA_ORIENTATION = 1,
             INVALID_DATA_PATIENT_ID = 2,
             INVALID_DATA_CORRUPTED = 3,
+            INVALID_DATA_ACCESSION_NUMBER = 4
         };
         
         //! Check to see if two datasets are from the same scan

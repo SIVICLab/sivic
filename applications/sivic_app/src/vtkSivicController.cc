@@ -2541,6 +2541,21 @@ void vtkSivicController::SetOverlayThreshold( double threshold )
 }
 
 
+
+/*! 
+ *   This is current for UCSF only. This method will do the following...
+ *   
+ *   1. Create a temporary directary in the pacsDirectory below.
+ *   2. Create a local directory one directory above where the spectra was loaded from
+ *   3. Verify that it can write to both of these paths.
+ *   4. Create a set of secondary captures and save them to the local directory.
+ *   5. Open the secondary captures in a preview window and wait for user input.
+ *   6. After the user has closed all of the secondary capture windows get a confirmation to send to PACS.
+ *   7. If the user confirms to send then copy all images to the PACS temporary directory.
+ *   8. Reidentify these images in the temporary directory.
+ *   9. Move the images to the PACS directory.
+ *  10. Delete the temporary PACS directory.
+ */
 void vtkSivicController::PushToPACS()
 {
 #if defined( UCSF_INTERNAL )
@@ -2552,23 +2567,11 @@ void vtkSivicController::PushToPACS()
         return; 
     }
 
+    svkPACSInterface* pacsInterface = svkUCSFPACSInterface::New();
 
-    // Lets check to see if the original DICOM file can be found so we can get the studyUID and Accession number
-    string dcmFileName = svkUCSFUtils::GetDICOMFileName( this->model->GetDataFileName( "AnatomicalData" ), 
-                                                         this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader());
+    /*********************************** CHECK FOR FILE WRITING PERMISSIONS ****************************************/
 
-    string sourceImageName = this->model->GetDataFileName("AnatomicalData"); 
-    size_t pos = sourceImageName.find_last_of(".");
-
-    bool imageIsDICOM = 0;
-    if ( pos != string::npos && pos + 3 < sourceImageName.size()) {
-        string extention = sourceImageName.substr( pos+1, 3 ); 
-        if( extention == "DCM" || extention == "dcm" ) {
-            imageIsDICOM = 1;
-        }
-    } 
-
-    // Lets locate a local directory to make a copy of the images being push to pacs
+    // Lets locate a local directory to make a copy of the images being push to pacs. We'll use the spectra directory
     string spectraFileName = this->model->GetDataFileName( "SpectroscopicData" );
 
     // Parse for directory name
@@ -2582,109 +2585,37 @@ void vtkSivicController::PushToPACS()
     found = localDirectory.find_last_of("/");
     localDirectory = localDirectory.substr(0,found); 
 
-    // Lets make sure the dicom file exists, this implies the studyUID and Accession number or correct
+    // Lets check the connection to PACS
+    bool preperationSuccessful = pacsInterface->Connect();
 
-	if( !svkUtils::FilePathExists(dcmFileName.c_str()) && !imageIsDICOM ) {
-
-        // If the dicom file cannot be found, lets allow the user to choose one
-        string errorMessage("CANNOT FIND DICOM FILE:");
-        errorMessage.append( dcmFileName );
-        errorMessage.append( "\n Do you want to choose a DICOM image to get the study information?" );
-        vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
-        messageDialog->SetApplication(app);
-        messageDialog->Create();
-        messageDialog->SetText( errorMessage.c_str() );
-        messageDialog->SetStyle( vtkKWMessageDialog::StyleYesNo);
-        messageDialog->Invoke();
-
-        // If the user wants to choose a dicom image
-        if ( messageDialog->GetStatus() == vtkKWDialog::StatusOK ) {
-            vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
-            dlg->SetApplication(app);
-            dlg->Create();
-            dlg->SetFileTypes("{{DICOM Image} {.dcm .DCM}}");
-            dlg->SetLastPath( localDirectory.c_str() );
-            dlg->Invoke();
-            int dialogStatus = dlg->GetStatus();
-            dcmFileName = string(dlg->GetFileName());
-            dlg->Delete();
-            if ( dialogStatus != vtkKWDialog::StatusOK ) { // Dialog was canceled
-                return;
-            } 
-        } else { // User did not want to choose an image
-            return;
-        }
-    }
-
-    svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();
-    struct stat buffer;
-    // Lets create image to write out, and attach the image's header to get study info
-    svkImageData* outputImage = svkMriImageData::New();
-    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
-    // Give it a default dcos so it can be viewed in an image viewer
-	if( !imageIsDICOM && svkUtils::FilePathExists( dcmFileName.c_str()) && dcmReader->CanReadFile( dcmFileName.c_str() ) ){
-        dcmReader->SetFileName( dcmFileName.c_str() );
-        dcmReader->UpdateInformation();
-        svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
-        outputImage->SetDcmHeader( dcmHeader );
-        dcmReader->GetOutput()->GetDcos(dcos);
-        outputImage->SetDcos(dcos);
-        dcmHeader->Register(this);
-
-    } else if( !imageIsDICOM ) {
-        string errorMessage2("NOT A VALID DICOM IMAGE:");
-        errorMessage2.append( dcmFileName );
-        PopupMessage( errorMessage2 );
+	if (!preperationSuccessful ) { 
+        string errorMessage("COULD NOT CONNECT TO PACS: ");
+        errorMessage.append(pacsInterface->GetPACSTargetString());
+        PopupMessage( errorMessage );
         return; 
-    }  
-    if( imageIsDICOM ) {
-        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
-        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
-        this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
-        outputImage->SetDcos(dcos );
-    }
-    dcmReader->Delete();
+	} 
 
-
-
-    // Set PACS directory
-    string pacsDirectory( "/data/dicom_mb/export/PACS/" );
-
+    // We will need to copy the images to a local directory
     localDirectory.append( "/DICOM/" );
 
+    // Let's create the local directory 
 	if(!svkUtils::FilePathExists(localDirectory.c_str())) {
 		vtkDirectory::MakeDirectory( localDirectory.c_str() );
     }
 
-
+    // Make sure we can write to the new directory
 	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
-        string errorMessage2("COULD NOT WRITE TO PATH: ");
-        errorMessage2.append( localDirectory );
-        PopupMessage( errorMessage2 );
+        string errorMessage("COULD NOT WRITE TO PATH: ");
+        errorMessage.append( localDirectory );
+        PopupMessage( errorMessage );
         return; 
 	} 
 
-    // Lets create a name for the images that uses the series ID of the image, and the spectra
-    string filePattern;
-    filePattern.append("E");
-    string studyId = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetStringValue("StudyID");
-    filePattern.append(studyId);
-    filePattern.append("_ImageSpec_S");
-    ostringstream ossSN;
+    /*********************************** CREATE SECONDARY CAPTURES ******************************************************/
 
-    ossSN << this->model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetIntValue("SeriesNumber");
-    string imageSeriesNumber (ossSN.str());
-    filePattern.append(imageSeriesNumber);
-    filePattern.append("_");
-
-    ossSN.str("");
-    ossSN << this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetIntValue("SeriesNumber");
-    string specSeriesNumber (ossSN.str());
-    filePattern.append(specSeriesNumber);
-    filePattern.append("I");
-    
-    filePattern.append("*.dcm");
-
+    // Lets create a name for the images 
+    string filePattern = svkUtils::GetSecondaryCaptureFilePattern( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
+                                                                     , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
     string fileNameString = localDirectory + filePattern;
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
@@ -2721,18 +2652,32 @@ void vtkSivicController::PushToPACS()
     bool print = 0; 
     bool preview = 1; 
 
+    // We need to create an svkMriImageData object to hold the secondary capture data
+    svkImageData* outputImage = svkMriImageData::New();
+    
+    // We are going to set its header to be the header of the image. This will only be used to derive the header for the secondary capture image.
+    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
+
+    // We need to givie it a dcos so that svkImageViewer can render it for the preview
+    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+    this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
+    outputImage->SetDcos( dcos );
+
+    // write the images to the local directary and bring up a preview window
+    // TODO: If we had a secondary capture reader this could be done it two steps for clarity
     this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
                                writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print, preview );
 
     // Reset the slice
     this->SetSlice(currentSlice);
 
-    // Verify the user wants to push to pacs
+    // Verify the user wants to push to pacs and verify PACS location
     vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
     messageDialog->SetApplication(app);
     messageDialog->Create();
     stringstream textString;
-    textString <<"Are you sure you want to push to PACS?\nImages will be copied to " << pacsDirectory << "." << endl; 
+    textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << pacsInterface->GetPACSTargetString() << "." << endl; 
     messageDialog->SetText( textString.str().c_str() );
     messageDialog->SetStyle( vtkKWMessageDialog::StyleOkCancel);
     messageDialog->Invoke();
@@ -2742,30 +2687,34 @@ void vtkSivicController::PushToPACS()
     }
     messageDialog->Delete();
 
+    /********************************** SEND IMAGES TO PACS *************************************/
+
     // Now we copy the local images to PACS
     if( confirmSend ) {
-        for( int i = outputImage->GetExtent()[4]; i <= outputImage->GetExtent()[5]; i++ ) {
-            string sourceImageName = fileNameString;
+        int firstSlice = outputImage->GetExtent()[4];
+        int lastSlice = outputImage->GetExtent()[5];
 
-            ostringstream frameNum;
-            frameNum <<  i+1;
+        vector<string> filesToSend = svkUtils::GetFileNamesFromPattern( filePattern, firstSlice, lastSlice );
 
-            //  Replace * with slice number in output file name: 
-            size_t pos = sourceImageName.find_last_of("*");
-            if ( pos != string::npos) {
-                sourceImageName.replace(pos, 1, frameNum.str());
-            } else {
-                size_t pos = sourceImageName.find_last_of(".");
-                sourceImageName.replace(pos, 1, frameNum.str() + ".");
-            }
-            string targetImageName = sourceImageName;
-            pos = targetImageName.find( localDirectory.c_str() ); 
-            targetImageName.replace( pos, localDirectory.size(), pacsDirectory.c_str(), pos, pacsDirectory.size());
-			
-			svkUtils::CopyFile(sourceImageName.c_str(), targetImageName.c_str());
-        }
+        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( filesToSend, localDirectory );
+        if (!pacsSendSuccess ) { 
+            string errorMessage("COULD NOT SEND TO PACS: ");
+            errorMessage.append(pacsInterface->GetPACSTargetString());
+            PopupMessage( errorMessage );
+        } 
+        
     }
 
+    // Remove the PACS temporory directory
+    bool disconnectSuccessful = pacsInterface->Disconnect();
+
+	if (!disconnectSuccessful ) { 
+        string errorMessage("COULD NOT DISCONNECT FROM PACS: ");
+        errorMessage.append(pacsInterface->GetPACSTargetString());
+        PopupMessage( errorMessage );
+	} 
+
+    // Free our output image
     if (outputImage != NULL) {
         outputImage->Delete();
         outputImage = NULL; 
@@ -2776,7 +2725,10 @@ void vtkSivicController::PushToPACS()
         this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
     }
 
+    // Free writer
     writer->Delete();
+
+    // Refresh the views
     this->overlayController->GetView()->Refresh();    
     this->plotController->GetView()->Refresh();    
     this->viewRenderingWidget->infoWidget->Render();    

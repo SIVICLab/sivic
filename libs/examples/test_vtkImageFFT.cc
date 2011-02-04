@@ -105,7 +105,7 @@ int main (int argc, char** argv)
     }
 
     // Lets look at the data...
-    vtkImageData* pointImage =  vtkImageData::New();
+    svkMriImageData* pointImage =  svkMriImageData::New();
     svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187 );
     //pointImage->GetPointData()->SetScalars( sineWaveImage->GetPointData()->GetScalars() );
     //pointImage->GetPointData()->Modified();
@@ -115,12 +115,12 @@ int main (int argc, char** argv)
     PrintMatlabFormat( pointImage, string("pointImage") );
     ViewImage( pointImage );
 
-    vtkImageData* pointImageFT = vtkImageData::New();
+    svkMriImageData* pointImageFT = svkMriImageData::New();
     FFTImage( pointImage, pointImageFT );
     PrintMatlabFormat( pointImageFT, string("pointImageFT") );
     ViewImage( pointImageFT );
 
-    vtkImageData* pointImageRFT = vtkImageData::New();
+    svkMriImageData* pointImageRFT = svkMriImageData::New();
     RFFTImage( pointImageFT, pointImageRFT );
     PrintMatlabFormat( pointImageFT, string("pointImageRFT") );
     ViewImage( pointImageRFT );

@@ -93,13 +93,24 @@ bool svkDataValidator::AreDataCompatible( svkImageData* data1, svkImageData* dat
             this->status.insert(svkDataValidator::INVALID_DATA_ORIENTATION);
             this->resultInfo = "\tDcos matrices are not aligned!\n";
         }
+        string accession1 = data1->GetDcmHeader()->GetStringValue("AccessionNumber" );
+        string accession2 = data2->GetDcmHeader()->GetStringValue("AccessionNumber" );
+        string patientID1 = data1->GetDcmHeader()->GetStringValue("PatientID" );
+        string patientID2 = data2->GetDcmHeader()->GetStringValue("PatientID" );
 
-        // Now lets check to see if the patient id's match
-        if( strcmp( data1->GetDcmHeader()->GetStringValue("PatientID").c_str(), 
-            data2->GetDcmHeader()->GetStringValue("PatientID").c_str() ) != 0 ) {
-            this->status.insert(svkDataValidator::INVALID_DATA_PATIENT_ID);
-            this->resultInfo += "\tPatient ID does not match between datasets!\n";
+        if( !accession1.empty() && !accession2.empty() ) {
+            if( strcmp( accession1.c_str(), accession2.c_str() ) != 0 ) {
+                this->status.insert(svkDataValidator::INVALID_DATA_ACCESSION_NUMBER);
+                this->resultInfo += "\tAccession Number does not match between datasets!\n";
+            }
+        } else {
+            if( strcmp( patientID1.c_str(), patientID2.c_str() ) != 0 ) {
+                this->status.insert(svkDataValidator::INVALID_DATA_PATIENT_ID);
+                this->resultInfo += "\tPatient ID  does not match between datasets!\n";
+            }
+
         }
+        // Now lets check to see if the patient id's match
 
     } else {
         this->status.insert(svkDataValidator::INVALID_DATA_CORRUPTED);

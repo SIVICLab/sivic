@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: $
+ *  $Rev: $
+ *  $Author: $
+ *  $Date: $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,71 +40,59 @@
  */
 
 
-#ifndef SVK_UTILS_H
-#define SVK_UTILS_H
+#ifndef SVK_PACS_INTERFACE_H
+#define SVK_PACS_INTERFACE_H
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
 #include <vtkObject.h>
-#include <vtkGlobFileNames.h>
-#include <vtkStringArray.h>
-#include <vtkDirectory.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
+#include <vtkObjectFactory.h>
+#include <vector>
 
-#ifdef WIN32
-#include <windows.h>
-#define MAXPATHLEN 260
-#else
-#include <sys/param.h>
-#include <pwd.h>
-#endif
 namespace svk {
 
 
 using namespace std;
-/*! 
- *  UCSF specific utilities.
+
+
+/*!
+ *  A generic interface to PACS. Currently only has methods to connect, send
+ *  images and disconnect.
  */
-class svkUtils : public vtkObject
+class svkPACSInterface : public vtkObject 
 {
 
+    // if these are accessed only via the corresponding controller, then these don't need to be public
     public:
 
+        vtkTypeRevisionMacro( svkPACSInterface, vtkObject);
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkUtils, vtkObject );
-  
-        // vtk initialization 
-        static svkUtils* New();  
+        //! Create a connection to PACS. Return true if the connection can be made.        
+        virtual bool                    Connect() = 0;
 
-        //! Does the file or path exist:
-		static bool           FilePathExists( const char* path );
-		static string		  GetCurrentWorkingDirectory();
-		static string		  GetUserName();
-		static bool			  CanWriteToPath( const char* path );
-		static int            CopyFile( const char* input, const char* output );
-		static int            MoveFile( const char* input, const char* output );
-		static bool           PrintFile( const char* fileName, const char* printerName );
-		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string         GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+        //! Send a set of images to PACS. Returns true if the images can be sent.       
+        virtual bool                    SendImagesToPACS( vector<string> files, string sourceDirectory ) = 0;
 
+        //! Close the PACS connection. Returns true if the connection closes cleanly.       
+        virtual bool                    Disconnect() = 0;
 
-	protected:
+        //! Get a string representation of the PACS connection.       
+        virtual string                  GetPACSTargetString();
 
-       svkUtils();
-       ~svkUtils();
-        
+        //! Set the string representation of the PACS connection.       
+        virtual void                    SetPACSTargetString( string pacsTarget );
+
+    protected:
+
+        string pacsTarget;
+
+        svkPACSInterface();
+        ~svkPACSInterface();
+
 };
 
 
 }   //svk
 
 
+#endif //SVK_PACS_INTERFACE_H
 
-#endif //SVK_UTILS

@@ -158,6 +158,8 @@ ADD_LIBRARY(
     svkVarianFidMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
+    svkPACSInterface.cc
+    svkUCSFPACSInterface.cc
     svkDataView.cc
     svkDataViewController.cc
     svkImageView2D.cc
