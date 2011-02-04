@@ -229,7 +229,7 @@ void svkIdfVolumeWriter::WriteHeader()
 
     out << "IMAGE DESCRIPTOR FILE version 5" << endl;
     if ( hdr->GetStringValue( "AccessionNumber" ).length() > 0 ) {
-        out << "studyid: t#_" << hdr->GetStringValue( "AccessionNumber" ) << endl;
+        out << "studyid: " << hdr->GetStringValue( "AccessionNumber" ) << endl;
     } else {
         out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
     }

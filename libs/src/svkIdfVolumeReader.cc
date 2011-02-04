@@ -325,7 +325,6 @@ void svkIdfVolumeReader::InitDcmHeader()
     this->InitMultiFrameFunctionalGroupsModule();
     this->InitMultiFrameDimensionModule();
     this->InitAcquisitionContextModule();
-    this->InitNonIdfTags();
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
@@ -390,8 +389,6 @@ void svkIdfVolumeReader::InitGeneralStudyModule()
     vtkstd::string accessionNumber;
     if ( this->IsIdfStudyIdAccessionNumber() ) {
         accessionNumber = idfMap[ "studyId" ];  
-        //  remove leading t#_
-        accessionNumber = accessionNumber.substr(3); 
     } else {
         accessionNumber = ""; 
     }
@@ -701,53 +698,6 @@ void svkIdfVolumeReader::InitMRReceiveCoilMacro()
 }
 
 
-/*!
- *  Loading Tags that are not included in the idf header.
- *  This method will search for the DICOM series as used
- *  at UCSF.
- *  TODO: WINDOWS: Change needed here to deal with Window filesystems.
- */
-void svkIdfVolumeReader::InitNonIdfTags()
-{
-
-    // First we construct the filename of a .dcm file from the same series
-    vtkstd::string fileNameString(this->FileName);
-    size_t pos;
-    pos = fileNameString.find_last_of("/");
-    pos = fileNameString.substr(0,pos).find_last_of("/");
-    // First we construct the filename of a .dcm file from the same series
-    vtkstd::string dcmFileName(fileNameString.substr(0,pos).c_str());
-    dcmFileName += "/E";
-    dcmFileName += idfMap[ vtkstd::string( "studyNum") ];
-    dcmFileName += "/";
-    dcmFileName += idfMap[ vtkstd::string( "seriesNum") ];
-    dcmFileName += "/E";
-    dcmFileName += idfMap[ vtkstd::string( "studyNum") ];
-    dcmFileName += "S";
-    dcmFileName += idfMap[ vtkstd::string( "seriesNum") ];
-    dcmFileName += "I";
-    dcmFileName += "1.DCM";
-
-
-    struct stat buffer;
-
-    if ( stat( dcmFileName.c_str(), &buffer ) == 0 ) {
-        svkDcmMriVolumeReader* dcmReader = svkDcmMriVolumeReader::New();    
-        dcmReader->SetFileName( dcmFileName.c_str() );
-        dcmReader->UpdateInformation();
-        svkDcmHeader* dcmHeader = dcmReader->GetOutput()->GetDcmHeader();
-        this->GetOutput()->GetDcmHeader()->SetValue(
-                  "StudyInstanceUID", dcmHeader->GetStringValue("StudyInstanceUID") );
-        this->GetOutput()->GetDcmHeader()->SetValue(
-                  "AccessionNumber", dcmHeader->GetStringValue("AccessionNumber") );
-    } else {
-        cout << "File: " << dcmFileName << " Does not Exist! Cannot acquire StudyInstance UID nor AccessionNumber!" << endl; 
-    }
- 
-}
-
-
-
 /*! 
  *  Use the IDF patient position string to set the DCM_PatientPosition data element.
  */
@@ -1035,7 +985,7 @@ bool svkIdfVolumeReader::IsIdfStudyIdAccessionNumber()
     bool isAccession = false; 
     vtkstd::string idfStudyId = idfMap[ "studyId" ]; 
 
-    size_t pos = idfStudyId.find( "t#_" ); 
+    size_t pos = idfStudyId.find( "t" ); 
     if ( pos == 0 ) {
         isAccession = true; 
     }
