@@ -92,7 +92,8 @@ class svkUtils : public vtkObject
 		static int            MoveFile( const char* input, const char* output );
 		static bool           PrintFile( const char* fileName, const char* printerName );
 		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string         GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+        static string         GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra);
+        static string         GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
 
 
 	protected:

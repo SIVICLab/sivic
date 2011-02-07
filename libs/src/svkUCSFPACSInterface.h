@@ -43,10 +43,6 @@
 #ifndef SVK_UCSFPACS_INTERFACE_H
 #define SVK_UCSFPACS_INTERFACE_H
 
-#define PACS_DIRECTORY "/data/dicom_mb/export/PACS/"
-#define PACS_TEMP_DIRECTORY "SIVIC_TMP/"
-
-
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <svkPACSInterface.h>
@@ -79,12 +75,10 @@ class svkUCSFPACSInterface : public svkPACSInterface
 
   
         bool Connect();
-        bool SendImagesToPACS( vector<string> files, string sourceDirectory );
+        bool SendImagesToPACS( string sourceDirectory );
         bool Disconnect();
 
     protected:
-    
-        string pacsTempDirectory;
 
         svkUCSFPACSInterface();
         ~svkUCSFPACSInterface();

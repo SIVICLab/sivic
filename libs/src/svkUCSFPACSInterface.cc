@@ -50,9 +50,7 @@ vtkStandardNewMacro(svkUCSFPACSInterface);
 //! Constructor
 svkUCSFPACSInterface::svkUCSFPACSInterface()
 {
-    this->pacsTarget        = string( PACS_DIRECTORY );
-    this->pacsTempDirectory = string( this->pacsTarget );
-    this->pacsTempDirectory.append( PACS_TEMP_DIRECTORY );
+    this->pacsTarget = string( "" );
 }
 
 //! Destructor
@@ -74,26 +72,9 @@ bool svkUCSFPACSInterface::Connect()
     bool success = true;
     int result = 0;
     
-    // Create Temp PACS directary
-    if(svkUtils::FilePathExists( this->pacsTempDirectory.c_str()) ) {
-        result = vtkDirectory::DeleteDirectory( this->pacsTempDirectory.c_str() );
-        
-        // Make sure the delete was successful
-        if( result == 0 ) { // vtkDirectory uses an int for return, it is actually a true/false result
-            cout << "ERROR: Could not delete previous temp folder at: " << this->pacsTempDirectory << endl;
-            return false;
-        }
-    }
-
-    result = vtkDirectory::MakeDirectory( this->pacsTempDirectory.c_str() );
-    if ( result == 0 ) {  // vtkDirectory uses an int for return, it is actually a true/false result
-        cout << "ERROR: Could not create temparary directory at: " << this->pacsTempDirectory << endl;
-        return false;
-    }
-    
-    // Make sure we can write to the new directary
-    if ( !svkUtils::CanWriteToPath(this->pacsTempDirectory.c_str())) { // Can the user get a file handle
-        cout << "ERROR: Could not write to temparary directory at: " << this->pacsTempDirectory << endl;
+    // Make sure we can write to the PACS directary
+    if ( !svkUtils::CanWriteToPath(this->pacsTarget.c_str())) { // Can the user get a file handle
+        cout << "ERROR: Could not write to PACS directory at: " << this->pacsTarget << endl;
         success = false;
     } 
 
@@ -102,66 +83,43 @@ bool svkUCSFPACSInterface::Connect()
 
 
 /*!
- *  Copies images to the temp directory, reidentifies them, and the copies them to 
- *  the PACS directory.
+ *  Sends deidentified images to PACS (they become reidentified in transit)
  *
- *  \param files a vector of image file names to be sent.
  *  \param sourceDirectory a string containing the source directory.
  *  \return true of the copy succeeds, otherwise false.
  */
-bool svkUCSFPACSInterface::SendImagesToPACS( vector<string> files, string sourceDirectory  )
+bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory  )
 {
     bool success = true;
-    int result = 1;
+    int result = 0;
 
-    // Copy images
-    for( vector<string>::iterator iter = files.begin();
-        iter != files.end(); ++iter) {
-        string source = string(sourceDirectory);
-        source.append( *iter );
-        string destination = string(this->pacsTempDirectory);
-        destination.append(*iter);
-        result = svkUtils::CopyFile( source.c_str(), destination.c_str() );
-        if( result != 0 ) { // This is a system results so 0 is success
-            cout<< "ERROR: COULD NOT COPY: " << source << " to " << destination << ". Halting sending images." << endl;
-            return false; 
-        }
+#ifndef WIN32
+    stringstream sendToPACSCommand;
+    sendToPACSCommand << "send_to_pacs --in_dir " << sourceDirectory;
+    if( this->pacsTarget.compare("") != 0 ) {
+        sendToPACSCommand << " --test_dir " << this->pacsTarget;
     }
+    cout << "Send to PACS command: " << sendToPACSCommand.str() << endl;
+    result = system( sendToPACSCommand.str().c_str() );
+    if( result != 0 ) {
+        cout << "ERROR: Could not send to PACS! " << endl;
+        success = false;
+    } else {
+        success = true;
+    }
+#else
+    // Not supported in windows
+#endif
 
-    result = svkUCSFUtils::ReidentifyImages( this->pacsTempDirectory );
-    if( result != 0 ) { // This is a system result so 0 is success
-        cout << "ERROR: COULD NOT REIDENTIFY IMAGES!" << endl;
-        return false;
-    }
-
-    // Move images
-    for( vector<string>::iterator iter = files.begin();
-        iter != files.end(); ++iter) {
-        string source = string(pacsTempDirectory);
-        source.append( *iter );
-        string destination = string(this->pacsTarget);
-        destination.append(*iter);
-        result = svkUtils::MoveFile( source.c_str(), destination.c_str() );
-        if( result != 0 ) { // This is a system result so 0 is success
-            cout<< "COULD NOT MOVE: " << source << " to " << destination << ". Halting sending images." << endl;
-            return false; 
-        }
-    }
     return success;
-
 }
 
 
 /*!
- *  Deletes the temporary directory.
+ *
  */
 bool svkUCSFPACSInterface::Disconnect()
 {
     bool success = true;
-    int result = vtkDirectory::DeleteDirectory( this->pacsTempDirectory.c_str() );
-    if ( result == 0 ) {  // vtkDirectory uses an int for return, it is actually a true/false result
-        cout << "ERROR: Could not delete temparary directory at: " << this->pacsTempDirectory << endl;
-        success = false;
-    }
     return success;
 }

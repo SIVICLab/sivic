@@ -553,10 +553,6 @@ void svkPlotLineGrid::GenerateActor()
                 tmpXYPlot->GetPointIds()->SetNumberOfIds(arrayLength);
                 tmpXYPlot->SetDataPoints( tmpPoints );
 
-                if (this->GetDebug()) {
-                    cout << "CREATE: " << xInd << " " << yInd << " " << zInd;
-                    cout << " True ID " << this->data->ComputeCellId( voxelIndex ) << endl;
-                }
                 tmpXYPlot->SetDcos( dcos );
                 tmpXYPlot->SetSpacing( spacing );
                 tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(

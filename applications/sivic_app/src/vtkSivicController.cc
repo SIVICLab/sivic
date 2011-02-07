@@ -2569,6 +2569,9 @@ void vtkSivicController::PushToPACS()
 
     svkPACSInterface* pacsInterface = svkUCSFPACSInterface::New();
 
+    // For testing below
+    //pacsInterface->SetPACSTargetString("/data/lhst3/sivic/DICOM_REID/results");
+
     /*********************************** CHECK FOR FILE WRITING PERMISSIONS ****************************************/
 
     // Lets locate a local directory to make a copy of the images being push to pacs. We'll use the spectra directory
@@ -2581,42 +2584,74 @@ void vtkSivicController::PushToPACS()
     string localDirectory = spectraFileName.substr(0,found); 
     found = localDirectory.find_last_of("/");
 
-    // We want to put the DICOM folder one above the spectra location
+    // We want to put the SIVIC_DICOM_SC folder parallel to the spectra location
     found = localDirectory.find_last_of("/");
     localDirectory = localDirectory.substr(0,found); 
 
-    // Lets check the connection to PACS
-    bool preperationSuccessful = pacsInterface->Connect();
-
-	if (!preperationSuccessful ) { 
-        string errorMessage("COULD NOT CONNECT TO PACS: ");
-        errorMessage.append(pacsInterface->GetPACSTargetString());
-        PopupMessage( errorMessage );
-        return; 
-	} 
-
-    // We will need to copy the images to a local directory
-    localDirectory.append( "/DICOM/" );
+    // We will write the images to the local directory
+    localDirectory.append( "/SIVIC_DICOM_SC/" );
 
     // Let's create the local directory 
 	if(!svkUtils::FilePathExists(localDirectory.c_str())) {
-		vtkDirectory::MakeDirectory( localDirectory.c_str() );
+		int result = vtkDirectory::MakeDirectory( localDirectory.c_str() );
+        if (result == 0) { //  Was the directory created?
+            string errorMessage("ERROR: Could not create to directory: ");
+            errorMessage.append( localDirectory );
+            PopupMessage( errorMessage );
+            return; 
+        } 
     }
 
     // Make sure we can write to the new directory
 	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
-        string errorMessage("COULD NOT WRITE TO PATH: ");
+        string errorMessage("ERROR: Could not write to directory: ");
         errorMessage.append( localDirectory );
         PopupMessage( errorMessage );
         return; 
 	} 
 
-    /*********************************** CREATE SECONDARY CAPTURES ******************************************************/
+    string captureDirectory = svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
+                                                                           , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
 
+    // We will need to copy the images to the capture directory
+    localDirectory.append( captureDirectory );
+    localDirectory.append( "/" );
+
+    // Let's create the local directory 
+	if(svkUtils::FilePathExists(localDirectory.c_str())) {
+        string message = "Secondary capture directory ";
+        message.append(localDirectory);
+        message.append(" already exists. This directory will be removed. Do you want to continue? ");
+        if( this->PopupMessage(message, vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
+            int result = vtkDirectory::DeleteDirectory( localDirectory.c_str() );
+            if( result == 0 ) {
+                string errorMessage = string("ERROR: COULD NOT REMOVE DIRECTORY: ");
+                errorMessage.append(localDirectory);
+                this->PopupMessage(errorMessage);
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+
+    // Now lets make the subdirectory
+    vtkDirectory::MakeDirectory( localDirectory.c_str() );
+
+    // Make sure we can write to the new directory
+	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
+        string errorMessage("ERROR: COULD NOT WRITE TO PATH: ");
+        errorMessage.append( localDirectory );
+        PopupMessage( errorMessage );
+        return; 
+	} 
+
+    string filePattern = svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
+                                                                        , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
     // Lets create a name for the images 
-    string filePattern = svkUtils::GetSecondaryCaptureFilePattern( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
-                                                                     , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
     string fileNameString = localDirectory + filePattern;
+
+    /*********************************** CREATE SECONDARY CAPTURES ******************************************************/
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     vtkImageWriter* writer = NULL;
@@ -2671,21 +2706,18 @@ void vtkSivicController::PushToPACS()
 
     // Reset the slice
     this->SetSlice(currentSlice);
-
-    // Verify the user wants to push to pacs and verify PACS location
-    vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
-    messageDialog->SetApplication(app);
-    messageDialog->Create();
     stringstream textString;
-    textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << pacsInterface->GetPACSTargetString() << "." << endl; 
-    messageDialog->SetText( textString.str().c_str() );
-    messageDialog->SetStyle( vtkKWMessageDialog::StyleOkCancel);
-    messageDialog->Invoke();
+    textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << endl; 
+    if( pacsInterface->GetPACSTargetString().compare("") == 0 ) {
+        textString << " default location." << endl; 
+    } else { 
+        textString << pacsInterface->GetPACSTargetString() << "." << endl; 
+    }   
+
     bool confirmSend = false;
-    if ( messageDialog->GetStatus() == vtkKWDialog::StatusOK ) {
+    if( this->PopupMessage(textString.str(), vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
         confirmSend = true;
     }
-    messageDialog->Delete();
 
     /********************************** SEND IMAGES TO PACS *************************************/
 
@@ -2694,25 +2726,14 @@ void vtkSivicController::PushToPACS()
         int firstSlice = outputImage->GetExtent()[4];
         int lastSlice = outputImage->GetExtent()[5];
 
-        vector<string> filesToSend = svkUtils::GetFileNamesFromPattern( filePattern, firstSlice, lastSlice );
-
-        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( filesToSend, localDirectory );
+        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory );
         if (!pacsSendSuccess ) { 
-            string errorMessage("COULD NOT SEND TO PACS: ");
+            string errorMessage("ERROR: Could not send to PACS: ");
             errorMessage.append(pacsInterface->GetPACSTargetString());
             PopupMessage( errorMessage );
         } 
         
     }
-
-    // Remove the PACS temporory directory
-    bool disconnectSuccessful = pacsInterface->Disconnect();
-
-	if (!disconnectSuccessful ) { 
-        string errorMessage("COULD NOT DISCONNECT FROM PACS: ");
-        errorMessage.append(pacsInterface->GetPACSTargetString());
-        PopupMessage( errorMessage );
-	} 
 
     // Free our output image
     if (outputImage != NULL) {

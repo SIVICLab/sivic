@@ -70,7 +70,7 @@ class svkPACSInterface : public vtkObject
         virtual bool                    Connect() = 0;
 
         //! Send a set of images to PACS. Returns true if the images can be sent.       
-        virtual bool                    SendImagesToPACS( vector<string> files, string sourceDirectory ) = 0;
+        virtual bool                    SendImagesToPACS( string sourceDirectory ) = 0;
 
         //! Close the PACS connection. Returns true if the connection closes cleanly.       
         virtual bool                    Disconnect() = 0;

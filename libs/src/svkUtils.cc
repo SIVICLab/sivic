@@ -222,30 +222,47 @@ bool svkUtils::PrintFile( const char* fileName, const char* printerName )
 
 }
 
+
 /*!
- * Generates a filename based on Accession and series number. Used for pushing to PACS.
+ * Generates a derectory based on the series and series number sof the image and spectra. Used for pushing to PACS.
  */
-string svkUtils::GetSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra)
+string svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra)
 {
     string filePattern = "";
     if( image != NULL && spectra != NULL ) {
-        string studyId = spectra->GetDcmHeader()->GetStringValue("AccessionNumber");
-        filePattern.append(studyId);
-        filePattern.append("_SIVIC_SC_S");
-        ostringstream ossSN;
 
+        ostringstream ossSN;
+        ossSN.str("");
+
+        // Start with the image series number
         ossSN << image->GetDcmHeader()->GetIntValue("SeriesNumber");
         string imageSeriesNumber (ossSN.str());
         filePattern.append(imageSeriesNumber);
         filePattern.append("_");
 
+        // append spectra series number
         ossSN.str("");
         ossSN << spectra->GetDcmHeader()->GetIntValue("SeriesNumber");
         string specSeriesNumber (ossSN.str());
         filePattern.append(specSeriesNumber);
-        filePattern.append("I");
 
-        filePattern.append("*.dcm");
+    } 
+
+    return filePattern;
+}
+
+
+/*!
+ * Generates a derectory based on the series and series number sof the image and spectra. Used for pushing to PACS.
+ */
+string svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra)
+{
+    string filePattern = "";
+    if( image != NULL && spectra != NULL ) {
+        string studyId = spectra->GetDcmHeader()->GetStringValue("AccessionNumber");
+        filePattern.append(studyId);
+        filePattern.append("_SIVIC_SC_I*.DCM");
+
     } 
 
     return filePattern;
