@@ -80,6 +80,7 @@ SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 
+
 ###################################
 #   VTK
 ###################################
@@ -230,6 +231,16 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkSpectraReferenceViewTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkMrsImageFFT
+    svkMrsImageFFT.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMrsImageFFT
 	${SVK_LIBS}
 )
 
