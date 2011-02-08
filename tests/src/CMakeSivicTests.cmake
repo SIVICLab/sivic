@@ -40,8 +40,8 @@
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
-SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
-SET( TEST_BIN_PATH ${CMAKE_SOURCE_DIR}/trunk/applications/cmd_line/${PLATFORM})
+SET( TEST_SCRIPT_PATH ${CMAKE_BINARY_DIR}/trunk/tests/scripts)
+SET( TEST_BIN_PATH ${CMAKE_BINARY_DIR}/trunk/applications/cmd_line/${PLATFORM})
 
 #############################################################
 #   Location where output files from individual tests 

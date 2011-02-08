@@ -141,6 +141,7 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
     int tol = 100;
 
     bool areOrientationsSame = true; 
+    
 
     // First lets check the dcos. Parallel and anti-parallel are acceptible.
     if( data1 != NULL && data2 != NULL ) {
@@ -149,7 +150,7 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
         for( int i = 0; i < 3; i++ ) {
             for( int j = 0; j < 3; j++ ) {
                 // Check the absolute value, with a tolerance in case of rounding errors
-                if( floor(fabs(tol*dcos1[i][j])) != floor(fabs(tol*dcos2[i][j])) ) {
+                if( (int)((tol*dcos1[i][j])) != (int)((tol*dcos2[i][j])) ) {
                     this->resultInfo = "Orientations do not match.";
                     return false;
                 }
@@ -307,10 +308,10 @@ bool svkDataValidator::AreDataOriginsSame( svkImageData* data1, svkImageData* da
     double origin2[3] = {0,0,0};
     data1->GetDcmHeader()->GetOrigin( origin1, 0 );
     data2->GetDcmHeader()->GetOrigin( origin2, 0 );
-
-    if( floor(1000*origin1[0]) == floor(1000*origin2[0])
-     && floor(1000*origin1[1]) == floor(1000*origin2[1])           
-     && floor(1000*origin1[2]) == floor(1000*origin2[2]) ) {
+    
+    if( (int)(1000*origin1[0]) == (int)(1000*origin2[0])
+     && (int)(1000*origin1[1]) == (int)(1000*origin2[1])           
+     && (int)(1000*origin1[2]) == (int)(1000*origin2[2]) ) {
         return true;
     } else {
         this->resultInfo="Origin does not match.";

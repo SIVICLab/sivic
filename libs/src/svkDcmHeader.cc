@@ -425,6 +425,7 @@ void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesD
     headerCopy->InsertUniqueUID("SeriesInstanceUID");
     headerCopy->InsertUniqueUID("SOPInstanceUID");
     headerCopy->SetValue("ImageType", "DERIVED\\SECONDARY");
+    headerCopy->SetSliceOrder(this->dataSliceOrder);
     if ( !seriesDescription.empty() ) {
         headerCopy->SetValue("SeriesDescription", seriesDescription);
     }
@@ -1831,7 +1832,7 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
         )
     );
 
-    //mri->SetSliceOrder( this->GetSliceOrder() );
+    mri->SetSliceOrder( this->dataSliceOrder );
 
     // Add Pixel Spacing
     vtkstd::string pixelSizes = this->GetStringSequenceItemElement (
