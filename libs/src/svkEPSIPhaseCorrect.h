@@ -40,11 +40,13 @@
  */
 
 
-#ifndef SVK_ALGO_TEMPLATE_H
-#define SVK_ALGO_TEMPLATE_H
+#ifndef SVK_EPSI_PHASE_CORRECT_H
+#define SVK_EPSI_PHASE_CORRECT_H
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
+//#include <vtkInformation.h>
+//#include <vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkImageInPlaceFilter.h>
 
@@ -59,19 +61,19 @@ using namespace std;
 /*! 
  *  Template for in-place filter class
  */
-class svkAlgoTemplate : public svkImageInPlaceFilter
+class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
 {
 
     public:
 
-        static svkAlgoTemplate* New();
-        vtkTypeRevisionMacro( svkAlgoTemplate, svkImageInPlaceFilter);
+        static svkEPSIPhaseCorrect* New();
+        vtkTypeRevisionMacro( svkEPSIPhaseCorrect, svkImageInPlaceFilter);
 
 
     protected:
 
-        svkAlgoTemplate();
-        ~svkAlgoTemplate();
+        svkEPSIPhaseCorrect();
+        ~svkEPSIPhaseCorrect();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
@@ -90,5 +92,5 @@ class svkAlgoTemplate : public svkImageInPlaceFilter
 }   //svk
 
 
-#endif //SVK_ALGO_TEMPLATE_H
+#endif //SVK_EPSI_PHASE_CORRECT_H
 
