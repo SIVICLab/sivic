@@ -93,7 +93,7 @@ class svkGEPFileMapper : public vtkObject
                             int swapBytes, 
                             vtkstd::map < vtkstd::string, void* >  inputArgs
                         );
-        void            ReadData( vtkstd::string pFileName, svkImageData* data );
+        virtual void    ReadData( vtkstd::string pFileName, svkImageData* data );
         vtkstd::string  GetProgressText( );
         void            SetProgressText( vtkstd::string progressText );
 
