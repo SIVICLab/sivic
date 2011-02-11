@@ -188,6 +188,7 @@ ADD_LIBRARY(
     svkImageInPlaceFilter.cc    
     svkPhaseSpec.cc
     svkAlgoTemplate.cc
+    svkEPSIPhaseCorrect.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkImageLinearPhase.cc
