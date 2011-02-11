@@ -99,6 +99,7 @@ class svkImageLinearPhase : public vtkImageFourierFilter
     protected:
         svkImageLinearPhase();
         ~svkImageLinearPhase();
+
     private:
 
         void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,

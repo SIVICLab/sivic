@@ -63,8 +63,8 @@ vtkStandardNewMacro(svkImageLinearPhase);
  */
 svkImageLinearPhase::svkImageLinearPhase() 
 {
-    //this->SetNumberOfThreads(1);
-   // this->SetDimensionality(1);
+    //  this->SetNumberOfThreads(1);
+    //  this->SetDimensionality(1);
     this->shiftWindow[0] = 0;
     this->shiftWindow[1] = 0;
     this->shiftWindow[2] = 0;
@@ -78,12 +78,11 @@ svkImageLinearPhase::svkImageLinearPhase()
  */
 svkImageLinearPhase::~svkImageLinearPhase()
 {
-
 }
 
 
 /*!
- *
+ *  Set an additional phase shift for example to voxel shift data. 
  */
 void svkImageLinearPhase::SetShiftWindow( double shiftWindow[3] )
 {
@@ -101,6 +100,7 @@ void vtkImageLinearPhaseInternalRequestUpdateExtent(int *inExt, int *outExt,
   inExt[iteration*2] = wExt[iteration*2];
   inExt[iteration*2 + 1] = wExt[iteration*2 + 1];  
 }
+
 
 //----------------------------------------------------------------------------
 // This templated execute method handles any type input, but the output
@@ -262,6 +262,10 @@ void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *ou
 }
 
 
+/*!
+ *  Applies a first order phase correction to the in data. The array of phase corrections is 
+ *  calcuated by CreatePhaseArray() method. 
+ */
 void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N, vtkImageComplex* phaseArray )
 {
     for( int i=0; i < N; i++ ) {
@@ -272,12 +276,23 @@ void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageCompl
 }
 
 
+/*!
+ *  This method takes an array of N, vtkImageComplex values, where  vtkImageComplex  
+ *  is a struct with a double real and double imaginary component representing 
+ *  a single complex value.  The function applies a linear phase correction to the
+ *  values with pivot given by the origin (middle index of array) and linear factor
+ *  that increments by 2*pi/N.  An additional phase shift may be applied (e.g. 
+ *  for voxel shifting origin. 
+ *  On output the vtkImageComplex variable phaseArray contains the phase factors 
+ *  to be applied to each point. 
+ */
 void svkImageLinearPhase::CreatePhaseArray(int N, vtkImageComplex* phaseArray) 
 { 
+
     int origin = N/2 + 1;
     double phaseIncrement;
     double mult;
-    for( int i=0; i < N; i++ ) {
+    for( int i = 0; i <  N; i++ ) {
         phaseIncrement = (i - origin)/((double)(N));
         mult = -2 * this->pie * phaseIncrement * this->shiftWindow[this->Iteration];
         phaseArray[i].Real = cos(mult);
