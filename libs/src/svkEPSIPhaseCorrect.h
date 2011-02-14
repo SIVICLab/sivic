@@ -45,8 +45,7 @@
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
-//#include <vtkInformation.h>
-//#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkImageFourierFilter.h>
 
 #include <svkImageInPlaceFilter.h>
 
@@ -68,6 +67,10 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
 
         static svkEPSIPhaseCorrect* New();
         vtkTypeRevisionMacro( svkEPSIPhaseCorrect, svkImageInPlaceFilter);
+        void    SetNumEPSIkRead( int numKspaceSamples );
+        void    SetEPSIAxis( int epsiAxis );
+        void    SetEPSIOrigin( float epsiOrigin );
+        float   GetEPSIOrigin();
 
 
     protected:
@@ -84,6 +87,16 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+
+
+    private: 
+
+        void            CreateEPSIPhaseCorrectionFactors( vtkImageComplex** phaseArray, int numSpecPts ); 
+
+        int             numEPSIkRead;
+        int             epsiAxis;
+        float           epsiOrigin;
+        double*         epsiSpatialPhaseCorrection;
 
 
 };
