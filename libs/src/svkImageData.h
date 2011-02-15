@@ -247,6 +247,8 @@ class svkImageData: public vtkImageData
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
 
+        void               SyncVTKImageDataToDcmHeader(); 
+
         // REQUIRED?
         virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);
 

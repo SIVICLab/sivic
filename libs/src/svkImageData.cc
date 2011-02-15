@@ -1721,3 +1721,75 @@ bool svkImageData::WasModified()
     }   
 }
 
+
+/*!
+ *  Synchronizes vtkImageData params with information in 
+ *  current svkDcmHeader member variable. 
+ */
+void svkImageData::SyncVTKImageDataToDcmHeader()
+{
+
+    //  Set spatial dimensionality: 
+    int numVoxels[3]; 
+    int extent[6]; 
+    numVoxels[0] = this->dcmHeader->GetIntValue("Columns");
+    numVoxels[1] = this->dcmHeader->GetIntValue("Rows");
+    numVoxels[2] = this->dcmHeader->GetNumberOfSlices(); 
+
+    if ( strcmp( this->GetClassName(), "svkMrsImageData") == 0 ) {
+        this->SetExtent(
+            0,
+            numVoxels[0],
+            0,
+            numVoxels[1],
+            0,
+            numVoxels[2]
+        );
+    } else if ( strcmp(this->GetClassName(), "svkMriImageData") == 0 ) {
+        this->SetExtent(
+            0,
+            numVoxels[0] - 1,
+            0,
+            numVoxels[1] - 1,
+            0,
+            numVoxels[2] - 1
+        );
+    }
+    this->SetUpdateExtent( this->GetExtent() ); 
+    this->SetWholeExtent( this->GetExtent() ); 
+
+    //  ============================
+    //  Set Voxel Spacing ( includes any gaps )
+    //  ============================
+    double spacing[3];
+    this->dcmHeader->GetPixelSpacing( spacing );
+    this->SetSpacing(spacing);
+
+    //  ============================
+    //  Set Origin
+    //  ============================
+    double origin[3];
+    this->dcmHeader->GetOrigin(origin);
+
+    //  For MRS data the vtk point origin (origin of first point in data set is corner of voxel)
+    //  is 1/2 voxel away from DICOM origin.
+    if ( strcmp( this->GetClassName(), "svkMrsImageData") == 0 ) {
+
+        double pixelSize[3];
+        this->dcmHeader->GetPixelSize(pixelSize);
+
+        double dcos[3][3];
+        this->dcmHeader->GetDataDcos(dcos);
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                origin[i] -= (pixelSize[j]/2) * dcos[j][i];
+            }
+        }
+    }
+
+    this->SetOrigin( origin );
+
+
+}
+
