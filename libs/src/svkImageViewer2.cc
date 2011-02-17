@@ -320,25 +320,12 @@ void svkImageViewer2::SetInput(svkImageData *in)
     //this->UpdateDisplayExtent();
 
     int* extent = in->GetExtent();
-
-    switch( in->GetDcmHeader()->GetOrientationType() ) {
-        case svkDcmHeader::AXIAL: 
-            this->axialSlice = (extent[5]-extent[4])/2;
-            this->coronalSlice = (extent[3]-extent[2])/2;
-            this->sagittalSlice = (extent[1]-extent[0])/2;
-            break;
-        case svkDcmHeader::CORONAL: 
-            this->coronalSlice = (extent[5]-extent[4])/2;
-            this->axialSlice = (extent[3]-extent[2])/2;
-            this->sagittalSlice = (extent[1]-extent[0])/2;
-            break;
-        case svkDcmHeader::SAGITTAL: 
-            this->coronalSlice = (extent[5]-extent[4])/2;
-            this->axialSlice = (extent[3]-extent[2])/2;
-            this->coronalSlice = (extent[1]-extent[0])/2;
-            break;
-
-    }
+    int axialIndex    = this->GetInput()->GetOrientationIndex( svkDcmHeader::AXIAL );
+    int coronalIndex  = this->GetInput()->GetOrientationIndex( svkDcmHeader::CORONAL );
+    int sagittalIndex = this->GetInput()->GetOrientationIndex( svkDcmHeader::SAGITTAL );
+    this->axialSlice    = (extent[2*axialIndex+1]- extent[2*axialIndex])/2;
+    this->coronalSlice  = (extent[2*coronalIndex+1]- extent[2*coronalIndex])/2;
+    this->sagittalSlice = (extent[2*sagittalIndex+1]- extent[2*sagittalIndex])/2;
 
     this->InitializeOrthogonalActors();
 
@@ -452,7 +439,6 @@ void svkImageViewer2::SetSlice( int slice )
 void svkImageViewer2::SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation ) 
 {
     if( this->GetInput() != NULL ) {
-        svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
         int* extent = this->GetInput()->GetExtent();
         int sliceIndex = this->GetInput()->GetOrientationIndex( sliceOrientation );
 
@@ -502,7 +488,6 @@ void svkImageViewer2::ResetCamera()
         double distance = this->GetRenderer()->GetActiveCamera()->GetDistance();
         double dcos[3][3];
         static_cast<svkImageData*>(this->GetInput())->GetDcos( dcos );
-        svkDcmHeader::Orientation dataOrientation = this->data->GetDcmHeader()->GetOrientationType();
         double x[3] = {0,0,0};
         double tmpCenter[3] = {0,0,0};
         this->data->GetImageCenter( tmpCenter );
@@ -592,46 +577,9 @@ void svkImageViewer2::SetColorLevel(double s)
  */
 void svkImageViewer2::InitializeOrthogonalActors() 
 {
-    int* extent = this->data->GetExtent();
-
-    // Setting the DisplayExtent is how we select a slice.
-    switch ( this->data->GetDcmHeader()->GetOrientationType() ) {
-        case svkDcmHeader::AXIAL:
-
-            this->axialImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], extent[2], extent[3], axialSlice, axialSlice );   
-
-            this->coronalImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], coronalSlice, coronalSlice, extent[4], extent[5]); 
-
-            this->sagittalImageActor->SetDisplayExtent( 
-                                    sagittalSlice, sagittalSlice, extent[2], extent[3], extent[4], extent[5] );
-            break;
-
-        case svkDcmHeader::CORONAL:
-
-            this->axialImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], axialSlice, axialSlice, extent[4], extent[5] );   
-
-            this->coronalImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], extent[2], extent[3], coronalSlice, coronalSlice ); 
-
-            this->sagittalImageActor->SetDisplayExtent( 
-                                    sagittalSlice, sagittalSlice, extent[2], extent[3], extent[4], extent[5] );
-            break;
-
-        case svkDcmHeader::SAGITTAL:
-
-            this->axialImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], axialSlice, axialSlice, extent[4], extent[5] );   
-
-            this->coronalImageActor->SetDisplayExtent( 
-                                    coronalSlice, coronalSlice, extent[2], extent[3], extent[4], extent[5] ); 
-
-            this->sagittalImageActor->SetDisplayExtent( 
-                                    extent[0], extent[1], extent[2], extent[3], sagittalSlice, sagittalSlice);
-            break;
-    }
+    this->SetSlice( this->axialSlice, svkDcmHeader::AXIAL ); 
+    this->SetSlice( this->coronalSlice, svkDcmHeader::CORONAL ); 
+    this->SetSlice( this->sagittalSlice, svkDcmHeader::SAGITTAL ); 
 
     this->axialImageActor->InterpolateOff();
     this->coronalImageActor->InterpolateOff();

@@ -483,38 +483,12 @@ void svkPlotLine::SetMirrorPlots( bool mirrorPlots )
     this->mirrorPlots = mirrorPlots;
 }
 
-
 /*!
  *
  */
-void svkPlotLine::SetPlotDirection( PlotDirection plotDirection  ) 
+void svkPlotLine::SetPlotDirection( int amplitudeIndex, int pointIndex )
 {
-    this->plotDirection = plotDirection;
-    switch( this->plotDirection ) {
-        case ROW_COLUMN:
-            this->pointIndex     = 0;
-            this->amplitudeIndex = 1;
-            break;
-        case COLUMN_ROW:
-            this->pointIndex     = 1;
-            this->amplitudeIndex = 0;
-            break;
-        case ROW_SLICE:
-            this->pointIndex     = 0;
-            this->amplitudeIndex = 2;
-            break;
-        case SLICE_ROW:
-            this->pointIndex     = 2;
-            this->amplitudeIndex = 0;
-            break;
-        case SLICE_COLUMN:
-            this->pointIndex     = 2;
-            this->amplitudeIndex = 1;
-            break;
-        case COLUMN_SLICE:
-            this->pointIndex     = 1;
-            this->amplitudeIndex = 2;
-            break;
-    }
+    this->amplitudeIndex = amplitudeIndex;
+    this->pointIndex = pointIndex;
     this->RecalculateScale();
 }

@@ -305,26 +305,204 @@ void svkDcmHeader::GetOrientation(double orientation[2][3])
 }
 
 
+
+/*!
+ *
+ *  This method is used for determining the index of the dcos matrix that corresponds to the 
+ *  normal vector of a given user defined slice orientation in LPS coordinates.
+ *
+ *
+ * Each row of the dcos represents the COLUMN, ROW, or SLICE dimension of the data
+ * as defined by the data ordering.
+ *
+ * We are going to check them each sequentially to make sure that if two rows have the same
+ * magnitude in a given direction they are assigned to different slice view orientations.
+ *
+ * EXAMPLE 1----------------------------------------------------------------------
+ *
+ * 
+ *
+ * For example if we have the dcos:
+ *
+ *                       LR        AP        SI
+ *
+ *     COLUMN INDEX       1         0         0 
+ *     ROW INDEX          0         1         0 
+ *     SLICE INDEX        0         0         1 
+ *
+ * If user requests the index of a coronal view of the data:
+ *
+ *    int coronalIndex = GetOrientationIndex( svkDcmHeader::CORONAL )
+ *
+ * First we will find the AXIAL direction. This is defined as the greatest absolute value
+ * in the SI column. It is clear that this is the SLICE INDEX. Second we search for
+ * the CORONAL direction-- this is the greatest absolute value in the AP column and 
+ * is clearly the COLUMN INDEX. Lastly we look for the SAGITTAL directions which is
+ * again clear and is the ROW INDEX
+ *     Result:
+ *         AXIAL    index = 2 <-- This is the data's orientation type
+ *         CORONAL  index = 1
+ *         SAGITTAL index = 0
+ *
+ * And the method would return the value 1, for CORONAL 
+ *
+ *    GetOrientationIndex( svkDcmHeader::CORONAL ) = 1;
+ *
+ * EXAMPLE 2----------------------------------------------------------------------
+ *
+ * For Example if we have the dcos:
+ *
+ *                       LR        AP        SI
+ *
+ *     COLUMN INDEX       0         1         0 
+ *     ROW INDEX          1         0         0 
+ *     SLICE INDEX        0         0         1 
+ *
+ * If user requests the index of a sagittal view of the data:
+ *
+ *    int axialIndex = GetOrientationIndex( svkDcmHeader::AXIAL )
+ *
+ * First we will find the AXIAL direction. This is defined as the greatest absolute value
+ * in the SI column. It is clear that this is the SLICE INDEX. Second we search for
+ * the CORONAL direction-- this is the greatest absolute value in the AP column and 
+ * is clearly the ROW INDEX. Lastly we look for the SAGITTAL directions which is
+ * again clear and is the COLUMN INDEX
+ *
+ *     Result:
+ *         AXIAL    index = 2 <-- This is the data's orientation type
+ *         CORONAL  index = 0
+ *         SAGITTAL index = 1
+ *
+ * And the method would return the value 2, for AXIAL 
+ *
+ *    GetOrientationIndex( svkDcmHeader::AXIAL ) = 2;
+ *
+ *
+ * EXAMPLE 3----------------------------------------------------------------------
+ *
+ * For Example if we have the dcos:
+ *
+ *                        LR        AP        SI
+ *
+ *     COLUMN INDEX    0.7071    0.5000    0.5000
+ *     ROW INDEX            0    0.7071   -0.7071
+ *     SLICE INDEX    -0.7071    0.5000    0.5000
+ *
+ * If user requests the index of a sagittal view of the data:
+ *
+ *    int coronalIndex = GetOrientationIndex( svkDcmHeader::CORONAL )
+ *
+ * This case is of an image rotated 45 degrees in two dimensions. In this scenario
+ * the data is so oblique that defining AXIAL, SAGITTAL, and CORONAL is somewhat
+ * arbitrary.
+ *
+ * First we will find the AXIAL direction. This is defined as the greatest absolute value
+ * in the SI column. In this case we would take the ROW INDEX and declare that the
+ * AXIAL direction. Next we would search for the CORONAL direction. The highest component
+ * in the AP direction is also the COLUMN INDEX, but we have already defined that
+ * as the AXIAL direction so we take the next highest which is the same for both
+ * the COLUMN and SLICE INDEX. In this case it is arbitrary, the method searches in the
+ * order ROW, COLUMN, SLICE and searches for values greater than or equal to so it would 
+ * take the SLICE INDEX. Since the only INDEX left is the COLUMN INDEX that will be our 
+ * SAGITTAL direction.
+ *
+ *     Result:
+ *         AXIAL    index = 1 
+ *         CORONAL  index = 2 <-- This is the data's orientation type
+ *         SAGITTAL index = 0
+ *
+ * And the method would return the value 0, for CORONAL 
+ *
+ *    GetOrientationIndex( svkDcmHeader::CORONAL ) = 0;
+ *
+ *  \param orientation the view orientation you want to get the index of 
+ *  \return the index, 0 is COLUMN, 1 is ROW, 2 is SLICE as defined by the data ordering.
+ */
+int svkDcmHeader::GetOrientationIndex( svkDcmHeader::Orientation orientation )
+{
+
+    // First we need our dcos
+    double dcos[3][3];
+    this->GetDataDcos(dcos);
+
+    // We need to map each row of the dcos to be AXIAL, SAGITTAL, or CORONAL....
+    map<int,int> primaryComponents;
+
+    // Lets initialize with negative values
+    primaryComponents[svkDcmHeader::AXIAL]    = -1;
+    primaryComponents[svkDcmHeader::CORONAL]  = -1;
+    primaryComponents[svkDcmHeader::SAGITTAL] = -1;
+
+    // Lets start by determining the AXIAL direction...
+    double maxValue = 0;
+    int maxIndex = 0;
+    for( int i = 0; i < 3; i++ ) {
+        int SIIndex = 2; // 2 is the SI direction which corresponds to AXIAL 
+        double value = fabs(dcos[i][SIIndex]); 
+        if( value >= maxValue ) {
+            maxValue = value;
+            maxIndex = i;
+        }
+    }
+    primaryComponents[svkDcmHeader::AXIAL] = maxIndex;
+
+    // Now lets determin the coronal direction...
+    maxValue = 0;
+    maxIndex = 0;
+    for( int i = 0; i < 3; i++ ) {
+        if( i == primaryComponents[svkDcmHeader::AXIAL] ) {
+            continue; // If this row has already been assigned to AXIAL, do not consider it for coronal
+        }
+        int PAIndex = 1; // 1 is the PA direction  which corresponds to CORONAL
+        double value = fabs(dcos[i][PAIndex]); 
+        if( value >= maxValue ) {
+            maxValue = value;
+            maxIndex = i;
+        }
+    }
+    primaryComponents[svkDcmHeader::CORONAL] = maxIndex;
+
+    // Now lets determin the sagittal direction...
+    maxValue = 0;
+    maxIndex = 0;
+    for( int i = 0; i < 3; i++ ) {
+        if( i == primaryComponents[svkDcmHeader::AXIAL] || i == primaryComponents[svkDcmHeader::CORONAL] ) {
+            continue; // If this row has already been assigned to AXIAL or for CORONAL do not consider it for SAGITTAL
+        }
+        int LRIndex = 0; // 0 is the LR direction  which corresponds to CORONAL
+        double value = fabs(dcos[i][LRIndex]);  
+        if( value >= maxValue ) {
+            maxValue = value;
+            maxIndex = i;
+        }
+    }
+    primaryComponents[svkDcmHeader::SAGITTAL] = maxIndex;
+
+    // Now they we have defined each index, lets give the user the requested index
+    return primaryComponents[orientation];
+}
+
+
 /*!
  * Determine if the data set is coronal/sagital/axial
  */
 svkDcmHeader::Orientation svkDcmHeader::GetOrientationType( )
 {
-    double dcos[3][3];
-    Orientation orientation = AXIAL;
-    this->GetDataDcos( dcos );
-    double wVec[3];
-    wVec[0] = dcos[2][0];
-    wVec[1] = dcos[2][1];
-    wVec[2] = dcos[2][2];
+    Orientation orientation = UNKNOWN_ORIENTATION;
+    int axialIndex =    this->GetOrientationIndex(AXIAL);
+    int coronalIndex =  this->GetOrientationIndex(CORONAL);
+    int sagittalIndex = this->GetOrientationIndex(SAGITTAL);
 
-   if( pow( wVec[2], 2) >= pow( wVec[1], 2 ) && pow( wVec[2], 2) >= pow( wVec[0], 2 ) ) {
+    // Orientation type is defined as the SLICE dimension
+    int sliceIndex = 2;
+    if( axialIndex == sliceIndex ) {
         orientation = AXIAL;
-    } else if( pow( wVec[1], 2) >= pow( wVec[0], 2 ) && pow( wVec[1], 2) >= pow( wVec[2], 2 ) ) {
+    } else if ( coronalIndex == sliceIndex ) {
         orientation = CORONAL;
-    } else {
+    } else if( sagittalIndex == sliceIndex ) {
         orientation = SAGITTAL;
     }
+
     return orientation;
  
 }

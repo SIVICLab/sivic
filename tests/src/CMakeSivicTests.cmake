@@ -40,9 +40,9 @@
 #############################################################
 #   Paths to binary applications and scripts
 #############################################################
-SET( TEST_SCRIPT_PATH ${CMAKE_BINARY_DIR}/trunk/tests/scripts)
+SET( TEST_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/trunk/tests/scripts)
 SET( TEST_BIN_PATH_CMD_LINE ${CMAKE_BINARY_DIR}/trunk/applications/cmd_line/${PLATFORM})
-SET( TEST_BIN_PATH_TESTS ${CMAKE_SOURCE_DIR}/trunk/tests/${PLATFORM})
+SET( TEST_BIN_PATH_TESTS ${CMAKE_BINARY_DIR}/trunk/tests/${PLATFORM})
 
 #############################################################
 #   Location where output files from individual tests 
@@ -58,6 +58,11 @@ file( MAKE_DIRECTORY [ ${TEST_RESULTS_ROOT} ] )
 SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
 SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" )
 
+########################
+#   
+########################
+SET( TEST_NAME INSTANTIATION_TEST_MCHK)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkInstantiationTest )
 
 #############################################################
 #   Tests are in pairs:

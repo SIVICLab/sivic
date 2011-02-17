@@ -832,123 +832,60 @@ void svkPlotLineGrid::UpdateOrientation()
         bool mirrorPlots = false;
         bool invertPlots = false;
         double LRNormal[3];
+        double dcos[3][3];
+        this->data->GetDcos( dcos );
         this->data->GetDataBasis(LRNormal, svkImageData::LR );
         double PANormal[3];
         this->data->GetDataBasis(PANormal, svkImageData::PA );
         double SINormal[3];
         this->data->GetDataBasis(SINormal, svkImageData::SI );  
         svkPlotLine::PlotDirection plotDirection;
-
-        /*TODO: Get rid of this nested switch, maybe by manipulating the dcos and/or origin of plotLines...
-         *      It's purpose is to get the orientation of the plots correct with relation to the orientation
-         *      the camera.
-         */ 
-        switch( dataOrientation ) {
+        int amplitudeIndex;
+        int pointIndex;
+        
+         
+        int axialIndex = this->data->GetOrientationIndex( svkDcmHeader::AXIAL );
+        int coronalIndex = this->data->GetOrientationIndex( svkDcmHeader::CORONAL );
+        int sagittalIndex = this->data->GetOrientationIndex( svkDcmHeader::SAGITTAL );
+        switch( this->orientation ) {
             case svkDcmHeader::AXIAL:
-                //  this->orientation is the orientation of the camera view, 
-                //  not the intrinsic data acquisition orientation.
-                switch( this->orientation ) {
-                    case svkDcmHeader::AXIAL:
-                        // LR/PA direction
-                        if( LRNormal[0] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( PANormal[1] > 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::ROW_COLUMN;
-                        break;
-                    case svkDcmHeader::CORONAL:
-                        // LR/SI
-                        if( LRNormal[0] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[2] < 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::ROW_SLICE;
-                        break;
-                    case svkDcmHeader::SAGITTAL:
-                        // PA/SI
-                        if( PANormal[1] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[2] < 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::COLUMN_SLICE;
-                        break;
-                }
+
+                amplitudeIndex = coronalIndex;
+                if( dcos[amplitudeIndex][1] > 0 ) {
+                    invertPlots = true;
+                }         
+
+                pointIndex = sagittalIndex;
+                if( dcos[pointIndex][0] < 0 ) {
+                    mirrorPlots = true;
+                }         
                 break;
             case svkDcmHeader::CORONAL:
-                switch( this->orientation ) {
-                    case svkDcmHeader::AXIAL:
-                        // LR/PA direction
-                        if( LRNormal[0] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( PANormal[2] > 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::ROW_SLICE;
-                        break;
-                    case svkDcmHeader::CORONAL:
-                        // LR/SI
-                        if( LRNormal[0] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[1] < 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::ROW_COLUMN;
-                        break;
-                    case svkDcmHeader::SAGITTAL:
-                        plotDirection = svkPlotLine::SLICE_COLUMN;
-                        // PA/SI
-                        if( PANormal[2] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[1] < 0 ) {
-                            invertPlots = true;
-                        }
-                        break;
-                }
+
+                amplitudeIndex = axialIndex;
+                if( dcos[amplitudeIndex][2] < 0 ) {
+                    invertPlots = true;
+                }         
+
+                pointIndex = sagittalIndex;
+                if( dcos[pointIndex][0] < 0 ) {
+                    mirrorPlots = true;
+                }         
                 break;
+
             case svkDcmHeader::SAGITTAL:
-                switch( this->orientation ) {
-                    case svkDcmHeader::AXIAL:
-                        // LR/PA direction
-                        if( LRNormal[2] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( PANormal[1] > 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::SLICE_ROW;
-                        break;
-                    case svkDcmHeader::CORONAL:
-                        // LR/SI
-                        if( LRNormal[2] > 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[0] > 0 ) {
-                            invertPlots = true;
-                        }
-                        plotDirection = svkPlotLine::SLICE_COLUMN;
-                        break;
-                    case svkDcmHeader::SAGITTAL:
-                        // PA/SI
-                        plotDirection = svkPlotLine::ROW_COLUMN;
-                        if( PANormal[1] < 0 ) {
-                            mirrorPlots = true;
-                        }
-                        if( SINormal[0] > 0 ) {
-                            invertPlots = true;
-                        }
-                        break;
-                }
+                amplitudeIndex = axialIndex;
+                if( dcos[amplitudeIndex][2] < 0 ) {
+                    invertPlots = true;
+                }         
+
+                pointIndex = coronalIndex;
+                if( dcos[pointIndex][1] < 0 ) {
+                    mirrorPlots = true;
+                }         
                 break;
         }
+         
 
         string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         //if( acquisitionType == "SINGLE VOXEL" ) {
@@ -956,7 +893,7 @@ void svkPlotLineGrid::UpdateOrientation()
         //}
         while(!iterator->IsDoneWithTraversal()) {
             tmpBoxPlot = static_cast<svkPlotLine*>( iterator->GetCurrentObject()); 
-            tmpBoxPlot->SetPlotDirection( plotDirection );
+            tmpBoxPlot->SetPlotDirection( amplitudeIndex, pointIndex );
             tmpBoxPlot->SetMirrorPlots( mirrorPlots );
             tmpBoxPlot->GeneratePolyData();
             tmpBoxPlot->SetInvertPlots( invertPlots );

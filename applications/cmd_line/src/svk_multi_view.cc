@@ -272,6 +272,8 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     window->SetPosition(xPos,yPos);
     window->SetSize(globalVars.winSize,globalVars.winSize);
 
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
+
     // Lets add a text actor with some info in it.
     dataViewer->SetInput( data, 0  );
     if( globalVars.spectra != NULL ) {
@@ -313,6 +315,7 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.annotations[id] );
 
+    window->GetRenderers()->GetFirstRenderer()->DrawOn( );
     dataViewer->GetView()->Refresh();
     window->Render();
 

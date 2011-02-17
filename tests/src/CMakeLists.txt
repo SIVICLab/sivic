@@ -40,11 +40,15 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(svk_test)
 
 option( BUILD_GRAPHICS_TESTING "Run graphics test." FALSE )
+option( USE_OFF_SCREEN_TESTING "Use offscreen rendering if available." TRUE )
 
 #
 #   Set build dir:
 #
 IF (CMAKE_SYSTEM_NAME MATCHES Linux)
+    IF (USE_OFF_SCREEN_TESTING )
+        SET( GRAPHICS_WRAPPER ${CMAKE_SOURCE_DIR}/trunk/tests/scripts/xvfb-run )
+    ENDIF (USE_OFF_SCREEN_TESTING )
     IF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
         SET(PLATFORM Linux_i686)
     ELSE (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
@@ -211,6 +215,16 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkOverlayViewTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkInstantiationTest
+    svkInstantiationTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkInstantiationTest
 	${SVK_LIBS}
 )
 

@@ -146,6 +146,7 @@ void QuickView( const char* filename)
 
     window->SetSize(500,500);
     window->SetWindowName( "svk_quick_view" );
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
 
     // Lets add a text actor with some info in it.
     dataViewer->SetInput( data, 0  );
@@ -169,6 +170,7 @@ void QuickView( const char* filename)
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( annotation );
 
+    window->GetRenderers()->GetFirstRenderer()->DrawOn( );
     dataViewer->GetView()->Refresh();
     window->Render();
     rwi->Start();

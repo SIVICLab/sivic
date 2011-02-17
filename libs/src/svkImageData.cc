@@ -1284,66 +1284,10 @@ void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation slic
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-
-    switch ( this->GetDcmHeader()->GetOrientationType() ) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    normal[0] = dcos[2][0];  
-                    normal[1] = dcos[2][1];  
-                    normal[2] = dcos[2][2];  
-                    break;
-                case svkDcmHeader::CORONAL:
-                    normal[0] = dcos[1][0];  
-                    normal[1] = dcos[1][1];  
-                    normal[2] = dcos[1][2];  
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    normal[0] = dcos[0][0];  
-                    normal[1] = dcos[0][1];  
-                    normal[2] = dcos[0][2];  
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    normal[0] = dcos[1][0];  
-                    normal[1] = dcos[1][1];  
-                    normal[2] = dcos[1][2];  
-                    break;
-                case svkDcmHeader::CORONAL:
-                    normal[0] = dcos[2][0];  
-                    normal[1] = dcos[2][1];  
-                    normal[2] = dcos[2][2];  
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    normal[0] = dcos[0][0];  
-                    normal[1] = dcos[0][1];  
-                    normal[2] = dcos[0][2];  
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    normal[0] = dcos[1][0];  
-                    normal[1] = dcos[1][1];  
-                    normal[2] = dcos[1][2];  
-                    break;
-                case svkDcmHeader::CORONAL:
-                    normal[0] = dcos[0][0];  
-                    normal[1] = dcos[0][1];  
-                    normal[2] = dcos[0][2];  
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    normal[0] = dcos[2][0];  
-                    normal[1] = dcos[2][1];  
-                    normal[2] = dcos[2][2];  
-                    break;
-            }
-            break;
-    } 
+    int index = this->GetOrientationIndex( sliceOrientation );
+    normal[0] = dcos[index][0];
+    normal[1] = dcos[index][1];
+    normal[2] = dcos[index][2];
 
 }
 
@@ -1406,49 +1350,8 @@ int svkImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    int numSlices;
-    switch ( this->GetDcmHeader()->GetOrientationType()) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[2];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[1];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0];
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[2];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0];
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[0];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[2];
-                    break;
-            }
-            break;
-    }
-    return numSlices;
+    int index = this->GetOrientationIndex( sliceOrientation );
+    return this->GetDimensions()[index];
 }
 
 
@@ -1459,49 +1362,10 @@ int svkImageData::GetFirstSlice( svkDcmHeader::Orientation sliceOrientation)
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    int firstSlice;
-    switch ( this->GetDcmHeader()->GetOrientationType()) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    firstSlice = this->GetExtent()[4];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    firstSlice = this->GetExtent()[2];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    firstSlice = this->GetExtent()[0];
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    firstSlice = this->GetExtent()[2];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    firstSlice = this->GetExtent()[4];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    firstSlice = this->GetExtent()[0];
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    firstSlice = this->GetExtent()[2];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    firstSlice = this->GetExtent()[0];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    firstSlice = this->GetExtent()[4];
-                    break;
-            }
-            break;
-    }
-    return firstSlice;
+
+    int index = this->GetOrientationIndex( sliceOrientation );
+    return this->GetExtent()[2*index]; 
+    
 }
 
 
@@ -1513,48 +1377,8 @@ int svkImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation)
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
     int lastSlice;
-    switch ( this->GetDcmHeader()->GetOrientationType()) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    lastSlice = this->GetExtent()[5];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    lastSlice = this->GetExtent()[3];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    lastSlice = this->GetExtent()[1];
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    lastSlice = this->GetExtent()[3];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    lastSlice = this->GetExtent()[5];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    lastSlice = this->GetExtent()[1];
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    lastSlice = this->GetExtent()[3];
-                    break;
-                case svkDcmHeader::CORONAL:
-                    lastSlice = this->GetExtent()[1];
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    lastSlice = this->GetExtent()[5];
-                    break;
-            }
-            break;
-    }
-    return lastSlice;
+    int index = this->GetOrientationIndex( sliceOrientation );
+    return this->GetExtent()[2*index + 1]; 
 }
 
 
@@ -1602,59 +1426,14 @@ void svkImageData::GetDataBasis( double basisVector[3], DataBasis basis )
 
 
 /*!
- *  The orientation index is the index of a dataset for a given orientation.
- *  It represents whether a given orientation progresses in the row, column, or slice
- *  dimension.
+ *  Pass call through to header.
  *
  *  \param orientation the orientation whose index you wish to get
  *  \return the index, 0 is rows, 1 is columns, 2 is slices.
  */
 int svkImageData::GetOrientationIndex( svkDcmHeader::Orientation orientation )
 {
-    int index;
-    switch( this->GetDcmHeader()->GetOrientationType() ) {
-        case svkDcmHeader::AXIAL:
-            switch( orientation ) {
-                case svkDcmHeader::AXIAL:
-                    index = 2;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    index = 1;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    index = 0;
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch( orientation ) {
-                case svkDcmHeader::AXIAL:
-                    index = 1;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    index = 2;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    index = 0;
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch( orientation ) {
-                case svkDcmHeader::AXIAL:
-                    index = 1;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    index = 0;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    index = 2;
-                    break;
-            }
-            break;
-    }
-    return index;
-    
+    return this->GetDcmHeader()->GetOrientationIndex(orientation);
 }
 
 

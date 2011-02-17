@@ -859,49 +859,9 @@ int svkMrsImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientati
 {
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    int numSlices;
-    switch ( this->GetDcmHeader()->GetOrientationType()) {
-        case svkDcmHeader::AXIAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[2]-1;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[1]-1;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0]-1;
-                    break;
-            }
-            break;
-        case svkDcmHeader::CORONAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1]-1;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[2]-1;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[0]-1;
-                    break;
-            }
-            break;
-        case svkDcmHeader::SAGITTAL:
-            switch ( sliceOrientation ) {
-                case svkDcmHeader::AXIAL:
-                    numSlices = this->GetDimensions()[1]-1;
-                    break;
-                case svkDcmHeader::CORONAL:
-                    numSlices = this->GetDimensions()[0]-1;
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    numSlices = this->GetDimensions()[2]-1;
-                    break;
-            }
-            break;
-    }
-    return numSlices;
+    int index = this->GetOrientationIndex( sliceOrientation );
+    return this->GetDimensions()[index] - 1;
+ 
 }
 
 

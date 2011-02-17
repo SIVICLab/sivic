@@ -199,7 +199,6 @@ void MemoryTest()
     svkOverlayViewController* overlayController = svkOverlayViewController::New();
 
     overlayController->SetRWInteractor( rwi );
-
     overlayController->SetInput( firstImage, 0  );
     overlayController->SetInput( firstSpectra, 1 );
     overlayController->SetInput( firstOverlay, 2 );
@@ -412,6 +411,7 @@ void RenderingTest()
     if( globalArgs.disableValidation ) {
         overlayController->GetView()->ValidationOff();
     }
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
     overlayController->SetInput( image, 0  );
 
     if( spectra != NULL ) {
@@ -424,6 +424,7 @@ void RenderingTest()
     if( overlay != NULL ) {
         overlayController->SetInput( overlay, 2 );
     }
+    window->GetRenderers()->GetFirstRenderer()->DrawOn( );
     
     for( int i = 0; i < image->GetNumberOfSlices(); i++ ) {
         stringstream filename;
@@ -438,6 +439,7 @@ void RenderingTest()
     if( overlay != NULL ) {
         overlay->Delete();
     }
+
     model->Delete();
     window->Delete();
     overlayController->Delete();

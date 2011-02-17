@@ -52,6 +52,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <set>
+#include <map>
 
 
 namespace svk {
@@ -485,7 +486,8 @@ class svkDcmHeader: public vtkObject
         void                GetPixelSpacing(double spacing[3]);
         void                GetPixelSize(double size[3]);
         void                GetOrientation(double orientation[2][3]);
-        svkDcmHeader::Orientation         GetOrientationType();
+        Orientation         GetOrientationType();
+        int                 GetOrientationIndex( svkDcmHeader::Orientation orientation );
         void                GetNormalVector(double normal[3]);
         void                GetDataDcos(
                                 double dcos[3][3], 

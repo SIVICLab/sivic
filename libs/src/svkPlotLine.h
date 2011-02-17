@@ -100,7 +100,7 @@ class svkPlotLine : public vtkPolyLine
         void                SetDcos( double dcos[3][3] );
         void                SetInvertPlots( bool invertPlots );
         void                SetMirrorPlots( bool mirrorPlots );
-        void                SetPlotDirection( PlotDirection plotDirection  );
+        void                SetPlotDirection( int amplitudeDirection, int plotDirection );
 
 
     protected:
