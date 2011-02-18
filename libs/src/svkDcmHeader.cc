@@ -1297,8 +1297,8 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
     for (int coilNum = 0; coilNum < numCoils; coilNum++) {
         for (int timePt = 0; timePt < numTimePts; timePt++) {
 
-            float displacement[3];
-            float frameLPSPosition[3];
+            float displacement[3]={0,0,0};
+            float frameLPSPosition[3]={0,0,0};
 
             for (int i = 0; i < numSlices; i++) {
 

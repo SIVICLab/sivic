@@ -693,4 +693,54 @@
    fun:_ZN22vtkXOpenGLRenderWindow6RenderEv
    fun:main
 }
+{
+   <glibc_1>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/usr/lib64/libGL.so.256.53
+}
+{
+   <libgl_1>
+   Memcheck:Cond
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <libgl_2>
+   Memcheck:Cond
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+}
+{
+   <libgl_3>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <libgl_4>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XSend
+   obj:/usr/lib64/libGL.so.256.53
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib64/libGL.so.256.53
+}
 

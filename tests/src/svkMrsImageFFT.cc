@@ -56,6 +56,7 @@ int main (int argc, char** argv)
 
     svkDataModel* model = svkDataModel::New();
     svkImageData* data = model->LoadFile( fname.c_str() );
+    data->Register(NULL); 
 
     if( !data->IsA("svkMrsImageData") ) {
         cerr << "INPUT MUST BE SPECTRA!" << endl;
@@ -86,6 +87,10 @@ int main (int argc, char** argv)
     writer->SetInput( spectralFFT->GetOutput() );
     writer->Write();
     writer->Delete();
+    spatialRFFT->Delete();
+    spectralFFT->Delete();
+    model->Delete();
+    data->Delete();
 
     return 0; 
 }

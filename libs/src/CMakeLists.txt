@@ -167,10 +167,8 @@ ADD_LIBRARY(
 	svkDataModel.cc
 	svkDataValidator.cc
     svkSatBandSet.cc
-    svkAreaPicker.cc
     svkBoxPlot.cc
     svkPlotLine.cc
-    svkPlotGrid.cc
     svkPlotLineGrid.cc
     svkSpecGridSelector.cc
     svkPlotGridView.cc

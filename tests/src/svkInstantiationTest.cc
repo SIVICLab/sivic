@@ -41,7 +41,6 @@
 
 
 #include <svkAlgoTemplate.h>
-#include <svkAreaPicker.h>
 #include <svkBoxPlot.h>
 #include <svkBurnResearchPixels.h>
 #include <svkByteSwap.h>
@@ -123,7 +122,6 @@
 #include <svkOverlayView.h>
 #include <svkPACSInterface.h>
 #include <svkPhaseSpec.h>
-#include <svkPlotGrid.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGridView.h>
 #include <svkPlotLineGrid.h>
@@ -151,11 +149,9 @@ using namespace svk;
 int main ( int argc, char** argv )
 {
     vtkObject* obj;
-    obj = svkAreaPicker::New();
+    obj = svkBurnResearchPixels::New();
     obj->Delete();
     obj = svkBoxPlot::New();
-    obj->Delete();
-    obj = svkBurnResearchPixels::New();
     obj->Delete();
     obj = svkByteSwap::New();
     obj->Delete();
@@ -306,8 +302,6 @@ int main ( int argc, char** argv )
     obj = svkPACSInterface::New();
     obj->Delete();
     obj = svkPhaseSpec::New();
-    obj->Delete();
-    obj = svkPlotGrid::New();
     obj->Delete();
     obj = svkPlotGridViewController::New();
     obj->Delete();

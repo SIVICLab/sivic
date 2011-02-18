@@ -302,18 +302,18 @@ void svkMrsImageFFT::UpdateOrigin()
     int numSlices = data->GetDcmHeader()->GetNumberOfSlices();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    double dcos[3][3]; 
+    double dcos[3][3]={{0,0,0},{0,0,0},{0,0,0}}; 
     data->GetDcmHeader()->GetDataDcos( dcos ); 
 
-    double pixelSpacing[3]; 
+    double pixelSpacing[3] = {0,0,0}; 
     data->GetDcmHeader()->GetPixelSpacing( pixelSpacing ); 
 
-    double toplc[3]; 
+    double toplc[3] = {0,0,0}; 
     data->GetDcmHeader()->GetOrigin( toplc, 0 ); 
 
     //  Calculate new toplc
     //  This is so far specific to GE RECON which has 1/2 voxel shift by default
-    double shift[3]; 
+    double shift[3] = {0,0,0};
     for (int i = 0; i < 3; i++ ){
         shift[i] = this->prePhaseShift[i] + 0.5; 
         for(int j = 0; j < 3; j++ ){
@@ -395,6 +395,8 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
                             }
     
                         }
+                        delete[] imageComplexTime;
+                        delete[] imageComplexFrequency;
                     }
     
                 }

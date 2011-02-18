@@ -77,6 +77,7 @@ svkVarianCSFidMapper::svkVarianCSFidMapper()
     this->numYReordered = 16;
     this->numZReordered = 16;
     this->numTReordered = 59;
+    this->rectilinearData = NULL;  
 
 }
 

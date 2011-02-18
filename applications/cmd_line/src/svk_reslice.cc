@@ -175,7 +175,7 @@ int main (int argc, char** argv)
 
     writer->SetInput( reslicer->GetOutput() );
     writer->Write();
-
+    writer->Delete();
     inputReader->Delete();
     targetReader->Delete();
     reslicer->Delete();

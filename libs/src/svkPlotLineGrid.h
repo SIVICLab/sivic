@@ -58,7 +58,6 @@
 #include <vtkCollectionIterator.h>
 #include <vtkTransform.h>
 #include <svkPlotLine.h>
-#include <svkAreaPicker.h>
 #include <svkImageData.h>
 #include <svkDataView.h>
 #include <svkMrsImageData.h>
