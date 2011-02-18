@@ -82,7 +82,9 @@ svkEPSIPhaseCorrect::~svkEPSIPhaseCorrect()
 
 /*!
  *  Set the number of k-space samples along the EPSI encoding 
- *  direction (number of samples per lobe). 
+ *  direction (number of samples per lobe). This is the number
+ *  of samples per echo in the EPSI acquisition trajetory (not 
+ *  necessarily the final k-space dimensionality). 
  */
 void svkEPSIPhaseCorrect::SetNumEPSIkRead( int numKspacePoints )
 {
@@ -101,7 +103,8 @@ void svkEPSIPhaseCorrect::SetEPSIAxis( int epsiAxis)
 
 /*!
  *  Set the origin index along the EPSI encoding axis 
- *  default = numEPSIkRead/2 
+ *  default = (numEPSIkRead-1)/2. See notes for 
+ *  GetEPSIOrigin.  
  */
 void svkEPSIPhaseCorrect::SetEPSIOrigin( float epsiOrigin )
 {
@@ -111,7 +114,10 @@ void svkEPSIPhaseCorrect::SetEPSIOrigin( float epsiOrigin )
 
 /*!
  *  Get the origin index along the EPSI encoding axis 
- *  default = numEPSIkRead/2 
+ *  default = (numEPSIkRead-1)/2. This is the c-lang  
+ *  index, thus the -1, e.g.: if numEPSIkRead is 8,  
+ *  and data index varies from 0-7, the default origin 
+ *  index is 3.5. 
  */
 float svkEPSIPhaseCorrect::GetEPSIOrigin()
 {
@@ -123,10 +129,16 @@ float svkEPSIPhaseCorrect::GetEPSIOrigin()
 
 
 /*! 
- *  This method is called during pipeline execution.  This is where you should implement your algorithm. 
+ *  This method is called during pipeline execution.  Calculates the 2D array of linear phase correction factors, which
+ *  are a function of the epsi k-space index, as well as the spectral index.  Applies these to all spectra in data set
+ *  to generate a rectilinear spectral/spatial (k-space, time-domain) data set.  
  */
 int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+
+    if ( !this->isPipelineOn ) {
+        this->SetInput( this->originalInputData );
+    }
 
     if ( this->numEPSIkRead == 0  || this->epsiAxis < 0 ) {
         cout << "ERROR, must specify the epsiAxis and number of sample k-space points per lobe" << endl;
@@ -160,6 +172,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
     //  Iterate through 3D spatial locations
+    cout << "SUDS: " << numLobes << " " << slices << " " << rows << " " << cols << endl;
     for (int lobe = 0; lobe < numLobes; lobe++) {
         for (int z = 0; z < slices; z++) {
             for (int y = 0; y < rows; y++) {
@@ -174,7 +187,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                         epsiIndex = x; 
                     }
 
-                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z) );
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, lobe, 0) );
 
                     //  Iterate over frequency points in spectrum and apply phase correction:
                     for ( int freq = 0; freq < numSpecPts; freq++ ) {
@@ -186,7 +199,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
                         cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] - cmplxPtIn[1] * epsiPhase[1]; 
                         cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] + cmplxPtIn[0] * epsiPhase[1]; 
-    
+
                         spectrum->SetTuple(freq, cmplxPtPhased); 
     
                     }

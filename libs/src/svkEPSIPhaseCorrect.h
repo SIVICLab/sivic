@@ -56,9 +56,27 @@ namespace svk {
 using namespace std;
 
 
-
 /*! 
- *  Template for in-place filter class
+ *  This class corrects for the time shift of spectra in the 
+ *  EPSI direction that results from the EPSI sampling trajectory. 
+ *  For each TR, the spectra from neighboring K space values along 
+ *  the EPSI k-space axis are displaced in time relative to one
+ *  another by Dt (time between EPSI samples).  This time-domain 
+ *  shift is corrected here via the Fourier shift theorem, by applying
+ *  a linear phase shift to the spectra in the frequency domain, 
+ *  where the magnitude of the phase shift is a linear functino of the
+ *  distance of the spectrum from the origin of k-space (in EPSI 
+ *  direction).  Spectra are then inverse FT'd back to the time domain 
+ *  resulting in a rectilinear spectral/spatial data set (see Figure 3 
+ *  and equation 3 in the following reference). 
+ *  
+ *  References:
+ *      Charles H. Cunningham, Daniel B. Vigneron, Albert P. Chen, Duan Xu, 
+ *      Sarah J. Nelson, Ralph E. Hurd, Douglas A. Kelley, John M. Pauly:
+ *      "Design of Flyback Echo-Planar Readout Gradients for Magnetic
+ *      Resonance Spectroscopic Imaging", Magnetic Resonance in Medicine
+ *      54:1286-1289 (2005).  
+ * 
  */
 class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
 {
@@ -67,10 +85,11 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
 
         static svkEPSIPhaseCorrect* New();
         vtkTypeRevisionMacro( svkEPSIPhaseCorrect, svkImageInPlaceFilter);
-        void    SetNumEPSIkRead( int numKspaceSamples );
-        void    SetEPSIAxis( int epsiAxis );
-        void    SetEPSIOrigin( float epsiOrigin );
-        float   GetEPSIOrigin();
+
+        void            SetNumEPSIkRead( int numKspaceSamples );
+        void            SetEPSIAxis( int epsiAxis );
+        void            SetEPSIOrigin( float epsiOrigin );
+        float           GetEPSIOrigin();
 
 
     protected:
@@ -79,7 +98,6 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         ~svkEPSIPhaseCorrect();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
-
 
         //  Methods:
         virtual int     RequestData(
@@ -97,6 +115,7 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
         int             epsiAxis;
         float           epsiOrigin;
         double*         epsiSpatialPhaseCorrection;
+        svkImageData*   tmpData; 
 
 
 };
