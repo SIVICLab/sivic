@@ -136,10 +136,6 @@ float svkEPSIPhaseCorrect::GetEPSIOrigin()
 int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( !this->isPipelineOn ) {
-        this->SetInput( this->originalInputData );
-    }
-
     if ( this->numEPSIkRead == 0  || this->epsiAxis < 0 ) {
         cout << "ERROR, must specify the epsiAxis and number of sample k-space points per lobe" << endl;
         return 1; 
@@ -170,6 +166,9 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     float epsiPhase[2]; 
     int   epsiIndex; 
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
+
+    //  Transform data to frequency domain to apply linear phase shift: 
+    this->SpectralFFT( svkMrsImageFFT::FORWARD ); 
 
     //  Iterate through 3D spatial locations
     cout << "SUDS: " << numLobes << " " << slices << " " << rows << " " << cols << endl;
@@ -209,6 +208,11 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
         }
     }
 
+
+    //  Transform data to back to time domain 
+    this->SpectralFFT( svkMrsImageFFT::REVERSE ); 
+
+
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
@@ -231,7 +235,17 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
  *  (default middle index of array) and linear factor
  *  that increments by 2*pi/N.  These are multiplied by the factor derived by the 
  *  frequency encoding to obtain the final linear EPSI phase correctin (spatial/spectral). 
+ *
+ *      This is an implementation of equation 3 from (MRM 54:1286, 2005):   
+ *      Here, I'm using lobe and echo to mean a full gradient echo period
+ *          Sphased(mn) = S(mn) * exp i*( 2 * pi * m * n * Dt * Bs / N )
+ *              - Dt    = the time between k-space samples 
+ *              - Bs    = spectral bandwith (or 1/time_per_echo)
+ *              - N     = num gradient echoes
+ *          Dt*Bs is therefore 1/num_sample_per_echo, aka this->numEPSIkRead. 
+ *          N is numSpecPts (i.e. number of lobes or half that for symmetric EPSI).   
  */
+ 
 void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** epsiPhaseArray, int numSpecPts )
 {
 
@@ -248,11 +262,30 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
         for( int f = 0; f <  numSpecPts; f++ ) {
             phaseIncrement = ( k - kOrigin )/( numKPts );
             freqIncrement = ( f - fOrigin )/( numSpecPts );
-            mult = -2 * Pi * phaseIncrement * freqIncrement; 
+            mult = 2 * Pi * phaseIncrement * freqIncrement; 
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
         }
     }
+
+}
+
+
+/*!
+ *  To shift spectra in time a linear phase correction is appplied to spectra in the 
+ *  frequency domain.  This method transforms spectral domain from time to frequency. 
+ */
+int svkEPSIPhaseCorrect::SpectralFFT( svkMrsImageFFT::FFTMode direction )
+{
+
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+
+    svkMrsImageFFT* fft = svkMrsImageFFT::New();
+    fft->SetInput( mrsData );
+    fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    fft->SetFFTMode( direction ); 
+    fft->Update();
+    fft->Delete();
 
 }
 

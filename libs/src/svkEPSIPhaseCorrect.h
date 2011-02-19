@@ -45,8 +45,8 @@
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
-#include <vtkImageFourierFilter.h>
 
+#include <svkMrsImageFFT.h>
 #include <svkImageInPlaceFilter.h>
 
 
@@ -110,6 +110,8 @@ class svkEPSIPhaseCorrect : public svkImageInPlaceFilter
     private: 
 
         void            CreateEPSIPhaseCorrectionFactors( vtkImageComplex** phaseArray, int numSpecPts ); 
+        int             SpectralFFT( svkMrsImageFFT::FFTMode direction ); 
+
 
         int             numEPSIkRead;
         int             epsiAxis;
