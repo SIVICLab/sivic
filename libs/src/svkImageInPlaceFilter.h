@@ -64,7 +64,7 @@ using namespace std;
 
 
 /*! 
- * 
+ *  Base class for svkImageInPlaceFilter. 
  */
 class svkImageInPlaceFilter : public vtkImageInPlaceFilter
 {
@@ -84,6 +84,7 @@ class svkImageInPlaceFilter : public vtkImageInPlaceFilter
 
         virtual int         FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+
 
 };
 
