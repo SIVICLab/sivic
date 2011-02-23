@@ -2124,7 +2124,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::AXIAL );
         this->viewRenderingWidget->SetOrientation( svkDcmHeader::AXIAL );
-        if( alignOverlay ) {
+        if( alignOverlay || this->overlayController->GetCurrentStyle() == svkOverlayViewController::SELECTION ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::AXIAL;
@@ -2137,7 +2137,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::CORONAL );
         this->viewRenderingWidget->SetOrientation( svkDcmHeader::CORONAL );
-        if( alignOverlay ) {
+        if( alignOverlay || this->overlayController->GetCurrentStyle() == svkOverlayViewController::SELECTION ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::CORONAL;
@@ -2150,7 +2150,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->secondaryCaptureFormatter->SetOrientation( svkDcmHeader::SAGITTAL );
         this->viewRenderingWidget->SetOrientation( svkDcmHeader::SAGITTAL );
-        if( alignOverlay ) {
+        if( alignOverlay || this->overlayController->GetCurrentStyle() == svkOverlayViewController::SELECTION ) {
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::SAGITTAL;
@@ -2174,15 +2174,6 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
             this->plotController->HighlightSelectionVoxels();
         }
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
-        // Check to see if the image is inside the spectra
-        if( this->model->DataExists("AnatomicalData") ) {
-            if( !this->overlayController->IsImageInsideSpectra() ) {
-                this->TurnOffPlotView();
-            } else if( !this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp(
-                                           this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES)) ) {
-                this->TurnOnPlotView();
-            }
-        }
     }
 
     if( toggleDraw ) {

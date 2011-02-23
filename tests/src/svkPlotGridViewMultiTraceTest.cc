@@ -47,7 +47,6 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGridView.h>
-#include <svkPlotGrid.h>
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
 #include <vtkCamera.h>

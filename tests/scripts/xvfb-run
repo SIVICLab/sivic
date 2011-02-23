@@ -40,6 +40,6 @@
 #       Beck Olson
 #  
 
-Xvfb :2 -ac -screen 0 1024x768x24&
-DISPLAY=:2 ${@:1:$#}
+Xvfb :3 -ac -screen 0 1024x768x24&
+DISPLAY=:3 ${@:1:$#}
 killall Xvfb

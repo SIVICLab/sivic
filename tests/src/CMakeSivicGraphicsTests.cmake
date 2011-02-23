@@ -165,3 +165,88 @@ ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGri
 
 SET( TEST_NAME PLOT_GRID_MET_SHIFT_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_6/${PLATFORM} )
+
+
+#############################################################
+# Check to see if the we can render our phantom in multiple orientations. 
+#############################################################
+SET( TEST_NAME ORIENTATION_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t OrientationTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME ORIENTATION_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if you can render spectra and an overlay from
+# a phantom in different orientations.
+#############################################################
+SET( TEST_NAME ORIENTATION_SPEC_MET_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t OrientationTest --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME ORIENTATION_SPEC_MET_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if the we can render a sagittal phantom  image and spectra in multiple orientations. 
+#############################################################
+SET( TEST_NAME SAG_IMAGE_SPEC_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/orientations)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t OrientationTest --image ${TEST_CASE_ROOT}/input/sag_phantom.idf --spectra ${TEST_CASE_ROOT}/input/sag_recon.ddf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME SAG_IMAGE_SPEC_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if you can render sagittal spectra
+#############################################################
+SET( TEST_NAME SAG_SPEC_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/orientations)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t OrientationTest --spectra ${TEST_CASE_ROOT}/input/sag_recon.ddf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME SAG_SPEC_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if the we can render a coronal phantom  image and spectra in multiple orientations. 
+#############################################################
+SET( TEST_NAME COR_IMAGE_SPEC_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/orientations)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t OrientationTest --image ${TEST_CASE_ROOT}/input/cor_phantom.idf --spectra ${TEST_CASE_ROOT}/input/cor_phased.ddf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME COR_IMAGE_SPEC_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if you can render coronal spectra
+#############################################################
+SET( TEST_NAME COR_SPEC_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/orientations)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t OrientationTest --spectra ${TEST_CASE_ROOT}/input/cor_phased.ddf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME COR_SPEC_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )

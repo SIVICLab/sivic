@@ -47,7 +47,7 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <svkPlotGridViewController.h>
 #include <svkPlotGridView.h>
-#include <svkPlotGrid.h>
+#include <svkSpecPoint.h>
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
 #include <vtkCamera.h>
@@ -61,7 +61,7 @@
 
 using namespace svk;
     
-void DefaultTest( );
+void OrientationTest( );
 void MemoryTest( );
 void RenderingTest( );
 void DisplayUsage( );
@@ -96,7 +96,7 @@ int main ( int argc, char** argv )
     globalArgs.secondSpectraName = NULL;   /* -S option */
     globalArgs.firstOverlayName = NULL;     /* -o  option */
     globalArgs.secondOverlayName = NULL;    /* -O option */
-    testFunction = DefaultTest;
+    testFunction = RenderingTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
     if( opt == -1 ) {
@@ -111,6 +111,9 @@ int main ( int argc, char** argv )
                     } else if( strcmp( optarg, "RenderingTest" ) == 0 ) {
                         testFunction = RenderingTest;
                         cout<<" Executing Rendering Test... "<<endl;
+                    } else if( strcmp( optarg, "OrientationTest" ) == 0 ) {
+                        testFunction = OrientationTest;
+                        cout<<" Executing Orientation Test... "<<endl;
                     }
                 case 's':
                     globalArgs.firstSpectraName = optarg;
@@ -297,25 +300,39 @@ void RenderingTest()
 }
 
 
-void DefaultTest()
+void OrientationTest()
 {
-    if( globalArgs.firstSpectraName  == NULL ) {
-        DisplayUsage();
+    if( globalArgs.firstSpectraName  == NULL ||
+        globalArgs.secondSpectraName != NULL ||
+        globalArgs.secondOverlayName != NULL || 
+        globalArgs.outputPath        == NULL ) {
         cout << endl << " ERROR: ";
-        cout << "The first spectra and metabolite files must be specified to run the current test! " << endl; 
+        cout <<" Only one spectra and one metabolite files and an output path " 
+             <<" must be specified to run the rendering test! " << endl << endl; 
+        DisplayUsage();
     }
+
+    string rootName = "";
+    string spectraRoot = string( globalArgs.firstSpectraName );
+    size_t ext = spectraRoot.find_last_of(".");
+    size_t path = spectraRoot.find_last_of("/");
+    rootName = spectraRoot.substr(path+1,ext-path-1);
+   
 
     svkDataModel* model = svkDataModel::New();
 
-    svkImageData* spectra = model->LoadFile( globalArgs.firstSpectraName );
-    spectra->Register( NULL );
-    spectra->Update();
-
-    svkImageData* overlay = NULL; 
-    if( globalArgs.firstOverlayName  != NULL ) { 
-        overlay = model->LoadFile( globalArgs.firstOverlayName );
-        overlay->Register( NULL );
-        overlay->Update();
+    svkImageData* firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
+    firstSpectra->Register(NULL);
+    firstSpectra->Update();
+    svkImageData* firstOverlay = NULL;
+    if( globalArgs.firstOverlayName != NULL ) {
+        string overlayRoot = string( globalArgs.firstOverlayName );
+        size_t ext = overlayRoot.find_last_of(".");
+        size_t path = spectraRoot.find_last_of("/");
+        rootName += overlayRoot.substr(path+1,ext-path-1);
+        firstOverlay =  model->LoadFile( globalArgs.firstOverlayName );
+        firstOverlay->Register(NULL);
+        firstOverlay->Update();
     }
 
     vtkRenderWindow* window = vtkRenderWindow::New(); 
@@ -323,47 +340,85 @@ void DefaultTest()
     svkPlotGridViewController* plotController = svkPlotGridViewController::New();
 
     plotController->SetRWInteractor( rwi );
-    //rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New() );
 
-    window->SetSize(600,600);
-
-    plotController->SetInput( spectra  );
+    plotController->SetInput( firstSpectra, 0  );
+    if( firstOverlay != NULL ) {
+        plotController->SetInput( firstOverlay, 1 );
+    }
+    window->SetSize( 640, 640 );
+    window->Render();
     plotController->HighlightSelectionVoxels();
-    plotController->SetSlice(4);
-    plotController->GetView()->Refresh();
-    window->GetRenderers()->GetFirstRenderer()->DrawOn();
-    window->GetRenderers()->GetFirstRenderer()->Render();
-    //plotController->SetChannel(1);
-    //plotController->SetWindowLevelRange(-1000,1000,1);
-    //plotController->TurnPropOff( svkPlotGridView::PLOT_GRID );
-    if( overlay != NULL ) {
-        plotController->SetInput( overlay, 1 );
-    }
-    plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
-    for( int i = 0; i < 8; i++ ) {
-        plotController->SetSlice(i);
-        window->Render();
-        rwi->Start();
-    }
-    plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
-    for( int i = 0; i < 12; i++ ) {
-        plotController->SetSlice(i);
-        window->Render();
-        rwi->Start();
-    }
-    plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
-    for( int i = 0; i < 12; i++ ) {
-        plotController->SetSlice(i);
-        window->Render();
-        rwi->Start();
-    }
+    window->Render();
+
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( firstSpectra->GetDcmHeader() );
+    double minPoint = 3.844; 
+    double maxPoint = 0.602; 
+
+    //  Convert the current values to the target unit scale:
+    int lowestPoint = (int)point->ConvertPosUnits(
+        minPoint,
+        svkSpecPoint::PPM,
+        svkSpecPoint::PTS
+    );
+
+    int highestPoint = (int)point->ConvertPosUnits(
+        maxPoint,
+        svkSpecPoint::PPM,
+        svkSpecPoint::PTS
+    );
     
 
-    spectra->Delete();    
-    if( overlay != NULL ) {
-        overlay->Delete();    
+    plotController->SetWindowLevelRange( lowestPoint, highestPoint, 0);
+
+    double range[2] = {0,0};
+    svkMrsImageData::SafeDownCast(firstSpectra)->EstimateDataRange( range, lowestPoint, highestPoint, svkImageData::REAL  );
+    double minValue = range[0];
+    double maxValue = range[1];
+    
+    plotController->SetWindowLevelRange( minValue, maxValue, 1 );
+    cout << "Setting range to: " << minValue << " " << maxValue << endl;
+    plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
+
+    int firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::AXIAL);
+    int lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::AXIAL);
+    plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
+    plotController->HighlightSelectionVoxels();
+    for( int i = firstSlice; i <= lastSlice; i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_AXIAL" << i << ".tiff" ;
+        plotController->SetSlice(i);
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
     }
+    firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::CORONAL);
+    lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::CORONAL);
+    plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
+    plotController->HighlightSelectionVoxels();
+    for( int i = firstSlice; i <= lastSlice; i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_CORONAL" << i << ".tiff" ;
+        plotController->SetSlice(i);
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+    firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::SAGITTAL);
+    lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::SAGITTAL);
+    plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
+    plotController->HighlightSelectionVoxels();
+    for( int i = firstSlice; i <= lastSlice; i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_SAGITTAL" << i << ".tiff" ;
+        plotController->SetSlice(i);
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+
     plotController->Delete();
+    firstSpectra->Delete();
+    if( firstOverlay != NULL ) {
+        firstOverlay->Delete();
+    }
     model->Delete();
     window->Delete();
 }

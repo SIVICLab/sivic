@@ -59,6 +59,7 @@ using namespace svk;
 void DefaultTest( );
 void MemoryTest( );
 void RenderingTest( );
+void OrientationTest( );
 void DisplayUsage( );
 
 struct globalArgs_t {
@@ -116,6 +117,9 @@ int main ( int argc, char** argv )
                     } else if( strcmp( optarg, "RenderingTest" ) == 0 ) {
                         testFunction = RenderingTest;
                         cout<<" Executing Rendering Test... "<<endl;
+                    } else if( strcmp( optarg, "OrientationTest" ) == 0 ) {
+                        testFunction = OrientationTest;
+                        cout<<" Executing Orientation Test... "<<endl;
                     } 
                     break;
                 case 'i':
@@ -361,6 +365,113 @@ void DefaultTest()
     window->Delete();
 }
 
+void OrientationTest()
+{
+    if( globalArgs.firstImageName == NULL  || 
+        globalArgs.firstSpectraName == NULL  ) {
+        DisplayUsage();
+        cout << endl << " ERROR: ";
+        cout << "At least an image and a spectra must be specified to run this test! " << endl; 
+    }
+
+    string rootName = "";
+    string imageRoot = string( globalArgs.firstImageName );
+    size_t ext = imageRoot.find_last_of(".");
+    size_t path = imageRoot.find_last_of("/");
+    rootName = imageRoot.substr(path+1,ext-path-1);
+
+
+    svkDataModel* model = svkDataModel::New();
+    
+    svkImageData* spectra = NULL; 
+    if( globalArgs.firstSpectraName != NULL ) {
+        spectra = model->LoadFile( globalArgs.firstSpectraName );
+        spectra->Register(NULL);
+        spectra->Update();
+    }
+
+    svkImageData* image = NULL; 
+    if( globalArgs.firstImageName != NULL ) {
+        image = model->LoadFile( globalArgs.firstImageName );
+        image->Register(NULL);
+        image->Update();
+    }
+    svkImageData* overlay = NULL; 
+    if( globalArgs.firstOverlayName != NULL ) {
+        overlay = model->LoadFile( globalArgs.firstOverlayName );
+        overlay->Register(NULL);
+        overlay->Update();
+    }
+
+    
+    vtkRenderWindow* window = vtkRenderWindow::New(); 
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkOverlayViewController* overlayController = svkOverlayViewController::New();
+
+    overlayController->SetRWInteractor( rwi );
+
+    window->SetSize(600,600);
+
+    if( globalArgs.disableValidation ) {
+        overlayController->GetView()->ValidationOff();
+    }
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
+    overlayController->SetInput( image, 0  );
+
+    if( spectra != NULL ) {
+        overlayController->SetInput( spectra, 1  );
+    }
+
+    if( overlay != NULL ) {
+        overlayController->SetInput( overlay, 2 );
+    }
+    window->GetRenderers()->GetFirstRenderer()->DrawOn( );
+    
+    
+    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+    for( int i = 0; i < spectra->GetNumberOfSlices(svkDcmHeader::AXIAL); i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "AXIAL.tiff" ;
+        overlayController->SetSlice( i );
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+
+    overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+    overlayController->GetView()->Refresh();
+    overlayController->HighlightSelectionVoxels();
+    for( int i = 0; i < spectra->GetNumberOfSlices(svkDcmHeader::CORONAL); i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "CORONAL.tiff" ;
+        overlayController->SetSlice( i );
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+    overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL);
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+    overlayController->HighlightSelectionVoxels();
+    for( int i = 0; i < spectra->GetNumberOfSlices(svkDcmHeader::SAGITTAL); i++ ) {
+        stringstream filename;
+        filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "SAGITTAL.tiff" ;
+        overlayController->SetSlice( i );
+        window->Render();
+        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    }
+    if( spectra != NULL ) {
+        spectra->Delete();
+    }
+    if( overlay != NULL ) {
+        overlay->Delete();
+    }
+
+    model->Delete();
+    window->Delete();
+    overlayController->Delete();
+    image->Delete();
+    
+}
 
 void RenderingTest()
 {
