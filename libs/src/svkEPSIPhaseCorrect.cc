@@ -286,7 +286,7 @@ int svkEPSIPhaseCorrect::SpectralFFT( svkMrsImageFFT::FFTMode direction )
     fft->SetFFTMode( direction ); 
     fft->Update();
     fft->Delete();
-
+    return 0;
 }
 
 
