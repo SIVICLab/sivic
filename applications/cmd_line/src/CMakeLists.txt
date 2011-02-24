@@ -134,8 +134,9 @@ LINK_DIRECTORIES(
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
 )
+
 IF(WIN32)
-	SET(PLATFORM_INCLUDE getopt)
+	SET(PLATFORM_INCLUDE ../../../libs/getopt)
 ENDIF(WIN32)
 INCLUDE_DIRECTORIES(
     ./
@@ -144,11 +145,6 @@ INCLUDE_DIRECTORIES(
     ${PLATFORM_INCLUDE}
 )
 IF(WIN32)
-	ADD_LIBRARY( getopt
-			     STATIC
-				 getopt/getopt.c
-				 getopt/getopt_long.c
-			    )
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
 ENDIF(WIN32)
