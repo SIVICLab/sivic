@@ -85,6 +85,7 @@ class svkDataView : public vtkObject
         // for DataViews with multiple data objects (e.g. reference view has image and spec data) 
         virtual void                    SetInput( svkImageData* data, int index = 0 ) = 0;
 
+        virtual svkImageData*           GetInput( int index = 0 );
         //! Sets input data set to NULL for index and call Delete
         virtual void                    RemoveInput(  int index = 0 );
 

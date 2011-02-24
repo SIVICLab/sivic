@@ -117,6 +117,19 @@ void svkDataView::RemoveInput(  int index )
 }
 
 
+/*!
+ * gets the input.
+ */
+svkImageData* svkDataView::GetInput(  int index ) 
+{
+    if( this->dataVector.size() > index ) {
+        return this->dataVector[index];
+    } else {
+        return NULL;
+    }
+}
+
+
 /*
  *
  */

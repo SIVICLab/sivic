@@ -392,6 +392,28 @@ void svkObliqueReslice::SetReslicedHeaderOrientation()
         "SharedFunctionalGroupsSequence",
         0
     );
+
+        //  Determine whether the data is ordered with or against the slice normal direction.
+    double normal[3];
+    this->reslicedImage->GetDcmHeader()->GetNormalVector(normal);
+    svkDcmHeader::DcmDataOrderingDirection dataSliceOrder = svkDcmHeader::SLICE_ORDER_UNDEFINED;
+
+    double dcosSliceOrder[3];
+    for (int i = 0; i < 3; i++) {
+        dcosSliceOrder[i] = this->targetDcos[2][i];
+    }
+
+    //  Use the scalar product to determine whether the data in the .cmplx 
+    //  file is ordered along the slice normal or antiparalle to it. 
+    vtkMath* math = vtkMath::New();
+    if (math->Dot(normal, dcosSliceOrder) > 0 ) {
+        dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+    } else {
+        dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
+    }
+    this->reslicedImage->GetDcmHeader()->SetSliceOrder( dataSliceOrder );
+    math->Delete();
+
 }
 
 

@@ -561,7 +561,14 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
 
         this->detailedPlotController->SetInput( newData ); 
         this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
-
+       
+        // THe overlay controller may reslice the data, we need te make sure we get the new version of the data 
+        // TODO: Change the overlay controller to do this in place 
+        svkImageData* mri = this->overlayController->GetView()->GetInput(svkOverlayView::MRI);
+        if( mri != NULL && mri != this->model->GetDataObject( "AnatomicalData" ) ) {
+            this->model->ChangeDataObject( "AnatomicalData", mri );
+        }
+        
         this->SetPreferencesFromRegistry();
 
         this->processingWidget->phaseSlider->SetValue(0.0); 
