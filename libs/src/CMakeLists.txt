@@ -106,13 +106,23 @@ IF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
 ENDIF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
 ADD_DEFINITIONS(-DSVK_ADAPT_DCMTK) 
 
+IF(WIN32)
+	SET(PLATFORM_INCLUDE ../getopt)
+ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(
     ./
     ${DCMTK_DIR}/include
+	${PLATFORM_INCLUDE}
 )
 
-
+IF(WIN32)
+	ADD_LIBRARY( getopt
+			     STATIC
+				 ../getopt/getopt.c
+				 ../getopt/getopt_long.c
+			    )
+ENDIF(WIN32)
 
 ADD_LIBRARY(
     svk 
