@@ -353,6 +353,9 @@ void vtkSivicController::OpenImage( const char* fileName )
 
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
+    } else if( !newData->IsA("svkMriImageData") ) {
+        this->PopupMessage("ERROR: Incorrect data type, data must be an image."); 
+        return;
     } else {
         string resultInfo; 
         if( this->model->GetDataObject( "SpectroscopicData" ) != NULL ) {
@@ -484,7 +487,6 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
     }
-
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
     string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
@@ -688,10 +690,13 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
     if (newData == NULL) {
 
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
-
-    } else {
+        return;
+    } else if( newData->IsA("svkMrsImageData")){
         this->OpenSpectra( newData,  stringFilename, oldData, onlyReadOneInputFile );
 
+    } else {
+        this->PopupMessage("ERROR: Incorrect data type, data must be spectra."); 
+        return;
     }
     this->DisableWidgets();
     this->EnableWidgets();
@@ -802,11 +807,17 @@ void vtkSivicController::OpenOverlay( const char* fileName )
         return;
     }
 
+
     string stringFilename( fileName );
     if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
 
         svkImageData* data = this->model->LoadFile( stringFilename );
-        this->OpenOverlay(data, stringFilename);
+        if( data->IsA("svkMriImageData") ) {
+            this->OpenOverlay(data, stringFilename);
+        } else {
+            this->PopupMessage("ERROR: Incorrect data type, data must be an image to be overlayed."); 
+            return;
+        }
     } else {
         this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
     }
