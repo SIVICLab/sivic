@@ -41,8 +41,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
 #include <unistd.h>
 #include <getopt.h>
+#endif
 #include <string.h>
 #include <svkDataModel.h>
 

@@ -232,5 +232,5 @@ vtkActor* GenerateGridActor( svkImageData* data )
     // Now we will create the actual actor
     vtkActor* selectionBoxActor = vtkActor::New();
     selectionBoxActor->SetMapper(selectionBoxMapper);
-
+	return selectionBoxActor;
 }
