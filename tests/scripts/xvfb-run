@@ -48,7 +48,9 @@ if [ -f /tmp/.X$DISPLAY_PORT-lock ]; then
 else
     echo ERROR: Xvfb server not running!
 fi
-DISPLAY=:$DISPLAY_PORT 
+env | grep DISPLAY
+export DISPLAY=:$DISPLAY_PORT 
+env | grep DISPLAY
 ${@:1:$#}
 export execute_result=$?
 env | grep DISPLAY
