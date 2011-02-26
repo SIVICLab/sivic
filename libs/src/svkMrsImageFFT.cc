@@ -86,16 +86,16 @@ svkMrsImageFFT::~svkMrsImageFFT()
 
 
 /*!
- * Method for converting between vtkDataArrays and vtkImageComplex.
+ *  Method for converting between vtkDataArrays and vtkImageComplex.
  */
 void svkMrsImageFFT::ConvertArrayToImageComplex( vtkDataArray* spectrum, vtkImageComplex* imageComplexSpectrum ) 
 {
     int numTuples = spectrum->GetNumberOfTuples();
     for( int i = 0; i < spectrum->GetNumberOfTuples(); i++ ) {
-       double tuple[2];
-       spectrum->GetTuple( i, tuple );
-       imageComplexSpectrum[i].Real = tuple[0]; 
-       imageComplexSpectrum[i].Imag = tuple[1]; 
+        double tuple[2];
+        spectrum->GetTuple( i, tuple );
+        imageComplexSpectrum[i].Real = tuple[0]; 
+        imageComplexSpectrum[i].Imag = tuple[1]; 
     }
 }
 
@@ -150,10 +150,11 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
     } else {
         fourierFilter = vtkImageFFT::New();
     }
-    fourierFilter->SetDimensionality(3);
     if( this->domain == SPECTRAL ) {
+        fourierFilter->SetDimensionality(1);
         returnValue = RequestDataSpectral( request, inputVector, outputVector, fourierFilter ); 
     } else if ( this->domain == SPATIAL ) {
+        fourierFilter->SetDimensionality(3);
         returnValue = RequestDataSpatial( request, inputVector, outputVector, fourierFilter ); 
     }
     fourierFilter->Delete();
@@ -303,9 +304,10 @@ void svkMrsImageFFT::UpdateOrigin()
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
     double dcos[3][3]={{0,0,0},{0,0,0},{0,0,0}}; 
+
     data->GetDcmHeader()->GetDataDcos( dcos ); 
 
-    double pixelSpacing[3] = {0,0,0}; 
+    double pixelSpacing[3] = {0,0,0};
     data->GetDcmHeader()->GetPixelSpacing( pixelSpacing ); 
 
     double toplc[3] = {0,0,0}; 
@@ -376,29 +378,56 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
                         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                                             svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
 
-                        vtkImageComplex* imageComplexTime = new vtkImageComplex[ numFrequencyPoints ];
-                        this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
-    
+                        vtkImageComplex* imageComplexTime      = new vtkImageComplex[ numFrequencyPoints ];
                         vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
-                        fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+                        vtkImageComplex* imageOut; 
+
+                        //  time to frequency: 
+                        if ( this->mode == FORWARD ) {
+
+                            this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
+
+                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0 ) {
+                                //this->PrintSpectrum( imageComplexTime, spectrum->GetNumberOfTuples(), "forward before fft" ); 
+                            //} 
     
-                        // Lets modify the data, putting 0 frequency at the center
-                        for (int i = 0; i < numFrequencyPoints; i++) {
-                            if( i > numFrequencyPoints/2 ) {
-                                spectrum->SetTuple2( i - numFrequencyPoints/2-1, 
-                                                    imageComplexFrequency[i].Real,  
-                                                    imageComplexFrequency[i].Imag );
-                            } else {
-                                spectrum->SetTuple2( i + numFrequencyPoints/2-1, 
-                                                    imageComplexFrequency[i].Real,  
-                                                    imageComplexFrequency[i].Imag );
-                            }
-    
+                            fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+
+                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
+                                //this->PrintSpectrum( imageComplexFrequency, spectrum->GetNumberOfTuples(), "forward after fft" );
+                            //}
+
+                            // For a FORWARD FFT, shift the data to put 0 frequency at the center index point.
+                            this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
+
+                            imageOut = imageComplexFrequency; 
+
+                        } else if (this->mode == REVERSE ) {
+
+                            this->ConvertArrayToImageComplex( spectrum, imageComplexFrequency);
+
+                            // For a Reverse FFT, shift the data to put 0 frequency at the first index point.
+                            this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
+
+                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
+                                //this->PrintSpectrum( imageComplexFrequency, spectrum->GetNumberOfTuples(),"reverse before rfft" ); 
+                            //}
+
+                            fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
+
+                            imageOut = imageComplexTime; 
+
+                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
+                                //this->PrintSpectrum( imageComplexTime, spectrum->GetNumberOfTuples(), "reverse after rfft" ); 
+                            //}
+
                         }
-                        delete[] imageComplexTime;
-                        delete[] imageComplexFrequency;
+
+                        for (int i = 0; i < numFrequencyPoints; i++) {
+                            spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
+                        }
+
                     }
-    
                 }
             }
         }
@@ -418,6 +447,81 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     this->GetInput()->Update();
     return 1; 
 } 
+
+
+/*
+ *  Debugging
+ */
+void svkMrsImageFFT::PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg )
+{
+    for( int i = 0; i < numPoints; i++ ) {
+        float abs = ( data[i].Real * data[i].Real ) 
+                  + ( data[i].Imag * data[i].Imag ); 
+        cout << msg << i << " = " << data[i].Real << " " << data[i].Imag << " -> " << abs << endl;
+    }
+}
+
+
+/*!
+ *  Shifts the zero frequency component in output of FFT operation to center of the spectrum. 
+ *  Behaves differently for even and odd data lengths. 
+ */
+void svkMrsImageFFT::FFTShift( vtkImageComplex* dataIn, int numPoints )
+{
+
+    float origin =  static_cast<float>(numPoints - 1) / 2. ; 
+    int shiftSize = static_cast<int>( ceil( origin ) ); 
+
+    vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
+
+    for (int i = 0; i < numPoints; i++) {
+        if( i > origin ) {
+            dataTmp[i - shiftSize].Real = dataIn[i].Real;  
+            dataTmp[i - shiftSize].Imag = dataIn[i].Imag;  
+        } else {
+            dataTmp[i + shiftSize].Real = dataIn[i].Real;  
+            dataTmp[i + shiftSize].Imag = dataIn[i].Imag;  
+        }
+    }
+    for (int i = 0; i < numPoints; i++) {
+        dataIn[i].Real = dataTmp[i].Real;  
+        dataIn[i].Imag = dataTmp[i].Imag;  
+    }
+
+    delete [] dataTmp; 
+}
+
+
+/*!
+ *  Shifts the zero frequency component from center to origin, for example in preparation for 
+ *  an IFFT. 
+ *  Behaves differently for even and odd data lengths. 
+ */
+void svkMrsImageFFT::IFFTShift( vtkImageComplex* dataIn, int numPoints )
+{
+
+    float origin =  static_cast<float>(numPoints - 1)/ 2. ; 
+    int shiftSize = static_cast<int>( ceil( origin ) ); 
+
+    vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
+
+    for (int i = 0; i < numPoints; i++) {
+        if( i >= origin ) {
+            dataTmp[i - shiftSize].Real = dataIn[i].Real;  
+            dataTmp[i - shiftSize].Imag = dataIn[i].Imag;  
+        } else {
+            dataTmp[i + shiftSize].Real = dataIn[i].Real;  
+            dataTmp[i + shiftSize].Imag = dataIn[i].Imag;  
+        }
+    }
+    for (int i = 0; i < numPoints; i++) {
+        dataIn[i].Real = dataTmp[i].Real;  
+        dataIn[i].Imag = dataTmp[i].Imag;  
+    }
+
+    delete [] dataTmp; 
+
+}
 
 
 /*!
