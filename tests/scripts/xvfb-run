@@ -66,4 +66,3 @@ if [ $server_stop_result = 0 ]; then
 else
     echo ERROR: Server could not be stopped!
 fi
-exit $execute_result
