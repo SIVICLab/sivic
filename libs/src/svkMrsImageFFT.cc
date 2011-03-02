@@ -387,15 +387,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
                             this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
 
-                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0 ) {
-                                //this->PrintSpectrum( imageComplexTime, spectrum->GetNumberOfTuples(), "forward before fft" ); 
-                            //} 
-    
                             fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
-
-                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
-                                //this->PrintSpectrum( imageComplexFrequency, spectrum->GetNumberOfTuples(), "forward after fft" );
-                            //}
 
                             // For a FORWARD FFT, shift the data to put 0 frequency at the center index point.
                             this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
@@ -409,17 +401,9 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
                             // For a Reverse FFT, shift the data to put 0 frequency at the first index point.
                             this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
 
-                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
-                                //this->PrintSpectrum( imageComplexFrequency, spectrum->GetNumberOfTuples(),"reverse before rfft" ); 
-                            //}
-
                             fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
 
                             imageOut = imageComplexTime; 
-
-                            //if ( x == 0 && y == 0 && z == 0 and timePt == 0  ){
-                                //this->PrintSpectrum( imageComplexTime, spectrum->GetNumberOfTuples(), "reverse after rfft" ); 
-                            //}
 
                         }
 
