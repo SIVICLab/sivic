@@ -2516,6 +2516,35 @@ int svkGEPFileMapper::GetNumberSuppressedAcquisitions( )
 }
 
 
+/*
+ *  Calculates the LPS center from the origin(toplc).
+ */
+void svkGEPFileMapper::GetCenterFromOrigin( double origin[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double center[3] )
+{
+    for( int i = 0; i < 3; i++ ) {
+        center[i] = origin[i];
+        for( int j = 0; j < 3; j++ ) {
+            center[i] += dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
+        }
+    }
+}
+
+
+/*
+ *  Calculates the LPS origin (toplc) from the center.
+ */
+void svkGEPFileMapper::GetOriginFromCenter( double center[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double origin[3] )
+{
+    for( int i = 0; i < 3; i++ ) {
+        origin[i] = center[i];
+        for( int j = 0; j < 3; j++ ) {
+            origin[i] -= dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
+        }
+    }
+}
+
+
+
 /*!
  *
  */

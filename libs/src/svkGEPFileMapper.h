@@ -173,6 +173,20 @@ class svkGEPFileMapper : public vtkObject
         vtkstd::string  GetHeaderValueAsString(vtkstd::string key);
         virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex); 
         vtkstd::string  ConvertGEDateToDICOM( vtkstd::string geDate ); 
+        void            GetOriginFromCenter( 
+                                             double center[3], 
+                                             int numVoxels[3], 
+                                             double voxelSpacing[3], 
+                                             double dcos[3][3], 
+                                             double origin[3] 
+                        ); 
+        void            GetCenterFromOrigin( 
+                                             double origin[3], 
+                                             int numVoxels[3], 
+                                             double voxelSpacing[3], 
+                                             double dcos[3][3], 
+                                             double center[3] 
+                        ); 
 
 
         vtkstd::string                          progressText;
