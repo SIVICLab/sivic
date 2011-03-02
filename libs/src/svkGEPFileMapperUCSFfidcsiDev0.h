@@ -67,6 +67,9 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         vtkTypeRevisionMacro( svkGEPFileMapperUCSFfidcsiDev0, svkGEPFileMapperUCSF );
         static svkGEPFileMapperUCSFfidcsiDev0* New();
 
+        virtual void    ReadData(vtkstd::string pFileName, svkImageData* data); 
+
+
     protected:
 
         svkGEPFileMapperUCSFfidcsiDev0();
@@ -76,6 +79,22 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         virtual void    GetSelBoxSize( float selBoxSize[3] );
         virtual void    GetCenterFromRawFile( double* center ); 
         virtual bool    IsChopOn(); 
+        void            ModifyForPatientEntry( svkImageData* data ); 
+
+
+    private: 
+
+        void            ReorderEPSIData( svkImageData* data ); 
+        void            RemoveArrays( svkImageData* data ); 
+        void            RedimensionData( svkImageData* data, int* numVoxelsReordered, int numFreqPts ); 
+        void            EPSIPhaseCorrection( 
+                                svkImageData* data, 
+                                int* numVoxels, 
+                                int numRead, 
+                                int epsiAxis
+                        ); 
+        void            ReverseOddEPSILobe( svkImageData* data, int epsiAxis ); 
+
 
 };
 
