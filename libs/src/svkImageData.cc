@@ -1550,15 +1550,15 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
     double origin[3];
     this->dcmHeader->GetOrigin(origin);
 
+    double dcos[3][3];
+    this->dcmHeader->GetDataDcos(dcos);
+
     //  For MRS data the vtk point origin (origin of first point in data set is corner of voxel)
     //  is 1/2 voxel away from DICOM origin.
     if ( strcmp( this->GetClassName(), "svkMrsImageData") == 0 ) {
 
         double pixelSize[3];
         this->dcmHeader->GetPixelSize(pixelSize);
-
-        double dcos[3][3];
-        this->dcmHeader->GetDataDcos(dcos);
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -1569,6 +1569,7 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
 
     this->SetOrigin( origin );
 
+    this->SetDcos( dcos );
 
 }
 
