@@ -170,6 +170,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     //  Transform data to frequency domain to apply linear phase shift: 
     this->SpectralFFT( svkMrsImageFFT::FORWARD ); 
 
+
     //  Iterate through 3D spatial locations
     cout << "SUDS: " << numLobes << " " << slices << " " << rows << " " << cols << endl;
     for (int lobe = 0; lobe < numLobes; lobe++) {
@@ -187,6 +188,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                     }
 
                     vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, lobe, 0) );
+cout << "SPECTRUM NUMBER: " << x << " " << y << " " << z << " " << lobe << endl;
 
                     //  Iterate over frequency points in spectrum and apply phase correction:
                     for ( int freq = 0; freq < numSpecPts; freq++ ) {
@@ -196,8 +198,15 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                         epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
                         epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
 
-                        cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] - cmplxPtIn[1] * epsiPhase[1]; 
-                        cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] + cmplxPtIn[0] * epsiPhase[1]; 
+                        //  data * e(i * X)
+                        //cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] - cmplxPtIn[1] * epsiPhase[1]; 
+                        //cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] + cmplxPtIn[0] * epsiPhase[1]; 
+
+                        //  data * e(-i * X)
+                        cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
+                        cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
+
+//cout << "spec: " << cmplxPtIn[0] << " " << cmplxPtIn[1] << " -> " << cmplxPtPhased[0] << " " << cmplxPtPhased[1] << endl;
 
                         spectrum->SetTuple(freq, cmplxPtPhased); 
     
@@ -244,25 +253,40 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
  *              - N     = num gradient echoes
  *          Dt*Bs is therefore 1/num_sample_per_echo, aka this->numEPSIkRead. 
  *          N is numSpecPts (i.e. number of lobes or half that for symmetric EPSI).   
+ *
+ *
+ *  current issues 
+ *  1.  + or - phase shift eix or e-ix) ? 
+ *  2.  Origin of k-space sampling based on num_read or current number of k-space samples (with ends thrown out)
+ *  3.  Matlab origin is off by 1 (N/2 vs (N-1)/2 for zero based array indexing 
+ *  4.  Is there an additional phase shift required for the even lobes due to the points thrown out between lobes?
+ *  5.  finally I think the numerator is based on the number of lobes per spectrum, rather than the total number
+ *      of lobes (echoes). the MATLAB currently uses the total number of lobes * numread
  */
- 
 void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** epsiPhaseArray, int numSpecPts )
 {
 
-    double kOrigin = this->GetEPSIOrigin(); 
     double numKPts = this->numEPSIkRead;
+//numKPts -=2; 
+    double kOrigin = this->GetEPSIOrigin(); 
+//kOrigin -=1; 
+    float  fOrigin = (numSpecPts-1)/2.; 
     double Pi      = vtkMath::Pi();
-    double phaseIncrement;
+    double kIncrement;
     double freqIncrement;
     double mult;
-    
-    float fOrigin = numSpecPts/2; 
-
+cout <<  "num spec pts: " << numSpecPts << endl;
+cout <<  "num k pts read: " << numEPSIkRead << endl;
+cout << " EPSI ORIGIN: " << kOrigin << endl;
+cout << " FREQ ORIGIN: " << fOrigin << endl;
+cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
     for( int k = 0; k < numKPts; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
-            phaseIncrement = ( k - kOrigin )/( numKPts );
+            kIncrement = ( k - kOrigin + 1)/( numKPts * 2);
+            //kIncrement = ( k - kOrigin )/( numKPts );
             freqIncrement = ( f - fOrigin )/( numSpecPts );
-            mult = 2 * Pi * phaseIncrement * freqIncrement; 
+            mult = 2 * Pi * kIncrement * freqIncrement; 
+cout << "multiplier( " << k << ", " << f << ") = " << mult << " " << k - kOrigin + 1<< " " << (f - fOrigin)/(numSpecPts * numKPts * 2)<< " cos: " << cos(mult) << " sin: " << sin(mult) << endl;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
         }
