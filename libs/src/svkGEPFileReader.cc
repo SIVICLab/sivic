@@ -234,21 +234,24 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
     vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
     this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
-    this->mapper->ReadData(this->GetFileName(), data);
-
-    this->mapper->RemoveObserver(progressCallback);
-
-
     //  Set the orientation in the svkImageData object, synchronized from the dcm header:
     double dcos[3][3];
     this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
     this->GetOutput()->SetDcos(dcos);
+
+    this->mapper->ReadData(this->GetFileName(), data);
+
+    //  resync any header changes with the svkImageData object's member variables
+    this->SetupOutputInformation(); 
+
+    this->mapper->RemoveObserver(progressCallback);
 
     //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
 
     this->SetProvenance(); 
+
 }
 
 
