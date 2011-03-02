@@ -544,6 +544,7 @@ class svkDcmHeader: public vtkObject
                                 vtkstd::string sliceThickness = ""
                             );
         void                InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime); 
+        void                InitPlaneOrientationMacro( double dcos[3][3] ); 
         void                InitPlaneOrientationMacro( vtkstd::string orientationString );
         void                InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
         void                InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 

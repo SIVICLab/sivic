@@ -1137,8 +1137,52 @@ void svkDcmHeader::InitImagePixelModule( int rows, int columns, svkDcmHeader::Dc
 /*!
  *
  */
+void svkDcmHeader::InitPlaneOrientationMacro( double dcos[3][3] )
+{
+
+    ostringstream ossDcos;
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            ossDcos << dcos[i][j];
+            if (i * j != 2) {
+                ossDcos<< "\\";
+            }
+        }
+    }
+
+
+    this->InitPlaneOrientationMacro( ossDcos.str() ); 
+
+    //  Set slice order based on the normal to the newly set orientation: 
+    double normal[3];
+    this->GetNormalVector(normal);
+
+    double dcosSliceOrder[3];
+    for (int i = 0; i < 3; i++) {
+        dcosSliceOrder[i] = dcos[2][i];
+    }
+
+    //  Use the scalar product to determine whether the data in the .cmplx
+    //  file is ordered along the slice normal or antiparalle to it.
+    vtkMath* math = vtkMath::New();
+    if (math->Dot(normal, dcosSliceOrder) > 0 ) {
+        this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+    } else {
+        this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
+    }
+    this->SetSliceOrder( this->dataSliceOrder );
+    math->Delete();
+
+}
+
+
+/*!
+ *
+ */
 void svkDcmHeader::InitPlaneOrientationMacro( vtkstd::string orientationString )
 {
+
+    this->ClearSequence( "PlaneOrientationSequence" );
 
     this->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
@@ -1175,7 +1219,8 @@ void svkDcmHeader::InitMRImageModule( vtkstd::string repetitionTime, vtkstd::str
 
 /*!
  *  Initialize the ImagePlane Module. 
- *  For single frame objects this may be called repeatedly changing only the value of the current instance ImagePositionPatient value. 
+ *  For single frame objects this may be called repeatedly changing only the value of the 
+ *  current instance ImagePositionPatient value. 
  */
 void svkDcmHeader::InitImagePlaneModule( vtkstd::string imagePositionPatient, vtkstd::string pixelSpacing, vtkstd::string imageOrientationPatient, vtkstd::string sliceThickness)
 {
@@ -1232,7 +1277,8 @@ void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::
 
 
 /*!
- *
+ *  Initializes the Per Frame Functional Gruop Sequence and attributes derived from 
+ *  method args, eg. dcos -> ImageOrientationPatient.  
  */
 void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], int numSlices, int numTimePts, int numCoils)
@@ -1242,6 +1288,7 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     this->SetValue( "NumberOfFrames", numSlices * numTimePts * numCoils );  
     this->InitMultiFrameDimensionModule( numSlices, numTimePts, numCoils ); 
     this->InitFrameContentMacro( numSlices, numTimePts, numCoils ); 
+    this->InitPlaneOrientationMacro( dcos ); 
     this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
 }
  
