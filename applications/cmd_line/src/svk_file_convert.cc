@@ -46,6 +46,7 @@ extern "C" {
 #include <getopt.h>
 }
 #else
+#include <getopt.h>
 #include <unistd.h>
 #endif
 #include <svkImageReaderFactory.h>
@@ -70,16 +71,21 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type [-h] \n";
+    usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type \n"; 
+    usemsg += "                 [ --deid_type type [ --deid_id id ] ] [-h]                   \n";
     usemsg += "\n";  
-    usemsg += "   -i input_file_name      name of file to convert. \n"; 
-    usemsg += "   -o output_file_name     name of outputfile. \n";  
-    usemsg += "   -t output_data_type     target data type: \n";  
-    usemsg += "                               2 = UCSF DDF               \n";  
-    usemsg += "                               3 = UCSF IDF               \n";  
-    usemsg += "                               4 = DICOM_MRS              \n";  
-    usemsg += "                               5 = DICOM_MRI              \n";  
-    usemsg += "                               6 = DICOM_Enhanced MRI     \n";  
+    usemsg += "   -i input_file_name        name of file to convert.        \n"; 
+    usemsg += "   -o output_file_name       name of outputfile.             \n";  
+    usemsg += "   -t output_data_type       target data type:               \n";  
+    usemsg += "                                 2 = UCSF DDF                \n";  
+    usemsg += "                                 3 = UCSF IDF                \n";  
+    usemsg += "                                 4 = DICOM_MRS               \n";  
+    usemsg += "                                 5 = DICOM_MRI               \n";  
+    usemsg += "                                 6 = DICOM_Enhanced MRI      \n";  
+    usemsg += "   --deid_type           type  Type of deidentification:     \n";
+    usemsg += "                                 1 = limited (default)       \n";
+    usemsg += "                                 2 = deidentified            \n";
+    usemsg += "   --deid_id             id    replace PHI with this identifier \n"; 
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                      burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
@@ -91,15 +97,33 @@ int main (int argc, char** argv)
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
+    svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED;
+    string deidStudyId = ""; 
     bool   burnResearchHeader = false;  
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
+
+    enum FLAG_NAME {
+        FLAG_DEID_TYPE, 
+        FLAG_DEID_STUDY_ID
+    };
+
+
+    static struct option long_options[] =
+    {
+        {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE}, 
+        {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
+        {0, 0, 0, 0}
+    };
+
+
 
     /*
     *   Process flags and arguments
     */
     int i;
-    while ((i = getopt(argc, argv, "i:o:t:bh")) != EOF) {
+    int option_index = 0; 
+    while ((i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -109,6 +133,12 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case FLAG_DEID_TYPE:
+                deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));
+                break;
+            case FLAG_DEID_STUDY_ID:
+                deidStudyId.assign( optarg );
                 break;
 #if defined( UCSF_INTERNAL )
             case 'b':
@@ -137,6 +167,23 @@ int main (int argc, char** argv)
     cout << outputFileName << endl;
     cout << dataTypeOut << endl;
 
+    // ===============================================
+    //  validate deidentification args:
+    // ===============================================
+    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED &&
+         deidType != svkDcmHeader::PHI_LIMITED &&
+         deidType != svkDcmHeader::PHI_IDENTIFIED)
+    {
+        cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
+        cout << usemsg << endl;
+        exit(1);
+    } else {
+        cout << "Deidentify data: type = " << deidType << endl;
+    }
+
+    cout << "file name: " << inputFileName << endl;
+
+
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
     readerFactory->Delete(); 
@@ -147,7 +194,20 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+
     reader->Update(); 
+
+    // ===============================================
+    //  Set up deidentification options:
+    // ===============================================
+    if ( deidType != svkDcmHeader::PHI_IDENTIFIED ) {
+        if ( deidStudyId.compare("") != 0 ) {
+            reader->GetOutput()->GetDcmHeader()->Deidentify( deidType, deidStudyId );
+        } else {
+            reader->GetOutput()->GetDcmHeader()->Deidentify( deidType );
+        }
+    }
+
 
     svkImageData* currentImage =  reader->GetOutput();
 
