@@ -143,14 +143,14 @@ bool svkDataValidator::AreDataOrientationsSame( svkImageData* data1, svkImageDat
     bool areOrientationsSame = true; 
     
 
-    // First lets check the dcos. Parallel and anti-parallel are acceptible.
+    // First lets check the dcos. 
     if( data1 != NULL && data2 != NULL ) {
         data1->GetDcmHeader()->GetDataDcos( dcos1 );
         data2->GetDcmHeader()->GetDataDcos( dcos2 );
         for( int i = 0; i < 3; i++ ) {
             for( int j = 0; j < 3; j++ ) {
-                // Check the absolute value, with a tolerance in case of rounding errors
-                if( (int)((tol*dcos1[i][j])) != (int)((tol*dcos2[i][j])) ) {
+                // Check the  value with a tolerance in case of rounding errors
+                if( vtkMath::Round(tol*dcos1[i][j]) != vtkMath::Round(tol*dcos2[i][j]) ) {
                     this->resultInfo = "Orientations do not match.";
                     return false;
                 }
@@ -274,12 +274,13 @@ bool svkDataValidator::AreDataSpacingsSame( svkImageData* data1, svkImageData* d
         this->resultInfo="One Data Set Is NULL.";
         return false;
     }
-    int tol = 1000; // Again due to precision differences we need a tolerance
+    int tol = 100; // Again due to precision differences we need a tolerance
     double* spacing1 = data1->GetSpacing();
     double* spacing2 = data2->GetSpacing();
-    if( floor(1000*spacing1[0]) == floor(1000*spacing2[0])
-     && floor(1000*spacing1[1]) == floor(1000*spacing2[1])           
-     && floor(1000*spacing1[2]) == floor(1000*spacing2[2]) ) {
+
+    if( vtkMath::Round(tol*spacing1[0]) == vtkMath::Round(tol*spacing2[0])
+     && vtkMath::Round(tol*spacing1[1]) == vtkMath::Round(tol*spacing2[1])           
+     && vtkMath::Round(tol*spacing1[2]) == vtkMath::Round(tol*spacing2[2]) ) {
         return true;
     } else {
         this->resultInfo="Spacing does not match.";
@@ -303,15 +304,15 @@ bool svkDataValidator::AreDataOriginsSame( svkImageData* data1, svkImageData* da
         this->resultInfo="One Data Set Is NULL.";
         return false;
     }
-    int tol = 1000; // Again due to precision differences we need a tolerance
+    int tol = 100; // Again due to precision differences we need a tolerance
     double origin1[3] = {0,0,0};
     double origin2[3] = {0,0,0};
     data1->GetDcmHeader()->GetOrigin( origin1, 0 );
     data2->GetDcmHeader()->GetOrigin( origin2, 0 );
     
-    if( (int)(1000*origin1[0]) == (int)(1000*origin2[0])
-     && (int)(1000*origin1[1]) == (int)(1000*origin2[1])           
-     && (int)(1000*origin1[2]) == (int)(1000*origin2[2]) ) {
+    if( vtkMath::Round(tol*origin1[0]) == vtkMath::Round(tol*origin2[0])
+     && vtkMath::Round(tol*origin1[1]) == vtkMath::Round(tol*origin2[1])           
+     && vtkMath::Round(tol*origin1[2]) == vtkMath::Round(tol*origin2[2]) ) {
         return true;
     } else {
         this->resultInfo="Origin does not match.";
