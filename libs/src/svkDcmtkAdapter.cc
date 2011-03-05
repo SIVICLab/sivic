@@ -750,8 +750,13 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 void svkDcmtkAdapter::ClearSequence(const char* seqName) 
 {
     DcmSequenceOfItems* seq; 
-    this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
-    seq->clear();
+    OFCondition status = this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
+    if ( seq == NULL || status != EC_Normal ) {
+        cout << "Sequence Not Found" << seqName << endl;
+    } else {
+        seq->clear();
+    }
+
     return; 
 }
 

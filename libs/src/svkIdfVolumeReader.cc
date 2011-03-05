@@ -248,6 +248,25 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
         }
         this->dataArray->SetName( "pixels" );
         data->GetPointData()->SetScalars(this->dataArray);
+
+//  here, I think we can try to call "SetArray" on the point data, with one array for each volume
+//  the number of arrays is then equivalent to the number of "components" in the field data.
+    data->GetPointData()->AddArray( this->dataArray); 
+    cout << "Num components: " << data->GetPointData()->GetNumberOfComponents() << endl;
+    cout << "Num tuples    : " << data->GetPointData()->GetNumberOfTuples() << endl;
+    data->GetPointData()->AddArray( vtkFloatArray::New() ); 
+    cout << "Num components: " << data->GetPointData()->GetNumberOfComponents() << endl;
+    cout << "Num tuples    : " << data->GetPointData()->GetNumberOfTuples() << endl;
+cout << "Get" << endl;
+    cout << " add: " << data->GetPointData()->GetArray( 0 ) << endl; 
+cout << "Get" << endl;
+    cout << " add: " << data->GetPointData()->GetArray( 1 ) << endl; 
+cout << "Get" << endl;
+    cout << " add: " << data->GetPointData()->GetArray( 2 ) << endl; 
+
+//cout << "input data array for scalars:  " << this->dataArray << endl;
+//cout << "point data, array: " << static_cast<vtkFloatArray*>(data->GetPointData()->GetArray(0) )->GetPointer(0) << endl;
+//cout << "point data, scalars, pointer: " << static_cast<vtkFloatArray*>(data->GetPointData()->GetScalars())->GetPointer(0) << endl;
         this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::REAL );
         double imaginaryRange[2] = {0,0}; 
         // Imaginary values are zeroes-- since images only have real components
