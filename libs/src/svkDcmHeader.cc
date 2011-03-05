@@ -652,7 +652,7 @@ void svkDcmHeader::UpdateOrientation()
     istringstream* iss = new istringstream();
     string orientationString;
 
-    //  The 6 elements of the ImageOrientationPatient are the in plance vectors along the
+    //  The 6 elements of the ImageOrientationPatient are the in plane vectors along the
     //  row and column directions:
 
     //  for multi-frame objects, orientation is in shared functional group sequence: 
