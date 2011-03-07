@@ -101,8 +101,10 @@
 // for plotting spectra.
 #define NEG_RANGE_SCALE .17
 #define POS_RANGE_SCALE .70
-#define PPM_DEFAULT_MIN 3.844 
-#define PPM_DEFAULT_MAX 0.602 
+#define PPM_1H_DEFAULT_MIN 3.844 
+#define PPM_1H_DEFAULT_MAX 0.602 
+#define PPM_13C_DEFAULT_MIN 250 
+#define PPM_13C_DEFAULT_MAX -50 
 #define SLIDER_RELATIVE_RESOLUTION 0.002 
 
 using namespace svk;
@@ -214,6 +216,7 @@ class vtkSivicController : public vtkObject
         void                       SetThresholdTypeToQuantity();
         void                       SetOverlayThreshold( double threshold );
         void                       PushToPACS();
+        void                       GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax ); 
 
  
     protected:

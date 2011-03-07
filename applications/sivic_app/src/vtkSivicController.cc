@@ -2802,3 +2802,19 @@ void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* this
 
 }
 
+
+/*
+ *
+ */
+void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax )
+{
+    vtkstd::string nucleus = mrsData->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    if ( nucleus.find("13C") !=string::npos ) {
+        ppmMin = PPM_13C_DEFAULT_MIN; 
+        ppmMax = PPM_13C_DEFAULT_MAX;
+    } else {
+        ppmMin = PPM_1H_DEFAULT_MIN; 
+        ppmMax = PPM_1H_DEFAULT_MAX;
+    }
+}
+

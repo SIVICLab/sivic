@@ -319,7 +319,10 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
             if ( useFullRange ) {
                 this->xSpecRange->SetRange( min, max );
             } else {
-                this->xSpecRange->SetRange( PPM_DEFAULT_MIN, PPM_DEFAULT_MAX );
+                float ppmMin;  
+                float ppmMax;  
+                this->sivicController->GetMRSDefaultPPMRange( data, ppmMin, ppmMax ); 
+                this->xSpecRange->SetRange( ppmMin, ppmMax);
             }
         } else {
             this->SetSpecUnitsCallback(svkSpecPoint::PTS);
