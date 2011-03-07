@@ -19,6 +19,35 @@ SIVIC is an open-source standards-based software framework and application suite
         <a href="http://my.cdash.org/index.php?project=SIVIC"/>SIVIC Dashboard</a>
     </li>
 </ul>
+<b>Command Line Tools:</b> 
+<ul>
+    <li>
+        <a href="apps/svk_file_convert.html"/>svk_file_convert</a>
+    </li>
+    <li>
+        <a href="apps/svk_gepfile_reader.html"/>svk_gepfile_reader</a>
+    </li>
+    <li>
+        <a href="apps/svk_reslice.html"/>svk_reslice</a>
+    </li>
+    <li>
+        <a href="apps/svk_quantify.html"/>svk_quantify</a>
+    </li>
+    <li>
+        <a href="apps/svk_spec_diff.html"/>svk_spec_diff</a>
+    </li>
+    <li>
+        <a href="apps/svk_dcmdump.html"/>svk_dcmdump</a>
+    </li>
+    <li>
+        <a href="apps/svk_quick_view.html"/>svk_quick_view</a>
+    </li>
+    <li>
+        <a href="apps/svk_multi_view.html"/>svk_multi_view</a>
+    </li>
+
+
+</ul>
 
 
 
