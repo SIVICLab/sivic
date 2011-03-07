@@ -185,7 +185,6 @@ ADD_LIBRARY(
     sivicPreferencesWidget.cc
     sivicKWCompositeWidget.cc
     vtkSivicController.cc
-    sivicAppGUI.cc
     sivicBasicTest.cc
     sivicTestCase.cc
     sivicTestSuite.cc
