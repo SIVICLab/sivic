@@ -387,17 +387,23 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
 
     //  =================================================
-    //  3.  resample ramp data 
+    //  resample ramp data 
     //  =================================================
 
 
     //  =================================================
-    //  4.  combine even/odd lobes
+    //  Zero fill in frequency domain
+    //  =================================================
+    this->ZeroFill(data); 
+
+
+    //  =================================================
+    //  combine even/odd lobes
     //  =================================================
 
 
     //  =================================================
-    //  5.  Account for patient entry
+    //  Account for patient entry
     //  =================================================
     this->ModifyForPatientEntry(data); 
 
@@ -429,6 +435,46 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
 
     epsiPhase->Delete(); 
     tmpData->Delete(); 
+
+}
+
+
+/*!
+ *  Zero fill to 256 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::ZeroFill( svkImageData* data )
+{
+
+    svkDcmHeader* hdr = data->GetDcmHeader(); 
+    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
+    int cols       = hdr->GetIntValue( "Columns" );
+    int rows       = hdr->GetIntValue( "Rows" );
+    int slices     = hdr->GetNumberOfSlices();
+    int numLobes   = 2; 
+
+    float cmplxPt[2]; 
+    cmplxPt[0] = 0.; 
+    cmplxPt[1] = 0.; 
+
+    for (int lobe = 0; lobe < numLobes; lobe++) {
+        for (int z = 0; z < slices; z++) {
+            for (int y = 0; y < rows; y++) {
+                for (int x = 0; x < cols; x++) {
+
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, lobe, 0) );
+
+                    //  Iterate over frequency points in spectrum and apply phase correction:
+                    for ( int freq = numSpecPts; freq < 256; freq++ ) {
+
+                        spectrum->InsertTuple(freq, cmplxPt);
+
+                    }
+                }
+            }
+        }
+    }
+
+    this->dcmHeader->SetValue( "DataPointColumns", 256);
 
 }
 
