@@ -199,6 +199,7 @@ ADD_LIBRARY(
     svkEPSIPhaseCorrect.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
+    svkMrsImageFlip.cc
     svkImageLinearPhase.cc
     svkImageMapToWindowLevelColors.cc
     svkImageMapToColors.cc
