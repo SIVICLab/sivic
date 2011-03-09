@@ -155,7 +155,7 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     wholeMin0 = wholeExtent[this->Iteration * 2];
     wholeMax0 = wholeExtent[this->Iteration * 2 + 1];  
 
-    // Reversing is different for odd size, by the same for even
+    // Reversing is different for odd size, but the same for even
     if( this->reverseCenter ) {
         mid0 = (wholeMin0 + wholeMax0 + 2) / 2;
     } else {
