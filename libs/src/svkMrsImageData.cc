@@ -998,20 +998,20 @@ void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, 
         int linearIndex = 0;
         double* value;
         double range[2];
-        vtkDataArray* scalars = image->GetPointData()->GetScalars();
+        vtkDataArray* imageScalars = image->GetPointData()->GetScalars();
         for (int z = Extent[4]; z < Extent[5]; z++) {
             for (int y = Extent[2]; y < Extent[3]; y++) {
                 for (int x = Extent[0]; x < Extent[1]; x++) {
                     vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[1]-1) ) + x; 
-                    value = scalars->GetTuple2( linearIndex );
+                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[0]-1) ) + x; 
+                    value = imageScalars->GetTuple2( linearIndex );
                     spectrum->SetTuple2( point, value[0], value[1] );
-                   
                 }
             }
         }
     }
 }
+
 
 /*
 void  svkMrsImageData::SetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
