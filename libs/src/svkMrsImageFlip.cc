@@ -65,7 +65,7 @@ svkMrsImageFlip::svkMrsImageFlip()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     //  Initialize any member variables
-    this->filteredAxis = -1; 
+    this->filteredAxis = 0; 
 }
 
 
@@ -79,6 +79,10 @@ svkMrsImageFlip::~svkMrsImageFlip()
 
 /*
  *  Sets the axis to reverse: 0 = cols(x), 1 = rows(y), 2 = slice(z)
+ *  Data is reversed along this axis, e.g. if axis is set to 0, the 
+ *  voxel columns are revsed (voxel in col 0 becomes voxel n col N-1, 
+ *  and voxels in col N-1 becomes voxels in col 0, etc.  This can also 
+ *  be thought of as reverse the data in each row or along the x direction. 
  */
 void svkMrsImageFlip::SetFilteredAxis( int axis )
 {
@@ -108,29 +112,34 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
     vtkImageData* tmpData = NULL;
     svkMriImageData* singleFreqImage = svkMriImageData::New();
 
-    vtkImageFlip* flip = vtkImageFlip::New();
-    flip->SetFilteredAxis( this->filteredAxis ); 
 
     for( int timePt = 0; timePt < numTimePts; timePt++ ) {
         for( int coil = 0; coil < numCoils; coil++ ) {
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
+
                 mrsData->GetImage( singleFreqImage, freq, timePt, coil);
+
                 singleFreqImage->Modified();
 
                 tmpData = singleFreqImage;
+
+                vtkImageFlip* flip = vtkImageFlip::New();
+                flip->SetFilteredAxis( this->filteredAxis ); 
 
                 flip->SetInput( tmpData ); 
                 tmpData = flip->GetOutput();
                 tmpData->Update();
 
+
                 mrsData->SetImage( tmpData, freq, timePt, coil);
+
+                flip->Delete(); 
 
             }
         }
     }
 
-    flip->Delete(); 
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -141,7 +150,7 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
 
 
 /*!
- *  Set the input data type, e.g. svkMrsImageData for an MRS algorithm.
+ *  Set the input data type to svkMrsImageData.
  */
 int svkMrsImageFlip::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
