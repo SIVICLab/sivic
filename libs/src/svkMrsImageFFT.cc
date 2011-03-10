@@ -389,7 +389,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
                             fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
 
-                            // For a FORWARD FFT, shift the data to put 0 frequency at the center index point.
+                            // For a FORWARD FFT, shift the frequency data to put 0 frequency at the center index point.
                             this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
 
                             imageOut = imageComplexFrequency; 
@@ -398,7 +398,8 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
                             this->ConvertArrayToImageComplex( spectrum, imageComplexFrequency);
 
-                            // For a Reverse FFT, shift the data to put 0 frequency at the first index point.
+                            //  For a Reverse FFT, shift the frequency data to put 0 frequency at the first index point 
+                            //  prior to RFFT.
                             this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
 
                             fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
@@ -455,13 +456,14 @@ void svkMrsImageFFT::FFTShift( vtkImageComplex* dataIn, int numPoints )
 
     float origin =  static_cast<float>(numPoints - 1) / 2. ; 
     int shiftSize = static_cast<int>( ceil( origin ) ); 
+    int oddCorrection = numPoints%2; 
 
     vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
 
     for (int i = 0; i < numPoints; i++) {
         if( i > origin ) {
-            dataTmp[i - shiftSize].Real = dataIn[i].Real;  
-            dataTmp[i - shiftSize].Imag = dataIn[i].Imag;  
+            dataTmp[i - shiftSize - oddCorrection].Real = dataIn[i].Real;  
+            dataTmp[i - shiftSize - oddCorrection].Imag = dataIn[i].Imag;  
         } else {
             dataTmp[i + shiftSize].Real = dataIn[i].Real;  
             dataTmp[i + shiftSize].Imag = dataIn[i].Imag;  
@@ -477,15 +479,17 @@ void svkMrsImageFFT::FFTShift( vtkImageComplex* dataIn, int numPoints )
 
 
 /*!
- *  Shifts the zero frequency component from center to origin, for example in preparation for 
- *  an IFFT. 
+ *  Shifts the zero frequency component from center to origin, for example 
+ *  in preparation for an IFFT. 
  *  Behaves differently for even and odd data lengths. 
+ *  Assumes that the data is ordered from low to high frequency. 
  */
 void svkMrsImageFFT::IFFTShift( vtkImageComplex* dataIn, int numPoints )
 {
 
     float origin =  static_cast<float>(numPoints - 1)/ 2. ; 
     int shiftSize = static_cast<int>( ceil( origin ) ); 
+    int oddCorrection = numPoints%2; 
 
     vtkImageComplex* dataTmp = new vtkImageComplex[ numPoints ];
 
@@ -494,8 +498,8 @@ void svkMrsImageFFT::IFFTShift( vtkImageComplex* dataIn, int numPoints )
             dataTmp[i - shiftSize].Real = dataIn[i].Real;  
             dataTmp[i - shiftSize].Imag = dataIn[i].Imag;  
         } else {
-            dataTmp[i + shiftSize].Real = dataIn[i].Real;  
-            dataTmp[i + shiftSize].Imag = dataIn[i].Imag;  
+            dataTmp[i + shiftSize + oddCorrection].Real = dataIn[i].Real;  
+            dataTmp[i + shiftSize + oddCorrection].Imag = dataIn[i].Imag;  
         }
     }
     for (int i = 0; i < numPoints; i++) {
