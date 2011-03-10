@@ -60,10 +60,19 @@
 
 #include <vtkImageDecomposeFilter.h>
 
+
 namespace svk {
     
+
 using namespace svk;
 
+
+/*!
+ *  Version of vtkImageFourierCenter with option for reversing the operation.
+ *  The reverse opteration isn't symmetric for data with an odd number of 
+ *  points.  Operates on vtkImageData.  See svkMrsImageFourierCenter for
+ *  version that operates on spectral data. 
+ */
 class svkImageFourierCenter : public vtkImageDecomposeFilter
 {
 
