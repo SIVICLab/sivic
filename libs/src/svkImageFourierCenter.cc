@@ -88,7 +88,7 @@ svkImageFourierCenter::~svkImageFourierCenter()
 
 /*!
  *  This method tells the superclass which input extent is needed.
- * This gets the whole input (even though it may not be needed).
+ *  This gets the whole input (even though it may not be needed).
  */
 int svkImageFourierCenter::IterativeRequestUpdateExtent( vtkInformation* input, vtkInformation* output)
 {
