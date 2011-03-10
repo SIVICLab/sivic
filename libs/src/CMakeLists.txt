@@ -200,6 +200,7 @@ ADD_LIBRARY(
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkMrsImageFlip.cc
+    svkMrsImageFourierCenter.cc
     svkImageLinearPhase.cc
     svkImageMapToWindowLevelColors.cc
     svkImageMapToColors.cc
