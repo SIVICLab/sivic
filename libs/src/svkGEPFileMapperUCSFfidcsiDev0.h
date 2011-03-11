@@ -95,8 +95,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                         ); 
         void            ReverseOddEPSILobe( svkImageData* data, int epsiAxis ); 
         void            ZeroFill( svkImageData* data ); 
-
-
+        void            FlipAxis( svkImageData* data, int axis ); 
 
 };
 

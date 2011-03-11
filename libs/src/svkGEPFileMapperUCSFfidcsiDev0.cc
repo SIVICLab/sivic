@@ -42,6 +42,7 @@
 
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkMrsImageData.h>
+#include <svkMrsImageFlip.h>
 #include <svkEPSIPhaseCorrect.h>
 #include <vtkDebugLeaks.h>
 
@@ -385,6 +386,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->ReverseOddEPSILobe( data, epsiAxis ); 
 
+    //  =================================================
+    //  if feet first entry, reverse LP and SI direction: 
+    //  =================================================
+    this->FlipAxis( data, 0); 
+    this->FlipAxis( data, 2); 
+
 
     //  =================================================
     //  resample ramp data 
@@ -405,7 +412,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     //  Account for patient entry
     //  =================================================
-    this->ModifyForPatientEntry(data); 
+//    this->ModifyForPatientEntry(data); 
 
 }
 
@@ -436,6 +443,27 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     epsiPhase->Delete(); 
     tmpData->Delete(); 
 
+}
+
+
+/*!
+ *  Reverses the specified axis. 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis ) 
+{
+
+    svkMrsImageData* tmpData = svkMrsImageData::New();
+    tmpData->DeepCopy( data ); 
+
+    svkMrsImageFlip* flip = svkMrsImageFlip::New(); 
+    flip->SetFilteredAxis( axis ); 
+    flip->SetInput( tmpData ); 
+    flip->Update(); 
+
+    data->DeepCopy( flip->GetOutput() ); 
+
+    flip->Delete(); 
+    tmpData->Delete(); 
 }
 
 
@@ -620,7 +648,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
     data->DeepCopy( reversedImageData ); 
     data->Modified();
     reversedImageData->Delete(); 
-
 }
 
 
