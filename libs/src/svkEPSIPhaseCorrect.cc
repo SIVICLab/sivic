@@ -172,7 +172,6 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
 
     //  Iterate through 3D spatial locations
-    cout << "SUDS: " << numLobes << " " << slices << " " << rows << " " << cols << endl;
     for (int lobe = 0; lobe < numLobes; lobe++) {
         for (int z = 0; z < slices; z++) {
             for (int y = 0; y < rows; y++) {
@@ -188,7 +187,6 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                     }
 
                     vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, lobe, 0) );
-cout << "SPECTRUM NUMBER: " << x << " " << y << " " << z << " " << lobe << endl;
 
                     //  Iterate over frequency points in spectrum and apply phase correction:
                     for ( int freq = 0; freq < numSpecPts; freq++ ) {
@@ -286,7 +284,7 @@ cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
             //kIncrement = ( k - kOrigin )/( numKPts );
             freqIncrement = ( f - fOrigin )/( numSpecPts );
             mult = 2 * Pi * kIncrement * freqIncrement; 
-cout << "multiplier( " << k << ", " << f << ") = " << mult << " " << k - kOrigin + 1<< " " << (f - fOrigin)/(numSpecPts * numKPts * 2)<< " cos: " << cos(mult) << " sin: " << sin(mult) << endl;
+//cout << "multiplier( " << k << ", " << f << ") = " << mult << " " << k - kOrigin + 1<< " " << (f - fOrigin)/(numSpecPts * numKPts * 2)<< " cos: " << cos(mult) << " sin: " << sin(mult) << endl;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
         }
