@@ -89,6 +89,9 @@ void svkMrsImageFourierCenter::SetShiftDomain( ShiftDomain domain)
 
 /*
  *  Sets the domain to shift, spectral or spatial. 
+ *  FORWARD is used to move 0 frequency from the origin to the image center. 
+ *  REVERSE is used to move 0 frequency from the image center to the origin.
+ *  image origin.
  */
 void svkMrsImageFourierCenter::SetShiftDirection( ShiftDirection direction)
 {
@@ -146,6 +149,8 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
 
                 svkImageFourierCenter* imageShift = svkImageFourierCenter::New();
 
+                //  Reverse is used to move the 0 frequency component from the 
+                //  image center back to the image origin as required for FFT algo. 
                 if ( this->shiftDirection == svkMrsImageFourierCenter::REVERSE ) {
                     imageShift->SetReverseCenter( true );
                 }
@@ -168,6 +173,14 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
     this->GetInput()->Update();
 
 } 
+
+
+/*
+ *  Apply to spectral dimensions
+ */
+void svkMrsImageFourierCenter::ApplySpectralShift() 
+{
+}
 
 
 /*!

@@ -58,7 +58,7 @@ using namespace std;
 
 /*! 
  *  Reverses the svkMrsImageData spatial data ordering (voxels) along the specified 
- *  axis. 
+ *  axis (currently only operates on all dimensions and spectral domain not yet supported). 
  */
 class svkMrsImageFourierCenter : public svkImageInPlaceFilter
 {
