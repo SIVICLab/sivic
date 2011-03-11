@@ -43,6 +43,7 @@
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkMrsImageData.h>
 #include <svkMrsImageFlip.h>
+#include <svkMrsImageFourierCenter.h>
 #include <svkEPSIPhaseCorrect.h>
 #include <vtkDebugLeaks.h>
 
@@ -386,6 +387,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->ReverseOddEPSILobe( data, epsiAxis ); 
 
+
     //  =================================================
     //  if feet first entry, reverse LP and SI direction: 
     //  =================================================
@@ -394,12 +396,21 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
 
     //  =================================================
+    //  FFTShift:  put the origin of k-space at the image
+    //  center so it's suitable for standard downstream 
+    //  FFT.
+    //  =================================================
+    this->FFTShift( data ); 
+   
+
+    //  =================================================
     //  resample ramp data 
     //  =================================================
 
 
     //  =================================================
-    //  Zero fill in frequency domain
+    //  Zero fill in frequency domain (should be moved to
+    //  post-processing step)
     //  =================================================
     this->ZeroFill(data); 
 
@@ -410,9 +421,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
 
     //  =================================================
-    //  Account for patient entry
+    //  Account for patient entry.. need to review, not sure this
+    //   is necessary after the axis flips above. 
     //  =================================================
-//    this->ModifyForPatientEntry(data); 
+//this->ModifyForPatientEntry(data); 
 
 }
 
@@ -463,6 +475,30 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis )
     data->DeepCopy( flip->GetOutput() ); 
 
     flip->Delete(); 
+    tmpData->Delete(); 
+}
+
+
+/*!
+ *  Shift the spatial k-space origin to the image center
+ *  so the output data is suitable for standard FFT 
+ *  recon which expects the origin to be in the center. 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::FFTShift( svkImageData* data )
+{
+
+    svkMrsImageData* tmpData = svkMrsImageData::New();
+    tmpData->DeepCopy( data ); 
+
+    svkMrsImageFourierCenter* fftShift = svkMrsImageFourierCenter::New(); 
+    fftShift->SetShiftDomain( svkMrsImageFourierCenter::SPATIAL ); 
+    fftShift->SetShiftDirection( svkMrsImageFourierCenter::FORWARD); 
+    fftShift->SetInput( tmpData ); 
+    fftShift->Update(); 
+
+    data->DeepCopy( fftShift->GetOutput() ); 
+
+    fftShift->Delete(); 
     tmpData->Delete(); 
 }
 
