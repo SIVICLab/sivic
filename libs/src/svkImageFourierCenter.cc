@@ -114,7 +114,7 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     double *outPtr0, *outPtr1, *outPtr2;
     vtkIdType inInc0, inInc1, inInc2;
     vtkIdType outInc0, outInc1, outInc2;
-    int *wholeExtent, wholeMin0, wholeMax0, mid0;
+    int *wholeExtent, wholeMin0, wholeMax0; 
     int inIdx0, outIdx0, idx1, idx2;
     int min0, max0, min1, max1, min2, max2;
     int numberOfComponents;
@@ -155,12 +155,13 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     wholeMin0 = wholeExtent[this->Iteration * 2];
     wholeMax0 = wholeExtent[this->Iteration * 2 + 1];  
 
-    // Reversing is different for odd size, but the same for even
-    if( this->reverseCenter ) {
-        mid0 = (wholeMin0 + wholeMax0 + 2) / 2;
-    } else {
-        mid0 = (wholeMin0 + wholeMax0 + 1) / 2;
-    }
+    //  Reversing is different for odd size, but the same for even
+    //  wholeMin0 + wholwMax0 is the range of indices in this
+    //  dimension.  The number of points is 1 more:  e.g. 0,1,2 is 3 pts. 
+    int numPts = wholeMin0 + wholeMax0 + 1; 
+    float mid0 = static_cast<float>(numPts - 1) / 2.;
+    int shiftSize = static_cast<int>( ceil( mid0 ) );
+    int oddCorrection = numPts%2; 
 
     // initialize input coordinates
     inCoords[0] = outExt[0];
@@ -170,13 +171,31 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
     target = static_cast<unsigned long>((max2-min2+1)*(max0-min0+1) * this->GetNumberOfIterations() / 50.0);
     target++;
 
-    // loop over the filtered axis first
+    //  loop over the filtered axis first
+    //  This looked at from the point of view of the input index and so the
+    //  logic is reversed from that used by the spectral FFT shift algorithm. 
     for (outIdx0 = min0; outIdx0 <= max0; ++outIdx0) {
+
         // get the correct input pointer
-        inIdx0 = outIdx0 + mid0;
-        if (inIdx0 > wholeMax0) {
-            inIdx0 -= (wholeMax0 - wholeMin0 + 1);
+
+        if( this->reverseCenter ) {
+
+            if ( outIdx0 > mid0 ) {
+                inIdx0 = outIdx0 - shiftSize - oddCorrection;
+            } else {
+                inIdx0 = outIdx0 + shiftSize ;
+            }
+
+        } else {
+
+            if ( outIdx0 >= mid0 ) {
+                inIdx0 = outIdx0 - shiftSize; 
+            } else {
+                inIdx0 = outIdx0 + shiftSize + oddCorrection;
+            }
+
         }
+
         inCoords[this->Iteration] = inIdx0;
         inPtr0 = static_cast<double *>(inData->GetScalarPointer(inCoords));
     
