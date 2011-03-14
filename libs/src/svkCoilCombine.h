@@ -62,12 +62,16 @@ using namespace std;
 
 
 /*! 
- *  Class that combines single coild data into a combined image.  Data must be in phase prior to combining for 
- *  constructive addition of complex data (see svkMultiCoilPhase).  The weighting factors used in the linear 
+ *  WARNING:  
+ *  This Algorithm is a beta version for RSNA that simply adds the complex values from each coil without weighting. 
+
+ *  Class that combines single coild data into a combined image.  Complex data must be in phase prior to combining for 
+ *  constructive addition of complex data (see svkMultiCoilPhase).  Sum of squares outputs magnitude data and is not
+ *  sensitive to the phase of the complex input data. The weighting factors used in the linear 
  *  combination may be set from a) spatially dependent coil sensitivity maps (experimentally derived or other), 
  *  b) peak amplitude (e.g. h20 peak), or constant. 
  *  
- *  This Algorithm is a beta version for RSNA, but is(will be) based on methodes derived and validated in 
+ *  This is(will be) based on methodes derived and validated in 
  *  the Sarah Nelson lab at UCSF, Department of Radiology and Biomedical Imaging. 
  *
  *  References:
@@ -84,8 +88,13 @@ class svkCoilCombine : public svkImageInPlaceFilter
         static svkCoilCombine* New();
         vtkTypeRevisionMacro( svkCoilCombine, svkImageInPlaceFilter);
 
-        float   PhaseBySymmetry( vtkFloatArray* spectrum, int peakMaxPtIn, int peakStartPtIn, int peakStopPtIn); 
 
+        typedef enum {
+            ADDITION = 0,
+            SUM_OF_SQUARES
+        } CombinationMethod;
+
+        void    SetCombinationMethod( CombinationMethod method);
 
 
     protected:
@@ -111,7 +120,10 @@ class svkCoilCombine : public svkImageInPlaceFilter
 
     private:
 
-        void            RedimensionData( svkImageData* data ); 
+        void                RedimensionData(); 
+        CombinationMethod   combinationMethod; 
+        void                RequestAdditionData(); 
+        void                RequestSumOfSquaresData(); 
 
 
 };

@@ -59,11 +59,22 @@ svkCoilCombine::svkCoilCombine()
 #endif
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
+
+    this->combinationMethod = svkCoilCombine::ADDITION; 
 }
 
 
 svkCoilCombine::~svkCoilCombine()
 {
+}
+
+
+/*
+ *
+ */
+void svkCoilCombine::SetCombinationMethod( CombinationMethod method)
+{
+    this->combinationMethod = method; 
 }
 
 
@@ -82,13 +93,37 @@ int svkCoilCombine::RequestInformation( vtkInformation* request, vtkInformationV
 int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
-    svkImageData* data = this->GetImageDataInput(0); 
+    if ( this->combinationMethod == ADDITION ) {
+        this->RequestAdditionData(); 
+    } else if (this->combinationMethod == SUM_OF_SQUARES ) {
+        this->RequestSumOfSquaresData(); 
+    }
 
-    int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
-    int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    //  Redimension data set:
+    this->RedimensionData(); 
+
+    //  Trigger observer update via modified event:
+    this->GetInput()->Modified();
+    this->GetInput()->Update();
+    return 1; 
+
+}
+
+
+/*!
+ *  Combine data by adding complex values.  No weighting is applied.
+ */
+void svkCoilCombine::RequestAdditionData()
+{
+
+    //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
+    svkDcmHeader* hdr  = data->GetDcmHeader();
+
+    int numFrequencyPoints  = hdr->GetIntValue( "DataPointColumns" );
+    int numChannels         = hdr->GetNumberOfCoils();
+    int numTimePts          = hdr->GetNumberOfTimePoints();
+    int numComponents       = data->GetCellData()->GetNumberOfComponents();
 
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
@@ -101,8 +136,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
             for (int y = 0; y < numVoxels[1]; y++) {
                 for (int x = 0; x < numVoxels[0]; x++) {
 
-                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>(
-                        svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, 0) );
+                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, 0) );
 
                     for( int channel = 1; channel < numChannels; channel++ ) { 
 
@@ -110,13 +144,13 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
                                             svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
     
                         for (int i = 0; i < numFrequencyPoints; i++) {
-
+    
                             spectrum0->GetTupleValue(i, cmplxPt0);
                             spectrumN->GetTupleValue(i, cmplxPtN);
-
+    
                             cmplxPt0[0] += cmplxPtN[0]; 
                             cmplxPt0[1] += cmplxPtN[1]; 
-
+    
                             spectrum0->SetTuple( i, cmplxPt0);
                         }
 
@@ -126,21 +160,86 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
         }
     }
 
-    //  Redimension data set:
-    this->RedimensionData( data ); 
 
-    //  Trigger observer update via modified event:
-    this->GetInput()->Modified();
-    this->GetInput()->Update();
-    return 1; 
 } 
+
+
+/*!
+ *  Combine data by sum of squares.  Input data is complex, output data is magnitude (one component). 
+ */
+void svkCoilCombine::RequestSumOfSquaresData()
+{
+
+    //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
+    svkDcmHeader* hdr = data->GetDcmHeader();
+
+    int numFrequencyPoints  = hdr->GetIntValue( "DataPointColumns" );
+    int numChannels         = hdr->GetNumberOfCoils();
+    int numTimePts          = hdr->GetNumberOfTimePoints();
+
+    int numVoxels[3]; 
+    data->GetNumberOfVoxels(numVoxels); 
+
+    //  Magnitude Output 
+    int numComponents = 1; 
+
+
+    // For each voxel, add data from individual voxels:  
+    float cmplxPtN[2];
+    float magnigutdValue; 
+
+    for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+        for (int z = 0; z < numVoxels[2]; z++) {
+            for (int y = 0; y < numVoxels[1]; y++) {
+                for (int x = 0; x < numVoxels[0]; x++) {
+
+                    float* magnitudeData = new float[numFrequencyPoints];
+
+                    for (int freq = 0; freq < numFrequencyPoints; freq++) {
+
+                        magnitudeData[ freq ] = 0.; 
+
+                        //  foreach freq point, get sum of squares over all channels
+                        for( int channel = 0; channel < numChannels; channel++ ) { 
+
+                            vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
+    
+                            spectrumN->GetTupleValue(freq, cmplxPtN);
+    
+                            magnitudeData[ freq ] += (cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1]); 
+    
+                        }
+
+                    }
+
+                    //  Now reset the array for channel 0 to the magnitude data: 
+                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, 0) );
+                    spectrum0->SetArray(magnitudeData, numFrequencyPoints, 0);  
+                    spectrum0->SetNumberOfComponents(1);
+                }
+            }
+        }
+    }
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "DataRepresentation",
+        "MAGNITUDE" 
+    );
+
+}
 
 
 /*!
  *  Remove coil dimension from data set:
  */
-void svkCoilCombine::RedimensionData( svkImageData* data )
-{
+void svkCoilCombine::RedimensionData()
+{ 
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) );
+
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
 
