@@ -104,89 +104,90 @@ class svkGEPFileMapper : public vtkObject
         ~svkGEPFileMapper();
   
 
-        void            InitPatientModule();
-        void            InitGeneralStudyModule();
-        void            InitGeneralSeriesModule();
-        void            InitFrameOfReferenceModule();
-        void            InitGeneralEquipmentModule();
-        void            InitEnhancedGeneralEquipmentModule(); 
-        virtual void    InitMultiFrameFunctionalGroupsModule();
-        virtual void    InitAcquisitionContextModule();
-        virtual void    InitMRSpectroscopyPulseSequenceModule();
-        virtual void    InitSharedFunctionalGroupMacros();
-        virtual void    InitPerFrameFunctionalGroupMacros();
-        virtual void    InitPixelMeasuresMacro();
-        virtual void    InitPlaneOrientationMacro();
-        virtual void    InitMRSpectroscopyFrameTypeMacro();
-        virtual void    InitMRTimingAndRelatedParametersMacro();
-        virtual void    InitMRSpectroscopyFOVGeometryMacro();
-        virtual void    InitMREchoMacro();
-        virtual void    InitMRModifierMacro();
-        virtual void    InitMRReceiveCoilMacro();
-        virtual void    InitMRTransmitCoilMacro();
-        virtual void    InitMRAveragesMacro();
-        virtual void    InitMRSpatialSaturationMacro();
-        virtual void    InitSatBand( float satRAS[3], float translation, int satBandNumber ); 
-        virtual void    InitMRSpectroscopyModule();
-        virtual void    InitVolumeLocalizationSeq();
-        virtual void    InitMRSpectroscopyDataModule();
+        void                    InitPatientModule();
+        void                    InitGeneralStudyModule();
+        void                    InitGeneralSeriesModule();
+        void                    InitFrameOfReferenceModule();
+        void                    InitGeneralEquipmentModule();
+        void                    InitEnhancedGeneralEquipmentModule(); 
+        virtual void            InitMultiFrameFunctionalGroupsModule();
+        virtual void            InitAcquisitionContextModule();
+        virtual void            InitMRSpectroscopyPulseSequenceModule();
+        virtual void            InitSharedFunctionalGroupMacros();
+        virtual void            InitPerFrameFunctionalGroupMacros();
+        virtual void            InitPixelMeasuresMacro();
+        virtual void            InitPlaneOrientationMacro();
+        virtual void            InitMRSpectroscopyFrameTypeMacro();
+        virtual void            InitMRTimingAndRelatedParametersMacro();
+        virtual void            InitMRSpectroscopyFOVGeometryMacro();
+        virtual void            InitMREchoMacro();
+        virtual void            InitMRModifierMacro();
+        virtual void            InitMRReceiveCoilMacro();
+        virtual void            InitMRTransmitCoilMacro();
+        virtual void            InitMRAveragesMacro();
+        virtual void            InitMRSpatialSaturationMacro();
+        virtual void            InitSatBand( float satRAS[3], float translation, int satBandNumber ); 
+        virtual void            InitMRSpectroscopyModule();
+        virtual vtkstd::string  GetVolumeLocalizationTechnique();
+        virtual void            InitVolumeLocalizationSeq();
+        virtual void            InitMRSpectroscopyDataModule();
 
-        virtual void    GetCenterFromRawFile( double* center );
-        virtual float   GetFrequencyOffset(); 
-        int             GetNumVoxelsInVol();
-        virtual void    GetNumVoxels( int numVoxels[3] ); 
-        virtual int     GetNumKSpacePoints(); 
-        void            GetVoxelSpacing( double voxelSpacing[3] ); 
-        void            GetFOV( float fov[3] ); 
-        int             GetNumCoils(); 
-        int             GetNumFrames(); 
-        virtual int     GetNumTimePoints(); 
-        virtual int     GetNumDummyScans(); 
-        bool            AddDummy( int offset, int coilNum, int timePt ); 
-        void            GetDcos( double dcos[3][3] ); 
-        float           GetPPMRef(); 
-        bool            IsSwapOn(); 
-        bool            Is2D(); 
-        virtual bool    IsChopOn(); 
-        void            GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z); 
-        void            UpdateProgress(double amount);
-        virtual void    ModifyBehavior( svkImageData* data ); 
-        void            RedimensionModifiedSVData( svkImageData* data ); 
-        virtual int     GetNumberUnsuppressedAcquisitions(); 
-        virtual int     GetNumberSuppressedAcquisitions(); 
-        virtual void    GetSelBoxCenter( float selBoxCenter[3] ); 
-        virtual void    GetSelBoxSize( float selBoxSize[3] ); 
+        virtual void            GetCenterFromRawFile( double* center );
+        virtual float           GetFrequencyOffset(); 
+        int                     GetNumVoxelsInVol();
+        virtual void            GetNumVoxels( int numVoxels[3] ); 
+        virtual int             GetNumKSpacePoints(); 
+        void                    GetVoxelSpacing( double voxelSpacing[3] ); 
+        void                    GetFOV( float fov[3] ); 
+        int                     GetNumCoils(); 
+        int                     GetNumFrames(); 
+        virtual int             GetNumTimePoints(); 
+        virtual int             GetNumDummyScans(); 
+        bool                    AddDummy( int offset, int coilNum, int timePt ); 
+        void                    GetDcos( double dcos[3][3] ); 
+        float                   GetPPMRef(); 
+        bool                    IsSwapOn(); 
+        bool                    Is2D(); 
+        virtual bool            IsChopOn(); 
+        void                    GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z); 
+        void                    UpdateProgress(double amount);
+        virtual void            ModifyBehavior( svkImageData* data ); 
+        void                    RedimensionModifiedSVData( svkImageData* data ); 
+        virtual int             GetNumberUnsuppressedAcquisitions(); 
+        virtual int             GetNumberSuppressedAcquisitions(); 
+        virtual void            GetSelBoxCenter( float selBoxCenter[3] ); 
+        virtual void            GetSelBoxSize( float selBoxSize[3] ); 
 
 
-        void            SetCellSpectrum( 
-                            vtkImageData* data, 
-                            bool wasSampled, 
-                            int offset, 
-                            int index, 
-                            int x, int y, int z, 
-                            int timePoint = 0, 
-                            int channel = 0
-                        );
+        void                    SetCellSpectrum( 
+                                    vtkImageData* data, 
+                                    bool wasSampled, 
+                                    int offset, 
+                                    int index, 
+                                    int x, int y, int z, 
+                                    int timePoint = 0, 
+                                    int channel = 0
+                                );
 
-        int             GetHeaderValueAsInt(vtkstd::string key);
-        float           GetHeaderValueAsFloat(vtkstd::string key);
-        vtkstd::string  GetHeaderValueAsString(vtkstd::string key);
-        virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex); 
-        vtkstd::string  ConvertGEDateToDICOM( vtkstd::string geDate ); 
-        void            GetOriginFromCenter( 
+        int                     GetHeaderValueAsInt(vtkstd::string key);
+        float                   GetHeaderValueAsFloat(vtkstd::string key);
+        vtkstd::string          GetHeaderValueAsString(vtkstd::string key);
+        virtual bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
+        vtkstd::string          ConvertGEDateToDICOM( vtkstd::string geDate ); 
+        void                    GetOriginFromCenter( 
                                              double center[3], 
                                              int numVoxels[3], 
                                              double voxelSpacing[3], 
                                              double dcos[3][3], 
                                              double origin[3] 
-                        ); 
-        void            GetCenterFromOrigin( 
+                                ); 
+        void                    GetCenterFromOrigin( 
                                              double origin[3], 
                                              int numVoxels[3], 
                                              double voxelSpacing[3], 
                                              double dcos[3][3], 
                                              double center[3] 
-                        ); 
+                                ); 
 
 
         vtkstd::string                          progressText;

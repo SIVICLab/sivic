@@ -89,6 +89,16 @@ bool svkGEPFileMapperUCSFfidcsiDev0::IsChopOn()
 }
 
 
+/*
+ *  Returns the volume localization type = NONE. 
+ */
+vtkstd::string  svkGEPFileMapperUCSFfidcsiDev0::GetVolumeLocalizationTechnique()
+{
+    vtkstd::string localizationType("NONE");
+    return localizationType; 
+}
+
+
 /*!
  *
  */

@@ -75,28 +75,29 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         svkGEPFileMapperUCSFfidcsiDev0();
         ~svkGEPFileMapperUCSFfidcsiDev0();
   
-        virtual void    GetSelBoxCenter( float selBoxCenter[3] );
-        virtual void    GetSelBoxSize( float selBoxSize[3] );
-        virtual void    GetCenterFromRawFile( double* center ); 
-        virtual bool    IsChopOn(); 
-        void            ModifyForPatientEntry( svkImageData* data ); 
+        virtual vtkstd::string  GetVolumeLocalizationTechnique(); 
+        virtual void            GetSelBoxCenter( float selBoxCenter[3] );
+        virtual void            GetSelBoxSize( float selBoxSize[3] );
+        virtual void            GetCenterFromRawFile( double* center ); 
+        virtual bool            IsChopOn(); 
+        void                    ModifyForPatientEntry( svkImageData* data ); 
 
 
     private: 
 
-        void            ReorderEPSIData( svkImageData* data ); 
-        void            RemoveArrays( svkImageData* data ); 
-        void            RedimensionData( svkImageData* data, int* numVoxelsReordered, int numFreqPts ); 
-        void            EPSIPhaseCorrection( 
-                                svkImageData* data, 
-                                int* numVoxels, 
-                                int numRead, 
-                                int epsiAxis
-                        ); 
-        void            ReverseOddEPSILobe( svkImageData* data, int epsiAxis ); 
-        void            ZeroFill( svkImageData* data ); 
-        void            FlipAxis( svkImageData* data, int axis ); 
-        void            FFTShift( svkImageData* data ); 
+        void                    ReorderEPSIData( svkImageData* data ); 
+        void                    RemoveArrays( svkImageData* data ); 
+        void                    RedimensionData( svkImageData* data, int* numVoxelsReordered, int numFreqPts ); 
+        void                    EPSIPhaseCorrection( 
+                                    svkImageData* data, 
+                                    int* numVoxels, 
+                                    int numRead, 
+                                    int epsiAxis
+                                ); 
+        void                    ReverseOddEPSILobe( svkImageData* data, int epsiAxis ); 
+        void                    ZeroFill( svkImageData* data ); 
+        void                    FlipAxis( svkImageData* data, int axis ); 
+        void                    FFTShift( svkImageData* data ); 
 
 };
 

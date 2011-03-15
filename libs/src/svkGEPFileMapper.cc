@@ -1634,16 +1634,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
     );
 
     vtkstd::string localizationType; 
-
-    if ( this->pfileVersion > 9 ) {
-        localizationType.assign( "PRESS" ); 
-    } else {
-        float user0 = this->GetHeaderValueAsFloat( "rhr.rh_user0" );
-        if( user0 == 3 || user0 == 1 ) {
-            localizationType.assign( "PRESS" ); 
-        }
-    }
-
+    localizationType = this->GetVolumeLocalizationTechnique(); 
 
     this->dcmHeader->SetValue(
         "VolumeLocalizationTechnique", 
@@ -1689,6 +1680,26 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
         "WaterReferencedPhaseCorrection", 
         vtkstd::string("NO")
     );
+}
+
+
+/*
+ *  Returns the volume localization type, e.g. PRESS. 
+ */
+vtkstd::string  svkGEPFileMapper::GetVolumeLocalizationTechnique()
+{
+    vtkstd::string localizationType; 
+
+    if ( this->pfileVersion > 9 ) {
+        localizationType.assign( "PRESS" ); 
+    } else {
+        float user0 = this->GetHeaderValueAsFloat( "rhr.rh_user0" );
+        if( user0 == 3 || user0 == 1 ) {
+            localizationType.assign( "PRESS" ); 
+        }
+    }
+
+    return localizationType;     
 }
 
 
