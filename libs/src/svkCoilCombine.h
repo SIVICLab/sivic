@@ -94,7 +94,13 @@ class svkCoilCombine : public svkImageInPlaceFilter
             SUM_OF_SQUARES
         } CombinationMethod;
 
+        typedef enum {
+            COIL = 0,
+            TIME  
+        } CombinationDimension;
+
         void    SetCombinationMethod( CombinationMethod method);
+        void    SetCombinationDimension( CombinationDimension dimension);
 
 
     protected:
@@ -120,10 +126,12 @@ class svkCoilCombine : public svkImageInPlaceFilter
 
     private:
 
-        void                RedimensionData(); 
-        CombinationMethod   combinationMethod; 
-        void                RequestAdditionData(); 
-        void                RequestSumOfSquaresData(); 
+        void                    RedimensionData(); 
+        void                    RequestAdditionData(); 
+        void                    RequestSumOfSquaresData(); 
+
+        CombinationMethod       combinationMethod; 
+        CombinationDimension    combinationDimension; 
 
 
 };

@@ -61,6 +61,7 @@ svkCoilCombine::svkCoilCombine()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     this->combinationMethod = svkCoilCombine::ADDITION; 
+    this->combinationDimension = svkCoilCombine::COIL; 
 }
 
 
@@ -77,6 +78,14 @@ void svkCoilCombine::SetCombinationMethod( CombinationMethod method)
     this->combinationMethod = method; 
 }
 
+
+/*
+ *
+ */
+void svkCoilCombine::SetCombinationDimension( CombinationDimension dimension )
+{
+    this->combinationDimension = dimension; 
+}
 
 /*! 
  *
@@ -101,6 +110,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Redimension data set:
     this->RedimensionData(); 
+cout << "RD: " << *( this->GetImageDataInput(0) ) << endl;;
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -189,45 +199,76 @@ void svkCoilCombine::RequestSumOfSquaresData()
     float cmplxPtN[2];
     float magnigutdValue; 
 
-    for (int timePt = 0; timePt < numTimePts; timePt++) {
+
+    int outterLoopLimits[2];
+    int innerLoopLimits[2];
+
+    if ( this->combinationDimension == COIL ) {
+        outterLoopLimits[0] = 0; 
+        outterLoopLimits[1] = numTimePts; 
+        innerLoopLimits[0] = 0; 
+        innerLoopLimits[1] = numChannels; 
+    } else if ( this->combinationDimension == TIME ) {
+        outterLoopLimits[0] = 0; 
+        outterLoopLimits[1] = numChannels; 
+        innerLoopLimits[0] = 0; 
+        innerLoopLimits[1] = numTimePts; 
+    }
+
+
+    int timePt; 
+    int channel; 
+    for (int outterLoopIndex = 0; outterLoopIndex < outterLoopLimits[1]; outterLoopIndex++) {
 
         for (int z = 0; z < numVoxels[2]; z++) {
             for (int y = 0; y < numVoxels[1]; y++) {
                 for (int x = 0; x < numVoxels[0]; x++) {
 
-                    float* magnitudeData = new float[numFrequencyPoints];
+                    //float* magnitudeData = new float[numFrequencyPoints];
+                    float* magnitudeData = new float[numFrequencyPoints * 2];
 
                     for (int freq = 0; freq < numFrequencyPoints; freq++) {
 
-                        magnitudeData[ freq ] = 0.; 
+                        magnitudeData[ freq * 2 ] = 0.; 
+                        magnitudeData[ freq * 2 + 1] = 0.; 
 
                         //  foreach freq point, get sum of squares over all channels
-                        for( int channel = 0; channel < numChannels; channel++ ) { 
+                        for( int innerLoopIndex = 0; innerLoopIndex < innerLoopLimits[1]; innerLoopIndex++ ) { 
+
+                            if ( this->combinationDimension == COIL ) {
+                                timePt  = outterLoopIndex; 
+                                channel = innerLoopIndex; 
+                            } else if ( this->combinationDimension == TIME ) {
+                                channel = outterLoopIndex; 
+                                timePt  = innerLoopIndex; 
+                            }
 
                             vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
                                             svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
     
                             spectrumN->GetTupleValue(freq, cmplxPtN);
     
-                            magnitudeData[ freq ] += (cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1]); 
+                            magnitudeData[ freq *2 ] += ( cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1] ); 
+                            magnitudeData[ (freq *2) + 1 ] += 0; 
     
                         }
 
                     }
 
                     //  Now reset the array for channel 0 to the magnitude data: 
-                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, 0) );
-                    spectrum0->SetArray(magnitudeData, numFrequencyPoints, 0);  
-                    spectrum0->SetNumberOfComponents(1);
+                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, 0, 0) );
+                    //spectrum0->SetNumberOfComponents(1);
+                    spectrum0->SetNumberOfComponents(2);
+                    spectrum0->SetArray(magnitudeData, numFrequencyPoints*2, 1);  
                 }
             }
         }
     }
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "DataRepresentation",
-        "MAGNITUDE" 
-    );
+//this->GetOutput()->GetDcmHeader()->SetValue(
+ //"DataRepresentation",
+ //"MAGNITUDE" 
+//);
 
 }
 
@@ -246,9 +287,24 @@ void svkCoilCombine::RedimensionData()
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
+    int minTimePt; 
+    int minChannel; 
+    int newNumTimePts = numTimePts; 
+    int newNumChannels = numCoils; 
+
+    if ( this->combinationDimension == COIL ) {
+        minTimePt  = 0; 
+        minChannel = 1; 
+        newNumChannels = 1; 
+    } else if ( this->combinationDimension == TIME ) {
+        minTimePt  = 1; 
+        minChannel = 0; 
+        newNumTimePts = 1; 
+    }
+
     //  Remove all arrays with coil number > 0
-    for (int coilNum = 1; coilNum < numCoils; coilNum++) {
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
+    for (int coilNum = minChannel; coilNum < numCoils; coilNum++) {
+        for (int timePt = minTimePt; timePt < numTimePts; timePt++) {
             for (int z = 0; z < numVoxels[2]; z++) {
                 for (int y = 0; y < numVoxels[1]; y++) {
                     for (int x = 0; x < numVoxels[0]; x++) {
@@ -275,8 +331,8 @@ void svkCoilCombine::RedimensionData()
         voxelSpacing,
         dcos, 
         data->GetDcmHeader()->GetNumberOfSlices(), 
-        numTimePts, 
-        1 
+        newNumTimePts, 
+        newNumChannels  
     );
 
     data->GetDcmHeader()->PrintDcmHeader( ); 

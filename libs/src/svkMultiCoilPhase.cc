@@ -298,6 +298,7 @@ float svkMultiCoilPhase::CalculateCenterPhase( int timePt, int coilNum )
     return phaseTotal/8.0;
 }
 
+
 /*!
  *  Returns the phase of the peak at the specified position determined by
  *  maximizing the real component symmetry: left and right side should have equivalent
