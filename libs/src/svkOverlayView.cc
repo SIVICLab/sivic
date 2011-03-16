@@ -534,10 +534,11 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
             this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
         }
         int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
-        if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( newSpectraSlice, orientation )                       && isPropOn[VOL_SELECTION] 
+        if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( newSpectraSlice, orientation ) 
+                 && isPropOn[VOL_SELECTION] 
                  && this->toggleSelBoxVisibility) {
             this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
-        } else if( this->toggleSelBoxVisibility ) {
+        } else if( this->GetProp( svkOverlayView::VOL_SELECTION) && this->toggleSelBoxVisibility ) {
             this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
         }
         if(  newSpectraSlice >= this->dataVector[MRS]->GetFirstSlice( this->orientation ) &&
