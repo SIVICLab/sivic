@@ -74,22 +74,22 @@ int main (int argc, char** argv)
     usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type \n"; 
     usemsg += "                 [ --deid_type type [ --deid_id id ] ] [-h]                   \n";
     usemsg += "\n";  
-    usemsg += "   -i input_file_name        name of file to convert.        \n"; 
-    usemsg += "   -o output_file_name       name of outputfile.             \n";  
-    usemsg += "   -t output_data_type       target data type:               \n";  
-    usemsg += "                                 2 = UCSF DDF                \n";  
-    usemsg += "                                 3 = UCSF IDF                \n";  
-    usemsg += "                                 4 = DICOM_MRS               \n";  
-    usemsg += "                                 5 = DICOM_MRI               \n";  
-    usemsg += "                                 6 = DICOM_Enhanced MRI      \n";  
-    usemsg += "   --deid_type           type  Type of deidentification:     \n";
-    usemsg += "                                 1 = limited (default)       \n";
-    usemsg += "                                 2 = deidentified            \n";
-    usemsg += "   --deid_id             id    replace PHI with this identifier \n"; 
+    usemsg += "   -i            input_file_name     Name of file to convert.        \n"; 
+    usemsg += "   -o            output_file_name    Name of outputfile.             \n";  
+    usemsg += "   -t            output_data_type    Target data type:               \n";  
+    usemsg += "                                         2 = UCSF DDF                \n";  
+    usemsg += "                                         3 = UCSF IDF                \n";  
+    usemsg += "                                         4 = DICOM_MRS               \n";  
+    usemsg += "                                         5 = DICOM_MRI               \n";  
+    usemsg += "                                         6 = DICOM_Enhanced MRI      \n";  
+    usemsg += "   --deid_type   type                Type of deidentification:     \n";
+    usemsg += "                                         1 = limited (default)       \n";
+    usemsg += "                                         2 = deidentified            \n";
+    usemsg += "   --deid_id     id                  Replace PHI with this identifier \n"; 
 #if defined( UCSF_INTERNAL )
-    usemsg += "   -b                      burn UCSF Radiology Research into pixels of each image. \n";  
+    usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
-    usemsg += "   -h                      print help mesage. \n";  
+    usemsg += "   -h                                Print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Converts the input file to the specified target file type \n";  
     usemsg += "\n";  
@@ -111,8 +111,8 @@ int main (int argc, char** argv)
 
     static struct option long_options[] =
     {
-        {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE}, 
-        {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
+        {"deid_type",   required_argument, NULL,  FLAG_DEID_TYPE}, 
+        {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {0, 0, 0, 0}
     };
 
