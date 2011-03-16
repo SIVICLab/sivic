@@ -258,6 +258,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svkMrsCombine
+    svkMrsCombine.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMrsCombine
+	${SVK_LIBS}
+)
+
 include(CMakeSivicTests.cmake)
 
 IF (BUILD_GRAPHICS_TESTING)
