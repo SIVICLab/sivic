@@ -434,7 +434,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  Account for patient entry.. need to review, not sure this
     //   is necessary after the axis flips above. 
     //  =================================================
-//this->ModifyForPatientEntry(data); 
+    this->ModifyForPatientEntry(data); 
 
 }
 
