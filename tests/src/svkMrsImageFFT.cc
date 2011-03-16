@@ -64,6 +64,7 @@ int main (int argc, char** argv)
     }
 
 
+    //  Reverse FFT spatial data: kspace to spatial domain
     svkMrsImageFFT* spatialRFFT= svkMrsImageFFT::New();
     spatialRFFT->SetInput( data );
     spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
@@ -76,6 +77,7 @@ int main (int argc, char** argv)
     spatialRFFT->SetPostPhaseShift( postPhaseShift );
     spatialRFFT->Update();
     
+    //  FFT spectral data: time to frequency domain
     svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
     spectralFFT->SetInput( spatialRFFT->GetOutput() );
     spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
