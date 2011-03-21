@@ -1198,7 +1198,7 @@ void svkPlotGridView::AlignCamera( )
         double* visibleBounds  = this->GetRenderer( svkPlotGridView::PRIMARY)->ComputeVisiblePropBounds();
         double thickness = sqrt( pow( visibleBounds[1] - visibleBounds[0], 2 ) +
                                  pow( visibleBounds[3] - visibleBounds[2], 2 ) +
-                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) );
+                                 pow( visibleBounds[5] - visibleBounds[4], 2 ) ) + fabs(distance);
         this->GetRenderer( svkPlotGridView::PRIMARY)->GetActiveCamera()->SetThickness( thickness );
         double columnNormal[3];
         double viewUp[3];
