@@ -218,6 +218,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_get_filetype
+    svk_get_filetype.cc 
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_get_filetype
+	${SVK_LIBS}
+)
+
 ADD_EXECUTABLE(
     svk_spec_diff
     svk_spec_diff.cc 
