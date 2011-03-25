@@ -81,6 +81,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
 
         //  Methods:
         svkImageReader2*    CreateImageReader2( const char* path );
+        void                QuickParse(); 
 
 
     protected:
@@ -104,6 +105,8 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESigna5XReader*         geSigna5XReader;
         svkGESignaLX2Reader*        geSignaLX2Reader;
         svkGEPostageStampReader*    gePostageStampReader;
+
+        bool                        quickParse; 
 
 };
 

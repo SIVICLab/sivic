@@ -75,6 +75,8 @@ svkGEPFileReader::svkGEPFileReader()
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
+
+    this->onlyParseHeader = false; 
 }
 
 
@@ -108,6 +110,15 @@ svkGEPFileReader::~svkGEPFileReader()
          //delete this->inputArgs[ mapIter->first ];  
         cout << " need to clean up memory" << endl; 
     }
+}
+
+
+/*!
+ *
+ */
+svkGEPFileReader::OnlyParseHeader()
+{
+    this->onlyParseHeader = true; 
 }
 
 
@@ -153,16 +164,20 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                 if ( isGEPFile ) { 
                     this->SetFileName( fname ); 
                     this->ReadGEPFile(); 
-                    this->mapper = this->GetPFileMapper(); 
-                    if ( this->mapper != NULL ) {
+                    if ( this->onlyParseHeader ) {
+                        //  Just for parsing header, don't care about mapping
                         isKnownPSD = true;
+                    } else {
+                        this->mapper = this->GetPFileMapper(); 
+                        if ( this->mapper != NULL ) {
+                            isKnownPSD = true;
+                        }
                     }
                 }
             }
 
 
         }
-
 
     } catch ( ifstream::failure e ) {
 
@@ -227,30 +242,32 @@ void svkGEPFileReader::ExecuteInformation()
 void svkGEPFileReader::ExecuteData(vtkDataObject* output)
 {
 
-    vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
+    if ( ! this->onlyParseHeader ) {
+        vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+        svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
-    this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        vtkDebugMacro( << this->GetClassName() << " FileName: " << this->FileName );
+        this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
-    //  Set the orientation in the svkImageData object, synchronized from the dcm header:
-    double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
-    this->GetOutput()->SetDcos(dcos);
+        //  Set the orientation in the svkImageData object, synchronized from the dcm header:
+        double dcos[3][3];
+        this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
+        this->GetOutput()->SetDcos(dcos);
 
-    this->mapper->ReadData(this->GetFileName(), data);
+        this->mapper->ReadData(this->GetFileName(), data);
 
-    //  resync any header changes with the svkImageData object's member variables
-    this->SetupOutputInformation(); 
+        //  resync any header changes with the svkImageData object's member variables
+        this->SetupOutputInformation(); 
 
-    this->mapper->RemoveObserver(progressCallback);
+        this->mapper->RemoveObserver(progressCallback);
 
-    //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
-    //  been allocated. but that requires the number of components to be specified.
-    this->GetOutput()->GetIncrements();
+        //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
+        //  been allocated. but that requires the number of components to be specified.
+        this->GetOutput()->GetIncrements();
 
-    this->SetProvenance(); 
+        this->SetProvenance(); 
+    }
 
 }
 
@@ -350,30 +367,33 @@ void svkGEPFileReader::InitDcmHeader()
     //  the svkImageData's DICOM header.
     this->ReadGEPFile(); 
 
-    //  Fill in data set specific values using the appropriate mapper type:
-    this->mapper = this->GetPFileMapper(); 
+    if ( ! this->onlyParseHeader ) {
+        //  Fill in data set specific values using the appropriate mapper type:
+        this->mapper = this->GetPFileMapper(); 
     
-    cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
+        cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
 
-    //  all the IE initialization modules would be contained within the 
-    this->mapper->InitializeDcmHeader( 
-        this->pfMap, 
-        this->GetOutput()->GetDcmHeader(), 
-        this->pfileVersion, 
-        this->GetSwapBytes(), 
-        this->inputArgs
-    ); 
+        //  all the IE initialization modules would be contained within the 
+        this->mapper->InitializeDcmHeader( 
+            this->pfMap, 
+            this->GetOutput()->GetDcmHeader(), 
+            this->pfileVersion, 
+            this->GetSwapBytes(), 
+            this->inputArgs
+        ); 
 
-    //  Deidentify data if necessary
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
-    it = this->inputArgs.find( "phiType" );
-    if ( it != this->inputArgs.end() ) {
-        this->DeidentifyData(); 
-    }
+        //  Deidentify data if necessary
+        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        it = this->inputArgs.find( "phiType" );
+        if ( it != this->inputArgs.end() ) {
+            this->DeidentifyData(); 
+        }
 
 
-    if (this->GetDebug()) { 
-        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+        if (this->GetDebug()) { 
+            this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+        }
+
     }
 }
 

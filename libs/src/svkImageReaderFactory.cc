@@ -86,6 +86,9 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->geSigna5XReader );
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
+
+    //  this can be used if only need to check file type for example.
+    this->quickParse = false; 
 }
 
 
@@ -157,6 +160,18 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->gePostageStampReader = NULL;
     }
 
+}
+
+
+/*!
+ *  Set this for quick parsing of header info.  For GEPFiles, 
+ *  this permits a header dump regardless of whether a mapper
+ *  is available. 
+ */
+void svkImageReaderFactory::QuickParse()
+{
+    this->quickParse = true; 
+    this->gePFileReader->OnlyParseHeader(); 
 }
 
 

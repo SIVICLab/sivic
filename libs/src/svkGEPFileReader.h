@@ -97,6 +97,7 @@ class svkGEPFileReader : public svkImageReader2
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ); 
         void                SetTemperature( float temp ); 
         void                PrintHeader();
+        void                OnlyParseHeader();
 
         // Description: 
         // A descriptive name for this format
@@ -155,6 +156,7 @@ class svkGEPFileReader : public svkImageReader2
                                          inputArgs; 
 
         vtkCallbackCommand*              progressCallback;
+        bool                             onlyParseHeader;  
 
 };
 
