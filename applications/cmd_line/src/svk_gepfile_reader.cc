@@ -259,11 +259,24 @@ int main (int argc, char** argv)
     //  type . 
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
+    if ( printHeader ) { 
+        readerFactory->QuickParse();
+    }
     svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
         exit(1);
+    }
+
+    reader->SetFileName( inputFileName.c_str() );
+
+    //  If printing header just print and return
+    if ( printHeader ) {
+        reader->OnlyParseHeader();
+        reader->Update();
+        reader->PrintHeader();
+        exit(0);
     }
 
 
@@ -272,7 +285,6 @@ int main (int argc, char** argv)
     //  svkMrsImageData object and set any reading
     //  behaviors (e.g. average suppressed data). 
     // ===============================================  
-    reader->SetFileName( inputFileName.c_str() );
 
     //  Set the svkGEPFileReader's behavior if not default
     if ( unsuppressed ) { 
@@ -309,12 +321,6 @@ int main (int argc, char** argv)
     }
     
     reader->Update(); 
-
-    //  If printing header just print and return
-    if ( printHeader ) {
-        reader->PrintHeader();
-        exit(0);
-    }
 
     svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
 

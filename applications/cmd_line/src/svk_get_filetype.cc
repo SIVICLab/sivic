@@ -111,6 +111,7 @@ int main (int argc, char** argv)
 
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    readerFactory->QuickParse();
     svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
     readerFactory->Delete(); 
 
