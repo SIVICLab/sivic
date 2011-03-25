@@ -116,7 +116,7 @@ svkGEPFileReader::~svkGEPFileReader()
 /*!
  *
  */
-svkGEPFileReader::OnlyParseHeader()
+void svkGEPFileReader::OnlyParseHeader()
 {
     this->onlyParseHeader = true; 
 }
