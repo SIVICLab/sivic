@@ -148,6 +148,7 @@ void sivicProcessingWidget::CreateWidget()
     this->combineButton->SetParent( this );
     this->combineButton->Create( );
     this->combineButton->EnabledOff();
+    //this->combineButton->EnabledOn();
     this->combineButton->SetText( "Combine");
     this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
 
@@ -424,6 +425,8 @@ void sivicProcessingWidget::ExecuteCombine()
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
         svkCoilCombine* coilCombine = svkCoilCombine::New();
         coilCombine->SetInput( data );
+        //coilCombine->SetCombinationDimension( svkCoilCombine::TIME );  for combining time points
+        //coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  for combining as magnitude data 
         coilCombine->Update();
         data->Modified();
         coilCombine->Delete();
