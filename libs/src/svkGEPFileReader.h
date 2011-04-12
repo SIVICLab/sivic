@@ -98,6 +98,8 @@ class svkGEPFileReader : public svkImageReader2
         void                SetTemperature( float temp ); 
         void                PrintHeader();
         void                OnlyParseHeader();
+        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
+                                                 GetPFMap(); 
 
         // Description: 
         // A descriptive name for this format
