@@ -142,6 +142,7 @@ ADD_LIBRARY(
     svkDICOMMRSWriter.cc
     svkDICOMEnhancedMRIWriter.cc
     svkDICOMMRIWriter.cc
+    svkDICOMRawDataWriter.cc
     svkImageWriterFactory.cc
     svkMultiWindowToImageFilter.cc
     svkImageReaderFactory.cc
@@ -160,6 +161,7 @@ ADD_LIBRARY(
     svkDcmVolumeReader.cc
     svkDcmMrsVolumeReader.cc
     svkDcmMriVolumeReader.cc
+    svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
@@ -215,6 +217,7 @@ ADD_LIBRARY(
     svkMRSIOD.cc
     svkMRIIOD.cc
     svkEnhancedMRIIOD.cc
+    svkRawIOD.cc
     svkOpenGLOrientedImageActor.cc
     svkOrientedImageActorFactory.cc
     svkLookupTable.cc
