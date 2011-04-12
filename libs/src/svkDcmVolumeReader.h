@@ -74,12 +74,12 @@ class svkDcmVolumeReader : public svkImageReader2
 
         int                                     numFrames; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
+        virtual void                            InitDcmHeader();
 
 
     private: 
 
-        virtual void                             InitDcmHeader();
-        virtual void                             LoadData(svkImageData* data) = 0; 
+        virtual void                            LoadData(svkImageData* data) = 0; 
 
 };
 
