@@ -86,16 +86,17 @@ class svkGEPFileMapper : public vtkObject
             LOAD_AVG_SUPPRESSED    
         };
 
-        virtual void    InitializeDcmHeader(
-                            vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
-                            svkDcmHeader* header, 
-                            float pfileVersion, 
-                            int swapBytes, 
-                            vtkstd::map < vtkstd::string, void* >  inputArgs
-                        );
-        virtual void    ReadData( vtkstd::string pFileName, svkImageData* data );
-        vtkstd::string  GetProgressText( );
-        void            SetProgressText( vtkstd::string progressText );
+        virtual void            InitializeDcmHeader(
+                                    vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >  pfMap, 
+                                    svkDcmHeader* header, 
+                                    float pfileVersion, 
+                                    int swapBytes, 
+                                    vtkstd::map < vtkstd::string, void* >  inputArgs
+                                );
+        virtual void            ReadData( vtkstd::string pFileName, svkImageData* data );
+        vtkstd::string          GetProgressText( );
+        void                    SetProgressText( vtkstd::string progressText );
+        static vtkstd::string   ConvertGEDateToDICOM( vtkstd::string geDate ); 
 
 
     protected:
@@ -173,7 +174,6 @@ class svkGEPFileMapper : public vtkObject
         float                   GetHeaderValueAsFloat(vtkstd::string key);
         vtkstd::string          GetHeaderValueAsString(vtkstd::string key);
         virtual bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
-        vtkstd::string          ConvertGEDateToDICOM( vtkstd::string geDate ); 
         void                    GetOriginFromCenter( 
                                              double center[3], 
                                              int numVoxels[3], 
