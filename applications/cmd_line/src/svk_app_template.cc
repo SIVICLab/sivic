@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_quantify.cc $
- *  $Rev: 793 $
- *  $Author: jccrane $
- *  $Date: 2011-01-05 10:04:27 -0800 (Wed, 05 Jan 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *   

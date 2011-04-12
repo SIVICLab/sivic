@@ -164,6 +164,7 @@ SET(SVK_LIBS
     dcmdata
     ofstd 
     ${PLATFORM_LIBS}
+    crypto 
 )
 
 
@@ -281,6 +282,17 @@ TARGET_LINK_LIBRARIES(
     svk_app_template
     ${SVK_LIBS}
 )
+
+ADD_EXECUTABLE(
+    svk_create_dcmraw
+    svk_create_dcmraw.cc
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_create_dcmraw
+    ${SVK_LIBS}
+)
+
 
 IF (!WIN32)	
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_file_convert )
