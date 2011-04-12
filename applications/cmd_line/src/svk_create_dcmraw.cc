@@ -50,6 +50,7 @@ extern "C" {
 #include <unistd.h>
 #endif
 #include <svkDICOMRawDataWriter.h>
+#include <svkImageReaderFactory.h> 
 
 #include <openssl/sha.h>
 
@@ -65,20 +66,22 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_get_filetype -i input_file_name  --md5 md5_sum [ -h ]              \n"; 
-    usemsg += "\n";  
-    usemsg += "   -i    input_file_name     Name of file to convert.    \n"; 
-    usemsg += "   -h                        Print help mesage.          \n";  
-    usemsg += " \n";  
-    usemsg += "Encapsulates the specified file GEPFile in a DICOM Raw Data SOP instance\n"; 
+    usemsg += "svk_get_filetype -i input_file_name  --md5 md5_sum [ -h ]                    \n"; 
+    usemsg += "                                                                             \n";  
+    usemsg += "   -i    input_file_name     Name of file to convert.                        \n"; 
+    usemsg += "   -x                        Extract Files from DICOM Raw Data SOP Instance. \n"; 
+    usemsg += "   -h                        Print help mesage.                              \n";  
+    usemsg += "                                                                             \n";  
+    usemsg += "Encapsulates the specified file GEPFile in a DICOM Raw Data SOP instance     \n"; 
     usemsg += "\n";  
 
     string inputFileName; 
+    bool   extractRaw = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
-        FLAG_MD5_CKSUM = 0
+        FLAG_SHA1_CKSUM = 0
     }; 
     
 
@@ -93,10 +96,13 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:h", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:xh", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                break;
+            case 'x':
+                extractRaw = true; 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -117,16 +123,36 @@ int main (int argc, char** argv)
 
     cout << inputFileName << endl;
 
-    unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
-    string digest = GetHash( inputFileName, sha1Digest ); 
-    cout << "DIGEST STRING: " << digest << endl;
+    if ( extractRaw ) {
 
-    svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
-    rawWriter->SetFileName( inputFileName.c_str() );
-    rawWriter->SetSHA1Digest( digest ); 
-    rawWriter->Write();
+        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+        svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+        readerFactory->Delete();
 
-    rawWriter->Delete(); 
+        if (reader == NULL || ! reader->IsA("svkDcmRawDataReader") ) {
+            cerr << "File is not a DICOM Raw Data Storage file: " << inputFileName << endl;
+            exit(1);
+        }
+
+        reader->SetFileName( inputFileName.c_str() );
+        reader->Update(); 
+        svkDcmRawDataReader::SafeDownCast( reader )->ExtractFiles();
+
+        reader->Delete();
+
+    } else {    
+
+        unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
+        string digest = GetHash( inputFileName, sha1Digest ); 
+        cout << "DIGEST STRING: " << digest << endl;
+    
+        svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
+        rawWriter->SetFileName( inputFileName.c_str() );
+        rawWriter->SetSHA1Digest( digest ); 
+        rawWriter->Write();
+    
+        rawWriter->Delete(); 
+    }
 
     return 0; 
 }
