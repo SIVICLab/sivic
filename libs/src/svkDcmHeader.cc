@@ -1873,6 +1873,28 @@ void svkDcmHeader::InitMRAveragesMacro(int numAverages)
 
 
 /*!
+ *  Initialize Raw Data Module. 
+ */
+void svkDcmHeader::InitRawDataModule( vtkstd::string contentDate, vtkstd::string contentTime, void* rawFile ) 
+{
+
+    if ( !contentDate.empty() ) {
+        this->SetValue(
+            "ContentDate",
+            contentDate
+        );
+    }
+
+    if ( !contentTime.empty() ) {
+        this->SetValue(
+            "ContentTime",
+            contentTime
+        );
+    }
+}
+
+
+/*!
  *  Initializes an MR Image Storage header from an Enhanced  MRI Storage header. 
  */
 int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dataType )

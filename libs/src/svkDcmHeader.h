@@ -81,7 +81,8 @@ class svkDcmHeader: public vtkObject
             MR_SPECTROSCOPY,
             SECONDARY_CAPTURE,      // Deprecated
             MULTI_FRAME_BYTE_SC,    // 8 bit gray scale multi-frame SC image
-            MULTI_FRAME_WORD_SC     // >8 bit gray scale multi-frame SC image
+            MULTI_FRAME_WORD_SC,     // >8 bit gray scale multi-frame SC image
+            RAW_DATA 
         } DcmIodType;
 
         enum {
@@ -301,6 +302,21 @@ class svkDcmHeader: public vtkObject
                         ) = 0;
 
         /*! 
+         *  Method to add a multi-valued item to a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number. 
+         */
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int seqItemPosition,
+                            const char* elementName,
+                            float* values, 
+                            int numValues, 
+                            const char* parentSeqName = NULL,
+                            int parentSeqItemPosition = 0
+                        ) = 0;
+
+        /*! 
          *  Method to add an item to a DICOM Sequence by specifying the SQ name and
          *  the item's position in the sequence. Optionally, for nested sequences
          *  specify the parent SQ and item number. 
@@ -367,11 +383,26 @@ class svkDcmHeader: public vtkObject
          */
         virtual float   GetFloatSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0,
-                            int pos = 0
+                            int         parentSeqItemPosition = 0,
+                            int         pos = 0
+                        ) = 0;
+
+        /*! 
+         *  Method to get an item's element from a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences 
+         *  specify the parent SQ and item number.
+         */
+        virtual void    GetFloatSequenceItemElement(
+                            const char* seqName,
+                            int         seqItemPosition,
+                            const char* elementName,
+                            float*      values,  
+                            int         numValues,  
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
         /*! 
@@ -381,10 +412,10 @@ class svkDcmHeader: public vtkObject
          */
         virtual double  GetDoubleSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
         /*! 
@@ -574,6 +605,11 @@ class svkDcmHeader: public vtkObject
                                 string coilType = "UNKNOWN"
                             );
         void                InitMRAveragesMacro(int numAverages = 1);
+        void                InitRawDataModule(
+                                vtkstd::string contentDate,
+                                vtkstd::string contentTime,
+                                void* rawFile
+                            );
 
         int                 ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
         int                 ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 

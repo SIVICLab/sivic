@@ -103,41 +103,50 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    AddSequenceItemElement(
                             const char* parentSeqName, 
-                            int parentSeqItemPosition, 
+                            int         parentSeqItemPosition, 
                             const char* elementName
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName, 
-                            string value, 
+                            string      value, 
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
                             unsigned int* values,
-                            int numValues, 
+                            int         numValues, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
+                        );
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int         seqItemPosition,
+                            const char* elementName,
+                            float*      values,
+                            int         numValues, 
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName, 
-                            int value, 
+                            int         value, 
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName, 
-                            float value, 
+                            float       value, 
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
 
         virtual void    ClearSequence( const char* seqName ); 
@@ -146,41 +155,50 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual int     GetIntSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0, 
-                            int pos = 0    
+                            int         parentSeqItemPosition = 0, 
+                            int         pos = 0    
                         );
         virtual float   GetFloatSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0, 
-                            int pos = 0    
+                            int         parentSeqItemPosition = 0, 
+                            int         pos = 0    
+                        );
+        virtual void    GetFloatSequenceItemElement(
+                            const char* seqName,
+                            int         seqItemPosition,
+                            const char* elementName,
+                            float*      values,
+                            int         numValues,
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0
                         );
         virtual double  GetDoubleSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
         virtual string  GetStringSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
         virtual string  GetStringSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName, 
-                            int pos,
+                            int         pos,
                             const char* parentSeqName = NULL, 
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         );
 
         virtual int     GetNumberOfElements( const char* elementName );

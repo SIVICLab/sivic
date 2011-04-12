@@ -252,6 +252,42 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
+    // ===================================================
+    //  Private Additions to:  
+    //  Raw Data Module
+    //  (DICOM PT 3: C.19.1)
+    // ===================================================
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1018, EVR_SQ, 
+            "SVK_FILE_SET_SEQUENCE", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1019, EVR_LO, 
+            "SVK_FILE_SHA1_DIGEST", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1020, EVR_UL, 
+            "SVK_FILE_NUM_BYTES", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    //  Block containing a GE PFile. 
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1021, EVR_OF, 
+            "SVK_FILE_CONTENTS", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
     dcmDataDict.unlock();
 }
 
@@ -292,6 +328,11 @@ void svkDcmtkAdapter::SetSOPClassUID(DcmIodType iodType)
         this->dcmFile->getDataset()->putAndInsertString(
             DCM_SOPClassUID, 
             UID_SecondaryCaptureImageStorage
+        );
+    } else if ( iodType == RAW_DATA ) {
+        this->dcmFile->getDataset()->putAndInsertString(
+            DCM_SOPClassUID, 
+            UID_RawDataStorage
         );
     } else { 
         cout << "WARNING: UNRECOGNIZED SOP CLASS" << endl;
@@ -526,7 +567,7 @@ void svkDcmtkAdapter::GetFloatValue(const char* name, float* values, long unsign
     memcpy( values, floatArray, 4 * numValues );
 
     this->Modified();
-}
+} 
 
 
 /*!
@@ -704,7 +745,8 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
  *  \param seqName the string name of the parent sequence
  *  \param seqItemPosition the position of the item in that sequence 
  *  \param elementName the name of the element being added to the specified item
- *  \param value the value of the element being added to the specified item
+ *  \param values array of value of the element being added to the specified item
+ *  \param numValues  number of values in values array. 
  *  \param parentSeqName the string name of the parent sequence
  *  \param parentSeqItemPosition the position of the item in that sequence 
  */
@@ -739,6 +781,58 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
         inputArray[i] = (Uint32)values[i]; 
     }
     status = element->putUint32Array(inputArray, numValues);
+    if (status.bad()) {
+        cerr << "Error: could not insert element(" << status.text() << ")" << endl;
+    }
+    delete[] inputArray;
+    this->Modified();
+}
+
+
+/*!
+ *  Add an item to the specified item in the specified sequence(seqName), where the sequence is 
+ *  nested within a specific parent sequence(parentSeqName) and item(parentSeqItemPosition).
+ *
+ *  \param seqName the string name of the parent sequence
+ *  \param seqItemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *  \param values array of value of the element being added to the specified item
+ *  \param numValues  number of values in values array. 
+ *  \param parentSeqName the string name of the parent sequence
+ *  \param parentSeqItemPosition the position of the item in that sequence 
+ */
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, float* values, int numValues, const char* parentSeqName, int parentSeqItemPosition)
+{
+    OFCondition status; 
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    DcmItem* newItem = this->GetDcmItem(dataset, seqName, seqItemPosition); 
+
+    //  Insert a dummy val. This was the only way I was able to get this to work
+    //  for inserting multiple vals.  I'm probably missing something, but it works. 
+    Float32 dummyVal = 99.; 
+    newItem->putAndInsertFloat32( GetDcmTag( elementName), dummyVal) ;
+
+
+    //  Now get the element and add the array to it:    
+    DcmElement* element;
+    status = newItem->findAndGetElement( GetDcmTagKey( elementName), element);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    Float32* inputArray = new Float32[numValues]; 
+    for (int i = 0; i < numValues; i++) {
+        inputArray[i] = (Float32)values[i]; 
+    }
+    status = element->putFloat32Array(values, numValues);
     if (status.bad()) {
         cerr << "Error: could not insert element(" << status.text() << ")" << endl;
     }
@@ -865,6 +959,43 @@ float svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqI
         GetDcmTagKey(elementName), 
         pos
     );
+}
+
+
+/*!
+ *  Get an item from the specified item in the specified sequence.
+ *
+ *  \param seqName the string name of the sequence
+ *  \param itemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *
+ *  \return array of float values for the item element 
+ */
+void svkDcmtkAdapter::GetFloatSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, float* values, int numValues, const char* parentSeqName, int parentSeqItemPosition) 
+{
+
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    dataset = this->GetDcmItem(dataset, seqName, seqItemPosition);
+
+    DcmElement* of;
+    float* floatArray;
+    OFCondition status = dataset->findAndGetElement( GetDcmTagKey( elementName ), of);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    of->getFloat32Array( floatArray );
+    memcpy( values, floatArray, 4 * numValues );
+
+    this->Modified();
 }
 
 
