@@ -164,7 +164,6 @@ SET(SVK_LIBS
     dcmdata
     ofstd 
     ${PLATFORM_LIBS}
-    crypto 
 )
 
 
@@ -291,6 +290,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_create_dcmraw
     ${SVK_LIBS}
+    crypto 
 )
 
 
