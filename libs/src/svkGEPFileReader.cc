@@ -2077,6 +2077,13 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
 }
 
 
+vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > > 
+svkGEPFileReader::GetPFMap() 
+{
+    return this->pfMap; 
+}
+
+
 /*!
  *
  */
