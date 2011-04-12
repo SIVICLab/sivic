@@ -59,6 +59,7 @@
 #include <svkGESigna5XReader.h>
 #include <svkGESignaLX2Reader.h>
 #include <svkGEPostageStampReader.h>
+#include <svkDcmRawDataReader.h>
 
 
 namespace svk {
@@ -105,6 +106,7 @@ class svkImageReaderFactory : public vtkImageReader2Factory
         svkGESigna5XReader*         geSigna5XReader;
         svkGESignaLX2Reader*        geSignaLX2Reader;
         svkGEPostageStampReader*    gePostageStampReader;
+        svkDcmRawDataReader*        dcmRawDataReader;
 
         bool                        quickParse; 
 
