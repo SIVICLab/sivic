@@ -68,6 +68,9 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
     this->seriesNumber = 0; 
     this->instanceNumber = 1; 
     this->sha1Digest = ""; 
+
+    this->SetErrorCode(vtkErrorCode::NoError);
+    this->computedPFileSize = 0; 
 }
 
 
@@ -79,6 +82,27 @@ svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
 }
 
 
+/*!
+ *  Add filename for file associated with the PFile and to be 
+ *  included in RawData SOP instance. 
+ *
+ */
+void svkDICOMRawDataWriter::AddAssociatedFile( string fileName, string sha1DigestVal )
+{
+
+    if ( fileName.size() == 0 || sha1DigestVal.size() != 40 ) {
+        vtkErrorMacro("Missing FileName or valid SHA1 Digest.  Can Not generate DICOM Raw Data File. " );
+        this->SetErrorCode(vtkErrorCode::UnknownError);
+    } else {
+        vector < string > file; 
+        file.push_back( fileName ); 
+        file.push_back( sha1DigestVal ); 
+        file.push_back( "Associated File" ); 
+        this->associatedFiles.push_back( file ); 
+    }
+}
+
+
 
 /*!
  *  The main method which triggers the writer to create DICOM Raw Data file.
@@ -86,7 +110,6 @@ svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
 void svkDICOMRawDataWriter::Write()
 {
 
-    this->SetErrorCode(vtkErrorCode::NoError);
 
     svkImageReaderFactory* readerFactory =svkImageReaderFactory::New();
     readerFactory->QuickParse();
@@ -101,6 +124,11 @@ void svkDICOMRawDataWriter::Write()
     this->pfMap = reader->GetPFMap();
 
     this->InitDcmHeader();
+
+    if ( this->GetErrorCode() != vtkErrorCode::NoError ) { 
+        vtkErrorMacro(<< "Could not initialize DICOM Raw Data file for writing." );
+        return; 
+    }
 
 
     if ( this->FileName ) { 
@@ -338,6 +366,22 @@ void svkDICOMRawDataWriter::InitGeneralEquipmentModule()
  */
 void svkDICOMRawDataWriter::InitRawDataModule()
 {
+
+    int raw_pass_size = this->GetHeaderValueAsInt("rhr.rh_raw_pass_size");
+    int raw_offset = this->GetHeaderValueAsInt("rhr.rdb_hdr_off_data");
+    this->computedPFileSize = raw_pass_size + raw_offset; 
+
+    if ( string(this->FileName).size() == 0 || this->sha1Digest.size() != 40  || this->computedPFileSize == 0 ) {
+        vtkErrorMacro("Missing FileName or valid SHA1 Digest.  Can Not generate DICOM Raw Data File. " );
+        this->SetErrorCode(vtkErrorCode::UnknownError);
+    } else {
+        vector < string > file; 
+        file.push_back( this->FileName ); 
+        file.push_back( this->sha1Digest ); 
+        file.push_back( "GE PFile" ); 
+        this->associatedFiles.push_back( file ); 
+    }
+
     this->dcmHeader->SetValue(
         "InstanceNumber",
         1 
@@ -371,58 +415,85 @@ void svkDICOMRawDataWriter::InitRawDataModule()
     ); 
 
 
-    ifstream* pFile = new ifstream();
-    pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    for ( int fileNum = 0; fileNum < this->associatedFiles.size(); fileNum++ ) {
 
-    try {
+        ifstream* pFile = new ifstream();
+        pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        pFile->open( this->FileName, ios::binary);
+        try {
 
-        pFile->seekg(0, ios::end);
-        // get-ptr position is now same as file size
-        ios::pos_type pfileSize = pFile->tellg();  
-        cout << "PFILE SIZE = " << static_cast<int>(pfileSize) << endl;
+            pFile->open( (this->associatedFiles[fileNum][0]).c_str(), ios::binary);
 
-        void* pfileBuffer = new char[static_cast<int>(pfileSize)]; 
-        pFile->seekg(0, ios::beg);
-        pFile->read( static_cast<char*>(pfileBuffer), pfileSize);
+            pFile->seekg(0, ios::end);
+            // get-ptr position is now same as file size
+            ios::pos_type pfileSize = pFile->tellg();  
+            cout << "PFILE SIZE = " << static_cast<int>(pfileSize) << endl;
 
-        this->dcmHeader->SetValue(
-            "SVK_PRIVATE_TAG",
-            "SVK_PRIVATE_CREATOR"
-        );
+            //  for the pfile, make sure the file size is as expceted: 
+            if ( this->associatedFiles[fileNum][2].compare("GE PFile") == 0 ) { 
+                if ( static_cast<int>(pfileSize) != this->computedPFileSize ) { 
+                    cout << "GEPFile Size on disk doesn't match expectation based on header info: " << endl; 
+                    cout << pfileSize << " vs " << this->computedPFileSize  << endl; 
+                    this->SetErrorCode( vtkErrorCode::PrematureEndOfFileError); 
+                    continue; 
+                }
+            }
 
-        this->dcmHeader->InsertEmptyElement( "SVK_FILE_SET_SEQUENCE" );
+            void* pfileBuffer = new char[ static_cast<int>(pfileSize) ]; 
+            pFile->seekg(0, ios::beg);
+            pFile->read( static_cast<char*>(pfileBuffer), pfileSize );
 
+            this->dcmHeader->SetValue(
+                "SVK_PRIVATE_TAG",
+                "SVK_PRIVATE_CREATOR"
+            );
 
-        this->dcmHeader->AddSequenceItemElement(
-            "SVK_FILE_SET_SEQUENCE",
-            0,
-            "SVK_FILE_SHA1_DIGEST",
-            this->sha1Digest
-        );
+            this->dcmHeader->InsertEmptyElement( "SVK_FILE_SET_SEQUENCE" );
 
-        this->dcmHeader->AddSequenceItemElement(
-            "SVK_FILE_SET_SEQUENCE",
-            0,
-            "SVK_FILE_NUM_BYTES",
-            static_cast<int>(pfileSize) 
-        );
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_TYPE",
+                this->associatedFiles[fileNum][2]
+            );
 
-        this->dcmHeader->AddSequenceItemElement(
-            "SVK_FILE_SET_SEQUENCE",
-            0,
-            "SVK_FILE_CONTENTS",
-            static_cast<float*>(pfileBuffer),
-            pfileSize/sizeof(float) 
-        );
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_NAME",
+                this->associatedFiles[fileNum][0]
+            );
 
-    } catch (ifstream::failure e) {
-        cout << "ERROR: Exception opening/reading file " << this->FileName << " => " << e.what() << endl;
-        exit(1);
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_SHA1_DIGEST",
+                this->associatedFiles[fileNum][1]
+            );
+
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_NUM_BYTES",
+                static_cast<int>(pfileSize) 
+            );
+
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_CONTENTS",
+                static_cast<float*>(pfileBuffer),
+                pfileSize/sizeof(float) 
+            );
+
+        } catch (ifstream::failure e) {
+            cout << "ERROR: Exception opening/reading file " << this->associatedFiles[fileNum][0] << " => " << e.what() << endl;
+            this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+        }
+
+        pFile->close();
     }
 
-    pFile->close();
 }
 
 

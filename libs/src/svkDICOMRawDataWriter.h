@@ -66,7 +66,8 @@ using namespace std;
  *  Concrete svkImageWriter instance for creating a Raw Data SOP instance. 
  *  Used within svk primarily for encapsulating a non DICOM raw file (e.g. 
  *  a GE PFile) into a DICOM object such that it may managed via DICOM C-STORE,
- *  C-GET, etc. 
+ *  C-GET, etc. Encapsulates a raw file as well as any associated files into 
+ *  a single object. 
  */
 class svkDICOMRawDataWriter : public svkImageWriter
 {
@@ -76,13 +77,10 @@ class svkDICOMRawDataWriter : public svkImageWriter
         static svkDICOMRawDataWriter* New();
         vtkTypeRevisionMacro( svkDICOMRawDataWriter, svkImageWriter);
 
-        // Description:
-        void            SetInput( vtkDataObject* input );
         void            SetSHA1Digest( string sha1Digest);
+        void            AddAssociatedFile( string fileName, string sha1Digest ); 
         virtual void    Write();
 
-        //  Return the default file name pattern
-        void            CreateNewSeries();
 
 
     protected:
@@ -95,20 +93,20 @@ class svkDICOMRawDataWriter : public svkImageWriter
 
     private:
 
-        void    InitDcmHeader();
-        void    InitPatientModule(); 
-        void    InitGeneralStudyModule(); 
-        void    InitGeneralSeriesModule(); 
-        void    InitGeneralEquipmentModule(); 
-        void    InitRawDataModule(); 
-
-        int     GetHeaderValueAsInt(vtkstd::string key); 
-
+        void            InitDcmHeader();
+        void            InitPatientModule(); 
+        void            InitGeneralStudyModule(); 
+        void            InitGeneralSeriesModule(); 
+        void            InitGeneralEquipmentModule(); 
+        void            InitRawDataModule(); 
+        int             GetHeaderValueAsInt(vtkstd::string key); 
 
         //  Members:
-        svkDcmHeader*   dcmHeader;
+        svkDcmHeader*                   dcmHeader;
+        string                          sha1Digest; 
+        vector < vector <string > >     associatedFiles; 
+        int                             computedPFileSize; 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >     pfMap;
-        string          sha1Digest; 
 };
 
 

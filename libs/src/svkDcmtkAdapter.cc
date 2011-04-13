@@ -267,6 +267,20 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1019, EVR_LO, 
+            "SVK_FILE_TYPE", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1020, EVR_LT, 
+            "SVK_FILE_NAME", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1021, EVR_LO, 
             "SVK_FILE_SHA1_DIGEST", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
@@ -274,7 +288,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1020, EVR_UL, 
+            0x7777, 0x1022, EVR_UL, 
             "SVK_FILE_NUM_BYTES", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
@@ -282,7 +296,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
     //  Block containing a GE PFile. 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1021, EVR_OF, 
+            0x7777, 0x1023, EVR_OF, 
             "SVK_FILE_CONTENTS", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )

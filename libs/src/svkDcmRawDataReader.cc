@@ -40,18 +40,15 @@
  */
 
 
+
 #include <svkDcmRawDataReader.h>
+#include <svkDcmHeader.h>
 #include <svkMriImageData.h>
-#include <vtkType.h>
-#include <vtkDebugLeaks.h>
-#include <vtkStringArray.h>
+
+#include <vtkErrorCode.h>
 #include <vtkInformation.h>
-#include <svkIOD.h>
-#include <svkRawIOD.h>
-#include <svkEnhancedMRIIOD.h>
-#include <vtkstd/vector>
-#include <vtkstd/utility>
-#include <vtkstd/algorithm>
+#include <vtkDebugLeaks.h>
+
 #include <sstream>
 
 
@@ -72,6 +69,9 @@ svkDcmRawDataReader::svkDcmRawDataReader()
     vtkDebugLeaks::ConstructClass("svkDcmRawDataReader");
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
+        
+    this->SetErrorCode(vtkErrorCode::NoError);
+
 }
 
 
@@ -150,36 +150,65 @@ void svkDcmRawDataReader::ExecuteInformation()
 void svkDcmRawDataReader::ExtractFiles()
 {
 
-    string outputFileName( this->FileName );  
-    outputFileName.append(".extracted"); 
-    ofstream outputFile ( outputFileName.c_str(), ios::binary );
-    if( !outputFile) { 
-        throw runtime_error("Cannot open file to extract raw data to ");
-    }
-    
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    int numberOfEncapsulatedFiles = hdr->GetNumberOfItemsInSequence( "SVK_FILE_SET_SEQUENCE" );
 
-    long unsigned int numBytes=  
-        this->GetOutput()->GetDcmHeader()->GetIntSequenceItemElement(
-            "SVK_FILE_SET_SEQUENCE",
-            0,
-            "SVK_FILE_NUM_BYTES"
-        );
-    long unsigned int numValues =  numBytes / sizeof(float); 
-    float* fileBuffer = new float[ numValues ]; 
 
-    this->GetOutput()->GetDcmHeader()->GetFloatSequenceItemElement(
-            "SVK_FILE_SET_SEQUENCE",
-            0,
-            "SVK_FILE_CONTENTS",
-            fileBuffer, 
-            numValues
-        );
+    for ( int fileNum = 0; fileNum < numberOfEncapsulatedFiles; fileNum++ ) {
 
-    
-    outputFile.write( (char *)fileBuffer, numBytes); 
+        vtkstd::string fileName =  
+            hdr->GetStringSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_NAME"
+            );
 
-    if (fileBuffer != NULL) {
-        delete[] fileBuffer; 
+        vtkstd::string sha1Digest =  
+            hdr->GetStringSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_SHA1_DIGEST"
+            );
+
+        long unsigned int numBytes=  
+            hdr->GetIntSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_NUM_BYTES"
+            );
+
+        long unsigned int numValues =  numBytes / sizeof(float); 
+        float* fileBuffer = new float[ numValues ]; 
+
+        hdr->GetFloatSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_CONTENTS",
+                fileBuffer, 
+                numValues
+            );
+
+        vtkstd::string outputFileName( fileName );  
+        outputFileName.append(".extracted"); 
+        ofstream outputFile ( outputFileName.c_str(), ios::binary );
+        if( !outputFile) { 
+            cout << "Cannot open file to extract raw data to: " << fileName << endl;
+            this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+        }
+        
+        outputFile.write( (char *)fileBuffer, numBytes); 
+
+        if( outputFile.bad() ) { 
+            cout << "Error extracting DICOM Raw Data to disk: " << fileName << endl;
+            this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+        }
+
+        outputFile.close(); 
+
+        if (fileBuffer != NULL) {
+            delete[] fileBuffer; 
+        }
+
     }
 
 }
