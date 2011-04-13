@@ -250,3 +250,32 @@ ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGri
 
 SET( TEST_NAME COR_SPEC_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if you can render spectra from a phantom with sat bands
+#############################################################
+SET( TEST_NAME PHANTOM_SPECTRA_SAT_BANDS_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/sat_bands)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -t SatBandTest --spectra ${TEST_CASE_ROOT}/input/sag_recon.ddf -p ${TEST_RESULTS_PATH}
+ )
+
+SET( TEST_NAME PHANTOM_SPECTRA_SAT_BANDS_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
+
+
+#############################################################
+# Check to see if you can render an image from a phantom with sat bands
+#############################################################
+SET( TEST_NAME PHANTOM_IMAGE_SAT_BANDS_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/sat_bands)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t SatBandTest --image ${TEST_CASE_ROOT}/input/sag_phantom.idf --spectra ${TEST_CASE_ROOT}/input/sag_recon.ddf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME PHANTOM_IMAGE_SAT_BANDS_DIFF)
+ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )

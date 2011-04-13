@@ -236,7 +236,8 @@ int main ( int argc, char** argv )
 void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int xPos, int yPos )
 {
 
-    svkImageData* data = globalVars.model->LoadFile( filename );
+    bool readOnlyOneFile = true; 
+    svkImageData* data = globalVars.model->LoadFile( filename, readOnlyOneFile );
     if( data == NULL ) {
         cerr << "ERROR: Could not read input file: " << filename << endl;
         exit(1);

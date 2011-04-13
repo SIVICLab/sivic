@@ -627,12 +627,12 @@ void svkSatBandSet::GenerateClippingPlanes( )
         int uIndexRange[2];
         int vIndexRange[2];
         int wIndexRange[2];
-        uIndexRange[0] = extent[0];
-        uIndexRange[1] = extent[1];
-        vIndexRange[0] = extent[2];
-        vIndexRange[1] = extent[3];
-        wIndexRange[0] = extent[4];
-        wIndexRange[1] = extent[5];
+        uIndexRange[0] = this->extent[0];
+        uIndexRange[1] = this->extent[1];
+        vIndexRange[0] = this->extent[2];
+        vIndexRange[1] = this->extent[3];
+        wIndexRange[0] = this->extent[4];
+        wIndexRange[1] = this->extent[5];
         double rowNormal[3];
         this->spectra->GetDataBasis(rowNormal, svkImageData::ROW );
         double columnNormal[3];
@@ -640,87 +640,43 @@ void svkSatBandSet::GenerateClippingPlanes( )
         double sliceNormal[3];
         this->spectra->GetDataBasis(sliceNormal, svkImageData::SLICE );
 
-        switch (orientation) {
-            case svkDcmHeader::AXIAL: 
-                clippingPlanes[0]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
-                clippingPlanes[1]->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
-                clippingPlanes[2]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
-                clippingPlanes[3]->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
-                clippingPlanes[4]->SetNormal(  sliceNormal[0],  sliceNormal[1],  sliceNormal[2] );
-                clippingPlanes[5]->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
-
-                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
-
-                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
+        // Planes 0-1 clip the sat bands in the row direction to the full extent of the volume
+        clippingPlanes[0]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
+        clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
 
 
-                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
-
-                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(vIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(vIndexRange[1] + CLIP_TOLERANCE) );
-                break;
-            case svkDcmHeader::CORONAL:
-                clippingPlanes[0]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
-                clippingPlanes[1]->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
-                clippingPlanes[2]->SetNormal(  sliceNormal[0],  sliceNormal[1],  sliceNormal[2] );
-                clippingPlanes[3]->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
-                clippingPlanes[4]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
-                clippingPlanes[5]->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
-
-                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(uIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(uIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(uIndexRange[0] - CLIP_TOLERANCE) );
-
-                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
+        clippingPlanes[1]->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
+        clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (uIndexRange[1] + CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP * (uIndexRange[1] + CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI * (uIndexRange[1] + CLIP_TOLERANCE) );
 
 
-                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
+        // Planes 2-3 clip the sat bands in the column direction to the full extent of the volume
+        clippingPlanes[2]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
+        clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
-                break;
-            case svkDcmHeader::SAGITTAL:
-                clippingPlanes[0]->SetNormal(  columnNormal[0],  columnNormal[1],  columnNormal[2] );
-                clippingPlanes[1]->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
-                clippingPlanes[2]->SetNormal(  sliceNormal[0],  sliceNormal[1],  sliceNormal[2] );
-                clippingPlanes[3]->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
-                clippingPlanes[4]->SetNormal(  rowNormal[0],  rowNormal[1],  rowNormal[2] );
-                clippingPlanes[5]->SetNormal( -rowNormal[0], -rowNormal[1], -rowNormal[2] );
+        clippingPlanes[3]->SetNormal( -columnNormal[0], -columnNormal[1], -columnNormal[2] );
+        clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[1] + CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP*(vIndexRange[1] + CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI*(vIndexRange[1] + CLIP_TOLERANCE) );
 
-                clippingPlanes[0]->SetOrigin( origin[0] + this->deltaLR*(vIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(vIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(vIndexRange[0] - CLIP_TOLERANCE) );
+        // Planes 4-5 clip the sat bands in the slice direction to the full extent of the volume
+        clippingPlanes[4]->SetNormal(  sliceNormal[0],  sliceNormal[1],  sliceNormal[2] );
+        clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
 
-                clippingPlanes[1]->SetOrigin( origin[0] + this->deltaLR * (vIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP * (vIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI * (vIndexRange[1] + CLIP_TOLERANCE) );
+        clippingPlanes[5]->SetNormal( -sliceNormal[0], -sliceNormal[1], -sliceNormal[2] );
+        clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
+                                      origin[1] + this->deltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
+                                      origin[2] + this->deltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
 
-
-                clippingPlanes[2]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[0] - CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(wIndexRange[0] - CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(wIndexRange[0] - CLIP_TOLERANCE) );
-
-                clippingPlanes[3]->SetOrigin( origin[0] + this->deltaLR*(wIndexRange[1] + CLIP_TOLERANCE),
-                                              origin[1] + this->deltaAP*(wIndexRange[1] + CLIP_TOLERANCE), 
-                                              origin[2] + this->deltaSI*(wIndexRange[1] + CLIP_TOLERANCE) );
-                break;
-
-        } 
+        // Now that we have full volume clipping, lets set the clipping for our particular slice
         this->GenerateSliceClippingPlanes();
-
-
     } else {
         if (this->GetDebug()) {
             cout<<"INPUT HAS NOT BEEN SET!!"<<endl;
@@ -735,23 +691,28 @@ void svkSatBandSet::GenerateClippingPlanes( )
 void svkSatBandSet::GenerateSliceClippingPlanes( )
 {
     if( spectra != NULL ) {
-        if( image != NULL ) {
+        if( image != NULL ) { // If we are clipping to the image volume
+            // Lets get the index of the current orientation for the sat bands
+            int index = this->image->GetOrientationIndex(this->orientation);
             if( slice >= 0 ) {
-                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice - IMAGE_CLIP_TOLERANCE),
+                // Bring the clipping planes for the given orientation in to be flush with the slice
+                clippingPlanes[2*index]->SetOrigin( origin[0] + this->deltaLR * ( slice - IMAGE_CLIP_TOLERANCE),
                                               origin[1] + this->deltaAP * ( slice - IMAGE_CLIP_TOLERANCE),
                                               origin[2] + this->deltaSI * ( slice  - IMAGE_CLIP_TOLERANCE) );
 
-                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + IMAGE_CLIP_TOLERANCE ),
+                clippingPlanes[2*index + 1]->SetOrigin( origin[0] + this->deltaLR * ( slice + IMAGE_CLIP_TOLERANCE ),
                                               origin[1] + this->deltaAP * ( slice + IMAGE_CLIP_TOLERANCE ),
                                               origin[2] + this->deltaSI * ( slice + IMAGE_CLIP_TOLERANCE ) );
             }
-        } else {
+        } else { // if we are clipping to the spectra volume, done when no image is present
+            int index = this->spectra->GetOrientationIndex(this->orientation);
             if( slice >= 0 ) {
-                clippingPlanes[4]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 - CLIP_TOLERANCE),
+                // Bring the clipping planes for the given orientation in to be flush with the slice
+                clippingPlanes[2*index]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 - CLIP_TOLERANCE),
                                           origin[1] + this->deltaAP * ( slice + 0.5 - CLIP_TOLERANCE),
                                           origin[2] + this->deltaSI * ( slice  + 0.5 - CLIP_TOLERANCE) );
 
-                clippingPlanes[5]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 + CLIP_TOLERANCE ),
+                clippingPlanes[2*index + 1]->SetOrigin( origin[0] + this->deltaLR * ( slice + 0.5 + CLIP_TOLERANCE ),
                                           origin[1] + this->deltaAP * ( slice + 0.5 + CLIP_TOLERANCE ),
                                           origin[2] + this->deltaSI * ( slice + 0.5 + CLIP_TOLERANCE ) );
             }

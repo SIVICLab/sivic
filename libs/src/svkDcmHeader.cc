@@ -212,7 +212,7 @@ int svkDcmHeader::GetOrigin(double origin[3], int sliceNumber)
 
     } else {
 
-        if ( this->ElementExists("ImagePositionPatient") == true ) {
+        if ( this->ElementExists( "ImagePositionPatient", "PlanePositionSequence") == true ) {
 
             istringstream* iss = new istringstream();
             string originString; 

@@ -54,11 +54,13 @@ int main ( int argc, char** argv )
     if( argc != 2 ) {
         DisplayUsage();
     }   
-    svkImageData* data = model->LoadFile(argv[1]);
-    data->Update();
+    bool readOnlyOneFile = true; 
+    svkImageData* data = model->LoadFile(argv[1], readOnlyOneFile);
     if( data == NULL ) {
         cout << "Cannot read file: " << argv[0] << endl;
+        exit(1);
     }
+    data->Update();
     cout << "File: " << argv[0] << endl <<  "VTK Object: " << endl << *data << endl;
     cout << "SVK DICOM Header: " << endl;
     data->GetDcmHeader()->PrintDcmHeader();

@@ -119,8 +119,8 @@ void QuickView( const char* filename)
 {
 
     svkDataModel* model = svkDataModel::New();
-    
-    data = model->LoadFile(filename );
+    bool readOnlyOneFile = true; 
+    data = model->LoadFile(filename, readOnlyOneFile );
     if( data == NULL ) {
         cerr << "ERROR: Could not read input file: " << filename << endl;
         exit(1);

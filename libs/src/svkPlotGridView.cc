@@ -778,39 +778,96 @@ void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc)
 
 
 /*!
- *  
+ *  The actor that represents the text values of the metabolite overlays will,
+ *  by default, render the text at the center of each voxel. We want the text
+ *  to show up in the top left corner of each voxel. To do this we will
+ *  apply a transform to the actor to translate it. 
+ *   
  */
 void svkPlotGridView::UpdateMetaboliteTextDisplacement() 
 {
     if( this->dataVector[MET] != NULL ) {
         vtkTransform* optimus = vtkTransform::New();
         double displacement[3] = {0,0,0};
-        double dL;
-        double dP;
-        double dS;
+        double dSagittal = 0;
+        double dCoronal = 0;
+        double dAxial = 0;
+        double dHorizontal = 2.1;
+        double dVertical   = 3.2;
+        double dDepth      = 2.0;
         double* spacing = this->dataVector[MET]->GetSpacing();
+       
+        // Let's get the index of each orientation 
+        int sagIndex = this->dataVector[MET]->GetOrientationIndex(svkDcmHeader::SAGITTAL);
+        int corIndex = this->dataVector[MET]->GetOrientationIndex(svkDcmHeader::CORONAL);
+        int axiIndex = this->dataVector[MET]->GetOrientationIndex(svkDcmHeader::AXIAL);
+
+        /* 
+         * Depending on how the data is being viewed the displacement will change
+         * because the vertical and horizontal dimension may change. The reason
+         * vertical and horizontal have different displacements is that the bottom
+         * left corner of the text is centered within each voxel. As such we will
+         * have to displace it more horizontally than vertically to account for the
+         * height of the text.
+         */
         switch( this->orientation ) {
+            /*
+             *  In the axial view the sagittal plane is perpendicular to 
+             *  horizontal, and coronal is perpendicular to vertical
+             */
             case svkDcmHeader::AXIAL:
-                dL = -spacing[0]/2.1;
-                dP = -spacing[1]/3.2;
-                dS = spacing[2]/2.0;
+                dSagittal = spacing[sagIndex]/dHorizontal;
+                dCoronal  = spacing[corIndex]/dVertical;
+                dAxial    = spacing[axiIndex]/dDepth;
                 break;
+            /*
+             *  In the coronal view the sagittal plane is perpendicular to 
+             *  horizontal, and axial is perpendicular to vertical
+             */
             case svkDcmHeader::CORONAL:
-                dL = -spacing[0]/2.1;
-                dP = -spacing[1]/2.0;
-                dS = -spacing[2]/3.2;
+                dSagittal = spacing[sagIndex]/dHorizontal;
+                dCoronal  = spacing[corIndex]/dDepth;
+                dAxial    = spacing[axiIndex]/dVertical;
                 break;
+            /*
+             *  In the sagittal view the coronal plane is perpendicular to 
+             *  horizontal, and axial is perpendicular to vertical
+             */
             case svkDcmHeader::SAGITTAL:
-                dL = -spacing[0]/2.0;
-                dP = -spacing[1]/2.1;
-                dS = -spacing[2]/3.2;
+                dSagittal = spacing[sagIndex]/dDepth;
+                dCoronal  = spacing[corIndex]/dHorizontal;
+                dAxial    = spacing[axiIndex]/dVertical;
                 break;
         }
+
+        /*
+         * The sign of the displacement does not depend on the dcos, it
+         * only depends on the absolute direction in LPS. 
+         *
+         * For example if we have two dataset with:
+         *
+         * dcos = 1 0 0
+         *        0 1 0
+         *        0 0 1
+         * 
+         * OR
+         *
+         * dcos = -1 0 0
+         *        0 -1 0
+         *        0 0 -1
+         *
+         * text should be displaced in exactly the same way. To account
+         * for this we take magnitude of the displacement in each
+         * orientation and set the direction.
+         * 
+         */
         double dcos[3][3];
         this->dataVector[MET]->GetDcos( dcos );
-        for ( int i = 0; i < 3; i++ ) {
-            displacement[i] =  (dL) * dcos[0][i] + (dP) * dcos[1][i] + (dS) * dcos[2][i];
-        }
+        displacement[0] =  -fabs(dSagittal * dcos[sagIndex][0] + dCoronal * dcos[corIndex][0] + dAxial * dcos[axiIndex][0]);
+        displacement[1] =  -fabs(dSagittal * dcos[sagIndex][1] + dCoronal * dcos[corIndex][1] + dAxial * dcos[axiIndex][1]);
+        displacement[2] =   fabs(dSagittal * dcos[sagIndex][2] + dCoronal * dcos[corIndex][2] + dAxial * dcos[axiIndex][2]);
+
+        // Now lets apply the transform...
         optimus->Translate( displacement );
         vtkLabeledDataMapper::SafeDownCast( 
                 vtkActor2D::SafeDownCast( 

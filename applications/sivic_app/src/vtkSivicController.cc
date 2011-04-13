@@ -812,7 +812,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
     if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
 
         svkImageData* data = this->model->LoadFile( stringFilename );
-        if( data->IsA("svkMriImageData") ) {
+        if( data != NULL && data->IsA("svkMriImageData") ) {
             this->OpenOverlay(data, stringFilename);
         } else {
             this->PopupMessage("ERROR: Incorrect data type, data must be an image to be overlayed."); 
@@ -2361,7 +2361,9 @@ void vtkSivicController::EnableWidgets()
 
     if ( model->DataExists("MetaboliteData")) {
         this->spectraViewWidget->overlayImageCheck->EnabledOn();
+        this->spectraViewWidget->overlayImageCheck->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->spectraViewWidget->overlayTextCheck->EnabledOn();
+        this->spectraViewWidget->overlayTextCheck->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->overlayWindowLevelWidget->EnabledOn();
     } 
     if ( model->DataExists("OverlayData") ||  model->DataExists("MetaboliteData")) {

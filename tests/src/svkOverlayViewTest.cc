@@ -71,6 +71,7 @@ struct globalArgs_t {
     char *secondOverlayName;  /* -O option */
     char *outputPath;         /* -p option */
     bool disableValidation;  /* -d option */
+    bool showSatBands;
 } globalArgs;
 
 static const struct option longOpts[] = {
@@ -102,6 +103,7 @@ int main ( int argc, char** argv )
     globalArgs.secondOverlayName = NULL;    /* -O option */
     globalArgs.outputPath = NULL;           /* -p option */
     globalArgs.disableValidation = false;
+    globalArgs.showSatBands = false;
     testFunction = DefaultTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
@@ -120,6 +122,10 @@ int main ( int argc, char** argv )
                     } else if( strcmp( optarg, "OrientationTest" ) == 0 ) {
                         testFunction = OrientationTest;
                         cout<<" Executing Orientation Test... "<<endl;
+                    } else if( strcmp( optarg, "SatBandTest" ) == 0 ) {
+                        testFunction = OrientationTest;
+                        globalArgs.showSatBands = true;
+                        cout<<" Executing Sat Band Test... "<<endl;
                     } 
                     break;
                 case 'i':
@@ -412,6 +418,7 @@ void OrientationTest()
 
     window->SetSize(600,600);
 
+
     if( globalArgs.disableValidation ) {
         overlayController->GetView()->ValidationOff();
     }
@@ -429,6 +436,14 @@ void OrientationTest()
     
     
     overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    if( globalArgs.showSatBands == true ) {
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL);
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_AXIAL_OUTLINE);
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL);
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_CORONAL_OUTLINE);
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL);
+        overlayController->TurnPropOn(svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE);
+    }
     svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
     for( int i = 0; i < spectra->GetNumberOfSlices(svkDcmHeader::AXIAL); i++ ) {
         stringstream filename;

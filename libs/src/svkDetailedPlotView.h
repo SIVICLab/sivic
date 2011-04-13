@@ -60,6 +60,7 @@
 #include <svkSpecPoint.h>
 #include <svkDataView.h>
 #include <svkBoxPlot.h>
+#include <svkPlotLine.h>
 #include <svkMrsImageData.h>
 
 #include <vector>

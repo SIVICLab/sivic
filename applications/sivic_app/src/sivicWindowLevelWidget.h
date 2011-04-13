@@ -115,6 +115,7 @@ class sivicWindowLevelWidget : public sivicKWCompositeWidget
         void   DisableUpdate();
         void   SetWindowLevelTarget(svkOverlayViewController::WindowLevelTarget target);
         void   SetOverlayDataName( string overlayDataName );
+        void   SetSliderLabel( string sliderTitle);
         string GetOverlayDataName( );
         void   SetSyncPlotGrid( bool syncPlotGrid );
 
@@ -141,6 +142,7 @@ class sivicWindowLevelWidget : public sivicKWCompositeWidget
         vtkKWScaleWithEntry*                        maxSlider;
         vtkKWScaleWithEntrySetWithLabel*            imageSliders;
         vtkKWMenuButtonWithLabel*                   sliderType;
+        string                                      sliderLabel;
 
         
         // Description:

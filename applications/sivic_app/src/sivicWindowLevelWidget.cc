@@ -65,6 +65,7 @@ sivicWindowLevelWidget::sivicWindowLevelWidget()
     this->updateEnabled = true;
     this->sliderType = NULL;
     this->syncPlotGrid = false;
+    this->sliderLabel = "Window Level";
 
 
 }
@@ -160,6 +161,16 @@ void sivicWindowLevelWidget::SetLevelRange( double levelMin, double levelMax )
 void sivicWindowLevelWidget::SetLevelRange( double* range )
 {
     this->SetLevelRange( range[0], range[1] );
+}
+
+
+//! Set the slider label 
+void sivicWindowLevelWidget::SetSliderLabel( string sliderLabel )
+{
+    this->sliderLabel = sliderLabel;
+    if( this->imageSliders != NULL ) {
+        this->imageSliders->SetLabelText(sliderLabel.c_str());
+    }
 }
 
 
@@ -287,7 +298,7 @@ void sivicWindowLevelWidget::CreateWidget()
     this->imageSliders = vtkKWScaleWithEntrySetWithLabel::New();
     this->imageSliders->SetParent(this);
     this->imageSliders->Create();
-    this->imageSliders->SetLabelText("Image Window Level");
+    this->imageSliders->SetLabelText(sliderLabel.c_str());
     if( this->target == svkOverlayViewController::REFERENCE_IMAGE ) {
         this->imageSliders->GetLabel()->SetImageToPredefinedIcon(vtkKWIcon::IconWindowLevel);
     } else if( this->target == svkOverlayViewController::IMAGE_OVERLAY ) {

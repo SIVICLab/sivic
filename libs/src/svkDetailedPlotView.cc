@@ -354,7 +354,11 @@ void svkDetailedPlotView::AddPlot( int index, int component, int channel, int ti
 
         // We need to push the data into the first component of a new array or it won't plot
         for ( int i = 0; i < arrayLength; i++ ) {
-            xyData->SetTuple1(i, myArray->GetComponent(i,component));
+            if( component != svkPlotLine::MAGNITUDE ) {
+                xyData->SetTuple1(i, myArray->GetComponent(i,component));
+            } else {
+                xyData->SetTuple1(i, pow( pow(myArray->GetComponent(i,0), 2) + pow( myArray->GetComponent(i,0), 2) , 0.5 ) );
+            }
         }
 
         // We need push the data into field data to plot x vs y

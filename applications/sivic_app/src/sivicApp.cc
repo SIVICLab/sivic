@@ -55,7 +55,9 @@ sivicApp::sivicApp()
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
     this->windowLevelWidget = sivicWindowLevelWidget::New();
+    this->windowLevelWidget->SetSliderLabel("Image Window Level");
     this->overlayWindowLevelWidget = sivicWindowLevelWidget::New();
+    this->overlayWindowLevelWidget->SetSliderLabel("Overlay Window Level");
     this->preferencesWidget = sivicPreferencesWidget::New();
     this->spectraRangeWidget = sivicSpectraRangeWidget::New();
     this->viewRenderingWidget = sivicViewRenderingWidget::New();

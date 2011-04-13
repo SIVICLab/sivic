@@ -72,6 +72,7 @@ struct globalArgs_t {
     char *firstOverlayName;    /* -o option */
     char *secondOverlayName;   /* -O option */
     char *outputPath;          /* -p option */
+    bool showSatBands;          /* -p option */
 } globalArgs;
 
 static const struct option longOpts[] = {
@@ -91,6 +92,7 @@ int main ( int argc, char** argv )
     void (*testFunction)() = NULL;
     int opt = 0;
     int longIndex;
+    globalArgs.showSatBands = false;
     /* Initialize globalArgs before we get to work. */
     globalArgs.firstSpectraName = NULL;    /* -s  option */
     globalArgs.secondSpectraName = NULL;   /* -S option */
@@ -114,6 +116,10 @@ int main ( int argc, char** argv )
                     } else if( strcmp( optarg, "OrientationTest" ) == 0 ) {
                         testFunction = OrientationTest;
                         cout<<" Executing Orientation Test... "<<endl;
+                    } else if( strcmp( optarg, "SatBandTest" ) == 0 ) {
+                        testFunction = OrientationTest;
+                        globalArgs.showSatBands = true;
+                        cout<<" Executing Sat Band Test... "<<endl;
                     }
                 case 's':
                     globalArgs.firstSpectraName = optarg;
@@ -300,7 +306,7 @@ void RenderingTest()
 }
 
 
-void OrientationTest()
+void OrientationTest( ) 
 {
     if( globalArgs.firstSpectraName  == NULL ||
         globalArgs.secondSpectraName != NULL ||
@@ -346,6 +352,10 @@ void OrientationTest()
         plotController->SetInput( firstOverlay, 1 );
     }
     window->SetSize( 640, 640 );
+    if( globalArgs.showSatBands == true ) {
+        plotController->TurnPropOn(svkPlotGridView::SAT_BANDS);
+        plotController->TurnPropOn(svkPlotGridView::SAT_BANDS_OUTLINE);
+    }
     window->Render();
     plotController->HighlightSelectionVoxels();
     window->Render();

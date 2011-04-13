@@ -197,7 +197,7 @@ void sivicSpectraViewWidget::CreateWidget()
     this->overlayImageCheck->EnabledOff();
     this->overlayImageCheck->SetPadX(2);
     this->overlayImageCheck->SetText("Overlay Image");
-    this->overlayImageCheck->SelectedStateOff();
+    this->overlayImageCheck->SelectedStateOn();
 
     this->overlayTextCheck = vtkKWCheckButton::New();
     this->overlayTextCheck->SetParent(this);
