@@ -58,24 +58,27 @@ using namespace svk;
 
 
 //  function declarations
-string GetHash( string inputFileName, unsigned char* sha1Digest ); 
+string GetHash( string inputRawFileName, unsigned char* sha1Digest ); 
 
 
 int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_get_filetype -i input_file_name  --md5 md5_sum [ -h ]                    \n"; 
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
+    usemsg += "svk_get_filetype -i input_file_name  [ -a additional_file_name ] [ -xh ]     \n"; 
     usemsg += "                                                                             \n";  
-    usemsg += "   -i    input_file_name     Name of file to convert.                        \n"; 
+    usemsg += "   -i    input_file_name     Name of raw file to convert.                    \n"; 
+    usemsg += "   -a    associated file     Name of associated files to include in DICOM    \n"; 
+    usemsg += "                             output.  May specify -a multiple times.         \n"; 
     usemsg += "   -x                        Extract Files from DICOM Raw Data SOP Instance. \n"; 
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Encapsulates the specified file GEPFile in a DICOM Raw Data SOP instance     \n"; 
     usemsg += "\n";  
 
-    string inputFileName; 
+    string inputRawFileName; 
+    vector < string >  associatedFiles; 
     bool   extractRaw = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -96,10 +99,13 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:xh", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:a:xh", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
-                inputFileName.assign( optarg );
+                inputRawFileName.assign( optarg );
+                break;
+            case 'a':
+                associatedFiles.push_back( optarg );
                 break;
             case 'x':
                 extractRaw = true; 
@@ -116,40 +122,69 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    if ( argc != 0 || inputFileName.length() == 0 ) {
+    if ( argc != 0 || inputRawFileName.length() == 0 ) {
         cout << usemsg << endl;
         exit(1); 
     }
 
-    cout << inputFileName << endl;
+    cout << inputRawFileName << endl;
+    for (int i = 0; i <  associatedFiles.size(); i++) { 
+            cout << "associated file: " << associatedFiles[i] << endl;
+    }
+
 
     if ( extractRaw ) {
 
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+        svkImageReader2* reader = readerFactory->CreateImageReader2(inputRawFileName.c_str());
         readerFactory->Delete();
 
         if (reader == NULL || ! reader->IsA("svkDcmRawDataReader") ) {
-            cerr << "File is not a DICOM Raw Data Storage file: " << inputFileName << endl;
+            cerr << "File is not a DICOM Raw Data Storage file: " << inputRawFileName << endl;
             exit(1);
         }
 
-        reader->SetFileName( inputFileName.c_str() );
+        reader->SetFileName( inputRawFileName.c_str() );
         reader->Update(); 
         svkDcmRawDataReader::SafeDownCast( reader )->ExtractFiles();
+
+        if ( reader->GetErrorCode() != vtkErrorCode::NoError ) {    
+            cout << endl;
+            cout << "######################################" << endl;
+            cout << "ERROR, could not Extract files from "   <<endl; 
+            cout << "DICOM Raw Data. "                       << endl;
+            cout << "######################################" << endl;
+            cout << endl;
+            exit(1); 
+        }
 
         reader->Delete();
 
     } else {    
 
         unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
-        string digest = GetHash( inputFileName, sha1Digest ); 
+        string digest = GetHash( inputRawFileName, sha1Digest ); 
         cout << "DIGEST STRING: " << digest << endl;
     
         svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
-        rawWriter->SetFileName( inputFileName.c_str() );
+        rawWriter->SetFileName( inputRawFileName.c_str() );
         rawWriter->SetSHA1Digest( digest ); 
+
+        for (int i = 0; i < associatedFiles.size(); i++ ) {
+            string digest = GetHash( associatedFiles[i], sha1Digest ); 
+            rawWriter->AddAssociatedFile( associatedFiles[i], digest );     
+        }
+
         rawWriter->Write();
+
+        if ( rawWriter->GetErrorCode() != vtkErrorCode::NoError ) {    
+            cout << endl;
+            cout << "######################################" << endl;
+            cout << "ERROR, could not write DICOM Raw Data. " << endl;
+            cout << "######################################" << endl;
+            cout << endl;
+            exit(1); 
+        }
     
         rawWriter->Delete(); 
     }
@@ -162,7 +197,7 @@ int main (int argc, char** argv)
 /*
  *  Gets the sha1Digest of the specified file.  
  */
-string GetHash( string inputFileName, unsigned char* sha1Digest ) {
+string GetHash( string inputRawFileName, unsigned char* sha1Digest ) {
 
     string sha1DigestString; 
 
@@ -171,7 +206,7 @@ string GetHash( string inputFileName, unsigned char* sha1Digest ) {
 
     try {
 
-        inputStream->open( inputFileName.c_str(), ios::binary);
+        inputStream->open( inputRawFileName.c_str(), ios::binary);
 
         inputStream->seekg(0, ios::end);
 
@@ -183,9 +218,8 @@ string GetHash( string inputFileName, unsigned char* sha1Digest ) {
         inputStream->seekg(0, ios::beg);
         inputStream->read( static_cast<char*>(fileBuffer), fileSize);
 
-        SHA1( static_cast<unsigned char*>(fileBuffer),  fileSize,  sha1Digest);
+        SHA1( static_cast<unsigned char*>(fileBuffer), fileSize,  sha1Digest);
 
-        printf("Digest(sha1): ");
         char buf[3]; 
         for(int i = 0; i < SHA_DIGEST_LENGTH; i++) {
             sprintf( buf, "%02x", sha1Digest[i] );
@@ -194,7 +228,7 @@ string GetHash( string inputFileName, unsigned char* sha1Digest ) {
         printf(" \n");
 
    } catch (ifstream::failure e) {
-        cout << "ERROR: Exception opening/reading file " << inputFileName << " => " << e.what() << endl;
+        cout << "ERROR: Exception opening/reading file " << inputRawFileName << " => " << e.what() << endl;
         exit(1);
     }
 
