@@ -155,13 +155,6 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    //cout << inputFileName << endl;
-    //cout << outputFileName << endl;
-    //cout << dataTypeOut << endl;
-    //cout << peakCenterPpm << endl;
-    //cout << peakWidthPpm << endl;
-    //cout << peakName<< endl;
-    //cout << isVerbose << endl;
 
     if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE || 
@@ -170,12 +163,12 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
-    cout << dataTypeOut << endl;
-    cout << peakCenterPpm << endl;
-    cout << peakWidthPpm << endl;
-    cout << peakName<< endl;
+    //cout << inputFileName << endl;
+    //cout << outputFileName << endl;
+    //cout << dataTypeOut << endl;
+    //cout << peakCenterPpm << endl;
+    //cout << peakWidthPpm << endl;
+    //cout << peakName<< endl;
 
 
     // ===============================================
