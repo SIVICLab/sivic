@@ -271,6 +271,16 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_svrecon
+    svk_svrecon.cc
+)
+ 
+TARGET_LINK_LIBRARIES(
+    svk_svrecon
+    ${SVK_LIBS}
+)
+
 #   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
 ADD_EXECUTABLE(
     svk_app_template

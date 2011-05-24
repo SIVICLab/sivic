@@ -80,6 +80,7 @@ int main (int argc, char** argv)
     usemsg += "   --peak_center       ppm   Chemical shift of peak center \n";
     usemsg += "   --peak_width        ppm   Width in ppm of peak integration \n";
     usemsg += "   --peak_name         name  String label name for peak \n"; 
+    usemsg += "   --verbose                 Prints integrals for each voxel to stdout. \n"; 
     usemsg += "   -h                        print help mesage. \n";  
     usemsg += " \n";  
     usemsg += "Generates metabolite map volume by direct integration of input spectra over the specified chemical shift range. \n";
@@ -88,16 +89,18 @@ int main (int argc, char** argv)
     string inputFileName; 
     string outputFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    float peakCenterPpm;
-    float peakWidthPpm;
+    float  peakCenterPpm;
+    float  peakWidthPpm;
     string peakName;
+    bool   isVerbose = false;   
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
         FLAG_PEAK_CENTER = 0,
         FLAG_PEAK_WIDTH, 
-        FLAG_PEAK_NAME
+        FLAG_PEAK_NAME, 
+        FLAG_VERBOSE  
     };
 
 
@@ -107,6 +110,7 @@ int main (int argc, char** argv)
         {"peak_center",      required_argument, NULL,  FLAG_PEAK_CENTER},
         {"peak_width",       required_argument, NULL,  FLAG_PEAK_WIDTH},
         {"peak_name",        required_argument, NULL,  FLAG_PEAK_NAME},
+        {"verbose",          no_argument      , NULL,  FLAG_VERBOSE},
         {0, 0, 0, 0}
     };
 
@@ -136,6 +140,9 @@ int main (int argc, char** argv)
            case FLAG_PEAK_NAME:
                 peakName.assign( optarg);
                 break;
+           case FLAG_VERBOSE:
+                isVerbose = true; 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -147,12 +154,14 @@ int main (int argc, char** argv)
 
     argc -= optind;
     argv += optind;
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
-    cout << dataTypeOut << endl;
-    cout << peakCenterPpm << endl;
-    cout << peakWidthPpm << endl;
-    cout << peakName<< endl;
+
+    //cout << inputFileName << endl;
+    //cout << outputFileName << endl;
+    //cout << dataTypeOut << endl;
+    //cout << peakCenterPpm << endl;
+    //cout << peakWidthPpm << endl;
+    //cout << peakName<< endl;
+    //cout << isVerbose << endl;
 
     if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE || 
@@ -192,13 +201,14 @@ int main (int argc, char** argv)
 
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
     quant->SetInput( reader->GetOutput() ); 
+    quant->SetVerbose( isVerbose ); 
     quant->SetSeriesDescription( peakName + " Metabolite Map" ); 
     quant->SetPeakPosPPM( peakCenterPpm );
     quant->SetPeakWidthPPM( peakWidthPpm );
     quant->Update();
 
-    quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
-    cout << *( quant->GetOutput() ) << endl;
+    //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    //cout << *( quant->GetOutput() ) << endl;
 
     // ===============================================  
     //  Write the data out to the specified file type.  
