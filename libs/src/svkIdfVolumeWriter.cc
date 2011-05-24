@@ -172,7 +172,9 @@ void svkIdfVolumeWriter::WriteData()
         numBytesPerPixel = 4; 
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
             //scale to float: 
-            cout << "SCALE Double to Float" << endl;
+            if (this->GetDebug()) {
+                cout << "SCALE Double to Float" << endl;
+            }
             double* doublePixels; 
             doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
             floatPixels = new float[ numSlices * numPixelsPerSlice ];     
@@ -523,7 +525,9 @@ void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixe
     double inputRangeMax = 0. ; 
     this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
     double deltaRangeIn = inputRangeMax - inputRangeMin;
-    cout << "RANGE " << inputRangeMax << " " << inputRangeMin << endl;
+    if (this->GetDebug()) {
+        cout << "RANGE " << inputRangeMax << " " << inputRangeMin << endl;
+    }
 
     //  Get the output range for scaling:
     float floatMin = VTK_FLOAT_MIN;
