@@ -71,6 +71,7 @@ svkExtractMRIFromMRS::svkExtractMRIFromMRS()
     this->zeroCopy = false; 
     this->quantificationAlgorithm = svkExtractMRIFromMRS::INTEGRATE; 
     this->iod = NULL;
+    this->isVerbose = false; 
 }
 
 
@@ -168,7 +169,6 @@ int svkExtractMRIFromMRS::RequestInformation( vtkInformation* request, vtkInform
  */
 int svkExtractMRIFromMRS::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    cout << "REQUEST DATA" << endl;
 
     //  Create the template data object by  
     //  extractng an svkMriImageData from the input svkMrsImageData object
@@ -273,6 +273,9 @@ void svkExtractMRIFromMRS::Integrate()
         for ( int pt = startPt; pt <= endPt; pt ++ ) {
             integral += specPtr[2*pt]; 
         }
+        if ( this->isVerbose ) {
+            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " integral " << integral << endl; 
+        }
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
     }
 
@@ -365,6 +368,15 @@ void svkExtractMRIFromMRS::SetAlgorithmToPeakHeight()
 void svkExtractMRIFromMRS::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
+}
+
+
+/*!
+ *  Write the integrals for each voxel to stdout. Default is false.  
+ */
+void svkExtractMRIFromMRS::SetVerbose( bool isVerbose )
+{
+    this->isVerbose = isVerbose; 
 }
 
 

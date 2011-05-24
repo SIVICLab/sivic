@@ -88,6 +88,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         void                    SetPeakWidthPPM( float peak_width_ppm  );     
         void                    SetAlgorithmToIntegrate();     
         void                    SetAlgorithmToPeakHeight();     
+        void                    SetVerbose( bool isVerbose );     
 
 
     protected:
@@ -128,6 +129,7 @@ class svkExtractMRIFromMRS: public svkImageAlgorithm
         float                            peakCenterPPM;
         float                            peakWidthPPM;
         svkExtractMRIFromMRS::algorithm  quantificationAlgorithm;  
+        bool                             isVerbose; 
 
 };
 
