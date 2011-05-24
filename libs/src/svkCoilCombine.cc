@@ -110,7 +110,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
 
     //  Redimension data set:
     this->RedimensionData(); 
-cout << "RD: " << *( this->GetImageDataInput(0) ) << endl;;
+    //cout << "RD: " << *( this->GetImageDataInput(0) ) << endl;;
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -335,7 +335,9 @@ void svkCoilCombine::RedimensionData()
         newNumChannels  
     );
 
-    data->GetDcmHeader()->PrintDcmHeader( ); 
+    if (this->GetDebug()) { 
+        data->GetDcmHeader()->PrintDcmHeader( ); 
+    }
     
 }
 
