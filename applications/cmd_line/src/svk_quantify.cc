@@ -195,10 +195,17 @@ int main (int argc, char** argv)
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
     quant->SetInput( reader->GetOutput() ); 
     quant->SetVerbose( isVerbose ); 
-    quant->SetSeriesDescription( peakName + " Metabolite Map" ); 
     quant->SetPeakPosPPM( peakCenterPpm );
     quant->SetPeakWidthPPM( peakWidthPpm );
+
+    quant->SetAlgorithmToIntegrate();
+    quant->SetSeriesDescription( peakName + "area metabolite map" ); 
     quant->Update();
+
+    quant->SetAlgorithmToPeakHeight();
+    quant->SetSeriesDescription( peakName + "peak ht metabolite map" ); 
+    quant->Update();
+
 
     //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     //cout << *( quant->GetOutput() ) << endl;
@@ -208,24 +215,26 @@ int main (int argc, char** argv)
     //  Use an svkImageWriterFactory to obtain the
     //  correct writer type. 
     // ===============================================  
-    vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    if ( isVerbose == false ) {
+
+        vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+        svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     
-    if ( writer == NULL ) {
-        cerr << "Can not determine writer of type: " << dataTypeOut << endl;
-        exit(1);
-    }
+        if ( writer == NULL ) {
+            cerr << "Can not determine writer of type: " << dataTypeOut << endl;
+            exit(1);
+        }
    
-    writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( quant->GetOutput() );
+        writer->SetFileName( outputFileName.c_str() );
+        writer->SetInput( quant->GetOutput() );
 
-    //  Set the input command line into the data set provenance:
-    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+        //  Set the input command line into the data set provenance:
+        reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
-    writer->Write();
+        writer->Write();
+    }
 
     quant->Delete(); 
-    writer->Delete();
     reader->Delete();
 
     return 0; 
