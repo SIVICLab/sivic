@@ -229,7 +229,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     currentData = preIfc->GetOutput();
                 }
 
-                // Do the Fourier Transfort
+                // Do the Fourier Transform
                 fourierFilter->SetInput(currentData);
                 currentData = fourierFilter->GetOutput();
 
