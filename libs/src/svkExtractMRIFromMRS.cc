@@ -234,6 +234,9 @@ void svkExtractMRIFromMRS::PeakHt()
                 peakHt = specPtr[2*pt]; 
             }
         }
+        if ( this->isVerbose ) {
+            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " peak_ht: " << peakHt << endl; 
+        }
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, peakHt);
     }
 }
@@ -274,7 +277,7 @@ void svkExtractMRIFromMRS::Integrate()
             integral += specPtr[2*pt]; 
         }
         if ( this->isVerbose ) {
-            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " integral " << integral << endl; 
+            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " integral: " << integral << endl; 
         }
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
     }
