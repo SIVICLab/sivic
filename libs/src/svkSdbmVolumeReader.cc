@@ -48,6 +48,9 @@
 
 #include <sys/stat.h>
 
+#include <cerrno>
+
+
 
 using namespace svk;
 
@@ -244,13 +247,18 @@ void svkSdbmVolumeReader::ExecuteData(vtkDataObject* output)
 void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
 {
 
-    ifstream* cmplxDataIn = new ifstream();
-    cmplxDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-
     vtkstd::string shfFilePath( this->GetFilePath( this->GetFileNames()->GetValue(0) ) );
     vtkstd::string cmplxFile = shfFilePath + "/" +  shfMap["data_file_name"]; 
 
-    cmplxDataIn->open( cmplxFile.c_str(), ios::binary);
+    ifstream* cmplxDataIn = new ifstream();
+    //cmplxDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+
+
+    cmplxDataIn->open( cmplxFile.c_str(), ios::in);
+    if( !cmplxDataIn ) {
+        cout << strerror(errno) << '\n'; // displays "Permission denied"
+        exit(1);
+    }
 
     int numComponents = 2;
     int numPts = this->GetHeaderValueAsInt(shfMap, "num_pts_0"); 
@@ -269,9 +277,9 @@ void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
         cmplxDataIn->seekg(offsetToData);
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
-        if ( this->GetSwapBytes() ) {
+        #ifdef VTK_WORDS_BIGENDIAN
             vtkByteSwap::SwapVoidRange((void *)this->specData, this->GetNumPixelsInVol() * numPts * numComponents, sizeof(float));
-        }
+        #endif
 
         for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
             for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
@@ -281,11 +289,14 @@ void svkSdbmVolumeReader::ReadComplexFile(vtkImageData* data)
             }
         }
 
-        delete [] specData; 
+        delete [] this->specData; 
+        specData = NULL;
+        
     }
 
     cmplxDataIn->close(); 
     delete cmplxDataIn;
+
 }
 
 
@@ -438,172 +449,59 @@ void svkSdbmVolumeReader::ParseShf()
         if ( ! this->shfHdr->is_open() ) {
             throw runtime_error( "Could not open volume file: " + shfFileName );
         }
+
+
         istringstream* iss = new istringstream();
 
-        //  Skip first 25 lines: 
-        for (int i = 0; i < 24; i++) {
-            this->ReadLine(this->shfHdr, iss);
+        while ( ! this->shfHdr->eof() ) {
+
+            vtkstd::string key; 
+            vtkstd::string value; 
+
+            if ( this->ReadLineKeyValue(iss, ' ', &key, &value ) == 0 ) {
+
+                //cout << "key: " << key << " = " << value << endl;
+                shfMap[key] = value; 
+
+            } else {
+
+                break;
+
+            }
+
+            if ( key.compare("dimen_num") == 0)  {
+
+
+                //  parse dims: 
+
+                //  DIM 0
+                this->ParseShfDim( key ); 
+
+                //  Skip 5 lines: 
+                for (int i = 0; i < 5; i++) {
+                    this->ReadLine(this->shfHdr, iss);
+                }
+                //  DIM 1
+                this->ParseShfDim( "" ); 
+        
+                //  Skip 5 lines: 
+                for (int i = 0; i < 5; i++) {
+                    this->ReadLine(this->shfHdr, iss);
+                }
+                //  DIM 2
+                this->ParseShfDim( "" ); 
+        
+                //  Skip 5 lines: 
+                for (int i = 0; i < 5; i++) {
+                    this->ReadLine(this->shfHdr, iss);
+                }
+                //  DIM 3
+                this->ParseShfDim( "" ); 
+
+                break; 
+            } 
+
         }
-
-        shfMap["header_name"] = this->ReadLineValue(iss, ' ');
-        shfMap["data_file_name"] = this->ReadLineValue(iss, ' ');
-        shfMap["data_type"] = this->ReadLineValue(iss, ' ');
-        shfMap["data_precision"] = this->ReadLineValue(iss, ' ');
-        shfMap["header_size"] = this->ReadLineValue(iss, ' ');
-        shfMap["offset_to_data"] = this->ReadLineValue(iss, ' ');
-        shfMap["data_format"] = this->ReadLineValue(iss, ' ');
-        shfMap["sw_version"] = this->ReadLineValue(iss, ' ');
-        shfMap["rdbm_hdr_rev"] = this->ReadLineValue(iss, ' ');
-        shfMap["header_creator"] = this->ReadLineValue(iss, ' ');
-
-        //  Skip 10 lines: 
-        for (int i = 0; i < 10; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-        shfMap["site"] = this->ReadLineValue(iss, ' ');
-        shfMap["patient_id"] = this->ReadLineValue(iss, ' ');
-        shfMap["study_number"] = this->ReadLineValue(iss, ' ');
-        shfMap["series_number"] = this->ReadLineValue(iss, ' ');
-        shfMap["patient_name"] = this->ReadLineValue(iss, ' ');
-        shfMap["patient_age"] = this->ReadLineValue(iss, ' ');
-        shfMap["patient_sex"] = this->ReadLineValue(iss, ' ');
-        shfMap["time_acquired"] = this->ReadLineValue(iss, ' ');
-        shfMap["date_acquired"] = this->ReadLineValue(iss, ' ');
-
-        //  Skip 14 lines: 
-        for (int i = 0; i < 14; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        shfMap["psd_name"] = this->ReadLineValue(iss, ' ');
-        shfMap["TR"] = this->ReadLineValue(iss, ' ');
-        shfMap["TE"] = this->ReadLineValue(iss, ' ');
-        shfMap["TI"] = this->ReadLineValue(iss, ' ');
-        shfMap["TM"] = this->ReadLineValue(iss, ' ');
-        shfMap["TG"] = this->ReadLineValue(iss, ' ');
-        shfMap["R1"] = this->ReadLineValue(iss, ' ');
-        shfMap["R2"] = this->ReadLineValue(iss, ' ');
-        shfMap["OPENX"] = this->ReadLineValue(iss, ' ');
-        shfMap["is_chopped"] = this->ReadLineValue(iss, ' ');
-
-        //  Skip 12 lines: 
-        for (int i = 0; i < 12; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        //  Display type info,  Skip 5 lines for now: 
-        for (int i = 0; i < 5; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        //  Display type info,  Skip 32 lines for now: 
-        for (int i = 0; i < 32; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        shfMap["magstrength"] = this->ReadLineValue(iss, ' ');
-        shfMap["center_freq"] = this->ReadLineValue(iss, ' ');
-        shfMap["ppm_offset"] = this->ReadLineValue(iss, ' ');
-        shfMap["header_tag"] = this->ReadLineValue(iss, ' ');
-        shfMap["scan_mode"] = this->ReadLineValue(iss, ' ');
-        shfMap["freq_mode"] = this->ReadLineValue(iss, ' ');
-        shfMap["swappf"] = this->ReadLineValue(iss, ' ');
-        shfMap["position"] = this->ReadLineValue(iss, ' ');
-        shfMap["entry"] = this->ReadLineValue(iss, ' ');
-        shfMap["plane"] = this->ReadLineValue(iss, ' ');
-        shfMap["obplane"] = this->ReadLineValue(iss, ' ');
-        shfMap["rotation"] = this->ReadLineValue(iss, ' ');
-        shfMap["transpose"] = this->ReadLineValue(iss, ' ');
-        shfMap["ampl_norm"] = this->ReadLineValue(iss, ' ');
-        shfMap["temperature"] = this->ReadLineValue(iss, ' ');
-        shfMap["xoff"] = this->ReadLineValue(iss, ' ');
-        shfMap["yoff"] = this->ReadLineValue(iss, ' ');
-        shfMap["freq_scale"] = this->ReadLineValue(iss, ' ');
-        shfMap["phase_scale"] = this->ReadLineValue(iss, ' ');
-        shfMap["num_coils"] = this->ReadLineValue(iss, ' ');
-        shfMap["coil_name"] = this->ReadLineValue(iss, ' ');
-        shfMap["coil_type"] = this->ReadLineValue(iss, ' ');
-        shfMap["surface_coil_type"] = this->ReadLineValue(iss, ' ');
-        shfMap["extremity_coil_flag"] = this->ReadLineValue(iss, ' ');
-        shfMap["num_slices"] = this->ReadLineValue(iss, ' ');
-        shfMap["num_sep_slices"] = this->ReadLineValue(iss, ' ');
-
-        //  Skip 10 lines: 
-        for (int i = 0; i < 10; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        shfMap["tlhc_R"] = this->ReadLineValue(iss, ' ');
-        shfMap["tlhc_A"] = this->ReadLineValue(iss, ' ');
-        shfMap["tlhc_S"] = this->ReadLineValue(iss, ' ');
-        shfMap["trhc_R"] = this->ReadLineValue(iss, ' ');
-        shfMap["trhc_A"] = this->ReadLineValue(iss, ' ');
-        shfMap["trhc_S"] = this->ReadLineValue(iss, ' ');
-        shfMap["brhc_R"] = this->ReadLineValue(iss, ' ');
-        shfMap["brhc_A"] = this->ReadLineValue(iss, ' ');
-        shfMap["brhc_S"] = this->ReadLineValue(iss, ' ');
-
-        vtkstd::string tmp = this->ReadLineValue(iss, ' ');
-        while ( tmp.find("sagekey_opuserinfo") == vtkstd::string::npos)  {
-            tmp = this->ReadLineValue(iss, ' ');
-        }
-        this->ReadLine(this->shfHdr, iss);
-
-        shfMap["num_opuserfields"] = this->ReadLineValue(iss, ' ');
-
-        int numOU = this->GetHeaderValueAsInt(shfMap, "num_opuserfields"); 
-        for (int i = 0; i < numOU; i++) {
-            ostringstream ossIndex;
-            ossIndex << i;
-            vtkstd::string indexString(ossIndex.str());
-            vtkstd::string ouString = "opuser" + indexString; 
-            shfMap[ouString] = this->ReadLineValue(iss, ' ');
-        }
-
-        //  Skip 9 lines: 
-        for (int i = 0; i < 9; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        shfMap["num_rhuserfields"] = this->ReadLineValue(iss, ' ');
-
-        int numRU = this->GetHeaderValueAsInt(shfMap, "num_rhuserfields"); 
-        for (int i = 0; i < numOU; i++) {
-            ostringstream ossIndex;
-            ossIndex << i;
-            vtkstd::string indexString(ossIndex.str());
-            vtkstd::string ruString = "rhuser" + indexString; 
-            shfMap[ruString] = this->ReadLineValue(iss, ' ');
-        }
-
-        //  Skip 36 lines: 
-        for (int i = 0; i < 36; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-
-        //  DIM 0
-        this->ParseShfDim(); 
-
-        //  Skip 5 lines: 
-        for (int i = 0; i < 5; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-        //  DIM 1
-        this->ParseShfDim(); 
-
-        //  Skip 5 lines: 
-        for (int i = 0; i < 5; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-        //  DIM 2
-        this->ParseShfDim(); 
-
-        //  Skip 5 lines: 
-        for (int i = 0; i < 5; i++) {
-            this->ReadLine(this->shfHdr, iss);
-        }
-        //  DIM 3
-        this->ParseShfDim(); 
 
         delete iss;
 
@@ -619,11 +517,20 @@ void svkSdbmVolumeReader::ParseShf()
 /*!
  *
  */
-void svkSdbmVolumeReader::ParseShfDim()
+void svkSdbmVolumeReader::ParseShfDim( vtkstd::string dimenNum )
 {
     istringstream* iss = new istringstream();
 
-    shfMap["dimen_num"] = this->ReadLineValue(iss, ' ');
+
+    vtkstd::string key; 
+    vtkstd::string value; 
+    //  first time the dimension number is alrady know, otherwise get it: 
+    if ( dimenNum.size() == 0 ) {
+        this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+        shfMap["dimen_num"] =  value; 
+    } else { 
+        shfMap["dimen_num"] =  dimenNum; 
+    }
 
     int dimNum = this->GetHeaderValueAsInt(shfMap, "dimen_num"); 
     ostringstream ossIndex;
@@ -631,16 +538,26 @@ void svkSdbmVolumeReader::ParseShfDim()
     vtkstd::string indexString(ossIndex.str());
     vtkstd::string ruString = "rhuser" + indexString; 
 
-    shfMap["domain_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["num_pts_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["width_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["direction_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["zero_time_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["zero_freq_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["pc_time_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["pc_freq_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["sl_loc_" + indexString] = this->ReadLineValue(iss, ' ');
-    shfMap["sl_thick_" + indexString] = this->ReadLineValue(iss, ' ');
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value; 
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
+    this->ReadLineKeyValue(iss, ' ', &key, &value ); 
+    shfMap[key + "_" + indexString] = value;
 
     delete iss;
 }
@@ -696,8 +613,8 @@ void svkSdbmVolumeReader::InitPatientModule()
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
         shfMap["patient_name"], 
         shfMap["patient_id"], 
-        NULL,
-        NULL
+        "",
+        "" 
     );
 }
 
@@ -820,8 +737,26 @@ void svkSdbmVolumeReader::InitSharedFunctionalGroupMacros()
  */
 void svkSdbmVolumeReader::InitPerFrameFunctionalGroupMacros()
 {
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
+    double voxelSpacing[3];
+    this->GetOutput()->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
+
+    //  Get toplc float array from shfMap and use that to generate
+    //  frame locations.  This position is off by 1/2 voxel, fixed below:
+    double toplc[3];
+    toplc[0] = -1 * this->GetHeaderValueAsFloat(shfMap, "tlhc_R"); 
+    toplc[1] = -1 * this->GetHeaderValueAsFloat(shfMap, "tlhc_A"); 
+    toplc[2] = this->GetHeaderValueAsFloat(shfMap, "tlhc_S"); 
+
+
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+            toplc,
+            voxelSpacing,
+            this->dcos,
+            this->numSlices,
+            1,
+            this->numCoils
+    );
+
 }
 
 
@@ -928,78 +863,9 @@ void svkSdbmVolumeReader::InitFrameContentMacro()
             frame++; 
         }
     }
+
     delete[] indexValues;
 
-}
-
-
-/*!
- *
- */
-void svkSdbmVolumeReader::InitPlanePositionMacro()
-{
-    int frame = 0; 
-
-    for (int coilNum = 0; coilNum < this->numCoils; coilNum++) {
-
-        //  Get toplc float array from shfMap and use that to generate
-        //  frame locations.  This position is off by 1/2 voxel, fixed below:
-        float toplc[3];
-        toplc[0] = this->GetHeaderValueAsFloat(shfMap, "tlhc_R"); 
-        toplc[1] = this->GetHeaderValueAsFloat(shfMap, "tlhc_A"); 
-        toplc[2] = this->GetHeaderValueAsFloat(shfMap, "tlhc_S"); 
-        
-        double pixelSpacing[3];
-        this->GetOutput()->GetDcmHeader()->GetPixelSpacing( pixelSpacing );
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                toplc[i] -= (pixelSpacing[j]/2) * this->dcos[j][i];
-            }
-        }
-
-        float displacement[3]; 
-        float frameLPSPosition[3]; 
-    
-        for (int i = 0; i < this->numSlices; i++) {
-    
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement( 
-                "PerFrameFunctionalGroupsSequence",
-                i, 
-                "PlanePositionSequence"
-            );
-    
-            //add displacement along normal vector:
-            for (int j = 0; j < 3; j++) {
-                displacement[j] = this->dcos[2][j] * pixelSpacing[2] * i;
-            }
-            for(int j = 0; j < 3; j++) { //L, P, S
-                frameLPSPosition[j] = toplc[j] +  displacement[j] ;
-            }
-
-            vtkstd::string imagePositionPatient;
-            for (int j = 0; j < 3; j++) {
-                ostringstream oss;
-                oss.precision(8);
-                oss << frameLPSPosition[j];
-                imagePositionPatient += oss.str();
-                if (j < 2) {
-                imagePositionPatient += '\\';
-                }
-            }
-
-            this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-                "PlanePositionSequence",            
-                0,                                 
-                "ImagePositionPatient",           
-                imagePositionPatient,               
-                "PerFrameFunctionalGroupsSequence", 
-                frame 
-            );
-        
-            frame++;     
-        }
-    }
 }
 
 
@@ -1027,30 +893,30 @@ void svkSdbmVolumeReader::InitPlaneOrientationMacro()
      *  Should correspond with the orientation descriptors (plane, oblane)
      */
     float tlhc[3]; 
-    tlhc[0] = this->GetHeaderValueAsFloat(shfMap, "tlhc_R"); 
-    tlhc[1] = this->GetHeaderValueAsFloat(shfMap, "tlhc_A"); 
+    tlhc[0] = -1 * this->GetHeaderValueAsFloat(shfMap, "tlhc_R"); 
+    tlhc[1] = -1 * this->GetHeaderValueAsFloat(shfMap, "tlhc_A"); 
     tlhc[2] = this->GetHeaderValueAsFloat(shfMap, "tlhc_S"); 
 
     float trhc[3]; 
-    trhc[0] = this->GetHeaderValueAsFloat(shfMap, "trhc_R"); 
-    trhc[1] = this->GetHeaderValueAsFloat(shfMap, "trhc_A"); 
+    trhc[0] = -1 * this->GetHeaderValueAsFloat(shfMap, "trhc_R"); 
+    trhc[1] = -1 * this->GetHeaderValueAsFloat(shfMap, "trhc_A"); 
     trhc[2] = this->GetHeaderValueAsFloat(shfMap, "trhc_S"); 
 
     float brhc[3]; 
-    brhc[0] = this->GetHeaderValueAsFloat(shfMap, "brhc_R"); 
-    brhc[1] = this->GetHeaderValueAsFloat(shfMap, "brhc_A"); 
+    brhc[0] = -1 * this->GetHeaderValueAsFloat(shfMap, "brhc_R"); 
+    brhc[1] = -1 * this->GetHeaderValueAsFloat(shfMap, "brhc_A"); 
     brhc[2] = this->GetHeaderValueAsFloat(shfMap, "brhc_S"); 
 
     //  Determine vectors in LPS (DICOM) rather than RAS 
     float colDir[3]; 
     for (int i = 0; i < 3; i++) {
-        colDir[i] = tlhc[i] - trhc[i];
+        colDir[i] = trhc[i] - tlhc[i];
     }
     float colNorm = vtkMath::Normalize(colDir); 
 
     float rowDir[3]; 
     for (int i = 0; i < 3; i++) {
-        rowDir[i] = trhc[i] - brhc[i];
+        rowDir[i] = brhc[i] - trhc[i];
     }
     float rowNorm = vtkMath::Normalize(rowDir); 
 
@@ -1130,6 +996,44 @@ void svkSdbmVolumeReader::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence"
     );
 
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionDataColumns",
+        this->GetHeaderValueAsInt(shfMap, "num_pts_0"), 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+//
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionPhaseColumns",
+        this->GetHeaderValueAsInt(shfMap, "num_pts_1"), 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionPhaseRows",
+        this->GetHeaderValueAsInt(shfMap, "num_pts_2"), 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
+        this->GetHeaderValueAsInt(shfMap, "num_pts_3"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+//
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",   
         0,                                    
@@ -1237,6 +1141,9 @@ void svkSdbmVolumeReader::InitMRReceiveCoilMacro()
 
     vtkstd::string coilType("VOLUME"); 
     this->numCoils =  this->GetHeaderValueAsInt(shfMap, "num_coils");  
+    if ( this->numCoils < 0 ) {
+        this->numCoils = 1; 
+    }
     if ( this->numCoils > 1 ) {
         coilType.assign("MULTICOIL"); 
     }
@@ -1486,6 +1393,11 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_FrequencyOffset",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference", 
         this->GetHeaderValueAsFloat(shfMap, "ppm_offset")
     );
@@ -1718,38 +1630,50 @@ vtkstd::string svkSdbmVolumeReader::ReadLineIgnore(istringstream* iss, char deli
 /*! 
  *  Read the value part of a delimited key value line in a file: 
  */
-vtkstd::string svkSdbmVolumeReader::ReadLineValue(istringstream* iss, char delim)
+int svkSdbmVolumeReader::ReadLineKeyValue(istringstream* iss, char delim, vtkstd::string* key, vtkstd::string* value)
 {
 
-    vtkstd::string value;
     this->ReadLine(this->shfHdr, iss);
+
     try {
 
         vtkstd::string line;
         line.assign( iss->str() );
 
         vtkstd::size_t delimPos = line.find_first_of(delim);
-        vtkstd::string delimitedLine; 
+        vtkstd::string valueTmp; 
+        vtkstd::string keyTmp; 
+
         if (delimPos != vtkstd::string::npos) {
-            delimitedLine.assign( line.substr( delimPos + 1 ) );
+            keyTmp.assign( line.substr( 0, delimPos ) );
+            valueTmp.assign( line.substr( delimPos + 1 ) );
         } else {
-            delimitedLine.assign( line );
+            keyTmp.assign( line );
+            valueTmp.assign( line );
+        }
+
+        // remove trailing white space from key: 
+        vtkstd::size_t firstSpace = keyTmp.find_first_of( ' ' );  
+        if ( firstSpace != vtkstd::string::npos) {
+            key->assign( keyTmp.substr( 0, firstSpace ) );
+        } else {
+            key->assign( keyTmp ); 
         }
    
-        // remove leading white space: 
-        vtkstd::size_t firstNonSpace = delimitedLine.find_first_not_of( ' ' );  
+        // remove leading white space from value: 
+        vtkstd::size_t firstNonSpace = valueTmp.find_first_not_of( ' ' );  
         if ( firstNonSpace != vtkstd::string::npos) {
-            value.assign( delimitedLine.substr( firstNonSpace ) );
+            value->assign( valueTmp.substr( firstNonSpace ) );
         } else {
-            value.assign( delimitedLine ); 
+            value->assign( valueTmp ); 
         }
 
     } catch (const exception& e) {
         cout <<  e.what() << endl;
+        return -1; 
     }
 
-    return value;
-
+    return 0; 
 }
 
 

@@ -105,7 +105,6 @@ class svkSdbmVolumeReader : public svkImageReader2
         void            InitPerFrameFunctionalGroupMacros();
         void            InitPixelMeasuresMacro();
         void            InitFrameContentMacro();
-        void            InitPlanePositionMacro();
         void            InitPlaneOrientationMacro();
         void            InitMRSpectroscopyFrameTypeMacro();
         void            InitMRTimingAndRelatedParametersMacro();
@@ -125,9 +124,9 @@ class svkSdbmVolumeReader : public svkImageReader2
         int             GetNumSlices();
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int channel = 0, int timepoint = 0 );
         void            ParseShf();
-        void            ParseShfDim(); 
+        void            ParseShfDim( vtkstd::string dimenNum ); 
         vtkstd::string  ReadLineSubstr(istringstream* iss, int start, int stop);
-        vtkstd::string  ReadLineValue(istringstream* iss, char delim);
+        int             ReadLineKeyValue(istringstream* iss, char delim, vtkstd::string* key, vtkstd::string* value);
         vtkstd::string  ReadLineIgnore(istringstream* iss, char delim);
         void            PrintKeyValuePairs(); 
         int             GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
@@ -136,6 +135,7 @@ class svkSdbmVolumeReader : public svkImageReader2
                             vtkstd::string keyString, int valueIndex = 0); 
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
+
 
 
         //  Members:
