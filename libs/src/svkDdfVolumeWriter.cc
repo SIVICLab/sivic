@@ -641,11 +641,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "data reordered: " << endl;
 
     float acqTLC[3];
-    for (int i = 0; i < 3; i++) {
-        acqTLC[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionTLC", 
-            "SharedFunctionalGroupsSequence", 0, i
-        );
+    if( hdr->ElementExists( "SVK_SpectroscopyAcquisitionTLC" ) ) {
+        for (int i = 0; i < 3; i++) {
+            acqTLC[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionTLC", 
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
     }
 
     *out << "acq. toplc(lps, mm):  " << fixed << right << setw(13) << setprecision(5)
@@ -654,16 +656,18 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
          << setw(14) << acqTLC[2] << endl;
 
     float acqSpacing[3];
-    for (int i = 0; i < 2; i++) {
-        acqSpacing[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionPixelSpacing", 
-            "SharedFunctionalGroupsSequence", 0, i
+    if( hdr->ElementExists( "SVK_SpectroscopyAcquisitionPixelSpacing" ) ) {
+        for (int i = 0; i < 2; i++) {
+            acqSpacing[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionPixelSpacing", 
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
+        acqSpacing[2] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
+            "SharedFunctionalGroupsSequence", 0
         );
     }
-    acqSpacing[2] = hdr->GetFloatSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
-        "SharedFunctionalGroupsSequence", 0
-    );
 
     *out << "acq. spacing(mm):  " << fixed << right << setw(16) << setprecision(5)
          << acqSpacing[0]
@@ -692,11 +696,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "acq. number of points: " << acqPts1 << " " << acqPts2 << " " << acqPts3 << endl;
 
     float acqDcos[9]; 
-    for (int i = 0; i < 9; i++) {
-        acqDcos[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionOrientation", 
-            "SharedFunctionalGroupsSequence", 0, i
-        );
+    if( hdr->ElementExists( "SVK_SpectroscopyAcquisitionOrientation" ) ) {
+        for (int i = 0; i < 9; i++) {
+            acqDcos[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionOrientation", 
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
     }
 
     *out << "acq. dcos1: " << fixed << setw(14) << setprecision(5) << acqDcos[0] << setw(14) << acqDcos[1]
@@ -793,11 +799,13 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                                 << endl;  
 
     float reorderedTLC[3];
-    for (int i = 0; i < 3; i++) {
-        reorderedTLC[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedTLC",
-            "SharedFunctionalGroupsSequence", 0, i
-        );
+    if( hdr->ElementExists( "SVK_SpectroscopyAcqReorderedTLC" ) ) {
+        for (int i = 0; i < 3; i++) {
+            reorderedTLC[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedTLC",
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
     }
 
     *out << "reordered toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
@@ -813,42 +821,55 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                                           << endl;  
 
     float reorderedSpacing[3];
-    for (int i = 0; i < 2; i++) {
-        reorderedSpacing[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPixelSpacing",
-            "SharedFunctionalGroupsSequence", 0, i
+    if( hdr->ElementExists( "SVK_SpectroscopyAcqReorderedPixelSpacing" ) ) {
+        for (int i = 0; i < 2; i++) {
+            reorderedSpacing[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPixelSpacing",
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
+        reorderedSpacing[2] = hdr->GetFloatSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
+            "SharedFunctionalGroupsSequence", 0
         );
     }
-    reorderedSpacing[2] = hdr->GetFloatSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
-        "SharedFunctionalGroupsSequence", 0
-    );
 
     *out << "reordered spacing(mm):  " << fixed << right << setw(17) << setprecision(5)
          << reorderedSpacing[0]
          << setw(14) << reorderedSpacing[1]
          << setw(14) << reorderedSpacing[2] << endl;
 
-    int reorderedPts1 = hdr->GetIntSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
-        "SharedFunctionalGroupsSequence", 0
-    );
-    int reorderedPts2 = hdr->GetIntSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
-        "SharedFunctionalGroupsSequence", 0
-    );
-    int reorderedPts3 = hdr->GetIntSequenceItemElement(
-        "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-        "SharedFunctionalGroupsSequence", 0
-    );
+    int reorderedPts1;
+    int reorderedPts2;
+    int reorderedPts3; 
+    if( hdr->ElementExists( "SVK_SpectroscopyAcqReorderedPhaseColumns" ) ) {
+        reorderedPts1 = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
+            "SharedFunctionalGroupsSequence", 0
+        );
+        reorderedPts2 = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
+            "SharedFunctionalGroupsSequence", 0
+        );
+        reorderedPts3 = hdr->GetIntSequenceItemElement(
+            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+            "SharedFunctionalGroupsSequence", 0
+        );
+    } else {
+        reorderedPts1 =  hdr->GetIntValue("Columns");
+        reorderedPts2 =  hdr->GetIntValue("Rows");
+        reorderedPts3 =  hdr->GetNumberOfSlices();
+    }
     *out << "reordered number of points: " << reorderedPts1 << " " << reorderedPts2 << " " << reorderedPts3 << endl;
 
     float reorderedDcos[9];
-    for (int i = 0; i < 9; i++) {
-        reorderedDcos[i] = hdr->GetFloatSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOrientation",
-            "SharedFunctionalGroupsSequence", 0, i
-        );
+    if( hdr->ElementExists( "SVK_SpectroscopyAcqReorderedOrientation" ) ) {
+        for (int i = 0; i < 9; i++) {
+            reorderedDcos[i] = hdr->GetFloatSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOrientation",
+                "SharedFunctionalGroupsSequence", 0, i
+            );
+        }
     }
 
     *out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << reorderedDcos[0] << setw(14) << reorderedDcos[1]
@@ -884,18 +905,24 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3], vtkstd::string centerType
 
     int numPix[3]; 
     if ( centerType.compare( "reordered" ) == 0 ) {
-        numPix[0] = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
-            "SharedFunctionalGroupsSequence", 0
-        );
-        numPix[1] = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
-            "SharedFunctionalGroupsSequence", 0
-        );
-        numPix[2] = hdr->GetIntSequenceItemElement(
-            "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
-            "SharedFunctionalGroupsSequence", 0
-        );
+        if( hdr->ElementExists( "SVK_SpectroscopyAcqReorderedPhaseColumns" ) ) {
+            numPix[0] = hdr->GetIntSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseColumns",
+                "SharedFunctionalGroupsSequence", 0
+            );
+            numPix[1] = hdr->GetIntSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedPhaseRows",
+                "SharedFunctionalGroupsSequence", 0
+            );
+            numPix[2] = hdr->GetIntSequenceItemElement(
+                "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+                "SharedFunctionalGroupsSequence", 0
+            );
+        } else {
+            numPix[0] =  hdr->GetIntValue("Columns");
+            numPix[1] =  hdr->GetIntValue("Rows");
+            numPix[2] =  hdr->GetNumberOfSlices();
+        }
     } else if ( centerType.compare( "current" ) == 0 ) {
         numPix[0] =  hdr->GetIntValue("Columns");
         numPix[1] =  hdr->GetIntValue("Rows");
