@@ -189,13 +189,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  Reset hdr value (DataPointColumns)
     //===========
     int numEPSIPts= this->dcmHeader->GetIntValue( "DataPointColumns" );
-    cout << "Num EPSI Pts: "<< numEPSIPts << endl;
+    //cout << "Num EPSI Pts: "<< numEPSIPts << endl;
 
     //  this is the number of lobes in the EPSI sampling. For symmetric 
     //  epsi this is twice the number of frequence points (pos + neg)    
     int numSymmetricEPSILobes = this->GetHeaderValueAsInt( "rhr.rh_user10" );
     int numFreqPts = numSymmetricEPSILobes / 2;     
-    cout << "Num Freq Pts: "<< numFreqPts << endl;
+    //cout << "Num Freq Pts: "<< numFreqPts << endl;
 
 
     //============================================================
@@ -251,7 +251,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     reorderedVoxels[2] = numVoxels[2]; 
     reorderedVoxels[ epsiAxis ] = numVoxels[epsiAxis] - 2; //throw out first and last samples
 
-    cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
+    //cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //============================================================
@@ -532,13 +532,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     for ( int i = 0; i < gridSize; i++ ) {
         kn[i]     = ( (i + 0.5) - gridSize/2 ) * dkn; 
         knNorm[i] = kn[i] / dkn; 
-        cout << "knn: " << knNorm[i] << endl;
+        //cout << "knn: " << knNorm[i] << endl;
     }
 
     float* waveFormIntegralNorm = new float[ numEPSIVoxels ]; 
     for ( int i = 0; i < numEPSIVoxels; i++ ) {
         waveFormIntegralNorm[i] =  waveFormIntegral[i] / dkn; 
-        cout << "wfin: " << waveFormIntegralNorm[i] << endl;
+        //cout << "wfin: " << waveFormIntegralNorm[i] << endl;
     }
 
     //  =============================================
@@ -555,7 +555,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     float* densityCompensationFactors = new float[ numEPSIVoxels ]; 
     for ( int i = 0; i < numEPSIVoxels; i++ ) {
         densityCompensationFactors[i] = waveFormTmp[i+2] - waveFormTmp[i];  
-        cout << "DCF: " << densityCompensationFactors[i] << endl;
+        //cout << "DCF: " << densityCompensationFactors[i] << endl;
     }
 
 
@@ -601,11 +601,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
             }
         }
 
-        for (int k = 0; k < iGrid.size(); k++ ) {
-            cout << "IGRID: " << iGrid[k] << endl;
-            cout << "IGRID: " << iGridDK[k] << endl;
-        }
-        cout << endl; 
+        //for (int k = 0; k < iGrid.size(); k++ ) {
+            //cout << "IGRID: " << iGrid[k] << endl;
+            //cout << "IGRID: " << iGridDK[k] << endl;
+        //}
+        //cout << endl; 
 
 
         //  get Kaiser Bessel Values: 
@@ -613,11 +613,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
         this->GetKaiserBesselValues( &iGridDK , kWidth, beta, &kbVals); 
 
         // Initialize non-zero grid elements:  
-        cout << "DCF: " << densityCompensationFactors[i] << endl; 
+        //cout << "DCF: " << densityCompensationFactors[i] << endl; 
         int kbIndex = 0; 
         for (int m = iGrid[0]; m <= iGrid[iGrid.size() - 1]; m++ ) {
-            cout << "Row, Col: " << m << " " << i << endl;
-            cout << "grid: " << kbVals[kbIndex] * densityCompensationFactors[i] << endl; 
+            //cout << "Row, Col: " << m << " " << i << endl;
+            //cout << "grid: " << kbVals[kbIndex] * densityCompensationFactors[i] << endl; 
             grid[m][i] = kbVals[kbIndex] * densityCompensationFactors[i]; 
             kbIndex++; 
         }
@@ -646,7 +646,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     float* epsiKData = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
     for ( int lobe = 0; lobe < 2; lobe++) {
-        cout << "LOBE: " << lobe << endl;
+        //cout << "LOBE: " << lobe << endl;
         for ( int slice = 0; slice < regridDims[2]; slice++) {
             for ( int row = 0; row < regridDims[1]; row++) {
                 for ( int col = 0; col < regridDims[0]; col++) {
@@ -745,7 +745,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             tuple[1] = epsiKData[k].Imag; 
                             spectrum->SetTuple( k, tuple );
                             
-                            cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
+                            //cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
                         }
 
                     }
@@ -776,7 +776,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
                             char arrayName[30];
                             sprintf(arrayName, "%d %d %d %d %d", col, row, slice, lobe, coilNum);
-                            cout << "REGRID remove array: " << arrayName << endl;
+                            //cout << "REGRID remove array: " << arrayName << endl;
                             data->GetCellData()->RemoveArray( arrayName );
                         }
                     }
@@ -882,7 +882,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float
             x = beta * pow( x, 0.5 ); 
             (*kbVals)[i] =  this->GetModifiedBessel0( x ) / width ; 
 
-            cout << "KB: " << (*kbVals)[i] << endl;
+            //cout << "KB: " << (*kbVals)[i] << endl;
 
         }
 
