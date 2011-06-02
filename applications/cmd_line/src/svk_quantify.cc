@@ -117,7 +117,7 @@ int main (int argc, char** argv)
         {"peak_center",      required_argument, NULL,  FLAG_PEAK_CENTER},
         {"peak_width",       required_argument, NULL,  FLAG_PEAK_WIDTH},
         {"peak_name",        required_argument, NULL,  FLAG_PEAK_NAME},
-        {"algorithm",        required_argument, NULL,  FLAG_ALGORITHM},
+        {"algo",             required_argument, NULL,  FLAG_ALGORITHM},
         {"verbose",          no_argument      , NULL,  FLAG_VERBOSE},
         {0, 0, 0, 0}
     };
