@@ -109,6 +109,28 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 
 
 /*! 
+ *  Initializes any private DICOM attributes that are needed internally
+ */
+void svkDcmMrsVolumeReader::InitPrivateHeader()
+{
+
+    if( ! this->GetOutput()->GetDcmHeader()->ElementExists( "SVK_PRIVATE_TAG", "top") ) {
+        this->GetOutput()->GetDcmHeader()->SetValue(  "SVK_PRIVATE_TAG", "SVK_PRIVATE_CREATOR"); 
+    }
+
+    //  If not present, add the SVK Domain attributes defaulted to spatial domain 
+    //  Private Attributes for spatial domain encoding:
+    if( ! this->GetOutput()->GetDcmHeader()->ElementExists( "SVK_ColumnsDomain", "top") ) {
+
+        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_ColumnsDomain",  "SPACE"); 
+        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_RowsDomain", "SPACE"); 
+        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_SliceDomain", "SPACE"); 
+    }
+
+}
+
+
+/*! 
  *  
  */
 void svkDcmMrsVolumeReader::LoadData( svkImageData* data )

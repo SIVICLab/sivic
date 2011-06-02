@@ -127,6 +127,14 @@ int svkDcmRawDataReader::CanReadFile(const char* fname)
 
 
 /*!
+ *  Initializes any private DICOM attributes that are needed internally
+ */
+void svkDcmRawDataReader::InitPrivateHeader()
+{
+}
+
+
+/*!
  *
  */
 void svkDcmRawDataReader::LoadData( svkImageData* data )

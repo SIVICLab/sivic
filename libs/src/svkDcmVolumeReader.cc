@@ -161,6 +161,7 @@ void svkDcmVolumeReader::ExecuteInformation()
 
     }
 
+    this->InitPrivateHeader();
 }
 
 

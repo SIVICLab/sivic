@@ -122,6 +122,14 @@ int svkGEPostageStampReader::CanReadFile(const char* fname)
 }
 
 
+/*!
+ *  Initializes any private DICOM attributes that are needed internally
+ */
+void svkGEPostageStampReader::InitPrivateHeader()
+{
+}
+
+
 /*! 
  *  
  */

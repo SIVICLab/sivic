@@ -87,6 +87,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
 
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         void    LoadData( svkImageData* data ); 
+        void    InitPrivateHeader(); 
 
 
 

@@ -494,6 +494,14 @@ void svkDcmMriVolumeReader::InitDcmHeader()
 }
 
 
+/*!
+ *  Initializes any private DICOM attributes that are needed internally
+ */
+void svkDcmMriVolumeReader::InitPrivateHeader()
+{
+}
+
+
 /*! 
  *  Init the Shared and PerFrame sequences and load the pixel data into the svkImageData object. 
  */

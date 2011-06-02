@@ -92,6 +92,7 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
     private:
 
         virtual void    LoadData(svkImageData* data); 
+        virtual void    InitPrivateHeader(); 
 
         void            InitMultiFrameFunctionalGroupsModule(); 
         void            InitSharedFunctionalGroupMacros(); 
