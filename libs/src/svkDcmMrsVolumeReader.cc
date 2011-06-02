@@ -181,7 +181,10 @@ void svkDcmMrsVolumeReader::SetCellSpectrum(svkImageData* data, int x, int y, in
              + ( timePt * timePtOffset ) + ( coilNum * coilOffset ) ) * this->numFreqPts * numComponents;
 
 
+    //  According to DICOM Part 3 C.8.14.4.1, data should be ordered from low to high frequency, 
+    //  Or as the complex conjugate:
     for (int i = 0; i < this->numFreqPts; i++) {
+        specData[ offset + (i * 2) + 1 ] *= -1;     //invert the imaginary component
         dataArray->SetTuple( i, &(specData[ offset + (i * 2) ]) );
     }
 

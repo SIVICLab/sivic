@@ -181,6 +181,12 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
                         for (int i = 0; i < specPts; i++) {
         
                             fa->GetTupleValue(i, dataTuple);  
+
+                            //  According to DICOM Part 3 C.8.14.4.1, data should be ordered from low to high frequency,
+                            //  Or as the complex conjugate:
+                            if (numComponents == 2) {
+                                dataTuple[1] *= -1;     //invert the imaginary component
+                            }
         
                             for (int j = 0; j < numComponents; j++) {
                                 specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
