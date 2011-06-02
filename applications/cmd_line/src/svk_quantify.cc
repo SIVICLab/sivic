@@ -72,16 +72,19 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_quantify -i input_file_name -o output_file_name -t output_data_type [-h] \n";
     usemsg += "\n";  
-    usemsg += "   -i input_file_name        name of file to convert. \n"; 
-    usemsg += "   -o output_file_name       name of outputfile. \n";  
-    usemsg += "   -t output_data_type       target data type: \n";  
-    usemsg += "                                 3 = UCSF IDF      \n";  
-    usemsg += "                                 6 = DICOM_MRI     \n";  
-    usemsg += "   --peak_center       ppm   Chemical shift of peak center \n";
-    usemsg += "   --peak_width        ppm   Width in ppm of peak integration \n";
-    usemsg += "   --peak_name         name  String label name for peak \n"; 
-    usemsg += "   --verbose                 Prints integrals for each voxel to stdout. \n"; 
-    usemsg += "   -h                        print help mesage. \n";  
+    usemsg += "   -i input_file_name        name of file to convert.            \n"; 
+    usemsg += "   -o output_file_name       name of outputfile.                 \n";  
+    usemsg += "   -t output_data_type       target data type:                   \n";  
+    usemsg += "                                 3 = UCSF IDF                    \n";  
+    usemsg += "                                 6 = DICOM_MRI                   \n";  
+    usemsg += "   --peak_center       ppm   Chemical shift of peak center       \n";
+    usemsg += "   --peak_width        ppm   Width in ppm of peak integration    \n";
+    usemsg += "   --peak_name         name  String label name for peak          \n"; 
+    usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout. \n"; 
+    usemsg += "   --algo                    Quantification algorithm :          \n"; 
+    usemsg += "                                 1 = Peak Ht (default)           \n";  
+    usemsg += "                                 2 = Integration                 \n";  
+    usemsg += "   -h                        print help mesage.                  \n";  
     usemsg += " \n";  
     usemsg += "Generates metabolite map volume by direct integration of input spectra over the specified chemical shift range. \n";
     usemsg += "\n";  
@@ -93,6 +96,9 @@ int main (int argc, char** argv)
     float  peakWidthPpm;
     string peakName;
     bool   isVerbose = false;   
+    svkExtractMRIFromMRS::algorithm algo = svkExtractMRIFromMRS::PEAK_HT; 
+    int algoInt; 
+
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -100,6 +106,7 @@ int main (int argc, char** argv)
         FLAG_PEAK_CENTER = 0,
         FLAG_PEAK_WIDTH, 
         FLAG_PEAK_NAME, 
+        FLAG_ALGORITHM, 
         FLAG_VERBOSE  
     };
 
@@ -110,6 +117,7 @@ int main (int argc, char** argv)
         {"peak_center",      required_argument, NULL,  FLAG_PEAK_CENTER},
         {"peak_width",       required_argument, NULL,  FLAG_PEAK_WIDTH},
         {"peak_name",        required_argument, NULL,  FLAG_PEAK_NAME},
+        {"algorithm",        required_argument, NULL,  FLAG_ALGORITHM},
         {"verbose",          no_argument      , NULL,  FLAG_VERBOSE},
         {0, 0, 0, 0}
     };
@@ -142,6 +150,18 @@ int main (int argc, char** argv)
                 break;
            case FLAG_VERBOSE:
                 isVerbose = true; 
+                break;
+           case FLAG_ALGORITHM:
+                algoInt = atoi(optarg); 
+                if ( algoInt == 1 ) {
+                    algo = svkExtractMRIFromMRS::PEAK_HT; 
+                } else if ( algoInt == 2 ) {
+                    algo = svkExtractMRIFromMRS::INTEGRATE; 
+                } else {
+                    cout << "ERROR: invalid algorithm: " << algoInt << endl;
+                    cout << usemsg << endl;
+                    exit(1); 
+                }
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -194,18 +214,23 @@ int main (int argc, char** argv)
 
     svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
     quant->SetInput( reader->GetOutput() ); 
-    quant->SetVerbose( isVerbose ); 
+    if ( isVerbose ) { 
+        quant->SetVerbose( isVerbose ); 
+    }    
     quant->SetPeakPosPPM( peakCenterPpm );
     quant->SetPeakWidthPPM( peakWidthPpm );
 
-    quant->SetAlgorithmToIntegrate();
-    quant->SetSeriesDescription( peakName + "area metabolite map" ); 
-    quant->Update();
+    if ( isVerbose || algo == svkExtractMRIFromMRS::INTEGRATE ) {
+        quant->SetAlgorithmToIntegrate();
+        quant->SetSeriesDescription( peakName + "area metabolite map" ); 
+        quant->Update();
+    }
 
-    quant->SetAlgorithmToPeakHeight();
-    quant->SetSeriesDescription( peakName + "peak ht metabolite map" ); 
-    quant->Update();
-
+    if ( isVerbose || algo == svkExtractMRIFromMRS::PEAK_HT) {
+        quant->SetAlgorithmToPeakHeight();
+        quant->SetSeriesDescription( peakName + "peak ht metabolite map" ); 
+        quant->Update();
+    }
 
     //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
     //cout << *( quant->GetOutput() ) << endl;
