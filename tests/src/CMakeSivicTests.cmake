@@ -363,7 +363,7 @@ SET( TEST_NAME TEST_MCHK_INTEGRATE_MET_MAP)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
-ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 3 --peak_center 1.99 --peak_width .4 --peak_name NAA)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 3 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 2)
 
 SET( TEST_NAME TEST_INTEGRATE_MET_MAP_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
