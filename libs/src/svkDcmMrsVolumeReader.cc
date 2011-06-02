@@ -183,8 +183,17 @@ void svkDcmMrsVolumeReader::SetCellSpectrum(svkImageData* data, int x, int y, in
 
     //  According to DICOM Part 3 C.8.14.4.1, data should be ordered from low to high frequency, 
     //  Or as the complex conjugate:
+    string signalDomain = this->GetOutput()->GetDcmHeader()->GetStringValue( "SignalDomainColumns" );
+    bool isTimeDomain = false;
+    if ( signalDomain.compare("TIME") == 0 ) {
+        isTimeDomain = true;
+    }
+
     for (int i = 0; i < this->numFreqPts; i++) {
-        specData[ offset + (i * 2) + 1 ] *= -1;     //invert the imaginary component
+        // see previous comment about DICOM convention for time domain data. 
+        if ( isTimeDomain ) {
+            specData[ offset + (i * 2) + 1 ] *= -1;     //invert the imaginary component
+        }
         dataArray->SetTuple( i, &(specData[ offset + (i * 2) ]) );
     }
 

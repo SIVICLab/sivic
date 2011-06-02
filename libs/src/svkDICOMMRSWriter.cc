@@ -165,6 +165,12 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
 
     vtkFloatArray* fa; 
     float* dataTuple = new float[numComponents];  
+      
+    string signalDomain = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "SignalDomainColumns" ); 
+    bool isTimeDomain = false; 
+    if ( signalDomain.compare("TIME") == 0 ) {
+        isTimeDomain = true; 
+    }
 
     for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
         for (int timePt = 0; timePt < numTimePts; timePt ++) {
@@ -182,9 +188,9 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
         
                             fa->GetTupleValue(i, dataTuple);  
 
-                            //  According to DICOM Part 3 C.8.14.4.1, data should be ordered from low to high frequency,
-                            //  Or as the complex conjugate:
-                            if (numComponents == 2) {
+                            //  According to DICOM Part 3 C.8.14.4.1, time domain data should be 
+                            //  ordered from low to high frequency (or as the complex conjugate):
+                            if (numComponents == 2 && isTimeDomain ) {
                                 dataTuple[1] *= -1;     //invert the imaginary component
                             }
         

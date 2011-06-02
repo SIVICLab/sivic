@@ -379,8 +379,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     data->DeepCopy( reorderedImageData ); 
     numVoxels[epsiAxis] = numVoxels[epsiAxis] - 2; //   first and last point were thrown out
-    this->RedimensionData( data, numVoxels, numFreqPts ); 
-
+    int numVoxelsOriginal[3]; 
+    this->GetNumVoxels( numVoxelsOriginal ); 
+    this->RedimensionData( data, numVoxelsOriginal, numVoxels, numFreqPts ); 
 
     //  =================================================
     //  Apply linear phase correction to correct for EPSI sampling of 
@@ -391,39 +392,34 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
  
-
     //  =================================================
     //  reverse odd lobe k-space spectra along epsi axis
     //  =================================================
     this->ReverseOddEPSILobe( data, epsiAxis ); 
 
+    //  =================================================
+    //  resample ramp data 
+    //  =================================================
+    this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
 
     //  =================================================
-    //  if feet first entry, reverse LP and SI direction: 
+    //  if feet first entry, reverse RL and SI direction: 
     //  =================================================
     this->FlipAxis( data, 0); 
     this->FlipAxis( data, 2); 
 
-
     //  =================================================
     //  FFTShift:  put the origin of k-space at the image
     //  center so it's suitable for standard downstream 
-    //  FFT.
+    //  FFT.  Seems to be the case already
     //  =================================================
-    this->FFTShift( data ); 
+    //this->FFTShift( data ); 
    
-
-    //  =================================================
-    //  resample ramp data 
-    //  =================================================
-
-
     //  =================================================
     //  Zero fill in frequency domain (should be moved to
     //  post-processing step)
     //  =================================================
     this->ZeroFill(data); 
-
 
     //  =================================================
     //  combine even/odd lobes
@@ -487,6 +483,574 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis )
     flip->Delete(); 
     tmpData->Delete(); 
 }
+
+
+/*!
+ *  Resamples ramp portion of symmetric EPSI acquisition, regridding it 
+ *  to a uniform cartesian grid. 
+ *
+ *  References: 
+ *  
+ *      John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *      Selection of a Convolution Function for Fourier Inversion Using Gridding
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
+ *
+ *      Philip J. Beatty, Dwight G. Nishimura, John M. Pauly,
+ *      Rapid Gridding Reconstruction With a Minimal Oversampling Ratio
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. 24, NO. 6, JUNE 2005
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis )
+{
+    //  get the EPSI sampling waveform: 
+    svkDcmHeader* hdr = data->GetDcmHeader(); 
+    int numVoxels[3];  
+    numVoxels[0] = hdr->GetIntValue( "Columns" );
+    numVoxels[1] = hdr->GetIntValue( "Rows" );
+    numVoxels[2] = hdr->GetNumberOfSlices();
+
+    int numEPSIVoxels = numVoxels[ epsiAxis ]; 
+
+    float* waveFormIntegral = new float[ numEPSIVoxels ]; 
+    this->GetWaveFormIntegral( waveFormIntegral, deltaT, plateauTime, rampTime ); 
+
+    //  =============================================
+    //  MATLAB translation: 
+    //  ks = waveFormIntegral  (21 points)
+    //  ks_max = integralMaxFloat
+    //  ks_norm =  waveFormIntegralNorm
+    //  =============================================
+
+    //  Max should be last point in cummulative integral: 
+    float integralMaxFloat = waveFormIntegral[ numEPSIVoxels - 1 ]; 
+    int integralMax = static_cast<int>( floor(  2 * integralMaxFloat ) ); 
+    int overGridFactor = 2; 
+    int gridSize = overGridFactor * integralMax; 
+    float dkn = ( 2 * integralMaxFloat ) / gridSize; 
+
+    float* kn     = new float[ gridSize ]; 
+    float* knNorm = new float[ gridSize ]; 
+    for ( int i = 0; i < gridSize; i++ ) {
+        kn[i]     = ( (i + 0.5) - gridSize/2 ) * dkn; 
+        knNorm[i] = kn[i] / dkn; 
+        cout << "knn: " << knNorm[i] << endl;
+    }
+
+    float* waveFormIntegralNorm = new float[ numEPSIVoxels ]; 
+    for ( int i = 0; i < numEPSIVoxels; i++ ) {
+        waveFormIntegralNorm[i] =  waveFormIntegral[i] / dkn; 
+        cout << "wfin: " << waveFormIntegralNorm[i] << endl;
+    }
+
+    //  =============================================
+    //  Calculate density compensation factors
+    //  =============================================
+    float* waveFormTmp = new float[ numEPSIVoxels + 2]; 
+
+    waveFormTmp[0] = 2 * waveFormIntegral[0] - waveFormIntegral[1]; 
+    for ( int i = 1; i < numEPSIVoxels + 1; i++ ) {
+        waveFormTmp[i] = waveFormIntegral[i - 1];
+    }
+    waveFormTmp[numEPSIVoxels +1] = 2 * waveFormIntegral[ numEPSIVoxels-1 ] - waveFormIntegral[ numEPSIVoxels -2 ]; 
+    
+    float* densityCompensationFactors = new float[ numEPSIVoxels ]; 
+    for ( int i = 0; i < numEPSIVoxels; i++ ) {
+        densityCompensationFactors[i] = waveFormTmp[i+2] - waveFormTmp[i];  
+        cout << "DCF: " << densityCompensationFactors[i] << endl;
+    }
+
+
+    //  =============================================
+    //  Calculate   Kaise-Bessel kernel params:  
+    //  Equation 5:
+    //  Philip J. Beatty, Dwight G. Nishimura, John M. Pauly,
+    //  Rapid Gridding Reconstruction With a Minimal Oversampling Ratio
+    //  IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. 24, NO. 6, JUNE 2005
+    //  =============================================
+    float kWidth = 3.5; 
+    float beta = ( kWidth * kWidth ) / ( overGridFactor * overGridFactor ) ; 
+    beta *= ( overGridFactor - 0.5 ) * ( overGridFactor - 0.5 ); 
+    beta -= 0.8 ; 
+    beta = pow( beta, 0.5); 
+    beta *= vtkMath::Pi(); 
+    
+   
+    //  =============================================
+    //  Make Gridding Matrix: 
+    //  =============================================
+
+    //  allocate and initialize to zero
+    float** grid = new float*[gridSize];    //  gridSize rows
+    for (int i = 0; i < gridSize; i++ ) {
+        grid[i] = new float [numEPSIVoxels];   //   numEPSIVoxels columns 
+        for ( int j = 0; j < numEPSIVoxels; j++) {
+            grid[i][j] = 0;      
+        }
+    }
+
+    float* dk = new float[ gridSize ]; 
+    for ( int i = 0; i < numEPSIVoxels; i++ ) {
+
+        vtkstd::vector <int> iGrid; 
+        vtkstd::vector <float> iGridDK; 
+
+        for ( int j = 0; j < gridSize; j++ ) {
+            dk[j] = fabs( knNorm[j] - waveFormIntegralNorm[i] );  
+            if ( dk[j] < (kWidth/2) ) {
+                iGrid.push_back( j ); 
+                iGridDK.push_back( dk[j] ); 
+            }
+        }
+
+        for (int k = 0; k < iGrid.size(); k++ ) {
+            cout << "IGRID: " << iGrid[k] << endl;
+            cout << "IGRID: " << iGridDK[k] << endl;
+        }
+        cout << endl; 
+
+
+        //  get Kaiser Bessel Values: 
+        vtkstd::vector<float> kbVals; 
+        this->GetKaiserBesselValues( &iGridDK , kWidth, beta, &kbVals); 
+
+        // Initialize non-zero grid elements:  
+        cout << "DCF: " << densityCompensationFactors[i] << endl; 
+        int kbIndex = 0; 
+        for (int m = iGrid[0]; m <= iGrid[iGrid.size() - 1]; m++ ) {
+            cout << "Row, Col: " << m << " " << i << endl;
+            cout << "grid: " << kbVals[kbIndex] * densityCompensationFactors[i] << endl; 
+            grid[m][i] = kbVals[kbIndex] * densityCompensationFactors[i]; 
+            kbIndex++; 
+        }
+
+    }
+
+
+    //  ================================================
+    //  Initialize the rolloff correction: Eq 15 Jackson
+    //  ================================================
+    float* apodCor = new float[gridSize]; 
+    this->GetRolloffCorrection( gridSize, kWidth, beta, apodCor ); 
+
+
+    //  ================================================
+    //  Convolve, Iterate over the nonEPSI dimensions: 
+    //  ================================================
+    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
+    int regridDims[3]; 
+    regridDims[0] = numVoxels[0]; 
+    regridDims[1] = numVoxels[1]; 
+    regridDims[2] = numVoxels[2]; 
+    // loop over all dims other than the epsi k-space dimension: 
+    regridDims[epsiAxis] = 1;  
+
+    float* epsiKData = new float[ numEPSIVoxels * 2 ];
+    float* overgrid = new float[ gridSize *2 ];
+    for ( int lobe = 0; lobe < 2; lobe++) {
+        cout << "LOBE: " << lobe << endl;
+        for ( int slice = 0; slice < regridDims[2]; slice++) {
+            for ( int row = 0; row < regridDims[1]; row++) {
+                for ( int col = 0; col < regridDims[0]; col++) {
+                    for ( int freq = 0; freq < numSpecPts; freq++) {
+
+                        for ( int epsiK = 0; epsiK < numVoxels[epsiAxis]; epsiK++ ) {
+
+                            if ( epsiAxis == 0 ) { 
+                                col = epsiK;         
+                            } else if ( epsiAxis == 1 ) {
+                                row = epsiK;         
+                            } else if ( epsiAxis == 2 ) {
+                                slice = epsiK;         
+                            }
+
+                            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, lobe, 0) 
+                            );
+
+                            epsiKData[ epsiK * 2 ]     = spectrum->GetValue( freq * 2 ); 
+                            epsiKData[ epsiK * 2 + 1 ] = spectrum->GetValue( freq * 2 + 1 ); 
+                            
+                        }
+
+                        // ========================================================
+                        //  Calculate the overgrid vector here for each epsi row
+                        //  fn_overgrid in MATLAB
+                        // ========================================================
+                        for ( int i = 0; i < gridSize; i++ ) {
+                            overgrid[ i*2 ] = 0;  
+                            overgrid[ i*2 + 1 ] = 0;  
+                            for ( int j = 0; j < numEPSIVoxels; j++) {
+                                overgrid[ i*2 ]    += grid[i][j] * epsiKData[ j * 2 ];
+                                overgrid[ i*2 + 1] += grid[i][j] * epsiKData[ j * 2 + 1];
+                            }
+                        }
+
+                        //================================================
+                        //  ifft overgrid and divide by apodCor
+                        //      -> convert to vtkImageComplex
+                        //      ->  ifftShift (k=0 to origin)
+                        //      ->  ifft   (k to spatial domain) 
+                        //      ->  fftShift ( x=0 to middle)
+                        //================================================
+                        vtkImageComplex* epsiKData = new vtkImageComplex[ gridSize ];
+                        vtkImageComplex* epsiXData = new vtkImageComplex[ gridSize ];
+                        for( int i = 0; i < gridSize; i++ ) {
+                            epsiKData[i].Real = overgrid[i*2];
+                            epsiKData[i].Imag = overgrid[i*2+1];
+                        }
+                        svkMrsImageFFT::IFFTShift( epsiKData, gridSize );
+                        vtkImageFourierFilter* rfft = vtkImageRFFT::New();
+                        rfft->ExecuteRfft( epsiKData, epsiXData, gridSize );
+                        svkMrsImageFFT::FFTShift( epsiXData, gridSize );
+
+                        for( int i = 0; i < gridSize; i++ ) {
+                            epsiXData[i].Real = epsiXData[i].Real / apodCor[i]; 
+                            epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
+                        }
+
+                        int offset = floor(integralMax/2); 
+                        for( int i = 0; i < gridSize; i++ ) {
+                            epsiXData[i].Real = epsiXData[i + offset].Real; 
+                            epsiXData[i].Imag = epsiXData[i + offset].Imag; 
+                        }
+
+                        //================================================
+                        //  ifftshift (move x = 0 back to origin), 
+                        //  fft (x back to kspace)
+                        //  fftshift (k=0 back to middle)
+                        //================================================
+                        svkMrsImageFFT::IFFTShift( epsiXData, integralMax);
+
+                        vtkImageFourierFilter* fft = vtkImageFFT::New();
+                        fft->ExecuteFft( epsiXData, epsiKData, integralMax);
+
+                        svkMrsImageFFT::FFTShift( epsiKData, integralMax);
+
+                        //  Set the Gridded k-space data back into the data set: 
+                        float tuple[2]; 
+                        for ( int k = 0; k < integralMax; k++ ) {
+
+                            if ( epsiAxis == 0 ) { 
+                                col = k;         
+                            } else if ( epsiAxis == 1 ) {
+                                row = k;         
+                            } else if ( epsiAxis == 2 ) {
+                                slice = k;         
+                            }
+
+                            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, lobe, 0) 
+                            );
+
+                            tuple[0] = epsiKData[k].Real; 
+                            tuple[1] = epsiKData[k].Imag; 
+                            spectrum->SetTuple( k, tuple );
+                            
+                            cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    //  redimension the data set in the EPSI k-space axis (18 voxels, epsiKData):  
+    //  Remove all arrays with epsiAxis dimension greater
+    //  than  integralMax, and reinit the DcmHeader!!!
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        for ( int lobe = 0; lobe < 2; lobe++) {
+            for ( int slice = 0; slice < regridDims[2]; slice++) {
+                for ( int row = 0; row < regridDims[1]; row++) {
+                    for ( int col = 0; col < regridDims[0]; col++) {
+
+                        for ( int epsiK = integralMax; epsiK < numVoxels[epsiAxis]; epsiK++ ) {
+
+                            if ( epsiAxis == 0 ) { 
+                                col = epsiK;         
+                            } else if ( epsiAxis == 1 ) {
+                                row = epsiK;         
+                            } else if ( epsiAxis == 2 ) {
+                                slice = epsiK;         
+                            }
+
+                            char arrayName[30];
+                            sprintf(arrayName, "%d %d %d %d %d", col, row, slice, lobe, coilNum);
+                            cout << "REGRID remove array: " << arrayName << endl;
+                            data->GetCellData()->RemoveArray( arrayName );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Now reinit the DICOM header
+    regridDims[epsiAxis] = integralMax; 
+    this->RedimensionData( data, numVoxels, regridDims, numSpecPts); 
+
+}
+
+
+/*! 
+ *  Initialize the rolloff correction: Eq 15 Jackson
+ * 
+ *  References: 
+ *      John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *      Selection of a Convolution Function for Fourier Inversion Using Gridding
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetRolloffCorrection( int gridSize, float width, float beta, float* apodCor)
+{
+
+    float arg[2]; 
+    float pi2 = vtkMath::Pi() * vtkMath::Pi();
+    float width2 = width * width; 
+    float beta2 = beta * beta; 
+    float x2; 
+    for ( int i = 0; i < gridSize; i++ ) {
+
+        x2 = pow( (i - floor(gridSize/2) ) / gridSize, 2);  
+        arg[0]  = pi2 * width2 * x2 - beta2;  
+        arg[1]  = 0; 
+
+        // sin(a+ib) = sin(a) * cosh(b) + i cos(a) * sinh(b) 
+        // which simplifies for all real or all imaginary
+        if ( arg[0] >= 0 ) {
+            // all real
+            arg[0] = pow( arg[0], 0.5); 
+            apodCor[i] = sin( arg[0] ) / arg[0];
+        } else {
+            // all imag 
+            arg[1] = pow( -1 * arg[0], 0.5); 
+            arg[0] = 0;     
+            apodCor[i] = sinh( arg[1] ) / arg[1];
+        }
+
+    }
+
+}    
+
+
+/*!
+ *
+ *  Gridding: 
+ *
+ *  Computes the Kaiser-Bessel convolving function used for gridding, namely
+ *
+ *  y = f(u, width, beta) = I0 [ beta*sqrt(1-(2u/width)^2) ]/width
+ *
+ *  where 
+ *      I0    = the zero-order modified Bessel function of the first kind.
+ *      u     = vector of k-space locations for calculation.
+ *      width = width parameter - see Jackson et al.
+ *      beta  = beta parameter - see Jackson et al.
+ *
+ *  OUTPUT:
+ *       y = vector of Kaiser-Bessel values.
+ *
+ *                                                         
+ *  References: 
+ *      John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *      Selection of a Convolution Function for Fourier Inversion Using Gridding
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
+ *  
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float>* u, float width, float beta, vtkstd::vector<float>* kbVals )
+{
+
+    //  vector to hold indices for computing bessel coefficients. 
+    vtkstd::vector <int> uz; 
+    //vtkstd::vector<float> kb_vals; 
+    // Indices where u < w/2.
+    for ( int i = 0; i < u->size(); i++ ) {
+        if ( fabs ( (*u)[i] ) < (width/2) ) {
+            uz.push_back( i ); 
+        }
+        kbVals->push_back(0.); 
+    }    
+
+    // Calculate Modified Bessel Function of the first kind (order 0) at indices in uz vector.
+
+
+    if ( uz.size() > 0) {
+
+        for (int i = 0; i < uz.size(); i++) {
+
+            //  Bessel argument: 
+            float x =   1 - pow( ( 2. * (*u)[ uz[i] ] / width ), 2);    
+            x = beta * pow( x, 0.5 ); 
+            (*kbVals)[i] =  this->GetModifiedBessel0( x ) / width ; 
+
+            cout << "KB: " << (*kbVals)[i] << endl;
+
+        }
+
+    } 
+
+}
+
+
+/*
+ *  Calculate the modified Bessel function (order 0)
+ *  
+ *  The zero-order functions simplify significantly and 
+ *  are implemented here.  For the zero-order function, 
+ *  the modified bessel function is the same as the 
+ *  real component of the zero-order Bessel function
+ *  of the first kind     
+ *
+ *  Ref: 
+ *  Mathematical Methods for Physicists (3rd edition, 1985)
+ *  George Arfken 
+ *  Academic Press, INC
+ *  equation 11.111
+ */
+double svkGEPFileMapperUCSFfidcsiDev0::GetModifiedBessel0( float arg )
+{
+         
+    double modifiedBessel; 
+    float besselArgImag = arg;  
+    float besselReal = this->GetBessel0( besselArgImag ); 
+
+    //  for order 0, the first term in 11.111 reduces to: 
+    //  cos(0)*J(arg) - isin(0)*J(arg) = 1 * J(arg)
+    modifiedBessel = besselReal; 
+    return modifiedBessel; 
+}
+
+
+/*
+ *  Calculate the Real component of the Bessel function of the first 
+ *  kind (order 0) returns only the real component of an imaginary argument:
+ *      i.e. arg is implicitly -i * arg.
+ *
+ *  Ref: 
+ *  Mathematical Methods for Physicists (3rd edition, 1985)
+ *  George Arfken 
+ *  Academic Press, INC
+ *  equation 11.5 
+ */
+double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0( float arg)
+{
+    double bessel; 
+    double besselTerm; 
+
+    float tol; 
+    float tolNum; 
+    float tolDenom; 
+   
+    //  Calculate first term:  
+    int index = 0; 
+    bessel = this->GetBessel0Term( arg, index);  
+    tolNum = bessel; 
+    tolDenom = bessel; 
+    tol = fabs(tolNum/tolDenom); 
+
+    while ( tol > .00001) {
+        index++; 
+        besselTerm = this->GetBessel0Term( arg, index);
+        bessel += besselTerm;
+        tol = fabs(besselTerm/tolDenom); 
+        tolDenom = tolNum; 
+    }
+    return bessel; 
+
+}
+
+
+/*
+ *  Get term in series form of bessel function:
+ *  this is a specialzed solution for implicit "i" 
+ *  in the argument for computing modified bessel 0 solutions.  
+ *
+ *  Ref: 
+ *  Mathematical Methods for Physicists (3rd edition, 1985)
+ *  George Arfken 
+ *  Academic Press, INC
+ *  equation 11.5 
+ */
+double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0Term( float arg, int index)
+{
+
+    float besselTerm = pow( -1, index );
+    besselTerm *= pow( (arg/2), 2*index ); 
+    if (besselTerm == HUGE_VAL ) {
+        cout << "ERROR: " << this->GetClassName() << " Can not get Gessel0Term for " << arg << " " << index << endl;
+        cout << "ERROR: " << this->GetClassName() << " value out of range " << endl; 
+        exit(1); 
+    }
+    
+    besselTerm /= pow( vtkMath::Factorial( index), 2); 
+
+    //  account for alternating i ^ (2*index)
+    if ( index % 2 ) {
+        besselTerm *= -1; 
+    }
+
+    return besselTerm; 
+}
+
+
+/*!
+ *  Returns the waveform integral over a single period, normalized to 1 and centered 
+ *  about 0, with both end points removed (zero crossing). 
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegral, int deltaT, int plateauTime, int rampTime )
+{
+    //  4 microsecond sampling:     
+    int sampleDeltaT= 4; 
+    int numRampSamples = rampTime / sampleDeltaT;  
+    int numPlateauSamples = plateauTime / sampleDeltaT;  
+
+    int numWaveFormPts = (numRampSamples * 2) + numPlateauSamples; 
+    float* waveForm = new float[ numWaveFormPts ]; 
+    float* waveFormIntegralAll = new float[ numWaveFormPts ]; 
+
+    for ( int i = 0; i < numWaveFormPts; i++) { 
+
+        if ( i <  numRampSamples ) { 
+            //  leading ramp 
+            waveForm[i] = ( i + 0.5 ) / numRampSamples; 
+        } else if ( i >= ( numRampSamples + numPlateauSamples ) ) {
+            //  trailing ramps:    
+            int rampIndex = numRampSamples - (i -  (numRampSamples + numPlateauSamples) ); 
+            waveForm[i] = ( rampIndex - 0.5 ) / numRampSamples; 
+        } else {
+            //  plateau
+            waveForm[i] = 1; 
+        }
+  
+        if ( i == 0 ) { 
+            waveFormIntegralAll[i] += waveForm[ i ]; 
+        } else if ( i > 0 ) {
+            waveFormIntegralAll[i] = waveForm[i] + waveFormIntegralAll[ i-1 ]; 
+        }
+    }
+
+    //  make symmetric about 0: 
+    float max = waveFormIntegralAll[numWaveFormPts-1]; 
+    for ( int i = 0; i < numWaveFormPts; i++) { 
+        waveFormIntegralAll[i] -= max/2.; 
+    }
+
+
+    //  normalize to 1 and down sample full integral to EPSI k-space sampling interval: 
+    int binSize = deltaT / sampleDeltaT; 
+    int binIndex = 0 + binSize/2 -1; 
+
+    // truncate first and last points: 
+    int firstSample = binIndex + binSize;  
+    int lastSample = numWaveFormPts - binSize; 
+    int outputIndex = 0; 
+    for ( int i = firstSample; i < lastSample; i+=binSize) { 
+        waveFormIntegral[outputIndex] = waveFormIntegralAll[i]/ binSize; 
+        outputIndex++; 
+    }
+
+}
+
+
 
 
 /*!
@@ -617,23 +1181,23 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
                     //  array ordering
                     for ( int epsiAxisIndex = 0; epsiAxisIndex < epsiAxisLimit; epsiAxisIndex++ ) {
                         
-                        xOutOdd = x; 
-                        yOutOdd = y; 
-                        zOutOdd = z; 
+                        xOutEven = x;
+                        yOutEven = y;
+                        zOutEven = z;
                         //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis
                         if ( epsiAxis == 0 ) {
                             x = epsiAxisIndex; 
-                            xOutOdd = epsiAxisLimit - epsiAxisIndex - 1; 
+                            xOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
                         } else if ( epsiAxis == 1 ) {
                             y = epsiAxisIndex; 
-                            yOutOdd = epsiAxisLimit - epsiAxisIndex - 1; 
+                            yOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
                         } else if ( epsiAxis == 2 ) {
                             z = epsiAxisIndex; 
-                            zOutOdd = epsiAxisLimit - epsiAxisIndex - 1; 
+                            zOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
                         }
-                        xOutEven = x; 
-                        yOutEven = y; 
-                        zOutEven = z; 
+                        xOutOdd = x; 
+                        yOutOdd = y; 
+                        zOutOdd = z; 
 
                         int indexInEven =  x
                                   + ( numVoxels[0] ) * y
@@ -734,7 +1298,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::RemoveArrays( svkImageData* data )
  *  Redimension after reordering epsi dimension.  Should have 2 lobes
  *  at this point. 
  */
-void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* numVoxelsReordered, int numFreqPts )
+void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts )
 {
 
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
@@ -750,11 +1314,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* n
     double dcos[3][3];
     data->GetDcmHeader()->GetDataDcos( dcos );
 
-    int numOriginalVoxels[3]; 
-    this->GetNumVoxels( numOriginalVoxels ); 
-
     double center[3]; 
-    this->GetCenterFromOrigin( origin, numOriginalVoxels, voxelSpacing, dcos, center); 
+    this->GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
 
     //  Now calcuate the new origin based on the reordered dimensionality: 
     double newOrigin[3]; 

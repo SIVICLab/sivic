@@ -50,13 +50,29 @@ namespace svk {
 
 
 /*! 
- *  Mapper from pfile header to DICOM IOD/SOP Class instance, overrides
- *  specific product logic with UCSF fidcsi_ucsf_dev0 research psd 
- *  developed by Peder Larson, PhD UCSF Department of Radiology and Biomedical 
- *  Imaging. 
+ *  Mapper from a GE P-file header to a DICOM MRS SOP Class. This 
+ *  concrete svkGEPFileMapper overrides default product sequence logic 
+ *  with specifics required for reading symmetric EPSI data acquired with  
+ *  the fidcsi_ucsf_dev0 research psd developed by Peder Larson, PhD,  UCSF. 
+ *  This mapper outputs a regular cartesian grid of k-space data suitable
+ *  for Fourier transform reconstruction. 
+ *  
+ *  Non-uniformly sampled Symmetric EPSI ramp data is sampled to a cartesian 
+ *  grid using a "Gridding"  algorithm using a Kaiser-Bessel convolving function 
+ *  as described here:
  *
- *  Output will ultimately be regridded to rectaliniear 3D array of FIDs 
- *  for output.   
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
+ *      Selection of a Convolution Function for Fourier Inversion Using Gridding
+ *      John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *
+ *  The following people contributed to the development, implementation and 
+ *  validation of this class: 
+ *  
+ *      Peder EZ Larson, PhD (UCSF Department of Radiology and Biomedical Imaging)
+ *      Jason C. Crane, PhD (UCSF Department of Radiology and Biomedical Imaging) 
+ *      Sarah J. Nelson, PhD (UCSF Department of Radiology and Biomedical Imaging)
+ *      Daniel Vigneron, PhD (UCSF Department of Radiology and Biomedical Imaging)
+ *      Brian Hargreaves, PhD (Standford University ) ?????
  *  
  */
 class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF 
@@ -87,7 +103,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
 
         void                    ReorderEPSIData( svkImageData* data ); 
         void                    RemoveArrays( svkImageData* data ); 
-        void                    RedimensionData( svkImageData* data, int* numVoxelsReordered, int numFreqPts ); 
+        void                    RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts ); 
         void                    EPSIPhaseCorrection( 
                                     svkImageData* data, 
                                     int* numVoxels, 
@@ -98,9 +114,21 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         void                    ZeroFill( svkImageData* data ); 
         void                    FlipAxis( svkImageData* data, int axis ); 
         void                    FFTShift( svkImageData* data ); 
+        void                    ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis ); 
+        virtual void            GetWaveFormIntegral( float* waveFormIntegral, int deltaT, int plateauTime, int rampTime ); 
+        void                    GetKaiserBesselValues( 
+                                    vtkstd::vector<float>* u, 
+                                    float width, 
+                                    float beta,
+                                    vtkstd::vector<float>* kbVals 
+                                    ); 
+        double                  GetBessel0Term( float arg, int index);
+        double                  GetBessel0( float arg);
+        double                  GetModifiedBessel0( float arg ); 
+        void                    GetRolloffCorrection( int gridSize, float width, float beta, float* apodCor); 
 
-};
 
+}; 
 
 }   //svk
 
