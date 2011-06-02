@@ -387,6 +387,9 @@ void svkDdfVolumeReader::InitDcmHeader()
     }
 
     this->iod->Delete();
+
+    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR");
+
 }
 
 

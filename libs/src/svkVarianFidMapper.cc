@@ -115,6 +115,8 @@ void svkVarianFidMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd
 
     this->InitMRSpectroscopyDataModule();
 
+    this->dcmHeader->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR"); 
+
 }
 
 
