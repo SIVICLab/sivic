@@ -332,7 +332,8 @@ void sivicProcessingWidget::ExecuteRecon()
         spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
         spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
         spatialRFFT->SetPreCorrectCenter( true );
-        double preShiftWindow[3] = {-0.5, -1.0, -0.5 };
+        double preShiftWindow[3] = {-0.5, -0.5, -0.5 };
+        //double preShiftWindow[3] = {-0.5, -1.0, -0.5 };
         double postShiftWindow[3] = {-0.5, -0.5, -0.5 };
         //spatialRFFT->SetPrePhaseShift( -0.5 );
         spatialRFFT->SetPrePhaseShift(preShiftWindow );

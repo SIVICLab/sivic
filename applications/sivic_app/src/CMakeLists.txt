@@ -215,6 +215,7 @@ TARGET_LINK_LIBRARIES(
     svkadapt
     dcmdata
     ofstd 
+    oflog
     ${KWWidgets_LIBRARIES}
     #KWCallbacksExampleLib
     SivicKWCallbacksLib
