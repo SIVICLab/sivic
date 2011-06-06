@@ -102,6 +102,12 @@ SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 
+# if dcmtk 3.6, need to add liboflog: 
+SET(DCMTK_OFLOG "")
+if ( EXISTS "${DCMTK_DIR}/liboflog.a")
+    SET(DCMTK_OFLOG oflog)
+endif (EXISTS "${DCMTK_DIR}/liboflog.a")
+
 ###################################
 #   VTK
 ###################################
@@ -215,7 +221,7 @@ TARGET_LINK_LIBRARIES(
     svkadapt
     dcmdata
     ofstd 
-    oflog
+    ${DCMTK_OFLOG}
     ${KWWidgets_LIBRARIES}
     #KWCallbacksExampleLib
     SivicKWCallbacksLib
