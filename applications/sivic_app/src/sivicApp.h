@@ -99,6 +99,7 @@ class sivicApp
 
         vtkSivicController*        sivicController;
         sivicViewRenderingWidget*  viewRenderingWidget;
+        sivicPreprocessingWidget*  preprocessingWidget;
         sivicProcessingWidget*     processingWidget;
         sivicQuantificationWidget* quantificationWidget;
         sivicImageViewWidget*      imageViewWidget;

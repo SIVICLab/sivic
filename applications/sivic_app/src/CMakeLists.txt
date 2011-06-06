@@ -186,6 +186,7 @@ ADD_LIBRARY(
     sivicSpectraRangeWidget.cc
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
+    sivicPreprocessingWidget.cc
     sivicQuantificationWidget.cc
     sivicWindowLevelWidget.cc
     sivicPreferencesWidget.cc

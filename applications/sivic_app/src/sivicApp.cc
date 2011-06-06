@@ -51,6 +51,7 @@ sivicApp::sivicApp()
     // For returnting the application status
     this->exitStatus = 0;
     this->processingWidget = sivicProcessingWidget::New();
+    this->preprocessingWidget = sivicPreprocessingWidget::New();
     this->quantificationWidget = sivicQuantificationWidget::New();
     this->imageViewWidget = sivicImageViewWidget::New();
     this->spectraViewWidget = sivicSpectraViewWidget::New();
@@ -94,6 +95,11 @@ sivicApp::~sivicApp()
     if( this->processingWidget != NULL ) {
         this->processingWidget->Delete();
         this->processingWidget = NULL;
+    }
+
+    if( this->preprocessingWidget != NULL ) {
+        this->preprocessingWidget->Delete();
+        this->preprocessingWidget = NULL;
     }
 
     if( this->quantificationWidget != NULL ) {
@@ -236,6 +242,13 @@ int sivicApp::Build( int argc, char* argv[] )
     this->viewRenderingWidget->SetApplication( this->sivicKWApp );
     this->viewRenderingWidget->Create();
 
+    this->preprocessingWidget->SetParent(tabbedPanel );
+    this->preprocessingWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->preprocessingWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->preprocessingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->preprocessingWidget->SetSivicController(this->sivicController);
+    this->preprocessingWidget->Create();
+
     this->processingWidget->SetParent(tabbedPanel );
     this->processingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->processingWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -310,11 +323,14 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
     vtkKWWidget* interactorPanel = tabbedPanel->GetFrame("Inspecting");
 
-    this->tabbedPanel->AddPage("MRS Recon Demo", "Prototype MRS recon Processing.", NULL);
-    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("MRS Recon Demo");
+    this->tabbedPanel->AddPage("Preprocess", "Preprocessing.", NULL);
+    vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preprocess");
 
-    this->tabbedPanel->AddPage("MRS Quantification Demo", "Prototype MRS Quantification.", NULL);
-    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quantification Demo");
+    this->tabbedPanel->AddPage("MRS Recon", "MRS recon.", NULL);
+    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("MRS Recon");
+
+    this->tabbedPanel->AddPage("MRS Quantification", "MRS Quantification.", NULL);
+    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quantification");
 
     vtkKWSeparator* separator = vtkKWSeparator::New();
     separator->SetParent(this->sivicWindow->GetViewFrame());
@@ -348,6 +364,8 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->spectraRangeWidget->GetWidgetName(), interactorPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
+              this->preprocessingWidget->GetWidgetName(), preprocessingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 

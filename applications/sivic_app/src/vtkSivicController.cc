@@ -261,6 +261,14 @@ void vtkSivicController::SetProcessingWidget( sivicProcessingWidget* processingW
 
 
 //! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget)
+{
+    this->preprocessingWidget = preprocessingWidget;
+    this->preprocessingWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget)
 {
     this->quantificationWidget = quantificationWidget;
