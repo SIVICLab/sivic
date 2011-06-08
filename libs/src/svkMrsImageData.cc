@@ -100,7 +100,7 @@ void svkMrsImageData::GetNumberOfVoxels(int numVoxels[3])
 
  
 /*!
- *  Creates an unstructured frid that represents the selection box.
+ *  Creates an unstructured grid that represents the selection box.
  *
  *  \param selectionBoxGrid the object to populate
  */

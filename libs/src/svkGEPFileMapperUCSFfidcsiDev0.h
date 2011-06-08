@@ -51,29 +51,46 @@ namespace svk {
 
 /*! 
  *  Mapper from a GE P-file header to a DICOM MRS SOP Class. This 
- *  concrete svkGEPFileMapper overrides default product sequence logic 
+ *  concrete svkGEPFileMapper overrides the default product sequence logic 
  *  with specifics required for reading symmetric EPSI data acquired with  
- *  the fidcsi_ucsf_dev0 research psd developed by Peder Larson, PhD,  UCSF. 
- *  This mapper outputs a regular cartesian grid of k-space data suitable
- *  for Fourier transform reconstruction. 
+ *  the fidcsi_ucsf_dev0 research PSD developed by Peder Larson, PhD,  UCSF 
+ *  Department of Radiology and Biomedical Imaging. This mapper outputs
+ *  a regular cartesian grid of k-space data suitable for Fourier transform 
+ *  reconstruction. 
  *  
- *  Non-uniformly sampled Symmetric EPSI ramp data is sampled to a cartesian 
- *  grid using a "Gridding"  algorithm using a Kaiser-Bessel convolving function 
- *  as described here:
- *
- *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. IO. NO. 3 , SEPTEMBER 1991
- *      Selection of a Convolution Function for Fourier Inversion Using Gridding
- *      John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *  Non-uniformly sampled Symmetric EPSI ramp data is sampled onto a cartesian 
+ *  grid using a "Gridding" algorithm based on a Kaiser-Bessel convolving function 
+ *  as described in references 1 and 2.
+ *  
+ *  Portions of this implementation are based on a MATLAB implementation of the
+ *  regridding algorithm developed by Brian Hargreaves, Ph.D. (Stanford University)
+ *  that is available at the following URL: 
+ *      - http://www-mrsrl.stanford.edu/~brian/gridding/
+ *      - http://mrsrl.stanford.edu/~brian/mritools.html
+ *        The license on this MATLAB implementation is reproduced here from the 
+ *        above web-site: 
+ *        "All code on these pages is available free of charge for any use." 
  *
  *  The following people contributed to the development, implementation and 
  *  validation of this class: 
  *  
- *      Peder EZ Larson, PhD (UCSF Department of Radiology and Biomedical Imaging)
+ *      Peder E.Z. Larson, PhD (UCSF Department of Radiology and Biomedical Imaging)
  *      Jason C. Crane, PhD (UCSF Department of Radiology and Biomedical Imaging) 
  *      Sarah J. Nelson, PhD (UCSF Department of Radiology and Biomedical Imaging)
  *      Daniel Vigneron, PhD (UCSF Department of Radiology and Biomedical Imaging)
- *      Brian Hargreaves, PhD (Standford University ) ?????
+ *      Mathew L. Zierhut, PhD (UCSF Department of Radiology and Biomedical Imaging)
  *  
+ *
+ *  References:
+ *
+ *  1.  John I. Jackson, Craig H. Meyer, Dwight G. Nishimura and Albert Macovski
+ *      Selection of a Convolution Function for Fourier Inversion Using Gridding
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING. VOL. 10. NO. 3 , SEPTEMBER 1991
+ *
+ *  2.  Philip J. Beatty, Dwight G. Nishimura, John M. Pauly,
+ *      Rapid Gridding Reconstruction With a Minimal Oversampling Ratio
+ *      IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. 24, NO. 6, JUNE 2005
+ *
  */
 class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF 
 {
