@@ -468,11 +468,34 @@ void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
 
 
 /*!
- *  Get the origin of the selection box as defined in the images coordinate system.
- *  The origin is defined as the point minimum point in the dcos directions.
+ *  Get the origin of the selection box as defined in the images coordinate system (dcos).
+ *  The origin is defined as the point minimum point in the 3 dcos directions.
+ *
  *  eg. 
  *      For vector (0,0,1) the origin would be the most negative z value.
  *      For vector (0,0,-1) the origin would be the most positive z value. 
+ *
+ *  To calculate the origin we start by getting the vertecies of the selection
+ *  box. The gemoetry of the selection box is determined by the method 
+ *  GenerateSelectionBox which stores the results as an unstructured grid of 
+ *  points with a single cell that represent the volume of the selection. As
+ *  such the points are not ordered so we have no idea which point is the 
+ *  origin relative to our dcos.
+ *
+ *  To make this determination we take the dot product of each point with each axis' unit 
+ *  vector in the dcos. This gives us a projection of the point onto a vector that points 
+ *  along the direction of the axis of the dataset and intersects 0. If we project each 
+ *  point onto each axis the "origin" is going to have the lowest value when projected 
+ *  onto each axis.
+ *
+ *  To avoid precision errors we are going to sum the distances in all three projected
+ *  directions and choose the minimum value. These precision errors are caused when
+ *  you have four points that define a surface of the selection box and you project
+ *  them onto the axis perpendicular to the plane. Geometrically these should all
+ *  project to exactly the same value (assuming the selection box is perfectly aligned
+ *  with the dcos), but in practice this calculation can be off by a very small amount.
+ *  This error becomes insignificant when you sum the distances in all three directions. 
+ *
  *
  *  \param orgin target array
  */
@@ -482,13 +505,18 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
     vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::New();
     this->GenerateSelectionBox( uGrid );
 
+    // Row Normal is Parallel to the DICOM colums
     double rowNormal[3]; 
     this->GetDataBasis( rowNormal, svkImageData::ROW );
+
+    // Column Normal is Parallel to the DICOM rows
     double columnNormal[3]; 
     this->GetDataBasis( columnNormal, svkImageData::COLUMN );
+
     double sliceNormal[3]; 
     this->GetDataBasis( sliceNormal, svkImageData::SLICE );
 
+    // We can get the points from the unstructured grid but the order is arbitrary
     vtkPoints* selBoxPoints = uGrid->GetPoints();
     int originIndex;
 
@@ -505,15 +533,23 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
     rowDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), rowNormal );
     columnDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), columnNormal );
     sliceDistanceMin = vtkMath::Dot( selBoxPoints->GetPoint(originIndex), sliceNormal );
+    double minDistance = rowDistanceMin + sliceDistanceMin + columnDistanceMin;
+
+    // Just initialize to a safe value
+    double distance = VTK_DOUBLE_MAX;
 
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        // Calculate the distance in the three directions of the dcos
+        // Lets project the point onto each axis  
         rowDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
         columnDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
         sliceDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
 
+        // Here we will sum the 3 distances to avoid precision errors
+        distance = rowDistance + columnDistance + sliceDistance;
+
         // If it is the minimum then that is the origin
-        if( rowDistance <= rowDistanceMin && columnDistance <= columnDistanceMin && sliceDistance <= sliceDistanceMin ) {
+        if( distance < minDistance ) {
+            minDistance = distance;
             originIndex = i;
         }
 
