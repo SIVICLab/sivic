@@ -526,7 +526,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     int overGridFactor = 2; 
     int gridSize = overGridFactor * integralMax; 
     float dkn = ( 2 * integralMaxFloat ) / gridSize; 
-
     float* kn     = new float[ gridSize ]; 
     float* knNorm = new float[ gridSize ]; 
     for ( int i = 0; i < gridSize; i++ ) {
@@ -707,7 +706,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
                         }
 
-                        int offset = floor(integralMax/2); 
+                        int offset = static_cast<int>(floor(integralMax/2)); 
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i + offset].Real; 
                             epsiXData[i].Imag = epsiXData[i + offset].Imag; 
@@ -1022,7 +1021,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegra
         }
   
         if ( i == 0 ) { 
-            waveFormIntegralAll[i] += waveForm[ i ]; 
+            waveFormIntegralAll[i] = waveForm[ i ]; 
         } else if ( i > 0 ) {
             waveFormIntegralAll[i] = waveForm[i] + waveFormIntegralAll[ i-1 ]; 
         }
