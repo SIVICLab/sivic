@@ -432,6 +432,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->ModifyForPatientEntry(data); 
 
+
+    reorderedImageData->Delete(); 
+
 }
 
 
@@ -749,6 +752,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
                         rfft->Delete();
                         fft->Delete();
+                        delete [] epsiXData; 
+                        delete [] epsiKData; 
                     }
                 }
             }
@@ -789,6 +794,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     // Now reinit the DICOM header
     regridDims[epsiAxis] = integralMax; 
     this->RedimensionData( data, numVoxels, regridDims, numSpecPts); 
+
+    delete [] waveFormIntegralNorm;
+    delete [] waveForm;
 
 }
 
