@@ -796,7 +796,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     this->RedimensionData( data, numVoxels, regridDims, numSpecPts); 
 
     delete [] waveFormIntegralNorm;
-    delete [] waveForm;
 
 }
 
@@ -1056,6 +1055,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetWaveFormIntegral( float* waveFormIntegra
         waveFormIntegral[outputIndex] = waveFormIntegralAll[i]/ binSize; 
         outputIndex++; 
     }
+
+    delete [] waveForm;
+    delete [] waveFormIntegralAll;
 
 }
 
