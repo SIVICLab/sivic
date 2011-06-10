@@ -19,18 +19,20 @@ vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision: 936 $");
  */
 sivicPreprocessingWidget::sivicPreprocessingWidget()
 {
-    this->phaseSlider = NULL;
-    this->phaser = NULL;
-    this->phaseAllVoxelsButton = NULL;
-    this->phaseAllChannelsButton = NULL;
-    this->fftButton = NULL;
-    this->phaseButton = NULL;
-    this->combineButton = NULL;
-    this->phaseChangeInProgress = 0;
+
+    this->zeroFillSelectorSpec = NULL;
+    this->zeroFillSelectorCols = NULL;
+    this->zeroFillSelectorRows = NULL;
+    this->zeroFillSelectorSlices = NULL;
+    this->zeroFillButton = NULL;
+    this->specLabel = NULL;
+    this->colsLabel = NULL;
+    this->rowsLabel = NULL;
+    this->slicesLabel = NULL;
+
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
-
 
 }
 
@@ -41,39 +43,49 @@ sivicPreprocessingWidget::sivicPreprocessingWidget()
 sivicPreprocessingWidget::~sivicPreprocessingWidget()
 {
 
-    if( this->phaseSlider != NULL ) {
-        this->phaseSlider->Delete();
-        this->phaseSlider = NULL;
+    if( this->zeroFillSelectorSpec != NULL ) {
+        this->zeroFillSelectorSpec->Delete();
+        this->zeroFillSelectorSpec = NULL;
     }
 
-    if( this->phaser != NULL ) {
-        this->phaser->Delete();
-        this->phaser = NULL;
+    if( this->zeroFillSelectorCols != NULL ) {
+        this->zeroFillSelectorCols->Delete();
+        this->zeroFillSelectorCols = NULL;
     }
 
-    if( this->phaseAllVoxelsButton != NULL ) {
-        this->phaseAllVoxelsButton->Delete();
-        this->phaseAllVoxelsButton= NULL;
+    if( this->zeroFillSelectorRows != NULL ) {
+        this->zeroFillSelectorRows->Delete();
+        this->zeroFillSelectorRows = NULL;
     }
 
-    if( this->phaseAllChannelsButton != NULL ) {
-        this->phaseAllChannelsButton->Delete();
-        this->phaseAllChannelsButton= NULL;
+    if( this->zeroFillSelectorSlices != NULL ) {
+        this->zeroFillSelectorSlices->Delete();
+        this->zeroFillSelectorSlices = NULL;
     }
 
-    if( this->fftButton != NULL ) {
-        this->fftButton->Delete();
-        this->fftButton= NULL;
+    if( this->zeroFillButton != NULL ) {
+        this->zeroFillButton->Delete();
+        this->zeroFillButton= NULL;
     }
 
-    if( this->phaseButton != NULL ) {
-        this->phaseButton->Delete();
-        this->phaseButton= NULL;
+    if( this->specLabel != NULL ) {
+        this->specLabel->Delete();
+        this->specLabel = NULL;
     }
 
-    if( this->combineButton != NULL ) {
-        this->combineButton->Delete();
-        this->combineButton= NULL;
+    if( this->colsLabel != NULL ) {
+        this->colsLabel->Delete();
+        this->colsLabel = NULL;
+    }
+
+    if( this->rowsLabel != NULL ) {
+        this->rowsLabel->Delete();
+        this->rowsLabel = NULL;
+    }
+
+    if( this->slicesLabel != NULL ) {
+        this->slicesLabel->Delete();
+        this->slicesLabel = NULL;
     }
 
 
@@ -98,95 +110,151 @@ void sivicPreprocessingWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    this->phaseSlider = vtkKWScaleWithEntry::New();
-    this->phaseSlider->SetParent(this);
-    this->phaseSlider->Create();
-    this->phaseSlider->SetEntryWidth( 4 );
-    this->phaseSlider->SetLength( 200 );
-    this->phaseSlider->SetOrientationToHorizontal();
-    this->phaseSlider->SetLabelText("TBD");
-    this->phaseSlider->SetValue(0);
-    this->phaseSlider->SetRange( -180, 180 );
-    this->phaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
-    this->phaseSlider->EnabledOff();
-    this->phaseSlider->SetEntryPositionToRight();
-    this->phaseSlider->SetLabelPositionToLeft();
+    //  =================================== 
+    //  Zero Filling Selector
+    //  =================================== 
+    this->zeroFillSelectorSpec = vtkKWMenuButtonWithLabel::New();
+    this->zeroFillSelectorSpec->SetParent(this);
+    this->zeroFillSelectorSpec->Create();
+    this->zeroFillSelectorSpec->SetLabelPositionToLeft();
+    this->zeroFillSelectorSpec->SetPadY(2);
+    this->zeroFillSelectorSpec->EnabledOff();
+    this->zeroFillSelectorSpec->EnabledOn();
+    this->zeroFillSelectorSpec->SetHeight(.8);
+    vtkKWMenu* zfSpecMenu = this->zeroFillSelectorSpec->GetWidget()->GetMenu();
 
-    this->phaser = svkPhaseSpec::New();
-    this->phaser->SetChannel(0);
-    this->phaseAllVoxelsButton = vtkKWCheckButton::New();
-    this->phaseAllVoxelsButton->SetParent(this);
-    this->phaseAllVoxelsButton->Create();
-    this->phaseAllVoxelsButton->EnabledOff();
-    this->phaseAllVoxelsButton->SetPadX(2);
-    this->phaseAllVoxelsButton->SetText("TBD");
-    this->phaseAllVoxelsButton->SelectedStateOn();
+    this->zeroFillSelectorCols = vtkKWMenuButtonWithLabel::New();
+    this->zeroFillSelectorCols->SetParent(this);
+    this->zeroFillSelectorCols->Create();
+    this->zeroFillSelectorSpec->SetLabelPositionToTop();
+    this->zeroFillSelectorCols->LabelVisibilityOff();
+    this->zeroFillSelectorCols->SetPadY(2);
+    this->zeroFillSelectorCols->EnabledOn();
+    vtkKWMenu* zfColsMenu = this->zeroFillSelectorCols->GetWidget()->GetMenu();
 
-    this->phaseAllChannelsButton = vtkKWCheckButton::New();
-    this->phaseAllChannelsButton->SetParent(this);
-    this->phaseAllChannelsButton->Create();
-    this->phaseAllChannelsButton->EnabledOff();
-    this->phaseAllChannelsButton->SetPadX(2);
-    this->phaseAllChannelsButton->SetText("TBD");
-    this->phaseAllChannelsButton->SelectedStateOff();
-    
-    this->fftButton = vtkKWPushButton::New();
-    this->fftButton->SetParent( this );
-    this->fftButton->Create( );
-    this->fftButton->EnabledOff();
-    this->fftButton->SetText( "Apodization placeholder");
-    this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
+    this->zeroFillSelectorRows = vtkKWMenuButtonWithLabel::New();
+    this->zeroFillSelectorRows->SetParent(this);
+    this->zeroFillSelectorRows->Create();
+    this->zeroFillSelectorCols->LabelVisibilityOff();
+    this->zeroFillSelectorRows->SetPadY(2);
+    this->zeroFillSelectorRows->EnabledOn();
+    vtkKWMenu* zfRowsMenu = this->zeroFillSelectorRows->GetWidget()->GetMenu();
 
-    this->phaseButton = vtkKWPushButton::New();
-    this->phaseButton->SetParent( this );
-    this->phaseButton->Create( );
-    this->phaseButton->EnabledOff();
-    this->phaseButton->SetText( "zero-filling placeholder");
-    this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
+    this->zeroFillSelectorSlices = vtkKWMenuButtonWithLabel::New();
+    this->zeroFillSelectorSlices->SetParent(this);
+    this->zeroFillSelectorSlices->Create();
+    this->zeroFillSelectorCols->LabelVisibilityOff();
+    this->zeroFillSelectorSlices->SetPadY(2);
+    this->zeroFillSelectorSlices->EnabledOn();
+    vtkKWMenu* zfSlicesMenu = this->zeroFillSelectorSlices->GetWidget()->GetMenu();
 
-    this->combineButton = vtkKWPushButton::New();
-    this->combineButton->SetParent( this );
-    this->combineButton->Create( );
-    this->combineButton->EnabledOff();
-    //this->combineButton->EnabledOn();
-    this->combineButton->SetText( "tbd");
-    this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
+    string zfOption1 = "none";
+    string zfOption2 = "double";
+    string zfOption3 = "next y^2";
+    string invocationString;
 
-    this->Script("grid %s -row 0 -column 0 -columnspan 2 -sticky nsew", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 1 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nsew", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -columnspan 2 -sticky nsew", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 4 -column 0 -columnspan 2 -sticky nsew", this->combineButton->GetWidgetName() );
+    invocationString = "ZeroFill SPECTRAL none"; 
+    zfSpecMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPECTRAL double"; 
+    zfSpecMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPECTRAL nextPower2"; 
+    zfSpecMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "ZeroFill SPATIAL_COLS none"; 
+    zfColsMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_COLS double"; 
+    zfColsMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_COLS nextPower2"; 
+    zfColsMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "ZeroFill SPATIAL_ROWS none"; 
+    zfRowsMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_ROWS double"; 
+    zfRowsMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_ROWS nextPower2"; 
+    zfRowsMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "ZeroFill SPATIAL_SLICES none"; 
+    zfSlicesMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_SLICES double"; 
+    zfSlicesMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPATIAL_SLICES nextPower2"; 
+    zfSlicesMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
+
+    //  Set default values
+    this->zeroFillSelectorSpec->GetWidget()->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorCols->GetWidget()->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorRows->GetWidget()->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorSlices->GetWidget()->SetValue( zfOption1.c_str() );
+
+    this->zeroFillButton = vtkKWPushButton::New();
+    this->zeroFillButton->SetParent( this );
+    this->zeroFillButton->Create( );
+    this->zeroFillButton->EnabledOff();
+    this->zeroFillButton->SetText( "Zero Fill");
+    this->zeroFillButton->SetBalloonHelpString("Zero fill data.");
+
+    //  =================================== 
+    //  Zero Fill Labels
+    //  =================================== 
+    vtkKWLabel* zfSpecLabel = vtkKWLabel::New(); 
+    zfSpecLabel->SetText( string("Zero Fill Spec").c_str() );
+    zfSpecLabel->SetParent(this);
+    zfSpecLabel->SetHeight(1);
+    zfSpecLabel->SetPadX(0);
+    zfSpecLabel->SetPadY(0);
+    zfSpecLabel->SetJustificationToLeft();
+    zfSpecLabel->Create();
+
+    vtkKWLabel* zfColLabel = vtkKWLabel::New(); 
+    zfColLabel->SetText( string("Zero Fill #Cols").c_str() );
+    zfColLabel->SetParent(this);
+    zfColLabel->SetHeight(1);
+    zfColLabel->SetPadX(0);
+    zfColLabel->SetPadY(0);
+    zfColLabel->SetJustificationToLeft();
+    zfColLabel->Create();
+
+    vtkKWLabel* zfRowLabel = vtkKWLabel::New(); 
+    zfRowLabel->SetText( string("Zero Fill #Rows").c_str() );
+    zfRowLabel->SetParent(this);
+    zfRowLabel->SetHeight(1);
+    zfRowLabel->SetPadX(0);
+    zfRowLabel->SetPadY(0);
+    zfRowLabel->SetJustificationToLeft();
+    zfRowLabel->Create();
+
+    vtkKWLabel* zfSliceLabel = vtkKWLabel::New(); 
+    zfSliceLabel->SetText( string("Zero Fill #Slices").c_str() );
+    zfSliceLabel->SetParent(this);
+    zfSliceLabel->SetHeight(1);
+    zfSliceLabel->SetPadX(0);
+    zfSliceLabel->SetPadY(0);
+    zfSliceLabel->SetJustificationToLeft();
+    zfSliceLabel->Create();
+
+    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfSpecLabel->GetWidgetName(),  0);
+    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfColLabel->GetWidgetName(),   1);
+    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfRowLabel->GetWidgetName(),   2);
+    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfSliceLabel->GetWidgetName(), 3);
+
+    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorSpec->GetWidgetName(),   0);
+    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorCols->GetWidgetName(),   1);
+    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorRows->GetWidgetName(),   2);
+    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorSlices->GetWidgetName(), 3);
 
     this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 2  -weight 16", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 4  -weight 16", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
+
+    this->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 50", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 50 -uniform 1 -minsize 50", this->GetWidgetName() );
+
+
 
     this->AddCallbackCommandObserver(
-        this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueStartChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseAllVoxelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseAllChannelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->fftButton, vtkKWPushButton::InvokedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseButton, vtkKWPushButton::InvokedEvent );
-    this->AddCallbackCommandObserver(
-        this->combineButton, vtkKWPushButton::InvokedEvent );
-
+        this->zeroFillButton, vtkKWPushButton::InvokedEvent );
 
 }
 
@@ -197,249 +265,17 @@ void sivicPreprocessingWidget::CreateWidget()
 void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
-    if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-
-        this->SetPhaseUpdateExtent();
-
-    // Respond to a selection change in the plot grid view 
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->phaseSlider ) {
-        switch ( event ) {
-            case vtkKWScale::ScaleValueChangedEvent:
-                this->phaseChangeInProgress = 0;
-                this->UpdatePhaseSliderBindings();
-                break;
-            case vtkKWScale::ScaleValueChangingEvent:
-                this->phaser->SetPhase0( this->phaseSlider->GetValue() );
-                this->phaser->Update();
-                if( !this->phaseChangeInProgress ) {
-                    this->UpdatePhaseSliderBindings();
-                }
-                break;
-            case vtkKWScale::ScaleValueStartChangingEvent:
-                this->phaseChangeInProgress = 1;
-                break;
-            default:
-                cout << "Got a unknown event!" << endl;
-        }
-    } else if( caller == this->phaseAllChannelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->phaseAllVoxelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->fftButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteRecon();
-    } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecutePhase();
-    } else if( caller == this->combineButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine();
+    if( caller == this->zeroFillButton && event == vtkKWPushButton::InvokedEvent ) {
+        this->ExecuteZeroFill();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
 
 
 /*!
- *  Sets the correct update extent for phasing
- */
-void sivicPreprocessingWidget::SetPhaseUpdateExtent()
-{
-
-    return; 
-/*
-    int* start = new int[3];
-    int* end = new int[3];
-    start[0] = -1;
-    start[1] = -1;
-    start[2] = -1;
-    end[0] = -1;
-    end[1] = -1;
-    end[2] = -1;
-
-    if ( this->phaseAllChannelsButton->GetSelectedState() ) {
-        this->phaser->PhaseAllChannels();
-    } else {
-        this->phaser->SetChannel( this->plotController->GetChannel() );
-    }
-
-    if ( this->phaseAllVoxelsButton->GetSelectedState() ) {
-        this->phaser->SetUpdateExtent(start, end );
-    } else {
-        int* range = new int[2];
-        range = this->plotController->GetTlcBrc();
-        this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[0], start);
-        this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[1], end);
-        this->phaser->SetUpdateExtent(start, end );
-    }
-    delete[] start;
-    delete[] end;
-*/
-}
-
-
-/*!
- *  Updates/Adds keyboard bindings to the phase slider when it is in focus.
- */
-void sivicPreprocessingWidget::UpdatePhaseSliderBindings()
-{
-
-    return; 
-
-/*
-    stringstream increment;
-    stringstream decrement;
-    increment << "SetValue " << this->phaseSlider->GetValue() + this->phaseSlider->GetResolution();
-    decrement << "SetValue " << this->phaseSlider->GetValue() - this->phaseSlider->GetResolution();
-    this->phaseSlider->RemoveBinding( "<Left>");
-    this->phaseSlider->AddBinding( "<Left>", this->phaseSlider, decrement.str().c_str() );
-    this->phaseSlider->RemoveBinding( "<Right>");
-    this->phaseSlider->AddBinding( "<Right>", this->phaseSlider, increment.str().c_str() );
-    this->phaseSlider->Focus(); 
-*/
-}
-
-
-/*!
- *  Executes the FFT in place.
- */
-void sivicPreprocessingWidget::ExecuteFFT() 
-{
-
-    return; 
-
-/*
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
-        imageFFT->SetInput( data );
-        imageFFT->Update();
-        data->Modified();
-        imageFFT->Delete();
-        bool useFullFrequencyRange = 1;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 1;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
-        this->sivicController->EnableWidgets( );
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-    }
-*/
-}
-
-
-/*!
- *  Executes the Recon.
- */
-void sivicPreprocessingWidget::ExecuteRecon() 
-{
-
-    return; 
-/*
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-
-        svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
-
-        spatialRFFT->SetInput( data );
-        spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-        spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
-        spatialRFFT->SetPreCorrectCenter( true );
-        double preShiftWindow[3] = {-0.5, -0.5, -0.5 };
-        //double preShiftWindow[3] = {-0.5, -1.0, -0.5 };
-        double postShiftWindow[3] = {-0.5, -0.5, -0.5 };
-        //spatialRFFT->SetPrePhaseShift( -0.5 );
-        spatialRFFT->SetPrePhaseShift(preShiftWindow );
-        spatialRFFT->SetPostCorrectCenter( true );
-        //spatialRFFT->SetPostPhaseShift( -0.5 );
-        spatialRFFT->SetPostPhaseShift( postShiftWindow );
-        spatialRFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Spatial Recon...");
-        spatialRFFT->Update();
-        spatialRFFT->RemoveObserver( progressCallback );
-
-        svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
-        spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
-        spectralFFT->SetInput( spatialRFFT->GetOutput() );
-        spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
-        spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
-        spectralFFT->Update();
-        data->Modified();
-        data->Update();
-        spectralFFT->RemoveObserver( progressCallback);
-        
-
-        bool useFullFrequencyRange = 1;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 1;
-        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-        //                                   resetAmplitude, resetFrequency );
-        string stringFilename = "Result";
-        this->sivicController->OpenSpectra( data, stringFilename);
-        this->sivicController->EnableWidgets( );
-
-        // We are resetting the input to make sure the actors get updated
-
-        //this->plotController->SetInput(data);
-        //this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        //this->plotController->GetView()->Refresh();
-        spatialRFFT->Delete();
-        spectralFFT->Delete();
-        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
-        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
-    }
-*/
-}
-
-
-/*!
- *  Executes the Phasing.
- */
-void sivicPreprocessingWidget::ExecutePhase() 
-{
-
-    return; 
-
-/*
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkMultiCoilPhase* multiCoilPhase = svkMultiCoilPhase::New();
-        multiCoilPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        multiCoilPhase->SetInput( data );
-        multiCoilPhase->Update();
-        data->Modified();
-        multiCoilPhase->RemoveObserver( progressCallback);
-        multiCoilPhase->Delete();
-        bool useFullFrequencyRange = 0;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 0;
-        string stringFilename = "PhasedData";
-        this->sivicController->OpenSpectra( data, stringFilename);
-        this->sivicController->EnableWidgets( );
-        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-        //                                   resetAmplitude, resetFrequency );
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
-        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
-    }
-*/
-}
-
-
-
-/*!
  *  Executes the combining of the channels.
  */
-void sivicPreprocessingWidget::ExecuteCombine() 
+void sivicPreprocessingWidget::ExecuteZeroFill() 
 {
 
     return; 

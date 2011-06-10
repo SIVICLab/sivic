@@ -38,9 +38,8 @@
 #include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
 #include <vtkKWTkUtilities.h>
-#include <vtkKWScaleWithEntry.h>
-#include <vtkKWCheckButton.h>
 #include <vtkKWPushButton.h>
+#include <vtkKWMenuButtonWithLabel.h>
 
 #include <svkDataModel.h>
 #include <svkPhaseSpec.h>
@@ -72,12 +71,16 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
         sivicPreprocessingWidget();
         ~sivicPreprocessingWidget();
 
-        vtkKWCheckButton*               phaseAllVoxelsButton;
-        vtkKWCheckButton*               phaseAllChannelsButton;
-        vtkKWScaleWithEntry*            phaseSlider;
-        vtkKWPushButton*                fftButton;
-        vtkKWPushButton*                phaseButton;
-        vtkKWPushButton*                combineButton;
+        vtkKWMenuButtonWithLabel*       zeroFillSelectorSpec;
+        vtkKWMenuButtonWithLabel*       zeroFillSelectorCols;
+        vtkKWMenuButtonWithLabel*       zeroFillSelectorRows;
+        vtkKWMenuButtonWithLabel*       zeroFillSelectorSlices;
+        vtkKWPushButton*                zeroFillButton;
+        vtkKWLabel*                     specLabel; 
+        vtkKWLabel*                     colsLabel; 
+        vtkKWLabel*                     rowsLabel; 
+        vtkKWLabel*                     slicesLabel; 
+
 
         
         // Description:
@@ -90,18 +93,10 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
 
     private:
 
-        svkPhaseSpec*               phaser;
         vtkCallbackCommand*         progressCallback;
 
-        void                        SetPhaseUpdateExtent();
-        void                        UpdatePhaseSliderBindings();
-        bool                        phaseChangeInProgress;
-        void                        ExecuteFFT();
-        void                        ExecuteRecon();
-        void                        ExecutePhase();
-        void                        ExecuteCombine();
+        void                        ExecuteZeroFill();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
-
 
 
         sivicPreprocessingWidget(const sivicPreprocessingWidget&);   // Not implemented.
