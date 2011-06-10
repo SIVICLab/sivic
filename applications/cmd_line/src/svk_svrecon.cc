@@ -77,14 +77,15 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
-    usemsg += "                   [ -u | -s ] [ -anh ] \n";
+    usemsg += "svk_svrecon -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
+    usemsg += "                   --time [ -u | -s ] [ -anh ] \n";
     usemsg += "\n";  
     usemsg += "   -i                name   Name of file to convert. \n"; 
     usemsg += "   -o                name   Name of outputfile. \n";
     usemsg += "   -t                type   Target data type: \n";
     usemsg += "                                 2 = UCSF DDF      \n";
     usemsg += "                                 4 = DICOM_MRS (default)    \n";
+    usemsg += "   --time                   Generate time-domain output.  Default is frequency domain. \n";
     usemsg += "   -u                       If single voxel, write only unsuppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -s                       If single voxel, write only suppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -a                       If single voxel, write average of the specified data  \n"; 
@@ -100,19 +101,24 @@ int main (int argc, char** argv)
     bool unsuppressed = false; 
     bool suppressed = false; 
     bool average = false; 
+    bool isTimeDomain = false; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_TIME_DOMAIN = 0,
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"time",      no_argument,       NULL,  FLAG_TIME_DOMAIN},
         {0, 0, 0, 0}
     };
+
+
 
     // ===============================================  
     //  Process flags and arguments
@@ -139,6 +145,10 @@ int main (int argc, char** argv)
             case 'a':
                 average = true;  
                 break;
+            case FLAG_TIME_DOMAIN:
+                isTimeDomain = true;
+                break;
+
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -249,8 +259,20 @@ int main (int argc, char** argv)
     coilCombine->Delete();
 
     // ===============================================  
-    //  quantify 
+    //  If time domain output requested, iFFT the spectral 
+    //  data. 
     // ===============================================  
+    if ( isTimeDomain ) {
+        imageFFT = svkMrsImageFFT::New();
+        imageFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
+        imageFFT->SetFFTMode( svkMrsImageFFT::REVERSE ); 
+        imageFFT->SetInput( currentImage );
+        imageFFT->Update();
+        currentImage->Modified();
+        imageFFT->Delete();
+    }
+
+cout <<" CHECK origin: " << *currentImage << endl; 
 
 
     // ===============================================  
