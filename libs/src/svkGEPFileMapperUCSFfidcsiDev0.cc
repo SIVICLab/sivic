@@ -747,6 +747,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             //cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
                         }
 
+                        rfft->delete();
+                        fft->delete();
                     }
                 }
             }
