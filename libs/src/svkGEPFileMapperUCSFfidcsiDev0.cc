@@ -572,7 +572,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     float beta = ( kWidth * kWidth ) / ( overGridFactor * overGridFactor ) ; 
     beta *= ( overGridFactor - 0.5 ) * ( overGridFactor - 0.5 ); 
     beta -= 0.8 ; 
-    beta = pow( beta, 0.5); 
+    beta = static_cast<float>( pow( static_cast<double>(beta), 0.5) ); 
     beta *= vtkMath::Pi(); 
     
    
@@ -709,7 +709,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
                         }
 
-                        int offset = static_cast<int>(floor(integralMax/2)); 
+                        int offset = static_cast<int>(floor(integralMax/2.)); 
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i + offset].Real; 
                             epsiXData[i].Imag = epsiXData[i + offset].Imag; 
@@ -818,7 +818,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetRolloffCorrection( int gridSize, float w
     float x2; 
     for ( int i = 0; i < gridSize; i++ ) {
 
-        x2 = pow( (i - floor(gridSize/2) ) / gridSize, 2);  
+        x2 = pow( (i - floor(gridSize/2.) ) / gridSize, 2);  
         arg[0]  = pi2 * width2 * x2 - beta2;  
         arg[1]  = 0; 
 
@@ -826,11 +826,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetRolloffCorrection( int gridSize, float w
         // which simplifies for all real or all imaginary
         if ( arg[0] >= 0 ) {
             // all real
-            arg[0] = pow( arg[0], 0.5); 
+            arg[0] = static_cast<float>( pow( static_cast<double>(arg[0]), 0.5) ); 
             apodCor[i] = sin( arg[0] ) / arg[0];
         } else {
             // all imag 
-            arg[1] = pow( -1 * arg[0], 0.5); 
+            arg[1] = static_cast<float>( pow( static_cast<double>( -1 * arg[0]), 0.5) ); 
             arg[0] = 0;     
             apodCor[i] = sinh( arg[1] ) / arg[1];
         }
@@ -887,7 +887,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float
 
             //  Bessel argument: 
             float x =   1 - pow( ( 2. * (*u)[ uz[i] ] / width ), 2);    
-            x = beta * pow( x, 0.5 ); 
+            x = beta * static_cast<float>( pow( static_cast<double>(x), 0.5 ) ); 
             (*kbVals)[i] =  this->GetModifiedBessel0( x ) / width ; 
 
             //cout << "KB: " << (*kbVals)[i] << endl;
@@ -981,7 +981,7 @@ double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0( float arg)
 double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0Term( float arg, int index)
 {
 
-    float besselTerm = pow( -1, index );
+    float besselTerm = pow( static_cast<float>(-1), index );
     besselTerm *= pow( (arg/2), 2*index ); 
     if (besselTerm == HUGE_VAL ) {
         cout << "ERROR: " << this->GetClassName() << " Can not get Gessel0Term for " << arg << " " << index << endl;
@@ -989,7 +989,7 @@ double svkGEPFileMapperUCSFfidcsiDev0::GetBessel0Term( float arg, int index)
         exit(1); 
     }
     
-    besselTerm /= pow( vtkMath::Factorial( index), 2); 
+    besselTerm /= pow( static_cast<double>( vtkMath::Factorial( index) ), 2); 
 
     //  account for alternating i ^ (2*index)
     if ( index % 2 ) {
