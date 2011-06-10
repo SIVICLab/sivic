@@ -162,6 +162,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
         this->gePostageStampReader = NULL;
     }
 
+    if (this->dcmRawDataReader != NULL) {
+        this->dcmRawDataReader->Delete();
+        this->dcmRawDataReader = NULL;
+    }
+
 }
 
 

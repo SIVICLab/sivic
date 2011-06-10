@@ -60,6 +60,7 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkLookupTable.h>
 #include <vtkScalarBarActor.h>
+#include <vtkImageGaussianSmooth.h>
 
 #include <svkOverlayViewController.h>
 #include <svkImageViewer2.h>
@@ -71,6 +72,10 @@
 #include <svkLookupTable.h>
 #include <svkSatBandSet.h>
 
+#include <svkBurnResearchPixels.h>
+#include <svkSincInterpolationFilter.h>
+
+#define SINC_MAX_EXTENT 512
 
 namespace svk {
 
@@ -186,6 +191,7 @@ class svkOverlayView : public svkDataView
         //! the render window in which the view is to be displayed 
         vtkRenderWindow*                myRenderWindow;
 
+
         bool                            toggleSelBoxVisibility;
         bool                            imageInsideSpectra;
 
@@ -194,9 +200,15 @@ class svkOverlayView : public svkDataView
         svkImageMapToColors*            windowLevelerCoronal;
         svkImageMapToColors*            windowLevelerSagittal;
 
+
+        // Holds the sinc interpolated version of the overlay
+        svkSincInterpolationFilter*     sincInterpolation;
+
+        // Holds the interpolated overlay
+        svkMriImageData*                interpOverlay;
+
         // Transfer function for rendering overlays
         svkLookupTable*                 colorTransfer;
-
 
         // Methods:
         void                            SetupMrInput( bool firstInput );
@@ -216,6 +228,7 @@ class svkOverlayView : public svkDataView
         void                            ResetWindowLevel();
         int                             FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation );
         int                             FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation orientation );
+        int                             FindOverlaySlice( int spectraSlice, svkDcmHeader::Orientation orientation );
         bool                            IsSatBandForSliceOn( svkDcmHeader::Orientation orientation );
         bool                            IsSatBandOutlineForSliceOn( svkDcmHeader::Orientation orientation );
         bool                            AreAllSatBandsOn( svkDcmHeader::Orientation orientation );

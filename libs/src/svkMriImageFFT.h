@@ -40,67 +40,80 @@
  */
 
 
-#ifndef SVK_IDF_VOLUME_WRITER_H
-#define SVK_IDF_VOLUME_WRITER_H
+#ifndef SVK_MRI_IMAGE_FFT_H
+#define SVK_MRI_IMAGE_FFT_H
 
-#include <vtkInformation.h>
 
-#include <svkImageWriter.h>
-#include <svkImageData.h>
+#include <vtkObject.h>
+#include <vtkObjectFactory.h>
+#include <vtkImageFourierFilter.h>
+#include <vtkImageFFT.h>
+#include <vtkImageRFFT.h>
+#include <vtkImageExtractComponents.h>
+#include <svkImageAlgorithm.h>
 
-#include <vtkstd/string>
 
 namespace svk {
 
 
+using namespace std;
+
+
+
 /*! 
- *  Concrete writer instance for UCSF IDF image output.  
+ *  Applies vtk FFT algorithms to svkMriImageData objects. In contrast to the 
+ *  vtkImageFFT and vtkImageRFFT svkMriImageFFT performs both forward and reverse 
+ *  FFT's. The domain is defined by the SetFFTMode method. Also this algorithm is
+ *  by default not in place, but by using the SetOperateInPlace method you
+ *  can force the algorithm to overate in place. Input can be any data type, but
+ *  output for the FFT is complex doubles and the output for RFFT is real doubles.
  */
-class svkIdfVolumeWriter : public svkImageWriter
+class svkMriImageFFT : public svkImageAlgorithm
 {
 
     public:
 
-        static svkIdfVolumeWriter* New();
-        vtkTypeRevisionMacro( svkIdfVolumeWriter, svkImageWriter);
+        static svkMriImageFFT* New();
+        vtkTypeRevisionMacro( svkMriImageFFT, svkImageAlgorithm);
 
-        //  Methods:
-        vtkDataObject*  GetInput(int port);
-        vtkDataObject*  GetInput() { return this->GetInput(0); };
-        svkImageData*   GetImageDataInput(int port);
-        virtual void    Write();
+        typedef enum {
+            FORWARD = 0, 
+            REVERSE 
+        } FFTMode;
 
-        void            SetCastDoubleToFloat( bool castDoubleToFloat );
+        void             SetFFTMode( FFTMode mode );
+        void             SetOperateInPlace( bool operateInPlace );
+        svkImageData*    GetOutput();
+        svkImageData*    GetOutput(int port);
 
 
     protected:
 
-        svkIdfVolumeWriter();
-        ~svkIdfVolumeWriter();
+        svkMriImageFFT();
+        ~svkMriImageFFT();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
 
+        //  Methods:
+        virtual int     RequestData(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector
+                        );
+
+
     private:
 
-        bool            castDoubleToFloat;
-        
-        void            InitImageData();
-        void            WriteData();
-        void            WriteHeader();
-        void            GetIDFCenter(double center[3]);
-        vtkstd::string  GetIDFPatientsName(vtkstd::string patientsName);
-        void            MapUnsignedToSigned( void* pixels, int numPixels ); 
-        void            MapSignedIntToFloat(short* shortPixels, float* floatPixels, int numPixels);
-        void            MapDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels); 
-        void            CastDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels); 
-        void            GetDoublePixelRange(double* doublePixels, int numPixels, double& rangeMin, double& rangeMax); 
+        void            UpdateHeader( svkDcmHeader* targetHeader );
 
+        FFTMode         mode; 
+        bool            operateInPlace;
 };
 
 
 }   //svk
 
 
-#endif //SVK_IDF_VOLUME_WRITER_H
+#endif //SVK_MRI_IMAGE_FFT_H
 

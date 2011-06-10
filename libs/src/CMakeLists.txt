@@ -201,6 +201,9 @@ ADD_LIBRARY(
     svkEPSIPhaseCorrect.cc
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
+    svkMriImageFFT.cc
+    svkImagePadFilter.cc
+    svkSincInterpolationFilter.cc
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc
     svkImageLinearPhase.cc

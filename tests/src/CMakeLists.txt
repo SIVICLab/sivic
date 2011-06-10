@@ -259,6 +259,56 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svkMriImageFFTTest
+    svkMriImageFFTTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMriImageFFTTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkImagePadFilterTest
+    svkImagePadFilterTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkImagePadFilterTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkImageLinearPhaseTest
+    svkImageLinearPhaseTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkImageLinearPhaseTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkImageFourierCenterTest
+    svkImageFourierCenterTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkImageFourierCenterTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkSincInterpolateTest
+    svkSincInterpolateTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkSincInterpolateTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svkMrsCombine
     svkMrsCombine.cc
 )

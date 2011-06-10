@@ -125,20 +125,6 @@ SET( TEST_NAME OVERLAY_MET_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_3/${PLATFORM} )
 
 #############################################################
-# Check to see if the validation will catch the origin shift
-# in the overlay-- no overlay should be rendered. 
-#############################################################
-SET( TEST_NAME OVERLAY_MET_SHIFT_RENDER_MCHK)
-SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
-FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
-FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
-SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -t RenderingTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met_shifted.idf -p ${TEST_RESULTS_PATH} )
-
-SET( TEST_NAME OVERLAY_MET_SHIFT_RENDER_DIFF)
-ADD_TEST(${TEST_NAME}  diff -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_4/${PLATFORM} )
-
-#############################################################
 # Check to see if you can render spectra and an overlay from
 # a phantom.
 #############################################################

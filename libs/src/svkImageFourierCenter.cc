@@ -230,7 +230,11 @@ void svkImageFourierCenter::ThreadedExecute(vtkImageData *inData, vtkImageData *
 
 
 /*!
- *  Do want to have this algorithm reverse the center?
+ *  If set to false the origin index [0,0,0] is moved to the center
+ *  of the volume. If set to true then center index is moved to the
+ *  origin. You want to reverse the center when preparing to ifft 
+ *  if your origin was at the center of the volume.
+ *
  */
 void svkImageFourierCenter::SetReverseCenter( bool reverseCenter ) 
 {

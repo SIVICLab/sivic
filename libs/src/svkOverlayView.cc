@@ -80,6 +80,9 @@ svkOverlayView::svkOverlayView()
     this->overlayOpacity = 0.5;
     this->overlayThreshold = 0.0;
 
+    // This will hold thie sinc interpolation of the overlay
+    this->sincInterpolation = svkSincInterpolationFilter::New();
+    this->interpOverlay = svkMriImageData::New();
 
     // Create a state vector for our images
 
@@ -200,6 +203,14 @@ svkOverlayView::~svkOverlayView()
     if( this->satBandsSagittal != NULL ) {
         this->satBandsSagittal->Delete();
         this->satBandsSagittal = NULL;     
+    }
+    if( this->sincInterpolation != NULL ) {
+        this->sincInterpolation->Delete();
+        this->sincInterpolation = NULL;     
+    }
+    if( this->interpOverlay != NULL ) {
+        this->interpOverlay->Delete();
+        this->interpOverlay = NULL;     
     }
 
 }
@@ -609,6 +620,19 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
 }
 
 
+/*
+ *  Finds the spectra slice that most closely corresponds to the input image slice.
+ */
+int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation orientation ) 
+{
+    int overlaySlice;
+    double imageSliceCenter[3];
+    this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
+    overlaySlice = this->dataVector[OVERLAY]->GetClosestSlice( imageSliceCenter, orientation );
+    return overlaySlice;
+}
+
+
 /*!
  *  Sets the slice of the anatamical data, based on the spectroscopic slice.
  *  It calculates the anatomical slice closest to the center of the spectroscopic
@@ -961,18 +985,9 @@ void svkOverlayView::SetSliceOverlay() {
                              this->dataVector[OVERLAY]->GetLastSlice( svkDcmHeader::CORONAL ) };
         int sagittalRange[2] = {this->dataVector[OVERLAY]->GetFirstSlice( svkDcmHeader::SAGITTAL ),
                              this->dataVector[OVERLAY]->GetLastSlice( svkDcmHeader::SAGITTAL ) };
-        if(    imageExtent[0] == overlayExtent[0] && imageExtent[1] == overlayExtent[1]  
-            && imageExtent[2] == overlayExtent[2] && imageExtent[3] == overlayExtent[3]  
-            && imageExtent[4] == overlayExtent[4] && imageExtent[5] == overlayExtent[5] ) {
-            overlaySliceAxial =   imageViewer->axialSlice; 
-            overlaySliceCoronal = imageViewer->coronalSlice; 
-            overlaySliceSagittal =imageViewer->sagittalSlice; 
-              
-        } else {
-            overlaySliceAxial =   this->FindSpectraSlice( imageViewer->axialSlice, svkDcmHeader::AXIAL); 
-            overlaySliceCoronal = this->FindSpectraSlice( imageViewer->coronalSlice, svkDcmHeader::CORONAL); 
-            overlaySliceSagittal =this->FindSpectraSlice( imageViewer->sagittalSlice, svkDcmHeader::SAGITTAL); 
-        }
+        overlaySliceAxial =   this->FindOverlaySlice( imageViewer->axialSlice, svkDcmHeader::AXIAL); 
+        overlaySliceCoronal = this->FindOverlaySlice( imageViewer->coronalSlice, svkDcmHeader::CORONAL); 
+        overlaySliceSagittal =this->FindOverlaySlice( imageViewer->sagittalSlice, svkDcmHeader::SAGITTAL); 
 
         if( this->IsPropOn( svkOverlayView::AXIAL_OVERLAY_FRONT ) ) {
             if( overlaySliceAxial > axialRange[1] ) {
@@ -1232,7 +1247,7 @@ void svkOverlayView::SetupOverlay()
     svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
                                    )->SetInput( this->windowLevelerSagittal->GetOutput() );
 
-    this->SetInterpolationType( NEAREST );
+    this->SetInterpolationType( this->interpolationType );
     this->SetOverlayOpacity( 0.35 );
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
@@ -1332,6 +1347,10 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
 {
     if (interpolationType == NEAREST ) {
         this->interpolationType = NEAREST; 
+        // Check to see if the current overlay is interpolated already
+        if( interpOverlay == dataVector[OVERLAY] ) {
+            this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
+        }
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
@@ -1340,6 +1359,10 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
     } else if (interpolationType == LINEAR) {
         this->interpolationType = LINEAR; 
+        // Check to see if the current overlay is interpolated already
+        if( interpOverlay == dataVector[OVERLAY] ) {
+            this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
+        }
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
@@ -1348,7 +1371,57 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
     } else if (interpolationType == SINC) {
         this->interpolationType = SINC; 
-        cout << "SINC NOT SUPPORTED YET" << endl;
+        if( interpOverlay != dataVector[OVERLAY] ) {
+
+            int* extent = dataVector[OVERLAY]->GetExtent(); 
+            int xLength = extent[1]-extent[0] + 1;
+            int yLength = extent[3]-extent[2] + 1;
+            int zLength = extent[5]-extent[4] + 1;
+
+            double* imageSpacing = dataVector[MRI]->GetSpacing();
+            double* overlaySpacing = dataVector[OVERLAY]->GetSpacing();
+
+            // Lets choose the resolution of the sinc by trying to get to the resolution of the image
+            int xSize = (int)pow( 2, vtkMath::Round( log2( xLength * (overlaySpacing[0]/imageSpacing[0]) ) ) );
+            int ySize = (int)pow( 2, vtkMath::Round( log2( yLength * (overlaySpacing[1]/imageSpacing[1]) ) ) );
+            int zSize = (int)pow( 2, vtkMath::Round( log2( zLength * (overlaySpacing[2]/imageSpacing[2]) ) ) );
+            if( xSize > SINC_MAX_EXTENT ) {
+                xSize = SINC_MAX_EXTENT;
+            }
+            if( ySize > SINC_MAX_EXTENT ) {
+                ySize = SINC_MAX_EXTENT;
+            }
+            if( zSize > SINC_MAX_EXTENT ) {
+                zSize = SINC_MAX_EXTENT;
+            }
+            sincInterpolation->SetOutputWholeExtent( 0, xSize-1, 0, ySize-1, 0, zSize-1 );
+            sincInterpolation->SetInput( dataVector[OVERLAY] );
+            sincInterpolation->Update();
+            interpOverlay->Delete();
+            interpOverlay = svkMriImageData::New();
+            interpOverlay->DeepCopy( sincInterpolation->GetOutput() );
+            interpOverlay->Update();
+            interpOverlay->SyncVTKImageDataToDcmHeader();
+
+            vtkImageExtractComponents* real = vtkImageExtractComponents::New();
+            real->SetComponents( 0 );
+            real->SetInput( sincInterpolation->GetOutput() );
+            real->Update();
+            interpOverlay->ShallowCopy( real->GetOutput() );
+            interpOverlay->Update();
+
+            real->Delete();
+            interpOverlay->SyncVTKImageDataToDcmHeader();
+
+            this->SetInput( interpOverlay, OVERLAY );
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
+            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+
+        }
     }
     this->Refresh();
 }
@@ -1442,12 +1515,6 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
                 resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
                 resultInfo = ""; 
             } else if ( !valid ) {
-                resultInfo += validator->resultInfo.c_str();
-                resultInfo += "\n";
-            }
-            bool imgGeomMatch  = validator->AreDataGeometriesSame( data, dataVector[MRI] );
-            bool specGeomMatch = validator->AreDataGeometriesSame( data, dataVector[MRS] );
-            if( !imgGeomMatch && !specGeomMatch ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }

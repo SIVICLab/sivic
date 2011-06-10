@@ -63,7 +63,7 @@ vtkStandardNewMacro(svkImageLinearPhase);
  */
 svkImageLinearPhase::svkImageLinearPhase() 
 {
-    //  this->SetNumberOfThreads(1);
+    //this->SetNumberOfThreads(1);
     //  this->SetDimensionality(1);
     this->shiftWindow[0] = 0;
     this->shiftWindow[1] = 0;
@@ -190,7 +190,7 @@ void vtkImageLinearPhaseExecute(svkImageLinearPhase *self,
         ++pComplex;
         }
      
-      // Call the method that performs the RFFT
+      // Call the method that performs the Linear Phase
       self->ExecuteLinearPhase(inComplex, outComplex, inSize0, phaseArray);
 
       // copy into output
@@ -219,7 +219,7 @@ void vtkImageLinearPhaseExecute(svkImageLinearPhase *self,
 
 
 //----------------------------------------------------------------------------
-// This method is passed input and output Datas, and executes the RFFT
+// This method is passed input and output Datas, and executes the Linear Phase
 // algorithm to fill the output from the input.
 // Not threaded yet.
 void svkImageLinearPhase::ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
@@ -288,8 +288,7 @@ void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageCompl
  */
 void svkImageLinearPhase::CreatePhaseArray(int N, vtkImageComplex* phaseArray) 
 { 
-
-    int origin = N/2 + 1;
+    int origin = N/2;
     double phaseIncrement;
     double mult;
     for( int i = 0; i <  N; i++ ) {

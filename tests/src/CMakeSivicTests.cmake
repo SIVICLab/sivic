@@ -381,6 +381,129 @@ ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkMrsImageFFT ${TEST_CASE_ROOT}/i
 SET( TEST_NAME TEST_MRS_FFT_DIFF )
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
 
+########################
+#   MRI FFT test: 
+########################
+SET( TEST_NAME TEST_MCHK_EVEN_MRI_FFT )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/mri_fft)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkMriImageFFTTest ${TEST_CASE_ROOT}/input/testBoxEven.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_EVEN_MRI_FFT_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_even )
+
+########################
+#   MRI FFT test: 
+########################
+SET( TEST_NAME TEST_MCHK_ODD_MRI_FFT )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/mri_fft)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkMriImageFFTTest ${TEST_CASE_ROOT}/input/testBoxOdd.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_MRI_FFT_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_odd )
+
+####################################################
+#   Image center test for even image dimensions
+####################################################
+SET( TEST_NAME TEST_MCHK_EVEN_IMAGE_CENTER )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_center)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImageFourierCenterTest ${TEST_CASE_ROOT}/input/constantEven.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_EVEN_IMAGE_CENTER_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_even )
+
+####################################################
+#   Image center test for odd image dimensions
+####################################################
+SET( TEST_NAME TEST_MCHK_ODD_IMAGE_CENTER )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_center)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImageFourierCenterTest ${TEST_CASE_ROOT}/input/constantOdd.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_IMAGE_CENTER_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_odd )
+
+########################
+#   Image padding test: 
+########################
+SET( TEST_NAME TEST_MCHK_EVEN_IMAGE_PAD )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_pad)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImagePadFilterTest ${TEST_CASE_ROOT}/input/testBoxCenterEven.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_EVEN_IMAGE_PAD_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_even )
+
+########################
+#   Image padding test: 
+########################
+SET( TEST_NAME TEST_MCHK_ODD_IMAGE_PAD )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_pad)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImagePadFilterTest ${TEST_CASE_ROOT}/input/testBoxCenterOdd.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_IMAGE_PAD_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_odd )
+
+
+##############################
+#   Image linear phase test: 
+##############################
+SET( TEST_NAME TEST_MCHK_EVEN_IMAGE_LINEAR_PHASE )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_linear_phase)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImageLinearPhaseTest ${TEST_CASE_ROOT}/input/testBoxEven.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_EVEN_IMAGE_LINEAR_PHASE_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_even )
+
+
+##############################
+#   Image linear phase test: 
+##############################
+SET( TEST_NAME TEST_MCHK_ODD_IMAGE_LINEAR_PHASE )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/image_linear_phase)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkImageLinearPhaseTest ${TEST_CASE_ROOT}/input/testBoxOdd.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_ODD_IMAGE_LINEAR_PHASE_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_odd )
+
+
+##############################
+#   sinc interpolate test for even data set: 
+##############################
+SET( TEST_NAME TEST_MCHK_EVEN_SINC_INTERPOLATE )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/sinc_interpolate)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkSincInterpolateTest ${TEST_CASE_ROOT}/input/testBoxCenterEven.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_EVEN_SINC_INTERPOLATE_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_even )
+
+##############################
+#   sinc interpolate test for odd data set: 
+##############################
+SET( TEST_NAME TEST_MCHK_ODD_SINC_INTERPOLATE )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/sinc_interpolate)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkSincInterpolateTest ${TEST_CASE_ROOT}/input/testBoxCenterOdd.idf ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME TEST_ODD_SINC_INTERPOLATE_DIFF )
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_odd )
+
 
 ########################
 #   Data combining test: 

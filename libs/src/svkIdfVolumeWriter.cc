@@ -72,6 +72,7 @@ svkIdfVolumeWriter::svkIdfVolumeWriter()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
+    this->castDoubleToFloat = false;
 }
 
 
@@ -178,7 +179,11 @@ void svkIdfVolumeWriter::WriteData()
             double* doublePixels; 
             doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
             floatPixels = new float[ numSlices * numPixelsPerSlice ];     
-            this->MapDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+            if( this->castDoubleToFloat ) {
+                this->CastDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+            } else {
+                this->MapDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+            }
             pixels = floatPixels;
         }
         if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
@@ -199,10 +204,19 @@ void svkIdfVolumeWriter::WriteData()
         throw runtime_error("Cannot open .int2 file for writing");
     }
 
+    // We want to hold the pixels here so we can do an endian swap without changing the original data
+    void* bigEndianPixels = NULL; 
     // Swap bytes if the CPU is NOT big endian
+
 #ifndef VTK_WORDS_BIGENDIAN
     if (numBytesPerPixel > 1) {
-        vtkByteSwap::SwapVoidRange(pixels, numPixelsPerSlice * numSlices, numBytesPerPixel);
+        // Allocate our new array
+        bigEndianPixels = malloc( numBytesPerPixel * numPixelsPerSlice * numSlices );
+        memcpy( bigEndianPixels, pixels , numBytesPerPixel * numPixelsPerSlice * numSlices ); 
+        vtkByteSwap::SwapVoidRange(bigEndianPixels, numPixelsPerSlice * numSlices, numBytesPerPixel);
+
+        // These are the pixels to write out
+        pixels = bigEndianPixels;
     }
 #endif
 
@@ -210,6 +224,10 @@ void svkIdfVolumeWriter::WriteData()
 
     if (floatPixels != NULL) {
         delete[] floatPixels; 
+    }
+
+    if (bigEndianPixels != NULL) {
+        free(bigEndianPixels);
     }
 
 }
@@ -318,6 +336,12 @@ void svkIdfVolumeWriter::WriteHeader()
     vtkstd::string date = hdr->GetStringValue( "StudyDate" );
     if ( date.length() == 0 ) { 
         date.assign("        ");                
+    } else if ( date.length() < 8 ) {
+        for( int i = 0; i < 8; i++ ) {
+            if( i >= date.length() ) {
+                date.append(" ");
+            }
+        }
     }
 
     out << "comment: " << this->GetIDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << "- "
@@ -500,8 +524,8 @@ void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPix
  */
 void svkIdfVolumeWriter::GetDoublePixelRange(double* doublePixels, int numPixels, double& rangeMin, double& rangeMax)
 {
-    rangeMin = 0.; 
-    rangeMax = 0.; 
+    rangeMin = VTK_DOUBLE_MAX; 
+    rangeMax = VTK_DOUBLE_MIN; 
     for (int i = 0; i < numPixels; i++ ) {
         if ( doublePixels[i] > rangeMax ) {
             rangeMax = doublePixels[i]; 
@@ -509,6 +533,37 @@ void svkIdfVolumeWriter::GetDoublePixelRange(double* doublePixels, int numPixels
         if ( doublePixels[i] < rangeMin ) {
             rangeMin = doublePixels[i]; 
         } 
+    }
+}
+
+
+/*!
+ *  Set to true if you want double values to be simply cast to floats. The default
+ *  behavior is to scale the doubles to the full dynamic range of the floats.
+ */
+void svkIdfVolumeWriter::SetCastDoubleToFloat( bool castDoubleToFloat )
+{
+    this->castDoubleToFloat = castDoubleToFloat;
+}
+
+
+/*!
+ *  Casts double inputs to floating point outputs. Uses c++ static_cast<float>
+ *  to accomplish this. If the range of the input is greater than the range
+ *  of floats it will throw an error.
+ */
+void svkIdfVolumeWriter::CastDoubleToFloat(double* doublePixels, float* floatPixels, int numPixels)
+{
+    double inputRangeMin = 0. ; 
+    double inputRangeMax = 0. ; 
+    this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
+    float floatMin = VTK_FLOAT_MIN;
+    float floatMax = VTK_FLOAT_MAX;
+    if( inputRangeMin < floatMin || inputRangeMax > floatMax ) {
+        throw runtime_error("ERROR: Cannot cast doubles to floats-- range is too large.");
+    }
+    for (int i = 0; i < numPixels; i++) {
+        floatPixels[i] = static_cast<float>( doublePixels[i] );
     }
 }
 
@@ -542,7 +597,6 @@ void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixe
     if (this->GetDebug()) {
         cout << "IDF Writer double to float scaling (slope, intercept): " << slope << " " << intercept << endl;
     }
-
     for (int i = 0; i < numPixels; i++) {
         floatPixels[i] = static_cast<float>( slope * doublePixels[i] + intercept );
     }
