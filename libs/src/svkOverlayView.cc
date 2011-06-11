@@ -1382,9 +1382,9 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
             double* overlaySpacing = dataVector[OVERLAY]->GetSpacing();
 
             // Lets choose the resolution of the sinc by trying to get to the resolution of the image
-            int xSize = (int)pow( 2, vtkMath::Round( log2( xLength * (overlaySpacing[0]/imageSpacing[0]) ) ) );
-            int ySize = (int)pow( 2, vtkMath::Round( log2( yLength * (overlaySpacing[1]/imageSpacing[1]) ) ) );
-            int zSize = (int)pow( 2, vtkMath::Round( log2( zLength * (overlaySpacing[2]/imageSpacing[2]) ) ) );
+            int xSize = (int)pow( 2, vtkMath::Round( log( xLength * (overlaySpacing[0]/imageSpacing[0]) )/log(2) ) );
+            int ySize = (int)pow( 2, vtkMath::Round( log( yLength * (overlaySpacing[1]/imageSpacing[1]) )/log(2) ) );
+            int zSize = (int)pow( 2, vtkMath::Round( log( zLength * (overlaySpacing[2]/imageSpacing[2]) )/log(2) ) );
             if( xSize > SINC_MAX_EXTENT ) {
                 xSize = SINC_MAX_EXTENT;
             }
