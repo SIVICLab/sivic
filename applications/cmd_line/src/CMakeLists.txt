@@ -292,16 +292,20 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
-ADD_EXECUTABLE(
-    svk_create_dcmraw
-    svk_create_dcmraw.cc
-)
+
+#   libcrypto doesn't exist on solaris
+IF (CMAKE_SYSTEM_NAME MATCHES Linux)
+    ADD_EXECUTABLE(
+        svk_create_dcmraw
+        svk_create_dcmraw.cc
+    )
  
-TARGET_LINK_LIBRARIES(
-    svk_create_dcmraw
-    ${SVK_LIBS}
-    crypto 
-)
+    TARGET_LINK_LIBRARIES(
+        svk_create_dcmraw
+        ${SVK_LIBS}
+        crypto 
+    )
+ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
 
 IF (!WIN32)	
