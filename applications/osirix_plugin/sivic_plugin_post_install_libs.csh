@@ -45,8 +45,8 @@
 #
 
 set plugin_name="SIVIC_MRSI.osirixplugin"
-if (-d /tmp/vtk-5.4) then 
-    mv /tmp/vtk-5.4 /Users/${USER}/Library/Application\ Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources/
+if (-d /tmp/vtk-5.6) then 
+    mv /tmp/vtk-5.6 /Users/${USER}/Library/Application\ Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources/
 endif
 if (-d /tmp/KWWidgets) then 
     mv /tmp/KWWidgets /Users/${USER}/Library/Application\ Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources/

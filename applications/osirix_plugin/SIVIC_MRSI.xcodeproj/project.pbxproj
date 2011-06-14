@@ -238,7 +238,14 @@
 			isa = PBXProject;
 			buildConfigurationList = CE6A9A9408AC841300D0C1EE /* Build configuration list for PBXProject "SIVIC_MRSI" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* SIVIC_MRSI */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -312,7 +319,10 @@
 				GCC_PREFIX_HEADER = SIVIC_MRSI_Prefix.pch;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"/usr/local/include/vtk-5.6",
+				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "@executable_path/../Plug-ins ";
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)";
@@ -345,6 +355,7 @@
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = SIVIC_MRSI;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.4 /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
 				VALID_ARCHS = "i386 x86_64";
@@ -371,7 +382,10 @@
 				GCC_PREFIX_HEADER = SIVIC_MRSI_Prefix.pch;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"/usr/local/include/vtk-5.6",
+				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -396,8 +410,9 @@
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = SIVIC_MRSI;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.4 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -417,7 +432,10 @@
 				GCC_PREFIX_HEADER = SIVIC_MRSI_Prefix.pch;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"/usr/local/include/vtk-5.6",
+				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -436,6 +454,7 @@
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = SIVIC_MRSI;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-Wmost",

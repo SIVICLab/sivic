@@ -43,7 +43,10 @@
 #import "DicomSeries.h"
 #import "BrowserController.h"
 #import "SIVIC_MRSIFilter.h"
+
+#define Cursor X11_Cursor
 #import <sivicApp.h>
+#undef Cursor
 
 
 @implementation SIVIC_MRSIFilter

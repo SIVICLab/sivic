@@ -51,7 +51,7 @@ mkdir ${depend_dir}
 ./vtk_dependencies.csh
 
 cp -R /usr/local/lib/KWWidgets  ${depend_dir}
-cp -R ./vtk-5.4 ${depend_dir}
+cp -R ./vtk-5.6 ${depend_dir}
 
 tcl_system="/Library/Frameworks/Tcl.framework/Versions/8.5/Tcl"
 tk_system="/Library/Frameworks/Tk.framework/Versions/8.5/Tk"
@@ -83,7 +83,7 @@ cd ${current}
 ############################
 #   vtk
 ############################
-cd "${depend_dir}/vtk-5.4"
+cd "${depend_dir}/vtk-5.6"
 for f in ./*.dylib
 do
     install_name_tool -change "${tcl_system}" "${plugin_path}/${tcl_plugin}" $f

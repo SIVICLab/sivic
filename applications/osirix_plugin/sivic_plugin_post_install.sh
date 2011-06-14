@@ -75,7 +75,7 @@ install_name_tool -change "${tk_system}" "${plugin_path}/${tk_plugin}" libKWWidg
 ############################
 #   vtk
 ############################
-cd "${plugin_path}/vtk-5.4"
+cd "${plugin_path}/vtk-5.6"
 for f in ./*.dylib
 do
     install_name_tool -change "${tcl_system}" "${plugin_path}/${tcl_plugin}" $f 
