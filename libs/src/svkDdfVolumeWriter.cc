@@ -648,6 +648,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                 "SharedFunctionalGroupsSequence", 0, i
             );
         }
+    } else {
+        for (int i = 0; i < 3; i++ ) {
+            acqTLC[i] = positionFirst[i]; 
+        }
     }
 
     *out << "acq. toplc(lps, mm):  " << fixed << right << setw(13) << setprecision(5)
@@ -667,6 +671,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
             "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcquisitionSliceThickness", 
             "SharedFunctionalGroupsSequence", 0
         );
+    } else {
+        for (int i = 0; i < 3; i++ ) {
+            acqSpacing[i] = voxelSpacing[i]; 
+        }
     }
 
     *out << "acq. spacing(mm):  " << fixed << right << setw(16) << setprecision(5)
@@ -703,6 +711,16 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                 "SharedFunctionalGroupsSequence", 0, i
             );
         }
+    } else {
+        acqDcos[0] = dcos[0][0]; 
+        acqDcos[1] = dcos[0][1]; 
+        acqDcos[2] = dcos[0][2]; 
+        acqDcos[3] = dcos[1][0]; 
+        acqDcos[4] = dcos[1][1]; 
+        acqDcos[5] = dcos[1][2]; 
+        acqDcos[6] = dcos[2][0]; 
+        acqDcos[7] = dcos[2][1]; 
+        acqDcos[8] = dcos[2][2]; 
     }
 
     *out << "acq. dcos1: " << fixed << setw(14) << setprecision(5) << acqDcos[0] << setw(14) << acqDcos[1]
@@ -806,6 +824,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                 "SharedFunctionalGroupsSequence", 0, i
             );
         }
+    } else {
+        for (int i = 0; i < 3; i++ ) {
+            reorderedTLC[i] = positionFirst[i]; 
+        }
     }
 
     *out << "reordered toplc(lps, mm):  " << fixed << right << setw(14) << setprecision(5)
@@ -832,6 +854,10 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
             "MRSpectroscopyFOVGeometrySequence", 0, "SVK_SpectroscopyAcqReorderedSliceThickness",
             "SharedFunctionalGroupsSequence", 0
         );
+    } else {
+        for (int i = 0; i < 3; i++ ) {
+            reorderedSpacing[i] = voxelSpacing[i]; 
+        }
     }
 
     *out << "reordered spacing(mm):  " << fixed << right << setw(17) << setprecision(5)
@@ -870,6 +896,16 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
                 "SharedFunctionalGroupsSequence", 0, i
             );
         }
+    } else {
+        reorderedDcos[0] = dcos[0][0]; 
+        reorderedDcos[1] = dcos[0][1]; 
+        reorderedDcos[2] = dcos[0][2]; 
+        reorderedDcos[3] = dcos[1][0]; 
+        reorderedDcos[4] = dcos[1][1]; 
+        reorderedDcos[5] = dcos[1][2]; 
+        reorderedDcos[6] = dcos[2][0]; 
+        reorderedDcos[7] = dcos[2][1]; 
+        reorderedDcos[8] = dcos[2][2]; 
     }
 
     *out << "reordered dcos1: " << fixed << setw(14) << setprecision(5) << reorderedDcos[0] << setw(14) << reorderedDcos[1]
