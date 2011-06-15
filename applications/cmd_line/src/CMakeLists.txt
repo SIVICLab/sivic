@@ -101,6 +101,13 @@ ENDIF(UCSF_INTERNAL)
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 
+# if dcmtk 3.6, need to add liboflog:
+SET(DCMTK_OFLOG "")
+if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a")
+
+
 ###################################
 #   VTK
 ###################################
@@ -163,6 +170,8 @@ SET(SVK_LIBS
     svkadapt 
     dcmdata
     ofstd 
+    ${DCMTK_OFLOG}
+    z
     ${PLATFORM_LIBS}
 )
 
