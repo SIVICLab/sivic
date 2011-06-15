@@ -475,7 +475,7 @@ void svkSdbmVolumeReader::ParseShf()
                 //  parse dims: 
 
                 //  DIM 0
-                this->ParseShfDim( key ); 
+                this->ParseShfDim( value ); 
 
                 //  Skip 5 lines: 
                 for (int i = 0; i < 5; i++) {
@@ -520,7 +520,6 @@ void svkSdbmVolumeReader::ParseShf()
 void svkSdbmVolumeReader::ParseShfDim( vtkstd::string dimenNum )
 {
     istringstream* iss = new istringstream();
-
 
     vtkstd::string key; 
     vtkstd::string value; 
@@ -953,7 +952,7 @@ void svkSdbmVolumeReader::InitPlaneOrientationMacro()
         this->dcos[2][i] = normal[i]; 
     }
 
-/*
+
     double dcosSliceOrder[3]; 
     for (int i = 0; i < 3; i++) {
         dcosSliceOrder[i] = dcos[2][i]; 
@@ -968,7 +967,7 @@ void svkSdbmVolumeReader::InitPlaneOrientationMacro()
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
     }
     math->Delete();
-*/
+
 }
 
 
