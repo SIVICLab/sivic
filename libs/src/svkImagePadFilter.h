@@ -108,7 +108,7 @@ class svkImagePadFilter : public svkImageAlgorithm
                              vtkInformationVector**,
                              vtkInformationVector*);
 
-        virtual void ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wExt[6]);
+        virtual void    ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wExt[6]);
 
     private:
 
