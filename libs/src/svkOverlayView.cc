@@ -601,8 +601,10 @@ int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orient
     this->dataVector[MRS]->GetSliceCenter( spectraSlice, spectraSliceCenter, orientation );
     double normal[3];
     this->dataVector[MRS]->GetSliceNormal( normal, orientation );
+    int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
+    double tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
 
-    imageSlice = this->dataVector[MRI]->GetClosestSlice( spectraSliceCenter, orientation );
+    imageSlice = this->dataVector[MRI]->GetClosestSlice( spectraSliceCenter, orientation, tolerance );
     return imageSlice;
 }
 
@@ -615,7 +617,9 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
     int spectraSlice;
     double imageSliceCenter[3];
     this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
-    spectraSlice = this->dataVector[MRS]->GetClosestSlice( imageSliceCenter, orientation );
+    int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
+    double tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
+    spectraSlice = this->dataVector[MRS]->GetClosestSlice( imageSliceCenter, orientation, tolerance );
     return spectraSlice;
 }
 
@@ -625,10 +629,18 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
  */
 int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation orientation ) 
 {
-    int overlaySlice;
-    double imageSliceCenter[3];
-    this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
-    overlaySlice = this->dataVector[OVERLAY]->GetClosestSlice( imageSliceCenter, orientation );
+    int overlaySlice = -1;
+    double sliceCenter[3];
+    double tolerance = 0;
+    this->dataVector[MRI]->GetSliceOrigin( imageSlice, sliceCenter, orientation );
+    if( this->dataVector[MRS] != NULL ) {
+        int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
+        tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
+    } else {
+        int index = this->dataVector[MRI]->GetOrientationIndex( orientation );
+        tolerance = this->dataVector[MRI]->GetSpacing()[index]/2.0;
+    }
+    overlaySlice = this->dataVector[OVERLAY]->GetClosestSlice( sliceCenter, orientation, tolerance );
     return overlaySlice;
 }
 
@@ -646,6 +658,7 @@ void svkOverlayView::UpdateImageSlice( bool centerImage )
         imageSlice = FindCenterImageSlice(this->slice, this->orientation);
     }
     int* imageExtent = dataVector[MRI]->GetExtent();
+    int satBandClipSlice = this->slice;
     if ( imageSlice >  this->dataVector[MRI]->GetLastSlice( this->orientation )) {
         this->imageViewer->GetImageActor( this->orientation )->SetVisibility(0);
         this->imageViewer->SetSlice( this->dataVector[MRI]->GetLastSlice(), this->orientation );
@@ -658,16 +671,20 @@ void svkOverlayView::UpdateImageSlice( bool centerImage )
         this->imageViewer->GetImageActor( this->orientation )->SetVisibility(1);
         this->imageViewer->SetSlice( imageSlice, this->orientation );
         this->imageInsideSpectra = true;
+        satBandClipSlice = imageSlice;
     }
     switch ( this->orientation ) {
         case svkDcmHeader::AXIAL:
-            this->satBandsAxial->SetClipSlice( imageSlice );
+            this->satBandsAxial->SetClipToReferenceImage( this->imageInsideSpectra );
+            this->satBandsAxial->SetClipSlice( satBandClipSlice );
             break;
         case svkDcmHeader::CORONAL:
-            this->satBandsCoronal->SetClipSlice( imageSlice );
+            this->satBandsCoronal->SetClipToReferenceImage( this->imageInsideSpectra );
+            this->satBandsCoronal->SetClipSlice( satBandClipSlice );
             break;
         case svkDcmHeader::SAGITTAL:
-            this->satBandsSagittal->SetClipSlice( imageSlice );
+            this->satBandsSagittal->SetClipToReferenceImage( this->imageInsideSpectra );
+            this->satBandsSagittal->SetClipSlice( satBandClipSlice );
             break;
     }
 }

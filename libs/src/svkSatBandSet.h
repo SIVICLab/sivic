@@ -88,6 +88,7 @@ class svkSatBandSet : public vtkObject
         void SetInput( svkMrsImageData* spectra );
         void SetReferenceImage( svkMriImageData* image );
         void RemoveReferenceImage( );
+        void SetClipToReferenceImage( bool clipToReferenceImage );
 
     private:
 
@@ -105,6 +106,7 @@ class svkSatBandSet : public vtkObject
         svkMrsImageData* spectra;
         svkMriImageData* image;
         int slice;
+        bool clipToReferenceImage;
         svkDcmHeader::Orientation orientation; 
         vector<vtkPlane*> clippingPlanes;
         vtkPoints*  satBandSurfaceOrigins;

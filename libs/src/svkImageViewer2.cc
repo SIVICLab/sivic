@@ -593,9 +593,26 @@ void svkImageViewer2::InitializeOrthogonalActors()
  */
 void svkImageViewer2::TurnOrthogonalImagesOn()
 {
-    this->axialImageActor->VisibilityOn();
-    this->coronalImageActor->VisibilityOn();
-    this->sagittalImageActor->VisibilityOn();
+    switch ( this->orientation ) {
+        case svkDcmHeader::AXIAL:
+            this->coronalImageActor->VisibilityOn(); 
+            this->coronalImageActor->Modified(); 
+            this->sagittalImageActor->VisibilityOn(); 
+            this->sagittalImageActor->Modified(); 
+            break;
+        case svkDcmHeader::CORONAL:
+            this->axialImageActor->VisibilityOn(); 
+            this->axialImageActor->Modified(); 
+            this->sagittalImageActor->VisibilityOn(); 
+            this->sagittalImageActor->Modified(); 
+            break;
+        case svkDcmHeader::SAGITTAL:
+            this->axialImageActor->VisibilityOn(); 
+            this->axialImageActor->Modified(); 
+            this->coronalImageActor->VisibilityOn(); 
+            this->coronalImageActor->Modified(); 
+            break;
+    }
 }
 
 

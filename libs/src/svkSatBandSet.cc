@@ -82,6 +82,7 @@ svkSatBandSet::svkSatBandSet()
     this->clippingPlanes.push_back( vtkPlane::New() );
     this->satBandActor= vtkActor::New();
     this->satBandOutlineActor= vtkActor::New();
+    this->clipToReferenceImage = true;
 }
 
 
@@ -191,6 +192,22 @@ void svkSatBandSet::RemoveReferenceImage( )
 }
 
 
+void svkSatBandSet::SetClipToReferenceImage( bool clipToReferenceImage ) 
+{
+    if( this->clipToReferenceImage != clipToReferenceImage ) {
+        this->clipToReferenceImage = clipToReferenceImage;
+        if( this->spectra != NULL ) {
+            this->UpdateClippingParameters();
+
+            // Now lets get our clipping planes, and generate the sat bands
+            this->GenerateClippingPlanes();
+            this->GenerateSatBandsActor();
+        }
+    }
+
+}
+
+
 void svkSatBandSet::UpdateClippingParameters() 
 {
     // if the input dataset is not null, initialize it...
@@ -198,7 +215,7 @@ void svkSatBandSet::UpdateClippingParameters()
         double LRNormal[3];
         double PANormal[3];
         double SINormal[3];
-        if( this->image != NULL ) {
+        if( this->image != NULL  && this->clipToReferenceImage ) {
             // These member variables are to speed up slicing...
             this->spacing = this->image->GetSpacing();
             this->image->GetDcos( dcos );
@@ -691,7 +708,7 @@ void svkSatBandSet::GenerateClippingPlanes( )
 void svkSatBandSet::GenerateSliceClippingPlanes( )
 {
     if( spectra != NULL ) {
-        if( image != NULL ) { // If we are clipping to the image volume
+        if( image != NULL && this->clipToReferenceImage) { // If we are clipping to the image volume
             // Lets get the index of the current orientation for the sat bands
             int index = this->image->GetOrientationIndex(this->orientation);
             if( slice >= 0 ) {

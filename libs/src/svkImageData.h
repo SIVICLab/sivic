@@ -234,7 +234,8 @@ class svkImageData: public vtkImageData
                            );
         virtual int        GetClosestSlice(
                                 double * posLPS, 
-                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
+                                svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION,
+                                double tolerance = -1
                            );
         virtual int        GetNumberOfSlices( 
                                 svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION 
@@ -273,7 +274,8 @@ class svkImageData: public vtkImageData
                                             double* posLPS, 
                                             svkDcmHeader::Orientation sliceOrientation, 
                                             double* origin, 
-                                            double* spacing 
+                                            double* spacing,
+                                            double tolerance = -1
                                         ); 
 
     

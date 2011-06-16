@@ -228,7 +228,7 @@ class svkOverlayView : public svkDataView
         void                            ResetWindowLevel();
         int                             FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation );
         int                             FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation orientation );
-        int                             FindOverlaySlice( int spectraSlice, svkDcmHeader::Orientation orientation );
+        int                             FindOverlaySlice( int slice, svkDcmHeader::Orientation orientation );
         bool                            IsSatBandForSliceOn( svkDcmHeader::Orientation orientation );
         bool                            IsSatBandOutlineForSliceOn( svkDcmHeader::Orientation orientation );
         bool                            AreAllSatBandsOn( svkDcmHeader::Orientation orientation );

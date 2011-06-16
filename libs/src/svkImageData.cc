@@ -1294,15 +1294,23 @@ void svkImageData::GetSliceNormal(double* normal, svkDcmHeader::Orientation slic
 
 /*!
  *  Calculates the closests slice to a given LPS coordinate for a given orientation.
+ *
+ *  \param posLPS the lps coordinate to match against
+ *  \param sliceOrientation the orientation to match against
+ *  \param tolerance the maximum permissible distance for a match
+ *
+ *  \return the closest slice. If the slice is outside the tolerance 
  */
-int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
+int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation, double tolerance )
 {
 
     double* origin  = new double[3]; 
+
+    // We are going to use the dicom origin, not the vtk origin.
     this->GetDcmHeader()->GetOrigin(origin, 0); 
     double* spacing = this->GetSpacing();
 
-    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing ); 
+    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing, tolerance ); 
     
     delete[] origin; 
     
@@ -1314,10 +1322,25 @@ int svkImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation slic
  *  This projects a posLPS onto a normal vector through the real world origin.  This is a common reference vector for 
  *  both the MRI and MRS data.  The projection is normalized by the relevant data slice spacing to get the nearest 
  *  slice.
+ *
+ *  This method takes the origin and spacing as input so that it can be used for single voxel data as well as
+ *  normal image and spectra.
+ *
+ *  If the matching slice is beyond the defined tolerance than -1 is returned.
+ *
+ *
+ *  \param posLPS the lps coordinate to match against
+ *  \param sliceOrientation the orientation to match against
+ *  \param origin the origin to use for the matching.
+ *  \param spacing the spacing to use for the matching
+ *  \param tolerance the maximum permissible distance for a match
+ *
+ *  \return the closest slice. If the slice is outside the tolerance then -1 is returned
  */
-int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation sliceOrientation, double* origin, double* spacing ) 
+int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation sliceOrientation, double* origin, double* spacing, double tolerance ) 
 {
 
+    // If the orientation is unknown, assume the orientation of the data
     sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
                                 this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
 
@@ -1327,7 +1350,8 @@ int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation s
     //  Project posLPS onto the normal vector through the 
     //  origin of world coordinate space (this is the same 
     //  reference for both data sets (e.g MRI and MRS). 
-    double imageCenter = vtkMath::Dot( posLPS, normal ); 
+    double projectedPosition = vtkMath::Dot( posLPS, normal ); 
+    double projectedOrigin = vtkMath::Dot( origin, normal ); 
 
     //  Which index (0,1,2) represents the 
     //  coordinate specified by sliceOrientation
@@ -1336,10 +1360,29 @@ int svkImageData::FindMatchingSlice( double* posLPS, svkDcmHeader::Orientation s
     //  Origin here is the center of the toplc slice (DICOM origin). 
     //  This is fractional and needs to be rounded to get the integer 
     //  slice value. 
-    double exactSlice = ( imageCenter - vtkMath::Dot( origin, normal ) )/(spacing[index] );
+    double exactSlice = ( projectedPosition - projectedOrigin )/(spacing[index] );
 
-    //  floor 0.5 is a nint implementation to get the nearest int slice.  
-    return (int) floor( exactSlice + 0.5 );
+    // Lets round to the nearest slice
+    int slice = vtkMath::Round( exactSlice );
+
+    // Now we make sure the slice is within bounds
+    int* extent = this->GetExtent();
+
+    if( slice < extent[2*index] ) {
+        slice = extent[2*index];
+    } else if ( slice > extent[2*index + 1] ) {
+        slice = extent[2*index + 1];
+    } 
+
+    // If a tolerance has been defined check to see if we are within it 
+    if( tolerance > 0 ) {
+        double projectedSlice = projectedOrigin + slice*spacing[index];
+        if( fabs( projectedSlice - projectedPosition ) > tolerance ) {
+            slice = -1;
+        }
+    }
+
+    return slice;
 }
 
 
