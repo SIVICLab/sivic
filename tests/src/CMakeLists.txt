@@ -318,6 +318,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svkMrsZeroFill
+    svkMrsZeroFill.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMrsZeroFill
+	${SVK_LIBS}
+)
+
 include(CMakeSivicTests.cmake)
 
 IF (BUILD_GRAPHICS_TESTING)

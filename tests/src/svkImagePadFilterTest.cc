@@ -47,7 +47,7 @@
 #include <vtkImageMagnitude.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkDICOMMRIWriter.h>
-#include <svkImagePadFilter.h>
+#include <svkMriZeroFill.h>
 using namespace svk;
 
 void WriteData( string name, svkImageData* data );
@@ -74,7 +74,7 @@ int main (int argc, char** argv)
     WriteData( name, data );
 
     // Create do padding by 1 extra pixel on each side
-    svkImagePadFilter* padOne = svkImagePadFilter::New();
+    svkMriZeroFill* padOne = svkMriZeroFill::New();
     padOne->SetInput( data );
 
     // Pad + 1 pixel. Remeber normally extent max is dim - 1 
@@ -86,7 +86,7 @@ int main (int argc, char** argv)
     WriteData( name, padOne->GetOutput() );
 
     // Create do padding by 1 extra pixel on each side
-    svkImagePadFilter* padTwo = svkImagePadFilter::New();
+    svkMriZeroFill* padTwo = svkMriZeroFill::New();
     padTwo->SetInput( data );
 
     // Pad + 2 pixel. Remeber normally extent max is dim - 1 
