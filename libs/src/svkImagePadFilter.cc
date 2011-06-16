@@ -41,17 +41,17 @@
 
 
 
-#include <svkImagePadFilter.h>
+#include <svkMriZeroFill.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImagePadFilter, "$Rev$");
-vtkStandardNewMacro(svkImagePadFilter);
+vtkCxxRevisionMacro(svkMriZeroFill, "$Rev$");
+vtkStandardNewMacro(svkMriZeroFill);
 
 
-svkImagePadFilter::svkImagePadFilter()
+svkMriZeroFill::svkMriZeroFill()
 {
 
 #if VTK_DEBUG_ON
@@ -72,7 +72,7 @@ svkImagePadFilter::svkImagePadFilter()
 }
 
 
-svkImagePadFilter::~svkImagePadFilter()
+svkMriZeroFill::~svkMriZeroFill()
 {
 }
 
@@ -80,7 +80,7 @@ svkImagePadFilter::~svkImagePadFilter()
 /*!
  *
  */
-void svkImagePadFilter::SetOutputWholeExtent(int extent[6])
+void svkMriZeroFill::SetOutputWholeExtent(int extent[6])
 {
     int modified = 0;
 
@@ -100,7 +100,7 @@ void svkImagePadFilter::SetOutputWholeExtent(int extent[6])
 /*!
  *
  */
-void svkImagePadFilter::SetOutputWholeExtent(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) 
+void svkMriZeroFill::SetOutputWholeExtent(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) 
 {
     int extent[6];
 
@@ -114,7 +114,7 @@ void svkImagePadFilter::SetOutputWholeExtent(int minX, int maxX, int minY, int m
 /*!
  *
  */
-void svkImagePadFilter::GetOutputWholeExtent(int extent[6])
+void svkMriZeroFill::GetOutputWholeExtent(int extent[6])
 {
 
     for (int i = 0; i < 6; i++) {
@@ -126,7 +126,7 @@ void svkImagePadFilter::GetOutputWholeExtent(int extent[6])
 /*!
  *
  */
-int svkImagePadFilter::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMriZeroFill::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     // get the info objects
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
@@ -145,7 +145,7 @@ int svkImagePadFilter::RequestInformation( vtkInformation* request, vtkInformati
 /*!
  *
  */
-void svkImagePadFilter::ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wholeExtent[6])
+void svkMriZeroFill::ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wholeExtent[6])
 {
     // Clip
     for (int i = 0; i < 3; i++) {
@@ -170,7 +170,7 @@ void svkImagePadFilter::ComputeInputUpdateExtent (int inExt[6], int outExt[6], i
 /*!
  *
  */
-int svkImagePadFilter::RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vtkInformationVector** inputVector, vtkInformationVector* outputVector)
+int svkMriZeroFill::RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vtkInformationVector** inputVector, vtkInformationVector* outputVector)
 {
     // get the info objects
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
@@ -196,7 +196,7 @@ int svkImagePadFilter::RequestUpdateExtent (vtkInformation* vtkNotUsed(request),
  *  data. If it is set to REVERSE then it will run an rfft and then extract the real component.
  *  Input can be any data type but output is always complex double.
  */
-int svkImagePadFilter::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     // Get our input
     svkMriImageData* data = svkMriImageData::SafeDownCast(this->GetImageDataInput(0));
@@ -286,7 +286,7 @@ int svkImagePadFilter::RequestData( vtkInformation* request, vtkInformationVecto
  * This determines if the input data is being operated on, or if a new dataset should be
  * created.
  */
-void svkImagePadFilter::SetOperateInPlace( bool operateInPlace )
+void svkMriZeroFill::SetOperateInPlace( bool operateInPlace )
 {
     this->operateInPlace = operateInPlace;
 }
@@ -295,7 +295,7 @@ void svkImagePadFilter::SetOperateInPlace( bool operateInPlace )
 /*!
  * Defines the input type: svkMriImageData.
  */
-int svkImagePadFilter::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMriZeroFill::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData"); 
     return 1;
@@ -306,7 +306,7 @@ int svkImagePadFilter::FillInputPortInformation( int vtkNotUsed(port), vtkInform
  * We want to override this method so that we can return a pointer to the input
  * in the case of an in place operation.
  */
-svkImageData* svkImagePadFilter::GetOutput(int port)
+svkImageData* svkMriZeroFill::GetOutput(int port)
 {
     if( this->operateInPlace ) {
         return svkMriImageData::SafeDownCast(this->GetImageDataInput(0));
@@ -320,7 +320,7 @@ svkImageData* svkImagePadFilter::GetOutput(int port)
  *   This is only overriden to prevent it from being hidden. When you override
  *   a method you need to override every overloaded version.
  */
-svkImageData* svkImagePadFilter::GetOutput()
+svkImageData* svkMriZeroFill::GetOutput()
 {   
     return this->GetOutput(0); 
 }

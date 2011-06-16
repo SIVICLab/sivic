@@ -203,7 +203,7 @@ ADD_LIBRARY(
     svkBurnResearchPixels.cc
     svkMrsImageFFT.cc
     svkMriImageFFT.cc
-    svkImagePadFilter.cc
+    svkMriZeroFill.cc
     svkSincInterpolationFilter.cc
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc

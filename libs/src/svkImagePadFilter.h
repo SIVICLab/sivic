@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_PAD_FILTER_H
-#define SVK_IMAGE_PAD_FILTER_H
+#ifndef SVK_MRI_ZERO_FILL
+#define SVK_MRI_ZERO_FILL
 
 
 #include <vtkObject.h>
@@ -68,13 +68,13 @@ using namespace std;
  *  output volume will be placed so that the origin of the original image remains in 
  *  the same world coordinate position. Padded data is set to value 0.
  */
-class svkImagePadFilter : public svkImageAlgorithm
+class svkMriZeroFill : public svkImageAlgorithm
 {
 
     public:
 
-        static svkImagePadFilter* New();
-        vtkTypeRevisionMacro( svkImagePadFilter, svkImageAlgorithm);
+        static svkMriZeroFill* New();
+        vtkTypeRevisionMacro( svkMriZeroFill, svkImageAlgorithm);
 
         void             SetOperateInPlace( bool operateInPlace );
         svkImageData*    GetOutput();
@@ -85,8 +85,8 @@ class svkImagePadFilter : public svkImageAlgorithm
 
     protected:
 
-        svkImagePadFilter();
-        ~svkImagePadFilter();
+        svkMriZeroFill();
+        ~svkMriZeroFill();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
@@ -121,5 +121,5 @@ class svkImagePadFilter : public svkImageAlgorithm
 }   //svk
 
 
-#endif //SVK_IMAGE_PAD_FILTER_H
+#endif //SVK_MRI_ZERO_FILL
 
