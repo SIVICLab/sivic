@@ -237,7 +237,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     int inExtent[6];
     data->GetExtent( inExtent );
 
-    svkImagePadFilter* pad = svkImagePadFilter::New();
+    svkMriZeroFill* pad = svkMriZeroFill::New();
     pad->SetInput( target );
     pad->SetOutputWholeExtent(this->outputWholeExtent);
     pad->SetOperateInPlace( true );

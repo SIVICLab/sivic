@@ -55,7 +55,7 @@
 #include <svkImageFourierCenter.h>
 #include <vtkImageFourierCenter.h>
 #include <vtkImageMathematics.h>
-#include <svkImagePadFilter.h>
+#include <svkMriZeroFill.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkImageLinearPhase.h>
 #include <vtkImageMagnitude.h>
@@ -75,7 +75,7 @@ using namespace std;
  *
  *  Run svkMriImageFFT on the input volume.
  *  Move k=0 to the center of the volume.
- *  Use svkImagePadFilter to pad the kspace volume.
+ *  Use svkMriZeroFill to pad the kspace volume.
  *  Move k=0 back to the origin.
  *  Run svkMriImageFFT to reverse the FFT.
  *  Update the header to decrease the pixel size.
