@@ -204,6 +204,7 @@ ADD_LIBRARY(
     svkMrsImageFFT.cc
     svkMriImageFFT.cc
     svkMriZeroFill.cc
+    svkMrsZeroFill.cc
     svkSincInterpolationFilter.cc
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc
