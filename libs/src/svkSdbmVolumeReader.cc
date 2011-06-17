@@ -1569,7 +1569,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyDataModule()
     vtkstd::string signalDomain; 
     if ( strcmp(shfMap["domain_0"].c_str(), "Time") == 0)  { 
         signalDomain.assign("TIME"); 
-    } else if ( strcmp(shfMap["dimensionType0"].c_str(), "Frequency") == 0)  { 
+    } else if ( strcmp(shfMap["domain_0"].c_str(), "Frequency") == 0)  { 
         signalDomain.assign("FREQUENCY"); 
     }
 
@@ -1577,6 +1577,39 @@ void svkSdbmVolumeReader::InitMRSpectroscopyDataModule()
         "SignalDomainColumns", 
         signalDomain 
     );
+
+    //  Private Attributes for spatial domain encoding:
+
+    if ( strcmp(shfMap["domain_1"].c_str(), "Space") == 0)  { 
+        signalDomain.assign("SPACE"); 
+    } else { 
+        signalDomain.assign("KSPACE"); 
+    }
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_ColumnsDomain",
+        signalDomain
+    );
+
+    if ( strcmp(shfMap["domain_2"].c_str(), "Space") == 0)  { 
+        signalDomain.assign("SPACE"); 
+    } else { 
+        signalDomain.assign("KSPACE"); 
+    }
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_RowsDomain",
+        signalDomain
+    );
+
+    if ( strcmp(shfMap["domain_3"].c_str(), "Space") == 0)  { 
+        signalDomain.assign("SPACE"); 
+    } else { 
+        signalDomain.assign("KSPACE"); 
+    }
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_SliceDomain",
+        signalDomain
+    );
+
 }
 
 
