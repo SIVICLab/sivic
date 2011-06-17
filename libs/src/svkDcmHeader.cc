@@ -611,6 +611,23 @@ void svkDcmHeader::MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesD
 
 
 /*!
+ *  Method that updates the current DICOM heder. New instance UIDs are generated
+ *  for SeriesInstanceUID, SOPInstanceUID, MediaStorageSOPInstanceUID.  StudyInstanceuUID is  
+ *  preserved.  
+ */
+void svkDcmHeader::MakeDerivedDcmHeader(string seriesDescription)
+{
+    this->InsertUniqueUID("SeriesInstanceUID");
+    this->InsertUniqueUID("SOPInstanceUID");
+    this->SetValue("ImageType", "DERIVED\\SECONDARY");
+    this->SetSliceOrder(this->dataSliceOrder);
+    if ( !seriesDescription.empty() ) {
+        this->SetValue("SeriesDescription", seriesDescription);
+    }
+}
+
+
+/*!
  *
  */
 bool svkDcmHeader::WasModified()

@@ -493,7 +493,12 @@ class svkDcmHeader: public vtkObject
          *
          *   \param headerCopy header object to copy current object into. 
          */
-        virtual void        MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesDescription);
+        void    MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesDescription);
+
+        /*!
+         *  Inplace version. 
+         */
+        void    MakeDerivedDcmHeader(string seriesDescription = ""); 
 
 
         /*!

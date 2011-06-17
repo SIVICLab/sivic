@@ -81,6 +81,9 @@ svkDICOMMRSWriter::~svkDICOMMRSWriter()
 void svkDICOMMRSWriter::Write()
 {
 
+    //  Make sure the series is unique: 
+    this->GetImageDataInput(0)->GetDcmHeader()->MakeDerivedDcmHeader(); 
+
     this->SetErrorCode(vtkErrorCode::NoError);
 
     if (! this->FileName ) {
