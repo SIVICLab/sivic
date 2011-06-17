@@ -2486,6 +2486,10 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
         //  reset header to indicate only 1 time point of data in output
         this->RedimensionModifiedSVData( data ); 
 
+        //  Since it's only unsuppressed data in the file now, set the 
+        //  SpectrallySelectedSuppression accordingly:
+        this->dcmHeader->SetValue( "SpectrallySelectedSuppression", "NONE" ); 
+
     } else {
 
         cout << "UNSUPPORTED BEHAVIOR" << endl;
