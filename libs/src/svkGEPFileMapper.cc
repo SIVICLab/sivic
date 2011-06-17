@@ -2380,6 +2380,9 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
     //
     if ( behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
 
+
+        //  If single voxel default to loading the averaged 
+        //  of the suppressed acquisitions. 
         if ( (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) 
             && (numTimePts > 1) 
             && (numSuppressed > 1) 
@@ -2425,6 +2428,50 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
 
                 cmplxPtAv[0] /= numSuppressed; 
                 cmplxPtAv[1] /= numSuppressed; 
+            
+                //  Output only has numCoil spectra
+                vtkFloatArray* spectrumOut = static_cast<vtkFloatArray*>(
+                    mrsData->GetSpectrum( coil )
+                ); 
+
+                spectrumOut->SetTuple( freq, cmplxPtAv );
+            }
+        }
+
+        //  delete the unnecessary data arrays  and
+        //  reset header to indicate only 1 time point of data in output
+        this->RedimensionModifiedSVData( data ); 
+
+    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ) {
+
+        cout << "LOAD_AVG_UNSUPPRESSED" << endl;
+
+        float cmplxPt[2];
+        float cmplxPtAv[2];
+
+        int numFreqPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
+        for ( int freq = 0; freq < numFreqPts; freq++ ) { 
+
+            int numCoils = this->GetNumCoils(); 
+            for ( int coil = 0; coil < numCoils; coil++ ) { 
+
+                cmplxPtAv[0] = 0; 
+                cmplxPtAv[1] = 0; 
+
+                //  averaging up to the start of the suppresed acquisitions:   
+                for ( int acq = 0; acq <  numUnsuppressed;  acq++ ) { 
+                    //  Average the unsuppressed time points
+                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                        mrsData->GetSpectrum( 0, 0, 0, acq, coil)
+                    ); 
+                    spectrum->GetTupleValue(freq, cmplxPt);
+                    cmplxPtAv[0] += cmplxPt[0]; 
+                    cmplxPtAv[1] += cmplxPt[1]; 
+    
+                }
+
+                cmplxPtAv[0] /= numUnsuppressed; 
+                cmplxPtAv[1] /= numUnsuppressed; 
             
                 //  Output only has numCoil spectra
                 vtkFloatArray* spectrumOut = static_cast<vtkFloatArray*>(
