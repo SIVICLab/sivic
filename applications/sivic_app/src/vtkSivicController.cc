@@ -1574,7 +1574,7 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
     }
     int instanceNumber = 1;
     for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->SliceInSelectionBox(m) ) {
+        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(m) ) {
             continue;
         }
         string fileNameStringTmp = fileNameString; 
