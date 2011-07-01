@@ -232,7 +232,11 @@ void svkGEPFileReader::ExecuteInformation()
         }
 
         this->InitDcmHeader(); 
-        this->SetupOutputInformation();
+
+        //  Only need to call this if we are using the data, not printing header
+        if ( ! this->onlyParseHeader ) {
+            this->SetupOutputInformation();
+        }
 
     }
 
