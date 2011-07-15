@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkUtils.h $
- *  $Rev: 823 $
- *  $Author: beckn8tor $
- *  $Date: 2011-02-07 10:00:05 -0800 (Mon, 07 Feb 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

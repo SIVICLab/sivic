@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkMrsZeroFill.cc $
- *  $Rev: 964 $
- *  $Author: jccrane $
- *  $Date: 2011-06-16 16:33:43 -0700 (Thu, 16 Jun 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsApodizationFilter, "$Rev: 964 $");
+vtkCxxRevisionMacro(svkMrsApodizationFilter, "$Rev$");
 vtkStandardNewMacro(svkMrsApodizationFilter);
 
 

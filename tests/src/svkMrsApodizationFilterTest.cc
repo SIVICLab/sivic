@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/svkMrsZeroFill.cc $
- *  $Rev: 970 $
- *  $Author: jccrane $
- *  $Date: 2011-06-20 10:50:31 -0700 (Mon, 20 Jun 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
