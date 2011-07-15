@@ -126,10 +126,9 @@ SET(SVK_LIBS
     vtkIO
     vtkFiltering
     vtkCommon
-    vtkVolumeRendering
-    svkadapt 
     svk 
     svkadapt 
+    vtkHybrid
     dcmdata
     ofstd 
     ${PLATFORM_LIBS}    

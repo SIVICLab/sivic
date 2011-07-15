@@ -174,7 +174,17 @@ double *svkOpenGLOrientedImageActor::GetBounds()
 }
 
 
-// Implement base class method.
+/*!
+ * This Method has been copied from vtk for two reasons:
+ * 1. Because it makes a call the MakeDataSuitable which is not virtual
+ *    and we had to override it.
+ * 2. There semes to be a bug in the vtk implementation. When the
+ *    actor is moved from one render window to another its
+ *    RenderWindow member variable is not updated UNLESS 
+ *    the Texture size changes. To work around this we hare setting the
+ *    texture size to 0 whene the render window changes. This causes
+ *    the algorithm to regenerate the texture. 
+ */
 void svkOpenGLOrientedImageActor::Load(vtkRenderer *ren)
 {
   GLenum format = GL_LUMINANCE;
@@ -186,6 +196,19 @@ void svkOpenGLOrientedImageActor::Load(vtkRenderer *ren)
       static_cast<vtkOpenGLRenderWindow*>(ren->GetRenderWindow())->GetContextCreationTime() >
       this->LoadTime)
     {
+
+    /*********************** SVK MODIFICATION START **********************/
+    // THIS IS ADDED. The actor does not appropriately track its renderwindow.
+    // If we release the graphics resources and set the TextureSize to 0
+    // It will correctly regenerate the texture of the image.
+    if( ren->GetRenderWindow() != this->RenderWindow ) {
+       this->ReleaseGraphicsResources( this->RenderWindow );
+       this->TextureSize[0] = 0;
+       this->TextureSize[1] = 0;
+
+       }
+    /*********************** SVK MODIFICATION END **********************/
+
     int xsize, ysize;
     int release, reuseTexture;
     unsigned char *data = this->MakeDataSuitable(xsize,ysize,

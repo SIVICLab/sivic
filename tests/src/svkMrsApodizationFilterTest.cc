@@ -21,66 +21,83 @@
  *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
  *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
  *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
- *  OF SUCH DAMAGE. 
- */     
+ *  OF SUCH DAMAGE.
+ */
 
 
 /*
- *  $URL$ 
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/svkMrsZeroFill.cc $
+ *  $Rev: 970 $
+ *  $Author: jccrane $
+ *  $Date: 2011-06-20 10:50:31 -0700 (Mon, 20 Jun 2011) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
+ *
  */
 
 
-#include <svkImageReader2.h>
-#include <svkImageReaderFactory.h>
 #include <svkDataModel.h>
 #include <svkImageData.h>
+#include <svkMrsApodizationFilter.h>
+#include <svkApodizationWindow.h>
+#include <svkDdfVolumeWriter.h>
+
 
 using namespace svk;
 
-void DisplayUsage();
 
-int main ( int argc, char** argv )
+/*
+ *  Application for testing data combination algorithms. 
+ */
+int main (int argc, char** argv)
 {
+
+    string fname(argv[1]);
+    string fnameOut(argv[2]);
+
     svkDataModel* model = svkDataModel::New();
-    if( argc != 2 ) {
-        DisplayUsage();
-    }   
-    bool readOnlyOneFile = true; 
-    svkImageData* data = model->LoadFile(argv[1], readOnlyOneFile);
-    if( data == NULL ) {
-        cout << "Cannot read file: " << argv[1] << endl;
+    svkImageData* data = model->LoadFile( fname.c_str() );
+    data->Register(NULL); 
+
+    cout << "Here" << endl;
+    if( !data->IsA("svkMrsImageData") ) {
+        cerr << "INPUT MUST BE SPECTRA!" << endl;
         exit(1);
     }
-    data->Update();
-    cout << "File: " << argv[0] << endl <<  "VTK Object: " << endl << *data << endl;
-    cout << "SVK DICOM Header: " << endl;
-    data->GetDcmHeader()->PrintDcmHeader();
-    return 0;
-  
-}
+
+    //  Combine coils using straight addition 
+    svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+    vtkFloatArray* window = vtkFloatArray::New();
+    int numPoints       = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    float spectralWidth = data->GetDcmHeader()->GetFloatValue( "SpectralWidth" );
+    float dt = 1.0/spectralWidth;
+
+    window->SetNumberOfComponents ( 2 );
+    window->SetNumberOfTuples( numPoints );
+
+    float fwhh = 4.0;
+
+    svkApodizationWindow::GetLorentzianWindow( window, fwhh, dt );
+    af->SetInput( data );
+    af->SetWindow( window );
+    af->Update();
 
 
-void DisplayUsage( )
-{
-    cout << endl << "############  USAGE  ############ " << endl << endl;
-    cout << "NAME" << endl;
-    cout << "    svk_dcmdump" << endl << endl;
-    cout << "SYNOPSIS" << endl;
-    cout << "    svk_dcmdump fileName" << endl << endl;
-    cout << "DESCRIPTION" << endl;
-    cout << "    svk_dcmdump is used to give a quick way to view svk's interpreted DICOM header of a given image file." << endl << endl;
-    cout << "VERSION" << endl;
-    cout << "     " << SVK_RELEASE_VERSION << endl; 
-    cout << endl << "############  USAGE  ############ " << endl << endl;
-    /* ... */
-    exit( EXIT_FAILURE );
+    svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
+    writer->SetFileName( fnameOut.c_str() );    
+    writer->SetInput( af->GetOutput() );
+    writer->Write();
+    writer->Delete();
+
+    af->Delete();
+
+    model->Delete();
+    data->Delete();
+
+    return 0; 
 }
+

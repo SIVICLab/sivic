@@ -66,6 +66,7 @@ svkObliqueReslice::svkObliqueReslice()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     this->reslicer      = vtkImageReslice::New(); 
+    this->reslicer->SetInterpolationModeToCubic();
     this->reslicedImage = NULL;  
 }
 

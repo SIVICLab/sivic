@@ -235,6 +235,9 @@ ADD_LIBRARY(
     svkUtils.cc
     svkImageFourierCenter.cc
     svkIntegratePeak.cc
+    svkApodizationWindow.cc
+    svkMrsApodizationFilter.cc
+
 )
 
 

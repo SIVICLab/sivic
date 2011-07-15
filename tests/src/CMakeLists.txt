@@ -132,14 +132,13 @@ SET(SVK_LIBS
     vtkIO
     vtkFiltering
     vtkCommon
-    vtkVolumeRendering
     svkTest
-    svkadapt 
     svk 
     svkadapt 
     dcmdata
     ofstd 
     z
+    vtkHybrid
 )
 
 
@@ -327,6 +326,16 @@ TARGET_LINK_LIBRARIES(
     svkMrsZeroFill
 	${SVK_LIBS}
 )
+
+ADD_EXECUTABLE(
+     svkMrsApodizationFilterTest
+     svkMrsApodizationFilterTest.cc
+ )
+ 
+ TARGET_LINK_LIBRARIES(
+     svkMrsApodizationFilterTest
+       ${SVK_LIBS}
+ )
 
 include(CMakeSivicTests.cmake)
 

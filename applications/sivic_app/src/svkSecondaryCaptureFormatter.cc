@@ -719,6 +719,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     window->OffScreenRenderingOn();
 #endif 
     window->AddRenderer( this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
+    this->overlayController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->SetRenderWindow(window);
 
     int numFrames = lastFrame - firstFrame + 1;
     int numRows = 2;
@@ -742,7 +743,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     for (int m = firstFrame; m <= lastFrame; m++) {
         vtkRenderLargeImage* rendererToImage = vtkRenderLargeImage::New();
         double origin[3];
-        model->GetDataObject("SpectroscopicData")->GetSliceOrigin(lastFrame+firstFrame-m, origin, orientation );
+
         if( isColorBarOn && m == firstFrame + 1 ) {
             this->overlayController->GetView()->TurnPropOff( svkOverlayView::COLOR_BAR );
         }
@@ -768,7 +769,7 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
         if( (m - firstFrame) % numCols == 0 ) {
             colAppenders[(m-firstFrame)/numCols] = vtkImageAppend::New();
             colAppenders[(m-firstFrame)/numCols]->SetInput(0, data );
-            colAppenders[(m-firstFrame)/numCols]->Update();
+            colAppenders[(m-firstFrame)/numCols]->SetAppendAxis(0);
 
             // In case of an odd number of slices we need to pad each
             vtkImageConstantPad* padder = vtkImageConstantPad::New();
@@ -782,20 +783,10 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
             }
             padder->SetOutputWholeExtent(0,x*numCols-1,0,y-1,0,0);
             rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
-/*
-            if( numCols == 1 ) {
-                //rowAppender->SetInput( (int)(numRows - 1 - (int)ceil((m-firstFrame)/((double)numRows))), padder->GetOutput() );
-                rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
-            } else {
-                rowAppender->SetInput( numRows - 1 - ((m-firstFrame)/(numCols)), padder->GetOutput() );
-            }
-*/
         } else {
             colAppenders[(m-firstFrame)/numCols]->SetInput((m-firstFrame) % numCols, data );
-            colAppenders[(m-firstFrame)/numCols]->Update();
         }
         rendererToImage->Delete();
-
     }
     rowAppender->Update();
 
