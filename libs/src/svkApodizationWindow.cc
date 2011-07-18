@@ -59,7 +59,15 @@ svkApodizationWindow::~svkApodizationWindow()
 
 /*!
  *  Creates a lorentzian window using the equation:
- *  f(t) = e^(-fwhh * PI * dt) from t = 0 to t= the number of tuples in the input array
+ *  f(t) = e^(-fwhh * PI * dt) from t = 0 to t = N where N the number of tuples in the input array.
+ *
+ *  \param window Pre-allocated array that will be populated with the window. 
+ *                The number of tuples allocated determines the number of points in the window.
+ *
+ *  \param fwhh   Defines the shape of the Lorentzian, also know as the line broadening parameter. 
+ *                Value in Hz. 
+ *
+ *  \param dt     Temporal resolution of the window in seconds.
  *
  */
 void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fwhh, float dt )
@@ -67,6 +75,7 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fw
     if( window != NULL ) {
         int numPoints = window->GetNumberOfTuples();
         for( int i = 0; i < numPoints; i++ ) {
+            // NOTE: fabs is used here in case we want to alter the center of the window.
             float value = exp( -fwhh * vtkMath::Pi()* fabs( dt * i ) );
             window->SetTuple2( i, value, value ); 
         }
