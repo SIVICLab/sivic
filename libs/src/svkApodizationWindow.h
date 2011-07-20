@@ -48,6 +48,7 @@
 #include <vtkObject.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
+#include <svkImageData.h>
 
 namespace svk {
 
@@ -69,6 +70,7 @@ class svkApodizationWindow : public vtkObject
         static svkApodizationWindow* New();  
 
         static void GetLorentzianWindow( vtkFloatArray* window, float fwhh, float dt );
+        static void GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh );
 
 	protected:
 

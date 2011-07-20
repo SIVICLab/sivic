@@ -57,27 +57,70 @@ svkApodizationWindow::~svkApodizationWindow()
 {
 }
 
+
 /*!
  *  Creates a lorentzian window using the equation:
  *  f(t) = e^(-fwhh * PI * dt) from t = 0 to t = N where N the number of tuples in the input array.
  *
- *  \param window Pre-allocated array that will be populated with the window. 
- *                The number of tuples allocated determines the number of points in the window.
+ *  \param window    Pre-allocated array that will be populated with the window. 
+ *                   The number of tuples allocated determines the number of points in the window.
  *
- *  \param fwhh   Defines the shape of the Lorentzian, also know as the line broadening parameter. 
- *                Value in Hz. 
+ *  \param fwhh      Defines the shape of the Lorentzian, also know as the line broadening parameter. 
+ *                   Value in Hz. 
  *
- *  \param dt     Temporal resolution of the window in seconds.
+ *  \param dt        Temporal resolution of the window in seconds.
  *
  */
 void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fwhh, float dt )
 {
     if( window != NULL ) {
+
         int numPoints = window->GetNumberOfTuples();
+
         for( int i = 0; i < numPoints; i++ ) {
-            // NOTE: fabs is used here in case we want to alter the center of the window.
+            // NOTE: fabs is used here in case we want to alter the center of the window in the future.
             float value = exp( -fwhh * vtkMath::Pi()* fabs( dt * i ) );
             window->SetTuple2( i, value, value ); 
         }
+    }
+}
+
+
+
+/*!
+ *  Creates a lorentzian window using the equation:
+ *  f(t) = e^(-fwhh * PI * dt) from t = 0 to t = N where N the number of tuples in the input array.
+
+ *  \param window    Array that will be populated with the window. 
+ *                   The number of tuples allocated determines the number of points in the window.
+ *
+ *  \param data      The data set to generate the window for. Based on the type the number of points
+ *                   and dt are determined. 
+ *
+ *  \param fwhh      Defines the shape of the Lorentzian, also know as the line broadening parameter. 
+ *                   Value in Hz. 
+ *
+ *  \param dt        Temporal resolution of the window in seconds.
+ *
+ *  \param numPoints The number of points in the window.
+ *
+ */
+void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh )
+{
+    if( data->IsA("svkMrsImageData") && window != NULL ) {
+
+        // Lets determine the number of points in our array 
+        int numPoints       = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+
+        // Lets set the number of components and the number of tuples
+        window->SetNumberOfComponents ( 2 );
+        window->SetNumberOfTuples( numPoints );
+
+        // Lets determine the point resolution for the window
+        float spectralWidth = data->GetDcmHeader()->GetFloatValue( "SpectralWidth" );
+        float dt = 1.0/spectralWidth;
+        svkApodizationWindow::GetLorentzianWindow( window, fwhh, dt );
+    } else {
+         vtkErrorWithObjectMacro(data, "Could not generate Lorentzian window for give data type!");
     }
 }

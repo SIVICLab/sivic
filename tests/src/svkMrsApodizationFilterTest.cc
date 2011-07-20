@@ -72,16 +72,10 @@ int main (int argc, char** argv)
     //  Combine coils using straight addition 
     svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
     vtkFloatArray* window = vtkFloatArray::New();
-    int numPoints       = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    float spectralWidth = data->GetDcmHeader()->GetFloatValue( "SpectralWidth" );
-    float dt = 1.0/spectralWidth;
-
-    window->SetNumberOfComponents ( 2 );
-    window->SetNumberOfTuples( numPoints );
 
     float fwhh = 4.0;
 
-    svkApodizationWindow::GetLorentzianWindow( window, fwhh, dt );
+    svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
     af->SetInput( data );
     af->SetWindow( window );
     af->Update();
