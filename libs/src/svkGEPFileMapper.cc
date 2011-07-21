@@ -1892,6 +1892,23 @@ int svkGEPFileMapper::GetHeaderValueAsInt(vtkstd::string key)
 
 
 /*!
+ *  returns the value for the specified key as a long long int. 
+ *  An int may be 4 or 8 bytes, but long int should be 8 as needed.
+ */
+long long int svkGEPFileMapper::GetHeaderValueAsLongInt(vtkstd::string key)
+{
+
+    istringstream* iss = new istringstream();
+    long long int value;
+
+    iss->str( pfMap[key][3] );
+    *iss >> value;
+    delete iss; 
+    return value;
+}
+
+
+/*!
  *  returns the value for the specified key as a float. 
  */
 float svkGEPFileMapper::GetHeaderValueAsFloat(vtkstd::string key)
@@ -1956,7 +1973,7 @@ int svkGEPFileMapper::GetNumCoils()
 int svkGEPFileMapper::GetNumTimePoints()
 {
 
-    int passSize = this->GetHeaderValueAsInt( "rhr.rh_raw_pass_size" ); 
+    long long int passSize = this->GetHeaderValueAsLongInt( "rhr.rh_raw_pass_size" ); 
     int numCoils = this->GetNumCoils(); 
     int numVoxels = this->GetNumVoxelsInVol(); 
     int dataWordSize = this->GetHeaderValueAsInt( "rhr.rh_point_size" ); 
@@ -2025,7 +2042,7 @@ bool svkGEPFileMapper::AddDummy( int offset, int coilNum, int timePt )
 int svkGEPFileMapper::GetNumDummyScans()
 {
 
-    int passSize = this->GetHeaderValueAsInt( "rhr.rh_raw_pass_size" ); 
+    long long int passSize = this->GetHeaderValueAsLongInt( "rhr.rh_raw_pass_size" ); 
     int numCoils = this->GetNumCoils(); 
     int numTimePoints = this->GetNumTimePoints();
     int numSampledVoxels = this->GetNumKSpacePoints(); 

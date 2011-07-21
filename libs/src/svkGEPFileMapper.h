@@ -171,6 +171,7 @@ class svkGEPFileMapper : public vtkObject
                                 );
 
         int                     GetHeaderValueAsInt(vtkstd::string key);
+        long long int           GetHeaderValueAsLongInt(vtkstd::string key); 
         float                   GetHeaderValueAsFloat(vtkstd::string key);
         vtkstd::string          GetHeaderValueAsString(vtkstd::string key);
         virtual bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 

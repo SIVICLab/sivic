@@ -866,6 +866,15 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
             vtkByteSwap::SwapVoidRange((void *)&ulintVal, 1, sizeof(unsigned int));
         }
         ossValue << ulintVal;
+    } else if ( type.compare("LINT_8") == 0) {
+        //  a long int may be 4 or 8 bytes, but a long long should be 
+        //  8 bytes as required: 
+        long long int intVal; 
+        this->gepf->read( (char*)(&intVal), 8 * numElements );
+        if ( this->GetSwapBytes() ) {
+            vtkByteSwap::SwapVoidRange((void *)&intVal, 1, sizeof(long long int));
+        }
+        ossValue << intVal;
     } else if ( type.compare("CHAR") == 0) {
         //  null terminate char array: 
         char* charVal = new char[numElements + 1];  
@@ -2111,7 +2120,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhr.ycsi                           , INT_2  , 1   , 376,\
             rhr.zcsi                           , INT_2  , 1   , 378,\
             rhr.rh_logo                        , CHAR   , 10  , 34,\
-            rhr.rh_raw_pass_size               , LINT_4 , 1   , 1660,\
+            rhr.rh_raw_pass_size               , LINT_8 , 1   , 1660,\
             rhr.rh_user0                       , FLOAT_4, 1   , 216,\
             rhr.rh_user1                       , FLOAT_4, 1   , 220,\
             rhr.rh_user2                       , FLOAT_4, 1   , 224,\
