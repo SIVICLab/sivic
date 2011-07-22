@@ -55,8 +55,8 @@ file( MAKE_DIRECTORY [ ${TEST_RESULTS_ROOT} ] )
 #   Flags for diff to avoid errors from minor differences in 
 #   paths and rootnames in header files and provenance. 
 #############################################################
-SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root)
-SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" )
+SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --exclude=.svn)
+SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
 
 ########################
 #   
