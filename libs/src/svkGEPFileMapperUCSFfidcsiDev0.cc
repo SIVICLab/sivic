@@ -887,7 +887,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetKaiserBesselValues( vtkstd::vector<float
 
             //  Bessel argument: 
             float x =   1 - pow( ( 2. * (*u)[ uz[i] ] / width ), 2);    
-            x = beta * static_cast<float>( pow( static_cast<double>(x), 0.5 ) ); 
+            x = beta * pow( static_cast<double>(x), 0.5 );
             (*kbVals)[i] =  this->GetModifiedBessel0( x ) / width ; 
 
             //cout << "KB: " << (*kbVals)[i] << endl;
