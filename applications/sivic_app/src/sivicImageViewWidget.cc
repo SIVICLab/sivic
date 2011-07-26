@@ -49,21 +49,6 @@ sivicImageViewWidget::sivicImageViewWidget()
  */
 sivicImageViewWidget::~sivicImageViewWidget()
 {
-    if( this->axialSlider != NULL ) {
-        this->axialSlider->Delete();
-        this->axialSlider= NULL;
-    }
-
-    if( this->coronalSlider != NULL ) {
-        this->coronalSlider->Delete();
-        this->coronalSlider= NULL;
-    }
-
-    if( this->sagittalSlider != NULL ) {
-        this->sagittalSlider->Delete();
-        this->sagittalSlider= NULL;
-    }
-
     if( this->overlayOpacitySlider != NULL ) {
         this->overlayOpacitySlider->Delete();
         this->overlayOpacitySlider = NULL;
@@ -92,16 +77,6 @@ sivicImageViewWidget::~sivicImageViewWidget()
     if( this->satBandOutlineButton != NULL ) {
         this->satBandOutlineButton ->Delete();
         this->satBandOutlineButton = NULL;
-    }
-
-    if( this->overlayButton != NULL ) {
-        this->overlayButton ->Delete();
-        this->overlayButton = NULL;
-    }
-
-    if( this->colorBarButton != NULL ) {
-        this->colorBarButton ->Delete();
-        this->colorBarButton = NULL;
     }
 
     if( this->orthImagesButton != NULL ) {
@@ -213,13 +188,32 @@ void sivicImageViewWidget::CreateWidget()
     //  =======================================================
     //  Overlay Widgets
     //  =======================================================
+
     this->orthoViewFrame = vtkKWFrame::New();   
     this->orthoViewFrame->SetParent(this);
     this->orthoViewFrame->Create();
 
+    vtkKWLabel* imageToolsLabel = vtkKWLabel::New();
+    imageToolsLabel->SetParent(this->orthoViewFrame);
+    imageToolsLabel->Create();
+    imageToolsLabel->SetText( string("Reference Image Tools").c_str() );
+    imageToolsLabel->SetJustificationToLeft();
+    imageToolsLabel->SetAnchorToWest();
+    imageToolsLabel->SetBorderWidth(1);
+    imageToolsLabel->SetFont("system 10 {bold}");
+
     this->overlayViewFrame = vtkKWFrame::New();   
     this->overlayViewFrame->SetParent(this);
     this->overlayViewFrame->Create();
+
+    vtkKWLabel* overlayToolsLabel = vtkKWLabel::New();
+    overlayToolsLabel->SetParent(this->overlayViewFrame);
+    overlayToolsLabel->Create();
+    overlayToolsLabel->SetText( string("Overlay Tools").c_str() );
+    overlayToolsLabel->SetJustificationToLeft();
+    overlayToolsLabel->SetAnchorToWest();
+    overlayToolsLabel->SetBorderWidth(1);
+    overlayToolsLabel->SetFont("system 10 {bold}");
 
     vtkKWSeparator* orthoSeparator = vtkKWSeparator::New();   
     orthoSeparator->SetParent(this);
@@ -234,23 +228,24 @@ void sivicImageViewWidget::CreateWidget()
     this->interpolationBox = vtkKWMenuButtonWithLabel::New();   
     this->interpolationBox->SetParent(this);
     this->interpolationBox->Create();
-    this->interpolationBox->SetLabelText("Interpolation Method");
-    this->interpolationBox->SetLabelPositionToTop();
-    this->interpolationBox->SetPadY(5);
     this->interpolationBox->EnabledOff();
+    this->interpolationBox->SetLabelPositionToTop();
+    this->interpolationBox->GetWidget()->SetAnchorToNorth();
+    this->interpolationBox->GetLabel()->SetJustificationToRight();
+    this->interpolationBox->SetLabelText("Interpolation");
     vtkKWMenu* interpMenu = this->interpolationBox->GetWidget()->GetMenu();
     interpMenu->AddRadioButton("nearest neighbor", this->sivicController, "SetInterpolationCallback 0");
     interpMenu->AddRadioButton("linear", this->sivicController, "SetInterpolationCallback 1");
     interpMenu->AddRadioButton("sinc", this->sivicController, "SetInterpolationCallback 2");
     this->interpolationBox->GetWidget()->SetValue( "nearest neighbor" );
+    int labelWidth = 8;
 
     this->lutBox = vtkKWMenuButtonWithLabel::New();   
     this->lutBox->SetParent(this);
     this->lutBox->Create();
     this->lutBox->SetLabelText("Color Map");
-    this->lutBox->SetLabelPositionToTop();
-    this->lutBox->SetPadY(5);
     this->lutBox->EnabledOff();
+    this->lutBox->SetLabelPositionToTop();
     vtkKWMenu* lutMenu = this->lutBox->GetWidget()->GetMenu();
 
     stringstream invocation;
@@ -276,7 +271,8 @@ void sivicImageViewWidget::CreateWidget()
     this->thresholdType->Create();
     this->thresholdType->SetLabelText("Threshold Type");
     this->thresholdType->SetLabelPositionToTop();
-    this->thresholdType->SetPadY(5);
+    this->thresholdType->GetWidget()->SetAnchorToSouth();
+    this->thresholdType->EnabledOff();
     this->thresholdType->EnabledOff();
     vtkKWMenu* thresholdTypeMenu = this->thresholdType->GetWidget()->GetMenu();
 
@@ -290,20 +286,26 @@ void sivicImageViewWidget::CreateWidget()
 
     this->thresholdType->GetWidget()->SetValue( "Quantity" );
 
-    this->axialSlider = vtkKWScaleWithEntry::New();
+    vtkKWScaleWithEntrySet* sliceSliders = vtkKWScaleWithEntrySet::New();
+    sliceSliders->SetParent( this );
+    sliceSliders->Create();
+    sliceSliders->ExpandWidgetsOn();
+
+    this->axialSlider = sliceSliders->AddWidget(0);
     this->axialSlider->SetParent(this);
     this->axialSlider->Create();
     this->axialSlider->SetEntryWidth( 3 );
     this->axialSlider->SetOrientationToHorizontal();
-    this->axialSlider->SetLabelText("Axial Slice    ");
+    this->axialSlider->SetLabelText("Axial Slice");
     this->axialSlider->SetValue(1);
     this->axialSlider->SetRange( 1, 1);
-    this->axialSlider->SetBalloonHelpString("Adjusts image slice.");
+    this->axialSlider->SetBalloonHelpString("Adjusts axial image slice.");
     this->axialSlider->EnabledOff();
+    this->axialSlider->SetPadY(1);
     this->axialSlider->SetLabelPositionToLeft();
     this->axialSlider->SetEntryPositionToRight();
 
-    this->coronalSlider = vtkKWScaleWithEntry::New();
+    this->coronalSlider = sliceSliders->AddWidget(1);
     this->coronalSlider->SetParent(this);
     this->coronalSlider->Create();
     this->coronalSlider->SetEntryWidth( 3 );
@@ -311,12 +313,13 @@ void sivicImageViewWidget::CreateWidget()
     this->coronalSlider->SetLabelText("Coronal Slice");
     this->coronalSlider->SetValue(1);
     this->coronalSlider->SetRange( 1, 1);
-    this->coronalSlider->SetBalloonHelpString("Adjusts the ortho view x slice.");
+    this->coronalSlider->SetPadY(1);
+    this->coronalSlider->SetBalloonHelpString("Adjusts the coronal image slice.");
     this->coronalSlider->EnabledOff();
     this->coronalSlider->SetLabelPositionToLeft();
     this->coronalSlider->SetEntryPositionToRight();
 
-    this->sagittalSlider = vtkKWScaleWithEntry::New();
+    this->sagittalSlider = sliceSliders->AddWidget(2);
     this->sagittalSlider->SetParent(this);
     this->sagittalSlider->Create();
     this->sagittalSlider->SetEntryWidth( 3 );
@@ -324,60 +327,82 @@ void sivicImageViewWidget::CreateWidget()
     this->sagittalSlider->SetLabelText("Sagittal Slice");
     this->sagittalSlider->SetValue(1);
     this->sagittalSlider->SetRange( 1, 1);
-    this->sagittalSlider->SetBalloonHelpString("Adjusts the ortho view y slice.");
+    this->sagittalSlider->SetPadY(1);
+    this->sagittalSlider->SetBalloonHelpString("Adjusts the sagittal image slice.");
     this->sagittalSlider->EnabledOff();
     this->sagittalSlider->SetLabelPositionToLeft();
     this->sagittalSlider->SetEntryPositionToRight();
 
+    // Let's setup the slice sliders in the set to be the same geometry 
+    int entryWidth = 2;
+    labelWidth = 10;
+    vtkKWScaleWithEntry* slider = NULL;
+    for (int i = 0; i < sliceSliders->GetNumberOfWidgets(); i++) {
+        slider = sliceSliders->GetWidget(sliceSliders->GetIdOfNthWidget(i));
+        if (sliceSliders) {
+            slider->SetEntryWidth(entryWidth);
+            slider->SetLabelWidth(labelWidth);
+        }
+    }
+
+    int overlaySliderEntryWidth = 11;
     this->overlayOpacitySlider = vtkKWScaleWithEntry::New();
     this->overlayOpacitySlider->SetParent(this);
     this->overlayOpacitySlider->Create();
-    this->overlayOpacitySlider->SetEntryWidth( 3 );
+    this->overlayOpacitySlider->SetEntryWidth( overlaySliderEntryWidth );
     this->overlayOpacitySlider->SetOrientationToHorizontal();
-    this->overlayOpacitySlider->SetLabelText("Opacity   ");
+    this->overlayOpacitySlider->SetLabelText("Opacity");
+    this->overlayOpacitySlider->SetLabelWidth( labelWidth - 2 );
     this->overlayOpacitySlider->SetValue(35);
     this->overlayOpacitySlider->SetRange( 0, 100 );
     this->overlayOpacitySlider->SetBalloonHelpString("Adjusts the opacity of image overlay.");
     this->overlayOpacitySlider->EnabledOff();
-    this->overlayOpacitySlider->SetLabelPositionToLeft();
     this->overlayOpacitySlider->SetEntryPositionToRight();
 
     this->overlayThresholdSlider = vtkKWScaleWithEntry::New();
     this->overlayThresholdSlider->SetParent(this);
     this->overlayThresholdSlider->Create();
-    this->overlayThresholdSlider->SetEntryWidth( 10 );
+    this->overlayThresholdSlider->SetEntryWidth( overlaySliderEntryWidth );
     this->overlayThresholdSlider->SetOrientationToHorizontal();
     this->overlayThresholdSlider->SetLabelText("Threshold");
+    this->overlayThresholdSlider->SetLabelWidth( labelWidth - 2 );
     this->overlayThresholdSlider->SetValue(0);
     this->overlayThresholdSlider->SetRange( 0, 0 );
     this->overlayThresholdSlider->SetBalloonHelpString("Adjusts the threshold of image overlay.");
     this->overlayThresholdSlider->EnabledOff();
-    this->overlayThresholdSlider->SetLabelPositionToLeft();
     this->overlayThresholdSlider->SetEntryPositionToRight();
 
+    vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
+    checkButtons->SetParent( this );
+    checkButtons->PackHorizontallyOn();
+    checkButtons->ExpandWidgetsOn();
+    checkButtons->Create();
+
     // Here is a radio button to toggle the overlay on/off
-    this->overlayButton = vtkKWCheckButton::New();
+    this->overlayButton = checkButtons->AddWidget(0);
     this->overlayButton->SetParent(this);
     this->overlayButton->Create();
     this->overlayButton->EnabledOff();
     this->overlayButton->SetText("Overlay");
     this->overlayButton->SelectedStateOn();
 
-    // Here is a radio button to toggle the overlay on/off
-    this->colorBarButton = vtkKWCheckButton::New();
+    // Here is a radio button to toggle the color bar on/off
+    this->colorBarButton = checkButtons->AddWidget(1);
     this->colorBarButton->SetParent(this);
     this->colorBarButton->Create();
     this->colorBarButton->EnabledOff();
     this->colorBarButton->SetText("Color Bar");
     this->colorBarButton->SelectedStateOn();
 
-    // Here is a radio button to toggle the overlay on/off
+    // Here is a radio button to toggle the orthogonal images on/off
     this->orthImagesButton = vtkKWCheckButton::New();
     this->orthImagesButton->SetParent(this);
     this->orthImagesButton->Create();
     this->orthImagesButton->EnabledOff();
     this->orthImagesButton->SetText("Orthogonal\n Images");
     this->orthImagesButton->SelectedStateOn();
+    this->orthImagesButton->SelectedStateOn();
+    this->orthImagesButton->SetAnchorToSouth();
 
     // Here is a progress gauge
     this->progressGauge = vtkKWProgressGauge::New();
@@ -446,26 +471,25 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky ew", orthoSeparator->GetWidgetName(), row); 
     row++; 
-    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 5 ", this->overlayViewFrame->GetWidgetName(), row);
+    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 2 ", this->overlayViewFrame->GetWidgetName(), row);
 
-
-    this->Script("grid %s -in %s -row 0 -column 2 -sticky w", 
-                this->overlayButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 1 -column 2 -sticky w", 
-                this->colorBarButton->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 0 -column 0 -rowspan 2 -sticky w", 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 6", 
+                overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 2", 
                 this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 0 -column 1 -rowspan 2 -sticky w", 
+    this->Script("grid %s -in %s -row 1 -column 1 -sticky we -padx 2 -pady 2", 
                 this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 2 -column 0  -columnspan 2 -sticky ew ", 
-                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 2 -sticky ew ", 
-                this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 2 -column 2 -rowspan 2 -sticky e", 
+    this->Script("grid %s -in %s -row 1 -column 2 -sticky sw -pady 2" , 
                 this->thresholdType->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid columnconfigure %s 0 -weight 10 ", this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 90 ", this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 20 ", this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 3 -sticky ew -pady 2", 
+                this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 2", 
+                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 4", 
+                checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1 ", this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
 
     //==================================================================
     //  Overlay View Widgets Frame
@@ -473,25 +497,24 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
     row++; 
-    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky nsew -padx 10 -pady 5", this->orthoViewFrame->GetWidgetName(), row);
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky ew ", 
-                this->axialSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 0 -column 1 -rowspan 2 -sticky w", 
+    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 10 -pady 2", this->orthoViewFrame->GetWidgetName(), row);
+
+        this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 6", 
+                imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", 
+                sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+        this->Script("grid %s -in %s -row 1 -column 1 -sticky e", 
                 this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky ew ", 
-                this->coronalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 2 -column 0 -sticky ew ", 
-                this->sagittalSlider->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 0 -weight 90 ", this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid columnconfigure %s 1 -weight 10 ",  this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 1", this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 0", this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0 -weight 1", this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0 -weight 0", this->orthoViewFrame->GetWidgetName() );
 
-
-    this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0  -weight 0", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 1  -weight 0", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 4  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 5  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 3  -weight 0", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 4  -weight 0", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 100 -uniform 1 -minsize 200", this->GetWidgetName() );
 
@@ -562,6 +585,8 @@ void sivicImageViewWidget::CreateWidget()
 
 
     // We can delete our references to all widgets that we do not have callbacks for.
+    checkButtons->Delete();
+    sliceSliders->Delete();
     overlaySeparator->Delete();
     orthoSeparator->Delete();
     titleText->Delete();

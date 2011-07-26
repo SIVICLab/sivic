@@ -67,31 +67,6 @@ sivicSpectraViewWidget::sivicSpectraViewWidget()
 sivicSpectraViewWidget::~sivicSpectraViewWidget()
 {
 
-    if( this->sliceSlider != NULL ) {
-        this->sliceSlider->Delete();
-        this->sliceSlider = NULL;
-    }   
-
-    if( this->channelSlider != NULL ) {
-        this->channelSlider->Delete();
-        this->channelSlider = NULL;
-    }
-
-    if( this->timePointSlider != NULL ) {
-        this->timePointSlider->Delete();
-        this->timePointSlider = NULL;
-    }
-
-    if( this->overlayImageCheck != NULL ) {
-        this->overlayImageCheck->Delete();
-        this->overlayImageCheck = NULL;
-    }
-
-    if( this->overlayTextCheck != NULL ) {
-        this->overlayTextCheck->Delete();
-        this->overlayTextCheck = NULL;
-    }
-
     if( this->specViewFrame != NULL ) {
         this->specViewFrame->Delete();
         this->specViewFrame = NULL;
@@ -143,69 +118,79 @@ void sivicSpectraViewWidget::CreateWidget()
     this->specViewFrame->SetParent(this);
     this->specViewFrame->Create();
 
-    this->sliceSlider = vtkKWScaleWithEntry::New();
-    this->sliceSlider->SetParent(this);
-    this->sliceSlider->Create();
-    this->sliceSlider->SetEntryWidth( 2 );
-    this->sliceSlider->SetOrientationToHorizontal();
-    this->sliceSlider->SetLabelText("Spectra Slice");
-    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
-    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
-    this->sliceSlider->SetEntryPositionToRight();
-    this->sliceSlider->SetLabelPositionToLeft();
-    this->sliceSlider->SetRange( 1, 1 );
-    this->sliceSlider->ClampValueOff();
-    this->sliceSlider->EnabledOff();
+    vtkKWScaleWithEntrySet* sliders = vtkKWScaleWithEntrySet::New();
+    sliders->SetParent( this );
+    sliders->Create();
+    sliders->ExpandWidgetsOn();
 
     //channel slider 
-    this->channelSlider = vtkKWScaleWithEntry::New();
+    this->channelSlider = sliders->AddWidget(0);
     this->channelSlider->SetParent(this);
     this->channelSlider->Create();
-    this->channelSlider->SetEntryWidth( 2 );
-    this->channelSlider->SetLength( 200 );
-    this->channelSlider->SetOrientationToHorizontal();
-    this->channelSlider->SetLabelText("Channel       ");
+    this->channelSlider->SetLabelText("Channel");
     this->channelSlider->SetValue(1);
     this->channelSlider->SetBalloonHelpString("Changes the spectroscopic channel.");
     this->channelSlider->SetRange( 1, 1 );
     this->channelSlider->EnabledOff();
-    this->channelSlider->SetEntryPositionToRight();
-    this->channelSlider->SetLabelPositionToLeft();
     this->channelSlider->ClampValueOff();
 
     //channel slider 
-    this->timePointSlider = vtkKWScaleWithEntry::New();
+    this->timePointSlider = sliders->AddWidget(1);
     this->timePointSlider->SetParent(this);
     this->timePointSlider->Create();
-    this->timePointSlider->SetEntryWidth( 2 );
-    this->timePointSlider->SetLength( 200 );
-    this->timePointSlider->SetOrientationToHorizontal();
-    this->timePointSlider->SetLabelText("Time Point    ");
+    this->timePointSlider->SetLabelText("Time Point");
     this->timePointSlider->SetValue(1);
     this->timePointSlider->SetBalloonHelpString("Changes the spectroscopic timepoint.");
     this->timePointSlider->SetRange( 1, 1 );
     this->timePointSlider->EnabledOff();
-    this->timePointSlider->SetEntryPositionToRight();
-    this->timePointSlider->SetLabelPositionToLeft();
     this->timePointSlider->ClampValueOff();
+
+    // slice slider
+    this->sliceSlider = sliders->AddWidget(2);
+    this->sliceSlider->SetParent(this);
+    this->sliceSlider->Create();
+    this->sliceSlider->SetLabelText("Slice");
+    this->sliceSlider->SetValue(this->plotController->GetSlice()+1);
+    this->sliceSlider->SetBalloonHelpString("Changes the spectroscopic slice.");
+    this->sliceSlider->SetRange( 1, 1 );
+    this->sliceSlider->ClampValueOff();
+    this->sliceSlider->EnabledOff();
+
  
     //  ======================================================
+  
+    // Let's setup the sliders in the set to be the same geometry 
+    int entryWidth = 2;
+    int labelWidth = 8; 
+    vtkKWScaleWithEntry* slider = NULL; 
+    for (int i = 0; i < sliders->GetNumberOfWidgets(); i++) {
+        slider = sliders->GetWidget(sliders->GetIdOfNthWidget(i));
+        if (slider) {
+            slider->SetEntryWidth(entryWidth);
+            slider->SetLabelWidth(labelWidth);
+        }
+    }
 
-    this->overlayImageCheck = vtkKWCheckButton::New();
+    vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
+    checkButtons->SetParent( this );
+    checkButtons->Create();
+    checkButtons->ExpandWidgetsOn();
+
+    this->overlayImageCheck = checkButtons->AddWidget(0);
     this->overlayImageCheck->SetParent(this);
     this->overlayImageCheck->Create();
     this->overlayImageCheck->EnabledOff();
-    this->overlayImageCheck->SetPadX(2);
-    this->overlayImageCheck->SetText("Overlay Image");
+    this->overlayImageCheck->SetText("Overlay\n Image");
     this->overlayImageCheck->SelectedStateOn();
+    this->overlayImageCheck->SetAnchorToWest();
 
-    this->overlayTextCheck = vtkKWCheckButton::New();
+    this->overlayTextCheck = checkButtons->AddWidget(1);
     this->overlayTextCheck->SetParent(this);
     this->overlayTextCheck->Create();
     this->overlayTextCheck->EnabledOff();
-    this->overlayTextCheck->SetPadX(2);
-    this->overlayTextCheck->SetText("Overlay Text");
+    this->overlayTextCheck->SetText("Overlay\n Text");
     this->overlayTextCheck->SelectedStateOn();
+    this->overlayTextCheck->SetAnchorToWest();
 
     // Create separator 
     vtkKWSeparator* separator = vtkKWSeparator::New();   
@@ -253,32 +238,23 @@ void sivicSpectraViewWidget::CreateWidget()
     //==================================================================
     //  Spec View Widgets Frame
     //==================================================================
-    this->Script("grid %s -row %d -column 0 -rowspan 3 -columnspan 2 -sticky wnse -pady 2 ", this->specViewFrame->GetWidgetName(), row); 
+    this->Script("grid %s -row %d -column 0 -sticky wnse ", this->specViewFrame->GetWidgetName(), row); 
 
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 5 -pady 2 ", 
-                    this->timePointSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+        // Lets script everything into the frame
+        this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse", 
+                    sliders->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
-        this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -padx 2 -pady 2", 
-                    this->overlayImageCheck->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
-
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 5 -pady 2 ", 
-                    this->channelSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
-
-        this->Script("grid %s -in %s -row 1 -column 1 -sticky wnse -padx 2 -pady 2", 
-                    this->overlayTextCheck->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
-
-        this->Script("grid %s -in %s -row 2 -column 0 -sticky wnse -padx 5 -pady 2 ", 
-                    this->sliceSlider->GetWidgetName(), this->specViewFrame->GetWidgetName());
+        this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -padx 2 ", 
+                    checkButtons->GetWidgetName(), this->specViewFrame->GetWidgetName());
 
 
-    this->Script("grid columnconfigure %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 100 -minsize 110",  this->specViewFrame->GetWidgetName() );
-    this->Script("grid rowconfigure    %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
-    this->Script("grid rowconfigure    %s 1 -weight 1 ", this->specViewFrame->GetWidgetName() );
-    this->Script("grid rowconfigure    %s 2 -weight 1 ", this->specViewFrame->GetWidgetName() );
+        // Lets weight the sliders to take up the maximum space
+        this->Script("grid columnconfigure %s 0 -weight 9 ", this->specViewFrame->GetWidgetName() );
+        this->Script("grid columnconfigure %s 1 -weight 0",  this->specViewFrame->GetWidgetName() );
+        this->Script("grid rowconfigure    %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
 
-    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 10 ", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 0 -weight 1 -minsize 100 ", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 10 -maxsize 30 ", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 1 ", this->GetWidgetName() );
 
 
 
@@ -318,6 +294,7 @@ void sivicSpectraViewWidget::CreateWidget()
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
 
     // We can delete our references to all widgets that we do not have callbacks for.
+    sliders->Delete();
     separator->Delete();
     separatorVert->Delete();
     titleText->Delete();

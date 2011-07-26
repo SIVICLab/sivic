@@ -71,11 +71,15 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
         sivicPreprocessingWidget();
         ~sivicPreprocessingWidget();
 
-        vtkKWMenuButtonWithLabel*       zeroFillSelectorSpec;
-        vtkKWMenuButtonWithLabel*       zeroFillSelectorCols;
-        vtkKWMenuButtonWithLabel*       zeroFillSelectorRows;
-        vtkKWMenuButtonWithLabel*       zeroFillSelectorSlices;
-        vtkKWPushButton*                zeroFillButton;
+        vtkKWMenuButton*                zeroFillSelectorSpec;
+        vtkKWMenuButton*                zeroFillSelectorCols;
+        vtkKWMenuButton*                zeroFillSelectorRows;
+        vtkKWMenuButton*                zeroFillSelectorSlices;
+        vtkKWPushButton*                applyButton;
+        vtkKWMenuButton*                apodizationSelectorSpec;
+        vtkKWMenuButton*                apodizationSelectorCols;
+        vtkKWMenuButton*                apodizationSelectorRows;
+        vtkKWMenuButton*                apodizationSelectorSlices;
         vtkKWLabel*                     specLabel; 
         vtkKWLabel*                     colsLabel; 
         vtkKWLabel*                     rowsLabel; 

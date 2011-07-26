@@ -24,7 +24,12 @@ sivicPreprocessingWidget::sivicPreprocessingWidget()
     this->zeroFillSelectorCols = NULL;
     this->zeroFillSelectorRows = NULL;
     this->zeroFillSelectorSlices = NULL;
-    this->zeroFillButton = NULL;
+    this->applyButton = NULL;
+    this->apodizationSelectorSpec = NULL;
+    this->apodizationSelectorCols = NULL;
+    this->apodizationSelectorRows = NULL;
+    this->apodizationSelectorSlices = NULL;
+
     this->specLabel = NULL;
     this->colsLabel = NULL;
     this->rowsLabel = NULL;
@@ -63,9 +68,29 @@ sivicPreprocessingWidget::~sivicPreprocessingWidget()
         this->zeroFillSelectorSlices = NULL;
     }
 
-    if( this->zeroFillButton != NULL ) {
-        this->zeroFillButton->Delete();
-        this->zeroFillButton= NULL;
+    if( this->applyButton != NULL ) {
+        this->applyButton->Delete();
+        this->applyButton= NULL;
+    }
+
+    if( this->apodizationSelectorSpec != NULL ) {
+        this->apodizationSelectorSpec->Delete();
+        this->apodizationSelectorSpec = NULL;
+    }
+
+    if( this->apodizationSelectorCols != NULL ) {
+        this->apodizationSelectorCols->Delete();
+        this->apodizationSelectorCols = NULL;
+    }
+
+    if( this->apodizationSelectorRows != NULL ) {
+        this->apodizationSelectorRows->Delete();
+        this->apodizationSelectorRows = NULL;
+    }
+
+    if( this->apodizationSelectorSlices != NULL ) {
+        this->apodizationSelectorSlices->Delete();
+        this->apodizationSelectorSlices = NULL;
     }
 
     if( this->specLabel != NULL ) {
@@ -113,40 +138,39 @@ void sivicPreprocessingWidget::CreateWidget()
     //  =================================== 
     //  Zero Filling Selector
     //  =================================== 
-    this->zeroFillSelectorSpec = vtkKWMenuButtonWithLabel::New();
+
+    int labelWidth = 0;
+    this->zeroFillSelectorSpec = vtkKWMenuButton::New();
     this->zeroFillSelectorSpec->SetParent(this);
     this->zeroFillSelectorSpec->Create();
-    this->zeroFillSelectorSpec->SetLabelPositionToLeft();
-    this->zeroFillSelectorSpec->SetPadY(2);
-    this->zeroFillSelectorSpec->EnabledOff();
-    this->zeroFillSelectorSpec->EnabledOn();
-    this->zeroFillSelectorSpec->SetHeight(.8);
-    vtkKWMenu* zfSpecMenu = this->zeroFillSelectorSpec->GetWidget()->GetMenu();
+    //this->zeroFillSelectorSpec->SetLabelText("Zero Fill");
+    //this->zeroFillSelectorSpec->SetLabelWidth(6);
 
-    this->zeroFillSelectorCols = vtkKWMenuButtonWithLabel::New();
+    vtkKWMenu* zfSpecMenu = this->zeroFillSelectorSpec->GetMenu();
+
+    this->zeroFillSelectorCols = vtkKWMenuButton::New();
     this->zeroFillSelectorCols->SetParent(this);
     this->zeroFillSelectorCols->Create();
-    this->zeroFillSelectorSpec->SetLabelPositionToTop();
-    this->zeroFillSelectorCols->LabelVisibilityOff();
-    this->zeroFillSelectorCols->SetPadY(2);
-    this->zeroFillSelectorCols->EnabledOn();
-    vtkKWMenu* zfColsMenu = this->zeroFillSelectorCols->GetWidget()->GetMenu();
+    //this->zeroFillSelectorCols->SetLabelText("Zero Fill #Cols");
+    //this->zeroFillSelectorCols->SetLabelWidth(labelWidth);
 
-    this->zeroFillSelectorRows = vtkKWMenuButtonWithLabel::New();
+    vtkKWMenu* zfColsMenu = this->zeroFillSelectorCols->GetMenu();
+
+    this->zeroFillSelectorRows = vtkKWMenuButton::New();
     this->zeroFillSelectorRows->SetParent(this);
     this->zeroFillSelectorRows->Create();
-    this->zeroFillSelectorCols->LabelVisibilityOff();
-    this->zeroFillSelectorRows->SetPadY(2);
-    this->zeroFillSelectorRows->EnabledOn();
-    vtkKWMenu* zfRowsMenu = this->zeroFillSelectorRows->GetWidget()->GetMenu();
+    //this->zeroFillSelectorRows->SetLabelText("Zero Fill #Rows");
+    //this->zeroFillSelectorRows->SetLabelWidth(labelWidth);
 
-    this->zeroFillSelectorSlices = vtkKWMenuButtonWithLabel::New();
+    vtkKWMenu* zfRowsMenu = this->zeroFillSelectorRows->GetMenu();
+
+    this->zeroFillSelectorSlices = vtkKWMenuButton::New();
     this->zeroFillSelectorSlices->SetParent(this);
     this->zeroFillSelectorSlices->Create();
-    this->zeroFillSelectorCols->LabelVisibilityOff();
-    this->zeroFillSelectorSlices->SetPadY(2);
-    this->zeroFillSelectorSlices->EnabledOn();
-    vtkKWMenu* zfSlicesMenu = this->zeroFillSelectorSlices->GetWidget()->GetMenu();
+    //this->zeroFillSelectorSlices->SetLabelText("Zero Fill #Slices");
+    //this->zeroFillSelectorSlices->SetLabelWidth(labelWidth);
+
+    vtkKWMenu* zfSlicesMenu = this->zeroFillSelectorSlices->GetMenu();
 
     string zfOption1 = "none";
     string zfOption2 = "double";
@@ -182,79 +206,154 @@ void sivicPreprocessingWidget::CreateWidget()
     zfSlicesMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
 
     //  Set default values
-    this->zeroFillSelectorSpec->GetWidget()->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorCols->GetWidget()->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorRows->GetWidget()->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorSlices->GetWidget()->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorSpec->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorCols->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorRows->SetValue( zfOption1.c_str() );
+    this->zeroFillSelectorSlices->SetValue( zfOption1.c_str() );
 
-    this->zeroFillButton = vtkKWPushButton::New();
-    this->zeroFillButton->SetParent( this );
-    this->zeroFillButton->Create( );
-    this->zeroFillButton->EnabledOff();
-    this->zeroFillButton->SetText( "Zero Fill");
-    this->zeroFillButton->SetBalloonHelpString("Zero fill data.");
+    this->applyButton = vtkKWPushButton::New();
+    this->applyButton->SetParent( this );
+    this->applyButton->Create( );
+    //this->applyButton->EnabledOff();
+    this->applyButton->SetText( "Apply");
+    this->applyButton->SetBalloonHelpString("Apply Preprocessing.");
 
     //  =================================== 
-    //  Zero Fill Labels
+    //  Apodization Selectors
     //  =================================== 
-    vtkKWLabel* zfSpecLabel = vtkKWLabel::New(); 
-    zfSpecLabel->SetText( string("Zero Fill Spec").c_str() );
-    zfSpecLabel->SetParent(this);
-    zfSpecLabel->SetHeight(1);
-    zfSpecLabel->SetPadX(0);
-    zfSpecLabel->SetPadY(0);
-    zfSpecLabel->SetJustificationToLeft();
-    zfSpecLabel->Create();
 
-    vtkKWLabel* zfColLabel = vtkKWLabel::New(); 
-    zfColLabel->SetText( string("Zero Fill #Cols").c_str() );
-    zfColLabel->SetParent(this);
-    zfColLabel->SetHeight(1);
-    zfColLabel->SetPadX(0);
-    zfColLabel->SetPadY(0);
-    zfColLabel->SetJustificationToLeft();
-    zfColLabel->Create();
+    //this->apodizationSelectorSpec = vtkKWMenuButton::New();
+    this->apodizationSelectorSpec = vtkKWMenuButton::New();
+    this->apodizationSelectorSpec->SetParent(this);
+    this->apodizationSelectorSpec->Create();
+    //this->apodizationSelectorSpec->SetLabelText("Apodize");
+    //this->apodizationSelectorSpec->SetLabelWidth(6);
 
-    vtkKWLabel* zfRowLabel = vtkKWLabel::New(); 
-    zfRowLabel->SetText( string("Zero Fill #Rows").c_str() );
-    zfRowLabel->SetParent(this);
-    zfRowLabel->SetHeight(1);
-    zfRowLabel->SetPadX(0);
-    zfRowLabel->SetPadY(0);
-    zfRowLabel->SetJustificationToLeft();
-    zfRowLabel->Create();
+    vtkKWMenu* apSpecMenu = this->apodizationSelectorSpec->GetMenu();
 
-    vtkKWLabel* zfSliceLabel = vtkKWLabel::New(); 
-    zfSliceLabel->SetText( string("Zero Fill #Slices").c_str() );
-    zfSliceLabel->SetParent(this);
-    zfSliceLabel->SetHeight(1);
-    zfSliceLabel->SetPadX(0);
-    zfSliceLabel->SetPadY(0);
-    zfSliceLabel->SetJustificationToLeft();
-    zfSliceLabel->Create();
+    this->apodizationSelectorCols = vtkKWMenuButton::New();
+    this->apodizationSelectorCols->SetParent(this);
+    this->apodizationSelectorCols->Create();
+    //this->apodizationSelectorCols->SetLabelText("Apodize #Cols");
+    //this->apodizationSelectorCols->SetLabelWidth(labelWidth);
 
-    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfSpecLabel->GetWidgetName(),  0);
-    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfColLabel->GetWidgetName(),   1);
-    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfRowLabel->GetWidgetName(),   2);
-    this->Script("grid %s -row %d -column 1 -rowspan 1 -padx 2", zfSliceLabel->GetWidgetName(), 3);
+    vtkKWMenu* apColsMenu = this->apodizationSelectorCols->GetMenu();
 
-    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorSpec->GetWidgetName(),   0);
-    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorCols->GetWidgetName(),   1);
-    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorRows->GetWidgetName(),   2);
-    this->Script("grid %s -row %d -column 2 -rowspan 1 -padx 2", this->zeroFillSelectorSlices->GetWidgetName(), 3);
+    this->apodizationSelectorRows = vtkKWMenuButton::New();
+    this->apodizationSelectorRows->SetParent(this);
+    this->apodizationSelectorRows->Create();
+    //this->apodizationSelectorRows->SetLabelText("Apodize #Rows");
+    //this->apodizationSelectorRows->SetLabelWidth(labelWidth);
 
-    this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
+    vtkKWMenu* apRowsMenu = this->apodizationSelectorRows->GetMenu();
 
-    this->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 50", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 50 -uniform 1 -minsize 50", this->GetWidgetName() );
+    this->apodizationSelectorSlices = vtkKWMenuButton::New();
+    this->apodizationSelectorSlices->SetParent(this);
+    this->apodizationSelectorSlices->Create();
+    //this->apodizationSelectorSlices->SetLabelText("Apodize #Slices");
+    //this->apodizationSelectorSlices->SetLabelWidth(labelWidth);
+
+    vtkKWMenu* apSlicesMenu = this->apodizationSelectorSlices->GetMenu();
+
+    string apOption1 = "none";
+    string apOption2 = "Lorentz";
+
+    invocationString = "Apodize SPECTRAL none"; 
+    apSpecMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "Apodize SPECTRAL lorentzian"; 
+    apSpecMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "Apodize SPATIAL_COLS none"; 
+    apColsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "Apodize SPATIAL_COLS lorentzian"; 
+    apColsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "Apodize SPATIAL_ROWS none"; 
+    apRowsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "Apodize SPATIAL_ROWS lorentzian"; 
+    apRowsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+
+    invocationString = "Apodize SPATIAL_SLICES none"; 
+    apSlicesMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "Apodize SPATIAL_SLICES lorentzian"; 
+    apSlicesMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+
+    //  Set default values
+    this->apodizationSelectorSpec->SetValue( apOption1.c_str() );
+    this->apodizationSelectorCols->SetValue( apOption1.c_str() );
+    this->apodizationSelectorRows->SetValue( apOption1.c_str() );
+    this->apodizationSelectorSlices->SetValue( apOption1.c_str() );
+
+    // Titles
+
+    vtkKWLabel* zeroFillTitle = vtkKWLabel::New(); 
+    zeroFillTitle->SetText( string("Zero Fill").c_str() );
+    zeroFillTitle->SetParent(this);
+    zeroFillTitle->SetJustificationToLeft();
+    zeroFillTitle->Create();
+
+    vtkKWLabel* apodizationTitle = vtkKWLabel::New(); 
+    apodizationTitle->SetText( string("Apodize").c_str() );
+    apodizationTitle->SetParent(this);
+    apodizationTitle->SetJustificationToLeft();
+    apodizationTitle->Create();
+
+    vtkKWLabel* specTitle = vtkKWLabel::New(); 
+    specTitle->SetText( string("Spec").c_str() );
+    specTitle->SetParent(this);
+    specTitle->SetJustificationToLeft();
+    specTitle->Create();
+
+    vtkKWLabel* colsTitle = vtkKWLabel::New(); 
+    colsTitle->SetText( string("Cols").c_str() );
+    colsTitle->SetParent(this);
+    colsTitle->SetJustificationToLeft();
+    colsTitle->Create();
+
+    vtkKWLabel* rowsTitle = vtkKWLabel::New(); 
+    rowsTitle->SetText( string("Rows").c_str() );
+    rowsTitle->SetParent(this);
+    rowsTitle->SetJustificationToLeft();
+    rowsTitle->Create();
+
+    vtkKWLabel* sliceTitle = vtkKWLabel::New(); 
+    sliceTitle->SetText( string("Slice").c_str() );
+    sliceTitle->SetParent(this);
+    sliceTitle->SetJustificationToLeft();
+    sliceTitle->Create();
+
+    this->Script("grid %s -row 0 -column 1 -sticky wnse", specTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 2 -sticky wnse", colsTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 3 -sticky wnse", rowsTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 4 -sticky wnse", sliceTitle->GetWidgetName(), 4);
+
+    this->Script("grid %s -row 1 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorSpec->GetWidgetName(),   1);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorCols->GetWidgetName(),   2);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorRows->GetWidgetName(),   3);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorSlices->GetWidgetName(), 4);
+
+    this->Script("grid %s -row 2 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorSpec->GetWidgetName(),   1);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorCols->GetWidgetName(),   2);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorRows->GetWidgetName(),   3);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorSlices->GetWidgetName(), 4);
 
 
+    this->Script("grid %s -row %d -column 4 -sticky nwse -padx 2 -pady 2", this->applyButton->GetWidgetName(), 3);
 
-    this->AddCallbackCommandObserver(
-        this->zeroFillButton, vtkKWPushButton::InvokedEvent );
+    this->Script("grid rowconfigure %s 0 -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 1 -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 2 -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 3 -weight 1", this->GetWidgetName() );
+
+    this->Script("grid columnconfigure %s 0 -weight 0 ", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 3 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 4 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
+
+    this->AddCallbackCommandObserver( this->applyButton, vtkKWPushButton::InvokedEvent );
 
 }
 
@@ -265,7 +364,7 @@ void sivicPreprocessingWidget::CreateWidget()
 void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
-    if( caller == this->zeroFillButton && event == vtkKWPushButton::InvokedEvent ) {
+    if( caller == this->applyButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecuteZeroFill();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
@@ -277,7 +376,7 @@ void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
  */
 void sivicPreprocessingWidget::ExecuteZeroFill() 
 {
-
+    cout << "Executing Zero fill..." << endl;
     return; 
 
 /*

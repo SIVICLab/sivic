@@ -40,6 +40,7 @@
 #include <vtkKWTkUtilities.h>
 #include <vtkKWScaleWithEntry.h>
 #include <vtkKWCheckButton.h>
+#include <vtkKWCheckButtonSet.h>
 #include <vtkKWPushButton.h>
 
 #include <svkDataModel.h>

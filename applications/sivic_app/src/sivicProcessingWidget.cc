@@ -51,16 +51,6 @@ sivicProcessingWidget::~sivicProcessingWidget()
         this->phaser = NULL;
     }
 
-    if( this->phaseAllVoxelsButton != NULL ) {
-        this->phaseAllVoxelsButton->Delete();
-        this->phaseAllVoxelsButton= NULL;
-    }
-
-    if( this->phaseAllChannelsButton != NULL ) {
-        this->phaseAllChannelsButton->Delete();
-        this->phaseAllChannelsButton= NULL;
-    }
-
     if( this->fftButton != NULL ) {
         this->fftButton->Delete();
         this->fftButton= NULL;
@@ -102,7 +92,6 @@ void sivicProcessingWidget::CreateWidget()
     this->phaseSlider->SetParent(this);
     this->phaseSlider->Create();
     this->phaseSlider->SetEntryWidth( 4 );
-    this->phaseSlider->SetLength( 200 );
     this->phaseSlider->SetOrientationToHorizontal();
     this->phaseSlider->SetLabelText("Phase");
     this->phaseSlider->SetValue(0);
@@ -114,21 +103,27 @@ void sivicProcessingWidget::CreateWidget()
 
     this->phaser = svkPhaseSpec::New();
     this->phaser->SetChannel(0);
-    this->phaseAllVoxelsButton = vtkKWCheckButton::New();
+
+    vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
+    checkButtons->SetParent( this );
+    checkButtons->PackHorizontallyOn( );
+    checkButtons->ExpandWidgetsOn( );
+    checkButtons->Create();
+
+    this->phaseAllVoxelsButton = checkButtons->AddWidget(0);
     this->phaseAllVoxelsButton->SetParent(this);
     this->phaseAllVoxelsButton->Create();
     this->phaseAllVoxelsButton->EnabledOff();
-    this->phaseAllVoxelsButton->SetPadX(2);
     this->phaseAllVoxelsButton->SetText("Apply to All Voxels");
     this->phaseAllVoxelsButton->SelectedStateOn();
 
-    this->phaseAllChannelsButton = vtkKWCheckButton::New();
+    this->phaseAllChannelsButton = checkButtons->AddWidget(1);
     this->phaseAllChannelsButton->SetParent(this);
     this->phaseAllChannelsButton->Create();
     this->phaseAllChannelsButton->EnabledOff();
-    this->phaseAllChannelsButton->SetPadX(2);
     this->phaseAllChannelsButton->SetText("Apply to All Channels");
     this->phaseAllChannelsButton->SelectedStateOff();
+
     
     this->fftButton = vtkKWPushButton::New();
     this->fftButton->SetParent( this );
@@ -148,23 +143,22 @@ void sivicProcessingWidget::CreateWidget()
     this->combineButton->SetParent( this );
     this->combineButton->Create( );
     this->combineButton->EnabledOff();
-    //this->combineButton->EnabledOn();
     this->combineButton->SetText( "Combine");
     this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
 
-    this->Script("grid %s -row 0 -column 0 -columnspan 2 -sticky nsew", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -sticky nsew", this->phaseAllVoxelsButton->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 1 -sticky nsew", this->phaseAllChannelsButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nsew", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -columnspan 2 -sticky nsew", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 4 -column 0 -columnspan 2 -sticky nsew", this->combineButton->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -pady 3 -columnspan 3 -sticky nwes -pady 5", this->phaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 0 -pady 3 -columnspan 3 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 0 -pady 3 -sticky we -padx 4 -pady 5", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 1 -pady 3 -sticky we -padx 4 -pady 5", this->phaseButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 2 -pady 3 -sticky we -padx 4 -pady 5", this->combineButton->GetWidgetName() );
 
-    this->Script("grid rowconfigure %s 0  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3  -weight 16", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 4  -weight 16", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 0 -weight 200 -uniform 1 -minsize 100", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 0  -weight 0", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 2  -weight 2", this->GetWidgetName() );
+
+    this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 1", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -187,6 +181,7 @@ void sivicProcessingWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->combineButton, vtkKWPushButton::InvokedEvent );
 
+    checkButtons->Delete();
 
 }
 

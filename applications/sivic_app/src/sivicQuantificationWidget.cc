@@ -100,6 +100,7 @@ void sivicQuantificationWidget::CreateWidget()
     this->mapViewSelector->SetLabelText("Met Map View");
     this->mapViewSelector->SetLabelPositionToTop();
     this->mapViewSelector->SetPadY(5);
+    this->mapViewSelector->GetWidget()->SetWidth(7);
     this->mapViewSelector->EnabledOff();
     vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
 
@@ -180,7 +181,7 @@ void sivicQuantificationWidget::CreateWidget()
     this->quantButton->SetParent( this );
     this->quantButton->Create( );
     this->quantButton->EnabledOff();
-    this->quantButton->SetText( "Generate Met. Maps");
+    this->quantButton->SetText( "Generate\n Metabolite\n Maps");
     this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
 
 
@@ -188,20 +189,20 @@ void sivicQuantificationWidget::CreateWidget()
     for ( int i = 0; i < this->numMets; i++ ) {
         this->Script("grid %s -row %d -column 0 -sticky w", 
                         this->metLabelVector[i]->GetWidgetName(), i);
-        this->Script("grid %s -row %d -column 1 -sticky wnse -padx 2", 
+        this->Script("grid %s -row %d -column 1 -sticky we -padx 2", 
                         this->metRangeVector[i]->GetWidgetName(), i);
     };
     this->Script("grid %s -row %d -column 2 -rowspan 2 -padx 2", this->mapViewSelector->GetWidgetName(), 0);
-    this->Script("grid %s -row %d -column 2 -padx 2", this->quantButton->GetWidgetName(), 2);
+    this->Script("grid %s -row %d -column 2 -rowspan 2 -sticky ew -padx 2", this->quantButton->GetWidgetName(), 2);
 
 
     for ( int i = 0; i < this->numMets; i++ ) {
         this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
     }
 
-    this->Script("grid columnconfigure %s 0 -weight 20 -uniform 1 -minsize 20", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 65 -uniform 1 -minsize 65", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 45 -uniform 1 -minsize 45", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 0", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1 -minsize 238", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 0", this->GetWidgetName() );
 
     //  Callbacks
     this->AddCallbackCommandObserver(

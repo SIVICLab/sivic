@@ -49,6 +49,8 @@
 #include <vtkKWPushButton.h>
 #include <vtkKWRadioButtonSet.h>
 #include <vtkKWUserInterfacePanel.h>
+#include <vtkKWTextWithScrollbars.h>
+#include <vtkKWText.h>
 #include <vtkKWIcon.h>
 #include <vtkKWNotebook.h>
 #include <vtkPNGReader.h>
@@ -68,7 +70,7 @@
 #include <vtksys/CommandLineArguments.hxx>
 
 #define WINDOW_SIZE_X 1000
-#define WINDOW_SIZE_Y 700
+#define WINDOW_SIZE_Y 760
 
 extern "C" int Sivickwcallbackslib_Init(Tcl_Interp *interp);
 
@@ -116,6 +118,7 @@ class sivicApp
 
         // Methods
         void PopulateMainToolbar( vtkKWToolbar* toolbar );
+        void GetWelcomeMessage( vtkKWText* text );
         
 };
 

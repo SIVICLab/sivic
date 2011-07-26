@@ -655,7 +655,7 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         }
         this->spectraRangeWidget->xSpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
         this->spectraRangeWidget->ySpecRange->InvokeEvent(vtkKWRange::RangeValueChangingEvent );
-        string component = (this->spectraRangeWidget->componentSelectBox->GetWidget()->GetValue( ));
+        string component = (this->spectraRangeWidget->componentSelectBox->GetValue( ));
         if( component == "read" ) {
             this->SetComponentCallback( 0 );
         } else if ( component == "imag" ) {

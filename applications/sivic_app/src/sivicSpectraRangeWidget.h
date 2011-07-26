@@ -54,6 +54,7 @@
 #include <vtkKWEntryWithLabel.h>
 #include <vtkKWEntrySet.h>
 #include <vtkKWWindow.h>
+#include <vtkKWFrameWithLabel.h>
 #include <vtkKWRange.h>
 #include <vtkKWLabel.h>
 #include <vtkKWRadioButton.h>
@@ -120,8 +121,8 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         vtkKWRenderWidget*              detailedPlotWidget;
         vtkKWRange*                     xSpecRange;
         vtkKWRange*                     ySpecRange;
-        vtkKWMenuButtonWithLabel*       unitSelectBox;
-        vtkKWMenuButtonWithLabel*       componentSelectBox;
+        vtkKWMenuButton*                unitSelectBox;
+        vtkKWMenuButton*                componentSelectBox;
         vtkKWFrame*                     specViewFrame;
         vtkKWFrame*                     specRangeFrame;
         vtkKWPushButton*                detailedPlotButton;

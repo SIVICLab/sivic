@@ -63,7 +63,6 @@ int main (int argc, char** argv)
     svkImageData* data = model->LoadFile( fname.c_str() );
     data->Register(NULL); 
 
-    cout << "Here" << endl;
     if( !data->IsA("svkMrsImageData") ) {
         cerr << "INPUT MUST BE SPECTRA!" << endl;
         exit(1);

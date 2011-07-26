@@ -242,6 +242,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->viewRenderingWidget->SetApplication( this->sivicKWApp );
     this->viewRenderingWidget->Create();
 
+    vtkKWText* welcomeText = vtkKWText::New();
+    welcomeText->SetParent( tabbedPanel );
+    welcomeText->Create();
+    this->GetWelcomeMessage( welcomeText );
+    welcomeText->ReadOnlyOn(); 
+
     this->preprocessingWidget->SetParent(tabbedPanel );
     this->preprocessingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->preprocessingWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -277,7 +283,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->spectraViewWidget->SetSivicController(this->sivicController);
     this->spectraViewWidget->Create();
 
-    this->spectraRangeWidget->SetParent(tabbedPanel);
+    this->spectraRangeWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->spectraRangeWidget->SetPlotController(this->sivicController->GetPlotController());
     this->spectraRangeWidget->SetOverlayController(this->sivicController->GetOverlayController());
     this->spectraRangeWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
@@ -320,8 +326,8 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetGlobalWidget( globalWidget );
 
-    this->tabbedPanel->AddPage("Inspecting", "Interact with the view of the loaded data.", NULL);
-    vtkKWWidget* interactorPanel = tabbedPanel->GetFrame("Inspecting");
+    this->tabbedPanel->AddPage("Welcome", "Welcome!", NULL);
+    vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Welcome");
 
     this->tabbedPanel->AddPage("Preprocess", "Preprocessing.", NULL);
     vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preprocess");
@@ -355,26 +361,29 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->Script("grid %s -row 0 -column 0 -columnspan 5 -sticky nsew", viewRenderingWidget->GetWidgetName());
     this->sivicKWApp->Script("grid %s -row 1 -column 0 -columnspan 5 -sticky nsew", separator->GetWidgetName());
     this->sivicKWApp->Script("grid %s -row 2 -column 0 -rowspan 3 -sticky wnse", imageViewWidget->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 1 -sticky nsew -rowspan 2", separatorVert->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 2 -sticky ensw -padx 2 -pady 2", tabbedPanel->GetWidgetName());
-    //this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky nsew", separator2->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky nsew -padx 2 -pady 2", spectraViewWidget->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew -rowspan 2", separatorVert2->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 4 -sticky nsew -rowspan 2 -padx 2 -pady 2", globalWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 1 -sticky nsew -rowspan 3", separatorVert->GetWidgetName());
 
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
-              this->spectraRangeWidget->GetWidgetName(), interactorPanel->GetWidgetName());
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
+    this->sivicKWApp->Script("grid %s -row 2 -column 2 -sticky ensw -padx 2", tabbedPanel->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 3 -column 2 -sticky nsew -padx 2 -pady 2", spectraRangeWidget->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 4 -column 2 -sticky nsew -padx 2", spectraViewWidget->GetWidgetName());
+
+    this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew -rowspan 3", separatorVert2->GetWidgetName());
+    this->sivicKWApp->Script("grid %s -row 2 -column 4 -sticky nsew -rowspan 3 -padx 2", globalWidget->GetWidgetName());
+
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 2 -pady 2 -in %s", 
+              welcomeText->GetWidgetName(), welcomePanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 4 -in %s", 
               this->preprocessingWidget->GetWidgetName(), preprocessingPanel->GetWidgetName());
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 10 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -padx 2 -pady 2 -in %s", 
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
 
     this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 100 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 -minsize 5 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0 -minsize 175 -maxsize 175", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 0 -minsize 80", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0 -minsize 150 -maxsize 150", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 0 -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 4 -weight 0 -minsize 20 -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 50 -uniform 1 -minsize 300", this->sivicWindow->GetViewFrame()->GetWidgetName() );
@@ -383,6 +392,7 @@ int sivicApp::Build( int argc, char* argv[] )
     separator->Delete();
     separatorVert->Delete();
     separatorVert2->Delete();
+    welcomeText->Delete();
 
 
     // Create Toolbar
@@ -452,6 +462,19 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->SetRegistryValue( 0, "RunTime", "lastPath", pathName.c_str() );
 
 
+}
+
+//! Populates the welcome message. 
+void sivicApp::GetWelcomeMessage(vtkKWText* text)
+{
+    ostringstream* oss = new ostringstream();
+    *oss << "**Welcome to ";
+    *oss << this->sivicKWApp->GetName() << " " << this->sivicKWApp->GetVersionName() << "!**" << endl; 
+    *oss << endl << "Home Page:" << endl << "  http://sivic.sourceforge.net" << endl;; 
+    *oss << endl << "User's Guide:" << endl << "  http://sourceforge.net/apps/trac/sivic/wiki/users_guide" << endl;; 
+    text->QuickFormattingOn(); 
+    text->SetText( oss->str().c_str()); 
+    delete oss;
 }
 
 

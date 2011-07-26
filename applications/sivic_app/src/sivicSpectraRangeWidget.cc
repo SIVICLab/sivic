@@ -163,13 +163,13 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
     //  Adjust the slider resolution for the target units:
     if ( targetUnits == svkSpecPoint::PPM ) {
         this->xSpecRange->SetResolution( .001 );
-        this->unitSelectBox->GetWidget()->SetValue( "PPM" );
+        this->unitSelectBox->SetValue( "PPM" );
     } else if ( targetUnits == svkSpecPoint::Hz ) {
         this->xSpecRange->SetResolution( .1 );
-        this->unitSelectBox->GetWidget()->SetValue( "Hz" );
+        this->unitSelectBox->SetValue( "Hz" );
     } else if ( targetUnits == svkSpecPoint::PTS ) {
         this->xSpecRange->SetResolution( 1 );
-        this->unitSelectBox->GetWidget()->SetValue( "PTS" );
+        this->unitSelectBox->SetValue( "PTS" );
         // We add one to all parameters to so that the user sees a range of 1 to numPoints
         // This will be deducted before being set into the views 
         lowestPoint = (float)(nearestInt(lowestPoint))+1; 
@@ -365,6 +365,8 @@ void sivicSpectraRangeWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
+    this->point = svkSpecPoint::New();
+
     //  =======================================================
     //  Spec View Widgets
     //  =======================================================
@@ -378,6 +380,8 @@ void sivicSpectraRangeWidget::CreateWidget()
 
     //  ======================================================
 
+    int rangeEntryWidth = 10;
+    int rangeLabelWidth = 8;
     // Create the x range widget 
     this->xSpecRange = vtkKWRange::New(); 
     this->xSpecRange->SetParent(this);
@@ -391,45 +395,8 @@ void sivicSpectraRangeWidget::CreateWidget()
     this->xSpecRange->SetEntry1PositionToTop();
     this->xSpecRange->SetEntry2PositionToTop();
     this->xSpecRange->SetLabelPositionToTop();
-    this->point = svkSpecPoint::New();
-    //  Set default resolution for PPM:
+    this->xSpecRange->SetLabelWidth( rangeLabelWidth );
     this->xSpecRange->SetResolution( .001 );
-
-    //  X Spec Unit Selector
-    this->unitSelectBox = vtkKWMenuButtonWithLabel::New();   
-    this->unitSelectBox->SetParent(this);
-    this->unitSelectBox->Create();
-    this->unitSelectBox->SetLabelText("Units");
-    this->unitSelectBox->SetLabelPositionToLeft();
-    this->unitSelectBox->SetPadY(10);
-    this->unitSelectBox->SetPadX(8);
-    this->unitSelectBox->SetHeight(2);
-    this->unitSelectBox->GetWidget()->SetWidth(4);
-    this->unitSelectBox->EnabledOff();
-    vtkKWMenu* unitMenu = this->unitSelectBox->GetWidget()->GetMenu();
-    unitMenu->AddRadioButton("PPM", this->sivicController, "SetSpecUnitsCallback 0");
-    unitMenu->AddRadioButton("Hz", this->sivicController, "SetSpecUnitsCallback 1");
-    unitMenu->AddRadioButton("PTS", this->sivicController, "SetSpecUnitsCallback 2");
-    unitSelectBox->GetWidget()->SetValue( "PPM" );
-    this->specUnits = svkSpecPoint::PPM; 
-
-    //  Component Selector (RE, IM, MAG) 
-    this->componentSelectBox = vtkKWMenuButtonWithLabel::New();   
-    this->componentSelectBox->SetParent(this);
-    this->componentSelectBox->Create();
-    this->componentSelectBox->SetLabelText("Comp.");
-    this->componentSelectBox->SetLabelPositionToLeft();
-    this->componentSelectBox->SetPadY(10);
-    this->componentSelectBox->SetPadX(8);
-    this->componentSelectBox->SetHeight(2);
-    this->componentSelectBox->GetWidget()->SetWidth(4);
-    this->componentSelectBox->EnabledOff();
-    vtkKWMenu* componentMenu = this->componentSelectBox->GetWidget()->GetMenu();
-    componentMenu->AddRadioButton("real", this->sivicController, "SetComponentCallback 0");
-    componentMenu->AddRadioButton("imag", this->sivicController, "SetComponentCallback 1");
-    componentMenu->AddRadioButton("mag", this->sivicController, "SetComponentCallback 2");
-    componentSelectBox->GetWidget()->SetValue( "real" );
-
 
     // Create the y range widget 
     this->ySpecRange = vtkKWRange::New(); 
@@ -449,6 +416,40 @@ void sivicSpectraRangeWidget::CreateWidget()
     this->ySpecRange->SetWholeRange(0, 1);
     this->ySpecRange->SetRange(0, 1);
     this->ySpecRange->ClampRangeOff();
+    //  Set default resolution for PPM:
+    this->ySpecRange->SetLabelWidth( rangeLabelWidth );
+
+    int menuLabelWidth = 0;
+    int menuWidth = 3;
+    int menuHeight = 2;
+    int menuPadY = 3;
+
+    //  X Spec Unit Selector
+    this->unitSelectBox = vtkKWMenuButton::New();   
+    this->unitSelectBox->SetParent(this);
+    this->unitSelectBox->Create();
+    this->unitSelectBox->EnabledOff();
+
+    vtkKWMenu* unitMenu = this->unitSelectBox->GetMenu();
+    unitMenu->AddRadioButton("PPM", this->sivicController, "SetSpecUnitsCallback 0");
+    unitMenu->AddRadioButton("Hz", this->sivicController, "SetSpecUnitsCallback 1");
+    unitMenu->AddRadioButton("PTS", this->sivicController, "SetSpecUnitsCallback 2");
+    unitSelectBox->SetValue( "PPM" );
+    this->specUnits = svkSpecPoint::PPM; 
+
+    //  Component Selector (RE, IM, MAG) 
+    this->componentSelectBox = vtkKWMenuButton::New();   
+    this->componentSelectBox->SetParent(this);
+    this->componentSelectBox->Create();
+    this->componentSelectBox->EnabledOff();
+
+    vtkKWMenu* componentMenu = this->componentSelectBox->GetMenu();
+    componentMenu->AddRadioButton("real", this->sivicController, "SetComponentCallback 0");
+    componentMenu->AddRadioButton("imag", this->sivicController, "SetComponentCallback 1");
+    componentMenu->AddRadioButton("mag", this->sivicController, "SetComponentCallback 2");
+    componentSelectBox->SetValue( "real" );
+
+
 
     this->detailedPlotButton = vtkKWPushButton::New();
     this->detailedPlotButton->SetParent(this);
@@ -475,10 +476,10 @@ void sivicSpectraRangeWidget::CreateWidget()
     //  Spec View Widgets Frame
     //==================================================================
 
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 2 -pady 2", 
+        this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 3 -pady 2", 
                     this->xSpecRange->GetWidgetName(), this->specRangeFrame->GetWidgetName()); 
 
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 2  -pady 2", 
+        this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 3", 
                     this->ySpecRange->GetWidgetName(), this->specRangeFrame->GetWidgetName()); 
 
         this->Script("grid columnconfigure %s 0 -weight 1 ", this->specRangeFrame->GetWidgetName() );
@@ -486,22 +487,27 @@ void sivicSpectraRangeWidget::CreateWidget()
         this->Script("grid rowconfigure    %s 0 -weight 1 ", this->specRangeFrame->GetWidgetName() );
         this->Script("grid rowconfigure    %s 1 -weight 1 ", this->specRangeFrame->GetWidgetName() );
 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse", this->specRangeFrame->GetWidgetName(), this->GetWidgetName()); 
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -pady 2 ", this->specRangeFrame->GetWidgetName(), this->GetWidgetName()); 
 
-
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky nwse -pady 2", 
+        this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -pady 2", 
                 this->unitSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky nwse -pady 2", 
-                this->componentSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
-
-        this->Script("grid %s -in %s -row 2 -column 0 -sticky nwsse -pady 2 -padx 10 ", 
+        this->Script("grid %s -in %s -row 1 -column 1 -sticky ensw -pady 2", 
                 this->detailedPlotButton->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-    this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -pady 2 ", this->specViewFrame->GetWidgetName(), this->GetWidgetName()); 
+        this->Script("grid %s -in %s -row 2 -column 1 -sticky wnse -pady 2", 
+                this->componentSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
-    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 80 ", this->GetWidgetName() );
+        this->Script("grid rowconfigure %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
+        this->Script("grid rowconfigure %s 1 -weight 1 ", this->specViewFrame->GetWidgetName() );
+        this->Script("grid rowconfigure %s 2 -weight 1 ", this->specViewFrame->GetWidgetName() );
+        this->Script("grid columnconfigure %s 0 -weight 1 ", this->specViewFrame->GetWidgetName() );
+        this->Script("grid columnconfigure %s 1 -weight 1 -minsize 73", this->specViewFrame->GetWidgetName() );
+
+    this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -rowspan 2 ", this->specViewFrame->GetWidgetName(), this->GetWidgetName()); 
+
+    this->Script("grid rowconfigure %s 0 -weight 1 -minsize 30 ", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 1  ", this->GetWidgetName() );
 
 
@@ -530,10 +536,10 @@ void sivicSpectraRangeWidget::CreateWidget()
         this->ySpecRange, vtkKWRange::RangeValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
-        this->unitSelectBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
+        this->unitSelectBox, vtkKWMenu::MenuItemInvokedEvent);
 
     this->AddCallbackCommandObserver(
-        this->componentSelectBox->GetWidget(), vtkKWMenu::MenuItemInvokedEvent);
+        this->componentSelectBox, vtkKWMenu::MenuItemInvokedEvent);
 
     this->AddCallbackCommandObserver(
         this->detailedPlotButton, vtkKWPushButton::InvokedEvent);
