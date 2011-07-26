@@ -56,7 +56,6 @@
 
 using namespace svk;
 
-void DefaultTest( );
 void MemoryTest( );
 void RenderingTest( );
 void OrientationTest( );
@@ -104,7 +103,7 @@ int main ( int argc, char** argv )
     globalArgs.outputPath = NULL;           /* -p option */
     globalArgs.disableValidation = false;
     globalArgs.showSatBands = false;
-    testFunction = DefaultTest;
+    testFunction = MemoryTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
     if( opt == -1 ) {
@@ -226,7 +225,6 @@ void MemoryTest()
     overlayController->SetTlcBrc( tlcbrc );
     window->Render();
     int* newTlcBrc = overlayController->GetTlcBrc();
-    cout<<" new TlcBrc: "<<newTlcBrc[0]<<" "<<newTlcBrc[1]<<endl;
     overlayController->SetSlice( 4 );
     window->Render();
     overlayController->SetRWInteractor(rwi);
@@ -256,119 +254,6 @@ void MemoryTest()
     model->Delete();
     window->Delete();
      
-}
-
-
-void DefaultTest()
-{
-    int slice =4 ;
-    if( globalArgs.firstImageName     == NULL  ) {
-        DisplayUsage();
-        cout << endl << " ERROR: ";
-        cout << "At least an image must be specified to run this test! " << endl; 
-    }
-
-    svkDataModel* model = svkDataModel::New();
-    
-
-    svkImageData* spectra = NULL; 
-    if( globalArgs.firstSpectraName != NULL ) {
-        spectra = model->LoadFile( globalArgs.firstSpectraName );
-        spectra->Register(NULL);
-        spectra->Update();
-    }
-
-    svkImageData* image = NULL; 
-    if( globalArgs.firstImageName != NULL ) {
-        image = model->LoadFile( globalArgs.firstImageName );
-        image->Register(NULL);
-        image->Update();
-    }
-
-    svkImageData* overlay = NULL; 
-    if( globalArgs.firstOverlayName != NULL ) {
-        overlay = model->LoadFile( globalArgs.firstOverlayName );
-        overlay->Register(NULL);
-        overlay->Update();
-    }
-
-    
-    vtkRenderWindow* window = vtkRenderWindow::New(); 
-    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
-    svkOverlayViewController* overlayController = svkOverlayViewController::New();
-
-    overlayController->SetRWInteractor( rwi );
-
-    vtkAxesActor* axes = vtkAxesActor::New();
-    vtkTransform* transform = vtkTransform::New();
-    //transform->Translate( image->GetOrigin()[0],image->GetOrigin()[1], image->GetOrigin()[2]);
-    //axes->SetUserTransform( transform );
-    axes->SetTotalLength(100,100,100);
-    axes->SetXAxisLabelText("L");
-    axes->SetYAxisLabelText("P");
-    axes->SetZAxisLabelText("S");
-    window->GetRenderers()->GetFirstRenderer()->AddActor( axes );
-
-    window->SetSize(600,600);
-
-    if( spectra != NULL ) {
-        overlayController->SetInput( spectra, 1  );
-    }
-    overlayController->SetInput( image, 0  );
-    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
-    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
-    overlayController->SetSlice(slice);
-    overlayController->SetSlice( 5 );
-    overlayController->UseWindowLevelStyle( );
-    overlayController->UseRotationStyle();
-    overlayController->HighlightSelectionVoxels();
-    overlayController->ResetWindowLevel();
-    if( overlay != NULL ) {
-        overlayController->SetInput( overlay, 2 );
-    }
-    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
-    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
-    overlayController->SetSlice( 0 );
-    overlayController->HighlightSelectionVoxels();
-    overlayController->GetView()->Refresh();
-    for( int i = 0; i < 8; i++ ) {
-        overlayController->SetSlice( i );
-        overlayController->GetView()->Refresh();
-        window->Render();
-        rwi->Start();
-    }
-    overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL);
-    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
-    overlayController->HighlightSelectionVoxels();
-    overlayController->GetView()->Refresh();
-    for( int i = 0; i < 12 ; i++ ) {
-        overlayController->SetSlice( i );
-        overlayController->GetView()->Refresh();
-        window->Render();
-        rwi->Start();
-    }
-
-    overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL);
-    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
-    overlayController->HighlightSelectionVoxels();
-    overlayController->GetView()->Refresh();
-    for( int i = 0; i < 12; i++ ) {
-        overlayController->SetSlice( i );
-        overlayController->GetView()->Refresh();
-        window->Render();
-        rwi->Start();
-    }
-
-    image->Delete();    
-    if( spectra != NULL ) {
-        spectra->Delete();    
-    }
-    if( overlay != NULL ) {
-        overlay->Delete();    
-    }
-    model->Delete();
-    overlayController->Delete();
-    window->Delete();
 }
 
 void OrientationTest()
@@ -596,8 +481,6 @@ void DisplayUsage( void )
     cout << "        Also will load multiple datasets to ensure no memory leaks when  " << endl;
     cout << "        switching between datasets. As such two images, two spectra, and" << endl;
     cout << "        two overlays (metabolites) are required to run the memory check. " << endl << endl;
-    cout << "    DefaultTest "<< endl;
-    cout << "        Loads each type of data and creates an interactive window. " << endl;
 
     cout << endl << "############  USAGE  ############ " << endl << endl;
     /* ... */

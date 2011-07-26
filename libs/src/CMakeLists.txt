@@ -83,7 +83,6 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 
 
 ###################################
