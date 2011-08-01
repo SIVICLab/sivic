@@ -201,7 +201,7 @@ void svkIdfVolumeWriter::WriteData()
 
     ofstream pixelsOut( (this->InternalFileName + extension).c_str(), ios::binary);
     if( !pixelsOut ) {
-        throw runtime_error("Cannot open .int2 file for writing");
+        throw runtime_error( "Cannot open file for writing: " + string(this->InternalFileName) + extension ); 
     }
 
     // We want to hold the pixels here so we can do an endian swap without changing the original data
