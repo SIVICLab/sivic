@@ -88,7 +88,17 @@ class svkMrsImageData: public svkImageData
         void           GetSelectionBoxOrigin(  double origin[3] );
         int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
         int            GetNumberOfChannels();
-        void           GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, int slice = -1 );
+        void           Get2DProjectedTlcBrcInSelectionBox( 
+                            int tlcBrc[2], 
+                            svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, 
+                            int slice = -1, 
+                            double tolerance = 0.50001 
+                       );
+        void           Get3DTlcBrcInSelectionBox( 
+                            int tlcBrc[2], 
+                            double tolerance = 0.50001 
+                       );
+
         void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.50001 );
         void           GetTlcBrcInUserSelection( 
                             int tlcBrc[2], 
