@@ -271,12 +271,12 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svkImagePadFilterTest
-    svkImagePadFilterTest.cc
+    svkMriZeroFill
+    svkMriZeroFill.cc
 )
 
 TARGET_LINK_LIBRARIES(
-    svkImagePadFilterTest
+    svkMriZeroFill
 	${SVK_LIBS}
 )
 

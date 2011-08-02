@@ -138,7 +138,10 @@ class svkImageData: public vtkImageData
                                 vtkDataObject* src, 
                                 svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
                            );
-        virtual void       ShallowCopy( vtkDataObject* src );
+        virtual void       ShallowCopy( 
+                                vtkDataObject* src, 
+                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
+                           );
         virtual void       ZeroCopy( 
                                 vtkImageData* src, 
                                 svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 

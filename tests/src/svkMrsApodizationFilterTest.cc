@@ -68,7 +68,7 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    //  Combine coils using straight addition 
+    //  Apodizes the data 
     svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
     vtkFloatArray* window = vtkFloatArray::New();
 

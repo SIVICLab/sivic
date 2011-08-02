@@ -268,3 +268,12 @@ string svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, 
     return filePattern;
 }
 
+        
+/*!
+ *  Returns the next highest power of two greater than the input x.
+ */
+int svkUtils::GetNextPower2( int x )
+{
+    int result = (int)pow( 2., ceil( log( static_cast<double>(x + 1) )/log(2.) ) );
+    return result;
+}

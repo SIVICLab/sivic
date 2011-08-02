@@ -46,6 +46,7 @@
 #include <svkDdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDICOMMRSWriter.h>
+#include <svkCoilCombine.h>
 
 
 using namespace svk;
@@ -63,29 +64,103 @@ int main (int argc, char** argv)
     svkDataModel* model = svkDataModel::New();
     svkImageData* data = model->LoadFile( fname.c_str() );
     data->Register(NULL); 
-
     if( !data->IsA("svkMrsImageData") ) {
         cerr << "INPUT MUST BE SPECTRA!" << endl;
         exit(1);
     }
-
+    svkCoilCombine* combine = svkCoilCombine::New();
+    combine->SetInput( data );
+    combine->SetCombinationMethod( svkCoilCombine::ADDITION );
+    combine->SetCombinationDimension( svkCoilCombine::COIL );
+    combine->Update(); 
     //  Combine coils using straight addition 
     svkMrsZeroFill* zf = svkMrsZeroFill::New();
     zf->SetInput( data );
-    zf->SetNumPoints( 4096 ); 
+    zf->SetNumberOfSpecPointsToDouble( ); 
+    zf->SetOutputWholeExtent(0, 12, 0, 10, 0, 11 ); 
+    zf->Update();
+    svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
+    string bothFilename(fnameOut);
+    bothFilename.append("_both");
+    writer->SetFileName( bothFilename.c_str() );    
+    writer->SetInput( data );
+    writer->Write();
+
+    // Clean up
+    combine->Delete();
+    combine = NULL;
+    writer->Delete();
+    writer = NULL;
+    zf->Delete();
+    zf = NULL;
+    data->Delete();
+    data = NULL;
+    // Filter is in place so we need to reload the data
+    data = model->LoadFile( fname.c_str() );
+    data->Register(NULL); 
+
+    combine = svkCoilCombine::New();
+    combine->SetInput( data );
+    combine->SetCombinationMethod( svkCoilCombine::ADDITION );
+    combine->SetCombinationDimension( svkCoilCombine::COIL );
+    combine->Update(); 
+
+    //  Combine coils using straight addition 
+    zf = svkMrsZeroFill::New();
+    zf->SetInput( combine->GetOutput() );
+    zf->SetNumberOfSpecPointsToNextPower2( ); 
     zf->Update();
 
-    svkDICOMMRSWriter* writer = svkDICOMMRSWriter::New();
-    writer->SetFileName( fnameOut.c_str() );    
+    writer = svkDdfVolumeWriter::New();
+    string spectralFilename(fnameOut);
+    spectralFilename.append("_spectral");
+    writer->SetFileName( spectralFilename.c_str() );    
     writer->SetInput( zf->GetOutput() );
     writer->Write();
+
+    // Clean up
+    combine->Delete();
+    combine = NULL;
     writer->Delete();
-
+    writer = NULL;
     zf->Delete();
-
-    model->Delete();
+    zf = NULL;
     data->Delete();
+    data = NULL;
 
+    // Filter is in place so we need to reload the data
+    data = model->LoadFile( fname.c_str() );
+    data->Register(NULL); 
+    combine = svkCoilCombine::New();
+    combine->SetInput( data );
+    combine->SetCombinationMethod( svkCoilCombine::ADDITION );
+    combine->SetCombinationDimension( svkCoilCombine::COIL );
+    combine->Update(); 
+
+    //  Combine coils using straight addition 
+    zf = svkMrsZeroFill::New();
+    zf->SetInput( combine->GetOutput() );
+    zf->SetOutputWholeExtent(0, 9, 0, 10, 0, 11 ); 
+    zf->Update();
+
+    writer = svkDdfVolumeWriter::New();
+    string spatialFilename(fnameOut);
+    spatialFilename.append("_spatial");
+    writer->SetFileName( spatialFilename.c_str() );    
+    writer->SetInput( zf->GetOutput() );
+    writer->Write();
+
+    // Clean up
+    zf->Delete();
+    zf = NULL;
+    combine->Delete();
+    combine = NULL;
+    writer->Delete();
+    writer = NULL;
+    data->Delete();
+    data = NULL;
+    model->Delete();
+    model = NULL;
     return 0; 
 }
 

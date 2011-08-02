@@ -48,6 +48,8 @@
 #include <svkMultiCoilPhase.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkMrsZeroFill.h>
+#include <svkMrsApodizationFilter.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>
@@ -99,7 +101,7 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*         progressCallback;
 
-        void                        ExecuteZeroFill();
+        void                        ExecutePreprocessing();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 

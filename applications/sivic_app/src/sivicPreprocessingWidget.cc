@@ -143,32 +143,28 @@ void sivicPreprocessingWidget::CreateWidget()
     this->zeroFillSelectorSpec = vtkKWMenuButton::New();
     this->zeroFillSelectorSpec->SetParent(this);
     this->zeroFillSelectorSpec->Create();
-    //this->zeroFillSelectorSpec->SetLabelText("Zero Fill");
-    //this->zeroFillSelectorSpec->SetLabelWidth(6);
+    this->zeroFillSelectorSpec->EnabledOff();
 
     vtkKWMenu* zfSpecMenu = this->zeroFillSelectorSpec->GetMenu();
 
     this->zeroFillSelectorCols = vtkKWMenuButton::New();
     this->zeroFillSelectorCols->SetParent(this);
     this->zeroFillSelectorCols->Create();
-    //this->zeroFillSelectorCols->SetLabelText("Zero Fill #Cols");
-    //this->zeroFillSelectorCols->SetLabelWidth(labelWidth);
+    this->zeroFillSelectorCols->EnabledOff();
 
     vtkKWMenu* zfColsMenu = this->zeroFillSelectorCols->GetMenu();
 
     this->zeroFillSelectorRows = vtkKWMenuButton::New();
     this->zeroFillSelectorRows->SetParent(this);
     this->zeroFillSelectorRows->Create();
-    //this->zeroFillSelectorRows->SetLabelText("Zero Fill #Rows");
-    //this->zeroFillSelectorRows->SetLabelWidth(labelWidth);
+    this->zeroFillSelectorRows->EnabledOff();
 
     vtkKWMenu* zfRowsMenu = this->zeroFillSelectorRows->GetMenu();
 
     this->zeroFillSelectorSlices = vtkKWMenuButton::New();
     this->zeroFillSelectorSlices->SetParent(this);
     this->zeroFillSelectorSlices->Create();
-    //this->zeroFillSelectorSlices->SetLabelText("Zero Fill #Slices");
-    //this->zeroFillSelectorSlices->SetLabelWidth(labelWidth);
+    this->zeroFillSelectorSlices->EnabledOff();
 
     vtkKWMenu* zfSlicesMenu = this->zeroFillSelectorSlices->GetMenu();
 
@@ -214,9 +210,9 @@ void sivicPreprocessingWidget::CreateWidget()
     this->applyButton = vtkKWPushButton::New();
     this->applyButton->SetParent( this );
     this->applyButton->Create( );
-    //this->applyButton->EnabledOff();
     this->applyButton->SetText( "Apply");
     this->applyButton->SetBalloonHelpString("Apply Preprocessing.");
+    this->applyButton->EnabledOff();
 
     //  =================================== 
     //  Apodization Selectors
@@ -226,32 +222,28 @@ void sivicPreprocessingWidget::CreateWidget()
     this->apodizationSelectorSpec = vtkKWMenuButton::New();
     this->apodizationSelectorSpec->SetParent(this);
     this->apodizationSelectorSpec->Create();
-    //this->apodizationSelectorSpec->SetLabelText("Apodize");
-    //this->apodizationSelectorSpec->SetLabelWidth(6);
+    this->apodizationSelectorSpec->EnabledOff();
 
     vtkKWMenu* apSpecMenu = this->apodizationSelectorSpec->GetMenu();
 
     this->apodizationSelectorCols = vtkKWMenuButton::New();
     this->apodizationSelectorCols->SetParent(this);
     this->apodizationSelectorCols->Create();
-    //this->apodizationSelectorCols->SetLabelText("Apodize #Cols");
-    //this->apodizationSelectorCols->SetLabelWidth(labelWidth);
+    this->apodizationSelectorCols->EnabledOff();
 
     vtkKWMenu* apColsMenu = this->apodizationSelectorCols->GetMenu();
 
     this->apodizationSelectorRows = vtkKWMenuButton::New();
     this->apodizationSelectorRows->SetParent(this);
     this->apodizationSelectorRows->Create();
-    //this->apodizationSelectorRows->SetLabelText("Apodize #Rows");
-    //this->apodizationSelectorRows->SetLabelWidth(labelWidth);
+    this->apodizationSelectorRows->EnabledOff();
 
     vtkKWMenu* apRowsMenu = this->apodizationSelectorRows->GetMenu();
 
     this->apodizationSelectorSlices = vtkKWMenuButton::New();
     this->apodizationSelectorSlices->SetParent(this);
     this->apodizationSelectorSlices->Create();
-    //this->apodizationSelectorSlices->SetLabelText("Apodize #Slices");
-    //this->apodizationSelectorSlices->SetLabelWidth(labelWidth);
+    this->apodizationSelectorSlices->EnabledOff();
 
     vtkKWMenu* apSlicesMenu = this->apodizationSelectorSlices->GetMenu();
 
@@ -365,7 +357,7 @@ void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
 {
     // Respond to a selection change in the overlay view
     if( caller == this->applyButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteZeroFill();
+        this->ExecutePreprocessing();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -374,36 +366,88 @@ void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
 /*!
  *  Executes the combining of the channels.
  */
-void sivicPreprocessingWidget::ExecuteZeroFill() 
+void sivicPreprocessingWidget::ExecutePreprocessing() 
 {
-    cout << "Executing Zero fill..." << endl;
+    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+    string domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+    if( domain != "TIME") {
+        cout << "ERROR: Data must be in the time domain for pre-processing." << endl;
+        return;
+    }
+    if( data != NULL ) {
+        string apodizeSpec(this->apodizationSelectorSpec->GetValue());
+        string apodizeCols(this->apodizationSelectorCols->GetValue());
+        string apodizeRows(this->apodizationSelectorRows->GetValue());
+        string apodizeSlices(this->apodizationSelectorSlices->GetValue());
+        string zeroFillSpec(this->zeroFillSelectorSpec->GetValue());
+        string zeroFillCols(this->zeroFillSelectorCols->GetValue());
+        string zeroFillRows(this->zeroFillSelectorRows->GetValue());
+        string zeroFillSlices(this->zeroFillSelectorSlices->GetValue());
+
+        bool executeZeroFill = false;
+        svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
+        zeroFill->SetInput(data);
+
+        if( zeroFillSpec.compare("double") == 0 ) {
+            zeroFill->SetNumberOfSpecPointsToDouble();
+            executeZeroFill = true;
+        } else if( zeroFillSpec.compare("next y^2") == 0 ) {
+            zeroFill->SetNumberOfSpecPointsToNextPower2();
+            executeZeroFill = true;
+        }
+        if( zeroFillRows.compare("double") == 0 ) {
+            zeroFill->SetNumberOfRowsToDouble();
+            executeZeroFill = true;
+        } else if( zeroFillRows.compare("next y^2") == 0 ) {
+            zeroFill->SetNumberOfRowsToNextPower2();
+            executeZeroFill = true;
+        }
+
+        if( zeroFillCols.compare("double") == 0 ) {
+            zeroFill->SetNumberOfColumnsToDouble();
+            executeZeroFill = true;
+        } else if( zeroFillCols.compare("next y^2") == 0 ) {
+            zeroFill->SetNumberOfColumnsToNextPower2();
+            executeZeroFill = true;
+        }
+
+        if( zeroFillSlices.compare("double") == 0 ) {
+            zeroFill->SetNumberOfSlicesToDouble();
+            executeZeroFill = true;
+        } else if( zeroFillSlices.compare("next y^2") == 0 ) {
+            zeroFill->SetNumberOfSlicesToNextPower2();
+            executeZeroFill = true;
+        }
+        
+        if( executeZeroFill ) {
+            zeroFill->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+            this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Zero Fill...");
+            zeroFill->Update();
+            bool useFullFrequencyRange = 0;
+            bool useFullAmplitudeRange = 1;
+            bool resetAmplitude = 1;
+            bool resetFrequency = 0;
+            data->Modified();
+            zeroFill->RemoveObserver( progressCallback);
+            string stringFilename = "ZF";
+            this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                          resetAmplitude, resetFrequency );
+            this->sivicController->OpenSpectra( data, stringFilename);
+        }
+        if( apodizeSpec.compare("Lorentz") == 0 ) {
+            svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+            vtkFloatArray* window = vtkFloatArray::New();
+            float fwhh = 4.0;
+            svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
+            af->SetInput( data );
+            af->SetWindow( window );
+            af->Update();
+            af->Delete();
+            data->Modified();
+        }
+    }
     return; 
 
-/*
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkCoilCombine* coilCombine = svkCoilCombine::New();
-        coilCombine->SetInput( data );
-        //coilCombine->SetCombinationDimension( svkCoilCombine::TIME );  for combining time points
-        //coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  for combining as magnitude data 
-        coilCombine->Update();
-        data->Modified();
-        coilCombine->Delete();
-        bool useFullFrequencyRange = 0;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 0;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
-        this->sivicController->ResetChannel( );
-        string stringFilename = "CombinedData";
-        this->sivicController->OpenSpectra( data, stringFilename);
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-    }
-*/
 }
 
 

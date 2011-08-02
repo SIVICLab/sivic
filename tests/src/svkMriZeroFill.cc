@@ -101,6 +101,7 @@ int main (int argc, char** argv)
     padOne->Delete();
     model->Delete();
     data->Delete();
+    cout << "RETURNING FROM MAIN..." << endl;
     return 0; 
 }
 

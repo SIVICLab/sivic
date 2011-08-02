@@ -39,6 +39,9 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(testing)
 
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0015 OLD)
+endif(COMMAND cmake_policy)
 
 
 #
@@ -84,7 +87,6 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindGLU.cmake)
 
 ###################################
 #   VTK

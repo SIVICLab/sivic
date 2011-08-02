@@ -553,6 +553,8 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         spectraData = static_cast<vtkImageData*>(newData );
         int* extent = newData->GetExtent();
 
+        this->plotController->SetInput( newData ); 
+
         if( tlcBrc == NULL ) {
             int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
             int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
@@ -567,7 +569,6 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
             this->plotController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
             this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
         }
-        this->plotController->SetInput( newData ); 
 
         this->detailedPlotController->SetInput( newData ); 
         this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
@@ -2308,6 +2309,12 @@ void vtkSivicController::EnableWidgets()
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
+            this->preprocessingWidget->applyButton->EnabledOn(); 
+            this->preprocessingWidget->zeroFillSelectorSpec->EnabledOn();
+            this->preprocessingWidget->zeroFillSelectorCols->EnabledOn();
+            this->preprocessingWidget->zeroFillSelectorRows->EnabledOn();
+            this->preprocessingWidget->zeroFillSelectorSlices->EnabledOn();
+            this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 
             this->processingWidget->combineButton->EnabledOff(); 
@@ -2420,6 +2427,16 @@ void vtkSivicController::DisableWidgets()
     this->processingWidget->fftButton->EnabledOff(); 
     this->processingWidget->phaseButton->EnabledOff(); 
     this->processingWidget->combineButton->EnabledOff(); 
+
+    this->preprocessingWidget->applyButton->EnabledOff(); 
+    this->preprocessingWidget->zeroFillSelectorSpec->EnabledOff();
+    this->preprocessingWidget->zeroFillSelectorCols->EnabledOff();
+    this->preprocessingWidget->zeroFillSelectorRows->EnabledOff();
+    this->preprocessingWidget->zeroFillSelectorSlices->EnabledOff();
+    this->preprocessingWidget->apodizationSelectorSpec->EnabledOff();
+    this->preprocessingWidget->apodizationSelectorCols->EnabledOff();
+    this->preprocessingWidget->apodizationSelectorRows->EnabledOff();
+    this->preprocessingWidget->apodizationSelectorSlices->EnabledOff();
 
     this->imageViewWidget->orthImagesButton->EnabledOff();
 

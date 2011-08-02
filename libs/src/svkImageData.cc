@@ -148,10 +148,16 @@ void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataForma
  *  First calls vtkImageData's shallow copy, then also copies the dcos, but does NOT copy the 
  *  DICOM header.
  */
-void svkImageData::ShallowCopy( vtkDataObject* src )
+void svkImageData::ShallowCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
-    this->vtkImageData::ShallowCopy( src );
+    this->Superclass::ShallowCopy( src );
+    if( src->IsA("svkImageData") ) {
+        svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
+    }
     this->CopyDcos( src );
+    if( castToFormat != svkDcmHeader::UNDEFINED ) {
+        this->CastDataFormat( castToFormat );
+    }
 }
 
 

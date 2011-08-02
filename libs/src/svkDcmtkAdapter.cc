@@ -1307,6 +1307,11 @@ void svkDcmtkAdapter::CopyDcmHeader(svkDcmHeader* headerCopy)
 {
 
     DcmFileFormat* tmpHeader= (static_cast<DcmFileFormat*>( (this->dcmFile) ) );
+
+    if (dynamic_cast<svkDcmtkAdapter*>(headerCopy)->dcmFile != NULL) {
+        delete dynamic_cast<svkDcmtkAdapter*>(headerCopy)->dcmFile;
+        dynamic_cast<svkDcmtkAdapter*>(headerCopy)->dcmFile = NULL;
+    }
     dynamic_cast<svkDcmtkAdapter*>(headerCopy)->dcmFile = static_cast<svkDcmtkIod*>( tmpHeader->clone() );
    
     cout << "REMEMBER TO Set the creation time/date in the header!" << endl;

@@ -192,9 +192,6 @@ int svkMriZeroFill::RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vt
 
 
 /*! 
- *  This is the primary execution method. If the mode is set to FORWARD it will do an fft of the
- *  data. If it is set to REVERSE then it will run an rfft and then extract the real component.
- *  Input can be any data type but output is always complex double.
  */
 int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
@@ -269,6 +266,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         this->GetOutput()->GetDcmHeader()->SetValue("Rows", newNumVoxels[1]);
         this->GetOutput()->GetDcmHeader()->SetValue("NumberOfFrames", newNumVoxels[2]);
         this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, spacing, dcos, numSlices, 1, 1);
+        this->GetOutput()->Modified();
     }
 
     //  Trigger observer update via modified event:

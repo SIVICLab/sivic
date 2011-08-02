@@ -94,6 +94,7 @@ class svkUtils : public vtkObject
 		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
         static string         GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra);
         static string         GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+        static int            GetNextPower2( int x );
 
 
 	protected:

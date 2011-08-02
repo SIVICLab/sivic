@@ -317,6 +317,7 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
+    this->sivicController->SetPreprocessingWidget( preprocessingWidget );
     this->sivicController->SetQuantificationWidget( quantificationWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );

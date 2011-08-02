@@ -135,6 +135,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
     try {
 
+
         this->gepf = new ifstream();
         this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
         this->gepf->open( fname, ios::binary);
@@ -172,6 +173,10 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                         //  Just for parsing header, don't care about mapping
                         isKnownPSD = true;
                     } else {
+                        // We may already have a mapper from can read.
+                        if( this->mapper != NULL ) {
+                            this->mapper->Delete();
+                        }
                         this->mapper = this->GetPFileMapper(); 
                         if ( this->mapper != NULL ) {
                             isKnownPSD = true;
@@ -190,10 +195,10 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
     if ( this->gepf->is_open() ) {
         this->gepf->close();
-        if ( this->gepf != NULL ) {
-            delete this->gepf;
-            this->gepf = NULL; 
-        }
+    }
+    if ( this->gepf != NULL ) {
+        delete this->gepf;
+        this->gepf = NULL; 
     }
 
     if ( isGEPFile && isKnownPSD ) {
@@ -588,6 +593,15 @@ void svkGEPFileReader::ReadGEPFile()
     cout << "FN: " << this->GetFileName() << endl;
 
     try {
+
+        // In case the stream is open from can read
+        if ( this->gepf != NULL )  {
+            if( this->gepf->is_open() ) {
+                this->gepf->close();
+            }
+            delete this->gepf;
+            this->gepf = NULL;
+        }
 
         //  Read in the GE Pfile Header:
         this->gepf = new ifstream();

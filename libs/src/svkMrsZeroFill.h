@@ -47,8 +47,11 @@
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
+#include <svkUtils.h>
+#include <svkMriZeroFill.h>
 #include <svkImageInPlaceFilter.h>
 
 
@@ -70,7 +73,35 @@ class svkMrsZeroFill : public svkImageInPlaceFilter
         static svkMrsZeroFill* New();
         vtkTypeRevisionMacro( svkMrsZeroFill, svkImageInPlaceFilter);
 
-        void            SetNumPoints(int numPoints);
+        typedef enum {
+            VALUE = 0,
+            DOUBLE,
+            POWER2
+        } FillType;
+
+
+
+        void            SetNumberOfRows( int numRows );
+        void            SetNumberOfRowsToDouble( );
+        void            SetNumberOfRowsToNextPower2( );
+
+        void            SetNumberOfColumns( int numColumns );
+        void            SetNumberOfColumnsToDouble( );
+        void            SetNumberOfColumnsToNextPower2( );
+
+        void            SetNumberOfSlices( int numSlices );
+        void            SetNumberOfSlicesToDouble( );
+        void            SetNumberOfSlicesToNextPower2( );
+
+        void            SetNumberOfSpecPoints( int numSpecPoints );
+        void            SetNumberOfSpecPointsToDouble( );
+        void            SetNumberOfSpecPointsToNextPower2( );
+        
+        void            SetOutputDimensions( int numRows, int numColumns, int numSlices, int numSpecPoints );
+
+        void            SetOutputWholeExtent( int extent[6] );
+        void            SetOutputWholeExtent(int minX, int maxX, int minY, int maxY, int minZ, int maxZ);
+
 
 
     protected:
@@ -87,17 +118,50 @@ class svkMrsZeroFill : public svkImageInPlaceFilter
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+
         virtual int     RequestData(
                             vtkInformation* request, 
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
 
+        virtual int     RequestDataSpatial(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector
+                        );
+
+        virtual int     RequestDataSpectral(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector,
+                            vtkInformationVector* outputVector
+                        );
+
+        virtual int     RequestUpdateExtent(vtkInformation*,
+                             vtkInformationVector**,
+                             vtkInformationVector*);
+
+        virtual void    ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wExt[6]);
+
+        virtual void    InitializeOutputWholeExtent();
 
     private:
         
         //  Members:
-        int             numTargetPts; 
+
+        // These will store the fill type. This is used in case the user defines the fill
+        // type before setting the input. The extent is computed on RequestInformation.
+        FillType        rowFillType;
+        FillType        columnFillType;
+        FillType        sliceFillType;
+        FillType        specFillType;
+
+        int             numSpecPoints; 
+        //ZeroFillDomain  domain;
+        int             outputWholeExtent[6];
+
+        virtual void    InitializeDataArrays( svkMrsImageData* outputData );
+
 
 };
 
