@@ -606,7 +606,7 @@ int* svkPlotGridView::HighlightSelectionVoxels()
 {
     if( dataVector[MRS] != NULL ) { 
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
+        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {
