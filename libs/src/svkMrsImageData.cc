@@ -925,7 +925,7 @@ void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, 
         string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType != "SINGLE VOXEL" ) {
             int tlcBrc[2];
-            this->GetTlcBrcInSelectionBox( tlcBrc );
+            this->Get2DProjectedTlcBrcInSelectionBox( tlcBrc );
             this->GetIndexFromID( tlcBrc[0], min );
             this->GetIndexFromID( tlcBrc[1], max );
         }

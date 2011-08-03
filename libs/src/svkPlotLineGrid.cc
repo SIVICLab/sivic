@@ -761,7 +761,7 @@ void svkPlotLineGrid::HighlightSelectionVoxels()
 {
     if( this->data != NULL ) {
         int tlcBrcImageData[2];
-        this->data->GetTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
+        this->data->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
     } 
 
