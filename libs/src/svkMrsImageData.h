@@ -52,6 +52,7 @@
 #include <svkMriImageData.h>
 #include <svkMrsTopoGenerator.h>
 
+#define DEFAULT_SELECTION_TOLERANCE 0.50001
 
 namespace svk {
 
@@ -90,22 +91,32 @@ class svkMrsImageData: public svkImageData
         int            GetNumberOfChannels();
         void           Get2DProjectedTlcBrcInSelectionBox( 
                             int tlcBrc[2], 
-                            svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, 
-                            int slice = -1, 
-                            double tolerance = 0.50001 
-                       );
-        void           Get3DTlcBrcInSelectionBox( 
-                            int tlcBrc[2], 
-                            double tolerance = 0.50001 
+                            svkDcmHeader::Orientation orientation, 
+                            int slice, 
+                            double tolerance = DEFAULT_SELECTION_TOLERANCE 
                        );
 
-        void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = 0.50001 );
+        void           Get3DVoxelsInSelectionBox( 
+                            int tlcVoxel[3], 
+                            int brcVoxel[3], 
+                            double tolerance = DEFAULT_SELECTION_TOLERANCE 
+                       );
+
+        void           Get3DTlcBrcInSelectionBox( 
+                            int tlcBrc[2], 
+                            double tolerance = DEFAULT_SELECTION_TOLERANCE 
+                       );
+
         void           GetTlcBrcInUserSelection( 
                             int tlcBrc[2], 
                             double userSelection[6], 
                             svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, 
                             int slice = -1 
                        );
+
+
+        void           GetSelectionBoxMaxMin( double minPoint[3], double maxPoint[3], double tolerance = DEFAULT_SELECTION_TOLERANCE );
+
         void           GetImage( 
                             svkMriImageData* image, 
                             int point, 
@@ -132,6 +143,13 @@ class svkMrsImageData: public svkImageData
 
 
     protected:
+
+        void           GetTlcBrcInSelectionBox( 
+                            int tlcBrc[2], 
+                            svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION, 
+                            int slice = -1 ,
+                            double tolerance = DEFAULT_SELECTION_TOLERANCE 
+                       );
 
         svkMrsImageData();
         ~svkMrsImageData();

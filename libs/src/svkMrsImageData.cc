@@ -683,15 +683,40 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
 
 
 /*!
+ *
+ *  Calculates the top left corner, and bottom right corner (high index-low index) of all
+ *  voxels that lie within the selection box for projected onto the given slice. Checks
+ *  to make sure the given slices is within the range of the volume, if it is not then
+ *  -1,-1 is returned as tlcBrc.
+ *
+ *  \param tlcBrc the destination for the result of the calculation
+ *  \param slice the slice you wish to project the results onto. 
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *                   voxel must be within the selection box to be selected
+ */
+void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice, double tolerance )
+{
+    int lastSlice  = this->GetLastSlice( orientation );
+    int firstSlice = this->GetFirstSlice( orientation );
+    if( slice >= firstSlice && slice <= lastSlice ) {
+        this->GetTlcBrcInSelectionBox( tlcBrc, orientation, slice, tolerance );
+    } else {
+        tlcBrc[0] = -1;
+        tlcBrc[1] = -1;
+    }
+}
+
+
+/*!
  *  Calculates the top left corner, and bottom right corner (high index-low index) of all
  *  voxels that lie within the selection box for a given slice. 
  *
  *  \param tlcBrc the destination for the result of the calculation
+ *  \param slice the slice you wish to project the results onto. If the slice is not in the volume a 3D range is returned.
  *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
  *                   voxel must be within the selection box to be selected
- *  \param slice the slice you wish to select within
  */
-void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice, double tolerance )
+void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice, double tolerance )
 {
         orientation = (orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
                                 this->GetDcmHeader()->GetOrientationType() : orientation;
@@ -720,6 +745,40 @@ void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmH
             selection[5] = maxPoint[2];
         }
         this->GetTlcBrcInUserSelection( tlcBrc, selection, orientation, slice );
+
+}
+
+
+/*!
+ *  Calculates the top left corner, and bottom right corner (high index-low index) of all
+ *  voxels that lie within the selection box for a given slice. Returns the index of the
+ *  each voxels.
+ *
+ *  \param tlcVoxel the destination for the result
+ *  \param brcVoxel the destination for the result 
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *                   voxel must be within the selection box to be selected
+ */
+void svkMrsImageData::Get3DVoxelsInSelectionBox( int tlcVoxel[3], int brcVoxel[3], double tolerance )
+{
+    int tlcBrc[2];
+    this->GetTlcBrcInSelectionBox( tlcBrc, svkDcmHeader::UNKNOWN_ORIENTATION, -1, tolerance );
+    this->GetIndexFromID( tlcBrc[0], tlcVoxel );
+    this->GetIndexFromID( tlcBrc[1], brcVoxel );
+}
+
+
+/*!
+ *  Calculates the top left corner, and bottom right corner (high index-low index) of all
+ *  voxels that lie within the selection box for a given slice. 
+ *
+ *  \param tlcBrc the destination for the result of the calculation
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *                   voxel must be within the selection box to be selected
+ */
+void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance )
+{
+    this->GetTlcBrcInSelectionBox( tlcBrc, svkDcmHeader::UNKNOWN_ORIENTATION, -1, tolerance );
 }
 
 
@@ -728,11 +787,12 @@ void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmH
  *  a given selection and slice. It assumes the userSelection defines a minimum and maximum
  *  range and that the user wishes to select all voxels within that range (for a given slice)
  *  in a regular box aligned with the dcos having corners at the minimum and maximum values.
+ *  If no slice is defined 
  *
  *  \param tlcBrc the destination for the result of the calculation
  *  \param userSelection the [minx, maxx, miny, maxy, minz, maxz] selection range 
  *  \param slice the slice within which to make the selection, if slice is outside of the range
- *               all voxels in the volume will be returned.
+ *               then the resulting tlcBrc will span the slices in the given selection
  */
 void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], 
                                                 svkDcmHeader::Orientation orientation, int slice )
@@ -925,7 +985,7 @@ void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, 
         string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType != "SINGLE VOXEL" ) {
             int tlcBrc[2];
-            this->Get2DProjectedTlcBrcInSelectionBox( tlcBrc );
+            this->GetTlcBrcInSelectionBox( tlcBrc );
             this->GetIndexFromID( tlcBrc[0], min );
             this->GetIndexFromID( tlcBrc[1], max );
         }
