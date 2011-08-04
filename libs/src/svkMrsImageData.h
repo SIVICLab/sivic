@@ -102,6 +102,8 @@ class svkMrsImageData: public svkImageData
                             double tolerance = DEFAULT_SELECTION_TOLERANCE 
                        );
 
+        void           GetSelectionBoxMask( short* mask, double tolerance = DEFAULT_SELECTION_TOLERANCE );  
+
         void           Get3DTlcBrcInSelectionBox( 
                             int tlcBrc[2], 
                             double tolerance = DEFAULT_SELECTION_TOLERANCE 

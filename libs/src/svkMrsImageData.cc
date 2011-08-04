@@ -782,6 +782,69 @@ void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance
 }
 
 
+/*
+ *  Generates data array representing binary mask indicating whether a given voxel is within 
+ *  the selection box or the specified fraction (tolerane) of a voxel is within the selection box.   
+ *  length of mask array is number of voxels in data set.  mask values are 0, not in selected
+ *  volume, or 1, in selected volume.  Method allocates mask. 
+ */
+void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
+{
+
+    //  min/max represent the xyz inidices representing
+    //  the rectanglular volume of voxels to quantify.
+    //  Default is for the min/max to include all voxels
+    int extent[6];
+    this->GetExtent( extent );
+
+    int min[3] = {extent[0], extent[2], extent[4]};
+    int max[3] = {extent[1], extent[3], extent[5]};
+
+    int numVoxels[3];
+    this->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+    mask = new short[totalVoxels];
+
+    if ( tolerance > 0 ) {
+
+        int voxelIndex[3];
+
+        for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
+
+            this->GetIndexFromID( voxelID, voxelIndex );
+
+            //  Get the ID of the voxels that define the TLC and BRC of the
+            //  the selection box for this slice:
+            this->Get3DVoxelsInSelectionBox(
+                min,
+                max,
+                tolerance 
+            );
+
+            //  compare the current voxel's indices to the tlcBrcID range:
+            if (
+                   ( (min[0] <= voxelIndex[0]) && (voxelIndex[0] <= max[0]) )
+                && ( (min[1] <= voxelIndex[1]) && (voxelIndex[1] <= max[1]) )
+                && ( (min[2] <= voxelIndex[2]) && (voxelIndex[2] <= max[2]) )
+            ) {
+                mask[voxelID] = 1;
+            } else {
+                mask[voxelID] = 0;
+            }
+        }
+
+    } else {
+
+        for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
+            mask[voxelID] = 1;
+        }
+
+    }
+}
+
+
+
+
 /*!
  *  This will get the top left corner, and bottom right hand corner (low index-high index) for 
  *  a given selection and slice. It assumes the userSelection defines a minimum and maximum
