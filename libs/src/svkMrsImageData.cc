@@ -786,7 +786,7 @@ void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance
  *  Generates data array representing binary mask indicating whether a given voxel is within 
  *  the selection box or the specified fraction (tolerane) of a voxel is within the selection box.   
  *  length of mask array is number of voxels in data set.  mask values are 0, not in selected
- *  volume, or 1, in selected volume.  Method allocates mask. 
+ *  volume, or 1, in selected volume.  Mask must be pre allocated. 
  */
 void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
 {
@@ -803,7 +803,6 @@ void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
     int numVoxels[3];
     this->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-    mask = new short[totalVoxels];
 
     if ( tolerance > 0 ) {
 
@@ -981,6 +980,7 @@ void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoin
         vtkDoubleArray* pixelData = vtkDoubleArray::New();
         pixelData->SetNumberOfComponents( numComponents );
         pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
+        pixelData->SetName("pixels");
         double* pixels = pixelData->GetPointer(0);
         int linearIndex = 0;
         int* dims = image->GetDimensions();
