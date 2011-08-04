@@ -185,7 +185,7 @@ double* svkMriImageData::GetImagePixels( int slice)
     }
     for( int i = 0; i < npixels; i++ ) {
         pixelBuffer[i] = (this->
-            GetPointData()->GetArray("pixels")->GetTuple1( npixels * slice + i ));
+            GetPointData()->GetScalars()->GetTuple1( npixels * slice + i ));
     }
     return pixelBuffer;
 }
@@ -204,7 +204,7 @@ void svkMriImageData::SetImagePixels( double* pixels, int slice)
     ypixels = this->GetExtent()[3] - this->GetExtent()[2] + 1;
     npixels = xpixels * ypixels;
     for( int i = 0; i < npixels; i++ ) {
-        this->GetPointData()->GetArray("pixels")->SetTuple( npixels * slice + i, &(pixels[i]) ); 
+        this->GetPointData()->GetScalars()->SetTuple( npixels * slice + i, &(pixels[i]) ); 
     }
 
 }
@@ -218,7 +218,7 @@ void svkMriImageData::SetImagePixels( double* pixels, int slice)
 vtkDataArray* svkMriImageData::GetImagePixelsArray( int slice )
 {
     vtkDataArray* pixelBufferArray; 
-    pixelBufferArray = vtkDataArray::CreateDataArray( this->GetPointData()->GetArray("pixels")->GetDataType());
+    pixelBufferArray = vtkDataArray::CreateDataArray( this->GetPointData()->GetScalars()->GetDataType());
     int xpixels;
     int ypixels;
     int npixels;
@@ -229,7 +229,7 @@ vtkDataArray* svkMriImageData::GetImagePixelsArray( int slice )
     pixelBufferArray->SetNumberOfTuples(npixels);
     for( int i = 0; i < npixels; i++ ) {
         pixelBufferArray->SetTuple1(i, this->
-            GetPointData()->GetArray("pixels")->GetTuple1( npixels * slice + i ));
+            GetPointData()->GetScalars()->GetTuple1( npixels * slice + i ));
     }
     return pixelBufferArray;
 }
@@ -251,7 +251,7 @@ double* svkMriImageData::GetImagePixel( int x, int y, int z )
 double* svkMriImageData::GetImagePixel( int id )
 {
     double* pixel = NULL; 
-    pixel = this->GetPointData()->GetArray("pixels")->GetTuple( id );
+    pixel = this->GetPointData()->GetScalars()->GetTuple( id );
     return pixel; 
 }
 
@@ -271,7 +271,7 @@ void svkMriImageData::SetImagePixel( int x, int y, int z, double value )
  */
 void svkMriImageData::SetImagePixel( int id , double value )
 {
-    this->GetPointData()->GetArray("pixels")->SetTuple1( id, value );
+    this->GetPointData()->GetScalars()->SetTuple1( id, value );
 }
 
 
