@@ -564,6 +564,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     //  =============================================
     //  Calculate   Kaise-Bessel kernel params:  
     //  Equation 5:
+    //
+    //      alpha = overGridFactor
+    //      W     = kWidth 
+    //
     //  Philip J. Beatty, Dwight G. Nishimura, John M. Pauly,
     //  Rapid Gridding Reconstruction With a Minimal Oversampling Ratio
     //  IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. 24, NO. 6, JUNE 2005
