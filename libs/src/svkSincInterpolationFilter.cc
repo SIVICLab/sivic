@@ -201,6 +201,14 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     svkMriImageData* target = svkMriImageData::New();
     target->DeepCopy( data );
     double *range;
+    vtkstd::string representation = data->GetDcmHeader()->GetStringSequenceItemElement(
+                                        "MRImageFrameTypeSequence",
+                                        0,
+                                        "ComplexImageComponent",
+                                        "SharedFunctionalGroupsSequence",
+                                        0
+                                        );
+
 
     /********************************************************
      *   STEP 1: FFT the input data...
@@ -220,7 +228,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     svkImageFourierCenter* center = svkImageFourierCenter::New();
     center->SetInput( fft->GetOutput() );
     center->Update();
-    target->ShallowCopy( center->GetOutput() );
+    target->DeepCopy( center->GetOutput() );
 
     // New we are done with fft algorithm
     fft->Delete();
@@ -244,69 +252,11 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     pad->Update();
 
     /********************************************************
-     *   STEP 4: Change the origin and spacing
-     ********************************************************/
-    
-    // Lets fix the header.
-    double* spacing = data->GetSpacing();
-    double newSpacing[3] = {0,0,0};
-    newSpacing[0] = spacing[0]*((double)(inExtent[1]-inExtent[0] + 1))/(this->outputWholeExtent[1] - this->outputWholeExtent[0] + 1);
-    newSpacing[1] = spacing[1]*((double)(inExtent[3]-inExtent[2] + 1))/(this->outputWholeExtent[3] - this->outputWholeExtent[2] + 1);
-    newSpacing[2] = spacing[2]*((double)(inExtent[5]-inExtent[4] + 1))/(this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1);
-    ostringstream* oss = new ostringstream();
-    *oss << newSpacing[0];
-    string pixelSpacingString( oss->str() + "\\" );
-    delete oss;
-
-    oss = new ostringstream();
-    *oss << newSpacing[1];
-    pixelSpacingString.append( oss->str() );
-
-    delete oss;
-    oss = new ostringstream();
-    *oss << newSpacing[2];
-    string sliceThicknessString( oss->str() );
-    delete oss;
-
-    double dcos[3][3];
-    data->GetDcos( dcos );
-    int numSlices = this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1;
-    double newOrigin[3] = { origin[0], origin[1], origin[2] };
-
-    double originShift[3] = { 0, 0, 0 }; 
-    originShift[0] = newSpacing[0]/2 - spacing[0]/2;
-    originShift[1] = newSpacing[1]/2 - spacing[1]/2;
-    originShift[2] = newSpacing[2]/2 - spacing[2]/2;
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            origin[i] += (originShift[j]) * dcos[j][i];
-        }
-    }
-
-    target->GetDcmHeader()->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
-    target->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( origin, newSpacing, dcos, numSlices, 1, 1);
-
-    /********************************************************
-     *   STEP 5: Apply the linear shift...
-     ********************************************************/
-
-    double shiftWindow[3] = { 0, 0, 0 }; 
-    shiftWindow[0] = -originShift[0]/newSpacing[0];
-    shiftWindow[1] = -originShift[1]/newSpacing[1];
-    shiftWindow[2] = -originShift[2]/newSpacing[2];
-
-    svkImageLinearPhase* linearShift = svkImageLinearPhase::New();
-    linearShift->SetShiftWindow( shiftWindow );
-    linearShift->SetInput( target );
-    linearShift->Update();
-
-    /********************************************************
-     *   STEP 6: Now we reverse the center...
+     *   STEP 4: Now we reverse the center...
      ********************************************************/
     svkImageFourierCenter* reverseCenter = svkImageFourierCenter::New();
     reverseCenter->SetReverseCenter( true );
-    reverseCenter->SetInput( linearShift->GetOutput() );
+    reverseCenter->SetInput( target );
     reverseCenter->Update();
 
     // We need to deep copy here because it is a non-svk output
@@ -320,7 +270,7 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     target->SyncVTKImageDataToDcmHeader(); 
 
     /********************************************************
-     *   STEP 7: Now we return to the spatial domain and
+     *   STEP 5: Now we return to the spatial domain and
      ********************************************************/
 
     svkMriImageFFT* rfft = svkMriImageFFT::New();
@@ -328,46 +278,29 @@ int svkSincInterpolationFilter::RequestData( vtkInformation* request, vtkInforma
     rfft->SetFFTMode( svkMriImageFFT::REVERSE );
     rfft->SetOperateInPlace( true );
     rfft->Update();
-
-    /********************************************************
-     *   STEP 8: Scale the result by the padding...
-     ********************************************************/
-
-    double finalNumVoxels = (double)((this->outputWholeExtent[1] - this->outputWholeExtent[0] + 1 )
-                               * (this->outputWholeExtent[3] - this->outputWholeExtent[2] + 1 )
-                               * (this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1 ));
-
-    double originalNumVoxels = (double)((inExtent[1] - inExtent[0] + 1 )
-                               * (inExtent[3] - inExtent[2] + 1 )
-                               * (inExtent[5] - inExtent[4] + 1 ));
-
-    // We need to scale the image by the updated size
-    // This is because the FFT scalse up by the number of points
-    // and the IFFT divides by it.
-    double scale = finalNumVoxels/originalNumVoxels;
-
-    vtkImageMathematics* multiply = vtkImageMathematics::New();
-    multiply->SetConstantK( scale );
-    multiply->SetOperationToMultiplyByK();
-    multiply->SetInput( rfft->GetOutput() );
-    multiply->Update();
     
-    target->Update();
-    target->DeepCopy( multiply->GetOutput() ); 
-    target->SyncVTKImageDataToDcmHeader(); 
+    if( representation.compare("MAGNITUDE") == 0 ) {
+        vtkImageExtractComponents* real = vtkImageExtractComponents::New();
+        real->SetComponents( 0 );
+        real->SetInput( rfft->GetOutput() );
+        real->Update();
+        target->ShallowCopy( real->GetOutput() );
+        target->Update();
+        real->Delete();
+        target->SyncVTKImageDataToDcmHeader();
+    }
 
     //  Trigger observer update via modified event:
     if( this->operateInPlace ) {
         data->DeepCopy( target );
+        data->SyncVTKImageDataToDcmHeader();
         data->Modified();
         data->Update();
-        this->GetOutput()->SyncVTKImageDataToDcmHeader();
     } else {
         this->GetOutput()->DeepCopy( target );
         this->GetOutput()->SyncVTKImageDataToDcmHeader();
     }
 
-    multiply->Delete();
     target->Delete();
     rfft->Delete();
     return 1; 

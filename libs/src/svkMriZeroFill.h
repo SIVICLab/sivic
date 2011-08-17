@@ -51,6 +51,8 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkImageChangeInformation.h>
 #include <svkImageAlgorithm.h>
+#include <svkImageLinearPhase.h>
+#include <vtkImageMathematics.h>
 
 
 namespace svk {

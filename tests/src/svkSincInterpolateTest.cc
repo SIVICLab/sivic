@@ -110,23 +110,34 @@ void TestSinc( string name, int newDims[3], svkImageData* data )
     writer->SetInput( realSinc );
     writer->Write();
     writer->Delete();
-
-    vtkImageExtractComponents* imag = vtkImageExtractComponents::New();
-    imag->SetComponents( 1 );
-    imag->SetInput( sinc->GetOutput() );
-    imag->Update();
-
-    svkMriImageData* imagSinc = svkMriImageData::New();
-    imagSinc->DeepCopy( sinc->GetOutput());
-    imagSinc->DeepCopy( imag->GetOutput());
-
-    writer = svkIdfVolumeWriter::New();
-    string imagSincName = string(name);
-    imagSincName.append("Imag");
     
-    writer->SetFileName( imagSincName.c_str() );    
-    writer->SetInput( imagSinc );
-    writer->Write();
-    writer->Delete();
+    // If the source has imaginary components let's write them out
+    vtkstd::string representation = data->GetDcmHeader()->GetStringSequenceItemElement(
+                                        "MRImageFrameTypeSequence",
+                                        0,
+                                        "ComplexImageComponent",
+                                        "SharedFunctionalGroupsSequence",
+                                        0
+                                        );
+
+    if( representation.compare("MAGNITUDE") != 0 ) {
+        vtkImageExtractComponents* imag = vtkImageExtractComponents::New();
+        imag->SetComponents( 1 );
+        imag->SetInput( sinc->GetOutput() );
+        imag->Update();
+
+        svkMriImageData* imagSinc = svkMriImageData::New();
+        imagSinc->DeepCopy( sinc->GetOutput());
+        imagSinc->DeepCopy( imag->GetOutput());
+
+        writer = svkIdfVolumeWriter::New();
+        string imagSincName = string(name);
+        imagSincName.append("Imag");
+    
+        writer->SetFileName( imagSincName.c_str() );    
+        writer->SetInput( imagSinc );
+        writer->Write();
+        writer->Delete();
+    }
     sinc->Delete();
 }

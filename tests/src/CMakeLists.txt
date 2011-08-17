@@ -271,12 +271,12 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svkMriZeroFill
-    svkMriZeroFill.cc
+    svkMriZeroFillTest
+    svkMriZeroFillTest.cc
 )
 
 TARGET_LINK_LIBRARIES(
-    svkMriZeroFill
+    svkMriZeroFillTest
 	${SVK_LIBS}
 )
 
@@ -321,12 +321,12 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svkMrsZeroFill
-    svkMrsZeroFill.cc
+    svkMrsZeroFillTest
+    svkMrsZeroFillTest.cc
 )
 
 TARGET_LINK_LIBRARIES(
-    svkMrsZeroFill
+    svkMrsZeroFillTest
 	${SVK_LIBS}
 )
 

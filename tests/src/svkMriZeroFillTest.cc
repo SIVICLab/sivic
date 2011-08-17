@@ -58,6 +58,7 @@ int main (int argc, char** argv)
     string dirOut(argv[2]);
 
     svkDataModel* model = svkDataModel::New();
+
     svkImageData* data = model->LoadFile( fname.c_str() );
     data->Register(NULL); 
    
@@ -83,7 +84,21 @@ int main (int argc, char** argv)
 
     name = string(dirOut);
     name.append("/paddedOne");
-    WriteData( name, padOne->GetOutput() );
+
+    svkMriImageData* target = svkMriImageData::New();
+    target->DeepCopy( padOne->GetOutput() );
+    vtkImageExtractComponents* real = vtkImageExtractComponents::New();
+    real->SetComponents( 0 );
+    real->SetInput( padOne->GetOutput() );
+    real->Update();
+
+    target->DeepCopy( real->GetOutput() );
+    target->Update();
+    real->Delete();
+    target->SyncVTKImageDataToDcmHeader();
+
+    WriteData( name, target );
+    target->Delete();
 
     // Create do padding by 1 extra pixel on each side
     svkMriZeroFill* padTwo = svkMriZeroFill::New();
@@ -95,7 +110,21 @@ int main (int argc, char** argv)
 
     name = string(dirOut);
     name.append("/paddedTwo");
-    WriteData( name, padTwo->GetOutput() );
+
+    target = svkMriImageData::New();
+    target->DeepCopy( padTwo->GetOutput() );
+    real = vtkImageExtractComponents::New();
+    real->SetComponents( 0 );
+    real->SetInput( padTwo->GetOutput() );
+    real->Update();
+
+    target->DeepCopy( real->GetOutput() );
+    target->Update();
+    real->Delete();
+    target->SyncVTKImageDataToDcmHeader();
+
+    WriteData( name, target );
+    target->Delete();
 
     padTwo->Delete();
     padOne->Delete();

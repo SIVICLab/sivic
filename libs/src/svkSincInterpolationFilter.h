@@ -78,8 +78,6 @@ using namespace std;
  *  Use svkMriZeroFill to pad the kspace volume.
  *  Move k=0 back to the origin.
  *  Run svkMriImageFFT to reverse the FFT.
- *  Update the header to decrease the pixel size.
- *  Reset the origin back to its original position position (padding changes the origin).
  */
 class svkSincInterpolationFilter : public svkImageAlgorithm
 {

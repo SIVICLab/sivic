@@ -143,6 +143,15 @@ void svkEnhancedMRIIOD::InitMRImageFrameTypeMacro()
         "SharedFunctionalGroupsSequence",
         0
     );
+
+    this->dcmHeader->AddSequenceItemElement(
+        "MRImageFrameTypeSequence",
+        0,
+        "ComplexImageComponent",
+        string("MAGNITUDE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 }
 
 

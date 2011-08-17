@@ -80,6 +80,12 @@ svkImageLinearPhase::~svkImageLinearPhase()
 {
 }
 
+// This extent of the components changes to real and imaginary values.
+int svkImageLinearPhase::IterativeRequestInformation(vtkInformation* vtkNotUsed(input), vtkInformation* output)
+{
+    vtkDataObject::SetPointDataActiveScalarInfo(output, VTK_DOUBLE, 2);
+    return 1;
+}
 
 /*!
  *  Set an additional phase shift for example to voxel shift data. 

@@ -96,6 +96,9 @@ class svkImageLinearPhase : public vtkImageFourierFilter
         void ExecuteLinearPhase( vtkImageComplex* in, vtkImageComplex* out, int N, vtkImageComplex* phaseArray );
         void CreatePhaseArray( int N, vtkImageComplex* phaseArray );
         
+        // This extent of the components changes to real and imaginary values.
+        int IterativeRequestInformation(vtkInformation* vtkNotUsed(input), vtkInformation* output);
+
     protected:
         svkImageLinearPhase();
         ~svkImageLinearPhase();

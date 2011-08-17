@@ -1420,16 +1420,6 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
             interpOverlay->Update();
             interpOverlay->SyncVTKImageDataToDcmHeader();
 
-            vtkImageExtractComponents* real = vtkImageExtractComponents::New();
-            real->SetComponents( 0 );
-            real->SetInput( sincInterpolation->GetOutput() );
-            real->Update();
-            interpOverlay->ShallowCopy( real->GetOutput() );
-            interpOverlay->Update();
-
-            real->Delete();
-            interpOverlay->SyncVTKImageDataToDcmHeader();
-
             this->SetInput( interpOverlay, OVERLAY );
             svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
             svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();

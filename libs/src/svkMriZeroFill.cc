@@ -184,8 +184,8 @@ int svkMriZeroFill::RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vt
     outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),inExt);
 
     this->ComputeInputUpdateExtent(inExt, inExt, wholeExtent);
-
     inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),inExt,6);
+
 
     return 1;
 }
@@ -196,19 +196,16 @@ int svkMriZeroFill::RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vt
 int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     // Get our input
-    svkMriImageData* data = svkMriImageData::SafeDownCast(this->GetImageDataInput(0));
-
-    // If this is not operating in place thin we have to copy the basic header information here
-    if( !this->operateInPlace ) {
-        this->GetOutput()->DeepCopy( data );
-    }
+    svkMriImageData* inputData = svkMriImageData::SafeDownCast(this->GetImageDataInput(0));
+    svkMriImageData* targetData = svkMriImageData::New();
+    targetData->DeepCopy( inputData );
     
     /*
      * First we need to translate the extent if the input image data to be in the center of the target volume
      * This does not modify the input data, just re-defines its extent for the padding.
      */
     vtkImageChangeInformation* translateExtent = vtkImageChangeInformation::New();
-    int* inExtent = data->GetExtent();
+    int* inExtent = inputData->GetExtent();
 
     int oldNumVoxels[3];
     oldNumVoxels[0] =  inExtent[1] - inExtent[0] + 1;
@@ -229,7 +226,7 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
         }
     }
     translateExtent->SetExtentTranslation( extentTranslation ); 
-    translateExtent->SetInput( data );
+    translateExtent->SetInput( inputData );
    
     // Now we can use the vtk pad algorithm 
     vtkImageConstantPad* pad = NULL;
@@ -239,41 +236,109 @@ int svkMriZeroFill::RequestData( vtkInformation* request, vtkInformationVector**
     pad->SetInput(translateExtent->GetOutput());
     pad->Update();
 
-
     // Now let's move the origin to the appropriate location
-    double* origin = data->GetOrigin(); 
-    double* spacing = data->GetSpacing();
+    double* spacing = inputData->GetSpacing();
+    double newSpacing[3] = {0,0,0};
+    newSpacing[0] = spacing[0]*((double)(inExtent[1]-inExtent[0] + 1))/(this->outputWholeExtent[1] - this->outputWholeExtent[0] + 1);
+    newSpacing[1] = spacing[1]*((double)(inExtent[3]-inExtent[2] + 1))/(this->outputWholeExtent[3] - this->outputWholeExtent[2] + 1);
+    newSpacing[2] = spacing[2]*((double)(inExtent[5]-inExtent[4] + 1))/(this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1);
+    ostringstream* oss = new ostringstream();
+    *oss << newSpacing[0];
+    string pixelSpacingString( oss->str() + "\\" );
+    delete oss;
+
+    oss = new ostringstream();
+    *oss << newSpacing[1];
+    pixelSpacingString.append( oss->str() );
+
+    delete oss;
+    oss = new ostringstream();
+    *oss << newSpacing[2];
+    string sliceThicknessString( oss->str() );
+    delete oss;
+
     double dcos[3][3];
-    double newOrigin[3];
-    data->GetDcos( dcos );
+    inputData->GetDcos( dcos );
+    double* origin = inputData->GetOrigin();
+    double newOrigin[3] = { origin[0], origin[1], origin[2] };
+
+    double originShift[3] = { 0, 0, 0 };
+    originShift[0] = newSpacing[0]/2 - spacing[0]/2;
+    originShift[1] = newSpacing[1]/2 - spacing[1]/2;
+    originShift[2] = newSpacing[2]/2 - spacing[2]/2;
+
     for (int i = 0; i < 3; i++) {
-        newOrigin[i] = origin[i];
-        for( int j = 0; j < 3; j++) {
-            newOrigin[i] -= (extentTranslation[j]) * spacing[j] * dcos[j][i];
+        for (int j = 0; j < 3; j++) {
+            newOrigin[i] += (originShift[j]) * dcos[j][i];
         }
     }
+
     int numSlices = this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1;
 
-    if( this->operateInPlace ) {
-        data->ShallowCopy(pad->GetOutput());
-        data->GetDcmHeader()->SetValue("Columns", newNumVoxels[0]);
-        data->GetDcmHeader()->SetValue("Rows", newNumVoxels[1]);
-        data->GetDcmHeader()->SetValue("NumberOfFrames", newNumVoxels[2]);
-        data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, spacing, dcos, numSlices, 1, 1);
-    } else {
-        this->GetOutput()->ShallowCopy(pad->GetOutput());
-        this->GetOutput()->GetDcmHeader()->SetValue("Columns", newNumVoxels[0]);
-        this->GetOutput()->GetDcmHeader()->SetValue("Rows", newNumVoxels[1]);
-        this->GetOutput()->GetDcmHeader()->SetValue("NumberOfFrames", newNumVoxels[2]);
-        this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, spacing, dcos, numSlices, 1, 1);
-        this->GetOutput()->Modified();
-    }
+    // Update the header
+    targetData->GetDcmHeader()->SetValue("Columns", newNumVoxels[0]);
+    targetData->GetDcmHeader()->SetValue("Rows", newNumVoxels[1]);
+    targetData->GetDcmHeader()->SetValue("NumberOfFrames", newNumVoxels[2]);
+    targetData->GetDcmHeader()->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
+    targetData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, numSlices, 1, 1);
+    targetData->DeepCopy(pad->GetOutput() );
+    targetData->SyncVTKImageDataToDcmHeader(); 
+
+    double shiftWindow[3] = { 0, 0, 0 };
+    shiftWindow[0] = -originShift[0]/newSpacing[0];
+    shiftWindow[1] = -originShift[1]/newSpacing[1];
+    shiftWindow[2] = -originShift[2]/newSpacing[2];
+
+    // Apply a half voxel phase shift. This is because the sampled points of the data has changed.
+    svkImageLinearPhase* linearShift = svkImageLinearPhase::New();
+    linearShift->SetShiftWindow( shiftWindow );
+    linearShift->SetInput( targetData );
+    linearShift->Update();
+
+
+    // We need to scale the image by the updated size
+    // This is because the FFT scalse up by the number of points
+    // and the IFFT divides by it.
+    double scale = ((double)(newNumVoxels[0]*newNumVoxels[1]*newNumVoxels[2]))
+                   / ((double)(oldNumVoxels[0]*oldNumVoxels[1]*oldNumVoxels[2]));
+
+
+    vtkImageMathematics* multiply = vtkImageMathematics::New();
+    multiply->SetConstantK( scale );
+    multiply->SetOperationToMultiplyByK();
+    multiply->SetInput( linearShift->GetOutput() );
+    multiply->Update();
+   
+    targetData->DeepCopy(multiply->GetOutput());
+
+    // After the Linear Phase the BitsAllocated and PixelRepresentation must be reset
+    // TODO: Make svkImageLinearPhase output svkImageData with the correct header info
+    targetData->GetDcmHeader()->SetValue("BitsAllocated", 64);
+    targetData->GetDcmHeader()->SetValue("PixelRepresentation", 1);
+    targetData->GetDcmHeader()->ClearSequence("MRImageFrameTypeSequence");
+    targetData->GetDcmHeader()->AddSequenceItemElement(
+        "MRImageFrameTypeSequence",
+        0,
+        "ComplexImageComponent",
+        string("MAGNITUDE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 
     //  Trigger observer update via modified event:
     if( this->operateInPlace ) {
-        this->GetInput()->Modified();
-        this->GetInput()->Update();
+        inputData->DeepCopy( targetData );
+        inputData->SyncVTKImageDataToDcmHeader();
+        inputData->Modified();
+        inputData->Update();
+    } else {
+        this->GetOutput()->DeepCopy( targetData );
+        this->GetOutput()->SyncVTKImageDataToDcmHeader();
     }
+
+    linearShift->Delete();
+    targetData->Delete();
+    multiply->Delete();
     translateExtent->Delete();
     pad->Delete();
     return 1; 

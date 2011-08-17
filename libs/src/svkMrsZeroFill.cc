@@ -306,10 +306,7 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numChannels = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
-    double dcos[3][3];
     double origin[3];
-    double* spacing = data->GetSpacing();
-    data->GetDcos( dcos );
     int* inExtent = data->GetExtent();
     int oldNumVoxels[3];
     oldNumVoxels[0] =  inExtent[1] - inExtent[0];
@@ -346,17 +343,45 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
         }
     }
 
-    // Now we'll calculate the new origin of the dataset
-    double newOrigin[3];
+    //Adjust Spacing And Origin
+    double* spacing = data->GetSpacing();
+    double newSpacing[3] = {0,0,0};
+    newSpacing[0] = spacing[0]*((double)(oldNumVoxels[0] ))/(newNumVoxels[0] );
+    newSpacing[1] = spacing[1]*((double)(oldNumVoxels[1] ))/(newNumVoxels[1] );
+    newSpacing[2] = spacing[2]*((double)(oldNumVoxels[2] ))/(newNumVoxels[2] );
+    ostringstream* oss = new ostringstream();
+    *oss << newSpacing[0];
+    string pixelSpacingString( oss->str() + "\\" );
+    delete oss;
+
+    oss = new ostringstream();
+    *oss << newSpacing[1];
+    pixelSpacingString.append( oss->str() );
+
+    delete oss;
+    oss = new ostringstream();
+    *oss << newSpacing[2];
+    string sliceThicknessString( oss->str() );
+    delete oss;
+
+    double dcos[3][3];
+    data->GetDcos( dcos );
+    double newOrigin[3] = { origin[0], origin[1], origin[2] };
+
+    double originShift[3] = { 0, 0, 0 };
+    originShift[0] = newSpacing[0]/2 - spacing[0]/2;
+    originShift[1] = newSpacing[1]/2 - spacing[1]/2;
+    originShift[2] = newSpacing[2]/2 - spacing[2]/2;
+
     for (int i = 0; i < 3; i++) {
-        newOrigin[i] = origin[i];
-        for( int j = 0; j < 3; j++) {
-            newOrigin[i] -= (extentTranslation[j]) * spacing[j] * dcos[j][i];
+        for (int j = 0; j < 3; j++) {
+            newOrigin[i] += (originShift[j]) * dcos[j][i];
         }
     }
 
     // And construct the output target's spatial parameters.
-    outputData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, spacing, dcos, newNumVoxels[2], numTimePts, numChannels);
+    outputData->GetDcmHeader()->InitPixelMeasuresMacro( pixelSpacingString, sliceThicknessString );
+    outputData->GetDcmHeader()->InitPerFrameFunctionalGroupSequence( newOrigin, newSpacing, dcos, newNumVoxels[2], numTimePts, numChannels);
     outputData->SyncVTKImageDataToDcmHeader();
     outputData->Modified();
 
