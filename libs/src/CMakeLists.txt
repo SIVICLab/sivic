@@ -212,7 +212,9 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageCopy.cc
-    svkExtractMRIFromMRS.cc
+    svkQuantifyMetabolites.cc
+    svkMetaboliteMap.cc
+    svkMetaboliteRatioZScores.cc
     svkImageClip.cc
     svkObliqueReslice.cc
     svkIOD.cc
