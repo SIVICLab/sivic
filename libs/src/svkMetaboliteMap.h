@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_GENERATE_METABOLITE_MAP_H
-#define SVK_GENERATE_METABOLITE_MAP_H
+#ifndef SVK_METABOLITE_MAP_H
+#define SVK_METABOLITE_MAP_H
 
 
 #include <vtkObject.h>
@@ -67,13 +67,13 @@ using namespace std;
  *  useful for generating metaboite maps or other maps from spectral, dynamic or other multi-
  *  volumetric data. 
  */
-class svkGenerateMetaboliteMap: public svkImageAlgorithm
+class svkMetaboliteMap: public svkImageAlgorithm
 {
 
     public:
 
-        static svkGenerateMetaboliteMap* New();
-        vtkTypeRevisionMacro( svkGenerateMetaboliteMap, svkImageAlgorithm);
+        static svkMetaboliteMap* New();
+        vtkTypeRevisionMacro( svkMetaboliteMap, svkImageAlgorithm);
 
         typedef enum {
             INTEGRATE = 0, 
@@ -95,8 +95,8 @@ class svkGenerateMetaboliteMap: public svkImageAlgorithm
 
     protected:
 
-        svkGenerateMetaboliteMap();
-        ~svkGenerateMetaboliteMap();
+        svkMetaboliteMap();
+        ~svkMetaboliteMap();
 
         virtual int             RequestInformation(
                                     vtkInformation* request,
@@ -127,7 +127,7 @@ class svkGenerateMetaboliteMap: public svkImageAlgorithm
         vtkstd::string                       newSeriesDescription; 
         float                                peakCenterPPM;
         float                                peakWidthPPM;
-        svkGenerateMetaboliteMap::algorithm  quantificationAlgorithm;  
+        svkMetaboliteMap::algorithm  quantificationAlgorithm;  
         bool                                 isVerbose; 
         float                                useSelectedVolumeFraction;
         short*                               quantificationMask;
@@ -139,5 +139,5 @@ class svkGenerateMetaboliteMap: public svkImageAlgorithm
 }   //svk
 
 
-#endif //SVK_GENERATE_METABOLITE_MAP_H
+#endif //SVK_METABOLITE_MAP_H
 

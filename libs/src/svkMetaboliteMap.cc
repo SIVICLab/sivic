@@ -46,21 +46,21 @@
 #include <vtkXMLDataElement.h>
 #include <vtkXMLUtilities.h>
 
-#include <svkGenerateMetaboliteMap.h>
+#include <svkMetaboliteMap.h>
 #include <svkSpecPoint.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkGenerateMetaboliteMap, "$Rev$");
-vtkStandardNewMacro(svkGenerateMetaboliteMap);
+vtkCxxRevisionMacro(svkMetaboliteMap, "$Rev$");
+vtkStandardNewMacro(svkMetaboliteMap);
 
 
 /*!
  *
  */
-svkGenerateMetaboliteMap::svkGenerateMetaboliteMap()
+svkMetaboliteMap::svkMetaboliteMap()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -69,7 +69,7 @@ svkGenerateMetaboliteMap::svkGenerateMetaboliteMap()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     this->newSeriesDescription = ""; 
-    this->quantificationAlgorithm = svkGenerateMetaboliteMap::INTEGRATE; 
+    this->quantificationAlgorithm = svkMetaboliteMap::INTEGRATE; 
     this->isVerbose = false; 
     this->useSelectedVolumeFraction = 0;
     this->quantificationMask = NULL;
@@ -82,7 +82,7 @@ svkGenerateMetaboliteMap::svkGenerateMetaboliteMap()
 /*!
  *
  */
-svkGenerateMetaboliteMap::~svkGenerateMetaboliteMap()
+svkMetaboliteMap::~svkMetaboliteMap()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 
@@ -97,7 +97,7 @@ svkGenerateMetaboliteMap::~svkGenerateMetaboliteMap()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkGenerateMetaboliteMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkMetaboliteMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
@@ -108,7 +108,7 @@ void svkGenerateMetaboliteMap::SetSeriesDescription( vtkstd::string newSeriesDes
  *  Resets the origin and extent for correct initialization of output svkMriImageData object from input 
  *  svkMrsImageData object. 
  */
-int svkGenerateMetaboliteMap::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMetaboliteMap::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
@@ -151,7 +151,7 @@ int svkGenerateMetaboliteMap::RequestInformation( vtkInformation* request, vtkIn
 /*!
  *  Copy the Dcm Header and Provenance from the input to the output. 
  */
-int svkGenerateMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     //  Create the template data object by  
@@ -183,9 +183,9 @@ int svkGenerateMetaboliteMap::RequestData( vtkInformation* request, vtkInformati
             
     }
 
-    if (this->quantificationAlgorithm == svkGenerateMetaboliteMap::INTEGRATE) { 
+    if (this->quantificationAlgorithm == svkMetaboliteMap::INTEGRATE) { 
         this->Integrate(); 
-    } else if (this->quantificationAlgorithm == svkGenerateMetaboliteMap::PEAK_HT) { 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::PEAK_HT) { 
         this->PeakHt(); 
     }
 
@@ -201,7 +201,7 @@ int svkGenerateMetaboliteMap::RequestData( vtkInformation* request, vtkInformati
 /*! 
  *  Peak height of real spectra within specified limits. 
  */
-void svkGenerateMetaboliteMap::PeakHt()
+void svkMetaboliteMap::PeakHt()
 {
 
     this->ZeroData(); 
@@ -250,7 +250,7 @@ void svkGenerateMetaboliteMap::PeakHt()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkGenerateMetaboliteMap::Integrate()
+void svkMetaboliteMap::Integrate()
 {
 
     this->ZeroData(); 
@@ -298,7 +298,7 @@ void svkGenerateMetaboliteMap::Integrate()
 /*! 
  *  Zero data
  */
-void svkGenerateMetaboliteMap::ZeroData()
+void svkMetaboliteMap::ZeroData()
 {
 
     int numVoxels[3]; 
@@ -315,7 +315,7 @@ void svkGenerateMetaboliteMap::ZeroData()
 /*!
  *  Set the chemical shift of the peak position to integrate over.
  */
-void svkGenerateMetaboliteMap::SetPeakPosPPM( float centerPPM )
+void svkMetaboliteMap::SetPeakPosPPM( float centerPPM )
 {
     this->peakCenterPPM = centerPPM;
     this->Modified(); 
@@ -326,7 +326,7 @@ void svkGenerateMetaboliteMap::SetPeakPosPPM( float centerPPM )
  *  Set the chemical shift range to integrate over.  Integration will be +/- 1/2 this
  *  width about the peak position.
  */
-void svkGenerateMetaboliteMap::SetPeakWidthPPM( float widthPPM )
+void svkMetaboliteMap::SetPeakWidthPPM( float widthPPM )
 {
     this->peakWidthPPM = widthPPM;
     this->Modified(); 
@@ -336,7 +336,7 @@ void svkGenerateMetaboliteMap::SetPeakWidthPPM( float widthPPM )
 /*!
  *
  */
-void svkGenerateMetaboliteMap::GetIntegrationPtRange(int& startPt, int& endPt) 
+void svkMetaboliteMap::GetIntegrationPtRange(int& startPt, int& endPt) 
 {
 
     //  Get the integration range in points:
@@ -358,9 +358,9 @@ void svkGenerateMetaboliteMap::GetIntegrationPtRange(int& startPt, int& endPt)
 /*!
  *
  */
-void svkGenerateMetaboliteMap::SetAlgorithmToIntegrate()
+void svkMetaboliteMap::SetAlgorithmToIntegrate()
 {
-    this->quantificationAlgorithm = svkGenerateMetaboliteMap::INTEGRATE; 
+    this->quantificationAlgorithm = svkMetaboliteMap::INTEGRATE; 
     this->Modified(); 
 }
 
@@ -368,17 +368,17 @@ void svkGenerateMetaboliteMap::SetAlgorithmToIntegrate()
 /*!
  *
  */
-void svkGenerateMetaboliteMap::SetAlgorithmToPeakHeight()
+void svkMetaboliteMap::SetAlgorithmToPeakHeight()
 {
-    this->quantificationAlgorithm = svkGenerateMetaboliteMap::PEAK_HT; 
+    this->quantificationAlgorithm = svkMetaboliteMap::PEAK_HT; 
     this->Modified(); 
 }
 
 
 /*
- *  Set algo type based on string description svkGenerateMetaboliteMap::algorithm. 
+ *  Set algo type based on string description svkMetaboliteMap::algorithm. 
  */
-void svkGenerateMetaboliteMap::SetAlgorithm( vtkstd::string algo )
+void svkMetaboliteMap::SetAlgorithm( vtkstd::string algo )
 {
     if ( algo.compare("INTEGRATE") == 0 ) {
         this->SetAlgorithmToIntegrate(); 
@@ -393,7 +393,7 @@ void svkGenerateMetaboliteMap::SetAlgorithm( vtkstd::string algo )
 /*!
  *
  */
-void svkGenerateMetaboliteMap::UpdateProvenance()
+void svkMetaboliteMap::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
 }
@@ -402,7 +402,7 @@ void svkGenerateMetaboliteMap::UpdateProvenance()
 /*!
  *  Write the integrals for each voxel to stdout. Default is false.  
  */
-void svkGenerateMetaboliteMap::SetVerbose( bool isVerbose )
+void svkMetaboliteMap::SetVerbose( bool isVerbose )
 {
     this->isVerbose = isVerbose; 
 }
@@ -413,7 +413,7 @@ void svkGenerateMetaboliteMap::SetVerbose( bool isVerbose )
  *  volume within the selected MRS volume. The default is to include all voxels
  *  in the calculation (fraction = 0).
  */
-void svkGenerateMetaboliteMap::LimitToSelectedVolume(float fraction)
+void svkMetaboliteMap::LimitToSelectedVolume(float fraction)
 {
     this->useSelectedVolumeFraction = fraction;
     this->Modified();
@@ -423,7 +423,7 @@ void svkGenerateMetaboliteMap::LimitToSelectedVolume(float fraction)
 /*!
  *
  */
-int svkGenerateMetaboliteMap::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMetaboliteMap::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
     return 1;
@@ -433,7 +433,7 @@ int svkGenerateMetaboliteMap::FillInputPortInformation( int vtkNotUsed(port), vt
 /*!
  *  Output from this algo is an svkMriImageData object. 
  */
-int svkGenerateMetaboliteMap::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMetaboliteMap::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
     return 1;
