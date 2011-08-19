@@ -167,7 +167,21 @@ int svkGenerateMetaboliteMap::RequestData( vtkInformation* request, vtkInformati
         this->newSeriesDescription 
     );
 
-    this->GenerateQuantificationMask(); 
+    //  Determines binary mask indicating whether a given voxel should be quantified (1)  
+    //  or not (0). Usually this is based on whether a specified fraction of the voxel 
+    //  inside the selected volume. 
+    if ( this->quantificationMask == NULL ) {
+        int numVoxels[3];
+        this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
+        int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+        this->quantificationMask = new short[totalVoxels];
+
+        svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetSelectionBoxMask( 
+            this->quantificationMask, 
+            this->useSelectedVolumeFraction
+        ); 
+            
+    }
 
     if (this->quantificationAlgorithm == svkGenerateMetaboliteMap::INTEGRATE) { 
         this->Integrate(); 
@@ -216,7 +230,7 @@ void svkGenerateMetaboliteMap::PeakHt()
             ); 
             float* specPtr = spectrum->GetPointer(0);
 
-            double peakHt = specPtr[2*startPt];     
+            peakHt = specPtr[2*startPt];     
             for ( int pt = startPt; pt <= endPt; pt ++ ) {
                 if ( specPtr[2*pt] > peakHt ) {
                     peakHt = specPtr[2*pt]; 
@@ -278,77 +292,6 @@ void svkGenerateMetaboliteMap::Integrate()
         this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
     }
 
-}
-
-
-/*
- *  Determines binary mask indicating whether a given voxel should be quantified (1)  
- *  or not (0). Usually this is based on whether a specified fraction of the voxel 
- *  inside the selected volume. 
- */
-void svkGenerateMetaboliteMap::GenerateQuantificationMask() 
-{
-
-    if ( this->quantificationMask == NULL ) {
-        //  min/max represent the xyz inidices representing
-        //  the rectanglular volume of voxels to quantify.  
-        //  Default is for the min/max to include all voxels
-        int extent[6]; 
-        this->GetImageDataInput(0)->GetExtent( extent ); 
-        
-        int min[3] = {extent[0], extent[2], extent[4]};
-        int max[3] = {extent[1], extent[3], extent[5]};
-
-        //  Initialize the mask to 1 (quantify all voxels): 
-        int numVoxels[3]; 
-        this->GetOutput()->GetNumberOfVoxels(numVoxels);
-        int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-        this->quantificationMask = new short[totalVoxels]; 
-
-        int voxelIndex[3]; 
-        if ( this->useSelectedVolumeFraction > 0 ) { 
-
-            for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
-
-                this->quantificationMask[voxelID] = 0; 
-
-                //  Get the slice number for this voxelID: 
-                this->GetImageDataInput(0)->GetIndexFromID( voxelID, voxelIndex ); 
-            
-                //  Get the ID of the voxels that define the TLC and BRC of the 
-                //  the selection box for this slice:
-                int tlcBrcID[2];
-                svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->Get2DProjectedTlcBrcInSelectionBox( 
-                    tlcBrcID, 
-                    svkDcmHeader::UNKNOWN_ORIENTATION, 
-                    voxelIndex[2], 
-                    this->useSelectedVolumeFraction
-                );
-
-                this->GetImageDataInput(0)->GetIndexFromID( tlcBrcID[0], min );
-                this->GetImageDataInput(0)->GetIndexFromID( tlcBrcID[1], max );
-
-                //  compare the current voxel's indices to the tlcBrcID range: 
-                if ( 
-                       ( (min[0] <= voxelIndex[0]) && (voxelIndex[0] <= max[0]) ) 
-                    && ( (min[1] <= voxelIndex[1]) && (voxelIndex[1] <= max[1]) ) 
-                    && ( (min[2] <= voxelIndex[2]) && (voxelIndex[2] <= max[2]) ) 
-                ) {
-                    this->quantificationMask[voxelID] = 1; 
-                }
-                cout << "VOXID: " << voxelID << " = " << this->quantificationMask[voxelID] << endl;
-                cout << "   voxelINDEX: " << voxelIndex[0] << " " << voxelIndex[1] << " " << voxelIndex[2] << endl;
-                cout << "   min: " << min[0] << " " << min[1] << " " << min[2] << endl;
-                cout << "   max: " << max[0] << " " << max[1] << " " << max[2] << endl;
-            }
-
-
-        } else {
-            for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
-                this->quantificationMask[voxelID] = 1; 
-            }
-        }
-    }
 }
 
 
