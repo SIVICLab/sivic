@@ -194,21 +194,24 @@ void svkDICOMImageWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumbe
             vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
             if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
 
-                // convert slope and intercept to center and width:     
-
-                //  Get the pixel value range (defines the WL of VOI LUT):
+                //  MR Image Storage: 
+                //      convert slope and intercept to center and width:     
+                //      Get the pixel value range (defines the WL of VOI LUT):
                 double width = inputRangeMax - inputRangeMin;
                 double center = (inputRangeMax + inputRangeMin)/2;
                 dcmHeader->InitVOILUTModule( center, width ); 
 
             } else {
-                //  slope and intercept are for real -> short, we need the 
-                //  inverse transformation here that a downstream application:
-                //  can use to regenerate the original values:
+
+                //  Enhanced MR Image Storage: 
+                //      slope and intercept are for real -> short, we need the 
+                //      inverse transformation here that a downstream application:
+                //      can use to regenerate the original values:
                 float slopeReverse = 1/slope;  
                 int shortMin = VTK_UNSIGNED_SHORT_MIN; 
                 float interceptReverse = inputRangeMin - shortMin/slope;
                 dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse ); 
+
             }
 
             delete[] pixelData; 
