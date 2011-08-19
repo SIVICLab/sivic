@@ -162,13 +162,20 @@ void svkImageData::ShallowCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFo
 
 
 /*!
- *  First calls CopyStructure, then also copies the dcos, but does NOT copy the 
- *  DICOM header.
+ *  First calls CopyStructure, then also copies the dcos, and DICOM header. 
  */
 void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
+
+    if( src->IsA("svkImageData") ) {
+        svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
+    }
+
     // First we copy the basic structure, this copies no data
     this->CopyStructure( src );
+
+    int numCellArrays = src->GetCellData()->GetNumberOfArrays();
+    int numPointArrays = src->GetPointData()->GetNumberOfArrays();
 
     // Next lets figure out the vtk equivalent data type for the target
     int dataTypeVtk;
@@ -185,10 +192,16 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
         case svkDcmHeader::SIGNED_FLOAT_8:
             dataTypeVtk = VTK_DOUBLE;
             break; 
+        case svkDcmHeader::UNDEFINED:
+            if ( numCellArrays > 0 ) {
+                dataTypeVtk =  src->GetCellData()->GetArray(0)->GetDataType();
+            } else if ( numPointArrays > 0 ) {
+                dataTypeVtk = src->GetPointData()->GetArray(0)->GetDataType();
+            }
+            break; 
     }
 
     // Now lets get the cell data structure 
-    int numCellArrays = src->GetCellData()->GetNumberOfArrays();
     int numCellTuples = 0;
     int numCellComponents = 0;
     if( numCellArrays > 0 ) {
@@ -214,7 +227,6 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
     }
 
     // Now lets get the point data structure 
-    int numPointArrays = src->GetPointData()->GetNumberOfArrays();
     int numPointTuples = 0;
     int numPointComponents = 0;
     if( numPointArrays > 0 ) {
