@@ -540,6 +540,7 @@ void svkIdfVolumeWriter::GetDoublePixelRange(double* doublePixels, int numPixels
 /*!
  *  Set to true if you want double values to be simply cast to floats. The default
  *  behavior is to scale the doubles to the full dynamic range of the floats.
+ *  If the doubles are over range for float, will throw a runtime error.
  */
 void svkIdfVolumeWriter::SetCastDoubleToFloat( bool castDoubleToFloat )
 {
@@ -560,6 +561,7 @@ void svkIdfVolumeWriter::CastDoubleToFloat(double* doublePixels, float* floatPix
     float floatMin = VTK_FLOAT_MIN;
     float floatMax = VTK_FLOAT_MAX;
     if( inputRangeMin < floatMin || inputRangeMax > floatMax ) {
+        cout << "RANGE Min/Max: " << inputRangeMin << " - " << inputRangeMax << endl;
         throw runtime_error("ERROR: Cannot cast doubles to floats-- range is too large.");
     }
     for (int i = 0; i < numPixels; i++) {
