@@ -76,21 +76,19 @@ void sivicQuantificationWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    this->numMets = 4; 
-    this->metNames.push_back( "choline" ); 
-    this->metNames.push_back( "creatine" ); 
-    this->metNames.push_back( "NAA" ); 
-    this->metNames.push_back( "lipid_lac" ); 
+    svkQuantifyMetabolites* mrsQuant = svkQuantifyMetabolites::New();
+    //mrsQuant->SetXMLFileName( string xmlFileName ); 
 
-    // this is a map of default metabolite names to ppm ranges: 
-    this->metQuantMap["choline"].push_back(3.358); 
-    this->metQuantMap["choline"].push_back(3.169); 
-    this->metQuantMap["creatine"].push_back(3.154); 
-    this->metQuantMap["creatine"].push_back(2.973); 
-    this->metQuantMap["NAA"].push_back(2.164); 
-    this->metQuantMap["NAA"].push_back(1.93); 
-    this->metQuantMap["lipid_lac"].push_back(1.439); 
-    this->metQuantMap["lipid_lac"].push_back(1.273); 
+    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = mrsQuant->GetRegionNameVector(); 
+    this->numMets = regionNameVector.size(); 
+    for (int i = 0; i < regionNameVector.size() ; i ++ ) {
+        string regionName = regionNameVector[i][0]; 
+        float peakPPM  = mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+        float widthPPM = mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+        this->metNames.push_back( regionName ); 
+        this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
+        this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
+    }
 
 
     //  Map View Selector
@@ -268,7 +266,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
     if( data != NULL ) {
 
-        this->quant = svkExtractMRIFromMRS::New();
+        this->quant = svkMetaboliteMap::New();
         this->quant->SetInput( data );
 
         //generate pk ht, peak area and magnitude area met maps for the specified intervals
