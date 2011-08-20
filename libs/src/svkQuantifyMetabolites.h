@@ -77,10 +77,14 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         static svkQuantifyMetabolites* New();
         vtkTypeRevisionMacro( svkQuantifyMetabolites, svkImageAlgorithm);
 
-        void                                SetXMLFileName( vtkstd::string xmlFileName );     
-        void                                SetVerbose( bool isVerbose );     
-        vtkstd::vector< svkMriImageData* >* GetMetMaps();
-        void                                LimitToSelectedVolume(float fraction = 0.5001); 
+        void                                                SetXMLFileName( vtkstd::string xmlFileName );     
+        void                                                SetVerbose( bool isVerbose );     
+        vtkstd::vector< svkMriImageData* >*                 GetMetMaps();
+        void                                                LimitToSelectedVolume(float fraction = 0.5001); 
+        vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();
+        int                                                 GetIntFromString(vtkstd::string stringVal ); 
+        float                                               GetFloatFromString(vtkstd::string stringVal ); 
+
 
 
     protected:
@@ -125,6 +129,10 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         vtkstd::string                      xmlFileName; 
         vtkstd::vector< svkMriImageData* >  metMapVector; 
         float                               useSelectedVolumeFraction;
+
+        //  map of regions: region name, peak (ppm) and peak width (ppm)
+        vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
+
 
 
 };

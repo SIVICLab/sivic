@@ -117,49 +117,53 @@ vtkstd::vector< svkMriImageData* >* svkQuantifyMetabolites::GetMetMaps()
 void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
 {
 
+    this->GetRegionNameVector(); 
+
     //  
     //  Loop over the regions to quantify:
     //  
-    bool parseRegions = true; 
-    int regionIndex = 0; 
-    vtkXMLDataElement* regionXML;
+    bool parseQuants = true; 
+    int quantIndex = 0; 
+    vtkXMLDataElement* quantXML;
+    vtkXMLDataElement* algoXML;
     svkMetaboliteMap* mapGen = svkMetaboliteMap::New();
     mapGen->SetInput( this->GetImageDataInput(0) ); 
 
-    while ( parseRegions ) {
+    while ( parseQuants ) {
 
         ostringstream ossIndex;
-        ossIndex << regionIndex;
-        vtkstd::string regionIndexString(ossIndex.str());
+        ossIndex << quantIndex;
+        vtkstd::string quantIndexString(ossIndex.str());
 
-        regionXML = mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
+        quantXML = mrsXML->FindNestedElementWithNameAndId("QUANT", quantIndexString.c_str());
 
-        if (regionXML != NULL ) {
+        if (quantXML != NULL ) {
 
-            //cout << "region id = " << regionIndexString << endl;
-            //regionXML->PrintXML( cout, vtkIndent() ); 
+            cout << "quant id = " << quantIndexString << endl;
+            quantXML->PrintXML( cout, vtkIndent() ); 
 
-            //  Get algo type, quant params: peak, width and generate metabolite 
+            //  Get region and algo to quantify.  peak range is defied already in regionVector;  
             //  image to store in a vtkstd::vector of svkMriImageData objects. 
-             
-            vtkstd::string regionName( regionXML->GetAttributeValue( 1 ) ); 
-            regionName = this->ReplaceSlashesAndWhiteSpace( regionName ); 
-            vtkstd::string algoName( regionXML->GetAttributeValue( 2 ) ); 
-            algoName = this->ReplaceSlashesAndWhiteSpace( algoName ); 
-            float peakPPM;
-            regionXML->GetScalarAttribute("peak_ppm", peakPPM); 
-            float widthPPM;
-            regionXML->GetScalarAttribute("width_ppm", widthPPM); 
+            int regionID; 
+            quantXML->GetScalarAttribute("region", regionID); 
+            algoXML = quantXML->FindNestedElementWithName("ALGO");
+            vtkstd::string algoName( algoXML->GetAttributeValue( 0 ) );
+            algoName = this->ReplaceSlashesAndWhiteSpace( algoName );
+
+            vtkstd::string regionName = this->regionVector[regionID][0];  
+            float peakPPM  =  GetFloatFromString( this->regionVector[regionID][1] ); 
+            float widthPPM =  GetFloatFromString( this->regionVector[regionID][2] ); 
 
             cout << "NAME      : " << regionName << endl;
+            cout << "PEAK POS  : " << peakPPM << endl; 
+            cout << "PEAK WIDTH: " << widthPPM << endl; 
             cout << "ALGO      : " << algoName << endl;
-            cout << "peak pos  : " << peakPPM << endl;
-            cout << "peak width: " << widthPPM << endl;
 
             mapGen->SetPeakPosPPM( peakPPM );
             mapGen->SetPeakWidthPPM( widthPPM ); 
             mapGen->SetSeriesDescription( regionName + "_" + algoName );
             mapGen->SetAlgorithm( algoName );
+
             if ( this->useSelectedVolumeFraction ) { 
                 mapGen->LimitToSelectedVolume(); 
             }
@@ -172,15 +176,45 @@ void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
 
         } else {
 
-            parseRegions = false; 
+            parseQuants = false; 
 
         }
 
-        regionIndex++; 
+        quantIndex++; 
     }
 
     mapGen->Delete();
  
+}
+
+
+/*
+ *
+ */
+int svkQuantifyMetabolites::GetIntFromString(vtkstd::string stringVal ) 
+{
+ 
+    istringstream* iss = new istringstream();
+    int intVal;
+    iss->str( stringVal ); 
+    *iss >> intVal;
+    delete iss;
+    return intVal; 
+}
+
+
+/*
+ *
+ */
+float svkQuantifyMetabolites::GetFloatFromString(vtkstd::string stringVal ) 
+{
+ 
+    istringstream* iss = new istringstream();
+    float floatVal;
+    iss->str( stringVal ); 
+    *iss >> floatVal;
+    delete iss;
+    return floatVal; 
 }
 
 
@@ -291,22 +325,22 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
         if ( nestedXML != NULL ) {
 
             //  Is it part of numerator or denominator?
-            vtkstd::string regionType (nestedXML->GetName() ); 
-            vtkstd::string regionNumString = nestedXML->GetAttributeValue(0);
+            vtkstd::string quantType (nestedXML->GetName() ); 
+            vtkstd::string quantNumString = nestedXML->GetAttributeValue(0);
             istringstream* iss = new istringstream();
-            int regionNum;
-            iss->str( regionNumString ); 
-            *iss >> regionNum;
+            int quantNum;
+            iss->str( quantNumString ); 
+            *iss >> quantNum;
             delete iss;
             elementID++;    
-            if ( regionType.compare("NUMERATOR") == 0 ) {
-                inputImage->DeepCopy( this->metMapVector[regionNum] );
+            if ( quantType.compare("NUMERATOR") == 0 ) {
+                inputImage->DeepCopy( this->metMapVector[quantNum] );
                 mathN->SetInput2( inputImage ); 
                 mathN->Update();
                 numeratorImage->DeepCopy( mathN->GetOutput() ); 
                 mathN->SetInput1( numeratorImage ); 
-            } else if ( regionType.compare("DENOMINATOR") == 0 ) {
-                mathD->SetInput2( this->metMapVector[regionNum] ); 
+            } else if ( quantType.compare("DENOMINATOR") == 0 ) {
+                mathD->SetInput2( this->metMapVector[quantNum] ); 
                 mathD->Update();
                 denominatorImage->DeepCopy( mathD->GetOutput() ); 
                 mathD->SetInput1( denominatorImage ); 
@@ -463,6 +497,70 @@ string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( vtkstd::string inStr
 
     return outString; 
 
+}
+
+
+/*!
+ *  Returns an stl map containing the region name, with a vector of 2 floats 
+ *  that store the region peak ppm and width in ppm.  All info parsed from the 
+ *  xml config file.
+ */
+vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetRegionNameVector()
+{
+
+    //
+    //  Loop over the regions to quantify:
+    //
+    bool parseRegions = true;
+    int regionIndex = 0;
+
+    vtkXMLDataElement* mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+
+    vtkXMLDataElement* regionXML;
+
+
+    while ( parseRegions ) {
+
+        ostringstream ossIndex;
+        ossIndex << regionIndex;
+        vtkstd::string regionIndexString(ossIndex.str());
+
+        regionXML = mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
+
+        if (regionXML != NULL ) {
+
+            vtkstd::string regionName( regionXML->GetAttributeValue( 1 ) );
+            regionName = this->ReplaceSlashesAndWhiteSpace( regionName );
+            string peakPPM( regionXML->GetAttribute("peak_ppm") );
+            string widthPPM( regionXML->GetAttribute("width_ppm") );
+
+            cout << "XX peak pos  : " << peakPPM << endl;
+            cout << "XX peak width: " << widthPPM << endl;
+
+            vtkstd::vector < vtkstd::string > peak;
+            peak.push_back(regionName); 
+            peak.push_back(peakPPM); 
+            peak.push_back(widthPPM); 
+
+            this->regionVector.push_back(peak);  
+
+        } else {
+            parseRegions = false; 
+
+        }
+        regionIndex++; 
+    }
+
+    return this->regionVector; 
+}
+
+
+/*!
+ *  set the path/name to xml file.   
+ */
+void svkQuantifyMetabolites::SetXMLFileName( string xmlFileName )
+{
+    this->xmlFileName = xmlFileName;  
 }
 
 
