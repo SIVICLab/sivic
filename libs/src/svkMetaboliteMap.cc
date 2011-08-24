@@ -167,9 +167,9 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
         this->newSeriesDescription 
     );
 
-    //  Determines binary mask indicating whether a given voxel should be quantified (1)  
-    //  or not (0). Usually this is based on whether a specified fraction of the voxel 
-    //  inside the selected volume. 
+    //  Determines binary mask (quantificationMask) indicating whether a given voxel 
+    //  should be quantified (1) or not (0). Usually this is based on whether a specified 
+    //  fraction of the voxel inside the selected volume. 
     if ( this->quantificationMask == NULL ) {
         int numVoxels[3];
         this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
