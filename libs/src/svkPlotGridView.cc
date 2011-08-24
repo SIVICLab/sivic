@@ -639,9 +639,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
         double *range = dataVector[MET]->GetScalarRange();
-        if( range[1] <= 1 ) {
-            metMapper->SetLabelFormat("%1.0f");
-        } else if( range[1] < 100000 ) {
+        if( range[1] < 100000 ) {
             metMapper->SetLabelFormat("%1.2f");
         } else {
             metMapper->SetLabelFormat("%0.1e");
