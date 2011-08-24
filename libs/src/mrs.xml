@@ -1,0 +1,83 @@
+<SVK_MRS_QUANTIFICATION version="0.7.6">
+
+    <REGION id="0" name="CHOLINE"   peak_ppm="3.2635" width_ppm=".189">
+    </REGION>
+    <REGION id="1" name="CREATINE"  peak_ppm="3.06"  width_ppm=".18">
+    </REGION>
+    <REGION id="2" name="NAA"       peak_ppm="2.05"  width_ppm=".234">
+    </REGION>
+    <REGION id="3" name="LIPID_LAC" peak_ppm="1.36"  width_ppm=".17">
+    </REGION>
+
+    <QUANT id="0" region="0">
+        <ALGO name="PEAK_HT">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="1" region="1">
+        <ALGO name="PEAK_HT">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="2" region="2">
+        <ALGO name="PEAK_HT">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="3" region="3">
+        <ALGO name="PEAK_HT">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="4" region="0">
+        <ALGO name="INTEGRATE">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="5" region="1">
+        <ALGO name="INTEGRATE">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="6" region="2">
+        <ALGO name="INTEGRATE">
+        </ALGO>
+    </QUANT>
+
+    <QUANT id="7" region="3">
+        <ALGO name="INTEGRATE">
+        </ALGO>
+    </QUANT>
+
+
+    <RATIO id="0" name="CHO/NAA_PEAK_HT">
+        <NUMERATOR quant_id="0">
+        </NUMERATOR>
+        <DENOMINATOR quant_id="2">
+        </DENOMINATOR>
+    </RATIO>
+
+    <RATIO id="1" name="NAA/NAA_PEAK_HT">
+        <NUMERATOR quant_id="0">
+        </NUMERATOR>
+        <DENOMINATOR quant_id="0">
+        </DENOMINATOR>
+    </RATIO>
+
+    <RATIO id="2" name="CHO+CRE/NAA INTEGRATE">
+        <NUMERATOR quant_id="4">
+        </NUMERATOR>
+        <NUMERATOR quant_id="5">
+        </NUMERATOR>
+        <DENOMINATOR quant_id="6">
+        </DENOMINATOR>
+    </RATIO>
+
+    <ZSCORE id="0" name="CNI INTEGRATE">
+        <NUMERATOR quant_id="4">
+        </NUMERATOR>
+        <DENOMINATOR quant_id="6">
+        </DENOMINATOR>
+    </ZSCORE>
+
+</SVK_MRS_QUANTIFICATION>
