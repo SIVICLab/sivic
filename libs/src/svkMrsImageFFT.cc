@@ -307,6 +307,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "SPACE" );
+        data->GetDcmHeader()->ClearElement("SVK_KSpaceSymmetry"); 
     } else {
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
