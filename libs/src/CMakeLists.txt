@@ -203,6 +203,7 @@ ADD_LIBRARY(
     svkMriImageFFT.cc
     svkMriZeroFill.cc
     svkMrsZeroFill.cc
+    svkMrsLinearPhase.cc
     svkSincInterpolationFilter.cc
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc

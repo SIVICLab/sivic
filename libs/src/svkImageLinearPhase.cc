@@ -294,14 +294,5 @@ void svkImageLinearPhase::ExecuteLinearPhase( vtkImageComplex* in, vtkImageCompl
  */
 void svkImageLinearPhase::CreatePhaseArray(int N, vtkImageComplex* phaseArray) 
 { 
-    int origin = N/2;
-    double phaseIncrement;
-    double mult;
-    for( int i = 0; i <  N; i++ ) {
-        phaseIncrement = (i - origin)/((double)(N));
-        mult = -2 * this->pie * phaseIncrement * this->shiftWindow[this->Iteration];
-        phaseArray[i].Real = cos(mult);
-        phaseArray[i].Imag = sin(mult);
-    }
-
+    svkSpecUtils::CreateLinearPhaseShiftArray(N, phaseArray, this->shiftWindow[this->Iteration]);
 }

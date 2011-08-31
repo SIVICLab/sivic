@@ -71,12 +71,12 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->mode   = FORWARD;
     this->preCorrectCenter = false;
     this->postCorrectCenter = false;
-    this->prePhaseShift[0] = 0;
-    this->prePhaseShift[1] = 0;
-    this->prePhaseShift[2] = 0;
-    this->postPhaseShift[0] = 0;
-    this->postPhaseShift[1] = 0;
-    this->postPhaseShift[2] = 0;
+    this->voxelShift[0] = 0;
+    this->voxelShift[1] = 0;
+    this->voxelShift[2] = 0;
+    this->voxelShift[0] = 0;
+    this->voxelShift[1] = 0;
+    this->voxelShift[2] = 0;
 }
 
 
@@ -174,11 +174,17 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
     string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
     string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+    double kZeroShiftWindow[3] = {0,0,0};
     if( this->mode == REVERSE ) {
         if ( !domainCol.compare("SPACE") || !domainRow.compare("SPACE") || !domainSlice.compare("SPACE") ) {
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
+        for( int i = 0; i < 3; i++ ) {
+            if( !data->IsKZeroSampled( i ) ) {
+                kZeroShiftWindow[i] = -0.5;
+            }
+        }
     } else {
         if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
@@ -190,11 +196,14 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
     vtkImageData* currentData = NULL;
-    svkImageLinearPhase* prePhaseShifter = svkImageLinearPhase::New();                
-    svkImageLinearPhase* postPhaseShifter = svkImageLinearPhase::New();                
+    svkImageLinearPhase* preKZeroShifter = NULL;
+    svkImageLinearPhase* postKZeroShifter = NULL;
+    svkImageLinearPhase* voxelShifter = svkImageLinearPhase::New();
+
     svkImageFourierCenter* preIfc = svkImageFourierCenter::New(); 
     svkImageFourierCenter* postIfc = svkImageFourierCenter::New();
     double progress = 0;
+
     
     svkMriImageData* pointImage = svkMriImageData::New();
     for( int timePt = 0; timePt < numTimePoints; timePt++ ) {
@@ -214,12 +223,23 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 currentData = pointImage;
 
                 // Lets apply a phase shift....
-                if( this->prePhaseShift[0] != 0 
-                    && this->prePhaseShift[1] != 0 
-                    && this->prePhaseShift[2] != 0 ) {
-                    prePhaseShifter->SetShiftWindow( this->prePhaseShift );
-                    prePhaseShifter->SetInput( currentData ); 
-                    currentData = prePhaseShifter->GetOutput();
+                if( kZeroShiftWindow[0] != 0
+                    && kZeroShiftWindow[1] != 0
+                    && kZeroShiftWindow[2] != 0 ) {
+                    preKZeroShifter = svkImageLinearPhase::New();
+                    preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
+                    preKZeroShifter->SetInput( currentData );
+                    currentData = preKZeroShifter->GetOutput();
+                }
+
+                // Lets apply a voxel shift....
+                if( (  this->voxelShift[0] != 0
+                    || this->voxelShift[1] != 0
+                    || this->voxelShift[2] != 0 )
+                    && this->mode == REVERSE ) {
+                    voxelShifter->SetShiftWindow( this->voxelShift );
+                    voxelShifter->SetInput( currentData );
+                    currentData = voxelShifter->GetOutput();
                 }
 
                 // And correct the center....
@@ -239,14 +259,26 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     currentData = postIfc->GetOutput();
                 }
 
-                // Lets apply a phase shift....
-                if( this->postPhaseShift[0] != 0 
-                    && this->postPhaseShift[1] != 0 
-                    && this->postPhaseShift[2] != 0 ) {
-                    postPhaseShifter->SetShiftWindow( this->postPhaseShift );
-                    postPhaseShifter->SetInput( currentData ); 
-                    currentData = postPhaseShifter->GetOutput();
+
+                if( kZeroShiftWindow[0] != 0
+                    && kZeroShiftWindow[1] != 0
+                    && kZeroShiftWindow[2] != 0 ) {
+                    postKZeroShifter = svkImageLinearPhase::New();
+                    postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
+                    postKZeroShifter->SetInput( currentData );
+                    currentData = postKZeroShifter->GetOutput();
                 }
+
+                // Lets apply a voxel shift....
+                if( (  this->voxelShift[0] != 0
+                    || this->voxelShift[1] != 0
+                    || this->voxelShift[2] != 0 )
+                    && this->mode == FORWARD ) {
+                    voxelShifter->SetShiftWindow( this->voxelShift );
+                    voxelShifter->SetInput( currentData );
+                    currentData = voxelShifter->GetOutput();
+                }
+
                 currentData->Update();
                 data->SetImage( currentData, point, timePt, channel );
             }
@@ -260,13 +292,13 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         postIfc->Delete(); 
         postIfc = NULL; 
     }
-    if( prePhaseShifter != NULL ) {
-        prePhaseShifter->Delete(); 
-        prePhaseShifter = NULL; 
+    if( preKZeroShifter != NULL ) {
+        preKZeroShifter->Delete();
+        preKZeroShifter = NULL;
     }
-    if( postPhaseShifter != NULL ) {
-        postPhaseShifter->Delete(); 
-        postPhaseShifter = NULL; 
+    if( postKZeroShifter != NULL ) {
+        postKZeroShifter->Delete();
+        postKZeroShifter = NULL;
     }
     pointImage->Delete();
 
@@ -282,7 +314,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     }
 
     //  Update Origin and Per Frame Functional Groups for voxel shift:
-    this->UpdateOrigin(); 
+    this->UpdateOrigin();
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -292,8 +324,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
 
 /*! 
- *  Given a fractional voxel shift (prePhaseShift)  along each of the axes, 
- *  calculate a new TOPLC and reset the PerFrameFunctionalGroups:
+ *  Given a fractional voxel shift (voxelShift)  along each of the axes,
+ *  calculate a new TOPLC and reset the PerFrameFunctionalGroups.
  */
 void svkMrsImageFFT::UpdateOrigin() 
 {
@@ -314,10 +346,9 @@ void svkMrsImageFFT::UpdateOrigin()
     data->GetDcmHeader()->GetOrigin( toplc, 0 ); 
 
     //  Calculate new toplc
-    //  This is so far specific to GE RECON which has 1/2 voxel shift by default
     double shift[3] = {0,0,0};
     for (int i = 0; i < 3; i++ ){
-        shift[i] = this->prePhaseShift[i] + 0.5; 
+        shift[i] = this->voxelShift[i];
         for(int j = 0; j < 3; j++ ){
             toplc[i] -= ( dcos[j][i] * shift[j] * pixelSpacing[j] );
         }
@@ -551,22 +582,31 @@ void svkMrsImageFFT::SetPostCorrectCenter( bool postCorrectCenter )
 /*!
  *
  */
-void svkMrsImageFFT::SetPrePhaseShift( double prePhaseShift[3] )
+void svkMrsImageFFT::SetVoxelShift( double voxelShift[3] )
 {
-    this->prePhaseShift[0] = prePhaseShift[0];
-    this->prePhaseShift[1] = prePhaseShift[1];
-    this->prePhaseShift[2] = prePhaseShift[2];
+    this->NormalizePhaseShift( voxelShift );
+    this->voxelShift[0] = voxelShift[0];
+    this->voxelShift[1] = voxelShift[1];
+    this->voxelShift[2] = voxelShift[2];
 }
 
 
 /*!
- *
+ * This method will normalize the input shift to map to a +0.5 to -0.5
+ * range. This is the only type of phase shift supported by this class.
+ * @param shift
  */
-void svkMrsImageFFT::SetPostPhaseShift( double postPhaseShift[3] )
+void svkMrsImageFFT::NormalizePhaseShift( double shift[3] )
 {
-    this->postPhaseShift[0] = postPhaseShift[0];
-    this->postPhaseShift[1] = postPhaseShift[1];
-    this->postPhaseShift[2] = postPhaseShift[2];
+    for( int i = 0; i < 3; i ++ ) {
+        shift[i] = fmod(shift[i], 1.0);
+        if( shift[i] > 0.5 ) {
+            shift[i] -= 1;
+        } else if ( shift[i] < -0.5 ) {
+            shift[i] += 1;
+        }
+    }
+
 }
 
 

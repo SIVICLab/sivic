@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkMrsZeroFill.h $
+ *  $Rev: 994 $
+ *  $Author: beckn8tor $
+ *  $Date: 2011-08-02 16:39:09 -0700 (Tue, 02 Aug 2011) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,19 +40,18 @@
  */
 
 
-#ifndef SVK_MRI_ZERO_FILL
-#define SVK_MRI_ZERO_FILL
+#ifndef SVK_MRS_LINEAR_PHASE
+#define SVK_MRS_LINEAR_PHASE
 
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
-#include <vtkImageConstantPad.h>
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageChangeInformation.h>
-#include <svkImageAlgorithm.h>
-#include <svkImageLinearPhase.h>
-#include <vtkImageMathematics.h>
+#include <svkSpecUtils.h>
+#include <svkImageInPlaceFilter.h>
+#include <vtkImageFourierFilter.h>
 
 
 namespace svk {
@@ -61,42 +60,32 @@ namespace svk {
 using namespace std;
 
 
+
 /*! 
- *  This filter pads the input dataset to the size of the OutputWholeExtent. The output
- *  dataset will have the same content as the input dataset but will be padded. The
- *  input volume will be in the center of the output volume.
- *
- *  NOTE:
- *     * The spacing and the origin will be updated to maintain the same field of
- *       view.
- *
+ *  This class will apply a linear phase shift to spec datasets. This is the equivalent to appyling
+ *  a linear phase shift to each individual single-frequency image volume. NOTE: This class will
+ *  NOT change the origin of your dataset, it will simply phase the data.
  */
-class svkMriZeroFill : public svkImageAlgorithm
+class svkMrsLinearPhase : public svkImageInPlaceFilter
 {
 
     public:
 
-        static svkMriZeroFill* New();
-        vtkTypeRevisionMacro( svkMriZeroFill, svkImageAlgorithm);
-
-        void             SetOperateInPlace( bool operateInPlace );
-        svkImageData*    GetOutput();
-        svkImageData*    GetOutput(int port);
-        void             SetOutputWholeExtent( int extent[6] );
-        void             SetOutputWholeExtent(int minX, int maxX, int minY, int maxY, int minZ, int maxZ);
-        void             GetOutputWholeExtent( int extent[6] );
+        static svkMrsLinearPhase* New();
+        vtkTypeRevisionMacro( svkMrsLinearPhase, svkImageInPlaceFilter);
+        void SetShiftWindow( double shiftWindow[3] );
 
     protected:
 
-        svkMriZeroFill();
-        ~svkMriZeroFill();
+        svkMrsLinearPhase();
+        ~svkMrsLinearPhase();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
 
         //  Methods:
         virtual int     RequestInformation(
-                            vtkInformation* request,
+                            vtkInformation* request, 
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
@@ -107,16 +96,9 @@ class svkMriZeroFill : public svkImageAlgorithm
                             vtkInformationVector* outputVector
                         );
 
-        virtual int     RequestUpdateExtent(vtkInformation*,
-                             vtkInformationVector**,
-                             vtkInformationVector*);
-
-        virtual void    ComputeInputUpdateExtent (int inExt[6], int outExt[6], int wExt[6]);
-
     private:
-
-        bool            operateInPlace;
-        int             outputWholeExtent[6];
+        
+        double shiftWindow[3];
 
 };
 
@@ -124,5 +106,5 @@ class svkMriZeroFill : public svkImageAlgorithm
 }   //svk
 
 
-#endif //SVK_MRI_ZERO_FILL
+#endif //SVK_MRS_LINEAR_PHASE
 

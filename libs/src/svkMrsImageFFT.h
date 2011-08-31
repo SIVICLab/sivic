@@ -101,8 +101,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void             SetFFTMode( FFTMode mode );
         void             SetPreCorrectCenter( bool preCorrectCenter );
         void             SetPostCorrectCenter( bool postCorrectCenter );
-        void             SetPrePhaseShift( double prePhaseShift[3] );
-        void             SetPostPhaseShift( double postPhaseShift[3] );
+        void             SetVoxelShift( double voxelShift[3] );
         static void      FFTShift( vtkImageComplex* dataIn, int numPoints ); 
         static void      IFFTShift( vtkImageComplex* dataIn, int numPoints ); 
 
@@ -147,14 +146,14 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
 
         bool            preCorrectCenter;
         bool            postCorrectCenter;
-        double          prePhaseShift[3];
-        double          postPhaseShift[3];
+        double          voxelShift[3];
         int             updateExtent[6]; 
         FFTDomain       domain; 
         FFTMode         mode; 
 
         void            UpdateOrigin(); 
         void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
+        void            NormalizePhaseShift( double shift[3] );
 
 
 };

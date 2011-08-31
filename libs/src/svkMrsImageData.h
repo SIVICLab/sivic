@@ -141,7 +141,7 @@ class svkMrsImageData: public svkImageData
         void           EstimateDataRange( double range[2], int minPt, int maxPt, int component, int timePoint = 0
                                                                                               , int channel = 0   );
 
-
+        bool           IsKZeroSampled( int dimension );
 
 
     protected:

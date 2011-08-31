@@ -53,6 +53,7 @@
 #include <svkUtils.h>
 #include <svkMriZeroFill.h>
 #include <svkImageInPlaceFilter.h>
+#include <svkMrsLinearPhase.h>
 
 
 namespace svk {

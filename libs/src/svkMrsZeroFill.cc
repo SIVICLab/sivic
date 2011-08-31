@@ -394,7 +394,12 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int rows          = hdr->GetIntValue( "Rows" );
     int slices        = hdr->GetNumberOfSlices();
 
-    // Finally we copy the data from source to target.
+    // We need to scale the image by the updated size
+    // This is because the FFT will scale up by the number of points
+    // and the IFFT divides by it.
+    double scale = ((double)(newNumVoxels[0]*newNumVoxels[1]*newNumVoxels[2]))
+                   / ((double)(oldNumVoxels[0]*oldNumVoxels[1]*oldNumVoxels[2]));
+
     char arrayName[30];
     double progress = 0;
     for( int channel = 0; channel < numChannels; channel++ ) { 
@@ -409,7 +414,16 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
                         progress = ((x+1)*(y+1)*(z+1))/((double)slices*rows*cols);
                         this->UpdateProgress( progress );
                         vtkDataArray* spectrum = data->GetSpectrum(x, y, z, timePt, channel);
-                        outputData->GetSpectrum(x + extentTranslation[0], y + extentTranslation[1], z + extentTranslation[2], timePt, channel)->DeepCopy(spectrum);
+                        vtkDataArray* result = outputData->GetSpectrum(x + extentTranslation[0], y + extentTranslation[1], z + extentTranslation[2], timePt, channel);
+                        int numPoints = result->GetNumberOfTuples();
+                        int numComponents = result->GetNumberOfComponents();
+
+                        // TODO: This math could be changed to pointer math for speed
+                        for( int component = 0; component < numComponents; component++ ) {
+                            for( int point = 0; point < numPoints; point++ ) {
+                                result->SetComponent(point, component, scale*spectrum->GetComponent(point,component));
+                            }
+                        }
 
                     }
                 }
@@ -418,9 +432,28 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
     }
     this->UpdateProgress( 0 );
     
+    // Since we have moved the origin of the data, we need to shift the content.
+    double shiftWindow[3] = { 0, 0, 0 };
+    shiftWindow[0] = -originShift[0]/newSpacing[0];
+    shiftWindow[1] = -originShift[1]/newSpacing[1];
+    shiftWindow[2] = -originShift[2]/newSpacing[2];
+
+    // Apply a half voxel  difference phase shift. This is because the sampled points of the data has changed.
+    svkMrsLinearPhase* linearShift = svkMrsLinearPhase::New();
+    linearShift->SetShiftWindow( shiftWindow );
+    linearShift->SetInput( outputData );
+    linearShift->Update();
+
+
+    //outputData->SyncVTKImageDataToDcmHeader();
+
+
     // Since this algorithm is in place we need to copy the result back to the source
     data->ShallowCopy(outputData);
+
+
     data->SyncVTKImageDataToDcmHeader();
+
     outputData->Delete();
     return 1; 
 

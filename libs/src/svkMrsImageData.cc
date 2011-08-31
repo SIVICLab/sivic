@@ -596,6 +596,34 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
 }
 
 
+/*!
+ *
+ * @return
+ */
+bool svkMrsImageData::IsKZeroSampled( int dimension )
+{
+    string kSpaceSymmetry =  this->GetDcmHeader()->GetStringValue("SVK_KSpaceSymmetry");
+    int numVoxels[3];
+    this->GetNumberOfVoxels(numVoxels);
+    if( kSpaceSymmetry.compare("EVEN") == 0 ) {
+        if( numVoxels[dimension]%2==0 ) {
+            return false;
+        } else {
+            return true;
+        }
+    } else if( kSpaceSymmetry.compare("ODD") == 0 ) {
+        if( numVoxels[dimension]%2==0 ) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    return false;
+}
+
+
 /*! 
  *  Gets the number of channels in the dataset. The first time it is called
  *  it gets the number of channels from the header, after that it stores

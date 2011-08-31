@@ -109,3 +109,28 @@ float svkSpecUtils::GetPPMRef(float transmitFreq, float freqOffset, float temp )
 
     return ppmRef;
 }
+
+
+/*!
+ *  This method takes an array of N, vtkImageComplex values, where  vtkImageComplex
+ *  is a struct with a double real and double imaginary component representing
+ *  a single complex value.  The function applies a linear phase correction to the
+ *  values with pivot given by the origin (middle index of array) and linear factor
+ *  that increments by 2*pi/N.  An additional phase shift may be applied (e.g.
+ *  for voxel shifting origin.
+ *  On output the vtkImageComplex variable phaseArray contains the phase factors
+ *  to be applied to each point.
+ */
+void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift)
+{
+    int origin = N/2;
+    double phaseIncrement;
+    double mult;
+    for( int i = 0; i <  N; i++ ) {
+        phaseIncrement = (i - origin)/((double)(N));
+        mult = -2 * vtkMath::Pi()* phaseIncrement * shift;
+        phaseArray[i].Real = cos(mult);
+        phaseArray[i].Imag = sin(mult);
+    }
+
+}

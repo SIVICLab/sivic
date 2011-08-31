@@ -77,6 +77,7 @@
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <svkSpecUtils.h>
 
 #include <math.h>
 
@@ -87,6 +88,18 @@ namespace svk {
 
 using namespace std;
 
+/*!
+ *  This class will apply a linear phase shift to a vtkImageData object.
+ *
+ *  NOTES:
+ *      * This class will NOT change the origin of your dataset.
+ *      * This class is a vtk Algroithm, not svk so it will not update
+ *        the header. This is because it inherits from a vtk algorithm.
+ *
+ *  TODO:
+ *      * Create an svkMriLinearPhase to wrap this algorithm so that
+ *        it can produce an svk output dataset.
+ */
 class svkImageLinearPhase : public vtkImageFourierFilter
 {
     public:
