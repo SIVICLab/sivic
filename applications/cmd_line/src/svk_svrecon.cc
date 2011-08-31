@@ -272,8 +272,6 @@ int main (int argc, char** argv)
         imageFFT->Delete();
     }
 
-cout <<" CHECK origin: " << *currentImage << endl; 
-
 
     // ===============================================  
     //  Write the data out to the specified file type.  
