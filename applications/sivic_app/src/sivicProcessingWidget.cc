@@ -327,14 +327,7 @@ void sivicProcessingWidget::ExecuteRecon()
         spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
         spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
         spatialRFFT->SetPreCorrectCenter( true );
-        double preShiftWindow[3] = {-0.5, -0.5, -0.5 };
-        //double preShiftWindow[3] = {-0.5, -1.0, -0.5 };
-        double postShiftWindow[3] = {-0.5, -0.5, -0.5 };
-        //spatialRFFT->SetPrePhaseShift( -0.5 );
-        spatialRFFT->SetPrePhaseShift(preShiftWindow );
         spatialRFFT->SetPostCorrectCenter( true );
-        //spatialRFFT->SetPostPhaseShift( -0.5 );
-        spatialRFFT->SetPostPhaseShift( postShiftWindow );
         spatialRFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Spatial Recon...");
         spatialRFFT->Update();
