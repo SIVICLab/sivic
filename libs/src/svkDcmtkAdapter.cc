@@ -237,6 +237,16 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     //  symmetrically or not.  E.g., for an even number of 
     //  phase encodes, if even sampling, then k=0 was not 
     //  sampled . 
+    //  Permutations (assuming that SVK_KSpaceCentered is TRUE):  
+    //  for zero index arrays:
+    //      EVEN, even number of points -> origin not sampled
+    //          e.g, 8 points, index 4 is k 0.5
+    //      EVEN, odd  number of points -> origin is sampled
+    //          e.g, 9 points, index 4 is k 0.0
+    //      ODD , even number of points -> origin is sampled
+    //          e.g, 8 points, index 4 is k 0.0
+    //      ODD , odd  number of points -> origin not sampled
+    //          e.g, 9 points, index 4 is k 0.5
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1016, EVR_CS, 
             "SVK_KSpaceSymmetry", 
@@ -244,9 +254,19 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
-    //  Specifies (True/False) if acquired data was chopped
+    //  DEFINED TERMS indicating whether the k-space origin is
+    //  at the image center, or corner.  
+    //      Values: TRUE, FALSE
+    //privateDic->addEntry( new DcmDictEntry(
+            //0x7777, 0x1017, EVR_CS, 
+            //"SVK_KSpaceCentered", 
+            //1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        //)
+    //);
+
+    //  Specifies (YES/NO) if acquired data was chopped
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1017, EVR_CS, 
+            0x7777, 0x1018, EVR_CS, 
             "SVK_AcquisitionChop", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
@@ -259,28 +279,28 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     // ===================================================
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1018, EVR_SQ, 
+            0x7777, 0x1019, EVR_SQ, 
             "SVK_FILE_SET_SEQUENCE", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1019, EVR_LO, 
+            0x7777, 0x1020, EVR_LO, 
             "SVK_FILE_TYPE", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1020, EVR_LT, 
+            0x7777, 0x1021, EVR_LT, 
             "SVK_FILE_NAME", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1021, EVR_LO, 
+            0x7777, 0x1022, EVR_LO, 
             "SVK_FILE_SHA1_DIGEST", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
@@ -288,7 +308,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1022, EVR_UL, 
+            0x7777, 0x1023, EVR_UL, 
             "SVK_FILE_NUM_BYTES", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
@@ -296,7 +316,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
 
     //  Block containing a GE PFile. 
     privateDic->addEntry( new DcmDictEntry(
-            0x7777, 0x1023, EVR_OF, 
+            0x7777, 0x1024, EVR_OF, 
             "SVK_FILE_CONTENTS", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
