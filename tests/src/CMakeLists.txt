@@ -331,6 +331,25 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svkMrsLinearPhaseTest
+    svkMrsLinearPhaseTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMrsLinearPhaseTest
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkMrsFFTVoxelShiftTest
+    svkMrsFFTVoxelShiftTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkMrsFFTVoxelShiftTest
+    ${SVK_LIBS}
+)
+ADD_EXECUTABLE(
      svkMrsApodizationFilterTest
      svkMrsApodizationFilterTest.cc
  )

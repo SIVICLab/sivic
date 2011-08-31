@@ -69,7 +69,6 @@
 #include <svkDICOMSCWriter.h>
 #include <svkEnhancedMRIIOD.h>
 #include <svkEPSIPhaseCorrect.h>
-#include <svkExtractMRIFromMRS.h>
 #include <svkFdfVolumeReader.h>
 #include <svkGEImageHeader.h>
 #include <svkGEPFileMapper.h>
@@ -198,8 +197,6 @@ int main ( int argc, char** argv )
     obj = svkEnhancedMRIIOD::New();
     obj->Delete();
     obj = svkEPSIPhaseCorrect::New();
-    obj->Delete();
-    obj = svkExtractMRIFromMRS::New();
     obj->Delete();
     obj = svkFdfVolumeReader::New();
     obj->Delete();

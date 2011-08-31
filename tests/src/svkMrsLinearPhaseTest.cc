@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/svkMrsZeroFillTest.cc $
+ *  $Rev: 1001 $
+ *  $Author: beckn8tor $
+ *  $Date: 2011-08-16 17:14:42 -0700 (Tue, 16 Aug 2011) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -42,17 +42,15 @@
 
 #include <svkDataModel.h>
 #include <svkImageData.h>
-#include <svkMrsZeroFill.h>
-#include <svkMrsImageFFT.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDICOMMRSWriter.h>
-#include <svkCoilCombine.h>
+#include <svkMrsLinearPhase.h>
 
 
 using namespace svk;
 
-void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname );
+
 /*
  *  Application for testing data combination algorithms. 
  */
@@ -62,83 +60,32 @@ int main (int argc, char** argv)
     string fname(argv[1]);
     string fnameOut(argv[2]);
 
-    //  Combine coils using straight addition 
-    svkMrsZeroFill* zf = svkMrsZeroFill::New();
-    zf->SetNumberOfSpecPointsToDouble( ); 
-    zf->SetOutputWholeExtent(0, 12, 0, 10, 0, 11 );
-    string bothFilename(fnameOut);
-    bothFilename.append("_both");
-    ExecuteZeroFill( zf, fname, bothFilename );
-
-    zf->Delete();
-    zf = NULL;
-
-    //  Combine coils using straight addition 
-    zf = svkMrsZeroFill::New();
-    zf->SetNumberOfSpecPointsToNextPower2( ); 
-
-    string spectralFilename(fnameOut);
-    spectralFilename.append("_spectral");
-    ExecuteZeroFill( zf, fname, spectralFilename );
-
-    zf->Delete();
-    zf = NULL;
-
-    //  Combine coils using straight addition 
-    zf = svkMrsZeroFill::New();
-    zf->SetOutputWholeExtent(0, 20, 0, 20, 0, 20 );
-
-    string spatialFilename(fnameOut);
-    spatialFilename.append("_spatial");
-    ExecuteZeroFill( zf, fname, spatialFilename );
-
-    zf->Delete();
-    zf = NULL;
-    return 0; 
-}
-
-
-void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
-{
     svkDataModel* model = svkDataModel::New();
-    svkImageData* data = model->LoadFile( infname.c_str() );
-    data->Register(NULL);
+    svkImageData* data = model->LoadFile( fname.c_str() );
+    data->Register(NULL); 
     if( !data->IsA("svkMrsImageData") ) {
         cerr << "INPUT MUST BE SPECTRA!" << endl;
         exit(1);
-    }
+        }
 
-    //  FFT spectral data: time to frequency domain
-    svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
-    spatialFFT->SetInput( data );
-    spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-    spatialFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
-    spatialFFT->SetPostCorrectCenter( true );
-    spatialFFT->Update();
-    svkMrsImageData* targetData = svkMrsImageData::New();
-    targetData->DeepCopy( spatialFFT->GetOutput() );
-    //  Combine coils using straight addition
-    zf->SetInput( targetData );
-    zf->Update();
-
-    //  Reverse FFT spatial data: kspace to spatial domain
-    svkMrsImageFFT* spatialRFFT= svkMrsImageFFT::New();
-    spatialRFFT->SetInput( targetData );
-    spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-    spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
-    spatialRFFT->SetPreCorrectCenter( true );
-    spatialRFFT->Update();
-
+    svkMrsLinearPhase* phasor = svkMrsLinearPhase::New();
+    phasor->SetInput( data );
+    double window[3] = {-0.5, -0.5, -0.5 };
+    phasor->SetShiftWindow( window );
+    phasor->Update();
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
-    writer->SetFileName( outfname.c_str() );
-    writer->SetInput( spatialRFFT->GetOutput() );
+    writer->SetFileName( fnameOut.c_str() );
+    writer->SetInput( data );
     writer->Write();
+    phasor->Delete();
+    phasor = NULL;
 
-    // Clean up
     writer->Delete();
     writer = NULL;
     data->Delete();
     data = NULL;
     model->Delete();
     model = NULL;
+    return 0; 
 }
+

@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/tests/src/svkMrsZeroFillTest.cc $
+ *  $Rev: 1001 $
+ *  $Author: beckn8tor $
+ *  $Date: 2011-08-16 17:14:42 -0700 (Tue, 16 Aug 2011) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -62,46 +62,8 @@ int main (int argc, char** argv)
     string fname(argv[1]);
     string fnameOut(argv[2]);
 
-    //  Combine coils using straight addition 
-    svkMrsZeroFill* zf = svkMrsZeroFill::New();
-    zf->SetNumberOfSpecPointsToDouble( ); 
-    zf->SetOutputWholeExtent(0, 12, 0, 10, 0, 11 );
-    string bothFilename(fnameOut);
-    bothFilename.append("_both");
-    ExecuteZeroFill( zf, fname, bothFilename );
-
-    zf->Delete();
-    zf = NULL;
-
-    //  Combine coils using straight addition 
-    zf = svkMrsZeroFill::New();
-    zf->SetNumberOfSpecPointsToNextPower2( ); 
-
-    string spectralFilename(fnameOut);
-    spectralFilename.append("_spectral");
-    ExecuteZeroFill( zf, fname, spectralFilename );
-
-    zf->Delete();
-    zf = NULL;
-
-    //  Combine coils using straight addition 
-    zf = svkMrsZeroFill::New();
-    zf->SetOutputWholeExtent(0, 20, 0, 20, 0, 20 );
-
-    string spatialFilename(fnameOut);
-    spatialFilename.append("_spatial");
-    ExecuteZeroFill( zf, fname, spatialFilename );
-
-    zf->Delete();
-    zf = NULL;
-    return 0; 
-}
-
-
-void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
-{
     svkDataModel* model = svkDataModel::New();
-    svkImageData* data = model->LoadFile( infname.c_str() );
+    svkImageData* data = model->LoadFile( fname.c_str() );
     data->Register(NULL);
     if( !data->IsA("svkMrsImageData") ) {
         cerr << "INPUT MUST BE SPECTRA!" << endl;
@@ -117,20 +79,19 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
     spatialFFT->Update();
     svkMrsImageData* targetData = svkMrsImageData::New();
     targetData->DeepCopy( spatialFFT->GetOutput() );
-    //  Combine coils using straight addition
-    zf->SetInput( targetData );
-    zf->Update();
 
     //  Reverse FFT spatial data: kspace to spatial domain
     svkMrsImageFFT* spatialRFFT= svkMrsImageFFT::New();
     spatialRFFT->SetInput( targetData );
+    double voxelShift[3] = {0.5, 0.5, 0.5};
+    spatialRFFT->SetVoxelShift( voxelShift );
     spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
     spatialRFFT->SetPreCorrectCenter( true );
     spatialRFFT->Update();
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();
-    writer->SetFileName( outfname.c_str() );
+    writer->SetFileName( fnameOut.c_str() );
     writer->SetInput( spatialRFFT->GetOutput() );
     writer->Write();
 
@@ -141,4 +102,5 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
     data = NULL;
     model->Delete();
     model = NULL;
+    return 0;
 }
