@@ -1,24 +1,27 @@
 <SVK_MRS_QUANTIFICATION version="0.7.6">
 
-    <REGION id="0" name="CHOLINE"   peak_ppm="3.2635" width_ppm=".189">
+    <REGION id="0" name="CHOLINE"   peak_ppm="3.1455" width_ppm=".1758">
     </REGION>
     <REGION id="1" name="CREATINE"  peak_ppm="3.06"  width_ppm=".18">
     </REGION>
-    <REGION id="2" name="NAA"       peak_ppm="2.05"  width_ppm=".234">
+    <REGION id="2" name="NAA"       peak_ppm="1.9833"  width_ppm=".13">
     </REGION>
     <REGION id="3" name="LIPID_LAC" peak_ppm="1.36"  width_ppm=".17">
     </REGION>
 
+    -- cho peak ht
     <QUANT id="0" region="0">
         <ALGO name="PEAK_HT">
         </ALGO>
     </QUANT>
 
+    -- creatine peak ht
     <QUANT id="1" region="1">
         <ALGO name="PEAK_HT">
         </ALGO>
     </QUANT>
 
+    -- naa peak ht
     <QUANT id="2" region="2">
         <ALGO name="PEAK_HT">
         </ALGO>
@@ -29,16 +32,19 @@
         </ALGO>
     </QUANT>
 
+    -- cho integrated area
     <QUANT id="4" region="0">
         <ALGO name="INTEGRATE">
         </ALGO>
     </QUANT>
 
+    -- creatine integrated area
     <QUANT id="5" region="1">
         <ALGO name="INTEGRATE">
         </ALGO>
     </QUANT>
 
+    -- NAAintegrated area
     <QUANT id="6" region="2">
         <ALGO name="INTEGRATE">
         </ALGO>
@@ -73,11 +79,12 @@
         </DENOMINATOR>
     </RATIO>
 
-    <ZSCORE id="0" name="CNI INTEGRATE">
-        <NUMERATOR quant_id="4">
+    <ZSCORE id="0" name="CNI PEAK HT">
+        <NUMERATOR quant_id="0">
         </NUMERATOR>
-        <DENOMINATOR quant_id="6">
+        <DENOMINATOR quant_id="2">
         </DENOMINATOR>
     </ZSCORE>
+
 
 </SVK_MRS_QUANTIFICATION>

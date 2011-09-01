@@ -399,6 +399,15 @@ void svkMetaboliteMap::UpdateProvenance()
 }
 
 
+/*
+ *  Returns a pointer to the selected volume mask
+ */
+short* svkMetaboliteMap::GetSelectedVolumeMask()             
+{
+    return this->quantificationMask;     
+}
+
+
 /*!
  *  Write the integrals for each voxel to stdout. Default is false.  
  */

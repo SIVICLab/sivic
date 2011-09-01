@@ -52,6 +52,8 @@
 #include <svkImageCopy.h>
 #include <svkMetaboliteRatioZScores.h>
 
+#include <time.h>
+
 
 using namespace svk;
 
@@ -73,7 +75,9 @@ svkQuantifyMetabolites::svkQuantifyMetabolites()
 
     this->isVerbose = false; 
     this->xmlFileName = "/home/jasonc/svn/surbeck/brain/sivic/trunk/libs/src/mrs.xml"; 
+    this->mrsXML = NULL;
     this->useSelectedVolumeFraction = 0;
+    this->selectedVolumeMask = NULL;
 
 }
 
@@ -93,11 +97,14 @@ svkQuantifyMetabolites::~svkQuantifyMetabolites()
 void svkQuantifyMetabolites::Quantify()
 {
 
-    vtkXMLDataElement* mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() ); 
-    this->GenerateRegionMaps( mrsXML ); 
-    this->GenerateRatioMaps( mrsXML ); 
-    this->GenerateZScoreMaps( mrsXML ); 
-    //mrsXML->PrintXML(cout, vtkIndent()); 
+    if ( this->mrsXML == NULL ) {
+        this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() ); 
+    }
+
+    this->GenerateRegionMaps();
+    this->GenerateRatioMaps(); 
+    this->GenerateZScoreMaps(); 
+    //this->mrsXML->PrintXML(cout, vtkIndent()); 
 
 }
 
@@ -114,7 +121,7 @@ vtkstd::vector< svkMriImageData* >* svkQuantifyMetabolites::GetMetMaps()
 /*
  *
  */
-void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
+void svkQuantifyMetabolites::GenerateRegionMaps()
 {
 
     this->GetRegionNameVector(); 
@@ -130,16 +137,15 @@ void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
     mapGen->SetInput( this->GetImageDataInput(0) ); 
 
     while ( parseQuants ) {
-
         ostringstream ossIndex;
         ossIndex << quantIndex;
         vtkstd::string quantIndexString(ossIndex.str());
 
-        quantXML = mrsXML->FindNestedElementWithNameAndId("QUANT", quantIndexString.c_str());
+        quantXML = this->mrsXML->FindNestedElementWithNameAndId("QUANT", quantIndexString.c_str());
 
         if (quantXML != NULL ) {
 
-            cout << "quant id = " << quantIndexString << endl;
+            //cout << "quant id = " << quantIndexString << endl;
             quantXML->PrintXML( cout, vtkIndent() ); 
 
             //  Get region and algo to quantify.  peak range is defied already in regionVector;  
@@ -154,10 +160,10 @@ void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
             float peakPPM  =  GetFloatFromString( this->regionVector[regionID][1] ); 
             float widthPPM =  GetFloatFromString( this->regionVector[regionID][2] ); 
 
-            cout << "NAME      : " << regionName << endl;
-            cout << "PEAK POS  : " << peakPPM << endl; 
-            cout << "PEAK WIDTH: " << widthPPM << endl; 
-            cout << "ALGO      : " << algoName << endl;
+            //cout << "NAME      : " << regionName << endl;
+            //cout << "PEAK POS  : " << peakPPM << endl; 
+            //cout << "PEAK WIDTH: " << widthPPM << endl; 
+            //cout << "ALGO      : " << algoName << endl;
 
             mapGen->SetPeakPosPPM( peakPPM );
             mapGen->SetPeakWidthPPM( widthPPM ); 
@@ -183,6 +189,16 @@ void svkQuantifyMetabolites::GenerateRegionMaps( vtkXMLDataElement* mrsXML )
         quantIndex++; 
     }
 
+    //  If masking, grab a copy to use for z-score computation
+    if ( this->useSelectedVolumeFraction ) { 
+        
+        int numVoxels = this->metMapVector[0]->GetDcmHeader()->GetIntValue("Columns"); 
+        numVoxels    *= this->metMapVector[0]->GetDcmHeader()->GetIntValue("Rows"); 
+        numVoxels    *= this->metMapVector[0]->GetDcmHeader()->GetNumberOfSlices(); 
+        this->selectedVolumeMask = new short[numVoxels];
+        memcpy( this->selectedVolumeMask, mapGen->GetSelectedVolumeMask(), numVoxels * sizeof(short) );    
+
+    }    
     mapGen->Delete();
  
 }
@@ -226,7 +242,7 @@ float svkQuantifyMetabolites::GetFloatFromString(vtkstd::string stringVal )
  *  then set division by zero to 
  *  zero, otherwise use actual computed value    
  */
-void svkQuantifyMetabolites::GenerateRatioMaps( vtkXMLDataElement* mrsXML )
+void svkQuantifyMetabolites::GenerateRatioMaps()
 {
 
     //  
@@ -242,28 +258,29 @@ void svkQuantifyMetabolites::GenerateRatioMaps( vtkXMLDataElement* mrsXML )
         ossIndex << ratioIndex;
         vtkstd::string ratioIndexString(ossIndex.str());
 
-        ratioXML = mrsXML->FindNestedElementWithNameAndId("RATIO", ratioIndexString.c_str());
+        ratioXML = this->mrsXML->FindNestedElementWithNameAndId("RATIO", ratioIndexString.c_str());
 
         if (ratioXML != NULL ) {
 
             //  Get images contributing to numerator and  denominator for this ratio
              
-            cout << "RXML: " << ratioXML->GetAttributeValue( 1 ) << endl;; 
+            //cout << "RXML: " << ratioXML->GetAttributeValue( 1 ) << endl;; 
             vtkstd::string ratioName( ratioXML->GetAttributeValue( 1 ) ); 
             ratioName = this->ReplaceSlashesAndWhiteSpace( ratioName ); 
-            cout << "RATIO NAME : " << ratioName << endl;
+            //cout << "RATIO NAME : " << ratioName << endl;
             
             //  Initialize the ratio with zeros:
             svkImageData* numeratorImage   = svkMriImageData::New();
             svkImageData* denominatorImage = svkMriImageData::New();
-            numeratorImage->DeepCopy( this->metMapVector[0] ); 
-            denominatorImage->DeepCopy( this->metMapVector[0] ); 
+            numeratorImage->ZeroCopy( this->metMapVector[0] ); 
+            denominatorImage->ZeroCopy( this->metMapVector[0] ); 
 
             //  Get the numerator and denominator values for this ratio
             this->GetNumeratorAndDenominatorImages( ratioXML, numeratorImage, denominatorImage); 
 
             vtkImageMathematics* mathR = vtkImageMathematics::New(); 
             mathR->SetOperationToDivide();
+
             //  If the computation is masked, e.g. by selection box, 
             //  then set division by zero to 
             //  zero, otherwise use actual computed value    
@@ -274,6 +291,7 @@ void svkQuantifyMetabolites::GenerateRatioMaps( vtkXMLDataElement* mrsXML )
             mathR->SetInput1( numeratorImage ); 
             mathR->SetInput2( denominatorImage ); 
             mathR->Update();
+
 
             //  Create a new image a copy from a correctly 
             //  instantiated object, then copy over the new pixels
@@ -361,7 +379,7 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
  *  Generates z-score maps (metabolite indices) for the quantities specified in 
  *  the input xml configuration file.  
  */
-void svkQuantifyMetabolites::GenerateZScoreMaps( vtkXMLDataElement* mrsXML )
+void svkQuantifyMetabolites::GenerateZScoreMaps()
 {
 
     //  
@@ -371,43 +389,43 @@ void svkQuantifyMetabolites::GenerateZScoreMaps( vtkXMLDataElement* mrsXML )
     int zscoreIndex = 0; 
     vtkXMLDataElement* zscoreXML;
 
+    svkMetaboliteRatioZScores* zscore = svkMetaboliteRatioZScores::New(); 
+
     while ( parseZScores) {
 
         ostringstream ossIndex;
         ossIndex << zscoreIndex;
         vtkstd::string zscoreIndexString(ossIndex.str());
 
-        zscoreXML = mrsXML->FindNestedElementWithNameAndId("ZSCORE", zscoreIndexString.c_str());
+        zscoreXML = this->mrsXML->FindNestedElementWithNameAndId("ZSCORE", zscoreIndexString.c_str());
 
         if (zscoreXML != NULL ) {
 
             //  Get images contributing to numerator and  denominator for this index 
              
-            cout << "ZSXML: " << zscoreXML->GetAttributeValue( 1 ) << endl;; 
+            //cout << "ZSXML: " << zscoreXML->GetAttributeValue( 1 ) << endl;; 
             vtkstd::string zscoreName( zscoreXML->GetAttributeValue( 1 ) ); 
             zscoreName = this->ReplaceSlashesAndWhiteSpace( zscoreName ); 
-            cout << "ZSCORE NAME : " << zscoreName << endl;
+            //cout << "ZSCORE NAME : " << zscoreName << endl;
             
             //  Initialize the z-score maps with zeros:
             svkImageData* numeratorImage   = svkMriImageData::New();
             svkImageData* denominatorImage = svkMriImageData::New();
-            numeratorImage->DeepCopy( this->metMapVector[0] ); 
-            denominatorImage->DeepCopy( this->metMapVector[0] ); 
+            numeratorImage->ZeroCopy( this->metMapVector[0] ); 
+            denominatorImage->ZeroCopy( this->metMapVector[0] ); 
 
             //  Get the numerator and denominator images for 
             //  this ratio:
             this->GetNumeratorAndDenominatorImages( zscoreXML, numeratorImage, denominatorImage); 
-
-            svkMetaboliteRatioZScores* zscore = svkMetaboliteRatioZScores::New(); 
-            if ( this->useSelectedVolumeFraction ) { 
-                zscore->LimitToSelectedVolume(); 
-            }
 
             //  Now generate the z-score form the 
             //  numerator/denominator images
             zscore->SetInputNumerator( numeratorImage ); 
             zscore->SetInputDenominator( denominatorImage ); 
             zscore->SetInputMrsData( this->GetImageDataInput(0) ); 
+            if ( this->useSelectedVolumeFraction ) { 
+                zscore->LimitToSelectedVolume( this->selectedVolumeMask ); 
+            }
             zscore->Update();
 
             //  Create a new image a copy from a correctly 
@@ -431,6 +449,8 @@ void svkQuantifyMetabolites::GenerateZScoreMaps( vtkXMLDataElement* mrsXML )
 
         zscoreIndex++; 
     }
+
+    zscore->Delete(); 
 
 }
 
@@ -508,13 +528,17 @@ string svkQuantifyMetabolites::ReplaceSlashesAndWhiteSpace( vtkstd::string inStr
 vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetRegionNameVector()
 {
 
+    this->regionVector.clear();
+
     //
     //  Loop over the regions to quantify:
     //
     bool parseRegions = true;
     int regionIndex = 0;
 
-    vtkXMLDataElement* mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    if ( this->mrsXML == NULL ) {
+        this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    }
 
     vtkXMLDataElement* regionXML;
 
@@ -525,7 +549,7 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
         ossIndex << regionIndex;
         vtkstd::string regionIndexString(ossIndex.str());
 
-        regionXML = mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
+        regionXML = this->mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
 
         if (regionXML != NULL ) {
 
@@ -534,8 +558,8 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
             string peakPPM( regionXML->GetAttribute("peak_ppm") );
             string widthPPM( regionXML->GetAttribute("width_ppm") );
 
-            cout << "XX peak pos  : " << peakPPM << endl;
-            cout << "XX peak width: " << widthPPM << endl;
+            //cout << "XX peak pos  : " << peakPPM << endl;
+            //cout << "XX peak width: " << widthPPM << endl;
 
             vtkstd::vector < vtkstd::string > peak;
             peak.push_back(regionName); 
@@ -552,6 +576,41 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
     }
 
     return this->regionVector; 
+}
+
+
+/*!
+ *  Modify a region's peak and width. 
+ */
+void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float widthPPM )
+{
+
+    //  If necessary, read xml from file before modifying content:
+    if ( this->mrsXML == NULL ) {
+        this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    }
+
+    vtkXMLDataElement* regionXML;
+
+    ostringstream ossIndex;
+    ossIndex << regionID;
+    vtkstd::string regionIndexString(ossIndex.str());
+
+    regionXML = this->mrsXML->FindNestedElementWithNameAndId("REGION", regionIndexString.c_str());
+
+    if (regionXML != NULL ) {
+
+        //  Modify regionXML entry: 
+        regionXML->SetFloatAttribute("peak_ppm", peakPPM);
+        regionXML->SetFloatAttribute("width_ppm", widthPPM);
+
+    } else {
+        vtkWarningWithObjectMacro(this, "Could not find region " + regionIndexString + " in XML config");
+    }
+
+    //regionXML->PrintXML(cout, vtkIndent()); 
+    //this->mrsXML->PrintXML(cout, vtkIndent()); 
+
 }
 
 

@@ -84,6 +84,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();
         int                                                 GetIntFromString(vtkstd::string stringVal ); 
         float                                               GetFloatFromString(vtkstd::string stringVal ); 
+        void                                                ModifyRegion( int regionID, float peakPPM, float widthPPM ); 
 
 
 
@@ -113,9 +114,9 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         //  Methods:
         virtual void                        UpdateProvenance();
         void                                Quantify();
-        void                                GenerateRegionMaps( vtkXMLDataElement* mrsXML );
-        void                                GenerateRatioMaps( vtkXMLDataElement* mrsXML );
-        void                                GenerateZScoreMaps( vtkXMLDataElement* mrsXML );
+        void                                GenerateRegionMaps();
+        void                                GenerateRatioMaps();
+        void                                GenerateZScoreMaps();
         string                              ReplaceSlashesAndWhiteSpace( vtkstd::string inString); 
         void                                GetNumeratorAndDenominatorImages( 
                                                 vtkXMLDataElement* ratioXML, 
@@ -129,6 +130,9 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         vtkstd::string                      xmlFileName; 
         vtkstd::vector< svkMriImageData* >  metMapVector; 
         float                               useSelectedVolumeFraction;
+        short*                              selectedVolumeMask;
+        vtkXMLDataElement*                  mrsXML;
+
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)
         vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;

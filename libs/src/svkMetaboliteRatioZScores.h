@@ -70,6 +70,8 @@ using namespace std;
  *  the regresion fit converges. This class takes metabolite map inputs for already quantified values.  These 
  *  may be integrated area maps, peak_ht maps, or maps derived from other quantification methods.  This class 
  *  only computes the z-score map for the given input. The z-scores are computed as defined in reference 1.  
+ *  The reported map is the ratio of the perpendicular distance of a point from the regression line, normalized
+ *  by the standard deviation of these distance values.  
  *
  *  References:
  *  
@@ -88,9 +90,9 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
-
-        void                    SetInputNumerator(vtkDataObject *in) { this->SetInput(0, in); }
-        void                    SetInputDenominator(vtkDataObject *in) { this->SetInput(1, in); }
+        void                    LimitToSelectedVolume( short* selectedVolumeMask);
+        void                    SetInputDenominator(vtkDataObject *in) { this->SetInput(0, in); }
+        void                    SetInputNumerator(vtkDataObject *in) { this->SetInput(1, in); }
         void                    SetInputMrsData(vtkDataObject *in) { this->SetInput(2, in); }
         void                    SetZScoreThreshold( double threshold ); 
 
@@ -117,13 +119,18 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         void                    ComputeZScore(); 
         virtual void            UpdateProvenance();
         double                  GetMean( double* pixels, int numVoxels ); 
-        double                  GetSD( double* pixels, double mean, int numVoxels); 
+        double                  GetDistanceSD( double* pixels, int numVoxels); 
         double                  GetRegressionSlope( 
                                     double* numeratorPixels, 
                                     double* denominatorPixels, 
                                     double numeratorMean, 
                                     double denominatorMean, 
                                     int numVoxels 
+                                ); 
+        double                  GetRegressionSlopeZeroIntercept(
+                                    double* numeratorPixels, 
+                                    double* denominatorPixels, 
+                                    int totalVoxels
                                 ); 
         double                  GetRegressionIntercept(double slope, double numeratorMean, double denominatorMean); 
         void                    GetRegression(double& slope, double& intercept); 
@@ -139,6 +146,7 @@ class svkMetaboliteRatioZScores: public svkImageAlgorithm
         short*                  quantificationMask;
         short*                  iterationMask;
         double                  zscoreThreshold; 
+        bool                    yInterceptZero;
 
 };
 

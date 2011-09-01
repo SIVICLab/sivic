@@ -91,6 +91,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    SetAlgorithm( vtkstd::string algo );     
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
+        short*                  GetSelectedVolumeMask();
 
 
     protected:
