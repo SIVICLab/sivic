@@ -48,8 +48,10 @@
 #include <svkImageReader2.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
+#include <svkIdfVolumeWriter.h>
 #include <svkIntegratePeak.h>
-#include <svkExtractMRIFromMRS.h>
+#include <svkMetaboliteMap.h>
+#include <svkQuantifyMetabolites.h>
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -70,33 +72,47 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_quantify -i input_file_name -o output_file_name -t output_data_type [-h] \n";
+    usemsg += "svk_quantify -i input_file_name -o output_file_name -t output_data_type      \n";
+    usemsg += "             (--peak_center ppm --peak_width ppm --qty_name name | --xml file ) \n";
+    usemsg += "             [ --algo type ]                                                 \n"; 
+    usemsg += "             [--verbose ] [ -h ]                                             \n"; 
     usemsg += "\n";  
     usemsg += "   -i input_file_name        name of file to convert.            \n"; 
     usemsg += "   -o output_file_name       name of outputfile.                 \n";  
     usemsg += "   -t output_data_type       target data type:                   \n";  
     usemsg += "                                 3 = UCSF IDF                    \n";  
     usemsg += "                                 6 = DICOM_MRI                   \n";  
-    usemsg += "   --peak_center       ppm   Chemical shift of peak center       \n";
-    usemsg += "   --peak_width        ppm   Width in ppm of peak integration    \n";
-    usemsg += "   --peak_name         name  String label name for peak          \n"; 
+    usemsg += "   --xml               file  XML quantification config file      \n"; 
+    usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center     \n";
+    usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration  \n";
+    usemsg += "   --qty_name          name  String label name for peak or ratio \n"; 
     usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout. \n"; 
-    usemsg += "   --algo                    Quantification algorithm :          \n"; 
+    usemsg += "   --algo              type  Quantification algorithm :          \n"; 
     usemsg += "                                 1 = Peak Ht (default)           \n";  
     usemsg += "                                 2 = Integration                 \n";  
     usemsg += "   -h                        print help mesage.                  \n";  
     usemsg += " \n";  
-    usemsg += "Generates metabolite map volume by direct integration of input spectra over the specified chemical shift range. \n";
+    usemsg += "Generates metabolite map volume by direct integration of input spectra over \n"; 
+    usemsg += "the specified chemical shift range, or by peak ht determination. \n";
+    usemsg += "Alternatively, may compute a set of maps based on an input xml configuration file\n";
+    usemsg += "Example:  \n";
+    usemsg += "\n";  
+    usemsg += "    Calculate NAA peak ht map\n";
+    usemsg += "    svk_quantify -i mrs.dcm -o naa_pk.dcm -t6 --peak_center 2 --peak_width .4 \n";
+    usemsg += "                 --peak_2_width .2 --algo 2 --zscore --qty_name NAA_PK_HT\n";
+    usemsg += "    Calculate all quantities specified in xml file\n";
+    usemsg += "    svk_quantify -i mrs.dcm -o test -t3 --xml mrs.xml \n";
     usemsg += "\n";  
 
     string inputFileName; 
     string outputFileName; 
+    string xmlFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    float  peakCenterPpm;
-    float  peakWidthPpm;
-    string peakName;
+    float  peakCenterPPM;
+    float  peakWidthPPM;
+    string qtyName;
     bool   isVerbose = false;   
-    svkExtractMRIFromMRS::algorithm algo = svkExtractMRIFromMRS::PEAK_HT; 
+    svkMetaboliteMap::algorithm algo = svkMetaboliteMap::PEAK_HT; 
     int algoInt; 
 
 
@@ -105,8 +121,9 @@ int main (int argc, char** argv)
     enum FLAG_NAME {
         FLAG_PEAK_CENTER = 0,
         FLAG_PEAK_WIDTH, 
-        FLAG_PEAK_NAME, 
+        FLAG_QTY_NAME, 
         FLAG_ALGORITHM, 
+        FLAG_XML_FILE, 
         FLAG_VERBOSE  
     };
 
@@ -116,8 +133,9 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"peak_center",      required_argument, NULL,  FLAG_PEAK_CENTER},
         {"peak_width",       required_argument, NULL,  FLAG_PEAK_WIDTH},
-        {"peak_name",        required_argument, NULL,  FLAG_PEAK_NAME},
+        {"peak_name",        required_argument, NULL,  FLAG_QTY_NAME},
         {"algo",             required_argument, NULL,  FLAG_ALGORITHM},
+        {"xml",              required_argument, NULL,  FLAG_XML_FILE},
         {"verbose",          no_argument      , NULL,  FLAG_VERBOSE},
         {0, 0, 0, 0}
     };
@@ -140,23 +158,26 @@ int main (int argc, char** argv)
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
            case FLAG_PEAK_CENTER:
-                peakCenterPpm = atof( optarg);
+                peakCenterPPM = atof( optarg);
                 break;
            case FLAG_PEAK_WIDTH:
-                peakWidthPpm = atof( optarg);
+                peakWidthPPM = atof( optarg);
                 break;
-           case FLAG_PEAK_NAME:
-                peakName.assign( optarg);
+           case FLAG_QTY_NAME:
+                qtyName.assign( optarg);
                 break;
            case FLAG_VERBOSE:
                 isVerbose = true; 
                 break;
+           case FLAG_XML_FILE:
+                xmlFileName.assign(optarg);
+                break;
            case FLAG_ALGORITHM:
                 algoInt = atoi(optarg); 
                 if ( algoInt == 1 ) {
-                    algo = svkExtractMRIFromMRS::PEAK_HT; 
+                    algo = svkMetaboliteMap::PEAK_HT; 
                 } else if ( algoInt == 2 ) {
-                    algo = svkExtractMRIFromMRS::INTEGRATE; 
+                    algo = svkMetaboliteMap::INTEGRATE; 
                 } else {
                     cout << "ERROR: invalid algorithm: " << algoInt << endl;
                     cout << usemsg << endl;
@@ -176,9 +197,26 @@ int main (int argc, char** argv)
     argv += optind;
 
 
-    if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
-        dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE || 
-        peakCenterPpm == UNDEFINED_VAL || peakWidthPpm == UNDEFINED_VAL || peakName.length() == 0 ) {
+    if ( argc != 0 ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+  
+    
+    if ( xmlFileName.length() == 0  && ( inputFileName.length() == 0 || outputFileName.length() == 0 ) ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+  
+    //  If no xml file, then validate the other inputs. 
+    if ( xmlFileName.length() == 0 ) { 
+        if ( peakCenterPPM == UNDEFINED_VAL || peakWidthPPM == UNDEFINED_VAL || qtyName.length() == 0 ) {
+            cout << usemsg << endl;
+            exit(1); 
+        }
+    } 
+
+    if ( dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE ) { 
         cout << usemsg << endl;
         exit(1); 
     }
@@ -186,9 +224,9 @@ int main (int argc, char** argv)
     //cout << inputFileName << endl;
     //cout << outputFileName << endl;
     //cout << dataTypeOut << endl;
-    //cout << peakCenterPpm << endl;
-    //cout << peakWidthPpm << endl;
-    //cout << peakName<< endl;
+    //cout << peakCenterPPM << endl;
+    //cout << peakWidthPPM << endl;
+    //cout << qtyName<< endl;
 
 
     // ===============================================
@@ -203,7 +241,6 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-
     // ===============================================
     //  Use the reader to read the data into an
     //  svkMrsImageData object and set any reading
@@ -212,54 +249,87 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
-    svkExtractMRIFromMRS* quant = svkExtractMRIFromMRS::New();
-    quant->SetInput( reader->GetOutput() ); 
-    if ( isVerbose ) { 
-        quant->SetVerbose( isVerbose ); 
-    }    
-    quant->SetPeakPosPPM( peakCenterPpm );
-    quant->SetPeakWidthPPM( peakWidthPpm );
-
-    if ( isVerbose || algo == svkExtractMRIFromMRS::INTEGRATE ) {
-        quant->SetAlgorithmToIntegrate();
-        quant->SetSeriesDescription( peakName + "area metabolite map" ); 
-        quant->Update();
-    }
-
-    if ( isVerbose || algo == svkExtractMRIFromMRS::PEAK_HT) {
-        quant->SetAlgorithmToPeakHeight();
-        quant->SetSeriesDescription( peakName + "peak ht metabolite map" ); 
-        quant->Update();
-    }
-
-    //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
-    //cout << *( quant->GetOutput() ) << endl;
-
-    // ===============================================  
-    //  Write the data out to the specified file type.  
-    //  Use an svkImageWriterFactory to obtain the
-    //  correct writer type. 
-    // ===============================================  
-    if ( isVerbose == false ) {
-
+    //  if using XML config, then quantify all mets here, else only quantify the specified peak: 
+    if ( xmlFileName.length() != 0 ) {
+        svkQuantifyMetabolites* quantMets = svkQuantifyMetabolites::New();
+        quantMets->SetInput( reader->GetOutput() ); 
+        quantMets->LimitToSelectedVolume();    
+        quantMets->Update();
+        vtkstd::vector<svkMriImageData*>* metMapVector = quantMets->GetMetMaps();
+    
         vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
         svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    
+        
         if ( writer == NULL ) {
             cerr << "Can not determine writer of type: " << dataTypeOut << endl;
             exit(1);
         }
-   
-        writer->SetFileName( outputFileName.c_str() );
-        writer->SetInput( quant->GetOutput() );
+        for (int mapId = 0; mapId < metMapVector->size(); mapId++) {
+            cout << "mapId: " << mapId << endl; 
+            cout << "SD: " << (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") << endl;
+            writer->SetFileName( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription").c_str() );
+            writer->SetInput( (*metMapVector)[mapId] );
+            if ( writer->IsA( "svkIdfVolumeWriter" ) ) {
+                svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true ); 
+            }
+    
+            //  Set the input command line into the data set provenance:
+            reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    
+            writer->Write();
+        }
 
-        //  Set the input command line into the data set provenance:
-        reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    } else {
 
-        writer->Write();
+        svkMetaboliteMap* quant = svkMetaboliteMap::New();
+        quant->SetInput( reader->GetOutput() ); 
+        if ( isVerbose ) { 
+            quant->SetVerbose( isVerbose ); 
+        }    
+        quant->SetPeakPosPPM( peakCenterPPM );
+        quant->SetPeakWidthPPM( peakWidthPPM );
+    
+        if ( isVerbose || algo == svkMetaboliteMap::INTEGRATE ) {
+            quant->SetAlgorithmToIntegrate();
+            quant->SetSeriesDescription( qtyName + "area metabolite map" ); 
+            quant->Update();
+        }
+    
+        if ( isVerbose || algo == svkMetaboliteMap::PEAK_HT) {
+            quant->SetAlgorithmToPeakHeight();
+            quant->SetSeriesDescription( qtyName + "peak ht metabolite map" ); 
+            quant->Update();
+        }
+    
+        //quant->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+        //cout << *( quant->GetOutput() ) << endl;
+    
+        // ===============================================  
+        //  Write the data out to the specified file type.  
+        //  Use an svkImageWriterFactory to obtain the
+        //  correct writer type. 
+        // ===============================================  
+        if ( isVerbose == false ) {
+    
+            vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+            svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+        
+            if ( writer == NULL ) {
+                cerr << "Can not determine writer of type: " << dataTypeOut << endl;
+                exit(1);
+            }
+    
+            writer->SetFileName( outputFileName.c_str() );
+            writer->SetInput( quant->GetOutput() );
+    
+            //  Set the input command line into the data set provenance:
+            reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    
+            writer->Write();
+        }
+    
+        quant->Delete(); 
     }
-
-    quant->Delete(); 
     reader->Delete();
 
     return 0; 
