@@ -148,9 +148,9 @@ void sivicProcessingWidget::CreateWidget()
 
     this->Script("grid %s -row 0 -column 0 -pady 3 -columnspan 3 -sticky nwes -pady 5", this->phaseSlider->GetWidgetName() );
     this->Script("grid %s -row 1 -column 0 -pady 3 -columnspan 3 -sticky nwes", checkButtons->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -pady 3 -sticky we -padx 4 -pady 5", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 1 -pady 3 -sticky we -padx 4 -pady 5", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 2 -pady 3 -sticky we -padx 4 -pady 5", this->combineButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 0 -pady 3 -sticky we -padx 4 -pady 1", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 1 -pady 3 -sticky we -padx 4 -pady 1", this->phaseButton->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 2 -pady 3 -sticky we -padx 4 -pady 1", this->combineButton->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 0", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );

@@ -48,7 +48,6 @@
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkMetaboliteMap.h>
 #include <svkQuantifyMetabolites.h>
 #include <sivicKWCompositeWidget.h>
 
@@ -100,7 +99,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         void                                GetMRSFrequencyRange( double& min, double& max, svkSpecPoint::UnitType units); 
 
         vtkCallbackCommand*                 progressCallback;
-        svkMetaboliteMap*                   quant;
+        svkQuantifyMetabolites*             mrsQuant;
         vtkstd::vector < vtkstd::string >   metNames;
         int                                 numMets; 
         bool                                isEnabled; 

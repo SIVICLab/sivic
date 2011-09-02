@@ -24,7 +24,7 @@ sivicQuantificationWidget::sivicQuantificationWidget()
 {
 
     this->quantButton = NULL;
-    this->quant = NULL;
+    this->mrsQuant = NULL;
     this->mapViewSelector = NULL;   
     this->numMets = 0; 
     this->isEnabled = false; 
@@ -45,9 +45,9 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
         this->quantButton= NULL;
     }
 
-    if( this->quant != NULL ) {
-        this->quant->Delete();
-        this->quant= NULL;
+    if( this->mrsQuant != NULL ) {
+        this->mrsQuant->Delete();
+        this->mrsQuant= NULL;
     }
 
     if( this->mapViewSelector != NULL ) {
@@ -76,15 +76,15 @@ void sivicQuantificationWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    svkQuantifyMetabolites* mrsQuant = svkQuantifyMetabolites::New();
-    //mrsQuant->SetXMLFileName( string xmlFileName ); 
+    this->mrsQuant = svkQuantifyMetabolites::New();
+    //this->mrsQuant->SetXMLFileName( string xmlFileName ); 
 
-    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = mrsQuant->GetRegionNameVector(); 
+    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
     this->numMets = regionNameVector.size(); 
     for (int i = 0; i < regionNameVector.size() ; i ++ ) {
         string regionName = regionNameVector[i][0]; 
-        float peakPPM  = mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-        float widthPPM = mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
         this->metNames.push_back( regionName ); 
         this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
         this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
@@ -95,20 +95,21 @@ void sivicQuantificationWidget::CreateWidget()
     this->mapViewSelector = vtkKWMenuButtonWithLabel::New();
     this->mapViewSelector->SetParent(this);
     this->mapViewSelector->Create();
-    this->mapViewSelector->SetLabelText("Met Map View");
+    this->mapViewSelector->SetLabelText("Select Map");
     this->mapViewSelector->SetLabelPositionToTop();
-    this->mapViewSelector->SetPadY(5);
+    this->mapViewSelector->SetPadY(2);
     this->mapViewSelector->GetWidget()->SetWidth(7);
     this->mapViewSelector->EnabledOff();
+    this->mapViewSelector->GetLabel()->SetFont("system 8");
+    this->mapViewSelector->GetWidget()->SetFont("system 8");
     vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
+    mapViewMenu->SetFont("system 8");
 
     
     double rangeMin; 
     double rangeMax; 
     this->GetMRSFrequencyRange( rangeMin, rangeMax, svkSpecPoint::PPM); 
 
-    stringstream invocation; 
-    vtkstd::string mapSelectLabel;
 
     int i; 
     for ( i = 0; i < this->numMets; i++ ) {
@@ -120,58 +121,22 @@ void sivicQuantificationWidget::CreateWidget()
         this->metRangeVector[i]->Create();
         this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
         this->metRangeVector[i]->EnabledOff();
-        this->metRangeVector[i]->SetSliderSize(2);
-        this->metRangeVector[i]->SetPadY(4);
+        this->metRangeVector[i]->SetSliderSize(1);
+        this->metRangeVector[i]->SetPadY(1);
         this->metRangeVector[i]->SetEntry1PositionToLeft();
         this->metRangeVector[i]->SetEntry2PositionToRight();
         this->metRangeVector[i]->SetEntriesWidth(4);
         this->metRangeVector[i]->SetResolution(.01);
-
-        //  These are text labels for the range sliders
-        this->metLabelVector.push_back( vtkKWLabel::New() );  
-        this->metLabelVector[i]->SetText( (this->metNames[i]).c_str() );
-        this->metLabelVector[i]->SetParent(this);
-        this->metLabelVector[i]->SetHeight(1);
-        this->metLabelVector[i]->SetPadX(0);
-        this->metLabelVector[i]->SetPadY(0);
-        this->metLabelVector[i]->SetJustificationToLeft();
-        this->metLabelVector[i]->Create();
-
-        ostringstream mapNumArea;
-        mapNumArea <<  i * 2;
-        mapSelectLabel = this->metNames[i] + "_area";
-        invocation.str("");
-        invocation << "MetMapViewCallback " << mapNumArea.str() << endl;
-        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
-
-        ostringstream mapNumHt;
-        mapNumHt <<  (i * 2) + 1;
-        mapSelectLabel = this->metNames[i] + "_ht";
-        invocation.str("");
-        invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
-        mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
+        this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
+        this->metRangeVector[i]->GetLabel()->SetWidth(8); 
+        this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
 
     }
 
-    //  Add metabolie cho/naa ratios: 
-    ostringstream mapNumArea;
-    mapNumArea <<  i * 2;
-    mapSelectLabel = this->metNames[0] + "/" + this->metNames[2] + "_area_ratio";
-    invocation.str("");
-    invocation << "MetMapViewCallback " << mapNumArea.str() << endl;
-    mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
-
-    ostringstream mapNumHt;
-    mapNumHt <<  (i * 2) + 1;
-    mapSelectLabel = this->metNames[0] + "/" + this->metNames[2] + "_ht_ratio";
-    invocation.str("");
-    invocation << "MetMapViewCallback " << mapNumHt.str() << endl;
-    mapViewMenu->AddRadioButton(mapSelectLabel.c_str(), this->sivicController, invocation.str().c_str());
-
-
     //  Set default value
-    mapSelectLabel = this->metNames[2] + "_area"; 
+    vtkstd::string mapSelectLabel = this->metNames[0]; 
     this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
+    this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
 
 
     //  Generate button
@@ -179,28 +144,24 @@ void sivicQuantificationWidget::CreateWidget()
     this->quantButton->SetParent( this );
     this->quantButton->Create( );
     this->quantButton->EnabledOff();
-    this->quantButton->SetText( "Generate\n Metabolite\n Maps");
+    this->quantButton->SetText( "Generate Maps");
     this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
 
 
     //  Format the GUI grid in this panel:
     for ( int i = 0; i < this->numMets; i++ ) {
-        this->Script("grid %s -row %d -column 0 -sticky w", 
-                        this->metLabelVector[i]->GetWidgetName(), i);
-        this->Script("grid %s -row %d -column 1 -sticky we -padx 2", 
-                        this->metRangeVector[i]->GetWidgetName(), i);
+        this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
     };
-    this->Script("grid %s -row %d -column 2 -rowspan 2 -padx 2", this->mapViewSelector->GetWidgetName(), 0);
-    this->Script("grid %s -row %d -column 2 -rowspan 2 -sticky ew -padx 2", this->quantButton->GetWidgetName(), 2);
+    this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
+    this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
 
 
     for ( int i = 0; i < this->numMets; i++ ) {
         this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
     }
 
-    this->Script("grid columnconfigure %s 0 -weight 0", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 1 -minsize 238", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 0", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 1 -minsize 238", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 0", this->GetWidgetName() );
 
     //  Callbacks
     this->AddCallbackCommandObserver(
@@ -263,122 +224,55 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
 void sivicQuantificationWidget::ExecuteQuantification() 
 {
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+    vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
 
     if( data != NULL ) {
 
-        this->quant = svkMetaboliteMap::New();
-        this->quant->SetInput( data );
+        this->mrsQuant->SetInput( data );
+        this->mrsQuant->LimitToSelectedVolume();
 
-        //generate pk ht, peak area and magnitude area met maps for the specified intervals
-        //save each in the data model and through a drop down select which one to view (load as overlay)
-
-        double minValue;
-        double maxValue;
-        float peak;
-        float width;
-        svkMriImageData* tmp;
-
-        //
-        //  This is a vector of metabolite map names used in the svkDataModel: 
-        //  The names should appear in the same order in the vector as they do 
-        //  in the view selector 
-        //
-        int objectNumber= 0; 
-        for (int i = 0; i < this->metRangeVector.size(); i++ ) {
-
-            minValue = this->metRangeVector[i]->GetEntry1()->GetValueAsDouble();
-            maxValue = this->metRangeVector[i]->GetEntry2()->GetValueAsDouble();
-            peak  = static_cast< float > ( (maxValue + minValue)/2 );
-            width = static_cast< float > ( fabs( ( maxValue - minValue ) ) ); 
-
-            cout << "QUANT THIS ONE: " << this->metNames[i] << " " << peak << " " << width << endl;
-
-            this->quant->SetPeakPosPPM( peak );
-            this->quant->SetPeakWidthPPM( width );
-
-            for (int quantMethod = 0; quantMethod < 2; quantMethod++) {
-
-                //  Add met map to model 
-                vtkstd::string modelDataName = this->metNames[i]; 
-                if (quantMethod == 0) {
-                    this->quant->SetSeriesDescription( this->metNames[i] + " area Metabolite Map" );
-                    this->quant->SetAlgorithmToIntegrate(); 
-                    modelDataName += "_area";
-                } else if (quantMethod == 1) {
-                    this->quant->SetSeriesDescription( this->metNames[i] + " peak ht Metabolite Map" );
-                    this->quant->SetAlgorithmToPeakHeight(); 
-                    modelDataName += "_ht";
-                }
-                this->modelMetNames.push_back( modelDataName ); 
-
-                this->quant->Update();
-
-                //  Copy the data set so that the algo can be reused to generate a new map without
-                //  overwriting the previous map data. 
-                tmp = svkMriImageData::New();
-                tmp->DeepCopy(this->quant->GetOutput());
-                if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
-                    this->model->ChangeDataObject( this->modelMetNames[ objectNumber ], tmp); 
-                } else {
-                    this->model->AddDataObject( this->modelMetNames[ objectNumber ], tmp );
-                }
-                objectNumber++; 
-            }
+        //  update XML from current slider positions:
+        for (int i = 0; i < this->numMets; i++ ) {
+            float minPPM   = this->metRangeVector[i]->GetEntry1()->GetValueAsDouble();
+            float maxPPM   = this->metRangeVector[i]->GetEntry2()->GetValueAsDouble();
+            float peakPPM  = static_cast< float > ( (maxPPM + minPPM)/2 );
+            float widthPPM = static_cast< float > ( fabs( ( maxPPM - minPPM) ) ); 
+            this->mrsQuant->ModifyRegion( i, peakPPM, widthPPM ); 
         }
 
-        //  -------------------------------------------------
-        //  Generate Cho/NAA ratio map and add to model 
-        //  Do not use quant algo, just divide two images. 
-        //  -------------------------------------------------
-        vtkstd::string modelDataName = this->metNames[0] + "/" + this->metNames[2]; 
-        vtkstd::string seriesDescription;
-        for (int quantMethod = 0; quantMethod < 2; quantMethod++) {
-            if (quantMethod == 0) {
-                seriesDescription = this->metNames[0] + "/" + this->metNames[2] + " area ratio Metabolite Map";
-                modelDataName += "_area_ratio";
-            } else if (quantMethod == 1) {
-                seriesDescription = this->metNames[0] + "/" + this->metNames[2] + " peak ht ratio Metabolite Map";
-                modelDataName += "_ht_ratio";
-            }
+        this->mrsQuant->Update();
+
+        vtkstd::vector< svkMriImageData* >* metMaps = this->mrsQuant->GetMetMaps(); 
+
+        for (int i = 0; i < metMaps->size(); i ++ ) {
+
+            //
+            //  This is a vector of metabolite map names used in the svkDataModel: 
+            //  The names should appear in the same order in the vector as they do 
+            //  in the view selector 
+            //
+            vtkstd::string modelDataName = (*metMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"); 
             this->modelMetNames.push_back( modelDataName ); 
-    
-            //get two images and divide and set new output into tmp svkMriImageData object:  
-            vtkImageMathematics* divide = vtkImageMathematics::New();
-            divide->SetOperationToDivide();
-            divide->DivideByZeroToCOn();
-            cout << "CHECK RATIO input: " << this->modelMetNames[0 + quantMethod]  << endl;
-            cout << "CHECK RATIO input: " << this->modelMetNames[4 + quantMethod ]  << endl;
-            cout << "CHECK RATIO input: " << *( this->model->GetDataObject( this->modelMetNames[0 + quantMethod] ) ) << endl;
-            cout << "CHECK RATIO input: " << *( this->model->GetDataObject( this->modelMetNames[4 + quantMethod] ) ) << endl;
-            divide->SetInput1( this->model->GetDataObject( this->modelMetNames[0 + quantMethod] ) ); 
-            divide->SetInput2( this->model->GetDataObject( this->modelMetNames[4 + quantMethod] ) ); 
-            divide->Update();
-            cout << "CHECK RATIO: " << *(divide->GetOutput() ) << endl;
 
-            //  Copy the data set so that the algo can be reused to generate a new map without
-            //  overwriting the previous map data. 
-
-            svkImageCopy* copier = svkImageCopy::New();
-            copier->SetInput( this->model->GetDataObject( this->modelMetNames[0] ) );
-            copier->SetSeriesDescription( seriesDescription );
-            copier->Update();
-            tmp = static_cast<svkMriImageData*>( copier->GetOutput() );
-
-            tmp->DeepCopy( divide->GetOutput() );
-            if( this->model->DataExists( this->modelMetNames[ objectNumber ] ) ) {
-                this->model->ChangeDataObject( this->modelMetNames[ objectNumber ], tmp); 
+            if( this->model->DataExists( this->modelMetNames[i] ) ) {
+                this->model->ChangeDataObject( this->modelMetNames[ i ], (*metMaps)[i]); 
             } else {
-                this->model->AddDataObject( this->modelMetNames[ objectNumber ], tmp );
-            }
-            objectNumber++; 
-            divide->Delete();
-        }
-        //  -------------------------------------------------
-        //  End Ratio generation 
-        //  -------------------------------------------------
+                this->model->AddDataObject( this->modelMetNames[ i ], (*metMaps)[i]);
 
-        //  Initialize the overlay with the NAA met map
-        this->SetOverlay( this->modelMetNames[2] ); 
+                //  Add label to menu:
+                ostringstream mapNum;
+                mapNum <<  i; 
+                stringstream invocation; 
+                invocation.str("");
+                invocation << "MetMapViewCallback " << mapNum.str() << endl;
+                mapViewMenu->AddRadioButton(modelDataName.c_str(), this->sivicController, invocation.str().c_str());
+            }
+
+        }
+
+
+        //  Initialize the overlay with the first met map
+        this->SetOverlay( this->modelMetNames[0] ); 
 
         //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
         //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );

@@ -373,23 +373,30 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 2 -pady 2 -in %s", 
               welcomeText->GetWidgetName(), welcomePanel->GetWidgetName());
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 4 -in %s", 
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->preprocessingWidget->GetWidgetName(), preprocessingPanel->GetWidgetName());
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 10 -in %s", 
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
 
-    this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 100 -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0 -minsize 5 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0 -minsize 150 -maxsize 150", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 0 -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid rowconfigure    %s 4 -weight 0 -minsize 20 -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    //  row 0 -> render view
+    //  row 1 -> seperator
+    //  row 2 -> tab processing    
+    //  row 3 -> spec range    
+    //  row 4 -> spec view
+    this->sivicKWApp->Script("grid rowconfigure    %s 0 -weight 100  -minsize 300 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 1 -weight 0    -minsize 3   ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 2 -weight 0    -minsize 137 -maxsize 137", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 3 -weight 0    -minsize 20  -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    this->sivicKWApp->Script("grid rowconfigure    %s 4 -weight 0    -minsize 20  -maxsize 20", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 50 -uniform 1 -minsize 300", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 3 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid columnconfigure %s 4 -weight 0 -uniform 1 -minsize 185", this->sivicWindow->GetViewFrame()->GetWidgetName() );
+    //  width of right side frame (orientation and ucsf met map selector
+    this->sivicKWApp->Script("grid columnconfigure %s 4 -weight 0 -uniform 1 -minsize 80", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     separator->Delete();
     separatorVert->Delete();
     separatorVert2->Delete();

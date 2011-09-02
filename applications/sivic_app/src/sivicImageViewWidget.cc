@@ -473,7 +473,7 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 2 ", this->overlayViewFrame->GetWidgetName(), row);
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 6", 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 2", 
                 overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
     this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 2", 
                 this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
@@ -485,7 +485,7 @@ void sivicImageViewWidget::CreateWidget()
                 this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 2", 
                 this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 4", 
+    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 2", 
                 checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1 ", this->overlayViewFrame->GetWidgetName() );
@@ -499,12 +499,10 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 10 -pady 2", this->orthoViewFrame->GetWidgetName(), row);
 
-        this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 6", 
-                imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", 
-                sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-        this->Script("grid %s -in %s -row 1 -column 1 -sticky e", 
-                this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 2", imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 1 -column 1 -sticky e", this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    
     this->Script("grid columnconfigure %s 0 -weight 1", this->orthoViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 0", this->orthoViewFrame->GetWidgetName() );
     this->Script("grid rowconfigure %s 0 -weight 1", this->orthoViewFrame->GetWidgetName() );
