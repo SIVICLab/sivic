@@ -483,6 +483,7 @@ int svkQuantifyMetabolites::RequestInformation( vtkInformation* request, vtkInfo
 int svkQuantifyMetabolites::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
+    this->metMapVector.clear();
     this->Quantify();
 
     return 1; 
