@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkMrsLinearPhase.cc $
- *  $Rev: 1001 $
- *  $Author: beckn8tor $
- *  $Date: 2011-08-16 17:14:42 -0700 (Tue, 16 Aug 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkMrsLinearPhase, "$Rev: 1001 $");
+vtkCxxRevisionMacro(svkMrsLinearPhase, "$Rev$");
 vtkStandardNewMacro(svkMrsLinearPhase);
 
 
