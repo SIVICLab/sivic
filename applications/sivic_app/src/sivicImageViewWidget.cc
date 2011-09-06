@@ -200,7 +200,7 @@ void sivicImageViewWidget::CreateWidget()
     imageToolsLabel->SetJustificationToLeft();
     imageToolsLabel->SetAnchorToWest();
     imageToolsLabel->SetBorderWidth(1);
-    imageToolsLabel->SetFont("system 10 {bold}");
+    imageToolsLabel->SetFont("system 8 {bold}");
 
     this->overlayViewFrame = vtkKWFrame::New();   
     this->overlayViewFrame->SetParent(this);
@@ -213,7 +213,7 @@ void sivicImageViewWidget::CreateWidget()
     overlayToolsLabel->SetJustificationToLeft();
     overlayToolsLabel->SetAnchorToWest();
     overlayToolsLabel->SetBorderWidth(1);
-    overlayToolsLabel->SetFont("system 10 {bold}");
+    overlayToolsLabel->SetFont("system 8 {bold}");
 
     vtkKWSeparator* orthoSeparator = vtkKWSeparator::New();   
     orthoSeparator->SetParent(this);
@@ -473,19 +473,19 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 2 ", this->overlayViewFrame->GetWidgetName(), row);
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 2", 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 0", 
                 overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 2", 
+    this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 1", 
                 this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 1 -column 1 -sticky we -padx 2 -pady 2", 
+    this->Script("grid %s -in %s -row 1 -column 1 -sticky we -padx 2 -pady 1", 
                 this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 1 -column 2 -sticky sw -pady 2" , 
+    this->Script("grid %s -in %s -row 1 -column 2 -sticky sw -pady 1" , 
                 this->thresholdType->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 3 -sticky ew -pady 2", 
+    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 3 -sticky ew -pady 1", 
                 this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 2", 
+    this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 1", 
                 this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 2", 
+    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 1", 
                 checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1 ", this->overlayViewFrame->GetWidgetName() );
@@ -499,7 +499,7 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 10 -pady 2", this->orthoViewFrame->GetWidgetName(), row);
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 2", imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 0", imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 1 -column 1 -sticky e", this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     

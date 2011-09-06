@@ -242,6 +242,7 @@ int sivicApp::Build( int argc, char* argv[] )
     welcomeText->Create();
     this->GetWelcomeMessage( welcomeText );
     welcomeText->ReadOnlyOn(); 
+    welcomeText->SetFont("system 8"); 
 
     this->preprocessingWidget->SetParent(tabbedPanel );
     this->preprocessingWidget->SetPlotController(this->sivicController->GetPlotController());
