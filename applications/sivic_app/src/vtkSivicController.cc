@@ -36,6 +36,9 @@
 
 #include <vtkSivicController.h>
 #include <vtksys/SystemTools.hxx>
+#include <vtkKWToolbarSet.h>
+#include <vtkKWToolbar.h>
+#include <vtkKWPushButtonWithMenu.h>
 
 
 using namespace svk; 
@@ -318,14 +321,6 @@ void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* ov
 {
     this->overlayWindowLevelWidget = overlayWindowLevelWidget;
     this->overlayWindowLevelWidget->SetModel(this->model);
-}
-
-
-//! Sets this widget controllers view, also passes along its model
-void vtkSivicController::SetGlobalWidget( sivicGlobalWidget* globalWidget )
-{
-    this->globalWidget = globalWidget;
-    this->globalWidget->SetModel(this->model);
 }
 
 
@@ -682,6 +677,8 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
     this->plotController->GetView()->Refresh( );
 }
 
+
+
 void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInputFile )
 {
 
@@ -712,9 +709,41 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
     if( this->spectraViewWidget->sliceSlider->GetEnabled() ) {
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
     }
-    // Lets update the metabolite menu for the current spectra
-    this->globalWidget->PopulateMetaboliteMenu();
+
+    // Update the metabolite menu for the current spectra
+#if defined( UCSF_INTERNAL )
+
+    vector<string> names = svkUCSFUtils::GetAllMetaboliteNames();
+    vector<string>::iterator it = names.begin();
+    string commandString;
+
+    vtkKWMenu* metaboliteNames = static_cast<vtkKWMenu*>(
+            this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)); 
+
+    metaboliteNames->DeleteAllItems();
+    if( this->model != NULL ) {
+        string spectraFile = this->model->GetDataFileName("SpectroscopicData");
+        while(it != names.end()) {
+            if( spectraFile != "" ) {
+                bool includePath = true;
+                string metaboliteFileName;
+                metaboliteFileName = svkUCSFUtils::GetMetaboliteFileName(
+                                        this->model->GetDataFileName("SpectroscopicData"), it->c_str(), includePath );
+                if( svkUtils::FilePathExists(metaboliteFileName.c_str()) ) {
+                    commandString = "OpenMetabolites";
+                    commandString += " \"";
+                    commandString += *it;
+                    commandString += "\"";
+                    metaboliteNames->AddRadioButton(it->c_str(), this, commandString.c_str());
+                }
+            }
+            ++it;
+        }
+    }
+
+#endif
 }
+
 
 void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename )
 {
@@ -747,7 +776,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->spectraViewWidget->SetSyncOverlayWL( true );
                     this->overlayWindowLevelWidget->SetSyncPlotGrid( true );
                     // We are going to deselect the metabolites since we don't know where they were loaded from
-                    this->globalWidget->DeselectMetabolites();
+                    this->DeselectMetabolites();
                     this->viewRenderingWidget->ResetInfoText();
                 } else {
                     if( this->model->DataExists( "OverlayData" ) ) {
@@ -806,6 +835,20 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
 }
 
+
+void vtkSivicController::DeselectMetabolites( )
+{
+    int numItems =  static_cast<vtkKWMenu*>(
+                    this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
+                )-> GetNumberOfItems();
+    for( int i = 0; i < numItems; i++ ) {
+        static_cast<vtkKWMenu*>(
+                    this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
+                )->DeselectItem(i); 
+    }
+}
+
+
 void vtkSivicController::OpenOverlay( const char* fileName )
 {
 
@@ -839,22 +882,31 @@ void vtkSivicController::OpenMetabolites( const char* metabolites )
 {
     string metaboliteString(metabolites);
     string metaboliteFileName;
+
     if ( !(metaboliteString == "None") ) {
         if( !this->model->DataExists("MetaboliteData") || 
              metaboliteString != svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ) ) {
 
             // Currently require an image and a spectra to be loading to limit testing
             if( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
+
                 bool includePath = true;
                 string metaboliteFileName;
                 metaboliteFileName += svkUCSFUtils::GetMetaboliteFileName( 
                                         this->model->GetDataFileName("SpectroscopicData"), metaboliteString, includePath );
                 this->OpenOverlay( metaboliteFileName.c_str() );
+
                 if( !this->model->DataExists("MetaboliteData")) {
-                    this->globalWidget->metaboliteSelect->GetWidget()->SetValue( "None" );
+                    static_cast<vtkKWMenu*>(
+                        this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
+                    )->SelectItem(0);
                 } 
-                this->globalWidget->metaboliteSelect->GetWidget()
-                          ->SetValue( svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ).c_str());
+                static_cast<vtkKWMenu*>(
+                    this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
+                )->SelectItem(
+                    svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ).c_str()
+                );
+
             } else {
                this->PopupMessage( "You must load an image and a spectra before loading metabolites." ); 
             } 
@@ -2066,11 +2118,10 @@ void vtkSivicController::SetLUTCallback( int type )
 
 
 /*!
- *
+ *  Sets the overlay view in plot grid
  */
 void vtkSivicController::MetMapViewCallback( int mapNumber)
 {
-    cout << "DISPLAY: " << this->quantificationWidget->modelMetNames[mapNumber] << endl;
     this->quantificationWidget->SetOverlay( 
         this->quantificationWidget->modelMetNames[mapNumber] 
     ); 
@@ -2135,6 +2186,16 @@ string vtkSivicController::GetPrinterName( )
  */
 void vtkSivicController::SetOrientation( const char* orientation, bool alignOverlay ) 
 {
+
+    //  Get the orientation  
+    //this->mainWindow->GetMainToolbarSet()->GetToolbarsFrame()->GetChildWidgetWithName("Main Toolbar");
+
+    vtkKWPushButtonWithMenu* orientationButton = static_cast<vtkKWPushButtonWithMenu*>(
+        this->mainWindow->GetMainToolbarSet()->GetNthToolbar(0)->GetNthWidget(11)
+    ); ; 
+    //orientationButton->GetMenu()->SelectItemWithSelectedValueAsInt(1);
+
+
     // Set Our orientation member variable
     svkDcmHeader::Orientation newOrientation = svkDcmHeader::UNKNOWN_ORIENTATION;
     this->orientation = orientation;
@@ -2146,6 +2207,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
     }
 
+    int index; 
     if( this->orientation == "AXIAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL );
@@ -2155,10 +2217,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::AXIAL;
-        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("AXIAL");
-        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
-            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
-        }
+        index = orientationButton->GetMenu()->GetIndexOfItem("Axial");
     } else if ( this->orientation == "CORONAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL );
@@ -2168,10 +2227,7 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::CORONAL;
-        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("CORONAL");
-        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
-            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
-        }
+        index = orientationButton->GetMenu()->GetIndexOfItem("Coronal");
     } else if ( this->orientation == "SAGITTAL" ) {
         this->plotController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
         this->overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL );
@@ -2181,10 +2237,10 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
             svkOverlayView::SafeDownCast( this->overlayController->GetView())->AlignCamera();
         }
         newOrientation = svkDcmHeader::SAGITTAL;
-        int index = this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfItem("SAGITTAL");
-        if( index != this->globalWidget->orientationSelect->GetWidget()->GetMenu()->GetIndexOfSelectedItem()) {
-            this->globalWidget->orientationSelect->GetWidget()->GetMenu()->SelectItem( index );
-        }
+        index = orientationButton->GetMenu()->GetIndexOfItem("Sagittal");
+    }
+    if( index != orientationButton->GetMenu()->GetIndexOfSelectedItem()) {
+        orientationButton->GetMenu()->SelectItem( index );
     }
 
     if( this->model->DataExists("SpectroscopicData") ) {
@@ -2293,7 +2349,11 @@ void vtkSivicController::EnableWidgets()
 {
     this->DisableWidgets();
     if ( model->DataExists("SpectroscopicData") && model->DataExists("AnatomicalData") ) {
-        this->globalWidget->metaboliteSelect->EnabledOn();
+
+#if defined( UCSF_INTERNAL )
+        //  Enable the UCSF metabolite widgets
+        this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)->EnabledOn(); 
+#endif
         string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
@@ -2451,7 +2511,10 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->satBandOutlineButton->EnabledOff();
     this->overlayWindowLevelWidget->EnabledOff();
     this->windowLevelWidget->EnabledOff();
-    this->globalWidget->metaboliteSelect->EnabledOff();
+#if defined( UCSF_INTERNAL )
+    //  disable the UCSF metabolite widgets
+    this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)->EnabledOff(); 
+#endif
 }
 
 
@@ -2814,6 +2877,7 @@ void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void*
                   static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
     }
 }
+
 
 //! Exit the application
 void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* thisObject, void* callData)

@@ -49,21 +49,20 @@ sivicApp::sivicApp()
     this->sivicKWApp = NULL; 
 
     // For returnting the application status
-    this->exitStatus = 0;
-    this->processingWidget = sivicProcessingWidget::New();
-    this->preprocessingWidget = sivicPreprocessingWidget::New();
-    this->quantificationWidget = sivicQuantificationWidget::New();
-    this->imageViewWidget = sivicImageViewWidget::New();
-    this->spectraViewWidget = sivicSpectraViewWidget::New();
-    this->windowLevelWidget = sivicWindowLevelWidget::New();
+    this->exitStatus            = 0;
+    this->processingWidget      = sivicProcessingWidget::New();
+    this->preprocessingWidget   = sivicPreprocessingWidget::New();
+    this->quantificationWidget  = sivicQuantificationWidget::New();
+    this->imageViewWidget       = sivicImageViewWidget::New();
+    this->spectraViewWidget     = sivicSpectraViewWidget::New();
+    this->windowLevelWidget     = sivicWindowLevelWidget::New();
     this->windowLevelWidget->SetSliderLabel("Image Window Level");
     this->overlayWindowLevelWidget = sivicWindowLevelWidget::New();
     this->overlayWindowLevelWidget->SetSliderLabel("Overlay Window Level");
-    this->preferencesWidget = sivicPreferencesWidget::New();
-    this->spectraRangeWidget = sivicSpectraRangeWidget::New();
-    this->viewRenderingWidget = sivicViewRenderingWidget::New();
-    this->globalWidget        = sivicGlobalWidget::New();
-    this->tabbedPanel = vtkKWNotebook::New();
+    this->preferencesWidget     = sivicPreferencesWidget::New();
+    this->spectraRangeWidget    = sivicSpectraRangeWidget::New();
+    this->viewRenderingWidget   = sivicViewRenderingWidget::New();
+    this->tabbedPanel           = vtkKWNotebook::New();
 }
 
 
@@ -112,10 +111,6 @@ sivicApp::~sivicApp()
         this->imageViewWidget = NULL;
     }
 
-    if( this->globalWidget != NULL ) {
-        this->globalWidget->Delete();
-        this->globalWidget = NULL;
-    }
 
     if( this->spectraViewWidget != NULL ) {
         this->spectraViewWidget->Delete();
@@ -167,7 +162,7 @@ sivicApp::~sivicApp()
         this->tabbedPanel->Delete();
         this->tabbedPanel = NULL;
     }
-    
+
 }
 
 /*!
@@ -307,13 +302,6 @@ int sivicApp::Build( int argc, char* argv[] )
     this->overlayWindowLevelWidget->SetSivicController(this->sivicController);
     this->overlayWindowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::IMAGE_OVERLAY );
 
-    this->globalWidget->SetParent(this->sivicWindow->GetViewFrame());
-    this->globalWidget->SetPlotController(this->sivicController->GetPlotController());
-    this->globalWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->globalWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
-    this->globalWidget->SetSivicController(this->sivicController);
-    this->globalWidget->Create();
-
 
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
@@ -325,7 +313,6 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetOverlayWindowLevelWidget( overlayWindowLevelWidget );
     this->sivicController->SetPreferencesWidget( preferencesWidget );
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
-    this->sivicController->SetGlobalWidget( globalWidget );
 
     this->tabbedPanel->AddPage("Welcome", "Welcome!", NULL);
     vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Welcome");
@@ -369,7 +356,6 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->Script("grid %s -row 4 -column 2 -sticky nsew -padx 2", spectraViewWidget->GetWidgetName());
 
     this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew -rowspan 3", separatorVert2->GetWidgetName());
-    this->sivicKWApp->Script("grid %s -row 2 -column 4 -sticky nsew -rowspan 3 -padx 2", globalWidget->GetWidgetName());
 
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 2 -pady 2 -in %s", 
               welcomeText->GetWidgetName(), welcomePanel->GetWidgetName());
@@ -394,9 +380,6 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 350 ", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 1 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     this->sivicKWApp->Script("grid columnconfigure %s 2 -weight 50 -uniform 1 -minsize 300", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    this->sivicKWApp->Script("grid columnconfigure %s 3 -weight 0 -minsize 5", this->sivicWindow->GetViewFrame()->GetWidgetName() );
-    //  width of right side frame (orientation and ucsf met map selector
-    this->sivicKWApp->Script("grid columnconfigure %s 4 -weight 0 -uniform 1 -minsize 80", this->sivicWindow->GetViewFrame()->GetWidgetName() );
     separator->Delete();
     separatorVert->Delete();
     separatorVert2->Delete();
@@ -423,7 +406,14 @@ int sivicApp::Build( int argc, char* argv[] )
     ucsfMenu->SetParent(this->sivicKWApp->GetNthWindow(0)->GetMenu());
     ucsfMenu->Create();
     this->sivicKWApp->GetNthWindow(0)->GetMenu()->AddCascade("UCSF", ucsfMenu);
+
+    //  Add menu of UCSF metabolite maps:
+    vtkKWMenu* ucsfMetaboliteMenu = vtkKWMenu::New();
+    ucsfMetaboliteMenu->SetParent(ucsfMenu);
+    ucsfMetaboliteMenu->Create();
+    ucsfMenu->AddCascade("Load Metabolite Map", ucsfMetaboliteMenu);
     ucsfMenu->InsertCommand( 0, "&Send To PACS", this->sivicController, "PushToPACS" );
+
 #endif
 
 
@@ -611,6 +601,19 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     reloadPreferences->SetBalloonHelpString( "Reload Preferences." );
     //toolbar->AddWidget( reloadPreferences );
 
+    // Create Orientation Selector Menu
+    vtkKWPushButtonWithMenu* orientationButton = vtkKWPushButtonWithMenu::New();
+    orientationButton->SetParent( toolbar->GetFrame() );
+    orientationButton->Create();
+    orientationButton->GetMenuButton()->SetImageToPredefinedIcon( vtkKWIcon::IconAngleTool);
+    orientationButton->SetBalloonHelpString( "Select the orientation to view."); 
+    vtkKWMenu* orientationMenu = orientationButton->GetMenu();
+    orientationMenu->AddRadioButton("Axial", this->sivicController, "SetOrientation AXIAL 1"); 
+    orientationMenu->AddRadioButton("Coronal", this->sivicController, "SetOrientation CORONAL 1"); 
+    orientationMenu->AddRadioButton("Sagittal", this->sivicController, "SetOrientation SAGITTAL 1"); 
+    toolbar->AddWidget( orientationButton );
+
+
 #if defined(Darwin)
     //  Create OsiriX buttons
     vtkKWPushButton* osirixSCButton = vtkKWPushButton::New();
@@ -665,7 +668,7 @@ int sivicApp::Start( int argc, char* argv[] )
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
             int rows = tmp->GetDcmHeader()->GetIntValue( "Rows" ) ;
             int columns = tmp->GetDcmHeader()->GetIntValue( "Columns" ) ;
-            cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
+            //cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
             if ( rows > refRows && columns > refColumns) {
                 refRows = rows; 
                 refColumns = columns; 
@@ -690,13 +693,13 @@ int sivicApp::Start( int argc, char* argv[] )
     loadOrder.push_back(overlayImageIndex);
 
     for (int i=1 ; i < argc; i++) {
-        cout << "loading order: " << loadOrder[i-1] << endl;
+        //cout << "loading order: " << loadOrder[i-1] << endl;
     }
 
     //  Check each argv and set the load file type 
     for (int i=1 ; i < argc; i++) {
 
-        cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
+        //cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
         svkImageData* tmp = svkMriImageData::New();
         tmp->GetDcmHeader()->ReadDcmFile( argv[ loadOrder[i-1] ] );
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;

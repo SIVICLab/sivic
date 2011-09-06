@@ -180,7 +180,6 @@ ADD_LIBRARY(
     STATIC
 
     sivicApp.cc
-    sivicGlobalWidget.cc
     sivicImageViewWidget.cc
     sivicSpectraViewWidget.cc
     sivicSpectraRangeWidget.cc

@@ -136,14 +136,12 @@ void sivicViewRenderingWidget::CreateWidget()
     int row = 0; 
     this->Script("grid %s -row %d -column 0 -sticky nsew -columnspan 2", this->viewerWidget->GetWidgetName(), row );
     this->Script("grid %s -row %d -column 2 -sticky nsew", this->specViewerWidget->GetWidgetName(), row );
-    this->Script("grid %s -row %d -column 3 -sticky ewns", this->infoWidget->GetWidgetName(), row );
     row++; 
 
     this->Script("grid rowconfigure %s 0 -weight 100 -minsize 200", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 50 -uniform 1 -minsize 350", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 0",  this->GetWidgetName() );
     this->Script("grid columnconfigure %s 2 -weight 50 -uniform 1 -minsize 300", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 3 -weight 0 -uniform 1 -minsize 185", this->GetWidgetName() );
 
 
 

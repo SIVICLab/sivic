@@ -47,6 +47,7 @@
 #include <vtkKWToolbar.h>
 #include <vtkKWToolbarSet.h>
 #include <vtkKWPushButton.h>
+#include <vtkKWPushButtonWithMenu.h>
 #include <vtkKWRadioButtonSet.h>
 #include <vtkKWUserInterfacePanel.h>
 #include <vtkKWTextWithScrollbars.h>
@@ -64,7 +65,6 @@
 #include <sivicWindowLevelWidget.h>
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
-#include <sivicGlobalWidget.h>
 
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/CommandLineArguments.hxx>
@@ -110,7 +110,6 @@ class sivicApp
         sivicWindowLevelWidget*    overlayWindowLevelWidget;
         sivicPreferencesWidget*    preferencesWidget;
         sivicSpectraRangeWidget*   spectraRangeWidget;
-        sivicGlobalWidget*         globalWidget;
         vtkKWUserInterfacePanel*   uiPanel;
         vtkKWNotebook*             tabbedPanel;
         svkDataModel*              model;

@@ -108,11 +108,20 @@ void sivicQuantificationWidget::CreateWidget()
     
     double rangeMin; 
     double rangeMax; 
-    this->GetMRSFrequencyRange( rangeMin, rangeMax, svkSpecPoint::PPM); 
+    double peakStart; 
+    double peakEnd; 
 
 
     int i; 
     for ( i = 0; i < this->numMets; i++ ) {
+
+        string metName = this->metNames[i]; 
+        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+        peakStart = peakPPM + (widthPPM/2.);
+        peakEnd   = peakPPM - (widthPPM/2.);
+        this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
+
         this->metRangeVector.push_back( vtkKWRange::New() ); 
         this->metRangeVector[i]->SetParent(this);
         this->metRangeVector[i]->SetLabelPositionToLeft();
@@ -160,8 +169,8 @@ void sivicQuantificationWidget::CreateWidget()
         this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
     }
 
-    this->Script("grid columnconfigure %s 0 -weight 1 -minsize 238", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 0", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 0 -weight 1 -minsize 140", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1 -minsize 100", this->GetWidgetName() );
 
     //  Callbacks
     this->AddCallbackCommandObserver(
@@ -176,27 +185,46 @@ void sivicQuantificationWidget::CreateWidget()
 
 
 /*
- *  Gets the frequency range limits for range sliders in the specified units. 
+ *  Gets the frequency range limits for range sliders in the specified units. If peakStart and peakEnd
+ *  are provided, the range is relative to those parameters.  Otherwise (peakStart, peakEnd < 0 ) the 
+ *  full range is returned. 
  */
-void sivicQuantificationWidget::GetMRSFrequencyRange( double& min, double& max, svkSpecPoint::UnitType units)
+void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double peakEnd, double& min, double& max, svkSpecPoint::UnitType units)
 {
     min = 0.; 
     max = 0.; 
+
     if ( this->model != NULL ) {
+
         svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
 
         if( data != NULL ) {
+
+            //  Max allowable range: 
             min = 1;
             max = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
+
+            svkSpecPoint* point = svkSpecPoint::New();
+            point->SetDcmHeader( data->GetDcmHeader() );
+            double peakStartPt = point->ConvertPosUnits( peakStart, units, svkSpecPoint::PTS ); 
+            double peakEndPt   = point->ConvertPosUnits( peakEnd, units, svkSpecPoint::PTS ); 
+
+            double deltaPts    = peakEndPt - peakStartPt;  
+            peakStartPt -= 2 * deltaPts;  
+            if ( peakStartPt < min ) {
+                peakStartPt = min;
+            }
+            peakEndPt += 2 * deltaPts;  
+            if ( peakEndPt > max ) {
+                peakEndPt = max;
+            }
     
             //  If the domain is frequency, then convert from point space to target units.
             string domain = model->GetDataObject( "SpectroscopicData" )
                                     ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
             if( domain == "FREQUENCY" ) {
-                svkSpecPoint* point = svkSpecPoint::New();
-                point->SetDcmHeader( data->GetDcmHeader() );
-                min = point->ConvertPosUnits( min, svkSpecPoint::PTS, units ); 
-                max = point->ConvertPosUnits( max, svkSpecPoint::PTS, units ); 
+                min = point->ConvertPosUnits( peakStartPt, svkSpecPoint::PTS, units ); 
+                max = point->ConvertPosUnits( peakEndPt, svkSpecPoint::PTS, units ); 
                 point->Delete();
             }
         } 
@@ -270,13 +298,17 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
         }
 
+        //  if overlay has not been initialized, the overlay with the first met map 
+        //  otherwise grab the current menu value and use that to init the overlay
+        if( this->model->DataExists( "MetaboliteData" ) == NULL) {
+            vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
+            this->mapViewSelector->GetWidget()->SetValue( this->modelMetNames[0].c_str() );
+            this->SetOverlay( this->modelMetNames[0] ); 
+        }  else {
+            vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
+            this->SetOverlay(  this->mapViewSelector->GetWidget()->GetValue()  ); 
+        }
 
-        //  Initialize the overlay with the first met map
-        this->SetOverlay( this->modelMetNames[0] ); 
-
-        //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_IMAGE );
-        //this->plotController->TurnPropOn( svkPlotGridView::OVERLAY_TEXT );
-        //this->plotController->SetOverlayOpacity( .5 );
         this->plotController->GetView()->Refresh();
 
         this->sivicController->EnableWidgets( );
@@ -284,11 +316,13 @@ void sivicQuantificationWidget::ExecuteQuantification()
     }
 
     this->mapViewSelector->EnabledOn();
+
 }
 
 
 /*!
  *  Called by parent controller to enable this panel and initialize values
+ *  modelObjectName is the series description of the map
  */
 void sivicQuantificationWidget::SetOverlay( vtkstd::string modelObjectName)
 {
@@ -328,11 +362,20 @@ void sivicQuantificationWidget::EnableWidgets()
         float metMax;
         double rangeMin; 
         double rangeMax; 
-        this->GetMRSFrequencyRange( rangeMin, rangeMax, svkSpecPoint::PPM); 
+        double peakStart; 
+        double peakEnd; 
 
+        vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
         for ( int i = 0; i < this->numMets; i++ ) {
-            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+
             string metName = this->metNames[i]; 
+            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+            peakStart = peakPPM + (widthPPM/2.);
+            peakEnd   = peakPPM - (widthPPM/2.);
+            this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
+
+            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
             metMin = this->metQuantMap[metName][0]; 
             metMax = this->metQuantMap[metName][1]; 
             this->metRangeVector[i]->SetRange(metMin, metMax);
@@ -343,6 +386,7 @@ void sivicQuantificationWidget::EnableWidgets()
 
         this->isEnabled = true; 
     }
+
 }
 
 

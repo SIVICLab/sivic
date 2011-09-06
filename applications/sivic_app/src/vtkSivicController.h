@@ -92,7 +92,6 @@
 #include <sivicWindowLevelWidget.h>
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
-#include <sivicGlobalWidget.h>
 #include <vtkDirectory.h>
 #if defined( SVK_USE_GL2PS )
     #include <vtkGL2PSExporter.h>
@@ -137,7 +136,6 @@ class vtkSivicController : public vtkObject
         void                       SetWindowLevelWidget( sivicWindowLevelWidget* windowLevelWidget );
         void                       SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget );
         void                       SetPreferencesWidget( sivicPreferencesWidget* preferencesWidget );
-        void                       SetGlobalWidget( sivicGlobalWidget* globalWidget );
         void                       SetSlice( int slice, bool centerImage = true );
         void                       SetImageSlice( int slice, string orientation );
         void                       SetModel( svkDataModel* ); 
@@ -230,6 +228,7 @@ class vtkSivicController : public vtkObject
     private:
         static void                    UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
         static void                    ExitSivic(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        void                           DeselectMetabolites( ); 
         vtkCallbackCommand*            progressCallback;
         vtkCallbackCommand*            exitSivicCallback;
         string                         thresholdType;
@@ -248,7 +247,6 @@ class vtkSivicController : public vtkObject
         sivicWindowLevelWidget*        windowLevelWidget;
         sivicWindowLevelWidget*        overlayWindowLevelWidget;
         sivicPreferencesWidget*        preferencesWidget;
-        sivicGlobalWidget*             globalWidget;
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
         svkDetailedPlotViewController* detailedPlotController;
