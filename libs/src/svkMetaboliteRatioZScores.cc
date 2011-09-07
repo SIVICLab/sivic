@@ -71,7 +71,7 @@ svkMetaboliteRatioZScores::svkMetaboliteRatioZScores()
     this->useSelectedVolumeFraction = 0;
     this->quantificationMask    = NULL;
     this->iterationMask         = NULL;
-    this->zscoreThreshold       = 3.00; 
+    this->zscoreThreshold       = 2.25; 
     this->yInterceptZero        = true; 
 
     //  Requires an numerator and denominator    
@@ -258,6 +258,7 @@ int svkMetaboliteRatioZScores::GetOutliers()
             }
         }
     }
+
     return numOutliersInIteration; 
 }
 
@@ -273,6 +274,7 @@ void svkMetaboliteRatioZScores::GetZScores(double slope, double intercept)
 
     //  Initialize the output scalars with distance 
     //  measurements
+    //cout << "SLOPE INTERCEPT: " << slope << " " << intercept << endl;
     this->GetDistanceFromRegression( slope, intercept ); 
 
     int numVoxels[3]; 

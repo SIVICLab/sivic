@@ -53,6 +53,7 @@
 #include <svkMetaboliteRatioZScores.h>
 
 #include <time.h>
+#include <sys/stat.h>
 
 
 using namespace svk;
@@ -74,7 +75,7 @@ svkQuantifyMetabolites::svkQuantifyMetabolites()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     this->isVerbose = false; 
-    this->xmlFileName = ""; 
+    this->xmlFileName = svkQuantifyMetabolites::GetDefaultXMLFileName(); 
     this->mrsXML = NULL;
     this->useSelectedVolumeFraction = 0;
     this->selectedVolumeMask = NULL;
@@ -663,144 +664,175 @@ int svkQuantifyMetabolites::FillOutputPortInformation( int vtkNotUsed(port), vtk
 
 
 /*!
- *  Print out a template xml config file:  
+ *  gets the default xml quantification template filename 
+ *  $HOME/.SIVICQuant.xml
  */
-void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName )
+string svkQuantifyMetabolites::GetDefaultXMLFileName()
+{
+    string fileName = getenv("HOME"); 
+    fileName.append("/.SIVICQuant.xml" );
+    return fileName;
+}
+
+
+/*!
+ *  Print out a template xml config file:  
+ *  if fileName is "", then use default filename ( $HOME/.SIVICQuant.xml)
+ *  if clober is false, will not overwrite existing file.
+ */
+void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clobber )
 {
 
-    ofstream xmlOut( fileName.c_str() );
-    if( !xmlOut ) {
-        throw runtime_error("Cannot open xml file for writing: " + fileName );
+    //  if no filename, use default
+    if ( fileName.size() == 0 ) { 
+        fileName =  svkQuantifyMetabolites::GetDefaultXMLFileName(); 
     }
-    
 
-    xmlOut << ""
-<< "<!-- " << endl
-<< "   Copyright © 2009-2011 The Regents of the University of California." << endl
-<< "   All Rights Reserved." << endl
-<< " " << endl
-<< "   Redistribution and use in source and binary forms, with or without" << endl
-<< "   modification, are permitted provided that the following conditions are met:" << endl
-<< "   •   Redistributions of source code must retain the above copyright notice," << endl
-<< "       this list of conditions and the following disclaimer." << endl
-<< "   •   Redistributions in binary form must reproduce the above copyright notice," << endl
-<< "       this list of conditions and the following disclaimer in the documentation" << endl
-<< "       and/or other materials provided with the distribution." << endl
-<< "   •   None of the names of any campus of the University of California, the name" << endl
-<< "       \"The Regents of the University of California,\" or the names of any of its" << endl
-<< "       contributors may be used to endorse or promote products derived from this" << endl
-<< "       software without specific prior written permission." << endl
-<< " " << endl
-<< "   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND" << endl
-<< "   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED" << endl
-<< "   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED." << endl
-<< "   IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT," << endl
-<< "   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT" << endl
-<< "   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR" << endl
-<< "   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY," << endl
-<< "   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)" << endl
-<< "   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY" << endl
-<< "   OF SUCH DAMAGE." << endl
-<< " " << endl
-<< " " << endl
-<< "  $URL$" << endl
-<< "  $Rev$" << endl
-<< "   $Author$" << endl
-<< "   $Date$" << endl
-<< " " << endl
-<< "   Authors:" << endl
-<< "       Jason C. Crane, Ph.D." << endl
-<< "       Beck Olson" << endl
-<< "-->" << endl
-<< " "  << endl
-<< " <SVK_MRS_QUANTIFICATION version=\"0.7.6\">" << endl
-<< " " << endl
-<< "     <REGION id=\"0\" name=\"CHOLINE\"   peak_ppm=\"3.1455\" width_ppm=\".1758\">" << endl
-<< "     </REGION>" << endl
-<< "     <REGION id=\"1\" name=\"CREATINE\"  peak_ppm=\"3.06\"  width_ppm=\".18\">" << endl
-<< "     </REGION>" << endl
-<< "     <REGION id=\"2\" name=\"NAA\"       peak_ppm=\"1.9833\"  width_ppm=\".13\">" << endl
-<< "     </REGION>" << endl
-<< "     <REGION id=\"3\" name=\"LIPID_LAC\" peak_ppm=\"1.36\"  width_ppm=\".17\">" << endl
-<< "     </REGION>" << endl
-<< " " << endl
-<< "     -- cho peak ht" << endl
-<< "     <QUANT id=\"0\" region=\"0\">" << endl
-<< "         <ALGO name=\"PEAK_HT\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- creatine peak ht" << endl
-<< "     <QUANT id=\"1\" region=\"1\">" << endl
-<< "         <ALGO name=\"PEAK_HT\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- naa peak ht" << endl
-<< "     <QUANT id=\"2\" region=\"2\">" << endl
-<< "         <ALGO name=\"PEAK_HT\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- lip/lac peak ht " << endl
-<< "     <QUANT id=\"3\" region=\"3\">" << endl
-<< "         <ALGO name=\"PEAK_HT\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- cho integrated area" << endl
-<< "     <QUANT id=\"4\" region=\"0\">" << endl
-<< "         <ALGO name=\"INTEGRATE\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- creatine integrated area" << endl
-<< "     <QUANT id=\"5\" region=\"1\">" << endl
-<< "         <ALGO name=\"INTEGRATE\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- NAAintegrated area" << endl
-<< "     <QUANT id=\"6\" region=\"2\">" << endl
-<< "         <ALGO name=\"INTEGRATE\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- lip/lac integrated area " << endl
-<< "     <QUANT id=\"7\" region=\"3\">" << endl
-<< "         <ALGO name=\"INTEGRATE\">" << endl
-<< "         </ALGO>" << endl
-<< "     </QUANT>" << endl
-<< " " << endl
-<< "     -- ratio of choline to naa peak ht" << endl
-<< "     <RATIO id=\"0\" name=\"CHO/NAA_PEAK_HT\">" << endl
-<< "         <NUMERATOR quant_id=\"0\">" << endl
-<< "         </NUMERATOR>" << endl
-<< "         <DENOMINATOR quant_id=\"2\">" << endl
-<< "         </DENOMINATOR>" << endl
-<< "     </RATIO>" << endl
-<< " " << endl
-<< "     -- ratio of choline + creatine to naa peak ht" << endl
-<< "     <RATIO id=\"2\" name=\"CHO+CRE/NAA INTEGRATE\">" << endl
-<< "         <NUMERATOR quant_id=\"4\">" << endl
-<< "         </NUMERATOR>" << endl
-<< "         <NUMERATOR quant_id=\"5\">" << endl
-<< "         </NUMERATOR>" << endl
-<< "         <DENOMINATOR quant_id=\"6\">" << endl
-<< "         </DENOMINATOR>" << endl
-<< "     </RATIO>" << endl
-<< " " << endl
-<< "     -- choline/naa peak ht index (z-score)" << endl
-<< "     <ZSCORE id=\"0\" name=\"CNI PEAK HT\">" << endl
-<< "         <NUMERATOR quant_id=\"0\">" << endl
-<< "         </NUMERATOR>" << endl
-<< "         <DENOMINATOR quant_id=\"2\">" << endl
-<< "         </DENOMINATOR>" << endl
-<< "     </ZSCORE>" << endl
-<< " " << endl
-<< " " << endl
-<< " </SVK_MRS_QUANTIFICATION> " << endl; 
+    //  first check if the file exists (returns 0):
+    struct stat buf;
+    bool fileExists; 
+    if (stat(fileName.c_str(), &buf) == 0) {
+        fileExists = true;
+    } else {
+        fileExists = false;
+    }
 
-    xmlOut.close();
+    //  if the file doesn't exist, or clobber is true then create it
+    if ( ( fileExists && clobber == true ) || fileExists == false ) {
+
+        ofstream xmlOut( fileName.c_str() );
+        if( !xmlOut ) {
+            throw runtime_error("Cannot open xml file for writing: " + fileName );
+        }
+
+        xmlOut << ""
+        << "<!-- " << endl
+        << "   Copyright © 2009-2011 The Regents of the University of California." << endl
+        << "   All Rights Reserved." << endl
+        << " " << endl
+        << "   Redistribution and use in source and binary forms, with or without" << endl
+        << "   modification, are permitted provided that the following conditions are met:" << endl
+        << "   •   Redistributions of source code must retain the above copyright notice," << endl
+        << "       this list of conditions and the following disclaimer." << endl
+        << "   •   Redistributions in binary form must reproduce the above copyright notice," << endl
+        << "       this list of conditions and the following disclaimer in the documentation" << endl
+        << "       and/or other materials provided with the distribution." << endl
+        << "   •   None of the names of any campus of the University of California, the name" << endl
+        << "       \"The Regents of the University of California,\" or the names of any of its" << endl
+        << "       contributors may be used to endorse or promote products derived from this" << endl
+        << "       software without specific prior written permission." << endl
+        << " " << endl
+        << "   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND" << endl
+        << "   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED" << endl
+        << "   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED." << endl
+        << "   IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT," << endl
+        << "   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT" << endl
+        << "   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR" << endl
+        << "   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY," << endl
+        << "   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)" << endl
+        << "   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY" << endl
+        << "   OF SUCH DAMAGE." << endl
+        << " " << endl
+        << " " << endl
+        << "  $URL$" << endl
+        << "  $Rev$" << endl
+        << "   $Author$" << endl
+        << "   $Date$" << endl
+        << " " << endl
+        << "   Authors:" << endl
+        << "       Jason C. Crane, Ph.D." << endl
+        << "       Beck Olson" << endl
+        << "-->" << endl
+        << " "  << endl
+        << " <SVK_MRS_QUANTIFICATION version=\"0.7.6\">" << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"CHOLINE\"   peak_ppm=\"3.1455\" width_ppm=\".1758\">" << endl
+        << "     </REGION>" << endl
+        << "     <REGION id=\"1\" name=\"CREATINE\"  peak_ppm=\"3.06\"  width_ppm=\".18\">" << endl
+        << "     </REGION>" << endl
+        << "     <REGION id=\"2\" name=\"NAA\"       peak_ppm=\"1.9833\"  width_ppm=\".13\">" << endl
+        << "     </REGION>" << endl
+        << "     <REGION id=\"3\" name=\"LIPID_LAC\" peak_ppm=\"1.36\"  width_ppm=\".17\">" << endl
+        << "     </REGION>" << endl
+        << " " << endl
+        << "     -- cho peak ht" << endl
+        << "     <QUANT id=\"0\" region=\"0\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- creatine peak ht" << endl
+        << "     <QUANT id=\"1\" region=\"1\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- naa peak ht" << endl
+        << "     <QUANT id=\"2\" region=\"2\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- lip/lac peak ht " << endl
+        << "     <QUANT id=\"3\" region=\"3\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- cho integrated area" << endl
+        << "     <QUANT id=\"4\" region=\"0\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- creatine integrated area" << endl
+        << "     <QUANT id=\"5\" region=\"1\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- NAAintegrated area" << endl
+        << "     <QUANT id=\"6\" region=\"2\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- lip/lac integrated area " << endl
+        << "     <QUANT id=\"7\" region=\"3\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- ratio of choline to naa peak ht" << endl
+        << "     <RATIO id=\"0\" name=\"CHO/NAA_PEAK_HT\">" << endl
+        << "         <NUMERATOR quant_id=\"0\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <DENOMINATOR quant_id=\"2\">" << endl
+        << "         </DENOMINATOR>" << endl
+        << "     </RATIO>" << endl
+        << " " << endl
+        << "     -- ratio of choline + creatine to naa peak ht" << endl
+        << "     <RATIO id=\"2\" name=\"CHO+CRE/NAA INTEGRATE\">" << endl
+        << "         <NUMERATOR quant_id=\"4\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <NUMERATOR quant_id=\"5\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <DENOMINATOR quant_id=\"6\">" << endl
+        << "         </DENOMINATOR>" << endl
+        << "     </RATIO>" << endl
+        << " " << endl
+        << "     -- choline/naa peak ht index (z-score)" << endl
+        << "     <ZSCORE id=\"0\" name=\"CNI PEAK HT\">" << endl
+        << "         <NUMERATOR quant_id=\"0\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <DENOMINATOR quant_id=\"2\">" << endl
+        << "         </DENOMINATOR>" << endl
+        << "     </ZSCORE>" << endl
+        << " " << endl
+        << " " << endl
+        << " </SVK_MRS_QUANTIFICATION> " << endl; 
+
+            xmlOut.close();
+    }
 
 }

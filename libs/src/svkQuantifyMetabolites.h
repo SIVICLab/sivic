@@ -85,7 +85,8 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         int                                                 GetIntFromString(vtkstd::string stringVal ); 
         float                                               GetFloatFromString(vtkstd::string stringVal ); 
         void                                                ModifyRegion( int regionID, float peakPPM, float widthPPM ); 
-        static void                                         WriteDefaultXMLTemplate( string fileName ); 
+        static void                                         WriteDefaultXMLTemplate( string fileName, bool clobber = false ); 
+        static string                                       GetDefaultXMLFileName(); 
 
 
     protected:
