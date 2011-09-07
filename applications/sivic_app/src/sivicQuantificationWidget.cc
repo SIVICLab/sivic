@@ -77,7 +77,9 @@ void sivicQuantificationWidget::CreateWidget()
     this->Superclass::CreateWidget();
 
     this->mrsQuant = svkQuantifyMetabolites::New();
-    //this->mrsQuant->SetXMLFileName( string xmlFileName ); 
+    string xmlFileName( getenv("HOME") );
+    xmlFileName.append("/.SIVICQuant.xml" );
+    this->mrsQuant->SetXMLFileName( xmlFileName ); 
 
     vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
     this->numMets = regionNameVector.size(); 
