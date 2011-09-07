@@ -65,9 +65,7 @@ sivicApp::sivicApp()
     this->tabbedPanel           = vtkKWNotebook::New();
 
     // create default xml config file
-    string xmlFileName( getenv("HOME") ); 
-    xmlFileName.append("/.SIVICQuant.xml" ); 
-    svkQuantifyMetabolites::WriteDefaultXMLTemplate( xmlFileName ); 
+    svkQuantifyMetabolites::WriteDefaultXMLTemplate( "", false ); 
 
 }
 
