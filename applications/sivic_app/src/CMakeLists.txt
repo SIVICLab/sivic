@@ -186,6 +186,7 @@ ADD_LIBRARY(
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
     sivicPreprocessingWidget.cc
+    sivicDataWidget.cc
     sivicQuantificationWidget.cc
     sivicWindowLevelWidget.cc
     sivicPreferencesWidget.cc

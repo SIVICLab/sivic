@@ -101,6 +101,7 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         void                        ExecuteRecon();
         void                        ExecutePhase();
         void                        ExecuteCombine();
+        void                        InitializePhaser();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 

@@ -183,6 +183,33 @@ void vtkSivicController::TurnOnPlotView()
 }
 
 
+/*!
+ *  Sets the active spectra. This is the index of the spectra as loaded into the
+ *  plot grid.
+ *
+ * @param index
+ */
+void vtkSivicController::SetActiveSpectra( int index )
+{
+    if( this->model->DataExists("SpectroscopicData") && index >= 0 ) {
+       svkImageData* oldData = model->GetDataObject("SpectroscopicData");
+       if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
+           svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveSpectraIndex( index );
+           svkImageData* newSpec = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActiveSpectra();
+           this->model->ChangeDataObject("SpectroscopicData", newSpec );
+           this->processingWidget->InitializePhaser();
+           int channels = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfCoils();
+           this->spectraViewWidget->channelSlider->SetRange( 1, channels);
+           this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetChannel() + 1 );
+           int timePoints = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfTimePoints();
+           this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
+           this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetTimePoint() + 1 );
+           this->EnableWidgets();
+       }
+    }
+}
+
+
 //! Set the slice of all Controllers
 void vtkSivicController::SetImageSlice( int slice, string orientation )
 {
@@ -268,6 +295,14 @@ void vtkSivicController::SetPreprocessingWidget( sivicPreprocessingWidget* prepr
 {
     this->preprocessingWidget = preprocessingWidget;
     this->preprocessingWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetDataWidget( sivicDataWidget* dataWidget)
+{
+    this->dataWidget = dataWidget;
+    this->dataWidget->SetModel(this->model);
 }
 
 
@@ -492,7 +527,7 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
     }
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
-    string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkPlotGridView::MRS );
+    string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkOverlayView::MRS );
     svkDataValidator* validator = svkDataValidator::New(); 
     string validatorResultInfo;
     if( this->model->DataExists( "AnatomicalData" ) ) {
@@ -549,6 +584,8 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         int* extent = newData->GetExtent();
 
         this->plotController->SetInput( newData ); 
+        this->dataWidget->UpdateReferenceSpectraList();
+        this->dataWidget->SetFilename( 0, stringFilename);
 
         if( tlcBrc == NULL ) {
             int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
@@ -577,8 +614,7 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         
         this->SetPreferencesFromRegistry();
 
-        this->processingWidget->phaseSlider->SetValue(0.0); 
-        this->processingWidget->phaser->SetInput( newData );
+        this->processingWidget->InitializePhaser();
 
         this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
 
@@ -835,6 +871,30 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
 }
 
+void vtkSivicController::AddSpectra( string stringFilename )
+{
+    if ( this->model->DataExists("SpectroscopicData") ) {
+        svkImageData* data = this->model->LoadFile( stringFilename );
+        if( data != NULL && data->IsA("svkMrsImageData") ) {
+            string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MRS );
+            if( resultInfo.compare("") != 0 ) {
+                string message =  "ERROR: Could not load reference spectra.\n Info: ";
+                message.append( resultInfo );
+                this->PopupMessage( message );
+            } else {
+                svkPlotGridView::SafeDownCast(this->plotController->GetView())->AddReferenceInput( data );
+                this->dataWidget->UpdateReferenceSpectraList();
+                this->dataWidget->SetFilename( svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots(), stringFilename);
+            }
+        } else {
+            this->PopupMessage( "ERROR: Could not load reference spectra." );
+        }
+    } else {
+        this->PopupMessage( "ERROR: Currently loading of the reference spectra before the primary spectra is not supported." );
+    }
+
+}
+
 
 void vtkSivicController::DeselectMetabolites( )
 {
@@ -858,6 +918,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
         this->PopupMessage(" File does not exist!"); 
         return;
     }
+
 
 
     string stringFilename( fileName );
@@ -1145,7 +1206,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
-            } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "spectra_one_channel") == 0 ) {
+            } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/spectra";
 				if( svkUtils::FilePathExists( lastPathString.c_str()) ) {
@@ -1159,7 +1220,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         // Check to see which extention to filter for.
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
-        } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 ) {
+        } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
             dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm}} {{All files} {.*}}");
         } else {
             dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm}}");
@@ -1208,6 +1269,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         } else if( openTypeString.compare( "spectra_one_channel" ) == 0 ) {
             bool onlyReadOneInputFile = true;
             this->OpenSpectra( dlg->GetFileName(), onlyReadOneInputFile );
+        } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
+            this->AddSpectra( dlg->GetFileName() );
         } 
     }
 
@@ -2379,6 +2442,8 @@ void vtkSivicController::EnableWidgets()
             this->processingWidget->phaseButton->EnabledOff(); 
             this->processingWidget->combineButton->EnabledOff(); 
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+            this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
+            this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
         } else {
             this->processingWidget->fftButton->EnabledOff(); 

@@ -101,8 +101,6 @@ void sivicProcessingWidget::CreateWidget()
     this->phaseSlider->SetEntryPositionToRight();
     this->phaseSlider->SetLabelPositionToLeft();
 
-    this->phaser = svkPhaseSpec::New();
-    this->phaser->SetChannel(0);
 
     vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
     checkButtons->SetParent( this );
@@ -433,6 +431,20 @@ void sivicProcessingWidget::ExecuteCombine()
     }
 }
 
+void sivicProcessingWidget::InitializePhaser()
+{
+    if( this->phaser != NULL ) {
+        this->phaser->Delete();
+    }
+    this->phaser = svkPhaseSpec::New();
+    if( this->model->DataExists("SpectroscopicData") ) {
+        svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+        this->phaser->SetInput( data );
+        this->SetPhaseUpdateExtent();
+    }
+    this->phaseSlider->SetValue(0.0);
+
+}
 
 void sivicProcessingWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {

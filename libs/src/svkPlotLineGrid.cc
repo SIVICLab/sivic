@@ -443,6 +443,12 @@ void svkPlotLineGrid::CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2])
     }
 }
 
+void svkPlotLineGrid::SetColor( double rgb[3])
+{
+    if( this->plotGridActor != NULL ) {
+        this->plotGridActor->GetProperty()->SetColor(rgb);
+    }
+}
 
 /*!
  *  Update the view based on voxelIndexTLC/BRC. This regenerates
@@ -591,10 +597,9 @@ void svkPlotLineGrid::GenerateActor()
 
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( appender->GetOutput() );
-    if( this->plotGridActor != NULL ) {
-        this->plotGridActor->Delete();
+    if( this->plotGridActor == NULL ) {
+        this->plotGridActor = vtkActor::New();
     }
-    this->plotGridActor = vtkActor::New();
 
     plotGridActor->SetMapper( mapper );
     mapper->Delete();
@@ -904,6 +909,10 @@ void svkPlotLineGrid::UpdateOrientation()
     }
 }
 
+int svkPlotLineGrid::GetChannel( )
+{
+    return this->channel;
+}
 
 /*!
  *  Sets the channel the grid is currently displaying.
@@ -914,7 +923,6 @@ void svkPlotLineGrid::SetChannel( int channel )
 {
     this->channel = channel;
     if( this->data != NULL ) {
-
         // New channel makes all data no longer up to date
         for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
             this->channelUpToDate[i] = 0;
@@ -927,6 +935,7 @@ void svkPlotLineGrid::SetChannel( int channel )
         } else if ( channel < 0 ) {
             channel = 0;
         }
+        this->channel = channel;
 
         // Find the the minimum and maximum indecies
         int minIndex[3] = { 0,0,0 };
@@ -950,6 +959,12 @@ void svkPlotLineGrid::SetChannel( int channel )
 }
 
 
+int svkPlotLineGrid::GetTimePoint( )
+{
+    return this->timePoint;
+}
+
+
 /*!
  *  Sets the current time point to be viewed.
  *
@@ -970,6 +985,7 @@ void svkPlotLineGrid::SetTimePoint( int timePoint )
         } else if ( timePoint < 0 ) {
             timePoint = 0;
         }
+        this->timePoint = timePoint;
         int minIndex[3] = {0,0,0};
         int maxIndex[3] = { this->data->GetDimensions()[0]-2,
                             this->data->GetDimensions()[1]-2,

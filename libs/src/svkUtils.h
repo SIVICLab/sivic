@@ -95,6 +95,12 @@ class svkUtils : public vtkObject
         static string         GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra);
         static string         GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
         static int            GetNextPower2( int x );
+        static double         StringToDouble( string doubleString );
+        static float          StringToFloat(  string floatString );
+        static void           StringToColorArray( double color[3], string colorString );
+        static string         ColorArrayToString( double color[3] );
+        static vector<string> SplitString( string str, string token );
+        static string         GetFilenameFromFullPath( string fullPath );
 
 
 	protected:

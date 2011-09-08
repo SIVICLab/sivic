@@ -104,12 +104,15 @@ class svkPlotLineGrid : public vtkObject
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent                     GetComponent( );
+        int                     GetChannel( );
         void                    SetChannel( int channel );
+        int                     GetTimePoint( );
         void                    SetTimePoint( int timePoint );
         void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
         vtkActor*               GetPlotGridActor();
         void                    CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2]);
+        void                    SetColor( double rgb[3]);
 
     private:
 

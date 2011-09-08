@@ -52,6 +52,7 @@ sivicApp::sivicApp()
     this->exitStatus            = 0;
     this->processingWidget      = sivicProcessingWidget::New();
     this->preprocessingWidget   = sivicPreprocessingWidget::New();
+    this->dataWidget            = sivicDataWidget::New();
     this->quantificationWidget  = sivicQuantificationWidget::New();
     this->imageViewWidget       = sivicImageViewWidget::New();
     this->spectraViewWidget     = sivicSpectraViewWidget::New();
@@ -103,6 +104,11 @@ sivicApp::~sivicApp()
     if( this->preprocessingWidget != NULL ) {
         this->preprocessingWidget->Delete();
         this->preprocessingWidget = NULL;
+    }
+
+    if( this->dataWidget != NULL ) {
+        this->dataWidget->Delete();
+        this->dataWidget = NULL;
     }
 
     if( this->quantificationWidget != NULL ) {
@@ -269,6 +275,13 @@ int sivicApp::Build( int argc, char* argv[] )
     this->quantificationWidget->SetSivicController(this->sivicController);
     this->quantificationWidget->Create();
 
+    this->dataWidget->SetParent(tabbedPanel );
+    this->dataWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->dataWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->dataWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
+    this->dataWidget->SetSivicController(this->sivicController);
+    this->dataWidget->Create();
+
     this->imageViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->imageViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->imageViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -311,6 +324,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetPreprocessingWidget( preprocessingWidget );
+    this->sivicController->SetDataWidget( dataWidget );
     this->sivicController->SetQuantificationWidget( quantificationWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
     this->sivicController->SetSpectraViewWidget( spectraViewWidget );
@@ -330,6 +344,9 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->tabbedPanel->AddPage("MRS Quantification", "MRS Quantification.", NULL);
     vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quantification");
+
+    this->tabbedPanel->AddPage("Data", "Data.", NULL);
+    vtkKWWidget* dataPanel = tabbedPanel->GetFrame("Data");
 
     vtkKWSeparator* separator = vtkKWSeparator::New();
     separator->SetParent(this->sivicWindow->GetViewFrame());
@@ -370,6 +387,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s",
+              this->dataWidget->GetWidgetName(), dataPanel->GetWidgetName());
 
     //  row 0 -> render view
     //  row 1 -> seperator
@@ -489,6 +508,8 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* openExamButton = vtkKWPushButton::New();
     openExamButton->SetParent( toolbar->GetFrame() );
     openExamButton->Create();
+    openExamButton->SetPadY( 2 );
+    openExamButton->SetAnchorToNorth();
     openExamButton->SetText("exam");
     openExamButton->SetCompoundModeToLeft();
     openExamButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
@@ -500,29 +521,42 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWPushButton* openIdfButton = vtkKWPushButton::New();
     openIdfButton->SetParent( toolbar->GetFrame() );
     openIdfButton->Create();
+    openIdfButton->SetPadY( 2 );
+    openIdfButton->SetAnchorToNorth();
     openIdfButton->SetText("image");
     openIdfButton->SetCompoundModeToLeft();
     openIdfButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
     openIdfButton->SetCommand( this->sivicController, "OpenFile image NULL 0");
-    openIdfButton->SetBalloonHelpString( "Open a image file." );
+    openIdfButton->SetBalloonHelpString( "Open an image file." );
     toolbar->AddWidget( openIdfButton );
 
-    // Create Open spectra Button
-    vtkKWPushButton* openDdfButton = vtkKWPushButton::New();
-    openDdfButton->SetParent( toolbar->GetFrame() );
-    openDdfButton->Create();
-    openDdfButton->SetReliefToGroove();
-    openDdfButton->SetText("spectra");
-    openDdfButton->SetCompoundModeToLeft();
-    openDdfButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen ); 
-    openDdfButton->SetCommand( this->sivicController, "OpenFile spectra NULL 0");
-    openDdfButton->SetBalloonHelpString( "Open a spectra file." );
-    toolbar->AddWidget( openDdfButton );
+    // Create Open Spectra Selector Menu
+    vtkKWMenuButtonWithLabel* openSpectraButton = vtkKWMenuButtonWithLabel::New();
+    openSpectraButton->SetParent( toolbar->GetFrame() );
+    openSpectraButton->GetWidget()->SetReliefToFlat();
+    openSpectraButton->GetLabel()->SetPadY( 3 );
+    openSpectraButton->GetLabel()->SetAnchorToSouth();
+    openSpectraButton->GetLabel()->SetText("spectra");
+    openSpectraButton->Create();
+    openSpectraButton->GetLabel()->SetPadY( 3 );
+    openSpectraButton->GetLabel()->SetAnchorToSouth();
+    openSpectraButton->GetWidget()->SetReliefToFlat();
+    openSpectraButton->GetWidget()->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
+    //openSpectraButton->GetLabel()->SetHeight( 1 );
+    openSpectraButton->SetLabelPositionToRight();
+    openSpectraButton->SetBalloonHelpString( "Open a spectroscopic dataset.");
+    vtkKWMenu* openSpectraMenu = openSpectraButton->GetWidget()->GetMenu();
+    openSpectraMenu->AddRadioButton("Open Spectra", this->sivicController, "OpenFile spectra NULL 0");
+    openSpectraMenu->AddRadioButton("Add Spectra", this->sivicController, "OpenFile add_spectra NULL 0");
+    openSpectraMenu->AddRadioButton("Open Spectra 1 Channel", this->sivicController, "OpenFile spectra_one_channel NULL 1");
+    toolbar->AddWidget( openSpectraButton );
 
     // Create Open metabolite/overlay Button
     vtkKWPushButton* openMetButton = vtkKWPushButton::New();
     openMetButton->SetParent( toolbar->GetFrame() );
     openMetButton->Create();
+    openMetButton->SetPadY( 2 );
+    openMetButton->SetAnchorToNorth();
     openMetButton->SetReliefToGroove();
     openMetButton->SetText("overlay");
     openMetButton->SetCompoundModeToLeft();
@@ -617,6 +651,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     orientationMenu->AddRadioButton("Coronal", this->sivicController, "SetOrientation CORONAL 1"); 
     orientationMenu->AddRadioButton("Sagittal", this->sivicController, "SetOrientation SAGITTAL 1"); 
     toolbar->AddWidget( orientationButton );
+
 
 
 #if defined(Darwin)

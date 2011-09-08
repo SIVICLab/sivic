@@ -277,3 +277,85 @@ int svkUtils::GetNextPower2( int x )
     int result = (int)pow( 2., ceil( log( static_cast<double>(x + 1) )/log(2.) ) );
     return result;
 }
+
+
+/*!
+ *  Converts a string to a double.
+ *
+ * @param doubleString
+ * @return
+ */
+double svkUtils::StringToDouble( string doubleString )
+{
+    istringstream* iss = new istringstream();
+    double value = 0.0;
+    iss->str( doubleString );
+    *iss >> value;
+    delete iss;
+    return value;
+}
+
+
+/*!
+ *
+ * @param doubleString
+ * @return
+ */
+float svkUtils::StringToFloat( string doubleString )
+{
+    istringstream* iss = new istringstream();
+    float value = 0.0;
+    iss->str( doubleString );
+    *iss >> value;
+    delete iss;
+    return value;
+}
+
+
+void svkUtils::StringToColorArray( double color[3], string colorString )
+{
+    vector<string> colors = svkUtils::SplitString( colorString, " ");
+    if( colors.size() == 3) {
+        color[0] = svkUtils::StringToDouble( colors[0]);
+        color[1] = svkUtils::StringToDouble( colors[1]);
+        color[2] = svkUtils::StringToDouble( colors[2]);
+    }
+}
+
+string svkUtils::ColorArrayToString( double color[3] )
+{
+    stringstream stream;
+    stream << color[0] << " " << color[1] << " " << color[2] << endl;
+    return stream.str();
+}
+
+string svkUtils::GetFilenameFromFullPath( string fullPath )
+{
+    /*
+    size_t posSlash = fullPath.find_last_of("/");
+    if (  posSlash != string::npos) {
+        return fullPath.substr(posSlash, string::npos );
+    } else {
+        return fullPath;
+    }
+    */
+    vector<string> splitString = svkUtils::SplitString(fullPath, "/");
+    return splitString[splitString.size()-1];
+}
+
+vector<string> svkUtils::SplitString( string str, string token )
+{
+    vector<string> result;
+    int nPos;
+    while( (nPos = str.find_first_of(token)) != str.npos ) {
+        if(nPos > 0) {
+            result.push_back(str.substr(0,nPos));
+        }
+        str = str.substr(nPos+1);
+    }
+    if(str.length() > 0) {
+        result.push_back(str);
+    }
+    return result;
+}
+

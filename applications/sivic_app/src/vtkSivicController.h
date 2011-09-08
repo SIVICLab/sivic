@@ -82,6 +82,7 @@
 #include <svkDataModel.h>
 #include <svkLookupTable.h>
 #include <svkDataValidator.h>
+#include <vtkDataObjectCollection.h>
 #include <sivicProcessingWidget.h>
 #include <sivicPreprocessingWidget.h>
 #include <sivicQuantificationWidget.h>
@@ -92,6 +93,7 @@
 #include <sivicWindowLevelWidget.h>
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
+#include <sivicDataWidget.h>
 #include <vtkDirectory.h>
 #if defined( SVK_USE_GL2PS )
     #include <vtkGL2PSExporter.h>
@@ -129,6 +131,7 @@ class vtkSivicController : public vtkObject
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );
+        void                       SetDataWidget( sivicDataWidget* dataWidget );
         void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
@@ -145,6 +148,7 @@ class vtkSivicController : public vtkObject
         void                       OpenSpectra( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL ,bool onlyReadOneInputFile = false );
         void                       OpenSpectra( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenOverlay( svkImageData* data, string stringFilename );
+        void                       AddSpectra( string stringFilename );
         void                       OpenOverlay( const char* fileName );
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
@@ -198,6 +202,7 @@ class vtkSivicController : public vtkObject
         void                       SetOrientation( const char*, bool alignOverlay = 0 );
         void                       TurnOffPlotView();
         void                       TurnOnPlotView();
+        void                       SetActiveSpectra( int index );
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();
@@ -240,6 +245,7 @@ class vtkSivicController : public vtkObject
         sivicViewRenderingWidget*      viewRenderingWidget;
         sivicProcessingWidget*         processingWidget;
         sivicPreprocessingWidget*      preprocessingWidget;
+        sivicDataWidget*               dataWidget;
         sivicQuantificationWidget*     quantificationWidget;
         sivicImageViewWidget*          imageViewWidget;
         sivicSpectraRangeWidget*       spectraRangeWidget;

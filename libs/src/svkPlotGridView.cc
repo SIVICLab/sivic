@@ -72,6 +72,7 @@ svkPlotGridView::svkPlotGridView()
     this->rwi = NULL;
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);
+    this->dataVector.push_back(NULL);
 
     this->isPropOn.assign(svkPlotGridView::LAST_PROP+1, false);
     this->isRendererOn.assign(svkPlotGridView::LAST_RENDERER+1, false);
@@ -106,8 +107,33 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::SAT_BANDS_OUTLINE, this->satBands->GetSatBandsOutlineActor() );
     this->TurnPropOff( svkPlotGridView::SAT_BANDS_OUTLINE );
     this->satBands->SetOrientation( this->orientation );
-
+    //white
+    this->referenceSpectraColors[0][0] = 1;
+    this->referenceSpectraColors[0][1] = 1;
+    this->referenceSpectraColors[0][2] = 1;
+    //magenta
+    this->referenceSpectraColors[1][0] = 1;
+    this->referenceSpectraColors[1][1] = 0;
+    this->referenceSpectraColors[1][2] = 1;
+    //cyan
+    this->referenceSpectraColors[2][0] = 0;
+    this->referenceSpectraColors[2][1] = 1;
+    this->referenceSpectraColors[2][2] = 1;
+    //orange
+    this->referenceSpectraColors[3][0] = 1;
+    this->referenceSpectraColors[3][1] = 0.85;
+    this->referenceSpectraColors[3][2] = 0;
+    //green
+    this->referenceSpectraColors[4][0] = 0.15;
+    this->referenceSpectraColors[4][1] = 1;
+    this->referenceSpectraColors[4][2] = 0.15;
+    //grey
+    this->referenceSpectraColors[5][0] = 0.75;
+    this->referenceSpectraColors[5][1] = 0.75;
+    this->referenceSpectraColors[5][2] = 0.75;
+    this->numColors = 6;
     
+    this->activeSpectra = 0;
     
 }
 
@@ -161,6 +187,12 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
 {
     if( strcmp( GetDataCompatibility( data, index).c_str(),"") == 0 ) { 
         if( index == MRS ) {
+        	// If the user specifies just MRS as input we'll assume they
+        	// want to changet the active spectra.
+            if( this->activeSpectra != 0 ) {
+                this->SetInput( data, this->activeSpectra + 1);
+                return;
+            }
             if( dataVector[MRS] != NULL  ) {
                 (dataVector[MRS])->Delete();
             }
@@ -182,7 +214,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( PLOT_LINES ) );
                 }
             }
-            plotGrids[0]->SetInput(svkMrsImageData::SafeDownCast(data));
+            this->plotGrids[0]->SetInput(svkMrsImageData::SafeDownCast(data));
             this->GeneratePlotGridActor();
             this->TurnPropOn( PLOT_LINES );
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
@@ -235,17 +267,23 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             dataVector[MET] = data;
             data->Register( this );
             CreateMetaboliteOverlay( data );
-        } else if( index > MET ) {
-            while( dataVector.size() < index + 1 ) {
+        } else if( index >= ADDITIONAL_MRS ) {
+            while( dataVector.size() <= index ) {
                 dataVector.push_back(NULL);
             }
             if( dataVector[index] != NULL  ) {
                 (dataVector[index])->Delete();
             }
+            bool toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
+            if( toggleDraw ) {
+                this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+            }
             ObserveData( data );
             data->Register( this );
             dataVector[index] = data;
-            plotGrids.push_back( svkPlotLineGrid::New() );
+            while( plotGrids.size() < index ) {
+                plotGrids.push_back( svkPlotLineGrid::New() );
+            }
             plotGrids[index-1]->SetInput(svkMrsImageData::SafeDownCast(data));
             int minFreq;
             int maxFreq;
@@ -256,9 +294,21 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             plotGrids[0]->GetIntensityWLRange(minInt, maxInt);
             plotGrids[index-1]->SetIntensityWLRange(minInt, maxInt, this->tlcBrc);
             plotGrids[index-1]->SetComponent( plotGrids[0]->GetComponent() );
-            this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->plotGrids[index-1]->GetPlotGridActor() );
+            int colorIndex = index-1;
+            while( colorIndex >= this->numColors ) {
+                colorIndex -= this->numColors;
+            }
+
+            plotGrids[index-1]->SetColor( this->referenceSpectraColors[colorIndex] );
+            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->plotGrids[index-1]->GetPlotGridActor() ) ) {
+                this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->plotGrids[index-1]->GetPlotGridActor() );
+            }
+
             this->SetSlice( slice );
             this->SetOrientation( this->orientation );
+            if( toggleDraw ) {
+                this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
+            }
             this->AlignCamera(); 
 
         }
@@ -266,6 +316,10 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
     }
 }
 
+void svkPlotGridView::AddReferenceInput( svkImageData* data )
+{
+    this->SetInput( data, ADDITIONAL_MRS + (plotGrids.size()-1));
+}
 
 /*!
  * Removes a data input and the associated actors. Currently only implemented for overlay.
@@ -411,15 +465,100 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
     }
 }
 
+int svkPlotGridView::GetNumberOfReferencePlots( )
+{
+    return this->plotGrids.size() - 1;
+}
 
 /*!
  * Sets the color for the given plot index.
  */
-void svkPlotGridView::SetPlotColor(int index, double* rgb )
+void svkPlotGridView::SetPlotColor(int plotIndex, double* rgb )
 {
-    if( this->plotGrids[index] != NULL ) {
-        this->plotGrids[index]->GetPlotGridActor()->GetProperty()->SetColor(rgb);
+    if( this->plotGrids[plotIndex] != NULL ) {
+        this->plotGrids[plotIndex]->GetPlotGridActor()->GetProperty()->SetColor(rgb);
     }
+    this->Refresh();
+}
+
+
+/*!
+ * Sets the color for the given plot index.
+ */
+double* svkPlotGridView::GetPlotColor(int plotIndex )
+{
+    if( this->plotGrids[plotIndex] != NULL ) {
+        return this->plotGrids[plotIndex]->GetPlotGridActor()->GetProperty()->GetColor();
+    } else {
+        return NULL;
+    }
+}
+
+
+/*!
+ *  Show or hide the given plot by index.
+ * @param index
+ * @param visible
+ */
+void svkPlotGridView::SetPlotVisibility( int plotIndex, bool visible )
+{
+    if( this->plotGrids[plotIndex] != NULL ) {
+        this->plotGrids[plotIndex]->GetPlotGridActor()->SetVisibility(visible);
+    }
+    this->Refresh();
+}
+
+
+/*!
+ * Returns if the requested plot is visible, otherwise returns false.
+ *
+ * @param plotIndex
+ * @return
+ */
+bool svkPlotGridView::GetPlotVisibility( int plotIndex )
+{
+    if( this->plotGrids[plotIndex] != NULL ) {
+        return this->plotGrids[plotIndex]->GetPlotGridActor()->GetVisibility();
+    } else {
+       return false;
+    }
+}
+
+/*!
+ *  Sets the active spectra.
+ *
+ * @param index
+ */
+void svkPlotGridView::SetActiveSpectraIndex( int index )
+{
+    this->activeSpectra = index;
+    this->channel = this->plotGrids[index]->GetChannel();
+    this->timePoint = this->plotGrids[index]->GetTimePoint();
+}
+
+
+/*!
+ *  Returns the svkImageData object of the active spectra.
+ *
+ * @return
+ */
+svkImageData* svkPlotGridView::GetActiveSpectra( )
+{
+    if( this->activeSpectra == 0 ) {
+        return this->dataVector[0];
+    } else {
+        return this->dataVector[ this->activeSpectra + 1];
+    }
+}
+
+
+/*!
+ * Gets the index of the spectra that is currently active.
+ * @return
+ */
+int svkPlotGridView::GetActiveSpectraIndex( )
+{
+    return this->activeSpectra;
 }
 
 /*!
@@ -527,8 +666,17 @@ double* svkPlotGridView::GetOverlayWLRange( )
  */
 void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component, int plotIndex)
 {
-    if( this->plotGrids[plotIndex] != NULL ) {
-        plotGrids[plotIndex]->SetComponent( component );
+    if( plotIndex != -1 ) {
+        if( this->plotGrids[plotIndex] != NULL ) {
+            this->plotGrids[plotIndex]->SetComponent( component );
+        }
+    } else {
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetComponent( component );
+            }
+        }
     }
     this->Refresh();
 }
@@ -935,15 +1083,12 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
 {
     svkDataValidator* validator = svkDataValidator::New();
     string resultInfo = "";
-    if( targetIndex == 2 ) {
-        return resultInfo;
-    }
 
     // Check for null datasets and out of bound data sets...
     if ( data == NULL || targetIndex < 0 ) {
         resultInfo += "Data incompatible-- NULL or outside of input range!\n";
 
-    } else if( data->IsA("svkMriImageData") ) {
+    } else if( targetIndex == MET ) {
         if( dataVector[MRS] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 1" << endl;
             bool valid = validator->AreDataCompatible( data, dataVector[MRS] ); 
@@ -964,7 +1109,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
         } else {
             resultInfo += "Spectra must be loaded before overlays!\n";
         } 
-    } else if( data->IsA("svkMrsImageData") ) {
+    } else if( targetIndex == MRS ) {
         if( dataVector[MET] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 2" << endl;
             bool valid = validator->AreDataCompatible( data, dataVector[MET] );  
@@ -976,6 +1121,20 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             }
+        }
+    } else if( targetIndex >= ADDITIONAL_MRS ) {
+        if( dataVector[MRS] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+            if( !valid ) {
+                resultInfo += validator->resultInfo.c_str();
+            }
+            valid = validator->AreDataGeometriesSame( data, dataVector[MRS] );
+            if( !valid ) {
+                resultInfo += validator->resultInfo.c_str();
+            }
+
+        } else {
+            resultInfo += "Spectra must be loaded before overlays!\n";
         }
     } else {
         resultInfo += "Unrecognized data type!\n";
@@ -1007,14 +1166,30 @@ void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
  */
 void svkPlotGridView::SetChannel( int channel, int plotIndex )
 {
+    cout << "Setting channel to: "  << channel << endl;
+    cout << "Plot index: "  << plotIndex << endl;
     if( plotIndex == 0 ) {
         this->channel = channel;
     }
-    if( this->plotGrids[plotIndex] != NULL ) {
-        this->plotGrids[plotIndex]->SetChannel( channel );
+    if( plotIndex != -1 ) {
+        if( this->plotGrids[plotIndex] != NULL ) {
+            this->plotGrids[plotIndex]->SetChannel( channel );
+        }
+    } else {
+        this->channel = channel;
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetChannel( channel );
+            }
+        }
     }
+    cout << "Here" << endl;
+    this->Refresh();
+
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
+    cout << "Done setting channel to: "  << channel << endl;
 
 }
 
@@ -1026,9 +1201,21 @@ void svkPlotGridView::SetTimePoint( int timePoint, int plotIndex )
     if( plotIndex == 0 ) {
         this->timePoint = timePoint;
     }
-    if( this->plotGrids[plotIndex] != NULL ) {
-        plotGrids[plotIndex]->SetTimePoint( timePoint );
+    if( plotIndex != -1 ) {
+        if( this->plotGrids[plotIndex] != NULL ) {
+            this->plotGrids[plotIndex]->SetTimePoint( timePoint );
+        }
+    } else {
+        this->timePoint = timePoint;
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL ) {
+                (*iter)->SetTimePoint( timePoint );
+            }
+        }
     }
+    this->Refresh();
+
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
 

@@ -99,6 +99,7 @@ class svkPlotGridView : public svkDataView
 
         //  Methods:
         virtual void                SetInput( svkImageData* data, int index );
+        virtual void                AddReferenceInput( svkImageData* data );
         virtual void                RemoveInput( int index );
         virtual void                SetSlice( int slice );
         virtual void                SetTlcBrc( int tlcBrc[2] );
@@ -107,13 +108,20 @@ class svkPlotGridView : public svkDataView
         virtual void                GetWindowLevelRange( double &lower, double &upper, int index );
         virtual void                SetOverlayWLRange( double* range );
         virtual double*             GetOverlayWLRange( );
-        void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = 0 );
-        void                        SetChannel( int channel, int plotIndex = 0 );
+        void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = -1 );
+        void                        SetChannel( int channel, int plotIndex = -1 );
         int                         GetChannel( );
-        void                        SetTimePoint( int timePoint, int plotIndex = 0 );
+        void                        SetTimePoint( int timePoint, int plotIndex = -1 );
         int                         GetTimePoint( );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
-        virtual void                SetPlotColor( int index, double* rgb );
+        virtual void                SetPlotColor( int plotIndex, double* rgb );
+        virtual double*             GetPlotColor( int plotIndex );
+        virtual void                SetPlotVisibility( int plotIndex, bool visible );
+        virtual bool                GetPlotVisibility( int plotIndex );
+        virtual int                 GetNumberOfReferencePlots( );
+        virtual void                SetActiveSpectraIndex( int plotIndex );
+        virtual svkImageData*       GetActiveSpectra( );
+        virtual int                 GetActiveSpectraIndex( );
         virtual void                Refresh();
         void                        GeneratePlotGridActor();  
         void                        GenerateClippingPlanes();
@@ -145,7 +153,7 @@ class svkPlotGridView : public svkDataView
         } ColorSchema;
 
         //! Enum represent the data inputs
-        enum DataInputs { MRS,MET };
+        enum DataInputs { MRS, MET, ADDITIONAL_MRS };
 
         //! Enum represents different color schemes. Used for printing.
         typedef enum {
@@ -160,6 +168,7 @@ class svkPlotGridView : public svkDataView
         vector<svkPlotLineGrid*> plotGrids; 
         vector<svkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
+        double                 referenceSpectraColors[10][3];
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
         void                   UpdateMetaboliteImage( int* tlcBrc );
@@ -175,8 +184,10 @@ class svkPlotGridView : public svkDataView
         void                ResliceImage(svkImageData* input, svkImageData* target); 
         int                 channel;
         int                 timePoint;
+        int                 numColors;
         svkLookupTable*     colorTransfer;
         svkSatBandSet*      satBands;
+        int                 activeSpectra;
 
         static const double CLIP_TOLERANCE;
 
