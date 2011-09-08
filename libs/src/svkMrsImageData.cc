@@ -598,7 +598,7 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
 
 /*!
  *
- * @return
+ *  @return
  */
 bool svkMrsImageData::IsKZeroSampled( int dimension )
 {

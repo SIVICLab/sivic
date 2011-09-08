@@ -1853,11 +1853,14 @@ void svkDdfVolumeReader::InitMRSpectroscopyPulseSequenceModule()
     this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfKSpaceTrajectories", 1 );
 
     //  Assume EVEN, if evenSymmetry is not "yes" then set to ODD
-    string kSpaceSymmetry = "EVEN";
-    if ( ( this->ddfMap[ "evenSymmetry" ] ).compare("yes") != 0 ) {
-        kSpaceSymmetry = "ODD";
-    } 
-    this->GetOutput()->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry );
+    string spatialDomain = this->GetDimensionDomain( ddfMap["dimensionType1"] ); 
+    if ( spatialDomain.compare("KSPACE") == 0) {
+        string kSpaceSymmetry = "EVEN";
+        if ( ( this->ddfMap[ "evenSymmetry" ] ).compare("yes") != 0 ) {
+            kSpaceSymmetry = "ODD";
+        } 
+        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry );
+    }
 
     string chop = "no";
     if ( (this->ddfMap[ "chop" ] ).compare("yes") == 0 ) {

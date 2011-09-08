@@ -239,14 +239,20 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     //  sampled . 
     //  Permutations (assuming that SVK_KSpaceCentered is TRUE):  
     //  for zero index arrays:
-    //      EVEN, even number of points -> origin not sampled
-    //          e.g, 8 points, index 4 is k 0.5
-    //      EVEN, odd  number of points -> origin is sampled
-    //          e.g, 9 points, index 4 is k 0.0
-    //      ODD , even number of points -> origin is sampled
-    //          e.g, 8 points, index 4 is k 0.0
-    //      ODD , odd  number of points -> origin not sampled
-    //          e.g, 9 points, index 4 is k 0.5
+    //  
+    //      symmetry,   numpts
+    //      ======================================
+    //      EVEN,       even number of points -> origin not sampled
+    //      e.g, 8 points, index 4 is k 0.5
+    //  
+    //      EVEN,       odd  number of points -> origin is sampled
+    //      e.g, 9 points, index 4 is k 0.0
+    //  
+    //      ODD ,       even number of points -> origin is sampled
+    //      e.g, 8 points, index 4 is k 0.0
+    //
+    //      ODD ,       odd  number of points -> origin not sampled
+    //      e.g, 9 points, index 4 is k 0.5
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1016, EVR_CS, 
             "SVK_KSpaceSymmetry", 

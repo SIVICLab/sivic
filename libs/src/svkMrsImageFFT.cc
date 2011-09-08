@@ -312,6 +312,15 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
+
+        //  assume even/odd num pts is same for all 3 dims  
+        bool isEvenPts = false;
+        if ( data->GetDcmHeader()->GetIntValue("Columns") % 2 ) {
+            isEvenPts = true; 
+            data->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", "ODD"); 
+        } else {
+            data->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", "EVEN"); 
+        }
     }
 
     //  Update Origin and Per Frame Functional Groups for voxel shift:

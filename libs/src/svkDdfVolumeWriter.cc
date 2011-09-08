@@ -630,12 +630,15 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     }
     *out << "chop: " << chop << endl;
 
-    vtkstd::string symmetry = hdr->GetStringValue( "SVK_KSpaceSymmetry" );
-    vtkstd::string evenSymmetry; 
-    if ( symmetry.compare( "EVEN" ) == 0 ) {
-        evenSymmetry = "yes"; 
-    } else {
-        evenSymmetry = "no"; 
+    vtkstd::string evenSymmetry = ""; 
+    if ( hdr->ElementExists( "SVK_KSpaceSymmetry" ) ) {
+        vtkstd::string symmetry = hdr->GetStringValue( "SVK_KSpaceSymmetry" );
+        evenSymmetry; 
+        if ( symmetry.compare( "EVEN" ) == 0 ) {
+            evenSymmetry = "yes"; 
+        } else {
+            evenSymmetry = "no"; 
+        }
     }
     *out << "even symmetry: " << evenSymmetry << endl;
     *out << "data reordered: " << endl;
