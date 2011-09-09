@@ -180,8 +180,9 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
-        for( int i = 0; i < 3; i++ ) {
-            if( !data->IsKZeroSampled( i ) ) {
+        string k0Sampled data->GetDcmHeader()->GetStringValue( "SVK_KS0Sampled"); 
+        if ( k0Sampled.compare( "NO" ) == 0 ) { 
+            for( int i = 0; i < 3; i++ ) {
                 kZeroShiftWindow[i] = -0.5;
             }
         }
@@ -307,20 +308,12 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "SPACE" );
-        data->GetDcmHeader()->ClearElement("SVK_KSpaceSymmetry"); 
+        data->GetDcmHeader()->RemoveElement("SVK_K0Sampled"); 
     } else {
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
-
-        //  assume even/odd num pts is same for all 3 dims  
-        bool isEvenPts = false;
-        if ( data->GetDcmHeader()->GetIntValue("Columns") % 2 ) {
-            isEvenPts = true; 
-            data->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", "ODD"); 
-        } else {
-            data->GetDcmHeader()->SetValue( "SVK_KSpaceSymmetry", "EVEN"); 
-        }
+        data->GetDcmHeader()->SetValue( "SVK_KS0Sampled",    "YES"); 
     }
 
     //  Update Origin and Per Frame Functional Groups for voxel shift:

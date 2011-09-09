@@ -71,6 +71,13 @@ class svkDcmVolumeReader : public svkImageReader2
         virtual void                            ExecuteInformation();
         virtual void                            ExecuteData(vtkDataObject* output); 
         bool                                    ContainsProprietaryContent( svkImageData* data );
+        void                                    InitFileNames(); 
+        void                                    OnlyReadInputFile(); 
+        void                                    SortFilesByImagePositionPatient(
+                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
+                                                    bool ascending
+                                                );
+
 
         int                                     numFrames; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
@@ -81,6 +88,7 @@ class svkDcmVolumeReader : public svkImageReader2
 
         virtual void                            LoadData(svkImageData* data) = 0; 
         virtual void                            InitPrivateHeader() = 0; 
+        vtkStringArray*                         tmpFileNames;
 
 };
 

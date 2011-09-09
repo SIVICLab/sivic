@@ -80,13 +80,34 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
 
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
+        virtual void                             InitDcmHeader(); 
 
 
     private:
 
+        void            InitMultiFrameFunctionalGroupsModule(); 
+        void            InitSharedFunctionalGroupMacros();
+        void            InitMRTimingAndRelatedParametersMacro(); 
+        void            InitMREchoMacro(); 
+        void            InitMRReceiveCoilMacro();
+        void            InitMRAveragesMacro(); 
+        void            InitMRSpectroscopyFOVGeometryMacro(); 
+        void            InitMRSpectroscopyModule(); 
+        void            InitMRSpectroscopyDataModule(); 
+
+
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
-        void            SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, float* specData); 
+        void            SetCellSpectrum(
+                            svkImageData* data, 
+                            int x, 
+                            int y, 
+                            int z, 
+                            int timePt, 
+                            int coilNum, 
+                            int numComponents, 
+                            short* specData
+                        ); 
 
         int             numFreqPts;
         int             numTimePts;

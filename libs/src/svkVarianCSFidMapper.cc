@@ -917,9 +917,9 @@ void svkVarianCSFidMapper::InitMRSpectroscopyPulseSequenceModule()
 
     this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1 );
 
-    //  Assume EVEN sampling about k=0: 
-    string kSpaceSymmetry = "EVEN";
-    this->dcmHeader->SetValue( "SVK_KSpaceSymmetry", kSpaceSymmetry );
+    //  Assume EVEN sampling about k=0 (k0 not sampled): 
+    string k0Sampled = "NO";
+    this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
 
 }
 

@@ -153,6 +153,8 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    ClearElement(const char* elementName); 
 
+        virtual void    RemoveElement(const char* elementName); 
+
         virtual int     GetIntSequenceItemElement(
                             const char* seqName, 
                             int         seqItemPosition, 
@@ -222,6 +224,8 @@ class svkDcmtkAdapter: public svkDcmHeader
         DcmItem*            GetDcmItem(DcmItem* dataset, const char* seqName, int itemPosition);
         DcmSequenceOfItems* GetDcmSequence(const char* seqName); 
         void                SetPrivateDictionaryElements(); 
+        void                SetGEPrivateDictionaryElements();
+
 
         //  Members:
         svkDcmtkIod*        dcmFile; 

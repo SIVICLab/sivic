@@ -66,6 +66,8 @@ svkDcmtkAdapter::svkDcmtkAdapter()
 
     this->SetPrivateDictionaryElements(); 
 
+    this->SetGEPrivateDictionaryElements(); 
+
 }
 
 
@@ -81,6 +83,36 @@ svkDcmtkAdapter::~svkDcmtkAdapter()
         delete this->dcmFile;
         this->dcmFile = NULL;
     }
+
+}
+
+
+/*!
+ *  These may not be reliable, but were determined by trial/error 
+ *  elements to it. 
+ */
+void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
+{
+    // ===================================================
+    //  get existing dictionary and append private entries to it:
+    // ===================================================
+    this->privateDic = &( dcmDataDict.wrlock() );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0027, 0x1060, EVR_FL, 
+            "GE_PS_MATRIX_X", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0027, 0x1061, EVR_FL, 
+            "GE_PS_MATRIX_Y", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    dcmDataDict.unlock();
 
 }
 
@@ -233,7 +265,9 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     //  (DICOM PT 3: C.8.14.2)
     // ===================================================
 
-    //  defined terms specify whether k-space was sampled 
+    //  defined terms specify whether K=0 is sampled.  YES/NO
+    //  Explanation:
+    //  for GE and possibly other vendors k-space may be sampled 
     //  symmetrically or not.  E.g., for an even number of 
     //  phase encodes, if even sampling, then k=0 was not 
     //  sampled . 
@@ -255,7 +289,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
     //      e.g, 9 points, index 4 is k 0.5
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1016, EVR_CS, 
-            "SVK_KSpaceSymmetry", 
+            "SVK_K0Sampled", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
@@ -910,6 +944,17 @@ void svkDcmtkAdapter::ClearElement(const char* elementName)
     DcmElement* element;  
     this->dcmFile->getDataset()->findAndGetElement(  GetDcmTagKey( elementName ), element, true);
     element->clear();
+}
+
+
+/*!
+ *  Removes the specified element 
+ *
+ *  \param seqName the string name of the element to remove 
+ */
+void svkDcmtkAdapter::RemoveElement(const char* elementName) 
+{
+    this->dcmFile->getDataset()->remove(  GetDcmTagKey( elementName ), element, true);
 }
 
 

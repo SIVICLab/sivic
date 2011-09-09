@@ -82,12 +82,6 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual void                             InitDcmHeader();
-        void                                     InitFileNames(); 
-        void                                     OnlyReadInputFile(); 
-        void                                     SortFilesByImagePositionPatient( 
-                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
-                                                    bool ascending
-                                                 );    
 
     private:
 

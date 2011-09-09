@@ -43,8 +43,11 @@
 #include <vtkObjectFactory.h>
 #include <vtkDebugLeaks.h>
 #include <vtkInformation.h>
+#include <vtkStringArray.h>
 
 #include <svkMrsImageData.h>
+#include <svkIOD.h>
+#include <svkMRSIOD.h>
 
 
 using namespace svk;
@@ -121,6 +124,54 @@ int svkGEPostageStampReader::CanReadFile(const char* fname)
 
 }
 
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitDcmHeader()
+{
+
+    this->InitFileNames();
+
+    // Read the first file and load the header as the starting point
+    this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
+
+    //  Now override elements with Multi-Frame sequences and default details:
+    svkIOD* iod = svkMRSIOD::New();
+    iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
+    iod->SetReplaceOldElements(false);
+    iod->InitDcmHeader();
+    iod->Delete();
+
+    vtkstd::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
+    this->GetOutput()->GetDcmHeader()->SetValue( "StudyInstanceUID", studyInstanceUID.c_str() );
+
+
+    //  Now move info from original MRImageStorage header elements to flesh out enhanced
+    //  SOP class elements (often this is just a matter of copying elements from the top
+    //  level to a sequence item.
+    this->InitMultiFrameFunctionalGroupsModule();
+    this->InitMRSpectroscopyModule();
+    this->InitMRSpectroscopyDataModule();
+
+    /*
+     *  odds and ends:
+     */
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Rows",
+       16 
+    );
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Columns",
+       16 
+    );
+
+
+    if (this->GetDebug()) {
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    }
+
+}
+
 
 /*!
  *  Initializes any private DICOM attributes that are needed internally
@@ -128,6 +179,538 @@ int svkGEPostageStampReader::CanReadFile(const char* fname)
 void svkGEPostageStampReader::InitPrivateHeader()
 {
 }
+
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMultiFrameFunctionalGroupsModule()
+{
+
+    this->numFrames =  this->GetFileNames()->GetNumberOfValues();
+cout << "Frames: " << numFrames << endl;
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "NumberOfFrames",
+        this->numFrames
+    );
+
+    this->InitSharedFunctionalGroupMacros();
+    //this->InitPerFrameFunctionalGroupMacros();
+
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitSharedFunctionalGroupMacros()
+{
+
+    //this->InitPixelMeasuresMacro();
+    //this->InitPlaneOrientationMacro();
+    this->InitMRTimingAndRelatedParametersMacro();
+    this->InitMRSpectroscopyFOVGeometryMacro();
+    this->InitMREchoMacro();
+    //this->InitMRModifierMacro();
+    this->InitMRReceiveCoilMacro();
+    //this->InitMRTransmitCoilMacro();
+    this->InitMRAveragesMacro();
+    //this->InitMRSpatialSaturationMacro();
+    //this->InitMRSpatialVelocityEncodingMacro();
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRTimingAndRelatedParametersMacro()
+{
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    float repTime = hdr->GetFloatValue("RepetitionTime"); 
+    hdr->ClearElement("RepetitionTime");
+    float flipAngle = hdr->GetFloatValue("FlipAngle"); 
+    hdr->ClearElement("FlipAngle");
+    hdr->InitMRTimingAndRelatedParametersMacro(
+        repTime, 
+        flipAngle
+    );
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMREchoMacro()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    float echoTime = hdr->GetFloatValue("EchoTime"); 
+    hdr->ClearElement("EchoTime");
+    hdr->InitMREchoMacro( echoTime ); 
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRReceiveCoilMacro()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    hdr->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRReceiveCoilSequence"
+    );
+
+    string rcvCoilName = hdr->GetStringValue("ReceiveCoilName"); 
+    hdr->ClearElement("ReceiveCoilName");
+    hdr->AddSequenceItemElement(
+        "MRReceiveCoilSequence",
+        0,
+        "ReceiveCoilName",
+        rcvCoilName, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRReceiveCoilSequence",
+        0,
+        "ReceiveCoilManufacturerName",
+        vtkstd::string("GE"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    vtkstd::string coilType("VOLUME");
+    if ( rcvCoilName.compare("8HRBRAIN") == 0 ) {
+        coilType.assign("MULTICOIL");
+    }
+
+    hdr->AddSequenceItemElement(
+        "MRReceiveCoilSequence",
+        0,
+        "ReceiveCoilType",
+        coilType,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRReceiveCoilSequence",
+        0,
+        "QuadratureReceiveCoil",
+        vtkstd::string("YES"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRSpectroscopyModule()
+{
+
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+
+    /*  =======================================
+     *  MR Image and Spectroscopy Instance Macro
+     *  ======================================= */
+    string studyDate = hdr->GetStringValue("StudyDate");
+    string acqTime = hdr->GetStringValue("AcquisitionTime");
+    hdr->SetValue(
+        "AcquisitionDatetime",
+        studyDate + acqTime
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "AcquisitionDuration",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "ResonantNucleus",
+        "1H" 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "KSpaceFiltering",
+        "NONE"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "ApplicableSafetyStandardAgency",
+        "Research"
+    );
+
+    //this->GetOutput()->GetDcmHeader()->SetValue(
+        //"MagneticFieldStrength",
+        //hdr->GetStringValue("MagneticFieldStrength");
+    //);
+    /*  =======================================
+     *  END: MR Image and Spectroscopy Instance Macro
+     *  ======================================= */
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "ImageType",
+        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
+    );
+
+
+    /*  =======================================
+     *  Spectroscopy Description Macro
+     *  ======================================= */
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "VolumetricProperties",
+        vtkstd::string("VOLUME")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "VolumeBasedCalculationTechnique",
+        vtkstd::string("NONE")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "ComplexImageComponent",
+        vtkstd::string("COMPLEX")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "AcquisitionContrast",
+        "UNKNOWN"
+    );
+    /*  =======================================
+     *  END: Spectroscopy Description Macro
+     *  ======================================= */
+
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "TransmitterFrequency",
+        hdr->GetStringValue("ImagingFrequency")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SpectralWidth",
+        "1000"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_FrequencyOffset",
+        "0"
+    );  
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "ChemicalShiftReference",
+        "4.7"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "VolumeLocalizationTechnique", 
+        "PRESS"
+    );  
+    
+//    if ( strcmp(ddfMap["localizationType"].c_str(), "PRESS") == 0)  {
+//       this->InitVolumeLocalizationSeq();
+//  }
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Decoupling", 
+        "NO" 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "TimeDomainFiltering", 
+        "NONE" 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "NumberOfZeroFills", 
+        0 
+    );
+    
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "BaselineCorrection", 
+        vtkstd::string("NONE")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "FrequencyCorrection",
+        "NO"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "FirstOrderPhaseCorrection",
+        vtkstd::string("NO")
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "WaterReferencedPhaseCorrection",
+        vtkstd::string("NO")
+    );
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRAveragesMacro()
+{
+    int numAverages = 1;
+    this->GetOutput()->GetDcmHeader()->InitMRAveragesMacro(numAverages);
+}
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRSpectroscopyFOVGeometryMacro()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    hdr->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRSpectroscopyFOVGeometrySequence"
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionDataColumns",
+        256, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionPhaseColumns",
+        hdr->GetIntValue( "Columns" ),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionPhaseRows",
+        hdr->GetIntValue( "Rows" ),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    hdr->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SpectroscopyAcquisitionOutOfPlanePhaseSteps",
+        hdr->GetIntValue( "NumberOfFrames" ),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+/*
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcquisitionTLC",
+        ddfMap["acqToplcLPS0"] + '\\' + ddfMap["acqToplcLPS1"] + '\\' + ddfMap["acqToplcLPS2"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcquisitionPixelSpacing",
+        ddfMap["acqSpacing0"] + '\\' + ddfMap["acqSpacing1"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcquisitionSliceThickness",
+        ddfMap["acqSpacing2"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcquisitionOrientation",
+        ddfMap["acqDcos00"] + '\\' + ddfMap["acqDcos01"] + '\\' + ddfMap["acqDcos02"] + '\\' +
+        ddfMap["acqDcos10"] + '\\' + ddfMap["acqDcos11"] + '\\' + ddfMap["acqDcos12"] + '\\' +
+        ddfMap["acqDcos20"] + '\\' + ddfMap["acqDcos21"] + '\\' + ddfMap["acqDcos22"],
+        "SharedFunctionalGroupsSequence",    
+        0
+    );
+    
+
+    // ==================================================
+    //  Reordered Params
+    // ==================================================
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                               
+        "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints0" ),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                               
+        "SVK_SpectroscopyAcqReorderedPhaseRows",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints1" ),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",   
+        0,                               
+        "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+        this->GetHeaderValueAsInt( ddfMap, "reorderedNumberOfPoints2"),
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,                               
+        "SVK_SpectroscopyAcqReorderedTLC",
+        ddfMap["reorderedToplcLPS0"] + '\\' + ddfMap["reorderedToplcLPS1"] + '\\' + ddfMap["reorderedToplcLPS2"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedPixelSpacing",
+        ddfMap["reorderedSpacing0"] + '\\' + ddfMap["reorderedSpacing1"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedSliceThickness",
+        ddfMap["reorderedSpacing2"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedOrientation",
+        ddfMap["reorderedDcos00"] + '\\' + ddfMap["reorderedDcos01"] + '\\' + ddfMap["reorderedDcos02"] + '\\' +
+        ddfMap["reorderedDcos10"] + '\\' + ddfMap["reorderedDcos11"] + '\\' + ddfMap["reorderedDcos12"] + '\\' +
+        ddfMap["reorderedDcos20"] + '\\' + ddfMap["reorderedDcos21"] + '\\' + ddfMap["reorderedDcos22"],
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+*/
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "PercentSampling",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "PercentPhaseFieldOfView",
+        1,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
+{
+
+
+    int numCols = static_cast<int>(this->GetOutput()->GetDcmHeader()->GetFloatValue( "GE_PS_MATRIX_X" ));
+    int numRows = static_cast<int>(this->GetOutput()->GetDcmHeader()->GetFloatValue( "GE_PS_MATRIX_Y" ));
+
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Rows", 
+        numRows 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "Columns",
+        numCols 
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "DataPointRows",
+        1
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "DataPointColumns",
+        256
+    );
+
+    int numComponents =  2; 
+    vtkstd::string representation;
+    if (numComponents == 1) {
+        representation = "REAL";
+    } else if (numComponents == 2) {
+        representation = "COMPLEX";
+    }
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "DataRepresentation",
+        representation
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SignalDomainColumns",
+        "frequency"
+    );
+
+
+    //  Private Attributes for spatial domain encoding:
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_ColumnsDomain",
+        "space"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_RowsDomain",
+        "space"
+    );
+
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SVK_SliceDomain",
+        "space"
+    );
+}
+
+
 
 
 /*! 
@@ -143,6 +726,7 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     } else {
         numComponents = 1; 
     }
+        numComponents = 1; 
 
     this->numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
     this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
@@ -154,9 +738,9 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     long unsigned int dataLength = 
         numVoxels[0] * numVoxels[1] * numVoxels[2] * this->numFreqPts * numComponents * numCoils * this->numTimePts;
 
-    float* specData = new float [ dataLength ];
-    this->GetOutput()->GetDcmHeader()->GetFloatValue( "SpectroscopyData", specData, dataLength);  
-        
+    short* specData = new short[ dataLength ];
+    this->GetOutput()->GetDcmHeader()->GetShortValue( "PixelData", specData, dataLength);  
+
     for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
         for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
             for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
@@ -172,14 +756,13 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     delete [] specData; 
 
     //this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
-    this->GetOutput()->GetDcmHeader()->ClearElement( "SpectroscopyData" ); 
 }
 
 
 /*!
  *
  */
-void svkGEPostageStampReader::SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, float* specData)
+void svkGEPostageStampReader::SetCellSpectrum(svkImageData* data, int x, int y, int z, int timePt, int coilNum, int numComponents, short* specData)
 {
 
     //  Set XY points to plot - 2 components per tuble for complex data sets:
@@ -196,15 +779,21 @@ void svkGEPostageStampReader::SetCellSpectrum(svkImageData* data, int x, int y, 
     int cols = numVoxels[0];
     int rows = numVoxels[1];
     int slices = numVoxels[2];
-    int coilOffset = cols * rows * slices * this->numTimePts;     //number of spectra per coil
-    int timePtOffset = cols * rows * slices;
 
-    int offset = ((( cols * rows * z ) + ( cols * y ) + x )  
-             + ( timePt * timePtOffset ) + ( coilNum * coilOffset ) ) * this->numFreqPts * numComponents;
-
-
-    for (int i = 0; i < this->numFreqPts; i++) {
-        dataArray->SetTuple( i, &(specData[ offset + (i * 2) ]) );
+    int dx = 16;        //  16 stride along columns
+    int dy = 256*16;    //  16*256 stride along rows
+    int startIndex = x + y * 16 * 16; 
+    float specVal[2];
+    int freqPt = 0; 
+    for ( int rows = 0; rows < 16; rows++) {
+        for ( int cols = 0; cols < 16; cols++) {
+            int offset = startIndex + cols * dx + rows * dy; 
+            cout << "   offset: " << offset << endl;
+            specVal[0] =  static_cast<float>(specData[ offset ]);
+            specVal[1] =  0.0; 
+            dataArray->SetTuple( freqPt, specVal );
+            freqPt++; 
+        }
     }
 
     //  Add the spectrum's dataArray to the CellData:
