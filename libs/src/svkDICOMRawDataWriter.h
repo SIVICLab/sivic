@@ -54,6 +54,7 @@
 #include <svkImageWriter.h>
 
 #include <sys/stat.h>
+#include <time.h>
 
 
 namespace svk {
