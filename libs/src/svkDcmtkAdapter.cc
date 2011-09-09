@@ -954,7 +954,7 @@ void svkDcmtkAdapter::ClearElement(const char* elementName)
  */
 void svkDcmtkAdapter::RemoveElement(const char* elementName) 
 {
-    this->dcmFile->getDataset()->remove(  GetDcmTagKey( elementName ), element, true);
+    this->dcmFile->getDataset()->remove(  GetDcmTagKey( elementName ));
 }
 
 

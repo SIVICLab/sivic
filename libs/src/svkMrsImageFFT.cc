@@ -180,7 +180,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             cout << "svkMrsImageFFT: Already in target domain, not transforming " << endl; 
             return 1; 
         }; 
-        string k0Sampled data->GetDcmHeader()->GetStringValue( "SVK_KS0Sampled"); 
+        string k0Sampled = data->GetDcmHeader()->GetStringValue( "SVK_K0Sampled");
         if ( k0Sampled.compare( "NO" ) == 0 ) { 
             for( int i = 0; i < 3; i++ ) {
                 kZeroShiftWindow[i] = -0.5;
@@ -313,7 +313,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
         data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
-        data->GetDcmHeader()->SetValue( "SVK_KS0Sampled",    "YES"); 
+        data->GetDcmHeader()->SetValue( "SVK_K0Sampled",    "YES");
     }
 
     //  Update Origin and Per Frame Functional Groups for voxel shift:

@@ -1798,12 +1798,12 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
 
     //  If k-space data and sym is even: set to NO (assume GE data with even num pts)
     //  method: bool isK0Sampled( sym(even/odd), dimension(even/odd) );
-    string spatialDomain = this->GetDimensionDomain( ddfMap["dimensionType1"] );
+    string spatialDomain = this->dcmHeader->GetStringValue( "SVK_ColumnsDomain");
     if ( spatialDomain.compare("KSPACE") == 0) {
 
         string k0Sampled = "YES";
         // data dims odd?
-        if ( numVoxels[0] % 2 || numVoxels[1] % 2 numVoxels[2] % 2 ) {
+        if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
             if ( kSpaceSymmetry.compare("yes") == 0 ) {
                 k0Sampled = "YES";
             } else {
@@ -1817,7 +1817,7 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
             }
         }
 
-        this->GetOutput()->GetDcmHeader()->SetValue( "SVK_K0Sampled", k0Sampled);
+        this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
     }
 
     this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled); 

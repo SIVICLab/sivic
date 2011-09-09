@@ -359,7 +359,7 @@ class svkDcmHeader: public vtkObject
         /*! 
          *  Method to remove itm from dataset
          */
-        virtual void    RemoveElement(const char* elementName);
+        virtual void    RemoveElement( const char* elementName ) = 0;
 
         /*! 
          *  Method to get an item's element from a DICOM Sequence by specifying the SQ 

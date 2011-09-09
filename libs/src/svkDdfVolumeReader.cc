@@ -1861,7 +1861,7 @@ void svkDdfVolumeReader::InitMRSpectroscopyPulseSequenceModule()
        
         string ddfSym = this->ddfMap[ "evenSymmetry" ]; 
         // data dims odd? 
-        if ( numVoxels[0] % 2 || numVoxels[1] % 2 numVoxels[2] % 2 ) {
+        if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
             if ( ddfSym.compare("yes") == 0 ) {
                 k0Sampled = "YES"; 
             } else {
