@@ -81,6 +81,7 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual void                             InitDcmHeader(); 
+        virtual bool                            CheckForMultiVolume(); 
 
 
     private:
@@ -94,6 +95,7 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
         void            InitMRSpectroscopyFOVGeometryMacro(); 
         void            InitMRSpectroscopyModule(); 
         void            InitMRSpectroscopyDataModule(); 
+        void            InitPerFrameFunctionalGroupMacros(); 
 
 
         virtual void    LoadData(svkImageData* data); 

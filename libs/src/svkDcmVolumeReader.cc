@@ -432,17 +432,19 @@ void svkDcmVolumeReader::InitFileNames()
     //  Is Data multi-volumetric (multiple 
     //  instances of same ImagePositionPatient):
     //  ============================
-    set < vtkstd::string > uniqueSlices;
-    seriesIt = dcmSeriesAttributes.begin(); 
-    while ( seriesIt != dcmSeriesAttributes.end() ) { 
-        uniqueSlices.insert( (*seriesIt)[6] ); 
-        seriesIt++ ;
-    }
-    if ( dcmSeriesAttributes.size() > uniqueSlices.size() ) {
-        //  More than one file per slice:  
-        vtkWarningWithObjectMacro(this, "Multi-volumetric data, repeated slice locations"); 
-        this->OnlyReadInputFile(); 
-        return; 
+    if ( this->CheckForMultiVolume() ) {
+        set < vtkstd::string > uniqueSlices;
+        seriesIt = dcmSeriesAttributes.begin(); 
+        while ( seriesIt != dcmSeriesAttributes.end() ) { 
+            uniqueSlices.insert( (*seriesIt)[6] ); 
+            seriesIt++ ;
+        }
+        if ( dcmSeriesAttributes.size() > uniqueSlices.size() ) {
+            //  More than one file per slice:  
+            vtkWarningWithObjectMacro(this, "Multi-volumetric data, repeated slice locations"); 
+            this->OnlyReadInputFile(); 
+            return; 
+        }
     }
 
     //  ======================================================================
@@ -467,6 +469,15 @@ void svkDcmVolumeReader::InitFileNames()
     sortFileNames->Delete();
 
 } 
+
+
+/*
+ *  If true, then make sure only one data volume
+ *  is present in file list
+ */
+bool svkDcmVolumeReader::CheckForMultiVolume() {
+    return true; 
+}
 
 
 /*!

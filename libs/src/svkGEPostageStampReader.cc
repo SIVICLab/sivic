@@ -48,6 +48,7 @@
 #include <svkMrsImageData.h>
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
+#include <svkUtils.h>
 
 
 using namespace svk;
@@ -124,6 +125,17 @@ int svkGEPostageStampReader::CanReadFile(const char* fname)
 
 }
 
+
+/*
+ *  returns false, meaning it's ok to have a multi-volumetric data set
+ *  since real and imaginary components are stored in separate PS images 
+ *  with the same imagePositionPatient values. 
+ */
+bool svkGEPostageStampReader::CheckForMultiVolume() {
+    return false;
+}
+
+
 /*!
  *
  */
@@ -188,17 +200,72 @@ void svkGEPostageStampReader::InitPrivateHeader()
 void svkGEPostageStampReader::InitMultiFrameFunctionalGroupsModule()
 {
 
-    this->numFrames =  this->GetFileNames()->GetNumberOfValues();
-cout << "Frames: " << numFrames << endl;
+    //  num frames is 1/2 num files for postage stamp data, since real and
+    //  imaginary components of each slice are in separate files. 
+    this->numFrames =  this->GetFileNames()->GetNumberOfValues() / 2;
     this->GetOutput()->GetDcmHeader()->SetValue(
         "NumberOfFrames",
         this->numFrames
     );
 
     this->InitSharedFunctionalGroupMacros();
-    //this->InitPerFrameFunctionalGroupMacros();
+    this->InitPerFrameFunctionalGroupMacros();
 
 }
+
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    //  Get toplc float array from rdaMap and use that to generate
+    //  frame locations:
+    double toplc[3];
+    for (int i = 0; i < 3; i++) {
+        toplc[i] = svkUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );
+    }
+    
+    double pixelSpacing[3];
+    hdr->GetPixelSpacing(pixelSpacing);
+
+    if ( this->numFrames > 2 ) {
+
+        double origin0[3];
+        hdr->GetOrigin(origin0, 0); 
+
+        svkImageData* tmpImage = svkMriImageData::New();
+        tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( 2 ) );
+
+        double origin1[3];
+        tmpImage->GetDcmHeader()->GetOrigin(origin1, 0);
+        tmpImage->Delete();
+        
+
+        double sliceSpacing = 0;
+        for (int i = 0; i < 3; i++ ) {
+            sliceSpacing += pow(origin1[i] - origin0[i], 2);
+        }
+        sliceSpacing = pow(sliceSpacing, .5);
+
+        pixelSpacing[2] = sliceSpacing;
+    }
+
+    hdr->SetSliceOrder( svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL );
+
+    double dcos[3][3];
+    hdr->GetDataDcos(dcos);
+
+    hdr->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+    );
+
+}
+
+
 
 
 /*!
@@ -726,7 +793,6 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     } else {
         numComponents = 1; 
     }
-        numComponents = 1; 
 
     this->numFreqPts = this->GetOutput()->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
     this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
@@ -735,22 +801,36 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
+    //  the num pixels in plane
     long unsigned int dataLength = 
-        numVoxels[0] * numVoxels[1] * numVoxels[2] * this->numFreqPts * numComponents * numCoils * this->numTimePts;
+        numVoxels[0] * numVoxels[1] * this->numFreqPts * numComponents * numCoils * this->numTimePts;
 
     short* specData = new short[ dataLength ];
-    this->GetOutput()->GetDcmHeader()->GetShortValue( "PixelData", specData, dataLength);  
 
-    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
-        for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
-            for (int z = 0; z < (this->GetDataExtent())[5] ; z++) {
-                for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
-                    for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
-                        SetCellSpectrum( data, x, y, z, timePt, coilNum, numComponents, specData );
+    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+        
+        int realImag = fileIndex % 2; 
+        svkImageData* tmpImage = svkMriImageData::New();
+        tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( fileIndex ) );
+        //  if this is the 2nd component of complex pair, adjust the offset of 
+        //  the specData by 1/2 data length:
+        tmpImage->GetDcmHeader()->GetShortValue( "PixelData", specData + realImag * (dataLength/2) , dataLength/2);  
+
+        //  once both components of complex pair have been read in, then set the spectrum
+        if ( realImag == 1 ) {
+            for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+                for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
+                    for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
+                        for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
+                            int z = fileIndex / 2; 
+                            SetCellSpectrum( data, x, y, z, timePt, coilNum, numComponents, specData);
+                        }
                     }
                 }
             }
         }
+
+        tmpImage->Delete();
     }
 
     delete [] specData; 
@@ -778,19 +858,18 @@ void svkGEPostageStampReader::SetCellSpectrum(svkImageData* data, int x, int y, 
     data->GetNumberOfVoxels(numVoxels); 
     int cols = numVoxels[0];
     int rows = numVoxels[1];
-    int slices = numVoxels[2];
 
     int dx = 16;        //  16 stride along columns
     int dy = 256*16;    //  16*256 stride along rows
+    int componentOffset = 16 * 16 * 16 * 16;    // hardcoded size convention of postage stamp data:
     int startIndex = x + y * 16 * 16; 
     float specVal[2];
     int freqPt = 0; 
     for ( int rows = 0; rows < 16; rows++) {
         for ( int cols = 0; cols < 16; cols++) {
             int offset = startIndex + cols * dx + rows * dy; 
-            cout << "   offset: " << offset << endl;
             specVal[0] =  static_cast<float>(specData[ offset ]);
-            specVal[1] =  0.0; 
+            specVal[1] =  static_cast<float>(specData[ offset + componentOffset ]);
             dataArray->SetTuple( freqPt, specVal );
             freqPt++; 
         }
