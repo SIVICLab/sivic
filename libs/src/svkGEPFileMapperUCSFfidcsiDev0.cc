@@ -432,6 +432,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->ModifyForPatientEntry(data); 
 
+    this->InitK0Sampled();
 
     reorderedImageData->Delete(); 
 

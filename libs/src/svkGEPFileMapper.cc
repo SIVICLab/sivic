@@ -1787,41 +1787,6 @@ void svkGEPFileMapper::InitMRSpectroscopyPulseSequenceModule()
 
     this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1); 
 
-    string kSpaceSymmetry; 
-    if ( this->pfileVersion > 9 ) {
-        kSpaceSymmetry = "EVEN"; 
-    } else {
-        kSpaceSymmetry = this->GetHeaderValueAsString( "rhr.rh_user15" );
-    }
-
-    string k0Sampled;
-
-    //  If k-space data and sym is even: set to NO (assume GE data with even num pts)
-    //  method: bool isK0Sampled( sym(even/odd), dimension(even/odd) );
-    string spatialDomain = this->dcmHeader->GetStringValue( "SVK_ColumnsDomain");
-    if ( spatialDomain.compare("KSPACE") == 0) {
-
-        string k0Sampled = "YES";
-        // data dims odd?
-        if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
-            if ( kSpaceSymmetry.compare("yes") == 0 ) {
-                k0Sampled = "YES";
-            } else {
-                k0Sampled = "NO";
-            }
-        } else {
-            if ( kSpaceSymmetry.compare("yes") == 0 ) {
-                k0Sampled = "NO";
-            } else {
-                k0Sampled = "YES";
-            }
-        }
-
-        this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
-    }
-
-    this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled); 
-
     string chop = "NO"; 
     if ( IsChopOn() ) {
         chop = "YES"; 
@@ -1874,16 +1839,56 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
 
     //  Single Voxel doesn't require spatial tranform 
     vtkstd::string spatialDomain = "KSPACE"; 
-    if ( numVoxels[0] * numVoxels[1] * numVoxels[2] == 1 ) {
-        spatialDomain = "SPACE"; 
-    } 
 
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", spatialDomain );
     this->dcmHeader->SetValue( "SVK_RowsDomain", spatialDomain);
     this->dcmHeader->SetValue( "SVK_SliceDomain", spatialDomain );
 
+    this->InitK0Sampled();
 }
 
+
+/*!
+ *  Initializes the parameter SVK_K0Sampled based on symmetry and
+ *  dimensions of the dataset (odd/even).
+ *
+ */
+void svkGEPFileMapper::InitK0Sampled()
+{
+    string kSpaceSymmetry;
+    if ( this->pfileVersion > 9 ) {
+        kSpaceSymmetry = "EVEN";
+    } else {
+        kSpaceSymmetry = this->GetHeaderValueAsString( "rhr.rh_user15" );
+    }
+
+
+    //  If k-space data and sym is even: set to NO (assume GE data with even num pts)
+    //  method: bool isK0Sampled( sym(even/odd), dimension(even/odd) );
+    int numVoxels[3];
+    numVoxels[0] = this->dcmHeader->GetIntValue( "Columns");
+    numVoxels[1] = this->dcmHeader->GetIntValue( "Rows");
+    numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+
+    string k0Sampled = "YES";
+    cout << "Num Voxels :" << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
+    // data dims odd?
+    if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
+        if ( kSpaceSymmetry.compare("EVEN") == 0 ) {
+            k0Sampled = "YES";
+        } else {
+            k0Sampled = "NO";
+        }
+    } else {
+        if ( kSpaceSymmetry.compare("EVEN") == 0 ) {
+            k0Sampled = "NO";
+        } else {
+            k0Sampled = "YES";
+        }
+    }
+    this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
+
+}
 
 /*
  *  Gets the center of the acquisition grid.  May vary between sequences.
