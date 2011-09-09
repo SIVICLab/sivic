@@ -37,7 +37,6 @@ cmake_minimum_required(VERSION 2.4)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0015 OLD)
 endif(COMMAND cmake_policy)
 
 
@@ -49,6 +48,9 @@ PROJECT(sivic_application)
 #   Set build dir:
 #
 IF (CMAKE_SYSTEM_NAME MATCHES Linux)
+    if(COMMAND cmake_policy)
+        cmake_policy(SET CMP0015 OLD)
+    endif(COMMAND cmake_policy)
     IF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
         SET(PLATFORM Linux_i686)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
