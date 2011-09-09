@@ -381,7 +381,7 @@ void sivicSpectraRangeWidget::CreateWidget()
     //  ======================================================
 
     int rangeEntryWidth = 10;
-    int rangeLabelWidth = 8;
+    int rangeLabelWidth = 9;
     // Create the x range widget 
     this->xSpecRange = vtkKWRange::New(); 
     this->xSpecRange->SetParent(this);
@@ -478,10 +478,10 @@ void sivicSpectraRangeWidget::CreateWidget()
     //  Spec View Widgets Frame
     //==================================================================
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 3 -pady 4", 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -padx 2 -pady 2", 
                     this->xSpecRange->GetWidgetName(), this->specRangeFrame->GetWidgetName()); 
 
-    this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 4", 
+    this->Script("grid %s -in %s -row 1 -column 0 -sticky wnse -padx 2 -pady 2", 
                     this->ySpecRange->GetWidgetName(), this->specRangeFrame->GetWidgetName()); 
 
     this->Script("grid columnconfigure %s 0 -weight 1 ", this->specRangeFrame->GetWidgetName() );
@@ -494,9 +494,6 @@ void sivicSpectraRangeWidget::CreateWidget()
 
     this->Script("grid %s -in %s -row 0 -column 1 -sticky wnse -pady 1", 
                 this->unitSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
-
-    //this->Script("grid %s -in %s -row 1 -column 1 -sticky ensw -pady 2", 
-         //       this->detailedPlotButton->GetWidgetName(), this->specViewFrame->GetWidgetName()); 
 
     this->Script("grid %s -in %s -row 2 -column 1 -sticky wnse -pady 1", 
                 this->componentSelectBox->GetWidgetName(), this->specViewFrame->GetWidgetName()); 

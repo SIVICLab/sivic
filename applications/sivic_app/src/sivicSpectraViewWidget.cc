@@ -161,7 +161,7 @@ void sivicSpectraViewWidget::CreateWidget()
   
     // Let's setup the sliders in the set to be the same geometry 
     int entryWidth = 2;
-    int labelWidth = 8; 
+    int labelWidth = 9; 
     vtkKWScaleWithEntry* slider = NULL; 
     for (int i = 0; i < sliders->GetNumberOfWidgets(); i++) {
         slider = sliders->GetWidget(sliders->GetIdOfNthWidget(i));

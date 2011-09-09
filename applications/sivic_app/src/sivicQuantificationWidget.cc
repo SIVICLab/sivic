@@ -136,7 +136,7 @@ void sivicQuantificationWidget::CreateWidget()
         this->metRangeVector[i]->SetEntriesWidth(4);
         this->metRangeVector[i]->SetResolution(.01);
         this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
-        this->metRangeVector[i]->GetLabel()->SetWidth(8); 
+        this->metRangeVector[i]->GetLabel()->SetWidth(10); 
         this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
 
     }

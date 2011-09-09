@@ -199,8 +199,8 @@ void sivicImageViewWidget::CreateWidget()
     imageToolsLabel->SetText( string("Reference Image Tools").c_str() );
     imageToolsLabel->SetJustificationToLeft();
     imageToolsLabel->SetAnchorToWest();
-    imageToolsLabel->SetBorderWidth(1);
-    imageToolsLabel->SetFont("system 8 {bold}");
+    imageToolsLabel->SetBorderWidth(0);
+    imageToolsLabel->SetFont("arial 8 {bold}");
 
     this->overlayViewFrame = vtkKWFrame::New();   
     this->overlayViewFrame->SetParent(this);
@@ -212,8 +212,8 @@ void sivicImageViewWidget::CreateWidget()
     overlayToolsLabel->SetText( string("Overlay Tools").c_str() );
     overlayToolsLabel->SetJustificationToLeft();
     overlayToolsLabel->SetAnchorToWest();
-    overlayToolsLabel->SetBorderWidth(1);
-    overlayToolsLabel->SetFont("system 8 {bold}");
+    overlayToolsLabel->SetBorderWidth(0);
+    overlayToolsLabel->SetFont("arial 8 {bold}");
 
     vtkKWSeparator* orthoSeparator = vtkKWSeparator::New();   
     orthoSeparator->SetParent(this);
@@ -335,7 +335,7 @@ void sivicImageViewWidget::CreateWidget()
 
     // Let's setup the slice sliders in the set to be the same geometry 
     int entryWidth = 2;
-    labelWidth = 10;
+    labelWidth = 11;
     vtkKWScaleWithEntry* slider = NULL;
     for (int i = 0; i < sliceSliders->GetNumberOfWidgets(); i++) {
         slider = sliceSliders->GetWidget(sliceSliders->GetIdOfNthWidget(i));
@@ -451,7 +451,7 @@ void sivicImageViewWidget::CreateWidget()
     //==================================================================
     //  Image View Widgets Frame
     //==================================================================
-    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10", this->imageViewFrame->GetWidgetName(), row); 
+    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 8", this->imageViewFrame->GetWidgetName(), row); 
         this->Script("grid %s -in %s -row 0 -column 0 -sticky nw ", 
             this->volSelButton->GetWidgetName(), this->imageViewFrame->GetWidgetName(), row ); 
         this->Script( "grid %s -in %s -row 0 -column 1 -sticky nw ", 
@@ -466,12 +466,12 @@ void sivicImageViewWidget::CreateWidget()
         this->Script("grid columnconfigure %s 2 -weight 80 ", this->imageViewFrame->GetWidgetName() );
         this->Script("grid columnconfigure %s 3 -weight 80 ", this->imageViewFrame->GetWidgetName() );
     //==================================================================
-    //  Ortho View Widgets Frame
+    //  Overlay View Widgets Frame
     //==================================================================
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky ew", orthoSeparator->GetWidgetName(), row); 
     row++; 
-    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 10 -pady 2 ", this->overlayViewFrame->GetWidgetName(), row);
+    this->Script("grid %s -row %d -column 0 -sticky nsew -padx 8 -pady 1 ", this->overlayViewFrame->GetWidgetName(), row);
 
     this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 0", 
                 overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
@@ -492,12 +492,12 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid columnconfigure %s 2 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
 
     //==================================================================
-    //  Overlay View Widgets Frame
+    //  Ortho View Widgets Frame
     //==================================================================
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky ew", overlaySeparator->GetWidgetName(), row); 
     row++; 
-    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 10 -pady 2", this->orthoViewFrame->GetWidgetName(), row);
+    this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 8 -pady 1", this->orthoViewFrame->GetWidgetName(), row);
 
     this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 0", imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
