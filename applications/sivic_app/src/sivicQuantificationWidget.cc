@@ -299,7 +299,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
         //  if overlay has not been initialized, the overlay with the first met map 
         //  otherwise grab the current menu value and use that to init the overlay
-        if( this->model->DataExists( "MetaboliteData" ) == NULL) {
+        if( this->model->DataExists( "MetaboliteData" ) == false ) {
             vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
             this->mapViewSelector->GetWidget()->SetValue( this->modelMetNames[0].c_str() );
             this->SetOverlay( this->modelMetNames[0] ); 
