@@ -63,6 +63,7 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
+        SET(PLATFORM_LIBS z )
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
         IF (CMAKE_UNIVERSAL MATCHES TRUE)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDarwin -arch i386 -arch x86_64")
@@ -171,7 +172,6 @@ SET(SVK_LIBS
     dcmdata
     ofstd 
     ${DCMTK_OFLOG}
-    z
     ${PLATFORM_LIBS}
 )
 

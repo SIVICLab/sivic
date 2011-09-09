@@ -392,7 +392,7 @@ void sivicSpectraRangeWidget::CreateWidget()
     this->xSpecRange->SetRange(0, 1);
     this->xSpecRange->EnabledOff();
     this->xSpecRange->SetSliderSize(3);
-    this->xSpecRange->SetEntriesWidth(8);
+    this->xSpecRange->SetEntriesWidth(10);
     this->xSpecRange->SetEntry1PositionToLeft();
     this->xSpecRange->SetEntry2PositionToRight();
     this->xSpecRange->SetLabelPositionToLeft();
@@ -410,7 +410,7 @@ void sivicSpectraRangeWidget::CreateWidget()
     this->ySpecRange->SetRange(0, 1);
     this->ySpecRange->EnabledOff();
     this->ySpecRange->SetSliderSize(3);
-    this->ySpecRange->SetEntriesWidth(8);
+    this->ySpecRange->SetEntriesWidth(10);
     this->ySpecRange->SetEntry1PositionToLeft();
     this->ySpecRange->SetEntry2PositionToRight();
     this->ySpecRange->SetLabelPositionToLeft();

@@ -109,11 +109,7 @@ int main (int argc, char** argv)
     spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
     spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
     spatialRFFT->SetPreCorrectCenter( true );
-    double prePhaseShift[3] = {-0.5, -0.5, -0.5 };
-    double postPhaseShift[3] = {-0.5, -0.5, -0.5 };
-    spatialRFFT->SetPrePhaseShift( prePhaseShift );
     spatialRFFT->SetPostCorrectCenter( true );
-    spatialRFFT->SetPostPhaseShift( postPhaseShift );
     
     cout << "Getting the output of the algorithm..." << endl;
     outputData = spatialRFFT->GetOutput();
