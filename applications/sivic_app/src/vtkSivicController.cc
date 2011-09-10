@@ -898,9 +898,14 @@ void vtkSivicController::AddSpectra( string stringFilename )
 
 void vtkSivicController::DeselectMetabolites( )
 {
+    //   This menu doesn't exist outside of the UCSF build:
+    if ( this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3) == NULL ) {
+        return; 
+    }
+
     int numItems =  static_cast<vtkKWMenu*>(
                     this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
-                )-> GetNumberOfItems();
+                )->GetNumberOfItems();
     for( int i = 0; i < numItems; i++ ) {
         static_cast<vtkKWMenu*>(
                     this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)
