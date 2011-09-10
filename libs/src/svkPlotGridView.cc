@@ -1184,12 +1184,10 @@ void svkPlotGridView::SetChannel( int channel, int plotIndex )
             }
         }
     }
-    cout << "Here" << endl;
     this->Refresh();
 
     this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
     this->Refresh();
-    cout << "Done setting channel to: "  << channel << endl;
 
 }
 

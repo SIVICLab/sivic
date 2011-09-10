@@ -305,7 +305,13 @@ void sivicQuantificationWidget::ExecuteQuantification()
             this->SetOverlay( this->modelMetNames[0] ); 
         }  else {
             vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-            this->SetOverlay(  this->mapViewSelector->GetWidget()->GetValue()  ); 
+            vtkstd::string menuValue = this->mapViewSelector->GetWidget()->GetValue();
+            if( this->model->DataExists( menuValue )) {
+                this->SetOverlay(  this->mapViewSelector->GetWidget()->GetValue()  );
+            } else {
+                this->mapViewSelector->GetWidget()->SetValue( this->modelMetNames[0].c_str() );
+                this->SetOverlay( this->modelMetNames[0] );
+            }
         }
 
         this->plotController->GetView()->Refresh();
