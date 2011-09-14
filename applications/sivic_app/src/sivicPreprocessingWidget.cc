@@ -445,6 +445,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             af->Delete();
             data->Modified();
         }
+        zeroFill->Delete();
     }
     return; 
 

@@ -135,9 +135,12 @@ void ExecuteZeroFill( svkMrsZeroFill* zf, string infname, string outfname )
     writer->Write();
 
     // Clean up
+    spatialFFT->Delete();
+    spatialRFFT->Delete();
     writer->Delete();
     writer = NULL;
     data->Delete();
+    targetData->Delete();
     data = NULL;
     model->Delete();
     model = NULL;

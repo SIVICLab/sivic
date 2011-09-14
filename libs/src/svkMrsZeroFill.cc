@@ -262,6 +262,21 @@ int svkMrsZeroFill::RequestInformation( vtkInformation* request, vtkInformationV
 
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->outputWholeExtent, 6);
 
+    double newSpacing[3] = {0,0,0};
+    int oldNumVoxels[3];
+    data->GetNumberOfVoxels(oldNumVoxels);
+    int newNumVoxels[3];
+    newNumVoxels[0] =  this->outputWholeExtent[1] - this->outputWholeExtent[0];
+    newNumVoxels[1] =  this->outputWholeExtent[3] - this->outputWholeExtent[2];
+    newNumVoxels[2] =  this->outputWholeExtent[5] - this->outputWholeExtent[4];
+    double spacing[3];
+    data->GetSpacing(spacing);
+    newSpacing[0] = spacing[0]*((double)(oldNumVoxels[0] ))/(newNumVoxels[0] );
+    newSpacing[1] = spacing[1]*((double)(oldNumVoxels[1] ))/(newNumVoxels[1] );
+    newSpacing[2] = spacing[2]*((double)(oldNumVoxels[2] ))/(newNumVoxels[2] );
+    outInfo->Set(vtkDataObject::SPACING(), newSpacing, 3);
+
+
     return 1;
 }
 
@@ -453,7 +468,7 @@ int svkMrsZeroFill::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
 
     data->SyncVTKImageDataToDcmHeader();
-
+    linearShift->Delete();
     outputData->Delete();
     return 1; 
 

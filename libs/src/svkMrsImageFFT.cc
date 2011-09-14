@@ -301,6 +301,10 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         postKZeroShifter->Delete();
         postKZeroShifter = NULL;
     }
+    if( voxelShifter != NULL ) {
+        voxelShifter->Delete();
+        voxelShifter = NULL;
+    }
     pointImage->Delete();
 
     //  Update the DICOM header to reflect the spectral domain changes:

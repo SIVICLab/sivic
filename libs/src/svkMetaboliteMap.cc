@@ -117,7 +117,8 @@ int svkMetaboliteMap::RequestInformation( vtkInformation* request, vtkInformatio
     int inWholeExt[6];
     inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inWholeExt);
     double inSpacing[3]; 
-    inInfo->Get(vtkDataObject::SPACING(), inSpacing);
+    this->GetImageDataInput(0)->GetSpacing( inSpacing );
+    
 
     //  MRI image data has a smaller extent than the input MRS 
     //  image data (points vs cells):
