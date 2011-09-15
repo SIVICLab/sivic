@@ -473,7 +473,7 @@
 					ppc64,
 					x86_64,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Development;
@@ -485,7 +485,7 @@
 					ppc,
 					i386,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Deployment;
@@ -497,7 +497,7 @@
 					ppc,
 					i386,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
 			name = Default;
@@ -513,7 +513,7 @@
 				CE6A9A9308AC841300D0C1EE /* Default */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Development;
+			defaultConfigurationName = Deployment;
 		};
 		CE6A9A9408AC841300D0C1EE /* Build configuration list for PBXProject "SIVIC_MRSI" */ = {
 			isa = XCConfigurationList;
@@ -523,7 +523,7 @@
 				CE6A9A9708AC841300D0C1EE /* Default */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Development;
+			defaultConfigurationName = Deployment;
 		};
 /* End XCConfigurationList section */
 	};
