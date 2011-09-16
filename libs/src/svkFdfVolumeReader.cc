@@ -602,16 +602,16 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
     //  toplc from which the individual frame locations are calculated
 
     //  If volumetric 3D, get the center of the TLC voxel in LPS coords: 
-    float* volumeTlcLPSFrame = new float[3];  
+    double* volumeTlcLPSFrame = new double[3];  
     if (GetHeaderValueAsInt("rank") == 3) {
 
         //  Get the volumetric center in magnet frame coords: 
-        float volumeCenterUserFrame[3];  
+        double volumeCenterUserFrame[3];  
         for (int i = 0; i < 3; i++) {
             volumeCenterUserFrame[i] = this->GetHeaderValueAsFloat("location[]", i); 
         }
 
-        float* volumeTlcUserFrame = new float[3];  
+        double* volumeTlcUserFrame = new double[3];  
         for (int i = 0; i < 3; i++) {
             volumeTlcUserFrame[i] = volumeCenterUserFrame[i] 
                                  + ( this->GetHeaderValueAsFloat("roi[]", i) - pixelSpacing[i] )/2; 
@@ -621,9 +621,9 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
         
     }
 
-    float displacement[3];
+    double displacement[3];
     //  Center of toplc (LPS) pixel in frame:  
-    float frameLPSPosition[3];
+    double frameLPSPosition[3];
 
     /*  
      *  Iterate over slices 
@@ -649,13 +649,13 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
         if (GetHeaderValueAsInt("rank") == 2) {
 
             //  Location is the center of the image frame in user (acquisition frame). 
-            float centerUserFrame[3];  
+            double centerUserFrame[3];  
             for ( int j = 0; j < 3; j++) {
                 centerUserFrame[j] = this->GetHeaderValueAsFloat("location[]", i * 3 + j ) ;
             }
 
             //  Now get the center of the tlc voxel in the magnet frame: 
-            float* tlcUserFrame = new float[3];  
+            double* tlcUserFrame = new double[3];  
             for (int j = 0; j < 2; j++) {
                 tlcUserFrame[j] = centerUserFrame[j] 
                                  - ( this->GetHeaderValueAsFloat("roi[]", j) - pixelSpacing[j] )/2; 
