@@ -806,19 +806,20 @@ void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
 
     if ( tolerance > 0 ) {
 
+        //  Get the ID of the voxels that define the TLC and BRC of the
+        //  the selection box for this slice:
+        this->Get3DVoxelsInSelectionBox(
+            min,
+            max,
+            tolerance 
+        );
+
         int voxelIndex[3];
 
         for (int voxelID = 0; voxelID < totalVoxels; voxelID++ ) {
 
             this->GetIndexFromID( voxelID, voxelIndex );
 
-            //  Get the ID of the voxels that define the TLC and BRC of the
-            //  the selection box for this slice:
-            this->Get3DVoxelsInSelectionBox(
-                min,
-                max,
-                tolerance 
-            );
 
             //  compare the current voxel's indices to the tlcBrcID range:
             if (
