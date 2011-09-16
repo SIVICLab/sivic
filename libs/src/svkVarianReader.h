@@ -61,7 +61,7 @@ class svkVarianReader : public svkImageReader2
     public:
 
         vtkTypeRevisionMacro( svkVarianReader, svkImageReader2);
-        static void                      UserToMagnet(float* user, float* magnet, double dcos[3][3]); 
+        static void                      UserToMagnet(double* user, double* magnet, double dcos[3][3]); 
 
 
     protected:
