@@ -422,7 +422,7 @@ void svkVarianReader::PrintProcparKeyValuePairs()
 /*
  *  Utility method to convert from the Varian user frame to the magnet XYZ frame: 
  */
-void svkVarianReader::UserToMagnet(float* user, float* magnet, double dcos[3][3])
+void svkVarianReader::UserToMagnet(double* user, double* magnet, double dcos[3][3])
 {  
     for (int i = 0; i < 3; i++) {
         magnet[i] = 0.;     
