@@ -42,6 +42,7 @@
 
 #include <svkVarianFidMapper.h>
 #include <svkVarianReader.h>
+
 #include <vtkDebugLeaks.h>
 #include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
@@ -68,6 +69,7 @@ svkVarianFidMapper::svkVarianFidMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->specData = NULL;
+    this->numFrames = 1;
 
 }
 
@@ -204,9 +206,10 @@ void svkVarianFidMapper::InitMultiFrameFunctionalGroupsModule()
     this->numSlices = this->GetHeaderValueAsInt("ns");
     int numEchoes = this->GetHeaderValueAsInt("ne");
 
+    this->numFrames = this->numSlices * numEchoes;
     this->dcmHeader->SetValue(
         "NumberOfFrames",
-        this->numSlices * numEchoes
+        this->numFrames
     );
 
     this->InitPerFrameFunctionalGroupMacros();
@@ -240,135 +243,19 @@ void svkVarianFidMapper::InitSharedFunctionalGroupMacros()
 
 
 /*!
- *
- */
-void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
-{
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
-}
-
-
-/*!
- *  Pixel Spacing:
- */
-void svkVarianFidMapper::InitPixelMeasuresMacro()
-{
-    float numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
-
-    //  Not sure if this is best, also see lpe (phase encode resolution in cm)
-    float pixelSize[3];
-    pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
-    pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
-    pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
-
-    vtkstd::string pixelSizeString[3];
-
-    for (int i = 0; i < 3; i++) {
-        ostringstream oss;
-        oss << pixelSize[i];
-        pixelSizeString[i].assign( oss.str() );
-    }
-
-    this->dcmHeader->InitPixelMeasuresMacro(
-        pixelSizeString[0] + "\\" + pixelSizeString[1],
-        pixelSizeString[2]
-    );
-}
-
-
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkVarianFidMapper::InitFrameContentMacro()
-{
-
-    int numCoils = 1;
-    int numTimePts = 1;
-    int numFrameIndices = svkDcmHeader::GetNumberOfDimensionIndices( numTimePts, numCoils ) ;
-
-    unsigned int* indexValues = new unsigned int[numFrameIndices];
-
-    int frame = 0;
-
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-
-            for (int sliceNum = 0; sliceNum < this->numSlices; sliceNum++) {
-
-                svkDcmHeader::SetDimensionIndices(
-                    indexValues, numFrameIndices, sliceNum, timePt, coilNum, numTimePts, numCoils
-                );
-
-                this->dcmHeader->AddSequenceItemElement(
-                    "PerFrameFunctionalGroupsSequence",
-                    frame,
-                    "FrameContentSequence"
-                );
-
-                this->dcmHeader->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "DimensionIndexValues",
-                    indexValues,        //  array of vals
-                    numFrameIndices,    // num values in array
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->dcmHeader->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "FrameAcquisitionDateTime",
-                    "EMPTY_ELEMENT",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->dcmHeader->AddSequenceItemElement(
-                    "FrameContentSequence",
-                                                                                   0,
-                    "FrameReferenceDateTime",
-                    "EMPTY_ELEMENT",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                this->dcmHeader->AddSequenceItemElement(
-                    "FrameContentSequence",
-                    0,
-                    "FrameAcquisitionDuration",
-                    "-1",
-                    "PerFrameFunctionalGroupsSequence",
-                    frame
-                );
-
-                frame++;
-            }
-        }
-    }
-
-    delete[] indexValues;
-
-}
-
-/*!
  *  The FID toplc is the center of the first voxel.
  */
-void svkVarianFidMapper::InitPlanePositionMacro()
+void svkVarianFidMapper::InitPerFrameFunctionalGroupMacros()
 {
 
     double dcos[3][3];
     this->dcmHeader->SetSliceOrder( this->dataSliceOrder );
     this->dcmHeader->GetDataDcos( dcos );
+
     double pixelSpacing[3];
     this->dcmHeader->GetPixelSize(pixelSpacing);
 
-    float numPixels[3];
+    int numPixels[3];
     numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
     numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
     numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
@@ -378,16 +265,17 @@ void svkVarianFidMapper::InitPlanePositionMacro()
     //  toplc from which the individual frame locations are calculated
 
     //  If volumetric 3D (not 2D), get the center of the TLC voxel in LPS coords:
-    float* volumeTlcLPSFrame = new float[3];
-    if ( this->GetHeaderValueAsInt("ns", 0) > 1 ) {
+    double* volumeTlcLPSFrame = new double[3];
+    //  if more than 1 slice:
+    if ( numPixels[2] > 1 ) {
 
         //  Get the volumetric center in acquisition frame coords:
-        float volumeCenterAcqFrame[3];
+        double volumeCenterAcqFrame[3];
         for (int i = 0; i < 3; i++) {
             volumeCenterAcqFrame[i] = this->GetHeaderValueAsFloat("location[]", i);
         }
 
-        float* volumeTlcAcqFrame = new float[3];
+        double* volumeTlcAcqFrame = new double[3];
         for (int i = 0; i < 3; i++) {
             volumeTlcAcqFrame[i] = volumeCenterAcqFrame[i]
                                  + ( this->GetHeaderValueAsFloat("span[]", i) - pixelSpacing[i] )/2;
@@ -397,80 +285,48 @@ void svkVarianFidMapper::InitPlanePositionMacro()
 
     }
 
-    float displacement[3];
+
     //  Center of toplc (LPS) pixel in frame:
-    float frameLPSPosition[3];
+    double toplc[3];
 
-    /*
-     *  Iterate over slices (frames)
-     *  If 3D vol, calculate slice position, otherwise use value encoded
-     *  into slice header
-     */
-    for (int i = 0; i < this->dcmHeader->GetNumberOfSlices(); i++) {
+    //
+    //  If 3D vol, calculate slice position, otherwise use value encoded
+    //  into slice header
+    //
 
-        this->dcmHeader->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
+     //  If 2D (single slice)
+     if ( numPixels[2] == 1 ) {
 
-        //  Need to displace along normal from tlc of slice:
-        //  add displacement along normal vector to get toplc for each frame:
-        for (int j = 0; j < 3; j++) {
-            displacement[j] = dcos[2][j] * pixelSpacing[2] * i;
+        //  Location is the center of the image frame in user (acquisition frame).
+        double centerAcqFrame[3];
+        for ( int j = 0; j < 3; j++) {
+            centerAcqFrame[j] = 0.0;
         }
 
-        vtkstd::string imagePositionPatient;
+        //  Now get the center of the tlc voxel in the acq frame:
+        double* tlcAcqFrame = new double[3];
+        for (int j = 0; j < 2; j++) {
+            tlcAcqFrame[j] = centerAcqFrame[j]
+                - ( ( numPixels[j] * pixelSpacing[j] ) - pixelSpacing[j] )/2;
+        }
+        tlcAcqFrame[2] = centerAcqFrame[2];
 
-        //  If 2D (single slice)
-        if ( this->GetHeaderValueAsInt("ns", 0) == 1 ) {
-
-            //  Location is the center of the image frame in user (acquisition frame).
-            double centerAcqFrame[3];
-            for ( int j = 0; j < 3; j++) {
-                centerAcqFrame[j] = 0.0;
-            }
-
-            //  Now get the center of the tlc voxel in the acq frame:
-            float* tlcAcqFrame = new float[3];
-            for (int j = 0; j < 2; j++) {
-                tlcAcqFrame[j] = centerAcqFrame[j]
-                                 - ( ( numPixels[j] * pixelSpacing[j] ) - pixelSpacing[j] )/2;
-            }
-            tlcAcqFrame[2] = centerAcqFrame[2];
-
-            //  and convert to LPS (magnet) frame:
-            svkVarianReader::UserToMagnet(tlcAcqFrame, frameLPSPosition, dcos);
-
-            delete [] tlcAcqFrame;
-
-        } else {
-
-            for(int j = 0; j < 3; j++) { //L, P, S
-                frameLPSPosition[j] = volumeTlcLPSFrame[j] +  displacement[j] ;
-            }
+        //  and convert to LPS (magnet) frame:
+        svkVarianReader::UserToMagnet(tlcAcqFrame, toplc, dcos);
     
-        }
+        delete [] tlcAcqFrame;
+    
+    } else {
 
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss.precision(8);
-            oss << frameLPSPosition[j];
-            imagePositionPatient += oss.str();
-            if (j < 2) {
-                imagePositionPatient += '\\';
-            }
+        for(int j = 0; j < 3; j++) { //L, P, S
+            toplc[j] = volumeTlcLPSFrame[j]; 
         }
+    
+   }
 
-        this->dcmHeader->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient",
-            imagePositionPatient,
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-    }
+    this->dcmHeader->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+    );
 
     delete volumeTlcLPSFrame;
 }
@@ -838,14 +694,14 @@ void svkVarianFidMapper::InitMultiFrameDimensionModule()
     }
 */
 
-//    if (this->GetNumCoils() > 1) {
-//        indexCount++; 
-//        this->dcmHeader->AddSequenceItemElement(
- //           "DimensionIndexSequence",
-  //          indexCount,
-   //         "DimensionDescriptionLabel",
-    //        "Coil Number"
-     //   );
+//      if (this->GetNumCoils() > 1) {
+//          indexCount++; 
+//          this->dcmHeader->AddSequenceItemElement(
+//          "DimensionIndexSequence",
+//          indexCount,
+//          "DimensionDescriptionLabel",
+//          "Coil Number"
+//      );
 
 //
 //        this->dmHeader()->AddSequenceItemElement(
@@ -888,7 +744,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
         "AcquisitionDatetime",
         this->GetHeaderValueAsString("date")
     );
-
+    
     this->dcmHeader->SetValue(
         "AcquisitionDuration",
         0
@@ -896,7 +752,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        "H1"
+        "C13"
     );
 
     this->dcmHeader->SetValue(
@@ -909,9 +765,10 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
         "Research"
     );
 
+    //  B0 in Gauss?
     this->dcmHeader->SetValue(
         "MagneticFieldStrength",
-        -1
+        static_cast< int > ( this->GetHeaderValueAsFloat("B0") / 10000 )
     );
     /*  =======================================
      *  END: MR Image and Spectroscopy Instance Macro
@@ -919,7 +776,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ImageType",
-        vtkstd::string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
+        string("ORIGINAL\\PRIMARY\\SPECTROSCOPY\\NONE")
     );
 
 
@@ -928,23 +785,23 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
      *  ======================================= */
     this->dcmHeader->SetValue(
         "VolumetricProperties",
-        vtkstd::string("VOLUME")
+        string("VOLUME")
     );
 
     this->dcmHeader->SetValue(
         "VolumeBasedCalculationTechnique",
-        vtkstd::string("NONE")
+        string("NONE")
     );
 
     this->dcmHeader->SetValue(
         "ComplexImageComponent",
-        vtkstd::string("COMPLEX")
+        string("COMPLEX")
     );
 
     this->dcmHeader->SetValue(
         "AcquisitionContrast",
         "UNKNOWN"
-    );
+    );  
     /*  =======================================
      *  END: Spectroscopy Description Macro
      *  ======================================= */
@@ -952,12 +809,12 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "TransmitterFrequency",
-        "0"
+        this->GetHeaderValueAsFloat( "sfrq" )
     );
 
     this->dcmHeader->SetValue(
         "SpectralWidth",
-        this->GetHeaderValueAsFloat( "swf" )
+        this->GetHeaderValueAsFloat( "sw" )
     );
 
     this->dcmHeader->SetValue(
@@ -974,9 +831,6 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
         ""
     );
 
-    //if ( strcmp(ddfMap["localizationType"].c_str(), "PRESS") == 0)  {
-        //this->InitVolumeLocalizationSeq();
-    //}
 
     this->dcmHeader->SetValue(
         "Decoupling",
@@ -995,8 +849,8 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "BaselineCorrection",
-        vtkstd::string("NONE")
-    );  
+        string("NONE")
+    );
 
     this->dcmHeader->SetValue(
         "FrequencyCorrection",
@@ -1005,12 +859,13 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "FirstOrderPhaseCorrection",
-        vtkstd::string("NO")
+        string("NO")
     );
+
 
     this->dcmHeader->SetValue(
         "WaterReferencedPhaseCorrection",
-        vtkstd::string("NO")
+        string("NO")
     );
 }
 
@@ -1030,6 +885,7 @@ void svkVarianFidMapper::InitMRSpectroscopyDataModule()
     this->dcmHeader->SetValue( "SVK_RowsDomain", "KSPACE" );
     this->dcmHeader->SetValue( "SVK_SliceDomain", "KSPACE" );
 }
+
 
 /*!
  *  Reads spec data from fid file.
@@ -1105,7 +961,7 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 
     int numComponents = 1;
     vtkstd::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
-    if (representation.compare( "COMPLEX" ) ) {
+    if (representation.compare( "COMPLEX" ) == 0 ) {
         numComponents = 2;
     }
     vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
@@ -1132,6 +988,7 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 
 
     for (int i = 0; i < numPts; i++) {
+cout << "manual check of data values: " << this->specData[offset + (i*2)] << " " << this->specData[offset + (i*2) + 1] << endl;
         dataArray->SetTuple(i, &(this->specData[offset + (i * 2)]));
     }
 
@@ -1266,4 +1123,35 @@ vtkstd::string svkVarianFidMapper::GetHeaderValueAsString(vtkstd::string keyStri
     return (this->procparMap[keyString])[procparRow][valueIndex];
 }
 
+
+
+/*!
+ *  Pixel Spacing:
+ */
+void svkVarianFidMapper::InitPixelMeasuresMacro()
+{
+    float numPixels[3];
+    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
+    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+
+    //  Not sure if this is best, also see lpe (phase encode resolution in cm)
+    float pixelSize[3];
+    pixelSize[0] = this->GetHeaderValueAsFloat("vox1", 0);
+    pixelSize[1] = this->GetHeaderValueAsFloat("vox2", 0);
+    pixelSize[2] = this->GetHeaderValueAsFloat("vox3", 0);
+
+    vtkstd::string pixelSizeString[3];
+
+    for (int i = 0; i < 3; i++) {
+        ostringstream oss;
+        oss << pixelSize[i];
+        pixelSizeString[i].assign( oss.str() );
+    }
+
+    this->dcmHeader->InitPixelMeasuresMacro(
+        pixelSizeString[0] + "\\" + pixelSizeString[1],
+        pixelSizeString[2]
+    );
+}
 

@@ -42,6 +42,7 @@
 
 #include <svkVarianFidReader.h>
 #include <svkVarianCSFidMapper.h>
+#include <svkVarianUCSF2DcsiMapper.h>
 #include <vtkDebugLeaks.h>
 
 #include <sys/stat.h>
@@ -211,8 +212,7 @@ void svkVarianFidReader::InitDcmHeader()
     this->ParseFid(); 
 
     //  should be a mapper factory to get psd specific instance:
-    this->mapper = svkVarianCSFidMapper::New();
-    //this->mapper = svkVarianFidMapper::New();
+    this->mapper = this->GetFidMapper();
 
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
@@ -227,6 +227,34 @@ void svkVarianFidReader::InitDcmHeader()
     }
 
     iod->Delete();
+}
+
+
+/*!
+ *  Create an svkGEPFileMapper of the appropriate type for the present pfile
+ */
+svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
+{
+    svkVarianFidMapper* aMapper = NULL;
+
+    vtkstd::string seqfil = this->procparMap["seqfil"][0][0];
+
+    //convert to lower case:
+    vtkstd::string::iterator it;
+    for ( it = seqfil.begin(); it < seqfil.end(); it++ ) {
+        *it = (char)tolower(*it);
+    }
+
+    if ( seqfil.compare("c13_csi2d") == 0) {
+
+        // UCSF 2DCSI :
+        aMapper = svkVarianUCSF2DcsiMapper::New();
+
+    } else {
+        aMapper = svkVarianCSFidMapper::New();
+
+    }
+    return aMapper; 
 }
 
 

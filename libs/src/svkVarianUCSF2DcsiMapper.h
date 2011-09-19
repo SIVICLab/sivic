@@ -39,17 +39,15 @@
  *      Beck Olson
  */
 
-
-#ifndef SVK_VARIAN_FID_READER_H
-#define SVK_VARIAN_FID_READER_H
-
+#ifndef SVK_VARIAN_UCSF_2D_CSI_MAPPER_H
+#define SVK_VARIAN_UCSF_2D_CSI_MAPPER_H
 
 
+#include <vtkImageData.h>
 
-#include <svkVarianReader.h>
+#include <svkDcmHeader.h>
+#include <svkMRSIOD.h>
 #include <svkVarianFidMapper.h>
-#include <vtkInformation.h>
-#include <vtkStringArray.h>
 
 #include <vtkstd/map>
 #include <vtkstd/string>
@@ -60,60 +58,38 @@ namespace svk {
 
 
 /*! 
- *  Reader for varian FID files.  Parses the procpar file to create a map of header values which 
- *  are used to initialize the DICOM header through the mapper object.  The specific mapper instance
- *  is likely a function of the acquisition type / pulse sequence and is obtained from a mapper factory
- *  with rules TBD. 
+ *  Concrete mapper for C13 UCSF 2D CSI Varian sequence. 
+ *  
+ *  contributors to the development of the 2D C13 CSI sequence and software :
+ *      Sukumar Subramaniam, PhD (UCSF Surbeck Lab) 
+ *      Jason C. Crane, PhD (UCSF Surbeck Lab) 
+ *      Sarah J. Nelson, PhD (UCSF Surbeck Lab) 
+ *      Dan B. Vigneron, PhD (UCSF Surbeck Lab) 
+ *      John Kurhanewicz, PhD (UCSF Surbeck Lab) 
+ *  
+ *  Supported by: NIH P41EB013598
+ *
  */
-class svkVarianFidReader : public svkVarianReader
+class svkVarianUCSF2DcsiMapper : public svkVarianFidMapper
 {
 
     public:
 
-        static svkVarianFidReader* New();
-        vtkTypeRevisionMacro( svkVarianFidReader, svkVarianReader);
+        vtkTypeRevisionMacro( svkVarianUCSF2DcsiMapper, svkVarianFidMapper);
+        static          svkVarianUCSF2DcsiMapper* New();
 
-        // Description: 
-        // A descriptive name for this format
-        virtual const char* GetDescriptiveName() {
-            return "Varian FID File";
-        }
-
-        //  Methods:
-        virtual int             CanReadFile(const char* fname);
-
-
+        
     protected:
 
-        svkVarianFidReader();
-        ~svkVarianFidReader();
+        svkVarianUCSF2DcsiMapper();
+        ~svkVarianUCSF2DcsiMapper();
 
-        virtual int     FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void    ExecuteInformation();
-        virtual void    ExecuteData(vtkDataObject *output);
-
-
-    private:
-
-        //  Methods:
-        svkVarianFidMapper*              GetFidMapper(); 
-        virtual void                     InitDcmHeader();
-
-        svkDcmHeader::DcmPixelDataFormat GetFileType();
-        void                             ParseFid();
-        void                             GetFidKeyValuePair( vtkStringArray* keySet = NULL);
-
-        //  Members:
-        ifstream*                       fidFile;
-        vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >   
-                                        fidMap; 
-        svkVarianFidMapper*             mapper;
+        virtual void    InitMRSpectroscopyPulseSequenceModule(); 
 
 };
 
 
 }   //svk
 
-
-#endif //SVK_VARIAN_FID_READER_H
+#endif //SVK_VARIAN_UCSF_2D_CSI_MAPPER_H
 

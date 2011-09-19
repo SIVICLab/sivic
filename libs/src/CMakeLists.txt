@@ -166,6 +166,7 @@ ADD_LIBRARY(
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc
     svkVarianCSFidMapper.cc
+    svkVarianUCSF2DcsiMapper.cc
     svkVarianFidMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc

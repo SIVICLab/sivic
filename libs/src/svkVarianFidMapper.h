@@ -85,6 +85,7 @@ class svkVarianFidMapper : public vtkObject
                         );
 
         virtual void    ReadFidFile( vtkstd::string fidFileName, vtkImageData* data );
+
         
     protected:
 
@@ -100,11 +101,9 @@ class svkVarianFidMapper : public vtkObject
         virtual void    InitAcquisitionContextModule();
         virtual void    InitSharedFunctionalGroupMacros();
         virtual void    InitPerFrameFunctionalGroupMacros();
-        virtual void    InitFrameContentMacro();
         virtual void    InitMRModifierMacro(); 
         virtual void    InitMRTransmitCoilMacro(); 
         virtual void    InitMRAveragesMacro(); 
-        virtual void    InitPlanePositionMacro();
         virtual void    InitPixelMeasuresMacro();
         virtual void    InitPlaneOrientationMacro();
         virtual void    InitMREchoMacro();
@@ -142,6 +141,7 @@ class svkVarianFidMapper : public vtkObject
         float*                                      specData; 
         svkDcmHeader::DcmDataOrderingDirection      dataSliceOrder;
         int                                         numSlices; 
+        int                                         numFrames; 
         svkMRSIOD*                                  iod;
         int                                         swapBytes; 
 
