@@ -1222,7 +1222,6 @@ void svkImageData::SetDataRange( double range[2], int component )
  */
 void svkImageData::GetPositionFromIndex(int* index, double* posLPS)
 {
-
     double origin[3];
     this->GetDcmHeader()->GetOrigin(origin);
     double pixelSpacing[3]; 
@@ -1234,7 +1233,7 @@ void svkImageData::GetPositionFromIndex(int* index, double* posLPS)
     for (int i = 0; i < 3; i++) {
         posLPS[i] = origin[i];  
         for (int j = 0; j < 3; j++) { 
-            posLPS[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
+            posLPS[i] += (pixelSpacing[j] * index[j]) * dcos[j][i];
         }
     }
 }
@@ -1288,7 +1287,7 @@ void svkImageData::GetSliceCenter(int slice, double* sliceCenter, svkDcmHeader::
     for (int i = 0; i < 3; i++) {
         sliceCenter[i] = origin[i];  
         for (int j = 0; j < 3; j++) { 
-            sliceCenter[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
+            sliceCenter[i] += (pixelSpacing[j] * index[j]) * dcos[j][i];
         }
     }
 
@@ -1526,7 +1525,7 @@ void svkImageData::GetImageCenter( double* posLPS)
     for (int i = 0; i < 3; i++) {
         posLPS[i] = origin[i];  
         for (int j = 0; j < 3; j++) { 
-            posLPS[i] += (pixelSpacing[i] * index[j]) * dcos[j][i];
+            posLPS[i] += (pixelSpacing[j] * index[j]) * dcos[j][i];
         }
     }
 }
