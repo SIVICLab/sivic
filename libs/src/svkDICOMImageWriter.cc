@@ -147,12 +147,19 @@ void svkDICOMImageWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumbe
 
         case svkDcmHeader::UNSIGNED_INT_1:
         {
+            // Dicom does not support the writing of 8 bit words so we will convert to 16
             unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();
+            unsigned short* shortPixelData = new unsigned short[dataLength];
+            for (int i = 0; i < dataLength; i++) {
+                shortPixelData[i] = pixelData[offset + i];
+            }
+            dcmHeader->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
             dcmHeader->SetValue(
                   "PixelData",
-                  &(pixelData[offset]), 
+                  shortPixelData,
                   dataLength 
             );
+            delete[] shortPixelData;
         }
         break;
 

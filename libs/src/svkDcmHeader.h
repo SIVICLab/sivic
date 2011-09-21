@@ -520,7 +520,7 @@ class svkDcmHeader: public vtkObject
         vtkstd::string      GetDcmPatientsName( vtkstd::string patientsName ); 
         void                SetDcmPatientsName( vtkstd::string patientsName );
         void                SetPixelDataType( DcmPixelDataFormat dataType );
-        int                 GetPixelDataType( int vtkDataType );
+        int                 GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
 
         int                 GetOrigin( double origin[3], int frameNumber = 0 );
         void                GetPixelSpacing(double spacing[3]);
