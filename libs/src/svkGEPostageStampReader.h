@@ -98,6 +98,8 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
         void            InitPerFrameFunctionalGroupMacros(); 
         void            InitPixelMeasuresMacro(); 
         void            InitVolumeLocalizationSeq(); 
+        void            InitMRSpatialSaturationMacro(); 
+        void            InitSatBand( float satRAS[3], float translation, int satBandNumber ); 
         void            GetColsAndRows(int* numCols, int* numRows); 
 
 

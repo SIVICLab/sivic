@@ -243,39 +243,12 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
     hdr->GetDataDcos(dcos);
 
 
-    double toplc[3];
-
-    //  By comparison with the output from the raw reader, it looks 
-    //  like the MRS center is located 
-    //  as follows (in RAS), needs to convert to LPS
-    //  (0019,10b2) DS [4.097561]                               
-    //  (0019,10b3) DS [22.243902]                             
-    //  (0019,10b4) DS [-11.707317] 
-    double centerLPS[3]; 
-    centerLPS[0] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_R" ); 
-    centerLPS[1] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_A" ); 
-    centerLPS[2] = hdr->GetFloatValue( "GE_PS_CENTER_S" ); 
-
-    //  compute the toplc by translating along dcos through 1/2 fov 
-    //  less 1/2 voxel
-    int numCols; 
-    int numRows; 
-    this->GetColsAndRows(&numCols, &numRows); 
-    int numPix[3];
-    numPix[0] = numCols;
-    numPix[1] = numRows;
-    numPix[2] = this->numFrames;
-    float fov[3];
-    for(int i = 0; i < 3; i++) {
-        fov[i] = (numPix[i] - 1) * pixelSpacing[i];
-    }
-
-    for (int i = 0; i < 3; i++ ){
-        toplc[i] = centerLPS[i];
-        for(int j = 0; j < 3; j++ ){
-            toplc[i] -= ( dcos[j][i] * fov[j]/2. );
-        }
-    }
+    //  Get toplc from image position patient
+    //  frame locations:         
+    double toplc[3];         
+    for (int i = 0; i < 3; i++) {        
+        toplc[i] = svkUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
+    } 
 
     hdr->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSpacing, dcos, this->numFrames, 1, 1
@@ -301,7 +274,7 @@ void svkGEPostageStampReader::InitSharedFunctionalGroupMacros()
     this->InitMRReceiveCoilMacro();
     //this->InitMRTransmitCoilMacro();
     this->InitMRAveragesMacro();
-    //this->InitMRSpatialSaturationMacro();
+    this->InitMRSpatialSaturationMacro();
     //this->InitMRSpatialVelocityEncodingMacro();
 }
 
@@ -466,10 +439,10 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
         "Research"
     );
 
-    //this->GetOutput()->GetDcmHeader()->SetValue(
-        //"MagneticFieldStrength",
-        //hdr->GetStringValue("MagneticFieldStrength");
-    //);
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "MagneticFieldStrength",
+        hdr->GetStringValue("MagneticFieldStrength")
+    );
     /*  =======================================
      *  END: MR Image and Spectroscopy Instance Macro
      *  ======================================= */
@@ -507,14 +480,23 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
      *  ======================================= */
 
 
+    float transmitterFreq = 63;
+    if ( hdr->GetFloatValue("MagneticFieldStrength") == 1.5 ) { 
+        transmitterFreq = 63;
+    }
     this->GetOutput()->GetDcmHeader()->SetValue(
         "TransmitterFrequency",
-        hdr->GetStringValue("ImagingFrequency")
+        transmitterFreq
     );
 
+    //  original pts/hz:
+    //  (0019,10a7) DS [2000.000000]      
+    //  (0019,10a8) DS [1024.000000],
+    //  we subsample 256 frequency pts, but these fields
+    //  aren't present in all  PS data sets, so just hardcode for now
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SpectralWidth",
-        "1000"
+        "250"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -524,7 +506,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "ChemicalShiftReference",
-        "4.7"
+        "2.3"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -631,9 +613,9 @@ void svkGEPostageStampReader::InitVolumeLocalizationSeq()
     //  This may be GE_PS_CENER_R,A,S
     //  =========================
     float selBoxCenter[3];
-    selBoxCenter[0] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_R" ); 
-    selBoxCenter[1] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_A" ); 
-    selBoxCenter[2] = hdr->GetFloatValue( "GE_PS_CENTER_S" ); 
+    selBoxCenter[0] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_R" ); 
+    selBoxCenter[1] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_A" ); 
+    selBoxCenter[2] = hdr->GetFloatValue( "GE_PS_SEL_CENTER_S" ); 
 
 
     this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
@@ -644,6 +626,129 @@ void svkGEPostageStampReader::InitVolumeLocalizationSeq()
 
 }
 
+
+/*!
+ *  sat band information  image.user25-48
+ */
+void svkGEPostageStampReader::InitMRSpatialSaturationMacro()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    hdr->AddSequenceItemElement(
+        "SharedFunctionalGroupsSequence",
+        0,
+        "MRSpatialSaturationSequence"
+    );
+
+
+    //  if this field is 3, then sat bands are defined in user CVs.
+    //if ( this->GetHeaderValueAsInt( "rhr.rh_user_usage_tag" ) == 3 ) {
+
+        //  Sat band info (up to 6) is contained in 4 sequential user CVs:
+        int satBandNumber = 0;
+        for ( int i = 25; i < 49; i += 4 ) {
+
+            int index = i - 25; 
+
+            float satRAS[3];
+            satRAS[0] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index ) );
+            satRAS[1] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 1 ) );
+            satRAS[2] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 2 ) );
+            float translation = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 3 ) );
+        
+            if ( satRAS[0] != 0 || satRAS[1] != 0 || satRAS[2] != 0 || translation != 0) {
+                this->InitSatBand(satRAS, translation, satBandNumber);
+                satBandNumber++;
+            }
+
+        }
+    //}
+}
+
+
+/*!
+ *  Add a sat band to the SpatialSaturationSequence:
+ *  RAS:          vector of the normal to the sat band with lenght
+ *                equal to the band thickness in RAS coordinates.
+ *  translation : translation along that vector to sat band location (slab middle)
+ */
+void svkGEPostageStampReader::InitSatBand( float satRAS[3], float translation, int satBandNumber )
+{
+
+    float satThickness = sqrt(
+                            satRAS[0] * satRAS[0]
+                          + satRAS[1] * satRAS[1]
+                          + satRAS[2] * satRAS[2]
+                        );
+
+    float orientation[3];
+    float position[3];
+    for(int i = 0; i < 3; i++) {
+
+        //  orientation (normal vector):
+        orientation[i] = ( i < 2 ) ? ( -satRAS[i] / satThickness ) : ( satRAS[i] / satThickness );
+
+        //  translation given is towards the "farther" edge of the sat band.
+        //  we need to get the center plane = that's why it is
+        //  -0.5*thickness
+        //  quotes, since it's not necessarily the "farther" plane - when
+        //  the sat band is rotated around, it will be the closer plane,
+        //  but then the normal vector will be in the opposite direction
+        //  also, so our formula will still work
+
+        position[i] = orientation[i] * ( translation - 0.5 * satThickness );
+    }
+
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    hdr->AddSequenceItemElement(
+        "MRSpatialSaturationSequence",
+        satBandNumber,
+        "SlabThickness",
+        satThickness,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    vtkstd::string slabOrientation;
+    for (int j = 0; j < 3; j++) {
+        ostringstream ossOrientation;
+        ossOrientation << orientation[j];
+        slabOrientation += ossOrientation.str();
+        if (j < 2) {
+            slabOrientation += '\\';
+        }
+    }
+
+    hdr->AddSequenceItemElement(
+        "MRSpatialSaturationSequence",
+        satBandNumber,
+        "SlabOrientation",
+        slabOrientation,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    vtkstd::string slabPosition;
+    for (int j = 0; j < 3; j++) {
+        ostringstream ossPosition;
+        ossPosition << position[j];
+        slabPosition += ossPosition.str();
+        if (j < 2) {
+            slabPosition += '\\';
+        }
+    }
+    hdr->AddSequenceItemElement(
+        "MRSpatialSaturationSequence",
+        satBandNumber,
+        "MidSlabPosition",
+        slabPosition,
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+}
 
 
 /*!

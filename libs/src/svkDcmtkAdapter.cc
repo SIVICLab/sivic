@@ -100,7 +100,7 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
 
     privateDic->addEntry( new DcmDictEntry(
             0x0019, 0x10b2, EVR_FL, 
-            "GE_PS_CENTER_R", 
+            "GE_PS_SEL_CENTER_R", 
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );
@@ -108,14 +108,14 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
 
     privateDic->addEntry( new DcmDictEntry(
             0x0019, 0x10b3, EVR_FL, 
-            "GE_PS_CENTER_A", 
+            "GE_PS_SEL_CENTER_A", 
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );
 
     privateDic->addEntry( new DcmDictEntry(
             0x0019, 0x10b4, EVR_FL, 
-            "GE_PS_CENTER_S", 
+            "GE_PS_SEL_CENTER_S", 
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );
@@ -140,6 +140,14 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0043, 0x1038, EVR_FL, 
+            "GE_PS_SAT_BANDS", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
 
     dcmDataDict.unlock();
 
