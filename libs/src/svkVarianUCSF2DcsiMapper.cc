@@ -90,6 +90,100 @@ svkVarianUCSF2DcsiMapper::~svkVarianUCSF2DcsiMapper()
 
 
 /*!
+ *  Pixel Spacing:
+ */
+void svkVarianUCSF2DcsiMapper::InitPixelMeasuresMacro()
+{
+
+    float numPixels[3];
+    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
+    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+
+    //  lpe (phase encode resolution in cm, already converted in base class)
+    float pixelSize[3];
+    pixelSize[0] = this->GetHeaderValueAsFloat("lpe", 0) / numPixels[0] ;
+    pixelSize[1] = this->GetHeaderValueAsFloat("lpe2", 0) /  numPixels[1];
+    pixelSize[2] = this->GetHeaderValueAsFloat("thk", 0) / numPixels[2];
+
+    vtkstd::string pixelSizeString[3];
+
+    for (int i = 0; i < 3; i++) {
+        ostringstream oss;
+        oss << pixelSize[i];
+        pixelSizeString[i].assign( oss.str() );
+    }
+
+    this->dcmHeader->InitPixelMeasuresMacro(
+        pixelSizeString[0] + "\\" + pixelSizeString[1],
+        pixelSizeString[2]
+    );
+}
+
+
+/*!
+ *  The FID toplc is the center of the first voxel.
+ */
+void svkVarianUCSF2DcsiMapper::InitPerFrameFunctionalGroupMacros()
+{
+
+    double dcos[3][3];
+    this->dcmHeader->SetSliceOrder( this->dataSliceOrder );
+    this->dcmHeader->GetDataDcos( dcos );
+    double pixelSpacing[3];
+    this->dcmHeader->GetPixelSize(pixelSpacing);
+
+    int numPixels[3];
+    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
+    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+
+    //  Get center coordinate float array from fidMap and use that to generate
+    //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
+    //  toplc from which the individual frame locations are calculated
+
+
+    //  Center of toplc (LPS) pixel in frame:
+    double toplc[3];
+
+    //
+    //  If 3D vol, calculate slice position, otherwise use value encoded
+    //  into slice header
+    //
+
+     //  If 2D (single slice)
+     if ( numPixels[2] == 1 ) {
+
+        //  Location is the center of the image frame in user (acquisition frame).
+        double centerAcqFrame[3];
+        centerAcqFrame[0] = this->GetHeaderValueAsFloat("ppe", 0);
+        centerAcqFrame[1] = this->GetHeaderValueAsFloat("ppe2", 0);
+        centerAcqFrame[2] = this->GetHeaderValueAsFloat("pro", 0);
+
+        //  Now get the center of the tlc voxel in the acq frame:
+        double* tlcAcqFrame = new double[3];
+        for (int j = 0; j < 2; j++) {
+            tlcAcqFrame[j] = centerAcqFrame[j]
+                - ( ( numPixels[j] * pixelSpacing[j] ) - pixelSpacing[j] )/2;
+        }
+        tlcAcqFrame[2] = centerAcqFrame[2];
+
+        //  and convert to LPS (magnet) frame:
+        svkVarianReader::UserToMagnet(tlcAcqFrame, toplc, dcos);
+
+        delete [] tlcAcqFrame;
+
+    } 
+
+    this->dcmHeader->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSpacing, dcos, this->numFrames, 1, 1
+    );
+
+}
+
+
+
+/*!
  *
  */
 void svkVarianUCSF2DcsiMapper::InitMRSpectroscopyPulseSequenceModule()
@@ -167,8 +261,9 @@ void svkVarianUCSF2DcsiMapper::InitMRSpectroscopyPulseSequenceModule()
 
     this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1 );
 
-    //  Assume EVEN sampling about k=0 (k0 not sampled):
-    string k0Sampled = "NO";
+    //  k = 0 is sampled in the acquisition. 
+    //string k0Sampled = "NO";
+    string k0Sampled = "YES";
     this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
 
 }

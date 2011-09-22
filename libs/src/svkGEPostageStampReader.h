@@ -96,6 +96,9 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
         void            InitMRSpectroscopyModule(); 
         void            InitMRSpectroscopyDataModule(); 
         void            InitPerFrameFunctionalGroupMacros(); 
+        void            InitPixelMeasuresMacro(); 
+        void            InitVolumeLocalizationSeq(); 
+        void            GetColsAndRows(int* numCols, int* numRows); 
 
 
         virtual void    LoadData(svkImageData* data); 
@@ -113,7 +116,8 @@ class svkGEPostageStampReader : public svkDcmVolumeReader
 
         int             numFreqPts;
         int             numTimePts;
-
+        int             imageCols; 
+        int             imageRows; 
 
 };
 

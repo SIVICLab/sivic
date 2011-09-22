@@ -147,6 +147,9 @@ void svkGEPostageStampReader::InitDcmHeader()
     // Read the first file and load the header as the starting point
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue(0) );
 
+    this->imageCols = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" );
+    this->imageRows = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" );
+
     //  Now override elements with Multi-Frame sequences and default details:
     svkIOD* iod = svkMRSIOD::New();
     iod->SetDcmHeader( this->GetOutput()->GetDcmHeader());
@@ -157,25 +160,12 @@ void svkGEPostageStampReader::InitDcmHeader()
     vtkstd::string studyInstanceUID( this->GetOutput()->GetDcmHeader()->GetStringValue("StudyInstanceUID"));
     this->GetOutput()->GetDcmHeader()->SetValue( "StudyInstanceUID", studyInstanceUID.c_str() );
 
-
     //  Now move info from original MRImageStorage header elements to flesh out enhanced
     //  SOP class elements (often this is just a matter of copying elements from the top
     //  level to a sequence item.
     this->InitMultiFrameFunctionalGroupsModule();
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyDataModule();
-
-    /*
-     *  odds and ends:
-     */
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "Rows",
-       16 
-    );
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "Columns",
-       16 
-    );
 
 
     if (this->GetDebug()) {
@@ -221,17 +211,11 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
 {
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-
-    //  Get toplc float array from rdaMap and use that to generate
-    //  frame locations:
-    double toplc[3];
-    for (int i = 0; i < 3; i++) {
-        toplc[i] = svkUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );
-    }
     
     double pixelSpacing[3];
     hdr->GetPixelSpacing(pixelSpacing);
 
+    pixelSpacing[2] = hdr->GetFloatValue( "SliceThickness" ); 
     if ( this->numFrames > 2 ) {
 
         double origin0[3];
@@ -243,7 +227,6 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
         double origin1[3];
         tmpImage->GetDcmHeader()->GetOrigin(origin1, 0);
         tmpImage->Delete();
-        
 
         double sliceSpacing = 0;
         for (int i = 0; i < 3; i++ ) {
@@ -258,6 +241,41 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
 
     double dcos[3][3];
     hdr->GetDataDcos(dcos);
+
+
+    double toplc[3];
+
+    //  By comparison with the output from the raw reader, it looks 
+    //  like the MRS center is located 
+    //  as follows (in RAS), needs to convert to LPS
+    //  (0019,10b2) DS [4.097561]                               
+    //  (0019,10b3) DS [22.243902]                             
+    //  (0019,10b4) DS [-11.707317] 
+    double centerLPS[3]; 
+    centerLPS[0] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_R" ); 
+    centerLPS[1] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_A" ); 
+    centerLPS[2] = hdr->GetFloatValue( "GE_PS_CENTER_S" ); 
+
+    //  compute the toplc by translating along dcos through 1/2 fov 
+    //  less 1/2 voxel
+    int numCols; 
+    int numRows; 
+    this->GetColsAndRows(&numCols, &numRows); 
+    int numPix[3];
+    numPix[0] = numCols;
+    numPix[1] = numRows;
+    numPix[2] = this->numFrames;
+    float fov[3];
+    for(int i = 0; i < 3; i++) {
+        fov[i] = (numPix[i] - 1) * pixelSpacing[i];
+    }
+
+    for (int i = 0; i < 3; i++ ){
+        toplc[i] = centerLPS[i];
+        for(int j = 0; j < 3; j++ ){
+            toplc[i] -= ( dcos[j][i] * fov[j]/2. );
+        }
+    }
 
     hdr->InitPerFrameFunctionalGroupSequence(
         toplc, pixelSpacing, dcos, this->numFrames, 1, 1
@@ -274,7 +292,7 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
 void svkGEPostageStampReader::InitSharedFunctionalGroupMacros()
 {
 
-    //this->InitPixelMeasuresMacro();
+    this->InitPixelMeasuresMacro();
     //this->InitPlaneOrientationMacro();
     this->InitMRTimingAndRelatedParametersMacro();
     this->InitMRSpectroscopyFOVGeometryMacro();
@@ -286,6 +304,37 @@ void svkGEPostageStampReader::InitSharedFunctionalGroupMacros()
     //this->InitMRSpatialSaturationMacro();
     //this->InitMRSpatialVelocityEncodingMacro();
 }
+
+
+/*!
+ *  Pixel Spacing:
+ */
+void svkGEPostageStampReader::InitPixelMeasuresMacro()
+{
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    float diameter = hdr->GetFloatValue( "ReconstructionDiameter" );
+    int numCols; 
+    int numRows; 
+    this->GetColsAndRows(&numCols, &numRows); 
+
+    ostringstream ossCol;
+    ossCol << diameter/numCols;
+    vtkstd::string pixelSizeString(ossCol.str());
+
+    pixelSizeString.append("\\"); 
+
+    ostringstream ossRow;
+    ossRow << diameter/numRows;
+    pixelSizeString.append(ossRow.str());
+
+    hdr->InitPixelMeasuresMacro(
+        pixelSizeString, 
+        hdr->GetStringValue( "SliceThickness" )
+    );
+}
+
 
 
 /*!
@@ -483,9 +532,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
         "PRESS"
     );  
     
-//    if ( strcmp(ddfMap["localizationType"].c_str(), "PRESS") == 0)  {
-//       this->InitVolumeLocalizationSeq();
-//  }
+    this->InitVolumeLocalizationSeq();
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "Decoupling", 
@@ -525,6 +572,81 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
 
 
 /*!
+ *  Initializes the VolumeLocalizationSequence in the MRSpectroscopy
+ *  DICOM object for PRESS excitation.
+ */
+void svkGEPostageStampReader::InitVolumeLocalizationSeq()
+{
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    //  =========================
+    //  Get Orientation Values
+    //  =========================
+    double dcosD[3][3];
+    hdr->GetDataDcos(dcosD);
+    float dcos[3][3];
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            dcos[i][j] = static_cast<float>(dcosD[i][j]); 
+        }
+    }
+
+
+    //  =========================
+    //  Get Thickness Values:
+    //  (0019,10af) DS [69.170731]                              
+    //  (0019,10b0) DS [108.975609]                            
+    //  (0019,10b1) DS [13.400000]    
+    //  =========================
+    float selBoxSize[3];
+
+    selBoxSize[0] = 0.0;
+    float lMax = 0;
+    float pMax = 0;
+    float sMax = 0;
+    int lIndex;
+    int pIndex;
+    int sIndex;
+    for ( int i = 0; i < 3; i++ ) {
+        if( fabs( dcos[i][0] ) > lMax ) {
+            lIndex = i;
+            lMax = fabs( dcos[i][0] );
+        }
+        if( fabs( dcos[i][1] ) > pMax) {
+            pIndex = i;
+            pMax = fabs( dcos[i][1] );
+        }
+        if( fabs( dcos[i][2] ) > sMax ) {
+            sIndex = i;
+            sMax = fabs( dcos[i][2] );
+        }
+    }
+    selBoxSize[ lIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_1" ); 
+    selBoxSize[ pIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_2" );  
+    selBoxSize[ sIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_3" ); 
+
+
+    //  =========================
+    //  Get Center Location Values
+    //  This may be GE_PS_CENER_R,A,S
+    //  =========================
+    float selBoxCenter[3];
+    selBoxCenter[0] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_R" ); 
+    selBoxCenter[1] = -1 * hdr->GetFloatValue( "GE_PS_CENTER_A" ); 
+    selBoxCenter[2] = hdr->GetFloatValue( "GE_PS_CENTER_S" ); 
+
+
+    this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
+        selBoxSize,
+        selBoxCenter,
+        dcos
+    );
+
+}
+
+
+
+/*!
  *
  */
 void svkGEPostageStampReader::InitMRAveragesMacro()
@@ -557,11 +679,16 @@ void svkGEPostageStampReader::InitMRSpectroscopyFOVGeometryMacro()
         0
     );
 
+
+    int numCols = 0;
+    int numRows = 0;
+    this->GetColsAndRows( &numCols, &numRows );
+
     hdr->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseColumns",
-        hdr->GetIntValue( "Columns" ),
+        numCols, 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -570,7 +697,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyFOVGeometryMacro()
         "MRSpectroscopyFOVGeometrySequence",
         0,
         "SpectroscopyAcquisitionPhaseRows",
-        hdr->GetIntValue( "Rows" ),
+        numRows, 
         "SharedFunctionalGroupsSequence",
         0
     );
@@ -710,16 +837,37 @@ void svkGEPostageStampReader::InitMRSpectroscopyFOVGeometryMacro()
     );
 }
 
+
+/*!
+ *
+ */
+void svkGEPostageStampReader::GetColsAndRows(int* numCols, int* numRows)
+{
+
+    *numCols = 0; 
+    *numRows = 0; 
+    for (int i = 0; i < 4; i++ ) {    
+        int val = svkUtils::StringToInt( this->GetOutput()->GetDcmHeader()->GetStringValue( "AcquisitionMatrix", i ) );
+        if ( val != 0 ) {
+            if ( *numCols == 0 ) {  
+                *numCols = val; 
+            } else {
+                *numRows = val; 
+            }
+        }
+    }
+}
+
+
 /*!
  *
  */
 void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
 {
 
-
-    int numCols = static_cast<int>(this->GetOutput()->GetDcmHeader()->GetFloatValue( "GE_PS_MATRIX_X" ));
-    int numRows = static_cast<int>(this->GetOutput()->GetDcmHeader()->GetFloatValue( "GE_PS_MATRIX_Y" ));
-
+    int numCols = 0; 
+    int numRows = 0; 
+    this->GetColsAndRows( &numCols, &numRows ); 
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "Rows", 
@@ -736,6 +884,8 @@ void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
         1
     );
 
+    //  Postage stamp appears to be 256 frequency points:
+    //  16x16 grid of single frequency images
     this->GetOutput()->GetDcmHeader()->SetValue(
         "DataPointColumns",
         256
@@ -756,24 +906,24 @@ void svkGEPostageStampReader::InitMRSpectroscopyDataModule()
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SignalDomainColumns",
-        "frequency"
+        "FREQUENCY"
     );
 
 
     //  Private Attributes for spatial domain encoding:
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_ColumnsDomain",
-        "space"
+        "SPACE"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_RowsDomain",
-        "space"
+        "SPACE"
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SVK_SliceDomain",
-        "space"
+        "SPACE"
     );
 }
 
@@ -802,8 +952,7 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
     data->GetNumberOfVoxels(numVoxels); 
 
     //  the num pixels in plane
-    long unsigned int dataLength = 
-        numVoxels[0] * numVoxels[1] * this->numFreqPts * numComponents * numCoils * this->numTimePts;
+    long unsigned int dataLength = this->imageCols * this->imageCols * numComponents; 
 
     short* specData = new short[ dataLength ];
 
@@ -816,12 +965,24 @@ void svkGEPostageStampReader::LoadData( svkImageData* data )
         //  the specData by 1/2 data length:
         tmpImage->GetDcmHeader()->GetShortValue( "PixelData", specData + realImag * (dataLength/2) , dataLength/2);  
 
+        //  determine voxel range of image within postage stamp:
+        //  image may be smaller than postage stamp and padded with 
+        //  zeros
+        int stampCols = this->imageCols / 16; 
+        int stampRows = this->imageRows / 16; 
+        int paddingCols = (stampCols - numVoxels[0]) / 2; 
+        int paddingRows = (stampRows - numVoxels[1]) / 2; 
+        int xStart = paddingCols; 
+        int xEnd  = xStart + numVoxels[0]; 
+        int yStart = paddingRows; 
+        int yEnd  = yStart + numVoxels[1]; 
+        
         //  once both components of complex pair have been read in, then set the spectrum
         if ( realImag == 1 ) {
             for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
                 for (int timePt = 0; timePt < this->numTimePts; timePt ++) {
-                    for (int y = 0; y < (this->GetDataExtent())[3]; y++) {
-                        for (int x = 0; x < (this->GetDataExtent())[1]; x++) {
+                    for (int y = yStart; y < yEnd; y++) {
+                        for (int x = xStart; x < xEnd; x++ ) { 
                             int z = fileIndex / 2; 
                             SetCellSpectrum( data, x, y, z, timePt, coilNum, numComponents, specData);
                         }
@@ -849,22 +1010,30 @@ void svkGEPostageStampReader::SetCellSpectrum(svkImageData* data, int x, int y, 
     vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
     dataArray->SetNumberOfComponents( numComponents );
 
-    dataArray->SetNumberOfTuples(this->numFreqPts);
-    char arrayName[30];
-    sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
-    dataArray->SetName(arrayName);
-
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
-    int cols = numVoxels[0];
-    int rows = numVoxels[1];
+    int stampXVoxels = this->imageCols / 16; 
+    int stampYVoxels = this->imageRows / 16; 
+    int paddingCols = (stampXVoxels - numVoxels[0]) / 2; 
+    int paddingRows = (stampYVoxels - numVoxels[1]) / 2; 
 
-    int dx = 16;        //  16 stride along columns
-    int dy = 256*16;    //  16*256 stride along rows
-    int componentOffset = 16 * 16 * 16 * 16;    // hardcoded size convention of postage stamp data:
-    int startIndex = x + y * 16 * 16; 
+    dataArray->SetNumberOfTuples(this->numFreqPts);
+    char arrayName[30];
+    sprintf(arrayName, "%d %d %d %d %d", x - paddingCols, y - paddingRows, z, timePt, coilNum);
+    dataArray->SetName(arrayName);
+
+    //  each of the 256 stamps is imageSize/16, e.g. 512/16 = 32.  However the actual image may only be 24x24 voxels centered 
+    //  within that stamp.  
+
+    int dx = stampXVoxels;      //  stride along columns
+    int dy = this->imageCols * stampYVoxels ;   //  stride along rows (stamp to stamp) 16 stamps per row * row ht
+
+    int componentOffset = this->imageRows * this->imageCols;    // total size of 1 image
+    int startIndex = x + y * this->imageCols; 
     float specVal[2];
     int freqPt = 0; 
+
+    // loop over 256 frequency points 
     for ( int rows = 0; rows < 16; rows++) {
         for ( int cols = 0; cols < 16; cols++) {
             int offset = startIndex + cols * dx + rows * dy; 

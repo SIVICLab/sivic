@@ -99,15 +99,44 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
     this->privateDic = &( dcmDataDict.wrlock() );
 
     privateDic->addEntry( new DcmDictEntry(
-            0x0027, 0x1060, EVR_FL, 
-            "GE_PS_MATRIX_X", 
+            0x0019, 0x10b2, EVR_FL, 
+            "GE_PS_CENTER_R", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x10b3, EVR_FL, 
+            "GE_PS_CENTER_A", 
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );
 
     privateDic->addEntry( new DcmDictEntry(
-            0x0027, 0x1061, EVR_FL, 
-            "GE_PS_MATRIX_Y", 
+            0x0019, 0x10b4, EVR_FL, 
+            "GE_PS_CENTER_S", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x10af, EVR_FL, 
+            "GE_PS_SEL_BOX_SIZE_1", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x10b0, EVR_FL, 
+            "GE_PS_SEL_BOX_SIZE_2", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x10b1, EVR_FL, 
+            "GE_PS_SEL_BOX_SIZE_3", 
             1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
         )
     );

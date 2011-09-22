@@ -85,6 +85,9 @@ class svkVarianUCSF2DcsiMapper : public svkVarianFidMapper
         ~svkVarianUCSF2DcsiMapper();
 
         virtual void    InitMRSpectroscopyPulseSequenceModule(); 
+        virtual void    InitPixelMeasuresMacro(); 
+        virtual void    InitPerFrameFunctionalGroupMacros(); 
+
 
 };
 

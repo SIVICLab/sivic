@@ -562,7 +562,6 @@ void svkSdbmVolumeReader::ParseShfDim( vtkstd::string dimenNum )
 }
 
 
-
 /*!
  *  Initializes the VolumeLocalizationSequence in the MRSpectroscopy
  *  DICOM object for PRESS excitation.  
@@ -575,6 +574,10 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
     selBoxSize[0] = this->GetHeaderValueAsFloat(shfMap, "sl_thick_1"); 
     selBoxSize[1] = this->GetHeaderValueAsFloat(shfMap, "sl_thick_2"); 
     selBoxSize[2] = this->GetHeaderValueAsFloat(shfMap, "sl_thick_3"); 
+
+    //  if the sel box is 0 in all 3 dimensions, set localization to none
+    //  and reset sel box to full fov.  Otherwise, if some directions 
+    //   have sl_thick = 0, set those to the full fov
     if ( selBoxSize[0] == 0 && selBoxSize[1] &&  selBoxSize[2] ) {
         this->GetOutput()->GetDcmHeader()->SetValue(
             "VolumeLocalizationTechnique", 

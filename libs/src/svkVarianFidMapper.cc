@@ -380,6 +380,20 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
     eulerTransform->GetMatrix(dcos);
     cout << *dcos << endl;
 
+    //  and analagous to the fdf reader, convert from LAI to LPS: 
+    //dcos->SetElement(0, 0, dcos->GetElement(0, 0)  * 1 );
+    //dcos->SetElement(0, 1, dcos->GetElement(0, 1)  * -1);
+    //dcos->SetElement(0, 2, dcos->GetElement(0, 2)  * -1);
+
+    //dcos->SetElement(1, 0, dcos->GetElement(1, 0)  * 1 );
+    //dcos->SetElement(1, 1, dcos->GetElement(1, 1)  * -1);
+    //dcos->SetElement(1, 2, dcos->GetElement(1, 2)  * -1);
+
+    //dcos->SetElement(2, 0, dcos->GetElement(2, 0)  * 1 );
+    //dcos->SetElement(2, 1, dcos->GetElement(2, 1)  * -1);
+    //dcos->SetElement(2, 2, dcos->GetElement(2, 2)  * -1);
+    
+
     vtkstd::string orientationString;
 
     for (int i = 0; i < 2; i++) {
@@ -978,6 +992,12 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
     numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" );
     numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" );
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+    //  if cornoal, swap z and x:
+    int xTmp = x; 
+    x = y; 
+    y = xTmp; 
+    x = numVoxels[0] - x - 1; 
+    y = numVoxels[1] - y - 1; 
 
     int offset = (numPts * numComponents) *  (
                      ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt
@@ -988,7 +1008,6 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 
 
     for (int i = 0; i < numPts; i++) {
-cout << "manual check of data values: " << this->specData[offset + (i*2)] << " " << this->specData[offset + (i*2) + 1] << endl;
         dataArray->SetTuple(i, &(this->specData[offset + (i * 2)]));
     }
 

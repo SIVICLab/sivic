@@ -312,6 +312,23 @@ float svkUtils::StringToFloat( string doubleString )
 }
 
 
+/*!
+ *
+ * @param intString
+ * @return
+ */
+int svkUtils::StringToInt( string intString )
+{
+    istringstream* iss = new istringstream();
+    int value;
+    iss->str( intString );
+    *iss >> value;
+    delete iss;
+    return value;
+}
+
+
+
 void svkUtils::StringToColorArray( double color[3], string colorString )
 {
     vector<string> colors = svkUtils::SplitString( colorString, " ");

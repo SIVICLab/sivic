@@ -742,7 +742,7 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
 
     vtkstd::string orientationString;
  
-    //  varian appears to be LAI coords (rather than LPS), 
+    //  varian user frame appears to use LAI coords (rather than LPS), 
     //  so flip the 2nd and 3rd idndex.  Is there an "entry" indicator?
     //  HF vs FF should flip both RL and SI.  Supine/Prone should flip 
     //  RL and AP.  
@@ -754,12 +754,19 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     dcos[3] =      GetHeaderValueAsFloat("orientation[]", 3);
     dcos[4] = -1 * GetHeaderValueAsFloat("orientation[]", 4);
     dcos[5] = -1 * GetHeaderValueAsFloat("orientation[]", 5);
-    dcos[6] =      GetHeaderValueAsFloat("orientation[]", 5);
-    dcos[7] =      GetHeaderValueAsFloat("orientation[]", 5);
-    dcos[8] =      GetHeaderValueAsFloat("orientation[]", 5);
+    dcos[6] =      GetHeaderValueAsFloat("orientation[]", 6);
+    dcos[7] = -1 * GetHeaderValueAsFloat("orientation[]", 7);
+    dcos[8] = -1 * GetHeaderValueAsFloat("orientation[]", 8);
 
     //  If feet first, swap LR, SI
     vtkstd::string position1 = GetHeaderValueAsString("position1", 0);
+
+    //  I believe that for the Varian, the Magnet Z axis points along the inferior 
+    //  and y vector points along posterior so, i.e. AS positive.
+    //  therefore, dcos6,7,8 =  0,0,1 is actually 00-1
+    dcos[6] *= 1; 
+    dcos[7] *=-1; 
+    dcos[8] *=-1; 
 
     if( position1.find("feet first") != vtkstd::string::npos ) {
         //  swap L
@@ -800,8 +807,10 @@ void svkFdfVolumeReader::InitPlaneOrientationMacro()
     dcosSliceOrder[1] = dcos[7];
     dcosSliceOrder[2] = dcos[8];
 
-    //  Use the scalar product to determine whether the data in the .cmplx
-    //  file is ordered along the slice normal or antiparalle to it.
+    //  Use the scalar product to determine whether the data in the .fdf
+    //  file is ordered along the slice normal or antiparalle to it.  Note that
+    //  I believe that for the Varian, the Magnet Z axis points along the inferior 
+    //  therefore, dcos6,7,8 =  0,0,1 is actually 00-1
     vtkMath* math = vtkMath::New();
     if (math->Dot(normal, dcosSliceOrder) > 0 ) {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;

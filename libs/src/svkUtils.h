@@ -97,6 +97,7 @@ class svkUtils : public vtkObject
         static int            GetNextPower2( int x );
         static double         StringToDouble( string doubleString );
         static float          StringToFloat(  string floatString );
+        static int            StringToInt(  string intString );
         static void           StringToColorArray( double color[3], string colorString );
         static string         ColorArrayToString( double color[3] );
         static vector<string> SplitString( string str, string token );
