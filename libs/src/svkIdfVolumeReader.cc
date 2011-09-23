@@ -159,10 +159,12 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
         vtkstd::string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
         int dataUnitSize; 
+        vtkDataArray* array =  vtkFloatArray::New();
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
             volFileName.append( ".byt" );
             dataUnitSize = 1;
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+            array = vtkUnsignedShortArray::New();
             volFileName.append( ".int2" );
             dataUnitSize = 2;
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
@@ -173,8 +175,6 @@ void svkIdfVolumeReader::ReadVolumeFile()
         /*
         *   Flatten the data volume into one dimension
         */
-cout << "PIV: " << this->GetNumPixelsInVol() << endl; 
-cout << *data << endl;
         int numBytesInVol = this->GetNumPixelsInVol() * dataUnitSize; 
         this->pixelData = (void* ) malloc( numBytesInVol ); 
 
@@ -192,7 +192,7 @@ cout << *data << endl;
             }
         }
 
-        this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
+        array->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
 
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
@@ -201,13 +201,28 @@ cout << *data << endl;
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
         }
-        this->dataArray->SetName( "pixels" );
-        data->GetPointData()->SetScalars(this->dataArray);
 
+        ostringstream number;
+        number << fileIndex ; 
+        vtkstd::string arrayNameString("pixels"); 
+        arrayNameString.append(number.str());
+
+        
+        array->SetName( arrayNameString.c_str() ); 
+
+
+        if (fileIndex == 0 ) {
+            data->GetPointData()->SetScalars(array);
+        } else {
+            data->GetPointData()->AddArray(array);
+        }
+
+        cout << "data: " << *data << endl;
 
         // =================================================================================================
         //  here, I think we can try to call "SetArray" on the point data, with one array for each volume
         //  the number of arrays is then equivalent to the number of "components" in the field data.
+/*
 
             data->GetPointData()->AddArray( this->dataArray);
             cout << "Num components: " << data->GetPointData()->GetNumberOfComponents() << endl;
@@ -228,6 +243,7 @@ cout << *data << endl;
             //  << static_cast<vtkFloatArray*>(data->GetPointData()->GetArray(0) )->GetPointer(0) << endl;
             //cout << "point data, scalars, pointer: " 
             //      << static_cast<vtkFloatArray*>(data->GetPointData()->GetScalars())->GetPointer(0) << endl;
+*/
         // =================================================================================================
 
         volumeDataIn->close();
