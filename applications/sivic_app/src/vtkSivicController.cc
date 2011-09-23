@@ -1226,9 +1226,9 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
-            dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm}} {{All files} {.*}}");
+            dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
         } else {
-            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm}}");
+            dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
         }
     
     
