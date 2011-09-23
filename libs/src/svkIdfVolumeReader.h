@@ -45,6 +45,7 @@
 
 #include <vtkInformation.h>
 #include <vtkstd/map>
+#include <vtkStringArray.h>
 #include <vtkstd/string>
 
 #include <svkImageReader2.h>
@@ -135,10 +136,13 @@ class svkIdfVolumeReader : public svkImageReader2
         ifstream*                               volumeHdr;
         vtkstd::map <vtkstd::string, vtkstd::string>                    
                                                 idfMap; 
-        int                                     numSlices; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         bool                                    onlyReadHeader; 
         svkEnhancedMRIIOD*                      iod; 
+        vtkStringArray*                         tmpFileNames;
+        int                                     numFrames;
+        int                                     numSlices;
+        int                                     numVolumes;
 
 };
 

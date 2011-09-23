@@ -77,7 +77,6 @@ class svkDdfVolumeReader : public svkImageReader2
 
         //  Methods:
         virtual int     CanReadFile( const char* fname );
-        void            GlobFileNames(); 
 
 
     protected:

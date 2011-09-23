@@ -71,7 +71,8 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     this->pixelData = NULL;
     this->volumeHdr = NULL;
 
-    this->numSlices = -1; 
+    this->numSlices = 1; 
+    this->numVolumes = 1; 
     this->onlyReadHeader = false;
 
     // IDF files are always big-endian.
@@ -152,31 +153,34 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
     vtkDebugMacro( << this->GetClassName() << "::ReadVolumeFile()" );
 
-    vtkstd::string volFileName( this->GetFileRoot( this->GetFileName() ) );
-    int dataUnitSize; 
-    if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-        volFileName.append( ".byt" );
-        dataUnitSize = 1;
-    } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-        volFileName.append( ".int2" );
-        dataUnitSize = 2;
-    } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-        volFileName.append( ".real" );
-        dataUnitSize = 4;
-    }
+    svkImageData* data = this->GetOutput(); 
 
-    /*
-    *   Flatten the data volume into one dimension
-    */
-    int numBytesInVol = this->GetNumPixelsInVol() * dataUnitSize; 
-    if (this->pixelData == NULL) {
+    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
+
+        vtkstd::string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
+        int dataUnitSize; 
+        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
+            volFileName.append( ".byt" );
+            dataUnitSize = 1;
+        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+            volFileName.append( ".int2" );
+            dataUnitSize = 2;
+        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
+            volFileName.append( ".real" );
+            dataUnitSize = 4;
+        }
+
+        /*
+        *   Flatten the data volume into one dimension
+        */
+cout << "PIV: " << this->GetNumPixelsInVol() << endl; 
+cout << *data << endl;
+        int numBytesInVol = this->GetNumPixelsInVol() * dataUnitSize; 
         this->pixelData = (void* ) malloc( numBytesInVol ); 
-    }
-            
-    if ( !this->onlyReadHeader ) {
 
         ifstream* volumeDataIn = new ifstream();
         volumeDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+
         volumeDataIn->open( volFileName.c_str(), ios::binary);
         volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
 
@@ -187,6 +191,44 @@ void svkIdfVolumeReader::ReadVolumeFile()
                 vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(float));
             }
         }
+
+        this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
+
+        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
+            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
+        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
+            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
+        }
+        this->dataArray->SetName( "pixels" );
+        data->GetPointData()->SetScalars(this->dataArray);
+
+
+        // =================================================================================================
+        //  here, I think we can try to call "SetArray" on the point data, with one array for each volume
+        //  the number of arrays is then equivalent to the number of "components" in the field data.
+
+            data->GetPointData()->AddArray( this->dataArray);
+            cout << "Num components: " << data->GetPointData()->GetNumberOfComponents() << endl;
+            cout << "Num tuples    : " << data->GetPointData()->GetNumberOfTuples() << endl;
+            data->GetPointData()->AddArray( vtkFloatArray::New() );
+
+            cout << "Num components: " << data->GetPointData()->GetNumberOfComponents() << endl;
+            cout << "Num tuples    : " << data->GetPointData()->GetNumberOfTuples() << endl;
+            cout << "Get" << endl;
+            cout << " add: " << data->GetPointData()->GetArray( 0 ) << endl;
+            cout << "Get" << endl;
+            cout << " add: " << data->GetPointData()->GetArray( 1 ) << endl;
+            cout << "Get" << endl;
+            cout << " add: " << data->GetPointData()->GetArray( 2 ) << endl;
+        
+            //cout << "input data array for scalars:  " << this->dataArray << endl;
+            //cout << "point data, array: " 
+            //  << static_cast<vtkFloatArray*>(data->GetPointData()->GetArray(0) )->GetPointer(0) << endl;
+            //cout << "point data, scalars, pointer: " 
+            //      << static_cast<vtkFloatArray*>(data->GetPointData()->GetScalars())->GetPointer(0) << endl;
+        // =================================================================================================
 
         volumeDataIn->close();
         delete volumeDataIn;
@@ -224,32 +266,30 @@ int svkIdfVolumeReader::GetNumSlices()
  */
 void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
 {
+
+    this->FileNames = vtkStringArray::New();
+    this->FileNames->DeepCopy(this->tmpFileNames);
+    this->tmpFileNames->Delete();
+    this->tmpFileNames = NULL;
+
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    if ( this->FileName ) {
+    if ( this->GetFileNames()->GetNumberOfValues() ) {
+
         vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
         struct stat fs;
-        if ( stat(this->FileName, &fs) ) {
-            vtkErrorMacro("Unable to open file " << this->FileName );
+        if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
+            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
             return;
         }
 
         this->ReadVolumeFile();
-        this->dataArray->SetVoidArray( (void*)(this->pixelData), GetNumPixelsInVol(), 0);
 
-        if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
-        } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
-        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
-        }
-        this->dataArray->SetName( "pixels" );
-        data->GetPointData()->SetScalars(this->dataArray);
         this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::REAL );
         double imaginaryRange[2] = {0,0}; 
+
         // Imaginary values are zeroes-- since images only have real components
         this->GetOutput()->SetDataRange( imaginaryRange, svkImageData::IMAGINARY );
 
@@ -296,6 +336,16 @@ void svkIdfVolumeReader::ExecuteInformation()
         this->InitDcmHeader();
         this->SetupOutputInformation();
     }
+
+    //  This is a workaround required since the vtkImageAlgo executive
+    //  for the reder resets the Extent[5] value to the number of files
+    //  which is not correct for 3D multislice volume files. So store
+    //  the files in a temporary array until after ExecuteData has been
+    //  called, then reset the array.
+    this->tmpFileNames = vtkStringArray::New();
+    this->tmpFileNames->DeepCopy(this->FileNames);
+    this->FileNames->Delete();
+    this->FileNames = NULL;
 
 }
 
@@ -463,12 +513,15 @@ void svkIdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
         idfMap[ "studyDate" ] 
     );
 
-
     int value;
     istringstream* iss = new istringstream();
     iss->str(idfMap["numPixels_2"]);  
     *iss >> this->numSlices; 
-    this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfFrames", this->numSlices); 
+
+    this->numVolumes = this->GetFileNames()->GetNumberOfValues();
+    this->numFrames = this->numSlices * this->numVolumes; 
+
+    this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfFrames", this->numFrames ); 
 
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
@@ -481,6 +534,26 @@ void svkIdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
  */
 void svkIdfVolumeReader::InitMultiFrameDimensionModule()
 {
+
+    int indexCount = 0;
+
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "DimensionIndexSequence",
+        indexCount,
+        "DimensionDescriptionLabel",
+        "Slice"
+    );
+
+    if (this->numVolumes > 1) {
+        indexCount++;
+        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            indexCount,
+            "DimensionDescriptionLabel",
+            "Time Point"
+        );
+    }
+
 }
 
 
@@ -552,7 +625,7 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     }
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSize, dcos, numSlices, 1, 1
+        toplc, pixelSize, dcos, this->numSlices, 1, this->numVolumes 
     );
 }
 
@@ -780,16 +853,22 @@ void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string*
 void svkIdfVolumeReader::ParseIdf()
 {
    
-    vtkstd::string idfFileName( this->GetFileRoot( this->GetFileName() ) + ".idf" );
+    this->GlobFileNames();
+
 
     try { 
 
         //  Read in the IDF Header:
         this->volumeHdr = new ifstream();
         this->volumeHdr->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-        this->volumeHdr->open( idfFileName.c_str(), ifstream::in );
+
+        int fileIndex = 0;
+        vtkstd::string currentIdfFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".idf";
+
+        this->volumeHdr->open( currentIdfFileName.c_str(), ifstream::in );
+
         if ( ! this->volumeHdr->is_open() ) {
-            throw runtime_error( "Could not open volume file: " + idfFileName );
+            throw runtime_error( "Could not open volume file: " + currentIdfFileName );
         } 
         istringstream* iss = new istringstream();
 
@@ -955,7 +1034,7 @@ void svkIdfVolumeReader::ParseIdf()
         delete patientName;
 
     } catch (const exception& e) {
-        cerr << "ERROR opening or reading volume file (" << idfFileName << "): " << e.what() << endl;
+        cerr << "ERROR opening or reading volume file (" << this->GetFileName() << "): " << e.what() << endl;
     }
 
 }
