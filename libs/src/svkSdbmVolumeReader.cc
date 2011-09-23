@@ -583,6 +583,20 @@ void svkSdbmVolumeReader::InitVolumeLocalizationSeq()
             "VolumeLocalizationTechnique", 
             "NONE" 
         );
+        return;
+    }
+    //  If any 1 or 2 dims are zero and localization is only say a slab, set the localization in 
+    //  other 2 dims to full fov:
+    int numVoxels[3]; 
+    numVoxels[0] = this->GetHeaderValueAsInt(shfMap, "num_pts_1"); 
+    numVoxels[1] = this->GetHeaderValueAsInt(shfMap, "num_pts_2"); 
+    numVoxels[2] = this->GetHeaderValueAsInt(shfMap, "num_pts_2"); 
+    double voxelSpacing[3];
+    this->GetOutput()->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
+    for (int i = 0; i < 3; i++ ) {
+        if (selBoxSize[i] == 0 ) {
+            selBoxSize[i] = numVoxels[i] * voxelSpacing[i];
+        }
     }
 
     //  Get Center Location Values
