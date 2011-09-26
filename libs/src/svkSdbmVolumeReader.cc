@@ -1337,9 +1337,32 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
         0
     );
 
+
+    // ==========================
+    //  gyromatnetic ratios:
+    //  1H  1   0   1/2     42.58 
+    //  2H  1   1   1       6.54 
+    //  31P     1   0   1/2 17.25 
+    //  23Na    1   2   3/2 11.27 
+    //  14N     1   1   1   3.08 
+    //  13C     0   1   1/2 10.71 
+    //  19F     1   0   1/2 40.08 
+    // ==========================
+    float magStrength = this->GetHeaderValueAsFloat(shfMap, "magstrength"); 
+
     vtkstd::string isotope; 
-    if ( ( shfMap["ppm_offset"] ).find("127") != vtkstd::string::npos) { 
-        isotope.assign("1H"); 
+    if ( magStrength == 1.5 ) {
+        if ( ( shfMap["center_freq"] ).find("63") != vtkstd::string::npos) { 
+            isotope.assign("1H"); 
+        }
+    } else if (magStrength == 3 ) {
+        if ( ( shfMap["center_freq"] ).find("127") != vtkstd::string::npos) { 
+            isotope.assign("1H"); 
+        } else if (( shfMap["center_freq"] ).find("51") != vtkstd::string::npos) {
+            isotope.assign("31P"); 
+        } else if (( shfMap["center_freq"] ).find("32") != vtkstd::string::npos) {
+            isotope.assign("13C"); 
+        }
     }
     
     this->GetOutput()->GetDcmHeader()->SetValue(
