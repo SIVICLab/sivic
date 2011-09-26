@@ -609,7 +609,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     vtkstd::string onH20 = "yes"; 
     //  if this is not H1, then set to no:
     if ( hdr->GetStringValue( "ResonantNucleus" ).compare("1H") != 0 ) {
-        onH20.assign( "o" ); 
+        onH20.assign( "" ); 
     }
     if (hdr->GetFloatValue( "SVK_FrequencyOffset" ) != 0 ) {
         onH20.assign( "no" ); 
