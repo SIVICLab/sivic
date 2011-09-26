@@ -70,6 +70,7 @@ svkDcmVolumeReader::svkDcmVolumeReader()
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
     this->tmpFileNames = NULL;
+    this->numVolumes = 1;
 }
 
 
@@ -171,18 +172,16 @@ void svkDcmVolumeReader::ExecuteInformation()
 
     this->InitPrivateHeader();
 
-    if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
-        //  This is a workaround required since the vtkImageAlgo executive
-        //  for the reder resets the Extent[5] value to the number of files
-        //  which is not correct for 3D multislice volume files. So store
-        //  the files in a temporary array until after ExecuteData has been
-        //  called, then reset the array.
-        if (this->FileNames != NULL)  {
-            this->tmpFileNames = vtkStringArray::New();
-            this->tmpFileNames->DeepCopy(this->FileNames);
-            this->FileNames->Delete();
-            this->FileNames = NULL;
-        }
+    //  This is a workaround required since the vtkImageAlgo executive
+    //  for the reder resets the Extent[5] value to the number of files
+    //  which is not correct for 3D multislice volume files. So store
+    //  the files in a temporary array until after ExecuteData has been
+    //  called, then reset the array.
+    if (this->FileNames != NULL)  {
+        this->tmpFileNames = vtkStringArray::New();
+        this->tmpFileNames->DeepCopy(this->FileNames);
+        this->FileNames->Delete();
+        this->FileNames = NULL;
     }
 
 }
@@ -197,13 +196,11 @@ void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
-        if (this->tmpFileNames != NULL)  {
-            this->FileNames = vtkStringArray::New();
-            this->FileNames->DeepCopy(this->tmpFileNames);
-            this->tmpFileNames->Delete();
-            this->tmpFileNames = NULL;
-        }
+    if (this->tmpFileNames != NULL)  {
+        this->FileNames = vtkStringArray::New();
+        this->FileNames->DeepCopy(this->tmpFileNames);
+        this->tmpFileNames->Delete();
+        this->tmpFileNames = NULL;
     }
 
 
@@ -283,6 +280,7 @@ void svkDcmVolumeReader::InitFileNames()
      *      5 => normalS
      *      6 => ImagePositionPatient, 
      *      7 => projectionOnNormal 
+     *      8 => instanceNumber 
      *
      *  Note: the projection onto the normal of the input image orientation is 
      *  used for sorting slice order.
@@ -360,6 +358,9 @@ void svkDcmVolumeReader::InitFileNames()
             projectionOss << projectionOnNormal;
             dcmFileAttributes.push_back( projectionOss.str() ); 
 
+            // Add the instance number to the attributes:
+            dcmFileAttributes.push_back( tmp->GetDcmHeader()->GetStringValue( "InstanceNumber" ) );
+
             //  add the file attributes to the series attribute vector:
             dcmSeriesAttributes.push_back( dcmFileAttributes ); 
 
@@ -432,13 +433,21 @@ void svkDcmVolumeReader::InitFileNames()
     //  Is Data multi-volumetric (multiple 
     //  instances of same ImagePositionPatient):
     //  ============================
+    set < vtkstd::string > uniqueSlices;
+    seriesIt = dcmSeriesAttributes.begin(); 
+    while ( seriesIt != dcmSeriesAttributes.end() ) { 
+        uniqueSlices.insert( (*seriesIt)[6] ); 
+        seriesIt++ ;
+    }
+    this->numVolumes = fileNames->GetNumberOfValues() / uniqueSlices.size();
+    if ( fileNames->GetNumberOfValues() % uniqueSlices.size() != 0 ) {
+        //  different number of slices for each volume:
+        vtkWarningWithObjectMacro(this, "different number of slices in volumes"); 
+        this->OnlyReadInputFile(); 
+        return; 
+    }
+
     if ( this->CheckForMultiVolume() ) {
-        set < vtkstd::string > uniqueSlices;
-        seriesIt = dcmSeriesAttributes.begin(); 
-        while ( seriesIt != dcmSeriesAttributes.end() ) { 
-            uniqueSlices.insert( (*seriesIt)[6] ); 
-            seriesIt++ ;
-        }
         if ( dcmSeriesAttributes.size() > uniqueSlices.size() ) {
             //  More than one file per slice:  
             vtkWarningWithObjectMacro(this, "Multi-volumetric data, repeated slice locations"); 
@@ -451,6 +460,14 @@ void svkDcmVolumeReader::InitFileNames()
     //  Now sort the files according to ImagePositionPatient.
     //  ======================================================================
     this->SortFilesByImagePositionPatient( dcmSeriesAttributes, false); 
+
+    //  ======================================================================
+    //  And then by InstanceNumber
+    //  outter loop should be position, inner should be volume: 
+    //      for (pos = 0; pos < numPositions; pos++ ) { 
+    //          for (vol= 0; vol < numVolumes; vol++)  { 
+    //  ======================================================================
+    this->SortFilesByInstanceNumber( dcmSeriesAttributes, false); 
 
     // Finally, repopulate the file list.
     fileNames->SetNumberOfValues( dcmSeriesAttributes.size() );
@@ -495,10 +512,12 @@ void svkDcmVolumeReader::OnlyReadInputFile()
     tmpFileNames->Delete();
 }
 
+
 /*!
- *  sort compare utility method 
+ *  sort compare utility method.  Gets the 7th element of the vectors 
+ *  being compared.
  */
-float GetFloatVal( vtkstd::vector< vtkstd::string > vec ) 
+float GetFloatValAttribute7( vtkstd::vector< vtkstd::string > vec ) 
 {
     istringstream* posString = new istringstream();
 
@@ -514,17 +533,50 @@ float GetFloatVal( vtkstd::vector< vtkstd::string > vec )
 }
 
 
-//  sort ascending slice order
-bool SortAscend( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+/*!
+ *  sort compare utility method.  Gets the 8th element of the vectors 
+ *  being compared.
+ */
+int GetIntValAttribute8( vtkstd::vector< vtkstd::string > vec ) 
 {
-    return GetFloatVal( first ) < GetFloatVal( second );  
+    istringstream* instanceString = new istringstream();
+
+    //  8th element of attributes vector is the instance number 
+    instanceString->str( vec[8] );    
+    int instanceNumber; 
+    *instanceString >> instanceNumber; 
+
+    delete instanceString; 
+
+    return instanceNumber; 
+}
+
+
+//  sort ascending slice order
+bool SortAscendAttribute7( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+{
+    return GetFloatValAttribute7( first ) < GetFloatValAttribute7( second );  
 }
 
 
 //  sort descending slice order
-bool SortDescend( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+bool SortDescendAttribute7( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
 {
-    return GetFloatVal( first ) > GetFloatVal( second );  
+    return GetFloatValAttribute7( first ) > GetFloatValAttribute7( second );  
+}
+
+
+//  sort ascending slice order
+bool SortAscendAttribute8( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+{
+    return GetIntValAttribute8( first ) < GetIntValAttribute8( second );  
+}
+
+
+//  sort descending slice order
+bool SortDescendAttribute8( vtkstd::vector< vtkstd::string > first, vtkstd::vector < vtkstd::string> second )
+{
+    return GetIntValAttribute8( first ) > GetIntValAttribute8( second );  
 }
 
 
@@ -538,13 +590,33 @@ void svkDcmVolumeReader::SortFilesByImagePositionPatient(
 {
 
     if ( ascending ) {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscend ); 
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute7 ); 
     } else {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescend ); 
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute7 ); 
     }
 
     return;
 }
+
+
+/*!
+ *  Sort the list of files in either ascending or descending order by InstanceNumber 
+ */
+void svkDcmVolumeReader::SortFilesByInstanceNumber(
+        vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes, 
+        bool ascending
+    )
+{
+
+    if ( ascending ) {
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute8 ); 
+    } else {
+        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute8 ); 
+    }
+
+    return;
+}
+
 
 
 

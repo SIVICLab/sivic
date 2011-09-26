@@ -78,12 +78,16 @@ class svkDcmVolumeReader : public svkImageReader2
                                                     vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
                                                     bool ascending
                                                 );
-
+        void                                    SortFilesByInstanceNumber(
+                                                    vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
+                                                    bool ascending
+                                                ); 
 
         int                                     numFrames; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         virtual void                            InitDcmHeader();
         virtual bool                            CheckForMultiVolume(); 
+        int                                     numVolumes; 
 
 
     private: 

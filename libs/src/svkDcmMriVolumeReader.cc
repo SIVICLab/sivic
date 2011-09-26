@@ -187,24 +187,57 @@ void svkDcmMriVolumeReader::InitPrivateHeader()
 
 
 /*! 
- *  Init the Shared and PerFrame sequences and load the pixel data into the svkImageData object. 
+ *  Read the data for each volume into a separate point array in the vtkImageData object: 
+ *  file names are in the following order: 
+ *      fileNum slice   vol
+ *      0       0       0   
+ *      1       0       1   
+ *      2       0       2   
+ *      3       1       0   
+ *      4       1       1   
+ *      5       1       2   
+ *          
  */
 void svkDcmMriVolumeReader::LoadData( svkImageData* data )
 {
-    void *imageData = data->GetScalarPointer();
 
-    int rows    = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" ); 
-    int columns = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); 
+    int rows             = this->GetOutput()->GetDcmHeader()->GetIntValue( "Rows" ); 
+    int columns          = this->GetOutput()->GetDcmHeader()->GetIntValue( "Columns" ); 
+    int numSlices        = this->GetFileNames()->GetNumberOfValues() / this->numVolumes;  
     int numPixelsInSlice = rows * columns; 
+    int dataWordSize     = 2; 
+    int numBytesPerVol   = numPixelsInSlice * numSlices * dataWordSize;  
+
 
     /*
      *  Iterate over slices (frames) and copy ImagePositions
      */
-    for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) { 
-        svkImageData* tmpImage = svkMriImageData::New(); 
-        tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( i ) ); 
-        tmpImage->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData) + (i * numPixelsInSlice), numPixelsInSlice );
-        tmpImage->Delete(); 
+    for (int vol = 0; vol < this->numVolumes; vol++) { 
+
+        void* imageData = (void* ) malloc( numBytesPerVol );
+        vtkDataArray* array = vtkUnsignedShortArray::New();
+
+        ostringstream volNumber;
+        volNumber << vol;
+        vtkstd::string arrayNameString("pixels");
+        arrayNameString.append(volNumber.str());
+        array->SetName( arrayNameString.c_str() );
+
+        for (int slice = 0; slice < numSlices; slice++ ) {
+            svkImageData* tmpImage = svkMriImageData::New(); 
+            tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( vol + slice * this->numVolumes ) ); 
+            tmpImage->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData) + (slice * numPixelsInSlice), numPixelsInSlice );
+            tmpImage->Delete(); 
+        }
+
+        array->SetVoidArray( (void*)(imageData), numPixelsInSlice * numSlices, 0);
+        if (vol == 0 ) {
+            data->GetPointData()->SetScalars(array);
+        } else {
+            data->GetPointData()->AddArray(array);
+        }
+
+
     }
 
 }
@@ -320,86 +353,45 @@ void svkDcmMriVolumeReader::InitMRReceiveCoilMacro()
  */
 void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
 {
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
-}
 
+    int numSlices = this->numFrames / this->numVolumes;  
 
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkDcmMriVolumeReader::InitFrameContentMacro()
-{
-    for (int i = 0; i < this->numFrames; i++) {
+    svkImageData* tmpImage = svkMriImageData::New(); 
+    tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( 0 ) ); 
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDatetime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDatetime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
+    double toplc[3];
+    for (int i = 0; i < 3; i++ ) {
+        vtkstd::string pos( tmpImage->GetDcmHeader()->GetStringValue("ImagePositionPatient", i));
+        std::istringstream positionInString(pos);
+        positionInString >> toplc[i];
     }
-}
 
-
-/*!
- *  The FDF toplc is the center of the first voxel.
- */
-void svkDcmMriVolumeReader::InitPlanePositionMacro()
-{
-
-    /*
-     *  Iterate over slices (frames) and copy ImagePositions
-     */
-    for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) { 
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
-
-        svkImageData* tmpImage = svkMriImageData::New(); 
-        tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( i ) ); 
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient", 
-            tmpImage->GetDcmHeader()->GetStringValue( "ImagePositionPatient" ),
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        tmpImage->Delete(); 
+    double pixelSize[3];
+    for (int i = 0; i < 2; i++ ) {
+        vtkstd::string pos( tmpImage->GetDcmHeader()->GetStringValue("PixelSpacing", i));
+        std::istringstream positionInString(pos);
+        positionInString >> pixelSize[i];
     }
+    pixelSize[2] = tmpImage->GetDcmHeader()->GetFloatValue( "SliceThickness" ); 
+
+    double dcos[3][3];
+    tmpImage->GetDcmHeader()->GetDataDcos( dcos ); 
+
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+        toplc, pixelSize, dcos, numSlices, this->numVolumes, 1
+    );
+
 }
+
+
+/*
+ *  If true, then make sure only one data volume
+ *  is present in file list
+ */
+bool svkDcmMriVolumeReader::CheckForMultiVolume() {
+    return false;
+}
+
 
 
 /*!

@@ -82,6 +82,8 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
         virtual void                             InitDcmHeader();
+        virtual bool                             CheckForMultiVolume();
+
 
     private:
 
