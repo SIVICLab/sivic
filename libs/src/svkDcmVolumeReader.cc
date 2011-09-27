@@ -127,38 +127,9 @@ void svkDcmVolumeReader::ExecuteInformation()
         }
 
         this->InitDcmHeader();
-        this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
-        if (this->numFrames > 1) {
-            double origin0[3];
-            this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
-            double origin1[3];
-            this->GetOutput()->GetDcmHeader()->GetOrigin(origin1, this->numFrames-1); // zero indexed!
-
-            //  Determine whether the data is ordered with or against the slice normal direction.
-            double normal[3];
-            this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
-       
-            //  Get vector from first to last image and get the dot product of that vector with the normal:
-            double dcosSliceOrder[3];
-            for (int j = 0; j < 3; j++) {
-                dcosSliceOrder[j] =  origin1[j] - origin0[j];
-            }
-       
-            //  Use the scalar product to determine whether the data in the .cmplx
-            //  file is ordered along the slice normal or antiparalle to it.
-            vtkMath* math = vtkMath::New();
-            if (math->Dot(normal, dcosSliceOrder) > 0 ) {
-                this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
-            } else {
-                this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
-            }
-            math->Delete();
-        } else {
-            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
-        }
+        this->InitSliceOrder();
 
         double dcos[3][3];
-        this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
 
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
@@ -185,6 +156,93 @@ void svkDcmVolumeReader::ExecuteInformation()
     }
 
 }
+
+
+/*!
+ *  Method to set the slice order in dcos
+ */
+void svkDcmVolumeReader::InitSliceOrder()
+{
+    this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
+    if (this->numFrames > 1) {
+        double origin0[3];
+        this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
+        double origin1[3];
+        this->GetOutput()->GetDcmHeader()->GetOrigin(origin1, this->numFrames-1); // zero indexed!
+
+        //  Determine whether the data is ordered with or against the slice normal direction.
+        double normal[3];
+        this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
+   
+        //  Get vector from first to last image and get the dot product of that vector with the normal:
+        double dcosSliceOrder[3];
+        for (int j = 0; j < 3; j++) {
+            dcosSliceOrder[j] =  origin1[j] - origin0[j];
+        }
+   
+        //  Use the scalar product to determine whether the data in the .cmplx
+        //  file is ordered along the slice normal or antiparalle to it.
+        vtkMath* math = vtkMath::New();
+        if (math->Dot(normal, dcosSliceOrder) > 0 ) {
+            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+        } else {
+            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
+        }
+        math->Delete();
+    } else {
+        this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+    }
+
+    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
+}
+
+
+/*!
+ *  Method to set the slice order in dcos
+ */
+void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string fileEnd)
+{
+
+    this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
+    if (this->numFrames > 1) {
+
+
+        double origin0[3];
+        this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
+
+        double origin1[3];
+        svkImageData* tmpImage = svkMriImageData::New();
+        tmpImage->GetDcmHeader()->ReadDcmFile( fileEnd ); 
+        tmpImage->GetDcmHeader()->GetOrigin(origin1); // zero indexed!
+        tmpImage->Delete();
+
+        //  Determine whether the data is ordered with or against the slice normal direction.
+        double normal[3];
+        this->GetOutput()->GetDcmHeader()->GetNormalVector(normal);
+   
+        //  Get vector from first to last image and get the dot product of that vector with the normal:
+        double dcosSliceOrder[3];
+        for (int j = 0; j < 3; j++) {
+            dcosSliceOrder[j] =  origin1[j] - origin0[j];
+        }
+   
+        //  Use the scalar product to determine whether the data in the .cmplx
+        //  file is ordered along the slice normal or antiparalle to it.
+        vtkMath* math = vtkMath::New();
+        if (math->Dot(normal, dcosSliceOrder) > 0 ) {
+            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+        } else {
+            this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
+        }
+        math->Delete();
+    } else {
+        this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
+    }
+
+    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
+
+}
+
 
 
 /*!

@@ -86,6 +86,8 @@ class svkDcmVolumeReader : public svkImageReader2
         int                                     numFrames; 
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         virtual void                            InitDcmHeader();
+        void                                    InitSliceOrder(); 
+        void                                    InitSliceOrder(vtkstd::string hfileStart, vtkstd::string fileEnd); 
         virtual bool                            CheckForMultiVolume(); 
         int                                     numVolumes; 
 

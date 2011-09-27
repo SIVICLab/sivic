@@ -99,7 +99,6 @@ class svkDcmMriVolumeReader : public svkDcmVolumeReader
         void            InitFrameContentMacro(); 
         void            InitMRReceiveCoilMacro();
 
-        svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
 
 };
 

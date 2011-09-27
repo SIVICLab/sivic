@@ -374,6 +374,14 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
     }
     pixelSize[2] = tmpImage->GetDcmHeader()->GetFloatValue( "SliceThickness" ); 
 
+    string fileStart = this->GetFileNames()->GetValue( 0 ); 
+    string fileEnd = this->GetFileNames()->GetValue( this->numFrames - 1 ); 
+
+    this->InitSliceOrder(fileStart, fileEnd) ; 
+    tmpImage->GetDcmHeader()->SetSliceOrder( 
+        this->dataSliceOrder
+    );
+
     double dcos[3][3];
     tmpImage->GetDcmHeader()->GetDataDcos( dcos ); 
 
