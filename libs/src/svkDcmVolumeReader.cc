@@ -439,8 +439,11 @@ void svkDcmVolumeReader::InitFileNames()
         uniqueSlices.insert( (*seriesIt)[6] ); 
         seriesIt++ ;
     }
-    this->numVolumes = fileNames->GetNumberOfValues() / uniqueSlices.size();
-    if ( fileNames->GetNumberOfValues() % uniqueSlices.size() != 0 ) {
+    //  there is one entry in the dcmSeriesAttributes vector for each DICOM file:
+    dcmSeriesAttributes.size(); 
+    int numDcmFiles = dcmSeriesAttributes.size();
+    this->numVolumes = numDcmFiles  / uniqueSlices.size();
+    if ( numDcmFiles % uniqueSlices.size() != 0 ) {
         //  different number of slices for each volume:
         vtkWarningWithObjectMacro(this, "different number of slices in volumes"); 
         this->OnlyReadInputFile(); 
@@ -467,7 +470,7 @@ void svkDcmVolumeReader::InitFileNames()
     //      for (pos = 0; pos < numPositions; pos++ ) { 
     //          for (vol= 0; vol < numVolumes; vol++)  { 
     //  ======================================================================
-    this->SortFilesByInstanceNumber( dcmSeriesAttributes, false); 
+    this->SortFilesByInstanceNumber( dcmSeriesAttributes, true); 
 
     // Finally, repopulate the file list.
     fileNames->SetNumberOfValues( dcmSeriesAttributes.size() );
