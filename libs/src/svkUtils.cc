@@ -328,6 +328,17 @@ int svkUtils::StringToInt( string intString )
 }
 
 
+/*!
+ *  @param intVal
+ *  @return string equivalent
+ */
+string svkUtils::IntToString( int intVal )
+{
+    ostringstream intStream;
+    intStream << intVal;
+    return intStream.str();
+}
+
 
 void svkUtils::StringToColorArray( double color[3], string colorString )
 {
