@@ -42,6 +42,8 @@
 
 
 #include <svkIdfVolumeWriter.h>
+#include <svkImageReader2.h>
+#include <svkUtils.h>
 #include <vtkExecutive.h>
 #include <vtkImageAccumulate.h>
 #include <vtkErrorCode.h>
@@ -152,82 +154,96 @@ void svkIdfVolumeWriter::WriteData()
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
     int numSlices = hdr->GetNumberOfSlices();
+    int numVolumes = hdr->GetNumberOfTimePoints();
 
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
-    vtkstd::string extension; 
-    int numBytesPerPixel; 
-    void* pixels; 
-    float* floatPixels = NULL;
-    if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
-        extension = ".byt"; 
-        numBytesPerPixel = 1; 
-        pixels = static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
-        extension = ".int2"; 
-        numBytesPerPixel = 2; 
-        pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || 
-               dataType == svkDcmHeader::SIGNED_INT_2 || 
-               dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-        extension = ".real"; 
-        numBytesPerPixel = 4; 
-        if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
-            //scale to float: 
-            if (this->GetDebug()) {
-                cout << "SCALE Double to Float" << endl;
+    //  Write out each volume:
+    for ( int vol = 0; vol < numVolumes; vol++ ) {
+
+        int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+        vtkstd::string extension; 
+        int numBytesPerPixel; 
+        void* pixels; 
+        float* floatPixels = NULL;
+        if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
+            extension = ".byt"; 
+            numBytesPerPixel = 1; 
+            pixels = static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
+        } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
+            extension = ".int2"; 
+            numBytesPerPixel = 2; 
+            pixels = static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
+        } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4 || 
+                   dataType == svkDcmHeader::SIGNED_INT_2 || 
+                   dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+            extension = ".real"; 
+            numBytesPerPixel = 4; 
+            if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
+                //scale to float: 
+                if (this->GetDebug()) {
+                    cout << "SCALE Double to Float" << endl;
+                }
+                double* doublePixels; 
+                doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
+                floatPixels = new float[ numSlices * numPixelsPerSlice ];     
+                if( this->castDoubleToFloat ) {
+                    this->CastDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+                } else {
+                    this->MapDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+                }
+                pixels = floatPixels;
             }
-            double* doublePixels; 
-            doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-            floatPixels = new float[ numSlices * numPixelsPerSlice ];     
-            if( this->castDoubleToFloat ) {
-                this->CastDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
-            } else {
-                this->MapDoubleToFloat(doublePixels, floatPixels, numSlices * numPixelsPerSlice); 
+            if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
+                pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
             }
-            pixels = floatPixels;
+            //  If input pixels are signed ints, convert them to reals : 
+            if ( dataType == svkDcmHeader::SIGNED_INT_2 ) {
+                short* shortPixels; 
+                shortPixels = static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
+                floatPixels = new float[ numSlices * numPixelsPerSlice ];     
+                this->MapSignedIntToFloat(shortPixels, floatPixels, numSlices * numPixelsPerSlice); 
+                pixels = floatPixels;
+            }
         }
-        if ( dataType == svkDcmHeader::SIGNED_FLOAT_4 ) {
-            pixels = static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
+
+
+        vtkstd::string volName = this->InternalFileName;
+        if (numVolumes > 1 ) {
+            volName += "_" + svkUtils::IntToString(vol + 1);
         }
-        //  If input pixels are signed ints, convert them to reals : 
-        if ( dataType == svkDcmHeader::SIGNED_INT_2 ) {
-            short* shortPixels; 
-            shortPixels = static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-            floatPixels = new float[ numSlices * numPixelsPerSlice ];     
-            this->MapSignedIntToFloat(shortPixels, floatPixels, numSlices * numPixelsPerSlice); 
-            pixels = floatPixels;
+        volName += extension;
+
+        ofstream pixelsOut( volName.c_str(), ios::binary);
+        if( !pixelsOut ) {
+            throw runtime_error( "Cannot open file for writing: " + string(this->InternalFileName) + extension ); 
         }
-    }
 
-    ofstream pixelsOut( (this->InternalFileName + extension).c_str(), ios::binary);
-    if( !pixelsOut ) {
-        throw runtime_error( "Cannot open file for writing: " + string(this->InternalFileName) + extension ); 
-    }
+        // We want to hold the pixels here so we can do an endian swap without changing the original data
+        void* bigEndianPixels = NULL; 
+        // Swap bytes if the CPU is NOT big endian
 
-    // We want to hold the pixels here so we can do an endian swap without changing the original data
-    void* bigEndianPixels = NULL; 
-    // Swap bytes if the CPU is NOT big endian
+    #ifndef VTK_WORDS_BIGENDIAN
+        if (numBytesPerPixel > 1) {
+            // Allocate our new array
+            bigEndianPixels = malloc( numBytesPerPixel * numPixelsPerSlice * numSlices );
+            memcpy( bigEndianPixels, pixels , numBytesPerPixel * numPixelsPerSlice * numSlices ); 
+            vtkByteSwap::SwapVoidRange(bigEndianPixels, numPixelsPerSlice * numSlices, numBytesPerPixel);
 
-#ifndef VTK_WORDS_BIGENDIAN
-    if (numBytesPerPixel > 1) {
-        // Allocate our new array
-        bigEndianPixels = malloc( numBytesPerPixel * numPixelsPerSlice * numSlices );
-        memcpy( bigEndianPixels, pixels , numBytesPerPixel * numPixelsPerSlice * numSlices ); 
-        vtkByteSwap::SwapVoidRange(bigEndianPixels, numPixelsPerSlice * numSlices, numBytesPerPixel);
+            // These are the pixels to write out
+            pixels = bigEndianPixels;
+        }
+    #endif
 
-        // These are the pixels to write out
-        pixels = bigEndianPixels;
-    }
-#endif
+        pixelsOut.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
 
-    pixelsOut.write( (char *)pixels, numSlices * numPixelsPerSlice * numBytesPerPixel );
+        if (floatPixels != NULL) {
+            delete[] floatPixels; 
+        }
 
-    if (floatPixels != NULL) {
-        delete[] floatPixels; 
-    }
+        if (bigEndianPixels != NULL) {
+            free(bigEndianPixels);
+        }
 
-    if (bigEndianPixels != NULL) {
-        free(bigEndianPixels);
+        pixelsOut.close();
     }
 
 }
@@ -238,208 +254,225 @@ void svkIdfVolumeWriter::WriteData()
  */
 void svkIdfVolumeWriter::WriteHeader()
 {
+        
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
+    int numVolumes = hdr->GetNumberOfTimePoints();
 
-    //write the idf file
-    ofstream out( (this->InternalFileName+vtkstd::string(".idf")).c_str());
-    if(!out) {
-        throw runtime_error("Cannot open .idf file for writing");
-    }
-
-    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-
-    out << "IMAGE DESCRIPTOR FILE version 5" << endl;
-    if ( hdr->GetStringValue( "AccessionNumber" ).length() > 0 ) {
-        out << "studyid: " << hdr->GetStringValue( "AccessionNumber" ) << endl;
-    } else {
-        out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
-    }
-    out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
-    out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
-    out << "position: ";
-    vtkstd::string positionString = hdr->GetStringValue( "PatientPosition" );
-    if ( positionString.substr(0,2) == vtkstd::string( "HF" ) ){
-        out << "Head First, ";
-    } else if ( positionString.substr(0,2) == vtkstd::string( "FF" ) ) {
-        out << "Feet First, ";
-    } else {
-        out << "UNKNOWN, ";
-    }
-
-    if ( positionString.substr(2) == vtkstd::string( "S" ) ) {
-        out << "Supine" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "P" ) ) {
-        out << "Prone" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DL" ) ) {
-        out << "Decubitus Left" << endl;
-    } else if ( positionString.substr(2) == vtkstd::string( "DR" ) ) {
-        out << "Decubitus Right" << endl;
-    } else {
-        out << "UNKNOWN" << endl;;
-    }
-
-    vtkstd::string coilName; 
-    if ( hdr->ElementExists( "ReceiveCoilName" ) ) {
-        coilName = hdr->GetStringSequenceItemElement(
-            "MRReceiveCoilSequence",
-            0,
-            "ReceiveCoilName",
-            "SharedFunctionalGroupsSequence",
-            0
-        );
-    } else {
-        coilName = ""; 
-    }
-
-    out << "coil: " << coilName << endl; 
-
-    out << "orientation: ";
-
-    double orientation[2][3];
-    hdr->GetOrientation(orientation);
-
-    int xType; 
-    int yType; 
-    int zType;
-
-    if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) || 
-         ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) )
-    {
-        out << setw(3) << 13 << "     axial normal"<<endl;
-        xType = 1;
-        yType = 2;
-        zType = 3;
-    } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) || 
-        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) )
-    {
-        out << setw(3) << 11 << "     sagittal normal" << endl;
-        xType = 2;
-        yType = 3;
-        zType = 1;
-    } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) || 
-        ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) )
-    {
-        out << setw(3) << 12 << "     coronal normal" << endl;
-        xType = 1;
-        yType = 3;
-        zType = 2;
-    } else {
-        out << setw(3) << 9 << "     Oblique Plane" << endl;
-        xType = 0;
-        yType = 0;
-        zType = 0;
-    }
-
-    out << "echo/time/met index:     1     value:       1.00" << endl;
-    out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+    //  Write out each volume:
+    for ( int vol = 0; vol < numVolumes; vol++ ) {
 
 
-    vtkstd::string date = hdr->GetStringValue( "StudyDate" );
-    if ( date.length() == 0 ) { 
-        date.assign("        ");                
-    } else if ( date.length() < 8 ) {
-        for( int i = 0; i < 8; i++ ) {
-            if( i >= date.length() ) {
-                date.append(" ");
+        //write the idf file
+        vtkstd::string volName = this->InternalFileName;
+        if (numVolumes > 1 ) {
+            volName += "_" +  svkUtils::IntToString(vol + 1);
+        }
+        volName += vtkstd::string(".idf"); 
+
+        ofstream out( volName.c_str() );
+        if(!out) {
+            throw runtime_error("Cannot open .idf file for writing");
+        }
+
+        svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+
+        out << "IMAGE DESCRIPTOR FILE version 5" << endl;
+        if ( hdr->GetStringValue( "AccessionNumber" ).length() > 0 ) {
+            out << "studyid: " << hdr->GetStringValue( "AccessionNumber" ) << endl;
+        } else {
+            out << "studyid: " << hdr->GetStringValue( "PatientID" ) << endl;
+        }
+        out << "study #: " << setw(7) << hdr->GetStringValue( "StudyID" ) << endl;
+        out << "series #: " << setw(7) << hdr->GetIntValue( "SeriesNumber" ) << endl;
+        out << "position: ";
+        vtkstd::string positionString = hdr->GetStringValue( "PatientPosition" );
+        if ( positionString.substr(0,2) == vtkstd::string( "HF" ) ){
+            out << "Head First, ";
+        } else if ( positionString.substr(0,2) == vtkstd::string( "FF" ) ) {
+            out << "Feet First, ";
+        } else {
+            out << "UNKNOWN, ";
+        }
+
+        if ( positionString.substr(2) == vtkstd::string( "S" ) ) {
+            out << "Supine" << endl;
+        } else if ( positionString.substr(2) == vtkstd::string( "P" ) ) {
+            out << "Prone" << endl;
+        } else if ( positionString.substr(2) == vtkstd::string( "DL" ) ) {
+            out << "Decubitus Left" << endl;
+        } else if ( positionString.substr(2) == vtkstd::string( "DR" ) ) {
+            out << "Decubitus Right" << endl;
+        } else {
+            out << "UNKNOWN" << endl;;
+        }
+
+        vtkstd::string coilName; 
+        if ( hdr->ElementExists( "ReceiveCoilName" ) ) {
+            coilName = hdr->GetStringSequenceItemElement(
+                "MRReceiveCoilSequence",
+                0,
+                "ReceiveCoilName",
+                "SharedFunctionalGroupsSequence",
+                0
+            );
+        } else {
+            coilName = ""; 
+        }
+
+        out << "coil: " << coilName << endl; 
+
+        out << "orientation: ";
+
+        double orientation[2][3];
+        hdr->GetOrientation(orientation);
+
+        int xType; 
+        int yType; 
+        int zType;
+
+        if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][1] ) == 1 ) || 
+             ( fabs(orientation[0][1]) ==1 && fabs( orientation[1][0] ) == 1 ) )
+        {
+            out << setw(3) << 13 << "     axial normal"<<endl;
+            xType = 1;
+            yType = 2;
+            zType = 3;
+        } else if ( ( fabs( orientation[0][1] ) == 1 && fabs( orientation[1][2] ) == 1 ) || 
+            ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][1] ) == 1 ) )
+        {
+            out << setw(3) << 11 << "     sagittal normal" << endl;
+            xType = 2;
+            yType = 3;
+            zType = 1;
+        } else if ( ( fabs( orientation[0][0] ) == 1 && fabs( orientation[1][2] ) == 1) || 
+            ( fabs( orientation[0][2] ) == 1 && fabs( orientation[1][0] ) == 1 ) )
+        {
+            out << setw(3) << 12 << "     coronal normal" << endl;
+            xType = 1;
+            yType = 3;
+            zType = 2;
+        } else {
+            out << setw(3) << 9 << "     Oblique Plane" << endl;
+            xType = 0;
+            yType = 0;
+            zType = 0;
+        }
+
+        out << "echo/time/met index:     1     value:       1.00" << endl;
+        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+
+
+        vtkstd::string date = hdr->GetStringValue( "StudyDate" );
+        if ( date.length() == 0 ) { 
+            date.assign("        ");                
+        } else if ( date.length() < 8 ) {
+            for( int i = 0; i < 8; i++ ) {
+                if( i >= date.length() ) {
+                    date.append(" ");
+                }
             }
         }
+
+        out << "comment: " << this->GetIDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << " - "
+            << hdr->GetStringValue( "SeriesDescription" ) << " - "
+            << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
+            << endl;
+        
+        int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+        if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
+            out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
+        } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
+            out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
+        } else if (dataType == svkDcmHeader::SIGNED_INT_2) {
+            //  SIGNED_INT_2 gets converted to reals
+            out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+        } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
+            out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+        } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+            out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
+        }
+
+        
+        double center[3];
+        this->GetIDFCenter(center);
+        double pixelSpacing[3];
+        this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
+        
+        center[2] *= -1;
+        out << "dimension:  1     columns     itype: " << setw(2) << xType<< endl;
+        out << "npix: " << setw(5) << hdr->GetIntValue( "Columns" )
+            << "   fov(mm): "<< fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Columns") * pixelSpacing[0] 
+            << "  center(mm): " << setw(7) << ( (xType == 0) ? 0:center[xType-1])
+            << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[0] << endl;
+
+        out << "dimension:  2     rows        itype: " << setw(2) << yType << endl;
+        out << "npix: " << setw(5) << hdr->GetIntValue( "Rows" )
+            << "   fov(mm): " << fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Rows") * pixelSpacing[1] 
+            << "  center(mm): " << setw(7) << ( (yType==0)?0:center[yType-1] )
+            << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[1] << endl;
+
+        //zfov must take into account that slice could be skipped
+        
+        out << "dimension:  3     slices      itype: " << setw(2) << zType << endl;
+        out << "npix: " << setw(5) << hdr->GetNumberOfSlices()
+            << "   fov(mm): " << fixed << setw(7) << setprecision(2)
+            << pixelSpacing[2] * hdr->GetFloatValue("NumberOfFrames")
+            << "  center(mm): " << setw(7) << ((zType==0)?0:center[zType-1])
+            << "  pixelsize(mm): " << setw(10) << setprecision(5)  
+            << pixelSpacing[2] << endl;
+
+        center[2] *= -1;
+        
+        double pixelSize[3];
+        this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSize(pixelSize);
+        out << "slice thickness (mm): " << setw(14) << setprecision(5) << pixelSize[2] << endl;
+
+        double inputRangeMin; 
+        double inputRangeMax; 
+        if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
+            int numPixels = hdr->GetIntValue( "Columns" ) * hdr->GetIntValue( "Rows" ) * hdr->GetIntValue("NumberOfFrames"); 
+            double* doublePixels; 
+            doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
+            this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
+        } else {
+            vtkImageAccumulate* histo = vtkImageAccumulate::New();
+            histo->SetInput( this->GetImageDataInput(0) );
+            histo->Update();
+            inputRangeMin = (histo->GetMin())[0]; 
+            inputRangeMax = (histo->GetMax())[0];
+            histo->Delete();
+        }
+
+        out << "minimum: " << scientific << setw(12) << setprecision(4) << inputRangeMin
+        << "     maximum: " << scientific << setw(12) << setprecision(4) << inputRangeMax << endl;
+
+        out << "scale:     1.000" << endl;
+        out << "first slice read: " << setw(4) << 1 
+            << "   last slice read: " << setw(4) << hdr->GetIntValue("NumberOfFrames")
+            << "   sliceskip:    " << 1 << endl;
+        out << "LOCATION DATA IN LPS COORDINATES" << endl;
+        out << "center: " << fixed<<setw(14) << setprecision(5) << center[0]
+            << setw(14) << center[1] << setw(14) << center[2] << endl;
+
+        double positionFirst[3]; 
+        hdr->GetOrigin(positionFirst, 0);
+        out << "toplc:  " << fixed << setw(14) << setprecision(5)
+            << positionFirst[0]
+            << setw(14) << positionFirst[1]
+            << setw(14) << positionFirst[2] <<endl;
+
+        double dcos[3][3];
+        this->GetImageDataInput(0)->GetDcos(dcos);
+        out << "dcos1:  " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
+            << setw(14) << dcos[0][2] << endl;
+        out << "dcos2:  " << fixed << setw(14) << setprecision(5) << dcos[1][0]
+            << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
+        out << "dcos3:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
+            << dcos[2][1] << setw(14) << dcos[2][2] << endl;
+
+        out.close();
+
     }
-
-    out << "comment: " << this->GetIDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << "- "
-        << hdr->GetStringValue( "SeriesDescription" ) << " - "
-        << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
-        << endl;
-    
-    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
-    if (dataType == svkDcmHeader::UNSIGNED_INT_1) {
-        out << "filetype:   2     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::UNSIGNED_INT_2) {
-        out << "filetype:   3     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::SIGNED_INT_2) {
-        //  SIGNED_INT_2 gets converted to reals
-        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
-        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
-    } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-        out << "filetype:   7     entry/pixel:  1     DICOM format images" << endl;
-    }
-
-    
-    double center[3];
-    this->GetIDFCenter(center);
-    double pixelSpacing[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(pixelSpacing);
-    
-    center[2] *= -1;
-    out << "dimension:  1     columns     itype: " << setw(2) << xType<< endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue( "Columns" )
-        << "   fov(mm): "<< fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Columns") * pixelSpacing[0] 
-        << "  center(mm): " << setw(7) << ( (xType == 0) ? 0:center[xType-1])
-        << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[0] << endl;
-
-    out << "dimension:  2     rows        itype: " << setw(2) << yType << endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue( "Rows" )
-        << "   fov(mm): " << fixed << setw(7) << setprecision(2) << (float)hdr->GetIntValue( "Rows") * pixelSpacing[1] 
-        << "  center(mm): " << setw(7) << ( (yType==0)?0:center[yType-1] )
-        << "  pixelsize(mm): " << setw(10) << setprecision(5) << pixelSpacing[1] << endl;
-
-    //zfov must take into account that slice could be skipped
-    
-    out << "dimension:  3     slices      itype: " << setw(2) << zType << endl;
-    out << "npix: " << setw(5) << hdr->GetIntValue("NumberOfFrames")
-        << "   fov(mm): " << fixed << setw(7) << setprecision(2)
-        << pixelSpacing[2] * hdr->GetFloatValue("NumberOfFrames")
-        << "  center(mm): " << setw(7) << ((zType==0)?0:center[zType-1])
-        << "  pixelsize(mm): " << setw(10) << setprecision(5)  
-        << pixelSpacing[2] << endl;
-
-    center[2] *= -1;
-    
-    double pixelSize[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSize(pixelSize);
-    out << "slice thickness (mm): " << setw(14) << setprecision(5) << pixelSize[2] << endl;
-
-    double inputRangeMin; 
-    double inputRangeMax; 
-    if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-        int numPixels = hdr->GetIntValue( "Columns" ) * hdr->GetIntValue( "Rows" ) * hdr->GetIntValue("NumberOfFrames"); 
-        double* doublePixels; 
-        doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetScalars())->GetPointer(0);
-        this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
-    } else {
-        vtkImageAccumulate* histo = vtkImageAccumulate::New();
-        histo->SetInput( this->GetImageDataInput(0) );
-        histo->Update();
-        inputRangeMin = (histo->GetMin())[0]; 
-        inputRangeMax = (histo->GetMax())[0];
-        histo->Delete();
-    }
-
-    out << "minimum: " << scientific << setw(12) << setprecision(4) << inputRangeMin
-    << "     maximum: " << scientific << setw(12) << setprecision(4) << inputRangeMax << endl;
-
-    out << "scale:     1.000" << endl;
-    out << "first slice read: " << setw(4) << 1 
-        << "   last slice read: " << setw(4) << hdr->GetIntValue("NumberOfFrames")
-        << "   sliceskip:    " << 1 << endl;
-    out << "LOCATION DATA IN LPS COORDINATES" << endl;
-    out << "center: " << fixed<<setw(14) << setprecision(5) << center[0]
-        << setw(14) << center[1] << setw(14) << center[2] << endl;
-
-    double positionFirst[3]; 
-    hdr->GetOrigin(positionFirst, 0);
-    out << "toplc:  " << fixed << setw(14) << setprecision(5)
-        << positionFirst[0]
-        << setw(14) << positionFirst[1]
-        << setw(14) << positionFirst[2] <<endl;
-
-    double dcos[3][3];
-    this->GetImageDataInput(0)->GetDcos(dcos);
-    out << "dcos1:  " << fixed << setw(14) << setprecision(5) << dcos[0][0] << setw(14) << dcos[0][1]
-        << setw(14) << dcos[0][2] << endl;
-    out << "dcos2:  " << fixed << setw(14) << setprecision(5) << dcos[1][0]
-        << setw(14) << dcos[1][1] << setw(14) << dcos[1][2] << endl;
-    out << "dcos3:  " << fixed << setw(14) << setprecision(5) << dcos[2][0] << setw(14)
-        << dcos[2][1] << setw(14) << dcos[2][2] << endl;
 
 }
 
@@ -503,7 +536,7 @@ vtkstd::string svkIdfVolumeWriter::GetIDFPatientsName(vtkstd::string patientsNam
         patientsName.erase(pos, 1);     
     }
 
-    return patientsName;
+    return svkImageReader2::StripWhite( patientsName );
 }
 
 
