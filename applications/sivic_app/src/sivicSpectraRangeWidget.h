@@ -104,7 +104,7 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicSpectraRangeWidget,sivicKWCompositeWidget);
 
         void    SetSyncOverlayWL( bool syncOverlayWL );
-        void    SetSpecUnitsCallback(int targetUnits);
+        void    SetSpecUnitsCallback(svkSpecPoint::UnitType targetUnits);
         void    ResetRange( bool useFullFrequencyRange = 0, bool useFullAmplitudeRange = 0,
                             bool resetAmplitude = 1, bool resetFrequency = 1);
         void    ResetAmplitudeWholeRange( );
@@ -128,7 +128,7 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         vtkKWPushButton*                detailedPlotButton;
         vtkKWWindowBase*                detailedPlotWindow;
 
-        int                             specUnits;
+        svkSpecPoint::UnitType          specUnits;
         bool                            centerImage;
 
         

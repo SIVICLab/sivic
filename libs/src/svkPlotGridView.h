@@ -65,6 +65,9 @@
 #include <svkImageClip.h>
 #include <svkSatBandSet.h>
 #include <vtkCellCenters.h>
+#include <vtkXYPlotActor.h>
+#include <vtkCursor2D.h>
+#include <svkDetailedPlotDirector.h>
 
 #include <vector>
 
@@ -113,6 +116,7 @@ class svkPlotGridView : public svkDataView
         int                         GetChannel( );
         void                        SetTimePoint( int timePoint, int plotIndex = -1 );
         int                         GetTimePoint( );
+        void                        SetPlotUnits( svkSpecPoint::UnitType plotUnitType );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                SetPlotColor( int plotIndex, double* rgb );
         virtual double*             GetPlotColor( int plotIndex );
@@ -135,6 +139,8 @@ class svkPlotGridView : public svkDataView
             OVERLAY_TEXT,
             PLOT_GRID,
             PLOT_LINES,
+            DETAILED_PLOT,
+            RULER,
             SAT_BANDS,
             SAT_BANDS_OUTLINE,
             LAST_PROP = SAT_BANDS_OUTLINE
@@ -173,6 +179,7 @@ class svkPlotGridView : public svkDataView
         void                   UpdateMetaboliteText( int* tlcBrc );
         void                   UpdateMetaboliteImage( int* tlcBrc );
         void                   UpdateMetaboliteTextDisplacement( );
+        void                   UpdateDetailedPlot( int* tlcBrc );
         void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
         int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                
@@ -181,13 +188,15 @@ class svkPlotGridView : public svkDataView
         void                   SetOverlayThreshold( double threshold );
 
     private: 
-        void                ResliceImage(svkImageData* input, svkImageData* target); 
-        int                 channel;
-        int                 timePoint;
-        int                 numColors;
-        svkLookupTable*     colorTransfer;
-        svkSatBandSet*      satBands;
-        int                 activeSpectra;
+        void                     ResliceImage(svkImageData* input, svkImageData* target);
+        int                      channel;
+        int                      timePoint;
+        int                      numColors;
+        svkLookupTable*          colorTransfer;
+        svkSatBandSet*           satBands;
+        int                      activeSpectra;
+        svkDetailedPlotDirector* detailedPlotDirector;
+        svkSpecPoint::UnitType   plotUnitType;
 
         static const double CLIP_TOLERANCE;
 

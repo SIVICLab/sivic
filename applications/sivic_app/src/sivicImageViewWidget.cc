@@ -27,6 +27,7 @@ sivicImageViewWidget::sivicImageViewWidget()
     this->axialSlider = NULL;
     this->coronalSlider = NULL;
     this->sagittalSlider = NULL;
+    this->volumeSlider = NULL;
     this->volSelButton = NULL;
     this->plotGridButton = NULL;
     this->satBandButton = NULL;
@@ -333,6 +334,20 @@ void sivicImageViewWidget::CreateWidget()
     this->sagittalSlider->SetLabelPositionToLeft();
     this->sagittalSlider->SetEntryPositionToRight();
 
+    this->volumeSlider = sliceSliders->AddWidget(3);
+    this->volumeSlider->SetParent(this);
+    this->volumeSlider->Create();
+    this->volumeSlider->SetEntryWidth( 3 );
+    this->volumeSlider->SetOrientationToHorizontal();
+    this->volumeSlider->SetLabelText("Volume");
+    this->volumeSlider->SetValue(1);
+    this->volumeSlider->SetRange( 1, 1);
+    this->volumeSlider->SetBalloonHelpString("Adjusts image volume.");
+    this->volumeSlider->EnabledOff();
+    this->volumeSlider->SetPadY(1);
+    this->volumeSlider->SetLabelPositionToLeft();
+    this->volumeSlider->SetEntryPositionToRight();
+
     // Let's setup the slice sliders in the set to be the same geometry 
     int entryWidth = 2;
     labelWidth = 11;
@@ -475,6 +490,8 @@ void sivicImageViewWidget::CreateWidget()
 
     this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 0", 
                 overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
+    this->Script("grid %s -in %s -row 0 -column 1 -sticky we -columnspan 2",
+                checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 1", 
                 this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
     this->Script("grid %s -in %s -row 1 -column 1 -sticky we -padx 2 -pady 1", 
@@ -484,9 +501,7 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -in %s -row 3 -column 0  -columnspan 3 -sticky ew -pady 1", 
                 this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 1", 
-                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 5 -column 1 -sticky we -pady 1", 
-                checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+                this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 2 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
@@ -540,6 +555,12 @@ void sivicImageViewWidget::CreateWidget()
 
     this->AddCallbackCommandObserver(
         this->sagittalSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
+        this->volumeSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->volumeSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->overlayOpacitySlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -701,6 +722,20 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->sagittalSlider->RemoveBinding( "<Right>");
         this->sagittalSlider->AddBinding( "<Right>", this->sagittalSlider, increment.str().c_str() );
         this->sagittalSlider->Focus();
+    } else if( caller == this->volumeSlider->GetWidget() ) {
+        int volume = static_cast<int>(this->volumeSlider->GetValue()) - 1;
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveImageVolume( volume );
+        }
+        stringstream increment;
+        increment << "SetValue " << volume + 2;
+        stringstream decrement;
+        decrement << "SetValue " << volume;
+        this->volumeSlider->RemoveBinding( "<Left>");
+        this->volumeSlider->AddBinding( "<Left>", this->volumeSlider, decrement.str().c_str() );
+        this->volumeSlider->RemoveBinding( "<Right>");
+        this->volumeSlider->AddBinding( "<Right>", this->volumeSlider, increment.str().c_str() );
+        this->volumeSlider->Focus();
     } else if( caller == this->overlayOpacitySlider->GetWidget() ) {
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
             this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );

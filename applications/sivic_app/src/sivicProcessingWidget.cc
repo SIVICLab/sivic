@@ -20,7 +20,7 @@ vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
 sivicProcessingWidget::sivicProcessingWidget()
 {
     this->phaseSlider = NULL;
-    this->phaser = NULL;
+    this->phaser = svkPhaseSpec::New();
     this->phaseAllVoxelsButton = NULL;
     this->phaseAllChannelsButton = NULL;
     this->fftButton = NULL;

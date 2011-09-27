@@ -146,6 +146,10 @@ svkPlotLineGrid::~svkPlotLineGrid()
     delete[] timePtUpToDate;
 }
 
+svkMrsImageData* svkPlotLineGrid::GetInput()
+{
+    return this->data;
+}
 
 /*! 
  * Set input data and initialize default range values. Then it generates the actors
@@ -448,6 +452,14 @@ void svkPlotLineGrid::SetColor( double rgb[3])
     if( this->plotGridActor != NULL ) {
         this->plotGridActor->GetProperty()->SetColor(rgb);
     }
+}
+
+double* svkPlotLineGrid::GetColor( )
+{
+    if( this->plotGridActor != NULL ) {
+        return this->plotGridActor->GetProperty()->GetColor();
+    }
+    return NULL;
 }
 
 /*!

@@ -162,7 +162,6 @@ ENDIF(WIN32)
 SET(SVK_LIBS
     vtkRendering
     vtkGraphics
-    vtkHybrid
     vtkImaging
     vtkIO
     vtkFiltering
@@ -170,6 +169,7 @@ SET(SVK_LIBS
     vtkVolumeRendering
     svkadapt 
     svk 
+    vtkHybrid
     svkadapt 
     dcmdata
     ofstd 

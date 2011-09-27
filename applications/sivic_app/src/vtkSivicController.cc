@@ -467,6 +467,8 @@ void vtkSivicController::OpenImage( const char* fileName )
             } else if( !model->DataExists( "SpectroscopicData") || this->orientation != "SAGITTAL" ){
                 this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
+            this->imageViewWidget->volumeSlider->SetRange( 1, newData->GetDcmHeader()->GetNumberOfTimePoints());
+            this->imageViewWidget->volumeSlider->SetValue( 1 );
 
             if( model->DataExists("SpectroscopicData") ) {
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
@@ -2126,7 +2128,7 @@ void vtkSivicController::DisplayWindowLevelWindow()
  */
 void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 {
-    this->spectraRangeWidget->SetSpecUnitsCallback( targetUnits );
+    this->spectraRangeWidget->SetSpecUnitsCallback( static_cast<svkSpecPoint::UnitType>(targetUnits) );
 }
 
 
@@ -2502,6 +2504,7 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->sagittalSlider->EnabledOn();
         }
         this->windowLevelWidget->EnabledOn();
+        this->imageViewWidget->volumeSlider->EnabledOn();
     }
 
     if ( model->DataExists("MetaboliteData")) {

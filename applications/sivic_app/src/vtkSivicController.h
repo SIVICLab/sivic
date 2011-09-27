@@ -91,6 +91,8 @@
 #include <sivicImageViewWidget.h>
 #include <sivicSpectraViewWidget.h>
 #include <sivicWindowLevelWidget.h>
+#include <svkSpecPoint.h>
+
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicDataWidget.h>

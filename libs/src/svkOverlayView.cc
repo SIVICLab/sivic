@@ -591,7 +591,20 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
 }
 
 
-/*
+
+/*!
+ *  Sets the active volume. The active volume will be the rendered
+ *  volume.
+ *
+ * @param volume
+ */
+void svkOverlayView::SetActiveImageVolume( int volume )
+{
+    this->imageViewer->SetActiveVolume( volume );
+}
+
+
+/*!
  *  Finds the image slice that most closely corresponds to the input spectra slice.
  */
 int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation ) 

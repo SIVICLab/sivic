@@ -91,6 +91,7 @@ class svkPlotLineGrid : public vtkObject
 
         //  Methods
         void                    SetInput( svkMrsImageData* data );
+        svkMrsImageData*        GetInput( );
         void                    Update(int tlcBrc[2]);
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
@@ -113,6 +114,7 @@ class svkPlotLineGrid : public vtkObject
         vtkActor*               GetPlotGridActor();
         void                    CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2]);
         void                    SetColor( double rgb[3]);
+        double*                 GetColor( );
 
     private:
 

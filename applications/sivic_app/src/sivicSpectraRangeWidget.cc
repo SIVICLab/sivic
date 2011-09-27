@@ -118,7 +118,7 @@ sivicSpectraRangeWidget::~sivicSpectraRangeWidget()
 /*
  *
  */
-void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
+void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType targetUnits)
 {
     svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
     if( data == NULL ) {
@@ -180,6 +180,7 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(int targetUnits)
 
     this->detailedPlotController->SetUnits( this->specUnits );
     this->detailedPlotController->GetView()->Refresh( );
+    svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetPlotUnits( this->specUnits );
     this->xSpecRange->SetWholeRange( lowestPointRange, highestPointRange );
     this->xSpecRange->SetRange( lowestPoint, highestPoint ); 
 

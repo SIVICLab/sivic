@@ -116,6 +116,7 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         vtkKWScaleWithEntry*            coronalSlider;
         vtkKWScaleWithEntry*            sagittalSlider;
         vtkKWScaleWithEntry*            axialSlider;
+        vtkKWScaleWithEntry*            volumeSlider;
         vtkKWScaleWithEntry*            overlayOpacitySlider;
         vtkKWScaleWithEntry*            overlayThresholdSlider;
         vtkKWCheckButton*               satBandButton;

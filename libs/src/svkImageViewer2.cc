@@ -472,6 +472,32 @@ void svkImageViewer2::SetSlice( int slice, svkDcmHeader::Orientation sliceOrient
     }
 }
 
+
+/*!
+ *
+ *  Sets the active scalars for the image data set.
+ *
+ * @param volume
+ */
+void svkImageViewer2::SetActiveVolume( int volume )
+{
+    svkImageData* data = svkImageData::SafeDownCast(this->GetInput());
+    if( data != NULL && volume < data->GetPointData()->GetNumberOfArrays()) {
+        data->GetPointData()->SetActiveScalars( data->GetPointData()->GetArray(volume)->GetName() );
+        /*
+         * TODO: The above line modifies the input to the WindowLevel algorithms. The actor is not
+         *       re-rendering afterward. We need to figure out why this is and if manually calling
+         *       modified is the best solution or not. For now we manually call modified to get
+         *       the actors updated.
+         */
+        this->axialWinLevel->Modified();
+        this->coronalWinLevel->Modified();
+        this->sagittalWinLevel->Modified();
+        this->Render( );
+    }
+}
+
+
 /*!
  *  Resets the camera to be exactly perpendicular to the image.
  */

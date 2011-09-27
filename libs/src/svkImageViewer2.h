@@ -78,6 +78,7 @@ class svkImageViewer2 : public vtkImageViewer2
         void SetInput( svkImageData *in );
         virtual void SetSlice( int slice );
         virtual void SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation );
+        virtual void SetActiveVolume( int volume );
         void Render();
         void ResetCamera();
         void TurnOrthogonalImagesOn();
