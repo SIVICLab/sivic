@@ -62,11 +62,14 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     // We are not using the built-in X axis...
     this->xyPlotActor->SetPosition( 0.0, 0.0 );
     this->xyPlotActor->SetPosition2( 1.0, 1.0 );
+#if VTK_MINOR_VERSION >= 6
     this->xyPlotActor->ChartBoxOn();
     this->xyPlotActor->ChartBorderOn();
+    this->xyPlotActor->GetChartBoxProperty()->SetColor(0,0,0);
+#endif
+
     this->xyPlotActor->LegendOn();
     this->xyPlotActor->SetLegendPosition(0.75, 0.75);
-    this->xyPlotActor->GetChartBoxProperty()->SetColor(0,0,0);
     this->xyPlotActor->GetXAxisActor2D()->GetProperty()->SetColor(0,1,0);
     this->xyPlotActor->GetYAxisActor2D()->GetProperty()->SetColor(0,1,0);
 
