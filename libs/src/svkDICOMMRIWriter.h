@@ -72,6 +72,8 @@ class svkDICOMMRIWriter : public svkDICOMImageWriter
         ~svkDICOMMRIWriter();
 
         virtual int GetDataLength();
+        void        InitPixelData( svkDcmHeader* dcmHeader, int volNumber, int sliceNumber = -1);
+
 
 };
 

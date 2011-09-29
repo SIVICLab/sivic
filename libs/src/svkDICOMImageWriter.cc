@@ -45,6 +45,8 @@
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkImageAccumulate.h>
+#include <vtkDoubleArray.h>
+
 
 
 using namespace svk;
@@ -126,125 +128,12 @@ svkImageData* svkDICOMImageWriter::GetImageDataInput(int port)
 }
 
 
-/*!
- *  Write the pixel data to the PixelData DICOM element.       
- *  if a slice number (starting at 0 index) is specified, will 
- *  init only that block of PixelData in the DCM file.  
- * 
- */
-void svkDICOMImageWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber )
-{
-
-    vtkDebugMacro( << this->GetClassName() << "::InitPixelData()" );
-
-    int dataLength = this->GetDataLength();
-    int offset = 0; 
-    if (sliceNumber >= 0 ) {
-        offset = dataLength * sliceNumber; 
-    }
-
-    switch ( this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ) ) {
-
-        case svkDcmHeader::UNSIGNED_INT_1:
-        {
-            // Dicom does not support the writing of 8 bit words so we will convert to 16
-            unsigned char *pixelData = (unsigned char *)this->GetImageDataInput(0)->GetScalarPointer();
-            unsigned short* shortPixelData = new unsigned short[dataLength];
-            for (int i = 0; i < dataLength; i++) {
-                shortPixelData[i] = pixelData[offset + i];
-            }
-            dcmHeader->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
-            dcmHeader->SetValue(
-                  "PixelData",
-                  shortPixelData,
-                  dataLength 
-            );
-            delete[] shortPixelData;
-        }
-        break;
-
-        case svkDcmHeader::UNSIGNED_INT_2:
-        {
-            unsigned short *pixelData = static_cast<unsigned short *>( this->GetImageDataInput(0)->GetScalarPointer() );
-            dcmHeader->SetValue(
-                  "PixelData",
-                  &(pixelData[offset]), 
-                  dataLength 
-            );
-        }
-        break; 
-
-        case svkDcmHeader::SIGNED_FLOAT_4:
-        case svkDcmHeader::SIGNED_FLOAT_8:
-        {
-            //  Fix BitsAllocated, etc to be represent 
-            //  signed short data
-            dcmHeader->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
-
-            unsigned short* pixelData = new unsigned short[dataLength];  
-            float slope; 
-            float intercept; 
-            this->GetShortScaledPixels( pixelData, slope, intercept, sliceNumber ); 
-            
-            dcmHeader->SetValue(
-                  "PixelData",
-                  pixelData, 
-                  dataLength 
-            );
-
-            //  Init Rescale Attributes:    
-            //  For Enhanced MR Image Storage use the PixelValueTransformation Macro
-            //  For MR Image Stroage use VOI LUT Module. 
-            double inputRangeMin;
-            double inputRangeMax;
-            this->GetPixelRange(inputRangeMin, inputRangeMax);
-            vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
-
-                //  MR Image Storage: 
-                //      convert slope and intercept to center and width:     
-                //      Get the pixel value range (defines the WL of VOI LUT):
-                double width = inputRangeMax - inputRangeMin;
-                double center = (inputRangeMax + inputRangeMin)/2;
-                dcmHeader->InitVOILUTModule( center, width ); 
-
-            } else {
-
-                //  Enhanced MR Image Storage: 
-                //      slope and intercept are for real -> short, we need the 
-                //      inverse transformation here that a downstream application:
-                //      can use to regenerate the original values:
-                float slopeReverse = 1/slope;  
-                int shortMin = VTK_UNSIGNED_SHORT_MIN; 
-                float interceptReverse = inputRangeMin - shortMin/slope;
-                dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse ); 
-
-            }
-
-            delete[] pixelData; 
-        }
-        break;
-
-        case svkDcmHeader::SIGNED_INT_2: 
-        {
-            short *pixelData = static_cast<short *>( this->GetImageDataInput(0)->GetScalarPointer() );
-            dcmHeader->SetValue(
-                  "PixelData",
-                  &(pixelData[offset]), 
-                  dataLength 
-            );
-        }
-        default:
-          vtkErrorMacro("Undefined or unsupported pixel data type");
-    }
-}
-
 
 /*!
  *  vtkImageAccumulate doesn't seem to work for doubles, so need custom method for 
  *  calculating pixel value ranges. 
  */
-void svkDICOMImageWriter::GetPixelRange(double& min, double& max)
+void svkDICOMImageWriter::GetPixelRange(double& min, double& max, int volNumber)
 {
     int dataType = 
             this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
@@ -270,7 +159,10 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max)
 
         min = 0.;
         max = 0.;
-        double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
+        double* doublePixels = static_cast<double *>( 
+                vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
+        );
+
         for (int i = 0; i < numPixels; i++ ) {
             if ( doublePixels[i] > max ) {
                 max = doublePixels[i];
@@ -288,14 +180,14 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max)
  *  Returns a signed short array, together with the intercept and slope of the linear scaling 
  *  transformation ( shortVal = floatVal * slope + intercept).    
  */
-void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber )
+void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber, int volNumber)
 {
 
     //  Get the input range for scaling:
     double inputRangeMin;
     double inputRangeMax;
 
-    this->GetPixelRange(inputRangeMin, inputRangeMax);
+    this->GetPixelRange(inputRangeMin, inputRangeMax, volNumber);
     double deltaRangeIn = inputRangeMax - inputRangeMin;
 
     //  Get the output range for scaling:
@@ -322,12 +214,18 @@ void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, flo
             this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
 
     if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
-        float* floatPixels = static_cast<float *>( this->GetImageDataInput(0)->GetScalarPointer() );
+
+        float* floatPixels = static_cast<float *>( 
+            static_cast<vtkFloatArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
+        );
+
         for (int i = 0; i < dataLength; i++) {
             shortPixels[i] = static_cast<unsigned short> ( slope * floatPixels[offset + i] + intercept ); 
         }
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-        double* doublePixels = static_cast<double *>( this->GetImageDataInput(0)->GetScalarPointer() );
+        double* doublePixels = static_cast<double *>( 
+            vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
+        );
         for (int i = 0; i < dataLength; i++) {
             shortPixels[i] = static_cast<unsigned short> ( slope * doublePixels[offset + i] + intercept ); 
         }

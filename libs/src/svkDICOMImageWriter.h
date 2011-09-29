@@ -76,9 +76,8 @@ class svkDICOMImageWriter : public svkImageWriter
         ~svkDICOMImageWriter();
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        void            InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber = -1); 
-        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber ); 
-        void            GetPixelRange(double& min, double& max); 
+        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber, int volNumber ); 
+        void            GetPixelRange(double& min, double& max, int volNumber); 
         virtual int     GetDataLength() = 0;
         
 };

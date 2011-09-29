@@ -72,6 +72,8 @@ class svkDICOMEnhancedMRIWriter : public svkDICOMImageWriter
         ~svkDICOMEnhancedMRIWriter();
 
         virtual int GetDataLength(); 
+        void        InitPixelData( svkDcmHeader* dcmHeader );
+
 };
 
 
