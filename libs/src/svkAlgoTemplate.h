@@ -43,6 +43,7 @@
 #ifndef SVK_ALGO_TEMPLATE_H
 #define SVK_ALGO_TEMPLATE_H
 
+
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 
