@@ -166,6 +166,7 @@ class svkPlotGridView : public svkDataView
             FREQUENCY = 0,
             AMPLITUDE
         } WindowLevelRanges;
+        void                   SetActiveOverlayVolume( int volume );
 
     protected:
 
@@ -197,6 +198,7 @@ class svkPlotGridView : public svkDataView
         int                      activeSpectra;
         svkDetailedPlotDirector* detailedPlotDirector;
         svkSpecPoint::UnitType   plotUnitType;
+        svkImageMapToColors*     windowLevel;
 
         static const double CLIP_TOLERANCE;
 

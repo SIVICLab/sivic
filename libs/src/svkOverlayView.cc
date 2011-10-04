@@ -605,6 +605,25 @@ void svkOverlayView::SetActiveImageVolume( int volume )
 
 
 /*!
+ * Sets the active overlay volume.
+ *
+ * @param volume
+ */
+void svkOverlayView::SetActiveOverlayVolume( int volume )
+{
+    if( this->dataVector[OVERLAY] != NULL && volume < this->dataVector[OVERLAY]->GetPointData()->GetNumberOfArrays()) {
+        this->dataVector[OVERLAY]->GetPointData()->SetActiveScalars( this->dataVector[OVERLAY]->GetPointData()->GetArray(volume)->GetName() );
+        this->dataVector[OVERLAY]->Modified();
+        this->windowLevelerAxial->Modified();
+        this->windowLevelerCoronal->Modified();
+        this->windowLevelerSagittal->Modified();
+        this->GetRenderer( svkOverlayView::PRIMARY)->Modified();
+        this->Refresh( );
+    }
+
+}
+
+/*!
  *  Finds the image slice that most closely corresponds to the input spectra slice.
  */
 int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation ) 
@@ -659,7 +678,7 @@ int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation 
 
 
 /*!
- *  Sets the slice of the anatamical data, based on the spectroscopic slice.
+ *  Sets the slice of the anatomical data, based on the spectroscopic slice.
  *  It calculates the anatomical slice closest to the center of the spectroscopic
  *  slice.
  *

@@ -63,6 +63,7 @@ svkPlotGridView::svkPlotGridView()
 
     this->plotGrids.push_back(svkPlotLineGrid::New());
     this->orientation = svkDcmHeader::AXIAL;
+    this->windowLevel = svkImageMapToColors::New();
 
     // Setting layers is key for solaris rendering
 
@@ -173,6 +174,11 @@ svkPlotGridView::~svkPlotGridView()
     if( this->detailedPlotDirector != NULL ) {
         this->detailedPlotDirector->Delete();
         this->detailedPlotDirector = NULL;
+    }
+
+    if( this->windowLevel != NULL ) {
+        this->windowLevel->Delete();
+        this->windowLevel = NULL;
     }
 
    
@@ -539,6 +545,7 @@ void svkPlotGridView::SetPlotColor(int plotIndex, double* rgb )
     if( this->plotGrids[plotIndex] != NULL ) {
         this->plotGrids[plotIndex]->GetPlotGridActor()->GetProperty()->SetColor(rgb);
     }
+    this->UpdateDetailedPlot(this->tlcBrc);
     this->Refresh();
 }
 
@@ -897,10 +904,12 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         this->UpdateMetaboliteTextDisplacement();
         this->UpdateMetaboliteText( tlcBrc );
-
-        svkImageMapToColors* windowLevel = svkImageMapToColors::New();
+        if( this->windowLevel != NULL ) {
+            this->windowLevel->Delete();
+        }
+        this->windowLevel = svkImageMapToColors::New();
         metTextClipper->Update();
-        windowLevel->SetInput( dataVector[MET] );
+        this->windowLevel->SetInput( dataVector[MET] );
         if( this->colorTransfer == NULL ) {
             this->colorTransfer = svkLookupTable::New();
         }
@@ -914,13 +923,12 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->colorTransfer->SetLUTType( svkLookupTable::COLOR );
         this->colorTransfer->SetAlphaThreshold( 0.9 );
 
-        windowLevel->SetLookupTable( this->colorTransfer );
-        windowLevel->SetOutputFormatToRGBA( );
-        windowLevel->Update( );
+        this->windowLevel->SetLookupTable( this->colorTransfer );
+        this->windowLevel->SetOutputFormatToRGBA( );
+        this->windowLevel->Update( );
 
 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(windowLevel->GetOutput());
-        windowLevel->Delete();
+        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(this->windowLevel->GetOutput());
         bool isOverlayImageOn = this->IsPropOn(svkPlotGridView::OVERLAY_IMAGE); 
         if( this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) ) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->RemoveActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
@@ -1111,22 +1119,24 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
  */
 void svkPlotGridView::UpdateDetailedPlot( int* tlcBrc )
 {
-    int counter = 0;
-    this->detailedPlotDirector->RemoveAllInputs();
-    for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
-        iter != this->plotGrids.end(); ++iter) {
-        if( (*iter) != NULL && (*iter)->GetPlotGridActor()->GetVisibility() ) {
-            vtkDataArray* spectrum = (*iter)->GetInput()->GetSpectrum( tlcBrc[0] );
-            this->detailedPlotDirector->AddInput( spectrum , (*iter)->GetComponent(), (*iter)->GetInput());
-            this->detailedPlotDirector->SetPlotColor(counter, (*iter)->GetColor());
-            counter++;
+    if( this->dataVector[MRS] != NULL ) {
+        int counter = 0;
+        this->detailedPlotDirector->RemoveAllInputs();
+        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+            iter != this->plotGrids.end(); ++iter) {
+            if( (*iter) != NULL && (*iter)->GetPlotGridActor()->GetVisibility() ) {
+                vtkDataArray* spectrum = (*iter)->GetInput()->GetSpectrum( tlcBrc[0] );
+                this->detailedPlotDirector->AddInput( spectrum , (*iter)->GetComponent(), (*iter)->GetInput());
+                this->detailedPlotDirector->SetPlotColor(counter, (*iter)->GetColor());
+                counter++;
+            }
         }
+        this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MRS]->GetDcmHeader() , this->plotUnitType );
+        int lower;
+        int upper;
+        this->plotGrids[0]->GetFrequencyWLRange(lower, upper);
+        this->detailedPlotDirector->SetIndexRange(lower, upper);
     }
-    this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MRS]->GetDcmHeader() , this->plotUnitType );
-    int lower;
-    int upper;
-    this->plotGrids[0]->GetFrequencyWLRange(lower, upper);
-    this->detailedPlotDirector->SetIndexRange(lower, upper);
 
 }
 
@@ -1371,6 +1381,24 @@ void svkPlotGridView::SetOverlayThreshold( double threshold )
         this->colorTransfer->SetAlphaThreshold(threshold);
     }
 }
+
+
+/*!
+ * Sets the active overlay volume.
+ *
+ * @param volume
+ */
+void svkPlotGridView::SetActiveOverlayVolume( int volume )
+{
+    if( this->dataVector[MET] != NULL && volume < this->dataVector[MET]->GetPointData()->GetNumberOfArrays()) {
+        this->dataVector[MET]->GetPointData()->SetActiveScalars( this->dataVector[MET]->GetPointData()->GetArray(volume)->GetName() );
+        this->windowLevel->Modified();
+        this->Refresh( );
+    }
+
+}
+
+
 
 
 /*!

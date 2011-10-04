@@ -858,6 +858,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
                 this->overlayWindowLevelWidget->SetWindow( window ); 
                 this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
+                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetDcmHeader()->GetNumberOfTimePoints());
+                this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
 
                 if( toggleDraw ) {
                     this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
@@ -2528,6 +2530,7 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->colorBarButton->EnabledOn();
         this->imageViewWidget->colorBarButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->overlayWindowLevelWidget->EnabledOn();
+        this->imageViewWidget->overlayVolumeSlider->EnabledOn();
     }
 }
 
@@ -2539,6 +2542,7 @@ void vtkSivicController::DisableWidgets()
 {
     this->imageViewWidget->volSelButton->EnabledOff();
     this->imageViewWidget->plotGridButton->EnabledOff();
+    this->imageViewWidget->overlayVolumeSlider->EnabledOff();
 
     //this->spectraViewWidget->detailedPlotButton->EnabledOff();
     this->spectraViewWidget->sliceSlider->EnabledOff();

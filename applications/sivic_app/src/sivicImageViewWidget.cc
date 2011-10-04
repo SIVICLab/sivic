@@ -226,19 +226,22 @@ void sivicImageViewWidget::CreateWidget()
     overlaySeparator->Create();
     overlaySeparator->SetThickness(5);
 
+    int boxWidth = 14;
     this->interpolationBox = vtkKWMenuButtonWithLabel::New();   
     this->interpolationBox->SetParent(this);
     this->interpolationBox->Create();
+    this->interpolationBox->SetLabelText("Interpolation");
     this->interpolationBox->EnabledOff();
     this->interpolationBox->SetLabelPositionToTop();
-    this->interpolationBox->GetWidget()->SetAnchorToNorth();
-    this->interpolationBox->GetLabel()->SetJustificationToRight();
-    this->interpolationBox->SetLabelText("Interpolation");
+    this->interpolationBox->LabelVisibilityOff();
+    this->interpolationBox->GetWidget()->SetFont("system 8");
+    this->interpolationBox->GetWidget()->SetWidth(boxWidth);
     vtkKWMenu* interpMenu = this->interpolationBox->GetWidget()->GetMenu();
-    interpMenu->AddRadioButton("nearest neighbor", this->sivicController, "SetInterpolationCallback 0");
-    interpMenu->AddRadioButton("linear", this->sivicController, "SetInterpolationCallback 1");
-    interpMenu->AddRadioButton("sinc", this->sivicController, "SetInterpolationCallback 2");
-    this->interpolationBox->GetWidget()->SetValue( "nearest neighbor" );
+    interpMenu->AddRadioButton("Nearest Neighbor", this->sivicController, "SetInterpolationCallback 0");
+    interpMenu->AddRadioButton("Linear", this->sivicController, "SetInterpolationCallback 1");
+    interpMenu->AddRadioButton("Sinc", this->sivicController, "SetInterpolationCallback 2");
+    interpMenu->SetFont("system 8");
+    this->interpolationBox->GetWidget()->SetValue( "Nearest Neighbor" );
     int labelWidth = 8;
 
     this->lutBox = vtkKWMenuButtonWithLabel::New();   
@@ -247,35 +250,43 @@ void sivicImageViewWidget::CreateWidget()
     this->lutBox->SetLabelText("Color Map");
     this->lutBox->EnabledOff();
     this->lutBox->SetLabelPositionToTop();
+    this->lutBox->LabelVisibilityOff();
+    this->lutBox->GetWidget()->SetFont("system 8");
+    this->lutBox->GetWidget()->SetWidth(boxWidth);
     vtkKWMenu* lutMenu = this->lutBox->GetWidget()->GetMenu();
+    lutMenu->SetFont("system 8");
 
     stringstream invocation;
     invocation << "SetLUTCallback " << svkLookupTable::COLOR << endl;
-    lutMenu->AddRadioButton("color", this->sivicController, invocation.str().c_str());
+    lutMenu->AddRadioButton("Color LUT", this->sivicController, invocation.str().c_str());
 
     invocation.str("");
     invocation << "SetLUTCallback " << svkLookupTable::GREY_SCALE << endl;
-    lutMenu->AddRadioButton("grey ", this->sivicController, invocation.str().c_str());
+    lutMenu->AddRadioButton("Grey LUT", this->sivicController, invocation.str().c_str());
 
     invocation.str("");
     invocation << "SetLUTCallback " << svkLookupTable::HURD << endl;
-    lutMenu->AddRadioButton("hurd ", this->sivicController, invocation.str().c_str());
+    lutMenu->AddRadioButton("Hurd LUT", this->sivicController, invocation.str().c_str());
 
     invocation.str("");
     invocation << "SetLUTCallback " << svkLookupTable::CYAN_HOT << endl;
-    lutMenu->AddRadioButton("cyan ", this->sivicController, invocation.str().c_str());
+    lutMenu->AddRadioButton("Cyan LUT", this->sivicController, invocation.str().c_str());
 
-    this->lutBox->GetWidget()->SetValue( "color" );
+    this->lutBox->GetWidget()->SetValue( "Color LUT" );
 
     this->thresholdType = vtkKWMenuButtonWithLabel::New();   
     this->thresholdType->SetParent(this);
     this->thresholdType->Create();
     this->thresholdType->SetLabelText("Threshold Type");
     this->thresholdType->SetLabelPositionToTop();
+    this->thresholdType->LabelVisibilityOff();
     this->thresholdType->GetWidget()->SetAnchorToSouth();
     this->thresholdType->EnabledOff();
     this->thresholdType->EnabledOff();
+    this->thresholdType->GetWidget()->SetFont("system 8");
+    this->thresholdType->GetWidget()->SetWidth(boxWidth);
     vtkKWMenu* thresholdTypeMenu = this->thresholdType->GetWidget()->GetMenu();
+    thresholdTypeMenu->SetFont("system 8");
 
     invocation.str("");
     invocation << "SetThresholdTypeToQuantity " << endl;
@@ -360,14 +371,15 @@ void sivicImageViewWidget::CreateWidget()
         }
     }
 
-    int overlaySliderEntryWidth = 11;
+    int overlaySliderEntryWidth = 10;
+    int overlayLabelWidth = 8;
     this->overlayOpacitySlider = vtkKWScaleWithEntry::New();
     this->overlayOpacitySlider->SetParent(this);
     this->overlayOpacitySlider->Create();
     this->overlayOpacitySlider->SetEntryWidth( overlaySliderEntryWidth );
     this->overlayOpacitySlider->SetOrientationToHorizontal();
     this->overlayOpacitySlider->SetLabelText("Opacity");
-    this->overlayOpacitySlider->SetLabelWidth( labelWidth - 2 );
+    this->overlayOpacitySlider->SetLabelWidth( overlayLabelWidth );
     this->overlayOpacitySlider->SetValue(35);
     this->overlayOpacitySlider->SetRange( 0, 100 );
     this->overlayOpacitySlider->SetBalloonHelpString("Adjusts the opacity of image overlay.");
@@ -380,12 +392,25 @@ void sivicImageViewWidget::CreateWidget()
     this->overlayThresholdSlider->SetEntryWidth( overlaySliderEntryWidth );
     this->overlayThresholdSlider->SetOrientationToHorizontal();
     this->overlayThresholdSlider->SetLabelText("Threshold");
-    this->overlayThresholdSlider->SetLabelWidth( labelWidth - 2 );
+    this->overlayThresholdSlider->SetLabelWidth( overlayLabelWidth );
     this->overlayThresholdSlider->SetValue(0);
     this->overlayThresholdSlider->SetRange( 0, 0 );
     this->overlayThresholdSlider->SetBalloonHelpString("Adjusts the threshold of image overlay.");
     this->overlayThresholdSlider->EnabledOff();
     this->overlayThresholdSlider->SetEntryPositionToRight();
+
+    this->overlayVolumeSlider = vtkKWScaleWithEntry::New();
+    this->overlayVolumeSlider->SetParent(this);
+    this->overlayVolumeSlider->Create();
+    this->overlayVolumeSlider->SetEntryWidth( overlaySliderEntryWidth );
+    this->overlayVolumeSlider->SetOrientationToHorizontal();
+    this->overlayVolumeSlider->SetLabelText("Volume");
+    this->overlayVolumeSlider->SetLabelWidth( overlayLabelWidth );
+    this->overlayVolumeSlider->SetValue(0);
+    this->overlayVolumeSlider->SetRange( 0, 0 );
+    this->overlayVolumeSlider->SetBalloonHelpString("Adjusts the volume of image overlay.");
+    this->overlayVolumeSlider->EnabledOff();
+    this->overlayVolumeSlider->SetEntryPositionToRight();
 
     vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
     checkButtons->SetParent( this );
@@ -488,20 +513,22 @@ void sivicImageViewWidget::CreateWidget()
     row++; 
     this->Script("grid %s -row %d -column 0 -sticky nsew -padx 8 -pady 1 ", this->overlayViewFrame->GetWidgetName(), row);
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 3 -padx 2 -pady 0", 
+    this->Script("grid %s -in %s -row 0 -column 0 -sticky we -columnspan 1 -padx 2 -pady 0",
                 overlayToolsLabel->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
     this->Script("grid %s -in %s -row 0 -column 1 -sticky we -columnspan 2",
                 checkButtons->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 1 -column 0  -sticky we -padx 2 -pady 1", 
-                this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 1 -column 1 -sticky we -padx 2 -pady 1", 
-                this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 1 -column 2 -sticky sw -pady 1" , 
-                this->thresholdType->GetWidgetName(), this->overlayViewFrame->GetWidgetName() ); 
-    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 3 -sticky ew -pady 1", 
+    this->Script("grid %s -in %s -row 2 -column 0  -columnspan 2 -sticky ew -pady 1",
                 this->overlayThresholdSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 4 -column 0  -columnspan 3 -sticky ew -pady 1", 
+    this->Script("grid %s -in %s -row 2 -column 2 -sticky we -padx 2 -pady 1" ,
+                this->thresholdType->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 3 -column 0  -columnspan 2 -sticky ew -pady 1",
                 this->overlayOpacitySlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 3 -column 2  -sticky we -padx 2 -pady 1",
+                this->lutBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 4 -column 0  -columnspan 2 -sticky ew -pady 1",
+                this->overlayVolumeSlider->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 4 -column 2 -sticky e -columnspan 1 -padx 2 -pady 1",
+                this->interpolationBox->GetWidgetName(), this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1 ", this->overlayViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 2 -weight 0 ", this->overlayViewFrame->GetWidgetName() );
@@ -561,6 +588,12 @@ void sivicImageViewWidget::CreateWidget()
 
     this->AddCallbackCommandObserver(
         this->volumeSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
+
+    this->AddCallbackCommandObserver(
+        this->overlayVolumeSlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+
+    this->AddCallbackCommandObserver(
+        this->overlayVolumeSlider->GetWidget(), vtkKWScale::ScaleValueStartChangingEvent );
 
     this->AddCallbackCommandObserver(
         this->overlayOpacitySlider->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
@@ -736,6 +769,23 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
         this->volumeSlider->RemoveBinding( "<Right>");
         this->volumeSlider->AddBinding( "<Right>", this->volumeSlider, increment.str().c_str() );
         this->volumeSlider->Focus();
+    } else if( caller == this->overlayVolumeSlider->GetWidget() ) {
+        int volume = static_cast<int>(this->overlayVolumeSlider->GetValue()) - 1;
+        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+            svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveOverlayVolume( volume );
+            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
+        }
+        stringstream increment;
+        increment << "SetValue " << volume + 2;
+        stringstream decrement;
+        decrement << "SetValue " << volume;
+        this->overlayVolumeSlider->RemoveBinding( "<Left>");
+        this->overlayVolumeSlider->AddBinding( "<Left>", this->overlayVolumeSlider, decrement.str().c_str() );
+        this->overlayVolumeSlider->RemoveBinding( "<Right>");
+        this->overlayVolumeSlider->AddBinding( "<Right>", this->overlayVolumeSlider, increment.str().c_str() );
+        this->overlayVolumeSlider->Focus();
+        this->overlayController->GetView()->Refresh();
+        this->plotController->GetView()->Refresh();
     } else if( caller == this->overlayOpacitySlider->GetWidget() ) {
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
             this->overlayController->SetOverlayOpacity( this->overlayOpacitySlider->GetValue()/100.0 );
