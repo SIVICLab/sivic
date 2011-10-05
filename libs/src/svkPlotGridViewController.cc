@@ -101,6 +101,8 @@ svkPlotGridViewController::~svkPlotGridViewController()
 
 void svkPlotGridViewController::Reset()
 {
+    // lets remove the mose move callback in case it was in the detailed view when we reset
+    svkPlotGridView::SafeDownCast(this->view)->detailedPlotDirector->RemoveOnMouseMoveObserver( this->rwi );
     this->view->Delete();
     this->view = NULL;
 
@@ -127,6 +129,7 @@ void svkPlotGridViewController::Reset()
     this->dragSelectionCB->SetCallback( UpdateSelection );
     this->dragSelectionCB->SetClientData( (void*)this );
     this->dragSelect = svkSpecGridSelector::New();
+
     // Create View
     this->view = svkPlotGridView::New();
     this->view->SetController(this);

@@ -70,6 +70,8 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
 
     this->xyPlotActor->LegendOn();
     this->xyPlotActor->SetLegendPosition(0.75, 0.75);
+    this->glyphGenerator = vtkGlyphSource2D::New();
+    this->glyphGenerator->SetGlyphTypeToNone();
     this->xyPlotActor->GetXAxisActor2D()->GetProperty()->SetColor(0,1,0);
     this->xyPlotActor->GetYAxisActor2D()->GetProperty()->SetColor(0,1,0);
 
@@ -98,6 +100,11 @@ svkDetailedPlotDirector::~svkDetailedPlotDirector()
     if( this->dataModifiedCB != NULL ) {
         this->dataModifiedCB->Delete();
         this->dataModifiedCB = NULL;
+    }
+
+    if( this->glyphGenerator != NULL ) {
+        this->glyphGenerator->Delete();
+        this->glyphGenerator = NULL;
     }
        
 }
@@ -159,6 +166,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
          */
         this->xyPlotActor->SetDataObjectXComponent(numPlots-1, 0);
         this->xyPlotActor->SetDataObjectYComponent(numPlots-1, component + 1);
+        this->xyPlotActor->GetLegendActor()->SetEntrySymbol(numPlots-1, this->glyphGenerator->GetOutput());
     }
 
 }
@@ -474,7 +482,7 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
     double u = pos[0];
     double v = pos[1];
     int* windowSize = rwi->GetRenderWindow()->GetSize();
-    if( director != NULL ) {
+    if( director != NULL && director->GetPlotActor() != NULL ) {
         vtkRenderer* renderer = rwi->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
         director->GetPlotActor()->ViewportToPlotCoordinate( renderer, u, v);
         if( director->GetPlotActor()->IsInPlot(renderer,pos[0],pos[1] )) {

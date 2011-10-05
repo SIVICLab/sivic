@@ -132,6 +132,7 @@ class svkDetailedPlotDirector : public vtkObject
         vtkAxisActor2D*                ruler;
         //! A callback to update the plot lines when the data changes
         vtkCallbackCommand*            dataModifiedCB;
+        vtkGlyphSource2D*              glyphGenerator;
 
         static void UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
         static void UpdateCursorLocation( vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);

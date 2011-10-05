@@ -194,6 +194,11 @@ void vtkSivicController::SetActiveSpectra( int index )
     if( this->model->DataExists("SpectroscopicData") && index >= 0 ) {
        svkImageData* oldData = model->GetDataObject("SpectroscopicData");
        if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
+           int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+           if( toggleDraw ) {
+               this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+               this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+            }
            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveSpectraIndex( index );
            svkImageData* newSpec = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActiveSpectra();
            this->model->ChangeDataObject("SpectroscopicData", newSpec );
@@ -205,6 +210,16 @@ void vtkSivicController::SetActiveSpectra( int index )
            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
            this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetTimePoint() + 1 );
            this->EnableWidgets();
+           if( this->model->DataExists("AnatomicalData") ) {
+               this->overlayController->SetInput( this->model->GetDataObject("SpectroscopicData"), svkOverlayView::MRS );
+               this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
+           }
+           if( toggleDraw ) {
+               this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+               this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+            }
+           this->plotController->GetView()->Refresh();
+           this->overlayController->GetView()->Refresh();
        }
     }
 }
@@ -369,6 +384,7 @@ void vtkSivicController::ResetApplication( )
     this->overlayController->Reset();
     this->plotController->Reset();
     this->viewRenderingWidget->ResetInfoText();
+    this->dataWidget->UpdateReferenceSpectraList();
     this->DisableWidgets();
 
 }

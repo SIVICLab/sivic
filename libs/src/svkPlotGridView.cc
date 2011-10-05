@@ -331,7 +331,11 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
             }
+
             this->AlignCamera(); 
+            this->Refresh();
+            // We need to update after the refresh because some initialization occurs during the rendering in vtkXYPlotActor
+            this->UpdateDetailedPlot( this->tlcBrc );
 
         }
 
@@ -603,6 +607,10 @@ void svkPlotGridView::SetActiveSpectraIndex( int index )
     this->activeSpectra = index;
     this->channel = this->plotGrids[index]->GetChannel();
     this->timePoint = this->plotGrids[index]->GetTimePoint();
+    // Lets put this actor on top
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->plotGrids[index]->GetPlotGridActor());
+    this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->plotGrids[index]->GetPlotGridActor());
+    this->satBands->SetInput( svkMrsImageData::SafeDownCast(this->GetActiveSpectra()) );
 }
 
 

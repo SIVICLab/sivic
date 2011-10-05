@@ -89,11 +89,23 @@ void sivicDataWidget::CreateWidget()
     this->AddCallbackCommandObserver( this->referenceSpectra->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
 }
 
+
+/*!
+ * Sets the filename for a given row.
+ *
+ * @param row
+ * @param filename
+ */
 void sivicDataWidget::SetFilename( int row, string filename )
 {
     this->referenceSpectra->GetWidget()->InsertCellText(row, 4, svkUtils::GetFilenameFromFullPath(filename).c_str());
 }
 
+
+/*!
+ *
+ *  Updates the list of loaded datasets.
+ */
 void sivicDataWidget::UpdateReferenceSpectraList( )
 {
     svkPlotGridView* plotGridView = svkPlotGridView::SafeDownCast( this->plotController->GetView() );
@@ -102,6 +114,12 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
     // We start at one since the first plot index is the active spectra above...
     for( int i = 0; i < numPlots; i ++ ) {
         svkImageData* plotData = NULL;
+        /*
+         * Since the first input to the plotController is spectra, the second
+         * is image, and the third-n is spectra we have to do some strange
+         * indexing here.
+         * TODO: Refactor plotGridView so the spectra are all in order.
+         */
         if( i == 0 ) {
             plotData = this->plotController->GetView()->GetInput( i);
         } else {
@@ -119,6 +137,9 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
                 this->referenceSpectra->GetWidget()->InsertCellTextAsInt(i, 3, 0);
             }
             this->referenceSpectra->GetWidget()->SetCellWindowCommandToCheckButton(i, 3);
+        } else if( i== 0 ) {
+        	// No input so reset
+            this->referenceSpectra->GetWidget()->DeleteAllRows();
         }
 
     }
@@ -161,6 +182,14 @@ void sivicDataWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned 
 }
 
 
+/*!
+ * Updates the progress info during processing.
+ *
+ * @param subject
+ * @param
+ * @param thisObject
+ * @param callData
+ */
 void sivicDataWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
     static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
