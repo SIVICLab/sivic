@@ -80,6 +80,7 @@ class svkDcmVolumeReader : public svkImageReader2
                                                 );
         void                                    SortFilesByInstanceNumber(
                                                     vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes,
+                                                    int numSlicesPerVol, 
                                                     bool ascending
                                                 ); 
 

@@ -475,7 +475,7 @@ void svkDcmVolumeReader::InitFileNames()
             double dotNormals = vtkMath::Dot( normal, referenceNormal );
             if ( dotNormals < .9999) {
                 isOrientationOK = false; 
-                cout << "DOT NORMAL: " << dotNormals << endl;
+                //cout << "DOT NORMAL: " << dotNormals << endl;
             }
         }
         if ( isOrientationOK ) {
@@ -527,8 +527,9 @@ void svkDcmVolumeReader::InitFileNames()
     //  outter loop should be position, inner should be volume: 
     //      for (pos = 0; pos < numPositions; pos++ ) { 
     //          for (vol= 0; vol < numVolumes; vol++)  { 
+    //  i.e. all images from a given slice are consecutive
     //  ======================================================================
-    this->SortFilesByInstanceNumber( dcmSeriesAttributes, true); 
+    this->SortFilesByInstanceNumber( dcmSeriesAttributes, uniqueSlices.size(), true); 
 
     // Finally, repopulate the file list.
     fileNames->SetNumberOfValues( dcmSeriesAttributes.size() );
@@ -662,17 +663,42 @@ void svkDcmVolumeReader::SortFilesByImagePositionPatient(
 
 /*!
  *  Sort the list of files in either ascending or descending order by InstanceNumber 
+ *  thie input is already sorted by ImagePositionPatient   
  */
 void svkDcmVolumeReader::SortFilesByInstanceNumber(
         vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes, 
+        int numSlicesPerVol, 
         bool ascending
     )
 {
 
-    if ( ascending ) {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortAscendAttribute8 ); 
-    } else {
-        vtkstd::sort( dcmSeriesAttributes.begin(), dcmSeriesAttributes.end(), SortDescendAttribute8 ); 
+
+    int counter = -1; 
+
+    //  extract all attributes from corresponding to a single slice
+    for ( int slice = 0; slice < numSlicesPerVol; slice++ ) {
+
+
+        //  Put all instances of this slice into a new vector and sort it 
+        vtkstd::vector< vtkstd::vector< vtkstd::string> > dcmSliceAttributes;
+        for ( int vol = 0; vol < this->numVolumes; vol++ ) {
+            counter++; 
+            dcmSliceAttributes.push_back( dcmSeriesAttributes[counter] );
+        }
+
+        if ( ascending ) {
+            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortAscendAttribute8 ); 
+        } else {
+            vtkstd::sort( dcmSliceAttributes.begin(), dcmSliceAttributes.end(), SortDescendAttribute8 ); 
+        }
+
+        //  Not put the images back in the correc order:
+        counter = counter - this->numVolumes; 
+        for ( int vol = 0; vol < this->numVolumes; vol++ ) {
+            counter++; 
+            dcmSeriesAttributes[counter] = dcmSliceAttributes[vol]; 
+        }
+
     }
 
     return;
