@@ -1605,14 +1605,27 @@ void svkDdfVolumeReader::InitMultiFrameDimensionModule()
         );
     }
 
-/*
+
+    //  VR AT is comprised of 4 bytes: 2 16 bit unsigned ints
+    //  e.g.: 0018,00FF would be encoded as a series of 4 bytes in 
+    //  little endian transfer syntax as:  18H,00H,FFH,00H
+    char dicomAttribute[4];
+    dicomAttribute[1] = 0x18;
+    dicomAttribute[0] = 0x00;
+    dicomAttribute[3] = 0x47;
+    dicomAttribute[2] = 0x90;
+
+
     if ( this->IsMultiCoil() ) {
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "DimensionIndexSequence",
-            1,
+            0,
             "DimensionIndexPointer",
-            "18H\\00H\\47H\\90"
+            (unsigned int*)dicomAttribute,
+            1
         );
+
+        /* 
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "DimensionIndexSequence",
             1,
@@ -1620,8 +1633,9 @@ void svkDdfVolumeReader::InitMultiFrameDimensionModule()
             //"MultiCoilDefinitionSequence"
             "18H\\00H\\47H\\90"
         );
+        */
     }
-*/
+
 }
 
 
