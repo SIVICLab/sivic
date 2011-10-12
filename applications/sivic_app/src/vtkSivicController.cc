@@ -945,10 +945,11 @@ void vtkSivicController::OpenOverlay( const char* fileName )
     }
 
 
-
     string stringFilename( fileName );
     if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
 
+        //bool onlyReadOneInputFile = true;
+        //svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
         svkImageData* data = this->model->LoadFile( stringFilename );
         if( data != NULL && data->IsA("svkMriImageData") ) {
             this->OpenOverlay(data, stringFilename);

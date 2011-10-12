@@ -209,11 +209,11 @@ void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double p
             double peakEndPt   = point->ConvertPosUnits( peakEnd, units, svkSpecPoint::PTS ); 
 
             double deltaPts    = peakEndPt - peakStartPt;  
-            peakStartPt -= 2 * deltaPts;  
+            peakStartPt -= 3 * deltaPts;  
             if ( peakStartPt < min ) {
                 peakStartPt = min;
             }
-            peakEndPt += 2 * deltaPts;  
+            peakEndPt += 3 * deltaPts;  
             if ( peakEndPt > max ) {
                 peakEndPt = max;
             }
