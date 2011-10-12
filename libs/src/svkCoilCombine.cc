@@ -253,6 +253,9 @@ void svkCoilCombine::RequestSumOfSquaresData()
     
                         }
 
+                        magnitudeData[ freq * 2 ] = pow( magnitudeData[freq * 2], 0.5 );  
+                        magnitudeData[ (freq *2) + 1 ] = magnitudeData[ freq * 2 ]; 
+
                     }
 
                     //  Now reset the array for channel 0 to the magnitude data: 
