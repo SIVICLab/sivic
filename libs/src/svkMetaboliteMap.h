@@ -77,7 +77,8 @@ class svkMetaboliteMap: public svkImageAlgorithm
 
         typedef enum {
             INTEGRATE = 0, 
-            PEAK_HT = 1 
+            PEAK_HT = 1, 
+            MAG_PEAK_HT = 2 
         }algorithm;
 
 
@@ -88,6 +89,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    SetPeakWidthPPM( float peak_width_ppm  );     
         void                    SetAlgorithmToIntegrate();     
         void                    SetAlgorithmToPeakHeight();     
+        void                    SetAlgorithmToMagPeakHeight();     
         void                    SetAlgorithm( vtkstd::string algo );     
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
@@ -112,6 +114,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    ZeroData(); 
         void                    Integrate(); 
         void                    PeakHt(); 
+        void                    MagPeakHt(); 
 
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );

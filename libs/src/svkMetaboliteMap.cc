@@ -184,10 +184,13 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
             
     }
 
+    cout << "ALGO: " << this->quantificationAlgorithm  << endl;
     if (this->quantificationAlgorithm == svkMetaboliteMap::INTEGRATE) { 
         this->Integrate(); 
     } else if (this->quantificationAlgorithm == svkMetaboliteMap::PEAK_HT) { 
         this->PeakHt(); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_PEAK_HT) { 
+        this->MagPeakHt(); 
     }
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
@@ -297,6 +300,64 @@ void svkMetaboliteMap::Integrate()
 
 
 /*! 
+ *  Peak height of magnitude spectra within specified limits. 
+ */
+void svkMetaboliteMap::MagPeakHt()
+{
+
+    this->ZeroData(); 
+
+    //  Get integration limits:
+    int startPt = 0; 
+    int endPt = 0; 
+    this->GetIntegrationPtRange(startPt, endPt); 
+
+    //  If integration limits are out of range just returned zero'd image.
+    int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
+    if ( startPt < 0 || endPt >= numSpecPoints ) {
+        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
+        return; 
+    }
+
+    int numVoxels[3]; 
+    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+    double magPeakHt; 
+    double magPeakHtTmp; 
+    for (int i = 0; i < totalVoxels; i++ ) {
+
+        if ( this->quantificationMask[i] ) {
+            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+                svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
+            ); 
+            float* specPtr = spectrum->GetPointer(0);
+
+            magPeakHt  = pow( specPtr[2*startPt], 2);     
+            magPeakHt += pow( specPtr[2*startPt + 1], 2);     
+            magPeakHt = pow( magPeakHt, 0.5); 
+
+            for ( int pt = startPt; pt <= endPt; pt ++ ) {
+
+                magPeakHtTmp  = pow( specPtr[2*pt], 2); 
+                magPeakHtTmp += pow( specPtr[2*pt + 1], 2); 
+                magPeakHtTmp  = pow(magPeakHtTmp, 0.5); 
+
+                if ( magPeakHtTmp > magPeakHt ) {
+                    magPeakHt = magPeakHtTmp;        
+                }
+            }
+        } else {
+            magPeakHt = 0.; 
+        }
+        if ( this->isVerbose ) {
+            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " peak_ht: " << magPeakHt << endl; 
+        }
+        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, magPeakHt);
+    }
+}
+
+
+/*! 
  *  Zero data
  */
 void svkMetaboliteMap::ZeroData()
@@ -376,6 +437,16 @@ void svkMetaboliteMap::SetAlgorithmToPeakHeight()
 }
 
 
+/*!
+ *
+ */
+void svkMetaboliteMap::SetAlgorithmToMagPeakHeight()
+{
+    this->quantificationAlgorithm = svkMetaboliteMap::MAG_PEAK_HT; 
+    this->Modified(); 
+}
+
+
 /*
  *  Set algo type based on string description svkMetaboliteMap::algorithm. 
  */
@@ -385,6 +456,8 @@ void svkMetaboliteMap::SetAlgorithm( vtkstd::string algo )
         this->SetAlgorithmToIntegrate(); 
     } else if ( algo.compare("PEAK_HT") == 0 ) {
         this->SetAlgorithmToPeakHeight(); 
+    } else if ( algo.compare("MAG_PEAK_HT") == 0 ) {
+        this->SetAlgorithmToMagPeakHeight(); 
     } else {
         vtkWarningWithObjectMacro(this, "SetAlgorithm(): Not a valid algorithm " + algo );
     }
