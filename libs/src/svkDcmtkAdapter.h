@@ -116,12 +116,30 @@ class svkDcmtkAdapter: public svkDcmHeader
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int         seqItemPosition,
+                            int seqItemPosition,
                             const char* elementName,
-                            unsigned int* values,
+                            char*       values, 
                             int         numValues, 
                             const char* parentSeqName = NULL,
-                            int         parentSeqItemPosition = 0
+                            int parentSeqItemPosition = 0
+                        );
+        virtual void    AddSequenceItemElement(
+                            const char*     seqName,
+                            int             seqItemPosition,
+                            const char*     elementName,
+                            unsigned short* values, 
+                            int             numValues, 
+                            const char*     parentSeqName = NULL,
+                            int             parentSeqItemPosition = 0
+                        );
+        virtual void    AddSequenceItemElement(
+                            const char*     seqName,
+                            int             seqItemPosition,
+                            const char*     elementName,
+                            unsigned int*   values,
+                            int             numValues, 
+                            const char*     parentSeqName = NULL,
+                            int             parentSeqItemPosition = 0
                         );
         virtual void    AddSequenceItemElement(
                             const char* seqName,

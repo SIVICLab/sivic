@@ -295,6 +295,37 @@ class svkDcmHeader: public vtkObject
                             const char* seqName,
                             int seqItemPosition,
                             const char* elementName,
+                            char*       values, 
+                            int         numValues, 
+                            const char* parentSeqName = NULL,
+                            int parentSeqItemPosition = 0
+                        ) = 0;
+
+
+        /*! 
+         *  Method to add a multi-valued item to a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number. 
+         */
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int seqItemPosition,
+                            const char* elementName,
+                            unsigned short* values, 
+                            int numValues, 
+                            const char* parentSeqName = NULL,
+                            int parentSeqItemPosition = 0
+                        ) = 0;
+
+        /*! 
+         *  Method to add a multi-valued item to a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number. 
+         */
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int seqItemPosition,
+                            const char* elementName,
                             unsigned int* values, 
                             int numValues, 
                             const char* parentSeqName = NULL,

@@ -861,6 +861,113 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
  *  \param parentSeqName the string name of the parent sequence
  *  \param parentSeqItemPosition the position of the item in that sequence 
  */
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, char* values, int numValues, const char* parentSeqName, int parentSeqItemPosition)
+{
+    OFCondition status; 
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    DcmItem* newItem = this->GetDcmItem(dataset, seqName, seqItemPosition); 
+
+    //  Insert a dummy val. This was the only way I was able to get this to work
+    //  for inserting multiple vals.  I'm probably missing something, but it works. 
+    status = newItem->insertEmptyElement( GetDcmTag( elementName)) ;
+    if (status.bad()) {
+        cerr << "Error: cannot insert dummy val(" << status.text() << ")" << endl;
+    }
+
+    //  Now get the element and add the array to it:    
+    DcmElement* element;
+    status = newItem->findAndGetElement( GetDcmTagKey( elementName), element);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    Uint8* inputArray = new Uint8[numValues]; 
+    for (int i = 0; i < numValues; i++) {
+        inputArray[i] = (Uint8)values[i]; 
+    }
+    status = element->putUint8Array(inputArray, numValues);
+    if (status.bad()) {
+        cerr << "Error: could not insert element(" << status.text() << ")" << endl;
+    }
+    delete[] inputArray;
+    this->Modified();
+}
+
+
+/*!
+ *  Add an item to the specified item in the specified sequence(seqName), where the sequence is 
+ *  nested within a specific parent sequence(parentSeqName) and item(parentSeqItemPosition).
+ *
+ *  \param seqName the string name of the parent sequence
+ *  \param seqItemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *  \param values array of value of the element being added to the specified item
+ *  \param numValues  number of values in values array. 
+ *  \param parentSeqName the string name of the parent sequence
+ *  \param parentSeqItemPosition the position of the item in that sequence 
+ */
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, unsigned short* values, int numValues, const char* parentSeqName, int parentSeqItemPosition)
+{
+    OFCondition status; 
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    DcmItem* newItem = this->GetDcmItem(dataset, seqName, seqItemPosition); 
+
+    //  Insert a dummy val. This was the only way I was able to get this to work
+    //  for inserting multiple vals.  I'm probably missing something, but it works. 
+    status = newItem->insertEmptyElement( GetDcmTag( elementName)) ;
+    if (status.bad()) {
+        cerr << "Error: cannot insert dummy val(" << status.text() << ")" << endl;
+    }
+
+    //  Now get the element and add the array to it:    
+    DcmElement* element;
+    status = newItem->findAndGetElement( GetDcmTagKey( elementName), element);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    Uint16* inputArray = new Uint16[numValues]; 
+    for (int i = 0; i < numValues; i++) {
+        inputArray[i] = (Uint16)values[i]; 
+    }
+    status = element->putUint16Array(inputArray, numValues);
+    if (status.bad()) {
+        cerr << "Error: could not insert element(" << status.text() << ")" << endl;
+    }
+    delete[] inputArray;
+    this->Modified();
+}
+
+
+
+/*!
+ *  Add an item to the specified item in the specified sequence(seqName), where the sequence is 
+ *  nested within a specific parent sequence(parentSeqName) and item(parentSeqItemPosition).
+ *
+ *  \param seqName the string name of the parent sequence
+ *  \param seqItemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *  \param values array of value of the element being added to the specified item
+ *  \param numValues  number of values in values array. 
+ *  \param parentSeqName the string name of the parent sequence
+ *  \param parentSeqItemPosition the position of the item in that sequence 
+ */
 void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, unsigned int* values, int numValues, const char* parentSeqName, int parentSeqItemPosition)
 {
     OFCondition status; 
@@ -878,7 +985,11 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     //  Insert a dummy val. This was the only way I was able to get this to work
     //  for inserting multiple vals.  I'm probably missing something, but it works. 
     Uint32 dummyVal = 99; 
-    newItem->putAndInsertUint32( GetDcmTag( elementName), dummyVal) ;
+    status = newItem->putAndInsertUint32( GetDcmTag( elementName), dummyVal) ;
+    //status = newItem->insertEmptyElement( GetDcmTag( elementName)) ;
+    if (status.bad()) {;
+        cerr << "Error: cannot insert dummy val(" << status.text() << ")" << endl;
+    }
 
     //  Now get the element and add the array to it:    
     DcmElement* element;
