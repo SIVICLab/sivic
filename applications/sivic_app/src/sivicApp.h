@@ -106,6 +106,7 @@ class sivicApp
         sivicDataWidget*           dataWidget;
         sivicProcessingWidget*     processingWidget;
         sivicQuantificationWidget* quantificationWidget;
+        sivicCombineWidget*        combineWidget;
         sivicImageViewWidget*      imageViewWidget;
         sivicSpectraViewWidget*    spectraViewWidget;
         sivicWindowLevelWidget*    windowLevelWidget;

@@ -32,8 +32,8 @@
  *  $Date$
  */
 
-#ifndef SVK_PREPROCESSING_WIDGET_H 
-#define SVK_PREPROCESSING_WIDGET_H 
+#ifndef SVK_COMBINE_WIDGET_H 
+#define SVK_COMBINE_WIDGET_H 
 
 #include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
@@ -56,22 +56,22 @@
 
 using namespace svk; 
 
-class sivicPreprocessingWidget : public sivicKWCompositeWidget
+class sivicCombineWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicPreprocessingWidget *New();
-        vtkTypeRevisionMacro(sivicPreprocessingWidget,sivicKWCompositeWidget);
+        static sivicCombineWidget *New();
+        vtkTypeRevisionMacro(sivicCombineWidget,sivicKWCompositeWidget);
 
 
     protected:
 
 
-        sivicPreprocessingWidget();
-        ~sivicPreprocessingWidget();
+        sivicCombineWidget();
+        ~sivicCombineWidget();
 
         vtkKWMenuButton*                zeroFillSelectorSpec;
         vtkKWMenuButton*                zeroFillSelectorCols;
@@ -101,13 +101,13 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*         progressCallback;
 
-        void                        ExecutePreprocessing();
+        void                        ExecuteCombine();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 
-        sivicPreprocessingWidget(const sivicPreprocessingWidget&);   // Not implemented.
-        void operator=(const sivicPreprocessingWidget&);  // Not implemented.
+        sivicCombineWidget(const sivicCombineWidget&);   // Not implemented.
+        void operator=(const sivicCombineWidget&);  // Not implemented.
         
 };
 
-#endif //SVK_PREPROCESSING_WIDGET_H 
+#endif //SVK_COMBINE_WIDGET_H 

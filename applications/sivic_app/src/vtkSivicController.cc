@@ -330,6 +330,14 @@ void vtkSivicController::SetQuantificationWidget( sivicQuantificationWidget* qua
 
 
 //! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetCombineWidget( sivicCombineWidget* combineWidget)
+{
+    this->combineWidget = combineWidget;
+    this->combineWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetImageViewWidget( sivicImageViewWidget* imageViewWidget )
 {
     this->imageViewWidget = imageViewWidget;

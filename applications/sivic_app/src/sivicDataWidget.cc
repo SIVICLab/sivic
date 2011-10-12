@@ -1,8 +1,8 @@
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/sivicDataWidget.cc $
- *  $Rev: 936 $
- *  $Author: jccrane $
- *  $Date: 2011-06-03 11:41:20 -0700 (Fri, 03 Jun 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  */
 
 
@@ -11,7 +11,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicDataWidget );
-vtkCxxRevisionMacro( sivicDataWidget, "$Revision: 936 $");
+vtkCxxRevisionMacro( sivicDataWidget, "$Revision$");
 
 
 /*! 

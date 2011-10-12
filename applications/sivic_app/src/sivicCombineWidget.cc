@@ -7,17 +7,17 @@
 
 
 
-#include <sivicPreprocessingWidget.h>
+#include <sivicCombineWidget.h>
 #include <vtkSivicController.h>
 
-vtkStandardNewMacro( sivicPreprocessingWidget );
-vtkCxxRevisionMacro( sivicPreprocessingWidget, "$Revision$");
+vtkStandardNewMacro( sivicCombineWidget );
+vtkCxxRevisionMacro( sivicCombineWidget, "$Revision$");
 
 
 /*! 
  *  Constructor
  */
-sivicPreprocessingWidget::sivicPreprocessingWidget()
+sivicCombineWidget::sivicCombineWidget()
 {
 
     this->zeroFillSelectorSpec = NULL;
@@ -45,7 +45,7 @@ sivicPreprocessingWidget::sivicPreprocessingWidget()
 /*! 
  *  Destructor
  */
-sivicPreprocessingWidget::~sivicPreprocessingWidget()
+sivicCombineWidget::~sivicCombineWidget()
 {
 
     if( this->zeroFillSelectorSpec != NULL ) {
@@ -120,7 +120,7 @@ sivicPreprocessingWidget::~sivicPreprocessingWidget()
 /*! 
  *  Method in superclass to be overriden to add our custom widgets.
  */
-void sivicPreprocessingWidget::CreateWidget()
+void sivicCombineWidget::CreateWidget()
 {
 /*  This method will create our main window. The main window is a 
     vtkKWCompositeWidget with a vtkKWRendWidget. */
@@ -210,9 +210,9 @@ void sivicPreprocessingWidget::CreateWidget()
     this->applyButton = vtkKWPushButton::New();
     this->applyButton->SetParent( this );
     this->applyButton->Create( );
-    this->applyButton->SetText( "Apply");
-    this->applyButton->SetBalloonHelpString("Apply Preprocessing.");
-    this->applyButton->EnabledOff();
+    this->applyButton->SetText( "Combine Magnitude");
+    this->applyButton->SetBalloonHelpString("Apply.");
+    this->applyButton->EnabledOn();
 
     //  =================================== 
     //  Apodization Selectors
@@ -313,7 +313,7 @@ void sivicPreprocessingWidget::CreateWidget()
     sliceTitle->SetParent(this);
     sliceTitle->SetJustificationToLeft();
     sliceTitle->Create();
-
+/*
     this->Script("grid %s -row 0 -column 1 -sticky wnse", specTitle->GetWidgetName(), 4);
     this->Script("grid %s -row 0 -column 2 -sticky wnse", colsTitle->GetWidgetName(), 4);
     this->Script("grid %s -row 0 -column 3 -sticky wnse", rowsTitle->GetWidgetName(), 4);
@@ -330,7 +330,7 @@ void sivicPreprocessingWidget::CreateWidget()
     this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   2);
     this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   3);
     this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 4);
-
+*/
 
     this->Script("grid %s -row %d -column 4 -sticky nwse -padx 2 -pady 1", this->applyButton->GetWidgetName(), 3);
 
@@ -353,11 +353,11 @@ void sivicPreprocessingWidget::CreateWidget()
 /*! 
  *  Method responds to callbacks setup in CreateWidget
  */
-void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
+void sivicCombineWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
     if( caller == this->applyButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecutePreprocessing();
+        this->ExecuteCombine();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -366,93 +366,44 @@ void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
 /*!
  *  Executes the combining of the channels.
  */
-void sivicPreprocessingWidget::ExecutePreprocessing() 
+void sivicCombineWidget::ExecuteCombine() 
 {
+
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    string domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
-    if( domain != "TIME") {
-        cout << "ERROR: Data must be in the time domain for pre-processing." << endl;
-        return;
-    }
+
     if( data != NULL ) {
-        string apodizeSpec(this->apodizationSelectorSpec->GetValue());
-        string apodizeCols(this->apodizationSelectorCols->GetValue());
-        string apodizeRows(this->apodizationSelectorRows->GetValue());
-        string apodizeSlices(this->apodizationSelectorSlices->GetValue());
-        string zeroFillSpec(this->zeroFillSelectorSpec->GetValue());
-        string zeroFillCols(this->zeroFillSelectorCols->GetValue());
-        string zeroFillRows(this->zeroFillSelectorRows->GetValue());
-        string zeroFillSlices(this->zeroFillSelectorSlices->GetValue());
 
-        bool executeZeroFill = false;
-        svkMrsZeroFill* zeroFill = svkMrsZeroFill::New();
-        zeroFill->SetInput(data);
+        // We'll turn the renderer off to avoid rendering intermediate steps
+        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
 
-        if( zeroFillSpec.compare("double") == 0 ) {
-            zeroFill->SetNumberOfSpecPointsToDouble();
-            executeZeroFill = true;
-        } else if( zeroFillSpec.compare("next y^2") == 0 ) {
-            zeroFill->SetNumberOfSpecPointsToNextPower2();
-            executeZeroFill = true;
-        }
-        if( zeroFillRows.compare("double") == 0 ) {
-            zeroFill->SetNumberOfRowsToDouble();
-            executeZeroFill = true;
-        } else if( zeroFillRows.compare("next y^2") == 0 ) {
-            zeroFill->SetNumberOfRowsToNextPower2();
-            executeZeroFill = true;
-        }
+        svkCoilCombine* coilCombine = svkCoilCombine::New();
+        coilCombine->SetInput( data );
 
-        if( zeroFillCols.compare("double") == 0 ) {
-            zeroFill->SetNumberOfColumnsToDouble();
-            executeZeroFill = true;
-        } else if( zeroFillCols.compare("next y^2") == 0 ) {
-            zeroFill->SetNumberOfColumnsToNextPower2();
-            executeZeroFill = true;
-        }
+        coilCombine->SetCombinationDimension( svkCoilCombine::TIME );  //for combining time points
+        coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  //for combining as magnitude data
 
-        if( zeroFillSlices.compare("double") == 0 ) {
-            zeroFill->SetNumberOfSlicesToDouble();
-            executeZeroFill = true;
-        } else if( zeroFillSlices.compare("next y^2") == 0 ) {
-            zeroFill->SetNumberOfSlicesToNextPower2();
-            executeZeroFill = true;
-        }
-        
-        if( executeZeroFill ) {
-            zeroFill->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-            this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Zero Fill...");
-            zeroFill->Update();
-            bool useFullFrequencyRange = 0;
-            bool useFullAmplitudeRange = 1;
-            bool resetAmplitude = 1;
-            bool resetFrequency = 0;
-            data->Modified();
-            zeroFill->RemoveObserver( progressCallback);
-            string stringFilename = "ZF";
-            this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                          resetAmplitude, resetFrequency );
-            this->sivicController->OpenSpectra( data, stringFilename);
-        }
-        if( apodizeSpec.compare("Lorentz") == 0 ) {
-            svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
-            vtkFloatArray* window = vtkFloatArray::New();
-            float fwhh = 4.0;
-            svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
-            af->SetInput( data );
-            af->SetWindow( window );
-            af->Update();
-            af->Delete();
-            data->Modified();
-        }
-        zeroFill->Delete();
+        coilCombine->Update();
+        data->Modified();
+        coilCombine->Delete();
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 0;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                           resetAmplitude, resetFrequency );
+        this->sivicController->ResetChannel( );
+        string stringFilename = "CombinedData";
+        this->sivicController->OpenSpectra( data, stringFilename);
+        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
+        this->plotController->GetView()->Refresh();
     }
+
     return; 
 
 }
 
 
-void sivicPreprocessingWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+void sivicCombineWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
     static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 100.0*(*(double*)(callData)) );
     static_cast<vtkKWCompositeWidget*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(

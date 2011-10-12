@@ -86,6 +86,7 @@
 #include <sivicProcessingWidget.h>
 #include <sivicPreprocessingWidget.h>
 #include <sivicQuantificationWidget.h>
+#include <sivicCombineWidget.h>
 
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
@@ -135,6 +136,7 @@ class vtkSivicController : public vtkObject
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );
         void                       SetDataWidget( sivicDataWidget* dataWidget );
         void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
+        void                       SetCombineWidget( sivicCombineWidget* CombineWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
@@ -249,6 +251,7 @@ class vtkSivicController : public vtkObject
         sivicPreprocessingWidget*      preprocessingWidget;
         sivicDataWidget*               dataWidget;
         sivicQuantificationWidget*     quantificationWidget;
+        sivicCombineWidget*            combineWidget;
         sivicImageViewWidget*          imageViewWidget;
         sivicSpectraRangeWidget*       spectraRangeWidget;
         sivicSpectraViewWidget*        spectraViewWidget;
