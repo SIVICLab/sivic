@@ -174,12 +174,13 @@ void svkDdfVolumeReader::ExecuteInformation()
         }
 
         this->InitDcmHeader(); 
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
         this->SetupOutputInformation();
 
     }
 
     //  This is a workaround required since the vtkImageAlgo executive
-    //  for the reder resets the Extent[5] value to the number of files
+    //  for the reader resets the Extent[5] value to the number of files
     //  which is not correct for 3D multislice volume files. So store
     //  the files in a temporary array until after ExecuteData has been
     //  called, then reset the array.
@@ -202,6 +203,7 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
     this->FileNames->DeepCopy(this->tmpFileNames);
     this->tmpFileNames->Delete();
     this->tmpFileNames = NULL;
+        int numVoxels[3] = { this->GetDataExtent()[1], this->GetDataExtent()[3], this->GetDataExtent()[5] }; 
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
@@ -256,6 +258,7 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         int numComponents =  this->GetHeaderValueAsInt( ddfMap, "numberOfComponents" ); 
         int numPts = this->GetHeaderValueAsInt(ddfMap, "dimensionNumberOfPoints0"); 
         int numBytesInVol = this->GetNumPixelsInVol() * numPts * numComponents * sizeof(float) * this->numTimePts; 
+cout << " pixels, timepts: " << this->GetNumPixelsInVol()  << " " << this->numTimePts << endl;
         this->specData = new float[ numBytesInVol/sizeof(float) ];  
         cmplxDataIn->read( (char*)(this->specData), numBytesInVol );
 
@@ -376,7 +379,6 @@ void svkDdfVolumeReader::InitDcmHeader()
     this->InitGeneralSeriesModule(); 
     this->InitGeneralEquipmentModule(); 
     this->InitMultiFrameFunctionalGroupsModule();
-    this->InitMultiFrameDimensionModule();
     this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyModule(); 
     this->InitMRSpectroscopyPulseSequenceModule(); 
@@ -845,7 +847,6 @@ void svkDdfVolumeReader::InitGeneralEquipmentModule()
  */
 void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
 {
-    InitSharedFunctionalGroupMacros();
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "InstanceNumber", 
@@ -871,6 +872,8 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
         this->numSlices * this->numCoils * this->numTimePts
     );
 
+    InitSharedFunctionalGroupMacros();
+    this->InitMultiFrameDimensionModule();
     InitPerFrameFunctionalGroupMacros();
 }
 
@@ -880,7 +883,6 @@ void svkDdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
  */
 void svkDdfVolumeReader::InitSharedFunctionalGroupMacros()
 {
-
     this->InitPixelMeasuresMacro();
     this->InitPlaneOrientationMacro();
     this->InitMRTimingAndRelatedParametersMacro();
@@ -1584,6 +1586,12 @@ void svkDdfVolumeReader::InitMultiFrameDimensionModule()
         "DimensionDescriptionLabel",
         "Slice"
     );
+    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+        "DimensionIndexSequence",
+        0,
+        "DimensionIndexPointer",
+        "(0020,0032)"   //  ImagePositionPatient
+    );
 
     if (this->numTimePts > 1) {
         indexCount++;
@@ -1603,38 +1611,24 @@ void svkDdfVolumeReader::InitMultiFrameDimensionModule()
             "DimensionDescriptionLabel",
             "Coil Number"
         );
+        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            0,
+            "DimensionIndexPointer",
+            "(0018,9047)"
+        );
     }
 
 
     //  VR AT is comprised of 4 bytes: 2 16 bit unsigned ints
     //  e.g.: 0018,00FF would be encoded as a series of 4 bytes in 
     //  little endian transfer syntax as:  18H,00H,FFH,00H
-    char dicomAttribute[4];
-    dicomAttribute[1] = 0x18;
-    dicomAttribute[0] = 0x00;
-    dicomAttribute[3] = 0x47;
-    dicomAttribute[2] = 0x90;
-
-
-    if ( this->IsMultiCoil() ) {
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            0,
-            "DimensionIndexPointer",
-            (unsigned int*)dicomAttribute,
-            1
-        );
-
-        /* 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            1,
-            "FunctionalGroupPointer",
-            //"MultiCoilDefinitionSequence"
-            "18H\\00H\\47H\\90"
-        );
-        */
-    }
+    //char dicomAttribute[4];
+    //dicomAttribute[1] = 0x18;
+    //dicomAttribute[0] = 0x00;
+    //dicomAttribute[3] = 0x47;
+    //dicomAttribute[2] = 0x90;
+    //string vrATString = dicomAttribute; 
 
 }
 

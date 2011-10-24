@@ -764,7 +764,7 @@ string svkDcmtkAdapter::GetStringValue(const char* name, int pos)
  *
  *  \param parentSeqName the string name of the parent sequence
  *  \param parentSeqItemPosition the position of the item in that sequence 
- *  \param elementName the string name of the parent sequence
+ *  \param elementName the string name of the item in the sequence
  */
 void svkDcmtkAdapter::AddSequenceItemElement(const char* parentSeqName, int parentSeqItemPosition, const char* elementName)
 {
@@ -984,13 +984,16 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     //  Insert a dummy val. This was the only way I was able to get this to work
     //  for inserting multiple vals.  I'm probably missing something, but it works. 
+    //this->AddSequenceItemElement(seqName, seqItemPosition, elementName, 0, parentSeqName, seqItemPosition);
+
     Uint32 dummyVal = 99; 
     status = newItem->putAndInsertUint32( GetDcmTag( elementName), dummyVal) ;
     //status = newItem->insertEmptyElement( GetDcmTag( elementName)) ;
-    if (status.bad()) {;
+    if (status.bad()) {
         cerr << "Error: cannot insert dummy val(" << status.text() << ")" << endl;
     }
-
+    this->PrintDcmHeader();
+    
     //  Now get the element and add the array to it:    
     DcmElement* element;
     status = newItem->findAndGetElement( GetDcmTagKey( elementName), element);
