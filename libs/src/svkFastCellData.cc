@@ -81,6 +81,8 @@ int svkFastCellData::FastAddArray(  vtkAbstractArray* array )
     }
 
     int index = -1;
+    // Below is the line commented out for speed. It checks for an array of the same name.
+    //this->GetAbstractArray(array->GetName(), index);
 
     // We are going to not check for the abstract array and assume new
     if (index == -1) {
@@ -132,6 +134,8 @@ void svkFastCellData::FastSetArray(int i, vtkAbstractArray *data)
      *  this call. The user must then call FinishFastAdd which will add
      *  a dummy array and then remove it. This is so that the code
      *  below gets updated appropriately.
+     *
+     *
 #ifndef VTK_LEGACY_REMOVE
    //adjust scratch tuple array
     only if when the final array is being set
@@ -171,7 +175,9 @@ void svkFastCellData::FinishFastAdd()
 
 
 /*!
- * Uses fast add array methods to do deep copies.
+ * Uses fast add array methods to do deep copies. Also uses ShallowCopy to
+ * copy field data attributes which are private and cannot be updated
+ * in this method directly.
  *
  * @param fd
  */

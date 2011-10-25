@@ -75,7 +75,6 @@
 
 #include <svkUtils.h>
 #include <svkDataViewController.h>
-#include <svkDetailedPlotViewController.h>
 #include <svkSecondaryCaptureFormatter.h>
 #include <svkImageWriterFactory.h> 
 #include <sivicViewRenderingWidget.h>
@@ -212,7 +211,6 @@ class vtkSivicController : public vtkObject
         svkDataModel*              GetModel();
         svkOverlayViewController*  GetOverlayController(); 
         svkPlotGridViewController* GetPlotController(); 
-        svkDetailedPlotViewController* GetDetailedPlotController(); 
 
         vtkKWFileBrowserDialog*    myFileBrowser;
         void                       EnableWidgets();
@@ -260,7 +258,6 @@ class vtkSivicController : public vtkObject
         sivicPreferencesWidget*        preferencesWidget;
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
-        svkDetailedPlotViewController* detailedPlotController;
         svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
         vtkKWWindowBase*               windowLevelWindow;
         vtkKWWindowBase*               preferencesWindow;

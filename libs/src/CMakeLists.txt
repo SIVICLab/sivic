@@ -187,8 +187,6 @@ ADD_LIBRARY(
     svkSpecGridSelector.cc
     svkPlotGridView.cc
     svkPlotGridViewController.cc
-    svkDetailedPlotView.cc
-    svkDetailedPlotViewController.cc
     svkXYPlotActor.cc
     svkDetailedPlotDirector.cc
     svkOverlaySelector.cc

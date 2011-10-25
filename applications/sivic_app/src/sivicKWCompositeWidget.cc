@@ -20,7 +20,6 @@ vtkCxxRevisionMacro( sivicKWCompositeWidget, "$Revision$");
 sivicKWCompositeWidget::sivicKWCompositeWidget()
 {
     this->plotController = NULL;
-    this->detailedPlotController = NULL;
     this->overlayController = NULL;
     this->sivicController = NULL;
     this->model = NULL;
@@ -53,14 +52,6 @@ void sivicKWCompositeWidget::SetPlotController( svkPlotGridViewController* plotC
 }       
 
 
-/*! 
- *  Pure setter method (this->x = x) 
- */     
-void sivicKWCompositeWidget::SetDetailedPlotController( svkDetailedPlotViewController* detailedPlotController )
-{       
-    this->detailedPlotController = detailedPlotController;
-}       
-        
 /*! 
  *  Pure setter method (this->x = x) 
  */     

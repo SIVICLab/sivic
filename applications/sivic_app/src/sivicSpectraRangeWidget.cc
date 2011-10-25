@@ -57,7 +57,6 @@ sivicSpectraRangeWidget::sivicSpectraRangeWidget()
     this->ySpecRange = NULL;
     this->specViewFrame = NULL;
     this->specRangeFrame = NULL;
-    this->detailedPlotWindow = NULL;
     this->dataRange[0] = 0;
     this->dataRange[1] = 1;
 
@@ -106,10 +105,6 @@ sivicSpectraRangeWidget::~sivicSpectraRangeWidget()
     if( this->specRangeFrame != NULL ) {
         this->specRangeFrame->Delete();
         this->specRangeFrame = NULL;
-    }
-    if( this->detailedPlotWindow != NULL ) {
-        this->detailedPlotWindow->Delete();
-        this->detailedPlotWindow = NULL;
     }
 
 }
@@ -178,8 +173,6 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType target
         highestPointRange = (float)(nearestInt(highestPointRange))+1; 
     }
 
-    this->detailedPlotController->SetUnits( this->specUnits );
-    this->detailedPlotController->GetView()->Refresh( );
     svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetPlotUnits( this->specUnits );
     this->xSpecRange->SetWholeRange( lowestPointRange, highestPointRange );
     this->xSpecRange->SetRange( lowestPoint, highestPoint ); 
@@ -343,7 +336,6 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
         );
 
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
-        this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
     }
 }
 
@@ -454,13 +446,6 @@ void sivicSpectraRangeWidget::CreateWidget()
     componentMenu->AddRadioButton("mag", this->sivicController, "SetComponentCallback 2");
     componentSelectBox->SetValue( "real" );
 
-    this->detailedPlotButton = vtkKWPushButton::New();
-    this->detailedPlotButton->SetParent(this);
-    this->detailedPlotButton->Create();
-    this->detailedPlotButton->SetText("Plot");
-    this->detailedPlotButton->SetBalloonHelpString("Gives you a detailed plot of the selected voxel. You must select only one voxel to activate");
-    this->detailedPlotButton->EnabledOff();
-
     // Create separator 
     vtkKWSeparator* separator = vtkKWSeparator::New();   
     separator->SetParent(this);
@@ -541,9 +526,6 @@ void sivicSpectraRangeWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->componentSelectBox, vtkKWMenu::MenuItemInvokedEvent);
 
-    this->AddCallbackCommandObserver(
-        this->detailedPlotButton, vtkKWPushButton::InvokedEvent);
-
     // We can delete our references to all widgets that we do not have callbacks for.
     separator->Delete();
     separatorVert->Delete();
@@ -556,37 +538,9 @@ void sivicSpectraRangeWidget::CreateWidget()
  */
 void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
- if (  caller == this->GetApplication()->GetNthWindow(0) && event == vtkKWWindowBase::WindowClosingEvent ) {
-        if( this->detailedPlotWindow != NULL ) {
-            this->GetApplication()->RemoveWindow( this->detailedPlotWindow ); 
-        }
- } else if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-        int * tlcBrc = overlayController->GetTlcBrc();
-        string acquisitionType; 
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( (tlcBrc[0] == tlcBrc[1] && tlcBrc[0] != -1)|| acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotButton->EnabledOn();
-        } else {
-            this->detailedPlotButton->EnabledOff();
-        }
-    // Respond to a selection change in the plot grid view 
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-        int * tlcBrc = overlayController->GetTlcBrc();
-        string acquisitionType; 
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( tlcBrc[0] == tlcBrc[1] && tlcBrc[0] != -1 || acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotButton->EnabledOn();
-        } else {
-            this->detailedPlotButton->EnabledOff();
-        }
+
     // Respond to a change in the x range (frequency)
-    } else if( caller == this->xSpecRange ) {
+    if( caller == this->xSpecRange ) {
         double minValue;
         double maxValue;
         xSpecRange->GetRange( minValue, maxValue ); 
@@ -632,7 +586,6 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
         );
 
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
-        this->detailedPlotController->SetWindowLevelRange( lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
 
 
     // Respond to a change in the y range (amplitude) 
@@ -683,70 +636,6 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
         this->ySpecRange->RemoveBinding( "<Down>");
         this->ySpecRange->AddBinding( "<Down>", this->ySpecRange, widenRange.str().c_str() );
         this->ySpecRange->Focus(); 
-        this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
-        //}
-    } else if( caller == this->detailedPlotButton && event == vtkKWPushButton::InvokedEvent) {
-        vtkKWApplication *app = this->GetApplication();
-        if( this->detailedPlotWindow == NULL ) {
-            this->detailedPlotWindow = vtkKWWindowBase::New(); 
-            app->AddWindow( this->detailedPlotWindow );
-            this->detailedPlotWindow->Create(); 
-            this->detailedPlotWindow->SetSize(500,250);
-            this->detailedPlotWidget = vtkKWRenderWidget::New();
-            this->detailedPlotWidget->SetParent( this->detailedPlotWindow->GetViewFrame() );
-            this->detailedPlotWidget->Create();
-            detailedPlotController->SetRWInteractor(this->detailedPlotWidget->GetRenderWindowInteractor());
-            app->Script("pack %s -expand y -fill both -anchor c",
-                    this->detailedPlotWidget->GetWidgetName());
-        }
-        bool foundDetailedWindow = false;
-        for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
-            if( app->GetNthWindow(i) == this->detailedPlotWindow ) {
-                foundDetailedWindow = true;
-            }
-        }
-
-        if( !foundDetailedWindow ) {
-            app->AddWindow( this->detailedPlotWindow );
-        }
-        int* tlcBrc = this->plotController->GetTlcBrc();
-        this->detailedPlotController->SetUnits( this->specUnits );
-        double minValue;
-        double maxValue;
-        this->xSpecRange->GetRange( minValue, maxValue ); 
-        float lowestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry1()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-        float highestPoint = this->point->ConvertPosUnits(
-            this->xSpecRange->GetEntry2()->GetValueAsDouble(),
-            this->specUnits,
-            svkSpecPoint::PTS 
-        );
-        this->detailedPlotController->SetWindowLevelRange(lowestPoint, highestPoint, svkDetailedPlotView::FREQUENCY);
-        this->detailedPlotController->GetView()->Refresh( );
-        this->detailedPlotWindow->Display();
-        this->detailedPlotController->GetView()->Refresh( );
-        this->ySpecRange->GetRange( minValue, maxValue ); 
-        this->detailedPlotController->SetWindowLevelRange(minValue, maxValue, svkDetailedPlotView::AMPLITUDE);
-        string acquisitionType;
-        if( this->model->DataExists( "SpectroscopicData" ) ) {
-            acquisitionType = this->model->GetDataObject( "SpectroscopicData" )->
-                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        }
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            this->detailedPlotController->AddPlot( 0, this->plotController->GetComponent()
-                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL)
-                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT));
-        } else {
-            this->detailedPlotController->AddPlot( tlcBrc[0], this->plotController->GetComponent() 
-                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL)
-                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT));
-        }
-        this->detailedPlotController->GetView()->Refresh( );
-        this->detailedPlotController->SetUnits( this->specUnits );
-        this->detailedPlotController->GetView()->Refresh( );
     } 
 
 

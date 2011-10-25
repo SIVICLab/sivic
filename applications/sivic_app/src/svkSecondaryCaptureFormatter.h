@@ -58,7 +58,6 @@
 #include <svkImageData.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkDetailedPlotViewController.h>
 #include <svkMultiWindowToImageFilter.h>
 
 
@@ -106,7 +105,6 @@ class svkSecondaryCaptureFormatter : public vtkObject
         void SetSivicController( vtkSivicController* sivicController );
         void SetPlotController( svkPlotGridViewController* plotController );
         void SetOverlayController( svkOverlayViewController* overlayController );
-        void SetDetailedPlotController( svkDetailedPlotViewController* detailedplotController );
         void SetModel( svkDataModel* );    
         void SetAspect( CaptureAspect aspect);
         void SetOrientation( svkDcmHeader::Orientation orientation );
@@ -125,7 +123,6 @@ class svkSecondaryCaptureFormatter : public vtkObject
 
         vtkSivicController*            sivicController;
         svkPlotGridViewController*     plotController;
-        svkDetailedPlotViewController* detailedPlotController;
         svkOverlayViewController*      overlayController;
         svkDataModel*                  model;
         CaptureAspect                  aspect;

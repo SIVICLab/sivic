@@ -81,7 +81,6 @@
 #include <svkImageWriterFactory.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkDetailedPlotViewController.h>
 #include <svkPlotGridView.h>
 #include <svkImageReaderFactory.h>
 #include <svkPhaseSpec.h>
@@ -118,15 +117,12 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
     protected:
 
 
-        vtkKWRenderWidget*              detailedPlotWidget;
         vtkKWRange*                     xSpecRange;
         vtkKWRange*                     ySpecRange;
         vtkKWMenuButton*                unitSelectBox;
         vtkKWMenuButton*                componentSelectBox;
         vtkKWFrame*                     specViewFrame;
         vtkKWFrame*                     specRangeFrame;
-        vtkKWPushButton*                detailedPlotButton;
-        vtkKWWindowBase*                detailedPlotWindow;
 
         svkSpecPoint::UnitType          specUnits;
         bool                            centerImage;

@@ -88,15 +88,6 @@ void svkSecondaryCaptureFormatter::SetPlotController( svkPlotGridViewController*
 /*! 
  *  Pure setter method (this->x = x) 
  */     
-void svkSecondaryCaptureFormatter::SetDetailedPlotController( svkDetailedPlotViewController* detailedPlotController )
-{       
-    this->detailedPlotController = detailedPlotController;
-}       
-        
-
-/*! 
- *  Pure setter method (this->x = x) 
- */     
 void svkSecondaryCaptureFormatter::SetOverlayController( svkOverlayViewController* overlayController )
 {       
     this->overlayController = overlayController;

@@ -454,16 +454,6 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    test_svkDetailedPlotView
-    test_svkDetailedPlotView.cc
-)
-
-TARGET_LINK_LIBRARIES(
-    test_svkDetailedPlotView
-    ${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
     test_svkImageCopy
     test_svkImageCopy.cc
 )

@@ -249,7 +249,6 @@ int sivicApp::Build( int argc, char* argv[] )
     this->viewRenderingWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->viewRenderingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->viewRenderingWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->viewRenderingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->viewRenderingWidget->SetApplication( this->sivicKWApp );
     this->viewRenderingWidget->Create();
 
@@ -263,73 +262,62 @@ int sivicApp::Build( int argc, char* argv[] )
     this->preprocessingWidget->SetParent(tabbedPanel );
     this->preprocessingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->preprocessingWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->preprocessingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->preprocessingWidget->SetSivicController(this->sivicController);
     this->preprocessingWidget->Create();
 
     this->processingWidget->SetParent(tabbedPanel );
     this->processingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->processingWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->processingWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->processingWidget->SetSivicController(this->sivicController);
     this->processingWidget->Create();
 
     this->combineWidget->SetParent(tabbedPanel );
     this->combineWidget->SetPlotController(this->sivicController->GetPlotController());
     this->combineWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->combineWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->combineWidget->SetSivicController(this->sivicController);
     this->combineWidget->Create();
 
     this->quantificationWidget->SetParent(tabbedPanel );
     this->quantificationWidget->SetPlotController(this->sivicController->GetPlotController());
     this->quantificationWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->quantificationWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->quantificationWidget->SetSivicController(this->sivicController);
     this->quantificationWidget->Create();
 
     this->dataWidget->SetParent(tabbedPanel );
     this->dataWidget->SetPlotController(this->sivicController->GetPlotController());
     this->dataWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->dataWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->dataWidget->SetSivicController(this->sivicController);
     this->dataWidget->Create();
 
     this->imageViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->imageViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->imageViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->imageViewWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->imageViewWidget->SetSivicController(this->sivicController);
     this->imageViewWidget->Create();
 
     this->spectraViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->spectraViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->spectraViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->spectraViewWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->spectraViewWidget->SetSivicController(this->sivicController);
     this->spectraViewWidget->Create();
 
     this->spectraRangeWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->spectraRangeWidget->SetPlotController(this->sivicController->GetPlotController());
     this->spectraRangeWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->spectraRangeWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->spectraRangeWidget->SetSivicController(this->sivicController);
     this->spectraRangeWidget->Create();
 
     this->windowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
     this->windowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->windowLevelWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->windowLevelWidget->SetSivicController(this->sivicController);
     this->windowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::REFERENCE_IMAGE );
 
     this->preferencesWidget->SetPlotController(this->sivicController->GetPlotController());
     this->preferencesWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->preferencesWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->preferencesWidget->SetSivicController(this->sivicController);
 
     this->overlayWindowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
     this->overlayWindowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
-    this->overlayWindowLevelWidget->SetDetailedPlotController(this->sivicController->GetDetailedPlotController());
     this->overlayWindowLevelWidget->SetSivicController(this->sivicController);
     this->overlayWindowLevelWidget->SetWindowLevelTarget( svkOverlayViewController::IMAGE_OVERLAY );
 

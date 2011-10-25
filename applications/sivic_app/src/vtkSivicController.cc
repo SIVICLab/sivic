@@ -55,7 +55,6 @@ vtkSivicController::vtkSivicController()
     this->spectraData = NULL;
     this->plotController    = svkPlotGridViewController::New();
     this->overlayController = svkOverlayViewController::New();
-    this->detailedPlotController = svkDetailedPlotViewController::New();
     this->imageViewWidget = NULL;
     this->spectraViewWidget = NULL;
     this->windowLevelWidget = NULL;
@@ -72,7 +71,6 @@ vtkSivicController::vtkSivicController()
     this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
     this->secondaryCaptureFormatter->SetPlotController( this->plotController );
     this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
-    this->secondaryCaptureFormatter->SetDetailedPlotController( this->detailedPlotController );
     this->secondaryCaptureFormatter->SetSivicController( this );
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
@@ -96,11 +94,6 @@ vtkSivicController::~vtkSivicController()
     if( this->plotController != NULL ) {
         this->plotController->Delete();
         this->plotController = NULL;
-    }
-
-    if( this->detailedPlotController != NULL ) {
-        this->detailedPlotController->Delete();
-        this->detailedPlotController = NULL;
     }
 
     if( this->secondaryCaptureFormatter != NULL ) {
@@ -635,7 +628,6 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
             this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
         }
 
-        this->detailedPlotController->SetInput( newData ); 
         this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
         // THe overlay controller may reslice the data, we need te make sure we get the new version of the data 
@@ -1882,13 +1874,6 @@ svkPlotGridViewController* vtkSivicController::GetPlotController()
 }
 
 
-//! Returns the plot controller
-svkDetailedPlotViewController* vtkSivicController::GetDetailedPlotController()
-{
-    return this->detailedPlotController;
-}
-
-
 //! Changes to the window leveling mouse interactor.
 void vtkSivicController::UseWindowLevelStyle() 
 {
@@ -2576,7 +2561,6 @@ void vtkSivicController::DisableWidgets()
     this->imageViewWidget->plotGridButton->EnabledOff();
     this->imageViewWidget->overlayVolumeSlider->EnabledOff();
 
-    //this->spectraViewWidget->detailedPlotButton->EnabledOff();
     this->spectraViewWidget->sliceSlider->EnabledOff();
     this->spectraViewWidget->channelSlider->EnabledOff();
     this->spectraViewWidget->timePointSlider->EnabledOff();

@@ -75,8 +75,10 @@ class svkFastCellData : public vtkCellData
         svkFastCellData();
         ~svkFastCellData();
 
-        //! A fast method that does not require name lookup
+        //! A fast method that does not require name lookup. Follow with FinshFastAdd when all arrays are added.
         virtual int  FastAddArray( vtkAbstractArray* array );
+
+        //! A fast method that does not update the number of components.Follow with FinishFastAdd when all arrays are set.
         virtual void FastSetArray(int i, vtkAbstractArray *data);
 
         //! Method must be called after using FastAddArray

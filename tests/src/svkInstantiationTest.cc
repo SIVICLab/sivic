@@ -60,8 +60,6 @@
 #include <svkDcmVolumeReader.h>
 #include <svkDdfVolumeReader.h>
 #include <svkDdfVolumeWriter.h>
-#include <svkDetailedPlotViewController.h>
-#include <svkDetailedPlotView.h>
 #include <svkDICOMEnhancedMRIWriter.h>
 #include <svkDICOMImageWriter.h>
 #include <svkDICOMMRIWriter.h>
@@ -179,10 +177,6 @@ int main ( int argc, char** argv )
     obj = svkDdfVolumeReader::New();
     obj->Delete();
     obj = svkDdfVolumeWriter::New();
-    obj->Delete();
-    obj = svkDetailedPlotViewController::New();
-    obj->Delete();
-    obj = svkDetailedPlotView::New();
     obj->Delete();
     obj = svkDICOMEnhancedMRIWriter::New();
     obj->Delete();

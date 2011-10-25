@@ -83,7 +83,6 @@
 #include <svkImageWriterFactory.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkDetailedPlotViewController.h>
 #include <svkPlotGridView.h>
 #include <svkImageReaderFactory.h>
 #include <svkPhaseSpec.h>

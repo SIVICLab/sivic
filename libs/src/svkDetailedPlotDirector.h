@@ -29,7 +29,7 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDetailedPlotView.h $
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDetailedPlotDirector.h $
  *  $Rev: 913 $
  *  $Author: beckn8tor $
  *  $Date: 2011-04-13 13:19:09 -0700 (Wed, 13 Apr 2011) $
