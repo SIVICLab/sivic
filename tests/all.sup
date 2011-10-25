@@ -743,4 +743,118 @@
    obj:*
    obj:/usr/lib64/libGL.so.256.53
 }
+{
+   <nvidia_1>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+}
+{
+   <nvidia_2>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+}
+{
+   <nvidia_3>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <nvidia_4>
+   Memcheck:Value8
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <nvidia_5>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.280.13
+}
+
+{
+   <x11_leak>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}
+
+{
+   <gl_leak>
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:/usr/lib64/libGL.so.280.13
+}
+
+{
+   <render_window_leak>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+   fun:_ZN15vtkRenderWindow6RenderEv
+}
+
+{
+   <render_window_leak_2>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8Converters
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib64/libX11.so.6.2.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib64/libXt.so.6.0.0
+   fun:_XtDisplayInitialize
+   fun:XtOpenDisplay
+   fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
+}
 

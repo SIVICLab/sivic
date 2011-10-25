@@ -41,7 +41,6 @@
 
 
 #include <svkMrsImageData.h>
-#include <svkEnhancedMRIIOD.h>
 
 
 using namespace svk;
@@ -56,13 +55,16 @@ vtkStandardNewMacro(svkMrsImageData);
  */
 svkMrsImageData::svkMrsImageData()
 {
-    topoGenerator = svkMrsTopoGenerator::New();
-#if VTK_DEBUG_ON
-    this->DebugOn();
-#endif
-
     this->numChannels = 0;
+    this->topoGenerator = svkMrsTopoGenerator::New();
+}
 
+
+/*!
+ *  Destructor.
+ */
+svkMrsImageData::~svkMrsImageData()
+{
 }
 
 
@@ -76,29 +78,204 @@ vtkObject* svkMrsImageData::NewObject()
 
 
 /*!
- *  Destructor.
+ * Populates the argument indexArray
+ * based on the input paramateres of channel and timePoint. These
+ * arrays are used in the parent class for general data access.
+ *
+ * @param channel
+ * @param timePoint
+ * @param indexArray
  */
-svkMrsImageData::~svkMrsImageData()
+void svkMrsImageData::GetIndexArray( int timePoint, int channel,  int* indexArray )
 {
-    vtkDebugMacro(<<"svkMrsImageData::~svkMrsImageData");
-    if( topoGenerator != NULL ) {
-        topoGenerator->Delete();
-        topoGenerator = NULL;
+    indexArray[svkMrsImageData::TIMEPOINT] = timePoint;
+    indexArray[svkMrsImageData::CHANNEL] = channel;
+}
+
+
+/*!
+ * Gets the spectrum at the linear index i
+ *
+ * @param i
+ * @return
+ */
+vtkDataArray* svkMrsImageData::GetSpectrum( int i )
+{
+    return this->GetArray( i );
+}
+
+
+/*!
+ *   Gets a specified data array from linear index.
+ */
+vtkDataArray* svkMrsImageData::GetSpectrumFromID( int index, int timePoint, int channel)
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    return this->GetArrayFromID( index, indexArray );
+
+}
+
+
+/*!
+ *   Gets a specified data array.
+ */
+vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, int channel)
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    return this->GetArray( i, j, k, indexArray );
+}
+
+
+/*!
+ * Gets the point volume image for the given index. User can specify a series description
+ * for the new volume.
+ *
+ * @param image
+ * @param point
+ * @param timePoint
+ * @param channel
+ * @param component
+ * @param seriesDescription
+ */
+void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel,
+int component, vtkstd::string seriesDescription )
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    this->Superclass::GetImage( image, point, seriesDescription, indexArray, component );
+}
+
+
+/*!
+ * Gets the point volume image for the given index.
+ * @param image
+ * @param point
+ * @param timePoint
+ * @param channel
+ * @param component
+ */
+void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, int component )
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    this->Superclass::GetImage( image, point, indexArray, component );
+}
+
+
+/*!
+ * Sets the point volume image for the given index.
+ *
+ * @param image
+ * @param point
+ * @param timePoint
+ * @param channel
+ */
+void svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, int channel )
+{
+    int indexArray[2] = { -1, -1 };
+    this->GetIndexArray( timePoint, channel, indexArray );
+    this->Superclass::SetImage( image, point, indexArray );
+
+}
+
+
+/*!
+ *  Gets the closests slice for a given LPS coordinate, and a sliceOrientation.
+ *
+ *  \param posLPS the position in LPS coordinates
+ *  \param orientation the orientation of the slice you wish to select
+ */
+int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
+{
+
+    int slice = -1;
+    //  this should be the origin of the selection box
+    //  (i.e. treat as a single slice).
+    string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    if( acquisitionType == "SINGLE VOXEL" ) {
+        double origin[3] = {0,0,0};
+        double spacing[3] = {0,0,0};
+        this->GetSelectionBoxCenter( origin );
+        this->GetSelectionBoxSpacing( spacing );
+        int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing );
+    } else {
+       slice = Superclass::GetClosestSlice( posLPS, sliceOrientation );
+    }
+
+    return slice;
+
+}
+
+
+/*!
+ *  Gets the size for a given volume index.
+ *
+ * @param volumeIndex
+ * @return
+ */
+int svkMrsImageData::GetVolumeIndexSize( int volumeIndex )
+{
+    if( volumeIndex == 0 ) {
+        return this->GetDcmHeader()->GetNumberOfTimePoints();
+    } else if( volumeIndex == 1 ) {
+        return this->GetDcmHeader()->GetNumberOfCoils();
+    } else {
+        return -1;
     }
 }
 
 
 /*!
- *  Returns the number of voxels in the data set. 
+ *  svkMrsImageData has only two dimension indices: channel, timepoint.
+ *
+ * @return
  */
-void svkMrsImageData::GetNumberOfVoxels(int numVoxels[3])
+int svkMrsImageData::GetNumberOfVolumeDimensions( )
 {
-    numVoxels[0] = (this->GetExtent())[1];
-    numVoxels[1] = (this->GetExtent())[3];
-    numVoxels[2] = (this->GetExtent())[5];
+    return 2;
+}
+/*!
+ *  Gets the number of channels in the dataset. The first time it is called
+ *  it gets the number of channels from the header, after that it stores
+ *  the value in a member variable.
+ */
+int svkMrsImageData::GetNumberOfChannels()
+{
+    if( this->numChannels == 0 ) {
+        this->numChannels = this->GetDcmHeader()->GetNumberOfCoils();
+    }
+    return this->numChannels;
 }
 
- 
+
+/*!
+ * Estimates the data range for the given timepoint, channel, index range, and voxel range.
+ *
+ * @param range output object
+ * @param minPt lowest point to consider in determining range
+ * @param maxPt highest point to consider in determining range
+ * @param component the component you want to calculate
+ * @param tlcBrc the voxel range you are interested in
+ * @param timePoint the timePoint you are interested in
+ * @param channel the channel you are interested in
+ */
+void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, int component, int* tlcBrc, int timePoint, int channel)
+{
+        string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        int indexArray[2] = { -1, -1 };
+        this->GetIndexArray( timePoint, channel, indexArray );
+        if( acquisitionType != "SINGLE VOXEL" ) {
+            int tlcBrcInSelection[2];
+            this->GetTlcBrcInSelectionBox( tlcBrcInSelection );
+            Superclass::EstimateDataRange(range, minPt, maxPt, component, tlcBrcInSelection, indexArray );
+        } else {
+            Superclass::EstimateDataRange(range, minPt, maxPt, component, tlcBrc, indexArray );
+        }
+}
+
+
 /*!
  *  Creates an unstructured grid that represents the selection box.
  *
@@ -112,14 +289,14 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
 
         double thickness;
         double* center = new double[3];
-        double* normal = new double[3]; 
+        double* normal = new double[3];
 
         vtkPoints* planePoints = vtkPoints::New();
         vtkFloatArray* planeNormals = vtkFloatArray::New();
         planeNormals->SetNumberOfComponents(3);
         planeNormals->SetNumberOfTuples(numberOfItems * 2);
 
-        int index = 0;   // Used to index planes, as opposed to slabs 
+        int index = 0;   // Used to index planes, as opposed to slabs
 
         for (int i = 0; i < numberOfItems; i++) {
 
@@ -139,16 +316,16 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
             normal[2] = strtod(header->GetStringSequenceItemElement(
                         "VolumeLocalizationSequence", i, "SlabOrientation", 2).c_str(),NULL);
 
-            //  Top Point of plane 
-            planePoints->InsertPoint(index, center[0] + normal[0] * (thickness/2), 
+            //  Top Point of plane
+            planePoints->InsertPoint(index, center[0] + normal[0] * (thickness/2),
                     center[1] + normal[1] * (thickness/2),
                     center[2] + normal[2] * (thickness/2) );
             planeNormals->SetTuple3( index, normal[0], normal[1], normal[2] );
 
             index++; // index is per plane
 
-            //  Bottom Point of plane 
-            planePoints->InsertPoint(index, center[0] - normal[0] * (thickness/2), 
+            //  Bottom Point of plane
+            planePoints->InsertPoint(index, center[0] - normal[0] * (thickness/2),
                     center[1] - normal[1] * (thickness/2),
                     center[2] - normal[2] * (thickness/2) );
             planeNormals->SetTuple3( index, -normal[0], -normal[1], -normal[2] );
@@ -170,12 +347,12 @@ void svkMrsImageData::GenerateSelectionBox( vtkUnstructuredGrid* selectionBoxGri
         vtkPoints* selectionBoxPoints = vtkPoints::New();
         selectionBoxPoints->SetNumberOfPoints(numVerticies);
         for( int i = 0; i < numVerticies; i++ ) {
-            selectionBoxPoints->InsertPoint(i, vertices[i*numDims], 
-                    vertices[i*numDims + 1], 
+            selectionBoxPoints->InsertPoint(i, vertices[i*numDims],
+                    vertices[i*numDims + 1],
                     vertices[i*numDims + 2]   );
         }
         // And now lets use a Hexahedron to represent them.
-        // The point ID's must be in a specific order for this to work, 
+        // The point ID's must be in a specific order for this to work,
         // hence the variation in SetId calls. See the vtkHexahedron documentation.
         vtkHexahedron* selectionBox = vtkHexahedron::New();
         selectionBox->GetPointIds()->SetNumberOfIds( numVerticies );
@@ -225,7 +402,7 @@ void svkMrsImageData::GetSelectionBoxCenter( double* selBoxCenter )
     selBoxCenter[1] = 0;
     selBoxCenter[2] = 0;
 
-    vtkUnstructuredGrid* selBox = vtkUnstructuredGrid::New(); 
+    vtkUnstructuredGrid* selBox = vtkUnstructuredGrid::New();
     this->GenerateSelectionBox( selBox );
     vtkPoints* selBoxPoints = selBox->GetPoints();
 
@@ -236,7 +413,7 @@ void svkMrsImageData::GetSelectionBoxCenter( double* selBoxCenter )
                 selBoxCenter[i] += selBoxPoints->GetPoint(j)[i];
             }
             selBoxCenter[i] /= numPoints;
-        } 
+        }
         selBox->Delete();
     }
 
@@ -254,113 +431,12 @@ void svkMrsImageData::GetSelectionBoxDimensions( float* dims )
         for (int i = 0; i < numberOfItems; i++) {
             dims[i] = header->GetFloatSequenceItemElement("VolumeLocalizationSequence", i, "SlabThickness" );
         }
-    } else { 
+    } else {
         dims[0] = 0;
         dims[1] = 0;
         dims[2] = 0;
     }
 
-}
-
-
-/*!
- *   Gets a specified data array from linear index.
- */
-vtkDataArray* svkMrsImageData::GetSpectrumFromID( int index, int timePoint, int channel)
-{
-    int indexX;
-    int indexY;
-    int indexZ;
-    this->GetIndexFromID( index, &indexX, &indexY, &indexZ );
-    return this->GetSpectrum( indexX, indexY, indexZ, timePoint, channel);
-}
-
-
-/*!
- *   Gets a specified data array.
- */
-vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, int channel)
-{
-
-    // We are getting the number of dimensions and numtimepoints to make sure the variables are up to date
-    int* dims = this->GetDimensions();
-    int numTimePoints = this->GetDcmHeader()->GetNumberOfTimePoints();
-
-    int linearIndex = i + j * (dims[0]-1) + k * (dims[0]-1) * (dims[1]-1) 
-                        + timePoint * (dims[0]-1) * (dims[1]-1) * (dims[2]-1)
-                        + channel   * (dims[0]-1) * (dims[1]-1) * (dims[2]-1) * numTimePoints;
-    return this->GetSpectrum( linearIndex ); 
-}
-
-
-/*!
- *   Gets a spectrum at the specified linear index 
- */
-vtkDataArray* svkMrsImageData::GetSpectrum( int linearIndex )
-{
-    return this->GetCellData()->GetArray( linearIndex );
-}
-
-
-/*! 
- *  Makes sure the range gets updated when the object is modified. It searches all arrays for each
- *  component to determine maximum and minimums
- */     
-void svkMrsImageData::UpdateRange( int component )
-{
-    int* extent = this->GetExtent(); 
-    double realRange[2];
-    double imagRange[2];
-    double magRange[2];
-    realRange[0] = VTK_DOUBLE_MAX;
-    realRange[1] = VTK_DOUBLE_MIN;
-    imagRange[0] = VTK_DOUBLE_MAX;
-    imagRange[1] = VTK_DOUBLE_MIN;
-    magRange[0] = VTK_DOUBLE_MAX;
-    magRange[1] = VTK_DOUBLE_MIN;
-    int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePoints  = this->GetDcmHeader()->GetNumberOfTimePoints();
-    int numFrequencyPoints = this->GetCellData()->GetNumberOfTuples();
-    float* tuple;
-    double magnitude;
-    for (int z = extent[4]; z <= extent[5]-1; z++) {
-        for (int y = extent[2]; y <= extent[3]-1; y++) {
-            for (int x = extent[0]; x <= extent[1]-1; x++) {
-                for( int channel = 0; channel < numChannels; channel++ ) {
-                    for( int timePoint = 0; timePoint < numTimePoints; timePoint++ ) {
-                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( this->GetSpectrum( x, y, z, timePoint, channel ) );
-                        float* spectrumPtr = spectrum->GetPointer(0);
-                        for (int i = 0; i < numFrequencyPoints; i++) {
-                            tuple = spectrumPtr + 2*i;
-                            if( component == 0 ){
-                                realRange[0] = tuple[0] < realRange[0]
-                                    ? tuple[0] : realRange[0];
-                                realRange[1] = tuple[0] > realRange[1] 
-                                    ? tuple[0] : realRange[1];
-                            } else if (component == 1 ) {
-                                imagRange[0] = tuple[1] < imagRange[0]
-                                    ? tuple[1] : imagRange[0];
-                                imagRange[1] = tuple[1] > imagRange[1]
-                                    ? tuple[1] : imagRange[1];
-                            } else if (component == 2 ) {
-
-                                magnitude = pow( pow(static_cast<double>(tuple[0]), static_cast<double>(2) )
-                                        + pow( static_cast<double>(tuple[1]), static_cast<double>(2)),0.5);
-
-                                magRange[0] = magnitude < magRange[0]
-                                    ? magnitude : magRange[0];
-                                magRange[1] = magnitude > magRange[1]
-                                    ? magnitude : magRange[1];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    this->SetDataRange( realRange, svkImageData::REAL );
-    this->SetDataRange( imagRange, svkImageData::IMAGINARY );
-    this->SetDataRange( magRange, svkImageData::MAGNITUDE );
 }
 
 
@@ -389,40 +465,40 @@ bool svkMrsImageData::IsSliceInSelectionBox( int slice, svkDcmHeader::Orientatio
     vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::New();
     this->GenerateSelectionBox( uGrid );
     vtkPoints* selBoxPoints = uGrid->GetPoints();
-    double projectedSelBoxRange[2]; 
+    double projectedSelBoxRange[2];
     projectedSelBoxRange[0] = VTK_DOUBLE_MAX;
     projectedSelBoxRange[1] = -VTK_DOUBLE_MAX;
     double projectedDistance;
     if( selBoxPoints == NULL ) {
-        return false; 
+        return false;
     }
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal ); 
+        projectedDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
         if( projectedDistance < projectedSelBoxRange[0]) {
-            projectedSelBoxRange[0] = projectedDistance; 
+            projectedSelBoxRange[0] = projectedDistance;
         }
         if( projectedDistance > projectedSelBoxRange[1]) {
-            projectedSelBoxRange[1] = projectedDistance; 
+            projectedSelBoxRange[1] = projectedDistance;
         }
     }
 
-    double projectedSliceRange[2]; 
+    double projectedSliceRange[2];
     projectedSliceRange[0] = VTK_DOUBLE_MAX;
     projectedSliceRange[1] = -VTK_DOUBLE_MAX;
     for( int i = 0; i < sliceCell->GetPoints()->GetNumberOfPoints(); i++) {
-        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), sliceNormal ); 
+        projectedDistance = vtkMath::Dot( sliceCell->GetPoints()->GetPoint(i), sliceNormal );
         if( projectedDistance < projectedSliceRange[0]) {
-            projectedSliceRange[0] = projectedDistance; 
+            projectedSliceRange[0] = projectedDistance;
         }
         if( projectedDistance > projectedSliceRange[1]) {
-            projectedSliceRange[1] = projectedDistance; 
+            projectedSliceRange[1] = projectedDistance;
         }
     }
     sliceCell->Delete();
     double selBoxCenter = projectedSelBoxRange[0] +  (projectedSelBoxRange[1] - projectedSelBoxRange[0])/2;
     double sliceCenter = projectedSliceRange[0] + (projectedSliceRange[1] - projectedSliceRange[0])/2;
     bool inSlice = false;
-    if( ( projectedSelBoxRange[0] > projectedSliceRange[0] && projectedSelBoxRange[0] < sliceCenter 
+    if( ( projectedSelBoxRange[0] > projectedSliceRange[0] && projectedSelBoxRange[0] < sliceCenter
         )   || ( projectedSelBoxRange[1] > sliceCenter && projectedSelBoxRange[1] < projectedSliceRange[1]
             )   || ( sliceCenter > projectedSelBoxRange[0] && sliceCenter < projectedSelBoxRange[1]
                 ) ){
@@ -430,19 +506,6 @@ bool svkMrsImageData::IsSliceInSelectionBox( int slice, svkDcmHeader::Orientatio
     }
     uGrid->Delete();
     return inSlice;
-}
-
-
-/*!
- *  Get the last slice index for a given orientation. This is different for cell data so
- *  that is why it is overloaded.
- *
- *  \param sliceOrientation the orientation whose last slice you wish to get
- *  \return the last slice
- */
-int svkMrsImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
-{
-    return this->Superclass::GetLastSlice( sliceOrientation ) - 1;
 }
 
 
@@ -471,21 +534,21 @@ void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
  *  Get the origin of the selection box as defined in the images coordinate system (dcos).
  *  The origin is defined as the point minimum point in the 3 dcos directions.
  *
- *  eg. 
+ *  eg.
  *      For vector (0,0,1) the origin would be the most negative z value.
- *      For vector (0,0,-1) the origin would be the most positive z value. 
+ *      For vector (0,0,-1) the origin would be the most positive z value.
  *
  *  To calculate the origin we start by getting the vertecies of the selection
- *  box. The gemoetry of the selection box is determined by the method 
- *  GenerateSelectionBox which stores the results as an unstructured grid of 
+ *  box. The gemoetry of the selection box is determined by the method
+ *  GenerateSelectionBox which stores the results as an unstructured grid of
  *  points with a single cell that represent the volume of the selection. As
- *  such the points are not ordered so we have no idea which point is the 
+ *  such the points are not ordered so we have no idea which point is the
  *  origin relative to our dcos.
  *
- *  To make this determination we take the dot product of each point with each axis' unit 
- *  vector in the dcos. This gives us a projection of the point onto a vector that points 
- *  along the direction of the axis of the dataset and intersects 0. If we project each 
- *  point onto each axis the "origin" is going to have the lowest value when projected 
+ *  To make this determination we take the dot product of each point with each axis' unit
+ *  vector in the dcos. This gives us a projection of the point onto a vector that points
+ *  along the direction of the axis of the dataset and intersects 0. If we project each
+ *  point onto each axis the "origin" is going to have the lowest value when projected
  *  onto each axis.
  *
  *  To avoid precision errors we are going to sum the distances in all three projected
@@ -494,7 +557,7 @@ void svkMrsImageData::GetSelectionBoxSpacing( double spacing[3] )
  *  them onto the axis perpendicular to the plane. Geometrically these should all
  *  project to exactly the same value (assuming the selection box is perfectly aligned
  *  with the dcos), but in practice this calculation can be off by a very small amount.
- *  This error becomes insignificant when you sum the distances in all three directions. 
+ *  This error becomes insignificant when you sum the distances in all three directions.
  *
  *
  *  \param orgin target array
@@ -506,14 +569,14 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
     this->GenerateSelectionBox( uGrid );
 
     // Row Normal is Parallel to the DICOM colums
-    double rowNormal[3]; 
+    double rowNormal[3];
     this->GetDataBasis( rowNormal, svkImageData::ROW );
 
     // Column Normal is Parallel to the DICOM rows
-    double columnNormal[3]; 
+    double columnNormal[3];
     this->GetDataBasis( columnNormal, svkImageData::COLUMN );
 
-    double sliceNormal[3]; 
+    double sliceNormal[3];
     this->GetDataBasis( sliceNormal, svkImageData::SLICE );
 
     // We can get the points from the unstructured grid but the order is arbitrary
@@ -539,7 +602,7 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
     double distance = VTK_DOUBLE_MAX;
 
     for( int i = 0; i < selBoxPoints->GetNumberOfPoints(); i++) {
-        // Lets project the point onto each axis  
+        // Lets project the point onto each axis
         rowDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), rowNormal );
         columnDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), columnNormal );
         sliceDistance = vtkMath::Dot( selBoxPoints->GetPoint(i), sliceNormal );
@@ -562,57 +625,8 @@ void svkMrsImageData::GetSelectionBoxOrigin(  double origin[3] )
 
 
 /*!
- *  Gets the closests slice for a given LPS coordinate, and a sliceOrientation.
- *
- *  \param posLPS the position in LPS coordinates
- *  \param orientation the orientation of the slice you wish to select 
- */
-int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
-{
-
-    double* origin  = new double[3];
-    this->GetDcmHeader()->GetOrigin(origin, 0);
-    double* spacing = this->GetSpacing();
-
-    //  this should be the origin of the selection box 
-    //  (i.e. treat as a single slice). 
-    string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    if( acquisitionType == "SINGLE VOXEL" ) {
-        origin = new double[3];
-        spacing = new double[3];
-        this->GetSelectionBoxCenter( origin ); 
-        this->GetSelectionBoxSpacing( spacing );
-    } 
-
-    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing ); 
-
-    if( acquisitionType == "SINGLE VOXEL" ) {
-        delete[] spacing;
-    } 
-
-    delete[] origin;
-
-    return slice;
-}
-
-
-/*! 
- *  Gets the number of channels in the dataset. The first time it is called
- *  it gets the number of channels from the header, after that it stores
- *  the value in a member variable.
- */
-int svkMrsImageData::GetNumberOfChannels()
-{
-    if( this->numChannels == 0 ) {
-        this->numChannels = this->GetDcmHeader()->GetNumberOfCoils();
-    }
-    return this->numChannels;
-}
-
-
-/*!
  *  Method takes all points that define our selection box and determines the maximum and minimum point.
- *  
+ *
  *  \param minPoint the lowest point (most negative)
  *  \param maxPoint the highest point (most positive)
  *  \param tolerance ranges from 0-1, allows you to push slightly past the points for selection purposes
@@ -640,12 +654,12 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
         int maxCornerIndex;
         // Case for no selection box
         if( cellBoxPoints == NULL ) {
-            minPoint[0] = 0; 
-            minPoint[1] = 0; 
-            minPoint[2] = 0; 
-            maxPoint[0] = 0; 
-            maxPoint[1] = 0; 
-            maxPoint[2] = 0; 
+            minPoint[0] = 0;
+            minPoint[1] = 0;
+            minPoint[2] = 0;
+            maxPoint[0] = 0;
+            maxPoint[1] = 0;
+            maxPoint[2] = 0;
             return;
         }
         for( int i = 0; i < cellBoxPoints->GetNumberOfPoints(); i++ ) {
@@ -690,8 +704,8 @@ void svkMrsImageData::GetSelectionBoxMaxMin( double minPoint[3], double maxPoint
  *  -1,-1 is returned as tlcBrc.
  *
  *  \param tlcBrc the destination for the result of the calculation
- *  \param slice the slice you wish to project the results onto. 
- *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *  \param slice the slice you wish to project the results onto.
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the
  *                   voxel must be within the selection box to be selected
  */
 void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice, double tolerance )
@@ -709,11 +723,11 @@ void svkMrsImageData::Get2DProjectedTlcBrcInSelectionBox( int tlcBrc[2], svkDcmH
 
 /*!
  *  Calculates the top left corner, and bottom right corner (high index-low index) of all
- *  voxels that lie within the selection box for a given slice. 
+ *  voxels that lie within the selection box for a given slice.
  *
  *  \param tlcBrc the destination for the result of the calculation
  *  \param slice the slice you wish to project the results onto. If the slice is not in the volume a 3D range is returned.
- *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the
  *                   voxel must be within the selection box to be selected
  */
 void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orientation orientation, int slice, double tolerance )
@@ -755,8 +769,8 @@ void svkMrsImageData::GetTlcBrcInSelectionBox( int tlcBrc[2], svkDcmHeader::Orie
  *  each voxels.
  *
  *  \param tlcVoxel the destination for the result
- *  \param brcVoxel the destination for the result 
- *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *  \param brcVoxel the destination for the result
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the
  *                   voxel must be within the selection box to be selected
  */
 void svkMrsImageData::Get3DVoxelsInSelectionBox( int tlcVoxel[3], int brcVoxel[3], double tolerance )
@@ -770,10 +784,10 @@ void svkMrsImageData::Get3DVoxelsInSelectionBox( int tlcVoxel[3], int brcVoxel[3
 
 /*!
  *  Calculates the top left corner, and bottom right corner (high index-low index) of all
- *  voxels that lie within the selection box for a given slice. 
+ *  voxels that lie within the selection box for a given slice.
  *
  *  \param tlcBrc the destination for the result of the calculation
- *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the 
+ *  \param tolerance the tolerance ranges from 0.0-1.0 and determines what fraction of the
  *                   voxel must be within the selection box to be selected
  */
 void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance )
@@ -782,11 +796,11 @@ void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance
 }
 
 
-/*
- *  Generates data array representing binary mask indicating whether a given voxel is within 
- *  the selection box or the specified fraction (tolerane) of a voxel is within the selection box.   
+/*!
+ *  Generates data array representing binary mask indicating whether a given voxel is within
+ *  the selection box or the specified fraction (tolerane) of a voxel is within the selection box.
  *  length of mask array is number of voxels in data set.  mask values are 0, not in selected
- *  volume, or 1, in selected volume.  Mask must be pre allocated. 
+ *  volume, or 1, in selected volume.  Mask must be pre allocated.
  */
 void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
 {
@@ -811,7 +825,7 @@ void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
         this->Get3DVoxelsInSelectionBox(
             min,
             max,
-            tolerance 
+            tolerance
         );
 
         int voxelIndex[3];
@@ -841,360 +855,3 @@ void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
 
     }
 }
-
-
-
-
-/*!
- *  This will get the top left corner, and bottom right hand corner (low index-high index) for 
- *  a given selection and slice. It assumes the userSelection defines a minimum and maximum
- *  range and that the user wishes to select all voxels within that range (for a given slice)
- *  in a regular box aligned with the dcos having corners at the minimum and maximum values.
- *  If no slice is defined 
- *
- *  \param tlcBrc the destination for the result of the calculation
- *  \param userSelection the [minx, maxx, miny, maxy, minz, maxz] selection range 
- *  \param slice the slice within which to make the selection, if slice is outside of the range
- *               then the resulting tlcBrc will span the slices in the given selection
- */
-void svkMrsImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelection[6], 
-                                                svkDcmHeader::Orientation orientation, int slice )
-{
-    orientation = (orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
-                                this->GetDcmHeader()->GetOrientationType() : orientation;
-    if( userSelection != NULL ) {
-        double worldStart[3]; 
-        double worldEnd[3]; 
-        worldStart[0] = userSelection[0]; 
-        worldStart[1] = userSelection[2]; 
-        worldStart[2] = userSelection[4]; 
-        worldEnd[0] = userSelection[1]; 
-        worldEnd[1] = userSelection[3]; 
-        worldEnd[2] = userSelection[5]; 
-
-        int tlcIndex[3];
-        int brcIndex[3];
-        this->GetIndexFromPosition( worldStart, tlcIndex );
-        this->GetIndexFromPosition( worldEnd, brcIndex );
-        int* extent = this->GetExtent();
-        
-        int tmp;
-        for( int i = 0; i < 3; i++ ) {
-            if( tlcIndex[i] > brcIndex[i] ) {
-                tmp = brcIndex[i]; 
-                brcIndex[i] = tlcIndex[i];
-                tlcIndex[i] = tmp;
-            }
-        }
-
-        // This checks for out of bounds, if out of bounds use the end of the extent
-        tlcIndex[2] = (tlcIndex[2] >= extent[5]) ? extent[5]-1 : tlcIndex[2];
-        tlcIndex[1] = (tlcIndex[1] >= extent[3]) ? extent[3]-1 : tlcIndex[1];
-        tlcIndex[0] = (tlcIndex[0] >= extent[1]) ? extent[1]-1 : tlcIndex[0];
-        brcIndex[2] = (brcIndex[2] >= extent[5]) ? extent[5]-1 : brcIndex[2];
-        brcIndex[1] = (brcIndex[1] >= extent[3]) ? extent[3]-1 : brcIndex[1];
-        brcIndex[0] = (brcIndex[0] >= extent[1]) ? extent[1]-1 : brcIndex[0];
-        tlcIndex[2] = (tlcIndex[2] < extent[4]) ? extent[4] : tlcIndex[2];
-        tlcIndex[1] = (tlcIndex[1] < extent[2]) ? extent[2] : tlcIndex[1];
-        tlcIndex[0] = (tlcIndex[0] < extent[0]) ? extent[0] : tlcIndex[0];
-        brcIndex[2] = (brcIndex[2] < extent[4]) ? extent[4] : brcIndex[2];
-        brcIndex[1] = (brcIndex[1] < extent[2]) ? extent[2] : brcIndex[1];
-        brcIndex[0] = (brcIndex[0] < extent[0]) ? extent[0] : brcIndex[0];
-        int lastSlice  = this->GetLastSlice( orientation );
-        int firstSlice = this->GetFirstSlice( orientation );
-        if( slice >= firstSlice && slice <= lastSlice ) {
-            brcIndex[ this->GetOrientationIndex( orientation) ] = slice; 
-            tlcIndex[ this->GetOrientationIndex( orientation) ] = slice; 
-        }
-        tlcBrc[0] = tlcIndex[2]*extent[3] * extent[1] + tlcIndex[1]*extent[1] + tlcIndex[0]; 
-        tlcBrc[1] = brcIndex[2]*extent[3] * extent[1] + brcIndex[1]*extent[1] + brcIndex[0]; 
-    }
-} 
-
-
-/*!
- *   Method will extract a volume into a vtkImageData object representing
- *   a single point in the spectra. This is usefull for spatial FFT's.
- *
- *  \param target image the point image (must be initialized)
- *  \param point the point in the array you wish operate on 
- *  \param component the component to operate on 
- *  \param timePoint the time point to operate on 
- *  \param channel the the channel to operate on 
- *  \param component (0 = real, 1=im, 2=cmplx) 
- *
- */
-void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, 
-int component, vtkstd::string seriesDescription ) 
-{
-    if( image != NULL ) {
-
-        svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
-        iod->SetDcmHeader( image->GetDcmHeader() );
-        iod->InitDcmHeader();
-        iod->Delete(); 
-        
-        this->GetDcmHeader()->ConvertMrsToMriHeader( 
-            image->GetDcmHeader(), 
-            VTK_DOUBLE, 
-            seriesDescription
-        );
-
-        this->GetImage( image, point, timePoint, channel, component ); 
-    }
-}
-
-
-/*!
- *   Method will extract a volume into a vtkImageData object representing
- *   a single point in the spectra. This is usefull for spatial FFT's.
- *
- *  \param target image the point image (must be initialized)
- *  \param point the point in the array you wish operate on 
- *  \param component the component to operate on 
- *  \param timePoint the time point to operate on 
- *  \param channel the the channel to operate on 
- *  \param component (0 = real, 1=im, 2=cmplx) 
- *
- */
-void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, int component ) 
-{
-
-    if( image != NULL ) {
-
-        int numComponents = 2; 
-        if ( component < 2 ) {
-            numComponents = 1; 
-        } 
-
-        // Setup image dimensions
-        image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
-
-        image->SetScalarTypeToDouble( );
-        image->SetNumberOfScalarComponents( numComponents );
-        image->AllocateScalars();
-
-        image->CopyDcos( this );
-        image->GetIncrements();
-
-        // Create a float array to hold the pixel data
-        vtkDoubleArray* pixelData = vtkDoubleArray::New();
-        pixelData->SetNumberOfComponents( numComponents );
-        pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
-        pixelData->SetName("pixels");
-        double* pixels = pixelData->GetPointer(0);
-        int linearIndex = 0;
-        int* dims = image->GetDimensions();
-        double* tuple;
-        vtkDataArray* spectrum;
-        for (int z = Extent[4]; z < Extent[5]; z++) {
-            for (int y = Extent[2]; y < Extent[3]; y++) {
-                for (int x = Extent[0]; x < Extent[1]; x++) {
-                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-
-                    linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[0]) ) + x; 
-                    tuple = spectrum->GetTuple( point );
-                    if ( numComponents == 2 ) {
-                        pixels[2*linearIndex] = tuple[0];
-                        pixels[2*linearIndex+1] = tuple[1];
-                    } else {
-                        pixels[linearIndex] = tuple[0];
-                    }
-                }
-            }
-        }
-        image->GetPointData()->SetScalars( pixelData );
-        image->Modified();
-
-        pixelData->Delete();
-    }
-
-}
-
-
-/*!
- *  Determins the number of slices for a given orientation.
- */
-int svkMrsImageData::GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation)
-{
-    sliceOrientation = (sliceOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ? 
-                                this->GetDcmHeader()->GetOrientationType() : sliceOrientation;
-    int index = this->GetOrientationIndex( sliceOrientation );
-    return this->GetDimensions()[index] - 1;
- 
-}
-
-
-/*!
- *   Attempts to estimate the data range for a given frequency range. It finds the
- *   average maximum/minimum then adds three standard deviations. This should cover
- *   around 99% of the peaks.
- *
- *   \param min output variable-- the minimum value in the given pt range
- *   \param max output variable-- the maximum value in the given pt range
- *   \param minPt the start of the point range
- *   \param maxPt the end of the point range
- *   \param timePoint the timepoint to be looked at 
- *   \param channel the timepoint to be looked at 
- */
-void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, int component
-                                                                              , int timePoint
-                                                                              , int channel  )
-{
-        range[0] = VTK_DOUBLE_MAX;
-        range[1] = VTK_DOUBLE_MIN;
-        vtkDataArray* spectrum = NULL;
-        int min[3] = {Extent[0], Extent[2], Extent[4]}; 
-        int max[3] = {Extent[1], Extent[3], Extent[5]}; 
-        string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        if( acquisitionType != "SINGLE VOXEL" ) {
-            int tlcBrc[2];
-            this->GetTlcBrcInSelectionBox( tlcBrc );
-            this->GetIndexFromID( tlcBrc[0], min );
-            this->GetIndexFromID( tlcBrc[1], max );
-        }
-        double rangeAverage[2] = {0,0};
-        double stdDeviation[2] = {0,0};
-        int numVoxels = (max[0]-min[0]+1)*(max[1]-min[1]+1)*(max[2]-min[2]+1);
-        vector<double> maxValues;
-        vector<double> minValues;
-
-        // Find the average and the max/min for each voxel
-        for (int z = min[2]; z <= max[2]; z++) {
-            for (int y = min[1]; y <= max[1]; y++) {
-                for (int x = min[0]; x <= max[0]; x++) {
-                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-                    if( spectrum != NULL ) {
-                        double localRange[2] = {VTK_DOUBLE_MAX, VTK_DOUBLE_MIN};
-                        for( int i = minPt; i < maxPt; i++ ) {
-                            double value = spectrum->GetTuple(i)[component];
-                            localRange[0] = value < localRange[0] ? value: localRange[0];
-                            localRange[1] = value > localRange[1] ? value: localRange[1];
-                        }
-                        rangeAverage[0]+=localRange[0] / numVoxels; 
-                        rangeAverage[1]+=localRange[1] / numVoxels; 
-                        minValues.push_back( localRange[0] );
-                        maxValues.push_back( localRange[1] );
-                    }
-                }
-            }
-        }
-
-        for( int i = 0; i < numVoxels; i++ ) {
-            stdDeviation[0] += pow(minValues[i]-rangeAverage[0],2 )/numVoxels;
-            stdDeviation[1] += pow(maxValues[i]-rangeAverage[1],2 )/numVoxels;
-        }
-        stdDeviation[0] = pow(stdDeviation[0], 0.5);
-        stdDeviation[1] = pow(stdDeviation[1], 0.5);
-        range[0] = rangeAverage[0] - 3*stdDeviation[0];
-        range[1] = rangeAverage[1] + 3*stdDeviation[1];
-
-}
-
-
-/*
-void  svkMrsImageData::GetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
-{
-    if( imageCollection != NULL ) {
-        // Setup image dimensions
-        imageCollection->RemoveAllItems();
-        int* dims = this->GetDimensions();
-
-        // Create a float array to hold the pixel data
-        int linearIndex = 0;
-        int* dims;
-        double* tuple;
-        double* pixels;
-        vtkDataArray* spectrum;
-        vtkImageData* image;
-        vtkDoubleArray* pixelData;
-        int numPoints = this->GetCellData()->GetArray(0)->GetNumberOfTuples();
-        for (int z = Extent[4]; z < Extent[5]; z++) {
-            for (int y = Extent[2]; y < Extent[3]; y++) {
-                for (int x = Extent[0]; x < Extent[1]; x++) {
-                    spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-                    image = vtkImageData::New();
-                    image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
-                    image->SetSpacing( Spacing[0], Spacing[1], Spacing[2] );
-                    image->SetScalarTypeToDouble( );
-                    dims = image->GetDimensions();
-                    pixelData = vtkDoubleArray::New();
-                    pixelData->SetNumberOfComponents( 2 );
-                    pixelData->SetNumberOfTuples( (dims[0])*(dims[1])*(dims[2]) );
-                    pixels = pixelData->GetPointer(0);
-
-                    for( int point = 0; point < numPoints; point++ ) {
-                        linearIndex = i + j * (dims[0]-1) + k * (dims[0]-1) * (dims[1]-1);
-                        tuple = spectrum->GetTuple( point );
-                        pixels[2*linearIndex] = tuple[0];
-                        pixels[2*linearIndex+1] = tuple[1];
-                    }
-
-                    image->GetPointData()->SetScalars( pixelData );
-                    image->SetNumberOfScalarComponents(2);
-                    imageCollection->AddItem( image );
-                    image->Delete();
-                    pixelData->Delete();
-                }
-            }
-        }
-    }
-}
-*/
-
-/*!
- *   Method will set a spectral point from a vtkImageData object representing
- *   a single point in the spectra. This is usefull for spatial FFT's.
- *
- *  \param image the point image 
- *  \param point the point in the array you wish operate on 
- *  \param timePoint the time point to operate on 
- *  \param channel the the channel to operate on 
- *
- */
-void  svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, int channel ) 
-{
-    if( image != NULL ) {
-        int linearIndex = 0;
-        double* value;
-        double range[2];
-        vtkDataArray* imageScalars = image->GetPointData()->GetScalars();
-        for (int z = Extent[4]; z < Extent[5]; z++) {
-            for (int y = Extent[2]; y < Extent[3]; y++) {
-                for (int x = Extent[0]; x < Extent[1]; x++) {
-                    vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-                    linearIndex = ( z * (Dimensions[0]-1) * (Dimensions[1]-1) ) + ( y * (Dimensions[0]-1) ) + x; 
-                    value = imageScalars->GetTuple2( linearIndex );
-                    spectrum->SetTuple2( point, value[0], value[1] );
-                }
-            }
-        }
-    }
-}
-
-
-/*
-void  svkMrsImageData::SetAllImages( vtkDataSetCollection* imageCollection, int timePoint, int channel ) 
-{
-    if( image != NULL ) {
-        int linearIndex = 0;
-        double* value;
-        double range[2];
-        int numPoints = this->GetCellData()->GetArray(0)->GetNumberOfTuples();
-        vtkDataArray* scalars = image->GetPointData()->GetScalars();
-        for (int z = Extent[4]; z < Extent[5]; z++) {
-            for (int y = Extent[2]; y < Extent[3]; y++) {
-                for (int x = Extent[0]; x < Extent[1]; x++) {
-                    vtkDataArray* spectrum = this->GetSpectrum( x, y, z, timePoint, channel );
-                    for( int point = 0; point < numPoints; point++ ) {
-                        linearIndex = x + y * (dims[0]-1) + z * (dims[0]-1) * (dims[1]-1);
-                        value = scalars->GetTuple2( linearIndex );
-                        spectrum->SetTuple2( point, value[0], value[1] );
-                    }
-                   
-                }
-            }
-        }
-    }
-}
-*/

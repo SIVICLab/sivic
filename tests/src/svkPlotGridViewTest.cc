@@ -377,6 +377,7 @@ void OrientationTest( )
         svkSpecPoint::PPM,
         svkSpecPoint::PTS
     );
+    point->Delete();
     
 
     plotController->SetWindowLevelRange( lowestPoint, highestPoint, 0);

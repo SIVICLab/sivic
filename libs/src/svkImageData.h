@@ -64,6 +64,7 @@
 #include <vtkXMLDataElement.h>
 #include <vtkIndent.h>
 
+#include <svkFastCellData.h>
 #include <svkDcmtkAdapter.h>
 #include <svkDcmHeader.h>
 #include <svkProvenance.h>

@@ -358,6 +358,14 @@ ADD_EXECUTABLE(
      svkMrsApodizationFilterTest
        ${SVK_LIBS}
  )
+ADD_EXECUTABLE(
+     svkMri4DImageDataTest
+     svkMri4DImageDataTest.cc
+ )
+TARGET_LINK_LIBRARIES(
+    svkMri4DImageDataTest
+    ${SVK_LIBS}
+)
 
 include(CMakeSivicTests.cmake)
 

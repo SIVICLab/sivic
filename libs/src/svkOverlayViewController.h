@@ -162,7 +162,7 @@ class svkOverlayViewController: public svkDataViewController
         //! enum represents data indicies 
         enum DataInputs { 
             MRI = 0,
-            MRS = 1,
+            MR4D = 1,
             MET = 2 
         };
 

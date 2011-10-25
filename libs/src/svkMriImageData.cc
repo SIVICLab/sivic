@@ -42,6 +42,7 @@
 
 
 #include <svkMriImageData.h>
+#include <svk4DImageData.h>
 
 
 using namespace svk;
@@ -61,6 +62,7 @@ svkMriImageData::svkMriImageData()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
+    this->cellDataRepresentation = NULL;
 
 }
 
@@ -287,3 +289,123 @@ void svkMriImageData::GetNumberOfVoxels(int numVoxels[3])
 }
 
 
+/*!
+ *  This method will return a representation of the data using
+ *  cell data. This representation is used primarily for the
+ *  visualization of the image volume as traces.
+ *
+ * @return
+ */
+ svk4DImageData* svkMriImageData::GetCellDataRepresentation()
+ {
+     // Check to see if representation has been initialized
+     if( this->cellDataRepresentation == NULL ) {
+         this->cellDataRepresentation = svk4DImageData::New();
+         this->cellDataRepresentation->SetDcmHeader( this->GetDcmHeader());
+         this->cellDataRepresentation->Modified();
+         this->cellDataRepresentation->SyncVTKImageDataToDcmHeader();
+         this->InitializeCellDataArrays();
+         // These calls are commented because we are not sure if we want
+         // the image data to update if the 4Drepresentanion is modified
+         //this->cellRepresentationModifiedCB = vtkCallbackCommand::New();
+         //this->cellRepresentationModifiedCB->SetCallback( UpdatePixelData );
+         //this->cellRepresentationModifiedCB->SetClientData( (void*)this );
+         this->SyncCellRepresentationToPixelData();
+     }
+     return this->cellDataRepresentation;
+ }
+
+
+/*!
+ *  This method will copy the cell data representation values into
+ *  the pixel data array.
+ *
+ */
+void svkMriImageData::SyncPixelDataToCellRepresentation()
+{
+    // NOT YET IMPLEMENTED
+}
+
+
+/*!
+ *  This method will copy the pixel data into the cell representation
+ *  of the data.
+ */
+void svkMriImageData::SyncCellRepresentationToPixelData()
+{
+
+    int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = this->GetDcmHeader()->GetNumberOfTimePoints();
+    vtkDataArray* oldScalars = this->GetPointData()->GetScalars();
+    for( int channel = 0; channel < numChannels; channel++ ) {
+        int* channelPtr = &channel;
+        for( int timePoint = 0; timePoint < numTimePts; timePoint++ ) {
+            this->GetPointData()->SetActiveScalars( this->GetPointData()->GetArray( timePoint )->GetName() );
+            vtkDataArray* scalars = this->GetPointData()->GetScalars();
+            this->cellDataRepresentation->SetImage(this, timePoint, channelPtr);
+        }
+    }
+
+
+}
+
+
+/*!
+ *  This method will initialize the data arrays for the cell data representation.
+ */
+void svkMriImageData::InitializeCellDataArrays()
+{
+    int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = this->GetDcmHeader()->GetNumberOfTimePoints();
+    int* extent = this->GetExtent();
+    int* dims = this->GetDimensions();
+    vtkstd::string representation = this->GetDcmHeader()->GetStringSequenceItemElement(
+                                        "MRImageFrameTypeSequence",
+                                        0,
+                                        "ComplexImageComponent",
+                                        "SharedFunctionalGroupsSequence",
+                                        0
+                                        );
+    vtkCellData* cellData = this->cellDataRepresentation->GetCellData();
+    char arrayName[30];
+    int numComponents = 1;
+    if( representation.compare("MIXED") == 0) {
+        numComponents = 2;
+    }
+    int linearIndex = 0;
+    int counter = 0;
+    int numVoxels = (dims[0] + 1) * (dims[1] + 1) * (dims[2] + 1);
+    cellData->SetNumberOfTuples(  numTimePts );
+    cellData->AllocateArrays( numChannels * numVoxels );
+    for( int channel = 0; channel < numChannels; channel++ ) {
+        for (int z = 0; z < dims[2]; z++) {
+            for (int y = 0; y < dims[1]; y++) {
+                for (int x = 0; x < dims[0]; x++) {
+                    vtkFloatArray* array = vtkFloatArray::New();
+                    array->SetNumberOfComponents( numComponents );
+                    array->vtkFloatArray::SetNumberOfTuples( numTimePts );
+                    sprintf(arrayName, "%d %d %d %d", x, y, z, channel);
+                    svkFastCellData::SafeDownCast(cellData)->FastAddArray( array );
+                    array->SetName(arrayName);
+                    array->FastDelete();
+                }
+            }
+        }
+    }
+    svkFastCellData::SafeDownCast( cellData )->FinishFastAdd();
+}
+
+
+ /*!
+  *  Updates the pixel data when the data representation is modified.
+  *
+  * @param subject
+  * @param eid
+  * @param thisObject
+  * @param calldata
+  */
+void svkMriImageData::UpdatePixelData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata)
+{
+    svkMriImageData* data = static_cast<svkMriImageData*>(thisObject);
+    data->SyncPixelDataToCellRepresentation();
+}

@@ -84,6 +84,7 @@ svkImageData::svkImageData()
     this->range[2][0] = VTK_DOUBLE_MAX;
     this->range[2][1] = -VTK_DOUBLE_MAX;
 
+    this->CellData = svkFastCellData::New();
     this->lastUpdateTime = this->GetMTime();
 
 }
@@ -1575,7 +1576,7 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
     numVoxels[1] = this->dcmHeader->GetIntValue("Rows");
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices(); 
 
-    if ( strcmp( this->GetClassName(), "svkMrsImageData") == 0 ) {
+    if ( this->IsA("svk4DImageData") ) {
         this->SetExtent(
             0,
             numVoxels[0],
@@ -1615,7 +1616,7 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
 
     //  For MRS data the vtk point origin (origin of first point in data set is corner of voxel)
     //  is 1/2 voxel away from DICOM origin.
-    if ( strcmp( this->GetClassName(), "svkMrsImageData") == 0 ) {
+    if ( this->IsA( "svk4DImageData") ) {
 
         double pixelSize[3];
         this->dcmHeader->GetPixelSize(pixelSize);

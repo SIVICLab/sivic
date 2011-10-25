@@ -249,7 +249,7 @@ void sivicProcessingWidget::SetPhaseUpdateExtent()
     if ( this->phaseAllChannelsButton->GetSelectedState() ) {
         this->phaser->PhaseAllChannels();
     } else {
-        this->phaser->SetChannel( this->plotController->GetChannel() );
+        this->phaser->SetChannel( this->plotController->GetVolumeIndex( svkMrsImageData::CHANNEL ) );
     }
 
     if ( this->phaseAllVoxelsButton->GetSelectedState() ) {

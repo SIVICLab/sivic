@@ -222,7 +222,7 @@ bool svkDataValidator::AreDataExtentsSame( svkImageData* data1, svkImageData* da
     int* extent2 = data2->GetExtent();
 
     // Spectra should have a larger extent to match due to cell vs point data
-    if( data1->IsA("svkMrsImageData") && data2->IsA("svkMriImageData") ) {
+    if( data1->IsA("svk4DImageData") && data2->IsA("svkMriImageData") ) {
         if( extent2[0] == extent1[0] 
          && extent2[1] == extent1[1] - 1 
          && extent2[2] == extent1[2] 
@@ -233,7 +233,7 @@ bool svkDataValidator::AreDataExtentsSame( svkImageData* data1, svkImageData* da
         } else {
             resultInfo="Extents do not match.";
         }
-    } else if( data2->IsA("svkMrsImageData") && data1->IsA("svkMriImageData") ) {
+    } else if( data2->IsA("svk4DImageData") && data1->IsA("svkMriImageData") ) {
         if( extent1[0] == extent2[0]
          && extent1[1] == extent2[1] - 1 
          && extent1[2] == extent2[2]

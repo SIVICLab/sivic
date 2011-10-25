@@ -119,7 +119,8 @@ class svkPlotLine : public vtkPolyLine
         //! The number of points in the plotData
         int                 numPoints;
 
-        //int                 numComponents;
+        //! The number of components
+        int                 numComponents;
 
         int                 componentOffset;
 

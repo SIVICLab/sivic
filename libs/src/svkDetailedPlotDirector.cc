@@ -106,7 +106,14 @@ svkDetailedPlotDirector::~svkDetailedPlotDirector()
         this->glyphGenerator->Delete();
         this->glyphGenerator = NULL;
     }
-       
+    if( this->ruler != NULL ) {
+        this->ruler->Delete();
+        this->ruler = NULL;
+    }
+    if( this->abscissa != NULL ) {
+        this->abscissa->Delete();
+        this->abscissa = NULL;
+    }
 }
 
 
@@ -130,7 +137,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         fieldData->AllocateArrays(2);
 
         if( this->abscissa == NULL ) {
-            this->GenerateAbscissa( this->numPoints, 0 );
+            this->GenerateAbscissa( 0, this->numPoints );
             this->xyPlotActor->SetXRange(0, this->numPoints );
             double range[2];
             array->GetRange(range);
@@ -146,6 +153,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         magArray->SetNumberOfComponents( 1 );
         this->GenerateMagnitudeArray( array, magArray );
         fieldData->AddArray(magArray);
+        magArray->Delete();
 
         // dataObject is just a container
         vtkDataObject *dataObject = vtkDataObject::New();
@@ -278,18 +286,23 @@ void svkDetailedPlotDirector::SetIndexRange( int lower, int upper )
 void svkDetailedPlotDirector::GenerateAbscissa( svkDcmHeader* header, svkSpecPoint::UnitType type )
 {
     if( this->numPoints != -1 ) {
-        svkSpecPoint* converter = svkSpecPoint::New();
-        converter->SetDcmHeader( header );
-        float firstPointValue = converter->ConvertPosUnits(
-            0,
-            svkSpecPoint::PTS,
-            type
-        );
-        float lastPointValue = converter->ConvertPosUnits(
-            this->numPoints - 1,
-            svkSpecPoint::PTS,
-            type
-        );
+            float firstPointValue = 0;
+            float lastPointValue = this->numPoints -1;
+        if( type != svkSpecPoint::PTS ) {
+            svkSpecPoint* converter = svkSpecPoint::New();
+            converter->SetDcmHeader( header );
+            firstPointValue = converter->ConvertPosUnits(
+                0,
+                svkSpecPoint::PTS,
+                type
+            );
+            lastPointValue = converter->ConvertPosUnits(
+                this->numPoints - 1,
+                svkSpecPoint::PTS,
+                type
+            );
+            converter->Delete();
+        }
         this->GenerateAbscissa( firstPointValue, lastPointValue);
     }
 
@@ -310,7 +323,7 @@ void svkDetailedPlotDirector::GenerateAbscissa( double firstPointValue, double l
     abscissa->SetNumberOfComponents(1);
     abscissa->SetNumberOfTuples(this->numPoints);
     abscissa->SetName( "abscissa" );
-    double scale = ( lastPointValue - firstPointValue ) / this->numPoints;
+    double scale = ( lastPointValue - firstPointValue ) / (this->numPoints-1);
     for ( int i = 0; i < this->numPoints; i++ ) {
             abscissa->SetTuple1(i, firstPointValue + i*scale );
     }
@@ -401,9 +414,13 @@ int svkDetailedPlotDirector::GetPointIndexFromXValue( double xValue )
         for( int i = 0; i < this->abscissa->GetNumberOfTuples() - 1; i++) {
             double abscissaValue = this->abscissa->GetTuple1( i );
             double abscissaValueNext = this->abscissa->GetTuple1( i + 1 );
-            if( ( xValue >=  abscissaValue && xValue <=  abscissaValueNext )
-              ||( xValue <=  abscissaValue && xValue >=  abscissaValueNext ) ) {
-                return i;
+            if( ( xValue >  abscissaValue && xValue <=  abscissaValueNext )
+              ||( xValue <  abscissaValue && xValue >=  abscissaValueNext ) ) {
+                if( xValue == abscissaValueNext ) {
+                    return i+1; 
+                } else {
+                    return i; 
+                }
             }
         }
     }

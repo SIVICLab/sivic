@@ -65,7 +65,7 @@
 #include <svkOverlayViewController.h>
 #include <svkImageViewer2.h>
 #include <svkDataView.h>
-#include <svkMrsImageData.h>
+#include <svk4DImageData.h>
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
 #include <svkImageMapToColors.h>
@@ -136,7 +136,7 @@ class svkOverlayView : public svkDataView
         //! Enum represents input indecies
         enum DataInputs { 
             MRI = 0, 
-            MRS = 1, 
+            MR4D = 1,
             OVERLAY = 2
         };
 

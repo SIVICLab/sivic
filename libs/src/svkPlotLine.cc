@@ -81,6 +81,7 @@ svkPlotLine::svkPlotLine()
     this->origin[0] = 0;
     this->origin[1] = 0;
     this->origin[2] = 0;
+    this->numComponents = 0;
 }
 
 
@@ -150,6 +151,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
     if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
         this->componentOffset = this->plotComponent;
     } 
+    this->numComponents = this->plotData->GetNumberOfComponents();
 
     // Generate poly data is where the data is sync'd
     this->GeneratePolyData();
@@ -224,10 +226,10 @@ void svkPlotLine::GeneratePolyData()
 
         // First we will set all of the points before start Pt to the same position.
         if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-            amplitude = dataPtr[2*(this->startPt) + componentOffset];
+            amplitude = dataPtr[this->numComponents*(this->startPt) + componentOffset];
         } else {
-            amplitude = pow( static_cast<double>(dataPtr[2*(this->startPt)] * dataPtr[2*(this->startPt)] +
-                             dataPtr[2*(this->startPt) + 1] * dataPtr[2*(this->startPt) + 1]), 0.5);
+            amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(this->startPt)] * dataPtr[this->numComponents*(this->startPt)] +
+                             dataPtr[this->numComponents*(this->startPt) + 1] * dataPtr[this->numComponents*(this->startPt) + 1]), 0.5);
         }
 
         if( amplitude > this->maxValue ) {
@@ -260,10 +262,10 @@ void svkPlotLine::GeneratePolyData()
 
             // Which component are we using...
             if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-                amplitude = dataPtr[2*(i) + componentOffset];
+                amplitude = dataPtr[this->numComponents*(i) + componentOffset];
             } else {
-                amplitude = pow( static_cast<double>(dataPtr[2*(i)] * dataPtr[2*(i)] +
-                                 dataPtr[2*(i) + 1] * dataPtr[2*(i) + 1]), 0.5 );
+                amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(i)] * dataPtr[this->numComponents*(i)] +
+                                 dataPtr[this->numComponents*(i) + 1] * dataPtr[this->numComponents*(i) + 1]), 0.5 );
             }
 
             // If the value is outside the max/min
@@ -297,10 +299,10 @@ void svkPlotLine::GeneratePolyData()
 
         // And finally we set all points outside the range to the last value
         if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-            amplitude = dataPtr[2*(this->endPt) + componentOffset];
+            amplitude = dataPtr[this->numComponents*(this->endPt) + componentOffset];
         } else {
-            amplitude = pow( static_cast<double>(dataPtr[2*(this->endPt)] * dataPtr[2*(this->endPt)] +
-                             dataPtr[2*(this->endPt) + 1] * dataPtr[2*(this->endPt) + 1]), 0.5);
+            amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(this->endPt)] * dataPtr[this->numComponents*(this->endPt)] +
+                             dataPtr[this->numComponents*(this->endPt) + 1] * dataPtr[this->numComponents*(this->endPt) + 1]), 0.5);
         }
 
         // If the value is outside the max/min

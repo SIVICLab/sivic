@@ -106,9 +106,9 @@ void svkPlotGridViewController::Reset()
     this->view->Delete();
     this->view = NULL;
 
-    if( this->dataVector[svkPlotGridView::MRS] != NULL ) {
-        this->dataVector[svkPlotGridView::MRS]->Delete();
-        this->dataVector[svkPlotGridView::MRS] = NULL;
+    if( this->dataVector[svkPlotGridView::MR4D] != NULL ) {
+        this->dataVector[svkPlotGridView::MR4D]->Delete();
+        this->dataVector[svkPlotGridView::MR4D] = NULL;
     }
     if( this->dataVector[svkPlotGridView::MET] != NULL ) {
         this->dataVector[svkPlotGridView::MET]->Delete();
@@ -316,40 +316,14 @@ string svkPlotGridViewController::GetDataCompatibility( svkImageData* data, int 
     return static_cast<svkPlotGridView*>(view)->GetDataCompatibility( data, targetIndex ); 
 }
 
-
-/*!
- *
- */
-void svkPlotGridViewController::SetChannel( int channel ) 
+void svkPlotGridViewController::SetVolumeIndex( int index, int volumeIndex )
 {
-    svkPlotGridView::SafeDownCast( this->view )->SetChannel( channel );
+    static_cast<svkPlotGridView*>(view)->SetVolumeIndex( index, volumeIndex );
 }
 
-
-/*!
- *
- */
-void svkPlotGridViewController::SetTimePoint( int timePoint ) 
+int svkPlotGridViewController::GetVolumeIndex( int volumeIndex )
 {
-    svkPlotGridView::SafeDownCast( this->view )->SetTimePoint( timePoint );
-}
-
-
-/*!
- *
- */
-int svkPlotGridViewController::GetTimePoint( ) 
-{
-    return svkPlotGridView::SafeDownCast( this->view )->GetTimePoint();
-}
-
-
-/*!
- *
- */
-int svkPlotGridViewController::GetChannel( ) 
-{
-    return svkPlotGridView::SafeDownCast( this->view )->GetChannel();
+    return static_cast<svkPlotGridView*>(view)->GetVolumeIndex( volumeIndex );
 }
 
 

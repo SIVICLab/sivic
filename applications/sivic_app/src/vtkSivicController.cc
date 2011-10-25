@@ -171,8 +171,15 @@ void vtkSivicController::TurnOnPlotView()
 {
     this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                        this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+    string acquisitionType = "UNKNOWN";
+    if( this->model->DataExists("SpectroscopicData") && this->model->GetDataObject("SpectroscopicData")->IsA("svkMrsImageData")) {
+        acquisitionType = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    }
+    // We don't want to turn on the press box if its single voxel
+    if( acquisitionType != "SINGLE VOXEL" ) {
+        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                        this->plotController->GetView()->GetProp(svkPlotGridView::VOL_SELECTION));
+    }
     this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                        this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
     this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
@@ -199,19 +206,19 @@ void vtkSivicController::SetActiveSpectra( int index )
                this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
                this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
             }
-           svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveSpectraIndex( index );
-           svkImageData* newSpec = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActiveSpectra();
+           svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActivePlotIndex( index );
+           svkImageData* newSpec = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
            this->model->ChangeDataObject("SpectroscopicData", newSpec );
            this->processingWidget->InitializePhaser();
            int channels = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfCoils();
            this->spectraViewWidget->channelSlider->SetRange( 1, channels);
-           this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetChannel() + 1 );
+           this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
            int timePoints = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfTimePoints();
            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
-           this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetTimePoint() + 1 );
+           this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
            this->EnableWidgets();
            if( this->model->DataExists("AnatomicalData") ) {
-               this->overlayController->SetInput( this->model->GetDataObject("SpectroscopicData"), svkOverlayView::MRS );
+               this->overlayController->SetInput( this->model->GetDataObject("SpectroscopicData"), svkOverlayView::MR4D );
                this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
            }
            if( toggleDraw ) {
@@ -552,8 +559,8 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
     }
     string resultInfo;
-    string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MRS );
-    string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkOverlayView::MRS );
+    string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MR4D );
+    string overlayViewResultInfo = this->overlayController->GetDataCompatibility( newData, svkOverlayView::MR4D );
     svkDataValidator* validator = svkDataValidator::New(); 
     string validatorResultInfo;
     if( this->model->DataExists( "AnatomicalData" ) ) {
@@ -629,7 +636,7 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         }
 
         this->detailedPlotController->SetInput( newData ); 
-        this->overlayController->SetInput( newData, svkOverlayView::MRS ); 
+        this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
         // THe overlay controller may reslice the data, we need te make sure we get the new version of the data 
         // TODO: Change the overlay controller to do this in place 
@@ -904,7 +911,7 @@ void vtkSivicController::AddSpectra( string stringFilename )
     if ( this->model->DataExists("SpectroscopicData") ) {
         svkImageData* data = this->model->LoadFile( stringFilename );
         if( data != NULL && data->IsA("svkMrsImageData") ) {
-            string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MRS );
+            string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
             if( resultInfo.compare("") != 0 ) {
                 string message =  "ERROR: Could not load reference spectra.\n Info: ";
                 message.append( resultInfo );

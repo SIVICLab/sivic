@@ -228,8 +228,8 @@ void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->model->GetDataObject( "SpectroscopicData" ));
     if( data != NULL ) {
         int component = this->plotController->GetComponent();
-        int channel = this->plotController->GetChannel();
-        int timePoint = this->plotController->GetTimePoint();
+        int channel = this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL);
+        int timePoint = this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT);
         float lowestPoint = this->point->ConvertPosUnits(
             this->xSpecRange->GetEntry1()->GetValueAsDouble(),
             this->specUnits,
@@ -250,7 +250,7 @@ void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
             data->GetDataRange( range, this->plotController->GetComponent());
         } else {
             data->EstimateDataRange( range, static_cast<int>(lowestPoint), static_cast<int>(highestPoint)
-                                          , this->plotController->GetComponent(), timePoint, channel  );
+                                          , this->plotController->GetComponent(), NULL, timePoint, channel  );
             double rangeWidth = range[1]-range[0];
             range[0] -= 0.05 * rangeWidth;
             range[1] += 0.05 * rangeWidth;
@@ -737,12 +737,12 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
         }
         if( acquisitionType == "SINGLE VOXEL" ) {
             this->detailedPlotController->AddPlot( 0, this->plotController->GetComponent()
-                                                    , this->plotController->GetChannel()
-                                                    , this->plotController->GetTimePoint());
+                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL)
+                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT));
         } else {
             this->detailedPlotController->AddPlot( tlcBrc[0], this->plotController->GetComponent() 
-                                                    , this->plotController->GetChannel()
-                                                    , this->plotController->GetTimePoint());
+                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL)
+                                                    , this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT));
         }
         this->detailedPlotController->GetView()->Refresh( );
         this->detailedPlotController->SetUnits( this->specUnits );

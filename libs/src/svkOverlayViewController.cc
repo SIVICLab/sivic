@@ -222,9 +222,9 @@ void svkOverlayViewController::Reset()
         dataVector[MRI]->Delete();
         dataVector[MRI] = NULL;
     }
-    if( dataVector[MRS] != NULL ) {
-        dataVector[MRS]->Delete();
-        dataVector[MRS] = NULL;
+    if( dataVector[MR4D] != NULL ) {
+        dataVector[MR4D]->Delete();
+        dataVector[MR4D] = NULL;
     }
     if( dataVector[MET] != NULL ) {
         dataVector[MET]->Delete();
@@ -275,21 +275,21 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
         this->view->SetInput(data);
         if( !visualizationCreated ) { 
             CreateDataVisualization();
-            if( dataVector[MRS] != NULL ) {
-                this->view->SetInput(dataVector[MRS], 1); 
+            if( dataVector[MR4D] != NULL ) {
+                this->view->SetInput(dataVector[MR4D], 1);
             }
         }
-    } else if( index == MRS && data != NULL ) {
-        if( dataVector[MRS] != NULL ) {
-            dataVector[MRS]->Delete();
+    } else if( index == MR4D && data != NULL ) {
+        if( dataVector[MR4D] != NULL ) {
+            dataVector[MR4D]->Delete();
         }
         data->Register( this );
-        dataVector[MRS] = data;
+        dataVector[MR4D] = data;
         if( dataVector[MRI] != NULL ) {
             this->view->SetInput(data, 1);
             this->SetSlice( this->GetView()->GetSlice() );
         }
-    } else if( index == MET && data != NULL && dataVector[MRI] != NULL && dataVector[MRS]!=NULL ) {
+    } else if( index == MET && data != NULL && dataVector[MRI] != NULL && dataVector[MR4D]!=NULL ) {
         if( dataVector[MET] != NULL ) {
             dataVector[MET]->Delete();
         }
@@ -731,7 +731,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
     // We need the anatomical slice to calculate a point on the image
     int slice; 
     svkImageData* targetData;
-    targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRS];
+    targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MR4D];
     if( targetData == NULL ) {
         targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI];
     }
@@ -740,7 +740,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
 
         origin = targetData->GetOrigin();
         orientation = dvController->GetView()->GetOrientation();
-        if( targetData->IsA("svkMrsImageData") ) {
+        if( targetData->IsA("svk4DImageData") ) {
             slice = dvController->GetView()->GetSlice(); 
         } else {
             slice = dvController->GetImageSlice();

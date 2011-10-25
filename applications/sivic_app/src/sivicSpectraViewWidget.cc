@@ -339,7 +339,7 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         }
         int channel = static_cast<int>(this->channelSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
-            this->plotController->SetChannel( channel );
+            this->plotController->SetVolumeIndex( channel, svkMrsImageData::CHANNEL );
         }
         stringstream increment;
         increment << "SetValue " << channel + 2;
@@ -359,7 +359,7 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         }
         int timePoint = static_cast<int>(this->timePointSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
-            this->plotController->SetTimePoint( timePoint );
+            this->plotController->SetVolumeIndex( timePoint, svkMrsImageData::TIMEPOINT );
         }
         stringstream increment;
         increment << "SetValue " << timePoint + 2;

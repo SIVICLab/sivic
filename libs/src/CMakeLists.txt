@@ -129,6 +129,8 @@ ADD_LIBRARY(
     svkImageDataFactory.cc
     svkSpecPoint.cc
     svkImageData.cc
+    svk4DImageData.cc
+    svkFastCellData.cc
     svkMrsImageData.cc
     svkMriImageData.cc
     svkDcmHeader.cc

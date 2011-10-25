@@ -68,10 +68,8 @@ svkPlotGridView::svkPlotGridView()
     // Setting layers is key for solaris rendering
 
     this->slice = 0;
-    this->channel = 0;
-    this->timePoint = 0;
     this->rwi = NULL;
-    this->plotUnitType = svkSpecPoint::PPM;
+    this->plotUnitType = svkSpecPoint::PTS;
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);
     this->dataVector.push_back(NULL);
@@ -117,32 +115,32 @@ svkPlotGridView::svkPlotGridView()
     this->TurnPropOff( svkPlotGridView::SAT_BANDS_OUTLINE );
     this->satBands->SetOrientation( this->orientation );
     //white
-    this->referenceSpectraColors[0][0] = 1;
-    this->referenceSpectraColors[0][1] = 1;
-    this->referenceSpectraColors[0][2] = 1;
+    this->referencePlotColors[0][0] = 1;
+    this->referencePlotColors[0][1] = 1;
+    this->referencePlotColors[0][2] = 1;
     //magenta
-    this->referenceSpectraColors[1][0] = 1;
-    this->referenceSpectraColors[1][1] = 0;
-    this->referenceSpectraColors[1][2] = 1;
+    this->referencePlotColors[1][0] = 1;
+    this->referencePlotColors[1][1] = 0;
+    this->referencePlotColors[1][2] = 1;
     //cyan
-    this->referenceSpectraColors[2][0] = 0;
-    this->referenceSpectraColors[2][1] = 1;
-    this->referenceSpectraColors[2][2] = 1;
+    this->referencePlotColors[2][0] = 0;
+    this->referencePlotColors[2][1] = 1;
+    this->referencePlotColors[2][2] = 1;
     //orange
-    this->referenceSpectraColors[3][0] = 1;
-    this->referenceSpectraColors[3][1] = 0.85;
-    this->referenceSpectraColors[3][2] = 0;
+    this->referencePlotColors[3][0] = 1;
+    this->referencePlotColors[3][1] = 0.85;
+    this->referencePlotColors[3][2] = 0;
     //green
-    this->referenceSpectraColors[4][0] = 0.15;
-    this->referenceSpectraColors[4][1] = 1;
-    this->referenceSpectraColors[4][2] = 0.15;
+    this->referencePlotColors[4][0] = 0.15;
+    this->referencePlotColors[4][1] = 1;
+    this->referencePlotColors[4][2] = 0.15;
     //grey
-    this->referenceSpectraColors[5][0] = 0.75;
-    this->referenceSpectraColors[5][1] = 0.75;
-    this->referenceSpectraColors[5][2] = 0.75;
+    this->referencePlotColors[5][0] = 0.75;
+    this->referencePlotColors[5][1] = 0.75;
+    this->referencePlotColors[5][2] = 0.75;
     this->numColors = 6;
     
-    this->activeSpectra = 0;
+    this->activePlot = 0;
     
 }
 
@@ -205,19 +203,22 @@ svkPlotGridView::~svkPlotGridView()
 void svkPlotGridView::SetInput(svkImageData* data, int index)
 {
     if( strcmp( GetDataCompatibility( data, index).c_str(),"") == 0 ) { 
-        if( index == MRS ) {
-        	// If the user specifies just MRS as input we'll assume they
-        	// want to changet the active spectra.
-            if( this->activeSpectra != 0 ) {
-                this->SetInput( data, this->activeSpectra + 1);
+        if( index == MR4D ) {
+        	// If the user specifies just MR4D as input we'll assume they
+        	// want to changet the active plot.
+            if( this->activePlot != 0 ) {
+                this->SetInput( data, this->activePlot + 1);
                 return;
             }
-            if( dataVector[MRS] != NULL  ) {
-                (dataVector[MRS])->Delete();
+            while( this->volumeIndexVector.size() < svk4DImageData::SafeDownCast(data)->GetNumberOfVolumeDimensions()) {
+                this->volumeIndexVector.push_back(0);
+            }
+            if( dataVector[MR4D] != NULL  ) {
+                (dataVector[MR4D])->Delete();
             }
             ObserveData( data );
             data->Register( this );
-            dataVector[MRS] = data;
+            dataVector[MR4D] = data;
             int* extent = data->GetExtent();
             bool toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
             if( toggleDraw ) {
@@ -233,35 +234,47 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( PLOT_LINES ) );
                 }
             }
-            this->plotGrids[0]->SetInput(svkMrsImageData::SafeDownCast(data));
+            this->plotGrids[0]->SetInput(svk4DImageData::SafeDownCast(data));
             this->GeneratePlotGridActor();
             this->TurnPropOn( PLOT_LINES );
             this->TurnPropOn( svkPlotGridView::DETAILED_PLOT );
             this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
             this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_LINES ) );
-            string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-            if( acquisitionType == "SINGLE VOXEL" ) {
-                this->TurnPropOff( svkPlotGridView::PLOT_GRID );
-            } else {
-                this->TurnPropOn( svkPlotGridView::PLOT_GRID );
+            if( data->IsA("svkMrsImageData")) {
+                string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+                if( acquisitionType == "SINGLE VOXEL" ) {
+                    this->TurnPropOff( svkPlotGridView::PLOT_GRID );
+                } else {
+                    this->TurnPropOn( svkPlotGridView::PLOT_GRID );
+                }
             }
             if( this->GetProp( VOL_SELECTION ) != NULL ) {
                 if( this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ) ) ) {
                     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp( VOL_SELECTION ) );
                 }
             }
-            vtkActorCollection* selectionBoxTopology = dataVector[MRS]->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
-        // Case for no selection Box
-            if( selectionBoxTopology != NULL ) {
-                selectionBoxTopology->InitTraversal();
-                this->SetProp( VOL_SELECTION , selectionBoxTopology->GetNextActor());
-                this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp( VOL_SELECTION ) );
-                selectionBoxTopology->Delete();
+            int minIndex[3] = {0,0,0};
+            int maxIndex[3] = {this->dataVector[MR4D]->GetDimensions()[0]-2,this->dataVector[MR4D]->GetDimensions()[1]-2, this->slice};
+            this->tlcBrc[0] = 0;
+            this->tlcBrc[1] = svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+            if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+                vtkActorCollection* selectionBoxTopology = dataVector[MR4D]->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
+                // Case for no selection Box
+                if( selectionBoxTopology != NULL ) {
+                    selectionBoxTopology->InitTraversal();
+                    this->SetProp( VOL_SELECTION , selectionBoxTopology->GetNextActor());
+                    string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+                    if( acquisitionType != "SINGLE VOXEL" ) {
+                        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp( VOL_SELECTION ) );
+                    }
+                    selectionBoxTopology->Delete();
+                }
+                this->HighlightSelectionVoxels();
+                this->satBands->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MR4D]) );
+                this->satBands->SetClipSlice( this->slice );
+                this->plotUnitType = svkSpecPoint::PPM;
             }
-            this->HighlightSelectionVoxels();
             this->SetSlice( slice );
-            this->satBands->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
-            this->satBands->SetClipSlice( this->slice );
             if( !this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::SAT_BANDS))) {
                 this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(  this->GetProp( svkPlotGridView::SAT_BANDS));
             }
@@ -289,7 +302,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             dataVector[MET] = data;
             data->Register( this );
             CreateMetaboliteOverlay( data );
-        } else if( index >= ADDITIONAL_MRS ) {
+        } else if( index >= ADDITIONAL_MR4D ) {
             while( dataVector.size() <= index ) {
                 dataVector.push_back(NULL);
             }
@@ -306,7 +319,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             while( plotGrids.size() < index ) {
                 plotGrids.push_back( svkPlotLineGrid::New() );
             }
-            plotGrids[index-1]->SetInput(svkMrsImageData::SafeDownCast(data));
+            plotGrids[index-1]->SetInput(svk4DImageData::SafeDownCast(data));
             int minFreq;
             int maxFreq;
             plotGrids[0]->GetFrequencyWLRange(minFreq, maxFreq);
@@ -321,7 +334,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
                 colorIndex -= this->numColors;
             }
 
-            plotGrids[index-1]->SetColor( this->referenceSpectraColors[colorIndex] );
+            plotGrids[index-1]->SetColor( this->referencePlotColors[colorIndex] );
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->plotGrids[index-1]->GetPlotGridActor() ) ) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->plotGrids[index-1]->GetPlotGridActor() );
             }
@@ -344,7 +357,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
 
 void svkPlotGridView::AddReferenceInput( svkImageData* data )
 {
-    this->SetInput( data, ADDITIONAL_MRS + (plotGrids.size()-1));
+    this->SetInput( data, ADDITIONAL_MR4D + (plotGrids.size()-1));
 }
 
 /*!
@@ -376,6 +389,7 @@ void svkPlotGridView::RemoveInput(int index)
     } 
 }
 
+
 /*!
  *   Sets the slice.
  *  
@@ -388,35 +402,38 @@ void svkPlotGridView::SetSlice(int slice)
         this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff( );
     }
     this->slice = slice;
-    if( this->dataVector[MRS] != NULL ) {
+    if( this->dataVector[MR4D] != NULL ) {
         int tlcIndex[3];
         int brcIndex[3];
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
-        int lastSlice  = dataVector[MRS]->GetLastSlice( this->orientation );
-        int firstSlice = dataVector[MRS]->GetFirstSlice( this->orientation );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[0], tlcIndex );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[1], brcIndex );
+        int lastSlice  = dataVector[MR4D]->GetLastSlice( this->orientation );
+        int firstSlice = dataVector[MR4D]->GetFirstSlice( this->orientation );
         slice = (slice > lastSlice) ? lastSlice:slice;
         slice = (slice < firstSlice) ? firstSlice:slice;
         this->slice = slice;
-        tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
-        brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
-        tlcBrc[0] = this->dataVector[MRS]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
-        tlcBrc[1] = this->dataVector[MRS]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
-        this->satBands->SetClipSlice( this->slice );
+        tlcIndex[ this->dataVector[MR4D]->GetOrientationIndex( this->orientation ) ] = slice;
+        brcIndex[ this->dataVector[MR4D]->GetOrientationIndex( this->orientation ) ] = slice;
+        tlcBrc[0] = this->dataVector[MR4D]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
+        tlcBrc[1] = this->dataVector[MR4D]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData")){
+            this->satBands->SetClipSlice( this->slice );
                 // Case for no selection box
-        if( this->GetProp( VOL_SELECTION ) != NULL ) {
-            if( svkMrsImageData::SafeDownCast( this->dataVector[MRS])
-                      ->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
-                if( !this->GetRenderer( svkPlotGridView::PRIMARY)
-                            ->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) ) ) {
-                    this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( 
-                                   this->GetProp( svkPlotGridView::VOL_SELECTION) );
-                }
-            } else {
-                if( this->GetRenderer( svkPlotGridView::PRIMARY)
-                            ->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) ) ) {
-                    this->GetRenderer( svkPlotGridView::PRIMARY)
-                            ->RemoveActor(this->GetProp( svkPlotGridView::VOL_SELECTION) );
+            if( this->GetProp( VOL_SELECTION ) != NULL ) {
+                if( svkMrsImageData::SafeDownCast( this->dataVector[MR4D])
+                          ->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+                    string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+                    if( !this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) )
+                         && acquisitionType != "SINGLE VOXEL" ) {
+                        this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor(
+                                       this->GetProp( svkPlotGridView::VOL_SELECTION) );
+                    }
+                } else {
+                    if( this->GetRenderer( svkPlotGridView::PRIMARY)
+                                ->HasViewProp( this->GetProp( svkPlotGridView::VOL_SELECTION) ) ) {
+                        this->GetRenderer( svkPlotGridView::PRIMARY)
+                                ->RemoveActor(this->GetProp( svkPlotGridView::VOL_SELECTION) );
+                    }
                 }
             }
         }
@@ -466,7 +483,7 @@ void svkPlotGridView::SetTlcBrc(int tlcBrc[2])
  */
 void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
 {
-    if( svkDataView::IsTlcBrcWithinData(this->dataVector[MRS],tlcID, brcID ) ) {
+    if( svkDataView::IsTlcBrcWithinData(this->dataVector[MR4D],tlcID, brcID ) ) {
         this->tlcBrc[0] = tlcID;
         this->tlcBrc[1] = brcID;
         int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
@@ -514,8 +531,12 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
                 }
             }
             this->detailedPlotDirector->RemoveOnMouseMoveObserver( this->rwi );
-            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ) ) ) {
-                this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( VOL_SELECTION ) );
+            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( VOL_SELECTION ))
+                 && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
+                string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+                if( acquisitionType != "SINGLE VOXEL" ) {
+                    this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( VOL_SELECTION ) );
+                }
             }
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) ) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( OVERLAY_IMAGE ) );
@@ -598,44 +619,47 @@ bool svkPlotGridView::GetPlotVisibility( int plotIndex )
 }
 
 /*!
- *  Sets the active spectra.
+ *  Sets the active plot.
  *
  * @param index
  */
-void svkPlotGridView::SetActiveSpectraIndex( int index )
+void svkPlotGridView::SetActivePlotIndex( int index )
 {
-    this->activeSpectra = index;
-    this->channel = this->plotGrids[index]->GetChannel();
-    this->timePoint = this->plotGrids[index]->GetTimePoint();
+    this->activePlot = index;
+    for( int i = 0; i < this->volumeIndexVector.size(); i++ ) {
+        this->volumeIndexVector[i] = this->plotGrids[ index ]->GetVolumeIndex( i );
+    }
     // Lets put this actor on top
     this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->plotGrids[index]->GetPlotGridActor());
     this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->plotGrids[index]->GetPlotGridActor());
-    this->satBands->SetInput( svkMrsImageData::SafeDownCast(this->GetActiveSpectra()) );
-}
-
-
-/*!
- *  Returns the svkImageData object of the active spectra.
- *
- * @return
- */
-svkImageData* svkPlotGridView::GetActiveSpectra( )
-{
-    if( this->activeSpectra == 0 ) {
-        return this->dataVector[0];
-    } else {
-        return this->dataVector[ this->activeSpectra + 1];
+    if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+        this->satBands->SetInput( svkMrsImageData::SafeDownCast(this->GetActivePlot()) );
     }
 }
 
 
 /*!
- * Gets the index of the spectra that is currently active.
+ *  Returns the svkImageData object of the active plot.
+ *
  * @return
  */
-int svkPlotGridView::GetActiveSpectraIndex( )
+svkImageData* svkPlotGridView::GetActivePlot( )
 {
-    return this->activeSpectra;
+    if( this->activePlot == 0 ) {
+        return this->dataVector[0];
+    } else {
+        return this->dataVector[ this->activePlot + 1];
+    }
+}
+
+
+/*!
+ * Gets the index of the plot that is currently active.
+ * @return
+ */
+int svkPlotGridView::GetActivePlotIndex( )
+{
+    return this->activePlot;
 }
 
 
@@ -645,8 +669,8 @@ int svkPlotGridView::GetActiveSpectraIndex( )
  */
 void svkPlotGridView::SetPlotUnits( svkSpecPoint::UnitType plotUnitType )
 {
-    if( this->dataVector[MRS] != NULL ) {
-        this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MRS]->GetDcmHeader(), plotUnitType );
+    if( this->dataVector[MR4D] != NULL ) {
+        this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MR4D]->GetDcmHeader(), plotUnitType );
         this->plotUnitType = plotUnitType;
     }
 }
@@ -675,7 +699,7 @@ void svkPlotGridView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
 
 
 /*!
- *  SetWindowLevel for spectral view;  index 0 is frequency, index 1 is intensity.
+ *  SetWindowLevel for plot view;  index 0 is frequency, index 1 is intensity.
  *  NOTE: Method assumes that frequency ranges are in integers (points).
  *
  *  \param lower the lower limit
@@ -784,7 +808,7 @@ void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component, int pl
  */ 
 void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
 {
-    if( selectionArea != NULL && dataVector[MRS] != NULL) {
+    if( selectionArea != NULL && dataVector[MR4D] != NULL) {
         double worldStart[3]; 
         double worldEnd[3]; 
         if( !isWorldCords ) {
@@ -820,7 +844,7 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
         selection[5] = worldEnd[2];
 
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
+        svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
 
     } 
@@ -848,9 +872,9 @@ void svkPlotGridView::Refresh()
  */
 int* svkPlotGridView::HighlightSelectionVoxels()
 {
-    if( dataVector[MRS] != NULL ) { 
+    if( this->dataVector[MR4D] != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
+        svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {
@@ -868,7 +892,7 @@ int* svkPlotGridView::HighlightSelectionVoxels()
  */
 void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 {
-    if( dataVector[MRS] != NULL && data != NULL ) {
+    if( dataVector[MR4D] != NULL && data != NULL ) {
         double* spacing = data->GetSpacing();
 
         if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) == NULL ) {
@@ -966,12 +990,12 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
  */
 void svkPlotGridView::UpdateMetaboliteText(int* tlcBrc) 
 {
-    if( dataVector[MRS] != NULL ) {
-        int* extent = dataVector[MRS]->GetExtent();
+    if( dataVector[MR4D] != NULL ) {
+        int* extent = dataVector[MR4D]->GetExtent();
         int tlcIndex[3];
         int brcIndex[3];
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[0], tlcIndex );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[1], brcIndex );
         for( vector<svkImageClip*>::iterator iter = metClippers.begin(); iter!= metClippers.end(); iter++ ) {
             (*iter)->SetOutputWholeExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]); 
             (*iter)->ClipDataOn();
@@ -990,18 +1014,18 @@ void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc)
 {
     int tlcIndex[3];
     int brcIndex[3];
-    if( dataVector[MRS] != NULL ) {
+    if( dataVector[MR4D] != NULL ) {
         int minIndex[3] = {0,0,0};
-        int maxIndex[3] = {this->dataVector[MRS]->GetDimensions()[0]-2,this->dataVector[MRS]->GetDimensions()[1]-2,this->dataVector[MRS]->GetDimensions()[2]-2};
-        int orientationIndex = this->dataVector[MRS]->GetOrientationIndex( this->orientation );
+        int maxIndex[3] = {this->dataVector[MR4D]->GetDimensions()[0]-2,this->dataVector[MR4D]->GetDimensions()[1]-2,this->dataVector[MR4D]->GetDimensions()[2]-2};
+        int orientationIndex = this->dataVector[MR4D]->GetOrientationIndex( this->orientation );
 
         minIndex[ orientationIndex ] = this->slice;
         maxIndex[ orientationIndex ] = this->slice;
-        int minID = this->dataVector[MRS]->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
-        int maxID = this->dataVector[MRS]->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
+        int minID = this->dataVector[MR4D]->GetIDFromIndex( minIndex[0], minIndex[1], minIndex[2] );
+        int maxID = this->dataVector[MR4D]->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
 
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
-        this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[0], tlcIndex );
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[1], brcIndex );
         for( int i = 0; i < 3; i++ ) {
             if( i != orientationIndex ) {
                 tlcIndex[i]--;
@@ -1127,19 +1151,21 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
  */
 void svkPlotGridView::UpdateDetailedPlot( int* tlcBrc )
 {
-    if( this->dataVector[MRS] != NULL ) {
+    if( this->dataVector[MR4D] != NULL ) {
         int counter = 0;
         this->detailedPlotDirector->RemoveAllInputs();
+        int voxelIndex[3] = {0, 0, 0};
+        this->dataVector[MR4D]->GetIndexFromID( tlcBrc[0], voxelIndex );
         for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
             iter != this->plotGrids.end(); ++iter) {
             if( (*iter) != NULL && (*iter)->GetPlotGridActor()->GetVisibility() ) {
-                vtkDataArray* spectrum = (*iter)->GetInput()->GetSpectrum( tlcBrc[0] );
+                vtkDataArray* spectrum = (*iter)->GetInput()->GetArray( voxelIndex[0], voxelIndex[1], voxelIndex[2], (int*)this->volumeIndexVector.data());
                 this->detailedPlotDirector->AddInput( spectrum , (*iter)->GetComponent(), (*iter)->GetInput());
                 this->detailedPlotDirector->SetPlotColor(counter, (*iter)->GetColor());
                 counter++;
             }
         }
-        this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MRS]->GetDcmHeader() , this->plotUnitType );
+        this->detailedPlotDirector->GenerateAbscissa( this->dataVector[MR4D]->GetDcmHeader() , this->plotUnitType );
         int lower;
         int upper;
         this->plotGrids[0]->GetFrequencyWLRange(lower, upper);
@@ -1214,27 +1240,27 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
         resultInfo += "Data incompatible-- NULL or outside of input range!\n";
 
     } else if( targetIndex == MET ) {
-        if( dataVector[MRS] != NULL ) {
+        if( dataVector[MR4D] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 1" << endl;
-            bool valid = validator->AreDataCompatible( data, dataVector[MRS] ); 
+            bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                 cout << "WARNING, reformatting images to spectroscopic orientation" << endl; 
                 resultInfo = "";
-                this->ResliceImage( data, dataVector[MRS] );
+                this->ResliceImage( data, dataVector[MR4D] );
             } else if( !valid ) {
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             } 
 
-            bool geometriesMatch = validator->AreDataGeometriesSame( data, dataVector[MRS] );
+            bool geometriesMatch = validator->AreDataGeometriesSame( data, dataVector[MR4D] );
             if( !geometriesMatch ) {
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
         } else {
-            resultInfo += "Spectra must be loaded before overlays!\n";
+            resultInfo += "4D data must be loaded before overlays!\n";
         } 
-    } else if( targetIndex == MRS ) {
+    } else if( targetIndex == MR4D ) {
         if( dataVector[MET] != NULL ) {
             //cout << "PLOT GRID VIEW VALIDATOR 2" << endl;
             bool valid = validator->AreDataCompatible( data, dataVector[MET] );  
@@ -1247,19 +1273,19 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
                 resultInfo += "\n"; 
             }
         }
-    } else if( targetIndex >= ADDITIONAL_MRS ) {
-        if( dataVector[MRS] != NULL ) {
-            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+    } else if( targetIndex >= ADDITIONAL_MR4D ) {
+        if( dataVector[MR4D] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
             if( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
             }
-            valid = validator->AreDataGeometriesSame( data, dataVector[MRS] );
+            valid = validator->AreDataGeometriesSame( data, dataVector[MR4D] );
             if( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
             }
 
         } else {
-            resultInfo += "Spectra must be loaded before overlays!\n";
+            resultInfo += "4D data must be loaded before overlays!\n";
         }
     } else {
         resultInfo += "Unrecognized data type!\n";
@@ -1272,7 +1298,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
 
 
 /*!
- *  Reslice images to MRS orientation
+ *  Reslice images to MR4D orientation
  */
 void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
 {
@@ -1287,55 +1313,32 @@ void svkPlotGridView::ResliceImage(svkImageData* input, svkImageData* target)
 
 
 /*!
+ * Set the index for the given volume dimension index.
  *
+ * @param index the index of the volume
+ * @param volumeIndex the index of the volume dimension
+ * @param plotIndex the index of the plot line you wish to modify
  */
-void svkPlotGridView::SetChannel( int channel, int plotIndex )
+void svkPlotGridView::SetVolumeIndex( int index, int volumeIndex, int plotIndex )
 {
-    cout << "Setting channel to: "  << channel << endl;
-    cout << "Plot index: "  << plotIndex << endl;
     if( plotIndex == 0 ) {
-        this->channel = channel;
+        this->volumeIndexVector[ volumeIndex ] = index;
     }
     if( plotIndex != -1 ) {
         if( this->plotGrids[plotIndex] != NULL ) {
-            this->plotGrids[plotIndex]->SetChannel( channel );
+            this->plotGrids[plotIndex]->SetVolumeIndex( index, volumeIndex );
         }
     } else {
-        this->channel = channel;
+        this->volumeIndexVector[ volumeIndex ] = index;
         for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
             iter != this->plotGrids.end(); ++iter) {
             if( (*iter) != NULL ) {
-                (*iter)->SetChannel( channel );
+                (*iter)->SetVolumeIndex( index, volumeIndex);
             }
         }
     }
-    this->Refresh();
-
-    this->rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
-    this->Refresh();
-
-}
-
-/*!
- *
- */
-void svkPlotGridView::SetTimePoint( int timePoint, int plotIndex )
-{
-    if( plotIndex == 0 ) {
-        this->timePoint = timePoint;
-    }
-    if( plotIndex != -1 ) {
-        if( this->plotGrids[plotIndex] != NULL ) {
-            this->plotGrids[plotIndex]->SetTimePoint( timePoint );
-        }
-    } else {
-        this->timePoint = timePoint;
-        for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
-            iter != this->plotGrids.end(); ++iter) {
-            if( (*iter) != NULL ) {
-                (*iter)->SetTimePoint( timePoint );
-            }
-        }
+    if( this->tlcBrc[0] == this->tlcBrc[1] && this->tlcBrc[0] != -1 ) {
+        this->UpdateDetailedPlot(this->tlcBrc);
     }
     this->Refresh();
 
@@ -1346,22 +1349,14 @@ void svkPlotGridView::SetTimePoint( int timePoint, int plotIndex )
 
 
 /*!
+ * Getter for the index of current volume.
  *
+ * @param volumeIndex
+ * @return
  */
-int svkPlotGridView::GetTimePoint( )
+int  svkPlotGridView::GetVolumeIndex( int volumeIndex  )
 {
-    return this->timePoint;
-
-}
-
-
-/*!
- *
- */
-int svkPlotGridView::GetChannel( )
-{
-    return this->channel;
-
+    return this->volumeIndexVector[ volumeIndex ];
 }
 
 
@@ -1433,11 +1428,11 @@ void svkPlotGridView::GeneratePlotGridActor( )
     // if the data arrays are present when passed to
     // vtkExtractEdges. 
 
-    svkImageData* geometryData = svkMrsImageData::New();
-    geometryData->SetOrigin( dataVector[MRS]->GetOrigin() );
-    geometryData->SetSpacing( dataVector[MRS]->GetSpacing() );
-    geometryData->SetExtent( dataVector[MRS]->GetExtent() );
-    dataVector[MRS]->GetDcos(dcos);
+    svkImageData* geometryData = svk4DImageData::New();
+    geometryData->SetOrigin( dataVector[MR4D]->GetOrigin() );
+    geometryData->SetSpacing( dataVector[MR4D]->GetSpacing() );
+    geometryData->SetExtent( dataVector[MR4D]->GetExtent() );
+    dataVector[MR4D]->GetDcos(dcos);
     geometryData->SetDcos(dcos);
     edgeExtractor->SetInput( geometryData );
     geometryData->Delete();
@@ -1462,15 +1457,18 @@ void svkPlotGridView::GeneratePlotGridActor( )
  */
 void svkPlotGridView::GenerateClippingPlanes()
 { 
-    if( this->dataVector[MRS] != NULL ) {
-        string acquisitionType = this->dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    if( this->dataVector[MR4D] != NULL ) {
+        string acquisitionType;
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+            acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        }
         if( acquisitionType != "SINGLE VOXEL" ) {
-            this->ClipMapperToTlcBrc( dataVector[MRS],
+            this->ClipMapperToTlcBrc( dataVector[MR4D],
                                  vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID ))->GetMapper(), tlcBrc, CLIP_TOLERANCE, CLIP_TOLERANCE, CLIP_TOLERANCE );
             for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
                 iter != this->plotGrids.end(); ++iter) {
                 if( (*iter) != NULL ) {
-                    this->ClipMapperToTlcBrc( this->dataVector[MRS], (*iter)->GetPlotGridActor()->GetMapper(), tlcBrc, 0, 0, 0 );
+                    this->ClipMapperToTlcBrc( this->dataVector[MR4D], (*iter)->GetPlotGridActor()->GetMapper(), tlcBrc, 0, 0, 0 );
                 }
             }
         }
@@ -1484,7 +1482,7 @@ void svkPlotGridView::GenerateClippingPlanes()
 void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
 {
     this->orientation = orientation;
-    if( this->dataVector[MRS] != NULL ) {
+    if( this->dataVector[MR4D] != NULL ) {
         int toggleDraw = this->GetRenderer( svkPlotGridView::PRIMARY )->GetDraw();
         if( toggleDraw ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
@@ -1514,12 +1512,15 @@ void svkPlotGridView::SetOrientation( svkDcmHeader::Orientation orientation )
 //! Resets the camera to look at the new selection
 void svkPlotGridView::AlignCamera( ) 
 {  
-    if( this->GetRenderer( svkPlotGridView::PRIMARY) != NULL && this->dataVector[MRS] != NULL ) {
+    if( this->GetRenderer( svkPlotGridView::PRIMARY) != NULL && this->dataVector[MR4D] != NULL ) {
         double bounds[6];
-        string acquisitionType = dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         double normal[3];
-        this->dataVector[MRS]->GetSliceNormal( normal, this->orientation );
+        this->dataVector[MR4D]->GetSliceNormal( normal, this->orientation );
         double zoom;
+        string acquisitionType;
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+            string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        }
         if( acquisitionType == "SINGLE VOXEL" ) {
             memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
         } else {
@@ -1537,11 +1538,11 @@ void svkPlotGridView::AlignCamera( )
                                  bounds[4] + (bounds[5] - bounds[4])/2.0 };
 
         this->GetRenderer( svkPlotGridView::PRIMARY)->ResetCamera( bounds );
-        if( svkMrsImageData::SafeDownCast(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData") && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
             double* selectionBoxBounds = this->GetProp( VOL_SELECTION )->GetBounds();
             double tmpViewBounds[6];
             memcpy( tmpViewBounds, bounds, sizeof(double)*6 );
-            int orientationIndex = this->dataVector[MRS]->GetOrientationIndex( this->orientation ); 
+            int orientationIndex = this->dataVector[MR4D]->GetOrientationIndex( this->orientation );
             tmpViewBounds[2*orientationIndex] = selectionBoxBounds[2*orientationIndex];
             tmpViewBounds[2*orientationIndex+1] = selectionBoxBounds[2*orientationIndex+1];
             diagonal = sqrt( pow(tmpViewBounds[1] - tmpViewBounds[0],2) 
@@ -1589,7 +1590,7 @@ void svkPlotGridView::AlignCamera( )
 
         switch ( this->orientation ) {
             case svkDcmHeader::AXIAL:
-                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::CORONAL );
                 if( viewUp[1] < 0 ) {
                     inverter *=-1;
                 }
@@ -1598,7 +1599,7 @@ void svkPlotGridView::AlignCamera( )
                                                               inverter*viewUp[2] );
                 break;
             case svkDcmHeader::CORONAL:
-                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
                 if( viewUp[2] > 0 ) {
                     inverter *=-1;
                 }
@@ -1607,7 +1608,7 @@ void svkPlotGridView::AlignCamera( )
                                                               inverter*viewUp[2] );
                 break;
             case svkDcmHeader::SAGITTAL:
-                this->dataVector[MRS]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
+                this->dataVector[MR4D]->GetSliceNormal( viewUp, svkDcmHeader::AXIAL );
                 if( viewUp[2] > 0 ) {
                     inverter *=-1;
                 }

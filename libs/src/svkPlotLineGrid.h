@@ -46,6 +46,7 @@
 
 #include <vector>
 #include <vtkRenderer.h>
+#include <vtkIdList.h>
 
 #include <vtkImageData.h>
 #include <vtkCellData.h>
@@ -60,6 +61,7 @@
 #include <svkPlotLine.h>
 #include <svkImageData.h>
 #include <svkDataView.h>
+#include <svk4DImageData.h>
 #include <svkMrsImageData.h>
 #include <vtkPolyDataCollection.h>
 
@@ -90,8 +92,8 @@ class svkPlotLineGrid : public vtkObject
 
 
         //  Methods
-        void                    SetInput( svkMrsImageData* data );
-        svkMrsImageData*        GetInput( );
+        void                    SetInput( svk4DImageData* data );
+        svk4DImageData*        GetInput( );
         void                    Update(int tlcBrc[2]);
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
@@ -105,10 +107,10 @@ class svkPlotLineGrid : public vtkObject
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent                     GetComponent( );
-        int                     GetChannel( );
-        void                    SetChannel( int channel );
-        int                     GetTimePoint( );
-        void                    SetTimePoint( int timePoint );
+        vtkstd::vector<int>     GetVolumeIndexArray( );
+        //void                    SetVolumeIndexArray( vtkstd::vector<int> volumeIndexVector );
+        void                    SetVolumeIndex( int index, int volumeIndex = 0 );
+        int                     GetVolumeIndex( int volumeIndex = 0 );
         void                    UpdateDataArrays(int tlc, int brc);
         void                    SetOrientation( svkDcmHeader::Orientation orientation );
         vtkActor*               GetPlotGridActor();
@@ -118,27 +120,25 @@ class svkPlotLineGrid : public vtkObject
 
     private:
 
+        void                    ClearXYPlots();
+        void                    ClearPolyData();
+
         //! The current slice
         int                         slice;
-
-        //! The current channel
-        int                         channel;
-
-        //! The current timePoint
-        int                         timePoint;
+        vtkstd::vector< int >      volumeIndexVector;
 
         //! The ID's of the top left corner, and bottom right corner cells 
         int                         tlcBrc[2];
 
         //! Represents the current slice of plot lines
-        vtkCollection*              xyPlots;
+        vtkstd::vector<svkPlotLine*>  xyPlots;
 
         //! The actor that holds the plot grid
         vtkActor*                   plotGridActor;
 
         vtkAppendPolyData*          appender;
 
-        vtkPolyDataCollection*         polyDataCollection;
+        vtkstd::vector< vtkPolyData*>    polyDataVector;
 
         //! The index of the first point in the plots to be plotted-
         int                         plotRangeX1;     
@@ -163,14 +163,11 @@ class svkPlotLineGrid : public vtkObject
 
         int                         ampSelectionUpToDate[2];
 
-        //! Has the channel been modified since the last slice update 
-        bool*                        channelUpToDate;
-
-        //! Has the timePoint been modified since the last slice update 
-        bool*                        timePtUpToDate;
+        // Defines if the given volume for a given slice is up to date
+        vtkstd::vector< vtkstd::vector<bool> >  volumeUpToDate;
 
         //! The data
-        svkMrsImageData*               data;
+        svk4DImageData*               data;
 
         //! A callback to update the plot lines when the data changes
         vtkCallbackCommand*         dataModifiedCB;
@@ -189,6 +186,12 @@ class svkPlotLineGrid : public vtkObject
         void                        UpdateOrientation();
         void                        GenerateActor();
         void                        HighlightSelectionVoxels();
+        bool                        IsSliceUpToDate( int slice );
+        void                        SetSliceUpToDate( int slice );
+        void                        SetSliceOutOfDate( int slice );
+        void                        SetVolumeUpToDate( int volumeIndex );
+        void                        SetVolumeOutOfDate( int volumeIndex );
+        void                        InitializeVolumeUpToDateVector();
 
 };
 

@@ -244,13 +244,13 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     // if the data arrays are present when passed to
     // vtkExtractEdges. 
 
-    svkImageData* geometryData = svkMrsImageData::New();
-    geometryData->SetOrigin( dataVector[MRS]->GetOrigin() );
-    geometryData->SetSpacing( dataVector[MRS]->GetSpacing() );
-    geometryData->SetExtent( dataVector[MRS]->GetExtent() );
-    dataVector[MRS]->GetDcos(dcos);
+    svkImageData* geometryData = svk4DImageData::New();
+    geometryData->SetOrigin( dataVector[MR4D]->GetOrigin() );
+    geometryData->SetSpacing( dataVector[MR4D]->GetSpacing() );
+    geometryData->SetExtent( dataVector[MR4D]->GetExtent() );
+    dataVector[MR4D]->GetDcos(dcos);
     geometryData->SetDcos(dcos);
-    //edgeExtractor->SetInput( dataVector[MRS] );
+    //edgeExtractor->SetInput( dataVector[MR4D] );
     edgeExtractor->SetInput( geometryData );
     geometryData->Delete(); 
 
@@ -263,7 +263,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 0, 0 );
 
     // Now we need to grab the selection box
-    vtkActorCollection* selectionTopo = dataVector[MRS]->GetTopoActorCollection( 1 );
+    vtkActorCollection* selectionTopo = dataVector[MR4D]->GetTopoActorCollection( 1 );
 
     // Case for no selection box
     if( selectionTopo != NULL ) {
@@ -286,7 +286,7 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
 
    
     this->SetProp( svkOverlayView::PLOT_GRID, this->GetProp( svkOverlayView::PLOT_GRID ) );
-    string acquisitionType = dataVector[MRS]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     if( acquisitionType != "SINGLE VOXEL" ) {
         this->TurnPropOn( svkOverlayView::PLOT_GRID );
     } else {
@@ -299,9 +299,11 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
         this->HighlightSelectionVoxels();
     }
 
-    this->satBandsAxial->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
-    this->satBandsCoronal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
-    this->satBandsSagittal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MRS]) );
+    if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
+        this->satBandsAxial->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MR4D]) );
+        this->satBandsCoronal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MR4D]) );
+        this->satBandsSagittal->SetInput( static_cast<svkMrsImageData*>(this->dataVector[MR4D]) );
+    }
     if( this->dataVector[MRI] != NULL ) {
         this->SetSlice(this->imageViewer->GetSlice(svkDcmHeader::AXIAL),    svkDcmHeader::AXIAL);
         this->SetSlice(this->imageViewer->GetSlice(svkDcmHeader::SAGITTAL), svkDcmHeader::SAGITTAL);
@@ -364,7 +366,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
     }
  
     int* extent = this->dataVector[MRI]->GetExtent();
-    if( dataVector[MRS] == NULL ) {
+    if( dataVector[MR4D] == NULL ) {
         this->SetSlice( (extent[5]-extent[4])/2 );
     } 
     //this->SetSlice((extent[2]-extent[3])/2,svkDcmHeader::CORONAL);
@@ -429,7 +431,7 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
             SetupOverlay();
         } else if( data->IsA("svkMriImageData") ) {
             SetupMrInput( resetViewState );
-        } else if( data->IsA("svkMrsImageData") ) {
+        } else if( data->IsA("svk4DImageData") ) {
             SetupMsInput( resetViewState );
         } 
         this->Refresh();
@@ -477,32 +479,32 @@ void svkOverlayView::SetSlice(int slice)
 void svkOverlayView::SetSlice(int slice, bool centerImage)
 {
     if( dataVector[MRI] != NULL ) {
-        if( dataVector[MRS] != NULL ) { 
+        if( dataVector[MR4D] != NULL ) {
     
             if( tlcBrc[0] >= 0 && tlcBrc[1] >= 0 ) {
-                int* extent = dataVector[MRS]->GetExtent();
-                svkDcmHeader::Orientation dataOrientation = dataVector[MRS]->GetDcmHeader()->GetOrientationType();
+                int* extent = dataVector[MR4D]->GetExtent();
+                svkDcmHeader::Orientation dataOrientation = dataVector[MR4D]->GetDcmHeader()->GetOrientationType();
                 int tlcIndex[3];
                 int brcIndex[3];
-                this->dataVector[MRS]->GetIndexFromID( tlcBrc[0], tlcIndex );
-                this->dataVector[MRS]->GetIndexFromID( tlcBrc[1], brcIndex );
-                int lastSlice  = dataVector[MRS]->GetLastSlice( this->orientation );
-                int firstSlice = dataVector[MRS]->GetFirstSlice( this->orientation );
+                this->dataVector[MR4D]->GetIndexFromID( tlcBrc[0], tlcIndex );
+                this->dataVector[MR4D]->GetIndexFromID( tlcBrc[1], brcIndex );
+                int lastSlice  = dataVector[MR4D]->GetLastSlice( this->orientation );
+                int firstSlice = dataVector[MR4D]->GetFirstSlice( this->orientation );
                 slice = (slice > lastSlice) ? lastSlice:slice;
                 slice = (slice < firstSlice) ? firstSlice:slice;
-                tlcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
-                brcIndex[ this->dataVector[MRS]->GetOrientationIndex( this->orientation ) ] = slice;
-                tlcBrc[0] = this->dataVector[MRS]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
-                tlcBrc[1] = this->dataVector[MRS]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
+                tlcIndex[ this->dataVector[MR4D]->GetOrientationIndex( this->orientation ) ] = slice;
+                brcIndex[ this->dataVector[MR4D]->GetOrientationIndex( this->orientation ) ] = slice;
+                tlcBrc[0] = this->dataVector[MR4D]->GetIDFromIndex( tlcIndex[0], tlcIndex[1], tlcIndex[2] );
+                tlcBrc[1] = this->dataVector[MR4D]->GetIDFromIndex( brcIndex[0], brcIndex[1], brcIndex[2] );
             }
             this->slice = slice;
             this->GenerateClippingPlanes();
 
             // Case for no selection box
-            if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL ) {
+            if( this->GetProp( svkOverlayView::VOL_SELECTION ) != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
 
                 // If it is make it visible, otherwise hide it
-                if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
+                if( static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) && isPropOn[VOL_SELECTION] && this->toggleSelBoxVisibility) {
                     this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
                 } else if( this->toggleSelBoxVisibility ) {
                     this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
@@ -538,22 +540,23 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
     if( toggleDraw ) {
         this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
     }
-    if( this->dataVector[MRS] != NULL && orientation == this->orientation ) {
+    if( this->dataVector[MR4D] != NULL && orientation == this->orientation ) {
 
         // We may have removed the plot grid, so lets make sure its present
         if( !this->GetRenderer(svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::PLOT_GRID ) )) {
             this->GetRenderer(svkOverlayView::PRIMARY)->AddViewProp(this->GetProp( svkOverlayView::PLOT_GRID ));
         }
         int newSpectraSlice = this->FindSpectraSlice( slice, orientation );
-        if( static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( newSpectraSlice, orientation ) 
-                 && isPropOn[VOL_SELECTION] 
-                 && this->toggleSelBoxVisibility) {
+        if( this->dataVector[MR4D]->IsA("svkMrsImageData")
+                && static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( newSpectraSlice, orientation )
+                && isPropOn[VOL_SELECTION]
+                && this->toggleSelBoxVisibility) {
             this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
         } else if( this->GetProp( svkOverlayView::VOL_SELECTION) && this->toggleSelBoxVisibility ) {
             this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(0);
         }
-        if(  newSpectraSlice >= this->dataVector[MRS]->GetFirstSlice( this->orientation ) &&
-             newSpectraSlice <=  this->dataVector[MRS]->GetLastSlice( this->orientation ) ) {
+        if(  newSpectraSlice >= this->dataVector[MR4D]->GetFirstSlice( this->orientation ) &&
+             newSpectraSlice <=  this->dataVector[MR4D]->GetLastSlice( this->orientation ) ) {
 
             if( newSpectraSlice != this->slice ) {
                 this->SetSlice( newSpectraSlice );    
@@ -569,7 +572,7 @@ void svkOverlayView::SetSlice(int slice, svkDcmHeader::Orientation orientation)
     this->imageViewer->SetSlice( slice, orientation );    
     this->SetSliceOverlay();
 
-    if( dataVector[MRS] != NULL ) {
+    if( dataVector[MR4D] != NULL ) {
         switch ( orientation ) {
             case svkDcmHeader::AXIAL:
                 this->satBandsAxial->SetClipSlice( slice );
@@ -630,11 +633,11 @@ int svkOverlayView::FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orient
 {
     int imageSlice;
     double spectraSliceCenter[3];
-    this->dataVector[MRS]->GetSliceCenter( spectraSlice, spectraSliceCenter, orientation );
+    this->dataVector[MR4D]->GetSliceCenter( spectraSlice, spectraSliceCenter, orientation );
     double normal[3];
-    this->dataVector[MRS]->GetSliceNormal( normal, orientation );
-    int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
-    double tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
+    this->dataVector[MR4D]->GetSliceNormal( normal, orientation );
+    int index = this->dataVector[MR4D]->GetOrientationIndex( orientation );
+    double tolerance = this->dataVector[MR4D]->GetSpacing()[index]/2.0;
 
     imageSlice = this->dataVector[MRI]->GetClosestSlice( spectraSliceCenter, orientation, tolerance );
     return imageSlice;
@@ -649,9 +652,9 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
     int spectraSlice;
     double imageSliceCenter[3];
     this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
-    int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
-    double tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
-    spectraSlice = this->dataVector[MRS]->GetClosestSlice( imageSliceCenter, orientation, tolerance );
+    int index = this->dataVector[MR4D]->GetOrientationIndex( orientation );
+    double tolerance = this->dataVector[MR4D]->GetSpacing()[index]/2.0;
+    spectraSlice = this->dataVector[MR4D]->GetClosestSlice( imageSliceCenter, orientation, tolerance );
     return spectraSlice;
 }
 
@@ -665,9 +668,9 @@ int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation 
     double sliceCenter[3];
     double tolerance = 0;
     this->dataVector[MRI]->GetSliceOrigin( imageSlice, sliceCenter, orientation );
-    if( this->dataVector[MRS] != NULL ) {
-        int index = this->dataVector[MRS]->GetOrientationIndex( orientation );
-        tolerance = this->dataVector[MRS]->GetSpacing()[index]/2.0;
+    if( this->dataVector[MR4D] != NULL ) {
+        int index = this->dataVector[MR4D]->GetOrientationIndex( orientation );
+        tolerance = this->dataVector[MR4D]->GetSpacing()[index]/2.0;
     } else {
         int index = this->dataVector[MRI]->GetOrientationIndex( orientation );
         tolerance = this->dataVector[MRI]->GetSpacing()[index]/2.0;
@@ -751,7 +754,7 @@ void svkOverlayView::SetRWInteractor( vtkRenderWindowInteractor* rwi )
  */ 
 void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
 {
-    if( selectionArea != NULL && dataVector[MRS] != NULL) {
+    if( selectionArea != NULL && dataVector[MR4D] != NULL) {
         double worldStart[3]; 
         double worldEnd[3]; 
         if( !isWorldCords ) {
@@ -787,9 +790,9 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
         selection[5] = worldEnd[2];
 
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
+        svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
-    } else if( dataVector[MRS] != NULL ) {
+    } else if( dataVector[MR4D] != NULL ) {
 
         //What should we do when the mri data is null, but the mrs is not....
     } 
@@ -804,7 +807,7 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
  */
 void svkOverlayView::SetTlcBrc( int* tlcBrc ) 
 {
-    if( svkDataView::IsTlcBrcWithinData( this->dataVector[MRS], tlcBrc ) ) {
+    if( svkDataView::IsTlcBrcWithinData( this->dataVector[MR4D], tlcBrc ) ) {
         this->tlcBrc[0] = tlcBrc[0];
         this->tlcBrc[1] = tlcBrc[1];
         this->GenerateClippingPlanes();
@@ -819,9 +822,9 @@ void svkOverlayView::SetTlcBrc( int* tlcBrc )
  */
 int* svkOverlayView::HighlightSelectionVoxels()
 {
-    if( dataVector[MRS] != NULL ) { 
+    if( dataVector[MR4D] != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData") ) {
         int tlcBrcImageData[2];
-        svkMrsImageData::SafeDownCast(this->dataVector[MRS])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
+        svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
     } else {
@@ -972,8 +975,8 @@ double svkOverlayView::GetColorOverlayWindow()
 void svkOverlayView::GenerateClippingPlanes( )
 {
     // We need to leave a little room around the edges, so the border does not get cut off
-    if( dataVector[MRS] != NULL ) {
-        this->ClipMapperToTlcBrc( dataVector[MRS], 
+    if( dataVector[MR4D] != NULL ) {
+        this->ClipMapperToTlcBrc( dataVector[MR4D],
                                  vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID ))->GetMapper(), 
                                  tlcBrc, svkOverlayView::CLIP_TOLERANCE, 
                                  svkOverlayView::CLIP_TOLERANCE, svkOverlayView::CLIP_TOLERANCE );
@@ -1544,14 +1547,14 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
     } else if( data->IsA("svkMriImageData") ) {
         
-        if( targetIndex == OVERLAY && dataVector[MRS] == NULL ) {
+        if( targetIndex == OVERLAY && dataVector[MR4D] == NULL ) {
             resultInfo = "ERROR: Spectra must be loaded before overlays!\n";
         } 
 
-        if( dataVector[MRS] != NULL ) {
-            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+        if( dataVector[MR4D] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
+                resultInfo = "Orientation mismatch: reslicing images to MR4D data orientation.";
                 resultInfo = ""; 
             } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
@@ -1559,12 +1562,12 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
             }
         } 
 
-    } else if( data->IsA("svkMrsImageData") ) {
+    } else if( data->IsA("svk4DImageData") ) {
 
         if( dataVector[MRI] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                resultInfo = "Orientation mismatch: reslicing images to MRS data orientation."; 
+                resultInfo = "Orientation mismatch: reslicing images to MR4D data orientation.";
                 resultInfo = ""; 
             } else if ( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
@@ -1602,15 +1605,15 @@ int svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
 
     } else if( data->IsA("svkMriImageData") ) {
         
-        if( dataVector[MRS] != NULL ) {
-            bool valid = validator->AreDataCompatible( data, dataVector[MRS] );
+        if( dataVector[MR4D] != NULL ) {
+            bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                this->ResliceImage(data, dataVector[MRS], targetIndex); 
+                this->ResliceImage(data, dataVector[MR4D], targetIndex);
                 indexModified = targetIndex;
             } 
         } 
 
-    } else if( data->IsA("svkMrsImageData") ) {
+    } else if( data->IsA("svk4DImageData") ) {
 
         if( dataVector[MRI] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
@@ -1628,7 +1631,7 @@ int svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
 
 
 /*!
- *  Reslice images to MRS orientation
+ *  Reslice images to MR4D orientation
  */
 void svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int targetIndex)    
 {
@@ -1787,8 +1790,8 @@ void svkOverlayView::SetOrientation( svkDcmHeader::Orientation orientation )
         }
         this->imageViewer->SetOrientation( orientation );
         //this->AlignCamera();
-        if( this->dataVector[MRS] != NULL ) {
-            svkDataView::ResetTlcBrcForNewOrientation( this->dataVector[MRS], this->orientation, this->tlcBrc, this->slice );
+        if( this->dataVector[MR4D] != NULL ) {
+            svkDataView::ResetTlcBrcForNewOrientation( this->dataVector[MR4D], this->orientation, this->tlcBrc, this->slice );
             bool satBandsAllOn = false;
             bool satBandsOutlineAllOn = false;
             bool satBandsSliceOn = false;
@@ -2003,7 +2006,8 @@ void svkOverlayView::ToggleSelBoxVisibilityOn()
     if( this->GetProp( svkOverlayView::VOL_SELECTION ) == NULL ) {
         return;
     }
-    if( this->dataVector[MRS] != NULL && static_cast<svkMrsImageData*>(this->dataVector[MRS])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
+    if( this->dataVector[MR4D] != NULL && this->dataVector[MR4D]->IsA("svkMrsImageData")
+            && static_cast<svkMrsImageData*>(this->dataVector[MR4D])->IsSliceInSelectionBox( this->slice, this->orientation ) ) {
         this->GetProp( svkOverlayView::VOL_SELECTION )->SetVisibility(1);
         this->TurnPropOn( svkOverlayView::VOL_SELECTION );
     } else {

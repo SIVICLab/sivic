@@ -112,10 +112,8 @@ class svkPlotGridView : public svkDataView
         virtual void                SetOverlayWLRange( double* range );
         virtual double*             GetOverlayWLRange( );
         void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = -1 );
-        void                        SetChannel( int channel, int plotIndex = -1 );
-        int                         GetChannel( );
-        void                        SetTimePoint( int timePoint, int plotIndex = -1 );
-        int                         GetTimePoint( );
+        virtual void                SetVolumeIndex( int index, int volumeIndex = 0, int plotIndex = -1 );
+        virtual int                 GetVolumeIndex( int volumeIndex = 0 );
         void                        SetPlotUnits( svkSpecPoint::UnitType plotUnitType );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                SetPlotColor( int plotIndex, double* rgb );
@@ -123,9 +121,9 @@ class svkPlotGridView : public svkDataView
         virtual void                SetPlotVisibility( int plotIndex, bool visible );
         virtual bool                GetPlotVisibility( int plotIndex );
         virtual int                 GetNumberOfReferencePlots( );
-        virtual void                SetActiveSpectraIndex( int plotIndex );
-        virtual svkImageData*       GetActiveSpectra( );
-        virtual int                 GetActiveSpectraIndex( );
+        virtual void                SetActivePlotIndex( int plotIndex );
+        virtual svkImageData*       GetActivePlot( );
+        virtual int                 GetActivePlotIndex( );
         virtual void                Refresh();
         void                        GeneratePlotGridActor();  
         void                        GenerateClippingPlanes();
@@ -159,7 +157,7 @@ class svkPlotGridView : public svkDataView
         } ColorSchema;
 
         //! Enum represent the data inputs
-        enum DataInputs { MRS, MET, ADDITIONAL_MRS };
+        enum DataInputs { MR4D, MET, ADDITIONAL_MR4D };
 
         //! Enum represents different color schemes. Used for printing.
         typedef enum {
@@ -175,7 +173,7 @@ class svkPlotGridView : public svkDataView
         vector<svkPlotLineGrid*> plotGrids; 
         vector<svkImageClip*>  metClippers;
         vector<vtkActor2D*>    overlayTextActors;
-        double                 referenceSpectraColors[10][3];
+        double                 referencePlotColors[10][3];
         void                   CreateMetaboliteOverlay( svkImageData* data );
         void                   UpdateMetaboliteText( int* tlcBrc );
         void                   UpdateMetaboliteImage( int* tlcBrc );
@@ -190,15 +188,14 @@ class svkPlotGridView : public svkDataView
 
     private: 
         void                     ResliceImage(svkImageData* input, svkImageData* target);
-        int                      channel;
-        int                      timePoint;
         int                      numColors;
         svkLookupTable*          colorTransfer;
         svkSatBandSet*           satBands;
-        int                      activeSpectra;
+        int                      activePlot;
         svkDetailedPlotDirector* detailedPlotDirector;
         svkSpecPoint::UnitType   plotUnitType;
         svkImageMapToColors*     windowLevel;
+        vtkstd::vector<int>      volumeIndexVector;
 
         static const double CLIP_TOLERANCE;
 

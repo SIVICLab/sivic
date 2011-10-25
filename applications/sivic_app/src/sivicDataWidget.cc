@@ -131,7 +131,7 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
             this->referenceSpectra->GetWidget()->SetCellWindowCommandToCheckButton(i, 1);
             this->referenceSpectra->GetWidget()->InsertCellText(i, 2, svkUtils::ColorArrayToString( plotGridView->GetPlotColor(i)).c_str());
             this->referenceSpectra->GetWidget()->SetCellWindowCommandToColorButton(i, 2);
-            if( i == svkPlotGridView::SafeDownCast( this->plotController->GetView())->GetActiveSpectraIndex() ) {
+            if( i == svkPlotGridView::SafeDownCast( this->plotController->GetView())->GetActivePlotIndex() ) {
                 this->referenceSpectra->GetWidget()->InsertCellTextAsInt(i, 3, 1);
             } else {
                 this->referenceSpectra->GetWidget()->InsertCellTextAsInt(i, 3, 0);
@@ -160,7 +160,7 @@ void sivicDataWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned 
 
         int visible = this->referenceSpectra->GetWidget()->GetCellTextAsInt(i,1);
         int active = this->referenceSpectra->GetWidget()->GetCellTextAsInt(i,3);
-        if( active == 1 && i != svkPlotGridView::SafeDownCast( this->plotController->GetView())->GetActiveSpectraIndex() ) {
+        if( active == 1 && i != svkPlotGridView::SafeDownCast( this->plotController->GetView())->GetActivePlotIndex() ) {
             newActiveIndex = i;
         }
 

@@ -48,7 +48,10 @@
 
 #include <vtkObjectFactory.h>
 #include <svkImageData.h>
+#include <svk4DImageData.h>
 #include <vtkImageAccumulate.h>
+#include <vtkCallbackCommand.h>
+#include <svkFastCellData.h>
 
 
 namespace svk {
@@ -73,16 +76,22 @@ class svkMriImageData: public svkImageData
         static vtkObject*       NewObject();
 
 
-        double*         GetImagePixels( int slice );
-        vtkDataArray*   GetImagePixelsArray( int slice );
-        double*         GetImagePixel( int id );
-        double*         GetImagePixel( int x, int y, int z );
-        void            SetImagePixels( double* pixels, int slice); 
-        void            SetImagePixel( int id, double value );
-        void            SetImagePixel( int x, int y, int z, double value );
-        virtual void    GetNumberOfVoxels(int numVoxels[3]); 
-        void            GetAutoWindowLevel( double& window, double& level, int numBins = NUM_BINS
+        double*                 GetImagePixels( int slice );
+        vtkDataArray*           GetImagePixelsArray( int slice );
+        double*                 GetImagePixel( int id );
+        double*                 GetImagePixel( int x, int y, int z );
+        void                    SetImagePixels( double* pixels, int slice);
+        void                    SetImagePixel( int id, double value );
+        void                    SetImagePixel( int x, int y, int z, double value );
+        virtual void            GetNumberOfVoxels(int numVoxels[3]);
+        void                    GetAutoWindowLevel( double& window, double& level, int numBins = NUM_BINS
                                                                          , double excludeFactor = EXCLUDE_FACTOR );
+        virtual svk4DImageData* GetCellDataRepresentation();
+        void                    SyncPixelDataToCellRepresentation();
+        void                    SyncCellRepresentationToPixelData();
+
+
+        static void             UpdatePixelData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
 
 
     protected:
@@ -94,7 +103,10 @@ class svkMriImageData: public svkImageData
     
     private:
         
-        double* pixelBuffer;
+        svk4DImageData*         cellDataRepresentation;
+        double*                 pixelBuffer;
+        vtkCallbackCommand*     cellRepresentationModifiedCB;
+        void                    InitializeCellDataArrays();
 };
 
 
