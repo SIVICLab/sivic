@@ -66,6 +66,7 @@
 #include <vtkKWPushButton.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkImageWriter.h>
+#include <vtkKWPushButton.h>
 #include <vtkKWSeparator.h>
 #include <vtkJPEGWriter.h>
 #include <vtkTIFFWriter.h>
@@ -134,6 +135,7 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         vtkKWFrame*                     imageViewFrame;
         vtkKWFrame*                     orthoViewFrame;
         vtkKWFrame*                     overlayViewFrame;
+        vtkKWPushButton*                generateTraceButton;
 
 
         

@@ -393,7 +393,7 @@ void sivicCombineWidget::ExecuteCombine()
                                            resetAmplitude, resetFrequency );
         this->sivicController->ResetChannel( );
         string stringFilename = "CombinedData";
-        this->sivicController->OpenSpectra( data, stringFilename);
+        this->sivicController->Open4DImage( data, stringFilename);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }

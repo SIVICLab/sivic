@@ -432,7 +432,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             string stringFilename = "ZF";
             this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                           resetAmplitude, resetFrequency );
-            this->sivicController->OpenSpectra( data, stringFilename);
+            this->sivicController->Open4DImage( data, stringFilename);
         }
         if( apodizeSpec.compare("Lorentz") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();

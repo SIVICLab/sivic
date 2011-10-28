@@ -992,7 +992,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
     if (status.bad()) {
         cerr << "Error: cannot insert dummy val(" << status.text() << ")" << endl;
     }
-    this->PrintDcmHeader();
+    //this->PrintDcmHeader();
     
     //  Now get the element and add the array to it:    
     DcmElement* element;

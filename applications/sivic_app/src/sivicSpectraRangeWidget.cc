@@ -43,7 +43,6 @@
 vtkStandardNewMacro( sivicSpectraRangeWidget );
 vtkCxxRevisionMacro( sivicSpectraRangeWidget, "$Revision$");
 
-static int nearestInt(float x);   
 
 
 /*! 
@@ -59,6 +58,7 @@ sivicSpectraRangeWidget::sivicSpectraRangeWidget()
     this->specRangeFrame = NULL;
     this->dataRange[0] = 0;
     this->dataRange[1] = 1;
+    this->point = svkSpecPoint::New();
 
 }
 
@@ -115,7 +115,7 @@ sivicSpectraRangeWidget::~sivicSpectraRangeWidget()
  */
 void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType targetUnits)
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
     if( data == NULL ) {
         return;
     }
@@ -128,26 +128,26 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType target
     }
 
     //  Convert the current values to the target unit scale:
-    float lowestPoint = this->point->ConvertPosUnits(
+    float lowestPoint = this->ConvertPosUnits(
         minValue,
         this->specUnits, 
         targetUnits 
     );
 
-    float highestPoint = this->point->ConvertPosUnits(
+    float highestPoint = this->ConvertPosUnits(
         maxValue,
         this->specUnits, 
         targetUnits 
     );
 
     //  convert the Whole Range to the target unit scale:
-    float lowestPointRange = this->point->ConvertPosUnits(
+    float lowestPointRange = this->ConvertPosUnits(
         0,
         svkSpecPoint::PTS, 
         targetUnits 
     );
 
-    float highestPointRange = this->point->ConvertPosUnits(
+    float highestPointRange = this->ConvertPosUnits(
         data->GetCellData()->GetArray(0)->GetNumberOfTuples()-1, 
         svkSpecPoint::PTS, 
         targetUnits 
@@ -167,10 +167,10 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType target
         this->unitSelectBox->SetValue( "PTS" );
         // We add one to all parameters to so that the user sees a range of 1 to numPoints
         // This will be deducted before being set into the views 
-        lowestPoint = (float)(nearestInt(lowestPoint))+1; 
-        highestPoint = (float)(nearestInt(highestPoint))+1; 
-        lowestPointRange = (float)(nearestInt(lowestPointRange))+1; 
-        highestPointRange = (float)(nearestInt(highestPointRange))+1; 
+        lowestPoint = (float)(svkUtils::NearestInt(lowestPoint))+1;
+        highestPoint = (float)(svkUtils::NearestInt(highestPoint))+1;
+        lowestPointRange = (float)(svkUtils::NearestInt(lowestPointRange))+1;
+        highestPointRange = (float)(svkUtils::NearestInt(highestPointRange))+1;
     }
 
     svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetPlotUnits( this->specUnits );
@@ -204,7 +204,7 @@ void sivicSpectraRangeWidget::ResetRange( bool useFullFrequencyRange, bool useFu
  */
 void sivicSpectraRangeWidget::ResetAmplitudeWholeRange( )
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
     if( data != NULL ) {
         data->GetDataRange( this->dataRange, this->plotController->GetComponent()  );
         this->ySpecRange->SetWholeRange( this->dataRange[0], this->dataRange[1] );
@@ -218,32 +218,36 @@ void sivicSpectraRangeWidget::ResetAmplitudeWholeRange( )
  */
 void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
 {
-    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->model->GetDataObject( "SpectroscopicData" ));
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
     if( data != NULL ) {
         int component = this->plotController->GetComponent();
-        int channel = this->plotController->GetVolumeIndex(svkMrsImageData::CHANNEL);
-        int timePoint = this->plotController->GetVolumeIndex(svkMrsImageData::TIMEPOINT);
-        float lowestPoint = this->point->ConvertPosUnits(
+        float lowestPoint = this->ConvertPosUnits(
             this->xSpecRange->GetEntry1()->GetValueAsDouble(),
             this->specUnits,
             svkSpecPoint::PTS
         );
 
-        float highestPoint = this->point->ConvertPosUnits(
+        float highestPoint = this->ConvertPosUnits(
             this->xSpecRange->GetEntry2()->GetValueAsDouble(),
             this->specUnits,
             svkSpecPoint::PTS
         );
 
-        string domain = model->GetDataObject( "SpectroscopicData" )
-                                 ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string domain = "TIME";
+        if( data->IsA("svkMrsImageData")) {
+            domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        }
         double range[2];
 
         if ( useFullRange || domain == "TIME" ) {
             data->GetDataRange( range, this->plotController->GetComponent());
         } else {
-            data->EstimateDataRange( range, static_cast<int>(lowestPoint), static_cast<int>(highestPoint)
-                                          , this->plotController->GetComponent(), NULL, timePoint, channel  );
+            int lowInt = static_cast<int>(lowestPoint);
+            int highInt =  static_cast<int>(highestPoint);
+            int component = this->plotController->GetComponent();
+            int* volumeIndexArray = this->plotController->GetVolumeIndexArray();
+            int* tlcBrc = this->plotController->GetTlcBrc();
+            data->EstimateDataRange( range, lowInt, highInt, component, tlcBrc , volumeIndexArray );
             double rangeWidth = range[1]-range[0];
             range[0] -= 0.05 * rangeWidth;
             range[1] += 0.05 * rangeWidth;
@@ -259,19 +263,21 @@ void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
  */
 void sivicSpectraRangeWidget::ResetFrequencyWholeRange( )
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
     if( data != NULL ) {
-        string domain = model->GetDataObject( "SpectroscopicData" )
-                                 ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string domain = "TIME";
+        if( data->IsA("svkMrsImageData")) {
+            domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        }
         float min = 1;
         float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
         if( domain == "FREQUENCY" ) {
-            min = this->point->ConvertPosUnits(
+            min = this->ConvertPosUnits(
                             0,
                             svkSpecPoint::PTS,
                             this->specUnits 
                                 );
-            max = this->point->ConvertPosUnits(
+            max = this->ConvertPosUnits(
                             data->GetCellData()->GetArray(0)->GetNumberOfTuples(),
                             svkSpecPoint::PTS,
                             this->specUnits 
@@ -291,20 +297,22 @@ void sivicSpectraRangeWidget::ResetFrequencyWholeRange( )
  */
 void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
     if( data != NULL ) {
-        string domain = model->GetDataObject( "SpectroscopicData" )
-                                 ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        string domain = "TIME";
+        if( data->IsA("svkMrsImageData")) {
+            domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+        }
         float min = 1;
         float max = data->GetCellData()->GetArray(0)->GetNumberOfTuples(); 
         if( domain == "FREQUENCY" ) {
             this->SetSpecUnitsCallback(svkSpecPoint::PPM);
-            min = this->point->ConvertPosUnits(
+            min = this->ConvertPosUnits(
                             0,
                             svkSpecPoint::PTS,
                             this->specUnits 
                                 );
-            max = this->point->ConvertPosUnits(
+            max = this->ConvertPosUnits(
                             data->GetCellData()->GetArray(0)->GetNumberOfTuples(),
                             svkSpecPoint::PTS,
                             this->specUnits 
@@ -323,13 +331,13 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
             this->xSpecRange->SetRange( min, max );
         }
         //We now need to reset the range of the plotController
-        float lowestPoint = this->point->ConvertPosUnits(
+        float lowestPoint = this->ConvertPosUnits(
             this->xSpecRange->GetEntry1()->GetValueAsDouble(),
             this->specUnits,
             svkSpecPoint::PTS
         );
 
-        float highestPoint = this->point->ConvertPosUnits(
+        float highestPoint = this->ConvertPosUnits(
             this->xSpecRange->GetEntry2()->GetValueAsDouble(),
             this->specUnits,
             svkSpecPoint::PTS
@@ -358,7 +366,6 @@ void sivicSpectraRangeWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    this->point = svkSpecPoint::New();
 
     //  =======================================================
     //  Spec View Widgets
@@ -572,17 +579,18 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
 
         //  Get the display unit type and convert to points:
         //  Convert Values to points before setting the plot controller's range
-
-        float lowestPoint = this->point->ConvertPosUnits(
+        float lowestPoint = minValue;
+        float highestPoint = maxValue;
+        lowestPoint = this->ConvertPosUnits(
             minValue,
             this->specUnits,
-            svkSpecPoint::PTS 
+            svkSpecPoint::PTS
         );
     
-        float highestPoint = this->point->ConvertPosUnits(
+        highestPoint = this->ConvertPosUnits(
             maxValue,
             this->specUnits,
-            svkSpecPoint::PTS 
+            svkSpecPoint::PTS
         );
 
         this->plotController->SetWindowLevelRange( lowestPoint, highestPoint, svkPlotGridView::FREQUENCY);
@@ -645,27 +653,22 @@ void sivicSpectraRangeWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
 }
 
 
-/*
- *   Returns the nearest int.  For values at the mid-point,
- *   the value is rounded to the larger int.
+/*!
+ *
+ * @param position
+ * @param inType
+ * @param targetType
  */
-int nearestInt(float x)
+float sivicSpectraRangeWidget::ConvertPosUnits(float position, int inType, int targetType)
 {
-    int x_to_int;
-    x_to_int = (int) x;
 
-    /*
-     *   First do positive numbers, then negative ones.
-     */
-    if (x>=0) {
-        if ((x - x_to_int) >= 0.5) {
-            x_to_int += 1;
-        }
+    svk4DImageData* data = this->sivicController->GetActive4DImageData();
+    if( data != NULL && data->IsA("svkMrsImageData") ){
+        this->point->SetDcmHeader( data->GetDcmHeader() );
+        float value = this->point->ConvertPosUnits( position, inType, targetType );
+        return value;
     } else {
-        if ((x_to_int - x) > 0.5) {
-            x_to_int -= 1;
-        }
+        return position;
     }
 
-    return (int) x_to_int;
 }

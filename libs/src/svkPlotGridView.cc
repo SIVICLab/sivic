@@ -877,6 +877,19 @@ int* svkPlotGridView::HighlightSelectionVoxels()
         svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->Get2DProjectedTlcBrcInSelectionBox( tlcBrcImageData, this->orientation, this->slice );
         this->SetTlcBrc( tlcBrcImageData );
         return tlcBrc;
+    } else if(this->dataVector[MR4D] != NULL) {
+        // If there is no selection, select everything in the slice
+        double selection[6];
+        int tlcBrcImageData[2];
+        selection[0] = VTK_INT_MIN/2;
+        selection[1] = VTK_INT_MAX/2;
+        selection[2] = VTK_INT_MIN/2;
+        selection[3] = VTK_INT_MAX/2;
+        selection[4] = VTK_INT_MIN/2;
+        selection[5] = VTK_INT_MAX/2;
+        svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
+        this->SetTlcBrc( tlcBrcImageData );
+        return this->tlcBrc;
     } else {
         return NULL; 
     }
@@ -1359,6 +1372,17 @@ int  svkPlotGridView::GetVolumeIndex( int volumeIndex  )
     return this->volumeIndexVector[ volumeIndex ];
 }
 
+/*!
+ * Getter for the index of current volume.
+ *
+ * @param volumeIndex
+ * @return
+ */
+int*  svkPlotGridView::GetVolumeIndexArray( )
+{
+    return this->volumeIndexVector.data();
+}
+
 
 /*!
  *  Sets the opacity of the image overlay.
@@ -1632,4 +1656,15 @@ void svkPlotGridView::AlignCamera( )
             this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOn();
         }
     }
+}
+
+
+/*!
+ *  Returns the active input dataset.
+ *
+ * @return
+*/
+svk4DImageData* svkPlotGridView::GetActiveInput()
+{
+    return this->plotGrids[ this->activePlot ]->GetInput();
 }

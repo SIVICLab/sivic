@@ -148,10 +148,10 @@ class vtkSivicController : public vtkObject
         void                       OpenExam( );
         int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);
         void                       OpenImage(   const char* fileName );
-        void                       OpenSpectra( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL ,bool onlyReadOneInputFile = false );
-        void                       OpenSpectra( const char* fileName, bool onlyReadOneInputFile = false );
+        void                       Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL ,bool onlyReadOneInputFile = false );
+        void                       Open4DImage( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenOverlay( svkImageData* data, string stringFilename );
-        void                       AddSpectra( string stringFilename );
+        void                       Add4DImageData( string stringFilename, bool onlyReadOneInputFile = false );
         void                       OpenOverlay( const char* fileName );
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
@@ -205,7 +205,8 @@ class vtkSivicController : public vtkObject
         void                       SetOrientation( const char*, bool alignOverlay = 0 );
         void                       TurnOffPlotView();
         void                       TurnOnPlotView();
-        void                       SetActiveSpectra( int index );
+        void                       SetActive4DImageData( int index );
+        svk4DImageData*            GetActive4DImageData();
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();
@@ -224,7 +225,6 @@ class vtkSivicController : public vtkObject
         void                       SetOverlayThreshold( double threshold );
         void                       PushToPACS();
         void                       GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax ); 
-
  
     protected:
 

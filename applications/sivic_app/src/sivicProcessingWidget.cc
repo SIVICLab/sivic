@@ -248,8 +248,8 @@ void sivicProcessingWidget::SetPhaseUpdateExtent()
 
     if ( this->phaseAllChannelsButton->GetSelectedState() ) {
         this->phaser->PhaseAllChannels();
-    } else {
-        this->phaser->SetChannel( this->plotController->GetVolumeIndex( svkMrsImageData::CHANNEL ) );
+    } else if(  this->model->DataExists("SpectroscopicData") ) {
+            this->phaser->SetChannel( this->plotController->GetVolumeIndex( svkMrsImageData::CHANNEL ) );
     }
 
     if ( this->phaseAllVoxelsButton->GetSelectedState() ) {
@@ -350,7 +350,7 @@ void sivicProcessingWidget::ExecuteRecon()
         //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
         //                                   resetAmplitude, resetFrequency );
         string stringFilename = "Result";
-        this->sivicController->OpenSpectra( data, stringFilename);
+        this->sivicController->Open4DImage( data, stringFilename);
         this->sivicController->EnableWidgets( );
 
         // We are resetting the input to make sure the actors get updated
@@ -388,7 +388,7 @@ void sivicProcessingWidget::ExecutePhase()
         bool resetAmplitude = 1;
         bool resetFrequency = 0;
         string stringFilename = "PhasedData";
-        this->sivicController->OpenSpectra( data, stringFilename);
+        this->sivicController->Open4DImage( data, stringFilename);
         this->sivicController->EnableWidgets( );
         //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
         //                                   resetAmplitude, resetFrequency );
@@ -425,7 +425,7 @@ void sivicProcessingWidget::ExecuteCombine()
                                            resetAmplitude, resetFrequency );
         this->sivicController->ResetChannel( );
         string stringFilename = "CombinedData";
-        this->sivicController->OpenSpectra( data, stringFilename);
+        this->sivicController->Open4DImage( data, stringFilename);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }

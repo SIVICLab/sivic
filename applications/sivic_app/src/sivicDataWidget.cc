@@ -177,7 +177,7 @@ void sivicDataWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned 
                 this->referenceSpectra->GetWidget()->SetCellWindowCommandToCheckButton(i, 3);
             }
         }
-        this->sivicController->SetActiveSpectra( newActiveIndex );
+        this->sivicController->SetActive4DImageData( newActiveIndex );
     }
 }
 

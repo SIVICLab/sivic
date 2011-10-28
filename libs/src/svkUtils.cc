@@ -226,10 +226,10 @@ bool svkUtils::PrintFile( const char* fileName, const char* printerName )
 /*!
  * Generates a derectory based on the series and series number sof the image and spectra. Used for pushing to PACS.
  */
-string svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra)
+string svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svk4DImageData* activeData)
 {
     string filePattern = "";
-    if( image != NULL && spectra != NULL ) {
+    if( image != NULL && activeData != NULL ) {
 
         ostringstream ossSN;
         ossSN.str("");
@@ -242,7 +242,7 @@ string svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, sv
 
         // append spectra series number
         ossSN.str("");
-        ossSN << spectra->GetDcmHeader()->GetIntValue("SeriesNumber");
+        ossSN << activeData->GetDcmHeader()->GetIntValue("SeriesNumber");
         string specSeriesNumber (ossSN.str());
         filePattern.append(specSeriesNumber);
 
@@ -253,13 +253,13 @@ string svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, sv
 
 
 /*!
- * Generates a derectory based on the series and series number sof the image and spectra. Used for pushing to PACS.
+ * Generates a derectory based on the series and series number sof the image and activeData. Used for pushing to PACS.
  */
-string svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra)
+string svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svk4DImageData* activeData)
 {
     string filePattern = "";
-    if( image != NULL && spectra != NULL ) {
-        string studyId = spectra->GetDcmHeader()->GetStringValue("AccessionNumber");
+    if( image != NULL && activeData != NULL ) {
+        string studyId = activeData->GetDcmHeader()->GetStringValue("AccessionNumber");
         filePattern.append(studyId);
         filePattern.append("_SIVIC_SC_I*.DCM");
 
@@ -386,4 +386,30 @@ vector<string> svkUtils::SplitString( string str, string token )
     }
     return result;
 }
+
+/*
+ *   Returns the nearest int.  For values at the mid-point,
+ *   the value is rounded to the larger int.
+ */
+int svkUtils::NearestInt(float x)
+{
+    int x_to_int;
+    x_to_int = (int) x;
+
+    /*
+     *   First do positive numbers, then negative ones.
+     */
+    if (x>=0) {
+        if ((x - x_to_int) >= 0.5) {
+            x_to_int += 1;
+        }
+    } else {
+        if ((x_to_int - x) > 0.5) {
+            x_to_int -= 1;
+        }
+    }
+
+    return (int) x_to_int;
+}
+
 

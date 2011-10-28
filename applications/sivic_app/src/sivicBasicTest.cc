@@ -58,7 +58,7 @@ void sivicBasicTest::Run()
     this->sivicController->PopupMessage( "TESTING IMAGE OPEN...." );
     this->sivicController->OpenImage( "/home/bolson/Projects/visualization/4svn/visualization/trunk/libs/testing/data/t3148_fla.idf" );
     this->sivicController->PopupMessage( "TESTING SPECTRA OPEN...." );
-    this->sivicController->OpenSpectra( "/home/bolson/Projects/visualization/4svn/visualization/trunk/libs/testing/data/t3148_1_cor.ddf" );
+    this->sivicController->Open4DImage( "/home/bolson/Projects/visualization/4svn/visualization/trunk/libs/testing/data/t3148_1_cor.ddf" );
     this->sivicController->PopupMessage( "TESTING METABOLTE OPEN...." );
     this->sivicController->OpenOverlay( "/home/bolson/Projects/visualization/4svn/visualization/trunk/libs/testing/data/t3148_1r01.idf" );
     this->sivicController->PopupMessage( "TESTING IMAGE OVERLAY OPEN...." );

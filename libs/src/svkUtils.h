@@ -92,8 +92,8 @@ class svkUtils : public vtkObject
 		static int            MoveFile( const char* input, const char* output );
 		static bool           PrintFile( const char* fileName, const char* printerName );
 		static vector<string> GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string         GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svkMrsImageData* spectra);
-        static string         GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svkMrsImageData* spectra);
+        static string         GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svk4DImageData* spectra);
+        static string         GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svk4DImageData* spectra);
         static int            GetNextPower2( int x );
         static double         StringToDouble( string doubleString );
         static float          StringToFloat(  string floatString );
@@ -103,7 +103,7 @@ class svkUtils : public vtkObject
         static string         ColorArrayToString( double color[3] );
         static vector<string> SplitString( string str, string token );
         static string         GetFilenameFromFullPath( string fullPath );
-
+        static int            NearestInt(float x);
 
 	protected:
 

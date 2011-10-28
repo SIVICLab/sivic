@@ -276,7 +276,7 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
         if( !visualizationCreated ) { 
             CreateDataVisualization();
             if( dataVector[MR4D] != NULL ) {
-                this->view->SetInput(dataVector[MR4D], 1);
+                this->view->SetInput(dataVector[MR4D], svkOverlayView::MR4D );
             }
         }
     } else if( index == MR4D && data != NULL ) {

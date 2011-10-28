@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkImageData.cc $
+ *  $Rev: 1108 $
+ *  $Author: beckn8tor $
+ *  $Date: 2011-10-25 11:29:51 -0700 (Tue, 25 Oct 2011) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageData, "$Rev$");
+vtkCxxRevisionMacro(svkImageData, "$Rev: 1108 $");
 
 
 /*!
@@ -1006,6 +1006,7 @@ void svkImageData::GetDcos( double dcos [][3] )
 void svkImageData::SetDcmHeader(svkDcmHeader* dcmHeader)
 {
     this->dcmHeader = dcmHeader;
+    this->dcmHeader->Register( this );
     this->Modified();
 }
 

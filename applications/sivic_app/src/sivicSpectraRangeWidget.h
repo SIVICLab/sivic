@@ -85,6 +85,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkPhaseSpec.h>
 #include <svkSpecPoint.h>
+#include <svkUtils.h>
 #include <svkMultiWindowToImageFilter.h>
 #include <sivicKWCompositeWidget.h>
 
@@ -110,6 +111,7 @@ class sivicSpectraRangeWidget : public sivicKWCompositeWidget
         void    ResetAmplitudeRange( bool useFullRange = 0);
         void    ResetFrequencyWholeRange( );
         void    ResetFrequencyRange( bool useFullRange = 0);
+        float   ConvertPosUnits(float position, int inType, int targetType);
         
         sivicSpectraRangeWidget();
         ~sivicSpectraRangeWidget();

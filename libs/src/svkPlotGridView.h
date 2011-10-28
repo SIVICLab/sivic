@@ -114,6 +114,7 @@ class svkPlotGridView : public svkDataView
         void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = -1 );
         virtual void                SetVolumeIndex( int index, int volumeIndex = 0, int plotIndex = -1 );
         virtual int                 GetVolumeIndex( int volumeIndex = 0 );
+        virtual int*                GetVolumeIndexArray(  );
         void                        SetPlotUnits( svkSpecPoint::UnitType plotUnitType );
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                SetPlotColor( int plotIndex, double* rgb );
@@ -129,6 +130,7 @@ class svkPlotGridView : public svkDataView
         void                        GenerateClippingPlanes();
         virtual void                SetOrientation( svkDcmHeader::Orientation orientation );
         virtual void                AlignCamera();
+        svk4DImageData*             GetActiveInput();
 
         //! Enum represents objects in the scene
         typedef enum {

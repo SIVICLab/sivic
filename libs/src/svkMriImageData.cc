@@ -345,6 +345,7 @@ void svkMriImageData::SyncCellRepresentationToPixelData()
             this->cellDataRepresentation->SetImage(this, timePoint, channelPtr);
         }
     }
+    this->GetPointData()->SetActiveScalars( oldScalars->GetName() );
 
 
 }

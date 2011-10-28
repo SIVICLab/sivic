@@ -100,11 +100,7 @@ class svkPlotGridViewController : public svkDataViewController
                 string                  GetDataCompatibility( svkImageData* data, int targetIndex );
         virtual void                    SetVolumeIndex( int index, int volumeIndex = 0 );
         virtual int                     GetVolumeIndex( int volumeIndex = 0 );
-
-                //void                    SetChannel( int channel );
-                //int                     GetChannel( );
-                //void                    SetTimePoint( int timePoint );
-                //int                     GetTimePoint( );
+        virtual int*                    GetVolumeIndexArray( );
                 void                    SetOverlayOpacity( double opacity );
                 void                    SetOverlayThreshold( double threshold );
 

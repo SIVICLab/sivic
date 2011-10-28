@@ -326,6 +326,10 @@ int svkPlotGridViewController::GetVolumeIndex( int volumeIndex )
     return static_cast<svkPlotGridView*>(view)->GetVolumeIndex( volumeIndex );
 }
 
+int* svkPlotGridViewController::GetVolumeIndexArray(  )
+{
+    return static_cast<svkPlotGridView*>(view)->GetVolumeIndexArray( );
+}
 
 /*!
  *

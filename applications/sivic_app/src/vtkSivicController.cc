@@ -165,7 +165,8 @@ void vtkSivicController::TurnOnPlotView()
     this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                        this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
     string acquisitionType = "UNKNOWN";
-    if( this->model->DataExists("SpectroscopicData") && this->model->GetDataObject("SpectroscopicData")->IsA("svkMrsImageData")) {
+    svk4DImageData* activeData = this->GetActive4DImageData();
+    if( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         acquisitionType = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
     }
     // We don't want to turn on the press box if its single voxel
@@ -189,10 +190,10 @@ void vtkSivicController::TurnOnPlotView()
  *
  * @param index
  */
-void vtkSivicController::SetActiveSpectra( int index )
+void vtkSivicController::SetActive4DImageData( int index )
 {
-    if( this->model->DataExists("SpectroscopicData") && index >= 0 ) {
-       svkImageData* oldData = model->GetDataObject("SpectroscopicData");
+    svk4DImageData* oldData = this->GetActive4DImageData();
+    if( oldData != NULL && index >= 0 ) {
        if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
            int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
            if( toggleDraw ) {
@@ -200,18 +201,22 @@ void vtkSivicController::SetActiveSpectra( int index )
                this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
             }
            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActivePlotIndex( index );
-           svkImageData* newSpec = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
-           this->model->ChangeDataObject("SpectroscopicData", newSpec );
+           svkImageData* newData = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
+           if( newData->IsA("svkMrsImageData")) {
+               this->model->ChangeDataObject("SpectroscopicData", newData );
+           } else {
+               this->model->ChangeDataObject("4DImageData", newData );
+           }
            this->processingWidget->InitializePhaser();
-           int channels = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfCoils();
+           int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
            this->spectraViewWidget->channelSlider->SetRange( 1, channels);
            this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
-           int timePoints = svkMrsImageData::SafeDownCast( newSpec )->GetDcmHeader()->GetNumberOfTimePoints();
+           int timePoints = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
            this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
            this->EnableWidgets();
            if( this->model->DataExists("AnatomicalData") ) {
-               this->overlayController->SetInput( this->model->GetDataObject("SpectroscopicData"), svkOverlayView::MR4D );
+               this->overlayController->SetInput( newData, svkOverlayView::MR4D );
                this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
            }
            if( toggleDraw ) {
@@ -387,6 +392,7 @@ void vtkSivicController::ResetApplication( )
 {
     model->RemoveDataObject("AnatomicalData"); 
     model->RemoveDataObject("SpectroscopicData"); 
+    model->RemoveDataObject("4DImageData");
     model->RemoveDataObject("OverlayData"); 
     model->RemoveDataObject("MetaboliteData"); 
     this->overlayController->Reset();
@@ -420,9 +426,10 @@ void vtkSivicController::OpenImage( const char* fileName )
         return;
     } else {
         string resultInfo; 
-        if( this->model->GetDataObject( "SpectroscopicData" ) != NULL ) {
+        svk4DImageData* activeData = this->GetActive4DImageData();
+        if( activeData != NULL ) {
             svkDataValidator* validator = svkDataValidator::New(); 
-            bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "SpectroscopicData" )); 
+            bool valid = validator->AreDataCompatible( newData, activeData);
             if ( !valid ) {
                 resultInfo = validator->resultInfo; 
             }
@@ -471,30 +478,30 @@ void vtkSivicController::OpenImage( const char* fileName )
             lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
             this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
-                this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-            } else if( !model->DataExists( "SpectroscopicData") || this->orientation != "AXIAL" ) {
+                this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+            } else if( !this->GetActive4DImageData() || this->orientation != "AXIAL" ) {
                 this->imageViewWidget->axialSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
             firstSlice = newData->GetFirstSlice( svkDcmHeader::CORONAL );
             lastSlice = newData->GetLastSlice( svkDcmHeader::CORONAL );
             this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
-                this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-            } else if( !model->DataExists( "SpectroscopicData") || this->orientation != "CORONAL" ){
+                this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+            } else if( !this->GetActive4DImageData() || this->orientation != "CORONAL" ){
                 this->imageViewWidget->coronalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
             firstSlice = newData->GetFirstSlice( svkDcmHeader::SAGITTAL );
             lastSlice = newData->GetLastSlice( svkDcmHeader::SAGITTAL );
             this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
-                this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2);
-            } else if( !model->DataExists( "SpectroscopicData") || this->orientation != "SAGITTAL" ){
+                this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
+            } else if( !this->GetActive4DImageData() || this->orientation != "SAGITTAL" ){
                 this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
             this->imageViewWidget->volumeSlider->SetRange( 1, newData->GetDcmHeader()->GetNumberOfTimePoints());
             this->imageViewWidget->volumeSlider->SetValue( 1 );
 
-            if( model->DataExists("SpectroscopicData") ) {
+            if( this->GetActive4DImageData() != NULL ) {
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
                 this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent); 
             }
@@ -543,13 +550,28 @@ void vtkSivicController::OpenImage( const char* fileName )
 }
 
 
-void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilename, svkImageData* oldData, bool onlyReadOneInputFile )
+/*!
+ *  Opens a 4D image data object. This could be spectra or a dynamic trace.
+ *
+ * @param newData
+ * @param stringFilename
+ * @param oldData
+ * @param onlyReadOneInputFile
+ */
+void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData, bool onlyReadOneInputFile )
 {
 
     int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
     if( toggleDraw ) {
         this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
         this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    }
+    string objectName;
+    if( newData->IsA("svkMrsImageData")) {
+        objectName = "SpectroscopicData";
+    } else if (newData->IsA("svkMriImageData")) {
+        newData = svkMriImageData::SafeDownCast(newData)->GetCellDataRepresentation();
+        objectName = "4DImageData";
     }
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MR4D );
@@ -591,18 +613,19 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
         validatorResultInfo.compare("") == 0 && 
         newData != NULL )  {
 
-        // If the spectra file is already in the model
+
+        // If the 4D image file is already in the model
         int* tlcBrc = NULL; 
         if( oldData != NULL ) {
             // We need to copy the tlc brc so it carries over to the new data set.
             tlcBrc = new int[2];
             memcpy( tlcBrc, this->plotController->GetTlcBrc(), 2*sizeof(int) );
-            this->model->ChangeDataObject( "SpectroscopicData", newData );
-            this->model->SetDataFileName( "SpectroscopicData", stringFilename );
+            this->model->ChangeDataObject( objectName, newData );
+            this->model->SetDataFileName( objectName, stringFilename );
 
         } else {
-            this->model->AddDataObject( "SpectroscopicData", newData );
-            this->model->SetDataFileName( "SpectroscopicData", stringFilename );
+            this->model->AddDataObject( objectName, newData );
+            this->model->SetDataFileName( objectName, stringFilename );
         }
 
         // Now we can update the sliders based on the image data properties
@@ -618,7 +641,7 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
             int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
             this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             this->spectraViewWidget->sliceSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
-            int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
+            int channels = newData->GetDcmHeader()->GetNumberOfCoils();
             this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
             this->spectraViewWidget->channelSlider->SetValue( 1 );
             int timePoints = newData->GetDcmHeader()->GetNumberOfTimePoints();
@@ -641,7 +664,9 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
 
         this->processingWidget->InitializePhaser();
 
-        this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
+        if( newData->IsA("svkMrsImageData")) {
+            this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
+        }
 
         if( oldData != NULL ) {
             bool useFullFrequencyRange = 0;
@@ -740,7 +765,13 @@ void vtkSivicController::OpenSpectra( svkImageData* newData,  string stringFilen
 
 
 
-void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInputFile )
+/*!
+ *  Opens a 4D image data object.
+ *
+ * @param fileName
+ * @param onlyReadOneInputFile
+ */
+void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInputFile )
 {
 
     // Lets check to see if the file exists 
@@ -750,20 +781,22 @@ void vtkSivicController::OpenSpectra( const char* fileName, bool onlyReadOneInpu
     }
 
     string stringFilename(fileName);
-    svkImageData* oldData = model->GetDataObject("SpectroscopicData");
     svkImageData* newData = model->LoadFile( stringFilename, onlyReadOneInputFile );
 
+    string objectName;
+    if( newData != NULL && newData->IsA("svkMrsImageData")) {
+        objectName = "SpectroscopicData";
+    } else {
+        objectName = "4DImageData";
+    }
+    svkImageData* oldData = model->GetDataObject(objectName);
 
     if (newData == NULL) {
 
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
         return;
-    } else if( newData->IsA("svkMrsImageData")){
-        this->OpenSpectra( newData,  stringFilename, oldData, onlyReadOneInputFile );
-
     } else {
-        this->PopupMessage("ERROR: Incorrect data type, data must be spectra."); 
-        return;
+        this->Open4DImage( newData,  stringFilename, oldData, onlyReadOneInputFile );
     }
     this->DisableWidgets();
     this->EnableWidgets();
@@ -898,11 +931,17 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
 }
 
-void vtkSivicController::AddSpectra( string stringFilename )
+
+/*!
+ * Adds an additional spectra object.
+ *
+ * @param stringFilename
+ */
+void vtkSivicController::Add4DImageData( string stringFilename, bool onlyReadOneInputFile )
 {
-    if ( this->model->DataExists("SpectroscopicData") ) {
-        svkImageData* data = this->model->LoadFile( stringFilename );
-        if( data != NULL && data->IsA("svkMrsImageData") ) {
+    if ( this->GetActive4DImageData() != NULL ) {
+        svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
+        if( data != NULL && data->IsA("svk4DImageData") ) {
             string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
             if( resultInfo.compare("") != 0 ) {
                 string message =  "ERROR: Could not load reference spectra.\n Info: ";
@@ -953,7 +992,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
 
 
     string stringFilename( fileName );
-    if ( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
+    if ( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
 
         //bool onlyReadOneInputFile = true;
         //svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
@@ -982,7 +1021,7 @@ void vtkSivicController::OpenMetabolites( const char* metabolites )
              metaboliteString != svkUCSFUtils::GetMetaboliteName( this->model->GetDataFileName("MetaboliteData") ) ) {
 
             // Currently require an image and a spectra to be loading to limit testing
-            if( this->model->DataExists("SpectroscopicData") && this->model->DataExists("AnatomicalData") ) {
+            if( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
 
                 bool includePath = true;
                 string metaboliteFileName;
@@ -1173,7 +1212,7 @@ void vtkSivicController::OpenExam( )
     }
      
     // If the dialog was cancelled, or if either load failed do not oven overlay
-    if( status == vtkKWDialog::StatusCanceled || !this->model->DataExists("SpectroscopicData") 
+    if( status == vtkKWDialog::StatusCanceled || this->GetActive4DImageData() == NULL
                                               || !this->model->DataExists("AnatomicalData") ) {
         return;
     } 
@@ -1210,7 +1249,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
 {
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
-
+    this->viewRenderingWidget->viewerWidget->RemoveBindings();
+    this->viewRenderingWidget->specViewerWidget->RemoveBindings();
     string openTypeString( openType ); 
     size_t pos;
     vtkKWLoadSaveDialog *dlg = NULL; 
@@ -1233,7 +1273,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             size_t found;
             found = lastPathString.find_last_of("/");
 
-            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "overlay" ) == 0){
+            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
@@ -1251,7 +1291,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         }
     
         // Check to see which extention to filter for.
-        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
+        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
             dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
@@ -1295,15 +1335,20 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         // See if it is being loaded as a metabolite
         if( openTypeString.compare( "image" ) == 0 ) {
             this->OpenImage( dlg->GetFileName() );
+        } else if( openTypeString.compare( "image_dynamic" ) == 0 ) {
+            this->Open4DImage( dlg->GetFileName() );
         } else if( openTypeString.compare( "overlay" ) == 0 ) {
             this->OpenOverlay( dlg->GetFileName() );
         } else if( openTypeString.compare( "spectra" ) == 0 ) {
-            this->OpenSpectra( dlg->GetFileName() );
+            this->Open4DImage( dlg->GetFileName() );
         } else if( openTypeString.compare( "spectra_one_channel" ) == 0 ) {
             bool onlyReadOneInputFile = true;
-            this->OpenSpectra( dlg->GetFileName(), onlyReadOneInputFile );
+            this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
-            this->AddSpectra( dlg->GetFileName() );
+            this->Add4DImageData( dlg->GetFileName() );
+        } else if( openTypeString.compare( "add_spectra_one_channel" ) == 0 ) {
+            bool onlyReadOneInputFile = true;
+            this->Add4DImageData( dlg->GetFileName(), onlyReadOneInputFile );
         } 
     }
 
@@ -1315,10 +1360,12 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         dlg->SaveLastPathToRegistry("lastPath");
         dlg->Delete();
     }
-    app->ProcessPendingEvents(); 
+    app->ProcessPendingEvents();
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Enable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Enable();
     this->imageViewWidget->loadingLabel->SetText("");
+    this->viewRenderingWidget->viewerWidget->AddBindings();
+    this->viewRenderingWidget->specViewerWidget->AddBindings();
     //this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
     //this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
     return dlgStatus;
@@ -1471,7 +1518,7 @@ void vtkSivicController::SaveData( char* fileName )
     writer->SetFileName(fileName);
     writerFactory->Delete();
 
-    writer->SetInput( this->model->GetDataObject("SpectroscopicData") );
+    writer->SetInput( this->GetActive4DImageData() );
 
     writer->Write();
     writer->Delete();
@@ -1481,7 +1528,8 @@ void vtkSivicController::SaveData( char* fileName )
 //! Saves a secondary capture.
 void vtkSivicController::SaveSecondaryCapture( char* captureType )
 {
-    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
+    svk4DImageData* activeData = this->GetActive4DImageData();
+    if( activeData == NULL ) {
         PopupMessage( "SPECTRA MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
         return; 
     }
@@ -1493,7 +1541,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
 
     string defaultNamePattern;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern( 
-        model->GetDataObject( "SpectroscopicData" ) ,
+        activeData ,
         &defaultNamePattern
     );
     defaultNamePattern.append("*"); 
@@ -1583,7 +1631,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
 
 
     int firstFrame = 0;
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    int lastFrame = this->GetActive4DImageData()->GetDcmHeader()->GetNumberOfSlices();
     if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
@@ -1606,15 +1654,15 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
         outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
         this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
     } else { // If only spectra are loaded
-        outputImage->SetDcmHeader( this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
-        this->model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->Register(this);
+        outputImage->SetDcmHeader( this->GetActive4DImageData()->GetDcmHeader() );
+        this->GetActive4DImageData()->GetDcmHeader()->Register(this);
     }
     //Give it a default dcos so it can be viewed in an image viewer
     double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
     if( this->model->GetDataObject( "AnatomicalData" ) != NULL ) {
         this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
     } else { //If only spectra are loaded
-        this->model->GetDataObject( "SpectroscopicData" )->GetDcos(dcos);
+        this->GetActive4DImageData()->GetDcos(dcos);
     }
     outputImage->SetDcos(dcos);
     if( writer->IsA("svkImageWriter") ) {  
@@ -1716,14 +1764,14 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
     }
 
     int firstFrame = 0;
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetNumberOfSlices();
+    int lastFrame = this->GetActive4DImageData()->GetDcmHeader()->GetNumberOfSlices();
     if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
     int instanceNumber = 1;
     for (int m = firstFrame; m <= lastFrame; m++) {
-        if( !static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(m) ) {
+        if( this->GetActive4DImageData()->IsA("svkMrsImageData") && !static_cast<svkMrsImageData*>(this->GetActive4DImageData())->IsSliceInSelectionBox(m) ) {
             continue;
         }
         string fileNameStringTmp = fileNameString; 
@@ -2222,13 +2270,13 @@ void vtkSivicController::MetMapViewCallback( int mapNumber)
  */
 void vtkSivicController::Print(char* captureType, int outputOption )
 {
-    if( this->model->GetDataObject( "SpectroscopicData" ) == NULL ) {
+    if( this->GetActive4DImageData() == NULL ) {
         this->PopupMessage( "NO SPECTRA LOADED!");
         return; 
     }
     string defaultNamePattern;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern( 
-            model->GetDataObject( "SpectroscopicData" ) ,
+            this->GetActive4DImageData() ,
             &defaultNamePattern
             );
     this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, captureType, outputOption, 1 );
@@ -2332,14 +2380,17 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         orientationButton->GetMenu()->SelectItem( index );
     }
 
-    if( this->model->DataExists("SpectroscopicData") ) {
-        firstSlice = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( newOrientation );
-        lastSlice =  this->model->GetDataObject("SpectroscopicData")->GetLastSlice( newOrientation );
+    if( this->GetActive4DImageData() != NULL ) {
+        firstSlice = this->GetActive4DImageData()->GetFirstSlice( newOrientation );
+        lastSlice =  this->GetActive4DImageData()->GetLastSlice( newOrientation );
         this->spectraViewWidget->sliceSlider->SetRange( firstSlice + 1, lastSlice + 1 );
         this->spectraViewWidget->sliceSlider->SetValue( this->plotController->GetSlice()+1 );
         this->SetSlice( this->plotController->GetSlice());
-        string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
+        string acquisitionType = "UNKNOWN";
+        if( this->GetActive4DImageData()->IsA("svkMrsImageData")) {
+            acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+        }
         if( acquisitionType == "SINGLE VOXEL" ) {
             // For single voxel always highlight the selection box voxels
             this->overlayController->HighlightSelectionVoxels();
@@ -2385,7 +2436,7 @@ void vtkSivicController::RestoreSession( )
     }
     this->app->GetRegistryValue( 0, "open_files", "spectra", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
-        this->OpenSpectra( fileName );
+        this->Open4DImage( fileName );
     }
     this->app->GetRegistryValue( 0, "open_files", "metabolite", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
@@ -2407,7 +2458,7 @@ void vtkSivicController::RestoreSession( )
 void vtkSivicController::ResetRange( bool useFullFrequencyRange, bool useFullAmplitudeRange,
                                           bool resetAmplitude, bool resetFrequency)
 { 
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svk4DImageData* data = this->GetActive4DImageData();
     if( data != NULL ) {
         this->spectraRangeWidget->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                               resetAmplitude, resetFrequency );
@@ -2422,9 +2473,9 @@ void vtkSivicController::ResetRange( bool useFullFrequencyRange, bool useFullAmp
  */
 void vtkSivicController::ResetChannel( )
 {
-    svkImageData* data = this->model->GetDataObject( "SpectroscopicData" ); 
+    svkImageData* data = this->GetActive4DImageData();
     if( data != NULL ) {
-        int channels = svkMrsImageData::SafeDownCast( data )->GetDcmHeader()->GetNumberOfCoils();
+        int channels = data->GetDcmHeader()->GetNumberOfCoils();
         this->spectraViewWidget->channelSlider->SetRange( 1, channels); 
         this->spectraViewWidget->channelSlider->SetValue( 1 );
     }
@@ -2437,24 +2488,37 @@ void vtkSivicController::ResetChannel( )
 void vtkSivicController::EnableWidgets()
 {
     this->DisableWidgets();
-    if ( model->DataExists("SpectroscopicData") && model->DataExists("AnatomicalData") ) {
+    svk4DImageData* activeData = this->GetActive4DImageData();
+    if ( activeData != NULL && model->DataExists("AnatomicalData") ) {
 
 #if defined( UCSF_INTERNAL )
         //  Enable the UCSF metabolite widgets
         this->GetApplication()->GetNthWindow(0)->GetMenu()->GetNthChild(3)->GetNthChild(0)->EnabledOn(); 
 #endif
-        string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
+        if( activeData->IsA("svkMrsImageData") ) {
+            string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            this->imageViewWidget->plotGridButton->EnabledOff();
+            if( acquisitionType == "SINGLE VOXEL" ) {
+                this->imageViewWidget->plotGridButton->EnabledOff();
+            }
         } else {
             this->imageViewWidget->plotGridButton->EnabledOn();
             this->imageViewWidget->plotGridButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         }
     }
 
-    if ( model->DataExists("SpectroscopicData") ) {
+
+    if ( activeData != NULL ) {
+        this->spectraRangeWidget->xSpecRange->EnabledOn();
+        this->spectraRangeWidget->ySpecRange->EnabledOn();
         this->spectraViewWidget->sliceSlider->EnabledOn();
+        this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
+        this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
+        this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
+        this->spectraRangeWidget->unitSelectBox->EnabledOff();
+    }
+
+    if ( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
         if( domain == "TIME" ) {
@@ -2488,8 +2552,6 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->processingWidget->phaseSlider->EnabledOn(); 
-        this->spectraRangeWidget->xSpecRange->EnabledOn();
-        this->spectraRangeWidget->ySpecRange->EnabledOn();
         this->processingWidget->phaseAllChannelsButton->EnabledOn(); 
         this->processingWidget->phaseAllVoxelsButton->EnabledOn(); 
         this->spectraRangeWidget->componentSelectBox->EnabledOn();
@@ -2523,7 +2585,11 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->sagittalSlider->EnabledOn();
         }
         this->windowLevelWidget->EnabledOn();
-        this->imageViewWidget->volumeSlider->EnabledOn();
+        if( model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetNumberOfTimePoints() > 1) {
+            this->imageViewWidget->volumeSlider->EnabledOn();
+            this->imageViewWidget->generateTraceButton->EnabledOn();
+        }
+
     }
 
     if ( model->DataExists("MetaboliteData")) {
@@ -2752,7 +2818,7 @@ void vtkSivicController::PushToPACS()
 {
 #if defined( UCSF_INTERNAL )
 
-    if(     this->model->GetDataObject( "SpectroscopicData" ) == NULL 
+    if(     this->GetActive4DImageData() == NULL
          || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
 
         PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
@@ -2767,13 +2833,18 @@ void vtkSivicController::PushToPACS()
     /*********************************** CHECK FOR FILE WRITING PERMISSIONS ****************************************/
 
     // Lets locate a local directory to make a copy of the images being push to pacs. We'll use the spectra directory
-    string spectraFileName = this->model->GetDataFileName( "SpectroscopicData" );
+    string activeDataFileName;
+    if( this->GetActive4DImageData()->IsA("svkMrsImageData") ) {
+        activeDataFileName = this->model->GetDataFileName( "SpectroscopicData" );
+    } else {
+        activeDataFileName = this->model->GetDataFileName( "4DImageData" );
+    }
 
     // Parse for directory name
     size_t found;
-    found = spectraFileName.find_last_of("/");
+    found = activeDataFileName.find_last_of("/");
 
-    string localDirectory = spectraFileName.substr(0,found); 
+    string localDirectory = activeDataFileName.substr(0,found);
     found = localDirectory.find_last_of("/");
 
     // We want to put the SIVIC_DICOM_SC folder parallel to the spectra location
@@ -2803,7 +2874,7 @@ void vtkSivicController::PushToPACS()
 	} 
 
     string captureDirectory = svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
-                                                                           , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
+                                                                           , svk4DImageData::SafeDownCast( this->GetActive4DImageData()) );
 
     // We will need to copy the images to the capture directory
     localDirectory.append( captureDirectory );
@@ -2839,7 +2910,7 @@ void vtkSivicController::PushToPACS()
 	} 
 
     string filePattern = svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
-                                                                        , svkMrsImageData::SafeDownCast( this->model->GetDataObject("SpectroscopicData")) );
+                                                                        , svk4DImageData::SafeDownCast( this->GetActive4DImageData()) );
     // Lets create a name for the images 
     string fileNameString = localDirectory + filePattern;
 
@@ -2865,13 +2936,13 @@ void vtkSivicController::PushToPACS()
     // Lets get a new series number...
     string notUsed;
     int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern(
-        this->model->GetDataObject( "SpectroscopicData" ) ,
+        this->GetActive4DImageData(),
         &notUsed
     );
     static_cast<svkImageWriter*>(writer)->SetSeriesNumber( seriesNumber );
 
     // And set the series description
-    static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC MRSI secondary capture" );
+    static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
 
     // We will save the current slice so we can return to it after the capture is done
     int currentSlice = this->plotController->GetSlice(); 
@@ -3002,3 +3073,12 @@ void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& pp
     }
 }
 
+
+/*!
+ *
+ * @return
+ */
+svk4DImageData* vtkSivicController::GetActive4DImageData()
+{
+    return svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetActiveInput();
+}
