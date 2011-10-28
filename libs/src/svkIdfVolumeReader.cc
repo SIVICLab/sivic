@@ -207,9 +207,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
         vtkstd::string arrayNameString("pixels"); 
         arrayNameString.append(number.str());
 
-        
         array->SetName( arrayNameString.c_str() ); 
-
 
         if (fileIndex == 0 ) {
             data->GetPointData()->SetScalars(array);

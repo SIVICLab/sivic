@@ -185,13 +185,7 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
     }
 
     cout << "ALGO: " << this->quantificationAlgorithm  << endl;
-    if (this->quantificationAlgorithm == svkMetaboliteMap::INTEGRATE) { 
-        this->Integrate(); 
-    } else if (this->quantificationAlgorithm == svkMetaboliteMap::PEAK_HT) { 
-        this->PeakHt(); 
-    } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_PEAK_HT) { 
-        this->MagPeakHt(); 
-    }
+    this->GenerateMap(); 
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
@@ -203,58 +197,9 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
 
 
 /*! 
- *  Peak height of real spectra within specified limits. 
- */
-void svkMetaboliteMap::PeakHt()
-{
-
-    this->ZeroData(); 
-
-    //  Get integration limits:
-    int startPt = 0; 
-    int endPt = 0; 
-    this->GetIntegrationPtRange(startPt, endPt); 
-
-    //  If integration limits are out of range just returned zero'd image.
-    int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
-    if ( startPt < 0 || endPt >= numSpecPoints ) {
-        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
-        return; 
-    }
-
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-    double peakHt; 
-    for (int i = 0; i < totalVoxels; i++ ) {
-
-        if ( this->quantificationMask[i] ) {
-            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
-            ); 
-            float* specPtr = spectrum->GetPointer(0);
-
-            peakHt = specPtr[2*startPt];     
-            for ( int pt = startPt; pt <= endPt; pt ++ ) {
-                if ( specPtr[2*pt] > peakHt ) {
-                    peakHt = specPtr[2*pt]; 
-                }
-            }
-        } else {
-            peakHt = 0.; 
-        }
-        if ( this->isVerbose ) {
-            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " peak_ht: " << peakHt << endl; 
-        }
-        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, peakHt);
-    }
-}
-
-
-/*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkMetaboliteMap::Integrate()
+void svkMetaboliteMap::GenerateMap()
 {
 
     this->ZeroData(); 
@@ -274,87 +219,174 @@ void svkMetaboliteMap::Integrate()
     int numVoxels[3]; 
     this->GetOutput()->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-    double integral;
-    for (int i = 0; i < totalVoxels; i++ ) {
 
-        if ( this->quantificationMask[i] ) {
-            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
-            ); 
-            float* specPtr = spectrum->GetPointer(0);
+    //  Loop over volumes (time points, coils):
 
-            integral = 0;     
-            for ( int pt = startPt; pt <= endPt; pt ++ ) {
-                integral += specPtr[2*pt]; 
+    int numCoils      = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePoints = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfTimePoints();
+
+    int volumeIndex = 0; 
+    for (int coilIndex = 0; coilIndex < numCoils; coilIndex++) {   
+        for (int timeIndex = 0; timeIndex < numTimePoints; timeIndex++) {   
+
+            //  Get the data array to initialize.  For vol0, this already exists, 
+            //  for other volumes, need to create a new vtkDataArray to insert
+            vtkDataArray* metMapArray;
+            if ( volumeIndex == 0 ) {
+                metMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
+            } else {
+                //  allocate a new array, copy volume0 into it and add it to the 
+                //  vtkImageData point data:
+                metMapArray = vtkDoubleArray::New();     
+                metMapArray->DeepCopy( this->GetOutput()->GetPointData()->GetArray(0) ); 
+                this->GetOutput()->GetPointData()->AddArray( metMapArray );
             }
-        } else {
-            integral = 0.;
-        }
-        if ( this->isVerbose ) {
-            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " integral: " << integral << endl; 
-        }
-        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, integral);
-    }
 
-}
+            //  Add the output volume array to the correct array in the svkMriImageData object
+            ostringstream number;
+            number << volumeIndex;
+            vtkstd::string arrayNameString("pixels");
+            arrayNameString.append(number.str());
+
+            metMapArray->SetName( arrayNameString.c_str() );
 
 
-/*! 
- *  Peak height of magnitude spectra within specified limits. 
- */
-void svkMetaboliteMap::MagPeakHt()
-{
+            double voxelValue;
+            for (int i = 0; i < totalVoxels; i++ ) {
 
-    this->ZeroData(); 
+                if ( this->quantificationMask[i] ) {
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
+                        svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i, timeIndex, coilIndex ) 
+                    ); 
+                    float* specPtr = spectrum->GetPointer(0);
 
-    //  Get integration limits:
-    int startPt = 0; 
-    int endPt = 0; 
-    this->GetIntegrationPtRange(startPt, endPt); 
+                    voxelValue = this->GetMapVoxelValue( specPtr, startPt, endPt); 
 
-    //  If integration limits are out of range just returned zero'd image.
-    int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
-    if ( startPt < 0 || endPt >= numSpecPoints ) {
-        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
-        return; 
-    }
-
-    int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-    double magPeakHt; 
-    double magPeakHtTmp; 
-    for (int i = 0; i < totalVoxels; i++ ) {
-
-        if ( this->quantificationMask[i] ) {
-            vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetSpectrumFromID(i) 
-            ); 
-            float* specPtr = spectrum->GetPointer(0);
-
-            magPeakHt  = pow( specPtr[2*startPt], 2);     
-            magPeakHt += pow( specPtr[2*startPt + 1], 2);     
-            magPeakHt = pow( magPeakHt, 0.5); 
-
-            for ( int pt = startPt; pt <= endPt; pt ++ ) {
-
-                magPeakHtTmp  = pow( specPtr[2*pt], 2); 
-                magPeakHtTmp += pow( specPtr[2*pt + 1], 2); 
-                magPeakHtTmp  = pow(magPeakHtTmp, 0.5); 
-
-                if ( magPeakHtTmp > magPeakHt ) {
-                    magPeakHt = magPeakHtTmp;        
+                } else {
+                    voxelValue = 0.;
                 }
+                if ( this->isVerbose ) {
+                    cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " value: " << voxelValue << endl; 
+                }
+
+                metMapArray->SetTuple1(i, voxelValue);
             }
-        } else {
-            magPeakHt = 0.; 
+
+            volumeIndex++; 
+
         }
-        if ( this->isVerbose ) {
-            cout << "voxel(" << i << ") ppm center: " << this->peakCenterPPM << " peak_ht: " << magPeakHt << endl; 
-        }
-        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, magPeakHt);
+    }
+
+    //  rewrite the header per-frame functional groups:
+    if (volumeIndex > 1 ) {    
+        this->RedimensionData();
     }
 }
+
+
+/*!  
+ *  For multi-volume data modifies header's per frame functional group sequence:
+ */
+double svkMetaboliteMap::GetMapVoxelValue( float* specPtr, int startPt, int endPt)
+{
+
+    double voxelValue; 
+
+    if (this->quantificationAlgorithm == svkMetaboliteMap::INTEGRATE) { 
+        voxelValue = this->GetIntegral( specPtr, startPt, endPt); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::PEAK_HT) { 
+        voxelValue = this->GetPeakHt( specPtr, startPt, endPt ); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_PEAK_HT) { 
+        voxelValue = this->GetMagPeakHt( specPtr, startPt, endPt ); 
+    }
+}
+
+
+/*!  
+ *  Gets integral of real component over the specified range from startPt to endPt.
+ */
+double svkMetaboliteMap::GetIntegral( float* specPtr, int startPt, int endPt)
+{
+
+    double integral = 0;
+
+    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+        integral += specPtr[2*pt];
+    }
+    return integral; 
+}
+
+
+/*!  
+ *  Gets max peak ht of real component over the specified range from startPt to endPt.
+ */
+double svkMetaboliteMap::GetPeakHt( float* specPtr, int startPt, int endPt)
+{
+
+    double peakHt = specPtr[ 2 * startPt ];
+    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+        if ( specPtr[2*pt] > peakHt ) {
+            peakHt = specPtr[2*pt];
+        }
+    }
+    return peakHt; 
+    
+}
+
+
+/*!  
+ *  Gets max peak ht of magnitude spectrum over the specified range from startPt to endPt.
+ */
+double svkMetaboliteMap::GetMagPeakHt( float* specPtr, int startPt, int endPt)
+{
+
+    double magPeakHt  = pow( specPtr[2*startPt], 2);
+    magPeakHt += pow( specPtr[2*startPt + 1], 2);
+    magPeakHt = pow( magPeakHt, 0.5);
+
+    double magPeakHtTmp;
+    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+
+        magPeakHtTmp  = pow( specPtr[2*pt], 2);
+        magPeakHtTmp += pow( specPtr[2*pt + 1], 2);
+        magPeakHtTmp  = pow(magPeakHtTmp, 0.5);
+
+        if ( magPeakHtTmp > magPeakHt ) {
+            magPeakHt = magPeakHtTmp;
+        }
+    }
+}
+
+
+/*!  
+ *  For multi-volume data modifies header's per frame functional group sequence:
+ */
+void svkMetaboliteMap::RedimensionData()
+{
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    double origin[3];
+    hdr->GetOrigin( origin, 0 );
+
+    double voxelSpacing[3];
+    hdr->GetPixelSpacing( voxelSpacing );
+
+    double dcos[3][3];
+    hdr->GetDataDcos( dcos );
+
+    int numCoils      = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePoints = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetDcmHeader()->GetNumberOfTimePoints();
+
+    hdr->InitPerFrameFunctionalGroupSequence(
+        origin,
+        voxelSpacing,
+        dcos,
+        hdr->GetNumberOfSlices(),
+        numCoils,
+        numTimePoints 
+    );
+}
+
 
 
 /*! 

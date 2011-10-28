@@ -112,10 +112,6 @@ class svkMetaboliteMap: public svkImageAlgorithm
                                     vtkInformationVector* outputVector 
                                 );
         void                    ZeroData(); 
-        void                    Integrate(); 
-        void                    PeakHt(); 
-        void                    MagPeakHt(); 
-
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
@@ -124,17 +120,24 @@ class svkMetaboliteMap: public svkImageAlgorithm
     private:
 
         //  Methods:
-        virtual void                         UpdateProvenance();
-        void                                 GetIntegrationPtRange(int& startPt, int& endPt); 
+        virtual void            UpdateProvenance();
+        void                    RedimensionData(); 
+        void                    GetIntegrationPtRange(int& startPt, int& endPt); 
+        void                    GenerateMap(); 
+        double                  GetMapVoxelValue( float* specPtr, int startPt, int endPt); 
+        double                  GetIntegral( float* specPtr, int startPt, int endPt);
+        double                  GetPeakHt( float* specPtr, int startPt, int endPt );
+        double                  GetMagPeakHt( float* specPtr, int startPt, int endPt );
+
 
         //  Members:
-        vtkstd::string                       newSeriesDescription; 
-        float                                peakCenterPPM;
-        float                                peakWidthPPM;
-        svkMetaboliteMap::algorithm  quantificationAlgorithm;  
-        bool                                 isVerbose; 
-        float                                useSelectedVolumeFraction;
-        short*                               quantificationMask;
+        vtkstd::string              newSeriesDescription; 
+        float                       peakCenterPPM;
+        float                       peakWidthPPM;
+        svkMetaboliteMap::algorithm quantificationAlgorithm;  
+        bool                        isVerbose; 
+        float                       useSelectedVolumeFraction;
+        short*                      quantificationMask;
 
 
 };
