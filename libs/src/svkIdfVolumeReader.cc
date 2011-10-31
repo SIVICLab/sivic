@@ -159,8 +159,9 @@ void svkIdfVolumeReader::ReadVolumeFile()
 
         vtkstd::string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
         int dataUnitSize; 
-        vtkDataArray* array =  vtkFloatArray::New();
+        vtkDataArray* array;
         if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_1 ) {
+            array = vtkUnsignedCharArray::New();
             volFileName.append( ".byt" );
             dataUnitSize = 1;
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
@@ -168,6 +169,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
             volFileName.append( ".int2" );
             dataUnitSize = 2;
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
+            array =  vtkFloatArray::New();
             volFileName.append( ".real" );
             dataUnitSize = 4;
         }
@@ -218,7 +220,6 @@ void svkIdfVolumeReader::ReadVolumeFile()
         volumeDataIn->close();
         delete volumeDataIn;
     }
-
 }
 
 
