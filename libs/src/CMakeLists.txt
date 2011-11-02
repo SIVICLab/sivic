@@ -148,6 +148,7 @@ ADD_LIBRARY(
     svkMultiWindowToImageFilter.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc
+    svkImageMathematics.cc
     svkSiemensRdaReader.cc
     svkGEPFileReader.cc
     svkGEPFileMapper.cc

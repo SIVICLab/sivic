@@ -45,7 +45,7 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkXMLDataElement.h>
 #include <vtkXMLUtilities.h>
-#include <vtkImageMathematics.h>
+#include <svkImageMathematics.h>
 
 #include <svkQuantifyMetabolites.h>
 #include <svkMetaboliteMap.h>
@@ -275,11 +275,15 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
             svkImageData* denominatorImage = svkMriImageData::New();
             numeratorImage->ZeroCopy( this->metMapVector[0] ); 
             denominatorImage->ZeroCopy( this->metMapVector[0] ); 
+    for (int i = 0; i < 8; i++ ) {
+        cout << "NUMERATOR image (zero):   " << (numeratorImage->GetPointData()->GetArray(i)->GetTuple(335))[0] << endl;
+    }        
 
             //  Get the numerator and denominator values for this ratio
+            //cout << "NI0: " << *numeratorImage << endl;
             this->GetNumeratorAndDenominatorImages( ratioXML, numeratorImage, denominatorImage); 
 
-            vtkImageMathematics* mathR = vtkImageMathematics::New(); 
+            svkImageMathematics* mathR = svkImageMathematics::New(); 
             mathR->SetOperationToDivide();
 
             //  If the computation is masked, e.g. by selection box, 
@@ -289,10 +293,16 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
                 mathR->SetConstantC(0);
                 mathR->DivideByZeroToCOn();
             }
+            //cout << "NI: " << *numeratorImage << endl;
             mathR->SetInput1( numeratorImage ); 
             mathR->SetInput2( denominatorImage ); 
+            cout << "============================" << endl;
+            cout << "divide images" << endl;
+            cout << "============================" << endl;
             mathR->Update();
-
+    for (int i = 0; i < 8; i++ ) {
+        cout << "RATIOOOO:   " << (mathR->GetOutput()->GetPointData()->GetArray(i)->GetTuple(335))[0] << endl;
+    }        
 
             //  Create a new image a copy from a correctly 
             //  instantiated object, then copy over the new pixels
@@ -326,8 +336,8 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
 void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement* ratioXML, svkImageData* numeratorImage, svkImageData* denominatorImage)
 {
 
-    vtkImageMathematics* mathN = vtkImageMathematics::New(); 
-    vtkImageMathematics* mathD = vtkImageMathematics::New(); 
+    svkImageMathematics* mathN = svkImageMathematics::New(); 
+    svkImageMathematics* mathD = svkImageMathematics::New(); 
     mathN->SetOperationToAdd();
     mathD->SetOperationToAdd();
     mathN->SetInput1( numeratorImage );     
@@ -353,8 +363,7 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
             delete iss;
             elementID++;    
             if ( quantType.compare("NUMERATOR") == 0 ) {
-                inputImage->DeepCopy( this->metMapVector[quantNum] );
-                mathN->SetInput2( inputImage ); 
+                mathN->SetInput2( this->metMapVector[quantNum] ); 
                 mathN->Update();
                 numeratorImage->DeepCopy( mathN->GetOutput() ); 
                 mathN->SetInput1( numeratorImage ); 
@@ -370,6 +379,12 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
             elementsExist = false; 
         }
     }
+
+    for (int i = 0; i < 8; i++ ) {
+        cout << "TUP335 num:   " << (numeratorImage->GetPointData()->GetArray(i)->GetTuple(335))[0] << endl;
+        cout << "TUP335 denom: " << (denominatorImage->GetPointData()->GetArray(i)->GetTuple(335))[0] << endl;
+    }            
+    
 
     mathN->Delete();
     mathD->Delete();
