@@ -252,8 +252,8 @@ void svkCoilCombine::RequestSumOfSquaresData()
                             magnitudeData[ (freq *2) + 1 ] += 0; 
     
                         }
-
-                        magnitudeData[ freq * 2 ] = pow( magnitudeData[freq * 2], 0.5 );  
+						// Solaris build needs these casts to determine the correct method
+                        magnitudeData[ freq * 2 ] = pow( (double)magnitudeData[freq * 2], (double)0.5 );
                         magnitudeData[ (freq *2) + 1 ] = magnitudeData[ freq * 2 ]; 
 
                     }

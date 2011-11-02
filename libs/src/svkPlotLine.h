@@ -46,15 +46,20 @@
 #include <vtkPoints.h>
 #include <vtkFloatArray.h>
 #include <vtkPolyLine.h>
+#include <vector>
 
 
 namespace svk {
 
+using namespace vtkstd;
 
 /*!
+ * svkPlotLine is a utility class that manipulates values in an array
+ * of x-y-z floating point values. It can be used to manipulate
+ * the points in a vtkPolyData object to to represent a vtkDataArray.
  *
  */ 
-class svkPlotLine : public vtkPolyLine
+class svkPlotLine : public vtkObject
 {
     friend class svkPlotLineGrid;
 
@@ -76,7 +81,7 @@ class svkPlotLine : public vtkPolyLine
         } PlotDirection;
 
 
-        vtkTypeRevisionMacro( svkPlotLine, vtkPolyLine );
+        vtkTypeRevisionMacro( svkPlotLine, vtkObject );
         
         static svkPlotLine*  New();
 
@@ -90,17 +95,18 @@ class svkPlotLine : public vtkPolyLine
         void                SetValueRange( double minValue, double maxValue );
         double*             GetBounds();
         void                SetComponent( PlotComponent component );
-        vtkPoints*          GetDataPoints();
-        void                SetDataPoints(vtkPoints* polyLinePoints);
+        float*              GetDataPoints();
+        void                SetDataPoints(float* polyLinePoints);
         double*             GetOrigin();
         void                SetOrigin( double* origin );
         double*             GetSpacing();
         void                SetSpacing( double* spacing );
         void                GetDcos( double dcos[3][3] );
-        void                SetDcos( double dcos[3][3] );
         void                SetInvertPlots( bool invertPlots );
         void                SetMirrorPlots( bool mirrorPlots );
         void                SetPlotDirection( int amplitudeDirection, int plotDirection );
+
+        void	    		SetDcos(vector< vector<double> >* dcos);
 
 
     protected:
@@ -135,14 +141,8 @@ class svkPlotLine : public vtkPolyLine
 
         float*              dataPtr;
 
-        //! The magnitude of the data to be plotted
-        //vtkFloatArray*      plotDataMagnitude;
-
-        //! The data point values used to make up the line 
-        vtkFloatArray*      pointData;
-
         //! The points that make up the line
-        vtkPoints*          polyLinePoints;
+        float*              polyLinePoints;
 
         //! Should the plots be inverted?
         bool                invertPlots;
@@ -170,10 +170,10 @@ class svkPlotLine : public vtkPolyLine
         double          origin[3];
         
         //! Size of the box to fill
-        double          spacing[3];
+        double*         spacing;
 
         //! The dcos of the dataset
-        double          dcos[3][3];
+        vector< vector<double> >*  dcos;
 
         void RecalculateScale();
         void RecalculatePlotAreaBounds();

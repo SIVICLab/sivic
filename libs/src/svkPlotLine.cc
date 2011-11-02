@@ -70,7 +70,6 @@ svkPlotLine::svkPlotLine()
     this->minValue  = 0; 
     this->maxValue  = 1;
     this->numPoints = 0;
-    this->pointData = vtkFloatArray::New();
     this->polyLinePoints = NULL;
     this->plotComponent = REAL; 
     this->invertPlots = false;
@@ -93,10 +92,6 @@ svkPlotLine::~svkPlotLine()
     if( this->plotData != NULL ) {
         this->plotData->Delete();
         this->plotData = NULL;
-    }
-    if( this->pointData != NULL ) {
-        this->pointData->Delete();
-        this->pointData = NULL;
     }
 }
 
@@ -133,7 +128,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
         this->plotData->Delete();
     }
 
-    this->plotData = plotData; 
+    this->plotData = plotData;
     this->plotData->Register( this );
 
     // We can now setup the polyLine and polyData
@@ -143,14 +138,11 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
         this->numPoints = this->plotData->GetNumberOfTuples();
     }
 
-    for( int i = 0; i < this->numPoints; i++ ) {
-        this->GetPointIds()->SetId(i,i);
-    }
 
     dataPtr = this->plotData->GetPointer(0);
     if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
         this->componentOffset = this->plotComponent;
-    } 
+    }
     this->numComponents = this->plotData->GetNumberOfComponents();
 
     // Generate poly data is where the data is sync'd
@@ -248,13 +240,15 @@ void svkPlotLine::GeneratePolyData()
         } else {
             delta[ pointIndex ] = 0; 
         }
-        posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
-        posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
-        posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
+        posLPS[0] = this->origin[0] + (delta[0]) * (*this->dcos)[0][0] + (delta[1]) * (*this->dcos)[1][0] + (delta[2]) * (*this->dcos)[2][0];
+        posLPS[1] = this->origin[1] + (delta[0]) * (*this->dcos)[0][1] + (delta[1]) * (*this->dcos)[1][1] + (delta[2]) * (*this->dcos)[2][1];
+        posLPS[2] = this->origin[2] + (delta[0]) * (*this->dcos)[0][2] + (delta[1]) * (*this->dcos)[1][2] + (delta[2]) * (*this->dcos)[2][2];
 
         // All points before the start get moved to the same position
         for( int i = 0; i < this->startPt; i++ ) {
-            this->polyLinePoints->SetPoint(i, posLPS );
+            this->polyLinePoints[ i*3 ] = posLPS[0];
+            this->polyLinePoints[i*3+1] = posLPS[1];
+            this->polyLinePoints[i*3+2] = posLPS[2];
         }
 
         // Now for visible Points
@@ -290,11 +284,13 @@ void svkPlotLine::GeneratePolyData()
             }
 
             // NOTE: This could be moved into the above if blocks for speed
-            posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
-            posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
-            posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
+            posLPS[0] = this->origin[0] + (delta[0]) * (*this->dcos)[0][0] + (delta[1]) * (*this->dcos)[1][0] + (delta[2]) * (*this->dcos)[2][0];
+            posLPS[1] = this->origin[1] + (delta[0]) * (*this->dcos)[0][1] + (delta[1]) * (*this->dcos)[1][1] + (delta[2]) * (*this->dcos)[2][1];
+            posLPS[2] = this->origin[2] + (delta[0]) * (*this->dcos)[0][2] + (delta[1]) * (*this->dcos)[1][2] + (delta[2]) * (*this->dcos)[2][2];
 
-            this->polyLinePoints->SetPoint(i, posLPS);
+            this->polyLinePoints[ i*3 ]   = posLPS[0];
+            this->polyLinePoints[i*3 + 1] = posLPS[1];
+            this->polyLinePoints[i*3 + 2] = posLPS[2];
         }
 
         // And finally we set all points outside the range to the last value
@@ -326,13 +322,14 @@ void svkPlotLine::GeneratePolyData()
             delta[ pointIndex ] = (this->endPt - this->startPt) * this->scale[0]; 
         }
         // NOTE: This could be moved into the above if blocks for speed
-        posLPS[0] = this->origin[0] + (delta[0]) * dcos[0][0] + (delta[1]) * dcos[1][0] + (delta[2]) * dcos[2][0];
-        posLPS[1] = this->origin[1] + (delta[0]) * dcos[0][1] + (delta[1]) * dcos[1][1] + (delta[2]) * dcos[2][1];
-        posLPS[2] = this->origin[2] + (delta[0]) * dcos[0][2] + (delta[1]) * dcos[1][2] + (delta[2]) * dcos[2][2];
+        posLPS[0] = this->origin[0] + (delta[0]) * (*this->dcos)[0][0] + (delta[1]) * (*this->dcos)[1][0] + (delta[2]) * (*this->dcos)[2][0];
+        posLPS[1] = this->origin[1] + (delta[0]) * (*this->dcos)[0][1] + (delta[1]) * (*this->dcos)[1][1] + (delta[2]) * (*this->dcos)[2][1];
+        posLPS[2] = this->origin[2] + (delta[0]) * (*this->dcos)[0][2] + (delta[1]) * (*this->dcos)[1][2] + (delta[2]) * (*this->dcos)[2][2];
         for( int i = this->endPt+1; i < numPoints; i++ ) {
-            this->polyLinePoints->SetPoint(i, posLPS );
+            this->polyLinePoints[ i*3 ] = posLPS[0];
+            this->polyLinePoints[i*3+1] = posLPS[1];
+            this->polyLinePoints[i*3+2] = posLPS[2];
         }
-        polyLinePoints->Modified(); 
     }
 }
 
@@ -340,7 +337,7 @@ void svkPlotLine::GeneratePolyData()
 /*!
  *  Get the vtkPoints object used by this class
  */
-vtkPoints* svkPlotLine::GetDataPoints() 
+float* svkPlotLine::GetDataPoints()
 {
     return this->polyLinePoints;
 }
@@ -349,7 +346,7 @@ vtkPoints* svkPlotLine::GetDataPoints()
 /*!
  *  Set the vtkPoints object that will be used by this class
  */
-void svkPlotLine::SetDataPoints(vtkPoints* polyLinePoints) 
+void svkPlotLine::SetDataPoints(float* polyLinePoints)
 {
     this->polyLinePoints = polyLinePoints;
 }
@@ -388,7 +385,7 @@ double* svkPlotLine::GetSpacing()
  */
 void svkPlotLine::SetSpacing( double* spacing )
 {
-    memcpy( this->spacing, spacing, sizeof(double) * 3 );
+	this->spacing = spacing;
     this->RecalculateScale();
     this->RecalculatePlotAreaBounds();
 }
@@ -399,17 +396,16 @@ void svkPlotLine::SetSpacing( double* spacing )
  */
 void svkPlotLine::GetDcos( double dcos[][3] )
 {
-    memcpy( dcos, this->dcos, sizeof(double) * 9 );
-    this->RecalculatePlotAreaBounds();
+    memcpy( dcos, &(*this->dcos)[0], sizeof(double) * 9 );
 }
 
 
 /*!
  *  Set Dcos
  */
-void svkPlotLine::SetDcos( double dcos[][3] )
+void svkPlotLine::SetDcos( vector< vector<double> >* dcos )
 {
-    memcpy( this->dcos, dcos, sizeof(double) * 9 );
+	this->dcos = dcos;
 }
 
 
@@ -428,9 +424,9 @@ void svkPlotLine::RecalculateScale()
  */
 void svkPlotLine::RecalculatePlotAreaBounds()
 {
-    double xMax = origin[0] + spacing[0] * dcos[0][0]   
-                            + spacing[1] * dcos[1][0]   
-                            + spacing[2] * dcos[2][0];
+    double xMax = origin[0] + spacing[0] * (*this->dcos)[0][0]
+                            + spacing[1] * (*this->dcos)[1][0]
+                            + spacing[2] * (*this->dcos)[2][0];
     double xMin;
     if( xMax > origin[0] ) {
         xMin = origin[0];
@@ -438,9 +434,9 @@ void svkPlotLine::RecalculatePlotAreaBounds()
         xMin = xMax;
         xMax = origin[0];
     }
-    double yMax = origin[1] + spacing[0] * dcos[0][1]   
-                            + spacing[1] * dcos[1][1]   
-                            + spacing[2] * dcos[2][1];
+    double yMax = origin[1] + spacing[0] * (*this->dcos)[0][1]
+                            + spacing[1] * (*this->dcos)[1][1]
+                            + spacing[2] * (*this->dcos)[2][1];
     double yMin;
     if( yMax > origin[1] ) {
         yMin = origin[1];
@@ -448,9 +444,9 @@ void svkPlotLine::RecalculatePlotAreaBounds()
         yMin = yMax;
         yMax = origin[1];
     }
-    double zMax = origin[2] + spacing[0] * dcos[0][2]  
-                            + spacing[1] * dcos[1][2]   
-                            + spacing[2] * dcos[2][2];
+    double zMax = origin[2] + spacing[0] * (*this->dcos)[0][2]
+                            + spacing[1] * (*this->dcos)[1][2]
+                            + spacing[2] * (*this->dcos)[2][2];
     double zMin;
     if( zMax > origin[2] ) {
         zMin = origin[2];

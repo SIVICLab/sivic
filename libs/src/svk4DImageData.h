@@ -49,6 +49,7 @@
 #include <vtkDoubleArray.h>
 
 #include <svkImageData.h>
+#include <vector>
 
 #define DEFAULT_SELECTION_TOLERANCE 0.50001
 

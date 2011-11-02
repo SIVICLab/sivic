@@ -1172,7 +1172,7 @@ void svkPlotGridView::UpdateDetailedPlot( int* tlcBrc )
         for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
             iter != this->plotGrids.end(); ++iter) {
             if( (*iter) != NULL && (*iter)->GetPlotGridActor()->GetVisibility() ) {
-                vtkDataArray* spectrum = (*iter)->GetInput()->GetArray( voxelIndex[0], voxelIndex[1], voxelIndex[2], (int*)this->volumeIndexVector.data());
+                vtkDataArray* spectrum = (*iter)->GetInput()->GetArray( voxelIndex[0], voxelIndex[1], voxelIndex[2], &this->volumeIndexVector[0]);
                 this->detailedPlotDirector->AddInput( spectrum , (*iter)->GetComponent(), (*iter)->GetInput());
                 this->detailedPlotDirector->SetPlotColor(counter, (*iter)->GetColor());
                 counter++;
@@ -1380,7 +1380,7 @@ int  svkPlotGridView::GetVolumeIndex( int volumeIndex  )
  */
 int*  svkPlotGridView::GetVolumeIndexArray( )
 {
-    return this->volumeIndexVector.data();
+    return &this->volumeIndexVector[0];
 }
 
 

@@ -118,10 +118,9 @@ vtkSivicController::~vtkSivicController()
 //! Set the slice of all Controllers
 void vtkSivicController::SetSlice( int slice, bool centerImage )
 {
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+    	this->DrawOff();
     }
     this->plotController->SetSlice(slice);
     this->overlayController->SetSlice(slice, centerImage);
@@ -137,11 +136,8 @@ void vtkSivicController::SetSlice( int slice, bool centerImage )
     }
 
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+    	this->DrawOn();
     }
-    this->overlayController->GetView()->Refresh();
-    this->plotController->GetView()->Refresh();
 }
 
 
@@ -195,11 +191,10 @@ void vtkSivicController::SetActive4DImageData( int index )
     svk4DImageData* oldData = this->GetActive4DImageData();
     if( oldData != NULL && index >= 0 ) {
        if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
-           int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+           int toggleDraw = this->GetDraw();
            if( toggleDraw ) {
-               this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-               this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-            }
+			   this->DrawOff();
+           }
            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActivePlotIndex( index );
            svkImageData* newData = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
            if( newData->IsA("svkMrsImageData")) {
@@ -220,11 +215,8 @@ void vtkSivicController::SetActive4DImageData( int index )
                this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
            }
            if( toggleDraw ) {
-               this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-               this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+               this->DrawOn();
             }
-           this->plotController->GetView()->Refresh();
-           this->overlayController->GetView()->Refresh();
        }
     }
 }
@@ -233,10 +225,9 @@ void vtkSivicController::SetActive4DImageData( int index )
 //! Set the slice of all Controllers
 void vtkSivicController::SetImageSlice( int slice, string orientation )
 {
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        this->DrawOff();
     }
     if( orientation == "AXIAL" ) {
         this->overlayController->SetSlice( slice, svkDcmHeader::AXIAL);
@@ -260,11 +251,8 @@ void vtkSivicController::SetImageSlice( int slice, string orientation )
         this->spectraViewWidget->SetCenterImage(true);
     }
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->DrawOn();
     }
-    this->overlayController->GetView()->Refresh();
-    this->plotController->GetView()->Refresh();
 }
 
 
@@ -454,10 +442,9 @@ void vtkSivicController::OpenImage( const char* fileName )
         } 
 
         if( strcmp( resultInfo.c_str(), "" ) == 0 && newData != NULL ) {
-            int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+            int toggleDraw = this->GetDraw();
             if( toggleDraw ) {
-                this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-                this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+                this->DrawOff();
             }
             if( oldData != NULL) {
                 this->model->ChangeDataObject( "AnatomicalData", newData );
@@ -527,11 +514,8 @@ void vtkSivicController::OpenImage( const char* fileName )
             this->windowLevelWidget->SetWindow( window ); 
             this->viewRenderingWidget->ResetInfoText();
             if( toggleDraw ) {
-                this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-                this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
+                this->DrawOn();
             }
-            this->overlayController->GetView()->Refresh( );
-            this->plotController->GetView()->Refresh();
 
         } else {
 
@@ -561,17 +545,18 @@ void vtkSivicController::OpenImage( const char* fileName )
 void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData, bool onlyReadOneInputFile )
 {
 
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        this->DrawOff();
     }
     string objectName;
     if( newData->IsA("svkMrsImageData")) {
         objectName = "SpectroscopicData";
     } else if (newData->IsA("svkMriImageData")) {
+        cout << "Before get cell data rep...." << endl;
         newData = svkMriImageData::SafeDownCast(newData)->GetCellDataRepresentation();
         objectName = "4DImageData";
+        cout << "after get cell data rep...." << endl;
     }
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MR4D );
@@ -753,14 +738,11 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         this->PopupMessage( resultInfo ); 
     }
 
-    if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-    }
     this->DisableWidgets();
     this->EnableWidgets();
-    this->overlayController->GetView()->Refresh( );
-    this->plotController->GetView()->Refresh( );
+    if( toggleDraw ) {
+        this->DrawOn();
+    }
 }
 
 
@@ -849,10 +831,9 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 
             resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
-                int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+                int toggleDraw = this->GetDraw();
                 if( toggleDraw ) {
-                    this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-                    this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+                    this->DrawOff();
                 }
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
                 resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
@@ -918,8 +899,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
 
                 if( toggleDraw ) {
-                    this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-                    this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
+                    this->DrawOn();
                 }
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
@@ -2038,9 +2018,9 @@ void vtkSivicController::ResetWindowLevel()
         double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
         double window = this->overlayController->GetWindow();
         double level = this->overlayController->GetLevel();
-        int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+        int toggleDraw = this->GetDraw();
         if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+            this->DrawOff();
         }
         this->windowLevelWidget->SetLevelRange( pixelRange ); 
         this->windowLevelWidget->SetLevel( level ); 
@@ -2048,10 +2028,8 @@ void vtkSivicController::ResetWindowLevel()
         this->windowLevelWidget->SetWindow( window ); 
         this->viewRenderingWidget->ResetInfoText();
         if( toggleDraw ) {
-            this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+            this->DrawOn();
         }
-        this->viewRenderingWidget->specViewerWidget->Render();
-        this->viewRenderingWidget->viewerWidget->Render();
     }
 
 }
@@ -2095,15 +2073,13 @@ void vtkSivicController::DisplayPreferencesWindow()
                 , this->preferencesWindow->GetViewFrame()->GetWidgetName() );
     }
 
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        this->DrawOff();
     }
     this->preferencesWindow->Display();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->DrawOn();
     }
 
     // Check to see if the window has already been added
@@ -2148,10 +2124,9 @@ void vtkSivicController::DisplayWindowLevelWindow()
                 , this->windowLevelWindow->GetViewFrame()->GetWidgetName() );
     }
 
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        this->DrawOff();
     }
     if( this->model->DataExists("AnatomicalData") ) {
         double* pixelRange = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetArray(0)->GetRange();
@@ -2173,8 +2148,7 @@ void vtkSivicController::DisplayWindowLevelWindow()
         this->overlayWindowLevelWidget->SetWindow( window ); 
     } 
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+        this->DrawOn();
     }
     this->windowLevelWindow->Display();
     bool foundDetailedWindow = false;
@@ -2338,10 +2312,9 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
     this->orientation = orientation;
     int firstSlice;
     int lastSlice;
-    int toggleDraw = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+    int toggleDraw = this->GetDraw();
     if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
-        this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+        this->DrawOff();
     }
 
     int index; 
@@ -2399,13 +2372,10 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
         this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
     }
 
-    if( toggleDraw ) {
-        this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-        this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
-    }
     this->EnableWidgets();
-    this->plotController->GetView()->Refresh();
-    this->overlayController->GetView()->Refresh();
+    if( toggleDraw ) {
+        this->DrawOn();
+    }
 }
 
 
@@ -2512,9 +2482,6 @@ void vtkSivicController::EnableWidgets()
         this->spectraRangeWidget->xSpecRange->EnabledOn();
         this->spectraRangeWidget->ySpecRange->EnabledOn();
         this->spectraViewWidget->sliceSlider->EnabledOn();
-        this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
-        this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
-        this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
         this->spectraRangeWidget->unitSelectBox->EnabledOff();
     }
 
@@ -3081,4 +3048,51 @@ void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& pp
 svk4DImageData* vtkSivicController::GetActive4DImageData()
 {
     return svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetActiveInput();
+}
+
+
+/*!
+ * Stops the renderers from updating. This is to make transitions appear fluid.
+ */
+void vtkSivicController::DrawOff()
+{
+	this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->SwapBuffersOff();
+	this->viewRenderingWidget->viewerWidget->GetRenderWindow()->SwapBuffersOff();
+	this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOff();
+	this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOff();
+
+}
+
+
+/*!
+ *  Starts the renderers updating again. This is to make transitions appear fluid.
+ */
+void vtkSivicController::DrawOn()
+{
+	this->plotController->GetView()->Refresh();
+	this->overlayController->GetView()->Refresh();
+	this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->DrawOn();
+	this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();
+	this->viewRenderingWidget->specViewerWidget->GetRenderWindow()->SwapBuffersOn();
+	this->viewRenderingWidget->viewerWidget->GetRenderWindow()->SwapBuffersOn();
+	this->plotController->GetView()->Refresh();
+	this->overlayController->GetView()->Refresh();
+
+}
+
+
+/*!
+ *  Just a check to see if the renders are currently drawing.
+ */
+int vtkSivicController::GetDraw()
+{
+	// Both renderer
+	int drawOverlay  = this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+	int drawPlotGrid = this->plotController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->GetDraw();
+
+	if( drawOverlay != drawPlotGrid ) {
+		return 0;
+	} else {
+		return drawOverlay;
+	}
 }

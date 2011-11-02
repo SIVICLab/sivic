@@ -159,12 +159,15 @@ void sivicSpectraRangeWidget::SetSpecUnitsCallback(svkSpecPoint::UnitType target
     if ( targetUnits == svkSpecPoint::PPM ) {
         this->xSpecRange->SetResolution( .001 );
         this->unitSelectBox->SetValue( "PPM" );
+		this->xSpecRange->SetLabelText( "Frequency" );
     } else if ( targetUnits == svkSpecPoint::Hz ) {
         this->xSpecRange->SetResolution( .1 );
         this->unitSelectBox->SetValue( "Hz" );
+		this->xSpecRange->SetLabelText( "Frequency" );
     } else if ( targetUnits == svkSpecPoint::PTS ) {
         this->xSpecRange->SetResolution( 1 );
         this->unitSelectBox->SetValue( "PTS" );
+		this->xSpecRange->SetLabelText( "Points" );
         // We add one to all parameters to so that the user sees a range of 1 to numPoints
         // This will be deducted before being set into the views 
         lowestPoint = (float)(svkUtils::NearestInt(lowestPoint))+1;

@@ -341,7 +341,6 @@ void svkMriImageData::SyncCellRepresentationToPixelData()
         int* channelPtr = &channel;
         for( int timePoint = 0; timePoint < numTimePts; timePoint++ ) {
             this->GetPointData()->SetActiveScalars( this->GetPointData()->GetArray( timePoint )->GetName() );
-            vtkDataArray* scalars = this->GetPointData()->GetScalars();
             this->cellDataRepresentation->SetImage(this, timePoint, channelPtr);
         }
     }
@@ -378,11 +377,12 @@ void svkMriImageData::InitializeCellDataArrays()
     int numVoxels = (dims[0] + 1) * (dims[1] + 1) * (dims[2] + 1);
     cellData->SetNumberOfTuples(  numTimePts );
     cellData->AllocateArrays( numChannels * numVoxels );
+	vtkFloatArray* array = NULL;
     for( int channel = 0; channel < numChannels; channel++ ) {
         for (int z = 0; z < dims[2]; z++) {
             for (int y = 0; y < dims[1]; y++) {
                 for (int x = 0; x < dims[0]; x++) {
-                    vtkFloatArray* array = vtkFloatArray::New();
+                    array = vtkFloatArray::New();
                     array->SetNumberOfComponents( numComponents );
                     array->vtkFloatArray::SetNumberOfTuples( numTimePts );
                     sprintf(arrayName, "%d %d %d %d", x, y, z, channel);

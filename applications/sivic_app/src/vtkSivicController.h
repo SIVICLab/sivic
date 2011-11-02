@@ -225,6 +225,9 @@ class vtkSivicController : public vtkObject
         void                       SetOverlayThreshold( double threshold );
         void                       PushToPACS();
         void                       GetMRSDefaultPPMRange( svkImageData* mrsData, float& ppmMin, float& ppmMax ); 
+        int                        GetDraw();
+        void                       DrawOff();
+        void					   DrawOn();
  
     protected:
 

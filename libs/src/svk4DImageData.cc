@@ -89,9 +89,10 @@ svk4DImageData::~svk4DImageData()
  */
 void svk4DImageData::GetNumberOfVoxels(int numVoxels[3])
 {
-    numVoxels[0] = (this->GetExtent())[1];
-    numVoxels[1] = (this->GetExtent())[3];
-    numVoxels[2] = (this->GetExtent())[5];
+	int* extent = this->GetExtent();
+    numVoxels[0] = extent[1];
+    numVoxels[1] = extent[3];
+    numVoxels[2] = extent[5];
 }
 
  
@@ -391,8 +392,8 @@ void svk4DImageData::EstimateDataRange( double range[2], int minPt, int maxPt, i
         double rangeAverage[2] = {0,0};
         double stdDeviation[2] = {0,0};
         int numVoxels = (max[0]-min[0]+1)*(max[1]-min[1]+1)*(max[2]-min[2]+1);
-        vector<double> maxValues;
-        vector<double> minValues;
+        vtkstd::vector<double> maxValues;
+        vtkstd::vector<double> minValues;
 
         // Find the average and the max/min for each voxel
         for (int z = min[2]; z <= max[2]; z++) {
@@ -486,7 +487,7 @@ vtkDataArray* svk4DImageData::GetArray(int x, int y, int z, int* indexArray )
         newIndexArray.push_back( indexArray[i] );
     }
 
-    return this->GetArray(  static_cast<int*>(newIndexArray.data()) );
+    return this->GetArray(  static_cast<int*>(&(newIndexArray[0])) );
 
 }
 

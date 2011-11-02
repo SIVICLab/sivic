@@ -72,10 +72,10 @@ namespace svk {
 using namespace std;
 
 /*
- * Representation for spectroscopic data. It creates a vtkPolyData to represent
- * the spatial location of the data aquired, and uses svkPlotLien objects
- * to represent the plot lines. There are methods for controlling the range,
- * slice, etc.
+ * Representation for 4D Image Data. It creates a vtkPolyData object to represent
+ * the spatial location of the data acquired, and uses svkPlotLine objects
+ * to modify point data for the individual cells. There are methods for controlling
+ * the range, slice, etc.
  *
  */
 class svkPlotLineGrid : public vtkObject
@@ -98,7 +98,7 @@ class svkPlotLineGrid : public vtkObject
         void                    SetTlcBrc(int tlcBrc[2]);
         int*                    GetTlcBrc();
         void                    SetSlice(int slice);
-        void                    SetSliceAppender();
+        void                    SetPlotPoints();
         int                     GetSlice( );
         void                    SetFrequencyWLRange(int lower, int range, int tlcBrc[2]); 
         void                    GetFrequencyWLRange(int &lower, int &range); 
@@ -108,7 +108,6 @@ class svkPlotLineGrid : public vtkObject
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent                     GetComponent( );
         vtkstd::vector<int>     GetVolumeIndexArray( );
-        //void                    SetVolumeIndexArray( vtkstd::vector<int> volumeIndexVector );
         void                    SetVolumeIndex( int index, int volumeIndex = 0 );
         int                     GetVolumeIndex( int volumeIndex = 0 );
         void                    UpdateDataArrays(int tlc, int brc);
@@ -121,7 +120,6 @@ class svkPlotLineGrid : public vtkObject
     private:
 
         void                    ClearXYPlots();
-        void                    ClearPolyData();
 
         //! The current slice
         int                         slice;
@@ -130,15 +128,20 @@ class svkPlotLineGrid : public vtkObject
         //! The ID's of the top left corner, and bottom right corner cells 
         int                         tlcBrc[2];
 
+        //! dcos to be passed as a pointer
+        vtkstd::vector< vtkstd::vector<double> > dcos;
+
         //! Represents the current slice of plot lines
         vtkstd::vector<svkPlotLine*>  xyPlots;
 
         //! The actor that holds the plot grid
         vtkActor*                   plotGridActor;
 
-        vtkAppendPolyData*          appender;
+        vtkPolyData*                polyData;
 
-        vtkstd::vector< vtkPolyData*>    polyDataVector;
+        vtkPoints*                  points;
+
+        vtkPolyDataMapper*          mapper;
 
         //! The index of the first point in the plots to be plotted-
         int                         plotRangeX1;     
@@ -181,6 +184,7 @@ class svkPlotLineGrid : public vtkObject
         void                        RegeneratePlots();
         static void                 UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
         void                        AllocateXYPlots();        
+        void                        AllocatePolyData();
         void                        UpdatePlotRange(int tlcBrc[2]);
         void                        UpdateComponent();
         void                        UpdateOrientation();
