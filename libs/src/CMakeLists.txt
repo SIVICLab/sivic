@@ -216,6 +216,7 @@ ADD_LIBRARY(
     svkImageMapToColors.cc
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
+    svkDSCDeltaR2.cc
     svkImageCopy.cc
     svkQuantifyMetabolites.cc
     svkMetaboliteMap.cc
