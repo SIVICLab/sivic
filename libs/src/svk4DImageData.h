@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svk4DImageData.h $
- *  $Rev: 1038 $
- *  $Author: jccrane $
- *  $Date: 2011-09-08 17:56:51 -0700 (Thu, 08 Sep 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

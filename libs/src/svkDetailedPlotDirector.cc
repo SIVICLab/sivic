@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDetailedPlotManager.cc $
- *  $Rev: 913 $
- *  $Author: beckn8tor $
- *  $Date: 2011-04-13 13:19:09 -0700 (Wed, 13 Apr 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDetailedPlotDirector, "$Rev: 913 $");
+vtkCxxRevisionMacro(svkDetailedPlotDirector, "$Rev$");
 vtkStandardNewMacro(svkDetailedPlotDirector);
 
 

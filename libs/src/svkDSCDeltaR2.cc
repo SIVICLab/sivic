@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDSCDeltaR2.cc $
- *  $Rev: 1113 $
- *  $Author: jccrane $
- *  $Date: 2011-10-28 12:56:43 -0700 (Fri, 28 Oct 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -53,7 +53,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCDeltaR2, "$Rev: 1113 $");
+vtkCxxRevisionMacro(svkDSCDeltaR2, "$Rev$");
 vtkStandardNewMacro(svkDSCDeltaR2);
 
 
@@ -85,10 +85,20 @@ svkDSCDeltaR2::~svkDSCDeltaR2()
 
 
 /*!
- *  Change the representation 
+ *  Change the representation between T2* and DR2*
  */
 int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+
+    svk4DImageData* dsc = this->GetCellDataRepresentation();
+
+    //  Loop through each voxel and convert to target representation:     
+    if ( this->currentRepresentation)  != this->targetRepresentation ) {
+        if (this->targetRepresentation == svkDSCDeltaR2::DR2 ) {
+            //  
+        }
+    }  
+
 /*
     //  Create the template data object by  
     //  extractng an svkMriImageData from the input svkMrsImageData object
@@ -134,9 +144,9 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
 /*!
  *
  */
-void svkDSCDeltaR2::SetRepresentatin( svkDSCDeltaR2::representaiton representation )
+void svkDSCDeltaR2::SetRepresentation( svkDSCDeltaR2::representation representation )
 {
-    this->targetRepresenation = representation; 
+    this->targetRepresentation = representation; 
     this->Modified(); 
 }
 

@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDataModel.cc $
- *  $Rev: 793 $
- *  $Author: jccrane $
- *  $Date: 2011-01-05 10:04:27 -0800 (Wed, 05 Jan 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -45,7 +45,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkXYPlotActor, "$Rev: 793 $");
+vtkCxxRevisionMacro(svkXYPlotActor, "$Rev$");
 vtkStandardNewMacro(svkXYPlotActor);
 
 

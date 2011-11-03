@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDSCDeltaR2.h $
- *  $Rev: 1113 $
- *  $Author: jccrane $
- *  $Date: 2011-10-28 12:56:43 -0700 (Fri, 28 Oct 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -71,6 +71,19 @@ using namespace std;
  *  1.  "Dynamic Susceptibility-Weighted Perfusion Imaging of High-Grade Gliomas: Characterization 
  *      of Spatial Heterogeneity", Janine M. Lupo, Soonmee Chaa, Susan M. Chang and Sarah J. Nelson, 
  *      AJNR 26: 1446-1454 (2005).    
+
+ *  Differentiation of Glioblastoma Multiforme and Single Brain Metastasis by Peak Height and Percentage of Signal Intensity Recovery Derived from Dynamic Susceptibility-Weighted Contrast-Enhanced Perfusion MR Imaging
+
+   1. S. Chaa,b,
+   2. J.M. Lupoa,
+   3. M.-H. Chena,
+   4. K.R. Lambornb,
+   5. M.W. McDermottb,
+   6. M.S. Bergerb,
+   7. S.J. Nelsona and
+   8. W.P. Dillona,b
+
+ AJNR June 2007 28: 1078-1084 
  *
  */
 class svkDSCDeltaR2: public svkImageInPlaceFilter
@@ -86,7 +99,7 @@ class svkDSCDeltaR2: public svkImageInPlaceFilter
             DR2 = 1 
         }representation;
 
-        void                    ChangeRepresentation(svkDSCDeltaR2::representation representation);
+        void                    SetRepresentation(svkDSCDeltaR2::representation representation);
 
 
     protected:
@@ -100,7 +113,7 @@ class svkDSCDeltaR2: public svkImageInPlaceFilter
                                     vtkInformationVector* outputVector 
                                 );
 
-        virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
 
     private:

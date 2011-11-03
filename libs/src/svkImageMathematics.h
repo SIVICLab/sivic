@@ -30,7 +30,6 @@
 
 /*
  *  $URL$
- *
  *  $Rev$
  *  $Author$
  *  $Date$
@@ -41,64 +40,42 @@
  */
 
 
-#ifndef SVK_XY_PLOT_ACTOR_H
-#define SVK_XY_PLOT_ACTOR_H
+#ifndef SVK_IMAGE_MATHEMATICS_H
+#define SVK_IMAGE_MATHEMATICS_H
 
 
-#include <vtkObjectFactory.h>
-#include <vtkXYPlotActor.h>
+#include <vtkImageMathematics.h>
 
-#include "vtkAppendPolyData.h"
-#include "vtkAxisActor2D.h"
-#include "vtkCellArray.h"
-#include "vtkDataObjectCollection.h"
-#include "vtkDataSetCollection.h"
-#include "vtkFieldData.h"
-#include "vtkDoubleArray.h"
-#include "vtkGlyph2D.h"
-#include "vtkGlyphSource2D.h"
-#include "vtkIntArray.h"
-#include "vtkLegendBoxActor.h"
-#include "vtkMath.h"
-#include "vtkObjectFactory.h"
-#include "vtkPlane.h"
-#include "vtkPlanes.h"
-#include "vtkPointData.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataMapper2D.h"
-#include "vtkProperty2D.h"
-#include "vtkTextMapper.h"
-#include "vtkTextProperty.h"
-#include "vtkViewport.h"
 
 namespace svk {
 
+
+using namespace std;
+
+
 /*! 
- *  The purpose of the DataModel class is two fold. The first is to maintain
- *  a hash of svkImageData objects that can be accessed and modified by any
- *  "views". The second is to maintain a hash of states that are to be shared
- *  between "views". 
- *  The DataViewControllers observe the DataModel and can respond if relevant
- *  changes are made. 
+ *  Wrapper class around vtkImageMathematics that operates 
+ *  on each vtkPointData array in the input vtkImageData objects.  
+ *  This is a convenience for applying an operation to a multi-volume
+ *  image object. 
  */
-class svkXYPlotActor : public vtkXYPlotActor
+
+class svkImageMathematics : public vtkImageMathematics
 {
 
     public:
+        static svkImageMathematics* New();
+        vtkTypeRevisionMacro( svkImageMathematics, vtkImageMathematics);
+        virtual void    Update(); 
 
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkXYPlotActor,vtkObject );
-   
-        static svkXYPlotActor*       New();
-        void ViewportToPlotCoordinate(vtkViewport *viewport, double &u, double &v);
 
     protected:
-        svkXYPlotActor();
-        ~svkXYPlotActor();
 
-        virtual void CreatePlotData(int *pos, int *pos2, double xRange[2],
-                                    double yRange[2], double *norms,
-                                    int numDS, int numDO);
+        svkImageMathematics();
+        ~svkImageMathematics();
+
+        virtual int         FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
 };
 
@@ -106,4 +83,5 @@ class svkXYPlotActor : public vtkXYPlotActor
 }   //svk
 
 
-#endif //SVK_XY_PLOT_ACTOR_H
+#endif //SVK_IMAGE_MATHEMATICS_H
+

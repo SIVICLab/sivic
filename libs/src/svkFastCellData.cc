@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkDataModel.cc $
- *  $Rev: 793 $
- *  $Author: jccrane $
- *  $Date: 2011-01-05 10:04:27 -0800 (Wed, 05 Jan 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *
  *  Much of the source here is copied from vtkDataSetAttributes. Due to private member
@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkFastCellData, "$Rev: 793 $");
+vtkCxxRevisionMacro(svkFastCellData, "$Rev$");
 vtkStandardNewMacro(svkFastCellData);
 
 

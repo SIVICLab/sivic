@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svk4DImageData.cc $
- *  $Rev: 1054 $
- *  $Author: jccrane $
- *  $Date: 2011-09-16 16:01:45 -0700 (Fri, 16 Sep 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -47,7 +47,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svk4DImageData, "$Rev: 1054 $");
+vtkCxxRevisionMacro(svk4DImageData, "$Rev$");
 vtkStandardNewMacro(svk4DImageData);
 
 
