@@ -86,16 +86,45 @@ svkDSCDeltaR2::~svkDSCDeltaR2()
 
 /*!
  *  Change the representation between T2* and DR2*
+ *  See reference2: 
+ *      ΔR2* = −ln(St/S0)/TE
+ *  For now, set S0, to be the value at point 5 after magnetization has stabilized.
  */
 int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    svk4DImageData* dsc = this->GetCellDataRepresentation();
+    svk4DImageData* dsc = svkMriImageData::SafeDownCast(this->GetImageDataInput(0))
+                    ->GetCellDataRepresentation();
+    double TE = dsc->GetDcmHeader()->GetDoubleValue("EchoTime"); 
+
+    int numVoxels[3];    
+    dsc->GetNumberOfVoxels( numVoxels ); 
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //  Loop through each voxel and convert to target representation:     
-    if ( this->currentRepresentation)  != this->targetRepresentation ) {
+    if ( this->currentRepresentation != this->targetRepresentation ) {
+        vtkDataArray* voxelData;
+        voxelData = dsc->GetArray(0);
+        int numPts = voxelData->GetNumberOfTuples(); 
+
         if (this->targetRepresentation == svkDSCDeltaR2::DR2 ) {
-            //  
+            //  Change representation from T2* to delta R2* 
+
+            for (int i = 0; i < totalVoxels; i++ )    {
+                voxelData = dsc->GetArray(i);
+                double s0 = voxelData->GetTuple1(0); 
+                for ( int t = 0; t < numPts; t++ ) {
+                    double value = -1 * log( voxelData->GetTuple1(t) / s0 ); 
+                    value = value / TE;
+                    voxelData->SetTuple1( t, value ); 
+                }
+            }                
+
+        } else {
+            //  Change representation delta R2* T2* 
+            for (int i = 0; i < totalVoxels; i++ )    {
+                voxelData = dsc->GetArray(i);
+            }                
         }
     }  
 
@@ -155,7 +184,7 @@ void svkDSCDeltaR2::SetRepresentation( svkDSCDeltaR2::representation representat
 /*!
  *  Output from this algo is an svkMriImageData object. 
  */
-int svkDSCDeltaR2::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDSCDeltaR2::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
     return 1;

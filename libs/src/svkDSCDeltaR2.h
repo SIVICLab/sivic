@@ -72,18 +72,11 @@ using namespace std;
  *      of Spatial Heterogeneity", Janine M. Lupo, Soonmee Chaa, Susan M. Chang and Sarah J. Nelson, 
  *      AJNR 26: 1446-1454 (2005).    
 
- *  Differentiation of Glioblastoma Multiforme and Single Brain Metastasis by Peak Height and Percentage of Signal Intensity Recovery Derived from Dynamic Susceptibility-Weighted Contrast-Enhanced Perfusion MR Imaging
-
-   1. S. Chaa,b,
-   2. J.M. Lupoa,
-   3. M.-H. Chena,
-   4. K.R. Lambornb,
-   5. M.W. McDermottb,
-   6. M.S. Bergerb,
-   7. S.J. Nelsona and
-   8. W.P. Dillona,b
-
- AJNR June 2007 28: 1078-1084 
+ *  2.  "Differentiation of Glioblastoma Multiforme and Single Brain Metastasis by Peak Height and 
+ *      Percentage of Signal Intensity Recovery Derived from Dynamic Susceptibility-Weighted 
+ *      Contrast-Enhanced Perfusion MR Imaging", 
+ *      S. Chaa, J.M. Lupo, M.-H. Chen, K.R. Lamborn, M.W. McDermott, M.S. Berger, S.J. Nelson and
+ *      W.P. Dillon,  AJNR 28: 1078-1084 (2007). 
  *
  */
 class svkDSCDeltaR2: public svkImageInPlaceFilter
@@ -113,7 +106,7 @@ class svkDSCDeltaR2: public svkImageInPlaceFilter
                                     vtkInformationVector* outputVector 
                                 );
 
-        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
 
     private:
