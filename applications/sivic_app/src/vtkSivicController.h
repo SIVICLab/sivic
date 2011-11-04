@@ -86,6 +86,7 @@
 #include <sivicPreprocessingWidget.h>
 #include <sivicQuantificationWidget.h>
 #include <sivicCombineWidget.h>
+#include <sivicDSCWidget.h>
 
 #include <sivicTestSuite.h>
 #include <sivicImageViewWidget.h>
@@ -136,6 +137,7 @@ class vtkSivicController : public vtkObject
         void                       SetDataWidget( sivicDataWidget* dataWidget );
         void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
         void                       SetCombineWidget( sivicCombineWidget* CombineWidget );
+        void                       SetDSCWidget( sivicDSCWidget* dscWidget );
         void                       SetImageViewWidget( sivicImageViewWidget* imageViewWidget );
         void                       SetSpectraRangeWidget( sivicSpectraRangeWidget* spectraRangeWidget );
         void                       SetSpectraViewWidget( sivicSpectraViewWidget* spectraViewWidget );
@@ -193,6 +195,7 @@ class vtkSivicController : public vtkObject
         void                       SetInterpolationCallback( int interpolationType );
         void                       SetLUTCallback( int type );
         void                       MetMapViewCallback(int mapNumber); 
+        void                       SetDSCRepresentationCallback(int representation); 
         void                       Print( char* captureType, int outputOption = 0);
         int                        PopupMessage( string message, int style = 0 );
         void                       SaveSession( );
@@ -253,6 +256,7 @@ class vtkSivicController : public vtkObject
         sivicDataWidget*               dataWidget;
         sivicQuantificationWidget*     quantificationWidget;
         sivicCombineWidget*            combineWidget;
+        sivicDSCWidget*                dscWidget;
         sivicImageViewWidget*          imageViewWidget;
         sivicSpectraRangeWidget*       spectraRangeWidget;
         sivicSpectraViewWidget*        spectraViewWidget;

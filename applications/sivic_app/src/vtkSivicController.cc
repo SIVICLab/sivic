@@ -331,6 +331,14 @@ void vtkSivicController::SetCombineWidget( sivicCombineWidget* combineWidget)
 
 
 //! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetDSCWidget( sivicDSCWidget* dscWidget )
+{
+    this->dscWidget = dscWidget;
+    this->dscWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetImageViewWidget( sivicImageViewWidget* imageViewWidget )
 {
     this->imageViewWidget = imageViewWidget;
@@ -2170,6 +2178,15 @@ void vtkSivicController::DisplayWindowLevelWindow()
 void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 {
     this->spectraRangeWidget->SetSpecUnitsCallback( static_cast<svkSpecPoint::UnitType>(targetUnits) );
+}
+
+
+/*
+ *
+ */
+void vtkSivicController::SetDSCRepresentationCallback(int representation)
+{
+    this->dscWidget->SetDSCRepresentationCallback( static_cast<svkDSCDeltaR2::representation>(representation) );
 }
 
 

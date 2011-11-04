@@ -73,7 +73,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_quantify -i input_file_name -o output_file_name -t output_data_type      \n";
-    usemsg += "             (--peak_center ppm --peak_width ppm --qty_name name | --xml file ) \n";
+    usemsg += "             (--peak_center ppm --peak_width ppm --peak_name name | --xml file ) \n";
     usemsg += "             [ --algo type ]                                                 \n"; 
     usemsg += "             [--verbose ] [ -h ]                                             \n"; 
     usemsg += "\n";  
@@ -85,7 +85,7 @@ int main (int argc, char** argv)
     usemsg += "   --xml               file  XML quantification config file      \n"; 
     usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center     \n";
     usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration  \n";
-    usemsg += "   --qty_name          name  String label name for peak or ratio \n"; 
+    usemsg += "   --peak_name         name  String label name for peak or ratio \n"; 
     usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout. \n"; 
     usemsg += "   --algo              type  Quantification algorithm :          \n"; 
     usemsg += "                                 1 = Peak Ht (default)           \n";  
@@ -99,7 +99,7 @@ int main (int argc, char** argv)
     usemsg += "\n";  
     usemsg += "    Calculate NAA peak ht map\n";
     usemsg += "    svk_quantify -i mrs.dcm -o naa_pk.dcm -t6 --peak_center 2 --peak_width .4 \n";
-    usemsg += "                 --peak_2_width .2 --algo 2 --zscore --qty_name NAA_PK_HT\n";
+    usemsg += "                 --peak_2_width .2 --algo 2 --zscore --peak_name NAA_PK_HT\n";
     usemsg += "    Calculate all quantities specified in xml file\n";
     usemsg += "    svk_quantify -i mrs.dcm -o test -t3 --xml mrs.xml \n";
     usemsg += "\n";  

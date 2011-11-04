@@ -70,8 +70,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
 
         vtkKWMenuButton*                dscRepresentationSelector;
         vtkKWPushButton*                applyButton;
-        vtkKWLabel*                     specLabel; 
-        vtkKWLabel*                     colsLabel; 
+        vtkKWLabel*                     dscLabel; 
 
 
         
@@ -80,6 +79,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
+        void            SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation); 
 
 
 
@@ -93,6 +93,8 @@ class sivicDSCWidget : public sivicKWCompositeWidget
 
         sivicDSCWidget(const sivicDSCWidget&);   // Not implemented.
         void operator=(const sivicDSCWidget&);  // Not implemented.
+        svkDSCDeltaR2*       dscRep;
+
         
 };
 

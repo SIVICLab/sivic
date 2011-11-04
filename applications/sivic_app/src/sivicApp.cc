@@ -55,6 +55,7 @@ sivicApp::sivicApp()
     this->dataWidget            = sivicDataWidget::New();
     this->quantificationWidget  = sivicQuantificationWidget::New();
     this->combineWidget         = sivicCombineWidget::New();
+    this->dscWidget             = sivicDSCWidget::New();
     this->imageViewWidget       = sivicImageViewWidget::New();
     this->spectraViewWidget     = sivicSpectraViewWidget::New();
     this->windowLevelWidget     = sivicWindowLevelWidget::New();
@@ -120,6 +121,11 @@ sivicApp::~sivicApp()
     if( this->combineWidget != NULL ) {
         this->combineWidget->Delete();
         this->combineWidget = NULL;
+    }
+
+    if( this->dscWidget != NULL ) {
+        this->dscWidget->Delete();
+        this->dscWidget = NULL;
     }
 
     if( this->imageViewWidget != NULL ) {
@@ -289,6 +295,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->dataWidget->SetSivicController(this->sivicController);
     this->dataWidget->Create();
 
+    this->dscWidget->SetParent(tabbedPanel );
+    this->dscWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->dscWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->dscWidget->SetSivicController(this->sivicController);
+    this->dscWidget->Create();
+
     this->imageViewWidget->SetParent(this->sivicWindow->GetViewFrame());
     this->imageViewWidget->SetPlotController(this->sivicController->GetPlotController());
     this->imageViewWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -334,6 +346,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetOverlayWindowLevelWidget( overlayWindowLevelWidget );
     this->sivicController->SetPreferencesWidget( preferencesWidget );
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
+    this->sivicController->SetDSCWidget( dscWidget );
 
     this->tabbedPanel->AddPage("Welcome", "Welcome!", NULL);
     vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Welcome");
@@ -352,6 +365,9 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->tabbedPanel->AddPage("Data", "Data.", NULL);
     vtkKWWidget* dataPanel = tabbedPanel->GetFrame("Data");
+
+    this->tabbedPanel->AddPage("DSC", "DSC", NULL);
+    vtkKWWidget* dscPanel = tabbedPanel->GetFrame("DSC");
 
     vtkKWSeparator* separator = vtkKWSeparator::New();
     separator->SetParent(this->sivicWindow->GetViewFrame());
@@ -396,6 +412,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s",
               this->dataWidget->GetWidgetName(), dataPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
+              this->dscWidget->GetWidgetName(), dscPanel->GetWidgetName());
 
     //  row 0 -> render view
     //  row 1 -> seperator
