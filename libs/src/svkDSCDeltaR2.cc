@@ -114,9 +114,19 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
                 voxelData = dsc->GetArray(i);
                 double s0 = voxelData->GetTuple1(0); 
                 for ( int t = 0; t < numPts; t++ ) {
-                    double value = -1 * log( voxelData->GetTuple1(t) / s0 ); 
-                    value = value / TE;
-                    voxelData->SetTuple1( t, value ); 
+                    if ( s0 > 0 ) {
+                        double s1 = voxelData->GetTuple1(t); 
+                        if (s1 > 0 ) {
+                            double value = -1 * log( s1 / s0 ); 
+                            value = value / TE;
+                            voxelData->SetTuple1( t, value ); 
+                        } else {
+                            voxelData->SetTuple1( t, 0); 
+                        }   
+                           //cout << "Voxr2: " << voxelData->GetTuple1(t) << "" << s0 << " " << value << endl;
+                    } else {  
+                        voxelData->SetTuple1( t, 0); 
+                    }
                 }
             }                
 
