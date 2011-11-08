@@ -50,7 +50,7 @@ vtkCxxRevisionMacro(svkPlotGridView, "$Rev$");
 vtkStandardNewMacro(svkPlotGridView);
 
 
-const double svkPlotGridView::CLIP_TOLERANCE = 0.001; 
+const double svkPlotGridView::CLIP_TOLERANCE = 0.001;
 
 
 //! Constructor 
@@ -444,8 +444,6 @@ void svkPlotGridView::SetSlice(int slice)
         iter != this->plotGrids.end(); ++iter) {
         if( (*iter) != NULL ) {
             (*iter)->SetSlice(slice);
-            (*iter)->SetTlcBrc(tlcBrc);
-            (*iter)->Update(tlcBrc);
         }
     }
     this->UpdateDetailedPlot( this->tlcBrc );
@@ -1437,33 +1435,18 @@ void svkPlotGridView::GeneratePlotGridActor( )
     if( toggleDraw ) {
         this->GetRenderer( svkPlotGridView::PRIMARY)->DrawOff();
     }
+
+    // We'll need a poly data mapper
     vtkPolyDataMapper* entireGridMapper = vtkPolyDataMapper::New();
-    entireGridMapper->ScalarVisibilityOff( );
-    entireGridMapper->InterpolateScalarsBeforeMappingOff();
-    entireGridMapper->ReleaseDataFlagOn();
-    entireGridMapper->ImmediateModeRenderingOn();
+    // This will be our grid
+    vtkPolyData* grid = vtkPolyData::New();
+    svk4DImageData::SafeDownCast( this->dataVector[MR4D] )->GetPolyDataGrid( grid );
+    vtkCleanPolyData* cleaner = vtkCleanPolyData::New();
+    cleaner->SetInput( grid );
+    grid->Delete();
 
-    // We need a filter to pull out the edges of the data cells (voxels)
-    vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();
-    double dcos[3][3];
-
-    // Here we are making a copy of the image for the grid.
-    // For some reason valgrind reports massive read errors
-    // if the data arrays are present when passed to
-    // vtkExtractEdges. 
-
-    svkImageData* geometryData = svk4DImageData::New();
-    geometryData->SetOrigin( dataVector[MR4D]->GetOrigin() );
-    geometryData->SetSpacing( dataVector[MR4D]->GetSpacing() );
-    geometryData->SetExtent( dataVector[MR4D]->GetExtent() );
-    dataVector[MR4D]->GetDcos(dcos);
-    geometryData->SetDcos(dcos);
-    edgeExtractor->SetInput( geometryData );
-    geometryData->Delete();
-
-    // Pipe the edges into the mapper 
-    entireGridMapper->SetInput( edgeExtractor->GetOutput() );
-    edgeExtractor->Delete();
+    entireGridMapper->SetInput( cleaner->GetOutput() );
+    cleaner->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkPlotGridView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();
     vtkActor::SafeDownCast( GetProp( svkPlotGridView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );

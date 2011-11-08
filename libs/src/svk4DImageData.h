@@ -77,6 +77,7 @@ class svk4DImageData: public svkImageData
         enum ActorType {PLOT_GRID, VOL_SELECTION, SAT_BANDS};
 
         virtual void   GetNumberOfVoxels(int numVoxels[3]);
+        virtual int    GetIDFromIndex(int indexX, int indexY, int indexZ, int* indexArray = NULL);
 
         vtkDataArray*  GetArray( int linearIndex );
         vtkDataArray*  GetArrayFromID( int index, int* indexArray = NULL );
@@ -112,6 +113,7 @@ class svk4DImageData: public svkImageData
         //void           InitializeDataArrays();
         virtual int    GetVolumeIndexSize( int volumeIndex );
         virtual int    GetNumberOfVolumeDimensions( );
+        virtual void   GetPolyDataGrid( vtkPolyData* grid );
 
 
     protected:

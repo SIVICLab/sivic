@@ -66,26 +66,6 @@ svkPlotLineGrid::svkPlotLineGrid()
     this->polyData = vtkPolyData::New();
     this->points = vtkPoints::New();
 
-
-    /*
-     * This arrays are used for improving performance. They keep track
-     * of whether modifications have been made on the current slice, so that
-     * when the slice eventually does change the new slice can be updated
-     * accordingly.
-     * 
-     * The first element of the UpToDate array is the top left corner voxel
-     * of the currently updated voxels, and the second element is the bottom
-     * right corner.
-     */
-    this->freqSelectionUpToDate[0] = -1;
-    this->freqSelectionUpToDate[1] = -1;
-    this->ampSelectionUpToDate[0] = -1;
-    this->ampSelectionUpToDate[1] = -1;
-
-    // These are per slice
-    this->freqUpToDate = NULL;
-    this->ampUpToDate = NULL;
-
     // This callback will catch changes to the dataset
     this->dataModifiedCB = vtkCallbackCommand::New();
     this->dataModifiedCB->SetCallback( UpdateData );
@@ -152,8 +132,6 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->mapper = NULL;
     }
 
-    delete[] freqUpToDate;
-    delete[] ampUpToDate;
 }
 
 svk4DImageData* svkPlotLineGrid::GetInput()
@@ -184,26 +162,6 @@ void svkPlotLineGrid::SetInput(svk4DImageData* data)
     // Observe the data for changes
     this->data->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
     int* extent = this->data->GetExtent(); 
-
-    if( this->freqUpToDate != NULL ) {
-        delete[] this->freqUpToDate;
-    }
-    if( this->ampUpToDate != NULL ) {
-        delete[] this->ampUpToDate;
-    }
-
-    this->freqSelectionUpToDate[0] = -1;
-    this->freqSelectionUpToDate[1] = -1;
-    this->ampSelectionUpToDate[0] = -1;
-    this->ampSelectionUpToDate[1] = -1;
-    
-    this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
-    this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
-
-    for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
-        this->freqUpToDate[i] = 0;
-        this->ampUpToDate[i] = 0;
-    }
 
     //  Set default plot range to full scale:
     int numFrequencyPoints = this->data->GetCellData()->GetNumberOfTuples();
@@ -299,6 +257,7 @@ void svkPlotLineGrid::AllocatePolyData()
 	}
 }
 
+
 /*! 
  *  Set the slice number to plot in the data object.
  *
@@ -332,11 +291,12 @@ void svkPlotLineGrid::SetSlice(int slice)
             this->UpdateDataArrays( minID, maxID);
             this->SetSliceUpToDate( slice );
         }
-        this->UpdatePlotRange(this->tlcBrc);
-        this->Update(this->tlcBrc);
+        bool generatePolyData = false;
+        this->UpdatePlotRange(this->tlcBrc, generatePolyData );
         this->SetPlotPoints();
     }
 }
+
 
 /*!
  *  This method sets the point pointers in the individual svkPlotLine
@@ -373,6 +333,7 @@ void svkPlotLineGrid::SetPlotPoints()
                 ID = this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex );
 				tmpXYPlot = this->xyPlots[ID];
                 tmpXYPlot->SetDataPoints( pointPtr + voxelNumber*3*arrayLength );
+                // We need to force the generate of poly data since we are re-using the point pointers
                 tmpXYPlot->GeneratePolyData();
                 voxelNumber++;
             }
@@ -431,7 +392,8 @@ void svkPlotLineGrid::SetTlcBrc(int tlcBrc[2])
         this->tlcBrc[0] = minID;
         this->tlcBrc[1] = maxID;
 
-        this->UpdatePlotRange(this->tlcBrc);
+        bool generatePolyData = false;
+        this->UpdatePlotRange(this->tlcBrc, generatePolyData );
         this->Update(this->tlcBrc);
     } 
 
@@ -511,6 +473,10 @@ void svkPlotLineGrid::CalculateTlcBrcBounds( double bounds[6], int tlcBrc[2])
     }
 }
 
+
+/*!
+ * Set the color for the plot lines
+ */
 void svkPlotLineGrid::SetColor( double rgb[3])
 {
     if( this->plotGridActor != NULL ) {
@@ -518,6 +484,10 @@ void svkPlotLineGrid::SetColor( double rgb[3])
     }
 }
 
+
+/*!
+ * Get the color for the plot lines
+ */
 double* svkPlotLineGrid::GetColor( )
 {
     if( this->plotGridActor != NULL ) {
@@ -525,6 +495,7 @@ double* svkPlotLineGrid::GetColor( )
     }
     return NULL;
 }
+
 
 /*!
  *  Update the view based on voxelIndexTLC/BRC. This regenerates
@@ -546,6 +517,7 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
     this->data->GetIndexFromID( tlcBrc[0], &rowRange[0], &columnRange[0], &sliceRange[0] );
     this->data->GetIndexFromID( tlcBrc[1], &rowRange[1], &columnRange[1], &sliceRange[1] );
     unsigned long int dataMTime = data->GetMTime();
+    bool modified = false;
     for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
         for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
             for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
@@ -556,10 +528,15 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
                 // If the data has been update since the actors- then regenerate them
                 if( dataMTime > tmpXYPlot->GetMTime() ) {
                     tmpXYPlot->GeneratePolyData();
+                    modified = true;
                 }
 
             }
         }
+    }
+
+    if( modified ) {
+		this->points->Modified();
     }
 }
 
@@ -667,7 +644,6 @@ void svkPlotLineGrid::GenerateActor()
 	this->mapper->SetInput( this->polyData );
 	plotGridActor->SetMapper( this->mapper );
 
-
     delete[] voxelIndex;
 
 }
@@ -686,12 +662,6 @@ void svkPlotLineGrid::SetFrequencyWLRange(int lower, int upper, int tlcBrc[2])
 {
     this->plotRangeX1 = lower; 
     this->plotRangeX2 = upper; 
-    if( this->data != NULL ) {
-        // Make all slices out of date
-        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
-            this->freqUpToDate[i] = 0;
-        }
-    }
     this->UpdatePlotRange(tlcBrc);
 }
 
@@ -717,12 +687,6 @@ void svkPlotLineGrid::SetIntensityWLRange(double lower, double upper, int tlcBrc
 {
     this->plotRangeY1 = lower;
     this->plotRangeY2 = upper;  
-    if( this->data != NULL ) {
-        // Make all slices out of date 
-        for( int i = 0; i < this->data->GetNumberOfSlices(this->orientation); i++ ) {
-            this->ampUpToDate[i] = 0;
-        }
-    }
     this->UpdatePlotRange(tlcBrc);
 }
 
@@ -745,7 +709,7 @@ void svkPlotLineGrid::GetIntensityWLRange(double &lower, double &upper)
  *
  *  \param tlcBrc range to update
  */
-void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2])
+void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2], bool generatePolyData )
 {
     if( data == NULL ) {
         return;
@@ -753,9 +717,7 @@ void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2])
     svkPlotLine* tmpXYPlot;
     int ID;
     int* extent = data->GetExtent();
-    if( data != NULL && (!this->ampUpToDate[slice] || (!this->freqUpToDate[slice]) ||
-        ampSelectionUpToDate[0] > tlcBrc[0] || ampSelectionUpToDate[1] < tlcBrc[1] ||
-        freqSelectionUpToDate[0] > tlcBrc[0] || freqSelectionUpToDate[1] < tlcBrc[1] )) { 
+    if( data != NULL ){
 
         int rowRange[2] = {0,0};
         int columnRange[2] = {0,0};
@@ -768,30 +730,18 @@ void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2])
                 for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
                     ID = this->data->GetIDFromIndex(rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = this->xyPlots[ID];
-                    if( !this->freqUpToDate[slice] ||
-                        freqSelectionUpToDate[0] > tlcBrc[0] || freqSelectionUpToDate[1] < tlcBrc[1] ) {
-                        tmpXYPlot->SetPointRange(this->plotRangeX1, this->plotRangeX2);
-                    }
-                    if( !this->ampUpToDate[slice]  ||
-                        ampSelectionUpToDate[0] > tlcBrc[0] || ampSelectionUpToDate[1] < tlcBrc[1] ) {
-                        tmpXYPlot->SetValueRange(this->plotRangeY1, this->plotRangeY2);
-                    }
+                    tmpXYPlot->SetGeneratePolyData( generatePolyData );
+					tmpXYPlot->SetPointRange(this->plotRangeX1, this->plotRangeX2 );
+					tmpXYPlot->SetValueRange(this->plotRangeY1, this->plotRangeY2 );
+                    tmpXYPlot->SetGeneratePolyData( true );
                 }
             }
         }
     }
 
-    if( !this->ampUpToDate[slice]) {
-        this->ampUpToDate[slice] = 1;
+    if( generatePolyData ) {
+		this->points->Modified();
     }
-    if( !this->freqUpToDate[slice]) {
-        this->freqUpToDate[slice] = 1;
-    }
-    this->ampSelectionUpToDate[0] = tlcBrc[0];
-    this->ampSelectionUpToDate[1] = tlcBrc[1];
-    this->freqSelectionUpToDate[0] = tlcBrc[0];
-    this->freqSelectionUpToDate[1] = tlcBrc[1];
-    this->points->Modified();
 }
 
 
@@ -845,8 +795,11 @@ void svkPlotLineGrid::HighlightSelectionVoxels()
  */
 void svkPlotLineGrid::SetComponent( svkPlotLine::PlotComponent component )
 {
-    this->plotComponent = component; 
-    this->UpdateComponent();
+	if( this->plotComponent != component ) {
+		this->plotComponent = component;
+		this->UpdateComponent();
+		this->points->Modified();
+	}
 }
 
 
@@ -872,7 +825,6 @@ void svkPlotLineGrid::UpdateComponent()
         iter != this->xyPlots.end(); ++iter) {
         tmpBoxPlot = static_cast<svkPlotLine*>( (*iter));
         tmpBoxPlot->SetComponent( this->plotComponent );
-        tmpBoxPlot->GeneratePolyData();
     }
 
     if (this->GetDebug()) {
@@ -959,7 +911,6 @@ void svkPlotLineGrid::UpdateOrientation()
             tmpBoxPlot = static_cast<svkPlotLine*>( (*iter));
             tmpBoxPlot->SetPlotDirection( amplitudeIndex, pointIndex );
             tmpBoxPlot->SetMirrorPlots( mirrorPlots );
-            tmpBoxPlot->GeneratePolyData();
             tmpBoxPlot->SetInvertPlots( invertPlots );
         }
         this->Update(tlcBrc);
@@ -1065,21 +1016,6 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
     svkDcmHeader::Orientation oldOrientation = this->orientation;
     this->orientation = orientation;    
     if( this->data!=NULL ) {
-        if( this->freqUpToDate != NULL ) {
-            delete[] this->freqUpToDate;
-        }
-        this->freqUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
-        for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
-            this->freqUpToDate[i] = 0;
-        }
-        if( this->ampUpToDate != NULL ) {
-            delete[] this->ampUpToDate;
-        }
-        this->ampUpToDate = new bool[ this->data->GetNumberOfSlices( this->orientation ) ];
-        for( int i = 0; i < this->data->GetNumberOfSlices( this->orientation ); i++ ) {
-            this->ampUpToDate[i] = 0;
-        }
-
         this->AllocatePolyData();
 
         svkDataView::ResetTlcBrcForNewOrientation( this->data, this->orientation, this->tlcBrc, this->slice );

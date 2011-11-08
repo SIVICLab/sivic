@@ -88,7 +88,6 @@ class svkPlotLine : public vtkObject
         svkPlotLine();
         ~svkPlotLine();
 
-        void                GeneratePolyData();
         void                SetData( vtkFloatArray* plotData );
         //void                SetPlotAreaBounds( double* bounds );
         void                SetPointRange( int startPt, int endPt );
@@ -105,13 +104,21 @@ class svkPlotLine : public vtkObject
         void                SetInvertPlots( bool invertPlots );
         void                SetMirrorPlots( bool mirrorPlots );
         void                SetPlotDirection( int amplitudeDirection, int plotDirection );
+        void				Modified();
 
         void	    		SetDcos(vector< vector<double> >* dcos);
+
+        // vtk macros
+        void				SetGeneratePolyData( bool generatePolyData );
+        bool				GetGeneratePolyData( );
 
 
     protected:
     
         //Members:
+
+        //! when modified should this object regenerate the poly data.
+        bool				generatePolyData;
    
         //! The bounds in which the plot is to be placed 
         double              plotAreaBounds[6];
@@ -151,6 +158,8 @@ class svkPlotLine : public vtkObject
         bool                mirrorPlots;
 
         PlotDirection       plotDirection;
+
+        void                GeneratePolyData();
 
     private:
 

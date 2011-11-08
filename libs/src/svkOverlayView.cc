@@ -230,33 +230,16 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
         this->GetRenderer( svkOverlayView::PRIMARY)->DrawOff();
     }
     vtkPolyDataMapper* entireGridMapper = vtkPolyDataMapper::New();
-    entireGridMapper->ScalarVisibilityOff( );
-    entireGridMapper->InterpolateScalarsBeforeMappingOff();
-    entireGridMapper->ReleaseDataFlagOn();
-    entireGridMapper->ImmediateModeRenderingOn();
-
-    // We need a filter to pull out the edges of the data cells (voxels)
-    vtkExtractEdges* edgeExtractor = vtkExtractEdges::New();
-    double dcos[3][3];
+    // This will be our grid
+    vtkPolyData* grid = vtkPolyData::New();
+    svk4DImageData::SafeDownCast( this->dataVector[MR4D] )->GetPolyDataGrid( grid );
+    vtkCleanPolyData* cleaner = vtkCleanPolyData::New();
+    cleaner->SetInput( grid );
+    grid->Delete();
     
-    // Here we are making a copy of the image for the grid.
-    // For some reason valgrind reports massive read errors
-    // if the data arrays are present when passed to
-    // vtkExtractEdges. 
-
-    svkImageData* geometryData = svk4DImageData::New();
-    geometryData->SetOrigin( dataVector[MR4D]->GetOrigin() );
-    geometryData->SetSpacing( dataVector[MR4D]->GetSpacing() );
-    geometryData->SetExtent( dataVector[MR4D]->GetExtent() );
-    dataVector[MR4D]->GetDcos(dcos);
-    geometryData->SetDcos(dcos);
-    //edgeExtractor->SetInput( dataVector[MR4D] );
-    edgeExtractor->SetInput( geometryData );
-    geometryData->Delete(); 
-
     // Pipe the edges into the mapper 
-    entireGridMapper->SetInput( edgeExtractor->GetOutput() );
-    edgeExtractor->Delete();
+    entireGridMapper->SetInput( cleaner->GetOutput() );
+    cleaner->Delete();
     vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID))->SetMapper( entireGridMapper );
     entireGridMapper->Delete();
     //vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );

@@ -67,6 +67,8 @@
 #include <vtkCellCenters.h>
 #include <vtkXYPlotActor.h>
 #include <vtkCursor2D.h>
+#include <vtkCleanPolyData.h>
+#include <vtkPolyDataPointSampler.h>
 #include <svkDetailedPlotDirector.h>
 
 #include <vector>

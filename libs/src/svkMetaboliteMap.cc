@@ -299,6 +299,7 @@ double svkMetaboliteMap::GetMapVoxelValue( float* specPtr, int startPt, int endP
     } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_PEAK_HT) { 
         voxelValue = this->GetMagPeakHt( specPtr, startPt, endPt ); 
     }
+    return voxelValue;
 }
 
 
@@ -355,6 +356,7 @@ double svkMetaboliteMap::GetMagPeakHt( float* specPtr, int startPt, int endPt)
             magPeakHt = magPeakHtTmp;
         }
     }
+    return magPeakHt;
 }
 
 

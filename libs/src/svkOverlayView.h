@@ -61,6 +61,7 @@
 #include <vtkLookupTable.h>
 #include <vtkScalarBarActor.h>
 #include <vtkImageGaussianSmooth.h>
+#include <vtkCleanPolyData.h>
 
 #include <svkOverlayViewController.h>
 #include <svkImageViewer2.h>

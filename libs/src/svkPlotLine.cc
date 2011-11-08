@@ -81,6 +81,7 @@ svkPlotLine::svkPlotLine()
     this->origin[1] = 0;
     this->origin[2] = 0;
     this->numComponents = 0;
+    this->generatePolyData = true;
 }
 
 
@@ -110,10 +111,13 @@ double* svkPlotLine::GetBounds()
  */
 void svkPlotLine::SetComponent( PlotComponent component )
 {
-    this->plotComponent = component;
-    if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-        this->componentOffset = this->plotComponent;
-    } 
+	if( this->plotComponent != component ) {
+		this->plotComponent = component;
+		if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
+			this->componentOffset = this->plotComponent;
+		}
+		this->Modified();
+	}
 }
 
 
@@ -124,29 +128,29 @@ void svkPlotLine::SetComponent( PlotComponent component )
  */
 void svkPlotLine::SetData( vtkFloatArray* plotData )
 {
-    if( this->plotData != NULL ) {
-        this->plotData->Delete();
-    }
+	if( plotData != NULL && plotData != this->plotData ) {
+		if( this->plotData != NULL ) {
+			this->plotData->Delete();
+		}
 
-    this->plotData = plotData;
-    this->plotData->Register( this );
+		this->plotData = plotData;
+		this->plotData->Register( this );
 
-    // We can now setup the polyLine and polyData
+		// We can now setup the polyLine and polyData
 
-    // Get the number of points in the incoming data
-    if( this->numPoints != this->plotData->GetNumberOfTuples()) {
-        this->numPoints = this->plotData->GetNumberOfTuples();
-    }
+		// Get the number of points in the incoming data
+		if( this->numPoints != this->plotData->GetNumberOfTuples()) {
+			this->numPoints = this->plotData->GetNumberOfTuples();
+		}
 
 
-    dataPtr = this->plotData->GetPointer(0);
-    if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
-        this->componentOffset = this->plotComponent;
-    }
-    this->numComponents = this->plotData->GetNumberOfComponents();
-
-    // Generate poly data is where the data is sync'd
-    this->GeneratePolyData();
+		dataPtr = this->plotData->GetPointer(0);
+		if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
+			this->componentOffset = this->plotComponent;
+		}
+		this->numComponents = this->plotData->GetNumberOfComponents();
+		this->Modified();
+	}
 }
 
 
@@ -161,17 +165,18 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
  */
 void svkPlotLine::SetPointRange( int startPt, int endPt )
 {
-    
-    this->startPt = startPt;
-    this->endPt   = endPt; 
-    if( this->endPt > numPoints -1 ) {
-        this->endPt = numPoints -1;
+    if( this->endPt != endPt || this->startPt != startPt ) {
+		this->startPt = startPt;
+		this->endPt   = endPt;
+		if( this->endPt > numPoints -1 ) {
+			this->endPt = numPoints -1;
+		}
+		if( this->startPt < 0 ) {
+			this->startPt = 0;
+		}
+		this->RecalculateScale();
+		this->Modified();
     }
-    if( this->startPt < 0 ) {
-        this->startPt = 0;
-    }
-    this->RecalculateScale();
-    this->GeneratePolyData();
 }
 
 
@@ -185,12 +190,25 @@ void svkPlotLine::SetPointRange( int startPt, int endPt )
  */
 void svkPlotLine::SetValueRange( double minValue, double maxValue )
 {
-    this->minValue = minValue;
-    this->maxValue = maxValue;
-    this->RecalculateScale();
-    this->GeneratePolyData();
+    if( this->maxValue != maxValue || this->minValue != minValue ) {
+		this->minValue = minValue;
+		this->maxValue = maxValue;
+		this->RecalculateScale();
+		this->Modified();
+	}
 }
 
+
+/*!
+ * The data has been modified so lets update the polyData.
+ */
+void svkPlotLine::Modified()
+{
+	if( this->generatePolyData ) {
+		this->GeneratePolyData();
+	}
+	this->Superclass::Modified();
+}
 
 /*!
  * Generates the poly data object that is used to represent the data.
@@ -203,17 +221,18 @@ void svkPlotLine::SetValueRange( double minValue, double maxValue )
  */
 void svkPlotLine::GeneratePolyData()
 {
-    // delta is change in the row, column, and slice direction
-    double delta[3];
-    double amplitude;
-    float posLPS[3];
-
-    delta[0] = this->spacing[0]/2.0;
-    delta[1] = this->spacing[1]/2.0;
-    delta[2] = this->spacing[2]/2.0;
 
     // We are going to precalculate the start + the distance in the slice dimension for speed
     if( this->plotData != NULL && this->polyLinePoints != NULL ) {
+
+		// delta is change in the row, column, and slice direction
+		double delta[3];
+		double amplitude;
+		float posLPS[3];
+
+		delta[0] = this->spacing[0]/2.0;
+		delta[1] = this->spacing[1]/2.0;
+		delta[2] = this->spacing[2]/2.0;
 
 
         // First we will set all of the points before start Pt to the same position.
@@ -348,7 +367,10 @@ float* svkPlotLine::GetDataPoints()
  */
 void svkPlotLine::SetDataPoints(float* polyLinePoints)
 {
-    this->polyLinePoints = polyLinePoints;
+	if( this->polyLinePoints != polyLinePoints ) {
+		this->polyLinePoints = polyLinePoints;
+		this->Modified();
+	}
 }
 
 
@@ -366,8 +388,11 @@ double* svkPlotLine::GetOrigin()
  */
 void svkPlotLine::SetOrigin( double* origin )
 {
-    memcpy( this->origin, origin, sizeof(double) * 3 );
-    this->RecalculatePlotAreaBounds();
+	if( origin != NULL && (this->origin[0] != origin[0] || this->origin[1] != origin[1] || this->origin[2] != origin[2]) ){
+		memcpy( this->origin, origin, sizeof(double) * 3 );
+		this->RecalculatePlotAreaBounds();
+		this->Modified();
+	}
 }
 
 
@@ -385,9 +410,12 @@ double* svkPlotLine::GetSpacing()
  */
 void svkPlotLine::SetSpacing( double* spacing )
 {
-	this->spacing = spacing;
-    this->RecalculateScale();
-    this->RecalculatePlotAreaBounds();
+	if( this->spacing != spacing  ){
+		this->spacing = spacing;
+		this->RecalculateScale();
+		this->RecalculatePlotAreaBounds();
+		this->Modified();
+	}
 }
 
 
@@ -405,7 +433,10 @@ void svkPlotLine::GetDcos( double dcos[][3] )
  */
 void svkPlotLine::SetDcos( vector< vector<double> >* dcos )
 {
-	this->dcos = dcos;
+	if( this->dcos != dcos ) {
+		this->dcos = dcos;
+		this->Modified();
+	}
 }
 
 
@@ -469,7 +500,10 @@ void svkPlotLine::RecalculatePlotAreaBounds()
  */
 void svkPlotLine::SetInvertPlots( bool invertPlots ) 
 {
-    this->invertPlots = invertPlots;
+	if( this->invertPlots != invertPlots ) {
+		this->invertPlots = invertPlots;
+		this->Modified();
+	}
 }
 
 
@@ -478,7 +512,10 @@ void svkPlotLine::SetInvertPlots( bool invertPlots )
  */
 void svkPlotLine::SetMirrorPlots( bool mirrorPlots ) 
 {
-    this->mirrorPlots = mirrorPlots;
+	if( this->mirrorPlots != mirrorPlots ) {
+		this->mirrorPlots = mirrorPlots;
+		this->Modified();
+	}
 }
 
 /*!
@@ -486,7 +523,28 @@ void svkPlotLine::SetMirrorPlots( bool mirrorPlots )
  */
 void svkPlotLine::SetPlotDirection( int amplitudeIndex, int pointIndex )
 {
-    this->amplitudeIndex = amplitudeIndex;
-    this->pointIndex = pointIndex;
-    this->RecalculateScale();
+	if( this->amplitudeIndex != amplitudeIndex || this->pointIndex != pointIndex ) {
+		this->amplitudeIndex = amplitudeIndex;
+		this->pointIndex = pointIndex;
+		this->RecalculateScale();
+		this->Modified();
+	}
+}
+
+
+/*!
+ *  Set to true if you want the poly data to be regenerating when modifying.
+ */
+void svkPlotLine::SetGeneratePolyData( bool generatePolyData )
+{
+	this->generatePolyData = generatePolyData;
+}
+
+
+/*!
+ *  Set to true if you want the poly data to be regenerating when modifying.
+ */
+bool svkPlotLine::GetGeneratePolyData( )
+{
+	return this->generatePolyData;
 }

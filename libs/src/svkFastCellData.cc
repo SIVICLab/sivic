@@ -119,7 +119,6 @@ void svkFastCellData::FastSetArray(int i, vtkAbstractArray *data)
     }
 
     if ( this->Data[i] != data ) {
-        this->Modified();
         if ( this->Data[i] != NULL ) {
           this->Data[i]->UnRegister(this);
         }

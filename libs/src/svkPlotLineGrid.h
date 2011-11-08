@@ -64,6 +64,7 @@
 #include <svk4DImageData.h>
 #include <svkMrsImageData.h>
 #include <vtkPolyDataCollection.h>
+#include <vtkLODActor.h>
 
 
 namespace svk {
@@ -135,7 +136,7 @@ class svkPlotLineGrid : public vtkObject
         vtkstd::vector<svkPlotLine*>  xyPlots;
 
         //! The actor that holds the plot grid
-        vtkActor*                   plotGridActor;
+        vtkActor*                plotGridActor;
 
         vtkPolyData*                polyData;
 
@@ -185,7 +186,7 @@ class svkPlotLineGrid : public vtkObject
         static void                 UpdateData(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
         void                        AllocateXYPlots();        
         void                        AllocatePolyData();
-        void                        UpdatePlotRange(int tlcBrc[2]);
+        void                        UpdatePlotRange(int tlcBrc[2], bool generatePolyData = true);
         void                        UpdateComponent();
         void                        UpdateOrientation();
         void                        GenerateActor();
