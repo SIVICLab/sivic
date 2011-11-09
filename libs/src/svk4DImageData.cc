@@ -136,34 +136,34 @@ void svk4DImageData::UpdateRange( int component )
     magRange[1] = VTK_DOUBLE_MIN;
     int numTuples = this->GetCellData()->GetNumberOfTuples();
     int numComponents = this->GetCellData()->GetArray(0)->GetNumberOfComponents();
-    float* tuple;
+    double* tuple;
     double magnitude;
+    vtkDataArray* array = NULL;
     for( int i = 0; i < this->GetCellData()->GetNumberOfArrays(); i ++ ) {
-        vtkFloatArray* array = static_cast<vtkFloatArray*>( this->GetArray(i) );
-        float* arrayPtr = array->GetPointer(0);
-            for (int i = 0; i < numTuples; i++) {
-                tuple = arrayPtr + numComponents*i;
-                if( component == 0 ){
-                    realRange[0] = tuple[0] < realRange[0]
-                        ? tuple[0] : realRange[0];
-                    realRange[1] = tuple[0] > realRange[1]
-                        ? tuple[0] : realRange[1];
-                } else if (component == 1 && numComponents > 1 ) {
-                    imagRange[0] = tuple[1] < imagRange[0]
-                        ? tuple[1] : imagRange[0];
-                    imagRange[1] = tuple[1] > imagRange[1]
-                        ? tuple[1] : imagRange[1];
-                } else if (component == 2 && numComponents > 1 ) {
+		array = static_cast<vtkFloatArray*>( this->GetArray(i) );
+		for (int i = 0; i < numTuples; i++) {
+			tuple = array->GetTuple( i );
+			if( component == 0 ){
+				realRange[0] = tuple[0] < realRange[0]
+					? tuple[0] : realRange[0];
+				realRange[1] = tuple[0] > realRange[1]
+					? tuple[0] : realRange[1];
+			} else if (component == 1 && numComponents > 1 ) {
+				imagRange[0] = tuple[1] < imagRange[0]
+					? tuple[1] : imagRange[0];
+				imagRange[1] = tuple[1] > imagRange[1]
+					? tuple[1] : imagRange[1];
+			} else if (component == 2 && numComponents > 1 ) {
 
-                    magnitude = pow( pow(static_cast<double>(tuple[0]), static_cast<double>(2) )
-                            + pow( static_cast<double>(tuple[1]), static_cast<double>(2)),0.5);
+				magnitude = pow( pow(static_cast<double>(tuple[0]), static_cast<double>(2) )
+						+ pow( static_cast<double>(tuple[1]), static_cast<double>(2)),0.5);
 
-                    magRange[0] = magnitude < magRange[0]
-                        ? magnitude : magRange[0];
-                    magRange[1] = magnitude > magRange[1]
-                        ? magnitude : magRange[1];
-                }
-            }
+				magRange[0] = magnitude < magRange[0]
+					? magnitude : magRange[0];
+				magRange[1] = magnitude > magRange[1]
+					? magnitude : magRange[1];
+			}
+		}
     }
     this->SetDataRange( realRange, svkImageData::REAL );
     this->SetDataRange( imagRange, svkImageData::IMAGINARY );

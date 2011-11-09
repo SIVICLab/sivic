@@ -327,6 +327,7 @@ void svkPlotLineGrid::SetPlotPoints()
 	float* pointPtr =  static_cast<float*>(this->points->GetData()->GetVoidPointer(0) );
     svkPlotLine* tmpXYPlot = NULL;
     int voxelNumber = 0;
+    this->TurnOffAllPlots();
     for (int sliceIndex = sliceRange[0]; sliceIndex <= sliceRange[1]; sliceIndex++) {
         for (int rowIndex = rowRange[0]; rowIndex <= rowRange[1]; rowIndex++) {
             for (int columnIndex = columnRange[0]; columnIndex <= columnRange[1]; columnIndex++) {
@@ -334,7 +335,7 @@ void svkPlotLineGrid::SetPlotPoints()
 				tmpXYPlot = this->xyPlots[ID];
                 tmpXYPlot->SetDataPoints( pointPtr + voxelNumber*3*arrayLength );
                 // We need to force the generate of poly data since we are re-using the point pointers
-                tmpXYPlot->GeneratePolyData();
+				tmpXYPlot->SetGeneratePolyData( true );
                 voxelNumber++;
             }
         }
@@ -524,9 +525,11 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
             
                 ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
                 tmpXYPlot = xyPlots[ID];
+                tmpXYPlot->SetGeneratePolyData( true );
 
                 // If the data has been update since the actors- then regenerate them
                 if( dataMTime > tmpXYPlot->GetMTime() ) {
+                	cout << "YUP I AM BEING USED! " << endl;
                     tmpXYPlot->GeneratePolyData();
                     modified = true;
                 }
@@ -614,8 +617,7 @@ void svkPlotLineGrid::GenerateActor()
 
                 tmpXYPlot->SetDcos( &this->dcos );
                 tmpXYPlot->SetSpacing( spacing );
-                tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(
-                                    this->data->GetArray(xInd, yInd, zInd , volumeIndexArray )) );
+                tmpXYPlot->SetData( this->data->GetArray(xInd, yInd, zInd , volumeIndexArray ) );
         
                 // Offset origin for current voxel
                 plotOrigin[0] = origin[0] + xInd * spacing[0] * dcos[0][0]
@@ -733,7 +735,6 @@ void svkPlotLineGrid::UpdatePlotRange( int tlcBrc[2], bool generatePolyData )
                     tmpXYPlot->SetGeneratePolyData( generatePolyData );
 					tmpXYPlot->SetPointRange(this->plotRangeX1, this->plotRangeX2 );
 					tmpXYPlot->SetValueRange(this->plotRangeY1, this->plotRangeY2 );
-                    tmpXYPlot->SetGeneratePolyData( true );
                 }
             }
         }
@@ -906,6 +907,7 @@ void svkPlotLineGrid::UpdateOrientation()
         //    mirrorPlots = false;
         //}
 
+        this->TurnOffAllPlots();
         for( vector<svkPlotLine*>::iterator iter = this->xyPlots.begin();
             iter != this->xyPlots.end(); ++iter) {
             tmpBoxPlot = static_cast<svkPlotLine*>( (*iter));
@@ -996,8 +998,7 @@ void svkPlotLineGrid::UpdateDataArrays( int tlc, int brc)
                 
                     ID = this->data->GetIDFromIndex( rowIndex, columnIndex, sliceIndex );
                     tmpXYPlot = static_cast<svkPlotLine*>( xyPlots[ID] );
-                    tmpXYPlot->SetData( vtkFloatArray::SafeDownCast(
-                                         this->data->GetArray(rowIndex, columnIndex, sliceIndex, &this->volumeIndexVector[0])));
+                    tmpXYPlot->SetData( this->data->GetArray(rowIndex, columnIndex, sliceIndex, &this->volumeIndexVector[0]));
                 }
             }
         }
@@ -1126,14 +1127,25 @@ void svkPlotLineGrid::InitializeVolumeUpToDateVector()
  */
 void svkPlotLineGrid::ClearXYPlots()
 {
-    int count = 0;
     for( vector<svkPlotLine*>::iterator iter = this->xyPlots.begin();
         iter != this->xyPlots.end(); ++iter) {
         if( (*iter) != NULL ) {
             (*iter)->Delete();
             (*iter) = NULL;
         }
-        count ++;
     }
     this->xyPlots.clear();
+}
+
+
+/*!
+ *  Stops all plots from updating.
+ */
+void svkPlotLineGrid::TurnOffAllPlots()
+{
+	bool generatePolyData = false;
+    for( vector<svkPlotLine*>::iterator iter = this->xyPlots.begin();
+        iter != this->xyPlots.end(); ++iter) {
+    	(*iter)->SetGeneratePolyData( generatePolyData );
+    }
 }

@@ -377,14 +377,15 @@ void svkMriImageData::InitializeCellDataArrays()
     int numVoxels = (dims[0] + 1) * (dims[1] + 1) * (dims[2] + 1);
     cellData->SetNumberOfTuples(  numTimePts );
     cellData->AllocateArrays( numChannels * numVoxels );
-	vtkFloatArray* array = NULL;
+	vtkAbstractArray* array = NULL;
+	int type = this->GetPointData()->GetArray(0)->GetDataType();
     for( int channel = 0; channel < numChannels; channel++ ) {
         for (int z = 0; z < dims[2]; z++) {
             for (int y = 0; y < dims[1]; y++) {
                 for (int x = 0; x < dims[0]; x++) {
-                    array = vtkFloatArray::New();
+                    array = vtkDataArray::CreateArray( type );
                     array->SetNumberOfComponents( numComponents );
-                    array->vtkFloatArray::SetNumberOfTuples( numTimePts );
+                    array->SetNumberOfTuples( numTimePts );
                     sprintf(arrayName, "%d %d %d %d", x, y, z, channel);
                     svkFastCellData::SafeDownCast(cellData)->FastAddArray( array );
                     array->SetName(arrayName);

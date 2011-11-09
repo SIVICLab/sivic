@@ -60,6 +60,7 @@
 #include <vtkCallbackCommand.h>
 #include <vtkRenderWindow.h>
 #include <vtkRendererCollection.h>
+#include <vtkFloatArray.h>
 
 #include <svkSpecPoint.h>
 #include <svkPlotLine.h>

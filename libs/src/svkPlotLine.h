@@ -44,7 +44,7 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkPoints.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkPolyLine.h>
 #include <vector>
 
@@ -88,7 +88,7 @@ class svkPlotLine : public vtkObject
         svkPlotLine();
         ~svkPlotLine();
 
-        void                SetData( vtkFloatArray* plotData );
+        void                SetData( vtkDataArray* plotData );
         //void                SetPlotAreaBounds( double* bounds );
         void                SetPointRange( int startPt, int endPt );
         void                SetValueRange( double minValue, double maxValue );
@@ -112,6 +112,8 @@ class svkPlotLine : public vtkObject
         void				SetGeneratePolyData( bool generatePolyData );
         bool				GetGeneratePolyData( );
 
+        template <class T>
+		void               GeneratePolyDataTemplated( T* castDataPtr );
 
     protected:
     
@@ -144,9 +146,11 @@ class svkPlotLine : public vtkObject
         double              maxValue;
 
         //! The data to be plotted
-        vtkFloatArray*      plotData;
+        vtkDataArray*      plotData;
 
-        float*              dataPtr;
+        void*               dataPtr;
+
+        int 				dataType;
 
         //! The points that make up the line
         float*              polyLinePoints;
@@ -161,7 +165,6 @@ class svkPlotLine : public vtkObject
 
         void                GeneratePolyData();
 
-    private:
 
         //! Which index should map to amplitude
         int amplitudeIndex;

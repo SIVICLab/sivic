@@ -57,6 +57,7 @@ vtkStandardNewMacro(svkPlotLine);
 svkPlotLine::svkPlotLine()
 {
     this->plotData = NULL;
+    this->dataType = -1;
     this->plotAreaBounds[0] = 0;
     this->plotAreaBounds[1] = 1;
     this->plotAreaBounds[2] = 0;
@@ -126,7 +127,7 @@ void svkPlotLine::SetComponent( PlotComponent component )
  *
  * \param plotData a vtkFloatArray that contains the data to be plotted
  */
-void svkPlotLine::SetData( vtkFloatArray* plotData )
+void svkPlotLine::SetData( vtkDataArray* plotData )
 {
 	if( plotData != NULL && plotData != this->plotData ) {
 		if( this->plotData != NULL ) {
@@ -134,6 +135,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
 		}
 
 		this->plotData = plotData;
+		this->dataType = this->plotData->GetDataType();
 		this->plotData->Register( this );
 
 		// We can now setup the polyLine and polyData
@@ -144,7 +146,7 @@ void svkPlotLine::SetData( vtkFloatArray* plotData )
 		}
 
 
-		dataPtr = this->plotData->GetPointer(0);
+		this->dataPtr = this->plotData->GetVoidPointer(0);
 		if (this->plotComponent == REAL || this->plotComponent == IMAGINARY) {
 			this->componentOffset = this->plotComponent;
 		}
@@ -210,16 +212,14 @@ void svkPlotLine::Modified()
 	this->Superclass::Modified();
 }
 
+
 /*!
- * Generates the poly data object that is used to represent the data.
- * This method will copy the current plotData into the pointData, then
- * call modified on the polyLine object so that it nows to sync with
- * the new data. 
+ * Modifies the input point data array that represent the data.
+ * This method will transform the current plotData into the pointData array.
  *
- * TODO: Find a way to Not Copy the new data, and just change a data
- *       reference.
  */
-void svkPlotLine::GeneratePolyData()
+template <class T>
+void svkPlotLine::GeneratePolyDataTemplated( T* castDataPtr )
 {
 
     // We are going to precalculate the start + the distance in the slice dimension for speed
@@ -236,11 +236,11 @@ void svkPlotLine::GeneratePolyData()
 
 
         // First we will set all of the points before start Pt to the same position.
-        if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-            amplitude = dataPtr[this->numComponents*(this->startPt) + componentOffset];
+        if( this->plotComponent == svkPlotLine::REAL || this->plotComponent == svkPlotLine::IMAGINARY ) {
+            amplitude = castDataPtr[this->numComponents*(this->startPt) + this->componentOffset];
         } else {
-            amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(this->startPt)] * dataPtr[this->numComponents*(this->startPt)] +
-                             dataPtr[this->numComponents*(this->startPt) + 1] * dataPtr[this->numComponents*(this->startPt) + 1]), 0.5);
+            amplitude = pow( static_cast<double>(castDataPtr[this->numComponents*(this->startPt)] * castDataPtr[this->numComponents*(this->startPt)] +
+                             castDataPtr[this->numComponents*(this->startPt) + 1] * castDataPtr[this->numComponents*(this->startPt) + 1]), 0.5);
         }
 
         if( amplitude > this->maxValue ) {
@@ -248,16 +248,16 @@ void svkPlotLine::GeneratePolyData()
         } else if ( amplitude < this->minValue ) {
             amplitude = this->minValue;
         }
-        // Often negative is up in LPS, so if this is true we invert 
+        // Often negative is up in LPS, so if this is true we invert
         if( this->invertPlots ) {
-            delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
+            delta[this->amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
         } else {
-            delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
+            delta[this->amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
         }
         if( this->mirrorPlots ) {
-            delta[ pointIndex ] = (this->endPt - this->startPt) * this->scale[0]; 
+            delta[ this->pointIndex ] = (this->endPt - this->startPt) * this->scale[0];
         } else {
-            delta[ pointIndex ] = 0; 
+            delta[ this->pointIndex ] = 0;
         }
         posLPS[0] = this->origin[0] + (delta[0]) * (*this->dcos)[0][0] + (delta[1]) * (*this->dcos)[1][0] + (delta[2]) * (*this->dcos)[2][0];
         posLPS[1] = this->origin[1] + (delta[0]) * (*this->dcos)[0][1] + (delta[1]) * (*this->dcos)[1][1] + (delta[2]) * (*this->dcos)[2][1];
@@ -274,11 +274,11 @@ void svkPlotLine::GeneratePolyData()
         for( int i = this->startPt; i <= this->endPt; i++ ) {
 
             // Which component are we using...
-            if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-                amplitude = dataPtr[this->numComponents*(i) + componentOffset];
+            if( this->plotComponent == svkPlotLine::REAL || this->plotComponent == svkPlotLine::IMAGINARY ) {
+                amplitude = castDataPtr[this->numComponents*(i) + this->componentOffset];
             } else {
-                amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(i)] * dataPtr[this->numComponents*(i)] +
-                                 dataPtr[this->numComponents*(i) + 1] * dataPtr[this->numComponents*(i) + 1]), 0.5 );
+                amplitude = pow( static_cast<double>(castDataPtr[this->numComponents*(i)] * castDataPtr[this->numComponents*(i)] +
+                                 castDataPtr[this->numComponents*(i) + 1] * castDataPtr[this->numComponents*(i) + 1]), 0.5 );
             }
 
             // If the value is outside the max/min
@@ -290,16 +290,16 @@ void svkPlotLine::GeneratePolyData()
 
             // Often negative is up in LPS, so if this is true we invert 
             if( this->invertPlots ) {
-                delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
+                delta[this->amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
             } else {
-                delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
+                delta[this->amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
             }
 
 
             if( this->mirrorPlots ) {
-                delta[ pointIndex ] = (this->endPt - i) * this->scale[0]; 
+                delta[ this->pointIndex ] = (this->endPt - i) * this->scale[0];
             } else {
-                delta[ pointIndex ] = (i - this->startPt) * this->scale[0]; 
+                delta[ this->pointIndex ] = (i - this->startPt) * this->scale[0];
             }
 
             // NOTE: This could be moved into the above if blocks for speed
@@ -313,11 +313,11 @@ void svkPlotLine::GeneratePolyData()
         }
 
         // And finally we set all points outside the range to the last value
-        if( this->plotComponent == REAL || this->plotComponent == IMAGINARY ) {
-            amplitude = dataPtr[this->numComponents*(this->endPt) + componentOffset];
+        if( this->plotComponent == svkPlotLine::REAL || this->plotComponent == svkPlotLine::IMAGINARY ) {
+            amplitude = castDataPtr[this->numComponents*(this->endPt) + this->componentOffset];
         } else {
-            amplitude = pow( static_cast<double>(dataPtr[this->numComponents*(this->endPt)] * dataPtr[this->numComponents*(this->endPt)] +
-                             dataPtr[this->numComponents*(this->endPt) + 1] * dataPtr[this->numComponents*(this->endPt) + 1]), 0.5);
+            amplitude = pow( static_cast<double>(castDataPtr[this->numComponents*(this->endPt)] * castDataPtr[this->numComponents*(this->endPt)] +
+                             castDataPtr[this->numComponents*(this->endPt) + 1] * castDataPtr[this->numComponents*(this->endPt) + 1]), 0.5);
         }
 
         // If the value is outside the max/min
@@ -329,22 +329,22 @@ void svkPlotLine::GeneratePolyData()
 
         // Often negative is up in LPS, so if this is true we invert 
         if( this->invertPlots ) {
-            delta[amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
+            delta[this->amplitudeIndex] = (this->maxValue - amplitude)*this->scale[1];
         } else {
-            delta[amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
+            delta[this->amplitudeIndex] = (amplitude - this->minValue)*this->scale[1];
         }
 
         // If the point is outside the start/end
         if( this->mirrorPlots ) {
-            delta[ pointIndex ] = 0; 
+            delta[ this->pointIndex ] = 0;
         } else {
-            delta[ pointIndex ] = (this->endPt - this->startPt) * this->scale[0]; 
+            delta[ this->pointIndex ] = (this->endPt - this->startPt) * this->scale[0];
         }
         // NOTE: This could be moved into the above if blocks for speed
         posLPS[0] = this->origin[0] + (delta[0]) * (*this->dcos)[0][0] + (delta[1]) * (*this->dcos)[1][0] + (delta[2]) * (*this->dcos)[2][0];
         posLPS[1] = this->origin[1] + (delta[0]) * (*this->dcos)[0][1] + (delta[1]) * (*this->dcos)[1][1] + (delta[2]) * (*this->dcos)[2][1];
         posLPS[2] = this->origin[2] + (delta[0]) * (*this->dcos)[0][2] + (delta[1]) * (*this->dcos)[1][2] + (delta[2]) * (*this->dcos)[2][2];
-        for( int i = this->endPt+1; i < numPoints; i++ ) {
+        for( int i = this->endPt+1; i < this->numPoints; i++ ) {
             this->polyLinePoints[ i*3 ] = posLPS[0];
             this->polyLinePoints[i*3+1] = posLPS[1];
             this->polyLinePoints[i*3+2] = posLPS[2];
@@ -352,6 +352,21 @@ void svkPlotLine::GeneratePolyData()
     }
 }
 
+
+/*!
+ * Calls template method.
+ */
+void svkPlotLine::GeneratePolyData()
+{
+  // choose which templated function to call.
+
+	switch (this->dataType) {
+		vtkTemplateMacro( this->GeneratePolyDataTemplated( static_cast<VTK_TT *>(this->dataPtr) ));
+	default:
+		vtkErrorMacro(<< "Execute: Unknown ScalarType");
+		return;
+	}
+}
 
 /*!
  *  Get the vtkPoints object used by this class
@@ -533,11 +548,18 @@ void svkPlotLine::SetPlotDirection( int amplitudeIndex, int pointIndex )
 
 
 /*!
- *  Set to true if you want the poly data to be regenerating when modifying.
+ *  Set to true if you want the poly data to be regenerated when modifying.
+ *  As a side effect poly data will be generated if it is changed from
+ *  false to true.
  */
 void svkPlotLine::SetGeneratePolyData( bool generatePolyData )
 {
-	this->generatePolyData = generatePolyData;
+	if( this->generatePolyData != generatePolyData ) {
+		this->generatePolyData = generatePolyData;
+		if( this->generatePolyData ) {
+			this->GeneratePolyData();
+		}
+	}
 }
 
 

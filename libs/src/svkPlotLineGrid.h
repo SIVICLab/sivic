@@ -197,6 +197,7 @@ class svkPlotLineGrid : public vtkObject
         void                        SetVolumeUpToDate( int volumeIndex );
         void                        SetVolumeOutOfDate( int volumeIndex );
         void                        InitializeVolumeUpToDateVector();
+        void						TurnOffAllPlots();
 
 };
 
