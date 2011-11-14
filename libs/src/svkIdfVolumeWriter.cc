@@ -75,6 +75,8 @@ svkIdfVolumeWriter::svkIdfVolumeWriter()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->castDoubleToFloat = false;
+    this->globalRangeMin = 0.; 
+    this->globalRangeMax = 0.;
 }
 
 
@@ -155,6 +157,8 @@ void svkIdfVolumeWriter::WriteData()
     int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
     int numSlices = hdr->GetNumberOfSlices();
     int numVolumes = hdr->GetNumberOfTimePoints();
+
+    this->InitDoublePixelRange(); 
 
     //  Write out each volume:
     for ( int vol = 0; vol < numVolumes; vol++ ) {
@@ -430,10 +434,8 @@ void svkIdfVolumeWriter::WriteHeader()
         double inputRangeMin; 
         double inputRangeMax; 
         if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-            int numPixels = hdr->GetIntValue( "Columns" ) * hdr->GetIntValue( "Rows" ) * hdr->GetIntValue("NumberOfFrames"); 
-            double* doublePixels; 
-            doublePixels = vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(vol))->GetPointer(0);
-            this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
+            inputRangeMin = this->globalRangeMin; 
+            inputRangeMax = this->globalRangeMax; 
         } else {
             vtkImageAccumulate* histo = vtkImageAccumulate::New();
             histo->SetInput( this->GetImageDataInput(0) );
@@ -553,20 +555,36 @@ void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPix
 
 
 /*!
- *
+ *  Calculates the global range of pixel values over all volumes:
  */
-void svkIdfVolumeWriter::GetDoublePixelRange(double* doublePixels, int numPixels, double& rangeMin, double& rangeMax)
+void svkIdfVolumeWriter::InitDoublePixelRange()
 {
-    rangeMin = VTK_DOUBLE_MAX; 
-    rangeMax = VTK_DOUBLE_MIN; 
-    for (int i = 0; i < numPixels; i++ ) {
-        if ( doublePixels[i] > rangeMax ) {
-            rangeMax = doublePixels[i]; 
-        } 
-        if ( doublePixels[i] < rangeMin ) {
-            rangeMin = doublePixels[i]; 
-        } 
+
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
+    int numVolumes = hdr->GetNumberOfTimePoints();
+    int numPixels = hdr->GetIntValue( "Columns" ) * hdr->GetIntValue( "Rows" ) *  hdr->GetNumberOfSlices();
+
+    double* doublePixels; 
+    this->globalRangeMin = VTK_DOUBLE_MAX; 
+    this->globalRangeMax = VTK_DOUBLE_MIN; 
+
+    //  Write out each volume:
+    for ( int vol = 0; vol < numVolumes; vol++ ) {
+
+        doublePixels = vtkDoubleArray::SafeDownCast(
+                    this->GetImageDataInput(0)->GetPointData()->GetArray(vol)
+                )->GetPointer(0);
+
+        for (int i = 0; i < numPixels; i++ ) {
+            if ( doublePixels[i] > this->globalRangeMax ) {
+                this->globalRangeMax = doublePixels[i]; 
+            } 
+            if ( doublePixels[i] < this->globalRangeMin ) {
+                this->globalRangeMin = doublePixels[i]; 
+            } 
+        }
     }
+
 }
 
 
@@ -590,11 +608,10 @@ void svkIdfVolumeWriter::CastDoubleToFloat(double* doublePixels, float* floatPix
 {
     double inputRangeMin = 0. ; 
     double inputRangeMax = 0. ; 
-    this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
     float floatMin = VTK_FLOAT_MIN;
     float floatMax = VTK_FLOAT_MAX;
-    if( inputRangeMin < floatMin || inputRangeMax > floatMax ) {
-        cout << "RANGE Min/Max: " << inputRangeMin << " - " << inputRangeMax << endl;
+    if( this->globalRangeMin < floatMin || this->globalRangeMax > floatMax ) {
+        cout << "RANGE Min/Max: " << this->globalRangeMin << " - " << this->globalRangeMax << endl;
         throw runtime_error("ERROR: Cannot cast doubles to floats-- range is too large.");
     }
     for (int i = 0; i < numPixels; i++) {
@@ -611,12 +628,9 @@ void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixe
     //  Scale this to 32 bit values and init RescaleIntercept and RescaleSlope:
 
     //  Get the input range for scaling:
-    double inputRangeMin = 0. ; 
-    double inputRangeMax = 0. ; 
-    this->GetDoublePixelRange(doublePixels, numPixels, inputRangeMin, inputRangeMax); 
-    double deltaRangeIn = inputRangeMax - inputRangeMin;
+    double deltaRangeIn = this->globalRangeMax - this->globalRangeMin;
     if (this->GetDebug()) {
-        cout << "RANGE " << inputRangeMax << " " << inputRangeMin << endl;
+        cout << "RANGE " << this->globalRangeMax << " " << this->globalRangeMin << endl;
     }
 
     //  Get the output range for scaling:
@@ -625,10 +639,10 @@ void svkIdfVolumeWriter::MapDoubleToFloat(double* doublePixels, float* floatPixe
     double deltaRangeOut = floatMax - floatMin;
 
     //  apply linear mapping from float range to signed short range;
-    //  floatMax = inputRangeMax * m + b;
-    //  floatMin = inputRangeMin * m + b;
+    //  floatMax = globalRangeMax * m + b;
+    //  floatMin = globalRangeMin * m + b;
     double slope = deltaRangeOut/deltaRangeIn;
-    double intercept = floatMin - inputRangeMin * ( deltaRangeOut/deltaRangeIn );
+    double intercept = floatMin - this->globalRangeMin * ( deltaRangeOut/deltaRangeIn );
     if (this->GetDebug()) {
         cout << "IDF Writer double to float scaling (slope, intercept): " << slope << " " << intercept << endl;
     }

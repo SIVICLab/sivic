@@ -211,10 +211,14 @@ void svkMetaboliteMap::GenerateMap()
 
     //  If integration limits are out of range just returned zero'd image.
     int numSpecPoints = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns");
-    if ( startPt < 0 || endPt >= numSpecPoints ) {
+    if ( startPt < 0 ) { 
+        startPt = 0;   
         vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
-        return; 
     }
+    if ( endPt >= numSpecPoints ) {
+        endPt = numSpecPoints - 1;     
+        vtkWarningWithObjectMacro(this, "Integration limits out of range, returning zero value map");
+    }  
 
     int numVoxels[3]; 
     this->GetOutput()->GetNumberOfVoxels(numVoxels);
@@ -249,7 +253,6 @@ void svkMetaboliteMap::GenerateMap()
             arrayNameString.append(number.str());
 
             metMapArray->SetName( arrayNameString.c_str() );
-
 
             double voxelValue;
             for (int i = 0; i < totalVoxels; i++ ) {
@@ -341,15 +344,16 @@ double svkMetaboliteMap::GetPeakHt( float* specPtr, int startPt, int endPt)
 double svkMetaboliteMap::GetMagPeakHt( float* specPtr, int startPt, int endPt)
 {
 
-    double magPeakHt  = pow( specPtr[2*startPt], 2);
-    magPeakHt += pow( specPtr[2*startPt + 1], 2);
+    double magPeakHt  = pow( specPtr[2 * startPt], 2);
+    magPeakHt += pow( specPtr[2 * startPt + 1], 2);
     magPeakHt = pow( magPeakHt, 0.5);
 
     double magPeakHtTmp;
+    
     for ( int pt = startPt; pt <= endPt; pt ++ ) {
 
-        magPeakHtTmp  = pow( specPtr[2*pt], 2);
-        magPeakHtTmp += pow( specPtr[2*pt + 1], 2);
+        magPeakHtTmp  = pow( specPtr[ 2 * pt], 2);
+        magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);
         magPeakHtTmp  = pow(magPeakHtTmp, 0.5);
 
         if ( magPeakHtTmp > magPeakHt ) {
