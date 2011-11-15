@@ -158,12 +158,14 @@ void svkIdfVolumeWriter::WriteData()
     int numSlices = hdr->GetNumberOfSlices();
     int numVolumes = hdr->GetNumberOfTimePoints();
 
-    this->InitDoublePixelRange(); 
+    int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
+    if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {
+        this->InitDoublePixelRange(); 
+    }
 
     //  Write out each volume:
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
-        int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
         vtkstd::string extension; 
         int numBytesPerPixel; 
         void* pixels; 
