@@ -500,7 +500,7 @@ int svkMrsZeroFill::RequestDataSpectral( vtkInformation* request, vtkInformation
     float cmplxPt[2];
     cmplxPt[0] = 0.;
     cmplxPt[1] = 0.;
-
+	vtkDataArray* spectrum = NULL;
     double progress = 0;
     for( int channel = 0; channel < numChannels; channel++ ) { 
         for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
@@ -514,13 +514,10 @@ int svkMrsZeroFill::RequestDataSpectral( vtkInformation* request, vtkInformation
                 for (int y = 0; y < rows; y++) {
                     for (int x = 0; x < cols; x++) {
 
-                        vtkFloatArray* spectrum = 
-                            vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel) );
+                        spectrum = svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel);
                         //  Iterate over frequency points in spectrum and apply phase correction:
                         for ( int freq = numSpecPts; freq < this->numSpecPoints; freq++ ) {
-
                             spectrum->InsertTuple(freq, cmplxPt);
-
                         }
                     }
                 }
@@ -644,13 +641,14 @@ void svkMrsZeroFill::InitializeDataArrays( svkMrsImageData* outputData )
                         if( numComponents == 2 ) {
                             dataArray->FillComponent( 1, 0 );
                         }
-                        cellData->AddArray( dataArray );
+                        static_cast<svkFastCellData*>(cellData)->FastAddArray( dataArray );
                         dataArray->SetName( arrayName );
-                        dataArray->Delete();
+                        dataArray->FastDelete();
                     }
                 }
                 progress = ((z+1))/((double)slices);
             }
         }
     }
+    svkFastCellData::SafeDownCast( cellData )->FinishFastAdd();
 }

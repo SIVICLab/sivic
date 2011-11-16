@@ -1396,7 +1396,7 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
     if (interpolationType == NEAREST ) {
         this->interpolationType = NEAREST; 
         // Check to see if the current overlay is interpolated already
-        if( interpOverlay == dataVector[OVERLAY] ) {
+        if( this->interpOverlay == dataVector[OVERLAY] ) {
             this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
         }
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
@@ -1408,7 +1408,7 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
     } else if (interpolationType == LINEAR) {
         this->interpolationType = LINEAR; 
         // Check to see if the current overlay is interpolated already
-        if( interpOverlay == dataVector[OVERLAY] ) {
+        if( this->interpOverlay == dataVector[OVERLAY] ) {
             this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
         }
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
@@ -1419,49 +1419,75 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
     } else if (interpolationType == SINC) {
         this->interpolationType = SINC; 
-        if( interpOverlay != dataVector[OVERLAY] ) {
-
-            int* extent = dataVector[OVERLAY]->GetExtent(); 
-            int xLength = extent[1]-extent[0] + 1;
-            int yLength = extent[3]-extent[2] + 1;
-            int zLength = extent[5]-extent[4] + 1;
-
-            double* imageSpacing = dataVector[MRI]->GetSpacing();
-            double* overlaySpacing = dataVector[OVERLAY]->GetSpacing();
-
-            // Lets choose the resolution of the sinc by trying to get to the resolution of the image
-            int xSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(xLength * (overlaySpacing[0]/imageSpacing[0]) ))/log(2.) ) );
-            int ySize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(yLength * (overlaySpacing[1]/imageSpacing[1]) ))/log(2.) ) );
-            int zSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(zLength * (overlaySpacing[2]/imageSpacing[2]) ))/log(2.) ) );
-            if( xSize > SINC_MAX_EXTENT ) {
-                xSize = SINC_MAX_EXTENT;
-            }
-            if( ySize > SINC_MAX_EXTENT ) {
-                ySize = SINC_MAX_EXTENT;
-            }
-            if( zSize > SINC_MAX_EXTENT ) {
-                zSize = SINC_MAX_EXTENT;
-            }
-            sincInterpolation->SetOutputWholeExtent( 0, xSize-1, 0, ySize-1, 0, zSize-1 );
-            sincInterpolation->SetInput( dataVector[OVERLAY] );
-            sincInterpolation->Update();
-            interpOverlay->Delete();
-            interpOverlay = svkMriImageData::New();
-            interpOverlay->DeepCopy( sincInterpolation->GetOutput() );
-            interpOverlay->Update();
-            interpOverlay->SyncVTKImageDataToDcmHeader();
-
-            this->SetInput( interpOverlay, OVERLAY );
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
-            svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+        if( this->interpOverlay != dataVector[OVERLAY] ) {
+        	this->UpdateSincInterpolation();
 
         }
     }
     this->Refresh();
+}
+
+
+/*!
+ *
+ */
+void svkOverlayView::UpdateSincInterpolation()
+{
+	int* extent = this->dataVector[OVERLAY]->GetExtent();
+	int xLength = extent[1]-extent[0] + 1;
+	int yLength = extent[3]-extent[2] + 1;
+	int zLength = extent[5]-extent[4] + 1;
+
+	double* imageSpacing = this->dataVector[MRI]->GetSpacing();
+	double* overlaySpacing = this->dataVector[OVERLAY]->GetSpacing();
+
+	// Lets choose the resolution of the sinc by trying to get to the resolution of the image
+	int xSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(xLength * (overlaySpacing[0]/imageSpacing[0]) ))/log(2.) ) );
+	int ySize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(yLength * (overlaySpacing[1]/imageSpacing[1]) ))/log(2.) ) );
+	int zSize = (int)pow( 2., vtkMath::Round( log( static_cast<double>(zLength * (overlaySpacing[2]/imageSpacing[2]) ))/log(2.) ) );
+	if( xSize > SINC_MAX_EXTENT ) {
+		xSize = SINC_MAX_EXTENT;
+	}
+	if( ySize > SINC_MAX_EXTENT ) {
+		ySize = SINC_MAX_EXTENT;
+	}
+	if( zSize > SINC_MAX_EXTENT ) {
+		zSize = SINC_MAX_EXTENT;
+	}
+
+	// We need to save the source data
+	svkMriImageData* overlaySource = svkMriImageData::SafeDownCast(this->dataVector[OVERLAY]);
+
+	int numArrays = overlaySource->GetPointData()->GetNumberOfArrays();
+	this->interpOverlay->Delete();
+	this->interpOverlay = svkMriImageData::New();
+	vtkDataArray* oldScalars = this->dataVector[OVERLAY]->GetPointData()->GetScalars();
+
+	// This is a temporary Kludge until we have the sinc interpolation algorithm working with multiple volumes
+	// Also there is a problem with the sinc interpolate filter that causes it to not update when the input is modified
+	// So we recreate the sinc interpolation filter for each volume.
+	for( int i = 0; i < numArrays; i++ ) {
+		overlaySource->GetPointData()->SetActiveScalars( overlaySource->GetPointData()->GetArray( i )->GetName() );
+		this->sincInterpolation->Delete();
+		this->sincInterpolation = svkSincInterpolationFilter::New();
+		this->sincInterpolation->SetOutputWholeExtent( 0, xSize-1, 0, ySize-1, 0, zSize-1 );
+		this->sincInterpolation->SetInput( overlaySource );
+		this->sincInterpolation->Update();
+		if( i == 0 ) {
+			this->interpOverlay->DeepCopy( this->sincInterpolation->GetOutput() );
+			for( int j = 0; j < this->interpOverlay->GetPointData()->GetNumberOfArrays(); j++) {
+				this->interpOverlay->GetPointData()->RemoveArray(this->interpOverlay->GetPointData()->GetArray(j)->GetName());
+
+			}
+		}
+		this->interpOverlay->GetPointData()->AddArray( sincInterpolation->GetOutput()->GetPointData()->GetScalars());
+    }
+
+    this->interpOverlay->GetPointData()->SetActiveScalars( oldScalars->GetName() );
+
+	this->interpOverlay->Update();
+	this->interpOverlay->SyncVTKImageDataToDcmHeader();
+	this->SetInput( this->interpOverlay, OVERLAY );
 }
 
 

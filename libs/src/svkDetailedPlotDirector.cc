@@ -204,6 +204,7 @@ void svkDetailedPlotDirector::RegenerateMagnitudeArrays()
 void svkDetailedPlotDirector::GenerateMagnitudeArray( vtkDataArray* complexArray, vtkDataArray* magnitudeArray)
 {
     if( complexArray != NULL && magnitudeArray != NULL ) {
+    	magnitudeArray->SetNumberOfTuples( complexArray->GetNumberOfTuples());
         for( int i = 0; i < complexArray->GetNumberOfTuples(); i++ ) {
             double* value = complexArray->GetTuple(i);
             double sumSquares = 0;
@@ -231,6 +232,7 @@ void svkDetailedPlotDirector::RemoveAllInputs( )
         this->dataModifiedCB->SetClientData( (void*)this );
     }
     this->xyPlotActor->RemoveAllInputs();
+    this->numPoints = -1;
 }
 
 
@@ -396,7 +398,9 @@ void svkDetailedPlotDirector::AddOnMouseMoveObserver( vtkRenderWindowInteractor*
 void svkDetailedPlotDirector::RemoveOnMouseMoveObserver( vtkRenderWindowInteractor* rwi)
 {
     if( this->cursorLocationCB != NULL ) {
-        rwi->RemoveObserver( this->cursorLocationCB );
+		if( rwi->HasObserver(vtkCommand::MouseMoveEvent, cursorLocationCB )) {
+			rwi->RemoveObserver(cursorLocationCB);
+		}
     }
 }
 

@@ -375,6 +375,10 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
         return;
     }
     if( data != NULL ) {
+        int toggleDraw = this->sivicController->GetDraw();
+        if( toggleDraw ) {
+        	this->sivicController->DrawOff();
+        }
         string apodizeSpec(this->apodizationSelectorSpec->GetValue());
         string apodizeCols(this->apodizationSelectorCols->GetValue());
         string apodizeRows(this->apodizationSelectorRows->GetValue());
@@ -427,12 +431,11 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             bool useFullAmplitudeRange = 1;
             bool resetAmplitude = 1;
             bool resetFrequency = 0;
-            data->Modified();
             zeroFill->RemoveObserver( progressCallback);
             string stringFilename = "ZF";
+            this->sivicController->Open4DImage( data, stringFilename, data);
             this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                           resetAmplitude, resetFrequency );
-            this->sivicController->Open4DImage( data, stringFilename);
         }
         if( apodizeSpec.compare("Lorentz") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
@@ -446,6 +449,9 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             data->Modified();
         }
         zeroFill->Delete();
+        if( toggleDraw ) {
+        	this->sivicController->DrawOn();
+        }
     }
     return; 
 

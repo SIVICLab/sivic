@@ -41,7 +41,6 @@ sivicImageViewWidget::sivicImageViewWidget()
     this->imageViewFrame = NULL;
     this->orthoViewFrame = NULL;
     this->overlayViewFrame = NULL;
-    this->generateTraceButton = NULL;
 
 
 }
@@ -122,11 +121,6 @@ sivicImageViewWidget::~sivicImageViewWidget()
         this->loadingLabel = NULL;
     }
     
-    if( this->generateTraceButton != NULL ) {
-        this->generateTraceButton ->Delete();
-        this->generateTraceButton = NULL;
-    }
-
 }
 
 
@@ -484,12 +478,6 @@ void sivicImageViewWidget::CreateWidget()
     infoText->Create();
     infoText->SetBorderWidth(1);
     infoText->SetRelief(1);
-    this->generateTraceButton = vtkKWPushButton::New();
-    this->generateTraceButton->SetParent( this );
-    this->generateTraceButton->Create( );
-    this->generateTraceButton->EnabledOff();
-    this->generateTraceButton->SetText( "Generate\n Traces");
-    this->generateTraceButton->SetBalloonHelpString("Generates trace data to be view on the right.");
 
     // ========================================================================================
     //  View/Controller Creation
@@ -555,9 +543,8 @@ void sivicImageViewWidget::CreateWidget()
     this->Script("grid %s -row %d -column 0 -rowspan 1 -sticky sew -padx 8 -pady 1", this->orthoViewFrame->GetWidgetName(), row);
 
     this->Script("grid %s -in %s -row 0 -column 0 -sticky w -pady 0", imageToolsLabel->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 1 -column 0 -rowspan 2 -sticky swe", sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
+    this->Script("grid %s -in %s -row 1 -column 0 -sticky swe", sliceSliders->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     this->Script("grid %s -in %s -row 1 -column 1 -sticky e", this->orthImagesButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
-    this->Script("grid %s -in %s -row 2 -column 1 -sticky e", this->generateTraceButton->GetWidgetName(), this->orthoViewFrame->GetWidgetName() );
     
     this->Script("grid columnconfigure %s 0 -weight 1", this->orthoViewFrame->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 0", this->orthoViewFrame->GetWidgetName() );
@@ -648,9 +635,6 @@ void sivicImageViewWidget::CreateWidget()
     // this is to catch overlay events to reset threshold slider
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::EndWindowLevelEvent );
-
-    this->AddCallbackCommandObserver(
-        this->generateTraceButton, vtkKWPushButton::InvokedEvent );
 
     // We can delete our references to all widgets that we do not have callbacks for.
     checkButtons->Delete();
@@ -938,11 +922,6 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
             this->overlayController->TurnOrthogonalImagesOff();
         }
         this->overlayController->GetView()->Refresh();
-    } else if( caller == this->generateTraceButton && event == vtkKWPushButton::InvokedEvent ) {
-        svkMriImageData* image = svkMriImageData::SafeDownCast(this->model->GetDataObject("AnatomicalData"));
-        if( image != NULL ) {
-            this->sivicController->Open4DImage( image->GetCellDataRepresentation(), "Cell Data Representation", false );
-        }
     } 
 
     // Make sure the superclass gets called for render requests

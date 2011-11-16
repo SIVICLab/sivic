@@ -227,6 +227,7 @@ class svkOverlayView : public svkDataView
         void                            GenerateClippingPlanes( );
         void                            SetupOverlay();
         void                            SetInterpolationType( int interpolationType );
+        void			            	UpdateSincInterpolation();
         void                            SetLUT( svkLookupTable::svkLookupTableType type );
         void                            ResetWindowLevel();
         int                             FindCenterImageSlice( int spectraSlice, svkDcmHeader::Orientation orientation );

@@ -137,6 +137,34 @@ int svkSincInterpolationFilter::RequestInformation( vtkInformation* request, vtk
         inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->outputWholeExtent);
     }
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->outputWholeExtent, 6);
+    if( this->GetImageDataInput(0) != NULL) {
+		svkMriImageData* inputData = svkMriImageData::SafeDownCast(this->GetImageDataInput(0));
+		double* spacing = inputData->GetSpacing();
+		int* inExtent = inputData->GetExtent();
+		double newSpacing[3] = {0,0,0};
+		newSpacing[0] = spacing[0]*((double)(inExtent[1]-inExtent[0] + 1))/(this->outputWholeExtent[1] - this->outputWholeExtent[0] + 1);
+		newSpacing[1] = spacing[1]*((double)(inExtent[3]-inExtent[2] + 1))/(this->outputWholeExtent[3] - this->outputWholeExtent[2] + 1);
+		newSpacing[2] = spacing[2]*((double)(inExtent[5]-inExtent[4] + 1))/(this->outputWholeExtent[5] - this->outputWholeExtent[4] + 1);
+		outInfo->Set(vtkDataObject::SPACING(), newSpacing, 3);
+
+	    double dcos[3][3];
+	    inputData->GetDcos( dcos );
+	    double* origin = inputData->GetOrigin();
+	    double newOrigin[3] = { origin[0], origin[1], origin[2] };
+
+	    double originShift[3] = { 0, 0, 0 };
+	    originShift[0] = newSpacing[0]/2 - spacing[0]/2;
+	    originShift[1] = newSpacing[1]/2 - spacing[1]/2;
+	    originShift[2] = newSpacing[2]/2 - spacing[2]/2;
+
+	    for (int i = 0; i < 3; i++) {
+	        for (int j = 0; j < 3; j++) {
+	            newOrigin[i] += (originShift[j]) * dcos[j][i];
+	        }
+	    }
+		outInfo->Set(vtkDataObject::ORIGIN(), newOrigin, 3);
+    }
+
 
     return 1;
 

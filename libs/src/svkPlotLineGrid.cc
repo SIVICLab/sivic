@@ -529,7 +529,6 @@ void svkPlotLineGrid::Update( int tlcBrc[2])
 
                 // If the data has been update since the actors- then regenerate them
                 if( dataMTime > tmpXYPlot->GetMTime() ) {
-                	cout << "YUP I AM BEING USED! " << endl;
                     tmpXYPlot->GeneratePolyData();
                     modified = true;
                 }

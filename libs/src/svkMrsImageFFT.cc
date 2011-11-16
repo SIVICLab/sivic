@@ -197,8 +197,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
     vtkImageData* currentData = NULL;
-    svkImageLinearPhase* preKZeroShifter = NULL;
-    svkImageLinearPhase* postKZeroShifter = NULL;
+    svkImageLinearPhase* preKZeroShifter = svkImageLinearPhase::New();
+    svkImageLinearPhase* postKZeroShifter = svkImageLinearPhase::New();
     svkImageLinearPhase* voxelShifter = svkImageLinearPhase::New();
 
     svkImageFourierCenter* preIfc = svkImageFourierCenter::New(); 
@@ -219,7 +219,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     this->UpdateProgress( progress );
                 }
                 data->GetImage( pointImage, point, timePt, channel );
-                pointImage->Modified();
 
                 currentData = pointImage;
 
@@ -227,7 +226,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 if( kZeroShiftWindow[0] != 0
                     && kZeroShiftWindow[1] != 0
                     && kZeroShiftWindow[2] != 0 ) {
-                    preKZeroShifter = svkImageLinearPhase::New();
                     preKZeroShifter->SetShiftWindow( kZeroShiftWindow );
                     preKZeroShifter->SetInput( currentData );
                     currentData = preKZeroShifter->GetOutput();
@@ -264,7 +262,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 if( kZeroShiftWindow[0] != 0
                     && kZeroShiftWindow[1] != 0
                     && kZeroShiftWindow[2] != 0 ) {
-                    postKZeroShifter = svkImageLinearPhase::New();
                     postKZeroShifter->SetShiftWindow( kZeroShiftWindow );
                     postKZeroShifter->SetInput( currentData );
                     currentData = postKZeroShifter->GetOutput();

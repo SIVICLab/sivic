@@ -135,7 +135,6 @@ class sivicImageViewWidget : public sivicKWCompositeWidget
         vtkKWFrame*                     imageViewFrame;
         vtkKWFrame*                     orthoViewFrame;
         vtkKWFrame*                     overlayViewFrame;
-        vtkKWPushButton*                generateTraceButton;
 
 
         

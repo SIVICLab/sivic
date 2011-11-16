@@ -289,6 +289,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             this->TurnPropOn( svkPlotGridView::VOL_SELECTION );
             this->SetOrientation( this->orientation );
             this->AlignCamera(); 
+            this->UpdateDetailedPlot( this->tlcBrc );
 
             if( toggleDraw ) {
                 this->GetRenderer( svkPlotGridView::PRIMARY )->DrawOn();

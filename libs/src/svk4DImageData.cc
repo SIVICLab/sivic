@@ -140,7 +140,7 @@ void svk4DImageData::UpdateRange( int component )
     double magnitude;
     vtkDataArray* array = NULL;
     for( int i = 0; i < this->GetCellData()->GetNumberOfArrays(); i ++ ) {
-		array = static_cast<vtkFloatArray*>( this->GetArray(i) );
+		array =  this->GetArray(i);
 		for (int i = 0; i < numTuples; i++) {
 			tuple = array->GetTuple( i );
 			if( component == 0 ){
@@ -324,52 +324,66 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int component )
 {
     if( image != NULL ) {
+    	vtkCellData* cellData = this->GetCellData();
 
-        int numComponents = 2; 
-        if ( component < 2 ) {
-            numComponents = 1; 
-        } 
-        //this->Update();
-        // Setup image dimensions
-        image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+    	vtkDataArray* firstArray = cellData->GetArray(0);
+    	// We have to have at least one array to get an image from it
+    	if( firstArray != NULL ) {
+			int numComponents = firstArray->GetNumberOfComponents();
+			//int dataType    = firstArray->GetDataType();
+			// Ideally this should copy the input type, but some algorithms (svkImageFourierCenter) require double input
+			// TODO: Update svkImageFourierCenter to support arbitrary input
+			int dataType    = VTK_DOUBLE;
 
-        image->SetScalarTypeToDouble( );
-        image->SetNumberOfScalarComponents( numComponents );
-        image->AllocateScalars();
+			// Setup image dimensions
+			image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
+			image->SetScalarType( dataType );
+	        if( component > 1) {
+				image->SetNumberOfScalarComponents( numComponents );
+	        } else {
+				image->SetNumberOfScalarComponents( 1 );
+	        }
+	        //image->AllocateScalars();
+			image->CopyDcos( this );
+			//image->GetIncrements();
 
-        image->CopyDcos( this );
-        image->GetIncrements();
+			// Create a new array to hold the pixel data
+			vtkDataArray* pixelData = vtkDataArray::CreateDataArray( dataType );
 
-        // Create a float array to hold the pixel data
-        vtkDoubleArray* pixelData = vtkDoubleArray::New();
-        pixelData->SetNumberOfComponents( numComponents );
-        pixelData->SetNumberOfTuples( (image->GetDimensions()[0])*(image->GetDimensions()[1])*(image->GetDimensions()[2]) );
-        pixelData->SetName("pixels");
-        double* pixels = pixelData->GetPointer(0);
-        int linearIndex = 0;
-        int* dims = image->GetDimensions();
-        double* tuple;
-        vtkDataArray* array;
-        for (int z = Extent[4]; z < Extent[5]; z++) {
-            for (int y = Extent[2]; y < Extent[3]; y++) {
-                for (int x = Extent[0]; x < Extent[1]; x++) {
-                    array = this->GetArray( x, y, z, indexArray );
+			// If the expected component in no 0 or 1 then copy all components
+			if( component > 1) {
+				pixelData->SetNumberOfComponents( numComponents );
+			} else {
+				pixelData->SetNumberOfComponents( 1 );
+			}
 
-                    linearIndex = ( z * (dims[0]) * (dims[1]) ) + ( y * (dims[0]) ) + x;
-                    tuple = array->GetTuple( point );
-                    if ( numComponents == 2 ) {
-                        pixels[2*linearIndex] = tuple[0];
-                        pixels[2*linearIndex+1] = tuple[1];
-                    } else {
-                        pixels[linearIndex] = tuple[ component ];
-                    }
-                }
-            }
-        }
-        image->GetPointData()->SetScalars( pixelData );
-        image->Modified();
+			int numVoxels = this->Extent[5] * this->Extent[3] * this->Extent[1];
+			pixelData->SetNumberOfTuples( numVoxels );
+			pixelData->SetName("pixels");
 
-        pixelData->Delete();
+			int i = 0;
+			int j = 0;
+			int linearIndex = 0;
+			int firstIndex = this->GetIDFromIndex(0, 0, 0, indexArray );
+			linearIndex = firstIndex;
+
+			// Lets loop through using the linear index for speed
+			vtkDataArray* array = NULL;
+			for( i = 0; i < numVoxels; i++ ) {
+				array = this->GetArray( linearIndex );
+				if( component > 1 ) {
+					for( j = 0; j < numComponents; j++) {
+						pixelData->SetComponent(linearIndex - firstIndex, j, array->GetComponent(point, j ));
+					}
+				} else {
+					pixelData->SetComponent(linearIndex - firstIndex, component, array->GetComponent( point, component));
+				}
+				linearIndex++;
+			}
+			image->GetPointData()->SetScalars( pixelData );
+			// We know this data is still held so lets fast delete it.
+			pixelData->FastDelete();
+		}
     }
 
 }

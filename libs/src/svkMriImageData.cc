@@ -387,7 +387,7 @@ void svkMriImageData::InitializeCellDataArrays()
                     array->SetNumberOfComponents( numComponents );
                     array->SetNumberOfTuples( numTimePts );
                     sprintf(arrayName, "%d %d %d %d", x, y, z, channel);
-                    svkFastCellData::SafeDownCast(cellData)->FastAddArray( array );
+                    static_cast<svkFastCellData*>(cellData)->FastAddArray( array );
                     array->SetName(arrayName);
                     array->FastDelete();
                 }

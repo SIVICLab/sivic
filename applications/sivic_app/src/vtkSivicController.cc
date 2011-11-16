@@ -561,10 +561,10 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
     if( newData->IsA("svkMrsImageData")) {
         objectName = "SpectroscopicData";
     } else if (newData->IsA("svkMriImageData")) {
-        cout << "Before get cell data rep...." << endl;
         newData = svkMriImageData::SafeDownCast(newData)->GetCellDataRepresentation();
         objectName = "4DImageData";
-        cout << "after get cell data rep...." << endl;
+        // If we are setting the
+        this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
     }
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MR4D );
@@ -2571,7 +2571,6 @@ void vtkSivicController::EnableWidgets()
         this->windowLevelWidget->EnabledOn();
         if( model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetNumberOfTimePoints() > 1) {
             this->imageViewWidget->volumeSlider->EnabledOn();
-            this->imageViewWidget->generateTraceButton->EnabledOn();
         }
 
     }
@@ -3111,5 +3110,23 @@ int vtkSivicController::GetDraw()
 		return 0;
 	} else {
 		return drawOverlay;
+	}
+}
+
+
+/*!
+ *
+*/
+void vtkSivicController::GenerateTraces( char* sourceImage )
+{
+	svkMriImageData* image = NULL;
+	if( strcmp( sourceImage, "reference_image" ) == 0 ) {
+		image = svkMriImageData::SafeDownCast(this->model->GetDataObject("AnatomicalData"));
+	} else if( strcmp( sourceImage, "overlay_image" ) == 0 ) {
+		image = svkMriImageData::SafeDownCast(this->model->GetDataObject("OverlayData"));
+	}
+	if( image != NULL ) {
+		cout << "Getting Cell Data from: " << *image << endl;
+		this->Open4DImage( image, "Cell Data Representation" );
 	}
 }

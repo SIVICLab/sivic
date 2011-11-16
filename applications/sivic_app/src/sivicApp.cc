@@ -713,6 +713,25 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     toolbar->AddWidget( osirixMetMapButton );
 #endif
 
+    // Create Open Spectra Selector Menu
+    vtkKWMenuButtonWithLabel* generateTraces = vtkKWMenuButtonWithLabel::New();
+    generateTraces->SetParent( toolbar->GetFrame() );
+    generateTraces->GetWidget()->SetReliefToFlat();
+    generateTraces->SetLabelPositionToLeft();
+    generateTraces->GetLabel()->SetPadY( 3 );
+    generateTraces->GetLabel()->SetAnchorToSouth();
+    generateTraces->GetLabel()->SetText("Generate Dynamic Traces");
+    generateTraces->Create();
+    generateTraces->GetLabel()->SetPadY( 3 );
+    generateTraces->GetLabel()->SetAnchorToSouth();
+    generateTraces->GetWidget()->SetReliefToFlat();
+    generateTraces->GetWidget()->SetImageToPredefinedIcon( vtkKWIcon::IconBrowserForward );
+    //openSpectraButton->GetLabel()->SetHeight( 1 );
+    generateTraces->SetBalloonHelpString( "Generate traces from a multi-volumetric image dataset.");
+    vtkKWMenu* generateTracesMenu = generateTraces->GetWidget()->GetMenu();
+    generateTracesMenu->AddRadioButton("From Reference Image", this->sivicController, "GenerateTraces reference_image");
+    generateTracesMenu->AddRadioButton("From Overlay Image", this->sivicController, "GenerateTraces overlay_image");
+    toolbar->AddWidget( generateTraces );
 
 }
 
