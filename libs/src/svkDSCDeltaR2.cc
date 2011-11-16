@@ -92,7 +92,6 @@ svkDSCDeltaR2::~svkDSCDeltaR2()
  */
 int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
     svk4DImageData* dsc = svkMriImageData::SafeDownCast(this->GetImageDataInput(0))
                     ->GetCellDataRepresentation();
     double TE = dsc->GetDcmHeader()->GetDoubleValue("EchoTime"); 
@@ -108,6 +107,7 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
         int numPts = voxelData->GetNumberOfTuples(); 
 
         if (this->targetRepresentation == svkDSCDeltaR2::DR2 ) {
+
             //  Change representation from T2* to delta R2* 
 
             for (int i = 0; i < totalVoxels; i++ )    {
@@ -123,59 +123,24 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
                         } else {
                             voxelData->SetTuple1( t, 0); 
                         }   
-                           //cout << "Voxr2: " << voxelData->GetTuple1(t) << "" << s0 << " " << value << endl;
                     } else {  
                         voxelData->SetTuple1( t, 0); 
                     }
                 }
             }                
+            this->currentRepresentation = svkDSCDeltaR2::DR2; 
 
         } else {
-            //  Change representation delta R2* T2* 
-            for (int i = 0; i < totalVoxels; i++ )    {
-                voxelData = dsc->GetArray(i);
-            }                
+
+            //  Change representation delta R2* to T2* 
+            cout << "revert to T2" << endl;
+            svkMriImageData::SafeDownCast(this->GetImageDataInput(0))
+                    ->SyncCellRepresentationToPixelData();
+
+            this->currentRepresentation = svkDSCDeltaR2::T2; 
         }
     }  
 
-/*
-    //  Create the template data object by  
-    //  extractng an svkMriImageData from the input svkMrsImageData object
-    //  Use an arbitrary point for initialization of scalars.  Actual data 
-    //  will be overwritten by algorithm. 
-    svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput() ), 
-        0, 
-        0, 
-        0, 
-        0, 
-        this->newSeriesDescription 
-    );
-
-    //  Determines binary mask (quantificationMask) indicating whether a given voxel 
-    //  should be quantified (1) or not (0). Usually this is based on whether a specified 
-    //  fraction of the voxel inside the selected volume. 
-    if ( this->quantificationMask == NULL ) {
-        int numVoxels[3];
-        this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
-        int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-        this->quantificationMask = new short[totalVoxels];
-
-        svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetSelectionBoxMask( 
-            this->quantificationMask, 
-            this->useSelectedVolumeFraction
-        ); 
-            
-    }
-
-    cout << "ALGO: " << this->quantificationAlgorithm  << endl;
-    this->GenerateMap(); 
-
-    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-    hdr->InsertUniqueUID("SeriesInstanceUID");
-    hdr->InsertUniqueUID("SOPInstanceUID");
-    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
-*/
     return 1; 
 };
 
@@ -185,6 +150,7 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
  */
 void svkDSCDeltaR2::SetRepresentation( svkDSCDeltaR2::representation representation )
 {
+    cout << "SET REPRESENTATIN: " << representation << endl;
     this->targetRepresentation = representation; 
     this->Modified(); 
 }

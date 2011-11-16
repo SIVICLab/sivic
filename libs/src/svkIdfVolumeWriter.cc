@@ -556,6 +556,7 @@ void svkIdfVolumeWriter::MapSignedIntToFloat(short* shortPixels, float* floatPix
 }
 
 
+
 /*!
  *  Calculates the global range of pixel values over all volumes:
  */
