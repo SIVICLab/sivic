@@ -195,6 +195,7 @@ class vtkSivicController : public vtkObject
         void                       SetInterpolationCallback( int interpolationType );
         void                       SetLUTCallback( int type );
         void                       MetMapViewCallback(int mapNumber); 
+        void                       DSCMapViewCallback(int mapNumber); 
         void                       SetDSCRepresentationCallback(int representation); 
         void                       Print( char* captureType, int outputOption = 0);
         int                        PopupMessage( string message, int style = 0 );

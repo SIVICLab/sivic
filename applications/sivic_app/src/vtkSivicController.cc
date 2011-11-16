@@ -2178,6 +2178,7 @@ void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
  */
 void vtkSivicController::SetDSCRepresentationCallback(int representation)
 {
+cout << "SIVIC CONTROLLER DSC CALL: " << representation << endl;
     this->dscWidget->SetDSCRepresentationCallback( static_cast<svkDSCDeltaR2::representation>(representation) );
 }
 
@@ -2244,6 +2245,18 @@ void vtkSivicController::MetMapViewCallback( int mapNumber)
 {
     this->quantificationWidget->SetOverlay( 
         this->quantificationWidget->modelMetNames[mapNumber] 
+    ); 
+}
+
+
+/*!
+ *  Sets the overlay view in plot grid
+ */
+void vtkSivicController::DSCMapViewCallback( int mapNumber)
+{
+cout << "OVERLAY MAP " << mapNumber << " " << this->dscWidget->modelDSCNames[mapNumber] << endl;
+    this->dscWidget->SetOverlay( 
+        this->dscWidget->modelDSCNames[mapNumber] 
     ); 
 }
 
