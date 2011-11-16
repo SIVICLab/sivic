@@ -557,8 +557,9 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openImageButton->SetLabelPositionToRight();
     openImageButton->SetBalloonHelpString( "Open an image dataset.");
     vtkKWMenu* openImageMenu = openImageButton->GetWidget()->GetMenu();
-    openImageMenu->AddRadioButton("Open Image", this->sivicController, "OpenFile image NULL 0");
-    openImageMenu->AddRadioButton("Open Dynamic", this->sivicController, "OpenFile image_dynamic NULL 0");
+    openImageMenu->AddRadioButton("Open Image", this->sivicController, "OpenFile image NULL 0 0");
+    openImageMenu->AddRadioButton("Open Single Image File", this->sivicController, "OpenFile image NULL 0 1");
+    openImageMenu->AddRadioButton("Open Dynamic", this->sivicController, "OpenFile image_dynamic NULL 0 0");
     toolbar->AddWidget( openImageButton );
 
     // Create Open Spectra Selector Menu
@@ -577,25 +578,31 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openSpectraButton->SetLabelPositionToRight();
     openSpectraButton->SetBalloonHelpString( "Open a spectroscopic dataset.");
     vtkKWMenu* openSpectraMenu = openSpectraButton->GetWidget()->GetMenu();
-    openSpectraMenu->AddRadioButton("Open Spectra", this->sivicController, "OpenFile spectra NULL 0");
-    openSpectraMenu->AddRadioButton("Open Spectra Single Channel", this->sivicController, "OpenFile spectra_one_channel NULL 1");
-    openSpectraMenu->AddRadioButton("Add Spectra", this->sivicController, "OpenFile add_spectra NULL 0");
-    openSpectraMenu->AddRadioButton("Add Spectra Single Channel", this->sivicController, "OpenFile add_spectra_one_channel NULL 0");
+    openSpectraMenu->AddRadioButton("Open Spectra", this->sivicController, "OpenFile spectra NULL 0 0");
+    openSpectraMenu->AddRadioButton("Open Spectra Single Channel", this->sivicController, "OpenFile spectra NULL 0 1");
+    openSpectraMenu->AddRadioButton("Add Spectra", this->sivicController, "OpenFile add_spectra NULL 0 0");
+    openSpectraMenu->AddRadioButton("Add Spectra Single Channel", this->sivicController, "OpenFile add_spectra NULL 0 1");
     toolbar->AddWidget( openSpectraButton );
 
     // Create Open metabolite/overlay Button
-    vtkKWPushButton* openMetButton = vtkKWPushButton::New();
-    openMetButton->SetParent( toolbar->GetFrame() );
-    openMetButton->Create();
-    openMetButton->SetPadY( 2 );
-    openMetButton->SetAnchorToNorth();
-    openMetButton->SetReliefToGroove();
-    openMetButton->SetText("overlay");
-    openMetButton->SetCompoundModeToLeft();
-    openMetButton->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
-    openMetButton->SetCommand( this->sivicController, "OpenFile overlay NULL 0");
-    openMetButton->SetBalloonHelpString( "Open an image to overlay or a metabolite file." );
-    toolbar->AddWidget( openMetButton );
+    vtkKWMenuButtonWithLabel* openOverlayButton = vtkKWMenuButtonWithLabel::New();
+    openOverlayButton->SetParent( toolbar->GetFrame() );
+    openOverlayButton->GetWidget()->SetReliefToFlat();
+    openOverlayButton->GetLabel()->SetPadY( 3 );
+    openOverlayButton->GetLabel()->SetAnchorToSouth();
+    openOverlayButton->GetLabel()->SetText("overlay");
+    openOverlayButton->Create();
+    openOverlayButton->GetLabel()->SetPadY( 3 );
+    openOverlayButton->GetLabel()->SetAnchorToSouth();
+    openOverlayButton->GetWidget()->SetReliefToFlat();
+    openOverlayButton->GetWidget()->SetImageToPredefinedIcon( vtkKWIcon::IconFileOpen );
+    openOverlayButton->SetLabelPositionToRight();
+    openOverlayButton->SetBalloonHelpString( "Open an image to overlay or a metabolite file." );
+    vtkKWMenu* openOverlayMenu = openOverlayButton->GetWidget()->GetMenu();
+    openOverlayMenu->AddRadioButton("Open Overlay", this->sivicController, "OpenFile overlay NULL 0 0");
+    openOverlayMenu->AddRadioButton("Open Single Overlay File", this->sivicController, "OpenFile overlay NULL 0 1");
+    toolbar->AddWidget( openOverlayButton );
+
 
     // Create secondary capture Button
     vtkKWPushButton* scButton = vtkKWPushButton::New();

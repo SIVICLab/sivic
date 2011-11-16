@@ -148,13 +148,13 @@ class vtkSivicController : public vtkObject
         void                       SetImageSlice( int slice, string orientation );
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
-        int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0);
-        void                       OpenImage(   const char* fileName );
-        void                       Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL ,bool onlyReadOneInputFile = false );
+        int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0, bool onlyReadOneInputFile = false);
+        void                       OpenImage(   const char* fileName, bool onlyReadOneInputFile = false );
+        void                       Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL );
         void                       Open4DImage( const char* fileName, bool onlyReadOneInputFile = false );
-        void                       OpenOverlay( svkImageData* data, string stringFilename );
         void                       Add4DImageData( string stringFilename, bool onlyReadOneInputFile = false );
-        void                       OpenOverlay( const char* fileName );
+        void                       OpenOverlay( svkImageData* data, string stringFilename );
+        void                       OpenOverlay( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenMetabolites( const char* metabolites );
         void                       SetPreferencesFromRegistry( );
         void                       SaveData();    

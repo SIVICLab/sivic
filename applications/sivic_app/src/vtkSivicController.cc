@@ -400,7 +400,7 @@ void vtkSivicController::ResetApplication( )
 }
 
 
-void vtkSivicController::OpenImage( const char* fileName )
+void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputFile )
 {
 
 
@@ -413,7 +413,7 @@ void vtkSivicController::OpenImage( const char* fileName )
     string stringFilename(fileName);
     svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
 		    cout << "Attempting to read  |" << stringFilename << "|" << endl;
-    svkImageData* newData = this->model->LoadFile( stringFilename );
+    svkImageData* newData = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
 
     if (newData == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -550,7 +550,7 @@ void vtkSivicController::OpenImage( const char* fileName )
  * @param oldData
  * @param onlyReadOneInputFile
  */
-void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData, bool onlyReadOneInputFile )
+void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData )
 {
 
     int toggleDraw = this->GetDraw();
@@ -786,7 +786,7 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
         return;
     } else {
-        this->Open4DImage( newData,  stringFilename, oldData, onlyReadOneInputFile );
+        this->Open4DImage( newData,  stringFilename, oldData );
     }
     this->DisableWidgets();
     this->EnableWidgets();
@@ -968,7 +968,7 @@ void vtkSivicController::DeselectMetabolites( )
 }
 
 
-void vtkSivicController::OpenOverlay( const char* fileName )
+void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInputFile )
 {
 
     // Lets check to see if the file exists 
@@ -982,9 +982,7 @@ void vtkSivicController::OpenOverlay( const char* fileName )
     string stringFilename( fileName );
     if ( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
 
-        //bool onlyReadOneInputFile = true;
-        //svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
-        svkImageData* data = this->model->LoadFile( stringFilename );
+        svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svkMriImageData") ) {
             this->OpenOverlay(data, stringFilename);
         } else {
@@ -1164,9 +1162,9 @@ void vtkSivicController::OpenExam( )
 	if(svkUtils::FilePathExists("images")) {
         imagePathName+= "/images";
         //cout << "Switching to image path:" << imagePathName.c_str() << endl;
-        status = this->OpenFile( "image", imagePathName.c_str(), true ); 
+        status = this->OpenFile( "image", imagePathName.c_str(), true, false );
     } else {
-        status = this->OpenFile( "image", NULL, true ); 
+        status = this->OpenFile( "image", NULL, true, false );
     }
     
     if( status == vtkKWDialog::StatusCanceled ) {
@@ -1190,13 +1188,13 @@ void vtkSivicController::OpenExam( )
         spectraPathName = lastPathString.substr(0,found); 
         spectraPathName += "/spectra";
 		if( svkUtils::FilePathExists(spectraPathName.c_str())) {
-            status = this->OpenFile( "spectra", spectraPathName.c_str() ); 
+            status = this->OpenFile( "spectra", spectraPathName.c_str(), false, false );
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
-            status = this->OpenFile( "spectra", lastPathString.substr(0,found).c_str() ); 
+            status = this->OpenFile( "spectra", lastPathString.substr(0,found).c_str(), false, false );
         }
     } else { 
-        status = this->OpenFile( "spectra", lastPathString.c_str() ); 
+        status = this->OpenFile( "spectra", lastPathString.c_str(), false, false );
     }
      
     // If the dialog was cancelled, or if either load failed do not oven overlay
@@ -1213,19 +1211,19 @@ void vtkSivicController::OpenExam( )
         bool includePath = true;
         string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI (ht)",includePath );
 		if( svkUtils::FilePathExists(cniFileName.c_str()) ) {
-            this->OpenOverlay( cniFileName.c_str() ); 
+            this->OpenOverlay( cniFileName.c_str(), true );
             this->EnableWidgets(); 
             this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
             this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
             this->SetOverlayThreshold( 2.0 );
 		} else if( svkUtils::FilePathExists(spectraPathName.c_str()) ) {
-            this->OpenFile( "overlay", spectraPathName.c_str() ); 
+            this->OpenFile( "overlay", spectraPathName.c_str(), false, true );
         } else {
             // If an images folder was used, but there is no corresponding spectra folder
-            this->OpenFile( "overlay", lastPathString.substr(0,found).c_str() ); 
+            this->OpenFile( "overlay", lastPathString.substr(0,found).c_str(), false, true );
         }
     } else { 
-        this->OpenFile( "overlay", lastPathString.c_str() ); 
+        this->OpenFile( "overlay", lastPathString.c_str(), false, true );
     }
 
 
@@ -1233,7 +1231,7 @@ void vtkSivicController::OpenExam( )
 
 
 /*!    Open a file.    */
-int vtkSivicController::OpenFile( char* openType, const char* startPath, bool resetBeforeLoad )
+int vtkSivicController::OpenFile( char* openType, const char* startPath, bool resetBeforeLoad, bool onlyReadOneInputFile )
 {
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
@@ -1267,7 +1265,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
                     dlg->SetLastPath( lastPathString.c_str());
                 }
-            } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
+            } else if ( strcmp( openType, "spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/spectra";
 				if( svkUtils::FilePathExists( lastPathString.c_str()) ) {
@@ -1281,7 +1279,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         // Check to see which extention to filter for.
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
-        } else if( strcmp( openType,"spectra" ) == 0 || strcmp(openType, "spectra_one_channel") == 0 || strcmp( openType, "add_spectra") == 0) {
+        } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
             dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
         } else {
             dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
@@ -1322,20 +1320,14 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     if (dlg->GetFileName() != NULL) {    
         // See if it is being loaded as a metabolite
         if( openTypeString.compare( "image" ) == 0 ) {
-            this->OpenImage( dlg->GetFileName() );
+            this->OpenImage( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "image_dynamic" ) == 0 ) {
-            this->Open4DImage( dlg->GetFileName() );
+            this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "overlay" ) == 0 ) {
-            this->OpenOverlay( dlg->GetFileName() );
+            this->OpenOverlay( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "spectra" ) == 0 ) {
-            this->Open4DImage( dlg->GetFileName() );
-        } else if( openTypeString.compare( "spectra_one_channel" ) == 0 ) {
-            bool onlyReadOneInputFile = true;
             this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
-            this->Add4DImageData( dlg->GetFileName() );
-        } else if( openTypeString.compare( "add_spectra_one_channel" ) == 0 ) {
-            bool onlyReadOneInputFile = true;
             this->Add4DImageData( dlg->GetFileName(), onlyReadOneInputFile );
         } 
     }
