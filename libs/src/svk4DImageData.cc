@@ -271,14 +271,14 @@ void svk4DImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelecti
 
 
 /*!
- *   Method will extract a volume into a vtkImageData object representing
- *   a single point in the spectra. This is usefull for spatial FFT's.
+ *  Method will extract a volume into a vtkImageData object representing
+ *  a single point in the 4D representation. This is useful for spatial FFT's
+ *  and map generation. 
  *
  *  \param target image the point image (must be initialized)
  *  \param point the point in the array you wish operate on 
- *  \param component the component to operate on 
- *  \param timePoint the time point to operate on 
- *  \param channel the the channel to operate on 
+ *  \param seriesDescription for DCM header 
+ *  \param indexArray is the array of non-spatial indices, e.g. channel and time point
  *  \param component (0 = real, 1=im, 2=cmplx) 
  *
  */
