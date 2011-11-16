@@ -251,6 +251,9 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         cmplxDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
         vtkstd::string cmplxFile = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".cmplx"; 
+        if( svkUtils::IsFileCompressed( cmplxFile )) {
+        	svkUtils::UncompressFile( cmplxFile );
+        }
 
         cmplxDataIn->open( cmplxFile.c_str(), ios::binary);
 

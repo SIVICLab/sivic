@@ -48,6 +48,7 @@
 #include <vtkStringArray.h>
 #include <vtkstd/string>
 
+#include <svkUtils.h>
 #include <svkImageReader2.h>
 #include <svkEnhancedMRIIOD.h>
 

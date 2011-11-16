@@ -104,6 +104,9 @@ class svkUtils : public vtkObject
         static vector<string> SplitString( string str, string token );
         static string         GetFilenameFromFullPath( string fullPath );
         static int            NearestInt(float x);
+        static bool           UncompressFiles( vtkStringArray *filenames );
+        static bool           UncompressFile( vtkstd::string filename );
+        static bool           IsFileCompressed( vtkstd::string filename );
 
 	protected:
 

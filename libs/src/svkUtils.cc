@@ -413,3 +413,67 @@ int svkUtils::NearestInt(float x)
 }
 
 
+/*!
+ *  Uncompress all files given.
+ */
+bool svkUtils::UncompressFiles( vtkStringArray *filenames )
+{
+	bool success = true;
+#ifndef WIN32
+    for (int fileIndex = 0; fileIndex < filenames->GetNumberOfValues(); fileIndex++) {
+			string filename = filenames->GetValue( fileIndex );
+			bool wasUncompressed = svkUtils::UncompressFile( filename );
+			if( !wasUncompressed ) {
+				success = false;
+			}
+    }
+#else
+	// No windows implementation yet.
+#endif
+    return success;
+}
+
+
+/*!
+ * Uncompress a file. Platform dependent, currently not supported on windows.
+ */
+bool svkUtils::UncompressFile( vtkstd::string filename )
+{
+	bool success = true;
+#ifndef WIN32
+	if( svkUtils::IsFileCompressed( filename ) ) {
+		stringstream uncompressCommand;
+		uncompressCommand << "gunzip " << filename;
+		cout << "UNCOMPRESSING FILE " << uncompressCommand.str() << endl;
+		int result = system( uncompressCommand.str().c_str() );
+		if( result != 0 ) {
+			success = false;
+		}
+	}
+#else
+	// No windows implementation yet.
+#endif
+	return success;
+}
+
+
+/*!
+ *  Check to see if a file is compressed. Platform dependent, currently not supported on windows.
+ */
+bool svkUtils::IsFileCompressed( vtkstd::string filename )
+{
+	bool isCompressed = false;
+#ifndef WIN32
+	stringstream testCompressCommand;
+	testCompressCommand << "gunzip -t " << filename;
+	cout << "EXECUTING: " <<  testCompressCommand.str() << endl;
+	int result = system( testCompressCommand.str().c_str() );
+	if( result == 0 ) {
+		cout << "FILE IS COMPRESSED!" << endl;
+		isCompressed = true;
+	}
+#else
+	// No windows implementation yet.
+#endif
+	return isCompressed;
+}

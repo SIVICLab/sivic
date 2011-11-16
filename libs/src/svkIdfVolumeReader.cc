@@ -183,6 +183,9 @@ void svkIdfVolumeReader::ReadVolumeFile()
         ifstream* volumeDataIn = new ifstream();
         volumeDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
+        if( svkUtils::IsFileCompressed( volFileName )) {
+        	svkUtils::UncompressFile( volFileName );
+        }
         volumeDataIn->open( volFileName.c_str(), ios::binary);
         volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
 

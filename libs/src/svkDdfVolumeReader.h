@@ -50,6 +50,7 @@
 
 #include <svkImageReader2.h>
 #include <svkMRSIOD.h>
+#include <svkUtils.h>
 
 #include <vtkstd/map>
 #include <vtkstd/string>
