@@ -466,10 +466,8 @@ bool svkUtils::IsFileCompressed( vtkstd::string filename )
 #ifndef WIN32
 	stringstream testCompressCommand;
 	testCompressCommand << "gunzip -t " << filename;
-	cout << "EXECUTING: " <<  testCompressCommand.str() << endl;
 	int result = system( testCompressCommand.str().c_str() );
 	if( result == 0 ) {
-		cout << "FILE IS COMPRESSED!" << endl;
 		isCompressed = true;
 	}
 #else

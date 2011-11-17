@@ -435,8 +435,8 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
         //  Precheck to see if valdation errors should be overridden:
         if( resultInfo.compare("") != 0 ) {
 
-            string resultInfoMsg  = "ERROR: Dataset is not compatible! \n\n"; 
-            resultInfoMsg += "Do you want to attempt to display them anyway? \n\n"; 
+            string resultInfoMsg  = "WARNING: Datasets may not be compatible! \n";
+            resultInfoMsg += "Do you want to attempt to display them anyway? \n";
             resultInfoMsg += "Info:\n"; 
             resultInfoMsg += resultInfo;
             int dialogStatus = this->PopupMessage( resultInfoMsg, vtkKWMessageDialog::StyleYesNo ); 
