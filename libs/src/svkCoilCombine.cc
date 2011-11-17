@@ -197,6 +197,7 @@ void svkCoilCombine::RequestSumOfSquaresData()
 
     // For each voxel, add data from individual voxels:  
     float cmplxPtN[2];
+    float cmplxPtNNew[2];
     float magnigutdValue; 
 
 
@@ -229,8 +230,8 @@ void svkCoilCombine::RequestSumOfSquaresData()
 
                     for (int freq = 0; freq < numFrequencyPoints; freq++) {
 
-                        magnitudeData[ freq * 2 ] = 0.; 
-                        magnitudeData[ freq * 2 + 1] = 0.; 
+                        cmplxPtNNew[ 0 ] = 0.; 
+                        cmplxPtNNew[ 1 ] = 0.; 
 
                         //  foreach freq point, get sum of squares over all channels
                         for( int innerLoopIndex = 0; innerLoopIndex < innerLoopLimits[1]; innerLoopIndex++ ) { 
@@ -248,30 +249,45 @@ void svkCoilCombine::RequestSumOfSquaresData()
     
                             spectrumN->GetTupleValue(freq, cmplxPtN);
     
-                            magnitudeData[ freq *2 ] += ( cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1] ); 
-                            magnitudeData[ (freq *2) + 1 ] += 0; 
-    
+                            cmplxPtNNew[0] += ( cmplxPtN[0] * cmplxPtN[0] + cmplxPtN[1] * cmplxPtN[1] ); 
+                            cmplxPtNNew[1] += 0; 
+
+                            if ( innerLoopIndex == innerLoopLimits[1] - 1 ) {
+
+                                cmplxPtNNew[0] /= innerLoopLimits[1]; 
+                                cmplxPtNNew[0] = pow( (double)cmplxPtNNew[0], (double)0.5 );
+                                cmplxPtNNew[1] = 0; 
+
+                                int targetTimeIndex; 
+                                int targetChannelIndex; 
+                                if ( this->combinationDimension == COIL ) {
+                                    targetChannelIndex = 0;
+                                    targetTimeIndex = timePt; 
+                                } else if ( this->combinationDimension == TIME ) {
+                                    targetChannelIndex = channel; 
+                                    targetTimeIndex = 0; 
+                                }
+
+                                vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
+                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( 
+                                                    x, y, z, targetTimeIndex, targetChannelIndex) 
+                                        );
+                                spectrumN->SetTupleValue(freq, cmplxPtNNew);
+                            }
+
                         }
-						// Solaris build needs these casts to determine the correct method
-                        magnitudeData[ freq * 2 ] = pow( (double)magnitudeData[freq * 2], (double)0.5 );
-                        magnitudeData[ (freq *2) + 1 ] = magnitudeData[ freq * 2 ]; 
 
                     }
 
-                    //  Now reset the array for channel 0 to the magnitude data: 
-                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, 0, 0) );
-                    //spectrum0->SetNumberOfComponents(1);
-                    spectrum0->SetNumberOfComponents(2);
-                    spectrum0->SetArray(magnitudeData, numFrequencyPoints*2, 1);  
                 }
             }
         }
     }
 
-//this->GetOutput()->GetDcmHeader()->SetValue(
- //"DataRepresentation",
- //"MAGNITUDE" 
-//);
+    //this->GetOutput()->GetDcmHeader()->SetValue(
+       //"DataRepresentation",
+       //"MAGNITUDE" 
+    //);
 
 }
 
