@@ -107,6 +107,7 @@ class svkMrsImageData: public svk4DImageData
         int            GetNumberOfVolumeDimensions( );
         int            GetNumberOfChannels();
 
+        bool           HasSelectionBox( );
         void           GenerateSelectionBox( vtkUnstructuredGrid* selectionBox );
         void           GetSelectionBoxCenter( double* selBoxCenter );
         void           GetSelectionBoxDimensions( float* dims );

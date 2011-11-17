@@ -1125,6 +1125,8 @@ void vtkSivicController::SetPreferencesFromRegistry( )
     this->app->GetRegistryValue( 0, "plot_grid", "blue", plotGridBlue );
     char plotGridGreen[50]="";
     this->app->GetRegistryValue( 0, "plot_grid", "green", plotGridGreen );
+    char plotGridOpacity[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "opacity", plotGridOpacity );
     if( string(plotGridRed) != "" && string(plotGridBlue) != "" && string(plotGridGreen) != "" ) {
         double rgb[3];
         rgb[0] = atof( plotGridRed );
@@ -1133,6 +1135,13 @@ void vtkSivicController::SetPreferencesFromRegistry( )
         vtkActor::SafeDownCast(this->overlayController->GetView()
                                    ->GetProp( svkOverlayView::PLOT_GRID ))
                                    ->GetProperty()->SetDiffuseColor( rgb );
+    }
+    if( string(plotGridOpacity) != "" ) {
+    	double opacity = atof( plotGridOpacity);
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::PLOT_GRID ))
+                                   ->GetProperty()->SetOpacity( opacity );
+
     }
 
 
@@ -1235,8 +1244,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
 {
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
-    this->viewRenderingWidget->viewerWidget->RemoveBindings();
-    this->viewRenderingWidget->specViewerWidget->RemoveBindings();
+    //this->viewRenderingWidget->viewerWidget->RemoveBindings();
+    //this->viewRenderingWidget->specViewerWidget->RemoveBindings();
     string openTypeString( openType ); 
     size_t pos;
     vtkKWLoadSaveDialog *dlg = NULL; 
@@ -1285,7 +1294,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
         }
     
-    
+
         // Invoke the dialog
         dlg->Invoke();
 
@@ -1344,8 +1353,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Enable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Enable();
     this->imageViewWidget->loadingLabel->SetText("");
-    this->viewRenderingWidget->viewerWidget->AddBindings();
-    this->viewRenderingWidget->specViewerWidget->AddBindings();
+    ////this->viewRenderingWidget->viewerWidget->AddBindings();
+    ////this->viewRenderingWidget->specViewerWidget->AddBindings();
     //this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
     //this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
     return dlgStatus;

@@ -275,6 +275,15 @@ void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, 
         }
 }
 
+bool svkMrsImageData::HasSelectionBox( )
+{
+	bool hasSelectionBox = false;
+    int numberOfItems = this->GetDcmHeader()->GetNumberOfItemsInSequence("VolumeLocalizationSequence");
+    if( numberOfItems == 3) {
+    	hasSelectionBox = true;
+    }
+    return hasSelectionBox;
+}
 
 /*!
  *  Creates an unstructured grid that represents the selection box.

@@ -127,8 +127,8 @@ void svkSecondaryCaptureFormatter::SetOrientation( svkDcmHeader::Orientation ori
 void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
     // Here are all the frames we may want to look at....
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+    int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
+    int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
     // If we want to only look at the current slice....
     if( outputOption == CURRENT_SLICE ) { 
@@ -138,17 +138,21 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
-        i++;
-    }
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+			i++;
+		}
+	}
 
     firstFrame = i; 
     firstFrame = firstFrame < 0 ? 0 : firstFrame;
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
-        i--;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+			i--;
+		}
     }
     lastFrame = i; 
 
@@ -255,8 +259,8 @@ void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastF
 void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print ) 
 {
     // Here are all the frames we may want to look at....
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+    int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
+    int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
     // If we want to only look at the current slice....
     if( outputOption == CURRENT_SLICE ) { 
@@ -266,8 +270,10 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
-        i++;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+			i++;
+		}
     }
 
     firstFrame = i; 
@@ -275,8 +281,10 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
-        i--;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+			i--;
+		}
     }
     lastFrame = i; 
 
@@ -327,8 +335,8 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
                                                                    bool print, bool preview ) 
 {
     // Here are all the frames we may want to look at....
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+    int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
+    int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
     // If we want to only look at the current slice....
     if( outputOption == CURRENT_SLICE ) { 
@@ -338,8 +346,10 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
-        i++;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+			i++;
+		}
     }
 
     firstFrame = i; 
@@ -347,9 +357,11 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
-        i--;
-    }
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+			i--;
+		}
+	}
     lastFrame = i; 
 
     //  Replace * with slice number in output file name: 
@@ -596,8 +608,8 @@ void svkSecondaryCaptureFormatter::RenderCombinedImage( int firstFrame, int last
 void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, string fileNameString, int outputOption, svkImageData* outputImage, bool print, int instanceNumber ) 
 {
     // Here are all the frames we may want to look at....
-    int firstFrame = this->model->GetDataObject("SpectroscopicData")->GetFirstSlice( this->orientation );
-    int lastFrame = this->model->GetDataObject("SpectroscopicData")->GetLastSlice( this->orientation );
+    int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
+    int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
     // If we want to only look at the current slice....
     if( outputOption == CURRENT_SLICE ) { 
@@ -607,8 +619,10 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
-        i++;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i <= lastFrame ) {
+			i++;
+		}
     }
 
     firstFrame = i; 
@@ -616,8 +630,10 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 
     // Now lets find the last slice inside the selection box...
     i = lastFrame;
-    while(!static_cast<svkMrsImageData*>(this->model->GetDataObject( "SpectroscopicData" ))->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
-        i--;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
+		while(!static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->IsSliceInSelectionBox(i, this->orientation) && i >= firstFrame ) {
+			i--;
+		}
     }
     lastFrame = i; 
 
@@ -741,10 +757,10 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
         // We need to reverse the slice order because of the direction of the appender.
         ostringstream position;
         this->sivicController->SetSlice( m );
-        int orientationIndex = model->GetDataObject("SpectroscopicData")->GetOrientationIndex( orientation );
+        int orientationIndex = this->sivicController->GetActive4DImageData()->GetOrientationIndex( orientation );
         int sliceIndex[3] = {0,0,0};
         sliceIndex[ orientationIndex ] = this->plotController->GetSlice();
-        model->GetDataObject( "SpectroscopicData" )->GetPositionFromIndex( sliceIndex, origin );
+        this->sivicController->GetActive4DImageData()->GetPositionFromIndex( sliceIndex, origin );
         position << "Slice: " << this->overlayController->GetSlice()+1 << " Pos(mm): " << origin[orientationIndex];
         sliceLocationActor->SetInput( position.str().c_str() );
         vtkImageData* data = vtkImageData::New();
@@ -850,7 +866,12 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
                                                      vtkTextActor* imageText   )
 {
     string currentImageName = model->GetDataFileName( "AnatomicalData" );
-    string currentSpectraName = model->GetDataFileName( "SpectroscopicData" );
+    string current4DImageName;
+    if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") ) {
+		current4DImageName = model->GetDataFileName( "SpectroscopicData" );
+    } else {
+		current4DImageName = model->GetDataFileName( "4DImageData" );
+    }
     string currentOverlayName = model->GetDataFileName( "OverlayData" );
     string currentMetaboliteName = model->GetDataFileName( "MetaboliteData" );
 
@@ -859,8 +880,6 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     stringstream imageInfo;
     size_t pos;
     
-    svkSpecPoint* point = svkSpecPoint::New();
-    point->SetDcmHeader( model->GetDataObject( "SpectroscopicData" )->GetDcmHeader() );
 
     if( model->DataExists( "AnatomicalData" ) ) {
 
@@ -934,7 +953,7 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     } 
 
     // Get Spectroscopy Parameters
-    if( model->DataExists( "SpectroscopicData" ) ) {
+    if( this->sivicController->GetActive4DImageData() != NULL ) {
 
         specInfo1.setf(ios::fixed,ios::floatfield);            // floatfield not set
         specInfo1.precision(1);
@@ -947,16 +966,18 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
 
         // Slice Position:
         int sliceIndex[3] = {0, 0, 0 };
-        int orientationIndex = model->GetDataObject("SpectroscopicData")->GetOrientationIndex( orientation );
+        int orientationIndex = this->sivicController->GetActive4DImageData()->GetOrientationIndex( orientation );
         sliceIndex[ orientationIndex ] = this->plotController->GetSlice();
-        model->GetDataObject( "SpectroscopicData" )->GetPositionFromIndex( sliceIndex, sliceLocation );
+        this->sivicController->GetActive4DImageData()->GetPositionFromIndex( sliceIndex, sliceLocation );
         specInfo1 << "CSI Slice Pos:  " << sliceLocation[orientationIndex] << endl;
         
-        // Coil
-        string specCoil = model->GetDataObject( "SpectroscopicData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
-        specInfo1 << "Coil:  " << specCoil << endl;
-        string echoTime = model->GetDataObject( "SpectroscopicData")->GetDcmHeader()->GetStringSequenceItemElement("MREchoSequence", 0, "EffectiveEchoTime" , "SharedFunctionalGroupsSequence");
-        specInfo1 << "TE:  " << echoTime << " ms" << endl;
+        if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData")) {
+			// Coil
+			string specCoil = this->sivicController->GetActive4DImageData()->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
+			specInfo1 << "Coil:  " << specCoil << endl;
+			string echoTime = this->sivicController->GetActive4DImageData()->GetDcmHeader()->GetStringSequenceItemElement("MREchoSequence", 0, "EffectiveEchoTime" , "SharedFunctionalGroupsSequence");
+			specInfo1 << "TE:  " << echoTime << " ms" << endl;
+        }
 
 
         pos = currentMetaboliteName.find_last_of("/"); 
@@ -969,31 +990,33 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
         specInfo1 << "Metabolites File: " << endl << " " <<  currentMetaboliteName.substr(pos) << endl; 
 
         // Get The Spectra Name
-        pos = currentSpectraName.find_last_of("/"); 
-        if( pos == currentSpectraName.npos ) {
+        pos = current4DImageName.find_last_of("/");
+        if( pos == current4DImageName.npos ) {
             pos = 0;
-        } else if( pos+1 < currentSpectraName.npos) {
+        } else if( pos+1 < current4DImageName.npos) {
             pos++;
         }
-        specInfo1 << "CSI File: " << endl << " " << currentSpectraName.substr(pos) << endl;
+        specInfo1 << "CSI File: " << endl << " " << current4DImageName.substr(pos) << endl;
 
         // Selected Region 
         // Center
-        double center[3]; 
-        svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxCenter( center );
-        specInfo2 << "Selection Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
-        // Size
-        float dims[3]; 
-        
-        svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->GetSelectionBoxDimensions( dims );
-        specInfo2 << "Selected Region:  " << dims[0]*dims[1]*dims[2] / 1000.0 << "cc" << endl;
+		double center[3];
+        if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData")) {
+			svkMrsImageData::SafeDownCast(this->sivicController->GetActive4DImageData())->GetSelectionBoxCenter( center );
+			specInfo2 << "Selection Center RAS: " << center[0] << " " << center[1] << " " << center[2] << "mm"<< endl;
+			// Size
+			float dims[3];
 
-        specInfo2 << "Size RAS: " << dims[0] << " " << dims[1] << " " << dims[2] << "mm"<< endl;
+			svkMrsImageData::SafeDownCast(this->sivicController->GetActive4DImageData())->GetSelectionBoxDimensions( dims );
+			specInfo2 << "Selected Region:  " << dims[0]*dims[1]*dims[2] / 1000.0 << "cc" << endl;
 
-        double* spacing = model->GetDataObject( "SpectroscopicData" )->GetSpacing();
+			specInfo2 << "Size RAS: " << dims[0] << " " << dims[1] << " " << dims[2] << "mm"<< endl;
+        }
+
+        double* spacing = this->sivicController->GetActive4DImageData()->GetSpacing();
         specInfo2 << "CSI Resolution:" << spacing[0] * spacing[1] * spacing[2] / 1000.0 << "cc" <<  endl;
         specInfo2 << "Size RAS: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << "mm" <<  endl;
-        model->GetDataObject( "SpectroscopicData" )->GetImageCenter( center );
+        this->sivicController->GetActive4DImageData()->GetImageCenter( center );
         specInfo2 << "Spectra Center RAS: " << center[0] << " " << center[1] << " " << center[2] << " mm"<< endl;
 
         double ampMin;
@@ -1003,26 +1026,34 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
         
         plotController->GetWindowLevelRange( ampMin, ampMax, svkPlotGridView::AMPLITUDE );
         plotController->GetWindowLevelRange( freqMin, freqMax, svkPlotGridView::FREQUENCY );
+        float lowestPoint = freqMin;
+        float highestPoint = freqMax;
 
-        float lowestPoint = point->ConvertPosUnits(
-            freqMin,
-            svkSpecPoint::PTS,
-            this->sivicController->GetFrequencyType()
-        );
+        if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData")) {
+			svkSpecPoint* point = svkSpecPoint::New();
+			point->SetDcmHeader( this->sivicController->GetActive4DImageData()->GetDcmHeader() );
 
-        float highestPoint = point->ConvertPosUnits(
-            freqMax,
-            svkSpecPoint::PTS,
-            this->sivicController->GetFrequencyType()
-        );
-        string units;
-        if ( this->sivicController->GetFrequencyType() == svkSpecPoint::PTS ) {
-            units = "Pts";
-        } else if ( this->sivicController->GetFrequencyType() == svkSpecPoint::Hz ) {
-            units = "Hz";
-        } else if ( this->sivicController->GetFrequencyType() == svkSpecPoint::PPM ) {
-            units = "PPM";
+			lowestPoint = point->ConvertPosUnits(
+				freqMin,
+				svkSpecPoint::PTS,
+				this->sivicController->GetFrequencyType()
+			);
+
+			highestPoint = point->ConvertPosUnits(
+				freqMax,
+				svkSpecPoint::PTS,
+				this->sivicController->GetFrequencyType()
+			);
+			point->Delete();
         }
+		string units;
+		if ( this->sivicController->GetFrequencyType() == svkSpecPoint::PTS ) {
+			units = "Pts";
+		} else if ( this->sivicController->GetFrequencyType() == svkSpecPoint::Hz ) {
+			units = "Hz";
+		} else if ( this->sivicController->GetFrequencyType() == svkSpecPoint::PPM ) {
+			units = "PPM";
+		}
 
         specInfo2 << "Frequency Range: " << lowestPoint << " <--> " << highestPoint << " " << units << endl;
         specInfo2.setf(ios::scientific, ios::floatfield);            // floatfield not set
@@ -1038,7 +1069,6 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
     imageText->SetInput( imageInfo.str().c_str() ) ;
     specText1->SetInput( specInfo1.str().c_str() ) ;
     specText2->SetInput( specInfo2.str().c_str() ) ;
-    point->Delete();
 
 }
 
