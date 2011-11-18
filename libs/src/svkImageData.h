@@ -252,6 +252,9 @@ class svkImageData: public vtkImageData
         void               GetDataRange( double range[2], int component );
         void               SetDataRange( double range[2], int component );
 
+        void               SetSourceData( svkImageData* source );
+        svkImageData*      GetSourceData();
+
         void               SyncVTKImageDataToDcmHeader(); 
 
         // REQUIRED?
@@ -268,6 +271,8 @@ class svkImageData: public vtkImageData
         svkProvenance*                  provenance;
         // REQUIRED?
         svkImageTopologyGenerator*      topoGenerator;
+
+        svkImageData*                   source;
 
         //! Range needs to be able to accomodate real, imaginary, and magnitude components
         double                          range[3][2];

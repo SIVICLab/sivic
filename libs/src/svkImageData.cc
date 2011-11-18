@@ -86,6 +86,7 @@ svkImageData::svkImageData()
 
     this->CellData = svkFastCellData::New();
     this->lastUpdateTime = this->GetMTime();
+    this->source = NULL;
 
 }
 
@@ -111,6 +112,11 @@ svkImageData::~svkImageData()
         this->topoGenerator->Delete();
         this->topoGenerator = NULL;
     }
+
+	if( this->source != NULL ) {
+		this->source->Delete( );
+		this->source = NULL;
+	}
 }
 
 
@@ -1635,3 +1641,35 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
 
 }
 
+
+/*!
+ *  Set the source data. This can be used to keep track of what image data object
+ *  was used to derive this one. It is just for book keeping and is not used in
+ *  any other way.
+ */
+void svkImageData::SetSourceData( svkImageData* source )
+{
+	// Get rid of reference to old source
+	if( this->source != NULL ) {
+		this->source->Delete( );
+	}
+
+	// Register new source
+	if( source != NULL ) {
+		source->Register( this );
+	}
+
+	// Set the new source object
+	this->source = source;
+}
+
+
+/*!
+ *  Set the source data. This can be used to keep track of what image data object
+ *  was used to derive this one. It is just for book keeping and is not used in
+ *  any other way.
+ */
+svkImageData* svkImageData::GetSourceData()
+{
+	return this->source;
+}

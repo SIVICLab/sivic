@@ -188,7 +188,10 @@ void sivicDSCWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned l
 void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation)
 {
     cout << "Change Representation" << endl;
-    svkImageData* data = this->model->GetDataObject("AnatomicalData");
+    svkImageData* data = NULL;
+    if( this->sivicController->GetActive4DImageData() != NULL ) {
+    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
+    }
 
     if( data != NULL ) {
 
@@ -266,7 +269,10 @@ void sivicDSCWidget::ExecuteQuantification()
 {
     cout << "Quantify DSC" << endl;
 
-    svkImageData* data = this->model->GetDataObject("AnatomicalData");
+    svkImageData* data = NULL;
+    if( this->sivicController->GetActive4DImageData() != NULL ) {
+    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
+    }
     vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
 
     if( data != NULL ) {
@@ -353,7 +359,11 @@ void sivicDSCWidget::SetOverlay( vtkstd::string modelObjectName)
         this->model->AddDataObject( "OverlayData", this->model->GetDataObject(modelObjectName ));
     }
     string tmpFilename = "temporaryFile";
-    if( this->model->DataExists( "AnatomicalData" ) ) {
+    svkImageData* data = NULL;
+    if( this->sivicController->GetActive4DImageData() != NULL ) {
+    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
+    }
+    if( data != NULL ) {
         this->sivicController->OpenOverlay(this->model->GetDataObject(modelObjectName), tmpFilename );
     } else {
         this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET );

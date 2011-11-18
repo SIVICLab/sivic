@@ -302,6 +302,7 @@ void svkMriImageData::GetNumberOfVoxels(int numVoxels[3])
      if( this->cellDataRepresentation == NULL ) {
          this->cellDataRepresentation = svk4DImageData::New();
          this->cellDataRepresentation->SetDcmHeader( this->GetDcmHeader());
+         this->cellDataRepresentation->SetSourceData( this );
          this->cellDataRepresentation->Modified();
          this->cellDataRepresentation->SyncVTKImageDataToDcmHeader();
          this->InitializeCellDataArrays();
