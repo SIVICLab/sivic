@@ -93,7 +93,9 @@ svkPlotGridView::svkPlotGridView()
 
     svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
-    this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
+	vtkActor2D* metActor = vtkActor2D::New();
+	this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
+	metActor->Delete();
     overlayActor->InterpolateOff();
 
     overlayActor->Delete();
@@ -373,8 +375,9 @@ void svkPlotGridView::RemoveInput(int index)
             if( ren->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT )) ) {
                 ren->RemoveActor(this->GetProp( svkPlotGridView::OVERLAY_TEXT) );
             }
-            vtkProp* nullProp = NULL; // Mac compiler error fix
-            this->SetProp( svkPlotGridView::OVERLAY_TEXT, nullProp );
+			vtkActor2D* metActor = vtkActor2D::New();
+			this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
+			metActor->Delete();
         }
 
         if( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) != NULL ) {
@@ -907,11 +910,6 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
     if( dataVector[MR4D] != NULL && data != NULL ) {
         double* spacing = data->GetSpacing();
 
-        if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) == NULL ) {
-            vtkActor2D* metActor = vtkActor2D::New();
-            this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
-            metActor->Delete();
-        }
         vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         svkImageClip* metTextClipper = svkImageClip::New();
         metTextClipper->SetInput( this->dataVector[MET] );

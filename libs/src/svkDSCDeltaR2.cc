@@ -141,6 +141,7 @@ int svkDSCDeltaR2::RequestData( vtkInformation* request, vtkInformationVector** 
         }
     }  
 
+    dsc->Modified();
     return 1; 
 };
 

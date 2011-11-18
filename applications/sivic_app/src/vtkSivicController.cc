@@ -1453,6 +1453,16 @@ void vtkSivicController::SaveMetaboliteMaps()
                 fileType
             );
         }
+        for (int i = 0; i < this->dscWidget->modelDSCNames.size(); i++ ) {
+            cout << "Save mets to local fs: " << this->dscWidget->modelDSCNames[i] << endl;
+            string fname( root + this->dscWidget->modelDSCNames[i] );
+
+            this->SaveMetMapData(
+                this->model->GetDataObject( this->dscWidget->modelDSCNames[i] ),
+                const_cast<char*>( fname.c_str() ),
+                fileType
+            );
+        }
 
     }
     dlg->Delete();
@@ -3127,6 +3137,26 @@ int vtkSivicController::GetDraw()
 	}
 }
 
+
+/*!
+ * Turn on the text for the overlay.
+ *
+ */
+void vtkSivicController::OverlayTextOn()
+{
+	this->spectraViewWidget->overlayTextCheck->SetSelectedState( true );
+	this->spectraViewWidget->overlayTextCheck->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
+}
+
+/*!
+ * Turn off the text for the overlay.
+ *
+ */
+void vtkSivicController::OverlayTextOff()
+{
+	this->spectraViewWidget->overlayTextCheck->SetSelectedState( false );
+	this->spectraViewWidget->overlayTextCheck->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
+}
 
 /*!
  *

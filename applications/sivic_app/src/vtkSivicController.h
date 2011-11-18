@@ -232,6 +232,8 @@ class vtkSivicController : public vtkObject
         int                        GetDraw();
         void                       DrawOff();
         void					   DrawOn();
+        void					   OverlayTextOn();
+        void					   OverlayTextOff();
         void					   GenerateTraces( char* sourceImage );
  
     protected:

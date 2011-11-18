@@ -239,7 +239,7 @@ double svkDSCPeakHeight::GetPeakHt( float* imgPtr )
     int startPt = 0; 
     int endPt = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     double peakHt = imgPtr[ startPt ];
-    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+    for ( int pt = startPt; pt < endPt; pt ++ ) {
         if ( imgPtr[ pt ] > peakHt ) {
             peakHt = imgPtr[ pt ];
         }

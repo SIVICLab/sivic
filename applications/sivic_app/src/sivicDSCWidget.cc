@@ -206,7 +206,13 @@ void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation
 
         this->sivicController->ResetChannel( );
         string stringFilename = "DSCdData";
-        this->sivicController->Open4DImage( data, stringFilename);
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 0;
+        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
+                                           resetAmplitude, resetFrequency );
+        this->sivicController->ResetChannel( );
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }
@@ -334,6 +340,7 @@ cout << "MODEL NAME EXISTS? " << this->modelDSCNames[i] << endl;
  */
 void sivicDSCWidget::SetOverlay( vtkstd::string modelObjectName)
 {
+	this->sivicController->OverlayTextOff();
     //  Initialize the overlay with the NAA met map
     if( this->model->DataExists( "MetaboliteData" ) ) {
         this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelObjectName ) );
