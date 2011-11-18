@@ -45,6 +45,7 @@
 #include <svkMRSIOD.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
+#include <vtkStringArray.h>
 
 #include <sys/stat.h>
 
@@ -268,7 +269,8 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
 
-        vtkstd::string pfileName = this->GetFileName();
+//  loop over all pfiles  here
+        vtkstd::string pfileName = this->GetFileNames()->GetValue(0);
         this->mapper->ReadData(pfileName, data);
 
         //  resync any header changes with the svkImageData object's member variables
@@ -591,6 +593,13 @@ void svkGEPFileReader::ReadGEPFile()
 {
 
     cout << "FN: " << this->GetFileName() << endl;
+    this->GlobFileNames();
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {    
+        cout << this->GetFileNames()->GetValue(fileNumber) << endl;
+    }
+
+
+    cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl;
 
     try {
 
@@ -607,7 +616,7 @@ void svkGEPFileReader::ReadGEPFile()
         this->gepf = new ifstream();
         this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        this->gepf->open( this->GetFileName(), ios::binary );
+        this->gepf->open( this->GetFileNames()->GetValue(0), ios::binary );
 
         //  Iterate through map, get offset and read the appropriate length at that offset.  fix endianness. 
         this->ParsePFile(); 
@@ -615,7 +624,7 @@ void svkGEPFileReader::ReadGEPFile()
         this->gepf->close();     
 
     } catch (const exception& e) {
-        cerr << "ERROR opening or reading GE P-File (" << this->GetFileName() << "): " << e.what() << endl;
+        cerr << "ERROR opening or reading GE P-File (" << this->GetFileNames()->GetValue(0) << "): " << e.what() << endl;
     }
 
 }

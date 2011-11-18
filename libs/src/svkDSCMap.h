@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_DSC_PEAK_HEIGHT_H
-#define SVK_DSC_PEAK_HEIGHT_H
+#ifndef SVK_DSC_MAP_H
+#define SVK_DSC_MAP_H
 
 
 #include <vtkObject.h>
@@ -52,7 +52,6 @@
 #include <svkMriImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <svkDSCMap.h>
 
 
 namespace svk {
@@ -65,27 +64,51 @@ using namespace std;
  *  Class to derive peak height and normalized peak height map from a DSC image in delta R2* 
  *  representation.  
  */
-class svkDSCPeakHeight: public svkDSCMap
+class svkDSCMap: public svkImageAlgorithm
 {
 
     public:
 
-        static svkDSCPeakHeight* New();
-        vtkTypeRevisionMacro( svkDSCPeakHeight, svkDSCMap);
+        vtkTypeRevisionMacro( svkDSCMap, svkImageAlgorithm);
+
+        void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
+        void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
+        void                    SetZeroCopy(bool zeroCopy); 
+        void                    SetNormalize();     
 
 
     protected:
 
-        svkDSCPeakHeight();
-        ~svkDSCPeakHeight();
+        svkDSCMap();
+        ~svkDSCMap();
+
+        virtual int             RequestInformation(
+                                    vtkInformation* request,
+                                    vtkInformationVector** inputVector,
+                                    vtkInformationVector* outputVector
+                                );
+        virtual int             RequestData( 
+                                    vtkInformation* request, 
+                                    vtkInformationVector** inputVector, 
+                                    vtkInformationVector* outputVector 
+                                );
+        void                    ZeroData(); 
+
+        virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
 
 
-    private:
+        virtual void            UpdateProvenance();
+        void                    RedimensionData(); 
+        virtual void            GenerateMap() = 0; 
+        double                  GetNoise( float* imgPtr ); 
+        double                  GetNormalizationFactor();
+        void                    GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept); 
 
-        //  Methods:
-        virtual void            GenerateMap(); 
-        double                  GetMapVoxelValue( float* imgPtr ); 
-        double                  GetPeakHt( float* imgPtr );
+
+        //  Members:
+        vtkstd::string          newSeriesDescription; 
+        bool                    normalize; 
 
 
 };
@@ -94,5 +117,5 @@ class svkDSCPeakHeight: public svkDSCMap
 }   //svk
 
 
-#endif //SVK_DSC_PEAK_HEIGHT_H
+#endif //SVK_DSC_MAP_H
 

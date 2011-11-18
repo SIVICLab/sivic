@@ -44,20 +44,20 @@
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
-#include <svkDSCPeakHeight.h>
+#include <svkDSCRecovery.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCPeakHeight, "$Rev$");
-vtkStandardNewMacro(svkDSCPeakHeight);
+vtkCxxRevisionMacro(svkDSCRecovery, "$Rev$");
+vtkStandardNewMacro(svkDSCRecovery);
 
 
 /*!
  *
  */
-svkDSCPeakHeight::svkDSCPeakHeight()
+svkDSCRecovery::svkDSCRecovery()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -72,17 +72,16 @@ svkDSCPeakHeight::svkDSCPeakHeight()
 /*!
  *
  */
-svkDSCPeakHeight::~svkDSCPeakHeight()
+svkDSCRecovery::~svkDSCRecovery()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 }
 
 
-
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDSCPeakHeight::GenerateMap()
+void svkDSCRecovery::GenerateMap()
 {
 
     this->ZeroData(); 
@@ -109,7 +108,7 @@ void svkDSCPeakHeight::GenerateMap()
         ); 
         float* imgPtr = perfusionDynamics->GetPointer(0);
 
-        voxelValue = this->GetMapVoxelValue( imgPtr ); 
+        voxelValue = this->GetRecovery( imgPtr, i ); 
 
         dscMapArray->SetTuple1(i, voxelValue);
     }
@@ -130,25 +129,22 @@ void svkDSCPeakHeight::GenerateMap()
 
 
 /*!  
- *  For multi-volume data modifies header's per frame functional group sequence:
- */
-double svkDSCPeakHeight::GetMapVoxelValue( float* imgPtr )
-{
-
-    double voxelValue; 
-    voxelValue = this->GetPeakHt( imgPtr ); 
-    return voxelValue;
-}
-
-
-/*!  
- *  Gets max peak height of DSC curve (DeltaR2*).  If the S/N
+ *  Gets % Recovery from the DSC curve (DeltaR2*).  If the S/N
  *  is < 5 returns 0.
  */
-double svkDSCPeakHeight::GetPeakHt( float* imgPtr )
+double svkDSCRecovery::GetRecovery( float* imgPtr, int voxelID )
 {
 
     //  get total point range to check:    
+    int numPts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    double slope0;    
+    double intercept0;    
+    int startPt0 = 7; 
+    int endPt0 = 21; 
+    this->GetRegression(voxelID, startPt0, endPt0, slope0, intercept0); 
+
+    //  Peak Ht: 
     int startPt = 0; 
     int endPt = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     double peakHt = imgPtr[ startPt ];
@@ -157,18 +153,21 @@ double svkDSCPeakHeight::GetPeakHt( float* imgPtr )
             peakHt = imgPtr[ pt ];
         }
     }
+    peakHt = peakHt - intercept0;
 
 
-    double noise = this->GetNoise( imgPtr );    
-    if ( peakHt == 0. || noise == 0. ) {
-        peakHt = 0.;
+    //  Post bolus baseline ht:
+    double slope1;    
+    double intercept1;    
+    int startPt1 = numPts - 20; 
+    int endPt1 = numPts - 1; 
+    this->GetRegression(voxelID, startPt1, endPt1, slope1, intercept1); 
+
+    double percentRecov = 0;   
+    if ( peakHt > 0) {
+        percentRecov = 100*(peakHt - intercept1 )/ peakHt; 
     }
-
-    //cout << " S/N " << peakHt << " / " << noise << endl;
-    if ( peakHt/noise < 4. ) {
-        peakHt = 0.;        
-    }
-
-    return peakHt; 
     
 }
+
+

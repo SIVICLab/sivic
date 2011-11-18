@@ -521,7 +521,11 @@ void svkImageReader2::GlobFileNames()
     string filePath( this->GetFilePath( this->GetFileName() ) );
     vtkGlobFileNames* globFileNames = vtkGlobFileNames::New();
     globFileNames->SetDirectory( filePath.c_str() ); 
-    globFileNames->AddFileNames( string( "*." + fileExtension).c_str() );
+    if ( fileExtension.compare("") == 0 ) {
+        globFileNames->AddFileNames(  "*" );
+    } else {
+        globFileNames->AddFileNames( string( "*." + fileExtension).c_str() );
+    }
 
     vtkSortFileNames* sortFileNames = vtkSortFileNames::New();
     sortFileNames->GroupingOn();

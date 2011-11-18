@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_DSC_PEAK_HEIGHT_H
-#define SVK_DSC_PEAK_HEIGHT_H
+#ifndef SVK_DSC_RECOVERY_H
+#define SVK_DSC_RECOVERY_H
 
 
 #include <vtkObject.h>
@@ -65,28 +65,27 @@ using namespace std;
  *  Class to derive peak height and normalized peak height map from a DSC image in delta R2* 
  *  representation.  
  */
-class svkDSCPeakHeight: public svkDSCMap
+class svkDSCRecovery: public svkDSCMap
 {
 
     public:
 
-        static svkDSCPeakHeight* New();
-        vtkTypeRevisionMacro( svkDSCPeakHeight, svkDSCMap);
+        static svkDSCRecovery* New();
+        vtkTypeRevisionMacro( svkDSCRecovery, svkDSCMap);
 
 
     protected:
 
-        svkDSCPeakHeight();
-        ~svkDSCPeakHeight();
+        svkDSCRecovery();
+        ~svkDSCRecovery();
+
+        double          GetRecovery( float* imgPtr, int voxelID ); 
 
 
     private:
 
         //  Methods:
         virtual void            GenerateMap(); 
-        double                  GetMapVoxelValue( float* imgPtr ); 
-        double                  GetPeakHt( float* imgPtr );
-
 
 };
 
@@ -94,5 +93,5 @@ class svkDSCPeakHeight: public svkDSCMap
 }   //svk
 
 
-#endif //SVK_DSC_PEAK_HEIGHT_H
+#endif //SVK_DSC_RECOVERY_H
 

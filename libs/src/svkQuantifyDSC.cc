@@ -47,6 +47,7 @@
 
 #include <svkQuantifyDSC.h>
 #include <svkDSCPeakHeight.h>
+#include <svkDSCRecovery.h>
 #include <svkImageCopy.h>
 #include <svkMetaboliteRatioZScores.h>
 
@@ -115,12 +116,25 @@ void svkQuantifyDSC::GenerateDSCMaps()
     dscPkHt->SetInput( this->GetImageDataInput(0) ); 
     dscPkHt->SetSeriesDescription( "Peak Height" );
     dscPkHt->Update();
-    svkMriImageData* image = svkMriImageData::New();
-    image->DeepCopy( dscPkHt->GetOutput() );
+    svkMriImageData* htImage = svkMriImageData::New();
+    htImage->DeepCopy( dscPkHt->GetOutput() );
 
-    this->dscMapVector.push_back( image );     
+    this->dscMapVector.push_back( htImage );     
 
     dscPkHt->Delete();
+
+
+    //  Calculate DSC % recovery map:
+    svkDSCRecovery* dscRecov = svkDSCRecovery::New();
+    dscRecov->SetInput( this->GetImageDataInput(0) ); 
+    dscRecov->SetSeriesDescription( "Percent Recovery" );
+    dscRecov->Update();
+    svkMriImageData* recovImage = svkMriImageData::New();
+    recovImage->DeepCopy( dscRecov->GetOutput() );
+
+    this->dscMapVector.push_back( recovImage );     
+
+    dscRecov->Delete();
  
 }
 
