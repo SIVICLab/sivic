@@ -237,7 +237,10 @@ void svkIOD::InitImagePixelModule()
 
 
 /*!
- *
+ *  SNOMED Coding:
+ *      value   scheme  meaning
+ *      T-A0100 SNM3    Brain
+ *      T-9200B SNM3    Prostate
  */
 void svkIOD::InitFrameAnatomyMacro()
 {
