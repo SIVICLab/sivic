@@ -951,7 +951,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         this->windowLevel = svkImageMapToColors::New();
         metTextClipper->Update();
-        this->windowLevel->SetInput( dataVector[MET] );
+        this->windowLevel->SetInput( this->dataVector[MET] );
         if( this->colorTransfer == NULL ) {
             this->colorTransfer = svkLookupTable::New();
         }
@@ -1405,6 +1405,35 @@ void svkPlotGridView::SetOverlayThreshold( double threshold )
         this->colorTransfer->SetAlphaThreshold(threshold);
     }
 }
+
+
+void svkPlotGridView::SetLUT( svkLookupTable::svkLookupTableType type )
+{
+	//  Set default threshold
+    double threshold;
+
+    if (this->colorTransfer != NULL) {
+        threshold = this->colorTransfer->GetAlphaThreshold();
+        this->colorTransfer->Delete();
+        this->colorTransfer = NULL;
+    } else {
+        threshold = 0.;
+    }
+
+    this->colorTransfer = svkLookupTable::New();
+	this->colorTransfer->SetLUTType( type );
+	this->colorTransfer->SetAlphaThreshold( threshold );
+    if(this->dataVector[MET] != NULL ) {
+		double window;
+		double level;
+		svkMriImageData::SafeDownCast(this->dataVector[MET])->GetAutoWindowLevel(window, level);
+		this->colorTransfer->SetRange( level - window/2.0, level + window/2.0);
+		this->windowLevel->SetLookupTable( this->colorTransfer );
+    }
+	this->Refresh();
+
+}
+
 
 
 /*!

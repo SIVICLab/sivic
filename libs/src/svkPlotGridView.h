@@ -189,6 +189,7 @@ class svkPlotGridView : public svkDataView
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetOverlayOpacity( double opacity );
         void                   SetOverlayThreshold( double threshold );
+        void                   SetLUT( svkLookupTable::svkLookupTableType type );
 
     private: 
         void                     ResliceImage(svkImageData* input, svkImageData* target);

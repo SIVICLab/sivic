@@ -348,3 +348,10 @@ void svkPlotGridViewController::SetOverlayThreshold(double threshold)
     static_cast<svkPlotGridView*>( view )->SetOverlayThreshold( threshold );
 }
 
+/*!
+ *
+ */
+void svkPlotGridViewController::SetLUT( svkLookupTable::svkLookupTableType type )
+{
+    static_cast<svkPlotGridView*>(this->view)->SetLUT( type );
+}

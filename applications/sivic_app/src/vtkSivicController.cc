@@ -883,14 +883,17 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetInterpolationCallback( 2 );
                 }
                 string lut = (this->imageViewWidget->lutBox->GetWidget()->GetValue( ));
-                if( lut == "color" ) {
+                cout << "lut is <" << lut << ">" << endl;
+                if( lut == "Color LUT" ) {
                     this->SetLUTCallback( svkLookupTable::COLOR );
-                } else if ( lut == "grey " ) {
+                } else if ( lut == "Grey LUT" ) {
                     this->SetLUTCallback( svkLookupTable::GREY_SCALE );
-                } else if ( lut == "hurd " ) {
+                } else if ( lut == "Hurd LUT" ) {
                     this->SetLUTCallback( svkLookupTable::HURD );
-                } else if ( lut == "cyan " ) {
+                } else if ( lut == "Cyan LUT" ) {
                     this->SetLUTCallback( svkLookupTable::CYAN_HOT );
+                } else if ( lut == "Reverse Color LUT" ) {
+                    this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 }
                 this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
@@ -2247,12 +2250,19 @@ void vtkSivicController::SetLUTCallback( int type )
 {
     if ( type == svkLookupTable::COLOR) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::COLOR );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::COLOR );
     } else if ( type == svkLookupTable::GREY_SCALE) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::GREY_SCALE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::GREY_SCALE );
     } else if ( type == svkLookupTable::HURD) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::HURD );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::HURD );
     } else if ( type == svkLookupTable::CYAN_HOT ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CYAN_HOT );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CYAN_HOT );
+    } else if ( type == svkLookupTable::REVERSE_COLOR ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::REVERSE_COLOR );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::REVERSE_COLOR );
     }
 }
 

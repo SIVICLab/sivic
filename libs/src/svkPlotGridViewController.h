@@ -56,6 +56,7 @@
 #include <svkSpecGridSelector.h>
 #include <svkPlotGridView.h>
 #include <svkPlotLine.h>
+#include <svkLookupTable.h>
 
 
 namespace svk {
@@ -103,6 +104,7 @@ class svkPlotGridViewController : public svkDataViewController
         virtual int*                    GetVolumeIndexArray( );
                 void                    SetOverlayOpacity( double opacity );
                 void                    SetOverlayThreshold( double threshold );
+                void                    SetLUT( svkLookupTable::svkLookupTableType type );
 
 
     protected:

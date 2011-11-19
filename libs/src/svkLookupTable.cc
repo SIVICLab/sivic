@@ -62,6 +62,7 @@ svkLookupTable::svkLookupTable()
 #endif
 
     this->alphaThresholdPercentage = 0.00; 
+    this->reverseThreshold = false;
 }
 
 
@@ -74,6 +75,7 @@ svkLookupTable::~svkLookupTable()
 //
 void svkLookupTable::SetLUTType(svkLookupTableType type)
 {
+	this->reverseThreshold = false;
     if ( type == svkLookupTable::COLOR ) {
 
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
@@ -82,6 +84,15 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetHueRange(0,1);
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
+
+    } else if ( type == svkLookupTable::REVERSE_COLOR ) {
+        this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
+        this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
+        this->SetValueRange(1,0);
+        this->SetHueRange(1,0);
+        this->SetSaturationRange(1,1);
+        this->SetAlphaRange(1.,1.);
+        this->reverseThreshold = true;
 
     } else if ( type == svkLookupTable::GREY_SCALE ) {
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
@@ -657,12 +668,19 @@ double svkLookupTable::GetAlphaThresholdValue()
 void svkLookupTable::ConfigureAlphaThreshold() 
 {
     double rgba[4];
+    double alphaBelowThreshold = 0.;
+    double alphaAboveThreshold = 1.;
+    if( this->reverseThreshold ) {
+    	alphaBelowThreshold = 1;
+    	alphaAboveThreshold = 0;
+    }
+
     for( int i = 0; i < this->GetNumberOfTableValues(); i++ ) {
         this->GetTableValue(i, rgba);
         if( i < this->alphaThresholdPercentage * this->GetNumberOfTableValues() ) {
-            rgba[3] = 0.;
+            rgba[3] = alphaBelowThreshold;
         } else {
-            rgba[3] = 1.;
+            rgba[3] = alphaAboveThreshold;
         }
         this->SetTableValue(i, rgba);
     }

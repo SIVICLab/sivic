@@ -62,6 +62,7 @@ class svkLookupTable : public vtkLookupTable
 
         enum svkLookupTableType {
             COLOR = 0, 
+            REVERSE_COLOR,
             GREY_SCALE, 
             HURD, 
             CYAN_HOT
@@ -94,6 +95,7 @@ class svkLookupTable : public vtkLookupTable
         double      alphaThresholdPercentage;
 
         void        ConfigureAlphaThreshold();
+        bool		reverseThreshold;
 
         static const int NUM_COLORS;    
 

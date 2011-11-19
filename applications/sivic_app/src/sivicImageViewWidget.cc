@@ -273,6 +273,10 @@ void sivicImageViewWidget::CreateWidget()
     invocation << "SetLUTCallback " << svkLookupTable::CYAN_HOT << endl;
     lutMenu->AddRadioButton("Cyan LUT", this->sivicController, invocation.str().c_str());
 
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::REVERSE_COLOR << endl;
+    lutMenu->AddRadioButton("Reverse Color LUT", this->sivicController, invocation.str().c_str());
+
     this->lutBox->GetWidget()->SetValue( "Color LUT" );
 
     this->thresholdType = vtkKWMenuButtonWithLabel::New();   
