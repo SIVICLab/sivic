@@ -96,8 +96,8 @@ void sivicDSCWidget::CreateWidget()
     //representationMenu->SetFont("times 24 bold");
     
 
-    string zfOption1 = "T2*";
-    string zfOption2 = "DR2*";
+    string zfOption1 = "T2* - susceptibility";
+    string zfOption2 = "Delta R2* - relative Gd concentration";
     string invocationString;
 
     invocationString = "SetDSCRepresentationCallback 0"; 
@@ -187,11 +187,7 @@ void sivicDSCWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned l
 
 void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation)
 {
-    cout << "Change Representation" << endl;
-    svkImageData* data = NULL;
-    if( this->sivicController->GetActive4DImageData() != NULL ) {
-    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
-    }
+    svkImageData* data = this->model->GetDataObject("AnatomicalData");
 
     if( data != NULL ) {
 
@@ -209,13 +205,7 @@ void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation
 
         this->sivicController->ResetChannel( );
         string stringFilename = "DSCdData";
-        bool useFullFrequencyRange = 0;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 0;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                           resetAmplitude, resetFrequency );
-        this->sivicController->ResetChannel( );
+        this->sivicController->Open4DImage( data, stringFilename);
         this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         this->plotController->GetView()->Refresh();
     }
@@ -228,7 +218,6 @@ void sivicDSCWidget::SetDSCRepresentationCallback( svkDSCDeltaR2::representation
 void sivicDSCWidget::ExecuteDSC() 
 {
 
-    cout << "EXECUTE" << endl;
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
 
     if( data != NULL ) {
@@ -267,12 +256,8 @@ void sivicDSCWidget::ExecuteDSC()
  */
 void sivicDSCWidget::ExecuteQuantification()
 {
-    cout << "Quantify DSC" << endl;
 
-    svkImageData* data = NULL;
-    if( this->sivicController->GetActive4DImageData() != NULL ) {
-    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
-    }
+    svkImageData* data = this->model->GetDataObject("AnatomicalData");
     vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
 
     if( data != NULL ) {
@@ -291,7 +276,6 @@ void sivicDSCWidget::ExecuteQuantification()
             //
             vtkstd::string modelDataName = (*dscMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription");
             this->modelDSCNames.push_back( modelDataName );
-cout << "MODEL NAME EXISTS? " << this->modelDSCNames[i] << endl;
  
             if( this->model->DataExists( this->modelDSCNames[i] ) ) {
                 this->model->ChangeDataObject( this->modelDSCNames[ i ], (*dscMaps)[i]);  
@@ -305,8 +289,6 @@ cout << "MODEL NAME EXISTS? " << this->modelDSCNames[i] << endl;
                 invocation.str("");
                 invocation << "DSCMapViewCallback " << mapNum.str() << endl;
 
-                cout << "DSCMapViewCallback " << mapNum.str() << endl;
-                cout << "Invocation " << invocation.str() << endl;
                 mapViewMenu->AddRadioButton(modelDataName.c_str(), this->sivicController, invocation.str().c_str());
             }
  
@@ -346,7 +328,6 @@ cout << "MODEL NAME EXISTS? " << this->modelDSCNames[i] << endl;
  */
 void sivicDSCWidget::SetOverlay( vtkstd::string modelObjectName)
 {
-	this->sivicController->OverlayTextOff();
     //  Initialize the overlay with the NAA met map
     if( this->model->DataExists( "MetaboliteData" ) ) {
         this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelObjectName ) );
@@ -359,11 +340,7 @@ void sivicDSCWidget::SetOverlay( vtkstd::string modelObjectName)
         this->model->AddDataObject( "OverlayData", this->model->GetDataObject(modelObjectName ));
     }
     string tmpFilename = "temporaryFile";
-    svkImageData* data = NULL;
-    if( this->sivicController->GetActive4DImageData() != NULL ) {
-    	data = this->sivicController->GetActive4DImageData()->GetSourceData();
-    }
-    if( data != NULL ) {
+    if( this->model->DataExists( "AnatomicalData" ) ) {
         this->sivicController->OpenOverlay(this->model->GetDataObject(modelObjectName), tmpFilename );
     } else {
         this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET );

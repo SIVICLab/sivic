@@ -313,37 +313,12 @@ void sivicCombineWidget::CreateWidget()
     sliceTitle->SetParent(this);
     sliceTitle->SetJustificationToLeft();
     sliceTitle->Create();
-/*
-    this->Script("grid %s -row 0 -column 1 -sticky wnse", specTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 2 -sticky wnse", colsTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 3 -sticky wnse", rowsTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 4 -sticky wnse", sliceTitle->GetWidgetName(), 4);
 
-    this->Script("grid %s -row 1 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSlices->GetWidgetName(), 4);
-
-    this->Script("grid %s -row 2 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 4);
-*/
-
-    this->Script("grid %s -row %d -column 4 -sticky nwse -padx 2 -pady 1", this->applyButton->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 0 -sticky nwse -padx 10 -pady 10", this->applyButton->GetWidgetName(), 0);
 
     this->Script("grid rowconfigure %s 0 -weight 0", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1 -weight 0", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2 -weight 0", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3 -weight 0", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 3 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 4 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver( this->applyButton, vtkKWPushButton::InvokedEvent );
 

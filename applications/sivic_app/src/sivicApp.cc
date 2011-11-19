@@ -351,6 +351,9 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("Welcome", "Welcome!", NULL);
     vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Welcome");
 
+    this->tabbedPanel->AddPage("Data", "Data.", NULL);
+    vtkKWWidget* dataPanel = tabbedPanel->GetFrame("Data");
+
     this->tabbedPanel->AddPage("Preprocess", "Preprocessing.", NULL);
     vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preprocess");
 
@@ -360,11 +363,8 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("Combine", "Combine", NULL);
     vtkKWWidget* combinePanel = tabbedPanel->GetFrame("Combine");
 
-    this->tabbedPanel->AddPage("MRS Quantification", "MRS Quantification.", NULL);
-    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quantification");
-
-    this->tabbedPanel->AddPage("Data", "Data.", NULL);
-    vtkKWWidget* dataPanel = tabbedPanel->GetFrame("Data");
+    this->tabbedPanel->AddPage("MRS Quant", "MRS Quant.", NULL);
+    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quant");
 
     this->tabbedPanel->AddPage("DSC", "DSC", NULL);
     vtkKWWidget* dscPanel = tabbedPanel->GetFrame("DSC");
