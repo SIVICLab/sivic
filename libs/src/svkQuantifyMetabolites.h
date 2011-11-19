@@ -133,6 +133,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         float                               useSelectedVolumeFraction;
         short*                              selectedVolumeMask;
         vtkXMLDataElement*                  mrsXML;
+        vtkXMLDataElement*                  applicationXML;
 
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)

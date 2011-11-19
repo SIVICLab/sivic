@@ -98,10 +98,6 @@ svkQuantifyMetabolites::~svkQuantifyMetabolites()
 void svkQuantifyMetabolites::Quantify()
 {
 
-    if ( this->mrsXML == NULL ) {
-        this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() ); 
-    }
-
     this->GenerateRegionMaps();
     this->GenerateRatioMaps(); 
     this->GenerateZScoreMaps(); 
@@ -542,9 +538,23 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
     bool parseRegions = true;
     int regionIndex = 0;
 
-    if ( this->mrsXML == NULL ) {
+    //if ( this->mrsXML == NULL ) {
         this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
-    }
+    //} 
+        this->mrsXML->PrintXML(cout, vtkIndent()); 
+
+    
+        //  Get the application specific sub-element (i.e. 1H Brain, 13C prostate, etc.)
+        string nucleus = "13C"; 
+        if ( this->GetImageDataInput(0) != NULL ) { 
+            nucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
+        } 
+        if ( nucleus.compare( "13C" ) == 0 ) {
+            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "13C");
+        } else {
+             this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H")->PrintXML(cout, vtkIndent());
+            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
+        }
 
     vtkXMLDataElement* regionXML;
 
@@ -594,6 +604,19 @@ void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float wi
     //  If necessary, read xml from file before modifying content:
     if ( this->mrsXML == NULL ) {
         this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+
+        this->mrsXML->PrintXML(cout, vtkIndent()); 
+        //  Get the application specific sub-element (i.e. 1H Brain, 13C prostate, etc.)
+        string nucleus = "13C"; 
+        if ( this->GetImageDataInput(0) != NULL ) { 
+            nucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
+        } 
+        if ( nucleus.compare( "13C" ) == 0 ) {
+            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "13C");
+        } else {
+            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
+        }
+        this->mrsXML->PrintXML(cout, vtkIndent()); 
     }
 
     vtkXMLDataElement* regionXML;
@@ -674,7 +697,7 @@ int svkQuantifyMetabolites::FillOutputPortInformation( int vtkNotUsed(port), vtk
 string svkQuantifyMetabolites::GetDefaultXMLFileName()
 {
     string fileName = getenv("HOME"); 
-    fileName.append("/.SIVICQuant.xml" );
+    fileName.append("/.SIVICQuant_0_9.xml" );
     return fileName;
 }
 
@@ -748,7 +771,10 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "       Beck Olson" << endl
         << "-->" << endl
         << " "  << endl
-        << " <SVK_MRS_QUANTIFICATION version=\"0.7.6\">" << endl
+        << " <SVK_MRS_QUANTIFICATION version=\"0.9.0\">" << endl
+        << " " << endl
+        << " -- 1H Brain " << endl
+        << "  <APPLICATION nucleus=\"1H\" anatomy=\"brain\"> " << endl
         << " " << endl
         << "     <REGION id=\"0\" name=\"CHOLINE\"   peak_ppm=\"3.1455\" width_ppm=\".1758\">" << endl
         << "     </REGION>" << endl
@@ -832,6 +858,121 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "         <DENOMINATOR quant_id=\"2\">" << endl
         << "         </DENOMINATOR>" << endl
         << "     </ZSCORE>" << endl
+        << " " << endl
+        << "  </APPLICATION> " << endl
+        << " " << endl
+        << " " << endl
+        << " -- 13C Prostate  " << endl
+        << "  <APPLICATION nucleus=\"13C\" anatomy=\"prostate\">      " << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"LACTATE\"  peak_ppm=\"185\"  width_ppm=\"2\"> " << endl
+        << "     </REGION> " << endl
+        << "     <REGION id=\"1\" name=\"ALANINE\"  peak_ppm=\"178\"  width_ppm=\"2\"> " << endl
+        << "     </REGION> " << endl
+        << "     <REGION id=\"2\" name=\"PYRUVATE\" peak_ppm=\"173\"  width_ppm=\"2\"> " << endl
+        << "     </REGION> " << endl
+        << "     <REGION id=\"3\" name=\"UREA\"     peak_ppm=\"164\"  width_ppm=\"2\"> " << endl
+        << "     </REGION> " << endl
+        << " " << endl
+        << "     -- lac peak ht " << endl
+        << "     <QUANT id=\"0\" region=\"0\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- ala peak ht " << endl
+        << "     <QUANT id=\"1\" region=\"1\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- pyr peak ht " << endl
+        << "     <QUANT id=\"2\" region=\"2\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- urea peak ht  " << endl
+        << "     <QUANT id=\"3\" region=\"3\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- lac integrated area " << endl
+        << "     <QUANT id=\"4\" region=\"0\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- ala integrated area " << endl
+        << "     <QUANT id=\"5\" region=\"1\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- pyr integrated area " << endl
+        << "     <QUANT id=\"6\" region=\"2\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- urea integrated area  " << endl
+        << "     <QUANT id=\"7\" region=\"3\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- lac magnitude  " << endl
+        << "     <QUANT id=\"8\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- ala magnitude  " << endl
+        << "     <QUANT id=\"9\" region=\"1\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- pyr magnitude  " << endl
+        << "     <QUANT id=\"10\" region=\"2\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- urea magnitude  " << endl
+        << "     <QUANT id=\"11\" region=\"3\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << " " << endl
+        << "     -- ratio of lac to pyr peak ht " << endl
+        << "     <RATIO id=\"0\" name=\"LAC/PYR_PEAK_HT\"> " << endl
+        << "         <NUMERATOR quant_id=\"0\"> " << endl
+        << "         </NUMERATOR> " << endl
+        << "         <DENOMINATOR quant_id=\"2\"> " << endl
+        << "         </DENOMINATOR> " << endl
+        << "     </RATIO> " << endl
+        << " " << endl
+        << " " << endl
+        << "   -- ratio of lac to pyr integrated area  " << endl
+        << "     <RATIO id=\"1\" name=\"LAC/PYR_INTEGRATED\"> " << endl
+        << "         <NUMERATOR quant_id=\"4\"> " << endl
+        << "         </NUMERATOR> " << endl
+        << "         <DENOMINATOR quant_id=\"6\"> " << endl
+        << "         </DENOMINATOR> " << endl
+        << "     </RATIO> " << endl
+        << " " << endl
+        << "     -- ratio of lac to pyr magnitude  " << endl
+        << "     <RATIO id=\"2\" name=\"LAC/PYR_MAG\"> " << endl
+        << "         <NUMERATOR quant_id=\"8\"> " << endl
+        << "         </NUMERATOR> " << endl
+        << "         <DENOMINATOR quant_id=\"10\"> " << endl
+        << "         </DENOMINATOR> " << endl
+        << "     </RATIO> " << endl
+        << " " << endl
+        << "   </APPLICATION> " << endl
         << " " << endl
         << " " << endl
         << " </SVK_MRS_QUANTIFICATION> " << endl; 
