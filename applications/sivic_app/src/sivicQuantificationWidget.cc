@@ -110,7 +110,6 @@ void sivicQuantificationWidget::CreateWidget()
     double peakStart; 
     double peakEnd; 
 
-
     int i; 
     for ( i = 0; i < this->numMets; i++ ) {
 
@@ -138,7 +137,6 @@ void sivicQuantificationWidget::CreateWidget()
         this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
         this->metRangeVector[i]->GetLabel()->SetWidth(10); 
         this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
-
     }
 
     //  Set default value
@@ -370,8 +368,24 @@ void sivicQuantificationWidget::EnableWidgets()
         double peakStart; 
         double peakEnd; 
 
+        svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+        this->mrsQuant->SetInput( data );
+
+        this->metNames.clear();
         vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
-        for ( int i = 0; i < this->numMets; i++ ) {
+        this->numMets = regionNameVector.size(); 
+        for (int i = 0; i < regionNameVector.size() ; i ++ ) {
+            string regionName = regionNameVector[i][0]; 
+            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+            this->metNames.push_back( regionName ); 
+            this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
+            this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
+        }
+
+
+        int i; 
+        for ( i = 0; i < this->numMets; i++ ) {
 
             string metName = this->metNames[i]; 
             float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
@@ -379,6 +393,24 @@ void sivicQuantificationWidget::EnableWidgets()
             peakStart = peakPPM + (widthPPM/2.);
             peakEnd   = peakPPM - (widthPPM/2.);
             this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
+    
+            this->metRangeVector.push_back( vtkKWRange::New() ); 
+            this->metRangeVector[i]->SetParent(this);
+            this->metRangeVector[i]->SetLabelPositionToLeft();
+            this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
+            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+            this->metRangeVector[i]->Create();
+            this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
+            this->metRangeVector[i]->EnabledOff();
+            this->metRangeVector[i]->SetSliderSize(1);
+            this->metRangeVector[i]->SetPadY(1);
+            this->metRangeVector[i]->SetEntry1PositionToLeft();
+            this->metRangeVector[i]->SetEntry2PositionToRight();
+            this->metRangeVector[i]->SetEntriesWidth(4);
+            this->metRangeVector[i]->SetResolution(.01);
+            this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
+            this->metRangeVector[i]->GetLabel()->SetWidth(10); 
+            this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
 
             this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
             metMin = this->metQuantMap[metName][0]; 
