@@ -354,7 +354,7 @@ void sivicCombineWidget::ExecuteCombine()
         svkCoilCombine* coilCombine = svkCoilCombine::New();
         coilCombine->SetInput( data );
 
-        coilCombine->SetCombinationDimension( svkCoilCombine::TIME );  //for combining time points
+        coilCombine->SetCombinationDimension( svkCoilCombine::COIL);  //for combining time points
         coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  //for combining as magnitude data
 
         coilCombine->Update();
