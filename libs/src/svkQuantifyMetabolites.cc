@@ -865,7 +865,7 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << " -- 13C Prostate  " << endl
         << "  <APPLICATION nucleus=\"13C\" anatomy=\"prostate\">      " << endl
         << " " << endl
-        << "     <REGION id=\"0\" name=\"LACTATE\"  peak_ppm=\"185\"  width_ppm=\"2\"> " << endl
+        << "     <REGION id=\"0\" name=\"LACTATE\"  peak_ppm=\"186\"  width_ppm=\"3\"> " << endl
         << "     </REGION> " << endl
         << "     <REGION id=\"1\" name=\"ALANINE\"  peak_ppm=\"178\"  width_ppm=\"2\"> " << endl
         << "     </REGION> " << endl
