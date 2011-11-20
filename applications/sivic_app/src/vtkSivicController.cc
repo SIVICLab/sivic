@@ -190,34 +190,42 @@ void vtkSivicController::SetActive4DImageData( int index )
 {
     svk4DImageData* oldData = this->GetActive4DImageData();
     if( oldData != NULL && index >= 0 ) {
-       if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
-           int toggleDraw = this->GetDraw();
-           if( toggleDraw ) {
-			   this->DrawOff();
-           }
-           svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActivePlotIndex( index );
-           svkImageData* newData = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
-           if( newData->IsA("svkMrsImageData")) {
-               this->model->ChangeDataObject("SpectroscopicData", newData );
-           } else {
-               this->model->ChangeDataObject("4DImageData", newData );
-           }
-           this->processingWidget->InitializePhaser();
-           int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
-           this->spectraViewWidget->channelSlider->SetRange( 1, channels);
-           this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
-           int timePoints = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
-           this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
-           this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
-           this->EnableWidgets();
-           if( this->model->DataExists("AnatomicalData") ) {
-               this->overlayController->SetInput( newData, svkOverlayView::MR4D );
-               this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
-           }
-           if( toggleDraw ) {
-               this->DrawOn();
+        if( index <= svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots()) {
+            int toggleDraw = this->GetDraw();
+            if( toggleDraw ) {
+			    this->DrawOff();
             }
-       }
+            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActivePlotIndex( index );
+            svkImageData* newData = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
+            if( newData->IsA("svkMrsImageData")) {
+                this->model->ChangeDataObject("SpectroscopicData", newData );
+            } else {
+                this->model->ChangeDataObject("4DImageData", newData );
+            }
+            this->processingWidget->InitializePhaser();
+            //  assume that only one dimensin is > 1 to determine number of volumes for slider range: 
+            int numVolumes; 
+            int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
+            int timePts = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
+            if ( channels == 1 ) {
+                numVolumes = timePts; 
+            } else {                    
+                numVolumes = channels; 
+            }
+            this->spectraViewWidget->channelSlider->SetRange( 1, channels);
+            this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
+            int timePoints = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
+            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
+            this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
+            this->EnableWidgets();
+            if( this->model->DataExists("AnatomicalData") ) {
+                this->overlayController->SetInput( newData, svkOverlayView::MR4D );
+                this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
+            }
+            if( toggleDraw ) {
+                this->DrawOn();
+            }
+        }
     }
 }
 
