@@ -388,9 +388,10 @@ void svkMetaboliteMap::RedimensionData()
         voxelSpacing,
         dcos,
         hdr->GetNumberOfSlices(),
-        numCoils,
-        numTimePoints 
+        numTimePoints, 
+        numCoils
     );
+
 }
 
 
