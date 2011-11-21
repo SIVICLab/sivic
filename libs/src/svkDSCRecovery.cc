@@ -138,36 +138,83 @@ double svkDSCRecovery::GetRecovery( float* imgPtr, int voxelID )
     //  get total point range to check:    
     int numPts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
 
-    double slope0;    
-    double intercept0;    
-    int startPt0 = 7; 
-    int endPt0 = 21; 
-    this->GetRegression(voxelID, startPt0, endPt0, slope0, intercept0); 
+    int voxelIndex[3];
+    this->GetImageDataInput(0)->GetIndexFromID(voxelID, voxelIndex);
+    int numVoxels[3];
+    this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
 
-    //  Peak Ht: 
-    int startPt = 0; 
-    int endPt = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    double peakHt = imgPtr[ startPt ];
-    for ( int pt = startPt; pt < endPt; pt ++ ) {
-        if ( imgPtr[ pt ] > peakHt ) {
-            peakHt = imgPtr[ pt ];
+    int xMin = 0;
+    if ( voxelIndex[0] - 1 >= 0 ) {
+        xMin = voxelIndex[0] - 1; 
+    }
+    int xMax = numVoxels[0];
+    if ( voxelIndex[0] + 1 < xMax ) {
+        xMax = voxelIndex[0] + 1; 
+    }
+
+    int yMin = 0;
+    if ( voxelIndex[1] - 1 >= 0 ) {
+        yMin = voxelIndex[1] - 1; 
+    }
+    int yMax = numVoxels[1];
+    if ( voxelIndex[1] + 1 < yMax ) {
+        yMax = voxelIndex[1] + 1; 
+    }
+
+    int zMin = 0;
+    if ( voxelIndex[2] - 1 >= 0 ) {
+        zMin = voxelIndex[2] - 1; 
+    }
+    int zMax = numVoxels[2];
+    if ( voxelIndex[2] + 1 < zMax ) {
+        zMax = voxelIndex[2] + 1; 
+    }
+
+    
+
+    double averageRecovery;
+    int numPtsToAverage = 0;  
+    for ( int x = xMin; x <= xMax; x++  ) {
+        for ( int y = yMin; y <= yMax; y++  ) {
+           for ( int z = zMin; z <= zMax; z++  ) {
+
+                double slope0;    
+                double intercept0;    
+                int startPt0 = 5; 
+                int endPt0 = 21; 
+                this->GetRegression(voxelID, startPt0, endPt0, slope0, intercept0); 
+
+                //  Peak Ht: 
+                int startPt = 0; 
+                int endPt = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+                double peakHt = imgPtr[ startPt ];
+                for ( int pt = startPt; pt < endPt; pt ++ ) {
+                    if ( imgPtr[ pt ] > peakHt ) {
+                        peakHt = imgPtr[ pt ];
+                    }
+                }
+                peakHt = peakHt - intercept0;
+               
+               
+                //  Post bolus baseline ht:
+                double slope1;    
+                double intercept1;    
+                int startPt1 = numPts - 40; 
+                int endPt1 = numPts - 1; 
+                this->GetRegression(voxelID, startPt1, endPt1, slope1, intercept1); 
+               
+                double percentRecov = 200.;   
+                if ( peakHt > 0) {
+                    percentRecov = 100 * (peakHt - (intercept1 - intercept0 ))/ peakHt; 
+                }
+                averageRecovery += percentRecov; 
+                numPtsToAverage++; 
+               
+               
+           }
         }
     }
-    peakHt = peakHt - intercept0;
-
-
-    //  Post bolus baseline ht:
-    double slope1;    
-    double intercept1;    
-    int startPt1 = numPts - 20; 
-    int endPt1 = numPts - 1; 
-    this->GetRegression(voxelID, startPt1, endPt1, slope1, intercept1); 
-
-    double percentRecov = 0;   
-    if ( peakHt > 0) {
-        percentRecov = 100*(peakHt - intercept1 )/ peakHt; 
-    }
-    
+    return averageRecovery/numPts;
 }
 
 
