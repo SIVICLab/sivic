@@ -203,9 +203,12 @@ double svkDSCRecovery::GetRecovery( float* imgPtr, int voxelID )
                 int endPt1 = numPts - 1; 
                 this->GetRegression(voxelID, startPt1, endPt1, slope1, intercept1); 
                
-                double percentRecov = 200.;   
+                double percentRecov = 0.;
                 if ( peakHt > 0) {
-                    percentRecov = 100 * (peakHt - (intercept1 - intercept0 ))/ peakHt; 
+                    percentRecov = 100 - 100 * (peakHt - (intercept1 - intercept0 ))/ peakHt;
+                }
+                if( percentRecov < 0 ) {
+                	percentRecov = 0;
                 }
                 averageRecovery += percentRecov; 
                 numPtsToAverage++; 
