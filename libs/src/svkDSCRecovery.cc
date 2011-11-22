@@ -144,35 +144,36 @@ double svkDSCRecovery::GetRecovery( float* imgPtr, int voxelID )
     this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
 
     int xMin = 0;
-    if ( voxelIndex[0] - 1 >= 0 ) {
-        xMin = voxelIndex[0] - 1; 
+    int delta = 1;
+    if ( voxelIndex[0] - delta >= 0 ) {
+        xMin = voxelIndex[0] - delta;
     }
     int xMax = numVoxels[0];
-    if ( voxelIndex[0] + 1 < xMax ) {
-        xMax = voxelIndex[0] + 1; 
+    if ( voxelIndex[0] + delta < xMax ) {
+        xMax = voxelIndex[0] + delta;
     }
 
     int yMin = 0;
-    if ( voxelIndex[1] - 1 >= 0 ) {
-        yMin = voxelIndex[1] - 1; 
+    if ( voxelIndex[1] - delta >= 0 ) {
+        yMin = voxelIndex[1] - delta;
     }
     int yMax = numVoxels[1];
-    if ( voxelIndex[1] + 1 < yMax ) {
-        yMax = voxelIndex[1] + 1; 
+    if ( voxelIndex[1] + delta < yMax ) {
+        yMax = voxelIndex[1] + delta;
     }
 
     int zMin = 0;
     if ( voxelIndex[2] - 1 >= 0 ) {
-        zMin = voxelIndex[2] - 1; 
+        zMin = voxelIndex[2];
     }
     int zMax = numVoxels[2];
     if ( voxelIndex[2] + 1 < zMax ) {
-        zMax = voxelIndex[2] + 1; 
+        zMax = voxelIndex[2];
     }
 
     
 
-    double averageRecovery;
+    double averageRecovery = 0;
     int numPtsToAverage = 0;  
     for ( int x = xMin; x <= xMax; x++  ) {
         for ( int y = yMin; y <= yMax; y++  ) {
@@ -203,21 +204,32 @@ double svkDSCRecovery::GetRecovery( float* imgPtr, int voxelID )
                 int endPt1 = numPts - 1; 
                 this->GetRegression(voxelID, startPt1, endPt1, slope1, intercept1); 
                
-                double percentRecov = 0.;
+                if( peakHt == 0 && intercept0 == 0 && intercept1 == 0 ) {
+                	continue;
+                }
+                double percentRecov = 100.;
                 if ( peakHt > 0) {
                     percentRecov = 100 - 100 * (peakHt - (intercept1 - intercept0 ))/ peakHt;
                 }
-                if( percentRecov < 0 ) {
-                	percentRecov = 0;
+                //if( percentRecov > 100 ) {
+                //	percentRecov = 100;
+                //}
+                //if( percentRecov < 0 ) {
+               // 	percentRecov = 0;
+                //}
+                if( percentRecov > 0 ) {
+					averageRecovery += percentRecov;
+					numPtsToAverage++;
                 }
-                averageRecovery += percentRecov; 
-                numPtsToAverage++; 
                
                
            }
         }
     }
-    return averageRecovery/numPts;
+    if( numPtsToAverage > 0 ) {
+		averageRecovery /= numPtsToAverage;
+    }
+    return averageRecovery;
 }
 
 
