@@ -52,6 +52,12 @@ mkdir ${depend_dir}
 
 cp -R /usr/local/lib/KWWidgets  ${depend_dir}
 cp -R ./vtk-5.6 ${depend_dir}
+cp -R /usr/local/lib/tcl8.5 ${depend_dir}
+cp -R /usr/local/lib/tk8.5 ${depend_dir}
+cp -R /usr/local/lib/libtcl8.5.dylib ${depend_dir}
+cp -R /usr/local/lib/libtk8.5.dylib ${depend_dir}
+
+exit
 
 tcl_system="/Library/Frameworks/Tcl.framework/Versions/8.5/Tcl"
 tk_system="/Library/Frameworks/Tk.framework/Versions/8.5/Tk"

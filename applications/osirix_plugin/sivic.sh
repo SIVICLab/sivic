@@ -49,10 +49,23 @@ echo ${plugin_path}
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
 export DYLD_FRAMEWORK_PATH
 
-DYLD_LIBRARY_PATH="${plugin_path}/Tcl.framework:${plugin_path}/Tk.framework:${plugin_path}/vtk-5.6:${plugin_path}/KWWidgets"
+DYLD_LIBRARY_PATH="${plugin_path}:${plugin_path}/tcl8.5:${plugin_path}/Tk8.5:${plugin_path}/vtk-5.6:${plugin_path}/KWWidgets"
 export DYLD_LIBRARY_PATH
 set | grep  DYLD_FRAMEWORK_PATH
 set | grep  DYLD_LIBRARY_PATH
+
+PATH="${plugin_path}:${plugin_path}/tcl8.5/:${plugin_path}/tk8.5/:${PATH}"
+export PATH
+set | grep PATH
+
+TCL_LIBRARY="${plugin_path}/tcl8.5/"
+export TCL_LIBRARY
+set | grep TCL_LIBRARY
+
+TK_LIBRARY="${plugin_path}/tk8.5/"
+export TK_LIBRARY
+set | grep TK_LIBRARY 
+
 
 DCMDICTPATH="${plugin_path}/dicom.dic"
 export DCMDICTPATH
