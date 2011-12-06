@@ -2172,7 +2172,7 @@ bool svkGEPFileMapper::WasIndexSampled(int indexX, int indexY, int indexZ)
  *  if elliptical k-space sampling was used, the data is zero-padded.  Other reduced
  *  k-space sampling strategies aren't supported yet. 
  */
-void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
+void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 {
 
     int numCoils = this->GetNumCoils(); 
@@ -2200,14 +2200,14 @@ void svkGEPFileMapper::ReadData(vtkstd::string pFileName, svkImageData* data)
     pFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
     try {
-        pFile->open( pFileName.c_str(), ios::binary);
+        pFile->open( pFileNames->GetValue(0).c_str(), ios::binary);
     
         pFile->seekg(0, ios::beg);
         int readOffset = this->GetHeaderValueAsInt( "rhr.rdb_hdr_off_data" );
         pFile->seekg(readOffset, ios::beg);
 
     } catch (ifstream::failure e) {
-        cout << "ERROR: Exception opening/reading file " << pFileName << " => " << e.what() << endl;
+        cout << "ERROR: Exception opening/reading file " << pFileNames->GetValue(0) << " => " << e.what() << endl;
         exit(1); 
     }
     

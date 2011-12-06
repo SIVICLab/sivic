@@ -53,6 +53,7 @@
 #include <vtkstd/map>
 #include <vtkstd/vector>
 #include <vtkstd/string>
+#include <vtkStringArray.h>
 
 
 namespace svk {
@@ -93,7 +94,7 @@ class svkGEPFileMapper : public vtkObject
                                     int swapBytes, 
                                     vtkstd::map < vtkstd::string, void* >  inputArgs
                                 );
-        virtual void            ReadData( vtkstd::string pFileName, svkImageData* data );
+        virtual void            ReadData( vtkStringArray* pFileNames, svkImageData* data );
         vtkstd::string          GetProgressText( );
         void                    SetProgressText( vtkstd::string progressText );
         static vtkstd::string   ConvertGEDateToDICOM( vtkstd::string geDate ); 

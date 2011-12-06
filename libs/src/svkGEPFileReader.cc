@@ -45,6 +45,7 @@
 #include <svkMRSIOD.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
+#include <vtkStringArray.h> 
 
 #include <sys/stat.h>
 
@@ -245,6 +246,16 @@ void svkGEPFileReader::ExecuteInformation()
 
     }
 
+    //  This is a workaround required since the vtkImageAlgo executive
+    //  for the reader resets the Extent[5] value to the number of files
+    //  which is not correct for 3D multislice volume files. So store
+    //  the files in a temporary array until after ExecuteData has been
+    //  called, then reset the array.
+    this->tmpFileNames = vtkStringArray::New();
+    this->tmpFileNames->DeepCopy(this->FileNames);
+    this->FileNames->Delete();
+    this->FileNames = NULL;
+
 }
 
 
@@ -254,6 +265,12 @@ void svkGEPFileReader::ExecuteInformation()
  */
 void svkGEPFileReader::ExecuteData(vtkDataObject* output)
 {
+
+    this->FileNames = vtkStringArray::New();
+    this->FileNames->DeepCopy(this->tmpFileNames);
+    this->tmpFileNames->Delete();
+    this->tmpFileNames = NULL;
+
 
     if ( ! this->onlyParseHeader ) {
         vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
@@ -268,8 +285,9 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
 
-        vtkstd::string pfileName = this->GetFileName();
-        this->mapper->ReadData(pfileName, data);
+        vtkstd::string pfileName = this->GetFileNames()->GetValue(0); 
+        //this->mapper->ReadData(pfileName, data);
+        this->mapper->ReadData(this->GetFileNames(), data);
 
         //  resync any header changes with the svkImageData object's member variables
         this->SetupOutputInformation(); 
@@ -591,6 +609,11 @@ void svkGEPFileReader::ReadGEPFile()
 {
 
     cout << "FN: " << this->GetFileName() << endl;
+    this->GlobFileNames();  	 	 
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {      	 	 
+        cout << "list raw files: " << this->GetFileNames()->GetValue(fileNumber) << endl;  	 	 
+    }  	 	 
+    cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl; 
 
     try {
 
@@ -607,7 +630,7 @@ void svkGEPFileReader::ReadGEPFile()
         this->gepf = new ifstream();
         this->gepf->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
-        this->gepf->open( this->GetFileName(), ios::binary );
+        this->gepf->open( this->GetFileNames()->GetValue(0), ios::binary ); 
 
         //  Iterate through map, get offset and read the appropriate length at that offset.  fix endianness. 
         this->ParsePFile(); 

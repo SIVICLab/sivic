@@ -145,10 +145,16 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetCenterFromRawFile( double* center )
  *  This method reads data from the pfile and puts the data into the CellData arrays.
  *  Non-uniform k-space sampling requires regridding to rectaliniear k-space array here. 
  */
-void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkstd::string pFileName, svkImageData* data)
+void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 {
+
+    for ( int fileNumber = 0; fileNumber < pFileNames->GetNumberOfValues(); fileNumber++ ) {      	 	 
+        cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
+    }  	 
+
+
     //  Do all the usual data loading stuff:
-    this->Superclass::ReadData( pFileName, data );
+    this->Superclass::ReadData( pFileNames, data );
 
     //  Separate out EPSI sampled data into time and k-space dimensions:
     this->ReorderEPSIData( data );

@@ -203,7 +203,8 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
     this->FileNames->DeepCopy(this->tmpFileNames);
     this->tmpFileNames->Delete();
     this->tmpFileNames = NULL;
-        int numVoxels[3] = { this->GetDataExtent()[1], this->GetDataExtent()[3], this->GetDataExtent()[5] }; 
+
+    int numVoxels[3] = { this->GetDataExtent()[1], this->GetDataExtent()[3], this->GetDataExtent()[5] }; 
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
