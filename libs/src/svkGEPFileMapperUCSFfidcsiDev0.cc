@@ -339,7 +339,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
                                 vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
                                 char arrayName[30];
-                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, lobe, coilNum);
+                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, coilNum, lobe);
                                 //cout << "reordered Array name (" << index << ") = " << arrayName << endl; 
                                 dataArray->SetName(arrayName);
 
@@ -422,7 +422,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     this->ZeroFill(data); 
 
     //  =================================================
-    //  combine even/odd lobes
+    //  combine even/odd lobes (separate post-processing 
+    //  step). 
     //  =================================================
 
 
@@ -670,7 +671,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             }
 
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, lobe, 0) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
                             );
 
                             epsiKData[ epsiK * 2 ]     = spectrum->GetValue( freq * 2 ); 
@@ -745,7 +746,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             }
 
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, lobe, 0) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
                             );
 
                             tuple[0] = epsiKData[k].Real; 
@@ -768,9 +769,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     //  redimension the data set in the EPSI k-space axis (18 voxels, epsiKData):  
     //  Remove all arrays with epsiAxis dimension greater
     //  than  integralMax, and reinit the DcmHeader!!!
-    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-        for ( int lobe = 0; lobe < 2; lobe++) {
+    int numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
+    for ( int lobe = 0; lobe < 2; lobe++) { // lobes are stored as coils or channels
+        for (int timePt = 0; timePt < numTimePoints; timePt++) {
             for ( int slice = 0; slice < regridDims[2]; slice++) {
                 for ( int row = 0; row < regridDims[1]; row++) {
                     for ( int col = 0; col < regridDims[0]; col++) {
@@ -786,7 +787,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             }
 
                             char arrayName[30];
-                            sprintf(arrayName, "%d %d %d %d %d", col, row, slice, lobe, coilNum);
+                            sprintf(arrayName, "%d %d %d %d %d", col, row, slice, timePt, lobe);
                             //cout << "REGRID remove array: " << arrayName << endl;
                             data->GetCellData()->RemoveArray( arrayName );
                         }
@@ -1115,7 +1116,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ZeroFill( svkImageData* data )
             for (int y = 0; y < rows; y++) {
                 for (int x = 0; x < cols; x++) {
 
-                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, lobe, 0) );
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, 0, lobe) );
 
                     //  Iterate over frequency points in spectrum and apply phase correction:
                     for ( int freq = numSpecPts; freq < 256; freq++ ) {
@@ -1161,8 +1162,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
     int cols       = hdr->GetIntValue( "Columns" );
     int rows       = hdr->GetIntValue( "Rows" );
     int slices     = hdr->GetNumberOfSlices();
-    int numLobes   = hdr->GetNumberOfTimePoints();  // e.g. symmetric EPSI has pos + neg lobes
-    int coilNum    = 0; 
+    int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
+    int timePt     = 0; 
 
     //  Do not loop over epsiAxis:
     int loopLimits[3]; 
@@ -1219,22 +1220,22 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
                                   + ( numVoxels[0] ) * y
                                   + ( numVoxels[0] * numVoxels[1] ) * z
                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * (lobe + 1)
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * coilNum;
+                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
                         int indexInOdd =  x
                                   + ( numVoxels[0] ) * y
                                   + ( numVoxels[0] * numVoxels[1] ) * z
                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * lobe 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * coilNum;
+                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
                         int indexOutEven = xOutEven
                                   + ( numVoxels[0] ) * yOutEven
                                   + ( numVoxels[0] * numVoxels[1] ) * zOutEven
                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * (lobe + 1) 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * coilNum;
+                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
                         int indexOutOdd =  xOutOdd
                                   + ( numVoxels[0] ) * yOutOdd
                                   + ( numVoxels[0] * numVoxels[1] ) * zOutOdd
                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * lobe 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * coilNum;
+                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
 
                         vtkFloatArray* dataArrayInEven  = vtkFloatArray::SafeDownCast( 
                                                                 data->GetCellData()->GetArray( indexInEven ) 
@@ -1250,10 +1251,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
                                                             );
 
                         char arrayNameEven[30];
-                        sprintf(arrayNameEven, "%d %d %d %d %d", xOutEven, yOutEven, zOutEven, lobe + 1, coilNum);
+                        sprintf(arrayNameEven, "%d %d %d %d %d", xOutEven, yOutEven, zOutEven, timePt, lobe + 1);
                         dataArrayOutEven->SetName(arrayNameEven);
                         char arrayNameOdd[30];
-                        sprintf(arrayNameOdd, "%d %d %d %d %d", xOutOdd, yOutOdd, zOutOdd, lobe, coilNum);
+                        sprintf(arrayNameOdd, "%d %d %d %d %d", xOutOdd, yOutOdd, zOutOdd, timePt, lobe);
                         dataArrayOutOdd->SetName(arrayNameOdd);
 
                         float tupleEven[2];
@@ -1284,8 +1285,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int
 void svkGEPFileMapperUCSFfidcsiDev0::RemoveArrays( svkImageData* data )
 {
 
-    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = 2; 
+    int numCoils = 2;//data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints(); 
 
     //  get the original EPSI dimensionality:
     int numVoxels[3];
@@ -1317,8 +1318,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::RemoveArrays( svkImageData* data )
 void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts )
 {
 
-    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = 2; //num lobes
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    int numCoils = 2; //data->GetDcmHeader()->GetNumberOfCoils(); //num lobes
 
     //  This is the original origin based on the reduced dimensionality in the EPSI direction
     double origin[3];

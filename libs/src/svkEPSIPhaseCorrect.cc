@@ -152,7 +152,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     int cols       = hdr->GetIntValue( "Columns" );
     int rows       = hdr->GetIntValue( "Rows" );
     int slices     = hdr->GetNumberOfSlices();
-    int numLobes   = hdr->GetNumberOfTimePoints();  // e.g. symmetric EPSI has pos + neg lobes
+    int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
 
     //  Initialize the spatial and spectral  factor in the EPSI phase correction: 
     vtkImageComplex** epsiPhaseArray = new vtkImageComplex*[ this->numEPSIkRead ];  
@@ -186,7 +186,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                         epsiIndex = x; 
                     }
 
-                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, lobe, 0) );
+                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, 0, lobe) );
 
                     //  Iterate over frequency points in spectrum and apply phase correction:
                     for ( int freq = 0; freq < numSpecPts; freq++ ) {
@@ -273,11 +273,11 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     double kIncrement;
     double freqIncrement;
     double mult;
-cout <<  "num spec pts: " << numSpecPts << endl;
-cout <<  "num k pts read: " << numEPSIkRead << endl;
-cout << " EPSI ORIGIN: " << kOrigin << endl;
-cout << " FREQ ORIGIN: " << fOrigin << endl;
-cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
+    cout <<  "num spec pts: " << numSpecPts << endl;
+    cout <<  "num k pts read: " << numEPSIkRead << endl;
+    cout << " EPSI ORIGIN: " << kOrigin << endl;
+    cout << " FREQ ORIGIN: " << fOrigin << endl;
+    cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
     for( int k = 0; k < numKPts; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
             kIncrement = ( k - kOrigin + 1)/( numKPts * 2);
