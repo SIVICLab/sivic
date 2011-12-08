@@ -149,15 +149,28 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
 {
 
     for ( int fileNumber = 0; fileNumber < pFileNames->GetNumberOfValues(); fileNumber++ ) {      	 	 
+
         cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
+        vtkStringArray* tmpArray = vtkStringArray::New();
+        tmpArray->InsertNextValue( pFileNames->GetValue(fileNumber) );
+
+        svkImageData* tmpImage = svkMrsImageData::New();
+        tmpImage->DeepCopy( data ); 
+
+        //  Do all the usual data loading stuff:
+        this->Superclass::ReadData( tmpArray, tmpImage);  //new
+
+        //  Separate out EPSI sampled data into time and k-space dimensions:
+        this->ReorderEPSIData( tmpImage );
+        data->DeepCopy( tmpImage ); 
+
+        tmpArray->Delete();
+        tmpImage->Delete();
     }  	 
 
-
-    //  Do all the usual data loading stuff:
-    this->Superclass::ReadData( pFileNames, data );
-
-    //  Separate out EPSI sampled data into time and k-space dimensions:
-    this->ReorderEPSIData( data );
+    // now that the header and dimensionality are set correctly, reset this param:
+    this->InitK0Sampled(); 
+    data->SyncVTKImageDataToDcmHeader(); 
 
 }
 
@@ -183,7 +196,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  Allocate arrays for all How many k-space points were acquired in all?
 
     //  Allocate arrays for spectra at each phase encode:
-    vtkstd::string dataRepresentation = this->dcmHeader->GetStringValue( "DataRepresentation" );
+    svkDcmHeader* hdr = data->GetDcmHeader();
+    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+
     int numComponents;
     if ( dataRepresentation == "COMPLEX" ) {
         numComponents = 2;
@@ -194,7 +209,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //===========
     //  Reset hdr value (DataPointColumns)
     //===========
-    int numEPSIPts= this->dcmHeader->GetIntValue( "DataPointColumns" );
+    int numEPSIPts= hdr->GetIntValue( "DataPointColumns" );
     //cout << "Num EPSI Pts: "<< numEPSIPts << endl;
 
     //  this is the number of lobes in the EPSI sampling. For symmetric 
@@ -1135,7 +1150,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ZeroFill( svkImageData* data )
         }
     }
 
-    this->dcmHeader->SetValue( "DataPointColumns", 256);
+    data->GetDcmHeader()->SetValue( "DataPointColumns", 256);
 
 }
 
@@ -1344,9 +1359,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* n
     double newOrigin[3]; 
     this->GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
 
-    this->dcmHeader->SetValue( "Columns", numVoxelsReordered[0]);
-    this->dcmHeader->SetValue( "Rows", numVoxelsReordered[1]);
-    this->dcmHeader->SetValue( "DataPointColumns", numFreqPts );
+    svkDcmHeader* hdr = data->GetDcmHeader();     
+    hdr->SetValue( "Columns", numVoxelsReordered[0]);
+    hdr->SetValue( "Rows", numVoxelsReordered[1]);
+    hdr->SetValue( "DataPointColumns", numFreqPts );
 
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         newOrigin,
@@ -1378,10 +1394,11 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
     double voxelSpacing[3];
     data->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
 
+    svkDcmHeader* hdr = data->GetDcmHeader();
     int numVoxels[3]; 
-    numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" ); 
-    numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" ); 
-    numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+    numVoxels[0] = hdr->GetIntValue( "Columns" ); 
+    numVoxels[1] = hdr->GetIntValue( "Rows" ); 
+    numVoxels[2] = hdr->GetNumberOfSlices();
 
     //  Get the current center: 
     double center[3]; 

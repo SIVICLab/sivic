@@ -159,7 +159,7 @@ class svkGEPFileReader : public svkImageReader2
 
         vtkCallbackCommand*              progressCallback;
         bool                             onlyParseHeader;  
-
+        vtkStringArray*                  tmpFileNames;
 };
 
 
