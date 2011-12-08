@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkImageData.cc $
- *  $Rev: 1108 $
- *  $Author: beckn8tor $
- *  $Date: 2011-10-25 11:29:51 -0700 (Tue, 25 Oct 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkImageData, "$Rev: 1108 $");
+vtkCxxRevisionMacro(svkImageData, "$Rev$");
 
 
 /*!
@@ -135,8 +135,8 @@ void svkImageData::PrintSelf( ostream &os, vtkIndent indent )
 
 /*!
  *  DeepCopy creates a deep copy of svkImageData, including orientation information.
- *  First calls vtkImageData's deep copy, then also copies the dcos, but does NOT copy the 
- *  DICOM header.
+ *  First calls vtkImageData's deep copy, then also copies the dcos.  Creates a derived
+ *  copy of the DICOM header. 
  */
 void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
@@ -1578,7 +1578,6 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
 
     //  Set spatial dimensionality: 
     int numVoxels[3]; 
-    int extent[6]; 
     numVoxels[0] = this->dcmHeader->GetIntValue("Columns");
     numVoxels[1] = this->dcmHeader->GetIntValue("Rows");
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices(); 
