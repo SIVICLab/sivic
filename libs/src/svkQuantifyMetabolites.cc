@@ -540,9 +540,9 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
     bool parseRegions = true;
     int regionIndex = 0;
 
-    //if ( this->mrsXML == NULL ) {
+    if ( this->mrsXML == NULL ) {
+
         this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
-    //} 
 		if( this->GetDebug() ) {
 			this->mrsXML->PrintXML(cout, vtkIndent());
 		}
@@ -561,6 +561,8 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
 			}
             this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
         }
+
+    } 
 
     vtkXMLDataElement* regionXML;
 
