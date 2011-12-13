@@ -174,7 +174,7 @@ double svkDSCMap::GetNoise( float* imgPtr )
 
     double noise = 0.;
     for ( int pt = 1; pt <= 15 ; pt ++ ) {
-        noise += pow( imgPtr[ pt ], 2. );
+        noise += pow( ((double)imgPtr[ pt ]), (double)2. );
     }
     noise = pow( (noise/15.), 0.5);    
     return noise; 
