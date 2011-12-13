@@ -260,112 +260,113 @@ void sivicQuantificationWidget::EnableWidgets()
     //  values, otherwise leave them where the user set them. 
     if ( this->isEnabled == false ) {
 
-    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
-    this->numMets = regionNameVector.size(); 
-    for (int i = 0; i < regionNameVector.size() ; i ++ ) {
-        string regionName = regionNameVector[i][0]; 
-        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
-        this->metNames.push_back( regionName ); 
-        this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
-        this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
-    }
+        svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+        this->mrsQuant->SetInput( data );
+
+        vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
+        this->numMets = regionNameVector.size(); 
+        for (int i = 0; i < regionNameVector.size() ; i ++ ) {
+            string regionName = regionNameVector[i][0]; 
+            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+            this->metNames.push_back( regionName ); 
+            this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
+            this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
+        }
 
 
-    //  Map View Selector
-    this->mapViewSelector = vtkKWMenuButtonWithLabel::New();
-    this->mapViewSelector->SetParent(this);
-    this->mapViewSelector->Create();
-    this->mapViewSelector->SetLabelText("Select Map");
-    this->mapViewSelector->SetLabelPositionToTop();
-    this->mapViewSelector->SetPadY(2);
-    this->mapViewSelector->GetWidget()->SetWidth(7);
-    this->mapViewSelector->EnabledOff();
-    this->mapViewSelector->GetLabel()->SetFont("system 8");
-    this->mapViewSelector->GetWidget()->SetFont("system 8");
-    vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-    mapViewMenu->SetFont("system 8");
+        //  Map View Selector
+        this->mapViewSelector = vtkKWMenuButtonWithLabel::New();
+        this->mapViewSelector->SetParent(this);
+        this->mapViewSelector->Create();
+        this->mapViewSelector->SetLabelText("Select Map");
+        this->mapViewSelector->SetLabelPositionToTop();
+        this->mapViewSelector->SetPadY(2);
+        this->mapViewSelector->GetWidget()->SetWidth(7);
+        this->mapViewSelector->EnabledOff();
+        this->mapViewSelector->GetLabel()->SetFont("system 8");
+        this->mapViewSelector->GetWidget()->SetFont("system 8");
+        vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
+        mapViewMenu->SetFont("system 8");
 
     
-    double rangeMin; 
-    double rangeMax; 
-    double peakStart; 
-    double peakEnd; 
+        double rangeMin; 
+        double rangeMax; 
+        double peakStart; 
+        double peakEnd; 
+    
+        int i; 
+        for ( i = 0; i < this->numMets; i++ ) {
 
-    int i; 
-    for ( i = 0; i < this->numMets; i++ ) {
+            string metName = this->metNames[i]; 
+            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
+            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
+            peakStart = peakPPM + (widthPPM/2.);
+            peakEnd   = peakPPM - (widthPPM/2.);
+            this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
+    
+            this->metRangeVector.push_back( vtkKWRange::New() ); 
+            this->metRangeVector[i]->SetParent(this);
+            this->metRangeVector[i]->SetLabelPositionToLeft();
+            this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
+            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+            this->metRangeVector[i]->Create();
+            this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
+            this->metRangeVector[i]->EnabledOff();
+            this->metRangeVector[i]->SetSliderSize(1);
+            this->metRangeVector[i]->SetPadY(1);
+            this->metRangeVector[i]->SetEntry1PositionToLeft();
+            this->metRangeVector[i]->SetEntry2PositionToRight();
+            this->metRangeVector[i]->SetEntriesWidth(4);
+            this->metRangeVector[i]->SetResolution(.01);
+            this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
+            this->metRangeVector[i]->GetLabel()->SetWidth(10); 
+            this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
+        }
 
-        string metName = this->metNames[i]; 
-        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
-        peakStart = peakPPM + (widthPPM/2.);
-        peakEnd   = peakPPM - (widthPPM/2.);
-        this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
-
-        this->metRangeVector.push_back( vtkKWRange::New() ); 
-        this->metRangeVector[i]->SetParent(this);
-        this->metRangeVector[i]->SetLabelPositionToLeft();
-        this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
-        this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
-        this->metRangeVector[i]->Create();
-        this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
-        this->metRangeVector[i]->EnabledOff();
-        this->metRangeVector[i]->SetSliderSize(1);
-        this->metRangeVector[i]->SetPadY(1);
-        this->metRangeVector[i]->SetEntry1PositionToLeft();
-        this->metRangeVector[i]->SetEntry2PositionToRight();
-        this->metRangeVector[i]->SetEntriesWidth(4);
-        this->metRangeVector[i]->SetResolution(.01);
-        this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
-        this->metRangeVector[i]->GetLabel()->SetWidth(10); 
-        this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
-    }
-
-    //  Set default value
-    vtkstd::string mapSelectLabel = this->metNames[0]; 
-    this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
-    this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
-
-
-    //  Generate button
-    this->quantButton = vtkKWPushButton::New();
-    this->quantButton->SetParent( this );
-    this->quantButton->Create( );
-    this->quantButton->EnabledOff();
-    this->quantButton->SetText( "Generate Maps");
-    this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
+        //  Set default value
+        vtkstd::string mapSelectLabel = this->metNames[0]; 
+        this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
+        this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
 
 
-    //  Format the GUI grid in this panel:
-    for ( int i = 0; i < this->numMets; i++ ) {
-        this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
-    };
-    this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
-    this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
+        //  Generate button
+        this->quantButton = vtkKWPushButton::New();
+        this->quantButton->SetParent( this );
+        this->quantButton->Create( );
+        this->quantButton->EnabledOff();
+        this->quantButton->SetText( "Generate Maps");
+        this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
 
 
-    for ( int i = 0; i < this->numMets; i++ ) {
-        this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
-    }
+        //  Format the GUI grid in this panel:
+        for ( int i = 0; i < this->numMets; i++ ) {
+            this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
+        };
+        this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
+        this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
 
-    this->Script("grid columnconfigure %s 0 -weight 1 -minsize 140", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 1 -minsize 100", this->GetWidgetName() );
 
-    //  Callbacks
-    this->AddCallbackCommandObserver(
-        this->quantButton, vtkKWPushButton::InvokedEvent 
-    );
+        for ( int i = 0; i < this->numMets; i++ ) {
+            this->Script("grid rowconfigure %s %d  -weight 10", this->GetWidgetName(), i );
+        }
 
-    this->AddCallbackCommandObserver(
-        this->mapViewSelector->GetWidget(), vtkKWMenu::MenuItemInvokedEvent
-    );
+        this->Script("grid columnconfigure %s 0 -weight 1 -minsize 140", this->GetWidgetName() );
+        this->Script("grid columnconfigure %s 1 -weight 1 -minsize 100", this->GetWidgetName() );
 
+        //  Callbacks
+        this->AddCallbackCommandObserver(
+            this->quantButton, vtkKWPushButton::InvokedEvent 
+        );
+    
+        this->AddCallbackCommandObserver(
+            this->mapViewSelector->GetWidget(), vtkKWMenu::MenuItemInvokedEvent
+        );
+    
         vtkstd::string metName;
         float metMin;
         float metMax;
 
-        svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-        this->mrsQuant->SetInput( data );
 
         for ( i = 0; i < this->numMets; i++ ) {
 
