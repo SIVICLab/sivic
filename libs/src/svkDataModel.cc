@@ -203,6 +203,14 @@ svkImageData* svkDataModel::GetDataObject( string objectName )
     }
 }
 
+/*!
+ * Returns the hash of data objects in the model.
+ */
+map<string, svkImageData*> svkDataModel::GetAllDataObjects( )
+{
+	return this->allDataObjectsByKeyName;
+}
+
 
 /*!
  *
@@ -213,6 +221,7 @@ bool svkDataModel::SetDataFileName(string objectName, string fileName)
         return 0;
     } else {
         allDataFileNamesByKeyName[objectName] = fileName;
+        this->Modified();
         return 1;
     }
 }
@@ -299,12 +308,12 @@ svkDcmHeader* svkDataModel::GetDcmHeader( string fileName )
  *
  *  \return a pointer to the new data object
  */  
-svkImageData* svkDataModel::AddFileToModel(string objectName, string fileName)
+svkImageData* svkDataModel::AddFileToModel(string objectName, string fileName, bool onlyOneInputFile)
 {
     if( DataExists( objectName ) ) {
         return NULL;
     } else {
-        svkImageData* myData = LoadFile( fileName.c_str() );
+        svkImageData* myData = LoadFile( fileName.c_str(), onlyOneInputFile );
         AddDataObject( objectName, myData );
         SetDataFileName( objectName, fileName );
         return myData;

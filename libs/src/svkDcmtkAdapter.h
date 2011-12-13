@@ -80,6 +80,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    SetSOPClassUID(DcmIodType iodType);
 
         virtual void    PrintDcmHeader();
+        virtual void    PrintDcmHeader(ostream& os);
 
         virtual void    InsertEmptyElement(const char* name);
         virtual void    InsertUniqueUID(const char* name);

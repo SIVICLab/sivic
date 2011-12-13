@@ -66,6 +66,7 @@
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicDataWidget.h>
+#include <sivicImageDataWidget.h>
 
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/CommandLineArguments.hxx>
@@ -104,6 +105,7 @@ class sivicApp
         sivicViewRenderingWidget*  viewRenderingWidget;
         sivicPreprocessingWidget*  preprocessingWidget;
         sivicDataWidget*           dataWidget;
+        sivicImageDataWidget*      imageDataWidget;
         sivicProcessingWidget*     processingWidget;
         sivicQuantificationWidget* quantificationWidget;
         sivicCombineWidget*        combineWidget;

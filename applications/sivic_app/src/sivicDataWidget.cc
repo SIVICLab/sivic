@@ -103,11 +103,8 @@ void sivicDataWidget::CreateWidget()
     this->referenceSpectra->GetWidget()->SetColumnFormatCommandToEmptyOutput(col_index);
     col_index = this->referenceSpectra->GetWidget()->AddColumn("Filename");
 
-    this->Script("grid %s -row 0 -column 0 -sticky nw", this->referenceSpectra->GetWidgetName(),   0);
+    this->Script("pack %s -expand y -fill both", this->referenceSpectra->GetWidgetName(),   0);
 
-    this->Script("grid rowconfigure %s 0 -weight 1 -maxsize 120", this->GetWidgetName() );
-
-    this->Script("grid columnconfigure %s 0 -weight 1 ", this->GetWidgetName() );
     //  Callbacks
     this->AddCallbackCommandObserver( this->referenceSpectra->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
 }

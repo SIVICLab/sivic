@@ -321,6 +321,13 @@ void vtkSivicController::SetDataWidget( sivicDataWidget* dataWidget)
     this->dataWidget->SetModel(this->model);
 }
 
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetImageDataWidget( sivicImageDataWidget* imageDataWidget)
+{
+    this->imageDataWidget = imageDataWidget;
+    this->imageDataWidget->SetModel(this->model);
+}
+
 
 //! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget)
@@ -410,8 +417,6 @@ void vtkSivicController::ResetApplication( )
 
 void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputFile )
 {
-
-
     // Lets check to see if the file exists 
 	if(!svkUtils::FilePathExists(fileName)) {
         this->PopupMessage(" File does not exist!"); 
@@ -419,13 +424,19 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
     }
 
     string stringFilename(fileName);
-    svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
 		    cout << "Attempting to read  |" << stringFilename << "|" << endl;
-    svkImageData* newData = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
+    string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
+    svkImageData* newData = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
+    this->OpenImage( newData, stringFilename );
 
-    if (newData == NULL) {
+}
+
+void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
+{
+    svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
+    if (data == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
-    } else if( !newData->IsA("svkMriImageData") ) {
+    } else if( !data->IsA("svkMriImageData") ) {
         this->PopupMessage("ERROR: Incorrect data type, data must be an image."); 
         return;
     } else {
@@ -433,7 +444,7 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
         svk4DImageData* activeData = this->GetActive4DImageData();
         if( activeData != NULL ) {
             svkDataValidator* validator = svkDataValidator::New(); 
-            bool valid = validator->AreDataCompatible( newData, activeData);
+            bool valid = validator->AreDataCompatible( data, activeData);
             if ( !valid ) {
                 resultInfo = validator->resultInfo; 
             }
@@ -457,51 +468,52 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
 
         } 
 
-        if( strcmp( resultInfo.c_str(), "" ) == 0 && newData != NULL ) {
+        if( strcmp( resultInfo.c_str(), "" ) == 0 && data != NULL ) {
             int toggleDraw = this->GetDraw();
             if( toggleDraw ) {
                 this->DrawOff();
             }
             if( oldData != NULL) {
-                this->model->ChangeDataObject( "AnatomicalData", newData );
+                this->model->ChangeDataObject( "AnatomicalData", data );
                 this->model->SetDataFileName( "AnatomicalData", stringFilename );
-                this->overlayController->SetInput( newData ); 
+                this->overlayController->SetInput( data );
             } else {
-                this->model->AddDataObject( "AnatomicalData", newData ); 
+                this->model->AddDataObject( "AnatomicalData", data );
                 this->model->SetDataFileName( "AnatomicalData", stringFilename );
-                this->overlayController->SetInput( newData ); 
+                this->overlayController->SetInput( data );
                 this->overlayController->ResetWindowLevel();
                 this->overlayController->HighlightSelectionVoxels();
             }
+            this->UpdateModelForReslicedImage();
             this->SetPreferencesFromRegistry();
-            int* extent = newData->GetExtent();
+            int* extent = data->GetExtent();
             int firstSlice;
             int lastSlice;
-            firstSlice = newData->GetFirstSlice( svkDcmHeader::AXIAL );
-            lastSlice = newData->GetLastSlice( svkDcmHeader::AXIAL );
+            firstSlice = data->GetFirstSlice( svkDcmHeader::AXIAL );
+            lastSlice = data->GetLastSlice( svkDcmHeader::AXIAL );
             this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
                 this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "AXIAL" ) {
                 this->imageViewWidget->axialSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
-            firstSlice = newData->GetFirstSlice( svkDcmHeader::CORONAL );
-            lastSlice = newData->GetLastSlice( svkDcmHeader::CORONAL );
+            firstSlice = data->GetFirstSlice( svkDcmHeader::CORONAL );
+            lastSlice = data->GetLastSlice( svkDcmHeader::CORONAL );
             this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
                 this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "CORONAL" ){
                 this->imageViewWidget->coronalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
-            firstSlice = newData->GetFirstSlice( svkDcmHeader::SAGITTAL );
-            lastSlice = newData->GetLastSlice( svkDcmHeader::SAGITTAL );
+            firstSlice = data->GetFirstSlice( svkDcmHeader::SAGITTAL );
+            lastSlice = data->GetLastSlice( svkDcmHeader::SAGITTAL );
             this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
             if( oldData == NULL ) {
                 this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "SAGITTAL" ){
                 this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
-            this->imageViewWidget->volumeSlider->SetRange( 1, newData->GetDcmHeader()->GetNumberOfTimePoints());
+            this->imageViewWidget->volumeSlider->SetRange( 1, data->GetDcmHeader()->GetNumberOfTimePoints());
             this->imageViewWidget->volumeSlider->SetValue( 1 );
 
             if( this->GetActive4DImageData() != NULL ) {
@@ -509,7 +521,7 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
                 this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent); 
             }
             if( oldData == NULL ) {
-                switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                switch( data->GetDcmHeader()->GetOrientationType() ) {
                     case svkDcmHeader::AXIAL:
                         this->SetOrientation( "AXIAL" );
                         break;
@@ -654,12 +666,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
         this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
-        // THe overlay controller may reslice the data, we need te make sure we get the new version of the data 
-        // TODO: Change the overlay controller to do this in place 
-        svkImageData* mri = this->overlayController->GetView()->GetInput(svkOverlayView::MRI);
-        if( mri != NULL && mri != this->model->GetDataObject( "AnatomicalData" ) ) {
-            this->model->ChangeDataObject( "AnatomicalData", mri );
-        }
+        this->UpdateModelForReslicedImage();
         
         this->SetPreferencesFromRegistry();
 
@@ -779,7 +786,8 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
     }
 
     string stringFilename(fileName);
-    svkImageData* newData = model->LoadFile( stringFilename, onlyReadOneInputFile );
+    string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
+    svkImageData* newData = model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
 
     string objectName;
     if( newData != NULL && newData->IsA("svkMrsImageData")) {
@@ -827,6 +835,8 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
                     commandString += *it;
                     commandString += "\"";
                     metaboliteNames->AddRadioButton(it->c_str(), this, commandString.c_str());
+                    bool onlyOneInputFile = true;
+                    this->model->AddFileToModel(*it, metaboliteFileName, onlyOneInputFile );
                 }
             }
             ++it;
@@ -834,6 +844,50 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
     }
 
 #endif
+}
+
+
+/*!
+ * Given a name of a dataset in the model, this method will open it as an overlay.
+ */
+void vtkSivicController::OpenOverlayFromModel( const char* modelObjectName )
+{
+	cout << "Openning overlay for model object " << modelObjectName << endl;
+	if( this->model->DataExists( modelObjectName )) {
+		this->OpenOverlay( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+	}
+}
+
+
+/*!
+ * Given a name of a dataset in the model, this method will open it as a reference image.
+ */
+void vtkSivicController::OpenImageFromModel( const char* modelObjectName )
+{
+	cout << "Openning overlay for model object " << modelObjectName << endl;
+	if( this->model->DataExists( modelObjectName )) {
+		this->OpenImage( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+	}
+}
+
+
+/*!
+ *  Updates the model to account for the reslicing of images by the overlay view.
+ *	// TODO: Change the overlay controller to reslice in place
+ */
+void vtkSivicController::UpdateModelForReslicedImage( )
+{
+	// The overlay controller may have resliced the data, we need to make sure we get the new version of the data into the model
+	svkImageData* mri = this->overlayController->GetView()->GetInput(svkOverlayView::MRI);
+	if( mri != NULL && mri != this->model->GetDataObject( "AnatomicalData" ) ) {
+		// Lets get the original filename
+		string originalFilename = this->model->GetDataFileName("AnatomicalData");
+		// Change the current anatomical data pointer
+		this->model->ChangeDataObject( "AnatomicalData", mri );
+		// And the pointer the current loaded data set
+		this->model->ChangeDataObject( svkUtils::GetFilenameFromFullPath(originalFilename), mri );
+	}
+
 }
 
 
@@ -869,6 +923,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     // We are going to deselect the metabolites since we don't know where they were loaded from
                     this->DeselectMetabolites();
                     this->viewRenderingWidget->ResetInfoText();
+                    // This dataset will superseded the previously loaded overlay data
+                    this->model->RemoveDataObject("OverlayData");
                 } else {
                     if( this->model->DataExists( "OverlayData" ) ) {
                         this->model->ChangeDataObject( "OverlayData", data );
@@ -891,7 +947,6 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetInterpolationCallback( 2 );
                 }
                 string lut = (this->imageViewWidget->lutBox->GetWidget()->GetValue( ));
-                cout << "lut is <" << lut << ">" << endl;
                 if( lut == "Color LUT" ) {
                     this->SetLUTCallback( svkLookupTable::COLOR );
                 } else if ( lut == "Grey LUT" ) {
@@ -939,7 +994,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 void vtkSivicController::Add4DImageData( string stringFilename, bool onlyReadOneInputFile )
 {
     if ( this->GetActive4DImageData() != NULL ) {
-        svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
+		string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
+        svkImageData* data = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svk4DImageData") ) {
             string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
             if( resultInfo.compare("") != 0 ) {
@@ -993,7 +1049,8 @@ void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInpu
     string stringFilename( fileName );
     if ( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
 
-        svkImageData* data = this->model->LoadFile( stringFilename, onlyReadOneInputFile );
+		string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
+        svkImageData* data = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svkMriImageData") ) {
             this->OpenOverlay(data, stringFilename);
         } else {
@@ -1229,9 +1286,9 @@ void vtkSivicController::OpenExam( )
         spectraPathName += "/spectra";
         spectraPathName += "/" + svkUCSFUtils::GetMetaboliteDirectoryName(this->model->GetDataFileName("SpectroscopicData"));
         bool includePath = true;
-        string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI (ht)",includePath );
-		if( svkUtils::FilePathExists(cniFileName.c_str()) ) {
-            this->OpenOverlay( cniFileName.c_str(), true );
+        string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI-ht",includePath );
+		if( this->model->DataExists("CNI-ht")) {
+            this->OpenOverlay( this->model->GetDataObject("CNI-ht"), this->model->GetDataFileName("CNI-ht"));
             this->EnableWidgets(); 
             this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
             this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
@@ -3190,5 +3247,66 @@ void vtkSivicController::GenerateTraces( char* sourceImage )
 	if( image != NULL ) {
 		cout << "Getting Cell Data from: " << *image << endl;
 		this->Open4DImage( image, "Cell Data Representation" );
+	}
+}
+
+
+void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
+{
+	vtkKWMenu* rightClickMenu = vtkKWMenu::New();
+	string invocationString;
+    invocationString = "DisplayHeader ";
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    rightClickMenu->SetParent( this->GetApplication()->GetNthWindow(0) );
+    rightClickMenu->Create();
+    rightClickMenu->AddRadioButton("Show Info", this, invocationString.c_str());
+    cout << "Show info invoction string <" << invocationString.c_str() << ">" << endl;
+    invocationString = "OpenOverlayFromModel ";
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    rightClickMenu->AddRadioButton("Set As Overlay", this, invocationString.c_str());
+    invocationString = "OpenImageFromModel ";
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
+    rightClickMenu->PopUp(x,y);
+
+}
+
+
+/*!
+ * Pops up a window to display the header for a given object in the model.
+ */
+void vtkSivicController::DisplayHeader( char* objectName )
+{
+	cout << "In DISPLAY HEADER!!" << endl;
+	string objectNameString = string(objectName);
+	if( this->model->DataExists( objectNameString ) ) {
+		ostringstream os;
+		this->model->GetDataObject( objectNameString )->GetDcmHeader()->PrintDcmHeader(os);
+		vtkKWWindowBase* infoWindow = vtkKWWindowBase::New();
+		this->app->AddWindow( infoWindow );
+		infoWindow->Create();
+		int width;
+		int height;
+		//this->mainWindow->GetSize(&width, &height);
+		//infoWindow->SetSize( width, height);
+
+		vtkKWTextWithScrollbarsWithLabel* textHolder = vtkKWTextWithScrollbarsWithLabel::New();
+		textHolder->SetParent( infoWindow->GetViewFrame() );
+		textHolder->Create();
+		textHolder->SetLabelText(objectName);
+		textHolder->SetLabelPositionToTop();
+		textHolder->GetWidget()->GetWidget()->ReadOnlyOn();
+		textHolder->GetWidget()->VerticalScrollbarVisibilityOn();
+		textHolder->GetWidget()->HorizontalScrollbarVisibilityOn();
+		textHolder->GetWidget()->GetWidget()->SetWrapToNone();
+		textHolder->GetWidget()->GetWidget()->AddTagMatcher("\\([a-z0-9]+,[a-z0-9]+\\)", "_fg_navy_tag_");
+		textHolder->GetWidget()->GetWidget()->AddTagMatcher("# [^\n]*", "_fg_dark_green_tag_");
+		textHolder->GetWidget()->GetWidget()->SetText( os.str().c_str() );
+		this->app->Script("pack %s -in %s -side top -fill both -expand y "
+				, textHolder->GetWidgetName(), infoWindow->GetViewFrame()->GetWidgetName());
+		infoWindow->Display();
+		infoWindow->Delete();
+	} else {
+		cout << "No object name:" << objectName << " in model " << endl;
 	}
 }

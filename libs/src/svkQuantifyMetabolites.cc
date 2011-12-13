@@ -143,7 +143,9 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
         if (quantXML != NULL ) {
 
             //cout << "quant id = " << quantIndexString << endl;
-            quantXML->PrintXML( cout, vtkIndent() ); 
+        	if( this->GetDebug() ) {
+				quantXML->PrintXML( cout, vtkIndent() );
+        	}
 
             //  Get region and algo to quantify.  peak range is defied already in regionVector;  
             //  image to store in a vtkstd::vector of svkMriImageData objects. 
@@ -541,7 +543,9 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
     //if ( this->mrsXML == NULL ) {
         this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
     //} 
-        this->mrsXML->PrintXML(cout, vtkIndent()); 
+		if( this->GetDebug() ) {
+			this->mrsXML->PrintXML(cout, vtkIndent());
+		}
 
     
         //  Get the application specific sub-element (i.e. 1H Brain, 13C prostate, etc.)
@@ -552,7 +556,9 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
         if ( nucleus.compare( "13C" ) == 0 ) {
             this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "13C");
         } else {
-             this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H")->PrintXML(cout, vtkIndent());
+			if( this->GetDebug() ) {
+				this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H")->PrintXML(cout, vtkIndent());
+			}
             this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
         }
 
@@ -604,8 +610,9 @@ void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float wi
     //  If necessary, read xml from file before modifying content:
     if ( this->mrsXML == NULL ) {
         this->mrsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
-
-        this->mrsXML->PrintXML(cout, vtkIndent()); 
+        if( this->GetDebug() ) {
+			this->mrsXML->PrintXML(cout, vtkIndent());
+        }
         //  Get the application specific sub-element (i.e. 1H Brain, 13C prostate, etc.)
         string nucleus = "13C"; 
         if ( this->GetImageDataInput(0) != NULL ) { 
@@ -616,7 +623,9 @@ void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float wi
         } else {
             this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
         }
-        this->mrsXML->PrintXML(cout, vtkIndent()); 
+        if( this->GetDebug() ) {
+			this->mrsXML->PrintXML(cout, vtkIndent());
+        }
     }
 
     vtkXMLDataElement* regionXML;

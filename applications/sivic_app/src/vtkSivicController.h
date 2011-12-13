@@ -60,6 +60,9 @@
 #include <vtkKWWindowBase.h>
 #include <vtkImageFlip.h>
 #include <vtkKWMessageDialog.h>
+#include <vtkKWTextWithScrollbars.h>
+#include <vtkKWTextWithScrollbarsWithLabel.h>
+#include <vtkKWText.h>
 #include <svkUCSFPACSInterface.h>
 #include <svkPACSInterface.h>
 
@@ -97,7 +100,10 @@
 #include <sivicPreferencesWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicDataWidget.h>
+#include <sivicImageDataWidget.h>
 #include <vtkDirectory.h>
+#include <vtkKWLogDialog.h>
+#include <vtkKWSimpleEntryDialog.h>
 #if defined( SVK_USE_GL2PS )
     #include <vtkGL2PSExporter.h>
 #endif
@@ -135,6 +141,7 @@ class vtkSivicController : public vtkObject
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );
         void                       SetDataWidget( sivicDataWidget* dataWidget );
+        void                       SetImageDataWidget( sivicImageDataWidget* imageDataWidget );
         void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
         void                       SetCombineWidget( sivicCombineWidget* CombineWidget );
         void                       SetDSCWidget( sivicDSCWidget* dscWidget );
@@ -149,10 +156,14 @@ class vtkSivicController : public vtkObject
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
         int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0, bool onlyReadOneInputFile = false);
+		void                       OpenImage( svkImageData* data, string stringFilename );
         void                       OpenImage(   const char* fileName, bool onlyReadOneInputFile = false );
+        void                       OpenImageFromModel( const char* modelObjectName );
+        void                       UpdateModelForReslicedImage();
         void                       Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL );
         void                       Open4DImage( const char* fileName, bool onlyReadOneInputFile = false );
         void                       Add4DImageData( string stringFilename, bool onlyReadOneInputFile = false );
+        void                       OpenOverlayFromModel( const char* modelObjectName );
         void                       OpenOverlay( svkImageData* data, string stringFilename );
         void                       OpenOverlay( const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenMetabolites( const char* metabolites );
@@ -235,6 +246,8 @@ class vtkSivicController : public vtkObject
         void					   OverlayTextOn();
         void					   OverlayTextOff();
         void					   GenerateTraces( char* sourceImage );
+        void					   DisplayImageDataInfo(int row, int column, int x, int y);
+        void					   DisplayHeader( char* objectName );
  
     protected:
 
@@ -258,6 +271,7 @@ class vtkSivicController : public vtkObject
         sivicProcessingWidget*         processingWidget;
         sivicPreprocessingWidget*      preprocessingWidget;
         sivicDataWidget*               dataWidget;
+        sivicImageDataWidget*          imageDataWidget;
         sivicQuantificationWidget*     quantificationWidget;
         sivicCombineWidget*            combineWidget;
         sivicDSCWidget*                dscWidget;

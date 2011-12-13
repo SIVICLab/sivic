@@ -251,10 +251,10 @@ void sivicViewRenderingWidget::ResetInfoText()
         }
 
         // Image Coil
-        string imageCoil = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
-
-
-        infoSS << "Image Coil:  " << imageCoil << endl << endl;
+        if( model->GetDataObject( "AnatomicalData")->GetDcmHeader()->ElementExists("ReceiveCoilName" , "SharedFunctionalGroupsSequence") ) {
+			string imageCoil = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
+			infoSS << "Image Coil:  " << imageCoil << endl << endl;
+        }
 
     } else {
         infoSS << "Scan Date:  " << endl; 

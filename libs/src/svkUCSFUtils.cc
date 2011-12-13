@@ -70,18 +70,18 @@ svkUCSFUtils::~svkUCSFUtils()
  */
 void svkUCSFUtils::CreateMap()
 {
-    svkUCSFUtils::metaboliteMap["CHO (area)"]     = "r01";
-    svkUCSFUtils::metaboliteMap["CHO (ht)"]       = "rh01";
-    svkUCSFUtils::metaboliteMap["CRE (area)"]     = "r02";
-    svkUCSFUtils::metaboliteMap["CRE (ht)"]       = "rh02";
-    svkUCSFUtils::metaboliteMap["NAA (area)"]     = "r03";
-    svkUCSFUtils::metaboliteMap["NAA (ht)"]       = "rh03";
-    svkUCSFUtils::metaboliteMap["LAC/LIP (area)"] = "r04";
-    svkUCSFUtils::metaboliteMap["LAC/LIP (ht)"]   = "rh04";
-    svkUCSFUtils::metaboliteMap["CCRI (area)"]    = "r01ares02";
-    svkUCSFUtils::metaboliteMap["CCRI (ht)"]      = "r01hres02";
-    svkUCSFUtils::metaboliteMap["CNI (area)"]     = "r01ares03";
-    svkUCSFUtils::metaboliteMap["CNI (ht)"]       = "r01hres03";
+    svkUCSFUtils::metaboliteMap["CHO-area"]     = "r01";
+    svkUCSFUtils::metaboliteMap["CHO-ht"]       = "rh01";
+    svkUCSFUtils::metaboliteMap["CRE-area"]     = "r02";
+    svkUCSFUtils::metaboliteMap["CRE-ht"]       = "rh02";
+    svkUCSFUtils::metaboliteMap["NAA-area"]     = "r03";
+    svkUCSFUtils::metaboliteMap["NAA-ht"]       = "rh03";
+    svkUCSFUtils::metaboliteMap["LAC/LIP-area"] = "r04";
+    svkUCSFUtils::metaboliteMap["LAC/LIP-ht"]   = "rh04";
+    svkUCSFUtils::metaboliteMap["CCRI-area"]    = "r01ares02";
+    svkUCSFUtils::metaboliteMap["CCRI-ht"]      = "r01hres02";
+    svkUCSFUtils::metaboliteMap["CNI-area"]     = "r01ares03";
+    svkUCSFUtils::metaboliteMap["CNI-ht"]       = "r01hres03";
     svkUCSFUtils::mapCreated = true;
 }
 

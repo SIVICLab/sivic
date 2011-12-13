@@ -53,6 +53,7 @@ sivicApp::sivicApp()
     this->processingWidget      = sivicProcessingWidget::New();
     this->preprocessingWidget   = sivicPreprocessingWidget::New();
     this->dataWidget            = sivicDataWidget::New();
+    this->imageDataWidget       = sivicImageDataWidget::New();
     this->quantificationWidget  = sivicQuantificationWidget::New();
     this->combineWidget         = sivicCombineWidget::New();
     this->dscWidget             = sivicDSCWidget::New();
@@ -111,6 +112,11 @@ sivicApp::~sivicApp()
     if( this->dataWidget != NULL ) {
         this->dataWidget->Delete();
         this->dataWidget = NULL;
+    }
+
+    if( this->imageDataWidget != NULL ) {
+        this->imageDataWidget->Delete();
+        this->imageDataWidget = NULL;
     }
 
     if( this->quantificationWidget != NULL ) {
@@ -295,6 +301,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->dataWidget->SetSivicController(this->sivicController);
     this->dataWidget->Create();
 
+    this->imageDataWidget->SetParent(tabbedPanel );
+    this->imageDataWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->imageDataWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->imageDataWidget->SetSivicController(this->sivicController);
+    this->imageDataWidget->Create();
+
     this->dscWidget->SetParent(tabbedPanel );
     this->dscWidget->SetPlotController(this->sivicController->GetPlotController());
     this->dscWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -338,6 +350,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetPreprocessingWidget( preprocessingWidget );
     this->sivicController->SetDataWidget( dataWidget );
+    this->sivicController->SetImageDataWidget( imageDataWidget );
     this->sivicController->SetCombineWidget( combineWidget );
     this->sivicController->SetQuantificationWidget( quantificationWidget );
     this->sivicController->SetImageViewWidget( imageViewWidget );
@@ -348,11 +361,15 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetDSCWidget( dscWidget );
 
-    this->tabbedPanel->AddPage("Welcome", "Welcome!", NULL);
-    vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Welcome");
+    //this->tabbedPanel->AddPage("Home", "Home", NULL);
+    //vtkKWWidget* welcomePanel = tabbedPanel->GetFrame("Home");
 
-    this->tabbedPanel->AddPage("Data", "Data.", NULL);
-    vtkKWWidget* dataPanel = tabbedPanel->GetFrame("Data");
+    this->tabbedPanel->AddPage("Image Data", "Image Data.", NULL);
+    vtkKWWidget* imageDataPanel = tabbedPanel->GetFrame("Image Data");
+
+    this->tabbedPanel->AddPage("4D Data", "4D Data.", NULL);
+    vtkKWWidget* dataPanel = tabbedPanel->GetFrame("4D Data");
+
 
     this->tabbedPanel->AddPage("Preprocess", "Preprocessing.", NULL);
     vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preprocess");
@@ -400,8 +417,8 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicKWApp->Script("grid %s -row 2 -column 3 -sticky nsew -rowspan 3", separatorVert2->GetWidgetName());
 
-    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 2 -pady 2 -in %s", 
-              welcomeText->GetWidgetName(), welcomePanel->GetWidgetName());
+    //this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 2 -pady 2 -in %s",
+    //          welcomeText->GetWidgetName(), welcomePanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->preprocessingWidget->GetWidgetName(), preprocessingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
@@ -410,6 +427,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->combineWidget->GetWidgetName(), combinePanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s",
+              this->imageDataWidget->GetWidgetName(), imageDataPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s",
               this->dataWidget->GetWidgetName(), dataPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 

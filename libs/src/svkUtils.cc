@@ -465,7 +465,7 @@ bool svkUtils::IsFileCompressed( vtkstd::string filename )
 	bool isCompressed = false;
 #ifndef WIN32
 	stringstream testCompressCommand;
-	testCompressCommand << "gunzip -t " << filename;
+	testCompressCommand << "gunzip -t " << filename << " 2> /dev/null";
 	int result = system( testCompressCommand.str().c_str() );
 	if( result == 0 ) {
 		isCompressed = true;

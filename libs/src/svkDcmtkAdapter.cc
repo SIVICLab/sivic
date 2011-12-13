@@ -454,9 +454,18 @@ void svkDcmtkAdapter::SetSOPClassUID(DcmIodType iodType)
 /*!
  *  Print the header information to standard out.
  */
-void svkDcmtkAdapter::PrintDcmHeader() 
+void svkDcmtkAdapter::PrintDcmHeader()
 {
-    this->dcmFile->print(cout); 
+	this->dcmFile->print(cout);
+}
+
+
+/*!
+ *  Print the header information to standard the given stream.
+ */
+void svkDcmtkAdapter::PrintDcmHeader(ostream& os)
+{
+	this->dcmFile->print(os);
 }
 
 

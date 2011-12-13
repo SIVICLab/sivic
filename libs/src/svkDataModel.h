@@ -97,39 +97,40 @@ class svkDataModel : public vtkObject
         ~svkDataModel();
         
         // DataObject manipulators 
-        virtual bool            AddDataObject( string objectName, svkImageData* dataObject );
-        virtual bool            RemoveDataObject( string objectName );
-        virtual bool            ChangeDataObject(string objectName, svkImageData* dataObject);
-        virtual bool            ReplaceDataFromFile(string objectName, string fileName);
-        virtual svkImageData*   GetDataObject( string objectName );
+        virtual bool                       AddDataObject( string objectName, svkImageData* dataObject );
+        virtual bool                       RemoveDataObject( string objectName );
+        virtual bool                       ChangeDataObject(string objectName, svkImageData* dataObject);
+        virtual bool                       ReplaceDataFromFile(string objectName, string fileName);
+        virtual svkImageData*              GetDataObject( string objectName );
+        virtual map<string, svkImageData*> GetAllDataObjects( );
 
         // For storing filenames...       
-        virtual bool            SetDataFileName( string objectName, string fileName );
-        virtual string          GetDataFileName( string objectName );
+        virtual bool                       SetDataFileName( string objectName, string fileName );
+        virtual string                     GetDataFileName( string objectName );
 
         // File loaders 
-        virtual svkImageData*   LoadFile( string fileName, bool onlyOneInputFile = false );
-        svkDcmHeader*           GetDcmHeader( string fileName );
-        virtual svkImageData*   AddFileToModel(string objectName, string fileName);
+        virtual svkImageData*              LoadFile( string fileName, bool onlyOneInputFile = false );
+        svkDcmHeader*                      GetDcmHeader( string fileName );
+        virtual svkImageData*              AddFileToModel(string objectName, string fileName, bool onlyOneInputFile = false);
        
         // File writers 
-        virtual bool            WriteToFile( string objectName, string fileName);
+        virtual bool                       WriteToFile( string objectName, string fileName);
 
         // File writers 
-        virtual bool		WriteToFile(svkImageData *data, const char *fileName);
+		virtual bool                       WriteToFile(svkImageData *data, const char *fileName);
        
         // State manipulators 
-        virtual map < string, void* > GetModelState();
-        virtual void                  SetModelState( map< string, void* > modelState );
-        virtual bool                  AddState( string stateName, void* stateValue );
-        virtual bool                  ChangeState( string stateName, void* stateValue );
-        virtual void*                 GetState( string stateName );
+        virtual map < string, void* >      GetModelState();
+        virtual void                       SetModelState( map< string, void* > modelState );
+        virtual bool                       AddState( string stateName, void* stateValue );
+        virtual bool                       ChangeState( string stateName, void* stateValue );
+        virtual void*                      GetState( string stateName );
     
         // Existence checks for objects and states
-        virtual bool            DataExists( string objectName );
-        virtual bool            StateExists( string stateName );
-        string                  GetProgressText( );
-        void                    SetProgressText( string progressText );
+        virtual bool                       DataExists( string objectName );
+        virtual bool                       StateExists( string stateName );
+        string                             GetProgressText( );
+        void                               SetProgressText( string progressText );
     
 
     private:

@@ -220,7 +220,8 @@ void svkObliqueReslice::UpdateProvenance()
  */
 void svkObliqueReslice::UpdateHeader()
 {
-    string seriesDescription("resliced"); 
+    string seriesDescription("RESLICED ");
+	seriesDescription.append(this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("SeriesDescription"));
 
     this->reslicedImage = this->GetOutput(); 
 

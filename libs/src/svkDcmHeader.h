@@ -136,6 +136,7 @@ class svkDcmHeader: public vtkObject
         virtual void        CreateIOD(DcmIodType iodType) = 0;
         virtual void        SetSOPClassUID(DcmIodType iodType) = 0;
         virtual void        PrintDcmHeader() = 0;
+        virtual void        PrintDcmHeader(ostream& os) = 0;
 
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 

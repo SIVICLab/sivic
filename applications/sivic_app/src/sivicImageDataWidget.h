@@ -26,56 +26,66 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/sivicImageDataWidget.h $
+ *  $Rev: 1105 $
+ *  $Author: jccrane $
+ *  $Date: 2011-10-11 23:34:06 -0700 (Tue, 11 Oct 2011) $
  */
 
-#ifndef SVK_MVCKW_COMPOSITE_WIDGET_H
-#define SVK_MVCKW_COMPOSITE_WIDGET_H
+#ifndef SVK_IMAGE_DATA_WIDGET_H
+#define SVK_IMAGE_DATA_WIDGET_H
 
 #include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
-#include <vtkKWTkUtilities.h>
-
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <sivicKWCompositeWidget.h>
+#include <vtkKWMultiColumnListWithScrollbars.h>
+#include <vtkKWMultiColumnList.h>
 
 #include <string.h>
 
 using namespace svk; 
 
-class vtkSivicController;
-
-
-class sivicKWCompositeWidget : public vtkKWCompositeWidget
+class sivicImageDataWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicKWCompositeWidget *New();
-        vtkTypeRevisionMacro(sivicKWCompositeWidget,vtkKWCompositeWidget);
-        virtual void SetSivicController( vtkSivicController* );
-        virtual void SetPlotController( svkPlotGridViewController* plotController );
-        virtual void SetOverlayController( svkOverlayViewController* overlayController );
-        virtual void SetModel( svkDataModel* );
-
+        static sivicImageDataWidget *New();
+        vtkTypeRevisionMacro(sivicImageDataWidget,sivicKWCompositeWidget);
+        void UpdateReferenceImageList();
+        void SetFilename( int row, string filename );
+        void SetModel( svkDataModel* model );
 
     protected:
 
 
-        sivicKWCompositeWidget();
-        ~sivicKWCompositeWidget();
+        sivicImageDataWidget();
+        ~sivicImageDataWidget();
 
-        vtkSivicController*            sivicController;
-        svkPlotGridViewController*     plotController;
-        svkOverlayViewController*      overlayController;
-        svkDataModel*                  model;
+        // Description:
+        // Create the widget.
+        virtual void    CreateWidget();
+        virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
 
+    private:
+
+        vtkCallbackCommand*                 modelModifiedCB;
+        vtkCallbackCommand*                 progressCallback;
+        vtkKWMultiColumnListWithScrollbars* imageList;
+        int                                 activeIndex;
+
+        static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
+        static void                 ModelModifiedCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+
+
+        sivicImageDataWidget(const sivicImageDataWidget&);   // Not implemented.
+        void operator=(const sivicImageDataWidget&);  // Not implemented.
+        
 };
 
-#endif //SVK_MVCKW_COMPOSITE_WIDGET_H
+#endif //SVK_IMAGE_DATA_WIDGET_H
