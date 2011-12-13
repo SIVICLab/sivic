@@ -314,7 +314,7 @@ double svkMetaboliteMap::GetIntegral( float* specPtr, int startPt, int endPt)
 
     double integral = 0;
 
-    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+    for ( int pt = startPt; pt < endPt; pt ++ ) {
         integral += specPtr[2*pt];
     }
     return integral; 
@@ -328,7 +328,7 @@ double svkMetaboliteMap::GetPeakHt( float* specPtr, int startPt, int endPt)
 {
 
     double peakHt = specPtr[ 2 * startPt ];
-    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+    for ( int pt = startPt; pt < endPt; pt ++ ) {
         if ( specPtr[2*pt] > peakHt ) {
             peakHt = specPtr[2*pt];
         }
@@ -350,7 +350,7 @@ double svkMetaboliteMap::GetMagPeakHt( float* specPtr, int startPt, int endPt)
 
     double magPeakHtTmp;
     
-    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+    for ( int pt = startPt; pt < endPt; pt ++ ) {
 
         magPeakHtTmp  = pow( specPtr[ 2 * pt], 2);
         magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);

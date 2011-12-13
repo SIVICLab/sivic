@@ -766,7 +766,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        "C13"
+        "13C"
     );
 
     this->dcmHeader->SetValue(
@@ -837,7 +837,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
     );
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
-        0
+        186 
     );
 
     this->dcmHeader->SetValue(
