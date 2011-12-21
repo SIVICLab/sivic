@@ -994,7 +994,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 void vtkSivicController::Add4DImageData( string stringFilename, bool onlyReadOneInputFile )
 {
     if ( this->GetActive4DImageData() != NULL ) {
-		string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
+		string modelName = stringFilename;
         svkImageData* data = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svk4DImageData") ) {
             string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
