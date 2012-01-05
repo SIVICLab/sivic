@@ -649,6 +649,34 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         this->dataWidget->UpdateReferenceSpectraList();
         this->dataWidget->SetFilename( 0, stringFilename);
 
+        /*
+         * Lets reset the orientation to match the new dataset. If there was
+         * no dataset previously loaded then reset everything, otherwise we
+         * only reset the orientation.
+         */
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 0;
+        bool resetAmplitude = 0;
+        bool resetFrequency = 0;
+        if( oldData != NULL ) {
+            this->SetOrientation( this->orientation.c_str() );
+        } else {
+            resetAmplitude = 1;
+            resetFrequency = 1;
+            switch( newData->GetDcmHeader()->GetOrientationType() ) {
+                case svkDcmHeader::AXIAL:
+                    this->SetOrientation( "AXIAL" );
+                    break;
+                case svkDcmHeader::CORONAL:
+                    this->SetOrientation( "CORONAL" );
+                    break;
+                case svkDcmHeader::SAGITTAL:
+                    this->SetOrientation( "SAGITTAL" );
+                    break;
+            }
+        }
+
+        // If the tlcBrc have not been set then lets choose the center slice.
         if( tlcBrc == NULL ) {
             int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
             int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
@@ -664,6 +692,12 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
             this->overlayController->SetSlice( ( lastSlice - firstSlice ) / 2 ); 
         }
 
+        /*
+         *  In case the slice is being change we want to calculate the frequency range after the slice is chosen
+         *  because the chosen range is based on the current slice.
+         */
+		this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, resetAmplitude, resetFrequency );
+
         this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
         this->UpdateModelForReslicedImage();
@@ -676,33 +710,6 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
             this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
         }
 
-        if( oldData != NULL ) {
-            bool useFullFrequencyRange = 0;
-            bool useFullAmplitudeRange = 0;
-            bool resetAmplitude = 0;
-            bool resetFrequency = 0;
-            this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                       resetAmplitude, resetFrequency );
-            this->SetOrientation( this->orientation.c_str() );
-        } else {
-            bool useFullFrequencyRange = 0;
-            bool useFullAmplitudeRange = 0;
-            bool resetAmplitude = 1;
-            bool resetFrequency = 1;
-            this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
-                                       resetAmplitude, resetFrequency );
-            switch( newData->GetDcmHeader()->GetOrientationType() ) {
-                case svkDcmHeader::AXIAL:
-                    this->SetOrientation( "AXIAL" );
-                    break;
-                case svkDcmHeader::CORONAL:
-                    this->SetOrientation( "CORONAL" );
-                    break;
-                case svkDcmHeader::SAGITTAL:
-                    this->SetOrientation( "SAGITTAL" );
-                    break;
-            }
-        }
 
         svkImageData* metData = this->model->GetDataObject("MetaboliteData");
         svkImageData* overlayData = this->model->GetDataObject("OverlayData");
@@ -886,6 +893,8 @@ void vtkSivicController::UpdateModelForReslicedImage( )
 		this->model->ChangeDataObject( "AnatomicalData", mri );
 		// And the pointer the current loaded data set
 		this->model->ChangeDataObject( svkUtils::GetFilenameFromFullPath(originalFilename), mri );
+		this->model->SetDataFileName( svkUtils::GetFilenameFromFullPath(originalFilename),svkUtils::GetFilenameFromFullPath(originalFilename)  );
+		this->model->SetDataFileName( "AnatomicalData",svkUtils::GetFilenameFromFullPath(originalFilename)  );
 	}
 
 }
