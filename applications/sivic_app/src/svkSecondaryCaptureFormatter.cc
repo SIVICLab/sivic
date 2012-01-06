@@ -912,8 +912,8 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
         if( pos == pixelSpacing.npos || pos + 1 >= pixelSpacing.npos ) {
             imageInfo << "Image FOV:  ?" << endl; 
         } else {
-            imageInfo << "Image FOV:  " << atof(pixelSpacing.substr(0,pos).c_str()) * rows << " X " 
-                               << atof(pixelSpacing.substr(pos+1).c_str()) * cols << endl;
+            imageInfo << "Image FOV:  " << atof(pixelSpacing.substr(0,pos).c_str()) * cols << " X "
+                               << atof(pixelSpacing.substr(pos+1).c_str()) * rows << endl;
         }
 
         // Image Coil
