@@ -94,10 +94,10 @@ void svkIOD::SetDcmHeader(svkDcmHeader* header)
  */
 void svkIOD::InitPatientModule()
 {
-    this->dcmHeader->InsertEmptyElement( "PatientsName" );
+    this->dcmHeader->InsertEmptyElement( "PatientName" );
     this->dcmHeader->InsertEmptyElement( "PatientID" );
-    this->dcmHeader->InsertEmptyElement( "PatientsBirthDate" );
-    this->dcmHeader->InsertEmptyElement( "PatientsSex" );
+    this->dcmHeader->InsertEmptyElement( "PatientBirthDate" );
+    this->dcmHeader->InsertEmptyElement( "PatientSex" );
 }
 
 
@@ -109,7 +109,7 @@ void svkIOD::InitGeneralStudyModule()
     this->dcmHeader->InsertUniqueUID( "StudyInstanceUID" );
     this->dcmHeader->InsertEmptyElement( "StudyDate" );
     this->dcmHeader->InsertEmptyElement( "StudyTime" );
-    this->dcmHeader->InsertEmptyElement( "ReferringPhysiciansName" );
+    this->dcmHeader->InsertEmptyElement( "ReferringPhysicianName" );
     this->dcmHeader->InsertEmptyElement( "StudyID" );
     this->dcmHeader->InsertEmptyElement( "AccessionNumber" );
 }
@@ -166,7 +166,7 @@ void svkIOD::InitGeneralEquipmentModule()
 void svkIOD::InitEnhancedGeneralEquipmentModule()
 {
     this->dcmHeader->SetValue( "Manufacturer", svkIOD::NA_STRING );
-    this->dcmHeader->SetValue( "ManufacturersModelName",svkIOD::NA_STRING );
+    this->dcmHeader->SetValue( "ManufacturerModelName",svkIOD::NA_STRING );
     this->dcmHeader->SetValue( "DeviceSerialNumber",svkIOD::NA_STRING );
     this->dcmHeader->SetValue( "SoftwareVersions",  svkIOD::NA_STRING );
 }

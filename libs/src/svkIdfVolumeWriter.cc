@@ -379,7 +379,7 @@ void svkIdfVolumeWriter::WriteHeader()
             }
         }
 
-        out << "comment: " << this->GetIDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << " - "
+        out << "comment: " << this->GetIDFPatientName( hdr->GetStringValue( "PatientName" ) ) << " - "
             << hdr->GetStringValue( "SeriesDescription" ) << " - "
             << date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3]
             << endl;
@@ -524,23 +524,23 @@ void svkIdfVolumeWriter::GetIDFCenter(double center[3])
 /*!
  *   
  */
-vtkstd::string svkIdfVolumeWriter::GetIDFPatientsName(vtkstd::string patientsName)
+vtkstd::string svkIdfVolumeWriter::GetIDFPatientName(vtkstd::string PatientName)
 {
 
     //  Remove DICOM delimiters:
-    for (int i = 0; i < patientsName.size(); i++) {
-        if ( patientsName[i] == '^') {
-            patientsName[i] = ' ';
+    for (int i = 0; i < PatientName.size(); i++) {
+        if ( PatientName[i] == '^') {
+            PatientName[i] = ' ';
         }
     }
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = patientsName.find("  ")) != vtkstd::string::npos) {
-        patientsName.erase(pos, 1);     
+    while ( (pos = PatientName.find("  ")) != vtkstd::string::npos) {
+        PatientName.erase(pos, 1);     
     }
 
-    return svkImageReader2::StripWhite( patientsName );
+    return svkImageReader2::StripWhite( PatientName );
 }
 
 

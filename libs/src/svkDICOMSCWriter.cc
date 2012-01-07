@@ -360,8 +360,8 @@ void svkDICOMSCWriter::InitDcmHeader()
         this->dcmHeaderTemplate->GetStringValue("StudyID") 
     );
 
-    this->dcmHeader->SetDcmPatientsName(  
-        this->dcmHeaderTemplate->GetStringValue("PatientsName")  
+    this->dcmHeader->SetDcmPatientName(  
+        this->dcmHeaderTemplate->GetStringValue("PatientName")  
     );
 
     this->dcmHeader->SetValue(

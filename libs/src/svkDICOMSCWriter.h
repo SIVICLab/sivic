@@ -71,7 +71,7 @@ using namespace std;
  *  Capture SOP class output (SOPClassUID:  1.2.840.10008.5.1.4.1.1.7).  
  *  The DICOM SC header is generated from scratch with the following elements
  *  copied from the svkDcmHeader of the input svkImageData object:   PatientID, 
- *  StudyDate, StudyID, PatientsName, StudyInstanceUID.  All instances have the 
+ *  StudyDate, StudyID, PatientName, StudyInstanceUID.  All instances have the 
  *  same "unique" SeriesInstanceUID, generated from scratch.  RGB output is the
  *  default.  Grayscale output may be specified, in which case the input 
  *  image is mapped via vtkImageLuminance to a gray scale output, with 

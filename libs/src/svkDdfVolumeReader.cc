@@ -778,7 +778,7 @@ void svkDdfVolumeReader::InitPatientModule()
 {
 
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
-        this->GetOutput()->GetDcmHeader()->GetDcmPatientsName(  ddfMap["patientName"] ),  
+        this->GetOutput()->GetDcmHeader()->GetDcmPatientName(  ddfMap["patientName"] ),  
         ddfMap["patientId"], 
         ddfMap["dateOfBirth"], 
         ddfMap["sex"] 

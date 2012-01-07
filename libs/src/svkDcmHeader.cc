@@ -85,9 +85,9 @@ svkDcmHeader::~svkDcmHeader()
  *  Converts a string representation of a patient name to a DICOM VR = PN representation. 
  *      "[lastName[^firstName[^middleName[^namePrefix[^nameSuffix]]]]"
  *
- *      \param patientsName space delimited patient name string 
+ *      \param PatientName space delimited patient name string 
  */
-vtkstd::string svkDcmHeader::GetDcmPatientsName(vtkstd::string patientsName)
+vtkstd::string svkDcmHeader::GetDcmPatientName(vtkstd::string PatientName)
 {
 
     size_t delim;
@@ -97,13 +97,13 @@ vtkstd::string svkDcmHeader::GetDcmPatientsName(vtkstd::string patientsName)
     // There should be no more than 5 elements to the name (4 delims):
     // replace spaces with ^, or add ^ between elements not present
     for (int i = 0; i < 4; i++) {
-        if ( (delim = patientsName.find_first_of(' ') ) != string::npos ) {
-            patientsName.replace( delim, 1, dcmPNDelim);
+        if ( (delim = PatientName.find_first_of(' ') ) != string::npos ) {
+            PatientName.replace( delim, 1, dcmPNDelim);
         } else {
-            patientsName.push_back('^');
+            PatientName.push_back('^');
         }
     }
-    return patientsName;
+    return PatientName;
 }
 
 
@@ -112,16 +112,16 @@ vtkstd::string svkDcmHeader::GetDcmPatientsName(vtkstd::string patientsName)
  *  and sets the value in the DICOM header: 
  *      "[lastName[^firstName[^middleName[^namePrefix[^nameSuffix]]]]"
  *
- *      \param patientsName space delimited patient name string 
+ *      \param PatientName space delimited patient name string 
  */
-void svkDcmHeader::SetDcmPatientsName(vtkstd::string patientsName)
+void svkDcmHeader::SetDcmPatientName(vtkstd::string PatientName)
 {
 
-    vtkstd::string dcmPatientsName = this->GetDcmPatientsName( patientsName ); 
+    vtkstd::string dcmPatientName = this->GetDcmPatientName( PatientName ); 
 
     this->SetValue(
-        "PatientsName",
-        dcmPatientsName
+        "PatientName",
+        dcmPatientName
     );
 
 }
@@ -1030,12 +1030,12 @@ void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIn
 /*!
  *  Initializes the DICOM Patient Module (Patient IE)
  */
-void svkDcmHeader::InitPatientModule(vtkstd::string patientsName, vtkstd::string patientID, vtkstd::string patientsBirthDate, vtkstd::string patientsSex)
+void svkDcmHeader::InitPatientModule(vtkstd::string PatientName, vtkstd::string patientID, vtkstd::string PatientBirthDate, vtkstd::string PatientSex)
 {
-    if ( !patientsName.empty() ) {
+    if ( !PatientName.empty() ) {
         this->SetValue(
-            "PatientsName",
-            patientsName
+            "PatientName",
+            PatientName
         );
     }
 
@@ -1045,16 +1045,16 @@ void svkDcmHeader::InitPatientModule(vtkstd::string patientsName, vtkstd::string
             patientID
         );
     }
-    if ( !patientsBirthDate.empty() ) {
+    if ( !PatientBirthDate.empty() ) {
         this->SetValue(
-            "PatientsBirthDate",
-            patientsBirthDate
+            "PatientBirthDate",
+            PatientBirthDate
         );
     }
-    if ( !patientsSex.empty() ) {
+    if ( !PatientSex.empty() ) {
         this->SetValue(
-            "PatientsSex",
-            patientsSex
+            "PatientSex",
+            PatientSex
         );
     }
 }
@@ -1082,7 +1082,7 @@ void svkDcmHeader::InitGeneralStudyModule(vtkstd::string studyDate, vtkstd::stri
 
     if ( !referringPhysiciansName.empty() ) {
         this->SetValue(
-            "ReferringPhysiciansName",
+            "ReferringPhysicianName",
             referringPhysiciansName
         );
     }
@@ -1810,7 +1810,7 @@ void svkDcmHeader::InitMRModifierMacro(float inversionTime)
     this->AddSequenceItemElement(
         "MRModifierSequence",
         0,
-        "SpatialPreSaturation",
+        "SpatialPresaturation",
         string("SLAB"),
         "SharedFunctionalGroupsSequence",
         0
@@ -1921,10 +1921,10 @@ int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dat
     //  Patient IE requires modification
     //
     mri->InitPatientModule(
-        this->GetStringValue( "PatientsName" ),
+        this->GetStringValue( "PatientName" ),
         this->GetStringValue( "PatientID" ),
-        this->GetStringValue( "PatientsBirthDate" ),
-        this->GetStringValue( "PatientsSex" )
+        this->GetStringValue( "PatientBirthDate" ),
+        this->GetStringValue( "PatientSex" )
     );
 
 
@@ -1934,7 +1934,7 @@ int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dat
     mri->InitGeneralStudyModule(
         this->GetStringValue( "StudyDate" ),
         this->GetStringValue( "StudyTime" ),
-        this->GetStringValue( "ReferringPhysiciansName" ),
+        this->GetStringValue( "ReferringPhysicianName" ),
         this->GetStringValue( "StudyID" ),
         this->GetStringValue( "AccessionNumber" ), 
         this->GetStringValue( "StudyInstanceUID" )
@@ -2023,10 +2023,10 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
     //  Patient IE requires modification
     //
     mri->InitPatientModule(
-        this->GetStringValue( "PatientsName" ),
+        this->GetStringValue( "PatientName" ),
         this->GetStringValue( "PatientID" ),
-        this->GetStringValue( "PatientsBirthDate" ),
-        this->GetStringValue( "PatientsSex" )
+        this->GetStringValue( "PatientBirthDate" ),
+        this->GetStringValue( "PatientSex" )
     );
 
 
@@ -2036,7 +2036,7 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
     mri->InitGeneralStudyModule(
         this->GetStringValue("StudyDate"),
         this->GetStringValue("StudyTime"),
-        this->GetStringValue("ReferringPhysiciansName"),
+        this->GetStringValue("ReferringPhysicianName"),
         this->GetStringValue("StudyID"),
         this->GetStringValue("AccessionNumber"), 
         this->GetStringValue("StudyInstanceUID")
@@ -2130,9 +2130,9 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
  *      0008,0023 ContentDate
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
- *      0008,0090 ReferringPhysiciansName
+ *      0008,0090 ReferringPhysicianName
  *      0008,1155 RefSOPInstanceUID
- *      0010,0010 PatientsName
+ *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
  *      0020,000D StudyInstanceUID
@@ -2163,9 +2163,9 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0008,0023 ContentDate
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
- *      0008,0090 ReferringPhysiciansName
+ *      0008,0090 ReferringPhysicianName
  *      0008,1155 RefSOPInstanceUID
- *      0010,0010 PatientsName
+ *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
  *      0020,000D StudyInstanceUID
@@ -2196,9 +2196,9 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0008,0023 ContentDate
  *      0008,0050 AccessionNumber
  *      0008,0080 InstitutionName
- *      0008,0090 ReferringPhysiciansName
+ *      0008,0090 ReferringPhysicianName
  *      0008,1155 RefSOPInstanceUID
- *      0010,0010 PatientsName
+ *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
  *      0020,000D StudyInstanceUID
@@ -2220,9 +2220,9 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->SetValue( "SOPInstanceUID",                studyId); 
             this->SetValue( "AccessionNumber",               studyId); 
             this->SetValue( "InstitutionName",               studyId); 
-            this->SetValue( "ReferringPhysiciansName",       studyId); 
+            this->SetValue( "ReferringPhysicianName",       studyId); 
             this->SetValue( "ReferencedSOPInstanceUID",      studyId); 
-            this->SetValue( "PatientsName",                  patientId); 
+            this->SetValue( "PatientName",                  patientId); 
             this->SetValue( "PatientID",                     patientId); 
             this->SetValue( "StudyInstanceUID",              studyId); 
             this->SetValue( "SeriesInstanceUID",             studyId); 
@@ -2241,7 +2241,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->SetValue( "SeriesDate",                    studyId); 
             this->SetValue( "AcquisitionDate",               studyId); 
             this->SetValue( "ContentDate",                   studyId); 
-            this->SetValue( "PatientsBirthDate",             patientId); 
+            this->SetValue( "PatientBirthDate",             patientId); 
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {

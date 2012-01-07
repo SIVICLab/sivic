@@ -121,7 +121,7 @@ class svkIdfVolumeReader : public svkImageReader2
         int             GetNumSlices();
         void            ParseIdfComment(
                             vtkstd::string comment, 
-                            vtkstd::string* patientsName, 
+                            vtkstd::string* PatientName, 
                             vtkstd::string* seriesDescription, 
                             vtkstd::string* studyDate
                         );

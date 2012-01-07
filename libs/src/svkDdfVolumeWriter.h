@@ -89,7 +89,7 @@ class svkDdfVolumeWriter : public svkImageWriter
         void             GetDDFCenter(float center[3], vtkstd::string centerType = "current" );
         void             GetDDFOrientation(float orientation[6]);
         vtkstd::string   GetDimensionDomain( vtkstd::string dimensionDomainString ); 
-        vtkstd::string   GetDDFPatientsName(vtkstd::string patientsName);
+        vtkstd::string   GetDDFPatientName(vtkstd::string PatientName);
         vtkstd::string   GetFileRootName(vtkstd::string fileRoot, int coiNum, int timePt = 0); 
         void             SetNumberTimePointsPerFile(int numTimePts);
         bool             AllTimePointsInEachFile(); 

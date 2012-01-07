@@ -129,7 +129,7 @@ void svkVarianFidMapper::InitPatientModule()
 {
 
     this->dcmHeader->InitPatientModule(
-        this->dcmHeader->GetDcmPatientsName( this->GetHeaderValueAsString("samplename") ),
+        this->dcmHeader->GetDcmPatientName( this->GetHeaderValueAsString("samplename") ),
         this->GetHeaderValueAsString("dataid"), 
         this->GetHeaderValueAsString("birthday"), 
         this->GetHeaderValueAsString("gender") 

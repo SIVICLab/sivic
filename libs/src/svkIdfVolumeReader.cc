@@ -411,7 +411,7 @@ void svkIdfVolumeReader::InitPatientModule()
     }
 
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
-        this->GetOutput()->GetDcmHeader()->GetDcmPatientsName( idfMap["patientName"] ),
+        this->GetOutput()->GetDcmHeader()->GetDcmPatientName( idfMap["patientName"] ),
         patientID, 
         "",
         "" 
@@ -805,15 +805,15 @@ vtkstd::string svkIdfVolumeReader::GetDcmPatientPositionString(vtkstd::string pa
 
 /*! 
  *  Parses the IDF comment field for:
- *      patientsName
+ *      PatientName
  *      seriesDescription
  *      studyDate
  */
-void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string* patientsName, 
+void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string* PatientName, 
     vtkstd::string* seriesDescription, vtkstd::string* studyDate)
 {
 
-    patientsName->assign(""); 
+    PatientName->assign(""); 
     studyDate->assign(""); 
     seriesDescription->assign(""); 
 
@@ -821,7 +821,7 @@ void svkIdfVolumeReader::ParseIdfComment(vtkstd::string comment, vtkstd::string*
     if ( (delim = comment.find_first_of('-')) != vtkstd::string::npos)
     { 
         delim = delim -1;
-        patientsName->assign( svkImageReader2::StripWhite( comment.substr(0, delim) ) );
+        PatientName->assign( svkImageReader2::StripWhite( comment.substr(0, delim) ) );
 
         vtkstd::string commentSub;
         commentSub = comment.substr(delim + 3);

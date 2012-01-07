@@ -1755,7 +1755,7 @@ void svkGESigna5XReader::InitPatientModule()
         name[found] = '^';
     }
 
-    this->GetOutput()->GetDcmHeader()->SetDcmPatientsName(name);
+    this->GetOutput()->GetDcmHeader()->SetDcmPatientName(name);
 
     vtkstd::string str;
     switch (this->imageHeader->Exam_Patient_Sex) {
@@ -1764,7 +1764,7 @@ void svkGESigna5XReader::InitPatientModule()
         default:        str="";  break;
     }
     this->GetOutput()->GetDcmHeader()->SetValue( 
-        "PatientsSex", 
+        "PatientSex", 
         str 
     );
 
@@ -1778,12 +1778,12 @@ void svkGESigna5XReader::InitPatientModule()
         case 3: ost << "W"; break;
     }
     this->GetOutput()->GetDcmHeader()->SetValue( 
-        "PatientsAge", 
+        "PatientAge", 
         ost.str() 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
-        "PatientsWeight", 
+        "PatientWeight", 
         this->imageHeader->Exam_Patient_Weight_In_Grams/1000.0 
     );
 
@@ -1814,7 +1814,7 @@ void svkGESigna5XReader::InitGeneralStudyModule()
         name[found] = '^';
     }
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "ReferringPhysiciansName",
+        "ReferringPhysicianName",
         name 
     );
 
@@ -1984,7 +1984,7 @@ void svkGESigna5XReader::InitEnhancedGeneralEquipmentModule()
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "ManufacturersModelName",
+        "ManufacturerModelName",
         vtkstd::string(this->imageHeader->Suite_Product_ID) 
     );
 
@@ -2741,7 +2741,7 @@ void svkGESigna5XReader::InitMRModifierMacro()
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRModifierSequence",
         0,                        
-        "SpatialPreSaturation",       
+        "SpatialPresaturation",       
         str,
         "SharedFunctionalGroupsSequence",    
         0                      

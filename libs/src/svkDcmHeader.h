@@ -549,8 +549,8 @@ class svkDcmHeader: public vtkObject
         virtual void        ReplaceOldElements( bool replaceElements ) = 0;
 
 
-        vtkstd::string      GetDcmPatientsName( vtkstd::string patientsName ); 
-        void                SetDcmPatientsName( vtkstd::string patientsName );
+        vtkstd::string      GetDcmPatientName( vtkstd::string PatientName ); 
+        void                SetDcmPatientName( vtkstd::string PatientName );
         void                SetPixelDataType( DcmPixelDataFormat dataType );
         int                 GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
 
@@ -589,10 +589,10 @@ class svkDcmHeader: public vtkObject
         //  DICOM IE and macro initialization methods:
         //==================================================
         void                InitPatientModule(
-                                vtkstd::string patientsName,
+                                vtkstd::string PatientName,
                                 vtkstd::string patientID,
-                                vtkstd::string patientsBirthDate,
-                                vtkstd::string patientsSex
+                                vtkstd::string PatientBirthDate,
+                                vtkstd::string PatientSex
                             );
 
         void                InitGeneralStudyModule(

@@ -354,11 +354,11 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "version: 6.1" << endl;
     *out << "object type: MR Spectroscopy" << endl;
     *out << "patient id: " << setw(19) << left << hdr->GetStringValue( "PatientID" ) << endl;
-    *out << "patient name: " << setw(63) << left << this->GetDDFPatientsName( hdr->GetStringValue( "PatientsName" ) ) << endl;
+    *out << "patient name: " << setw(63) << left << this->GetDDFPatientName( hdr->GetStringValue( "PatientName" ) ) << endl;
     *out << "patient code: " << endl;
 
 
-    vtkstd::string dob = hdr->GetStringValue( "PatientsBirthDate" ); 
+    vtkstd::string dob = hdr->GetStringValue( "PatientBirthDate" ); 
 
     if ( deidentified ) { 
         *out << "date of birth: " << dob << endl; 
@@ -371,7 +371,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
         }
     }
 
-    *out << "sex: " << hdr->GetStringValue( "PatientsSex" ) <<  endl;
+    *out << "sex: " << hdr->GetStringValue( "PatientSex" ) <<  endl;
     *out << "study id: " << hdr->GetStringValue( "StudyID" ) <<  endl;
     *out << "study code: " << "" <<  endl;
 
@@ -1003,23 +1003,23 @@ void svkDdfVolumeWriter::GetDDFCenter(float center[3], vtkstd::string centerType
 /*!
  *   
  */
-vtkstd::string svkDdfVolumeWriter::GetDDFPatientsName(vtkstd::string patientsName)
+vtkstd::string svkDdfVolumeWriter::GetDDFPatientName(vtkstd::string PatientName)
 {
 
     //  Remove DICOM delimiters:
-    for (int i = 0; i < patientsName.size(); i++) {
-        if ( patientsName[i] == '^') {
-            patientsName[i] = ' ';
+    for (int i = 0; i < PatientName.size(); i++) {
+        if ( PatientName[i] == '^') {
+            PatientName[i] = ' ';
         }
     }
 
     //  Remove multiple spaces:
     size_t pos; 
-    while ( (pos = patientsName.find("  ")) != vtkstd::string::npos) {
-        patientsName.erase(pos, 1);     
+    while ( (pos = PatientName.find("  ")) != vtkstd::string::npos) {
+        PatientName.erase(pos, 1);     
     }
 
-    return patientsName;
+    return PatientName;
 }
 
 
