@@ -2245,9 +2245,9 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
-        this->SetValue( "DeIdentificationMethod", "DEIDENTIFIED" ); 
+        this->SetValue( "DeidentificationMethod", "DEIDENTIFIED" ); 
     } else if ( phiType == svkDcmHeader::PHI_LIMITED ) {
-        this->SetValue( "DeIdentificationMethod", "LIMITED" ); 
+        this->SetValue( "DeidentificationMethod", "LIMITED" ); 
     }
 }
 

@@ -1824,7 +1824,7 @@ void svkGESigna5XReader::InitGeneralStudyModule()
         name[found] = '^';
     }
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "PerformingPhysiciansName",
+        "PerformingPhysicianName",
         name 
     );
 
@@ -2939,11 +2939,11 @@ void svkGESigna5XReader::InitMRImageAndSpectroscopyInstanceMacro()
      *  MR Image and Spectroscopy Instance Macro
      *  ======================================= */
 
-    vtkstd::string AcquisitionDatetime = this->imageHeader->MR_Time_Stamp_Date;
-    AcquisitionDatetime += this->imageHeader->MR_Time_Stamp_Time;
+    vtkstd::string AcquisitionDateTime = this->imageHeader->MR_Time_Stamp_Date;
+    AcquisitionDateTime += this->imageHeader->MR_Time_Stamp_Time;
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "AcquisitionDatetime",
-        AcquisitionDatetime 
+        "AcquisitionDateTime",
+        AcquisitionDateTime 
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -3229,7 +3229,7 @@ void svkGESigna5XReader::InitFrameContentMacro()
         this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
             "FrameContentSequence",
             0,
-            "FrameAcquisitionDatetime",
+            "FrameAcquisitionDateTime",
             "EMPTY_ELEMENT",
             "PerFrameFunctionalGroupsSequence",
             i

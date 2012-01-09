@@ -415,7 +415,7 @@ void svkGEPostageStampReader::InitMRSpectroscopyModule()
     string studyDate = hdr->GetStringValue("StudyDate");
     string acqTime = hdr->GetStringValue("AcquisitionTime");
     hdr->SetValue(
-        "AcquisitionDatetime",
+        "AcquisitionDateTime",
         studyDate + acqTime
     );
 

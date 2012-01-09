@@ -1536,7 +1536,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
      *  ======================================= */
 
     this->dcmHeader->SetValue(
-        "AcquisitionDatetime",
+        "AcquisitionDateTime",
         this->GetHeaderValueAsString( "rhr.rh_scan_date" ) + "000000" 
     );
 

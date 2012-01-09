@@ -709,7 +709,7 @@ void svkVarianCSFidMapper::InitMRSpectroscopyModule()
      *  ======================================= */
 
     this->dcmHeader->SetValue(
-        "AcquisitionDatetime",
+        "AcquisitionDateTime",
         this->GetHeaderValueAsString("date")
     );
 

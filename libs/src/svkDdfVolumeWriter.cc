@@ -344,7 +344,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
-    vtkstd::string deidMethod = hdr->GetStringValue( "DeIdentificationMethod" );
+    vtkstd::string deidMethod = hdr->GetStringValue( "DeidentificationMethod" );
     bool deidentified = false; 
     if (  deidMethod.compare("DEIDENTIFIED") == 0 ){ 
         deidentified = true; 

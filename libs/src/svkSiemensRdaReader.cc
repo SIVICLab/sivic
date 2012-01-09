@@ -1054,7 +1054,7 @@ void svkSiemensRdaReader::InitMRSpectroscopyModule()
      *  ======================================= */
 
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "AcquisitionDatetime",
+        "AcquisitionDateTime",
         this->GetHeaderValueAsString( "StudyDate") + "000000" 
     );
 

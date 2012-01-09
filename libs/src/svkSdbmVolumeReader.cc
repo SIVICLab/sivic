@@ -1328,7 +1328,7 @@ void svkSdbmVolumeReader::InitMRSpectroscopyModule()
      *  ======================================= */
 
     this->GetOutput()->GetDcmHeader()->SetValue(
-        "AcquisitionDatetime",
+        "AcquisitionDateTime",
         this->RemoveSlashesFromDate( &(shfMap["date_acquired"]) ) + "000000"
     );
 
