@@ -61,6 +61,7 @@ extern "C" {
 #include <svkDcmHeader.h>
 #include <svkBurnResearchPixels.h>
 #include <vtkIndent.h>
+#include <vtkXMLImageDataWriter.h>
 
 
 using namespace svk;
@@ -82,6 +83,7 @@ int main (int argc, char** argv)
     usemsg += "                                         4 = DICOM_MRS               \n";  
     usemsg += "                                         5 = DICOM_MRI               \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI      \n";  
+    usemsg += "                                         9 = VTI                     \n";
     usemsg += "   --deid_type   type                Type of deidentification:     \n";
     usemsg += "                                         1 = limited (default)       \n";
     usemsg += "                                         2 = deidentified            \n";
@@ -157,8 +159,14 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
+    /*
+     * In addition to svkImageWriters this converter also supports an xml writer for the vtk
+     * vti format. Because this writer is not a vtkImageWriter svkImagerWriterFactory cannot
+     * return it so we must instantiate it outside of the factory. To account for this extra
+     * type we will support a dataTypeOut equal to svkImageWriterFactory::LAST_TYPE + 1.
+     */
     if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
-        dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE ) {
+        dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE + 1 ) {
         cout << usemsg << endl;
         exit(1); 
     }
@@ -229,23 +237,34 @@ int main (int argc, char** argv)
 
 #endif
 
-    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ) );
+    //  Set the input command line into the data set provenance:
+	currentImage->GetProvenance()->SetApplicationCommand( cmdLine );
 
-    if ( writer == NULL ) {
-        cerr << "Can not determine writer of type: " << dataTypeOut << endl;
-        exit(1);
+	// If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
+    if( dataTypeOut <= svkImageWriterFactory::LAST_TYPE ) {
+		svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+		svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ) );
+
+		if ( writer == NULL ) {
+			cerr << "Can not determine writer of type: " << dataTypeOut << endl;
+			exit(1);
+		}
+
+		writerFactory->Delete();
+		writer->SetFileName( outputFileName.c_str() );
+		writer->SetInput( currentImage );
+		writer->Write();
+		writer->Delete();
+    } else if (dataTypeOut == svkImageWriterFactory::LAST_TYPE + 1 ) {
+        vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
+        writer->SetFileName( outputFileName.c_str() );
+        writer->SetInput( currentImage );
+
+        writer->Write();
+        writer->Delete();
     }
 
-    writerFactory->Delete();
-    writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( currentImage );
 
-    //  Set the input command line into the data set provenance:
-    currentImage->GetProvenance()->SetApplicationCommand( cmdLine );
-
-    writer->Write();
-    writer->Delete();
     reader->Delete();
 
 
