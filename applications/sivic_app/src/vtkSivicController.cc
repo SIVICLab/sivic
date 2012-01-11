@@ -2409,9 +2409,19 @@ int vtkSivicController::PopupMessage( string message, int style )
 string vtkSivicController::GetPrinterName( )
 {
     // Once we have the printer dialog working we can change this.
-    string printerName = "jasmine";
+    char registryPrinterName[100] = "";
+    string printerNameString = "";
 
-    return printerName;
+    // Lets grab the printer name from the registry
+    this->app->GetRegistryValue( 0, "defaults", "printer", registryPrinterName );
+    if( registryPrinterName != NULL && strcmp( registryPrinterName, "" ) != 0 ) {
+		printerNameString = registryPrinterName;
+    } else {
+    	printerNameString = "jasmine";
+    }
+    cout << "Using printer: " << printerNameString << endl;
+
+    return printerNameString;
 
 }
 

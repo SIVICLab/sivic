@@ -1222,8 +1222,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
     this->plotGrids[0]->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
 
-    if( this->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
-        vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
+    if( vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper() != NULL ) {
         vtkLabeledDataMapper::SafeDownCast( 
                 vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
             ->GetLabelTextProperty()->SetColor(textColor);
