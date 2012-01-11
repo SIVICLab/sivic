@@ -1376,8 +1376,6 @@ DcmTag svkDcmtkAdapter::GetDcmTag(const char* name)
     DcmTag tag;
 
     const DcmDictEntry *dicEnt = this->privateDic->findEntry( name );
-cout << "TAG NAME: " << name << endl;
-cout << " " << *dicEnt << endl;
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
         tag.setVR( dicEnt->getVR() );
