@@ -14,7 +14,15 @@
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>Default</name>
+                    <name>Release_SIVIC</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_SIVIC</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_svk_file_convert</name>
                     <type>0</type>
                 </confElem>
             </confList>
