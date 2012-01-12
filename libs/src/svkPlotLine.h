@@ -182,7 +182,7 @@ class svkPlotLine : public vtkObject
         double          origin[3];
         
         //! Size of the box to fill
-        double*         spacing;
+        double          spacing[3];
 
         //! The dcos of the dataset
         vector< vector<double> >*  dcos;

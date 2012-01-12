@@ -566,7 +566,9 @@ void svkPlotLineGrid::GenerateActor()
                           this->data->GetOrigin()[1],
                           this->data->GetOrigin()[2] };
 
-    double* spacing = this->data->GetSpacing();
+    double spacing[3] =  { this->data->GetSpacing()[0],
+                          this->data->GetSpacing()[1],
+                          this->data->GetSpacing()[2] };
 
     // TODO: Generalize for oblique single voxel
     if( acquisitionType == "SINGLE VOXEL" ) {

@@ -425,8 +425,8 @@ double* svkPlotLine::GetSpacing()
  */
 void svkPlotLine::SetSpacing( double* spacing )
 {
-	if( this->spacing != spacing  ){
-		this->spacing = spacing;
+	if( spacing != NULL && (this->spacing[0] != spacing[0] || this->spacing[1] != spacing[1] || this->spacing[2] != spacing[2]) ){
+		memcpy( this->spacing, spacing, sizeof(double) * 3 );
 		this->RecalculateScale();
 		this->RecalculatePlotAreaBounds();
 		this->Modified();
