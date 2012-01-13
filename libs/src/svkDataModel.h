@@ -99,6 +99,7 @@ class svkDataModel : public vtkObject
         // DataObject manipulators 
         virtual bool                       AddDataObject( string objectName, svkImageData* dataObject );
         virtual bool                       RemoveDataObject( string objectName );
+        virtual void                       RemoveAllDataObjects( );
         virtual bool                       ChangeDataObject(string objectName, svkImageData* dataObject);
         virtual bool                       ReplaceDataFromFile(string objectName, string fileName);
         virtual svkImageData*              GetDataObject( string objectName );

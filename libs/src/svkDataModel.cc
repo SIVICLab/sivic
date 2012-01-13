@@ -132,6 +132,18 @@ bool svkDataModel::RemoveDataObject( string objectName )
     }
 }
    
+void svkDataModel::RemoveAllDataObjects( )
+{
+	vector<string> allNames;
+    for( map<string, svkImageData*>::iterator iter = allDataObjectsByKeyName.begin();
+        iter != allDataObjectsByKeyName.end(); ++iter) {
+            allNames.push_back(iter->first);
+    }
+    for( vector<string>::iterator iter = allNames.begin(); iter != allNames.end(); ++iter) {
+    	this->RemoveDataObject( *iter );
+    }
+
+}
 
 /*!
  *  Changes a given data object in the hash to be associated with a new data

@@ -401,11 +401,7 @@ void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* ov
 /*!    Open a file.    */
 void vtkSivicController::ResetApplication( )
 {
-    model->RemoveDataObject("AnatomicalData"); 
-    model->RemoveDataObject("SpectroscopicData"); 
-    model->RemoveDataObject("4DImageData");
-    model->RemoveDataObject("OverlayData"); 
-    model->RemoveDataObject("MetaboliteData"); 
+    model->RemoveAllDataObjects();
     this->overlayController->Reset();
     this->plotController->Reset();
     this->viewRenderingWidget->ResetInfoText();
@@ -1241,7 +1237,7 @@ void vtkSivicController::OpenExam( )
     int status = -1;
 
 	string imagePathName = svkUtils::GetCurrentWorkingDirectory();
-
+	this->ResetApplication();
     // First we open an image
 
     // Lets check for an images folder
