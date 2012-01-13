@@ -335,6 +335,9 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
         patientEntryPos
     );
 
+    #   Retain the SeriesInstanceUID from the raw file as well.
+    this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"] ); 
+
 }
 
 
