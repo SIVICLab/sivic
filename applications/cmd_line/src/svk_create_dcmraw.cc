@@ -66,7 +66,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
-    usemsg += "svk_get_filetype -i input_file_name  [ -a additional_file_name ] [ -xh ]     \n"; 
+    usemsg += "svk_create_dcmraw -i input_file_name  [ -a additional_file_name ] [ -xh ]    \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of raw file to convert.                    \n"; 
     usemsg += "   -a    associated file     Name of associated files to include in DICOM    \n"; 
