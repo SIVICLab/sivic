@@ -336,7 +336,7 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
     );
 
     //  Retain the SeriesInstanceUID from the raw file as well.
-    this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"] ); 
+    this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"][3] ); 
 
 }
 
