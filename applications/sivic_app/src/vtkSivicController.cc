@@ -3257,7 +3257,11 @@ void vtkSivicController::GenerateTraces( char* sourceImage )
 	if( strcmp( sourceImage, "reference_image" ) == 0 ) {
 		image = svkMriImageData::SafeDownCast(this->model->GetDataObject("AnatomicalData"));
 	} else if( strcmp( sourceImage, "overlay_image" ) == 0 ) {
-		image = svkMriImageData::SafeDownCast(this->model->GetDataObject("OverlayData"));
+		if( this->model->DataExists("MetaboliteData")) {
+			image = svkMriImageData::SafeDownCast(this->model->GetDataObject("MetaboliteData"));
+		} else {
+			image = svkMriImageData::SafeDownCast(this->model->GetDataObject("OverlayData"));
+		}
 	}
 	if( image != NULL ) {
 		cout << "Getting Cell Data from: " << *image << endl;

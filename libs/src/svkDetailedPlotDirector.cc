@@ -74,7 +74,8 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     this->glyphGenerator->SetGlyphTypeToNone();
     this->xyPlotActor->GetXAxisActor2D()->GetProperty()->SetColor(0,1,0);
     this->xyPlotActor->GetYAxisActor2D()->GetProperty()->SetColor(0,1,0);
-
+    this->xyPlotActor->SetAdjustXLabels(0);
+    this->xyPlotActor->SetAdjustYLabels(0);
     this->abscissa = NULL;
     this->numPoints = -1;
     this->cursorLocationCB = NULL;
