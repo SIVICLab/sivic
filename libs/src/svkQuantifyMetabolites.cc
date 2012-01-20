@@ -132,6 +132,9 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
     vtkXMLDataElement* algoXML;
     svkMetaboliteMap* mapGen = svkMetaboliteMap::New();
     mapGen->SetInput( this->GetImageDataInput(0) ); 
+    if ( isVerbose ) {
+        mapGen->SetVerbose(isVerbose); 
+    }
 
     while ( parseQuants ) {
         ostringstream ossIndex;
