@@ -197,7 +197,7 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
 
 
 /*! 
- *  Integrate real spectra over specified limits. 
+ *  Quantify spectra using specified algorith (e.g. Ingegrate, PkHt, Magnitude). 
  */
 void svkMetaboliteMap::GenerateMap()
 {
