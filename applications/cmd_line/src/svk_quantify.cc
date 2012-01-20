@@ -252,6 +252,10 @@ int main (int argc, char** argv)
     //  if using XML config, then quantify all mets here, else only quantify the specified peak: 
     if ( xmlFileName.length() != 0 ) {
         svkQuantifyMetabolites* quantMets = svkQuantifyMetabolites::New();
+        quantMets->SetXMLFileName( xmlFileName );
+        if ( isVerbose ) { 
+            quantMets->SetVerbose( isVerbose ); 
+        }    
         quantMets->SetInput( reader->GetOutput() ); 
         quantMets->LimitToSelectedVolume();    
         quantMets->Update();
