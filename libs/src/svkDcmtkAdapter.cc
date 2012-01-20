@@ -1544,7 +1544,7 @@ void svkDcmtkAdapter::CopyDcmHeader(svkDcmHeader* headerCopy)
     }
     dynamic_cast<svkDcmtkAdapter*>(headerCopy)->dcmFile = static_cast<svkDcmtkIod*>( tmpHeader->clone() );
    
-    cout << "REMEMBER TO Set the creation time/date in the header!" << endl;
+    // TODO: cout << "REMEMBER TO Set the creation time/date in the header!" << endl;
 }
 
 
