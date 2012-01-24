@@ -2601,6 +2601,9 @@ void vtkSivicController::EnableWidgets()
                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
             if( acquisitionType == "SINGLE VOXEL" ) {
                 this->imageViewWidget->plotGridButton->EnabledOff();
+            } else {
+				this->imageViewWidget->plotGridButton->EnabledOn();
+				this->imageViewWidget->plotGridButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
             }
         } else {
             this->imageViewWidget->plotGridButton->EnabledOn();
