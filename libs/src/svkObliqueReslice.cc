@@ -172,6 +172,9 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
     //  Copy the vtkImageAlgo output to the allocated svkImageData output image
     this->GetOutput()->DeepCopy( this->reslicer->GetOutput() ); 
 
+    // TODO: This will have to be changed when we support multiple input datasets
+    this->GetOutput()->GetPointData()->GetScalars()->SetName("pixels0");
+
     this->UpdateHeader(); 
     outputVector->GetInformationObject(0)->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->GetOutput()->GetExtent(), 6);
     

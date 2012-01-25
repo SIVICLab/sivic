@@ -480,7 +480,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
                 this->overlayController->ResetWindowLevel();
                 this->overlayController->HighlightSelectionVoxels();
             }
-            this->UpdateModelForReslicedImage();
+            this->UpdateModelForReslicedImage("AnatomicalData");
             this->SetPreferencesFromRegistry();
             int* extent = data->GetExtent();
             int firstSlice;
@@ -696,7 +696,8 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
         this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
-        this->UpdateModelForReslicedImage();
+		this->UpdateModelForReslicedImage("AnatomicalData");
+		this->UpdateModelForReslicedImage("OverlayData");
         
         this->SetPreferencesFromRegistry();
 
@@ -876,21 +877,29 @@ void vtkSivicController::OpenImageFromModel( const char* modelObjectName )
 
 /*!
  *  Updates the model to account for the reslicing of images by the overlay view.
+ *  When the overlay view loads an image it may reslice the data to
  *	// TODO: Change the overlay controller to reslice in place
  */
-void vtkSivicController::UpdateModelForReslicedImage( )
+void vtkSivicController::UpdateModelForReslicedImage( string modelObjectName )
 {
 	// The overlay controller may have resliced the data, we need to make sure we get the new version of the data into the model
-	svkImageData* mri = this->overlayController->GetView()->GetInput(svkOverlayView::MRI);
-	if( mri != NULL && mri != this->model->GetDataObject( "AnatomicalData" ) ) {
+	svkImageData* mri = NULL;
+	if( modelObjectName == "AnatomicalData") {
+		mri = this->overlayController->GetView()->GetInput(svkOverlayView::MRI);
+	} else if ( modelObjectName == "OverlayData") {
+		mri = this->overlayController->GetView()->GetInput(svkOverlayView::OVERLAY);
+	} else {
+		return;
+	}
+	if( mri != NULL && mri != this->model->GetDataObject( modelObjectName ) ) {
 		// Lets get the original filename
-		string originalFilename = this->model->GetDataFileName("AnatomicalData");
+		string originalFilename = this->model->GetDataFileName( modelObjectName );
 		// Change the current anatomical data pointer
-		this->model->ChangeDataObject( "AnatomicalData", mri );
+		this->model->ChangeDataObject( modelObjectName, mri );
 		// And the pointer the current loaded data set
 		this->model->ChangeDataObject( svkUtils::GetFilenameFromFullPath(originalFilename), mri );
 		this->model->SetDataFileName( svkUtils::GetFilenameFromFullPath(originalFilename),svkUtils::GetFilenameFromFullPath(originalFilename)  );
-		this->model->SetDataFileName( "AnatomicalData",svkUtils::GetFilenameFromFullPath(originalFilename)  );
+		this->model->SetDataFileName( modelObjectName,svkUtils::GetFilenameFromFullPath(originalFilename)  );
 	}
 
 }
@@ -938,6 +947,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                         this->model->AddDataObject( "OverlayData", data );
                         this->model->SetDataFileName( "OverlayData", stringFilename );
                     }
+					this->UpdateModelForReslicedImage("OverlayData");
+					data = this->model->GetDataObject("OverlayData");
                     this->viewRenderingWidget->ResetInfoText();
                     this->spectraViewWidget->SetSyncOverlayWL( false );
                     this->overlayWindowLevelWidget->SetSyncPlotGrid( false );
