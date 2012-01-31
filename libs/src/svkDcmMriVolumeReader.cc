@@ -237,6 +237,12 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
             data->GetPointData()->AddArray(array);
         }
 
+        if( vol % 2 == 0 ) { // update progress every other volume
+			ostringstream progressStream;
+			progressStream <<"Reading Volume " << vol << " of " << this->numVolumes;
+			this->SetProgressText( progressStream.str().c_str() );
+			this->UpdateProgress( vol/((double)this->numVolumes) );
+        }
 
     }
 

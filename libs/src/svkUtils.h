@@ -107,6 +107,7 @@ class svkUtils : public vtkObject
         static bool           UncompressFiles( vtkStringArray *filenames );
         static bool           UncompressFile( vtkstd::string filename );
         static bool           IsFileCompressed( vtkstd::string filename );
+        static string         SpacesTo_( vtkstd::string inputString );
 
 	protected:
 

@@ -65,7 +65,7 @@ class sivicCombineWidget : public sivicKWCompositeWidget
 
         static sivicCombineWidget *New();
         vtkTypeRevisionMacro(sivicCombineWidget,sivicKWCompositeWidget);
-
+        //typedef svkCoilCombine::CombinationMethod CombinationMethod;
 
     protected:
 
@@ -73,27 +73,16 @@ class sivicCombineWidget : public sivicKWCompositeWidget
         sivicCombineWidget();
         ~sivicCombineWidget();
 
-        vtkKWMenuButton*                zeroFillSelectorSpec;
-        vtkKWMenuButton*                zeroFillSelectorCols;
-        vtkKWMenuButton*                zeroFillSelectorRows;
-        vtkKWMenuButton*                zeroFillSelectorSlices;
-        vtkKWPushButton*                applyButton;
-        vtkKWMenuButton*                apodizationSelectorSpec;
-        vtkKWMenuButton*                apodizationSelectorCols;
-        vtkKWMenuButton*                apodizationSelectorRows;
-        vtkKWMenuButton*                apodizationSelectorSlices;
-        vtkKWLabel*                     specLabel; 
-        vtkKWLabel*                     colsLabel; 
-        vtkKWLabel*                     rowsLabel; 
-        vtkKWLabel*                     slicesLabel; 
-
-
+        vtkKWPushButton* magnitudeCombinationButton;
+        vtkKWPushButton* additionCombinationButton;
         
         // Description:
         // Create the widget.
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
+        svkCoilCombine::CombinationMethod method;
+        void            ExecuteCombine(svkCoilCombine::CombinationMethod method, svkCoilCombine::CombinationDimension dimension );
 
 
 
@@ -101,7 +90,6 @@ class sivicCombineWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*         progressCallback;
 
-        void                        ExecuteCombine();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 

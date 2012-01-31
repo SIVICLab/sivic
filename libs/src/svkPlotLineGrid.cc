@@ -1020,7 +1020,7 @@ void svkPlotLineGrid::SetOrientation( svkDcmHeader::Orientation orientation )
     if( this->data!=NULL ) {
 
         svkDataView::ResetTlcBrcForNewOrientation( this->data, this->orientation, this->tlcBrc, this->slice );
-        this->AllocatePolyData();
+        this->GenerateActor();
 
         if( !svkDataView::IsTlcBrcWithinData( this->data, this->tlcBrc ) ) {
             int lastSlice  = data->GetLastSlice( this->orientation );

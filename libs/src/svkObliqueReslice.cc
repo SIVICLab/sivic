@@ -92,7 +92,6 @@ svkObliqueReslice::~svkObliqueReslice()
 void svkObliqueReslice::SetTargetDcosFromImage(svkImageData* image)
 {
     image->GetDcmHeader()->GetDataDcos(this->targetDcos); 
-    cout << "reslicer input in dcos setter: " << *(this->GetImageDataInput(0))<<endl;
 }
 
 
@@ -120,7 +119,6 @@ void svkObliqueReslice::SetTargetDcos(double dcos[3][3])
 int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    cout << "reslicer input: " << *( this->GetImageDataInput(0) ) << endl;
     this->reslicer->SetInput( this->GetImageDataInput(0) ); 
 
     double rotation[3][3];   
@@ -164,7 +162,6 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
  */
 int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) 
 {
-
 
     //  Get the allocated svk output image data (resliced image doesn't have a dcos yet): 
     this->GetOutput()->SetDcos( this->targetDcos ); 
@@ -335,11 +332,6 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
         }
     }
 
-    cout << "original tlc: " << tlc0[0] << " " << tlc0[1] << " " << tlc0[2] << endl;
-    cout << "original spacing: " << inputSpacing[0] << " " << inputSpacing[1] << " " << inputSpacing[2] << endl;
-    cout << "original voxels: " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
-    cout << "original ORIGIN: " << origin[0] << " " << origin[1] << " " << origin[2] << endl;
-
     //  Now calculate the NEW tlc: 
     //  this->targetDcos 
     //  this->newSpacing
@@ -353,15 +345,12 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     }
     double reslicedTlc[3]; 
     this->reslicedImage->GetOrigin( reslicedTlc );
-    cout << "resliced tlc: " << reslicedTlc[0] << " " << reslicedTlc[1] << " " << reslicedTlc[2] << endl;
 
     this->reslicedImage->SetOrigin( newTlc );
-    cout << "new tlc: " << newTlc[0] << " " << newTlc[1] << " " << newTlc[2] << endl;
     this->reslicedImage->SetOrigin( newTlc );
 
 
     int numSlices = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
-    cout << "RESLICED NUM SLICES : " << numSlices << endl;
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         newTlc, this->newSpacing, this->targetDcos, numSlices, 1, 1
     );

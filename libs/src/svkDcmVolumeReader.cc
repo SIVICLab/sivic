@@ -423,9 +423,16 @@ void svkDcmVolumeReader::InitFileNames()
             dcmSeriesAttributes.push_back( dcmFileAttributes ); 
 
             tmp->Delete();
-
+            if( i % 2 == 0 ) { // Only update progress every other iteration
+				ostringstream progressStream;
+				progressStream <<"Reading DICOM Header " << i << " of " <<  fileNames->GetNumberOfValues();
+				this->SetProgressText( progressStream.str().c_str() );
+				this->UpdateProgress( i/((double)fileNames->GetNumberOfValues() ) );
+            }
         }
     }
+	this->SetProgressText( "Done Reading DICOM Headers." );
+	this->UpdateProgress( 1 );
 
     //  ======================================================================
     //  Now validate that the DICOM files comprise a single volumetric series

@@ -401,12 +401,19 @@ void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* ov
 /*!    Open a file.    */
 void vtkSivicController::ResetApplication( )
 {
+	int toggleDraw = this->GetDraw();
+	if( toggleDraw ) {
+		this->DrawOff();
+	}
     model->RemoveAllDataObjects();
     this->overlayController->Reset();
     this->plotController->Reset();
     this->viewRenderingWidget->ResetInfoText();
     this->dataWidget->UpdateReferenceSpectraList();
     this->DisableWidgets();
+	if( toggleDraw ) {
+		this->DrawOn();
+	}
 
 }
 
@@ -441,9 +448,13 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
         if( activeData != NULL ) {
             svkDataValidator* validator = svkDataValidator::New(); 
             bool valid = validator->AreDataCompatible( data, activeData);
-            if ( !valid ) {
-                resultInfo = validator->resultInfo; 
-            }
+			if ( !valid ) {
+				if ( validator->IsOnlyError(svkDataValidator::INVALID_DATA_ORIENTATION)) {
+					valid = true; // We can handle orientation mismatch so lets ignore that error.
+				} else {
+					resultInfo = validator->resultInfo;
+				}
+			}
         }
 
 
@@ -577,7 +588,10 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
     if( newData->IsA("svkMrsImageData")) {
         objectName = "SpectroscopicData";
     } else if (newData->IsA("svkMriImageData")) {
-        newData = svkMriImageData::SafeDownCast(newData)->GetCellDataRepresentation();
+        newData->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        svk4DImageData* cellRep  = svkMriImageData::SafeDownCast(newData)->GetCellDataRepresentation();
+        newData->RemoveObserver(progressCallback);
+        newData = cellRep;
         objectName = "4DImageData";
         // If we are setting the
         this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
@@ -590,7 +604,11 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
     if( this->model->DataExists( "AnatomicalData" ) ) {
         bool valid = validator->AreDataCompatible( newData, this->model->GetDataObject( "AnatomicalData" )); 
         if ( !valid ) {
-            validatorResultInfo = validator->resultInfo; 
+        	if ( validator->IsOnlyError(svkDataValidator::INVALID_DATA_ORIENTATION)) {
+        		valid = true; // We can handle orientation mismatch so lets ignore that error.
+			} else {
+				validatorResultInfo = validator->resultInfo;
+			}
         }
     }
 
@@ -673,6 +691,9 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         }
 
         // If the tlcBrc have not been set then lets choose the center slice.
+        this->overlayController->SetInput( newData, svkOverlayView::MR4D );
+		this->UpdateModelForReslicedImage("AnatomicalData");
+		this->UpdateModelForReslicedImage("OverlayData");
         if( tlcBrc == NULL ) {
             int firstSlice = newData->GetFirstSlice( newData->GetDcmHeader()->GetOrientationType() );
             int lastSlice = newData->GetLastSlice( newData->GetDcmHeader()->GetOrientationType() );
@@ -693,11 +714,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
          *  because the chosen range is based on the current slice.
          */
 		this->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, resetAmplitude, resetFrequency );
-
-        this->overlayController->SetInput( newData, svkOverlayView::MR4D );
        
-		this->UpdateModelForReslicedImage("AnatomicalData");
-		this->UpdateModelForReslicedImage("OverlayData");
         
         this->SetPreferencesFromRegistry();
 
@@ -788,6 +805,10 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
         this->PopupMessage(" File does not exist!"); 
         return;
     }
+	int toggleDraw = this->GetDraw();
+	if( toggleDraw ) {
+		this->DrawOff();
+	}
 
     string stringFilename(fileName);
     string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
@@ -848,6 +869,9 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
     }
 
 #endif
+	if( toggleDraw ) {
+		this->DrawOn();
+	}
 }
 
 
@@ -859,6 +883,8 @@ void vtkSivicController::OpenOverlayFromModel( const char* modelObjectName )
 	cout << "Openning overlay for model object " << modelObjectName << endl;
 	if( this->model->DataExists( modelObjectName )) {
 		this->OpenOverlay( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+		this->DisableWidgets();
+		this->EnableWidgets();
 	}
 }
 
@@ -871,6 +897,8 @@ void vtkSivicController::OpenImageFromModel( const char* modelObjectName )
 	cout << "Openning overlay for model object " << modelObjectName << endl;
 	if( this->model->DataExists( modelObjectName )) {
 		this->OpenImage( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+		this->DisableWidgets();
+		this->EnableWidgets();
 	}
 }
 
@@ -891,7 +919,7 @@ void vtkSivicController::UpdateModelForReslicedImage( string modelObjectName )
 	} else {
 		return;
 	}
-	if( mri != NULL && mri != this->model->GetDataObject( modelObjectName ) ) {
+	if( mri != NULL && this->model->DataExists(modelObjectName) && mri != this->model->GetDataObject( modelObjectName ) ) {
 		// Lets get the original filename
 		string originalFilename = this->model->GetDataFileName( modelObjectName );
 		// Change the current anatomical data pointer
@@ -908,6 +936,10 @@ void vtkSivicController::UpdateModelForReslicedImage( string modelObjectName )
 void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename )
 {
         string resultInfo = "";
+		int toggleDraw = this->GetDraw();
+		if( toggleDraw ) {
+			this->DrawOff();
+		}
 
         if (data == NULL) {
             this->PopupMessage( "UNSUPPORTED FILE TYPE!");
@@ -915,10 +947,6 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 
             resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
-                int toggleDraw = this->GetDraw();
-                if( toggleDraw ) {
-                    this->DrawOff();
-                }
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
                 resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
                 string overlayDataName;
@@ -988,9 +1016,6 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetDcmHeader()->GetNumberOfTimePoints());
                 this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
 
-                if( toggleDraw ) {
-                    this->DrawOn();
-                }
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
                 message += resultInfo;
@@ -999,6 +1024,10 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
         }
         this->SetThresholdType( this->thresholdType );
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
+		if( toggleDraw ) {
+			this->DrawOn();
+		}
+	return;
 }
 
 
@@ -1304,11 +1333,18 @@ void vtkSivicController::OpenExam( )
         bool includePath = true;
         string cniFileName = svkUCSFUtils::GetMetaboliteFileName( this->model->GetDataFileName("SpectroscopicData"), "CNI-ht",includePath );
 		if( this->model->DataExists("CNI-ht")) {
+			int toggleDraw = this->GetDraw();
+			if( toggleDraw ) {
+				this->DrawOff();
+			}
             this->OpenOverlay( this->model->GetDataObject("CNI-ht"), this->model->GetDataFileName("CNI-ht"));
             this->EnableWidgets(); 
             this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
             this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
             this->SetOverlayThreshold( 2.0 );
+			if( toggleDraw ) {
+				this->DrawOn();
+			}
 		} else if( svkUtils::FilePathExists(spectraPathName.c_str()) ) {
             this->OpenFile( "overlay", spectraPathName.c_str(), false, true );
         } else {
@@ -1318,7 +1354,7 @@ void vtkSivicController::OpenExam( )
     } else { 
         this->OpenFile( "overlay", lastPathString.c_str(), false, true );
     }
-
+	return;
 
 }
 
@@ -2642,7 +2678,8 @@ void vtkSivicController::EnableWidgets()
             this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 
-            this->processingWidget->combineButton->EnabledOff(); 
+			this->combineWidget->magnitudeCombinationButton->EnabledOff();
+			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
             this->spectraRangeWidget->unitSelectBox->SetValue( "PTS" );
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
@@ -2651,7 +2688,8 @@ void vtkSivicController::EnableWidgets()
             this->processingWidget->fftButton->EnabledOff(); 
             this->processingWidget->phaseButton->EnabledOn(); 
             if( numChannels > 1 ) {
-                this->processingWidget->combineButton->EnabledOn();
+				this->combineWidget->magnitudeCombinationButton->EnabledOn();
+				this->combineWidget->additionCombinationButton->EnabledOn();
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
@@ -2756,7 +2794,8 @@ void vtkSivicController::DisableWidgets()
     this->processingWidget->phaseAllVoxelsButton->EnabledOff(); 
     this->processingWidget->fftButton->EnabledOff(); 
     this->processingWidget->phaseButton->EnabledOff(); 
-    this->processingWidget->combineButton->EnabledOff(); 
+	this->combineWidget->magnitudeCombinationButton->EnabledOff();
+	this->combineWidget->additionCombinationButton->EnabledOff();
 
     this->preprocessingWidget->applyButton->EnabledOff(); 
     this->preprocessingWidget->zeroFillSelectorSpec->EnabledOff();
@@ -3148,8 +3187,10 @@ void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void*
     } else {
         static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 
                   100.0*(*(double*)(callData)) );
-        static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
-                  static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
+        if( subject->IsA("svkDataModel")) {
+			static_cast<vtkSivicController*>(thisObject)->GetApplication()->GetNthWindow(0)->SetStatusText(
+					  static_cast<svkDataModel*>(subject)->GetProgressText().c_str() );
+        }
     }
 }
 

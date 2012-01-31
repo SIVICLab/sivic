@@ -25,7 +25,6 @@ sivicProcessingWidget::sivicProcessingWidget()
     this->phaseAllChannelsButton = NULL;
     this->fftButton = NULL;
     this->phaseButton = NULL;
-    this->combineButton = NULL;
     this->phaseChangeInProgress = 0;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
@@ -59,11 +58,6 @@ sivicProcessingWidget::~sivicProcessingWidget()
     if( this->phaseButton != NULL ) {
         this->phaseButton->Delete();
         this->phaseButton= NULL;
-    }
-
-    if( this->combineButton != NULL ) {
-        this->combineButton->Delete();
-        this->combineButton= NULL;
     }
 
 
@@ -127,28 +121,20 @@ void sivicProcessingWidget::CreateWidget()
     this->fftButton->SetParent( this );
     this->fftButton->Create( );
     this->fftButton->EnabledOff();
-    this->fftButton->SetText( "Recon");
+    this->fftButton->SetText( "Reconstruct");
     this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
 
     this->phaseButton = vtkKWPushButton::New();
     this->phaseButton->SetParent( this );
     this->phaseButton->Create( );
     this->phaseButton->EnabledOff();
-    this->phaseButton->SetText( "Phase");
+    this->phaseButton->SetText( "Phase On Water");
     this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
 
-    this->combineButton = vtkKWPushButton::New();
-    this->combineButton->SetParent( this );
-    this->combineButton->Create( );
-    this->combineButton->EnabledOff();
-    this->combineButton->SetText( "Combine");
-    this->combineButton->SetBalloonHelpString("Prototype Multi-Coil Combination.");
-
-    this->Script("grid %s -row 0 -column 0 -pady 3 -columnspan 3 -sticky nwes -pady 5", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -pady 3 -columnspan 3 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -pady 3 -columnspan 2 -sticky nwes -pady 5", this->phaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 0 -pady 3 -columnspan 2 -sticky nwes", checkButtons->GetWidgetName() );
     this->Script("grid %s -row 2 -column 0 -pady 3 -sticky we -padx 4 -pady 1", this->fftButton->GetWidgetName() );
     this->Script("grid %s -row 2 -column 1 -pady 3 -sticky we -padx 4 -pady 1", this->phaseButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 2 -pady 3 -sticky we -padx 4 -pady 1", this->combineButton->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 0", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );
@@ -156,7 +142,6 @@ void sivicProcessingWidget::CreateWidget()
 
     this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 1", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -176,8 +161,6 @@ void sivicProcessingWidget::CreateWidget()
         this->fftButton, vtkKWPushButton::InvokedEvent );
     this->AddCallbackCommandObserver(
         this->phaseButton, vtkKWPushButton::InvokedEvent );
-    this->AddCallbackCommandObserver(
-        this->combineButton, vtkKWPushButton::InvokedEvent );
 
     checkButtons->Delete();
 
@@ -225,8 +208,6 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
         this->ExecuteRecon();
     } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
-    } else if( caller == this->combineButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -399,37 +380,6 @@ void sivicProcessingWidget::ExecutePhase()
     }
 }
 
-
-
-/*!
- *  Executes the combining of the channels.
- */
-void sivicProcessingWidget::ExecuteCombine() 
-{
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkCoilCombine* coilCombine = svkCoilCombine::New();
-        coilCombine->SetInput( data );
-        //coilCombine->SetCombinationDimension( svkCoilCombine::TIME );  for combining time points
-        //coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  for combining as magnitude data 
-        coilCombine->Update();
-        data->Modified();
-        coilCombine->Delete();
-        bool useFullFrequencyRange = 0;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 0;
-        this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-                                           resetAmplitude, resetFrequency );
-        this->sivicController->ResetChannel( );
-        string stringFilename = "CombinedData";
-        this->sivicController->Open4DImage( data, stringFilename);
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-    }
-}
 
 void sivicProcessingWidget::InitializePhaser()
 {

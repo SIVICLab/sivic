@@ -334,3 +334,18 @@ bool svkDataValidator::IsInvalid( svkDataValidator::ValidationErrorStatus  error
         return false;
     }
 }
+
+
+/**!
+ * Returns true if the given error is the only error present, otherwise
+ * returns false. If the given error is not present then false is returned.
+ *
+ */
+bool svkDataValidator::IsOnlyError( svkDataValidator::ValidationErrorStatus  error )
+{
+	if( this->IsInvalid( error ) && this->status.size() == 1 ) {
+		return true;
+	} else {
+		return false;
+	}
+}

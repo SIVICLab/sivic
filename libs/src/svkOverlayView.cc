@@ -1475,12 +1475,10 @@ void svkOverlayView::UpdateSincInterpolation()
 		this->sincInterpolation->Update();
 		if( i == 0 ) {
 			this->interpOverlay->DeepCopy( this->sincInterpolation->GetOutput() );
-			for( int j = 0; j < this->interpOverlay->GetPointData()->GetNumberOfArrays(); j++) {
-				this->interpOverlay->GetPointData()->RemoveArray(this->interpOverlay->GetPointData()->GetArray(j)->GetName());
-
-			}
 		}
-		this->interpOverlay->GetPointData()->AddArray( sincInterpolation->GetOutput()->GetPointData()->GetScalars());
+		this->interpOverlay->GetPointData()->GetArray( i )->DeepCopy(sincInterpolation->GetOutput()->GetPointData()->GetScalars() );
+		// Array name order is not maintained so we need to rename the arrays
+		this->interpOverlay->GetPointData()->GetArray( i )->SetName(overlaySource->GetPointData()->GetArray( i )->GetName() );
     }
 
     this->interpOverlay->GetPointData()->SetActiveScalars( oldScalars->GetName() );
@@ -1657,11 +1655,6 @@ int svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
  */
 void svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int targetIndex)    
 {
-cout << "RESLICE IMAGE" << endl;
-cout << "RESLICE IMAGE" << endl;
-cout << "RESLICE IMAGE" << endl;
-cout << "RESLICE IMAGE" << endl;
-cout << "RESLICE IMAGE" << endl;
     //  if (orthogonal orientations) {
     svkObliqueReslice* reslicer = svkObliqueReslice::New();
     reslicer->SetInput( input );

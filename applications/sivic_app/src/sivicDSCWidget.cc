@@ -286,7 +286,7 @@ void sivicDSCWidget::ExecuteQuantification()
             //  The names should appear in the same order in the vector as they do
             //  in the view selector
             //
-            vtkstd::string modelDataName = (*dscMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription");
+            vtkstd::string modelDataName = svkUtils::SpacesTo_((*dscMaps)[i]->GetDcmHeader()->GetStringValue("SeriesDescription"));
             this->modelDSCNames.push_back( modelDataName );
  
             if( this->model->DataExists( this->modelDSCNames[i] ) ) {

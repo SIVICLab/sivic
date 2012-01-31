@@ -95,6 +95,7 @@ class svkDataValidator : public vtkObject
         bool    AreDataSpacingsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    AreDataOriginsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    IsInvalid( svkDataValidator::ValidationErrorStatus  error ); 
+        bool    IsOnlyError( svkDataValidator::ValidationErrorStatus  error );
 
         //! Holds the result of the last validation
         string resultInfo;

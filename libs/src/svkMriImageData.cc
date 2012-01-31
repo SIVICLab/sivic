@@ -338,13 +338,20 @@ void svkMriImageData::SyncCellRepresentationToPixelData()
     int numChannels  = this->GetDcmHeader()->GetNumberOfCoils();
     int numTimePts = this->GetDcmHeader()->GetNumberOfTimePoints();
     vtkDataArray* oldScalars = this->GetPointData()->GetScalars();
+    double progress = 0;
     for( int channel = 0; channel < numChannels; channel++ ) {
         int* channelPtr = &channel;
         for( int timePoint = 0; timePoint < numTimePts; timePoint++ ) {
+        	if( timePoint % 2 == 0 ) { // only update every other index
+				progress = timePoint/((double)numTimePts);
+				this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
+        	}
             this->GetPointData()->SetActiveScalars( this->GetPointData()->GetArray( timePoint )->GetName() );
             this->cellDataRepresentation->SetImage(this, timePoint, channelPtr);
         }
     }
+    progress = 1;
+	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
     this->GetPointData()->SetActiveScalars( oldScalars->GetName() );
 
 

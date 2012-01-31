@@ -20,20 +20,8 @@ vtkCxxRevisionMacro( sivicCombineWidget, "$Revision$");
 sivicCombineWidget::sivicCombineWidget()
 {
 
-    this->zeroFillSelectorSpec = NULL;
-    this->zeroFillSelectorCols = NULL;
-    this->zeroFillSelectorRows = NULL;
-    this->zeroFillSelectorSlices = NULL;
-    this->applyButton = NULL;
-    this->apodizationSelectorSpec = NULL;
-    this->apodizationSelectorCols = NULL;
-    this->apodizationSelectorRows = NULL;
-    this->apodizationSelectorSlices = NULL;
-
-    this->specLabel = NULL;
-    this->colsLabel = NULL;
-    this->rowsLabel = NULL;
-    this->slicesLabel = NULL;
+    this->magnitudeCombinationButton = NULL;
+    this->additionCombinationButton = NULL;
 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
@@ -48,71 +36,15 @@ sivicCombineWidget::sivicCombineWidget()
 sivicCombineWidget::~sivicCombineWidget()
 {
 
-    if( this->zeroFillSelectorSpec != NULL ) {
-        this->zeroFillSelectorSpec->Delete();
-        this->zeroFillSelectorSpec = NULL;
+    if( this->magnitudeCombinationButton != NULL ) {
+        this->magnitudeCombinationButton->Delete();
+        this->magnitudeCombinationButton= NULL;
     }
 
-    if( this->zeroFillSelectorCols != NULL ) {
-        this->zeroFillSelectorCols->Delete();
-        this->zeroFillSelectorCols = NULL;
+    if( this->additionCombinationButton != NULL ) {
+        this->additionCombinationButton->Delete();
+        this->additionCombinationButton= NULL;
     }
-
-    if( this->zeroFillSelectorRows != NULL ) {
-        this->zeroFillSelectorRows->Delete();
-        this->zeroFillSelectorRows = NULL;
-    }
-
-    if( this->zeroFillSelectorSlices != NULL ) {
-        this->zeroFillSelectorSlices->Delete();
-        this->zeroFillSelectorSlices = NULL;
-    }
-
-    if( this->applyButton != NULL ) {
-        this->applyButton->Delete();
-        this->applyButton= NULL;
-    }
-
-    if( this->apodizationSelectorSpec != NULL ) {
-        this->apodizationSelectorSpec->Delete();
-        this->apodizationSelectorSpec = NULL;
-    }
-
-    if( this->apodizationSelectorCols != NULL ) {
-        this->apodizationSelectorCols->Delete();
-        this->apodizationSelectorCols = NULL;
-    }
-
-    if( this->apodizationSelectorRows != NULL ) {
-        this->apodizationSelectorRows->Delete();
-        this->apodizationSelectorRows = NULL;
-    }
-
-    if( this->apodizationSelectorSlices != NULL ) {
-        this->apodizationSelectorSlices->Delete();
-        this->apodizationSelectorSlices = NULL;
-    }
-
-    if( this->specLabel != NULL ) {
-        this->specLabel->Delete();
-        this->specLabel = NULL;
-    }
-
-    if( this->colsLabel != NULL ) {
-        this->colsLabel->Delete();
-        this->colsLabel = NULL;
-    }
-
-    if( this->rowsLabel != NULL ) {
-        this->rowsLabel->Delete();
-        this->rowsLabel = NULL;
-    }
-
-    if( this->slicesLabel != NULL ) {
-        this->slicesLabel->Delete();
-        this->slicesLabel = NULL;
-    }
-
 
 }
 
@@ -135,192 +67,32 @@ void sivicCombineWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    //  =================================== 
-    //  Zero Filling Selector
-    //  =================================== 
+    this->magnitudeCombinationButton = vtkKWPushButton::New();
+    this->magnitudeCombinationButton->SetParent( this );
+    this->magnitudeCombinationButton->Create( );
+    this->magnitudeCombinationButton->SetText( "Combine Magnitude");
+    this->magnitudeCombinationButton->SetBalloonHelpString("Combine channels using magnitude.");
+    this->magnitudeCombinationButton->EnabledOff();
 
-    int labelWidth = 0;
-    this->zeroFillSelectorSpec = vtkKWMenuButton::New();
-    this->zeroFillSelectorSpec->SetParent(this);
-    this->zeroFillSelectorSpec->Create();
-    this->zeroFillSelectorSpec->EnabledOff();
+    this->additionCombinationButton = vtkKWPushButton::New();
+    this->additionCombinationButton->SetParent( this );
+    this->additionCombinationButton->Create( );
+    this->additionCombinationButton->SetText( "Simple Summation");
+    this->additionCombinationButton->SetBalloonHelpString("Combine channels by summation.");
+    this->additionCombinationButton->EnabledOff();
 
-    vtkKWMenu* zfSpecMenu = this->zeroFillSelectorSpec->GetMenu();
+    this->Script("grid %s -row %d -column %d -pady 3 -sticky we -padx 4 -pady 1", this->additionCombinationButton->GetWidgetName(), 1, 0 );
+    this->Script("grid %s -row %d -column %d -pady 3 -sticky we -padx 4 -pady 1", this->magnitudeCombinationButton->GetWidgetName(), 1, 1 );
 
-    this->zeroFillSelectorCols = vtkKWMenuButton::New();
-    this->zeroFillSelectorCols->SetParent(this);
-    this->zeroFillSelectorCols->Create();
-    this->zeroFillSelectorCols->EnabledOff();
+    this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
 
-    vtkKWMenu* zfColsMenu = this->zeroFillSelectorCols->GetMenu();
+    this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
 
-    this->zeroFillSelectorRows = vtkKWMenuButton::New();
-    this->zeroFillSelectorRows->SetParent(this);
-    this->zeroFillSelectorRows->Create();
-    this->zeroFillSelectorRows->EnabledOff();
-
-    vtkKWMenu* zfRowsMenu = this->zeroFillSelectorRows->GetMenu();
-
-    this->zeroFillSelectorSlices = vtkKWMenuButton::New();
-    this->zeroFillSelectorSlices->SetParent(this);
-    this->zeroFillSelectorSlices->Create();
-    this->zeroFillSelectorSlices->EnabledOff();
-
-    vtkKWMenu* zfSlicesMenu = this->zeroFillSelectorSlices->GetMenu();
-
-    string zfOption1 = "none";
-    string zfOption2 = "double";
-    string zfOption3 = "next y^2";
-    string invocationString;
-
-    invocationString = "ZeroFill SPECTRAL none"; 
-    zfSpecMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPECTRAL double"; 
-    zfSpecMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPECTRAL nextPower2"; 
-    zfSpecMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "ZeroFill SPATIAL_COLS none"; 
-    zfColsMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_COLS double"; 
-    zfColsMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_COLS nextPower2"; 
-    zfColsMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "ZeroFill SPATIAL_ROWS none"; 
-    zfRowsMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_ROWS double"; 
-    zfRowsMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_ROWS nextPower2"; 
-    zfRowsMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "ZeroFill SPATIAL_SLICES none"; 
-    zfSlicesMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_SLICES double"; 
-    zfSlicesMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "ZeroFill SPATIAL_SLICES nextPower2"; 
-    zfSlicesMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
-
-    //  Set default values
-    this->zeroFillSelectorSpec->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorCols->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorRows->SetValue( zfOption1.c_str() );
-    this->zeroFillSelectorSlices->SetValue( zfOption1.c_str() );
-
-    this->applyButton = vtkKWPushButton::New();
-    this->applyButton->SetParent( this );
-    this->applyButton->Create( );
-    this->applyButton->SetText( "Combine Magnitude");
-    this->applyButton->SetBalloonHelpString("Apply.");
-    this->applyButton->EnabledOn();
-
-    //  =================================== 
-    //  Apodization Selectors
-    //  =================================== 
-
-    //this->apodizationSelectorSpec = vtkKWMenuButton::New();
-    this->apodizationSelectorSpec = vtkKWMenuButton::New();
-    this->apodizationSelectorSpec->SetParent(this);
-    this->apodizationSelectorSpec->Create();
-    this->apodizationSelectorSpec->EnabledOff();
-
-    vtkKWMenu* apSpecMenu = this->apodizationSelectorSpec->GetMenu();
-
-    this->apodizationSelectorCols = vtkKWMenuButton::New();
-    this->apodizationSelectorCols->SetParent(this);
-    this->apodizationSelectorCols->Create();
-    this->apodizationSelectorCols->EnabledOff();
-
-    vtkKWMenu* apColsMenu = this->apodizationSelectorCols->GetMenu();
-
-    this->apodizationSelectorRows = vtkKWMenuButton::New();
-    this->apodizationSelectorRows->SetParent(this);
-    this->apodizationSelectorRows->Create();
-    this->apodizationSelectorRows->EnabledOff();
-
-    vtkKWMenu* apRowsMenu = this->apodizationSelectorRows->GetMenu();
-
-    this->apodizationSelectorSlices = vtkKWMenuButton::New();
-    this->apodizationSelectorSlices->SetParent(this);
-    this->apodizationSelectorSlices->Create();
-    this->apodizationSelectorSlices->EnabledOff();
-
-    vtkKWMenu* apSlicesMenu = this->apodizationSelectorSlices->GetMenu();
-
-    string apOption1 = "none";
-    string apOption2 = "Lorentz";
-
-    invocationString = "Apodize SPECTRAL none"; 
-    apSpecMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPECTRAL lorentzian"; 
-    apSpecMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "Apodize SPATIAL_COLS none"; 
-    apColsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_COLS lorentzian"; 
-    apColsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "Apodize SPATIAL_ROWS none"; 
-    apRowsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_ROWS lorentzian"; 
-    apRowsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
-
-    invocationString = "Apodize SPATIAL_SLICES none"; 
-    apSlicesMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_SLICES lorentzian"; 
-    apSlicesMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
-
-    //  Set default values
-    this->apodizationSelectorSpec->SetValue( apOption1.c_str() );
-    this->apodizationSelectorCols->SetValue( apOption1.c_str() );
-    this->apodizationSelectorRows->SetValue( apOption1.c_str() );
-    this->apodizationSelectorSlices->SetValue( apOption1.c_str() );
-
-    // Titles
-
-    vtkKWLabel* zeroFillTitle = vtkKWLabel::New(); 
-    zeroFillTitle->SetText( string("Zero Fill").c_str() );
-    zeroFillTitle->SetParent(this);
-    zeroFillTitle->SetJustificationToLeft();
-    zeroFillTitle->Create();
-
-    vtkKWLabel* apodizationTitle = vtkKWLabel::New(); 
-    apodizationTitle->SetText( string("Apodize").c_str() );
-    apodizationTitle->SetParent(this);
-    apodizationTitle->SetJustificationToLeft();
-    apodizationTitle->Create();
-
-    vtkKWLabel* specTitle = vtkKWLabel::New(); 
-    specTitle->SetText( string("Spec").c_str() );
-    specTitle->SetParent(this);
-    specTitle->SetJustificationToLeft();
-    specTitle->Create();
-
-    vtkKWLabel* colsTitle = vtkKWLabel::New(); 
-    colsTitle->SetText( string("Cols").c_str() );
-    colsTitle->SetParent(this);
-    colsTitle->SetJustificationToLeft();
-    colsTitle->Create();
-
-    vtkKWLabel* rowsTitle = vtkKWLabel::New(); 
-    rowsTitle->SetText( string("Rows").c_str() );
-    rowsTitle->SetParent(this);
-    rowsTitle->SetJustificationToLeft();
-    rowsTitle->Create();
-
-    vtkKWLabel* sliceTitle = vtkKWLabel::New(); 
-    sliceTitle->SetText( string("Slice").c_str() );
-    sliceTitle->SetParent(this);
-    sliceTitle->SetJustificationToLeft();
-    sliceTitle->Create();
-
-    this->Script("grid %s -row %d -column 0 -sticky nwse -padx 10 -pady 10", this->applyButton->GetWidgetName(), 0);
-
-    this->Script("grid rowconfigure %s 0 -weight 0", this->GetWidgetName() );
-
-    this->Script("grid columnconfigure %s 0 -weight 0 ", this->GetWidgetName() );
-
-    this->AddCallbackCommandObserver( this->applyButton, vtkKWPushButton::InvokedEvent );
+    this->AddCallbackCommandObserver( this->additionCombinationButton, vtkKWPushButton::InvokedEvent );
+    this->AddCallbackCommandObserver( this->magnitudeCombinationButton, vtkKWPushButton::InvokedEvent );
 
 }
 
@@ -331,8 +103,10 @@ void sivicCombineWidget::CreateWidget()
 void sivicCombineWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
     // Respond to a selection change in the overlay view
-    if( caller == this->applyButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine();
+    if( caller == this->magnitudeCombinationButton && event == vtkKWPushButton::InvokedEvent ) {
+        this->ExecuteCombine(svkCoilCombine::SUM_OF_SQUARES,svkCoilCombine::COIL);
+    } else if( caller == this->additionCombinationButton && event == vtkKWPushButton::InvokedEvent ) {
+        this->ExecuteCombine(svkCoilCombine::ADDITION,svkCoilCombine::COIL);
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -341,7 +115,7 @@ void sivicCombineWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsign
 /*!
  *  Executes the combining of the channels.
  */
-void sivicCombineWidget::ExecuteCombine() 
+void sivicCombineWidget::ExecuteCombine(svkCoilCombine::CombinationMethod method, svkCoilCombine::CombinationDimension dimension )
 {
 
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
@@ -354,8 +128,8 @@ void sivicCombineWidget::ExecuteCombine()
         svkCoilCombine* coilCombine = svkCoilCombine::New();
         coilCombine->SetInput( data );
 
-        coilCombine->SetCombinationDimension( svkCoilCombine::COIL);  //for combining time points
-        coilCombine->SetCombinationMethod( svkCoilCombine::SUM_OF_SQUARES );  //for combining as magnitude data
+        coilCombine->SetCombinationDimension( dimension );  //for combining time points
+        coilCombine->SetCombinationMethod( method );  //for combining as magnitude data
 
         coilCombine->Update();
         data->Modified();

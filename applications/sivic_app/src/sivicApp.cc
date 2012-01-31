@@ -578,7 +578,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vtkKWMenu* openImageMenu = openImageButton->GetWidget()->GetMenu();
     openImageMenu->AddRadioButton("Open Image", this->sivicController, "OpenFile image NULL 0 0");
     openImageMenu->AddRadioButton("Open Single Image File", this->sivicController, "OpenFile image NULL 0 1");
-    openImageMenu->AddRadioButton("Open Dynamic", this->sivicController, "OpenFile image_dynamic NULL 0 0");
+    openImageMenu->AddRadioButton("Open Image As Traces", this->sivicController, "OpenFile image_dynamic NULL 0 0");
     toolbar->AddWidget( openImageButton );
 
     // Create Open Spectra Selector Menu
@@ -746,7 +746,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     generateTraces->SetLabelPositionToLeft();
     generateTraces->GetLabel()->SetPadY( 3 );
     generateTraces->GetLabel()->SetAnchorToSouth();
-    generateTraces->GetLabel()->SetText("Generate Dynamic Traces");
+    generateTraces->GetLabel()->SetText("Generate Traces");
     generateTraces->Create();
     generateTraces->GetLabel()->SetPadY( 3 );
     generateTraces->GetLabel()->SetAnchorToSouth();

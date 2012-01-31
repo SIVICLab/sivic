@@ -174,7 +174,9 @@ void svkDdfVolumeReader::ExecuteInformation()
         }
 
         this->InitDcmHeader(); 
-        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+		if (this->GetDebug()) {
+			this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+		}
         this->SetupOutputInformation();
 
     }

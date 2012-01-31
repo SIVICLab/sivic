@@ -78,7 +78,6 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         vtkKWScaleWithEntry*            phaseSlider;
         vtkKWPushButton*                fftButton;
         vtkKWPushButton*                phaseButton;
-        vtkKWPushButton*                combineButton;
 
         
         // Description:
@@ -100,7 +99,6 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         void                        ExecuteFFT();
         void                        ExecuteRecon();
         void                        ExecutePhase();
-        void                        ExecuteCombine();
         void                        InitializePhaser();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 

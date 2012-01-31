@@ -475,3 +475,20 @@ bool svkUtils::IsFileCompressed( vtkstd::string filename )
 #endif
 	return isCompressed;
 }
+
+
+/*!
+ *  This method replaces spaces with underscores (_). Spaces are not
+ *  permitted in strings used through the tcl layer so if we want to
+ *  use a string as a variable in this way then the spaces must be
+ *  extracted.
+ */
+string svkUtils::SpacesTo_( vtkstd::string inputString )
+{
+        size_t pos = inputString.find( " " );
+        while( pos!= string::npos ) {
+            inputString.replace(pos, 1, "_");
+            pos = inputString.find( " " );
+        }
+        return inputString;
+}
