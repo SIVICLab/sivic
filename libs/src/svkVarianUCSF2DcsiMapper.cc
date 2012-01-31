@@ -160,6 +160,11 @@ void svkVarianUCSF2DcsiMapper::InitPerFrameFunctionalGroupMacros()
         centerAcqFrame[1] = this->GetHeaderValueAsFloat("ppe2", 0);
         centerAcqFrame[2] = this->GetHeaderValueAsFloat("pro", 0);
 
+        //  Account for slice offset (pss is offset in cm):
+        int mmPerCm = 10; 
+        centerAcqFrame[2] += this->GetHeaderValueAsFloat("pss", 0) * mmPerCm ;
+
+
         //  Now get the center of the tlc voxel in the acq frame:
         double* tlcAcqFrame = new double[3];
         for (int j = 0; j < 2; j++) {
