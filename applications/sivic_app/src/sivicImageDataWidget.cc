@@ -107,6 +107,8 @@ void sivicImageDataWidget::CreateWidget()
     col_index = this->imageList->GetWidget()->AddColumn("Name");
     col_index = this->imageList->GetWidget()->AddColumn("Description");
     col_index = this->imageList->GetWidget()->AddColumn("Viewed As");
+    col_index = this->imageList->GetWidget()->AddColumn("Filename");
+    col_index = this->imageList->GetWidget()->AddColumn("Model Name");
     //col_index = this->imageList->GetWidget()->AddColumn("Filename");
 
     this->Script("pack %s -expand y -fill both", this->imageList->GetWidgetName(),   0);
@@ -150,12 +152,12 @@ void sivicImageDataWidget::UpdateReferenceImageList( )
         	continue;
         }
         if( image != NULL && image->IsA("svkMriImageData") ) {
-			string modelName = iter->first;
+			string modelName = svkUtils::GetFilenameFromFullPath(iter->first);
 			string seriesDescription = "";
 			if( image->GetDcmHeader()->ElementExists("SeriesDescription")) {
 				seriesDescription = image->GetDcmHeader()->GetStringValue("SeriesDescription");
 			}
-			string filename = svkUtils::GetFilenameFromFullPath(this->model->GetDataFileName( modelName ));
+			string filename = svkUtils::GetFilenameFromFullPath(this->model->GetDataFileName( iter->first ));
             this->imageList->GetWidget()->InsertCellText(counter, 0, modelName.c_str());
             this->imageList->GetWidget()->InsertCellText(counter, 1, seriesDescription.c_str());
             string viewedAs = " ";
@@ -172,8 +174,9 @@ void sivicImageDataWidget::UpdateReferenceImageList( )
 					viewedAs.append( "Both Overlays ");
             	}
             }
-            //this->imageList->GetWidget()->InsertCellText(counter, 2, filename.c_str());
             this->imageList->GetWidget()->InsertCellText(counter, 2, viewedAs.c_str());
+            this->imageList->GetWidget()->InsertCellText(counter, 3, filename.c_str());
+            this->imageList->GetWidget()->InsertCellText(counter, 4, iter->first.c_str());
             counter++;
         }
     }

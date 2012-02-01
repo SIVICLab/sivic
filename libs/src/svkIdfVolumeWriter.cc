@@ -156,7 +156,7 @@ void svkIdfVolumeWriter::WriteData()
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     int numPixelsPerSlice = hdr->GetIntValue( "Rows" ) * hdr->GetIntValue( "Columns" );
     int numSlices = hdr->GetNumberOfSlices();
-    int numVolumes = hdr->GetNumberOfTimePoints();
+    int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
 
     int dataType = this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() );
     if ( dataType == svkDcmHeader::SIGNED_FLOAT_8 ) {

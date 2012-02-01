@@ -322,14 +322,14 @@ svkDcmHeader* svkDataModel::GetDcmHeader( string fileName )
  */  
 svkImageData* svkDataModel::AddFileToModel(string objectName, string fileName, bool onlyOneInputFile)
 {
-    if( DataExists( objectName ) ) {
-        return NULL;
+	svkImageData* myData = LoadFile( fileName.c_str(), onlyOneInputFile );
+    if( this->DataExists( objectName ) ) {
+        ChangeDataObject( objectName, myData );
     } else {
-        svkImageData* myData = LoadFile( fileName.c_str(), onlyOneInputFile );
         AddDataObject( objectName, myData );
-        SetDataFileName( objectName, fileName );
-        return myData;
     }
+	SetDataFileName( objectName, fileName );
+	return myData;
 }
 
 

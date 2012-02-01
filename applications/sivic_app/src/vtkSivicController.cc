@@ -428,8 +428,7 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
 
     string stringFilename(fileName);
 		    cout << "Attempting to read  |" << stringFilename << "|" << endl;
-    string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
-    svkImageData* newData = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
+    svkImageData* newData = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
     this->OpenImage( newData, stringFilename );
 
 }
@@ -520,7 +519,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             } else if( !this->GetActive4DImageData() || this->orientation != "SAGITTAL" ){
                 this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
             }
-            this->imageViewWidget->volumeSlider->SetRange( 1, data->GetDcmHeader()->GetNumberOfTimePoints());
+            this->imageViewWidget->volumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
             this->imageViewWidget->volumeSlider->SetValue( 1 );
 
             if( this->GetActive4DImageData() != NULL ) {
@@ -811,8 +810,7 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
 	}
 
     string stringFilename(fileName);
-    string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
-    svkImageData* newData = model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
+    svkImageData* newData = model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
 
     string objectName;
     if( newData != NULL && newData->IsA("svkMrsImageData")) {
@@ -925,8 +923,8 @@ void vtkSivicController::UpdateModelForReslicedImage( string modelObjectName )
 		// Change the current anatomical data pointer
 		this->model->ChangeDataObject( modelObjectName, mri );
 		// And the pointer the current loaded data set
-		this->model->ChangeDataObject( svkUtils::GetFilenameFromFullPath(originalFilename), mri );
-		this->model->SetDataFileName( svkUtils::GetFilenameFromFullPath(originalFilename),svkUtils::GetFilenameFromFullPath(originalFilename)  );
+		this->model->ChangeDataObject( originalFilename, mri );
+		this->model->SetDataFileName( originalFilename,svkUtils::GetFilenameFromFullPath(originalFilename)  );
 		this->model->SetDataFileName( modelObjectName,svkUtils::GetFilenameFromFullPath(originalFilename)  );
 	}
 
@@ -1013,7 +1011,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
                 this->overlayWindowLevelWidget->SetWindow( window ); 
                 this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
-                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetDcmHeader()->GetNumberOfTimePoints());
+                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
                 this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
 
             } else {
@@ -1039,8 +1037,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 void vtkSivicController::Add4DImageData( string stringFilename, bool onlyReadOneInputFile )
 {
     if ( this->GetActive4DImageData() != NULL ) {
-		string modelName = stringFilename;
-        svkImageData* data = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
+		//string modelName = stringFilename;
+        svkImageData* data = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svk4DImageData") ) {
             string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
             if( resultInfo.compare("") != 0 ) {
@@ -1094,8 +1092,7 @@ void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInpu
     string stringFilename( fileName );
     if ( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
 
-		string modelName = svkUtils::GetFilenameFromFullPath( stringFilename );
-        svkImageData* data = this->model->AddFileToModel( modelName, stringFilename, onlyReadOneInputFile );
+        svkImageData* data = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svkMriImageData") ) {
             this->OpenOverlay(data, stringFilename);
         } else {
@@ -3330,16 +3327,16 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
 	vtkKWMenu* rightClickMenu = vtkKWMenu::New();
 	string invocationString;
     invocationString = "DisplayHeader ";
-    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->SetParent( this->GetApplication()->GetNthWindow(0) );
     rightClickMenu->Create();
     rightClickMenu->AddRadioButton("Show Info", this, invocationString.c_str());
     cout << "Show info invoction string <" << invocationString.c_str() << ">" << endl;
     invocationString = "OpenOverlayFromModel ";
-    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Overlay", this, invocationString.c_str());
     invocationString = "OpenImageFromModel ";
-    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,0));
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
     rightClickMenu->PopUp(x,y);
 
