@@ -262,7 +262,7 @@ void svkIdfVolumeWriter::WriteHeader()
 {
         
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
-    int numVolumes = hdr->GetNumberOfTimePoints();
+    int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
 
     //  Write out each volume:
     for ( int vol = 0; vol < numVolumes; vol++ ) {
