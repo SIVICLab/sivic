@@ -839,7 +839,7 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
     //  sp is the frequency in Hz at left side (downfield/High freq) 
     //  side of spectrum: 
     //
-    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) - this->GetHeaderValueAsFloat( "sw" )/2.;
+    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "sw" )/2.;
     ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
