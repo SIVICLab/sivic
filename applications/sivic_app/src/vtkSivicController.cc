@@ -1880,7 +1880,7 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
     }
 
     int firstFrame = 0;
-    int lastFrame = this->GetActive4DImageData()->GetDcmHeader()->GetNumberOfSlices();
+    int lastFrame = this->GetActive4DImageData()->GetDcmHeader()->GetNumberOfSlices()-1;
     if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
