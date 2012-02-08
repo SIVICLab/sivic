@@ -1887,7 +1887,9 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
     }
     int instanceNumber = 1;
     for (int m = firstFrame; m <= lastFrame; m++) {
-        if( this->GetActive4DImageData()->IsA("svkMrsImageData") && !static_cast<svkMrsImageData*>(this->GetActive4DImageData())->IsSliceInSelectionBox(m) ) {
+        if( this->GetActive4DImageData()->IsA("svkMrsImageData")
+            &&  static_cast<svkMrsImageData*>(this->GetActive4DImageData())->HasSelectionBox()
+            && !static_cast<svkMrsImageData*>(this->GetActive4DImageData())->IsSliceInSelectionBox(m)) {
             continue;
         }
         string fileNameStringTmp = fileNameString; 
