@@ -1229,14 +1229,13 @@ void vtkSivicController::SetPreferencesFromRegistry( )
         }
     }
 
+
     char plotGridRed[50]="";
     this->app->GetRegistryValue( 0, "plot_grid", "red", plotGridRed );
     char plotGridBlue[50]="";
     this->app->GetRegistryValue( 0, "plot_grid", "blue", plotGridBlue );
     char plotGridGreen[50]="";
     this->app->GetRegistryValue( 0, "plot_grid", "green", plotGridGreen );
-    char plotGridOpacity[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "opacity", plotGridOpacity );
     if( string(plotGridRed) != "" && string(plotGridBlue) != "" && string(plotGridGreen) != "" ) {
         double rgb[3];
         rgb[0] = atof( plotGridRed );
@@ -1246,12 +1245,63 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                    ->GetProp( svkOverlayView::PLOT_GRID ))
                                    ->GetProperty()->SetDiffuseColor( rgb );
     }
+
+    char plotGridOpacity[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "opacity", plotGridOpacity );
     if( string(plotGridOpacity) != "" ) {
     	double opacity = atof( plotGridOpacity);
         vtkActor::SafeDownCast(this->overlayController->GetView()
                                    ->GetProp( svkOverlayView::PLOT_GRID ))
                                    ->GetProperty()->SetOpacity( opacity );
 
+    }
+
+    char plotGridWidth[50]="";
+    this->app->GetRegistryValue( 0, "plot_grid", "width", plotGridWidth );
+    if( string(plotGridWidth) != "" ) {
+    	double width = atof( plotGridWidth);
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::PLOT_GRID ))
+                                   ->GetProperty()->SetLineWidth( width );
+
+    }
+
+    char volSelectionRed[50]="";
+    this->app->GetRegistryValue( 0, "vol_selection", "red", volSelectionRed );
+    char volSelectionBlue[50]="";
+    this->app->GetRegistryValue( 0, "vol_selection", "blue", volSelectionBlue );
+    char volSelectionGreen[50]="";
+    this->app->GetRegistryValue( 0, "vol_selection", "green", volSelectionGreen );
+    if(this->overlayController->GetView()->GetProp( svkOverlayView::VOL_SELECTION) != NULL ) {
+		if( string(volSelectionRed) != "" && string(volSelectionBlue) != "" && string(volSelectionGreen) != "" ) {
+			double rgb[3];
+			rgb[0] = atof( volSelectionRed );
+			rgb[1] = atof( volSelectionGreen );
+			rgb[2] = atof( volSelectionBlue );
+			vtkActor::SafeDownCast(this->overlayController->GetView()
+									   ->GetProp( svkOverlayView::VOL_SELECTION ))
+									   ->GetProperty()->SetColor( rgb );
+		}
+
+		char volSelectionOpacity[50]="";
+		this->app->GetRegistryValue( 0, "vol_selection", "opacity", volSelectionOpacity );
+		if( string(volSelectionOpacity) != "" ) {
+			double opacity = atof( volSelectionOpacity);
+			vtkActor::SafeDownCast(this->overlayController->GetView()
+									   ->GetProp( svkOverlayView::VOL_SELECTION ))
+									   ->GetProperty()->SetOpacity( opacity );
+
+		}
+
+		char volSelectionWidth[50]="";
+		this->app->GetRegistryValue( 0, "vol_selection", "width", volSelectionWidth );
+		if( string(volSelectionWidth) != "" ) {
+			double width = atof( volSelectionWidth);
+			vtkActor::SafeDownCast(this->overlayController->GetView()
+									   ->GetProp( svkOverlayView::VOL_SELECTION ))
+									   ->GetProperty()->SetLineWidth( width );
+
+		}
     }
 
 
