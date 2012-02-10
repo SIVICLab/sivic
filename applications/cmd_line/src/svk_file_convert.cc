@@ -178,6 +178,12 @@ int main (int argc, char** argv)
     // ===============================================
     //  validate deidentification args:
     // ===============================================
+
+    //  if a deid id was provided, deidentification is implied:
+    if ( deidStudyId.compare("") != 0 && deidType == svkDcmHeader::PHI_IDENTIFIED) {
+         deidType = svkDcmHeader::PHI_LIMITED;
+    }
+
     if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED &&
          deidType != svkDcmHeader::PHI_LIMITED &&
          deidType != svkDcmHeader::PHI_IDENTIFIED)

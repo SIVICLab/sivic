@@ -135,6 +135,7 @@
               <df name="SivicKWCallbacksLib.dir">
               </df>
             </df>
+            <in>SivicKWCallbacksLibInit.cxx</in>
             <in>sivic.cc</in>
             <in>sivicApp.cc</in>
             <in>sivicApp.h</in>
@@ -176,6 +177,7 @@
             <in>svkSecondaryCaptureFormatter.h</in>
             <in>vtkSivicController.cc</in>
             <in>vtkSivicController.h</in>
+            <in>vtkSivicControllerTcl.cxx</in>
           </df>
           <df name="SunOS_sparc">
           </df>
@@ -1821,6 +1823,8 @@
               </df>
               <df name="TEST_MCHK_FDF_2_IDF">
               </df>
+              <df name="TEST_MCHK_GE_POSTAGE_TO_DDF">
+              </df>
               <df name="TEST_MCHK_GEPFILE_2_DDF_1">
               </df>
               <df name="TEST_MCHK_GEPFILE_2_DDF_2">
@@ -1840,6 +1844,10 @@
               <df name="TEST_MCHK_MRS_VOXEL_SHIFT">
               </df>
               <df name="TEST_MCHK_MRS_ZERO_FILL">
+              </df>
+              <df name="TEST_MCHK_MULTI_VOL_DCM_2_IDF">
+              </df>
+              <df name="TEST_MCHK_MULTI_VOL_IDF_2_IDF">
               </df>
               <df name="TEST_MCHK_OBLIQUE_RESLICE">
               </df>
