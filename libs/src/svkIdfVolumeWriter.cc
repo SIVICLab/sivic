@@ -422,7 +422,7 @@ void svkIdfVolumeWriter::WriteHeader()
         out << "dimension:  3     slices      itype: " << setw(2) << zType << endl;
         out << "npix: " << setw(5) << hdr->GetNumberOfSlices()
             << "   fov(mm): " << fixed << setw(7) << setprecision(2)
-            << pixelSpacing[2] * hdr->GetFloatValue("NumberOfFrames")
+            << pixelSpacing[2] * hdr->GetNumberOfSlices()
             << "  center(mm): " << setw(7) << ((zType==0)?0:center[zType-1])
             << "  pixelsize(mm): " << setw(10) << setprecision(5)  
             << pixelSpacing[2] << endl;
