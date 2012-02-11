@@ -365,7 +365,15 @@ void svkIdfVolumeWriter::WriteHeader()
         }
 
         out << "echo/time/met index:     1     value:       1.00" << endl;
-        out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+       
+        //  if there are multiple volumes append _volNum to rootname     
+        if ( numVolumes > 1 ) {
+            out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) 
+            << "_" << svkUtils::IntToString(vol+1) << endl;
+        } else {
+            out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
+        }
+
 
 
         vtkstd::string date = hdr->GetStringValue( "StudyDate" );
