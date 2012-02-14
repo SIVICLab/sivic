@@ -460,11 +460,14 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 this->associatedFiles[fileNum][2]
             );
 
+
+            //  Extract file name from path:
+            string associatedFileName = svkUtils::GetFilenameFromFullPath( this->associatedFiles[fileNum][0] );
             this->dcmHeader->AddSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
                 "SVK_FILE_NAME",
-                this->associatedFiles[fileNum][0]
+                associatedFileName 
             );
 
             this->dcmHeader->AddSequenceItemElement(

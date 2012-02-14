@@ -71,6 +71,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
         //  Methods:
         virtual int CanReadFile(const char* fname);
         void        ExtractFiles(); 
+        void        SetOutputDir( vtkstd::string outDir ); 
 
 
 
@@ -89,7 +90,7 @@ class svkDcmRawDataReader : public svkDcmVolumeReader
         void    LoadData( svkImageData* data ); 
         void    InitPrivateHeader(); 
 
-
+        vtkstd::string outDir;
 
 };
 

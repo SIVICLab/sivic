@@ -71,6 +71,7 @@ svkDcmRawDataReader::svkDcmRawDataReader()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
         
     this->SetErrorCode(vtkErrorCode::NoError);
+    this->outDir = "";
 
 }
 
@@ -196,18 +197,22 @@ void svkDcmRawDataReader::ExtractFiles()
                 numValues
             );
 
-        vtkstd::string outputFileName( fileName );  
+        //  If an output directory was provided, prepend the filename:
+        vtkstd::string outputFileName = fileName; 
+        if ( this->outDir.size() > 0 ) {
+            outputFileName = outDir + "/" + fileName; 
+        }
         outputFileName.append(".extracted"); 
         ofstream outputFile ( outputFileName.c_str(), ios::binary );
         if( !outputFile) { 
-            cout << "Cannot open file to extract raw data to: " << fileName << endl;
+            cout << "Cannot open file to extract raw data to: " << outputFileName << endl;
             this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
         }
         
         outputFile.write( (char *)fileBuffer, numBytes); 
 
         if( outputFile.bad() ) { 
-            cout << "Error extracting DICOM Raw Data to disk: " << fileName << endl;
+            cout << "Error extracting DICOM Raw Data to disk: " << outputFileName << endl;
             this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
         }
 
@@ -219,6 +224,15 @@ void svkDcmRawDataReader::ExtractFiles()
 
     }
 
+}
+
+
+/*!
+ *  Set the path to extract files into
+ */
+void svkDcmRawDataReader::SetOutputDir( vtkstd::string outDir )
+{
+    this->outDir = outDir; 
 }
 
 /*!
