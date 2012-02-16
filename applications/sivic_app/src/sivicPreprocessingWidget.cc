@@ -249,26 +249,20 @@ void sivicPreprocessingWidget::CreateWidget()
 
     string apOption1 = "none";
     string apOption2 = "Lorentz";
+    string apOption3 = "Gauss";
 
-    invocationString = "Apodize SPECTRAL none"; 
-    apSpecMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPECTRAL lorentzian"; 
-    apSpecMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+    apSpecMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
+    apSpecMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
+    apSpecMenu->AddRadioButton(apOption3.c_str(), this->sivicController, "");
 
-    invocationString = "Apodize SPATIAL_COLS none"; 
-    apColsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_COLS lorentzian"; 
-    apColsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+    apColsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
+    apColsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
 
-    invocationString = "Apodize SPATIAL_ROWS none"; 
-    apRowsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_ROWS lorentzian"; 
-    apRowsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+    apRowsMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
+    apRowsMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
 
-    invocationString = "Apodize SPATIAL_SLICES none"; 
-    apSlicesMenu->AddRadioButton(apOption1.c_str(), this->sivicController, invocationString.c_str());
-    invocationString = "Apodize SPATIAL_SLICES lorentzian"; 
-    apSlicesMenu->AddRadioButton(apOption2.c_str(), this->sivicController, invocationString.c_str());
+    apSlicesMenu->AddRadioButton(apOption1.c_str(), this->sivicController, "");
+    apSlicesMenu->AddRadioButton(apOption2.c_str(), this->sivicController, "");
 
     //  Set default values
     this->apodizationSelectorSpec->SetValue( apOption1.c_str() );
@@ -441,7 +435,33 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
             float fwhh = 4.0;
+            char fwhhDefault[50]="";
+            this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
+            if( string(fwhhDefault) != "" ) {
+                fwhh = atof( fwhhDefault );
+            }
             svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
+            af->SetInput( data );
+            af->SetWindow( window );
+            af->Update();
+            af->Delete();
+            data->Modified();
+        } else if ( apodizeSpec.compare("Gauss") == 0 ) {
+            svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
+            vtkFloatArray* window = vtkFloatArray::New();
+            float fwhh = 4.0;
+            float center = 0.0;
+            char fwhhDefault[50]="";
+            this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
+            if( string(fwhhDefault) != "" ) {
+                fwhh = atof( fwhhDefault );
+            }
+            char centerDefault[50]="";
+            this->GetApplication()->GetRegistryValue( 0, "apodization", "center",centerDefault  );
+            if( string(centerDefault) != "" ) {
+                center = atof( centerDefault );
+            }
+            svkApodizationWindow::GetGaussianWindow( window, data, fwhh, center );
             af->SetInput( data );
             af->SetWindow( window );
             af->Update();

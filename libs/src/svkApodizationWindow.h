@@ -69,8 +69,12 @@ class svkApodizationWindow : public vtkObject
         // vtk initialization 
         static svkApodizationWindow* New();  
 
-        static void GetLorentzianWindow( vtkFloatArray* window, float fwhh, float dt );
-        static void GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh );
+        static void  GetLorentzianWindow( vtkFloatArray* window, float fwhh, float dt );
+        static void  GetLorentzianWindow( vtkFloatArray* window, svkImageData* data, float fwhh );
+        static void  GetGaussianWindow( vtkFloatArray* window, float fwhh, float dt, float center = 0 );
+        static void  GetGaussianWindow( vtkFloatArray* window, svkImageData* data, float fwhh, float center = 0 );
+        static void  InitializeWindow( vtkFloatArray* window, svkImageData* data );
+        static float GetWindowResolution( svkImageData* data );
 
 	protected:
 
