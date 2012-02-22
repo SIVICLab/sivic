@@ -54,6 +54,8 @@
               </df>
               <df name="svk_spec_diff.dir">
               </df>
+              <df name="svk_surface_area.dir">
+              </df>
               <df name="svk_svrecon.dir">
               </df>
             </df>
@@ -69,6 +71,7 @@
             <in>svk_quick_view.cc</in>
             <in>svk_reslice.cc</in>
             <in>svk_spec_diff.cc</in>
+            <in>svk_surface_area.cc</in>
             <in>svk_svrecon.cc</in>
           </df>
           <df name="SunOS_sparc">

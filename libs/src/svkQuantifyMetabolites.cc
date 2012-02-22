@@ -162,10 +162,10 @@ void svkQuantifyMetabolites::GenerateRegionMaps()
             float peakPPM  =  GetFloatFromString( this->regionVector[regionID][1] ); 
             float widthPPM =  GetFloatFromString( this->regionVector[regionID][2] ); 
 
-            //cout << "NAME      : " << regionName << endl;
-            //cout << "PEAK POS  : " << peakPPM << endl; 
-            //cout << "PEAK WIDTH: " << widthPPM << endl; 
-            //cout << "ALGO      : " << algoName << endl;
+            cout << "NAME      : " << regionName << endl;
+            cout << "PEAK POS  : " << peakPPM << endl; 
+            cout << "PEAK WIDTH: " << widthPPM << endl; 
+            cout << "ALGO      : " << algoName << endl;
 
             mapGen->SetPeakPosPPM( peakPPM );
             mapGen->SetPeakWidthPPM( widthPPM ); 

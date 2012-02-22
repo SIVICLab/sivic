@@ -301,6 +301,10 @@ double svkMetaboliteMap::GetMapVoxelValue( float* specPtr, int startPt, int endP
         voxelValue = this->GetPeakHt( specPtr, startPt, endPt ); 
     } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_PEAK_HT) { 
         voxelValue = this->GetMagPeakHt( specPtr, startPt, endPt ); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::LINE_WIDTH) { 
+        voxelValue = this->GetLineWidth( specPtr, startPt, endPt ); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_LINE_WIDTH) { 
+        voxelValue = this->GetMagLineWidth( specPtr, startPt, endPt ); 
     }
     return voxelValue;
 }
@@ -334,6 +338,106 @@ double svkMetaboliteMap::GetPeakHt( float* specPtr, int startPt, int endPt)
         }
     }
     return peakHt; 
+    
+}
+
+
+/*
+ *  Gets the line width of the peak (in Hz)
+ */
+double svkMetaboliteMap::GetMagLineWidth( float* specPtr, int startPt, int endPt )
+{
+    //  Calculate Peak Max Ht and position.  then get position when intensity is 
+    //  1/2 that.  
+
+    int peakPosPt = startPt; 
+    double magPeakHt = 0;
+    double magPeakHtTmp = 0;
+    magPeakHt = pow( specPtr[ 2 * startPt], 2);
+    magPeakHt += pow( specPtr[ 2 * startPt + 1], 2);
+    magPeakHt = pow(magPeakHt, 0.5);
+
+    for ( int pt = startPt; pt <= endPt; pt++ ) {
+        magPeakHtTmp = pow( specPtr[ 2 * pt], 2);
+        magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);
+        magPeakHtTmp = pow(magPeakHtTmp, 0.5);
+        if ( magPeakHtTmp > magPeakHt ) {
+            magPeakHt = magPeakHtTmp;
+            peakPosPt = pt; 
+        }
+    }
+
+
+    double halfHeight = magPeakHt/2.;
+
+    //  Get fist 1/2 height point
+    int fwhmPt1 = startPt; 
+
+    for ( int pt = startPt; pt <= peakPosPt; pt++ ) {
+        magPeakHtTmp = pow( specPtr[ 2 * pt], 2);
+        magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);
+        magPeakHtTmp = pow(magPeakHtTmp, 0.5);
+        if ( magPeakHtTmp > halfHeight ) {
+            fwhmPt1 = pt; 
+            break; 
+        }
+    }
+
+    int fwhmPt2 = endPt; 
+    for ( int pt = peakPosPt; pt <= endPt; pt++ ) {
+        magPeakHtTmp = pow( specPtr[ 2 * pt], 2);
+        magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);
+        magPeakHtTmp = pow(magPeakHtTmp, 0.5);
+        if ( magPeakHtTmp < halfHeight ) {
+            fwhmPt2 = pt; 
+            break; 
+        }
+    }
+    
+    // could interpolate to get the actual delta frequency for better accuracy, but this is a quick start  
+    return (fwhmPt2 - fwhmPt1); 
+    
+}
+
+
+/*
+ *  Gets the line width of the peak (in Hz)
+ */
+double svkMetaboliteMap::GetLineWidth( float* specPtr, int startPt, int endPt )
+{
+    //  Calculate Peak Max Ht and position.  then get position when intensity is 
+    //  1/2 that.  
+
+    int peakPosPt; 
+    double peakHt = specPtr[ 2 * startPt ];
+    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+        if ( specPtr[2*pt] > peakHt ) {
+            peakHt = specPtr[2*pt];
+            peakPosPt = pt; 
+        }
+    }
+
+    double halfHeight = peakHt/2.;
+
+    //  Get fist 1/2 height point
+    int fwhmPt1; 
+    for ( int pt = startPt; pt <= peakPosPt; pt ++ ) {
+        if ( specPtr[2*pt] > halfHeight ) {
+            fwhmPt1 = pt; 
+            break; 
+        }
+    }
+
+    int fwhmPt2; 
+    for ( int pt = peakPosPt; pt <= endPt; pt ++ ) {
+        if ( specPtr[2*pt] < halfHeight ) {
+            fwhmPt2 = pt; 
+            break; 
+        }
+    }
+    
+    // could interpolate to get the actual delta frequency for better accuracy, but this is a quick start  
+    return (fwhmPt2 - fwhmPt1); 
     
 }
 
@@ -486,6 +590,26 @@ void svkMetaboliteMap::SetAlgorithmToMagPeakHeight()
 }
 
 
+/*!
+ *
+ */
+void svkMetaboliteMap::SetAlgorithmToLineWidth()
+{
+    this->quantificationAlgorithm = svkMetaboliteMap::LINE_WIDTH; 
+    this->Modified(); 
+}
+
+
+/*!
+ *
+ */
+void svkMetaboliteMap::SetAlgorithmToMagLineWidth()
+{
+    this->quantificationAlgorithm = svkMetaboliteMap::MAG_LINE_WIDTH; 
+    this->Modified(); 
+}
+
+
 /*
  *  Set algo type based on string description svkMetaboliteMap::algorithm. 
  */
@@ -497,6 +621,10 @@ void svkMetaboliteMap::SetAlgorithm( vtkstd::string algo )
         this->SetAlgorithmToPeakHeight(); 
     } else if ( algo.compare("MAG_PEAK_HT") == 0 ) {
         this->SetAlgorithmToMagPeakHeight(); 
+    } else if ( algo.compare("LINE_WIDTH") == 0 ) {
+        this->SetAlgorithmToLineWidth(); 
+    } else if ( algo.compare("MAG_LINE_WIDTH") == 0 ) {
+        this->SetAlgorithmToMagLineWidth(); 
     } else {
         vtkWarningWithObjectMacro(this, "SetAlgorithm(): Not a valid algorithm " + algo );
     }

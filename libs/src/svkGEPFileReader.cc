@@ -43,6 +43,7 @@
 #include <svkGEPFileReader.h>
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
+#include <svkUtils.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
 #include <vtkStringArray.h> 
@@ -2311,11 +2312,168 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
 }
 
 
-
+/*
+ *
+ */
 vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > > 
 svkGEPFileReader::GetPFMap() 
 {
     return this->pfMap; 
+}
+
+
+/*
+ *  Get the number of elements in the header field for the specified key:
+ */
+int svkGEPFileReader::GetNumElementsInField( vtkstd::string key )
+{
+    int numElements;
+    istringstream* iss = new istringstream();
+    iss->str( this->pfMap[key][1] );
+    *iss >> numElements;
+    delete iss;
+    return numElements; 
+}
+
+
+/*
+ *  Get the number of bytes in the header field for the specified key:
+ */
+int svkGEPFileReader::GetNumBytesInField( vtkstd::string key )
+{
+
+    int numElements = this->GetNumElementsInField( key );
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    int numBytes = 0;     
+
+    if ( type.compare("FLOAT_4") == 0) {
+        numBytes = numElements * 4; 
+    } else if ( type.compare("INT_2") == 0 ) {
+        numBytes = numElements * 2; 
+    } else if ( type.compare("UINT_2") == 0 ) {
+        numBytes = numElements * 2; 
+    } else if ( type.compare("UINT_4") == 0 ) {
+        numBytes = numElements * 4; 
+    } else if ( type.compare("INT_4") == 0) {
+        numBytes = numElements * 4; 
+    } else if ( type.compare("LINT_4") == 0) {
+        numBytes = numElements * 4; 
+    } else if ( type.compare("ULINT_4") == 0) {
+        numBytes = numElements * 4; 
+    } else if ( type.compare("LINT_8") == 0) {
+        numBytes = numElements * 8; 
+    } else if ( type.compare("CHAR") == 0) {
+        numBytes = numElements * 1; 
+    } else if ( type.compare("UID") == 0) {
+        numBytes = numElements * 1; 
+    }
+
+    return numBytes; 
+}
+
+
+/*
+ *  Get the number of bytes in the header field for the specified key:
+ */
+bool svkGEPFileReader::IsFieldChar( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("CHAR") == 0) {
+        return true; 
+    } else {
+        return false; 
+    }
+
+}
+
+
+
+/*
+ *  In place deidentification of field
+ */
+void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString)
+{
+    int offset;
+    int numBytes;
+
+    //  Check if key exists.  If not, just return; 
+    if ( this->pfMap.find(key) == pfMap.end() ) {
+        cout <<"Can't find element: " << key << endl; 
+        return; 
+    }
+
+    numBytes    = this->GetNumBytesInField( key ); 
+    offset      = svkUtils::StringToInt( this->pfMap[key][2] ); 
+
+    if ( fs->is_open() ) {
+
+        if ( this->IsFieldChar( key ) ) {
+            cout << "replace char bytes with " << deidString << endl; 
+
+            //  Replace numBytes at offset position with the deidString
+            //  set the put pointer to the correct offset
+            fs->seekp( offset, ios_base::beg );
+            fs->write( deidString.c_str(), numBytes);
+            //cout << "rdbm rev" << rdbmRev << " " << rdbmRevSwapped <<  endl;
+
+        } else {
+            cout << "replace bytes with " << key << " -> " << 0 << endl; 
+        }
+    }
+
+
+}    
+
+
+/* 
+ *  In place deidentification of raw file with study ID:
+ */
+void svkGEPFileReader::Deidentify( string studyID )
+{
+
+    this->OnlyParseHeader(); 
+    this->ReadGEPFile(); 
+
+    //  Now the pfMap has been initialized as follows.  Use the 
+    //  Offsets and field sizes to replace the appropriate bytes with 
+    //  the deidentification ID:
+    //  key        pfMap[key][0]    pfMap[key][1] pfMap[key][2] pfMap[key][3]
+    //  ----------------------------------------------------------------------
+    //  fieldName  nativeType       numElements   offset        stringValue
+
+    fstream* fs = new fstream();
+    fs->exceptions( fstream::eofbit | fstream::failbit | fstream::badbit );
+    fs->open( this->GetFileNames()->GetValue(0), ios::binary | ios::in | ios::out );
+
+    if ( fs->is_open() ) {
+        //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
+        this->DeidentifyField( fs, "rhe.refphy",        studyID);
+        this->DeidentifyField( fs, "rhe.ex_no",         studyID);
+        this->DeidentifyField( fs, "rhe.reqnum",        studyID);
+        this->DeidentifyField( fs, "rhe.reqnumff",      studyID);
+        this->DeidentifyField( fs, "rhe.study_uid",     studyID);
+        this->DeidentifyField( fs, "rhe.patid",         studyID);
+        this->DeidentifyField( fs, "rhe.patidff",       studyID);
+        this->DeidentifyField( fs, "rhe.patname",       studyID ),
+        this->DeidentifyField( fs, "rhe.patnameff",     studyID ),
+        this->DeidentifyField( fs, "rhe.hospname",      studyID ),
+        this->DeidentifyField( fs, "rhs.landmark_uid",  studyID ),
+
+        //  These fields are not removed from PHI_LIMITED data sets
+        this->DeidentifyField( fs, "rhr.rh_scan_time",  studyID);
+        this->DeidentifyField( fs, "rhe.dateofbirth",   studyID);
+        this->DeidentifyField( fs, "rhr.rh_scan_date",  studyID);
+
+        fs->close();
+    } else {
+        cout << "ERROR: Could not open raw file for deidentification: " << this->GetFileNames()->GetValue(0) << endl;
+        exit(1);
+    }
+
+    delete fs; 
+
 }
 
 

@@ -98,6 +98,7 @@ class svkGEPFileReader : public svkImageReader2
         void                SetTemperature( float temp ); 
         void                PrintHeader();
         void                OnlyParseHeader();
+        void                Deidentify( string studyID ); 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
                                                  GetPFMap(); 
 
@@ -148,6 +149,11 @@ class svkGEPFileReader : public svkImageReader2
         void                FillInMissingInfo(); 
         void                SetDataByteOrder(); 
         void                DeidentifyData(); 
+        int                 GetNumElementsInField( vtkstd::string key ); 
+        int                 GetNumBytesInField( vtkstd::string key ); 
+        void                DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString); 
+        bool                IsFieldChar( vtkstd::string key ); 
+
 
         //  Members:
         ifstream*                        gepf;
