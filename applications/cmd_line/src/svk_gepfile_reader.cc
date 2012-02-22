@@ -100,6 +100,7 @@ int main (int argc, char** argv)
     usemsg += "                            set the chemical shift of water. \n"; 
     usemsg += "   --no_dc_correction       Turns DC Offset correction off. \n"; 
     usemsg += "   --print_header           Only prints the PFile header key-value pairs, does not load data \n";
+    usemsg += "   --raw_anon         id    Deidentifies the raw file using the specified study ID.\n";
     usemsg += "   -h                       Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
@@ -119,6 +120,7 @@ int main (int argc, char** argv)
     float temp = UNDEFINED_TEMP; 
     bool dcCorrection = true; 
     bool printHeader = false; 
+    string rawAnonId = ""; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -130,7 +132,8 @@ int main (int argc, char** argv)
         FLAG_DEID_TYPE, 
         FLAG_DEID_PAT_ID, 
         FLAG_DEID_STUDY_ID, 
-        FLAG_TEMP 
+        FLAG_TEMP, 
+        FLAG_RAW_ANON
     }; 
 
 
@@ -144,6 +147,7 @@ int main (int argc, char** argv)
         {"deid_pat_id",      required_argument, NULL,  FLAG_DEID_PAT_ID},
         {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {"temp",             required_argument, NULL,  FLAG_TEMP},
+        {"raw_anon",         required_argument, NULL,  FLAG_RAW_ANON},
         {0, 0, 0, 0}
     };
 
@@ -193,6 +197,9 @@ int main (int argc, char** argv)
             case FLAG_TEMP:
                 temp = atof( optarg ); 
                 break;
+            case FLAG_RAW_ANON:
+                rawAnonId.assign( optarg ); 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -204,6 +211,7 @@ int main (int argc, char** argv)
 
     argc -= optind;
     argv += optind;
+
 
     // ===============================================  
     //  validate that: 
@@ -225,6 +233,22 @@ int main (int argc, char** argv)
             cout << usemsg << endl;
             exit(1); 
         }
+    }
+
+    // ===============================================  
+    //  If only anonymizing the raw file, just do that 
+    //  and exit
+    // ===============================================  
+    if ( rawAnonId.compare("") != 0 ) {
+        vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
+        svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
+        if (reader == NULL) {
+            cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
+            exit(1);
+        }
+        reader->SetFileName( inputFileName.c_str() );
+        reader->Deidentify(rawAnonId);
+        exit(0);
     }
 
     // ===============================================  

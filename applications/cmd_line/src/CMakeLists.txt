@@ -292,6 +292,16 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_surface_area
+    svk_surface_area.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_surface_area
+	${SVK_LIBS}
+)
+
 #   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
 ADD_EXECUTABLE(
     svk_app_template
@@ -329,6 +339,7 @@ IF (!WIN32)
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quantify )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_reslice )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_dcmdump )
+	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_surface_area)
 ELSE (!WIN32)
 	INSTALL_TARGETS( /local/bin svk_file_convert )
 	INSTALL_TARGETS( /local/bin svk_quick_view )
@@ -339,11 +350,14 @@ ELSE (!WIN32)
 	INSTALL_TARGETS( /local/bin svk_quantify )
 	INSTALL_TARGETS( /local/bin svk_reslice )
 	INSTALL_TARGETS( /local/bin svk_dcmdump )
+	INSTALL_TARGETS( /local/bin svk_surface_area)
 ENDIF (!WIN32)
 
 
 
 IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    SET_TARGET_PROPERTIES (svk_surface_area PROPERTIES LINK_FLAGS 
+    "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
     SET_TARGET_PROPERTIES (svk_file_convert PROPERTIES LINK_FLAGS 
     "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib") 
     SET_TARGET_PROPERTIES (svk_quick_view PROPERTIES LINK_FLAGS 
