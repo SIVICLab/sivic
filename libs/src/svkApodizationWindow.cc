@@ -146,7 +146,7 @@ void svkApodizationWindow::GetGaussianWindow( vtkFloatArray* window, float fwhh,
         int numPoints = window->GetNumberOfTuples();
         int numComponents = window->GetNumberOfComponents();
         for( int i = 0; i < numPoints; i++ ) {
-            float value = exp( -0.5 * pow((fwhh * vtkMath::Pi()* ( dt * i - center/1000 ))/pow(2*log(2),0.5),2) );
+            float value = exp( -0.5 * pow((fwhh * vtkMath::Pi()* ( dt * i - center/1000 ))/pow(2*log(2.),0.5),2) );
             for( int j = 0; j < numComponents; j++ ) {
 				window->SetComponent( i, j, value );
             }
