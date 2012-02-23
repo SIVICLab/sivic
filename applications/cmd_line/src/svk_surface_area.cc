@@ -37,8 +37,6 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  *
- *  Utility application for converting between supported file formats. 
- *
  */
 
 
@@ -85,6 +83,8 @@ int main (int argc, char** argv)
     usemsg += "             [--verbose ] [ -h ]                                             \n"; 
     usemsg += "\n";  
     usemsg += "   -i input_file_name        name of file to convert.            \n"; 
+    usemsg += "   -o output_file_name       name of output polydata file.            \n"; 
+    usemsg += "   -t threshold              contour threshold .            \n"; 
     usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout. \n"; 
     usemsg += "   -h                        print help mesage.                  \n";  
     usemsg += " \n";  
@@ -92,6 +92,8 @@ int main (int argc, char** argv)
     usemsg += "\n";  
 
     string inputFileName; 
+    string outputFileName; 
+    int    contourThreshold = 500;  
     bool   isVerbose = false;   
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -114,10 +116,16 @@ int main (int argc, char** argv)
     // ===============================================
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                break;
+            case 'o':
+                outputFileName.assign( optarg );
+                break;
+            case 't':
+                contourThreshold = atoi( optarg);
                 break;
            case FLAG_VERBOSE:
                 isVerbose = true; 
@@ -141,7 +149,7 @@ int main (int argc, char** argv)
     }
   
     
-    if ( inputFileName.length() == 0 ) { 
+    if ( inputFileName.length() == 0  || outputFileName.length() == 0 ) { 
         cout << usemsg << endl;
         exit(1); 
     }
@@ -170,7 +178,7 @@ int main (int argc, char** argv)
 
     vtkContourFilter* cont = vtkContourFilter::New();
     cont->SetInputConnection( reader->GetOutputPort() );
-    cont->SetValue(0, 500);
+    cont->SetValue(0, contourThreshold);
 /*
     vtkImageToPolyDataFilter* i2pd = vtkImageToPolyDataFilter::New();
     i2pd->SetInputConnection(cont->GetOutputPort()); 
@@ -195,16 +203,26 @@ int main (int argc, char** argv)
     vtkMassProperties* mass = vtkMassProperties::New();
     mass->SetInput( tf->GetOutput() ); 
     double vol = mass->GetVolume(); 
-    double sa = mass->GetSurfaceArea(); 
-    cout << "VOLUME: " << vol << endl;
-    cout << "SURFACE: " << sa << endl;
-    cout << "SURFACE/VOL " << sa/vol << endl;
+    //  vol = ( 4./3.) * vtkMath::Pi() * r3
+    
+    double radius = ( vol * 3. ) / (4. * vtkMath::Pi() ) ; 
+
+    radius = pow (radius, 1./3.); 
+
+    double surfaceArea = mass->GetSurfaceArea(); 
+
+    double sphericalSurfaceArea = 4 * vtkMath::Pi() * radius * radius; 
+
+    cout << "VOLUME:                    " << vol << endl;
+    cout << "RADIUS:                    " << radius<< endl;
+    cout << "SURFACE:                   " << surfaceArea << endl;
+    cout << "SURFACE/SPHERICAL_SURFACE: " << surfaceArea/sphericalSurfaceArea << endl;
 
     writer->SetInputConnection( tf->GetOutputPort() ); 
     //writer->SetInputConnection( cont->GetOutputPort() ); 
     //writer->SetInputConnection( i2pd->GetOutputPort() ); 
     //writer->SetInputConnection( tf->GetOutputPort() ); 
-    writer->SetFileName("triangledata.vtp");
+    writer->SetFileName( outputFileName.c_str() );
     writer->Write();
 
     writer->Delete();
