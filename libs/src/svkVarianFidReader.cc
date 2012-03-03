@@ -43,6 +43,7 @@
 #include <svkVarianFidReader.h>
 #include <svkVarianCSFidMapper.h>
 #include <svkVarianUCSF2DcsiMapper.h>
+#include <svkVarianUCSFEPSI2DMapper.h>
 #include <vtkDebugLeaks.h>
 
 #include <sys/stat.h>
@@ -249,6 +250,11 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
 
         // UCSF 2DCSI :
         aMapper = svkVarianUCSF2DcsiMapper::New();
+
+    } else if ( seqfil.compare("epsi2d") == 0) {
+
+        // UCSF 2DCSI :
+        aMapper =  svkVarianUCSFEPSI2DMapper::New();
 
     } else {
         aMapper = svkVarianCSFidMapper::New();
