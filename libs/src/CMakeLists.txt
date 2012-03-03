@@ -170,6 +170,7 @@ ADD_LIBRARY(
     svkVarianFidReader.cc
     svkVarianCSFidMapper.cc
     svkVarianUCSF2DcsiMapper.cc
+    svkVarianUCSFEPSI2DMapper.cc
     svkVarianFidMapper.cc
     svkGESigna5XReader.cc
     svkGESignaLX2Reader.cc
