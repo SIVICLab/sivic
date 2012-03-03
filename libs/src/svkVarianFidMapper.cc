@@ -910,7 +910,7 @@ void svkVarianFidMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from fid file.
  */
-void svkVarianFidMapper::ReadFidFile( vtkstd::string fidFileName, vtkImageData* data )
+void svkVarianFidMapper::ReadFidFile( vtkstd::string fidFileName, svkImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );
@@ -998,6 +998,7 @@ void svkVarianFidMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z
     numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" );
     numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" );
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+
     //  if cornoal, swap z and x:
     int xTmp = x; 
     x = y; 

@@ -114,6 +114,9 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
                             double origin[3] 
                         ); 
 
+        virtual void    SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum); 
+
+
 };
 
 

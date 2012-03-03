@@ -695,3 +695,52 @@ void svkVarianUCSFEPSI2DMapper::GetOriginFromCenter( double center[3], int numVo
         }
     }
 }
+
+
+/*
+ *
+ */
+void svkVarianUCSFEPSI2DMapper::SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum)
+{
+
+    int numComponents = 1;
+    vtkstd::string representation =  this->dcmHeader->GetStringValue( "DataRepresentation" );
+    if (representation.compare( "COMPLEX" ) == 0 ) {
+        numComponents = 2;
+    }
+    vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+    dataArray->SetNumberOfComponents( numComponents );
+
+    int numPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
+    dataArray->SetNumberOfTuples(numPts);
+
+    char arrayName[30];
+    sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
+    dataArray->SetName(arrayName);
+
+    int numVoxels[3];
+    numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" );
+    numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" );
+    numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+
+    int offset = (numPts * numComponents) *  (
+                     ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt
+                    +( numVoxels[0] * numVoxels[1] ) * z
+                    +  numVoxels[0] * y
+                    +  x
+                 );
+
+
+    for (int i = 0; i < numPts; i++) {
+        dataArray->SetTuple(i, &(this->specData[offset + (i * 2)]));
+    }
+
+    //  Add the spectrum's dataArray to the CellData:
+    //  vtkCellData is a subclass of vtkFieldData
+    data->GetCellData()->AddArray(dataArray);
+
+    dataArray->Delete();
+
+    return;
+}
+
