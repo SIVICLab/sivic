@@ -44,6 +44,7 @@
 
 
 #include <vtkImageData.h>
+#include <svkImageData.h>
 
 #include <svkDcmHeader.h>
 #include <svkMRSIOD.h>
@@ -84,7 +85,7 @@ class svkVarianFidMapper : public vtkObject
                             int        swapBytes  
                         );
 
-        virtual void    ReadFidFile( vtkstd::string fidFileName, vtkImageData* data );
+        virtual void    ReadFidFile( vtkstd::string fidFileName, svkImageData* data );
 
         
     protected:
