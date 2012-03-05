@@ -199,7 +199,6 @@ void svkVarianUCSFEPSI2DMapper::InitPerFrameFunctionalGroupMacros()
         int mmPerCm = 10; 
         centerAcqFrame[2] += this->GetHeaderValueAsFloat("pss", 0) * mmPerCm ;
 
-
         //  Now get the center of the tlc voxel in the acq frame:
         double* tlcAcqFrame = new double[3];
         for (int j = 0; j < 2; j++) {
@@ -556,7 +555,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
                             float tuple[2]; 
                             int epsiOffset; 
                             for (int i = 0; i < numFreqPts; i++) {
-                                epsiOffset = (lobeStride * 2 * i ) + currentEPSIPt;
+                                epsiOffset = (lobeStride * i ) + currentEPSIPt;
                                 epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
                                 tuple[0] = epsiTuple[0]; 
                                 tuple[1] = epsiTuple[1]; 
