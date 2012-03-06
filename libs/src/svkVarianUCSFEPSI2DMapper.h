@@ -58,9 +58,10 @@ namespace svk {
 
 
 /*! 
- *  Concrete mapper for C13 UCSF 2D CSI Varian sequence. 
+ *  Concrete mapper for C13 UCSF 2D  EPSI Varian sequence written by 
+ *  Sukumar Subramaniam, PhD (UCSF Surbeck Lab).   
  *  
- *  contributors to the development of the 2D C13 CSI sequence and software :
+ *  contributors to the development of the 2D C13 EPSI sequence and software :
  *      Sukumar Subramaniam, PhD (UCSF Surbeck Lab) 
  *      Jason C. Crane, PhD (UCSF Surbeck Lab) 
  *      Sarah J. Nelson, PhD (UCSF Surbeck Lab) 
@@ -88,6 +89,7 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
         virtual void    InitPixelMeasuresMacro(); 
         virtual void    InitPerFrameFunctionalGroupMacros(); 
         virtual void    InitMRSpectroscopyDataModule(); 
+        virtual void    InitMRSpectroscopyModule(); 
         virtual void    InitMultiFrameFunctionalGroupsModule(); 
         virtual void    ReadFidFile( vtkstd::string fidFileName, svkImageData* data ); 
         void            ReorderEPSIData( svkImageData* data); 
@@ -115,6 +117,9 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
                         ); 
 
         virtual void    SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum); 
+
+    private: 
+        void            GetNumVoxels(int* numVoxels); 
 
 
 };

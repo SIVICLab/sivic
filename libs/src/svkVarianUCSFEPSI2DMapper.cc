@@ -90,23 +90,32 @@ svkVarianUCSFEPSI2DMapper::~svkVarianUCSFEPSI2DMapper()
 }
 
 
+/*
+ * Gets the number of voxels from the fid/procpar header
+ * this will correspond to the 3D Grid, not the original 
+ * EPSI encoding
+ */
+void svkVarianUCSFEPSI2DMapper::GetNumVoxels(int* numVoxels)
+{
+    numVoxels[0] = this->GetHeaderValueAsInt("nv", 0);
+    numVoxels[1] = this->GetHeaderValueAsInt("np", 0)/2;
+    numVoxels[2] = this->GetHeaderValueAsInt("ns", 0);
+}
+
+
 /*!
  *  Pixel Spacing:
  */
 void svkVarianUCSFEPSI2DMapper::InitPixelMeasuresMacro()
 {
 
-    float numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
-    numPixels[1] = 1;
-    //numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    int numPixels[3];
+    this->GetNumVoxels(numPixels); 
 
     //  lpe (phase encode resolution in cm, already converted in base class)
     float pixelSize[3];
     pixelSize[0] = this->GetHeaderValueAsFloat("lpe", 0) / numPixels[0] ;
-    pixelSize[1] = 1; 
-    //pixelSize[1] = this->GetHeaderValueAsFloat("lpe2", 0) /  numPixels[1];
+    pixelSize[1] = this->GetHeaderValueAsFloat("lro", 0) / numPixels[1];
     pixelSize[2] = this->GetHeaderValueAsFloat("thk", 0) / numPixels[2];
 
     vtkstd::string pixelSizeString[3];
@@ -164,14 +173,18 @@ void svkVarianUCSFEPSI2DMapper::InitPerFrameFunctionalGroupMacros()
     double dcos[3][3];
     this->dcmHeader->SetSliceOrder( this->dataSliceOrder );
     this->dcmHeader->GetDataDcos( dcos );
+    dcos[0][0] *= -1; 
+    dcos[0][1] *= -1; 
+    dcos[0][2] *= -1; 
     double pixelSpacing[3];
     this->dcmHeader->GetPixelSize(pixelSpacing);
 
     int numPixels[3];
-    numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
+    this->GetNumVoxels(numPixels); 
+    //numPixels[0] = this->GetHeaderValueAsInt("nv", 0);
     numPixels[1] = 1; 
     //numPixels[1] = this->GetHeaderValueAsInt("nv2", 0);
-    numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
+    //numPixels[2] = this->GetHeaderValueAsInt("ns", 0);
 
     //  Get center coordinate float array from fidMap and use that to generate
     //  Displace from that coordinate by 1/2 fov - 1/2voxel to get to the center of the
@@ -197,7 +210,7 @@ void svkVarianUCSFEPSI2DMapper::InitPerFrameFunctionalGroupMacros()
 
         //  Account for slice offset (pss is offset in cm):
         int mmPerCm = 10; 
-        centerAcqFrame[2] += this->GetHeaderValueAsFloat("pss", 0) * mmPerCm ;
+        //centerAcqFrame[2] += this->GetHeaderValueAsFloat("pss", 0) * mmPerCm ;
 
         //  Now get the center of the tlc voxel in the acq frame:
         double* tlcAcqFrame = new double[3];
@@ -332,6 +345,31 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyPulseSequenceModule()
 
 
 /*!
+ *  
+ */
+void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
+{
+    this->Superclass::InitMRSpectroscopyModule(); 
+
+    this->dcmHeader->SetValue(
+        "SpectralWidth",
+        this->GetHeaderValueAsFloat( "swf" )
+    );
+
+    //  sp is the frequency in Hz at left side (downfield/High freq) 
+    //  side of spectrum: 
+    //
+    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "swf" )/2.;
+    ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
+    this->dcmHeader->SetValue(
+        "ChemicalShiftReference",
+        ppmRef 
+    );
+}
+
+
+
+/*!
  *  This method reads data from the pfile and puts the data into the CellData arrays.
  *  Non-uniform k-space sampling requires regridding to rectaliniear k-space array here. 
  */
@@ -440,7 +478,6 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
     int numEPSIVoxels[3]; 
     data->GetNumberOfVoxels(numEPSIVoxels);
 
-    cout << "NUM EPSI VOXELS: " << numEPSIVoxels[0] << " " <<  numEPSIVoxels[1] <<  " " << numEPSIVoxels[2] << endl;
     //  Set the actual number of k-space points sampled:
     int numVoxels[3]; 
     numVoxels[0] = numEPSIVoxels[0]; 
@@ -469,9 +506,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
     //============================================================
     svkImageData* reorderedImageData = svkMrsImageData::New();
     reorderedImageData->DeepCopy( data ); 
-    cout << "before removing: " << *reorderedImageData << endl;
     this->RemoveArrays( reorderedImageData ); 
-    cout << "after removing: " << *reorderedImageData << endl;
 
     //============================================================
     //  Preallocate data arrays for reordered data. The API only permits dynamic 
@@ -498,7 +533,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
 
                 vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(
                         svkMrsImageData::SafeDownCast(data)->GetSpectrum( xEPSI, yEPSI, zEPSI, timePoint, 0) );
-                cout << "REORDER: " << xEPSI << " "  << yEPSI << " "  << zEPSI << " "  << endl;
+                //cout << "REORDER: " << xEPSI << " "  << yEPSI << " "  << zEPSI << " "  << endl;
     
                 //  define range of spatial dimension to expand (i.e. epsiAxis):  
                 int rangeMin[3]; 
@@ -512,9 +547,9 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
                 //  throw out the first and last points (zero crossing)
                 rangeMin[epsiAxis] = 0; 
                 rangeMax[epsiAxis] = numVoxels[epsiAxis]; 
-                cout << "RANGE " << rangeMin[0] << " -> " << rangeMax[0] << endl;
-                cout << "RANGE " << rangeMin[1] << " -> " << rangeMax[1] << endl;
-                cout << "RANGE " << rangeMin[2] << " -> " << rangeMax[2] << endl;
+                //cout << "RANGE " << rangeMin[0] << " -> " << rangeMax[0] << endl;
+                //cout << "RANGE " << rangeMin[1] << " -> " << rangeMax[1] << endl;
+                //cout << "RANGE " << rangeMin[2] << " -> " << rangeMax[2] << endl;
                 
                 //============================================================
                 //  allocate an array for both the positive and negative lobes of 
@@ -531,7 +566,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
                     for (int y = rangeMin[1]; y < rangeMax[1] + 1; y++ ) { 
                         for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
 
-                    cout << "  to : " << x << " "  << y << " "  << z << " "  << endl;
+                    //cout << "  to : " << x << " "  << y << " "  << z << " "  << endl;
 
                             //  Add arrays to the new data set at the correct array index: 
                             int index =  x
@@ -539,7 +574,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
                                   + ( reorderedVoxels[0] * reorderedVoxels[1] ) * z
                                   + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * coilNum;
 
-                            cout << "   target index(xyzlobe): " << x << " " << y << " " << z << " index: " << index << endl;
+                            //cout << "   target index(xyzlobe): " << x << " " << y << " " << z << " index: " << index << endl;
                                  
                             vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
@@ -559,7 +594,7 @@ void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
                                 epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
                                 tuple[0] = epsiTuple[0]; 
                                 tuple[1] = epsiTuple[1]; 
-                                cout << " epsi_spec to cartesian spec " << epsiOffset << " -> " << i << " " << epsiTuple[0] << " " << epsiTuple[1] << endl;
+                                //cout << " epsi_spec to cartesian spec " << epsiOffset << " -> " << i << " " << epsiTuple[0] << " " << epsiTuple[1] << endl;
                                 dataArray->SetTuple( i, tuple );
        
                                 //cout << "       extract spectrum  epsiOffset: " 
@@ -721,6 +756,15 @@ void svkVarianUCSFEPSI2DMapper::SetCellSpectrum(vtkImageData* data, int x, int y
     numVoxels[0] = this->dcmHeader->GetIntValue( "Columns" );
     numVoxels[1] = this->dcmHeader->GetIntValue( "Rows" );
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+    
+    //  if cornoal, swap z and x:
+    //cout << "X,Y:" << x << " " << y << " -> ";
+    //int xTmp = x; 
+    //x = y; 
+    //y = xTmp; 
+    //x = numVoxels[0] - x - 1; 
+    //y = numVoxels[1] - y - 1; 
+    //cout << x << " " << y << endl; 
 
     int offset = (numPts * numComponents) *  (
                      ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt
