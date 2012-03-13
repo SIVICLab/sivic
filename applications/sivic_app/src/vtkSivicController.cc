@@ -1929,17 +1929,27 @@ void vtkSivicController::ExportSpectraCapture( string fileNameString, int output
         gl2psExporter->SetFileFormatToTeX();
     }
 
-    int firstFrame = 0;
-    int lastFrame = this->GetActive4DImageData()->GetDcmHeader()->GetNumberOfSlices()-1;
+    svkDcmHeader::Orientation dcmOrientation = svkDcmHeader::UNKNOWN_ORIENTATION;
+    if( this->orientation == "AXIAL" ) {
+		dcmOrientation  = svkDcmHeader::AXIAL;
+    } else if ( this->orientation == "CORONAL" ) {
+		dcmOrientation  = svkDcmHeader::CORONAL;
+    } else if ( this->orientation == "SAGITTAL" ) {
+		dcmOrientation  = svkDcmHeader::SAGITTAL;
+    }
+
+	int firstFrame = this->GetActive4DImageData()->GetFirstSlice( dcmOrientation );
+	int lastFrame = this->GetActive4DImageData()->GetLastSlice( dcmOrientation );
     if( outputOption == svkSecondaryCaptureFormatter::CURRENT_SLICE ) { 
         firstFrame = plotController->GetSlice();
         lastFrame = firstFrame + 1;
     }
+
     int instanceNumber = 1;
     for (int m = firstFrame; m <= lastFrame; m++) {
         if( this->GetActive4DImageData()->IsA("svkMrsImageData")
             &&  static_cast<svkMrsImageData*>(this->GetActive4DImageData())->HasSelectionBox()
-            && !static_cast<svkMrsImageData*>(this->GetActive4DImageData())->IsSliceInSelectionBox(m)) {
+            && !static_cast<svkMrsImageData*>(this->GetActive4DImageData())->IsSliceInSelectionBox(m, dcmOrientation)) {
             continue;
         }
         string fileNameStringTmp = fileNameString; 

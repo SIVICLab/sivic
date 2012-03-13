@@ -205,7 +205,7 @@ void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastF
 #endif 
     window->AddRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     window->SetSize( spectraHalfSize[0],spectraHalfSize[1] );
-    if(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
+    if(vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper() != NULL ) {
         vtkLabeledDataMapper::SafeDownCast( 
               vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) )
                                ->GetMapper())->GetLabelTextProperty()->SetFontSize(20);
@@ -244,7 +244,7 @@ void svkSecondaryCaptureFormatter::RenderSpectraImage( int firstFrame, int lastF
     window->RemoveRenderer( this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY ) );
     this->plotController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
     this->overlayController->GetView()->TurnRendererOn( svkPlotGridView::PRIMARY );
-    if(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) != NULL ) {
+    if(vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper() != NULL ) {
         vtkLabeledDataMapper::SafeDownCast( 
               vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ) )
                                ->GetMapper())->GetLabelTextProperty()->SetFontSize(10);
