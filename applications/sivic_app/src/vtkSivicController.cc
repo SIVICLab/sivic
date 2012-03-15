@@ -470,6 +470,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             if ( dialogStatus == 2 ) {
                 resultInfo = "";      
                 this->overlayController->GetView()->ValidationOff();
+                this->plotController->GetView()->ValidationOff();
             }
 
         } 
@@ -630,6 +631,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
             overlayViewResultInfo = "";      
             validatorResultInfo = "";      
             this->overlayController->GetView()->ValidationOff();
+            this->plotController->GetView()->ValidationOff();
         } 
 
     }  
@@ -775,6 +777,13 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         }
         this->viewRenderingWidget->ResetInfoText();
 
+		// If there is no reference image loaded lets create a default one.
+        if( !this->model->DataExists( "AnatomicalData" ) ) {
+        	svkMriImageData* zeroImage = svkMriImageData::New();
+        	this->GetActive4DImageData()->GetZeroImage( zeroImage );
+        	this->OpenImage( zeroImage, "zeroImage");
+        	zeroImage->Delete();
+       }
     } else {
 
         resultInfo = "ERROR: Could not load dataset!\nInfo:\n"; 

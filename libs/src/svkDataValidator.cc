@@ -274,13 +274,10 @@ bool svkDataValidator::AreDataSpacingsSame( svkImageData* data1, svkImageData* d
         this->resultInfo="One Data Set Is NULL.";
         return false;
     }
-    int tol = 100; // Again due to precision differences we need a tolerance
     double* spacing1 = data1->GetSpacing();
     double* spacing2 = data2->GetSpacing();
 
-    if( vtkMath::Round(tol*spacing1[0]) == vtkMath::Round(tol*spacing2[0])
-     && vtkMath::Round(tol*spacing1[1]) == vtkMath::Round(tol*spacing2[1])           
-     && vtkMath::Round(tol*spacing1[2]) == vtkMath::Round(tol*spacing2[2]) ) {
+    if( svkUtils::AreValuesClose(spacing1, spacing2 )) {
         return true;
     } else {
         this->resultInfo="Spacing does not match.";

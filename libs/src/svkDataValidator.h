@@ -46,6 +46,7 @@
 
 #include <vtkObjectFactory.h>
 #include <svkImageData.h>
+#include <svkUtils.h>
 #include <set>
 
 
@@ -96,6 +97,7 @@ class svkDataValidator : public vtkObject
         bool    AreDataOriginsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    IsInvalid( svkDataValidator::ValidationErrorStatus  error ); 
         bool    IsOnlyError( svkDataValidator::ValidationErrorStatus  error );
+        bool    AreValuesClose( double valueA, double valueB, int percentTolerance  );
 
         //! Holds the result of the last validation
         string resultInfo;

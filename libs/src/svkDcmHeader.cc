@@ -1264,7 +1264,6 @@ void svkDcmHeader::InitImagePlaneModule( vtkstd::string imagePositionPatient, vt
  */
 void svkDcmHeader::InitPixelMeasuresMacro( vtkstd::string pixelSpacing, vtkstd::string sliceThickness )
 {
-
     this->AddSequenceItemElement(
         "SharedFunctionalGroupsSequence",
         0,
@@ -2085,16 +2084,6 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
     double toplc[3];
     this->GetOrigin( toplc, 0 );
 
-    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 );
-
-    mri->InitPlaneOrientationMacro(
-        this->GetStringSequenceItemElement(
-            "PlaneOrientationSequence",
-            0,
-            "ImageOrientationPatient",
-            "SharedFunctionalGroupsSequence"
-        )
-    );
 
     mri->SetSliceOrder( this->dataSliceOrder );
 
@@ -2114,6 +2103,23 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
                                     );
 
     mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness );
+
+   mri->AddSequenceItemElement(
+            "SharedFunctionalGroupsSequence",
+            0,
+            "PlaneOrientationSequence"
+        );
+
+    mri->InitPlaneOrientationMacro(
+        this->GetStringSequenceItemElement(
+            "PlaneOrientationSequence",
+            0,
+            "ImageOrientationPatient",
+            "SharedFunctionalGroupsSequence"
+        )
+    );
+
+    mri->InitPerFrameFunctionalGroupSequence( toplc, pixelSpacing, dcos, numSlices, 1, 1 );
 
     return 0; 
 }

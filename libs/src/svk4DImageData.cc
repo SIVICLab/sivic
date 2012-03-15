@@ -271,6 +271,31 @@ void svk4DImageData::GetTlcBrcInUserSelection( int tlcBrc[2], double userSelecti
 
 
 /*!
+ *  Method will extract a volume into a svkImageData object
+ *  that matches the geometry of the 4D Image volume with a
+ *  zero value for all pixels.
+ *
+ *  \param target image the zero image (must be initialized)
+ *
+ */
+void  svk4DImageData::GetZeroImage( svkImageData* image )
+{
+    if( image != NULL ) {
+    	// If there is no reference image loaded lets create a default one.
+
+    	int numVolumeDimensions = this->GetNumberOfVolumeDimensions();
+    	int* volumeIndex = new int[numVolumeDimensions];
+    	for( int i = 0; i < numVolumeDimensions; i++ ) {
+    		volumeIndex[i] = 0;
+    	}
+    	this->GetImage( image, 0, "ZeroImage", volumeIndex, 0);
+    	image->GetPointData()->GetScalars()->FillComponent(0,1);
+
+    }
+}
+
+
+/*!
  *  Method will extract a volume into a vtkImageData object representing
  *  a single point in the 4D representation. This is useful for spatial FFT's
  *  and map generation. 
@@ -293,13 +318,14 @@ void  svk4DImageData::GetImage(  svkImageData* image,
         svkEnhancedMRIIOD* iod = svkEnhancedMRIIOD::New();
         iod->SetDcmHeader( image->GetDcmHeader() );
         iod->InitDcmHeader();
-        iod->Delete(); 
-        
+        iod->Delete();
+
         this->GetDcmHeader()->ConvertMrsToMriHeader( 
             image->GetDcmHeader(), 
             VTK_DOUBLE, 
             seriesDescription
         );
+    	image->SyncVTKImageDataToDcmHeader();
 
         this->GetImage( image, point, indexArray, component );
     }

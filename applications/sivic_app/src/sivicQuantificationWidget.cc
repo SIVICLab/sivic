@@ -229,24 +229,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
  */
 void sivicQuantificationWidget::SetOverlay( vtkstd::string modelObjectName)
 {
-    //  Initialize the overlay with the NAA met map
-    if( this->model->DataExists( "MetaboliteData" ) ) {
-        this->model->ChangeDataObject( "MetaboliteData", this->model->GetDataObject( modelObjectName ) );
-    } else {
-        this->model->AddDataObject( "MetaboliteData", this->model->GetDataObject(modelObjectName ));
-    }
-    if( this->model->DataExists( "OverlayData" ) ) {
-        this->model->ChangeDataObject( "OverlayData", this->model->GetDataObject( modelObjectName ) );
-    } else {
-        this->model->AddDataObject( "OverlayData", this->model->GetDataObject(modelObjectName ));
-    }
-    string tmpFilename = "temporaryFile";
-    if( this->model->DataExists( "AnatomicalData" ) ) {
-        this->sivicController->OpenOverlay(this->model->GetDataObject(modelObjectName), tmpFilename );
-    } else {
-        this->plotController->SetInput( this->model->GetDataObject( modelObjectName ), svkPlotGridView::MET ); 
-        this->overlayController->SetInput( this->model->GetDataObject( modelObjectName ), svkOverlayView::OVERLAY );
-   }
+	this->sivicController->OpenOverlayFromModel( modelObjectName.c_str() );
 }
 
 

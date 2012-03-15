@@ -1256,7 +1256,7 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
                 cout << "WARNING, reformatting images to spectroscopic orientation" << endl; 
                 resultInfo = "";
                 this->ResliceImage( data, dataVector[MR4D] );
-            } else if( !valid ) {
+            } else if( !valid && this->isValidationOn ) {
                 resultInfo += validator->resultInfo.c_str(); 
                 resultInfo += "\n"; 
             } 

@@ -95,6 +95,7 @@ class svk4DImageData: public svkImageData
                             int slice = -1 
                        );
 
+		void  		   GetZeroImage(  svkImageData* image );
         void           GetImage( svkImageData* image,
                                  int point,
                                  int* indexArray = NULL,

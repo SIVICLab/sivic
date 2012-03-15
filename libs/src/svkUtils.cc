@@ -492,3 +492,37 @@ string svkUtils::SpacesTo_( vtkstd::string inputString )
         }
         return inputString;
 }
+
+
+/*!
+ * Used to test for minor differences in values.
+ */
+bool svkUtils::AreValuesClose( double x, double y, double maxRatio )
+{
+	double ratio;
+	if( x > y ) {
+		ratio = y/x;
+	} else {
+		ratio = x/y;
+	}
+	if( ratio > 0 && 1 - ratio < maxRatio ) {
+		return true;
+	} else {
+		return false;
+	}
+
+}
+
+/*!
+ * Used to test for minor differences in values.
+ */
+bool svkUtils::AreValuesClose( double x[3], double y[3], double maxRatio )
+{
+	if(    svkUtils::AreValuesClose(x[0], y[0], maxRatio)
+		&& svkUtils::AreValuesClose(x[1], y[1], maxRatio)
+		&& svkUtils::AreValuesClose(x[2], y[2], maxRatio)) {
+		return true;
+	} else {
+		return false;
+	}
+}
