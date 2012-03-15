@@ -595,6 +595,8 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         objectName = "4DImageData";
         // If we are setting the
         this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
+        this->spectraRangeWidget->componentSelectBox->SetValue( "real");
+        this->SetComponentCallback( svkImageData::REAL);
     }
     string resultInfo;
     string plotViewResultInfo = this->plotController->GetDataCompatibility( newData, svkPlotGridView::MR4D );

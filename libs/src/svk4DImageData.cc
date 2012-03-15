@@ -458,6 +458,8 @@ void svk4DImageData::EstimateDataRange( double range[2], int minPt, int maxPt, i
         vtkstd::vector<double> minValues;
 
         // Find the average and the max/min for each voxel
+		double value = 0;
+		double* tuple = NULL;
         for (int z = min[2]; z <= max[2]; z++) {
             for (int y = min[1]; y <= max[1]; y++) {
                 for (int x = min[0]; x <= max[0]; x++) {
@@ -465,7 +467,13 @@ void svk4DImageData::EstimateDataRange( double range[2], int minPt, int maxPt, i
                     if( array != NULL ) {
                         double localRange[2] = {VTK_DOUBLE_MAX, VTK_DOUBLE_MIN};
                         for( int i = minPt; i < maxPt; i++ ) {
-                            double value = array->GetTuple(i)[component];
+                        	tuple = array->GetTuple(i);
+                        	if( component == svkImageData::MAGNITUDE ) {
+                        		value =   pow( pow(static_cast<double>(tuple[0]), static_cast<double>(2) )
+										+ pow( static_cast<double>(tuple[1]), static_cast<double>(2)),0.5);
+                        	} else {
+								value = tuple[component];
+                        	}
                             localRange[0] = value < localRange[0] ? value: localRange[0];
                             localRange[1] = value > localRange[1] ? value: localRange[1];
                         }
