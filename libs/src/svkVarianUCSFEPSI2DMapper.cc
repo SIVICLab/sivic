@@ -388,10 +388,48 @@ void svkVarianUCSFEPSI2DMapper::ReadFidFile( vtkstd::string fidFileName, svkImag
 
     tmpImage->Delete();
 
+    //  =================================================
+    //  Apply linear phase correction to correct for EPSI sampling of 
+    //  spectra: 
+    //      foreach k-space point, apply a phase correction to each complex 
+    //      spectral point. The correction is a function of the distance along 
+    //      the epsi-axis (k/t) with pivots at the center of each dimension.
+    //  =================================================
+//this->EPSIPhaseCorrection( data, numRead, epsiAxis);  
+
     // now that the header and dimensionality are set correctly, reset this param:
     //this->InitK0Sampled(); 
     data->SyncVTKImageDataToDcmHeader(); 
 
+}
+
+
+/*!
+ *  apply linear phase correction to k-space points along epsi-axis:
+ *  this would be easier if I actually redimension the metadata and set the new arrays 
+ */
+void svkVarianUCSFEPSI2DMapper::EPSIPhaseCorrection( svkImageData* data, int numRead, int epsiAxis)
+{
+/*
+    svkMrsImageData* tmpData = svkMrsImageData::New();
+    tmpData->DeepCopy( data ); 
+
+    svkEPSIPhaseCorrect* epsiPhase = svkEPSIPhaseCorrect::New();
+    if ( this->GetDebug() ) {
+        cout << this->GetClassName() << "::epsiPhaseCorrection() " << endl; 
+        cout << "   SetNumEPSIkread: " << numRead  << endl; 
+        cout << "   SetEPSIAxis:     " << epsiAxis << endl; 
+    }
+    epsiPhase->SetNumEPSIkRead( numRead );
+    epsiPhase->SetEPSIAxis( epsiAxis );
+    epsiPhase->SetInput( tmpData ); 
+    epsiPhase->Update(); 
+
+    data->DeepCopy( epsiPhase->GetOutput() ); 
+
+    epsiPhase->Delete(); 
+    tmpData->Delete(); 
+*/
 }
 
 
@@ -402,6 +440,12 @@ void svkVarianUCSFEPSI2DMapper::ReadFidFile( vtkstd::string fidFileName, svkImag
  *  a 1380 x 1 x 12 x 10 data set with 60 lobes (23 k-space samples) would get reordered to a
  *  two 30 x 23 x 12 x 10 data sets. Each will be encoded into a separate "channel" indicated
  *  by the dimension index sequence.  this is just a temporary internal layout.
+ * 
+ *  Refactor, inputs for reordering will be .... in progress( 
+ *      int numEPSIKspacePts e.g 16;     
+ *      int numEPSILobes = numEPSIPts / numEPSIKspacePts; 
+ *      int skip (points betwen lobes 
+ *      int offset points to skip at the begining
  */
 void svkVarianUCSFEPSI2DMapper::ReorderEPSIData( svkImageData* data)
 {

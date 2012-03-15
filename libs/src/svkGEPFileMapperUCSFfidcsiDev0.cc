@@ -148,7 +148,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetCenterFromRawFile( double* center )
 void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 {
 
-    for ( int fileNumber = 0; fileNumber < pFileNames->GetNumberOfValues(); fileNumber++ ) {      	 	 
+    svkImageData* tmpImageDynamic = svkMrsImageData::New();
+    tmpImageDynamic->DeepCopy( data ); 
+
+    int numTimePts = pFileNames->GetNumberOfValues(); 
+
+    for ( int fileNumber = 0; fileNumber < numTimePts; fileNumber++ ) {      	 	 
 
         cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
         vtkStringArray* tmpArray = vtkStringArray::New();
@@ -162,16 +167,162 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
 
         //  Separate out EPSI sampled data into time and k-space dimensions:
         this->ReorderEPSIData( tmpImage );
-        data->DeepCopy( tmpImage ); 
+        //data->DeepCopy( tmpImage ); 
+
+        //  copy data to tmpImageDynamic and add appropriate arrays
+        if ( fileNumber == 0 ) {
+
+            //  First time around set up the target data struct
+            tmpImageDynamic->DeepCopy(tmpImage); 
+            this->RemoveArrays( tmpImageDynamic ); 
+
+            //  ========================================
+            //  Preallocate all arrays for data set.  
+            //  Insert single time points at correct 
+            //  location in AddReorderedTimePoint 
+            //  ========================================
+            svkDcmHeader* hdr = tmpImage->GetDcmHeader();
+            int voxels[3]; 
+            voxels[0] = hdr->GetIntValue( "Columns" );
+            voxels[1] = hdr->GetIntValue( "Rows" );
+            voxels[2] = hdr->GetNumberOfSlices();
+            int totalNumArrays = numTimePts; 
+            totalNumArrays *= voxels[0] * voxels[1] * voxels[2]; 
+            totalNumArrays *= 2; // numLobes 
+           
+            vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+            int numComponents;
+            if ( dataRepresentation == "COMPLEX" ) {
+                   numComponents = 2;
+            } else {
+                   numComponents = 1;
+            }
+            int numFreqPts = hdr->GetIntValue( "DataPointColumns" );
+            for (int arrayNumber = 0; arrayNumber < totalNumArrays; arrayNumber++) {
+                vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+                dataArray->SetNumberOfComponents( numComponents );
+                dataArray->SetNumberOfTuples( numFreqPts );
+                tmpImageDynamic->GetCellData()->AddArray(dataArray);
+                dataArray->Delete();
+            }
+        } 
+        cout << "tmpDynamic: " << *tmpImageDynamic << endl;
+
+        int timePt = fileNumber; 
+        this->AddReorderedTimePoint(tmpImageDynamic, tmpImage, timePt, numTimePts); 
+        //cout << "tmp: " << *tmpImage << endl;
+        //tmpImage->GetDcmHeader()->PrintDcmHeader() ;
+        cout << "tmpDynamic: " << *tmpImageDynamic << endl;
+        //tmpImageDynamic->GetDcmHeader()->PrintDcmHeader() ;
 
         tmpArray->Delete();
         tmpImage->Delete();
+        
     }  	 
+
+    data->DeepCopy( tmpImageDynamic ); 
+
+cout << "data: " << *data << endl;
+    data->GetDcmHeader()->PrintDcmHeader();
 
     // now that the header and dimensionality are set correctly, reset this param:
     this->InitK0Sampled(); 
     data->SyncVTKImageDataToDcmHeader(); 
+cout << "data: " << *data << endl;
+    data->GetDcmHeader()->PrintDcmHeader();
+}
 
+
+/*!
+ *
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkImageData* dynamicImage, svkImageData* tmpImage, int timePt, int numTimePts)
+{
+
+    svkDcmHeader* hdr = tmpImage->GetDcmHeader();
+    vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
+    int numComponents;
+    if ( dataRepresentation == "COMPLEX" ) {
+        numComponents = 2;
+    } else {
+        numComponents = 1;
+    }
+
+    int numFreqPts = hdr->GetIntValue( "DataPointColumns" );
+
+    //  loop over all xyz, coil, time points
+    int voxels[3]; 
+    voxels[0] = hdr->GetIntValue( "Columns" );
+    voxels[1] = hdr->GetIntValue( "Rows" );
+    voxels[2] = hdr->GetNumberOfSlices();
+
+    int numCoils = 2;    //  num lobes = 2
+
+    for (int coil = 0; coil < numCoils; coil++) {
+        for (int z = 0; z < voxels[2]; z++) {
+            for (int y = 0; y < voxels[1]; y++) {
+                for (int x = 0; x < voxels[0]; x++) {
+
+                    //  Get index of array in target image. 
+                    int targetIndex =  x
+                            + ( voxels[0] ) * y
+                            + ( voxels[0] * voxels[1] ) * z
+                            + ( voxels[0] * voxels[1] * voxels[2] ) * timePt 
+                            + ( voxels[0] * voxels[1] * voxels[2] * numTimePts ) * coil; 
+
+                    vtkDataArray* targetDataArray = dynamicImage->GetCellData()->GetArray(targetIndex);
+    
+                    char targetArrayName[30];
+                    sprintf(targetArrayName, "%d %d %d %d %d", x, y, z, timePt, coil);
+                    cout << "ArrayName: " << targetArrayName << endl;    
+                    targetDataArray->SetName( targetArrayName );
+
+                    //  Add arrays to the new data set at the correct array index:
+                    //  Get the data array from the single time point tmpImage:     
+                    int index =  x
+                            + ( voxels[0] ) * y
+                            + ( voxels[0] * voxels[1] ) * z
+                            + ( voxels[0] * voxels[1] * voxels[2] ) * coil; 
+
+                    vtkDataArray* tmpDataArray = tmpImage->GetCellData()->GetArray(index);
+
+                    double* tmpTuple; 
+                    float dynamicTuple[2]; 
+                    for (int i = 0; i < numFreqPts; i++) {
+                        tmpTuple = tmpDataArray->GetTuple(i); 
+                        dynamicTuple[0] = tmpTuple[0]; 
+                        dynamicTuple[1] = tmpTuple[1]; 
+                        targetDataArray->SetTuple( i, dynamicTuple );
+                    }    
+
+                }
+            }
+        }
+    }
+
+    int currentNumTimePts = timePt + 1; 
+
+    //  This is the original origin based on the reduced dimensionality in the EPSI direction
+    hdr = dynamicImage->GetDcmHeader();
+    double origin[3];
+    hdr->GetOrigin( origin, 0 );
+
+    double voxelSpacing[3];
+    hdr->GetPixelSpacing( voxelSpacing );
+
+    double dcos[3][3];
+    hdr->GetDataDcos( dcos );
+
+    hdr->InitPerFrameFunctionalGroupSequence(
+        origin,
+        voxelSpacing,
+        dcos,
+        voxels[2], 
+        currentNumTimePts,
+        numCoils 
+    );
+
+    dynamicImage->SyncVTKImageDataToDcmHeader(); 
 }
 
 
@@ -353,14 +504,14 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
                                           + ( reorderedVoxels[0] ) * y
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] ) * z
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * lobe 
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * coilNum;
+                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * timePoint;
  
                                 //cout << "   target index(xyzlobe): " << x << " " 
                                     //<< y << " " << z << " " << lobe  << " index: " << index << endl;
                                 vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
                                 char arrayName[30];
-                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, coilNum, lobe);
+                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePoint, lobe);
                                 //cout << "reordered Array name (" << index << ") = " << arrayName << endl; 
                                 dataArray->SetName(arrayName);
 

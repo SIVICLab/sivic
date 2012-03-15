@@ -143,6 +143,12 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         double                  GetBessel0( float arg);
         double                  GetModifiedBessel0( float arg ); 
         void                    GetRolloffCorrection( int gridSize, float width, float beta, float* apodCor); 
+        void                    AddReorderedTimePoint(
+                                    svkImageData* dynamicImage, 
+                                    svkImageData* tmpImage, 
+                                    int timePt, 
+                                    int numTimePts
+                                ); 
 
 
 }; 

@@ -118,8 +118,11 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
 
         virtual void    SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum); 
 
+
+
     private: 
         void            GetNumVoxels(int* numVoxels); 
+        void            EPSIPhaseCorrection( svkImageData* data, int numRead, int epsiAxis); 
 
 
 };
