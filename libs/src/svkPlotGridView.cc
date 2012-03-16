@@ -1292,6 +1292,11 @@ string svkPlotGridView::GetDataCompatibility( svkImageData* data, int targetInde
             if( !valid ) {
                 resultInfo += validator->resultInfo.c_str();
             }
+            bool cellDataArraysMatch = validator->AreCellDataArrayStructureSame( data, dataVector[MR4D] );
+            if( !cellDataArraysMatch ) {
+                resultInfo += validator->resultInfo.c_str();
+                resultInfo += "\n";
+            }
 
         } else {
             resultInfo += "4D data must be loaded before overlays!\n";

@@ -1098,7 +1098,7 @@ void vtkSivicController::Add4DImageData( svkImageData* data, string stringFilena
 	if( data != NULL && data->IsA("svk4DImageData") ) {
 		string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
 		if( resultInfo.compare("") != 0 ) {
-			string message =  "ERROR: Could not load reference spectra.\n Info: ";
+			string message =  "ERROR: Could not load reference trace.\n Info: ";
 			message.append( resultInfo );
 			this->PopupMessage( message );
 		} else {

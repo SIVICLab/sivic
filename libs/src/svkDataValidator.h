@@ -92,6 +92,7 @@ class svkDataValidator : public vtkObject
         bool    AreDataCompatible( svkImageData* data1, svkImageData* data2 );
         bool    AreDataOrientationsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    AreDataGeometriesSame( svkImageData* data1, svkImageData* data2 ); 
+        bool    AreCellDataArrayStructureSame( svkImageData* data1, svkImageData* data2 );
         bool    AreDataExtentsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    AreDataSpacingsSame( svkImageData* data1, svkImageData* data2 ); 
         bool    AreDataOriginsSame( svkImageData* data1, svkImageData* data2 ); 

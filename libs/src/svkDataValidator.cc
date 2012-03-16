@@ -205,6 +205,30 @@ bool svkDataValidator::AreDataGeometriesSame( svkImageData* data1, svkImageData*
 
 
 /*!
+ *  Check to see if the data array structures are the same.
+ */
+bool svkDataValidator::AreCellDataArrayStructureSame( svkImageData* data1, svkImageData* data2 )
+{
+    this->resultInfo = "";
+	bool result = false;
+	if( data1 != NULL && data2 != NULL ) {
+		vtkDataArray* array1 = data1->GetCellData()->GetArray(0);
+		vtkDataArray* array2 = data2->GetCellData()->GetArray(0);
+		if(	   array1 != NULL && array2 !=NULL
+		    && array1->GetNumberOfTuples() == array2->GetNumberOfTuples()
+		    && array1->GetNumberOfComponents() == array2->GetNumberOfComponents() ) {
+			result = true;
+		} else {
+			this->resultInfo = " Cell data array structures do not match.";
+		}
+	} else {
+		this->resultInfo = " One input dataset is null.";
+	}
+	return result;
+}
+
+
+/*!
  * Check to see if two datasets have the same extent
  *
  *  \param data1 the first dataset to be compared

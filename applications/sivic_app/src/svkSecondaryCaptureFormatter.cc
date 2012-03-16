@@ -917,7 +917,10 @@ void svkSecondaryCaptureFormatter::PopulateInfoText( vtkTextActor* specText1,
         }
 
         // Image Coil
-        string imageCoil = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
+        string imageCoil = "?";
+        if(model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetNumberOfItemsInSequence( "MRReceiveCoilSequence") > 0 ) {
+			imageCoil = model->GetDataObject( "AnatomicalData")->GetDcmHeader()->GetStringSequenceItemElement("MRReceiveCoilSequence", 0, "ReceiveCoilName" , "SharedFunctionalGroupsSequence");
+        }
 
 
         imageInfo << "Image Coil:  " << imageCoil << endl << endl;
