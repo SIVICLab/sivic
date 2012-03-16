@@ -80,7 +80,8 @@ class svkMetaboliteMap: public svkImageAlgorithm
             PEAK_HT = 1, 
             MAG_PEAK_HT = 2, 
             LINE_WIDTH = 3,  
-            MAG_LINE_WIDTH = 4 
+            MAG_LINE_WIDTH = 4,
+            MAG_INTEGRATE = 5
         }algorithm;
 
 
@@ -94,6 +95,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    SetAlgorithmToMagPeakHeight();     
         void                    SetAlgorithmToLineWidth();
         void                    SetAlgorithmToMagLineWidth();
+        void                    SetAlgorithmToMagIntegrate();
         void                    SetAlgorithm( vtkstd::string algo );     
         void                    SetVerbose( bool isVerbose );     
         void                    LimitToSelectedVolume(float fraction = 0.5001);
@@ -130,6 +132,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    GenerateMap(); 
         double                  GetMapVoxelValue( float* specPtr, int startPt, int endPt); 
         double                  GetIntegral( float* specPtr, int startPt, int endPt);
+        double                  GetMagIntegral( float* specPtr, int startPt, int endPt);
         double                  GetPeakHt( float* specPtr, int startPt, int endPt );
         double                  GetMagPeakHt( float* specPtr, int startPt, int endPt );
         double                  GetLineWidth( float* specPtr, int startPt, int endPt );

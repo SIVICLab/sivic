@@ -34,6 +34,7 @@ sivicPreprocessingWidget::sivicPreprocessingWidget()
     this->colsLabel = NULL;
     this->rowsLabel = NULL;
     this->slicesLabel = NULL;
+    this->customValueEntry = NULL;
 
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
@@ -113,6 +114,11 @@ sivicPreprocessingWidget::~sivicPreprocessingWidget()
         this->slicesLabel = NULL;
     }
 
+    if( this->customValueEntry != NULL ) {
+        this->customValueEntry->Delete();
+        this->customValueEntry = NULL;
+    }
+
 
 }
 
@@ -171,6 +177,7 @@ void sivicPreprocessingWidget::CreateWidget()
     string zfOption1 = "none";
     string zfOption2 = "double";
     string zfOption3 = "next y^2";
+    string zfOption4 = "custom";
     string invocationString;
 
     invocationString = "ZeroFill SPECTRAL none"; 
@@ -179,6 +186,8 @@ void sivicPreprocessingWidget::CreateWidget()
     zfSpecMenu->AddRadioButton(zfOption2.c_str(), this->sivicController, invocationString.c_str());
     invocationString = "ZeroFill SPECTRAL nextPower2"; 
     zfSpecMenu->AddRadioButton(zfOption3.c_str(), this->sivicController, invocationString.c_str());
+    invocationString = "ZeroFill SPECTRAL custom";
+    zfSpecMenu->AddRadioButton(zfOption4.c_str(), this->sivicController, invocationString.c_str());
 
     invocationString = "ZeroFill SPATIAL_COLS none"; 
     zfColsMenu->AddRadioButton(zfOption1.c_str(), this->sivicController, invocationString.c_str());
@@ -308,24 +317,38 @@ void sivicPreprocessingWidget::CreateWidget()
     sliceTitle->SetJustificationToLeft();
     sliceTitle->Create();
 
+    vtkKWLabel* customTitle = vtkKWLabel::New();
+    customTitle->SetText( string("Custom").c_str() );
+    customTitle->SetParent(this);
+    customTitle->SetJustificationToLeft();
+    customTitle->Create();
+
+    this->customValueEntry = vtkKWEntry::New();
+    this->customValueEntry->SetParent(this);
+    this->customValueEntry->Create();
+    this->customValueEntry->EnabledOff();
+
     this->Script("grid %s -row 0 -column 1 -sticky wnse", specTitle->GetWidgetName(), 4);
     this->Script("grid %s -row 0 -column 2 -sticky wnse", colsTitle->GetWidgetName(), 4);
     this->Script("grid %s -row 0 -column 3 -sticky wnse", rowsTitle->GetWidgetName(), 4);
     this->Script("grid %s -row 0 -column 4 -sticky wnse", sliceTitle->GetWidgetName(), 4);
 
-    this->Script("grid %s -row 1 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSlices->GetWidgetName(), 4);
 
-    this->Script("grid %s -row 2 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 4);
+    this->Script("grid %s -row 1 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSpec->GetWidgetName(),   1);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   2);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   3);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 4);
+
+    this->Script("grid %s -row 2 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSpec->GetWidgetName(),   1);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorCols->GetWidgetName(),   2);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorRows->GetWidgetName(),   3);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSlices->GetWidgetName(), 4);
 
 
+    this->Script("grid %s -row %d -column 0 -sticky nwse -padx 2 -pady 1", customTitle->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 1 -sticky nwse -padx 2 -pady 1", this->customValueEntry->GetWidgetName(), 3);
     this->Script("grid %s -row %d -column 4 -sticky nwse -padx 2 -pady 1", this->applyButton->GetWidgetName(), 3);
 
     this->Script("grid rowconfigure %s 0 -weight 0", this->GetWidgetName() );
@@ -392,6 +415,9 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
         } else if( zeroFillSpec.compare("next y^2") == 0 ) {
             zeroFill->SetNumberOfSpecPointsToNextPower2();
             executeZeroFill = true;
+        } else if( zeroFillSpec.compare("custom") == 0 ) {
+            zeroFill->SetNumberOfSpecPoints(this->customValueEntry->GetValueAsInt());
+            executeZeroFill = true;
         }
         if( zeroFillRows.compare("double") == 0 ) {
             zeroFill->SetNumberOfRowsToDouble();
@@ -421,10 +447,10 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             zeroFill->AddObserver(vtkCommand::ProgressEvent, progressCallback);
             this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Zero Fill...");
             zeroFill->Update();
-            bool useFullFrequencyRange = 0;
+            bool useFullFrequencyRange = 1;
             bool useFullAmplitudeRange = 1;
             bool resetAmplitude = 1;
-            bool resetFrequency = 0;
+            bool resetFrequency = 1;
             zeroFill->RemoveObserver( progressCallback);
             string stringFilename = "ZF";
             this->sivicController->Open4DImage( data, stringFilename, data);

@@ -2612,12 +2612,8 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
             acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                 GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         }
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            // For single voxel always highlight the selection box voxels
-            this->overlayController->HighlightSelectionVoxels();
-            this->plotController->HighlightSelectionVoxels();
-        }
-        this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
+		this->overlayController->HighlightSelectionVoxels();
+		this->plotController->HighlightSelectionVoxels();
     }
 
     this->EnableWidgets();
@@ -2746,6 +2742,7 @@ void vtkSivicController::EnableWidgets()
             this->preprocessingWidget->zeroFillSelectorRows->EnabledOn();
             this->preprocessingWidget->zeroFillSelectorSlices->EnabledOn();
             this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
+            this->preprocessingWidget->customValueEntry->EnabledOn();
             this->processingWidget->fftButton->EnabledOn(); 
             this->processingWidget->phaseButton->EnabledOff(); 
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
@@ -2872,6 +2869,7 @@ void vtkSivicController::DisableWidgets()
     this->preprocessingWidget->zeroFillSelectorCols->EnabledOff();
     this->preprocessingWidget->zeroFillSelectorRows->EnabledOff();
     this->preprocessingWidget->zeroFillSelectorSlices->EnabledOff();
+	this->preprocessingWidget->customValueEntry->EnabledOff();
     this->preprocessingWidget->apodizationSelectorSpec->EnabledOff();
     this->preprocessingWidget->apodizationSelectorCols->EnabledOff();
     this->preprocessingWidget->apodizationSelectorRows->EnabledOff();

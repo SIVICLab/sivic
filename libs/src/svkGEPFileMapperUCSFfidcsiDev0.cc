@@ -591,7 +591,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  Zero fill in frequency domain (should be moved to
     //  post-processing step)
     //  =================================================
-    this->ZeroFill(data); 
+    //this->ZeroFill(data);
 
     //  =================================================
     //  combine even/odd lobes (separate post-processing 

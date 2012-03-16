@@ -960,6 +960,30 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "         </ALGO> " << endl
         << "     </QUANT> " << endl
         << " " << endl
+        << "     -- lac magnitude integrated area " << endl
+        << "     <QUANT id=\"12\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- ala magnitude integrated area " << endl
+        << "     <QUANT id=\"13\" region=\"1\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- pyr magnitude integrated area " << endl
+        << "     <QUANT id=\"14\" region=\"2\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- urea magnitude integrated area  " << endl
+        << "     <QUANT id=\"15\" region=\"3\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
         << " " << endl
         << "     -- ratio of lac to pyr peak ht " << endl
         << "     <RATIO id=\"0\" name=\"LAC/PYR_PEAK_HT\"> " << endl

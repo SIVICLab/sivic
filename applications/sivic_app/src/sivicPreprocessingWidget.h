@@ -40,6 +40,7 @@
 #include <vtkKWTkUtilities.h>
 #include <vtkKWPushButton.h>
 #include <vtkKWMenuButtonWithLabel.h>
+#include <vtkKWEntry.h>
 
 #include <svkDataModel.h>
 #include <svkPhaseSpec.h>
@@ -82,6 +83,7 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
         vtkKWMenuButton*                apodizationSelectorCols;
         vtkKWMenuButton*                apodizationSelectorRows;
         vtkKWMenuButton*                apodizationSelectorSlices;
+        vtkKWEntry*						customValueEntry;
         vtkKWLabel*                     specLabel; 
         vtkKWLabel*                     colsLabel; 
         vtkKWLabel*                     rowsLabel; 

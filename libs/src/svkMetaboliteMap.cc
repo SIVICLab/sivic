@@ -305,6 +305,8 @@ double svkMetaboliteMap::GetMapVoxelValue( float* specPtr, int startPt, int endP
         voxelValue = this->GetLineWidth( specPtr, startPt, endPt ); 
     } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_LINE_WIDTH) { 
         voxelValue = this->GetMagLineWidth( specPtr, startPt, endPt ); 
+    } else if (this->quantificationAlgorithm == svkMetaboliteMap::MAG_INTEGRATE) {
+        voxelValue = this->GetMagIntegral( specPtr, startPt, endPt );
     }
     return voxelValue;
 }
@@ -322,6 +324,25 @@ double svkMetaboliteMap::GetIntegral( float* specPtr, int startPt, int endPt)
         integral += specPtr[2*pt];
     }
     return integral; 
+}
+
+/*!
+ *  Gets integral of real component over the specified range from startPt to endPt.
+ */
+double svkMetaboliteMap::GetMagIntegral( float* specPtr, int startPt, int endPt)
+{
+
+    double integral = 0;
+
+    double mag= 0;
+
+    for ( int pt = startPt; pt <= endPt; pt ++ ) {
+		mag =  pow( specPtr[ 2 * pt], 2);
+		mag += pow( specPtr[ 2 * pt + 1], 2);
+		mag = pow(mag, 0.5);
+        integral += mag;
+    }
+    return integral;
 }
 
 
@@ -609,6 +630,12 @@ void svkMetaboliteMap::SetAlgorithmToMagLineWidth()
     this->Modified(); 
 }
 
+void  svkMetaboliteMap::SetAlgorithmToMagIntegrate()
+{
+    this->quantificationAlgorithm = svkMetaboliteMap::MAG_INTEGRATE;
+    this->Modified();
+}
+
 
 /*
  *  Set algo type based on string description svkMetaboliteMap::algorithm. 
@@ -625,6 +652,8 @@ void svkMetaboliteMap::SetAlgorithm( vtkstd::string algo )
         this->SetAlgorithmToLineWidth(); 
     } else if ( algo.compare("MAG_LINE_WIDTH") == 0 ) {
         this->SetAlgorithmToMagLineWidth(); 
+    } else if ( algo.compare("MAG_INTEGRATE") == 0 ) {
+        this->SetAlgorithmToMagIntegrate();
     } else {
         vtkWarningWithObjectMacro(this, "SetAlgorithm(): Not a valid algorithm " + algo );
     }
