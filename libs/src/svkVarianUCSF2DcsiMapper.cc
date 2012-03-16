@@ -272,4 +272,3 @@ void svkVarianUCSF2DcsiMapper::InitMRSpectroscopyPulseSequenceModule()
     this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
 
 }
-

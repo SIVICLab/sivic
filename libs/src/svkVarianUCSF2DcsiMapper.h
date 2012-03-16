@@ -88,7 +88,6 @@ class svkVarianUCSF2DcsiMapper : public svkVarianFidMapper
         virtual void    InitPixelMeasuresMacro(); 
         virtual void    InitPerFrameFunctionalGroupMacros(); 
 
-
 };
 
 

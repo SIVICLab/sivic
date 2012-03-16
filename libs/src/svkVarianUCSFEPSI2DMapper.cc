@@ -361,6 +361,7 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
     //
     float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "swf" )/2.;
     ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
+    ppmRef = 176; 
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
         ppmRef 
