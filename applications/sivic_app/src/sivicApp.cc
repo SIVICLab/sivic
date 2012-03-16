@@ -740,6 +740,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
 #endif
 
     // Create Open Spectra Selector Menu
+    /*
     vtkKWMenuButtonWithLabel* generateTraces = vtkKWMenuButtonWithLabel::New();
     generateTraces->SetParent( toolbar->GetFrame() );
     generateTraces->GetWidget()->SetReliefToFlat();
@@ -758,6 +759,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     generateTracesMenu->AddRadioButton("From Reference Image", this->sivicController, "GenerateTraces reference_image");
     generateTracesMenu->AddRadioButton("From Overlay Image", this->sivicController, "GenerateTraces overlay_image");
     toolbar->AddWidget( generateTraces );
+    */
 
 }
 

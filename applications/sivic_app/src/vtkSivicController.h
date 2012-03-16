@@ -162,7 +162,10 @@ class vtkSivicController : public vtkObject
         void                       UpdateModelForReslicedImage(string modelObjectName);
         void                       Open4DImage( svkImageData* newData,  string stringFilename, svkImageData* oldData = NULL );
         void                       Open4DImage( const char* fileName, bool onlyReadOneInputFile = false );
+        void                       Open4DImageFromModel( const char* modelObjectName );
         void                       Add4DImageData( string stringFilename, bool onlyReadOneInputFile = false );
+        void                       Add4DImageData( svkImageData* data, string stringFilename );
+        void                       Add4DImageDataFromModel(const char* modelObjectName );
         void                       OpenOverlayFromModel( const char* modelObjectName );
         void                       OpenOverlay( svkImageData* data, string stringFilename );
         void                       OpenOverlay( const char* fileName, bool onlyReadOneInputFile = false );

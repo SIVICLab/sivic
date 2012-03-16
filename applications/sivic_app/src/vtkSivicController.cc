@@ -885,11 +885,23 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
 
 
 /*!
+ * Given a name of a dataset in the model, this method will open it as 4D image.
+ */
+void vtkSivicController::Open4DImageFromModel( const char* modelObjectName )
+{
+	if( this->model->DataExists( modelObjectName )) {
+		this->Open4DImage( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+		this->DisableWidgets();
+		this->EnableWidgets();
+	}
+}
+
+
+/*!
  * Given a name of a dataset in the model, this method will open it as an overlay.
  */
 void vtkSivicController::OpenOverlayFromModel( const char* modelObjectName )
 {
-	cout << "Openning overlay for model object " << modelObjectName << endl;
 	if( this->model->DataExists( modelObjectName )) {
 		this->OpenOverlay( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
 		this->DisableWidgets();
@@ -1041,7 +1053,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 
 
 /*!
- * Adds an additional spectra object.
+ * Adds an additional 4D object.
  *
  * @param stringFilename
  */
@@ -1050,26 +1062,54 @@ void vtkSivicController::Add4DImageData( string stringFilename, bool onlyReadOne
     if ( this->GetActive4DImageData() != NULL ) {
 		//string modelName = stringFilename;
         svkImageData* data = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
-        if( data != NULL && data->IsA("svk4DImageData") ) {
-            string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
-            if( resultInfo.compare("") != 0 ) {
-                string message =  "ERROR: Could not load reference spectra.\n Info: ";
-                message.append( resultInfo );
-                this->PopupMessage( message );
-            } else {
-                svkPlotGridView::SafeDownCast(this->plotController->GetView())->AddReferenceInput( data );
-                this->dataWidget->UpdateReferenceSpectraList();
-                this->dataWidget->SetFilename( svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots(), stringFilename);
-            }
-        } else {
-            this->PopupMessage( "ERROR: Could not load reference spectra." );
-        }
+        this->Add4DImageData( data, stringFilename );
     } else {
         this->PopupMessage( "ERROR: Currently loading of the reference spectra before the primary spectra is not supported." );
     }
 
 }
 
+
+/*!
+ * Given a name of a dataset in the model, this method will add it it as 4D image.
+ */
+void vtkSivicController::Add4DImageDataFromModel( const char* modelObjectName )
+{
+	if( this->model->DataExists( modelObjectName )) {
+		this->Add4DImageData( this->model->GetDataObject( modelObjectName), this->model->GetDataFileName( modelObjectName ));
+		this->DisableWidgets();
+		this->EnableWidgets();
+	}
+}
+
+/*!
+ * Adds an additional 4D object.
+ *
+ * @param stringFilename
+ */
+void vtkSivicController::Add4DImageData( svkImageData* data, string stringFilename )
+{
+    if (data->IsA("svkMriImageData")) {
+        data->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        svk4DImageData* cellRep  = svkMriImageData::SafeDownCast(data)->GetCellDataRepresentation();
+        data->RemoveObserver(progressCallback);
+        data = cellRep;
+    }
+	if( data != NULL && data->IsA("svk4DImageData") ) {
+		string resultInfo = this->plotController->GetDataCompatibility( data,  svkPlotGridView::ADDITIONAL_MR4D );
+		if( resultInfo.compare("") != 0 ) {
+			string message =  "ERROR: Could not load reference spectra.\n Info: ";
+			message.append( resultInfo );
+			this->PopupMessage( message );
+		} else {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->AddReferenceInput( data );
+			this->dataWidget->UpdateReferenceSpectraList();
+			this->dataWidget->SetFilename( svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetNumberOfReferencePlots(), stringFilename);
+		}
+	} else {
+		this->PopupMessage( "ERROR: Could not load reference spectra." );
+	}
+}
 
 void vtkSivicController::DeselectMetabolites( )
 {
@@ -1252,6 +1292,11 @@ void vtkSivicController::SetPreferencesFromRegistry( )
         rgb[0] = atof( plotGridRed );
         rgb[1] = atof( plotGridGreen );
         rgb[2] = atof( plotGridBlue );
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::PLOT_GRID ))
+                                   ->GetProperty()->SetDiffuseColor( rgb );
+    } else {
+        double rgb[3] = {0,1,0};
         vtkActor::SafeDownCast(this->overlayController->GetView()
                                    ->GetProp( svkOverlayView::PLOT_GRID ))
                                    ->GetProperty()->SetDiffuseColor( rgb );
@@ -3379,7 +3424,7 @@ void vtkSivicController::GenerateTraces( char* sourceImage )
 	svkMriImageData* image = NULL;
 	if( strcmp( sourceImage, "reference_image" ) == 0 ) {
 		image = svkMriImageData::SafeDownCast(this->model->GetDataObject("AnatomicalData"));
-	} else if( strcmp( sourceImage, "overlay_image" ) == 0 ) {
+	} else if( strcmp( sourceImage, "overlay_image" ) == 0 || strcmp( sourceImage, "add_overlay_image" ) == 0 ) {
 		if( this->model->DataExists("MetaboliteData")) {
 			image = svkMriImageData::SafeDownCast(this->model->GetDataObject("MetaboliteData"));
 		} else {
@@ -3387,8 +3432,11 @@ void vtkSivicController::GenerateTraces( char* sourceImage )
 		}
 	}
 	if( image != NULL ) {
-		cout << "Getting Cell Data from: " << *image << endl;
-		this->Open4DImage( image, "Cell Data Representation" );
+		if(strcmp( sourceImage, "add_overlay_image" ) == 0 ) {
+			this->Add4DImageData( image, "Cell Data Representation" );
+		} else {
+			this->Open4DImage( image, "Cell Data Representation" );
+		}
 	}
 }
 
@@ -3396,19 +3444,28 @@ void vtkSivicController::GenerateTraces( char* sourceImage )
 void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
 {
 	vtkKWMenu* rightClickMenu = vtkKWMenu::New();
+    string objectNameString = this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4);
+	svkImageData* selectedData = this->model->GetDataObject( objectNameString );
 	string invocationString;
     invocationString = "DisplayHeader ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->SetParent( this->GetApplication()->GetNthWindow(0) );
     rightClickMenu->Create();
     rightClickMenu->AddRadioButton("Show Info", this, invocationString.c_str());
-    cout << "Show info invoction string <" << invocationString.c_str() << ">" << endl;
     invocationString = "OpenOverlayFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Overlay", this, invocationString.c_str());
     invocationString = "OpenImageFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
+	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
+		invocationString = "Open4DImageFromModel ";
+		invocationString.append( objectNameString );
+		rightClickMenu->AddRadioButton("Set As Dynamic Traces", this, invocationString.c_str());
+		invocationString = "Add4DImageDataFromModel ";
+		invocationString.append(objectNameString);
+		rightClickMenu->AddRadioButton("Add As Dynamic Traces", this, invocationString.c_str());
+	}
     rightClickMenu->PopUp(x,y);
 
 }
@@ -3419,7 +3476,6 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
  */
 void vtkSivicController::DisplayHeader( char* objectName )
 {
-	cout << "In DISPLAY HEADER!!" << endl;
 	string objectNameString = string(objectName);
 	if( this->model->DataExists( objectNameString ) ) {
 		ostringstream os;

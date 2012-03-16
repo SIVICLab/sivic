@@ -326,7 +326,7 @@ void sivicQuantificationWidget::EnableWidgets()
         for ( int i = 0; i < this->numMets; i++ ) {
             this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
         };
-        this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
+        //this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
         this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
 
 
