@@ -68,6 +68,7 @@ svkGEPFileMapper::svkGEPFileMapper()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->chopVal = 1;     
+    this->progress = 0;
 }
 
 
@@ -1871,9 +1872,12 @@ void svkGEPFileMapper::InitK0Sampled()
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
 
     string k0Sampled = "YES";
-    cout << "Num Voxels :" << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
+    //cout << "Num Voxels :" << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
+    //cout << "Num Voxels :" << numVoxels[0] %2 << " " << numVoxels[1] %2 << " " << numVoxels[2] %2 << endl;
     // data dims odd?
-    if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
+    if ( (numVoxels[0] > 1 && numVoxels[0] % 2) 
+            || (numVoxels[1] > 1 && numVoxels[1] % 2 ) 
+            || (numVoxels[2] > 1 && numVoxels[2] % 2 ) ) {
         if ( kSpaceSymmetry.compare("EVEN") == 0 ) {
             k0Sampled = "YES";
         } else {
@@ -2241,7 +2245,6 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
         this->chopVal = -1; 
     }
     int denominator = numVoxels[2] * numVoxels[1]  * numVoxels[0] + numVoxels[1]*numVoxels[0] + numVoxels[0];
-    double progress = 0;
 
     int x; 
     int y; 
@@ -2298,9 +2301,9 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 
                     }
 
-                    progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
+                    this->progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
                                        /((double)denominator);
-                    this->UpdateProgress( progress );
+                    this->UpdateProgress( this->progress );
 
                 }
             }

@@ -50,7 +50,7 @@
 #include <svkVarianFidMapper.h>
 #include <vtkInformation.h>
 #include <vtkStringArray.h>
-
+#include <vtkCallbackCommand.h>
 #include <vtkstd/map>
 #include <vtkstd/string>
 #include <vtkstd/vector>
@@ -91,6 +91,7 @@ class svkVarianFidReader : public svkVarianReader
         virtual int     FillOutputPortInformation(int port, vtkInformation* info);
         virtual void    ExecuteInformation();
         virtual void    ExecuteData(vtkDataObject *output);
+        void            SetProgressText( string progressText );
 
 
     private:
@@ -102,12 +103,21 @@ class svkVarianFidReader : public svkVarianReader
         svkDcmHeader::DcmPixelDataFormat GetFileType();
         void                             ParseFid();
         void                             GetFidKeyValuePair( vtkStringArray* keySet = NULL);
+        static void                      UpdateProgressCallback(
+                                            vtkObject* subject, 
+                                            unsigned long, 
+                                            void* thisObject, 
+                                            void* callData
+                                         );
+        void                             UpdateProgress(double amount);
 
         //  Members:
         ifstream*                       fidFile;
         vtkstd::map <vtkstd::string, vtkstd::vector<vtkstd::string> >   
                                         fidMap; 
         svkVarianFidMapper*             mapper;
+        vtkstd::string                  progressText;
+        vtkCallbackCommand*             progressCallback;
 
 };
 

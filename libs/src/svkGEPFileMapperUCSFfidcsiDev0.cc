@@ -155,6 +155,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
 
     for ( int fileNumber = 0; fileNumber < numTimePts; fileNumber++ ) {      	 	 
 
+        int timePt = fileNumber; 
+
+        ostringstream progressStream;
+        progressStream <<"Reading Time Point " << fileNumber + 1 << "/" << numTimePts ;
+        this->SetProgressText( progressStream.str().c_str() );
+
         cout << "list raw files EPSI: " << pFileNames->GetValue(fileNumber) << endl;  	 	 
         vtkStringArray* tmpArray = vtkStringArray::New();
         tmpArray->InsertNextValue( pFileNames->GetValue(fileNumber) );
@@ -162,14 +168,21 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
         svkImageData* tmpImage = svkMrsImageData::New();
         tmpImage->DeepCopy( data ); 
 
+        //  Reset the progress bar to local progress
+        this->progress = (float)timePt/numTimePts; 
+        this->UpdateProgress( this->progress );
+
         //  Do all the usual data loading stuff:
         this->Superclass::ReadData( tmpArray, tmpImage);  //new
+        this->progress = (float)timePt/numTimePts; 
+        this->UpdateProgress( this->progress );
 
         //  Separate out EPSI sampled data into time and k-space dimensions:
         this->ReorderEPSIData( tmpImage );
         //data->DeepCopy( tmpImage ); 
 
         //  copy data to tmpImageDynamic and add appropriate arrays
+
         if ( fileNumber == 0 ) {
 
             //  First time around set up the target data struct
@@ -206,29 +219,29 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
                 dataArray->Delete();
             }
         } 
-        cout << "tmpDynamic: " << *tmpImageDynamic << endl;
+        //cout << "tmpDynamic: " << *tmpImageDynamic << endl;
 
-        int timePt = fileNumber; 
         this->AddReorderedTimePoint(tmpImageDynamic, tmpImage, timePt, numTimePts); 
         //cout << "tmp: " << *tmpImage << endl;
         //tmpImage->GetDcmHeader()->PrintDcmHeader() ;
-        cout << "tmpDynamic: " << *tmpImageDynamic << endl;
+        //cout << "tmpDynamic: " << *tmpImageDynamic << endl;
         //tmpImageDynamic->GetDcmHeader()->PrintDcmHeader() ;
 
         tmpArray->Delete();
         tmpImage->Delete();
+
         
     }  	 
 
     data->DeepCopy( tmpImageDynamic ); 
 
-cout << "data: " << *data << endl;
+    //cout << "data: " << *data << endl;
     data->GetDcmHeader()->PrintDcmHeader();
 
     // now that the header and dimensionality are set correctly, reset this param:
-    this->InitK0Sampled(); 
     data->SyncVTKImageDataToDcmHeader(); 
-cout << "data: " << *data << endl;
+    this->InitK0Sampled(); 
+    //cout << "data: " << *data << endl;
     data->GetDcmHeader()->PrintDcmHeader();
 }
 
@@ -274,7 +287,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkImageData* dynamic
     
                     char targetArrayName[30];
                     sprintf(targetArrayName, "%d %d %d %d %d", x, y, z, timePt, coil);
-                    cout << "ArrayName: " << targetArrayName << endl;    
+                    //cout << "ArrayName: " << targetArrayName << endl;    
                     targetDataArray->SetName( targetArrayName );
 
                     //  Add arrays to the new data set at the correct array index:

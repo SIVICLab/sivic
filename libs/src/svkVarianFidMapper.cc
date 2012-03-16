@@ -47,6 +47,7 @@
 #include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
 #include <vtkByteSwap.h>
+#include <vtkCallbackCommand.h>
 
 
 using namespace svk;
@@ -955,17 +956,30 @@ void svkVarianFidMapper::ReadFidFile( vtkstd::string fidFileName, svkImageData* 
 
     svkDcmHeader* hdr = this->dcmHeader;
 
-    for (int coilNum = 0; coilNum < hdr->GetNumberOfCoils(); coilNum++) {
-        for (int timePt = 0; timePt < hdr->GetNumberOfTimePoints(); timePt++) {
+    double progress = 0;
+
+    int numTimePts = hdr->GetNumberOfTimePoints(); 
+    int numCoils = hdr->GetNumberOfCoils(); 
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+
             for (int z = 0; z < numVoxels[2] ; z++) {
                 for (int y = 0; y < numVoxels[1]; y++) {
                     for (int x = 0; x < numVoxels[0]; x++) {
                         SetCellSpectrum(data, x, y, z, timePt, coilNum);
+
+                        if( timePt % 2 == 0 ) { // only update every other index
+				            progress = (timePt * coilNum)/((double)(numTimePts*numCoils));
+				            this->InvokeEvent(vtkCommand::ProgressEvent, static_cast<void *>(&progress));
+        	            }
                     }
                 }
             }
         }
     }
+
+    progress = 1;
+	this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&progress));
 
     fidDataIn->close();
     delete fidDataIn;

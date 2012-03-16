@@ -204,6 +204,7 @@ class svkGEPFileMapper : public vtkObject
         vtkstd::map < vtkstd::string, void* >   inputArgs; 
         int                                     swapBytes;
         svkMRSIOD*                              iod;
+        double                                  progress; 
 
 
 };

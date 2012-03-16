@@ -74,6 +74,10 @@ svkVarianFidReader::svkVarianFidReader()
 
     //  data is written as big endian:
     this->SetDataByteOrderToBigEndian();
+
+    this->progressCallback = vtkCallbackCommand::New();
+    this->progressCallback->SetCallback( UpdateProgressCallback );
+    this->progressCallback->SetClientData( (void*)this );
 }
 
 
@@ -98,6 +102,10 @@ svkVarianFidReader::~svkVarianFidReader()
     if ( this->mapper != NULL )  {
         mapper->Delete(); 
         this->mapper = NULL; 
+    }
+    if( this->progressCallback != NULL ) {
+        this->progressCallback->Delete();
+        this->progressCallback = NULL;
     }
 }
 
@@ -214,6 +222,7 @@ void svkVarianFidReader::InitDcmHeader()
 
     //  should be a mapper factory to get psd specific instance:
     this->mapper = this->GetFidMapper();
+    this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
     //  all the IE initialization modules would be contained within the mapper
     this->mapper->InitializeDcmHeader(
@@ -222,6 +231,8 @@ void svkVarianFidReader::InitDcmHeader()
         iod,
         this->GetSwapBytes()
     );
+    this->RemoveObserver(progressCallback);
+
 
     if (this->GetDebug()) {
         this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
@@ -305,4 +316,31 @@ int svkVarianFidReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInfo
 {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMrsImageData");
     return 1;
+}
+
+
+/*!
+ * 
+ */
+void svkVarianFidReader::SetProgressText( string progressText ) 
+{
+    this->progressText = progressText;
+}
+
+
+/*!
+ * 
+ */
+void svkVarianFidReader::UpdateProgress(double amount)
+{
+    this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+}   
+
+
+/*!
+ * 
+ */
+void svkVarianFidReader::UpdateProgressCallback(vtkObject* subject, unsigned long, void* thisObject, void* callData)
+{
+    static_cast<svkVarianFidReader*>(thisObject)->UpdateProgress(*(double*)(callData)); 
 }
