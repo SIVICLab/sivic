@@ -968,6 +968,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
 
             resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY );
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
+            	// Lets make sure the first volume is currently the active scalars
+            	data->GetPointData()->SetActiveScalars( data->GetPointData()->GetArray(0)->GetName());
                 this->overlayController->SetInput( data, svkOverlayView::OVERLAY );
                 resultInfo = this->plotController->GetDataCompatibility( data, svkPlotGridView::MET ); 
                 string overlayDataName;
@@ -1023,19 +1025,22 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 } else if ( lut == "Reverse Color LUT" ) {
                     this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 }
-                this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
-                this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
-                this->imageViewWidget->overlayOpacitySlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
+                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
+                this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
+				this->imageViewWidget->overlayVolumeSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
                 double* pixelRange = data->GetPointData()->GetArray(0)->GetRange();
-                double window = this->overlayController->GetWindow(svkOverlayViewController::IMAGE_OVERLAY);
-                double level = this->overlayController->GetLevel(svkOverlayViewController::IMAGE_OVERLAY);
+                double window;
+                double level;
+                svkMriImageData::SafeDownCast(data)->GetAutoWindowLevel( window, level );
                 this->overlayWindowLevelWidget->SetLevelRange( pixelRange ); 
                 this->overlayWindowLevelWidget->SetLevel( level ); 
                 this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
                 this->overlayWindowLevelWidget->SetWindow( window ); 
                 this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
-                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
-                this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
+                this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
+                this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
+                this->imageViewWidget->overlayOpacitySlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
+                this->imageViewWidget->overlayThresholdSlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
 
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
