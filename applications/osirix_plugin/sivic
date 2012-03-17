@@ -41,5 +41,5 @@
 #   Startup script for OsX SIVIC binary
 #
 
-exec '/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources/sivic.sh'
+exec '/Application/SIVIC.app/Contents/Resources/sivic.sh'
 
