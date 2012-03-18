@@ -38,3 +38,13 @@ start packagemaker, load pmdoc and "build"
 
 note:  command line pkg installation:
 sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
+
+
+
+##################
+make the standalone version:
+##################
+run make_standalone.csh
+open SIVIC.app getinfo and drag sivic_logo.jpg onto the app icon
+
+build project which includes SIVIC.app
