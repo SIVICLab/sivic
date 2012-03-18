@@ -13,5 +13,5 @@ cp -rp plugin_depends/libtk8.5.dylib    SIVIC.app/Contents/Resources
 cp standalone/Info.plist                SIVIC.app/Contents
 cp tmpicns.rsrc                         SIVIC.app/Contents/Resources
 
-
+chmod -R 775 SIVIC.app
 
