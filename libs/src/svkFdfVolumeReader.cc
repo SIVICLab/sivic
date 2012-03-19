@@ -188,7 +188,7 @@ void svkFdfVolumeReader::ReadFdfFiles()
             this->pixelData = (void* ) malloc( numBytesInVol); 
         }
 
-        this->fdfFile->seekg(0, ios::end);     
+
         volumeDataIn->seekg(-1 * numBytesInFile, ios::end);
         int offset = (fileIndex * numBytesInFile);
         volumeDataIn->read( (char *)(this->pixelData) + offset, numBytesInFile);
