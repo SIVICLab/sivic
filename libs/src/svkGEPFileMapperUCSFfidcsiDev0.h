@@ -114,6 +114,9 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         virtual void            GetCenterFromRawFile( double* center ); 
         virtual bool            IsChopOn(); 
         void                    ModifyForPatientEntry( svkImageData* data ); 
+        void                    InitMRSpectroscopyModule(); 
+        float                   GetPPMRef(); 
+
 
 
     private: 

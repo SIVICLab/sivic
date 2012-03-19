@@ -1608,3 +1608,28 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
     data->SyncVTKImageDataToDcmHeader(); 
 
 }
+
+
+/*
+ *
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::InitMRSpectroscopyModule()
+{
+    this->Superclass::InitMRSpectroscopyModule();
+
+    this->dcmHeader->SetValue(
+        "SpectralWidth",
+        581
+    );
+
+}
+
+
+/*!
+ *  Gets the chemical shift reference taking into account acquisition frequency offset
+ *  and the acquisition sample temperature.
+ */
+float svkGEPFileMapperUCSFfidcsiDev0::GetPPMRef()
+{
+    return 178; 
+}

@@ -1717,6 +1717,7 @@ float svkGEPFileMapper::GetFrequencyOffset()
 
 }
 
+
 /*!
  *  Gets the chemical shift reference taking into account acquisition frequency offset
  *  and the acquisition sample temperature. 
