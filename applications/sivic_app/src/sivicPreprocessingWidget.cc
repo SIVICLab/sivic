@@ -457,15 +457,19 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                           resetAmplitude, resetFrequency );
         }
+		float fwhh = 4.0f;
+	    vtkstd::string nucleus = data->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+		if( nucleus.compare("13C") == 0 ) {
+			fwhh = 9.0f;
+		}
+		char fwhhDefault[50]="";
+		this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
+		if( string(fwhhDefault) != "" ) {
+			fwhh = atof( fwhhDefault );
+		}
         if( apodizeSpec.compare("Lorentz") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
-            float fwhh = 4.0;
-            char fwhhDefault[50]="";
-            this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
-            if( string(fwhhDefault) != "" ) {
-                fwhh = atof( fwhhDefault );
-            }
             svkApodizationWindow::GetLorentzianWindow( window, data, fwhh );
             af->SetInput( data );
             af->SetWindow( window );
@@ -475,13 +479,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
         } else if ( apodizeSpec.compare("Gauss") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
-            float fwhh = 4.0;
             float center = 0.0;
-            char fwhhDefault[50]="";
-            this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
-            if( string(fwhhDefault) != "" ) {
-                fwhh = atof( fwhhDefault );
-            }
             char centerDefault[50]="";
             this->GetApplication()->GetRegistryValue( 0, "apodization", "center",centerDefault  );
             if( string(centerDefault) != "" ) {
