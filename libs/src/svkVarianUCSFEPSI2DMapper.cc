@@ -254,6 +254,8 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyDataModule()
     this->dcmHeader->SetValue( "SVK_ColumnsDomain", "KSPACE" );
     this->dcmHeader->SetValue( "SVK_RowsDomain", "KSPACE" );
     this->dcmHeader->SetValue( "SVK_SliceDomain", "KSPACE" );
+    this->dcmHeader->SetValue( "SVK_ECHO_CENTER_PT", this->GetHeaderValueAsFloat("epsiorigin")); 
+        
 }
 
 

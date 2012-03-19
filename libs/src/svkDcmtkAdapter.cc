@@ -399,6 +399,14 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
+    //  Set point position of echo center 
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1024, EVR_DS, 
+            "SVK_ECHO_CENTER_PT", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
     dcmDataDict.unlock();
 }
 
