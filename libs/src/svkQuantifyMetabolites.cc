@@ -711,7 +711,7 @@ int svkQuantifyMetabolites::FillOutputPortInformation( int vtkNotUsed(port), vtk
 string svkQuantifyMetabolites::GetDefaultXMLFileName()
 {
     string fileName = getenv("HOME"); 
-    fileName.append("/.SIVICQuant_0_9.xml" );
+    fileName.append("/.SIVICQuant_0_9_3.xml" );
     return fileName;
 }
 
