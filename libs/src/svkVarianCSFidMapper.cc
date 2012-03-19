@@ -720,7 +720,7 @@ void svkVarianCSFidMapper::InitMRSpectroscopyModule()
 
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        "C13"
+        "13C"
     );
 
     this->dcmHeader->SetValue(

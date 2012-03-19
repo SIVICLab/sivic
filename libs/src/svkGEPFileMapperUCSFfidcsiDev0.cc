@@ -575,7 +575,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //          the correction is a function of the distance along the epsi-axis (k/t) with pivots 
     //          at the center of each dimension
     //  =================================================
-    this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
+    //this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
  
     //  =================================================
     //  reverse odd lobe k-space spectra along epsi axis

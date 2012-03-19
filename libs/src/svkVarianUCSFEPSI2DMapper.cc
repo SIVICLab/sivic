@@ -338,7 +338,7 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyPulseSequenceModule()
 
     //  k = 0 is sampled in the acquisition. 
     //string k0Sampled = "NO";
-    string k0Sampled = "YES";
+    string k0Sampled = "NO";
     this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
 
 }
@@ -359,9 +359,7 @@ void svkVarianUCSFEPSI2DMapper::InitMRSpectroscopyModule()
     //  sp is the frequency in Hz at left side (downfield/High freq) 
     //  side of spectrum: 
     //
-    float ppmRef = this->GetHeaderValueAsFloat( "sp" ) + this->GetHeaderValueAsFloat( "swf" )/2.;
-    ppmRef /= this->GetHeaderValueAsFloat( "sfrq" ); 
-    ppmRef = 176; 
+    float ppmRef = this->GetHeaderValueAsFloat( "spcenter" ) /  this->GetHeaderValueAsFloat( "sfrq" );
     this->dcmHeader->SetValue(
         "ChemicalShiftReference",
         ppmRef 

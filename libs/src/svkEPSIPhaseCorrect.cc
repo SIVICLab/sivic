@@ -42,6 +42,7 @@
 
 
 #include <svkEPSIPhaseCorrect.h>
+#include <svkMrsLinearPhase.h> 
 
 
 using namespace svk;
@@ -168,7 +169,17 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
     //  Transform data to frequency domain to apply linear phase shift: 
-    this->SpectralFFT( svkMrsImageFFT::FORWARD ); 
+    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
+    //this->SpectralFFT( svkMrsImageFFT::FORWARD ); 
+
+    svkMrsLinearPhase* phaser = svkMrsLinearPhase::New();    
+    double shift[3]; 
+    shift[0] = 0.; 
+    shift[1] = 10; 
+    shift[2] = 0.; 
+    phaser->SetShiftWindow(shift); 
+    phaser->SetInput(mrsData); 
+    phaser->Update(); 
 
 
     //  Iterate through 3D spatial locations
@@ -185,6 +196,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                     } else if ( this->epsiAxis == 0 ) {
                         epsiIndex = x; 
                     }
+
 
                     vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, 0, lobe) );
 
@@ -217,7 +229,8 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
 
     //  Transform data to back to time domain 
-    this->SpectralFFT( svkMrsImageFFT::REVERSE ); 
+    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
+    //this->SpectralFFT( svkMrsImageFFT::REVERSE ); 
 
 
     //  Trigger observer update via modified event:
@@ -304,7 +317,8 @@ int svkEPSIPhaseCorrect::SpectralFFT( svkMrsImageFFT::FFTMode direction )
 
     svkMrsImageFFT* fft = svkMrsImageFFT::New();
     fft->SetInput( mrsData );
-    fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    fft->SetFFTDomain( svkMrsImageFFT::SPATIAL);
+    //fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
     fft->SetFFTMode( direction ); 
     fft->Update();
     fft->Delete();
