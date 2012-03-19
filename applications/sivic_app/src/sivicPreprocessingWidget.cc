@@ -480,6 +480,14 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
             float center = 0.0;
+            //  default, set center to center time point (assume full symmetric echo)
+            float bandwidth = data->GetDcmHeader()->GetFloatValue("SpectralWidth");
+            float dwellTime = 1./bandwidth; 
+            int numFreqPts = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );     
+            int echoCenter = data->GetDcmHeader()->GetFloatValue( "SVK_ECHO_CENTER_PT" );     
+            //cout << "CENTER ECHO POINT: " << echoCenter << endl;
+            center = (echoCenter) * dwellTime; 
+            //cout << "APOD: " << center << " numpts: " << numFreqPts << endl;
             char centerDefault[50]="";
             this->GetApplication()->GetRegistryValue( 0, "apodization", "center",centerDefault  );
             if( string(centerDefault) != "" ) {
