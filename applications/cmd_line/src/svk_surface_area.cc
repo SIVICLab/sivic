@@ -25,6 +25,8 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  *  OF SUCH DAMAGE. 
  */     
+//  test run /data/bioe2/po1_preop_nd/b2611/t6080/surface_area_test>
+
 
 
 /*
@@ -43,10 +45,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkImageToPolyDataFilter.h>
 #include <vtkTriangleFilter.h>
+#include <vtkDataSetTriangleFilter.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkXMLPolyDataWriter.h> 
 #include <vtkContourFilter.h>
 #include <vtkMassProperties.h>
+#include <vtkImageQuantizeRGBToIndex.h>
+#include <vtkImageDataGeometryFilter.h>
+#include <vtkImageCanvasSource2D.h> 
 
 
 #include <svkImageReaderFactory.h>
@@ -176,25 +182,60 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
+/*
     vtkContourFilter* cont = vtkContourFilter::New();
     cont->SetInputConnection( reader->GetOutputPort() );
     cont->SetValue(0, contourThreshold);
+*/
 /*
+    vtkSmartPointer<vtkImageQuantizeRGBToIndex> quant =
+    vtkSmartPointer<vtkImageQuantizeRGBToIndex>::New();
+    quant->SetInputConnection(reader->GetOutputPort());
+    quant->SetNumberOfColors(16);
+ 
+
     vtkImageToPolyDataFilter* i2pd = vtkImageToPolyDataFilter::New();
-    i2pd->SetInputConnection(cont->GetOutputPort()); 
-    svkLookupTable* lut = svkLookupTable::New(); 
-    lut->SetLUTType(  svkLookupTable::GREY_SCALE ); 
-    i2pd->SetLookupTable ( lut ); 
+    i2pd->SetInputConnection( quant->GetOutputPort() ); 
+    //svkLookupTable* lut = svkLookupTable::New(); 
+    //lut->SetLUTType(  svkLookupTable::GREY_SCALE ); 
+    i2pd->SetLookupTable ( quant->GetLookupTable() ); 
+    //i2pd->SetLookupTable ( lut ); 
     i2pd->SetColorModeToLUT();
     i2pd->SetOutputStyleToPolygonalize();
     i2pd->SetError( 0 ); 
     i2pd->DecimationOn();
     i2pd->SetDecimationError(0.0);
     i2pd->SetSubImageSize(5);
+    i2pd->UpdateWholeExtent(); 
 */
+
+// Create an image
+vtkSmartPointer<vtkImageCanvasSource2D> source1 = 
+    vtkSmartPointer<vtkImageCanvasSource2D>::New();
+source1->SetScalarTypeToUnsignedChar();
+source1->SetNumberOfScalarComponents(3);
+source1->SetExtent(0, 100, 0, 100, 0, 0);
+source1->SetDrawColor(0,0,0,1);
+source1->FillBox(0, 100, 0, 100);
+source1->SetDrawColor(255,0,0,1);
+source1->FillBox(10, 20, 10, 20);
+source1->FillBox(40, 50, 20, 30);
+source1->Update();
+cout << "IMAGE SOURCE: " << *source1->GetOutput() << endl;
+
+    vtkSmartPointer<vtkImageDataGeometryFilter> i2pd = 
+        vtkSmartPointer<vtkImageDataGeometryFilter>::New();
+    i2pd->SetInputConnection(source1->GetOutputPort());
+    i2pd->Update();
+
+    vtkContourFilter* cont = vtkContourFilter::New();
+    cont->SetInputConnection( i2pd->GetOutputPort() );
+    cont->SetValue(0, 1);
+
 
     //Need a triangle filter because the polygons are complex and concave
     vtkTriangleFilter* tf = vtkTriangleFilter::New();
+    //tf->SetInputConnection(i2pd->GetOutputPort());
     tf->SetInputConnection(cont->GetOutputPort());
 
     vtkSmartPointer<vtkXMLPolyDataWriter> writer =  

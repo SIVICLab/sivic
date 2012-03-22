@@ -302,6 +302,18 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_fft
+    svk_fft.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_fft
+	${SVK_LIBS}
+)
+
+
 #   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
 ADD_EXECUTABLE(
     svk_app_template
