@@ -381,7 +381,7 @@ void sivicPreprocessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
 
 
 /*!
- *  Executes the combining of the channels.
+ *  Executes the proprocessing filters.
  */
 void sivicPreprocessingWidget::ExecutePreprocessing() 
 {
@@ -463,7 +463,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
 			fwhh = 9.0f;
 		}
 		char fwhhDefault[50]="";
-		this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh",fwhhDefault  );
+		this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh", fwhhDefault  );
 		if( string(fwhhDefault) != "" ) {
 			fwhh = atof( fwhhDefault );
 		}
@@ -484,15 +484,21 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             float bandwidth = data->GetDcmHeader()->GetFloatValue("SpectralWidth");
             float dwellTime = 1./bandwidth; 
             int numFreqPts = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );     
-            int echoCenter = data->GetDcmHeader()->GetFloatValue( "SVK_ECHO_CENTER_PT" );     
+            
+            int echoCenter = 0; 
+            if ( data->GetDcmHeader()->ElementExists( "SVK_ECHO_CENTER_PT" ) ) {
+                echoCenter = data->GetDcmHeader()->GetFloatValue( "SVK_ECHO_CENTER_PT" );     
+            }
+
             //cout << "CENTER ECHO POINT: " << echoCenter << endl;
             center = (echoCenter) * dwellTime; 
             //cout << "APOD: " << center << " numpts: " << numFreqPts << endl;
             char centerDefault[50]="";
-            this->GetApplication()->GetRegistryValue( 0, "apodization", "center",centerDefault  );
+            this->GetApplication()->GetRegistryValue( 0, "apodization", "center", centerDefault  );
             if( string(centerDefault) != "" ) {
                 center = atof( centerDefault );
             }
+cout << "APOD CENTER: " << center  << endl;
             fwhh = 15; 
             svkApodizationWindow::GetGaussianWindow( window, data, fwhh, center );
             af->SetInput( data );
