@@ -96,7 +96,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         } FFTMode;
 
         void             SetUpdateExtent(int* start, int* end);
-        void             ConvertArrayToImageComplex( vtkDataArray* array, vtkImageComplex* imageComplexArray);
+        static void      ConvertArrayToImageComplex( vtkDataArray* array, vtkImageComplex* imageComplexArray);
         void             SetFFTDomain( FFTDomain domain );
         void             SetFFTMode( FFTMode mode );
         void             SetPreCorrectCenter( bool preCorrectCenter );

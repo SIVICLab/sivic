@@ -43,7 +43,8 @@
 
 #include <svkMrsImageFourierCenter.h>
 #include <svkImageFourierCenter.h>
-
+#include <vtkImageFFT.h>
+#include <svkMrsImageFFT.h>
 
 using namespace svk;
 
@@ -176,10 +177,69 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
 
 
 /*
- *  Apply to spectral dimensions
+ *  Apply shift to spectral data 
  */
 void svkMrsImageFourierCenter::ApplySpectralShift() 
 {
+
+    //  Get pointer to input data set. 
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+
+    //  Get pointer to data's meta-data header (DICOM object). 
+    svkDcmHeader* hdr = mrsData->GetDcmHeader();  
+
+    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
+    int cols       = hdr->GetIntValue( "Columns" );
+    int rows       = hdr->GetIntValue( "Rows" );
+    int slices     = hdr->GetNumberOfSlices();
+    int numTimePts = hdr->GetNumberOfTimePoints();
+    int numCoils   = hdr->GetNumberOfCoils();  
+
+    //  Loop over all spectra and apply shift in appropriate direction 
+    //  to each one
+    for( int timePt = 0; timePt < numTimePts; timePt++ ) {
+        for( int coil = 0; coil < numCoils; coil++ ) {
+            for( int z = 0; z < slices; z++ ) {
+                for( int y = 0; y < rows; y++ ) {
+                    for( int x = 0; x < cols; x++ ) {
+
+
+                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+                            mrsData->GetSpectrum( x, y, z, timePt, coil) 
+                        );
+
+                        vtkImageComplex* complexSpectrum = new vtkImageComplex[ numSpecPts ];
+                        svkMrsImageFFT::ConvertArrayToImageComplex( spectrum, complexSpectrum );
+
+
+                        //  FORWARD: MOVES 0 to from initial point to Center
+                        //  REVERSE: Moves 0 from center to initial point 
+                        if ( this->shiftDirection == svkMrsImageFourierCenter::FORWARD) {
+
+                            svkMrsImageFFT::FFTShift( complexSpectrum, numSpecPts); 
+
+                        } else if ( this->shiftDirection == svkMrsImageFourierCenter::REVERSE ) {
+
+                            // Move t=0 from center to origin 
+                            svkMrsImageFFT::IFFTShift( complexSpectrum, numSpecPts); 
+
+                        } 
+
+                        //  Now set the shifted data back into the MRS data object:
+                        for (int i = 0; i < numSpecPts; i++) {
+                            spectrum->SetTuple2( i, complexSpectrum[i].Real, complexSpectrum[i].Imag ); 
+                        }
+           
+                    }
+                }
+            }
+        }
+    }
+
+
+    //  Trigger observer update via modified event:
+    this->GetInput()->Modified();
+    this->GetInput()->Update();
 }
 
 
