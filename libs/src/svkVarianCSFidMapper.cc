@@ -948,7 +948,7 @@ void svkVarianCSFidMapper::InitMRSpectroscopyDataModule()
 /*!
  *  Reads spec data from compressed sensing fid.
  */
-void svkVarianCSFidMapper::ReadFidFile( string fidFileName, vtkImageData* data )
+void svkVarianCSFidMapper::ReadFidFile( string fidFileName, svkImageData* data )
 {
     
     vtkDebugMacro( << this->GetClassName() << "::ReadFidFile()" );

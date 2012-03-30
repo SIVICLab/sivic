@@ -266,9 +266,8 @@ void svkVarianUCSF2DcsiMapper::InitMRSpectroscopyPulseSequenceModule()
 
     this->dcmHeader->SetValue( "NumberOfKSpaceTrajectories", 1 );
 
-    //  k = 0 is sampled in the acquisition. 
+    //  k = 0 is NOT sampled in the acquisition. 
     string k0Sampled = "NO";
-    //string k0Sampled = "YES";
     this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
 
 }

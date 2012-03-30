@@ -640,13 +640,17 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
         vtkstd::string k0Sampled = hdr->GetStringValue( "SVK_K0Sampled" );
         if ( k0Sampled.compare( "YES" ) == 0 ) {
             //  if odd dims
-            if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
+            if (  (numVoxels[0] > 1 && numVoxels[0] % 2 )
+               || (numVoxels[1] > 1 && numVoxels[1] % 2 )
+               || (numVoxels[2] > 1 && numVoxels[2] % 2 ) ) {
                 evenSymmetry = "yes"; 
             } else {
                 evenSymmetry = "no"; 
             }
         } else if ( k0Sampled.compare( "NO" ) == 0 ) {
-            if ( numVoxels[0] % 2 || numVoxels[1] % 2 || numVoxels[2] % 2 ) {
+            if ( (numVoxels[0] > 1 && numVoxels[0] % 2 )
+              || (numVoxels[1] > 1 && numVoxels[1] % 2 )
+              || (numVoxels[2] > 1 && numVoxels[2] % 2 ) ) {
                 evenSymmetry = "no"; 
             } else {
                 evenSymmetry = "yes"; 

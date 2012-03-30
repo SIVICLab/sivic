@@ -90,7 +90,7 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         vtkTypeRevisionMacro( svkVarianCSFidMapper, svkVarianFidMapper);
         static          svkVarianCSFidMapper* New();
 
-        virtual void    ReadFidFile( string fidFileName, vtkImageData* data );
+        virtual void    ReadFidFile( string fidFileName, svkImageData* data );
 
 
     protected:
