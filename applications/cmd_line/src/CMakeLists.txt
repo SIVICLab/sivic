@@ -114,6 +114,8 @@ endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a")
 ###################################
 #   VTK
 ###################################
+FIND_PACKAGE(VTK REQUIRED)
+
 IF(VTK_FOUND)
   INCLUDE(${VTK_USE_FILE})
 ENDIF(VTK_FOUND)

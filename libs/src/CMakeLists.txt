@@ -83,6 +83,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
+FIND_PACKAGE(VTK REQUIRED)
 
 ###################################
 #   VTK

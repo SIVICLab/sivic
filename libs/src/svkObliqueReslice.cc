@@ -165,12 +165,41 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
 
     //  Get the allocated svk output image data (resliced image doesn't have a dcos yet): 
     this->GetOutput()->SetDcos( this->targetDcos ); 
+    string activeScalarName = this->GetImageDataInput(0)->GetPointData()->GetScalars()->GetName();
 
-    //  Copy the vtkImageAlgo output to the allocated svkImageData output image
-    this->GetOutput()->DeepCopy( this->reslicer->GetOutput() ); 
+    this->reslicer->SetInput( this->GetImageDataInput(0) );
 
-    // TODO: This will have to be changed when we support multiple input datasets
-    this->GetOutput()->GetPointData()->GetScalars()->SetName("pixels0");
+    int numberOfVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
+
+    for( int i = 0; i < numberOfVolumes; i++ ) {
+    	string currentScalarName = this->GetImageDataInput(0)->GetPointData()->GetArray(i)->GetName();
+    	this->GetImageDataInput(0)->GetPointData()->SetActiveScalars( currentScalarName.c_str() );
+
+    	/*
+    	 *  We are going to switch the input data to NULL and then back to the image data object.
+    	 *  This is because the vtk algorithm will not re-execute just because the active scalars
+    	 *  have changed (although it really should). To get around this we switch the input to
+    	 *  NULL and then back to force an update.
+    	 */
+		this->reslicer->SetInput( NULL );
+		this->reslicer->SetInput( this->GetImageDataInput(0) );
+    	this->reslicer->Update();
+
+    	if( i == 0 ) {
+			//  Copy the vtkImageAlgo output to the allocated svkImageData output image
+			this->GetOutput()->DeepCopy( this->reslicer->GetOutput() );
+    	} else {
+    		// We need to copy the data array after each update because it will be reused
+    		vtkDataArray* newArray = vtkDataArray::CreateDataArray( this->reslicer->GetOutput()->GetPointData()->GetScalars()->GetDataType());
+    		newArray->DeepCopy(this->reslicer->GetOutput()->GetPointData()->GetScalars() );
+    		this->GetOutput()->GetPointData()->AddArray(newArray);
+    		newArray->Delete();
+    	}
+		this->GetOutput()->GetPointData()->GetArray(i)->SetName(currentScalarName.c_str());
+    }
+	this->GetImageDataInput(0)->GetPointData()->SetActiveScalars( activeScalarName.c_str() );
+
+
 
     this->UpdateHeader(); 
     outputVector->GetInformationObject(0)->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->GetOutput()->GetExtent(), 6);
@@ -249,9 +278,10 @@ void svkObliqueReslice::UpdateHeader()
         "Rows", 
         this->newNumVoxels[1]
     );
+    int numberOfVolumes = this->reslicedImage->GetPointData()->GetNumberOfArrays();
     this->reslicedImage->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
-        this->newNumVoxels[2]
+        this->newNumVoxels[2]*numberOfVolumes
     );
 
     //  Set Origin and Orientation and spacing
@@ -316,9 +346,7 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     this->GetImageDataInput(0)->GetDcmHeader()->GetPixelSpacing(inputSpacing); 
 
     int numVoxels[3]; 
-    numVoxels[0] = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
-    numVoxels[1] = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
-    numVoxels[2] = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "NumberOfFrames" ); 
+    this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
 
     double dcosIn[3][3];
     this->GetImageDataInput(0)->GetDcmHeader()->GetDataDcos(dcosIn); 
@@ -349,10 +377,11 @@ void svkObliqueReslice::SetReslicedHeaderPerFrameFunctionalGroups()
     this->reslicedImage->SetOrigin( newTlc );
     this->reslicedImage->SetOrigin( newTlc );
 
-
-    int numSlices = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
+    int numSlices = this->GetOutput()->GetDimensions()[2];
+    int numTimepoints = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int numCoils = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfCoils();
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        newTlc, this->newSpacing, this->targetDcos, numSlices, 1, 1
+        newTlc, this->newSpacing, this->targetDcos, numSlices, numTimepoints, numCoils
     );
 
     delete[] tlc0;
