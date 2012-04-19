@@ -48,8 +48,10 @@
 #include <svkOverlayViewController.h>
 #include <svkPlotGridView.h>
 #include <sivicKWCompositeWidget.h>
-
+#include <vtkKWMultiColumnListWithScrollbars.h>
+#include <vtkKWMultiColumnListWithLabel.h>
 #include <string.h>
+#include <vector>
 
 using namespace svk; 
 
@@ -65,6 +67,7 @@ class sivicPreferencesWidget : public sivicKWCompositeWidget
 
         void   RestorePreferencesFromRegistry( );
         bool   GetReadOnlyOneInputFile();
+		void   UpdateSettingsList( );
 
 
     protected:
@@ -82,6 +85,9 @@ class sivicPreferencesWidget : public sivicKWCompositeWidget
 
 
     private:
+
+        vector<string> settings;
+        vtkKWMultiColumnListWithScrollbars* settingsTable;
 
         sivicPreferencesWidget(const sivicPreferencesWidget&);   // Not implemented.
         void operator=(const sivicPreferencesWidget&);  // Not implemented.

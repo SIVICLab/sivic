@@ -114,6 +114,8 @@ class svkPlotGridView : public svkDataView
         virtual void                SetOverlayWLRange( double* range );
         virtual double*             GetOverlayWLRange( );
         void                        SetComponent( svkPlotLine::PlotComponent component, int plotIndex = -1 );
+        void                        SetActiveComponent( svkPlotLine::PlotComponent component );
+        svkPlotLine::PlotComponent  GetActiveComponent( );
         virtual void                SetVolumeIndex( int index, int volumeIndex = 0, int plotIndex = -1 );
         virtual int                 GetVolumeIndex( int volumeIndex = 0 );
         virtual int*                GetVolumeIndexArray(  );

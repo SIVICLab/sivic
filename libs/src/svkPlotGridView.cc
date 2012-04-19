@@ -801,6 +801,23 @@ void svkPlotGridView::SetComponent( svkPlotLine::PlotComponent component, int pl
     this->Refresh();
 }
 
+/*!
+ * Sets the component of the active plot.
+ */
+void svkPlotGridView::SetActiveComponent( svkPlotLine::PlotComponent component )
+{
+	this->SetComponent( component, this->activePlot );
+}
+
+
+/*!
+ * Gets the component of the active plot.
+ */
+svkPlotLine::PlotComponent  svkPlotGridView::GetActiveComponent( )
+{
+	return this->plotGrids[ this->activePlot]->GetComponent();
+}
+
 
 /*!
  *  Sets desired the current selection in Display (pixels) coordinates

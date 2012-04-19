@@ -45,7 +45,29 @@ vtkCxxRevisionMacro( sivicPreferencesWidget, "$Revision$");
  */
 sivicPreferencesWidget::sivicPreferencesWidget()
 {
-    this->testButton = NULL;
+    this->settings.push_back( "defaults/sync_components/Set to 'active' to update only active trace's component, otherwise update all traces. (active or all)");
+    this->settings.push_back( "defaults/printer/Name of the printer to use when printing.");
+    this->settings.push_back( "plot_grid/red/Sets the red component for the plot overlayed on the image. (0-1)");
+    this->settings.push_back( "plot_grid/blue/Sets the blue component for the plot overlayed on the image. (0-1)");
+    this->settings.push_back( "plot_grid/green/Sets the green component for the plot overlayed on the image. (0-1)");
+    this->settings.push_back( "plot_grid/opacity/Sets the opacity for the grid overlayed on the image. (0-1)");
+    this->settings.push_back( "plot_grid/width/Sets the width of the lines in the grid overlayed on the image. (0-1)");
+    this->settings.push_back( "sat_bands/red/Sets the red component for the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands/blue/Sets the blue component for the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands/green/Sets the green component for the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands/opacity/Sets the opacity for the saturation bands (0-1)");
+    this->settings.push_back( "sat_bands_outline/red/Sets the red component for the outlines of the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands_outline/blue/Sets the blue component for the outlines of the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands_outline/green/Sets the green component for the outlines of the saturation bands. (0-1)");
+    this->settings.push_back( "sat_bands_outline/opacity/Sets the opacity for the outlines of the saturation bands. (0-1)");
+    this->settings.push_back( "vol_selection/red/Sets the red component for the selection box. (0-1)");
+    this->settings.push_back( "vol_selection/blue/Sets the blue component for the selection box. (0-1)");
+    this->settings.push_back( "vol_selection/green/Sets the green component for the selection box. (0-1)");
+    this->settings.push_back( "vol_selection/opacity/Sets the opacity for the selection box edges. (0-1)");
+    this->settings.push_back( "vol_selection/width/Sets the width for the selection box edges. (0-1)");
+    this->settings.push_back( "apodization/fwhh/Sets the fullwidth half height in Hz for the apodization windows.");
+    this->settings.push_back( "apodization/center/Sets the center for the Gaussion apodization window.");
+
 }
 
 
@@ -54,20 +76,11 @@ sivicPreferencesWidget::sivicPreferencesWidget()
  */
 sivicPreferencesWidget::~sivicPreferencesWidget()
 {
-    if( this->testButton != NULL ) {
-        this->testButton->Delete();
-        this->testButton = NULL;
-    }
 
-}
-
-
-/*! 
- *  Restores preferences from your registry.
- */
-void sivicPreferencesWidget::RestorePreferencesFromRegistry( )
-{
-
+	if( this->settingsTable != NULL ) {
+		this->settingsTable->Delete();
+		this->settingsTable = NULL;
+	}
 }
 
 
@@ -95,26 +108,49 @@ void sivicPreferencesWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    this->testButton = vtkKWCheckButton::New();
-    this->testButton->SetParent(this);
-    this->testButton->SetText("Test Button");
-    this->testButton->Create();
+    this->settingsTable = vtkKWMultiColumnListWithScrollbars::New();
+    this->settingsTable->SetParent(this);
+    this->settingsTable->Create();
+    int col_index;
+    col_index = this->settingsTable->GetWidget()->AddColumn("Group");
+    col_index = this->settingsTable->GetWidget()->AddColumn("Name");
+    col_index = this->settingsTable->GetWidget()->AddColumn("Value");
+    this->settingsTable->GetWidget()->ColumnEditableOn(col_index);
+    col_index = this->settingsTable->GetWidget()->AddColumn("Description");
+    this->settingsTable->GetWidget()->StretchableColumnsOn();
 
+    this->Script("pack %s -expand y -fill both", this->settingsTable->GetWidgetName(),   0);
 
-    //  =======================================================
-    //  Now we pack the application together
-    //  =======================================================
-    int row = 0; 
+    //  Callbacks
+    this->AddCallbackCommandObserver( this->settingsTable->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
 
-    this->Script("grid %s -in %s -row 0 -column 0 -sticky ew ",
-             this->testButton->GetWidgetName(), this->GetWidgetName() );
+}
+/*!
+ *
+ *  Updates the list of settings.
+ */
+void sivicPreferencesWidget::UpdateSettingsList( )
+{
 
+    // We start at one since the first plot index is the active spectra above...
+    for( int i = 0; i < this->settings.size(); i ++ ) {
+    	vector<string> setting = svkUtils::SplitString( this->settings[i], "/");
 
-    this->Script("grid rowconfigure %s 0  -weight 1", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 0  -weight 1", this->GetWidgetName() );
+        char registryValue[100] = "";
+        string registryValueString = "";
 
-    this->AddCallbackCommandObserver(
-        this->testButton, vtkKWCheckButton::SelectedStateChangedEvent );
+        // Lets grab the printer name from the registry
+        this->GetApplication()->GetRegistryValue( 0, setting[0].c_str(), setting[1].c_str(), registryValue );
+        if( registryValue != NULL && strcmp( registryValue, "" ) != 0 ) {
+    		registryValueString = registryValue;
+        }
+
+		this->settingsTable->GetWidget()->InsertCellText(i, 0, setting[0].c_str());
+		this->settingsTable->GetWidget()->InsertCellText(i, 1, setting[1].c_str());
+		this->settingsTable->GetWidget()->InsertCellText(i, 2, registryValueString.c_str());
+		this->settingsTable->GetWidget()->InsertCellText(i, 3, setting[2].c_str());
+
+    }
 
 }
 
@@ -124,11 +160,17 @@ void sivicPreferencesWidget::CreateWidget()
  */
 void sivicPreferencesWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    if( caller == testButton ) {
-        cout << "SELECTED STATE CHANGED!!! " << endl;
-    } 
+    for( int i = 0; i < this->settingsTable->GetWidget()->GetNumberOfRows(); i++) {
+
+        string subkey = this->settingsTable->GetWidget()->GetCellText(i,0);
+        string key = this->settingsTable->GetWidget()->GetCellText(i,1);
+        string value = this->settingsTable->GetWidget()->GetCellText(i,2);
+
+		this->GetApplication()->SetRegistryValue( 0, subkey.c_str(), key.c_str(), value.c_str());
+
+    }
 
     // Make sure the superclass gets called for render requests
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
-
+    this->sivicController->SetPreferencesFromRegistry();
 }

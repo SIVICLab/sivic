@@ -515,11 +515,11 @@ int sivicApp::Build( int argc, char* argv[] )
     // Tools menu
     this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
             0, "&Show Window Level", this->sivicController, "DisplayWindowLevelWindow");
-    //this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
-    //        1, "&Preferences", this->sivicController, "DisplayPreferencesWindow");
+    this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
+            1, "&Preferences", this->sivicController, "DisplayPreferencesWindow");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            1, "&Run Tests", this->sivicController, "RunTestingSuite");
+            2, "&Run Tests", this->sivicController, "RunTestingSuite");
 #endif
     this->sivicKWApp->SetHelpDialogStartingPage("http://sivic.sourceforge.net");
     this->sivicWindow->Display();

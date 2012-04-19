@@ -222,9 +222,11 @@ void vtkSivicController::SetActive4DImageData( int index )
                 this->overlayController->SetInput( newData, svkOverlayView::MR4D );
                 this->overlayController->SetTlcBrc( this->plotController->GetTlcBrc() );
             }
+            this->SetPreferencesFromRegistry();
             if( toggleDraw ) {
                 this->DrawOn();
             }
+            this->SetComponentCallback( svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetActiveComponent());
         }
     }
 }
@@ -1205,6 +1207,10 @@ void vtkSivicController::OpenMetabolites( const char* metabolites )
 void vtkSivicController::SetPreferencesFromRegistry( )
 {
     // This block recals sat band colors from config file
+	int toggleDraw = this->GetDraw();
+	if( toggleDraw ) {
+		this->DrawOff();
+	}
     char satBandRed[50]="";
     this->app->GetRegistryValue( 0, "sat_bands", "red", satBandRed );
     char satBandBlue[50]="";
@@ -1224,6 +1230,8 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                    ->GetProperty()->SetAmbientColor( rgb );
         vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL ))
                                    ->GetProperty()->SetAmbientColor( rgb );
+
+
         char satBandOpacity[50]="";
         this->app->GetRegistryValue( 0, "sat_bands", "opacity", satBandOpacity );
         if( string( satBandOpacity ) != "" ) {
@@ -1237,6 +1245,15 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                    ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
             
         }
+
+        vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkPlotGridView::SAT_BANDS ))
+                                   ->Modified();
+        vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_AXIAL ))
+                                   ->Modified();
+        vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_CORONAL ))
+                                   ->Modified();
+        vtkActor::SafeDownCast(this->overlayController->GetView()->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL ))
+                                   ->Modified();
     }
 
     char satBandOutlineRed[50]="";
@@ -1283,6 +1300,20 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                        ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
             
         }
+        vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE ))
+                                   ->Modified();
+
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE ))
+                                   ->Modified();
+
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE ))
+                                   ->Modified();
+
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ))
+                                   ->Modified();
     }
 
 
@@ -1327,6 +1358,10 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 
     }
 
+	vtkActor::SafeDownCast(this->overlayController->GetView()
+							   ->GetProp( svkOverlayView::PLOT_GRID ))
+							   ->Modified();
+
     char volSelectionRed[50]="";
     this->app->GetRegistryValue( 0, "vol_selection", "red", volSelectionRed );
     char volSelectionBlue[50]="";
@@ -1363,7 +1398,13 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 									   ->GetProperty()->SetLineWidth( width );
 
 		}
+		vtkActor::SafeDownCast(this->overlayController->GetView()
+								   ->GetProp( svkOverlayView::VOL_SELECTION ))
+								   ->Modified();
     }
+	if( toggleDraw ) {
+		this->DrawOn();
+	}
 
 
 }
@@ -2318,14 +2359,12 @@ void vtkSivicController::DisplayPreferencesWindow()
         this->app->AddWindow( this->preferencesWindow );
         this->preferencesWindow->SetTitle("SIVIC Preferences");
         this->preferencesWindow->Create();
-        int width;
-        int height;
-        this->mainWindow->GetSize(&width, &height);
-        this->preferencesWindow->SetSize( width, 175);
+        this->preferencesWindow->SetSize( 925, 525);
         this->preferencesWidget->SetParent( this->preferencesWindow->GetViewFrame() );
         this->preferencesWidget->Create();
         this->app->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -pady 2 "
                 , this->preferencesWidget->GetWidgetName(), this->preferencesWindow->GetViewFrame()->GetWidgetName());
+
         this->app->Script("grid rowconfigure %s 0  -weight 1"
                 , this->preferencesWindow->GetViewFrame()->GetWidgetName() );
         this->app->Script("grid columnconfigure %s 0  -weight 1"
@@ -2336,6 +2375,7 @@ void vtkSivicController::DisplayPreferencesWindow()
     if( toggleDraw ) {
         this->DrawOff();
     }
+    this->preferencesWidget->UpdateSettingsList();
     this->preferencesWindow->Display();
     if( toggleDraw ) {
         this->DrawOn();
@@ -2448,12 +2488,42 @@ cout << "SIVIC CONTROLLER DSC CALL: " << representation << endl;
 void vtkSivicController::SetComponentCallback( int targetComponent)
 {
     string acquisitionType;
+    char registryValue[100] = "";
+    string registryValueString = "";
+    bool syncComponents = true;
+
+    // Lets grab the printer name from the registry
+    this->GetApplication()->GetRegistryValue( 0, "defaults", "sync_components", registryValue );
+    if( registryValue != NULL && strcmp( registryValue, "active" ) == 0 ) {
+    	syncComponents = false;
+    }
     if ( targetComponent == svkPlotLine::REAL) {
-        this->plotController->SetComponent(svkPlotLine::REAL);
+
+    	if( syncComponents ) {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetComponent(svkPlotLine::REAL);
+    	} else {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetActiveComponent(svkPlotLine::REAL);
+    	}
+        this->spectraRangeWidget->componentSelectBox->SetValue( "real");
+
     } else if ( targetComponent == svkPlotLine::IMAGINARY) {
-        this->plotController->SetComponent(svkPlotLine::IMAGINARY);
+
+    	if( syncComponents ) {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetComponent(svkPlotLine::IMAGINARY);
+    	} else {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetActiveComponent(svkPlotLine::IMAGINARY);
+    	}
+        this->spectraRangeWidget->componentSelectBox->SetValue( "imag");
+
     } else if ( targetComponent == svkPlotLine::MAGNITUDE) {
-        this->plotController->SetComponent(svkPlotLine::MAGNITUDE);
+
+    	if( syncComponents ) {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetComponent(svkPlotLine::MAGNITUDE);
+    	} else {
+			svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetActiveComponent(svkPlotLine::MAGNITUDE);
+    	}
+        this->spectraRangeWidget->componentSelectBox->SetValue( "mag");
+
     }
     if( model->DataExists( "SpectroscopicData" ) ) {
         acquisitionType = model->GetDataObject( "SpectroscopicData" )->
