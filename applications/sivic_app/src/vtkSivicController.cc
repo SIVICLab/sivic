@@ -1347,6 +1347,37 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                    ->GetProperty()->SetOpacity( opacity );
 
     }
+    char tracePlotGridRed[50]="";
+    this->app->GetRegistryValue( 0, "trace_plot_grid", "red", tracePlotGridRed );
+    char tracePlotGridBlue[50]="";
+    this->app->GetRegistryValue( 0, "trace_plot_grid", "blue", tracePlotGridBlue );
+    char tracePlotGridGreen[50]="";
+    this->app->GetRegistryValue( 0, "trace_plot_grid", "green", tracePlotGridGreen );
+    if( string(tracePlotGridRed) != "" && string(tracePlotGridGreen) != "" && string(tracePlotGridBlue) != "" ) {
+        double rgb[3];
+        rgb[0] = atof( tracePlotGridRed );
+        rgb[1] = atof( tracePlotGridGreen );
+        rgb[2] = atof( tracePlotGridBlue );
+        vtkActor::SafeDownCast(this->plotController->GetView()
+                                   ->GetProp( svkPlotGridView::PLOT_GRID ))
+                                   ->GetProperty()->SetDiffuseColor( rgb );
+    } else {
+        double rgb[3] = {0,1,0};
+        vtkActor::SafeDownCast(this->overlayController->GetView()
+                                   ->GetProp( svkPlotGridView::PLOT_GRID ))
+                                   ->GetProperty()->SetDiffuseColor( rgb );
+    }
+
+    char traceLineWidth[50]="";
+    this->app->GetRegistryValue( 0, "trace_lines", "width", traceLineWidth );
+    if( string(traceLineWidth) != "" ) {
+    	double width = atof( traceLineWidth);
+        vtkActor::SafeDownCast(this->plotController->GetView()
+                                   ->GetProp( svkPlotGridView::PLOT_LINES ))
+                                   ->GetProperty()->SetLineWidth( width );
+        vtkActor::SafeDownCast(this->plotController->GetView()
+                                   ->GetProp( svkPlotGridView::PLOT_LINES ))->Modified();
+    }
 
     char plotGridWidth[50]="";
     this->app->GetRegistryValue( 0, "plot_grid", "width", plotGridWidth );
@@ -1402,6 +1433,24 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 								   ->GetProp( svkOverlayView::VOL_SELECTION ))
 								   ->Modified();
     }
+
+	double rgb[3] = {-1,-1,-1};
+	sivicPreferencesWidget::GetColorFromRegistry( this->app, "image_background", rgb);
+	if( rgb[0] >= 0 && rgb[1] >= 0 && rgb[2] >= 0 ) {
+		cout << "Setting image background" << endl;
+		this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->SetBackground(rgb);
+		this->overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->Modified();
+	}
+	rgb[0] = -1;
+	rgb[1] = -1;
+	rgb[2] = -1;
+	sivicPreferencesWidget::GetColorFromRegistry(this->app, "trace_background", rgb);
+	if( rgb[0] >= 0 && rgb[1] >= 0 && rgb[2] >= 0 ) {
+		cout << "Setting trace background" << endl;
+		this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY)->SetBackground(rgb);
+		this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY)->Modified();
+	}
+
 	if( toggleDraw ) {
 		this->DrawOn();
 	}
@@ -1976,6 +2025,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
 
     if( print ){
         ToggleColorsForPrinting( svkSecondaryCaptureFormatter::LIGHT_ON_DARK );
+        this->SetPreferencesFromRegistry();
     }
     writer->Delete();
     this->overlayController->GetView()->Refresh();    

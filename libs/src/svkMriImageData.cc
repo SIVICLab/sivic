@@ -129,6 +129,36 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
     // The output of image accumulate is an image.
     vtkImageData* histogramImage = accumulator->GetOutput();
     histogramImage->Update();
+    int usedBins = 0;
+    double binHeight = 0;
+
+    // Let's make sure we have enough bins to get an accurate histogram
+    while( usedBins < MIN_USED_BINS and numBins < MAX_NUM_BINS   ) {
+    	usedBins = 0;
+		for( int i = 0; i < histogramImage->GetPointData()->GetScalars()->GetNumberOfTuples(); i++ ) {
+			// For now we are going to base the window/level on the real component of the image
+			binHeight = histogramImage->GetPointData()->GetScalars()->GetComponent(i,0);
+			if( binHeight > 0 ) {
+				usedBins++;
+			}
+			// Early break out of for loop for speed
+			if( usedBins >= MIN_USED_BINS ) {
+				break;
+			}
+		}
+
+		// Early break out of wihle loop for speed
+		if( usedBins >= MIN_USED_BINS ) {
+			break;
+		}
+		// If we didn't get to the minimum number of bins let's double the number used.
+		numBins *= 2;
+        binSize = fullWindow/numBins;
+		accumulator->SetComponentExtent(0, numBins-1,0,0,0,0);
+		accumulator->SetComponentSpacing(binSize,0,0);
+		accumulator->Update();
+		histogramImage->Update();
+    }
 
     // The "pixels" of the output are the values in the histogram
     vtkDataArray* histogram = histogramImage->GetPointData()->GetScalars();
@@ -160,7 +190,6 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
             minSum = lowSum;
         }
     } 
-
     double min = range[0] + (minIndex)*binSize; 
     double max = range[0] + (maxIndex+1)*(binSize); 
     window = max-min;

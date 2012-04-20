@@ -51,7 +51,17 @@ sivicPreferencesWidget::sivicPreferencesWidget()
     this->settings.push_back( "plot_grid/blue/Sets the blue component for the plot overlayed on the image. (0-1)");
     this->settings.push_back( "plot_grid/green/Sets the green component for the plot overlayed on the image. (0-1)");
     this->settings.push_back( "plot_grid/opacity/Sets the opacity for the grid overlayed on the image. (0-1)");
-    this->settings.push_back( "plot_grid/width/Sets the width of the lines in the grid overlayed on the image. (0-1)");
+    this->settings.push_back( "plot_grid/width/Sets the width of the lines in the grid overlayed on the image. (integer greater than 0)");
+    this->settings.push_back( "image_background/red/Sets the red component for the background of the image. (0-1)");
+    this->settings.push_back( "image_background/blue/Sets the blue component for the background of the image. (0-1)");
+    this->settings.push_back( "image_background/green/Sets the green component for the background of the image. (0-1)");
+    this->settings.push_back( "trace_background/red/Sets the red component for the background of the traces. (0-1)");
+    this->settings.push_back( "trace_lines/width/Sets the width of the trace lines. (integer greater than zero)");
+    this->settings.push_back( "trace_plot_grid/red/Sets the red component for the trace grid. (0-1)");
+    this->settings.push_back( "trace_plot_grid/blue/Sets the blue component for the trace grid. (0-1)");
+    this->settings.push_back( "trace_plot_grid/green/Sets the green component for the trace grid. (0-1)");
+    this->settings.push_back( "trace_background/blue/Sets the blue component for the background of the traces. (0-1)");
+    this->settings.push_back( "trace_background/green/Sets the green component for the background of the traces. (0-1)");
     this->settings.push_back( "sat_bands/red/Sets the red component for the saturation bands. (0-1)");
     this->settings.push_back( "sat_bands/blue/Sets the blue component for the saturation bands. (0-1)");
     this->settings.push_back( "sat_bands/green/Sets the green component for the saturation bands. (0-1)");
@@ -64,7 +74,7 @@ sivicPreferencesWidget::sivicPreferencesWidget()
     this->settings.push_back( "vol_selection/blue/Sets the blue component for the selection box. (0-1)");
     this->settings.push_back( "vol_selection/green/Sets the green component for the selection box. (0-1)");
     this->settings.push_back( "vol_selection/opacity/Sets the opacity for the selection box edges. (0-1)");
-    this->settings.push_back( "vol_selection/width/Sets the width for the selection box edges. (0-1)");
+    this->settings.push_back( "vol_selection/width/Sets the width for the selection box edges. (integer greater than zero)");
     this->settings.push_back( "apodization/fwhh/Sets the fullwidth half height in Hz for the apodization windows.");
     this->settings.push_back( "apodization/center/Sets the center for the Gaussion apodization window.");
 
@@ -173,4 +183,26 @@ void sivicPreferencesWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
     // Make sure the superclass gets called for render requests
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
     this->sivicController->SetPreferencesFromRegistry();
+}
+
+
+/*!
+ *  For a given subkey extract red green and blue components.
+ */
+void sivicPreferencesWidget::GetColorFromRegistry(vtkKWApplication* app, string subkey, double rgb[3])
+{
+    char red[50]="";
+    app->GetRegistryValue( 0, subkey.c_str(), "red", red );
+    char green[50]="";
+    app->GetRegistryValue( 0, subkey.c_str(), "green", green );
+    char blue[50]="";
+    app->GetRegistryValue( 0, subkey.c_str(), "blue", blue );
+
+
+    // only return the color if all three are present
+	if( string(red) != "" && string(green) != "" && string(blue) != "" ) {
+		rgb[0] = atof( red );
+		rgb[1] = atof( green );
+		rgb[2] = atof( blue );
+	}
 }

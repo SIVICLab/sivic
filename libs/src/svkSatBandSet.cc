@@ -50,8 +50,8 @@ vtkCxxRevisionMacro(svkSatBandSet, "$Rev$");
 vtkStandardNewMacro(svkSatBandSet);
 
 
-const double svkSatBandSet::CLIP_TOLERANCE = 0.025;
-const double svkSatBandSet::IMAGE_CLIP_TOLERANCE = 0.025;
+const double svkSatBandSet::CLIP_TOLERANCE = 0.05;
+const double svkSatBandSet::IMAGE_CLIP_TOLERANCE = 0.05;
 const int svkSatBandSet::PROJECTION_MULTIPLIER = 15;
 
 

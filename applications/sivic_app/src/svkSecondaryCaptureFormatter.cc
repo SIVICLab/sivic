@@ -130,11 +130,6 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
     int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
     int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
-    // If we want to only look at the current slice....
-    if( outputOption == CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
@@ -155,6 +150,12 @@ void svkSecondaryCaptureFormatter::WriteSpectraCapture( vtkImageWriter* writer, 
 		}
     }
     lastFrame = i; 
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) {
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
 
     //  Replace * with slice number in output file name: 
     size_t pos = fileNameString.find_last_of("*");
@@ -262,11 +263,6 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
     int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
     int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
-    // If we want to only look at the current slice....
-    if( outputOption == CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
@@ -287,6 +283,12 @@ void svkSecondaryCaptureFormatter::WriteCombinedCapture( vtkImageWriter* writer,
 		}
     }
     lastFrame = i; 
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) {
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
 
     //  Replace * with slice number in output file name: 
     size_t pos = fileNameString.find_last_of("*");
@@ -338,11 +340,6 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
     int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
     int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
-    // If we want to only look at the current slice....
-    if( outputOption == CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
 
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
@@ -363,6 +360,12 @@ void svkSecondaryCaptureFormatter::WriteCombinedWithSummaryCapture( vtkImageWrit
 		}
 	}
     lastFrame = i; 
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) {
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
 
     //  Replace * with slice number in output file name: 
     size_t pos = fileNameString.find_last_of("*");
@@ -611,12 +614,6 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
     int firstFrame = this->sivicController->GetActive4DImageData()->GetFirstSlice( this->orientation );
     int lastFrame = this->sivicController->GetActive4DImageData()->GetLastSlice( this->orientation );
 
-    // If we want to only look at the current slice....
-    if( outputOption == CURRENT_SLICE ) { 
-        firstFrame = plotController->GetSlice();
-        lastFrame = firstFrame;
-    }
-
     // Lets figure out which are our starting and ending frames
     int i = firstFrame;
     if( this->sivicController->GetActive4DImageData()->IsA("svkMrsImageData") && static_cast<svkMrsImageData*>(this->sivicController->GetActive4DImageData())->HasSelectionBox() ) {
@@ -636,6 +633,13 @@ void svkSecondaryCaptureFormatter::WriteImageCapture( vtkImageWriter* writer, st
 		}
     }
     lastFrame = i; 
+
+    // If we want to only look at the current slice....
+    if( outputOption == CURRENT_SLICE ) {
+        firstFrame = plotController->GetSlice();
+        lastFrame = firstFrame;
+    }
+
 
     //  Replace * with slice number in output file name: 
     size_t pos = fileNameString.find_last_of("*");

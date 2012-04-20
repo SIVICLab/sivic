@@ -60,7 +60,7 @@ svkPlotLineGrid::svkPlotLineGrid()
 
     this->data = NULL;
     this->slice = 0;
-    this->plotGridActor = NULL;
+    this->plotGridActor = vtkActor::New();
     this->orientation = svkDcmHeader::AXIAL;
     this->mapper = vtkPolyDataMapper::New();
     this->polyData = vtkPolyData::New();
