@@ -257,6 +257,8 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
     if( src->GetPointData()->GetScalars()) {
         this->GetPointData()->SetActiveScalars( src->GetPointData()->GetScalars()->GetName() );
     }
+	this->GetDcmHeader()->SetPixelDataType( castToFormat );
+    this->SetScalarType( dataTypeVtk );
 }
 
 
@@ -351,6 +353,8 @@ void svkImageData::CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat
         if ( pointArrayType != -1 ) {
             this->CastDataArrays(dataTypeVtk, this->GetPointData()); 
         }
+        this->GetDcmHeader()->SetPixelDataType( castToFormat );
+        this->SetScalarType( dataTypeVtk );
     } else {
         cerr << "ERROR: You must define the format to which you wish to cast" << endl; 
     }
