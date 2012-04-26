@@ -71,6 +71,8 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
 
     this->SetErrorCode(vtkErrorCode::NoError);
     this->computedPFileSize = 0; 
+    this->reuseSeriesUID = true;
+
 }
 
 
@@ -79,6 +81,17 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
  */
 svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
 {
+}
+
+
+/*!
+ *  By default the DICOM Raw Storage object will have the same uid as the raw file. However
+ *  in some cases it may be desirable to use a unique UID, for example if another series 
+ *  exists which contains the reconstructed MRImageStorage objects with the same UID. 
+ */
+void svkDICOMRawDataWriter::ReuseSeriesUID( bool reuseUID )
+{
+    this->reuseSeriesUID = reuseUID;
 }
 
 
@@ -336,7 +349,11 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
     );
 
     //  Retain the SeriesInstanceUID from the raw file as well.
-    this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"][3] ); 
+    if ( this->reuseSeriesUID ) {  
+        this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"][3] ); 
+    } else {
+        this->dcmHeader->InsertUniqueUID( "SeriesInstanceUID" );
+    }
 
 }
 
