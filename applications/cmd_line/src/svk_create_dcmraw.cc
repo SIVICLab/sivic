@@ -66,13 +66,16 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
-    usemsg += "svk_create_dcmraw -i input_file_name  [ -a additional_file_name ] [ -xh ]    \n"; 
+    usemsg += "svk_create_dcmraw -i input_file_name  -o output_dir                          \n"; 
+    usemsg += "                [ -a additional_file_name ] [ -xuh ]                         \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of raw file to convert.                    \n"; 
     usemsg += "   -a    associated file     Name of associated files to include in DICOM    \n"; 
     usemsg += "                             output.  May specify -a multiple times.         \n"; 
     usemsg += "   -o    output_dir          Extract Files into the specified dir.           \n"; 
     usemsg += "   -x                        Extract Files from DICOM Raw Data SOP Instance. \n"; 
+    usemsg += "   -u                        Generate a unique SeriesInstanceUID (default is \n"; 
+    usemsg += "                             to use value from pfile).                       \n"; 
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Encapsulates the specified file GEPFile in a DICOM Raw Data SOP instance     \n"; 
@@ -82,6 +85,7 @@ int main (int argc, char** argv)
     string outputDir = ""; 
     vector < string >  associatedFiles; 
     bool   extractRaw = false; 
+    bool   useNewUID  = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -101,7 +105,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:a:xo:h", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:a:xuo:h", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputRawFileName.assign( optarg );
@@ -114,6 +118,9 @@ int main (int argc, char** argv)
                 break;
             case 'o':
                 outputDir.assign( optarg );
+                break;
+            case 'u':
+                useNewUID = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -181,6 +188,10 @@ int main (int argc, char** argv)
         for (int i = 0; i < associatedFiles.size(); i++ ) {
             string digest = GetHash( associatedFiles[i], sha1Digest ); 
             rawWriter->AddAssociatedFile( associatedFiles[i], digest );     
+        }
+
+        if ( useNewUID ) {
+            rawWriter->ReuseSeriesUID( false ); 
         }
 
         rawWriter->Write();
