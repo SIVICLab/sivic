@@ -259,7 +259,6 @@ int main ( int argc, char** argv )
 		globalVars.imageViewers[i]->GetRenderer()->SetBackground(0.0,0.0,0.0);
 		globalVars.renderers.push_back(vtkRenderer::New());
 		globalVars.renderers[i]->AddActor2D(globalVars.annotations[i]);
-		globalVars.renderers[i]->AddActor(sphereActor);
 	}
 
 	// Now lets finish setting up the image viewers
@@ -514,7 +513,7 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 		double* spacing;
 		double planeOrigin[3];
 		double projection[3];
-		svkDcmHeader::Orientation orientation;
+		svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION;
 		// We need the anatomical slice to calculate a point on the image
 		int slice;
 		for( int i = 0; i < 3; i++ ) {
@@ -522,17 +521,19 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 				orientation = (svkDcmHeader::Orientation)i;
 			}
 		}
-		origin = globalVars.data->GetOrigin();
-		slice = globalVars.imageViewers[ orientation ]->GetSlice( orientation );
-		int index[3] = {0,0,0};
-		index[ globalVars.data->GetOrientationIndex( orientation ) ] = slice;
-		globalVars.data->GetPositionFromIndex(index, planeOrigin);
-		double viewNormal[3];
-		globalVars.data->GetSliceNormal( viewNormal, orientation );
-		double viewNormalDouble[3] = { viewNormal[0], viewNormal[1], viewNormal[2] };
-		vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, viewNormalDouble, projection );
-		UpdateCursor( projection );
-		SetSlices(projection);
+		if( orientation != svkDcmHeader::UNKNOWN_ORIENTATION ) {
+			origin = globalVars.data->GetOrigin();
+			slice = globalVars.imageViewers[ orientation ]->GetSlice( orientation );
+			int index[3] = {0,0,0};
+			index[ globalVars.data->GetOrientationIndex( orientation ) ] = slice;
+			globalVars.data->GetPositionFromIndex(index, planeOrigin);
+			double viewNormal[3];
+			globalVars.data->GetSliceNormal( viewNormal, orientation );
+			double viewNormalDouble[3] = { viewNormal[0], viewNormal[1], viewNormal[2] };
+			vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, viewNormalDouble, projection );
+			UpdateCursor( projection );
+			SetSlices(projection);
+		}
     }
 }
 
