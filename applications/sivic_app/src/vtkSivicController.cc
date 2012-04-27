@@ -1372,11 +1372,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
     this->app->GetRegistryValue( 0, "trace_lines", "width", traceLineWidth );
     if( string(traceLineWidth) != "" ) {
     	double width = atof( traceLineWidth);
-        vtkActor::SafeDownCast(this->plotController->GetView()
-                                   ->GetProp( svkPlotGridView::PLOT_LINES ))
-                                   ->GetProperty()->SetLineWidth( width );
-        vtkActor::SafeDownCast(this->plotController->GetView()
-                                   ->GetProp( svkPlotGridView::PLOT_LINES ))->Modified();
+    	svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetPlotLineWidth( width );
     }
 
     char plotGridWidth[50]="";

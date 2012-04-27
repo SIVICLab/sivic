@@ -123,6 +123,7 @@ class svkPlotGridView : public svkDataView
         virtual void                SetRWInteractor( vtkRenderWindowInteractor* rwi );
         virtual void                SetPlotColor( int plotIndex, double* rgb );
         virtual double*             GetPlotColor( int plotIndex );
+        virtual void                SetPlotLineWidth( float width );
         virtual void                SetPlotVisibility( int plotIndex, bool visible );
         virtual bool                GetPlotVisibility( int plotIndex );
         virtual int                 GetNumberOfReferencePlots( );

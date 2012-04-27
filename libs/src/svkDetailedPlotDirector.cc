@@ -261,6 +261,15 @@ void svkDetailedPlotDirector::SetPlotColor( int plotIndex, double* rgb)
 
 
 /*!
+ *  Sets the line width.
+ */
+void svkDetailedPlotDirector::SetLineWidth( float width )
+{
+	this->xyPlotActor->GetProperty()->SetLineWidth( width );
+}
+
+
+/*!
  *  Sets the range for the abscissa using indecies.
  *
  * @param lower

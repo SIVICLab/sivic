@@ -589,6 +589,18 @@ double* svkPlotGridView::GetPlotColor(int plotIndex )
     }
 }
 
+void svkPlotGridView::SetPlotLineWidth( float width )
+{
+	for( vector<svkPlotLineGrid*>::iterator iter = this->plotGrids.begin();
+		iter != this->plotGrids.end(); ++iter) {
+		if( (*iter) != NULL ) {
+			(*iter)->GetPlotGridActor()->GetProperty()->SetLineWidth( width);
+			(*iter)->GetPlotGridActor()->Modified();
+		}
+	}
+	this->detailedPlotDirector->SetLineWidth( width );
+
+}
 
 /*!
  *  Show or hide the given plot by index.

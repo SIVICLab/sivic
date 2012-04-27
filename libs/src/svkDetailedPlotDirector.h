@@ -97,6 +97,7 @@ class svkDetailedPlotDirector : public vtkObject
         virtual void                RemoveAllInputs( );
         virtual void                RemoveInput( vtkDataArray* array );
         virtual void                SetPlotColor( int plotIndex, double* rgb);
+		virtual void                SetLineWidth( float width );
 
         virtual void                SetIndexRange( int lower, int upper );
         virtual void                GenerateAbscissa( double firstPointValue, double lastPointValue );

@@ -92,6 +92,7 @@ class svkImageViewer2 : public vtkImageViewer2
         virtual svkOpenGLOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
         virtual svkImageData* GetInput();
         virtual bool          AreOrthogonalImagesOn();
+        void SetInteractorStyle( vtkInteractorStyleImage* style );
 
         int axialSlice;
         int coronalSlice;

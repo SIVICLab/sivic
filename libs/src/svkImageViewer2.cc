@@ -257,18 +257,8 @@ void svkImageViewer2::InstallPipeline()
     {
     if (!this->InteractorStyle)
       {
-      this->InteractorStyle = vtkInteractorStyleImage::New();
-      vtkImageViewer2Callback *cbk = vtkImageViewer2Callback::New();
-      cbk->IV = this;
-      this->InteractorStyle->AddObserver(
-        vtkCommand::WindowLevelEvent, cbk);
-      this->InteractorStyle->AddObserver(
-        vtkCommand::StartWindowLevelEvent, cbk);
-      this->InteractorStyle->AddObserver(
-        vtkCommand::ResetWindowLevelEvent, cbk);
-      this->InteractorStyle->AddObserver(
-        vtkCommand::EndWindowLevelEvent, cbk);
-      cbk->Delete();
+		  vtkInteractorStyleImage* style = vtkInteractorStyleImage::New();
+		  this->SetInteractorStyle(style);
       }
 
     this->Interactor->SetInteractorStyle(this->InteractorStyle);
@@ -683,6 +673,23 @@ bool svkImageViewer2::AreOrthogonalImagesOn()
         return false;
     }
         
+}
+
+
+void svkImageViewer2::SetInteractorStyle( vtkInteractorStyleImage* style )
+{
+	this->InteractorStyle = style;
+      vtkImageViewer2Callback *cbk = vtkImageViewer2Callback::New();
+      cbk->IV = this;
+      this->InteractorStyle->AddObserver(
+        vtkCommand::WindowLevelEvent, cbk);
+      this->InteractorStyle->AddObserver(
+        vtkCommand::StartWindowLevelEvent, cbk);
+      this->InteractorStyle->AddObserver(
+        vtkCommand::ResetWindowLevelEvent, cbk);
+      this->InteractorStyle->AddObserver(
+        vtkCommand::EndWindowLevelEvent, cbk);
+      cbk->Delete();
 }
 
 

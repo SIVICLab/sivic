@@ -212,6 +212,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_point_selector
+    svk_point_selector.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_point_selector 
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_multi_view
     svk_multi_view.cc
 )
