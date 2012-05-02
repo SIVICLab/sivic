@@ -83,7 +83,7 @@ void DisplayUsage( );
 struct globalArgs_t {
 } globalArgs;
 
-static const char *optString = "hs:o:i:";
+static const char *optString = "hs:o:i:L:P:S:";
 
 struct globalVariables {
 	string                               imageFilename;
@@ -110,6 +110,10 @@ int main ( int argc, char** argv )
 
 	// Parse Command line arguments
     int opt = 0;
+    double startingLPS[3] = {0,0,0};
+    double* startingL = NULL;
+    double* startingP = NULL;
+    double* startingS = NULL;
     opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
         switch( opt ) {
@@ -124,6 +128,18 @@ int main ( int argc, char** argv )
                 break;
             case 'i':
                 globalVars.imageFilename.assign( optarg );
+                break;
+            case 'L':
+            	startingLPS[0] = svkUtils::StringToDouble(optarg);
+            	startingL = startingLPS;
+                break;
+            case 'P':
+            	startingLPS[1] = svkUtils::StringToDouble(optarg);
+            	startingP = startingLPS + 1;
+                break;
+            case 'S':
+            	startingLPS[2] = svkUtils::StringToDouble(optarg);
+            	startingS = startingLPS + 2;
                 break;
             default:
                 cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -292,6 +308,15 @@ int main ( int argc, char** argv )
 
 	double center[3];
 	globalVars.data->GetCenter(center);
+	if( startingL != NULL ) {
+		center[0] = *startingL;
+	}
+	if( startingP != NULL ) {
+		center[1] = *startingP;
+	}
+	if( startingS != NULL ) {
+		center[2] = *startingS;
+	}
 	UpdateCursor( center );
 	SetSlices( center );
 
@@ -547,11 +572,17 @@ void DisplayUsage( void )
     cout << "NAME" << endl;
     cout << "    svk_point_selector" << endl << endl;
     cout << "SYNOPSIS" << endl;
-    cout << "    svk_point_selector -i reference_image [ -o overlay ] [-s screenshot ]" << endl << endl;
+    cout << "    svk_point_selector -i reference_image [ -o overlay ] [-s screenshot ]     " << endl;
+    cout << "                                          [-L pos] [-P pos] [-S pos]          " << endl << endl;
     cout << "DESCRIPTION" << endl;
-    cout << "    svk_point_selector is used to examine an image with an overlay in the three orthogonal directions." <<  endl;
-    cout << "    A cursor is placed over the image which will follow the mouse if shift is held. When the program" << endl;
-    cout << "    terminates the coordinates of the cursor is printed to the command line." << endl << endl;
+    cout << "    svk_point_selector is used to examine an image with an overlay in the     " << endl;
+    cout << "    three orthogonal directions. A cursor is placed over the image which will " << endl;
+    cout << "    follow the mouse if shift is held. When the program terminates the        " << endl;
+    cout << "    coordinates of the cursor are printed to the command line. A starting     " << endl;
+    cout << "    position can be defined for the cursor by using the -L -P and/or -S flags." << endl;
+    cout << "    Coordinate arguments must be quoted.                                      " << endl << endl;
+    cout << "EXAMPLE" << endl;
+    cout << "    svk_point_selector -i t1234_t1ca.idf -o 12A34.idf -s 12A34.jpg -L \"1.03\""<< endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl;
     cout << endl << "############  USAGE  ############ " << endl << endl;
