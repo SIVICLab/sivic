@@ -200,6 +200,43 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 
 
 /*!
+ * Calculates the center of mass of a volume using the pixel intensities as
+ * 'mass'. Just a weighted average location.
+ */
+void svkMriImageData::GetCenterOfMass(double centerOfMass[3], int component )
+{
+	centerOfMass[0] = 0;
+	centerOfMass[1] = 0;
+	centerOfMass[2] = 0;
+	double totalMass = 0;
+	int* dims = this->GetDimensions();
+	double position[3];
+	double value;
+	int index[3];
+	vtkDataArray* scalars = this->GetPointData()->GetScalars();
+	for( int i = 0; i < dims[0]; i++ ) {
+		for( int j = 0; j < dims[1]; j++ ) {
+			for( int k = 0; k < dims[2]; k++ ) {
+				index[0] = i;
+				index[1] = j;
+				index[2] = k;
+				value = scalars->GetComponent(this->GetIDFromIndex(i, j, k), component);
+				totalMass += value;
+				this->GetPositionFromIndex(index, position);
+				centerOfMass[0] += value * position[0];
+				centerOfMass[1] += value * position[1];
+				centerOfMass[2] += value * position[2];
+			}
+		}
+	}
+	centerOfMass[0] = centerOfMass[0]/totalMass;
+	centerOfMass[1] = centerOfMass[1]/totalMass;
+	centerOfMass[2] = centerOfMass[2]/totalMass;
+	cout << "Center of mass is: " << centerOfMass[0] << " " << centerOfMass[1] << " " << centerOfMass[2] << endl;
+}
+
+
+/*!
  *  Creates an array of doubles that is the pixels of image at slice "slice.
  *  Currently assumes 1 component data
  */

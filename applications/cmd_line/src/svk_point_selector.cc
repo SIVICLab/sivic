@@ -71,7 +71,11 @@ extern "C" {
 
 using namespace svk;
 
+void ProjectPointToSlice( svkDcmHeader::Orientation orientation, double* point, double* projection);
+void DrawOff();
+void DrawOn();
 void SetupImageViewer(double position[4], svkDcmHeader::Orientation orientation, vtkActor* sphere);
+void SetActiveOrientation( svkDcmHeader::Orientation orientation );
 void SetSlice( int slice, svkDcmHeader::Orientation orientation ) ;
 void SetSlices( double coordinates[3] ) ;
 void SetupCursor();
@@ -102,18 +106,29 @@ struct globalVariables {
 	vector<vtkTransform*>                transformers;
 	vtkSphereSource*                     sphere;
 	svkLookupTable*                      colorTransfer;
+	svkDcmHeader::Orientation            activeOrientation;
+	double                               activeCursorColor[3];
+	double                               inactiveCursorColor[3];
+	vtkRenderWindow*                     window;
 } globalVars;
 
 
 int main ( int argc, char** argv )
 {
-
+	globalVars.activeOrientation = svkDcmHeader::UNKNOWN_ORIENTATION;
 	// Parse Command line arguments
     int opt = 0;
     double startingLPS[3] = {0,0,0};
     double* startingL = NULL;
     double* startingP = NULL;
     double* startingS = NULL;
+    globalVars.activeCursorColor[0] = 1;
+    globalVars.activeCursorColor[1] = 1;
+    globalVars.activeCursorColor[2] = 0;
+    globalVars.inactiveCursorColor[0] = 0.7;
+    globalVars.inactiveCursorColor[1] = 0.7;
+    globalVars.inactiveCursorColor[2] = 0;
+
     opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
         switch( opt ) {
@@ -238,8 +253,8 @@ int main ( int argc, char** argv )
 	mapper->SetInput( globalVars.sphere->GetOutput() );
 
     // Lets create setup our window and renderers
-	vtkRenderWindow* window = vtkRenderWindow::New();
-	vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+	globalVars.window = vtkRenderWindow::New();
+	vtkRenderWindowInteractor* rwi = globalVars.window->MakeRenderWindowInteractor();
 	vtkInteractorStyleImage* style = vtkInteractorStyleImage::New();
 
 	rwi->SetInteractorStyle( style );
@@ -269,13 +284,14 @@ int main ( int argc, char** argv )
 
 		globalVars.imageViewers.push_back( svkImageViewer2::New() );
 		globalVars.imageViewers[i]->SetInput( globalVars.data );
-		globalVars.imageViewers[i]->SetInteractorStyle( vtkInteractorStyleImage::SafeDownCast( window->GetInteractor()->GetInteractorStyle()));
-		globalVars.imageViewers[i]->SetupInteractor( window->GetInteractor() );
-		globalVars.imageViewers[i]->SetRenderWindow( window );
+		globalVars.imageViewers[i]->SetInteractorStyle( vtkInteractorStyleImage::SafeDownCast( globalVars.window->GetInteractor()->GetInteractorStyle()));
+		globalVars.imageViewers[i]->SetupInteractor( globalVars.window->GetInteractor() );
+		globalVars.imageViewers[i]->SetRenderWindow( globalVars.window );
 		globalVars.imageViewers[i]->GetRenderer()->SetBackground(0.0,0.0,0.0);
 		globalVars.renderers.push_back(vtkRenderer::New());
 		globalVars.renderers[i]->AddActor2D(globalVars.annotations[i]);
 	}
+	DrawOff();
 
 	// Now lets finish setting up the image viewers
 	double position[4] = {0,0,0.5,0.5};
@@ -295,7 +311,7 @@ int main ( int argc, char** argv )
 	vtkRenderer* screenshotRenderer = vtkRenderer::New();
 	screenshotRenderer->SetViewport(0.5, 0, 1, 0.5);
 	screenshotRenderer->SetBackground(0,0,0);
-	window->AddRenderer( screenshotRenderer );
+	globalVars.window->AddRenderer( screenshotRenderer );
 	if( globalVars.screenshot != NULL ) {
 		vtkImageActor* actor = vtkImageActor::New();
 		actor->SetInput( globalVars.screenshot );
@@ -305,9 +321,13 @@ int main ( int argc, char** argv )
 	if( globalVars.data != NULL ) {
 		globalVars.data->Delete();
 	}
+	SetActiveOrientation( globalVars.data->GetDcmHeader()->GetOrientationType() );
 
 	double center[3];
 	globalVars.data->GetCenter(center);
+	if( globalVars.overlayData != NULL ) {
+		svkMriImageData::SafeDownCast(globalVars.overlayData)->GetCenterOfMass( center );
+	}
 	if( startingL != NULL ) {
 		center[0] = *startingL;
 	}
@@ -317,6 +337,7 @@ int main ( int argc, char** argv )
 	if( startingS != NULL ) {
 		center[2] = *startingS;
 	}
+
 	UpdateCursor( center );
 	SetSlices( center );
 
@@ -328,18 +349,71 @@ int main ( int argc, char** argv )
 	cursorLocationCB->SetClientData( NULL );
 
 	rwi->AddObserver(vtkCommand::MouseMoveEvent, cursorLocationCB);
-	window->Render();
+
+	vtkCallbackCommand* keypressCB = vtkCallbackCommand::New();
+	keypressCB->SetCallback( KeypressCallback );
+	keypressCB->SetClientData( NULL );
+	rwi->AddObserver(vtkCommand::KeyPressEvent, keypressCB);
+
+	DrawOn();
+	globalVars.window->Render();
 	rwi->Start();
 	cout << "Selected Location: L:" << globalVars.cursorPoint->GetPoint(0)[0]
 	                       << " P:" << globalVars.cursorPoint->GetPoint(0)[1]
 	                       << " S:" << globalVars.cursorPoint->GetPoint(0)[2] << endl;
 	model->Delete();
-	window->Delete();
+	globalVars.window->Delete();
     return 0;
   
 }
 
 
+/*!
+ *
+ */
+void ProjectPointToSlice( svkDcmHeader::Orientation orientation, double* point, double* projection )
+{
+	double* origin = globalVars.data->GetOrigin();
+	int slice = globalVars.imageViewers[ orientation ]->GetSlice( orientation );
+	int index[3] = {0,0,0};
+	index[ globalVars.data->GetOrientationIndex( orientation ) ] = slice;
+	double planeOrigin[3];
+	globalVars.data->GetPositionFromIndex(index, planeOrigin);
+	double sliceNormal[3];
+	globalVars.data->GetSliceNormal( sliceNormal, orientation );
+	double sliceNormalDouble[3] = { sliceNormal[0], sliceNormal[1], sliceNormal[2] };
+	vtkPlane::GeneralizedProjectPoint( point, planeOrigin, sliceNormalDouble, projection );
+}
+
+
+/*!
+ *  Turn off all renderers.
+ */
+void DrawOff()
+{
+	for( int i = 0; i < 3; i++ ) {
+		if( globalVars.renderers[i] != NULL ) {
+			globalVars.renderers[i]->DrawOff();
+		}
+	}
+}
+
+/*!
+ *  Turn on all renderers.
+ */
+void DrawOn()
+{
+	for( int i = 0; i < 3; i++ ) {
+		if( globalVars.renderers[i] != NULL ) {
+			globalVars.renderers[i]->DrawOn();
+		}
+	}
+}
+
+
+/*!
+ *  Sets up the orthogonal views.
+ */
 void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation, vtkActor* sphereActor )
 {
 	svkImageViewer2* imageViewer = globalVars.imageViewers[orientation];
@@ -379,7 +453,7 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 			cursorActor->GetProperty()->SetLineWidth(1);
 			mapper->SetInput( glyph->GetOutput() );
 			cursorActor->SetMapper( mapper );
-			cursorActor->GetProperty()->SetColor(1,1,0);
+			cursorActor->GetProperty()->SetColor(globalVars.inactiveCursorColor);
 			imageViewer->GetRenderer()->AddActor( cursorActor );
 		}
 	}
@@ -395,7 +469,32 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 	svkMriImageData::SafeDownCast(globalVars.data)->GetAutoWindowLevel(win, lev);
 	imageViewer->SetColorWindow( win );
 	imageViewer->SetColorLevel( lev );
+}
 
+
+/*!
+ *  Sets the active orientation for keyboard slicing.
+ */
+void SetActiveOrientation( svkDcmHeader::Orientation orientation )
+{
+	if( globalVars.activeOrientation != orientation ) {
+		globalVars.activeOrientation = orientation;
+		vtkActor* tmpActor = NULL;
+		for( int i = 0; i < 3; i++) {
+			vtkActorCollection* actors = globalVars.renderers[i]->GetActors();
+			for( int j = 0; j< actors->GetNumberOfItems(); j++) {
+				tmpActor = vtkActor::SafeDownCast(actors->GetItemAsObject(j));
+				if( (svkDcmHeader::Orientation)i == orientation ) {
+					tmpActor->GetProperty()->SetColor( globalVars.activeCursorColor);
+				} else {
+					tmpActor->GetProperty()->SetColor( globalVars.inactiveCursorColor);
+				}
+				tmpActor->Modified();
+			}
+			globalVars.renderers[i]->Modified();
+		}
+		globalVars.window->Render();
+	}
 }
 
 
@@ -436,10 +535,10 @@ void SetSlice( int slice, svkDcmHeader::Orientation orientation )
 		globalVars.transformers[orientation]->Translate( (delta+tol)*normal[0],
 								   (delta+tol)*normal[1],
 								   (delta+tol)*normal[2]);
-		//globalVars.transformers[orientation]->Translate( 0,0,0);
 		globalVars.overlayActors[orientation]->SetUserTransform(globalVars.transformers[orientation]);
 		globalVars.overlayActors[orientation]->SetDisplayExtent(overlaySliceExtent);
 	}
+	globalVars.window->Render();
 }
 
 
@@ -460,14 +559,31 @@ void SetSlices( double coordinates[3] )
  */
 void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata)
 {
-    char keyPressed;
-    int newSlice = -1;
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
-    keyPressed = rwi->GetKeyCode();
+    char keyCode = rwi->GetKeyCode();
+    string keySymbol;
+    if( rwi->GetKeySym() != NULL ) {
+    	keySymbol = rwi->GetKeySym();
+    }
             
-    if ( keyPressed == '+' ) {
-    } else if ( keyPressed == '-' ) {
+    int currentSlice = globalVars.imageViewers[globalVars.activeOrientation]->GetSlice( globalVars.activeOrientation);
+    int newSlice = currentSlice;
+
+    if( keySymbol.compare("Right") == 0 || keySymbol.compare("Up") == 0 || keyCode == '+'  ) {
+    	newSlice++;
+    } else if( keySymbol.compare("Left") == 0 || keySymbol.compare("Down") == 0 || keyCode == '-' ) {
+    	newSlice--;
+    }
+
+    if( newSlice != currentSlice ) {
+		double projection[3];
+    	DrawOff();
+    	SetSlice( newSlice, globalVars.activeOrientation);
+    	ProjectPointToSlice(globalVars.activeOrientation, globalVars.cursorPoint->GetPoint(0), projection );
+    	UpdateCursor( projection );
+    	DrawOn();
+    	globalVars.window->Render();
     }
 }
 
@@ -522,11 +638,18 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
     vtkRenderWindowInteractor *rwi =
             vtkRenderWindowInteractor::SafeDownCast( subject );
     int keyPressed = rwi->GetShiftKey();
+	int pos[2];
+	pos[0] = rwi->GetEventPosition()[0];
+	pos[1] = rwi->GetEventPosition()[1];
+	vtkRenderer* ren = rwi->FindPokedRenderer( pos[0], pos[1]);
+	if( ren == globalVars.renderers[svkDcmHeader::AXIAL ]) {
+		SetActiveOrientation( svkDcmHeader::AXIAL );
+	} else if( ren == globalVars.renderers[svkDcmHeader::CORONAL ]) {
+		SetActiveOrientation( svkDcmHeader::CORONAL );
+	} else if( ren == globalVars.renderers[svkDcmHeader::SAGITTAL ]) {
+		SetActiveOrientation( svkDcmHeader::SAGITTAL );
+	}
     if( keyPressed == 1  ) {
-		int pos[2];
-		pos[0] = rwi->GetEventPosition()[0];
-		pos[1] = rwi->GetEventPosition()[1];
-		vtkRenderer* ren = rwi->FindPokedRenderer( pos[0], pos[1]);
 		vtkCoordinate* mousePosition = vtkCoordinate::New();
 		mousePosition->SetCoordinateSystemToDisplay();
 		mousePosition->SetValue( pos[0], pos[1], 0);
@@ -536,7 +659,6 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 
 		double* origin;
 		double* spacing;
-		double planeOrigin[3];
 		double projection[3];
 		svkDcmHeader::Orientation orientation = svkDcmHeader::UNKNOWN_ORIENTATION;
 		// We need the anatomical slice to calculate a point on the image
@@ -547,15 +669,7 @@ void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObjec
 			}
 		}
 		if( orientation != svkDcmHeader::UNKNOWN_ORIENTATION ) {
-			origin = globalVars.data->GetOrigin();
-			slice = globalVars.imageViewers[ orientation ]->GetSlice( orientation );
-			int index[3] = {0,0,0};
-			index[ globalVars.data->GetOrientationIndex( orientation ) ] = slice;
-			globalVars.data->GetPositionFromIndex(index, planeOrigin);
-			double viewNormal[3];
-			globalVars.data->GetSliceNormal( viewNormal, orientation );
-			double viewNormalDouble[3] = { viewNormal[0], viewNormal[1], viewNormal[2] };
-			vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, viewNormalDouble, projection );
+			ProjectPointToSlice(orientation, imageCords, projection);
 			UpdateCursor( projection );
 			SetSlices(projection);
 		}
@@ -581,8 +695,15 @@ void DisplayUsage( void )
     cout << "    coordinates of the cursor are printed to the command line. A starting     " << endl;
     cout << "    position can be defined for the cursor by using the -L -P and/or -S flags." << endl;
     cout << "    Coordinate arguments must be quoted.                                      " << endl << endl;
+    cout << "INTERACTIVE CONTROLS " << endl;
+    cout << "    Left Click and drag to adjust window level.                               " << endl;
+    cout << "    Right Click and drag or use mouse wheel to adjust zoom.                   " << endl;
+    cout << "    Middle Click and drag to translate camera.                                " << endl;
+    cout << "    Arrow Keys or + and - can be used to change the current slice.            " << endl;
+    cout << "    Shift + r to reset camera.                                                " << endl;
+    cout << "    Alt + r can be used to reset the window level.                            " << endl << endl;
     cout << "EXAMPLE" << endl;
-    cout << "    svk_point_selector -i t1234_t1ca.idf -o 12A34.idf -s 12A34.jpg -L \"1.03\""<< endl;
+    cout << "    svk_point_selector -i t1234_t1ca.idf -o 12A34.idf -s 12A34.jpg -L \"1.03\""<< endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl;
     cout << endl << "############  USAGE  ############ " << endl << endl;

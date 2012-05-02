@@ -88,6 +88,7 @@ class svkMriImageData: public svkImageData
         virtual void            GetNumberOfVoxels(int numVoxels[3]);
         void                    GetAutoWindowLevel( double& window, double& level, int numBins = START_NUM_BINS
                                                                          , double excludeFactor = EXCLUDE_FACTOR );
+        void                    GetCenterOfMass( double centerOfMass[3], int component = 0 );
         virtual svk4DImageData* GetCellDataRepresentation();
         void                    SyncPixelDataToCellRepresentation();
         void                    SyncCellRepresentationToPixelData();
