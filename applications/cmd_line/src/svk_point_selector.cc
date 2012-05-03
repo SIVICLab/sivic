@@ -291,7 +291,6 @@ int main ( int argc, char** argv )
 		globalVars.renderers.push_back(vtkRenderer::New());
 		globalVars.renderers[i]->AddActor2D(globalVars.annotations[i]);
 	}
-	DrawOff();
 
 	// Now lets finish setting up the image viewers
 	double position[4] = {0,0,0.5,0.5};
@@ -355,7 +354,6 @@ int main ( int argc, char** argv )
 	keypressCB->SetClientData( NULL );
 	rwi->AddObserver(vtkCommand::KeyPressEvent, keypressCB);
 
-	DrawOn();
 	globalVars.window->Render();
 	rwi->Start();
 	cout << "Selected Location: L:" << globalVars.cursorPoint->GetPoint(0)[0]
