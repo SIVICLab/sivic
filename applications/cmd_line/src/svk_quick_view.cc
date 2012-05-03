@@ -191,7 +191,8 @@ void DisplayUsage( void )
     cout << "SYNOPSIS" << endl;
     cout << "    svk_quick_view fileName" << endl << endl;
     cout << "DESCRIPTION" << endl;
-    cout << "    svk_quick_view is used to give a quick way to load a volume file. Pressing + and - change the slice." << endl << endl;
+    cout << "    svk_quick_view is used to give a quick way to load a volume file. " << endl;
+    cout << "    Pressing either +/- or the arrow keys will change the slice." << endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl; 
     cout << endl << "############  USAGE  ############ " << endl << endl;

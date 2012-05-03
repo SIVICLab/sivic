@@ -112,8 +112,8 @@ void Usage( void )
     cout << "SYNOPSIS" << endl;
     cout << "    svk_multi_view [-s spectra ] [-o overlay ] [-d] imageOne imageTwo imageThree ..." << endl << endl;
     cout << "DESCRIPTION" << endl;
-    cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number.";
-    cout << " Pressing + and - change the slice." << endl << endl;
+    cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
+    cout << "    Pressing either +/- or the arrow keys will change the slice." << endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl; 
     cout << endl << "############  USAGE  ############ " << endl << endl;
