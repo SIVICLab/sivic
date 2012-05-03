@@ -355,6 +355,32 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
         this->dcmHeader->InsertUniqueUID( "SeriesInstanceUID" );
     }
 
+    time_t time = this->GetHeaderValueAsInt("rhs.se_datetime");
+
+    //convert to Pacific time:  subtract 8 hours
+    struct tm * timeinfo;
+    timeinfo = localtime ( &time );
+    bool isDaylightSavingsTime = timeinfo->tm_isdst;
+    if ( isDaylightSavingsTime ) {
+        time += 7 * 60 * 60;
+    } else {
+        time += 8 * 60 * 60;
+    }
+    char timeBuf[80];
+    strftime (timeBuf, 80,"%H%M", timeinfo);
+
+    this->dcmHeader->SetValue(
+        "SeriesTime",
+        string(timeBuf)
+    );
+
+    vtkstd::string dcmDate = svkGEPFileMapper::ConvertGEDateToDICOM( this->pfMap["rhr.rh_scan_date"][3] );
+
+    this->dcmHeader->SetValue(
+        "SeriesDate",
+        svkImageReader2::RemoveSlashesFromDate( &dcmDate )
+    );
+
 }
 
 
