@@ -213,9 +213,14 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
             vtkRenderWindowInteractor::SafeDownCast( subject );
     keyPressed = rwi->GetKeyCode();
             
-    if ( keyPressed == '+' ) {
+    string keySymbol;
+    if( rwi->GetKeySym() != NULL ) {
+    	keySymbol = rwi->GetKeySym();
+    }
+
+    if( keySymbol.compare("Right") == 0 || keySymbol.compare("Up") == 0 || keyPressed == '+'  ) {
         newSlice = slice+1;
-    } else if ( keyPressed == '-' ) {
+    } else if( keySymbol.compare("Left") == 0 || keySymbol.compare("Down") == 0 || keyPressed == '-' ) {
         newSlice = slice-1;
     }
 
