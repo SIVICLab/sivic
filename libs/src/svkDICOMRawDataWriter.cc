@@ -355,7 +355,7 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
         this->dcmHeader->InsertUniqueUID( "SeriesInstanceUID" );
     }
 
-    time_t time = this->GetHeaderValueAsInt("rhs.se_datetime");
+    time_t time = this->GetHeaderValueAsInt("rhe.ex_datetime");
 
     //convert to Pacific time:  subtract 8 hours
     struct tm * timeinfo;
