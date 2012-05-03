@@ -78,6 +78,7 @@ void SetupImageViewer(double position[4], svkDcmHeader::Orientation orientation,
 void SetActiveOrientation( svkDcmHeader::Orientation orientation );
 void SetSlice( int slice, svkDcmHeader::Orientation orientation ) ;
 void SetSlices( double coordinates[3] ) ;
+void ToggleReferenceImage( );
 void SetupCursor();
 void UpdateCursor( double location[3]);
 static void UpdateCursorLocation(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
@@ -87,13 +88,16 @@ void DisplayUsage( );
 struct globalArgs_t {
 } globalArgs;
 
-static const char *optString = "hs:o:i:L:P:S:";
+static const char *optString = "hs:o:i:a:L:P:S:";
 
 struct globalVariables {
 	string                               imageFilename;
+	string                               alternateImageFilename;
 	string                               overlayFilename;
 	string                               screenshotFilename;
 	svkImageData*                        data;
+	svkImageData*                        primaryImage;
+	svkImageData*                        alternateImage;
 	svkImageData*                        overlayData;
 	vtkImageData*                        screenshot;
 	vtkDoubleArray*                      cursorPosition;
@@ -109,6 +113,10 @@ struct globalVariables {
 	svkDcmHeader::Orientation            activeOrientation;
 	double                               activeCursorColor[3];
 	double                               inactiveCursorColor[3];
+	double								 primaryWindow;
+	double								 primaryLevel;
+	double								 alternateWindow;
+	double								 alternateLevel;
 	vtkRenderWindow*                     window;
 } globalVars;
 
@@ -122,12 +130,20 @@ int main ( int argc, char** argv )
     double* startingL = NULL;
     double* startingP = NULL;
     double* startingS = NULL;
+
+    // We need to save window level settings when alternating images.
+    globalVars.primaryWindow = -1;
+    globalVars.primaryLevel = 0;
+    globalVars.alternateWindow = -1;
+    globalVars.alternateLevel = 0;
     globalVars.activeCursorColor[0] = 1;
     globalVars.activeCursorColor[1] = 1;
     globalVars.activeCursorColor[2] = 0;
     globalVars.inactiveCursorColor[0] = 0.7;
     globalVars.inactiveCursorColor[1] = 0.7;
     globalVars.inactiveCursorColor[2] = 0;
+    globalVars.primaryImage = NULL;
+    globalVars.alternateImage = NULL;
 
     opt = getopt( argc, argv, optString);
     while( opt != -1 ) {
@@ -143,6 +159,9 @@ int main ( int argc, char** argv )
                 break;
             case 'i':
                 globalVars.imageFilename.assign( optarg );
+                break;
+            case 'a':
+                globalVars.alternateImageFilename.assign( optarg );
                 break;
             case 'L':
             	startingLPS[0] = svkUtils::StringToDouble(optarg);
@@ -185,6 +204,8 @@ int main ( int argc, char** argv )
 	}
 	globalVars.data->Register(NULL);
 	globalVars.data->Update();
+	globalVars.primaryImage = globalVars.data;
+	globalVars.primaryImage->Register(NULL);
 
 	// And now if there is an overlay lets load that
     if ( !globalVars.overlayFilename.empty() ) {
@@ -196,6 +217,17 @@ int main ( int argc, char** argv )
 		globalVars.overlayData->Register(NULL);
 		globalVars.overlayData->Update();
 
+    }
+
+	// And now if there is an alternate reference image lets load that
+    if ( !globalVars.alternateImageFilename.empty() ) {
+		globalVars.alternateImage = model->LoadFile(globalVars.alternateImageFilename, readOnlyOneFile );
+		if( globalVars.alternateImage == NULL ) {
+			cerr << "ERROR: Could not read input file: " << globalVars.alternateImageFilename << endl;
+			exit(1);
+		}
+		globalVars.alternateImage->Register(NULL);
+		globalVars.alternateImage->Update();
     }
 
     // Now lets read the screenshots if provided.
@@ -210,10 +242,10 @@ int main ( int argc, char** argv )
 
 
 	//Prepare overlay objects if we have overlay data and reslice if necessary
-	svkLookupTable* colorTransfer = svkLookupTable::New();
+	globalVars.colorTransfer = svkLookupTable::New();
 	if( globalVars.overlayData != NULL ) {
 		svkDataValidator* validator = svkDataValidator::New();
-		bool dcosMatch = validator->AreDataGeometriesSame(globalVars.data, globalVars.overlayData);
+		bool dcosMatch = validator->AreDataOrientationsSame(globalVars.data, globalVars.overlayData);
 		if( !dcosMatch ) {
 			cout << "WARNING: Overlay is being resliced to image " << endl;
 			svkObliqueReslice* reslicer = svkObliqueReslice::New();
@@ -225,10 +257,10 @@ int main ( int argc, char** argv )
 		double win;
 		double lev;
 		svkMriImageData::SafeDownCast(globalVars.overlayData)->GetAutoWindowLevel(win, lev);
-		colorTransfer->SetRange( lev - win/2.0, lev + win/2.0);
-		colorTransfer->SetLUTType( svkLookupTable::COLOR );
-		colorTransfer->SetAlphaThreshold( 0.15 );
-		colorTransfer->SetAlpha( 0.5 );
+		globalVars.colorTransfer->SetRange( lev - win/2.0, lev + win/2.0);
+		globalVars.colorTransfer->SetLUTType( svkLookupTable::COLOR );
+		globalVars.colorTransfer->SetAlphaThreshold( 0.15 );
+		globalVars.colorTransfer->SetAlpha( 0.5 );
 	}
 
 
@@ -268,7 +300,7 @@ int main ( int argc, char** argv )
 		int newExtent[6] = {extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]};
 		globalVars.colorMappers.push_back(svkImageMapToColors::New());
 		globalVars.colorMappers[i]->SetOutputFormatToRGBA();
-		globalVars.colorMappers[i]->SetLookupTable(colorTransfer);
+		globalVars.colorMappers[i]->SetLookupTable(globalVars.colorTransfer);
 
 		if( globalVars.overlayData != NULL ) {
 			globalVars.transformers.push_back(vtkTransform::New());
@@ -420,6 +452,7 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 	imageViewer->SetOrientation( orientation );
 	imageViewer->ResetCamera();
 	imageViewer->GetRenderer()->GetActiveCamera()->SetParallelProjection(1);
+	imageViewer->GetRenderer()->GetActiveCamera()->Zoom( 1.5 );
     ren->SetViewport(position);
 	imageViewer->GetImageActor()->PickableOff();
 	globalVars.cursorPoint->SetNumberOfPoints(1);
@@ -572,6 +605,8 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     	newSlice++;
     } else if( keySymbol.compare("Left") == 0 || keySymbol.compare("Down") == 0 || keyCode == '-' ) {
     	newSlice--;
+    } else if( keyCode == 'a' ) {
+    	ToggleReferenceImage();
     }
 
     if( newSlice != currentSlice ) {
@@ -583,6 +618,44 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     	DrawOn();
     	globalVars.window->Render();
     }
+}
+
+
+/*!
+ *
+ */
+void ToggleReferenceImage( )
+{
+	DrawOff();
+	for( int i = 0; i < 3; i++ ) {
+		if( globalVars.imageViewers[i]->GetInput() == globalVars.primaryImage ) {
+			// Save the current window level
+			globalVars.primaryWindow = globalVars.imageViewers[i]->GetColorWindow();
+			globalVars.primaryLevel = globalVars.imageViewers[i]->GetColorLevel();
+			globalVars.imageViewers[i]->SetInput( globalVars.alternateImage );
+			globalVars.data = globalVars.alternateImage;
+
+			if( globalVars.alternateWindow == -1 ) {
+				double win;
+				double lev;
+				svkMriImageData::SafeDownCast(globalVars.alternateImage)->GetAutoWindowLevel(win, lev);
+				globalVars.alternateWindow = win;
+				globalVars.alternateLevel = lev;
+			}
+			globalVars.imageViewers[i]->SetColorLevel( globalVars.alternateLevel);
+			globalVars.imageViewers[i]->SetColorWindow( globalVars.alternateWindow);
+		} else {
+			// Save the current window level
+			globalVars.alternateWindow = globalVars.imageViewers[i]->GetColorWindow();
+			globalVars.alternateLevel = globalVars.imageViewers[i]->GetColorLevel();
+			globalVars.imageViewers[i]->SetInput( globalVars.primaryImage );
+			globalVars.data = globalVars.primaryImage;
+			globalVars.imageViewers[i]->SetColorLevel( globalVars.primaryLevel);
+			globalVars.imageViewers[i]->SetColorWindow( globalVars.primaryWindow);
+		}
+	}
+	DrawOn();
+	SetSlices( globalVars.cursorPosition->GetTuple(0));
 }
 
 
@@ -685,6 +758,7 @@ void DisplayUsage( void )
     cout << "    svk_point_selector" << endl << endl;
     cout << "SYNOPSIS" << endl;
     cout << "    svk_point_selector -i reference_image [ -o overlay ] [-s screenshot ]     " << endl;
+    cout << "                                          [-a alternate_reference ]           " << endl;
     cout << "                                          [-L pos] [-P pos] [-S pos]          " << endl << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_point_selector is used to examine an image with an overlay in the     " << endl;
@@ -697,6 +771,7 @@ void DisplayUsage( void )
     cout << "    Left Click and drag to adjust window level.                               " << endl;
     cout << "    Right Click and drag or use mouse wheel to adjust zoom.                   " << endl;
     cout << "    Middle Click and drag to translate camera.                                " << endl;
+    cout << "    'a' switches between primary and alternate reference images.              " << endl;
     cout << "    Arrow Keys or + and - can be used to change the current slice.            " << endl;
     cout << "    Shift + r to reset camera.                                                " << endl;
     cout << "    Alt + r can be used to reset the window level.                            " << endl << endl;
