@@ -232,7 +232,6 @@ void svkMriImageData::GetCenterOfMass(double centerOfMass[3], int component )
 	centerOfMass[0] = centerOfMass[0]/totalMass;
 	centerOfMass[1] = centerOfMass[1]/totalMass;
 	centerOfMass[2] = centerOfMass[2]/totalMass;
-	cout << "Center of mass is: " << centerOfMass[0] << " " << centerOfMass[1] << " " << centerOfMass[2] << endl;
 }
 
 
