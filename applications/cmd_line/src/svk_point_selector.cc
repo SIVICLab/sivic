@@ -226,8 +226,20 @@ int main ( int argc, char** argv )
 			cerr << "ERROR: Could not read input file: " << globalVars.alternateImageFilename << endl;
 			exit(1);
 		}
+
+		svkDataValidator* validator = svkDataValidator::New();
+		bool dcosMatch = validator->AreDataOrientationsSame(globalVars.data, globalVars.alternateImage);
+		if( !dcosMatch ) {
+			cout << "WARNING: Alternate image is being resliced to primary image " << endl;
+			svkObliqueReslice* reslicer = svkObliqueReslice::New();
+			reslicer->SetInput( globalVars.alternateImage );
+			reslicer->SetTargetDcosFromImage( globalVars.data );
+			reslicer->Update();
+			globalVars.alternateImage = reslicer->GetOutput();
+		}
 		globalVars.alternateImage->Register(NULL);
 		globalVars.alternateImage->Update();
+
     }
 
     // Now lets read the screenshots if provided.
@@ -308,7 +320,7 @@ int main ( int argc, char** argv )
 			globalVars.overlayActors.push_back( svkOpenGLOrientedImageActor::New() );
 			globalVars.overlayActors[i]->SetInput(globalVars.colorMappers[i]->GetOutput());
 			globalVars.overlayActors[i]->SetUserTransform( globalVars.transformers[i] );
-			globalVars.overlayActors[i]->InterpolateOff();
+			globalVars.overlayActors[i]->InterpolateOn();
 		} else {
 			globalVars.overlayActors.push_back( NULL );
 			globalVars.transformers.push_back( NULL );
@@ -438,6 +450,7 @@ void DrawOn()
 			globalVars.renderers[i]->DrawOn();
 		}
 	}
+	globalVars.window->Render();
 }
 
 
@@ -465,6 +478,7 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
     int sliceIndex = globalVars.data->GetOrientationIndex( orientation );
 
 	for( int i = 0; i < 3; i++ ) {
+		imageViewer->GetImageActor((svkDcmHeader::Orientation)i)->InterpolateOn();
 		if( i != orientation ) {
 			vtkLineSource* line = vtkLineSource::New();
 			double orthSliceNormal[3];
@@ -654,8 +668,8 @@ void ToggleReferenceImage( )
 			globalVars.imageViewers[i]->SetColorWindow( globalVars.primaryWindow);
 		}
 	}
-	DrawOn();
 	SetSlices( globalVars.cursorPosition->GetTuple(0));
+	DrawOn();
 }
 
 
