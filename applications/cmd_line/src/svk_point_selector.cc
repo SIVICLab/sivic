@@ -68,6 +68,7 @@ extern "C" {
 #include <svkLookupTable.h>
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
+#define WINDOW_SIZE 768
 
 using namespace svk;
 
@@ -298,6 +299,7 @@ int main ( int argc, char** argv )
 
     // Lets create setup our window and renderers
 	globalVars.window = vtkRenderWindow::New();
+	globalVars.window->SetSize(WINDOW_SIZE, WINDOW_SIZE);
 	vtkRenderWindowInteractor* rwi = globalVars.window->MakeRenderWindowInteractor();
 	vtkInteractorStyleImage* style = vtkInteractorStyleImage::New();
 
@@ -465,7 +467,7 @@ void SetupImageViewer( double position[4], svkDcmHeader::Orientation orientation
 	imageViewer->SetOrientation( orientation );
 	imageViewer->ResetCamera();
 	imageViewer->GetRenderer()->GetActiveCamera()->SetParallelProjection(1);
-	imageViewer->GetRenderer()->GetActiveCamera()->Zoom( 1.5 );
+	imageViewer->GetRenderer()->GetActiveCamera()->Zoom( 2.2 );
     ren->SetViewport(position);
 	imageViewer->GetImageActor()->PickableOff();
 	globalVars.cursorPoint->SetNumberOfPoints(1);
