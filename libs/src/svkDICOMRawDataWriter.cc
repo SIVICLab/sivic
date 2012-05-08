@@ -72,6 +72,7 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
     this->SetErrorCode(vtkErrorCode::NoError);
     this->computedPFileSize = 0; 
     this->reuseSeriesUID = true;
+    this->seriesInstanceUID = "";
 
 }
 
@@ -92,6 +93,14 @@ svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
 void svkDICOMRawDataWriter::ReuseSeriesUID( bool reuseUID )
 {
     this->reuseSeriesUID = reuseUID;
+}
+
+/*
+ *  Use the specified seriesInstanceUID: 
+ */
+void svkDICOMRawDataWriter::SetSeriesUID( vtkstd::string UID )
+{
+    this->seriesInstanceUID = UID;
 }
 
 
@@ -348,8 +357,10 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
         patientEntryPos
     );
 
-    //  Retain the SeriesInstanceUID from the raw file as well.
-    if ( this->reuseSeriesUID ) {  
+    //  Retain the SeriesInstanceUID from the raw file as well, or use specified UID, or generate a new one.
+    if ( this->seriesInstanceUID.length() > 0 ) {  
+        this->dcmHeader->SetValue( "SeriesInstanceUID", this->seriesInstanceUID ); 
+    } else if ( this->reuseSeriesUID ) {  
         this->dcmHeader->SetValue( "SeriesInstanceUID", this->pfMap["rhs.series_uid"][3] ); 
     } else {
         this->dcmHeader->InsertUniqueUID( "SeriesInstanceUID" );
@@ -379,6 +390,22 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
     this->dcmHeader->SetValue(
         "SeriesDate",
         svkImageReader2::RemoveSlashesFromDate( &dcmDate )
+    );
+
+
+    //   Set the relatedseriessequence
+    this->dcmHeader->InsertEmptyElement( "RelatedSeriesSequence" );
+    this->dcmHeader->AddSequenceItemElement(
+        "RelatedSeriesSequence",
+        0,
+        "StudyInstanceUID", 
+        this->pfMap["rhe.study_uid"][3] 
+    );
+    this->dcmHeader->AddSequenceItemElement(
+        "RelatedSeriesSequence",
+        0,
+        "SeriesInstanceUID", 
+        this->pfMap["rhs.series_uid"][3] 
     );
 
 }
