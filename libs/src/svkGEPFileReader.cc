@@ -1216,13 +1216,17 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 39200,\
             rhi.nex                            , FLOAT_4, 1   , 39164,\
             rhi.numecho                        , INT_2  , 1   , 39156,\
+            rhi.image_uid                      , UID    , 32  , 39708,\
             rhe.ex_datetime                    , INT_4  , 1   , 37084,\
             rhe.ex_no                          , UINT_2 , 1   , 36880,\
             rhe.magstrength                    , INT_4  , 1   , 36956,\
             rhe.patid                          , CHAR   , 13  , 36960,\
+            rhe.patidff                        , CHAR   , 65  , 37521,\
             rhe.patname                        , CHAR   , 25  , 36973,\
+            rhe.patnameff                      , CHAR   , 65  , 37456,\
             rhe.refphy                         , CHAR   , 33  , 37088,\
             rhe.reqnum                         , CHAR   , 13  , 37071,\
+            rhe.reqnumff                       , CHAR   , 17  , 37586,\
             rhe.study_uid                      , UID    , 32  , 37358,\
             rhe.dateofbirth                    , CHAR   , 9   , 37603,\
             rhe.patsex                         , INT_2  , 1   , 37002,\
@@ -1393,13 +1397,17 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 60188,\
             rhi.nex                            , FLOAT_4, 1   , 60152,\
             rhi.numecho                        , INT_2  , 1   , 60144,\
+            rhi.image_uid                      , UID    , 32  , 60696,\
             rhe.ex_datetime                    , INT_4  , 1   , 57564,\
             rhe.ex_no                          , UINT_2 , 1   , 57360,\
             rhe.magstrength                    , INT_4  , 1   , 57436,\
             rhe.patid                          , CHAR   , 13  , 57440,\
+            rhe.patidff                        , CHAR   , 65  , 58001,\
             rhe.patname                        , CHAR   , 25  , 57453,\
+            rhe.patnameff                      , CHAR   , 65  , 57936,\
             rhe.refphy                         , CHAR   , 33  , 57568,\
             rhe.reqnum                         , CHAR   , 13  , 57551,\
+            rhe.reqnumff                       , CHAR   , 17  , 58066,\
             rhe.study_uid                      , UID    , 32  , 57838,\
             rhe.dateofbirth                    , CHAR   , 9   , 58083,\
             rhe.patsex                         , INT_2  , 1   , 57482,\
@@ -1571,13 +1579,17 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 65244,\
             rhi.nex                            , FLOAT_4, 1   , 64564,\
             rhi.numecho                        , INT_2  , 1   , 65206,\
+            rhi.image_uid                      , UID    , 32  , 65559,\
             rhe.ex_datetime                    , INT_4  , 1   , 61568,\
             rhe.ex_no                          , UINT_2 , 1   , 61576,\
             rhe.magstrength                    , INT_4  , 1   , 61560,\
             rhe.patid                          , CHAR   , 13  , 61884,\
+            rhe.patidff                        , CHAR   , 65  , 62127,\
             rhe.patname                        , CHAR   , 25  , 61897,\
+            rhe.patnameff                      , CHAR   , 65  , 62062,\
             rhe.refphy                         , CHAR   , 33  , 61690,\
             rhe.reqnum                         , CHAR   , 13  , 61677,\
+            rhe.reqnumff                       , CHAR   , 17  , 62192,\
             rhe.study_uid                      , UID    , 32  , 61966,\
             rhe.dateofbirth                    , CHAR   , 9   , 62209,\
             rhe.patsex                         , INT_2  , 1   , 61600,\
@@ -1749,13 +1761,17 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 144928,\
             rhi.nex                            , FLOAT_4, 1   , 143952,\
             rhi.numecho                        , INT_2  , 1   , 144890,\
+            rhi.image_uid                      , UID    , 32  , 145317,\
             rhe.ex_datetime                    , INT_4  , 1   , 140988,\
             rhe.ex_no                          , UINT_2 , 1   , 141044,\
             rhe.magstrength                    , INT_4  , 1   , 140980,\
             rhe.patid                          , CHAR   , 13  , 141368,\
+            rhe.patidff                        , CHAR   , 65  , 141611,\
             rhe.patname                        , CHAR   , 25  , 141381,\
+            rhe.patnameff                      , CHAR   , 65  , 141546,\
             rhe.refphy                         , CHAR   , 33  , 141174,\
             rhe.reqnum                         , CHAR   , 13  , 141161,\
+            rhe.reqnumff                       , CHAR   , 17  , 141676,\
             rhe.study_uid                      , UID    , 32  , 141450,\
             rhe.dateofbirth                    , CHAR   , 9   , 141693,\
             rhe.patsex                         , INT_2  , 1   , 141068,\
@@ -1927,13 +1943,17 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 144924,\
             rhi.nex                            , FLOAT_4, 1   , 143952,\
             rhi.numecho                        , INT_2  , 1   , 144890,\
+            rhi.image_uid                      , UID    , 32  , 145317,\
             rhe.ex_datetime                    , INT_4  , 1   , 140988,\
             rhe.ex_no                          , UINT_2 , 1   , 141044,\
             rhe.magstrength                    , INT_4  , 1   , 140980,\
             rhe.patid                          , CHAR   , 13  , 141368,\
+            rhe.patidff                        , CHAR   , 65  , 141611,\
             rhe.patname                        , CHAR   , 25  , 141381,\
+            rhe.patnameff                      , CHAR   , 65  , 141546,\
             rhe.refphy                         , CHAR   , 33  , 141174,\
             rhe.reqnum                         , CHAR   , 13  , 141161,\
+            rhe.reqnumff                       , CHAR   , 17  , 141676,\
             rhe.study_uid                      , UID    , 32  , 141450,\
             rhe.dateofbirth                    , CHAR   , 9   , 141693,\
             rhe.patsex                         , INT_2  , 1   , 141068,\
@@ -1980,7 +2000,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhr.ycsi                           , INT_2  , 1   , 376,\
             rhr.zcsi                           , INT_2  , 1   , 378,\
             rhr.rh_logo                        , CHAR   , 10  , 34,\
-            rhr.rh_raw_pass_size               , LINT_4 , 1   , 1660,\
+            rhr.rh_raw_pass_size               , LINT_8 , 1   , 1660,\
             rhr.rh_user0                       , FLOAT_4, 1   , 216,\
             rhr.rh_user1                       , FLOAT_4, 1   , 220,\
             rhr.rh_user2                       , FLOAT_4, 1   , 224,\
@@ -2105,6 +2125,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 148752,\
             rhi.nex                            , FLOAT_4, 1   , 147672,\
             rhi.numecho                        , INT_2  , 1   , 148718,\
+            rhi.image_uid                      , UID    , 32  , 149157,\
             rhe.ex_datetime                    , INT_4  , 1   , 143400,\
             rhe.ex_no                          , UINT_2 , 1   , 143516,\
             rhe.magstrength                    , INT_4  , 1   , 143392,\
@@ -2283,6 +2304,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhi.mr_flip                        , INT_2  , 1   , 149300,\
             rhi.nex                            , FLOAT_4, 1   , 148220,\
             rhi.numecho                        , INT_2  , 1   , 149266,\
+            rhi.image_uid                      , UID    , 32  , 149705,\
             rhe.ex_datetime                    , INT_4  , 1   , 143948,\
             rhe.ex_no                          , UINT_2 , 1   , 144064,\
             rhe.magstrength                    , INT_4  , 1   , 143940,\
