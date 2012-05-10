@@ -214,7 +214,8 @@ void svkDICOMRawDataWriter::Write()
     this->UpdateProgress(0.0);
 
  
-    this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
+    //  to ensure that the series only goes into PACS once, use the image uid from the raw file: 
+    this->dcmHeader->SetValue( "SOPInstanceUID", this->pfMap["rhi.image_uid"][3] ); 
 
     this->dcmHeader->SetValue(
         "InstanceNumber",
