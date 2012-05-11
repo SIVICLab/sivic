@@ -81,7 +81,9 @@ class svkDICOMRawDataWriter : public svkImageWriter
         void            SetSHA1Digest( string sha1Digest);
         void            AddAssociatedFile( string fileName, string sha1Digest ); 
         void            ReuseSeriesUID( bool reuseUID ); 
+        void            ReuseInstanceUID( bool reuseUID ); 
         void            SetSeriesUID( vtkstd::string UID ); 
+        void            SetInstanceUID( vtkstd::string UID ); 
         virtual void    Write();
 
 
@@ -111,7 +113,9 @@ class svkDICOMRawDataWriter : public svkImageWriter
         int                             computedPFileSize; 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >     pfMap;
         bool                            reuseSeriesUID; 
+        bool                            reuseInstanceUID; 
         vtkstd::string                  seriesInstanceUID; 
+        vtkstd::string                  sopInstanceUID; 
 };
 
 

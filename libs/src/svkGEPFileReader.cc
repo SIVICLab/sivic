@@ -2478,10 +2478,12 @@ void svkGEPFileReader::Deidentify( string studyID )
         this->DeidentifyField( fs, "rhe.study_uid",     studyID);
         this->DeidentifyField( fs, "rhe.patid",         studyID);
         this->DeidentifyField( fs, "rhe.patidff",       studyID);
-        this->DeidentifyField( fs, "rhe.patname",       studyID ),
-        this->DeidentifyField( fs, "rhe.patnameff",     studyID ),
-        this->DeidentifyField( fs, "rhe.hospname",      studyID ),
-        this->DeidentifyField( fs, "rhs.landmark_uid",  studyID ),
+        this->DeidentifyField( fs, "rhe.patname",       studyID);
+        this->DeidentifyField( fs, "rhe.patnameff",     studyID);
+        this->DeidentifyField( fs, "rhe.hospname",      studyID);
+        this->DeidentifyField( fs, "rhs.landmark_uid",  studyID);
+        this->DeidentifyField( fs, "rhs.series_uid",    studyID);
+        this->DeidentifyField( fs, "rhi.image_uid",     studyID);
 
         //  These fields are not removed from PHI_LIMITED data sets
         this->DeidentifyField( fs, "rhr.rh_scan_time",  studyID);

@@ -72,7 +72,9 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
     this->SetErrorCode(vtkErrorCode::NoError);
     this->computedPFileSize = 0; 
     this->reuseSeriesUID = true;
+    this->reuseInstanceUID = true;
     this->seriesInstanceUID = "";
+    this->sopInstanceUID = "";
 
 }
 
@@ -89,19 +91,46 @@ svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
  *  By default the DICOM Raw Storage object will have the same uid as the raw file. However
  *  in some cases it may be desirable to use a unique UID, for example if another series 
  *  exists which contains the reconstructed MRImageStorage objects with the same UID. 
+ *  If set to fasle, then a unique UID will be generated and inserted.    
  */
 void svkDICOMRawDataWriter::ReuseSeriesUID( bool reuseUID )
 {
     this->reuseSeriesUID = reuseUID;
 }
 
+
+/*!
+ *  By default the DICOM Raw Storage object will have the same instance uid as the raw file. However
+ *  in some cases it may be desirable to use a unique UID, for example if another series 
+ *  exists which contains the reconstructed MRImageStorage objects with the same UID. 
+ *  If set to fasle, then a unique UID will be generated and inserted.    
+ */
+void svkDICOMRawDataWriter::ReuseInstanceUID( bool reuseUID )
+{
+    this->reuseInstanceUID = reuseUID;
+}
+
+
+
 /*
- *  Use the specified seriesInstanceUID: 
+ *  Use the specified seriesInstanceUID, rather than the uid from the raw file. 
  */
 void svkDICOMRawDataWriter::SetSeriesUID( vtkstd::string UID )
 {
     this->seriesInstanceUID = UID;
+    this->reuseSeriesUID = false;
 }
+
+
+/*
+ *  Use the specified sopInstanceUID, rather than the image_uid from the raw file. 
+ */
+void svkDICOMRawDataWriter::SetInstanceUID( vtkstd::string UID )
+{
+    this->sopInstanceUID = UID;
+    this->reuseInstanceUID = false;
+}
+
 
 
 /*!
@@ -215,7 +244,13 @@ void svkDICOMRawDataWriter::Write()
 
  
     //  to ensure that the series only goes into PACS once, use the image uid from the raw file: 
-    this->dcmHeader->SetValue( "SOPInstanceUID", this->pfMap["rhi.image_uid"][3] ); 
+    if ( this->sopInstanceUID.length() > 0 ) {  
+        this->dcmHeader->SetValue( "SOPInstanceUID", this->sopInstanceUID ); 
+    } else if ( this->reuseInstanceUID ) {  
+        this->dcmHeader->SetValue( "SOPInstanceUID", this->pfMap["rhi.image_uid"][3] ); 
+    } else {
+        this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
+    }
 
     this->dcmHeader->SetValue(
         "InstanceNumber",
