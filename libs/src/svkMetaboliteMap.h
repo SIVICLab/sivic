@@ -137,6 +137,7 @@ class svkMetaboliteMap: public svkImageAlgorithm
         double                  GetMagPeakHt( float* specPtr, int startPt, int endPt );
         double                  GetLineWidth( float* specPtr, int startPt, int endPt );
         double                  GetMagLineWidth( float* specPtr, int startPt, int endPt );
+        float                   GetWidthInHz( int startPt, int endPt); 
 
 
         //  Members:

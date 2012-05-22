@@ -416,7 +416,7 @@ double svkMetaboliteMap::GetMagLineWidth( float* specPtr, int startPt, int endPt
     }
     
     // could interpolate to get the actual delta frequency for better accuracy, but this is a quick start  
-    return (fwhmPt2 - fwhmPt1); 
+    return this->GetWidthInHz( fwhmPt1, fwhmPt2 ); 
     
 }
 
@@ -458,8 +458,25 @@ double svkMetaboliteMap::GetLineWidth( float* specPtr, int startPt, int endPt )
     }
     
     // could interpolate to get the actual delta frequency for better accuracy, but this is a quick start  
-    return (fwhmPt2 - fwhmPt1); 
+    return this->GetWidthInHz( fwhmPt1, fwhmPt2 ); 
     
+}
+
+
+/*
+ *  Convert with in points to hz. 
+ */
+float svkMetaboliteMap::GetWidthInHz( int startPt, int endPt)
+{
+    //  Get the integration range in points:
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
+
+    float startPtHz = point->ConvertPosUnits( startPt, svkSpecPoint::PTS, svkSpecPoint::Hz ); 
+    float endPtHz   = point->ConvertPosUnits( endPt,   svkSpecPoint::PTS, svkSpecPoint::Hz ); 
+    float deltaHz = endPtHz - startPtHz; 
+    point->Delete();
+    return deltaHz; 
 }
 
 
@@ -560,7 +577,7 @@ void svkMetaboliteMap::SetPeakWidthPPM( float widthPPM )
 
 
 /*!
- *
+ *  Converts an integration range from PPM to points
  */
 void svkMetaboliteMap::GetIntegrationPtRange(int& startPt, int& endPt) 
 {
