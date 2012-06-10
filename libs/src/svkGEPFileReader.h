@@ -101,6 +101,8 @@ class svkGEPFileReader : public svkImageReader2
         void                Deidentify( string studyID ); 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
                                                  GetPFMap(); 
+        static float        LookupRawVersion(float rdbmRev, float rdbmRevSwapped); 
+
 
         // Description: 
         // A descriptive name for this format
