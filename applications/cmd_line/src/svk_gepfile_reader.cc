@@ -241,6 +241,7 @@ int main (int argc, char** argv)
     // ===============================================  
     if ( rawAnonId.compare("") != 0 ) {
         vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
+        readerFactory->QuickParse();
         svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
         if (reader == NULL) {
             cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
