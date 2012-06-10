@@ -1025,8 +1025,7 @@ float svkGEPFileReader::GetPFileVersion()
         cout << "rdbm rev" << rdbmRev << " " << rdbmRevSwapped <<  endl;
     }
 
-
-    version = svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped);
+    version = svkGEPFileReader::LookupRawVersion(rdbmRev, rdbmRevSwapped);
 
     return version; 
 }
@@ -1036,6 +1035,7 @@ float svkGEPFileReader::GetPFileVersion()
  */ 
 float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped) 
 {
+    float version = 0; 
     //  
     //  Map the rdbm revision to a platform number (e.g. 11.x, 12.x, etc.) 
     //
