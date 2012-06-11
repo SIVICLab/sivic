@@ -2442,7 +2442,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
     if ( fs->is_open() ) {
 
         if ( this->IsFieldChar( key ) ) {
-            cout << "replace char bytes with " << deidString << endl; 
+            cout << "replace char bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
 
             //  Replace numBytes at offset position with the deidString
             //  set the put pointer to the correct offset
@@ -2496,9 +2496,9 @@ void svkGEPFileReader::Deidentify( string studyID )
         this->DeidentifyField( fs, "rhi.image_uid",     studyID);
 
         //  These fields are not removed from PHI_LIMITED data sets
-        this->DeidentifyField( fs, "rhr.rh_scan_time",  studyID);
-        this->DeidentifyField( fs, "rhe.dateofbirth",   studyID);
-        this->DeidentifyField( fs, "rhr.rh_scan_date",  studyID);
+        this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
+        this->DeidentifyField( fs, "rhe.dateofbirth",   "");
+        this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
 
         fs->close();
     } else {
