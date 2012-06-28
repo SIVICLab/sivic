@@ -88,6 +88,7 @@ FIND_PACKAGE(VTK REQUIRED)
 ###################################
 #   VTK
 ###################################
+FIND_PACKAGE( VTK REQUIRED )
 IF(VTK_FOUND)
   INCLUDE(${VTK_USE_FILE})
 ENDIF(VTK_FOUND)
@@ -115,6 +116,10 @@ INCLUDE_DIRECTORIES(
     ${DCMTK_DIR}/include
 	${PLATFORM_INCLUDE}
 )
+if ( BUILD_CMINPACK )
+    INCLUDE_DIRECTORIES ( ${CMINPACK_DIR}/include )
+endif( BUILD_CMINPACK )
+
 
 IF(WIN32)
 	ADD_LIBRARY( getopt
@@ -249,7 +254,7 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
-
+    svkDynamicMRIAlgoTemplate.cc 
 )
 
 
