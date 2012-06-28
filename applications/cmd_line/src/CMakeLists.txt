@@ -146,6 +146,9 @@ LINK_DIRECTORIES(
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
 )
+if ( BUILD_CMINPACK )
+    LINK_DIRECTORIES( ${CMINPACK_DIR}/lib )
+endif( BUILD_CMINPACK )
 
 IF(WIN32)
 	SET(PLATFORM_INCLUDE ../../../libs/getopt)
@@ -156,10 +159,18 @@ INCLUDE_DIRECTORIES(
     ${DCMTK_DIR}/include
     ${PLATFORM_INCLUDE}
 )
+if ( BUILD_CMINPACK )
+    INCLUDE_DIRECTORIES( ${CMINPACK_DIR}/include )
+endif( BUILD_CMINPACK )
+
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
 ENDIF(WIN32)
+
+if ( BUILD_CMINPACK )
+    SET( CMINPACK_LIBS cminpack )
+endif( BUILD_CMINPACK )
 
 SET(SVK_LIBS
     vtkRendering
@@ -177,6 +188,7 @@ SET(SVK_LIBS
     ofstd 
     ${DCMTK_OFLOG}
     ${PLATFORM_LIBS}
+    ${CMINPACK_LIBS}
 )
 
 
@@ -325,6 +337,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+if ( BUILD_CMINPACK )
+    ADD_EXECUTABLE(
+        svk_met_kinetics
+        svk_met_kinetics.cc
+    )
+ 
+    TARGET_LINK_LIBRARIES(
+        svk_met_kinetics
+        ${SVK_LIBS}
+    )
+endif ( BUILD_CMINPACK )
 
 #   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
 ADD_EXECUTABLE(
@@ -336,6 +359,7 @@ TARGET_LINK_LIBRARIES(
     svk_app_template
     ${SVK_LIBS}
 )
+
 
 
 #   libcrypto doesn't exist on solaris

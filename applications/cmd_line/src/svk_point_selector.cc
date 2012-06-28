@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_point_selector.cc $
- *  $Rev: 1252 $
- *  $Author: jccrane $
- *  $Date: 2012-03-22 15:13:33 -0700 (Thu, 22 Mar 2012) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
