@@ -252,6 +252,12 @@ void svkDICOMRawDataWriter::Write()
         this->dcmHeader->InsertUniqueUID( "SOPInstanceUID" );
     }
 
+    //  To avoid needing to store values for these 2 UIDs as well, just 
+    //  reuse the SOPInstanceUID for the following 2 fields: 
+    this->dcmHeader->SetValue( "CreatorVersionUID",   this->dcmHeader->GetStringValue( "SOPInstanceUID" ) );
+    this->dcmHeader->SetValue( "FrameOfReferenceUID", this->dcmHeader->GetStringValue( "SOPInstanceUID" ) );
+
+
     this->dcmHeader->SetValue(
         "InstanceNumber",
         this->FileNumber 
