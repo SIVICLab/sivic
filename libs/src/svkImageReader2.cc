@@ -382,6 +382,8 @@ svkImageData* svkImageReader2::GetOutput(int port)
  */
 vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
 {
+
+    if ( slashDate->length() > 0 ) {
         size_t delim;
         delim = slashDate->find_first_of('/');
         vtkstd::string month = slashDate->substr(0, delim);
@@ -405,6 +407,10 @@ vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
         year = StripWhite(year);
 
         return year+month+day;
+    } else { 
+        return ""; 
+    }
+
 }
 
 
