@@ -376,15 +376,15 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "study code: " << "" <<  endl;
 
     vtkstd::string date = hdr->GetStringValue( "StudyDate" );
-    if ( date.length() != 8 ) {
-        date.assign("        ");
-    }
-
     if (  deidentified ) { 
         *out << "study date: " << date << endl;
     } else {
-        *out << "study date: " << 
+        if ( date.length() == 0 ) {
+            *out << "study date: " << endl;
+        } else {
+            *out << "study date: " << 
             date[4] << date[5] << "/" << date[6] << date[7] << "/" << date[0] << date[1] << date[2] << date[3] << endl;
+        }
     }
 
     *out << "accession number: " << hdr->GetStringValue( "AccessionNumber" ) <<  endl;
