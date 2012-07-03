@@ -254,7 +254,6 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
-    svkDynamicMRIAlgoTemplate.cc 
 )
 
 
@@ -266,6 +265,14 @@ ADD_LIBRARY(
     svkDcmtkUtils.cc
     svkDcmtkException.cc
 )
+
+IF ( BUILD_CMINPACK )
+    ADD_LIBRARY(
+        svkNumerical
+
+        svkDynamicMRIAlgoTemplate.cc 
+    )
+ENDIF ( BUILD_CMINPACK )
 
 #IF (BUILD_TESTS)
 #    ENABLE_TESTING()
