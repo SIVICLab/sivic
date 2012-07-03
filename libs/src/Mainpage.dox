@@ -1,0 +1,54 @@
+/**
+
+\mainpage
+
+<hr>
+<b>SIVIC -  Spectroscopic Imaging VIsualization and Computing </b>
+
+SIVIC is an open-source standards-based software framework and application suite for processing and visualization of DICOM MR Spectroscopy data. 
+
+<b>Links:</b> 
+<ul>
+    <li>
+        <a href="http://sivic.sourceforge.net/libsvk/html/classes.html"/>SIVIC C++ API.</a>
+    </li>
+    <li>
+        <a href=" https://sourceforge.net/apps/trac/sivic/">Main SIVIC Project Page with links to downloads and applications build from the SIVIC API. </a> 
+    </li>
+    <li>
+        <a href="http://my.cdash.org/index.php?project=SIVIC"/>SIVIC Dashboard</a>
+    </li>
+</ul>
+<b>Command Line Tools:</b> 
+<ul>
+    <li>
+        <a href="apps/svk_file_convert.html"/>svk_file_convert</a>
+    </li>
+    <li>
+        <a href="apps/svk_gepfile_reader.html"/>svk_gepfile_reader</a>
+    </li>
+    <li>
+        <a href="apps/svk_reslice.html"/>svk_reslice</a>
+    </li>
+    <li>
+        <a href="apps/svk_quantify.html"/>svk_quantify</a>
+    </li>
+    <li>
+        <a href="apps/svk_spec_diff.html"/>svk_spec_diff</a>
+    </li>
+    <li>
+        <a href="apps/svk_dcmdump.html"/>svk_dcmdump</a>
+    </li>
+    <li>
+        <a href="apps/svk_quick_view.html"/>svk_quick_view</a>
+    </li>
+    <li>
+        <a href="apps/svk_multi_view.html"/>svk_multi_view</a>
+    </li>
+
+
+</ul>
+
+
+
+*/
