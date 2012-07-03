@@ -521,7 +521,7 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
  */
 vtkstd::string svkGEPFileMapper::ConvertGEDateToDICOM( vtkstd::string geDate )
 { 
-    vtkstd::string dcmDate = ""; 
+    vtkstd::string dcmDate = "";
 
     //   if the data is deidentified, date will have length 0: 
     if (geDate.length() > 0) {
