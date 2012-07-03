@@ -110,6 +110,7 @@ class svkUtils : public vtkObject
         static string         SpacesTo_( vtkstd::string inputString );
         static bool           AreValuesClose(double x, double y, double maxRatio = 0.01 );
         static bool           AreValuesClose(double x[3], double y[3], double maxRatio = 0.01 );
+        static int            GetNumberOfDigits( int value, bool isMinusDigit = false );
 
 	protected:
 

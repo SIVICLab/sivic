@@ -190,7 +190,7 @@ void svkOverlayViewController::InitDisplayText( )
     
     stringstream out;
     //Create Text Actors to show mouse position and patient info
-    static_cast<vtkTextActor*>(this->view->GetProp(svkOverlayView::COORDINATES))->SetInput("x: null \ny: null \n z: null");
+    static_cast<vtkTextActor*>(this->view->GetProp(svkOverlayView::COORDINATES))->SetInput("x: null  y: null  z: null  v: null");
     imageOrigin = defaultOrigin; 
     this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->AddActor( 
         this->view->GetProp(svkOverlayView::COORDINATES)
@@ -327,8 +327,9 @@ void svkOverlayViewController::CreateDataVisualization( )
     
     myPD2DMapper->SetTransformCoordinate( viewTranslator );
     vtkTextActor* text = static_cast<vtkTextActor*>(this->view->GetProp(svkOverlayView::COORDINATES)); 
-    text->SetPosition(0.1,0.1); 
-    text->SetPosition2(0.9,0.9); 
+    text->GetTextProperty()->SetFontFamilyToCourier();
+    text->SetPosition(0.01,0.01);
+    text->SetPosition2(0.95,0.95);
     text->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     text->GetPosition2Coordinate()->SetCoordinateSystemToNormalizedViewport();
     this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->SetBackground( 0.1,0.2,0.4);
@@ -350,7 +351,7 @@ void svkOverlayViewController::CreateDataVisualization( )
     windowLevelStyle = rwi->GetInteractorStyle();
     windowLevelStyle->Register( this );
 
-    this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->SetViewport( 0.0, 0.0, 0.2, 0.15 );
+    this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->SetViewport( 0.0, 0.0, 1.0, 0.05 );
     this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->InteractiveOff();
     this->myRenderWindow->SetNumberOfLayers(2);
     this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->SetLayer(1);
@@ -731,10 +732,7 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
     // We need the anatomical slice to calculate a point on the image
     int slice; 
     svkImageData* targetData;
-    targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MR4D];
-    if( targetData == NULL ) {
-        targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI];
-    }
+	targetData = static_cast<svkOverlayView*>(dvController->GetView())->dataVector[MRI];
     if( targetData != NULL ) {
     
 
@@ -762,16 +760,36 @@ void svkOverlayViewController::UpdateCursorLocation(vtkObject* subject, unsigned
         // Project selection point onto the image
         vtkPlane::GeneralizedProjectPoint( imageCords, planeOrigin, viewNormalDouble, projection );
 
-        out.setf(ios::fixed,ios::floatfield); 
+        targetData->GetIndexFromPosition(projection, index);
+        double value = targetData->GetScalarComponentAsDouble(index[0], index[1], index[2], 0);
+        int writePos = 0;
+        out.setf(ios::fixed,ios::floatfield);
         out.precision(1);
-        out << "L: " << projection[0] << endl;
-        out << "P: " << projection[1] << endl;    
-        out << "S: " << projection[2];    
+        out << "                                        ";
+        out.seekp( writePos );
+        out << "L:";
+        out << projection[0];
+        writePos += 9;
+        out.seekp( writePos );
+        out << "P:";
+        out << projection[1];
+        writePos += 9;
+        out.seekp( writePos );
+        out << "S:";
+        out << projection[2];
+        writePos += 9;
+        out.seekp( writePos );
+		int dataType = targetData->GetDcmHeader()->GetPixelDataType( targetData->GetScalarType() );
+        if (dataType == svkDcmHeader::UNSIGNED_INT_1 || dataType == svkDcmHeader::UNSIGNED_INT_2 || dataType == svkDcmHeader::SIGNED_INT_2) {
+			out.precision(0);
+        } else {
+			out.precision(4);
+			out.setf(ios::scientific,ios::floatfield);
+        }
+        out << "V:" << value;
         static_cast<vtkTextActor*>(dvController->view->GetProp(svkOverlayView::COORDINATES))->SetInput((out.str()).c_str());
     } else { 
-        out<<"L: "<<endl;
-        out<<"P: "<<endl;    
-        out<<"S: ";    
+        out<<"L:       P:       S:       V:";   
         static_cast<vtkTextActor*>(dvController->view->GetProp(svkOverlayView::COORDINATES))->SetInput((out.str()).c_str());
     }
     mousePosition->Delete();

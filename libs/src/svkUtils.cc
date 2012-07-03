@@ -526,3 +526,22 @@ bool svkUtils::AreValuesClose( double x[3], double y[3], double maxRatio )
 		return false;
 	}
 }
+
+
+/*!
+ * Get the number of digits in an integer. Minus
+ * sign counts as a digit in this case.
+ */
+int svkUtils::GetNumberOfDigits( int number, bool isMinusDigit )
+{
+	int numDigits = 1;
+	if( isMinusDigit && number < 0){
+		numDigits ++;
+	}
+	number /= 10;
+	while( number != 0 ){
+		number /= 10;
+		numDigits ++;
+	}
+	return numDigits;
+}
