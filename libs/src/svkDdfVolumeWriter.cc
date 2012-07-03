@@ -376,7 +376,7 @@ void svkDdfVolumeWriter::InitHeader(ofstream* out, vtkstd::string fileName)
     *out << "study code: " << "" <<  endl;
 
     vtkstd::string date = hdr->GetStringValue( "StudyDate" );
-    if ( date.length() == 0 ) {
+    if ( date.length() != 8 ) {
         date.assign("        ");
     }
 
