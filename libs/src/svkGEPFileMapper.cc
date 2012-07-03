@@ -534,7 +534,7 @@ vtkstd::string svkGEPFileMapper::ConvertGEDateToDICOM( vtkstd::string geDate )
                 yearPrefix = "19";  
             }
         }
-        vtkstd::string dcmDate = geDate.replace(6, 1, yearPrefix);  
+        dcmDate = geDate.replace(6, 1, yearPrefix);  
     }
 
     return dcmDate; 
