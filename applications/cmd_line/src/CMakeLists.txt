@@ -169,7 +169,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 if ( BUILD_CMINPACK )
-    SET( CMINPACK_LIBS cminpack )
+    SET( CMINPACK_LIBS svkNumerical cminpack )
 endif( BUILD_CMINPACK )
 
 SET(SVK_LIBS
