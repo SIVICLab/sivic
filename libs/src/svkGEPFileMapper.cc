@@ -521,16 +521,22 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
  */
 vtkstd::string svkGEPFileMapper::ConvertGEDateToDICOM( vtkstd::string geDate )
 { 
-    size_t yearPos; 
-    vtkstd::string yearPrefix = "";  
-    if ( (yearPos = geDate.find_last_of("\\/") ) != vtkstd::string::npos ) { 
-        if ( geDate[yearPos + 1] == '1' ) { 
-            yearPrefix = "20";  
-        } else if ( geDate[yearPos + 1] == '0' ) { 
-            yearPrefix = "19";  
+    vtkstd::string dcmDate = ""; 
+
+    //   if the data is deidentified, date will have length 0: 
+    if (geDate.length() > 0) {
+        size_t yearPos; 
+        vtkstd::string yearPrefix = "";  
+        if ( (yearPos = geDate.find_last_of("\\/") ) != vtkstd::string::npos ) { 
+            if ( geDate[yearPos + 1] == '1' ) { 
+                yearPrefix = "20";  
+            } else if ( geDate[yearPos + 1] == '0' ) { 
+                yearPrefix = "19";  
+            }
         }
+        vtkstd::string dcmDate = geDate.replace(6, 1, yearPrefix);  
     }
-    vtkstd::string dcmDate = geDate.replace(6, 1, yearPrefix);  
+
     return dcmDate; 
 }
 
