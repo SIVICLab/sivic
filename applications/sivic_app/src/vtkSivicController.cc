@@ -1793,11 +1793,18 @@ void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, in
 
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer;
-
+    
     string fileNameString = string( fileName );
     writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( 
         static_cast<svkImageWriterFactory::WriterType>( writerType) ) 
     );
+    if( writer->IsA("svkIdfVolumeWriter") ) {
+		char doubleToFloat[100] = "";
+		this->GetApplication()->GetRegistryValue( 0, "data_writing", "double_to_float", doubleToFloat );
+    	if(doubleToFloat == NULL || strcmp( doubleToFloat, "" ) == 0 || strcmp( doubleToFloat, "CAST" ) == 0 ) {
+			svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true );
+    	}
+    }
     cout << "FN: " << fileName << endl;
     cout << "type: " << writerType << endl;
 

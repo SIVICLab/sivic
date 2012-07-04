@@ -77,6 +77,7 @@ sivicPreferencesWidget::sivicPreferencesWidget()
     this->settings.push_back( "vol_selection/width/Sets the width for the selection box edges. (integer greater than zero)");
     this->settings.push_back( "apodization/fwhh/Sets the fullwidth half height in Hz for the apodization windows.");
     this->settings.push_back( "apodization/center/Sets the center for the Gaussion apodization window.");
+    this->settings.push_back( "data_writing/double_to_float/Conversion method from double to float for writing. (MAP | CAST)");
 
 }
 
