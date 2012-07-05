@@ -615,10 +615,9 @@ void svkPlotLineGrid::GenerateActor()
 
                 ID = this->data->GetIDFromIndex(xInd, yInd, zInd);
                 tmpXYPlot = this->xyPlots[ID];
-
+                tmpXYPlot->SetData( this->data->GetArray(xInd, yInd, zInd , volumeIndexArray ) );
                 tmpXYPlot->SetDcos( &this->dcos );
                 tmpXYPlot->SetSpacing( spacing );
-                tmpXYPlot->SetData( this->data->GetArray(xInd, yInd, zInd , volumeIndexArray ) );
         
                 // Offset origin for current voxel
                 plotOrigin[0] = origin[0] + xInd * spacing[0] * dcos[0][0]

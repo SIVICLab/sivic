@@ -543,7 +543,8 @@ void svkPlotGridView::SetTlcBrc(int tlcID, int brcID)
             if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_IMAGE ) ) ) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( OVERLAY_IMAGE ) );
             }
-            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_TEXT ) ) ) {
+            if( !this->GetRenderer(svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( OVERLAY_TEXT ) )
+            		&& vtkActor2D::SafeDownCast(this->GetProp( OVERLAY_TEXT ))->GetMapper() != NULL ) {
                 this->GetRenderer(svkPlotGridView::PRIMARY)->AddViewProp( this->GetProp( OVERLAY_TEXT ) );
             }
             this->TurnPropOn( svkPlotGridView::PLOT_GRID);
