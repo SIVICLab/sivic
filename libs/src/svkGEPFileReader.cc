@@ -1980,6 +1980,189 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
             rhs.anref                          , CHAR   , 3   , 142401,\
         "); 
 
+    } else if ( (int)(this->pfileVersion) == 16 ) {
+
+        offsets.assign (" \
+            rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
+            rhr.rh_scan_date                   , CHAR   , 10  , 16,\
+            rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.csi_dims                       , INT_2  , 1   , 372,\
+            rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
+            rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
+            rhr.rh_dab[1].start_rcv            , INT_2  , 1   , 204,\
+            rhr.rh_dab[1].stop_rcv             , INT_2  , 1   , 206,\
+            rhr.rh_dab[2].start_rcv            , INT_2  , 1   , 208,\
+            rhr.rh_dab[2].stop_rcv             , INT_2  , 1   , 210,\
+            rhr.rh_dab[3].start_rcv            , INT_2  , 1   , 212,\
+            rhr.rh_dab[3].stop_rcv             , INT_2  , 1   , 214,\
+            rhr.rh_data_collect_type           , INT_2  , 1   , 56,\
+            rhr.rh_file_contents               , INT_2  , 1   , 44,\
+            rhr.rdb_hdr_off_data               , INT_4  , 1   , 1468,\
+            rhr.rh_frame_size                  , UINT_2 , 1   , 80,\
+            rhr.rh_point_size                  , INT_2  , 1   , 82,\
+            rhr.rh_ps_mps_freq                 , LINT_4 , 1   , 424,\
+            rhr.rh_user_usage_tag              , ULINT_4, 1   , 988,\
+            rhr.roilenx                        , FLOAT_4, 1   , 380,\
+            rhr.roileny                        , FLOAT_4, 1   , 384,\
+            rhr.roilenz                        , FLOAT_4, 1   , 388,\
+            rhr.spectral_width                 , FLOAT_4, 1   , 368,\
+            rhr.xcsi                           , INT_2  , 1   , 374,\
+            rhr.ycsi                           , INT_2  , 1   , 376,\
+            rhr.zcsi                           , INT_2  , 1   , 378,\
+            rhr.rh_logo                        , CHAR   , 10  , 34,\
+            rhr.rh_raw_pass_size               , ULINT_4, 1   , 116,\
+            rhr.rh_user0                       , FLOAT_4, 1   , 216,\
+            rhr.rh_user1                       , FLOAT_4, 1   , 220,\
+            rhr.rh_user2                       , FLOAT_4, 1   , 224,\
+            rhr.rh_user3                       , FLOAT_4, 1   , 228,\
+            rhr.rh_user4                       , FLOAT_4, 1   , 232,\
+            rhr.rh_user5                       , FLOAT_4, 1   , 236,\
+            rhr.rh_user6                       , FLOAT_4, 1   , 240,\
+            rhr.rh_user7                       , FLOAT_4, 1   , 244,\
+            rhr.rh_user8                       , FLOAT_4, 1   , 248,\
+            rhr.rh_user9                       , FLOAT_4, 1   , 252,\
+            rhr.rh_user10                      , FLOAT_4, 1   , 256,\
+            rhr.rh_user11                      , FLOAT_4, 1   , 260,\
+            rhr.rh_user12                      , FLOAT_4, 1   , 264,\
+            rhr.rh_user13                      , FLOAT_4, 1   , 268,\
+            rhr.rh_user14                      , FLOAT_4, 1   , 272,\
+            rhr.rh_user15                      , FLOAT_4, 1   , 276,\
+            rhr.rh_user16                      , FLOAT_4, 1   , 280,\
+            rhr.rh_user17                      , FLOAT_4, 1   , 284,\
+            rhr.rh_user18                      , FLOAT_4, 1   , 288,\
+            rhr.rh_user19                      , FLOAT_4, 1   , 292,\
+            rhr.rh_user20                      , FLOAT_4, 1   , 1000,\
+            rhr.rh_user21                      , FLOAT_4, 1   , 1004,\
+            rhr.rh_user22                      , FLOAT_4, 1   , 1008,\
+            rhr.rh_user23                      , FLOAT_4, 1   , 1012,\
+            rhr.rh_user24                      , FLOAT_4, 1   , 1016,\
+            rhr.rh_user25                      , FLOAT_4, 1   , 1020,\
+            rhr.rh_user26                      , FLOAT_4, 1   , 1024,\
+            rhr.rh_user27                      , FLOAT_4, 1   , 1028,\
+            rhr.rh_user28                      , FLOAT_4, 1   , 1032,\
+            rhr.rh_user29                      , FLOAT_4, 1   , 1036,\
+            rhr.rh_user30                      , FLOAT_4, 1   , 1040,\
+            rhr.rh_user31                      , FLOAT_4, 1   , 1044,\
+            rhr.rh_user32                      , FLOAT_4, 1   , 1048,\
+            rhr.rh_user33                      , FLOAT_4, 1   , 1052,\
+            rhr.rh_user34                      , FLOAT_4, 1   , 1056,\
+            rhr.rh_user35                      , FLOAT_4, 1   , 1060,\
+            rhr.rh_user36                      , FLOAT_4, 1   , 1064,\
+            rhr.rh_user37                      , FLOAT_4, 1   , 1068,\
+            rhr.rh_user38                      , FLOAT_4, 1   , 1072,\
+            rhr.rh_user39                      , FLOAT_4, 1   , 1076,\
+            rhr.rh_user40                      , FLOAT_4, 1   , 1080,\
+            rhr.rh_user41                      , FLOAT_4, 1   , 1084,\
+            rhr.rh_user42                      , FLOAT_4, 1   , 1088,\
+            rhr.rh_user43                      , FLOAT_4, 1   , 1092,\
+            rhr.rh_user44                      , FLOAT_4, 1   , 1096,\
+            rhr.rh_user45                      , FLOAT_4, 1   , 1100,\
+            rhr.rh_user46                      , FLOAT_4, 1   , 1104,\
+            rhr.rh_user47                      , FLOAT_4, 1   , 1108,\
+            rhr.rh_user48                      , FLOAT_4, 1   , 1112,\
+            rhi.psdname                        , CHAR   , 33  , 145180,\
+            rhi.scanspacing                    , FLOAT_4, 1   , 143988,\
+            rhi.te                             , INT_4  , 1   , 144628,\
+            rhi.ti                             , INT_4  , 1   , 144624,\
+            rhi.tr                             , INT_4  , 1   , 144620,\
+            rhi.tlhc_A                         , FLOAT_4, 1   , 144392,\
+            rhi.tlhc_R                         , FLOAT_4, 1   , 144388,\
+            rhi.tlhc_S                         , FLOAT_4, 1   , 144396,\
+            rhi.t                              , INT_4  , 1   , 144620,\
+            rhi.trhc_A                         , FLOAT_4, 1   , 144404,\
+            rhi.trhc_R                         , FLOAT_4, 1   , 144400,\
+            rhi.trhc_S                         , FLOAT_4, 1   , 144408,\
+            rhi.user0                          , FLOAT_4, 1   , 144024,\
+            rhi.user1                          , FLOAT_4, 1   , 144028,\
+            rhi.user2                          , FLOAT_4, 1   , 144032,\
+            rhi.user3                          , FLOAT_4, 1   , 144036,\
+            rhi.user4                          , FLOAT_4, 1   , 144040,\
+            rhi.user5                          , FLOAT_4, 1   , 144044,\
+            rhi.user6                          , FLOAT_4, 1   , 144048,\
+            rhi.user7                          , FLOAT_4, 1   , 144052,\
+            rhi.user8                          , FLOAT_4, 1   , 144056,\
+            rhi.user9                          , FLOAT_4, 1   , 144060,\
+            rhi.user10                         , FLOAT_4, 1   , 144064,\
+            rhi.user11                         , FLOAT_4, 1   , 144068,\
+            rhi.user12                         , FLOAT_4, 1   , 144072,\
+            rhi.user13                         , FLOAT_4, 1   , 144076,\
+            rhi.user14                         , FLOAT_4, 1   , 144080,\
+            rhi.user15                         , FLOAT_4, 1   , 144084,\
+            rhi.user16                         , FLOAT_4, 1   , 144088,\
+            rhi.user17                         , FLOAT_4, 1   , 144092,\
+            rhi.user18                         , FLOAT_4, 1   , 144096,\
+            rhi.user19                         , FLOAT_4, 1   , 144100,\
+            rhi.user20                         , FLOAT_4, 1   , 144104,\
+            rhi.user21                         , FLOAT_4, 1   , 144108,\
+            rhi.user22                         , FLOAT_4, 1   , 144112,\
+            rhi.user23                         , FLOAT_4, 1   , 144124,\
+            rhi.user24                         , FLOAT_4, 1   , 144128,\
+            rhi.user25                         , FLOAT_4, 1   , 144192,\
+            rhi.user26                         , FLOAT_4, 1   , 144196,\
+            rhi.user27                         , FLOAT_4, 1   , 144200,\
+            rhi.user28                         , FLOAT_4, 1   , 144204,\
+            rhi.user29                         , FLOAT_4, 1   , 144208,\
+            rhi.user30                         , FLOAT_4, 1   , 144212,\
+            rhi.user31                         , FLOAT_4, 1   , 144216,\
+            rhi.user32                         , FLOAT_4, 1   , 144220,\
+            rhi.user33                         , FLOAT_4, 1   , 144224,\
+            rhi.user34                         , FLOAT_4, 1   , 144228,\
+            rhi.user35                         , FLOAT_4, 1   , 144232,\
+            rhi.user36                         , FLOAT_4, 1   , 144236,\
+            rhi.user37                         , FLOAT_4, 1   , 144240,\
+            rhi.user38                         , FLOAT_4, 1   , 144244,\
+            rhi.user39                         , FLOAT_4, 1   , 144248,\
+            rhi.user40                         , FLOAT_4, 1   , 144252,\
+            rhi.user41                         , FLOAT_4, 1   , 144256,\
+            rhi.user42                         , FLOAT_4, 1   , 144260,\
+            rhi.user43                         , FLOAT_4, 1   , 144264,\
+            rhi.user44                         , FLOAT_4, 1   , 144268,\
+            rhi.user45                         , FLOAT_4, 1   , 144272,\
+            rhi.user46                         , FLOAT_4, 1   , 144276,\
+            rhi.user47                         , FLOAT_4, 1   , 144280,\
+            rhi.user48                         , FLOAT_4, 1   , 144284,\
+            rhi.cname                          , CHAR   , 17  , 145297,\
+            rhi.brhc_A                         , FLOAT_4, 1   , 144416,\
+            rhi.brhc_R                         , FLOAT_4, 1   , 144412,\
+            rhi.brhc_S                         , FLOAT_4, 1   , 144420,\
+            rhi.ctr_A                          , FLOAT_4, 1   , 144368,\
+            rhi.ctr_R                          , FLOAT_4, 1   , 144364,\
+            rhi.ctr_S                          , FLOAT_4, 1   , 144372,\
+            rhi.dfov                           , FLOAT_4, 1   , 143972,\
+            rhi.freq_dir                       , INT_2  , 1   , 145062,\
+            rhi.ctyp                           , INT_2  , 1   , 144996,\
+            rhi.loc                            , FLOAT_4, 1   , 143992,\
+            rhi.mr_flip                        , INT_2  , 1   , 144972,\
+            rhi.nex                            , FLOAT_4, 1   , 144000,\
+            rhi.numecho                        , INT_2  , 1   , 144938,\
+            rhi.image_uid                      , UID    , 32  , 145365,\
+            rhe.ex_datetime                    , INT_4  , 1   , 140988,\
+            rhe.ex_no                          , UINT_2 , 1   , 141044,\
+            rhe.magstrength                    , INT_4  , 1   , 140980,\
+            rhe.patid                          , CHAR   , 13  , 141368,\
+            rhe.patidff                        , CHAR   , 65  , 141611,\
+            rhe.patname                        , CHAR   , 25  , 141381,\
+            rhe.patnameff                      , CHAR   , 65  , 141546,\
+            rhe.refphy                         , CHAR   , 33  , 141174,\
+            rhe.reqnum                         , CHAR   , 13  , 141161,\
+            rhe.reqnumff                       , CHAR   , 17  , 141676,\
+            rhe.study_uid                      , UID    , 32  , 141450,\
+            rhe.dateofbirth                    , CHAR   , 9   , 141693,\
+            rhe.patsex                         , INT_2  , 1   , 141068,\
+            rhe.hospname                       , CHAR   , 33  , 141335,\
+            rhe.ex_sysid                       , CHAR   , 9   , 141312,\
+            rhe.uniq_sys_id                    , CHAR   , 16  , 141414,\
+            rhe.ex_verscre                     , CHAR   , 2   , 141410,\
+            rhs.se_no                          , INT_2  , 1   , 142194,\
+            rhs.se_desc                        , CHAR   , 65  , 142318,\
+            rhs.entry                          , INT_4  , 1   , 142064,\
+            rhs.position                       , INT_4  , 1   , 142060,\
+            rhs.series_uid                     , UID    , 32  , 142431,\
+            rhs.landmark_uid                   , UID    , 32  , 142463,\
+            rhs.anref                          , CHAR   , 3   , 142401,\
+        "); 
+
+
     } else if ( (int)(this->pfileVersion) == 20 ) {
 
         offsets.assign (" \
