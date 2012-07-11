@@ -554,7 +554,7 @@ void svkDcmVolumeReader::InitFileNames()
 
     //  Set Pixel Spacing, which can't necessarily be determined from data in a single DICOM object, for example if 
     //  the slice thickness differs from distance between samples.
-    this->SetSliceSpacing( tmp->GetDcmHeader(), uniqueSlices.size(), dcmSeriesAttributes );
+    this->SetSliceSpacing( tmp->GetDcmHeader(), dcmSeriesAttributes );
 
     globFileNames->Delete();
     sortFileNames->Delete();
@@ -566,12 +566,12 @@ void svkDcmVolumeReader::InitFileNames()
  *  Sets the slice spacing.  If multi slice, from actual spacing between slices, or for single slice, from 
  *  DCM SliceThickness attribute. 
  */ 
-void svkDcmVolumeReader::SetSliceSpacing( svkDcmHeader* hdr, int numSlicesPerVol, vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes )
+void svkDcmVolumeReader::SetSliceSpacing( svkDcmHeader* hdr, vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes )
 {
     if ( dcmSeriesAttributes.size() > 1 ) {
         int index1 = 1;
         if (this->numVolumes > 1 ) {
-            index1 = 1  * numSlicesPerVol; 
+            index1 = 1  * this->numVolumes; 
         } 
         this->sliceSpacing = abs( 
             svkDcmVolumeReader::GetFloatValAttribute7( dcmSeriesAttributes[ index1 ] ) - svkDcmVolumeReader::GetFloatValAttribute7( dcmSeriesAttributes[ 0 ]) 
