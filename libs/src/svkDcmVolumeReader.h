@@ -105,6 +105,7 @@ class svkDcmVolumeReader : public svkImageReader2
         float                                   sliceSpacing; 
         void                                    SetSliceSpacing( 
                                                     svkDcmHeader* hdr, 
+                                                    int numSlices, 
                                                     vtkstd::vector< vtkstd::vector< vtkstd::string> >& dcmSeriesAttributes 
                                                 );
 
