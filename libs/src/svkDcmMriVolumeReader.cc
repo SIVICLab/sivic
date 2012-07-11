@@ -380,6 +380,9 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
     }
     pixelSize[2] = tmpImage->GetDcmHeader()->GetFloatValue( "SliceThickness" ); 
 
+    //  Get pixelSize from input series:
+    pixelSize[2] = this->GetSliceSpacing();
+
     string fileStart = this->GetFileNames()->GetValue( 0 ); 
     string fileEnd = this->GetFileNames()->GetValue( this->numFrames - 1 ); 
 
