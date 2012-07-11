@@ -267,7 +267,8 @@ void svkDcmHeader::GetPixelSize(double size[3])
 
 
 /*!
- *  Get the spacing of the voxels.  This accounts for any gaps between samples.
+ *  Get the spacing of the voxels.  This accounts for any gaps between samples.  It is the actial
+ *  spacing between samples.  May differ from pixel(sample) size(thickness).
  */
 void svkDcmHeader::GetPixelSpacing(double spacing[3])
 {
