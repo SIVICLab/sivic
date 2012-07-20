@@ -80,6 +80,8 @@ svkSiemensRdaReader::svkSiemensRdaReader()
     this->numCoils = 1;
     this->numTimePts = 1;
     this->iod = NULL;
+    this->endOfHeaderPos = 0;
+
 }
 
 
@@ -232,12 +234,14 @@ void svkSiemensRdaReader::ReadRdaFiles(vtkImageData* data)
     ifstream* rdaDataIn = new ifstream();
     rdaDataIn->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
     rdaDataIn->open( this->FileName, ios::binary );
-    rdaDataIn->seekg(-1 * numBytesInVol, ios::end);//skip header
+
+    rdaDataIn->seekg(this->endOfHeaderPos, ios::beg); 
     rdaDataIn->read( (char*)(specDataDbl), numBytesInVol );
 
     if ( this->GetSwapBytes() ) {
         vtkByteSwap::SwapVoidRange((void *)specDataDbl, numBytesInVol/sizeof(double), sizeof(double));
     }
+
 
     this->MapDoubleValuesToFloat( specDataDbl, this->specData, numBytesInVol/sizeof(double));
 
@@ -1450,11 +1454,15 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
         //  Read only to the start of the pixel buffer, 
         //  i.e. no more than the header size, delimited 
         //  by "End of header":     
-        if ( tmp.compare(">>> End of header <<<") != 0 ) {
+        tmp.assign( iss->str() );
+        position = tmp.find(">>> End of header <<<"); 
+
+        if ( position == vtkstd::string::npos ) {  
 
             //  find first white space position before "key" string: 
-            cout << "DBG: " << iss->str() << endl;
-            tmp.assign( iss->str() );
+            if (this->GetDebug()) {
+                cout << "DBG: " << tmp << endl;
+            }
     
             //  Extract key and value strings:
             position = tmp.find_first_of(':');
@@ -1467,9 +1475,13 @@ int svkSiemensRdaReader::GetRdaKeyValuePair(  )
 
                 this->ParseAndSetStringElements(keyString, valueString);
             } 
+            this->endOfHeaderPos = this->rdaFile->tellg();
+            //cout << "EOF: " << this->rdaFile->tellg() << endl;
 
         } else { 
 
+            this->endOfHeaderPos = this->rdaFile->tellg();
+            //cout << "EOF2: " << this->rdaFile->tellg() << endl;
             this->rdaFile->seekg(0, ios::end);     
 
         }

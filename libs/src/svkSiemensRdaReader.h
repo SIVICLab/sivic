@@ -166,6 +166,7 @@ class svkSiemensRdaReader : public svkImageReader2
         int                                     numTimePts;
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         svkMRSIOD*                              iod; 
+        int                                     endOfHeaderPos; 
 
 };
 
