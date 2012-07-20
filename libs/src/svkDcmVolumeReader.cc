@@ -97,8 +97,19 @@ bool svkDcmVolumeReader::ContainsProprietaryContent( svkImageData* data )
         vtkstd::string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
         vtkstd::string imagedNucleus = data->GetDcmHeader()->GetStringValue( "ImagedNucleus" ) ;
 
-        if ( mfg == "GE MEDICAL SYSTEMS" && imagedNucleus == "SPECT" ) {
-            containsProprietaryContent = true;
+        vtkstd::string gePSSeq1 = ""; 
+        if( data->GetDcmHeader()->ElementExists( "GE_PS_SEQ_1" ) ) {
+            gePSSeq1 = data->GetDcmHeader()->GetStringValue( "GE_PS_SEQ_1" ) ;
+        }
+        vtkstd::string gePSSeq2 = ""; 
+        if( data->GetDcmHeader()->ElementExists( "GE_PS_SEQ_2" ) ) {
+            gePSSeq2 = data->GetDcmHeader()->GetStringValue( "GE_PS_SEQ_2" ) ;
+        }
+
+        if ( mfg == "GE MEDICAL SYSTEMS" ) {
+            if ( imagedNucleus == "SPECT" || gePSSeq1 == "PROBE-P" || gePSSeq2 == "presscsi"  ) {
+                containsProprietaryContent = true;
+            }
         }
     }
 

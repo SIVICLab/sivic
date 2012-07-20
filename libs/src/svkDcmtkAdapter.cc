@@ -148,6 +148,20 @@ void svkDcmtkAdapter::SetGEPrivateDictionaryElements()
         )
     );
 
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x109c, EVR_LO, 
+            "GE_PS_SEQ_1", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x0019, 0x109e, EVR_LO, 
+            "GE_PS_SEQ_2", 
+            1, 1, "private", OFFalse, "SVK_GEMS_PRIVATE_CREATOR" 
+        )
+    );
+
 
     dcmDataDict.unlock();
 
