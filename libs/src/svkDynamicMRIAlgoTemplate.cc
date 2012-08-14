@@ -55,8 +55,9 @@ vtkCxxRevisionMacro(svkDynamicMRIAlgoTemplate, "$Rev$");
 vtkStandardNewMacro(svkDynamicMRIAlgoTemplate);
 
 
-int                     fcn(void *p, int m, int n, const real *x, real *fvec, real *fjac,
-                                    int ldfjac, int iflag);
+int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag);
+int fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, int iflag); 
+                                   
 
 
 /*!
@@ -254,29 +255,47 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( float* metKinetics0,
     const int n = 3;
     int i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
     int ipvt[3];
-    real ftol, xtol, gtol, factor, fnorm;
+    real ftol, xtol, gtol, factor, fnorm, epsfcn;
     real x[3], fvec[15], fjac[15*3], diag[3], qtf[3],
         wa1[3], wa2[3], wa3[3], wa4[15];
     int k;
 
-    info = __cminpack_func__(lmder)(fcn, &data, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol,
-    maxfev, diag, mode, factor, nprint, &nfev, &njev,
-    ipvt, qtf, wa1, wa2, wa3, wa4);
+    //  lmder:
+    //info = __cminpack_func__(lmder)(fcn_lmder, &data, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol,
+    //maxfev, diag, mode, factor, nprint, &nfev, &njev,
+    //ipvt, qtf, wa1, wa2, wa3, wa4);
 
+    //  lmdif:
+    epsfcn = 0.; 
+    info = __cminpack_func__(lmdif)(fcn_lmdif, &data, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn,
+    diag, mode, factor, nprint, &nfev, fjac, ldfjac,
+    ipvt, qtf, wa1, wa2, wa3, wa4);
+ 
 
     cout << "   MAX VAL: " << maxValue << endl;
     return maxValue;
 
 }
 
+
 /*
- *  stub
+ *  lmder stub
  */
-int fcn(void *p, int m, int n, const real *x, real *fvec, real *fjac,
-     int ldfjac, int iflag)
+int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag)
 {
     return 0; 
 }
+
+
+/*
+ *  lmdif stub
+ */
+int fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, int iflag)
+{
+    return 0; 
+}
+
+
 
 /*! 
  *  Zero data
