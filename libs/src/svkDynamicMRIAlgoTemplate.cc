@@ -261,11 +261,13 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( float* metKinetics0,
     int k;
 
     //  lmder:
+    //  based on examples from cminpack-1.3.0/examples/tlmderc.c
     //info = __cminpack_func__(lmder)(fcn_lmder, &data, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol,
     //maxfev, diag, mode, factor, nprint, &nfev, &njev,
     //ipvt, qtf, wa1, wa2, wa3, wa4);
 
     //  lmdif:
+    //  based on examples from cminpack-1.3.0/examples/tlmdifc.c
     epsfcn = 0.; 
     info = __cminpack_func__(lmdif)(fcn_lmdif, &data, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn,
     diag, mode, factor, nprint, &nfev, fjac, ldfjac,
