@@ -1024,6 +1024,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetLUTCallback( svkLookupTable::HURD );
                 } else if ( lut == "Cyan LUT" ) {
                     this->SetLUTCallback( svkLookupTable::CYAN_HOT );
+                } else if ( lut == "Fire LUT" ) {
+                    this->SetLUTCallback( svkLookupTable::FIRE );
                 } else if ( lut == "Reverse Color LUT" ) {
                     this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 }
@@ -1603,7 +1605,14 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
-            dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
+			char defaultSpectraExtension[100] = "";
+
+			this->app->GetRegistryValue( 0, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
+			if( defaultSpectraExtension != NULL && strcmp( defaultSpectraExtension, "OFF" ) == 0 ) {
+				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
+			} else {
+				dlg->SetFileTypes("{{MRS Files} {.ddf .shf .rda .dcm .DCM fid}} {{All files} {.*}}");
+			}
         } else {
             dlg->SetFileTypes("{{All files} {.*}} {{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
         }
@@ -2620,6 +2629,9 @@ void vtkSivicController::SetLUTCallback( int type )
     } else if ( type == svkLookupTable::CYAN_HOT ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::CYAN_HOT );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::CYAN_HOT );
+    } else if ( type == svkLookupTable::FIRE ) {
+        static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::FIRE );
+        static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::FIRE );
     } else if ( type == svkLookupTable::REVERSE_COLOR ) {
         static_cast<svkOverlayViewController*>( this->overlayController)->SetLUT( svkLookupTable::REVERSE_COLOR );
         static_cast<svkPlotGridViewController*>( this->plotController)->SetLUT( svkLookupTable::REVERSE_COLOR );

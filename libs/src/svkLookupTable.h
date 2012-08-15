@@ -65,7 +65,8 @@ class svkLookupTable : public vtkLookupTable
             REVERSE_COLOR,
             GREY_SCALE, 
             HURD, 
-            CYAN_HOT
+            CYAN_HOT,
+            FIRE
         };
 
         static svkLookupTable* New();

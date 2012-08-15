@@ -274,6 +274,10 @@ void sivicImageViewWidget::CreateWidget()
     lutMenu->AddRadioButton("Cyan LUT", this->sivicController, invocation.str().c_str());
 
     invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::FIRE << endl;
+    lutMenu->AddRadioButton("Fire LUT", this->sivicController, invocation.str().c_str());
+
+    invocation.str("");
     invocation << "SetLUTCallback " << svkLookupTable::REVERSE_COLOR << endl;
     lutMenu->AddRadioButton("Reverse Color LUT", this->sivicController, invocation.str().c_str());
 
