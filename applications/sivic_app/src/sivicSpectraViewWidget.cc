@@ -316,7 +316,7 @@ void sivicSpectraViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, un
         } else if( this->sliceSlider->GetValue() > this->sliceSlider->GetRangeMax() ) {
             this->sliceSlider->SetValue( this->sliceSlider->GetRangeMax());
         }
-        if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+        if( event != vtkKWScale::ScaleValueStartChangingEvent && this->sliceSlider->GetEnabled()) {
             this->sivicController->SetSlice( static_cast<int>(this->sliceSlider->GetValue()) - 1, centerImage);
         }
         int decrementValue = this->plotController->GetSlice();

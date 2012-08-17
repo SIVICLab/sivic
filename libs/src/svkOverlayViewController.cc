@@ -289,7 +289,7 @@ void svkOverlayViewController::SetInput( svkImageData* data, int index)
             this->view->SetInput(data, 1);
             this->SetSlice( this->GetView()->GetSlice() );
         }
-    } else if( index == MET && data != NULL && dataVector[MRI] != NULL && dataVector[MR4D]!=NULL ) {
+    } else if( index == MET && data != NULL && dataVector[MRI] != NULL ) {
         if( dataVector[MET] != NULL ) {
             dataVector[MET]->Delete();
         }

@@ -760,6 +760,17 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
                 plotController->GetView()->RemoveInput( svkPlotGridView::MET );                    
                 this->model->RemoveDataObject("MetaboliteData");
             } 
+        } else if( overlayData != NULL && oldData == NULL ) {
+
+        	// If this is the first 4D dataset lets check to see if its metabolite data.
+            compatibility = "";
+            compatibility = this->plotController->GetDataCompatibility( overlayData, svkPlotGridView::MET );
+            if( compatibility.compare("") == 0 ) {
+				this->model->AddDataObject( "MetaboliteData", overlayData );
+				this->model->SetDataFileName( "MetaboliteData",  this->model->GetDataFileName("OverlayData") );
+				this->plotController->SetInput( overlayData, svkPlotGridView::MET );
+            }
+
         }
 
         if( tlcBrc == NULL || !svkDataView::IsTlcBrcWithinData(newData, tlcBrc[0], tlcBrc[1]) ) {
@@ -1150,7 +1161,7 @@ void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInpu
 
 
     string stringFilename( fileName );
-    if ( this->GetActive4DImageData() && this->model->DataExists("AnatomicalData") ) {
+    if ( this->GetActive4DImageData() || this->model->DataExists("AnatomicalData") ) {
 
         svkImageData* data = this->model->AddFileToModel( stringFilename, stringFilename, onlyReadOneInputFile );
         if( data != NULL && data->IsA("svkMriImageData") ) {
@@ -1160,7 +1171,7 @@ void vtkSivicController::OpenOverlay( const char* fileName, bool onlyReadOneInpu
             return;
         }
     } else {
-        this->PopupMessage( "ERROR: Currently loading of overlays before image AND spectra is not supported." );
+        this->PopupMessage( "ERROR: Currently loading of overlays before image OR spectra is not supported." );
     }
     this->DisableWidgets();
     this->EnableWidgets();

@@ -71,12 +71,18 @@ svkLookupTable::~svkLookupTable()
 {
 }
 
+// Returns the lookup table type used to generate the table
+svkLookupTable::svkLookupTableType svkLookupTable::GetLUTType()
+{
+	return this->type;
+}
 
 //
 void svkLookupTable::SetLUTType(svkLookupTableType type)
 {
 	this->reverseThreshold = false;
-    if ( type == svkLookupTable::COLOR ) {
+	this->type = type;
+    if ( this->type == svkLookupTable::COLOR ) {
 
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
         this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
@@ -85,7 +91,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetSaturationRange(1,1);
         this->SetAlphaRange(1.,1.);
 
-    } else if ( type == svkLookupTable::REVERSE_COLOR ) {
+    } else if ( this->type == svkLookupTable::REVERSE_COLOR ) {
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
         this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
         this->SetValueRange(1,0);
@@ -94,14 +100,14 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         this->SetAlphaRange(1.,1.);
         this->reverseThreshold = true;
 
-    } else if ( type == svkLookupTable::GREY_SCALE ) {
+    } else if ( this->type == svkLookupTable::GREY_SCALE ) {
         this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
         this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
         this->SetValueRange(0,1);
         this->SetHueRange(0,0);
         this->SetSaturationRange(0,0);
         this->SetAlphaRange(1.,1.);
-    } else if ( type == svkLookupTable::HURD ) {
+    } else if ( this->type == svkLookupTable::HURD ) {
 
         this->SetNumberOfColors(256);
         this->SetNumberOfTableValues(256);
@@ -364,7 +370,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(254, 255./255, 7./255, 0./255);
         SetTableValue(255, 255./255, 0./255, 0./255);
 
-    } else if ( type == svkLookupTable::CYAN_HOT ) {
+    } else if ( this->type == svkLookupTable::CYAN_HOT ) {
 
 //cout << "CYAN!" << endl;
         this->SetNumberOfColors(256);
@@ -625,7 +631,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(253,  248./255,  255./255,  255./255);
         SetTableValue(254,  251./255,  255./255,  255./255);
         SetTableValue(255,  255./255,  255./255,  255./255);
-    } else if ( type == svkLookupTable::FIRE ) {
+    } else if ( this->type == svkLookupTable::FIRE ) {
 
         this->SetNumberOfColors(256);
         this->SetNumberOfTableValues(256);
@@ -889,6 +895,7 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
 
 
     } else {
+    	this->type = NONE;
         vtkWarningWithObjectMacro(this, "lookup table not supported: " << type);   
     }
 

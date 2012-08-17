@@ -60,28 +60,30 @@ class svkLookupTable : public vtkLookupTable
 
     public:
 
-        enum svkLookupTableType {
+        typedef enum {
             COLOR = 0, 
             REVERSE_COLOR,
             GREY_SCALE, 
             HURD, 
             CYAN_HOT,
-            FIRE
-        };
+            FIRE,
+            NONE
+        } svkLookupTableType;
 
         static svkLookupTable* New();
         vtkTypeRevisionMacro( svkLookupTable, vtkLookupTable);
 
 
         //  Methods
-        void        SetAlphaThreshold(double thresholdPercentage);
-        double      GetAlphaThreshold();
+        void               SetAlphaThreshold(double thresholdPercentage);
+        double             GetAlphaThreshold();
 
         // Returns the actual value
-        double      GetAlphaThresholdValue();
+        double             GetAlphaThresholdValue();
 
-        void        PrintLUT();
-        void        SetLUTType(svkLookupTableType type);
+        void               PrintLUT();
+        void               SetLUTType(svkLookupTableType type);
+        svkLookupTableType GetLUTType();
         
 
 
@@ -93,10 +95,11 @@ class svkLookupTable : public vtkLookupTable
 
     private:
 
-        double      alphaThresholdPercentage;
+        svkLookupTableType type;
+        double             alphaThresholdPercentage;
 
-        void        ConfigureAlphaThreshold();
-        bool		reverseThreshold;
+        void               ConfigureAlphaThreshold();
+        bool               reverseThreshold;
 
         static const int NUM_COLORS;    
 

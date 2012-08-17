@@ -77,7 +77,7 @@ svkOverlayView::svkOverlayView()
     this->windowLevelerSagittal = NULL;
     this->colorTransfer = NULL ;
     this->imageInsideSpectra = false;
-    this->overlayOpacity = 0.5;
+    this->overlayOpacity = 0.35;
     this->overlayThreshold = 0.0;
 
     // This will hold thie sinc interpolation of the overlay
@@ -507,6 +507,7 @@ void svkOverlayView::SetSlice(int slice, bool centerImage)
             this->Refresh();
         } else {
             this->imageViewer->SetSlice( slice );    
+            this->SetSliceOverlay();
         } 
     } else {
         this->slice = slice;
@@ -656,7 +657,7 @@ int svkOverlayView::FindOverlaySlice( int imageSlice, svkDcmHeader::Orientation 
         tolerance = this->dataVector[MR4D]->GetSpacing()[index]/2.0;
     } else {
         int index = this->dataVector[MRI]->GetOrientationIndex( orientation );
-        tolerance = this->dataVector[MRI]->GetSpacing()[index]/2.0;
+        tolerance = this->dataVector[OVERLAY]->GetSpacing()[index]/2.0;
     }
     overlaySlice = this->dataVector[OVERLAY]->GetClosestSlice( sliceCenter, orientation, tolerance );
     return overlaySlice;
@@ -1184,6 +1185,7 @@ void svkOverlayView::SetSliceOverlay() {
  */
 void svkOverlayView::SetupOverlay()
 {
+	svkLookupTable::svkLookupTableType lutType = svkLookupTable::COLOR;
     if( this->windowLevelerAxial != NULL ) {
         this->windowLevelerAxial->Delete();
         this->windowLevelerAxial = NULL;     
@@ -1197,6 +1199,9 @@ void svkOverlayView::SetupOverlay()
         this->windowLevelerSagittal = NULL;     
     }
     if( this->colorTransfer != NULL ) {
+    	if( this->colorTransfer->GetLUTType() != svkLookupTable::NONE ) {
+    		lutType = this->colorTransfer->GetLUTType();
+    	}
         this->colorTransfer->Delete();
         this->colorTransfer = NULL;     
     }
@@ -1270,7 +1275,7 @@ void svkOverlayView::SetupOverlay()
     dataVector[OVERLAY]->GetDataBasis( sliceNormal, svkImageData::SLICE);
     double wDistance = vtkMath::Dot( overlayOrigin, sliceNormal ) - vtkMath::Dot( imageOrigin, sliceNormal ); 
 
-    this->SetLUT( svkLookupTable::COLOR); 
+    this->SetLUT( lutType );
    
     this->windowLevelerAxial->SetInput( dataVector[OVERLAY] );
     this->windowLevelerAxial->SetOutputFormatToRGBA();
@@ -1296,7 +1301,7 @@ void svkOverlayView::SetupOverlay()
                                    )->SetInput( this->windowLevelerSagittal->GetOutput() );
 
     this->SetInterpolationType( this->interpolationType );
-    this->SetOverlayOpacity( 0.35 );
+    this->SetOverlayOpacity( this->overlayOpacity );
 
     if( !this->GetRenderer( svkOverlayView::PRIMARY
                    )->HasViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) ) ) {
@@ -1567,10 +1572,6 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
     } else if( data->IsA("svkMriImageData") ) {
         
-        if( targetIndex == OVERLAY && dataVector[MR4D] == NULL ) {
-            resultInfo = "ERROR: Spectra must be loaded before overlays!\n";
-        } 
-
         if( dataVector[MR4D] != NULL ) {
             bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
