@@ -151,7 +151,6 @@ ADD_LIBRARY(
     svkDICOMMRIWriter.cc
     svkDICOMRawDataWriter.cc
     svkImageWriterFactory.cc
-    svkMultiWindowToImageFilter.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc
     svkImageMathematics.cc

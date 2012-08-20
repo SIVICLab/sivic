@@ -106,10 +106,9 @@ INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
 # if dcmtk 3.6, need to add liboflog:
 SET(DCMTK_OFLOG "")
-if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a")
+if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
     SET(DCMTK_OFLOG oflog )
-endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a")
-
+endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
 
 ###################################
 #   VTK

@@ -58,7 +58,6 @@
 #include <svkImageData.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
-#include <svkMultiWindowToImageFilter.h>
 
 
 class vtkSivicController;

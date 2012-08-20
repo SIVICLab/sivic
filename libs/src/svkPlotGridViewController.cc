@@ -239,16 +239,17 @@ void svkPlotGridViewController::SetRWInteractor( vtkRenderWindowInteractor* rwi 
         } 
         this->rwi = rwi;
         this->rwi->Register( this );
-        // Now we must remove all renderers, in case the window already had renderers in it
+        // Now we must remove all renderers, in case the window already had renderers init
         vtkRendererCollection* renderers = this->rwi->GetRenderWindow()->GetRenderers();
-        vtkCollectionIterator* myIterator = vtkCollectionIterator::New();
-        myIterator->SetCollection( renderers );
-        myIterator->InitTraversal();
-        while( !myIterator->IsDoneWithTraversal() ) {
-            this->rwi->GetRenderWindow()->RemoveRenderer( static_cast<vtkRenderer*>(myIterator->GetCurrentObject()) );
-            myIterator->GoToNextItem();
-        }
-        myIterator->Delete();
+		for( int i = 0; i < renderers->GetNumberOfItems(); i++ ) {
+			vtkObject* obj = renderers->GetItemAsObject(i);
+			if( obj != NULL ) {
+				vtkRenderer* renderer = vtkRenderer::SafeDownCast( obj );
+				if( renderer != NULL ) {
+					this->rwi->GetRenderWindow()->RemoveRenderer( renderer );
+				}
+			}
+		}
 
         // If we wanted another type of interactor...
         //rwi->SetInteractorStyle( vtkInteractorStyleTrackballCamera::New ());

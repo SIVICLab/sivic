@@ -743,7 +743,6 @@ void svkSecondaryCaptureFormatter::RenderSummaryImage( int firstFrame, int lastF
     window->SetSize( x, y );
     sliceLocationActor->SetPosition(x/4,y-25);
 
-    svkMultiWindowToImageFilter* mw2if = svkMultiWindowToImageFilter::New();
 
     vtkDataSetCollection* allImages = vtkDataSetCollection::New();
 

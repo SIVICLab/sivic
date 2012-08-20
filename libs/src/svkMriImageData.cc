@@ -133,7 +133,7 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
     double binHeight = 0;
 
     // Let's make sure we have enough bins to get an accurate histogram
-    while( usedBins < MIN_USED_BINS and numBins < MAX_NUM_BINS   ) {
+    while( usedBins < MIN_USED_BINS && numBins < MAX_NUM_BINS   ) {
     	usedBins = 0;
 		for( int i = 0; i < histogramImage->GetPointData()->GetScalars()->GetNumberOfTuples(); i++ ) {
 			// For now we are going to base the window/level on the real component of the image

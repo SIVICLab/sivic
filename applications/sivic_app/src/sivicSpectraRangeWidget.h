@@ -86,7 +86,6 @@
 #include <svkPhaseSpec.h>
 #include <svkSpecPoint.h>
 #include <svkUtils.h>
-#include <svkMultiWindowToImageFilter.h>
 #include <sivicKWCompositeWidget.h>
 
 #include <string.h>

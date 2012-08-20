@@ -462,13 +462,15 @@ void svkOverlayViewController::SetRWInteractor(vtkRenderWindowInteractor* rwi)
 
         // Now we must remove all renderers, in case the window already had renderers in it
         vtkRendererCollection* renderers = this->myRenderWindow->GetRenderers();
-        vtkCollectionIterator* myIterator = vtkCollectionIterator::New();
-        myIterator->SetCollection( renderers );
-        myIterator->InitTraversal();
-        while( !myIterator->IsDoneWithTraversal() ) {
-            this->myRenderWindow->RemoveRenderer( static_cast<vtkRenderer*>(myIterator->GetCurrentObject()) );
-            myIterator->GoToNextItem();
-        }
+        for( int i = 0; i < renderers->GetNumberOfItems(); i++ ) {
+			vtkObject* obj = renderers->GetItemAsObject(i);
+			if( obj != NULL ) {
+				vtkRenderer* renderer = vtkRenderer::SafeDownCast( obj );
+				if( renderer != NULL ) {
+					this->myRenderWindow->RemoveRenderer( renderer );
+				}
+			}
+		}
 
         // And add the new renderer
         this->rwi->SetEventPosition(0,0);
@@ -481,8 +483,6 @@ void svkOverlayViewController::SetRWInteractor(vtkRenderWindowInteractor* rwi)
             CreateDataVisualization();
         }
 
-        // Cleanup
-        myIterator->Delete();
     }
 }
 
