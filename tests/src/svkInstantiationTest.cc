@@ -110,7 +110,6 @@
 #include <svkMRSIOD.h>
 #include <svkMrsTopoGenerator.h>
 #include <svkMultiCoilPhase.h>
-#include <svkMultiWindowToImageFilter.h>
 #include <svkObliqueReslice.h>
 #include <svkOpenGLOrientedImageActor.h>
 #include <svkOrientedImageActorFactory.h>
@@ -275,8 +274,6 @@ int main ( int argc, char** argv )
     obj = svkMrsTopoGenerator::New();
     obj->Delete();
     obj = svkMultiCoilPhase::New();
-    obj->Delete();
-    obj = svkMultiWindowToImageFilter::New();
     obj->Delete();
     obj = svkObliqueReslice::New();
     obj->Delete();
