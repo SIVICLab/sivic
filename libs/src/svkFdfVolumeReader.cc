@@ -978,7 +978,7 @@ void svkFdfVolumeReader::ParseFdf()
         if (this->GetDebug()) {
             this->PrintProcparKeyValuePairs();
         }
-        this->fdfFile->close();
+
     } catch (const exception& e) {
         cerr << "ERROR opening or reading Varian fdf file (" << fdfFileName << "): " << e.what() << endl;
     }
