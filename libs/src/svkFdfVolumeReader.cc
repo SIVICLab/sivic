@@ -936,7 +936,7 @@ void svkFdfVolumeReader::ParseFdf()
 
             vtkstd::string currentFdfFileName( this->GetFileNames()->GetValue( fileIndex ) ); 
 
-            this->fdfFile->open( currentFdfFileName.c_str(), ifstream::in );
+            this->fdfFile->open( currentFdfFileName.c_str(), ios::binary );
             if ( ! this->fdfFile->is_open() ) {
                 throw runtime_error( "Could not open fdf file: " + currentFdfFileName );
             } 
@@ -978,7 +978,7 @@ void svkFdfVolumeReader::ParseFdf()
         if (this->GetDebug()) {
             this->PrintProcparKeyValuePairs();
         }
-
+        this->fdfFile->close();
     } catch (const exception& e) {
         cerr << "ERROR opening or reading Varian fdf file (" << fdfFileName << "): " << e.what() << endl;
     }
