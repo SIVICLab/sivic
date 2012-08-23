@@ -71,9 +71,9 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_met_kinetics -i1 met1 -i2 met2 -i3 met3 -o output_file_name [ -t output_data_type ] [ -h ] \n";
     usemsg += "\n";
-    usemsg += "   -i1               name   Name of met 1. \n";
-    usemsg += "   -i2               name   Name of met 2. \n";
-    usemsg += "   -i3               name   Name of met 3. \n";
+    usemsg += "   --i1              name   Name of met 1. \n";
+    usemsg += "   --i2              name   Name of met 2. \n";
+    usemsg += "   --i3              name   Name of met 3. \n";
     usemsg += "   -o                name   Name of outputfile. \n";
     usemsg += "   -t                type   Target data type: \n";
     usemsg += "                                 3 = UCSF IDF    \n";
