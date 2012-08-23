@@ -284,13 +284,20 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
     //  Try to call cminpack function:
   
     
-    const int numMets = 3;
-    const int combinedNumberOfTimePoints = numMets * numPts; /* should this be 3? 15? 20? 60? */
-    int i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
-    int ipvt[numMets];
+    const int  numMets = 3;
+    const int  combinedNumberOfTimePoints = numMets * numPts; // should this be 3? 15? 20? 60? 
+    int  i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
+    int* ipvt = new int[numMets];
     real ftol, xtol, gtol, factor, fnorm, epsfcn;
-    double x[numMets], fvec[combinedNumberOfTimePoints], diag[numMets], fjac[combinedNumberOfTimePoints * numMets], qtf[numMets],
-        wa1[numMets], wa2[numMets], wa3[numMets], wa4[combinedNumberOfTimePoints];
+    double* x = new double[numMets]; 
+    double* fvec = new double[combinedNumberOfTimePoints]; 
+    double* diag = new double[numMets]; 
+    double* fjac = new double[combinedNumberOfTimePoints * numMets]; 
+    double* qtf = new double[numMets];
+    double* wa1 = new double[numMets]; 
+    double* wa2 = new double[numMets]; 
+    double* wa3 = new double[numMets]; 
+    double* wa4 = new double[combinedNumberOfTimePoints];
     int k;
 
     real y[combinedNumberOfTimePoints];
@@ -443,6 +450,18 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
     cout << "   T1 all metabolites: " << T1all  << endl;
     printf("\n");
 
+    //  clean up memmory:
+    delete[] ipvt;
+    delete[] x;
+    delete[] fvec; 
+    delete[] diag; 
+    delete[] fjac; 
+    delete[] qtf; 
+    delete[] wa1; 
+    delete[] wa2; 
+    delete[] wa3; 
+    delete[] wa4; 
+
     //voxelValue=Kpl;
     return Kpl;
 }
@@ -471,7 +490,6 @@ int fcn_lmdif(void* p, int combinedNumberOfTimePoints, int numMets, const double
     double pi  = vtkMath::Pi(); //3.14159265358979323846;
     int    numTimePoints = combinedNumberOfTimePoints/numMets;
 
-    //cout << "TEST get value of metKinetics0: " <<  metKinetics0[0]; /* Urea at time = 0 */
     //cout << "TEST get value of metKinetics0: " <<  metKinetics0[0]; /* Urea at time = 0 */
   
     //  Now extract the arrays from the fcndata_t struct:  
