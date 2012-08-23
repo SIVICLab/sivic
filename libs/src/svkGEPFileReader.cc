@@ -148,7 +148,7 @@ int svkGEPFileReader::CanReadFile(const char* fname)
 
             this->pfileVersion = this->GetPFileVersion(); 
             this->SetDataByteOrder(); 
-        
+      
             if ( this->pfileVersion ) {
                 this->InitOffsetsMap(); 
 
@@ -1049,6 +1049,8 @@ float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped)
         version = 14.0;
     } else if ( (int)rdbmRev == 15 || (int)rdbmRevSwapped == 15 ) { 
         version = 15.0;
+    } else if ( (int)rdbmRev == 16 || (int)rdbmRevSwapped == 16 ) { 
+        version = 16.0;
     } else if ( (int)rdbmRev == 20 || (int)rdbmRevSwapped == 20 ) { 
         version = 20.0;
     } else if ( (int)rdbmRev == 21 || (int)rdbmRevSwapped == 21 ) { 
