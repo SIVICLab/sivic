@@ -80,7 +80,7 @@ svkFdfVolumeReader::svkFdfVolumeReader()
 
     // Set the byte ordering, as little-endian by default.
     this->SetDataByteOrderToLittleEndian(); 
-
+    this->tmpFileNames = NULL; 
 }
 
 
@@ -219,10 +219,11 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
 {
 
     this->FileNames = vtkStringArray::New(); 
-    this->FileNames->DeepCopy(this->tmpFileNames); 
-    this->tmpFileNames->Delete(); 
-    this->tmpFileNames = NULL; 
-
+    if( this->tmpFileNames != NULL ) {
+        this->FileNames->DeepCopy(this->tmpFileNames); 
+        this->tmpFileNames->Delete(); 
+        this->tmpFileNames = NULL; 
+    }
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
@@ -247,6 +248,7 @@ void svkFdfVolumeReader::ExecuteData(vtkDataObject* output)
             } else {
                 this->dataArray = vtkUnsignedShortArray::New();
             }
+            this->dataArray->SetName("pixels");
             this->MapFloatValuesTo16Bit( tmpArray, this->dataArray );
             tmpArray->Delete();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_INT_2 );

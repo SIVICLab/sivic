@@ -340,8 +340,8 @@ void svkImageReader2::SetupOutputScalarData()
             vtkErrorWithObjectMacro( this, "Unsupported data type: " << this->GetFileType() );
         }
 
+        this->dataArray->SetName("pixels");
         this->SetNumberOfScalarComponents(1);
-
     } 
 }
 

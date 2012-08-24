@@ -138,14 +138,7 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     
     reslicer->Update();
 
-    vtkInformation* reslicedInfo = this->reslicer->GetOutput()->GetInformation(); 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-
-    int outWholeExt[6];
-    reslicedInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt);
-
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt, 6);
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), outWholeExt, 6);
 
     // These values are not quite right... we only know the correct origin after request data is run
     outInfo->Set(vtkDataObject::SPACING(), this->reslicer->GetOutput()->GetSpacing(), 3);
