@@ -131,7 +131,7 @@ vtkstd::string svkImageReader2::GetFileExtension(const char* fname)
     size_t position;
     position = volumeFileName.find_last_of( "." );
     vtkstd::string fileExtension(""); 
-    if ( position != string::npos ) {
+    if ( position != string::npos && position != 0) {
         fileExtension.assign( volumeFileName.substr(position + 1) );
     } 
     return fileExtension;
