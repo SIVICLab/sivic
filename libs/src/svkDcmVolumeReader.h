@@ -64,6 +64,7 @@ class svkDcmVolumeReader : public svkImageReader2
 
         static float                            GetFloatValAttribute7( vtkstd::vector< vtkstd::string > vec ); 
         static int                              GetIntValAttribute8( vtkstd::vector< vtkstd::string > vec ); 
+        static void                             GetVOILUTScaledPixels( float* floatPixels, unsigned short* shortPixels, float center, float window, int numberOfPixels );
 
 
 

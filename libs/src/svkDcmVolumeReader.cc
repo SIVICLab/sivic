@@ -603,6 +603,41 @@ float svkDcmVolumeReader::GetSliceSpacing()
 }
 
 
+/*!
+ *  Scales an array of unsigned short pixel values into to a floating point
+ *  array according to the given center and window. The minimum value of the
+ *  output will be the center - window/2 and the max will be center + window/2.
+ */
+void svkDcmVolumeReader::GetVOILUTScaledPixels( float* floatPixels, unsigned short* shortPixels, float center, float window, int numberOfValues )
+{
+
+	float inputRangeMin = VTK_UNSIGNED_SHORT_MAX;
+	float inputRangeMax = VTK_UNSIGNED_SHORT_MIN;
+
+	// Get the min/max of the input array
+	for( int i = 0; i < numberOfValues; i++ ) {
+		if( shortPixels[i] < inputRangeMin ) {
+			inputRangeMin = shortPixels[i];
+		}
+		if( shortPixels[i] > inputRangeMax ) {
+			inputRangeMax = shortPixels[i];
+		}
+
+	}
+
+	float deltaRangeIn = inputRangeMax - inputRangeMin;
+	float outputRangeMin = center - window / 2.0;
+	float outputRangeMax = center + window / 2.0;
+	float deltaRangeOut = outputRangeMax - outputRangeMin;
+	float slope = deltaRangeOut/deltaRangeIn;
+	float intercept = outputRangeMin - inputRangeMin * ( slope );
+
+	for( int i = 0; i < numberOfValues; i++ ) {
+		floatPixels[i] = slope*shortPixels[i] + intercept;
+	}
+}
+
+
 
 /*
  *  If true, then make sure only one data volume
