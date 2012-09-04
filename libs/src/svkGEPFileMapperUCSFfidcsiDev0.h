@@ -130,9 +130,8 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     int numRead, 
                                     int epsiAxis
                                 ); 
-        void                    ReverseOddEPSILobe( svkImageData* data, int epsiAxis ); 
         void                    ZeroFill( svkImageData* data ); 
-        void                    FlipAxis( svkImageData* data, int axis ); 
+        void                    FlipAxis( svkImageData* data, int axis, int lobe = -1 ); 
         void                    FFTShift( svkImageData* data ); 
         void                    ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis ); 
         virtual void            GetWaveFormIntegral( float* waveFormIntegral, int deltaT, int plateauTime, int rampTime ); 

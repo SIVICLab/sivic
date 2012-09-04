@@ -575,22 +575,29 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //          the correction is a function of the distance along the epsi-axis (k/t) with pivots 
     //          at the center of each dimension
     //  =================================================
-    //this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
+    //test: this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
  
     //  =================================================
     //  reverse odd lobe k-space spectra along epsi axis
     //  =================================================
-    this->ReverseOddEPSILobe( data, epsiAxis ); 
+    this->FlipAxis( data, 0, 0);    
 
     //  =================================================
     //  resample ramp data 
     //  =================================================
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
 
+    //  This results in a match to Matlab when comparing the k-space data output:     
+    //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
+    //  final_datan(:,:,:,:,t) = fftshift(fftn(kdatan));
+    //  this->FlipAxis( data, 2); 
+    //  this->FlipAxis( data, 1); 
+    //  this->FlipAxis( data, 0); 
+
+
     //  =================================================
     //  if feet first entry, reverse RL and SI direction: 
     //  =================================================
-    this->FlipAxis( data, 0); 
     this->FlipAxis( data, 2); 
 
     //  =================================================
@@ -600,12 +607,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     //this->FFTShift( data ); 
    
-    //  =================================================
-    //  Zero fill in frequency domain (should be moved to
-    //  post-processing step)
-    //  =================================================
-    //this->ZeroFill(data);
-
     //  =================================================
     //  combine even/odd lobes (separate post-processing 
     //  step). 
@@ -657,7 +658,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
 /*!
  *  Reverses the specified axis. 
  */
-void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis ) 
+void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int lobe) 
 {
 
     svkMrsImageData* tmpData = svkMrsImageData::New();
@@ -665,6 +666,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis )
 
     svkMrsImageFlip* flip = svkMrsImageFlip::New(); 
     flip->SetFilteredAxis( axis ); 
+    if (lobe != -1) {
+        flip->SetFilteredChannel( lobe ); 
+    }
     flip->SetInput( tmpData ); 
     flip->Update(); 
 
@@ -836,7 +840,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     // loop over all dims other than the epsi k-space dimension: 
     regridDims[epsiAxis] = 1;  
 
-    float* epsiKData = new float[ numEPSIVoxels * 2 ];
+    float* epsiKData0 = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
     for ( int lobe = 0; lobe < 2; lobe++) {
         //cout << "LOBE: " << lobe << endl;
@@ -854,13 +858,14 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             } else if ( epsiAxis == 2 ) {
                                 slice = epsiK;         
                             }
-
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
                                 svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
                             );
 
-                            epsiKData[ epsiK * 2 ]     = spectrum->GetValue( freq * 2 ); 
-                            epsiKData[ epsiK * 2 + 1 ] = spectrum->GetValue( freq * 2 + 1 ); 
+                            //  epsiKData0 is equivalent to kte3 and kto3 in Matlab implementation
+                            epsiKData0[ epsiK * 2 ]     = spectrum->GetValue( freq * 2 ); 
+                            epsiKData0[ epsiK * 2 + 1 ] = spectrum->GetValue( freq * 2 + 1 ); 
+                            //cout << "Ramp Spectrum: " << epsiKData0[epsiK * 2 ] << " " << epsiKData0[epsiK * 2 +1]   << endl;
                             
                         }
 
@@ -872,10 +877,14 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             overgrid[ i*2 ] = 0;  
                             overgrid[ i*2 + 1 ] = 0;  
                             for ( int j = 0; j < numEPSIVoxels; j++) {
-                                overgrid[ i*2 ]    += grid[i][j] * epsiKData[ j * 2 ];
-                                overgrid[ i*2 + 1] += grid[i][j] * epsiKData[ j * 2 + 1];
+                                overgrid[ i*2 ]    += grid[i][j] * epsiKData0[ j * 2 ];
+                                overgrid[ i*2 + 1] += grid[i][j] * epsiKData0[ j * 2 + 1];
                             }
                         }
+
+                        //for ( int i = 0; i < gridSize; i++ ) {
+                        //    cout << "overgrid : " << overgrid[i* 2 ] << " " << overgrid[i* 2 +1]   << endl;
+                        //}
 
                         //================================================
                         //  ifft overgrid and divide by apodCor
@@ -895,9 +904,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         rfft->ExecuteRfft( epsiKData, epsiXData, gridSize );
                         svkMrsImageFFT::FFTShift( epsiXData, gridSize );
 
+                        //  epsiXData should correspond to Fn_overgrid in 
+                        //  Matlab implementation
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i].Real / apodCor[i]; 
                             epsiXData[i].Imag = epsiXData[i].Imag / apodCor[i]; 
+                            //cout << "epsiXData: " << epsiXData[i].Real << " " << epsiXData[i].Imag   << endl;
                         }
 
                         int offset = static_cast<int>(floor(integralMax/2.)); 
@@ -930,15 +942,25 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                                 slice = k;         
                             }
 
+                            //cout << "assign spectrum tuple col, row, slice, freq: " 
+                                //<< col << " " << row << " " << slice << " " << freq << endl;
+
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
                                 svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
                             );
 
                             tuple[0] = epsiKData[k].Real; 
                             tuple[1] = epsiKData[k].Imag; 
-                            spectrum->SetTuple( k, tuple );
-                            
-                            //cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
+                            spectrum->SetTuple( freq, tuple );
+                           
+                            //  spectrum/tuple corresponds to gridkb_1d.m, fn in Matlab implementation 
+                            //  up to here looks OK compared with Matlab
+                            //  dbg: 
+                            //  cout << "regridded tupple: " << tuple[0] << " + " << tuple[1] << endl;
+                            //vtkFloatArray* testspectrum = vtkFloatArray::SafeDownCast( 
+                                //svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) ); 
+                            //cout << "regridded spectrum check tuple: " 
+                                //<< testspectrum->GetValue( freq * 2 ) << " " << testspectrum->GetValue( freq * 2 + 1 ) << endl;
                         }
 
                         rfft->Delete();
@@ -950,6 +972,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
             }
         }
     }
+
+    //  dbg: 
+    //vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( svkMrsImageData::SafeDownCast(data)->GetSpectrum( 0, 0, 0, 0, 0) ); 
+    //for (int xx = 0; xx<numSpecPts; xx++) {
+        //cout << "regridded spectrum lobe0: " << spectrum->GetValue( xx * 2 ) << " " << spectrum->GetValue( xx * 2 + 1 ) << endl;
+    //}
 
     //  redimension the data set in the EPSI k-space axis (18 voxels, epsiKData):  
     //  Remove all arrays with epsiAxis dimension greater
@@ -987,6 +1015,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     this->RedimensionData( data, numVoxels, regridDims, numSpecPts); 
 
     delete [] waveFormIntegralNorm;
+    delete [] epsiKData0;
+    delete [] overgrid; 
 
 }
 
@@ -1316,150 +1346,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ZeroFill( svkImageData* data )
 
     data->GetDcmHeader()->SetValue( "DataPointColumns", 256);
 
-}
-
-
-/*!
- *  Reverse the k-space data along epsi axis in odd lobe.  
- */
-void svkGEPFileMapperUCSFfidcsiDev0::ReverseOddEPSILobe( svkImageData* data, int epsiAxis )
-{
-
-    //  Make a target object to write reversed data into
-    svkMrsImageData* reversedImageData = svkMrsImageData::New();
-    reversedImageData->DeepCopy( data ); 
-    this->RemoveArrays( reversedImageData ); 
-    int numVoxels[3]; 
-    data->GetNumberOfVoxels( numVoxels ); 
-
-    //  allocate new arrays for reversed data: 
-    for (int arrayNumber = 0; arrayNumber < data->GetCellData()->GetNumberOfArrays(); arrayNumber++) {
-        vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
-        dataArray->SetNumberOfComponents( 2 ); 
-        dataArray->SetNumberOfTuples( data->GetCellData()->GetNumberOfTuples() );
-        reversedImageData->GetCellData()->AddArray(dataArray);
-        dataArray->Delete();
-    }
-
-    //  Lookup any data set attributes from header required for algorithm (See DICOM IOD for field names):
-    svkDcmHeader* hdr = data->GetDcmHeader(); 
-    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
-    int cols       = hdr->GetIntValue( "Columns" );
-    int rows       = hdr->GetIntValue( "Rows" );
-    int slices     = hdr->GetNumberOfSlices();
-    int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
-    int timePt     = 0; 
-
-    //  Do not loop over epsiAxis:
-    int loopLimits[3]; 
-    loopLimits[0] = cols ; 
-    loopLimits[1] = rows; 
-    loopLimits[2] = slices; 
-    int epsiAxisLimit; 
-    if ( epsiAxis == 0 ) {
-        loopLimits[0] = 1; 
-        epsiAxisLimit = cols; 
-    } else if ( epsiAxis == 1 ) {
-        loopLimits[1] = 1; 
-        epsiAxisLimit = rows; 
-    } else if ( epsiAxis == 2 ) {
-        loopLimits[2] = 1; 
-        epsiAxisLimit = slices; 
-    }
-
-    //  Iterate through 3D spatial locations
-    int xOutEven;     
-    int yOutEven;     
-    int zOutEven;     
-    int xOutOdd;     
-    int yOutOdd;     
-    int zOutOdd;     
-    for (int lobe = 0; lobe < numLobes-1; lobe++) {   // odd lobe only
-        for (int z = 0; z < loopLimits[2]; z++) {
-            for (int y = 0; y < loopLimits[1]; y++) {
-                for (int x = 0; x < loopLimits[0]; x++) {
-
-                    //  for the given non EPSI indices, loop over the epsi direction and reverse the 
-                    //  array ordering
-                    for ( int epsiAxisIndex = 0; epsiAxisIndex < epsiAxisLimit; epsiAxisIndex++ ) {
-                        
-                        xOutEven = x;
-                        yOutEven = y;
-                        zOutEven = z;
-                        //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis
-                        if ( epsiAxis == 0 ) {
-                            x = epsiAxisIndex; 
-                            xOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
-                        } else if ( epsiAxis == 1 ) {
-                            y = epsiAxisIndex; 
-                            yOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
-                        } else if ( epsiAxis == 2 ) {
-                            z = epsiAxisIndex; 
-                            zOutEven = epsiAxisLimit - epsiAxisIndex - 1; 
-                        }
-                        xOutOdd = x; 
-                        yOutOdd = y; 
-                        zOutOdd = z; 
-
-                        int indexInEven =  x
-                                  + ( numVoxels[0] ) * y
-                                  + ( numVoxels[0] * numVoxels[1] ) * z
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * (lobe + 1)
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
-                        int indexInOdd =  x
-                                  + ( numVoxels[0] ) * y
-                                  + ( numVoxels[0] * numVoxels[1] ) * z
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * lobe 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
-                        int indexOutEven = xOutEven
-                                  + ( numVoxels[0] ) * yOutEven
-                                  + ( numVoxels[0] * numVoxels[1] ) * zOutEven
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * (lobe + 1) 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
-                        int indexOutOdd =  xOutOdd
-                                  + ( numVoxels[0] ) * yOutOdd
-                                  + ( numVoxels[0] * numVoxels[1] ) * zOutOdd
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * lobe 
-                                  + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * 2 ) * timePt;
-
-                        vtkFloatArray* dataArrayInEven  = vtkFloatArray::SafeDownCast( 
-                                                                data->GetCellData()->GetArray( indexInEven ) 
-                                                            );
-                        vtkFloatArray* dataArrayInOdd   = vtkFloatArray::SafeDownCast( 
-                                                                data->GetCellData()->GetArray( indexInOdd) 
-                                                            );
-                        vtkFloatArray* dataArrayOutEven = vtkFloatArray::SafeDownCast( 
-                                                                reversedImageData->GetCellData()->GetArray( indexOutEven ) 
-                                                            );
-                        vtkFloatArray* dataArrayOutOdd  = vtkFloatArray::SafeDownCast( 
-                                                                reversedImageData->GetCellData()->GetArray( indexOutOdd ) 
-                                                            );
-
-                        char arrayNameEven[30];
-                        sprintf(arrayNameEven, "%d %d %d %d %d", xOutEven, yOutEven, zOutEven, timePt, lobe + 1);
-                        dataArrayOutEven->SetName(arrayNameEven);
-                        char arrayNameOdd[30];
-                        sprintf(arrayNameOdd, "%d %d %d %d %d", xOutOdd, yOutOdd, zOutOdd, timePt, lobe);
-                        dataArrayOutOdd->SetName(arrayNameOdd);
-
-                        float tupleEven[2];
-                        float tupleOdd[2];
-                        for ( int f = 0 ; f < numSpecPts;  f++ ) {
-                            dataArrayInEven->GetTupleValue( f, tupleEven );
-                            dataArrayInOdd->GetTupleValue( f, tupleOdd);
-                            dataArrayOutEven->SetTuple( f, tupleEven );
-                            dataArrayOutOdd->SetTuple( f, tupleOdd );
-                        }
-
-                    }
-                }
-            }
-        }
-    }
-
-    data->DeepCopy( reversedImageData ); 
-    data->Modified();
-    reversedImageData->Delete(); 
 }
 
 
