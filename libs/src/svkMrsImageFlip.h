@@ -69,6 +69,7 @@ class svkMrsImageFlip : public svkImageInPlaceFilter
         vtkTypeRevisionMacro( svkMrsImageFlip, svkImageInPlaceFilter);
 
         void    SetFilteredAxis( int axis ); 
+        void    SetFilteredChannel( int channel); 
 
 
     protected:
@@ -90,6 +91,7 @@ class svkMrsImageFlip : public svkImageInPlaceFilter
     private: 
 
         int             filteredAxis; 
+        int             filteredChannel; 
 
 
 };

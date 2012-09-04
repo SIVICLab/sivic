@@ -66,6 +66,7 @@ svkMrsImageFlip::svkMrsImageFlip()
 
     //  Initialize any member variables
     this->filteredAxis = 0; 
+    this->filteredChannel = -1; 
 }
 
 
@@ -74,6 +75,16 @@ svkMrsImageFlip::svkMrsImageFlip()
  */
 svkMrsImageFlip::~svkMrsImageFlip()
 {
+}
+
+
+/*
+ *  Filter only the specified channel.  By default filters all 
+ *  channels if this method isn't called to set one.
+ */
+void svkMrsImageFlip::SetFilteredChannel( int channel)
+{
+    this->filteredChannel = channel; 
 }
 
 
@@ -112,9 +123,16 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
     vtkImageData* tmpData = NULL;
     svkMriImageData* singleFreqImage = svkMriImageData::New();
 
+    int lowerChannel = 0; 
+    int upperChannel = numCoils; 
+    if ( this->filteredChannel != -1 ) {
+        lowerChannel = this->filteredChannel; 
+        upperChannel = this->filteredChannel + 1; 
+    }
+        
 
-    for( int timePt = 0; timePt < numTimePts; timePt++ ) {
-        for( int coil = 0; coil < numCoils; coil++ ) {
+    for( int timePt = 0 ; timePt < numTimePts; timePt++ ) {
+        for( int coil = lowerChannel; coil < upperChannel; coil++ ) {
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
 
