@@ -116,7 +116,13 @@ class svkDynamicMRIAlgoTemplate: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        double                  GetKineticsMapVoxelValue(float* metKinetics0, float* metKinetics1, float* metKinetics2 ); 
+		double                  GetKineticsMapVoxelValue( float* metKinetics0, float* metKinetics1, float* metKinetics3);
+        //double                  GetKineticsMapVoxelValue( ); 
+
+        float*                  metKinetics0;
+        float*                  metKinetics1;
+        float*                  metKinetics2;
+        int                     currentTimePoint; 
 
 };
 

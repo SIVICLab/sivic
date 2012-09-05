@@ -60,17 +60,17 @@ vtkCxxRevisionMacro(svkDynamicMRIAlgoTemplate, "$Rev$");
 vtkStandardNewMacro(svkDynamicMRIAlgoTemplate);
 
 /* Use for user provided Jacobian*/
-int fcn_lmder(void* p, int m, int n, const real* x, real* fvec, real* fjac, int ldfjac, int iflag);
+int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag);
 
 /* Use for no Jacobian Provided */
-int fcn_lmdif(void* p, int combinedNumberOfTimePonits, int n, const double* x, double* fvec, int iflag);
+int svkDynamicMRIAlgoTemplate::fcn_lmdif(void *p, int m, int n, const double *x, double *fvec, int iflag);
 
 
-/* the following struct defines the data points */
-typedef struct  {
-    int m;  //total number of points in y array 
-    real *y;
-} fcndata_t;
+  /* the following struct defines the data points */
+    typedef struct  {
+        int m;
+        real *y;
+    } fcndata_t;
 
 
 /*!
@@ -227,10 +227,15 @@ void svkDynamicMRIAlgoTemplate::GenerateKineticParamMap()
         //cout << "NUM TUPS: " << kineticTrace->GetNumberOfTuples() << endl;
 
         float* metKinetics0 = kineticTrace0->GetPointer(0);
-        float* metKinetics1 = kineticTrace1->GetPointer(0);
-        float* metKinetics2 = kineticTrace2->GetPointer(0);
+		float* metKinetics1 = kineticTrace1->GetPointer(0);
+		float* metKinetics2 = kineticTrace2->GetPointer(0);
+		
+		//this->metKinetics0 = kineticTrace0->GetPointer(0);
+        //this->metKinetics1 = kineticTrace1->GetPointer(0);
+        //this->metKinetics2 = kineticTrace2->GetPointer(0);
 
-        voxelValue = this->GetKineticsMapVoxelValue(metKinetics0, metKinetics1, metKinetics2 );
+        voxelValue = this->GetKineticsMapVoxelValue( metKinetics0, metKinetics1, metKinetics2  );
+		//voxelValue = this->GetKineticsMapVoxelValue( );
 
         kineticsMapArray->SetTuple1(i, voxelValue);
     }
@@ -240,302 +245,272 @@ void svkDynamicMRIAlgoTemplate::GenerateKineticParamMap()
 /*!  
  *  Fit the kinetics for a single voxel. 
  */
-double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, float* metKinetics1, float* metKinetics2 )
+double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 {
 
     double voxelValue;
 
     //  get num points in kinetic trace: 
     int numPts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    
+	
     //  Get max and min intensity data point for upper and lower bounds:
-    float maxValue0 = metKinetics0[0];
-    float maxValue1 = metKinetics1[0];
-    float maxValue2 = metKinetics2[0];
-    float minValue0 = metKinetics0[0];
-    float minValue1 = metKinetics1[0];
-    float minValue2 = metKinetics2[0];
+    float maxValue0 = this->metKinetics0[0];
+	float maxValue1 = this->metKinetics1[0];
+	float maxValue2 = this->metKinetics2[0];	
+	float minValue0 = this->metKinetics0[0];
+	float minValue1 = this->metKinetics1[0];
+	float minValue2 = this->metKinetics2[0];
 
-      
+	  
     for ( int i = 0; i < numPts; i++ ) {
-        cout << "   val: " << i << " " << metKinetics0[i] << " " << metKinetics1[i] << " " <<  metKinetics2[i] << endl;
-        if ( metKinetics0[i] > maxValue0) {
-            maxValue0 = metKinetics0[ i ];
-        }
-        if ( metKinetics0[i] < minValue0) {
-            minValue0 = metKinetics0[ i ];
-        }
+        cout << "   val: " << i << " " << this->metKinetics0[i] << " " << this->metKinetics1[i] << " " <<  this->metKinetics2[i] << endl;
+        if ( this->metKinetics0[i] > maxValue0) {
+		  maxValue0 = this->metKinetics0[ i ];
+		}
+		if ( this->metKinetics0[i] < minValue0) {
+		  minValue0 = this->metKinetics0[ i ];
+		}
 
-        if ( metKinetics1[i] > maxValue1) {
-            maxValue1 = metKinetics1[ i ];
-        }
-        if ( metKinetics1[i] < minValue1) {
-            minValue1 = metKinetics1[ i ];
-        }
+		if ( this->metKinetics1[i] > maxValue1) {
+		  maxValue1 = this->metKinetics1[ i ];
+		}
+		if ( this->metKinetics1[i] < minValue1) {
+		  minValue1 = this->metKinetics1[ i ];
+		}
 
-        if ( metKinetics2[i] > maxValue2) {
-            maxValue2 = metKinetics2[ i ];
-        }
-        if ( metKinetics2[i] < minValue2) {
-            minValue2 = metKinetics2[ i ];
-        }
+		if ( this->metKinetics2[i] > maxValue2) {
+		  maxValue2 = this->metKinetics2[ i ];
+		}
+		if ( this->metKinetics2[i] < minValue2) {
+		  minValue2 = this->metKinetics2[ i ];
+		}
+
+		  
     }
 
     //  Try to call cminpack function:
   
-    
-    const int  numMets = 3;
-    const int  combinedNumberOfTimePoints = numMets * numPts; // should this be 3? 15? 20? 60? 
-    int  i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
-    int* ipvt = new int[numMets];
+	
+    const int m = 3*numPts; /* should this be 3? 15? 20? 60? */
+    const int n = 3;
+    int i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
+    int ipvt[n];
     real ftol, xtol, gtol, factor, fnorm, epsfcn;
-    double* x = new double[numMets]; 
-    double* fvec = new double[combinedNumberOfTimePoints]; 
-    double* diag = new double[numMets]; 
-    double* fjac = new double[combinedNumberOfTimePoints * numMets]; 
-    double* qtf = new double[numMets];
-    double* wa1 = new double[numMets]; 
-    double* wa2 = new double[numMets]; 
-    double* wa3 = new double[numMets]; 
-    double* wa4 = new double[combinedNumberOfTimePoints];
+    double x[n], fvec[3*numPts], diag[n], fjac[numPts*3*n], qtf[n],
+        wa1[n], wa2[n], wa3[n], wa4[3*numPts];
     int k;
 
-    real y[combinedNumberOfTimePoints];
-    for (int met = 0; met < numMets; met++){
-        for (int t = 0; t < numPts; t++){
-            if(met == 0) { 
-                y[met * numPts + t] = metKinetics0[t];
-            }
-            if(met == 1) {
-                y[met * numPts + t] = metKinetics1[t];
-            }
-            if(met == 2) {
-                y[met * numPts + t] = metKinetics2[t];
-            }
-        }
-    }
-        
-    fcndata_t data;    
-    data.m = combinedNumberOfTimePoints;
-    data.y = y;
-    /* Not sure what this is for...based on examples from cminpack-1.3.0/examples/tlmdifc.c */
+	real y[3*numPts];
+		for (int m=0; m<3; m++){
+		  for (int t=0; t<numPts; t++){
+			if(m==1) y[m*numPts+t] = this->metKinetics0[t];
+			if(m==2) y[m*numPts+t] = this->metKinetics1[t];
+			if(m==3) y[m*numPts+t] = this->metKinetics2[t];
+		  }
+		}
+		
+	fcndata_t data;	
+	data.m = m;
+	data.y = y;
+	/* Not sure what this is for...based on examples from cminpack-1.3.0/examples/tlmdifc.c */
 
-    real TR = 1; /* sec */
-      
-    /* Set initial values (sec-1)*/
-    //x[0] = metKinetics0[0]; /* Pyr at time = 0 */
-    //x[1] = metKinetics1[0]; /* Lac at time = 0 */
-    //x[2] = metKinetics2[0]; /* Urea at time = 0 */
-    x[0] = 1/(20*TR);       /* 1/T1 All */
-    //x[4] = 1/(10*TR);            /* T1,Pyr */
-    //x[5] = 1/(10*TR);            /* T1,Lac */
-    //x[6] = 1/(10*TR);            /* T1,Urea */
-    x[2] = 1/TR;              /* Kpyr->lac */
+	real TR = 1; /* sec */
+	  
+	/* Set initial values (sec-1)*/
+	//x[0] = this->metKinetics0[0]; /* Pyr at time = 0 */
+	//x[1] = this->metKinetics1[0]; /* Lac at time = 0 */
+	//x[2] = this->metKinetics2[0]; /* Urea at time = 0 */
+	x[0] = 1/(20*TR);       /* 1/T1 All */
+	//x[4] = 1/(10*TR);            /* T1,Pyr */
+	//x[5] = 1/(10*TR);            /* T1,Lac */
+	//x[6] = 1/(10*TR);            /* T1,Urea */
+	x[2] = 1/TR;              /* Kpyr->lac */
     x[1] = 2*TR;                 /* Pyruvate bolus arrival time */
-    
-    ldfjac = combinedNumberOfTimePoints;
+	
+	ldfjac = 3*numPts;
 
-    /* Set ftol and xtol to the square root of the machine */
-    /* and gtol to zero. unless high solutions are */
-    /* required, these are the recommended settings. */
-    ftol =sqrt(__cminpack_func__(dpmpar)(1));
-    xtol =sqrt(__cminpack_func__(dpmpar)(1));
-    gtol =0.;
+	/* Set ftol and xtol to the square root of the machine */
+	/* and gtol to zero. unless high solutions are */
+	/* required, these are the recommended settings. */
+	ftol =sqrt(__cminpack_func__(dpmpar)(1));
+	xtol =sqrt(__cminpack_func__(dpmpar)(1));
+	gtol =0.;
 
-    maxfev = 2000;
-    epsfcn = 0.;
+	maxfev = 2000;
+	epsfcn = 0.;
     mode = 1;
-    factor = 1000;
-    //nprint =0;
-    
-    
-    /* Set lower and upper bounds */
-    // double lb[] = {minValue0, minValue1, minValue2, 1/50, 1/50, 1/50, 0};
-    // double ub[] = {maxValue0, maxValue1, maxValue2, 1/5, 1/5, 1/5, 1};  
+	factor = 1000;
+	//nprint =0;
+	
+	
+	/* Set lower and upper bounds */
+	// double lb[] = {minValue0, minValue1, minValue2, 1/50, 1/50, 1/50, 0};
+	// double ub[] = {maxValue0, maxValue1, maxValue2, 1/5, 1/5, 1/5, 1};  
     /* SI pyr, SI lac, SI urea, 1/Tp, 1/T1L, 1/T1U, rate lac-pyr...sec-1 */
 
-    
-    // lmder: User defined Jacobian
-    // based on examples from cminpack-1.3.0/examples/tlmderc.c
-    //info = __cminpack_func__(lmder)(fcn_lmder, &data, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol,
-    //maxfev, diag, mode, factor, nprint, &nfev, &njev,
-    //ipvt, qtf, wa1, wa2, wa3, wa4);
+	
+	// lmder: User defined Jacobian
+ 	// based on examples from cminpack-1.3.0/examples/tlmderc.c
+	//info = __cminpack_func__(lmder)(fcn_lmder, &data, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol,
+ 	//maxfev, diag, mode, factor, nprint, &nfev, &njev,
+ 	//ipvt, qtf, wa1, wa2, wa3, wa4);
 
-    
-    // lmdif: Calculates Jacobian based on derivatives
-    // based on examples from cminpack-1.3.0/examples/tlmdifc.c
-    
-     info = __cminpack_func__(lmdif)(fcn_lmdif, &data, combinedNumberOfTimePoints, numMets, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, nprint, &nfev, fjac, ldfjac,ipvt, qtf, wa1, wa2, wa3, wa4); 
+	
+	// lmdif: Calculates Jacobian based on derivatives
+ 	// based on examples from cminpack-1.3.0/examples/tlmdifc.c
+	
+ 	info = __cminpack_func__(lmdif)(fcn_lmdif, &data, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, nprint, &nfev, fjac, ldfjac,ipvt, qtf, wa1, wa2, wa3, wa4); 
+	
+    fnorm = __cminpack_func__(enorm)(m, fvec);
+	
+	/*
+	 *  Look at rank, covariance and residuals to ensure goodness of fit 
+	 */ 
+	printf("    final 12 norm of the residuals:%15.7g\n\n",(double)fnorm);
+	printf("    number of function evaulations:%15.7g\n\n",fvec);
+	printf("    exit parameter                %10i\n\n",info);
+	switch (info){
+	case 0: printf(" improper iin put parameters "); break;
+	case 1: printf(" F_error < ftol "); break;
+	case 2: printf(" delta < xtol*xnorm "); break;
+	case 3: printf(" both_error < tol "); break;
+	case 4: printf(" cos(angle fvec Jacobian < gtol "); break;
+	case 5: printf(" n ftn evaluation > maxfev "); break;
+	case 6: printf(" too small ftol for F_error "); break;
+	case 7: printf(" too small xtol for x_error "); break;
+	case 99: printf(" too small gtol for cos(angle) "); break;
+	}
+	printf("\n");
+	printf("\n"); 
+	//for (j=0; j<n; ++j) {
+	//  printf("                 Estimated value:%15.7g\n\n",x[j]);
+	//  printf("\n");
+	//	}
 
-    
-    fnorm = __cminpack_func__(enorm)(combinedNumberOfTimePoints, fvec);
-    
-    /*
-     *  Look at rank, covariance and residuals to ensure goodness of fit 
-     */ 
-    printf("    final 12 norm of the residuals:%15.7g\n\n",(double)fnorm);
-    printf("    number of function evaulations:%15.7g\n\n",fvec);
-    printf("    exit parameter                %10i\n\n",info);
-    switch (info){
-        case 0: printf(" improper iin put parameters "); break;
-        case 1: printf(" F_error < ftol "); break;
-        case 2: printf(" delta < xtol*xnorm "); break;
-        case 3: printf(" both_error < tol "); break;
-        case 4: printf(" cos(angle fvec Jacobian < gtol "); break;
-        case 5: printf(" n ftn evaluation > maxfev "); break;
-        case 6: printf(" too small ftol for F_error "); break;
-        case 7: printf(" too small xtol for x_error "); break;
-        case 99: printf(" too small gtol for cos(angle) "); break;
-    }
-    printf("\n");
-    printf("\n"); 
-    //for (j=0; j<n; ++j) {
-    //  printf("                 Estimated value:%15.7g\n\n",x[j]);
-    //  printf("\n");
-    //    }
-
-    ftol = __cminpack_func__(dpmpar)(1);
-    
+	ftol = __cminpack_func__(dpmpar)(1);
+	
 #ifdef TEST_COVAR
-    {
-        /* test the original covar from MINPACK */
-        real covfac = fnorm * fnorm/(combinedNumberOfTimePoints - numMets);
-        real fjac1[15*3];
-        memcpy(fjac1, fjac, sizeof(fjac));
-        covar(numMets, fjac1, ldfjac, ipvt, ftol, wa1);
-        printf("      covariance (using covar)\n");
-        for ( i = 0; i < numMets; ++i) {
-            for ( j = 0; j < numMets; ++j){
-                printf("%s%15.7g", j%3==1?"\n     ":"", (double)fjac1[i*ldfjac+j]*covfac);
-            }
-        }
-        printf("\n");
-    }
+  {
+      /* test the original covar from MINPACK */
+      real covfac = fnorm*fnorm/(m-n);
+      real fjac1[15*3];
+      memcpy(fjac1, fjac, sizeof(fjac));
+      covar(n, fjac1, ldfjac, ipvt, ftol, wa1);
+      printf("      covariance (using covar)\n");
+      for (i=0; i<n; ++i) {
+		for (j=0; j<n; ++j){
+              printf("%s%15.7g", j%3==1?"\n     ":"", (double)fjac1[i*ldfjac+j]*covfac);
+		}
+	  }
+      printf("\n");
+  }
 #endif
-
-    /* test covar1, which also estimates the rank of the Jacobian */
-    k = __cminpack_func__(covar1)(combinedNumberOfTimePoints, numMets, fnorm*fnorm, fjac, ldfjac, ipvt, ftol, wa1);
-    printf("      covariance\n");
-    for ( i = 0; i < numMets; ++i) {
-        for ( j = 0; j < numMets; ++j){
-            printf("%s%15.7g", j%3==0?"\n     ":"", (double)fjac[i*ldfjac+j]);
-        }
-    }
-    printf("\n");
-    printf("\n");
-    printf("      rank(J) = %d\n", k != 0 ? k : numMets); 
-    printf("\n");  
-    //double Mfit[] = fcn_lmdif(void *p, int combinedNumberOfTimePoints, int n, const real *x, real *fvec, int iflag);
+  /* test covar1, which also estimates the rank of the Jacobian */
+  k = __cminpack_func__(covar1)(m, n, fnorm*fnorm, fjac, ldfjac, ipvt, ftol, wa1);
+  printf("      covariance\n");
+  for (i=0; i<n; ++i) {
+    for (j=0; j<n; ++j){
+      printf("%s%15.7g", j%3==0?"\n     ":"", (double)fjac[i*ldfjac+j]);
+	}
+  }
+  printf("\n");
+  printf("\n");
+  printf("      rank(J) = %d\n", k != 0 ? k : n); 
+  printf("\n");  
+	//double Mfit[] = fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, int iflag);
 
   
     /* Get parameters */
     //double Klp = 0;
     //double T1p = 1/x[4];
-    //double T1l = 1/x[5];
-    //double T1u = 1/x[6];
+	//double T1l = 1/x[5];
+	//double T1u = 1/x[6];
     double T1all     = 1/x[0];
     double t_arrival = x[1]; 
     double Kpl       = x[2];
-    
-    cout << " Two Site Exchange assuming back reaction is zero and acq starts after bolus" << endl;
-    printf("\n");
-    //cout << "   Klp: " << Klp   << endl;
-    //cout << "   T1p: " << T1p << endl;
-    //cout << "   Tl1: " << T1l << endl;
-    //cout << "   Tlu: " << T1u << endl;
-    cout << "   Kpl: " << Kpl << endl;
-    printf("\n");
-    cout << "   Bolus arrival time: " << t_arrival  << endl;
-    printf("\n");
-    cout << "   T1 all metabolites: " << T1all  << endl;
-    printf("\n");
+	
+	cout << " Two Site Exchange assuming back reaction is zero and acq starts after bolus" << endl;
+	printf("\n");
+	//cout << "   Klp: " << Klp   << endl;
+	//cout << "   T1p: " << T1p << endl;
+	//cout << "   Tl1: " << T1l << endl;
+	//cout << "   Tlu: " << T1u << endl;
+	cout << "   Kpl: " << Kpl << endl;
+	printf("\n");
+	cout << "   Bolus arrival time: " << t_arrival  << endl;
+	printf("\n");
+	cout << "   T1 all metabolites: " << T1all  << endl;
+	printf("\n");
 
-    //  clean up memmory:
-    delete[] ipvt;
-    delete[] x;
-    delete[] fvec; 
-    delete[] diag; 
-    delete[] fjac; 
-    delete[] qtf; 
-    delete[] wa1; 
-    delete[] wa2; 
-    delete[] wa3; 
-    delete[] wa4; 
+	//voxelValue=Kpl;
+	return Kpl;
 
-    //voxelValue=Kpl;
-    return Kpl;
 }
-
 
 /*
  * lmder stub
  */
-//    int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag)
-//    {
+//	int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag)
+//	{
 //  return 0;
-//    }
+//	}
 
 
 /*!
- *  model exchange
+ * model exchange
  */
-int fcn_lmdif(void* p, int combinedNumberOfTimePoints, int numMets, const double* x, double* fvec, int iflag)
-{
+int svkDynamicMRIAlgoTemplate::fcn_lmdif(void *p, int m, int n, const double *x, double *fvec, int iflag){
 
-    //const real y* = ((fcndata_t*)p)->y;
+  //const real y* = ((fcndata_t*)p)->y;
 
+cout << "TEST get valu of metKinetics0: " <<  this->metKinetics0[0]; /* Urea at time = 0 */
   
-    int    pfa = 0; 
-    float  TR  = 1; /* sec */
-    double pi  = vtkMath::Pi(); //3.14159265358979323846;
-    int    numTimePoints = combinedNumberOfTimePoints/numMets;
-
-    //cout << "TEST get value of metKinetics0: " <<  metKinetics0[0]; /* Urea at time = 0 */
+  int mets = 3;
+  int pfa = 0; 
+  float TR = 1; /* sec */
+  double pi = 3.14159265358979323846;
+  int Nt = sizeof(fvec)/3;
+   
+  const real *y = ((fcndata_t*)p)->y;
+		
+  /* set initial conditions*/
+  for (int mm = 1; mm<mets; mm++){
+	int k = Nt*(mm-1);
+	fvec[k] = y[mm-1]-x[mm-1]; 
+  }
   
-    //  Now extract the arrays from the fcndata_t struct:  
-    const real* y = ((fcndata_t*)p)->y;
-    const real* metKinetics0 = y;   
-    const real* metKinetics1 = y+=numTimePoints;   
-    const real* metKinetics2 = y+=numTimePoints;  
-        
-    /* set initial conditions*/
-    for (int mm = 1; mm < numMets; mm++){
-        int k = numTimePoints*(mm-1);
-        fvec[k] = y[mm-1]-x[mm-1]; 
-    }
-  
-    /* Use whem inital conditions are not an estimate */
-    double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
+  /* Use whem inital conditions are not an estimate */
+  double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
 
-    /* Test on pyruvate data only estimates T1p */
-    //double K[] = {x[1],0,0,   0,x[1],0,    0,0,x[1]-x[0]};
+  /* Test on pyruvate data only estimates T1p */
+  //double K[] = {x[1],0,0,   0,x[1],0,    0,0,x[1]-x[0]};
 
-    cout<< " X[0] =  " << x[0] << endl;
-    cout<< " X[1] =  " << x[1] << endl;
-    cout<< " X[2] =  " << x[1] << endl;
-    cout<< " y[0] =  " << y[0] << endl;
-    /* need to define TR, flip earlier*/
-    int j=1;
+  cout<< " X[0] =  " << x[0] << endl;
+  cout<< " X[1] =  " << x[1] << endl;
+  cout<< " X[2] =  " << x[1] << endl;
+  cout<< " y[0] =  " << y[0] << endl;
+ /* need to define TR, flip earlier*/
+  int j=1;
 
-    for (int mm = 1; mm < numMets; mm++){
-        for  ( int t = 1; t < numTimePoints; t++ ){
+ for (int mm = 1; mm<mets; mm++){
+		for  ( int t = 1; t < Nt; t++ ){
 
-            /* find residuals at x */
-            if ( pfa != 0){
-                /* correct for progressive flip angle*/
-                real flip=atan(1/(sqrt(numTimePoints-j)));
-                fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]- (exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1]*cos(flip*pi/180);
-            }
-            if (pfa == 0){
-                fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
-            
-                //cout<< " fvec =  " << fvec[(mm-1)*numTimePoints+t] << " at " << t << " and metabolite "<< mm << endl;
-            }
+		  /* find residuals at x */
+		  if ( pfa != 0){
+			/* correct for progressive flip angle*/
+			real flip=atan(1/(sqrt(Nt-j)));
+			fvec[(mm-1)*Nt+t] =y[(mm-1)*Nt+t]- (exp(K[(mm-1)*mets+0]*TR)+exp(K[(mm-1)*mets+1]*TR)+exp(K[(mm-1)*mets+2]*TR))*fvec[(mm-1)*Nt+t-1]*cos(flip*pi/180);
+		  }
+		  if (pfa == 0){
+			fvec[(mm-1)*Nt+t] =y[(mm-1)*Nt+t]-(exp(K[(mm-1)*mets+0]*TR)+exp(K[(mm-1)*mets+1]*TR)+exp(K[(mm-1)*mets+2]*TR))*fvec[(mm-1)*Nt+t-1];
+			
+			//cout<< " fvec =  " << fvec[(mm-1)*Nt+t] << " at " << t << " and metabolite "<< mm << endl;
+		  }
             j=j+1;
-        }
-    }
+		}
+ }
 
-    return 0;
+ return 0;
 
 }
 
@@ -544,29 +519,29 @@ int fcn_lmdif(void* p, int combinedNumberOfTimePoints, int numMets, const double
  */
 //double g(double* x,float* metKinetics0, float* metKinetics1, float* metKinetics2){
 //  int mets = 3;
-//  int numTimePoints = sizeof(metKinetics0);
-//  double res[3*numTimePoints];/*res[sizeof(X)];*/
-//  double model[3*numTimePoints];
+//  int Nt = sizeof(metKinetics0);
+//  double res[3*Nt];/*res[sizeof(X)];*/
+//  double model[3*Nt];
 //  model = fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, real *fjac,
-//                int ldfjac, int iflag);
+//				int ldfjac, int iflag);
   
 //  for (int m=1; m>mets; m++){
-//    for (int t=1; t<numTimePoints; t++){
-//      if (m==1){
-//        res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics0[t]; /*double check that this is right*/
-//      }
-//      if (m==2){
-//        res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics1[t]; /*double check that this is right*/
-//      }
-//      if (m==3){
-//        res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics2[t]; /*double check that this is right*/
-//      }
-//    }
+//	for (int t=1; t<Nt; t++){
+//	  if (m==1){
+//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics0[t]; /*double check that this is right*/
+//	  }
+//	  if (m==2){
+//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics1[t]; /*double check that this is right*/
+//	  }
+//	  if (m==3){
+//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics2[t]; /*double check that this is right*/
+//	  }
+//	}
 //  }
 //  // return res;
 //}
 
-    
+	
 
 /*! 
  *  Zero data
