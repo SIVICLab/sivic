@@ -63,12 +63,12 @@ vtkStandardNewMacro(svkDynamicMRIAlgoTemplate);
 int fcn_lmder(void *p, int m, int n, const real *x, real *fvec, real *fjac, int ldfjac, int iflag);
 
 /* Use for no Jacobian Provided */
-int svkDynamicMRIAlgoTemplate::fcn_lmdif(void *p, int m, int n, const double *x, double *fvec, int iflag);
+int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double *x, double *fvec, int iflag);
 
 
   /* the following struct defines the data points */
     typedef struct  {
-        int m;
+        int combinedNumberOfTimePoints;
         real *y;
     } fcndata_t;
 
@@ -223,12 +223,12 @@ void svkDynamicMRIAlgoTemplate::GenerateKineticParamMap()
             svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(i)
         );
 
-        //cout << "NUM COMP: " << kineticTrace->GetNumberOfComponents() << endl;
-        //cout << "NUM TUPS: " << kineticTrace->GetNumberOfTuples() << endl;
-
         float* metKinetics0 = kineticTrace0->GetPointer(0);
 		float* metKinetics1 = kineticTrace1->GetPointer(0);
 		float* metKinetics2 = kineticTrace2->GetPointer(0);
+		
+        //cout << "NUM COMP: " << kineticTrace->GetNumberOfComponents() << endl;
+        //cout << "NUM TUPS: " << kineticTrace->GetNumberOfTuples() << endl;
 		
 		//this->metKinetics0 = kineticTrace0->GetPointer(0);
         //this->metKinetics1 = kineticTrace1->GetPointer(0);
@@ -245,7 +245,7 @@ void svkDynamicMRIAlgoTemplate::GenerateKineticParamMap()
 /*!  
  *  Fit the kinetics for a single voxel. 
  */
-double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
+double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, float* metKinetics1, float* metKinetics2 )
 {
 
     double voxelValue;
@@ -263,26 +263,26 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 
 	  
     for ( int i = 0; i < numPts; i++ ) {
-        cout << "   val: " << i << " " << this->metKinetics0[i] << " " << this->metKinetics1[i] << " " <<  this->metKinetics2[i] << endl;
-        if ( this->metKinetics0[i] > maxValue0) {
-		  maxValue0 = this->metKinetics0[ i ];
+        cout << "   val: " << i << " " << metKinetics0[i] << " " << metKinetics1[i] << " " <<  metKinetics2[i] << endl;
+        if ( metKinetics0[i] > maxValue0) {
+		  maxValue0 = metKinetics0[ i ];
 		}
-		if ( this->metKinetics0[i] < minValue0) {
-		  minValue0 = this->metKinetics0[ i ];
+		if ( metKinetics0[i] < minValue0) {
+		  minValue0 = metKinetics0[ i ];
 		}
 
-		if ( this->metKinetics1[i] > maxValue1) {
-		  maxValue1 = this->metKinetics1[ i ];
+		if ( metKinetics1[i] > maxValue1) {
+		  maxValue1 = metKinetics1[ i ];
 		}
 		if ( this->metKinetics1[i] < minValue1) {
-		  minValue1 = this->metKinetics1[ i ];
+		  minValue1 = metKinetics1[ i ];
 		}
 
-		if ( this->metKinetics2[i] > maxValue2) {
-		  maxValue2 = this->metKinetics2[ i ];
+		if ( metKinetics2[i] > maxValue2) {
+		  maxValue2 = metKinetics2[ i ];
 		}
-		if ( this->metKinetics2[i] < minValue2) {
-		  minValue2 = this->metKinetics2[ i ];
+		if ( metKinetics2[i] < minValue2) {
+		  minValue2 = metKinetics2[ i ];
 		}
 
 		  
@@ -291,26 +291,39 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
     //  Try to call cminpack function:
   
 	
-    const int m = 3*numPts; /* should this be 3? 15? 20? 60? */
-    const int n = 3;
+    const int numMets = 3;
+    const int combinedNumberOfTimePoints = numMets * numPts; /* m = 3*numPts... should this be 3? 15? 20? 60? */
     int i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
-    int ipvt[n];
+    int* ipvt =  new int[numMets]; 
     real ftol, xtol, gtol, factor, fnorm, epsfcn;
-    double x[n], fvec[3*numPts], diag[n], fjac[numPts*3*n], qtf[n],
-        wa1[n], wa2[n], wa3[n], wa4[3*numPts];
+    double* x =  new double[numMets];
+	double* fvec = new double[combinedNumberOfTimePoints];
+	double* diag = new double[numMets];
+	double* fjac = new double[combinedNumberOfTimePoints*numMets];
+	double* qtf = new double[numMets];
+	double* wa1 = new double[numMets];
+	double* wa2 = new double[numMets];
+	double* wa3 = new double[numMets];
+	double* wa4 = new double[combinedNumberOfTimePoints];
     int k;
 
-	real y[3*numPts];
-		for (int m=0; m<3; m++){
-		  for (int t=0; t<numPts; t++){
-			if(m==1) y[m*numPts+t] = this->metKinetics0[t];
-			if(m==2) y[m*numPts+t] = this->metKinetics1[t];
-			if(m==3) y[m*numPts+t] = this->metKinetics2[t];
+	real y[combinedNumberOfTimePoints];
+		for (int met=0; met < numMets; met++){
+		  for (int t=0; t < numPts; t++){
+			if(met==1) {
+			  y[met*numPts+t] = metKinetics0[t];
+			}
+			if(met==2) {
+			  y[met*numPts+t] = metKinetics1[t];
+			}
+			if(met==3) {
+			  y[met*numPts+t] = metKinetics2[t];
+			}
 		  }
 		}
 		
 	fcndata_t data;	
-	data.m = m;
+	data.combinedNumberOfTimePoints = combinedNumberOfTimePoints;
 	data.y = y;
 	/* Not sure what this is for...based on examples from cminpack-1.3.0/examples/tlmdifc.c */
 
@@ -327,7 +340,7 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 	x[2] = 1/TR;              /* Kpyr->lac */
     x[1] = 2*TR;                 /* Pyruvate bolus arrival time */
 	
-	ldfjac = 3*numPts;
+	ldfjac = combinedNumberOfTimePoints;
 
 	/* Set ftol and xtol to the square root of the machine */
 	/* and gtol to zero. unless high solutions are */
@@ -359,9 +372,9 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 	// lmdif: Calculates Jacobian based on derivatives
  	// based on examples from cminpack-1.3.0/examples/tlmdifc.c
 	
- 	info = __cminpack_func__(lmdif)(fcn_lmdif, &data, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, nprint, &nfev, fjac, ldfjac,ipvt, qtf, wa1, wa2, wa3, wa4); 
+ 	info = __cminpack_func__(lmdif)(fcn_lmdif, &data,combinedNumberOfTimePoints , numMets, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, nprint, &nfev, fjac, ldfjac,ipvt, qtf, wa1, wa2, wa3, wa4);
 	
-    fnorm = __cminpack_func__(enorm)(m, fvec);
+    fnorm = __cminpack_func__(enorm)(combinedNumberOfTimePoints, fvec);
 	
 	/*
 	 *  Look at rank, covariance and residuals to ensure goodness of fit 
@@ -392,30 +405,31 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 #ifdef TEST_COVAR
   {
       /* test the original covar from MINPACK */
-      real covfac = fnorm*fnorm/(m-n);
+      real covfac = fnorm*fnorm/(combinedNumberOfTimePoints-numMets);
       real fjac1[15*3];
       memcpy(fjac1, fjac, sizeof(fjac));
       covar(n, fjac1, ldfjac, ipvt, ftol, wa1);
       printf("      covariance (using covar)\n");
-      for (i=0; i<n; ++i) {
-		for (j=0; j<n; ++j){
+      for (i=0; i < numMets; ++i) {
+		for (j=0; j < numMets; ++j){
               printf("%s%15.7g", j%3==1?"\n     ":"", (double)fjac1[i*ldfjac+j]*covfac);
 		}
 	  }
       printf("\n");
   }
 #endif
+  
   /* test covar1, which also estimates the rank of the Jacobian */
-  k = __cminpack_func__(covar1)(m, n, fnorm*fnorm, fjac, ldfjac, ipvt, ftol, wa1);
+  k = __cminpack_func__(covar1)(combinedNumberOfTimePoints, numMets, fnorm*fnorm, fjac, ldfjac, ipvt, ftol, wa1);
   printf("      covariance\n");
-  for (i=0; i<n; ++i) {
-    for (j=0; j<n; ++j){
+  for (i=0; i < numMets; ++i) {
+    for (j=0; j < numMets; ++j){
       printf("%s%15.7g", j%3==0?"\n     ":"", (double)fjac[i*ldfjac+j]);
 	}
   }
   printf("\n");
   printf("\n");
-  printf("      rank(J) = %d\n", k != 0 ? k : n); 
+  printf("      rank(J) = %d\n", k != 0 ? k : numMets); 
   printf("\n");  
 	//double Mfit[] = fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, int iflag);
 
@@ -442,8 +456,20 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 	cout << "   T1 all metabolites: " << T1all  << endl;
 	printf("\n");
 
+	// clean up memory:
+	delete[] ipvt;
+	delete[] x;
+	delete[] fvec;
+	delete[] diag;
+	delete[] fjac;
+	delete[] qtf;
+	delete[] wa1;
+	delete[] wa2;
+	delete[] wa3;
+	delete[] wa4;
+	
 	//voxelValue=Kpl;
-	return Kpl;
+	return voxelValue;
 
 }
 
@@ -459,27 +485,29 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue( )
 /*!
  * model exchange
  */
-int svkDynamicMRIAlgoTemplate::fcn_lmdif(void *p, int m, int n, const double *x, double *fvec, int iflag){
+int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double *x, double *fvec, int iflag){
 
   //const real y* = ((fcndata_t*)p)->y;
-
-cout << "TEST get valu of metKinetics0: " <<  this->metKinetics0[0]; /* Urea at time = 0 */
   
-  int mets = 3;
+  //int mets = 3;
   int pfa = 0; 
   float TR = 1; /* sec */
-  double pi = 3.14159265358979323846;
-  int Nt = sizeof(fvec)/3;
+  double pi = vtkMath::Pi();//3.14159265358979323846;
+  int numTimePoints = combinedNumberOfTimePoints/numMets; 
    
-  const real *y = ((fcndata_t*)p)->y;
-		
+  // Now extract the arrays from the fcndata_t struct:
+  const real* y = ((fcndata_t*)p)->y;
+  const real* metKinetics0 = y;
+  const real* metKinetics1 = y+=numTimePoints;
+  const real* metKinetics2 = y+=numTimePoints;
+  
   /* set initial conditions*/
-  for (int mm = 1; mm<mets; mm++){
-	int k = Nt*(mm-1);
+  for (int mm = 1; mm<numMets; mm++){
+	int k = numTimePoints*(mm-1);
 	fvec[k] = y[mm-1]-x[mm-1]; 
   }
   
-  /* Use whem inital conditions are not an estimate */
+  /* Use when inital conditions are not an estimate */
   double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
 
   /* Test on pyruvate data only estimates T1p */
@@ -489,22 +517,23 @@ cout << "TEST get valu of metKinetics0: " <<  this->metKinetics0[0]; /* Urea at 
   cout<< " X[1] =  " << x[1] << endl;
   cout<< " X[2] =  " << x[1] << endl;
   cout<< " y[0] =  " << y[0] << endl;
+  
  /* need to define TR, flip earlier*/
   int j=1;
 
- for (int mm = 1; mm<mets; mm++){
-		for  ( int t = 1; t < Nt; t++ ){
+ for (int mm = 1; mm<numMets; mm++){
+		for  ( int t = 1; t < numTimePoints; t++ ){
 
 		  /* find residuals at x */
 		  if ( pfa != 0){
 			/* correct for progressive flip angle*/
-			real flip=atan(1/(sqrt(Nt-j)));
-			fvec[(mm-1)*Nt+t] =y[(mm-1)*Nt+t]- (exp(K[(mm-1)*mets+0]*TR)+exp(K[(mm-1)*mets+1]*TR)+exp(K[(mm-1)*mets+2]*TR))*fvec[(mm-1)*Nt+t-1]*cos(flip*pi/180);
+			real flip=atan(1/(sqrt(numTimePoints-j)));
+			fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]- (exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1]*cos(flip*pi/180);
 		  }
 		  if (pfa == 0){
-			fvec[(mm-1)*Nt+t] =y[(mm-1)*Nt+t]-(exp(K[(mm-1)*mets+0]*TR)+exp(K[(mm-1)*mets+1]*TR)+exp(K[(mm-1)*mets+2]*TR))*fvec[(mm-1)*Nt+t-1];
+			fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
 			
-			//cout<< " fvec =  " << fvec[(mm-1)*Nt+t] << " at " << t << " and metabolite "<< mm << endl;
+			//cout<< " fvec =  " << fvec[(mm-1)*numTimePoints+t] << " at " << t << " and metabolite "<< mm << endl;
 		  }
             j=j+1;
 		}
@@ -520,21 +549,21 @@ cout << "TEST get valu of metKinetics0: " <<  this->metKinetics0[0]; /* Urea at 
 //double g(double* x,float* metKinetics0, float* metKinetics1, float* metKinetics2){
 //  int mets = 3;
 //  int Nt = sizeof(metKinetics0);
-//  double res[3*Nt];/*res[sizeof(X)];*/
-//  double model[3*Nt];
+//  double res[3*numTimePoints];/*res[sizeof(X)];*/
+//  double model[3*numTimePoints];
 //  model = fcn_lmdif(void *p, int m, int n, const real *x, real *fvec, real *fjac,
 //				int ldfjac, int iflag);
   
 //  for (int m=1; m>mets; m++){
-//	for (int t=1; t<Nt; t++){
+//	for (int t=1; t<numTimePoints; t++){
 //	  if (m==1){
-//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics0[t]; /*double check that this is right*/
+//		res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics0[t]; /*double check that this is right*/
 //	  }
 //	  if (m==2){
-//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics1[t]; /*double check that this is right*/
+//		res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics1[t]; /*double check that this is right*/
 //	  }
 //	  if (m==3){
-//		res[(m-1)*Nt+t] = model[(m-1)*Nt+t] - metKinetics2[t]; /*double check that this is right*/
+//		res[(m-1)*numTimePoints+t] = model[(m-1)*numTimePoints+t] - metKinetics2[t]; /*double check that this is right*/
 //	  }
 //	}
 //  }
