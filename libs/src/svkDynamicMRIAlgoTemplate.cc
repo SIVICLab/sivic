@@ -68,7 +68,7 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
 
   /* the following struct defines the data points */
     typedef struct  {
-        int combinedNumberOfTimePoints;
+        int m;
         real *y;
     } fcndata_t;
 
@@ -249,48 +249,45 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 {
 
     double voxelValue;
-
+	
     //  get num points in kinetic trace: 
     int numPts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
 	
     //  Get max and min intensity data point for upper and lower bounds:
-    float maxValue0 = this->metKinetics0[0];
-	float maxValue1 = this->metKinetics1[0];
-	float maxValue2 = this->metKinetics2[0];	
-	float minValue0 = this->metKinetics0[0];
-	float minValue1 = this->metKinetics1[0];
-	float minValue2 = this->metKinetics2[0];
-
-	  
-    for ( int i = 0; i < numPts; i++ ) {
-        cout << "   val: " << i << " " << metKinetics0[i] << " " << metKinetics1[i] << " " <<  metKinetics2[i] << endl;
-        if ( metKinetics0[i] > maxValue0) {
-		  maxValue0 = metKinetics0[ i ];
+    float maxValue0 = metKinetics0[0];
+	float maxValue1 = metKinetics1[0];
+	float maxValue2 = metKinetics2[0];	
+	float minValue0 = metKinetics0[0];
+	float minValue1 = metKinetics1[0];
+	float minValue2 = metKinetics2[0];
+	
+    for ( int t = 0; t < numPts; t++ ) {
+        cout << "   val: " << t << " " << metKinetics0[t] << " " << metKinetics1[t] << " " <<  metKinetics2[t] << endl;
+        if ( metKinetics0[t] > maxValue0) {
+		  maxValue0 = metKinetics0[ t ];
 		}
-		if ( metKinetics0[i] < minValue0) {
-		  minValue0 = metKinetics0[ i ];
-		}
-
-		if ( metKinetics1[i] > maxValue1) {
-		  maxValue1 = metKinetics1[ i ];
-		}
-		if ( this->metKinetics1[i] < minValue1) {
-		  minValue1 = metKinetics1[ i ];
+		if ( metKinetics0[t] < minValue0) {
+		  minValue0 = metKinetics0[ t ];
 		}
 
-		if ( metKinetics2[i] > maxValue2) {
-		  maxValue2 = metKinetics2[ i ];
+		if ( metKinetics1[t] > maxValue1) {
+		  maxValue1 = metKinetics1[ t ];
 		}
-		if ( metKinetics2[i] < minValue2) {
-		  minValue2 = metKinetics2[ i ];
+		if ( metKinetics1[t] < minValue1) {
+		  minValue1 = metKinetics1[ t ];
 		}
 
+		if ( metKinetics2[t] > maxValue2) {
+		  maxValue2 = metKinetics2[ t ];
+		}
+		if ( metKinetics2[t] < minValue2) {
+		  minValue2 = metKinetics2[ t ];
+		}
 		  
     }
 
-    //  Try to call cminpack function:
-  
 	
+    //  Set up dynamic variable arrray for cmin_pack 
     const int numMets = 3;
     const int combinedNumberOfTimePoints = numMets * numPts; /* m = 3*numPts... should this be 3? 15? 20? 60? */
     int i, j, ldfjac, maxfev, mode, nprint, info, nfev, njev;
@@ -306,24 +303,25 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 	double* wa3 = new double[numMets];
 	double* wa4 = new double[combinedNumberOfTimePoints];
     int k;
-
+	
 	real y[combinedNumberOfTimePoints];
-		for (int met=0; met < numMets; met++){
+	
+	for (int met=0; met < numMets; met++){
 		  for (int t=0; t < numPts; t++){
-			if(met==1) {
+			if(met==0) {
 			  y[met*numPts+t] = metKinetics0[t];
 			}
-			if(met==2) {
+			if(met==1) {
 			  y[met*numPts+t] = metKinetics1[t];
 			}
-			if(met==3) {
+			if(met==2) {
 			  y[met*numPts+t] = metKinetics2[t];
 			}
 		  }
-		}
+	}
 		
 	fcndata_t data;	
-	data.combinedNumberOfTimePoints = combinedNumberOfTimePoints;
+	data.m = combinedNumberOfTimePoints;
 	data.y = y;
 	/* Not sure what this is for...based on examples from cminpack-1.3.0/examples/tlmdifc.c */
 
@@ -338,14 +336,14 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 	//x[5] = 1/(10*TR);            /* T1,Lac */
 	//x[6] = 1/(10*TR);            /* T1,Urea */
 	x[2] = 1/TR;              /* Kpyr->lac */
-    x[1] = 2*TR;                 /* Pyruvate bolus arrival time */
+    x[1] = 3*TR;                 /* Pyruvate bolus arrival time */
 	
 	ldfjac = combinedNumberOfTimePoints;
 
 	/* Set ftol and xtol to the square root of the machine */
 	/* and gtol to zero. unless high solutions are */
 	/* required, these are the recommended settings. */
-	ftol =sqrt(__cminpack_func__(dpmpar)(1));
+	//ftol =sqrt(__cminpack_func__(dpmpar)(1));
 	xtol =sqrt(__cminpack_func__(dpmpar)(1));
 	gtol =0.;
 
@@ -467,8 +465,9 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 	delete[] wa2;
 	delete[] wa3;
 	delete[] wa4;
-	
-	//voxelValue=Kpl;
+
+    voxelValue=Kpl;
+
 	return voxelValue;
 
 }
@@ -493,13 +492,25 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
   int pfa = 0; 
   float TR = 1; /* sec */
   double pi = vtkMath::Pi();//3.14159265358979323846;
-  int numTimePoints = combinedNumberOfTimePoints/numMets; 
-   
+  int numTimePoints = combinedNumberOfTimePoints/numMets;
+  
+  //cout <<  "numTimePoints: " << numTimePoints << endl;
+  
   // Now extract the arrays from the fcndata_t struct:
   const real* y = ((fcndata_t*)p)->y;
+  
   const real* metKinetics0 = y;
   const real* metKinetics1 = y+=numTimePoints;
   const real* metKinetics2 = y+=numTimePoints;
+  
+  //cout << " metKinetics0[0] = "<< metKinetics0[0] << endl;
+  //cout << " metKinetics1[0] = "<< metKinetics1[0] << endl;
+  //cout << " metKinetics2[0] = "<< metKinetics2[0] << endl;
+  
+  //cout << " metKinetics0[numTimePoints-1] = "<< metKinetics0[numTimePoints-1] << endl;
+  //cout << " metKinetics1[numTimePoints-1] = "<< metKinetics1[numTimePoints-1] << endl;
+  //cout << " metKinetics2[numTimePoints-1] = "<< metKinetics2[numTimePoints-1] << endl;
+
   
   /* set initial conditions*/
   for (int mm = 1; mm<numMets; mm++){
@@ -507,21 +518,23 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
 	fvec[k] = y[mm-1]-x[mm-1]; 
   }
   
-  /* Use when inital conditions are not an estimate */
-  double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
+  /* Use when inital conditions are not estimated (PYR, LAC, UREA) */
+  // double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
 
+  /* Use when inital conditions are not estimated (PYR, LAC, LAC) */
+   double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, x[2],0,-x[0]};
+  
   /* Test on pyruvate data only estimates T1p */
-  //double K[] = {x[1],0,0,   0,x[1],0,    0,0,x[1]-x[0]};
+  // double K[] = {x[1]-x[0],0,0,   0,x[1]-x[0],0,    0,0,x[1]-x[0]};
 
-  cout<< " X[0] =  " << x[0] << endl;
-  cout<< " X[1] =  " << x[1] << endl;
-  cout<< " X[2] =  " << x[1] << endl;
-  cout<< " y[0] =  " << y[0] << endl;
+  //cout<< " X[0] =  " << x[0] << endl;
+  //cout<< " X[1] =  " << x[1] << endl;
+  //cout<< " X[2] =  " << x[2] << endl;
   
  /* need to define TR, flip earlier*/
   int j=1;
 
- for (int mm = 1; mm<numMets; mm++){
+ for (int mm = 0; mm<numMets; mm++){
 		for  ( int t = 1; t < numTimePoints; t++ ){
 
 		  /* find residuals at x */
@@ -531,8 +544,18 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
 			fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]- (exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1]*cos(flip*pi/180);
 		  }
 		  if (pfa == 0){
-			fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
-			
+			/* PYRUVATE */
+			if (mm==0){
+			  fvec[(mm)*numTimePoints+t] = metKinetics0[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
+			}
+			/* LACTATE */
+			if (mm==1){
+			  fvec[(mm)*numTimePoints+t] = metKinetics1[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
+			}
+			/* UREA */
+			if (mm==1){
+			  fvec[(mm)*numTimePoints+t] = metKinetics2[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
+			}
 			//cout<< " fvec =  " << fvec[(mm-1)*numTimePoints+t] << " at " << t << " and metabolite "<< mm << endl;
 		  }
             j=j+1;
