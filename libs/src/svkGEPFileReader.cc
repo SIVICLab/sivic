@@ -2840,38 +2840,40 @@ void svkGEPFileReader::Deidentify( string studyID )
     //  ----------------------------------------------------------------------
     //  fieldName  nativeType       numElements   offset        stringValue
 
-    fstream* fs = new fstream();
-    fs->exceptions( fstream::eofbit | fstream::failbit | fstream::badbit );
-    fs->open( this->GetFileNames()->GetValue(0), ios::binary | ios::in | ios::out );
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {      	 	 
+        fstream* fs = new fstream();
+        fs->exceptions( fstream::eofbit | fstream::failbit | fstream::badbit );
+        fs->open( this->GetFileNames()->GetValue(fileNumber), ios::binary | ios::in | ios::out );
 
-    if ( fs->is_open() ) {
-        //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
-        this->DeidentifyField( fs, "rhe.refphy",        studyID);
-        this->DeidentifyField( fs, "rhe.ex_no",         studyID);
-        this->DeidentifyField( fs, "rhe.reqnum",        studyID);
-        this->DeidentifyField( fs, "rhe.reqnumff",      studyID);
-        this->DeidentifyField( fs, "rhe.study_uid",     studyID);
-        this->DeidentifyField( fs, "rhe.patid",         studyID);
-        this->DeidentifyField( fs, "rhe.patidff",       studyID);
-        this->DeidentifyField( fs, "rhe.patname",       studyID);
-        this->DeidentifyField( fs, "rhe.patnameff",     studyID);
-        this->DeidentifyField( fs, "rhe.hospname",      studyID);
-        this->DeidentifyField( fs, "rhs.landmark_uid",  studyID);
-        this->DeidentifyField( fs, "rhs.series_uid",    studyID);
-        this->DeidentifyField( fs, "rhi.image_uid",     studyID);
+        if ( fs->is_open() ) {
+            //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
+            this->DeidentifyField( fs, "rhe.refphy",        studyID);
+            this->DeidentifyField( fs, "rhe.ex_no",         studyID);
+            this->DeidentifyField( fs, "rhe.reqnum",        studyID);
+            this->DeidentifyField( fs, "rhe.reqnumff",      studyID);
+            this->DeidentifyField( fs, "rhe.study_uid",     studyID);
+            this->DeidentifyField( fs, "rhe.patid",         studyID);
+            this->DeidentifyField( fs, "rhe.patidff",       studyID);
+            this->DeidentifyField( fs, "rhe.patname",       studyID);
+            this->DeidentifyField( fs, "rhe.patnameff",     studyID);
+            this->DeidentifyField( fs, "rhe.hospname",      studyID);
+            this->DeidentifyField( fs, "rhs.landmark_uid",  studyID);
+            this->DeidentifyField( fs, "rhs.series_uid",    studyID);
+            this->DeidentifyField( fs, "rhi.image_uid",     studyID);
 
-        //  These fields are not removed from PHI_LIMITED data sets
-        this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
-        this->DeidentifyField( fs, "rhe.dateofbirth",   "");
-        this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+            //  These fields are not removed from PHI_LIMITED data sets
+            this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
+            this->DeidentifyField( fs, "rhe.dateofbirth",   "");
+            this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
 
-        fs->close();
-    } else {
-        cout << "ERROR: Could not open raw file for deidentification: " << this->GetFileNames()->GetValue(0) << endl;
-        exit(1);
+            fs->close();
+        } else {
+            cout << "ERROR: Could not open raw file for deidentification: " << this->GetFileNames()->GetValue(0) << endl;
+            exit(1);
+        }
+
+        delete fs; 
     }
-
-    delete fs; 
 
 }
 
