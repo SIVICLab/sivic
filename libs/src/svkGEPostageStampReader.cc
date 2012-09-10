@@ -603,26 +603,36 @@ void svkGEPostageStampReader::InitVolumeLocalizationSeq()
             sMax = fabs( dcos[i][2] );
         }
     }
-    selBoxSize[ lIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_1" ); 
-    selBoxSize[ pIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_2" );  
-    selBoxSize[ sIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_3" ); 
+   
+    //  If these fields do not exist, then don't initialize the volume localization 
+    try {
 
 
-    //  =========================
-    //  Get Center Location Values
-    //  This may be GE_PS_CENER_R,A,S
-    //  =========================
-    float selBoxCenter[3];
-    selBoxCenter[0] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_R" ); 
-    selBoxCenter[1] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_A" ); 
-    selBoxCenter[2] = hdr->GetFloatValue( "GE_PS_SEL_CENTER_S" ); 
+        selBoxSize[ lIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_1" ); 
+        selBoxSize[ pIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_2" );  
+        selBoxSize[ sIndex ] = hdr->GetFloatValue( "GE_PS_SEL_BOX_SIZE_3" ); 
 
 
-    this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
-        selBoxSize,
-        selBoxCenter,
-        dcos
-    );
+
+        //  =========================
+        //  Get Center Location Values
+        //  This may be GE_PS_CENER_R,A,S
+        //  =========================
+        float selBoxCenter[3];
+        selBoxCenter[0] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_R" ); 
+        selBoxCenter[1] = -1 * hdr->GetFloatValue( "GE_PS_SEL_CENTER_A" ); 
+        selBoxCenter[2] = hdr->GetFloatValue( "GE_PS_SEL_CENTER_S" ); 
+    
+    
+        this->GetOutput()->GetDcmHeader()->InitVolumeLocalizationSeq(
+            selBoxSize,
+            selBoxCenter,
+            dcos
+        );
+
+    } catch (const exception& e) {
+        cerr << "Warning, GEPostage Stamp fields describing volume localization are not readable: " << e.what() << endl;
+    }
 
 }
 
