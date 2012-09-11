@@ -304,7 +304,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     }
     pointImage->Delete();
 
-    //  Update the DICOM header to reflect the spectral domain changes:
+    //  Update the DICOM header to reflect the spatial domain changes:
     if( this->mode == REVERSE ) {
         data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
         data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
