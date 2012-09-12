@@ -202,7 +202,7 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRI ) ); 
+    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
     if ( writer == NULL ) {
