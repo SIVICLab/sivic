@@ -470,6 +470,7 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 
     float* calculatedLacKinetics = new float[numPts]; 
     this->calculateLactateKinetics(x, numPts, metKinetics1, calculatedLacKinetics);  
+    delete[] calculatedLacKinetics; 
 
 	return voxelValue;
 
