@@ -468,9 +468,26 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 
     voxelValue=Kpl;
 
+    float* calculatedLacKinetics = new float[numPts]; 
+    this->calculateLactateKinetics(x, numPts, metKinetics1, calculatedLacKinetics);  
+
 	return voxelValue;
 
 }
+
+
+/*! 
+ *  Function to caluculate the lactate kinetic trace from the best fit params for this voxel
+ */
+void svkDynamicMRIAlgoTemplate::calculateLactateKinetics(double* fittedModelParams, int numTimePts, float* metKinetics1, float* lacKinetics ) 
+{
+    
+    //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
+    //  each time point   
+    for ( int t = 0; t < numTimePts; t++ ) {
+    }
+}
+
 
 /*
  * lmder stub
