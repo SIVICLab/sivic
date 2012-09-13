@@ -118,12 +118,19 @@ void svkEPSIPhaseCorrect::SetEPSIOrigin( float epsiOrigin )
  *  default = (numEPSIkRead-1)/2. This is the c-lang  
  *  index, thus the -1, e.g.: if numEPSIkRead is 8,  
  *  and data index varies from 0-7, the default origin 
- *  index is 3.5. 
+ *  index is 3.5.  However, should depend on whether 
+ *  k=0 was sampled or not.  If not, (default, then origin
+ *  is .5 higher. 
  */
 float svkEPSIPhaseCorrect::GetEPSIOrigin()
 {
+    bool k0Sampled = false; 
     if ( this->epsiOrigin < 0 ) { 
-        this->epsiOrigin = (this->numEPSIkRead - 1) / 2;
+        if (k0Sampled) { 
+            this->epsiOrigin = (this->numEPSIkRead - 1) / 2.;
+        } else { 
+            this->epsiOrigin = (this->numEPSIkRead) / 2.;
+        }
     }
     return this->epsiOrigin; 
 }
@@ -155,7 +162,8 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     int slices     = hdr->GetNumberOfSlices();
     int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
 
-    //  Initialize the spatial and spectral  factor in the EPSI phase correction: 
+    //  Initialize the spatial and spectral factor in the EPSI phase correction: 
+    //  One phase factor for each value of k in EPSI axis
     vtkImageComplex** epsiPhaseArray = new vtkImageComplex*[ this->numEPSIkRead ];  
     for (int i = 0; i < this->numEPSIkRead; i++ ) {
         epsiPhaseArray[i] = new vtkImageComplex[ numSpecPts ];  
@@ -168,19 +176,9 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     int   epsiIndex; 
     vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
 
-    //  Transform data to frequency domain to apply linear phase shift: 
-    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
-    //this->SpectralFFT( svkMrsImageFFT::FORWARD ); 
-
-    svkMrsLinearPhase* phaser = svkMrsLinearPhase::New();    
-    double shift[3]; 
-    shift[0] = 0.; 
-    shift[1] = 10; 
-    shift[2] = 0.; 
-    phaser->SetShiftWindow(shift); 
-    phaser->SetInput(mrsData); 
-    phaser->Update(); 
-
+    //  Inverse Fourier Transform spectral data to frequency domain to 
+    //  apply linear phase shift: 
+    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
 
     //  Iterate through 3D spatial locations
     for (int lobe = 0; lobe < numLobes; lobe++) {
@@ -196,7 +194,6 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                     } else if ( this->epsiAxis == 0 ) {
                         epsiIndex = x; 
                     }
-
 
                     vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, 0, lobe) );
 
@@ -216,7 +213,8 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
                         cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
                         cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
 
-//cout << "spec: " << cmplxPtIn[0] << " " << cmplxPtIn[1] << " -> " << cmplxPtPhased[0] << " " << cmplxPtPhased[1] << endl;
+                        //cout << "spec: " << cmplxPtIn[0] << " " << cmplxPtIn[1] << " -> " << cmplxPtPhased[0] 
+                        //  << " " << cmplxPtPhased[1] << endl;
 
                         spectrum->SetTuple(freq, cmplxPtPhased); 
     
@@ -228,9 +226,8 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     }
 
 
-    //  Transform data to back to time domain 
-    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
-    //this->SpectralFFT( svkMrsImageFFT::REVERSE ); 
+    //  Forward Fourier Transform spectral data to back to time domain, should now be shifted.   
+    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
 
 
     //  Trigger observer update via modified event:
@@ -278,10 +275,9 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
 {
 
     double numKPts = this->numEPSIkRead;
-//numKPts -=2; 
     double kOrigin = this->GetEPSIOrigin(); 
-//kOrigin -=1; 
-    float  fOrigin = (numSpecPts-1)/2.; 
+    float  fOrigin = (numSpecPts)/2.; 
+    //float  fOrigin = (numSpecPts-1)/2.; 
     double Pi      = vtkMath::Pi();
     double kIncrement;
     double freqIncrement;
@@ -291,13 +287,11 @@ void svkEPSIPhaseCorrect::CreateEPSIPhaseCorrectionFactors( vtkImageComplex** ep
     cout << " EPSI ORIGIN: " << kOrigin << endl;
     cout << " FREQ ORIGIN: " << fOrigin << endl;
     cout << "DENOM " << numSpecPts * numKPts * 2 << endl;
-    for( int k = 0; k < numKPts; k++ ) {
+    for( int k = 0; k < numKPts ; k++ ) {
         for( int f = 0; f <  numSpecPts; f++ ) {
-            kIncrement = ( k - kOrigin + 1)/( numKPts * 2);
-            //kIncrement = ( k - kOrigin )/( numKPts );
+            kIncrement = ( k - kOrigin )/( numKPts * 2);
             freqIncrement = ( f - fOrigin )/( numSpecPts );
             mult = 2 * Pi * kIncrement * freqIncrement; 
-//cout << "multiplier( " << k << ", " << f << ") = " << mult << " " << k - kOrigin + 1<< " " << (f - fOrigin)/(numSpecPts * numKPts * 2)<< " cos: " << cos(mult) << " sin: " << sin(mult) << endl;
             epsiPhaseArray[k][f].Real = cos( mult );
             epsiPhaseArray[k][f].Imag = sin( mult );
         }
@@ -317,8 +311,7 @@ int svkEPSIPhaseCorrect::SpectralFFT( svkMrsImageFFT::FFTMode direction )
 
     svkMrsImageFFT* fft = svkMrsImageFFT::New();
     fft->SetInput( mrsData );
-    fft->SetFFTDomain( svkMrsImageFFT::SPATIAL);
-    //fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
     fft->SetFFTMode( direction ); 
     fft->Update();
     fft->Delete();
