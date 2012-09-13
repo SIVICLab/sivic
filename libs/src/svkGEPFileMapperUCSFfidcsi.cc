@@ -88,3 +88,27 @@ void svkGEPFileMapperUCSFfidcsi::GetSelBoxCenter( float selBoxCenter[3] )
 
 } 
 
+
+/*
+ *  Gets the center of the acquisition grid.  May vary between sequences.
+ */
+void svkGEPFileMapperUCSFfidcsi::GetCenterFromRawFile( double* center )
+{
+
+    center[0] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_R" );
+    center[1] = -1 * this->GetHeaderValueAsFloat( "rhi.ctr_A" );
+    center[2] = this->GetHeaderValueAsFloat( "rhi.ctr_S" );
+
+} 
+
+
+
+/*
+ *  Returns the volume localization type = NONE. 
+ */
+vtkstd::string  svkGEPFileMapperUCSFfidcsi::GetVolumeLocalizationTechnique()
+{
+    vtkstd::string localizationType("NONE");
+    return localizationType;
+}
+

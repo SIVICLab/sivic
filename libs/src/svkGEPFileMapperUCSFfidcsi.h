@@ -66,7 +66,10 @@ class svkGEPFileMapperUCSFfidcsi : public svkGEPFileMapperUCSF
         svkGEPFileMapperUCSFfidcsi();
         ~svkGEPFileMapperUCSFfidcsi();
   
-        virtual void    GetSelBoxCenter( float selBoxCenter[3] );
+        virtual void            GetSelBoxCenter( float selBoxCenter[3] );
+        virtual void            GetCenterFromRawFile( double* center );
+        virtual vtkstd::string  GetVolumeLocalizationTechnique(); 
+
 
 };
 
