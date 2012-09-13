@@ -168,7 +168,7 @@ int main (int argc, char** argv)
     //  type . 
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
-    svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
+    svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
