@@ -151,6 +151,12 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
                                     int timePt, 
                                     int numTimePts
                                 ); 
+        void                    PrintSpecPts( 
+                                    svkImageData* data, 
+                                    int numFreqPts, 
+                                    int x, int y, int z, int timePt, int channel, 
+                                    vtkstd::string comment 
+                                ); 
 
 
 }; 

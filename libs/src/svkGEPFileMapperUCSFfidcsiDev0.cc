@@ -442,10 +442,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //============================================================
     //  Reorder the data: 
     //============================================================
-    int numCoils = 1; 
-    int numTimePts = 1; 
-    int timePoint = numTimePts - 1; 
-    int coilNum = numCoils - 1; 
+    int numTimePoints = 1; 
+    int timePoint = 0;
+    int numCoils = 2; //lobes
+    int coilNum = 0; 
 
     //============================================================
     //  create a data set to store the new reordered data arrays. 
@@ -464,7 +464,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     for (int i = 0; i < 3; i++) {
         numReorderedVoxels *= reorderedVoxels[i];  
     }
-    numReorderedVoxels *= 2 * numCoils; //2 lobes
+    numReorderedVoxels *= numTimePoints * numCoils; //2 lobes
     for (int arrayNumber = 0; arrayNumber < numReorderedVoxels; arrayNumber++) {
         vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
         dataArray->SetNumberOfComponents( numComponents );
@@ -575,12 +575,26 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //          the correction is a function of the distance along the epsi-axis (k/t) with pivots 
     //          at the center of each dimension
     //  =================================================
-    //test: this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
+    this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
  
     //  =================================================
-    //  reverse odd lobe k-space spectra along epsi axis
+    //  Reverse first, third, etc lobe k-space spectra along 
+    //  epsi axis.. Initial graidient lobe is negative and 
+    //  requires flipping of every other lobe. 
     //  =================================================
-    this->FlipAxis( data, 0, 0);    
+    if ( this->GetDebug() ) {
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before flip lobe"); 
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "before flip lobe"); 
+    }
+
+    //  flip first lobe along epsiAxis
+    //  first gradient is negative in this sequence:
+    this->FlipAxis( data, epsiAxis, 0);    
+
+    if ( this->GetDebug() ) {
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before resampled lobe"); 
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "before resampled lobe"); 
+    }
 
     //  =================================================
     //  resample ramp data 
@@ -590,15 +604,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
     //  final_datan(:,:,:,:,t) = fftshift(fftn(kdatan));
-    //  this->FlipAxis( data, 2); 
-    //  this->FlipAxis( data, 1); 
-    //  this->FlipAxis( data, 0); 
-
-
-    //  =================================================
-    //  if feet first entry, reverse RL and SI direction: 
-    //  =================================================
-    this->FlipAxis( data, 2); 
+    if ( this->GetDebug() ) {
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "resampled lobe"); 
+        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "resampled lobe"); 
+    }
 
     //  =================================================
     //  FFTShift:  put the origin of k-space at the image
@@ -612,7 +621,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  step). 
     //  =================================================
 
-
     //  =================================================
     //  Account for patient entry.. need to review, not sure this
     //   is necessary after the axis flips above. 
@@ -623,6 +631,19 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     reorderedImageData->Delete(); 
 
+}
+
+
+/*  
+ *  util method for debugging
+ */
+void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, int x, int y, int z, int timePt, int channel, vtkstd::string comment )
+{
+    vtkFloatArray* specLobe = vtkFloatArray::SafeDownCast(svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel));  
+    for (int p=0; p<numFreqPts; p++ ) {
+        cout << comment << " " << channel << ": " << specLobe->GetValue(p*2) << " " << specLobe->GetValue(p*2+1) << endl;
+    }
+    cout << endl;
 }
 
 
@@ -642,6 +663,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
         cout << "   SetNumEPSIkread: " << numRead  << endl; 
         cout << "   SetEPSIAxis:     " << epsiAxis << endl; 
     }
+    //  the first and last point have been thrown out
+    numRead -= 2; 
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
     epsiPhase->SetInput( tmpData ); 
@@ -840,6 +863,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     // loop over all dims other than the epsi k-space dimension: 
     regridDims[epsiAxis] = 1;  
 
+    int timePt = 0; // always 0 for this methods, only handles one time point at a time
     float* epsiKData0 = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
     for ( int lobe = 0; lobe < 2; lobe++) {
@@ -859,7 +883,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                                 slice = epsiK;         
                             }
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, timePt, lobe) 
                             );
 
                             //  epsiKData0 is equivalent to kte3 and kto3 in Matlab implementation
@@ -946,7 +970,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                                 //<< col << " " << row << " " << slice << " " << freq << endl;
 
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, 0, lobe) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, timePt, lobe) 
                             );
 
                             tuple[0] = epsiKData[k].Real; 
@@ -1459,21 +1483,16 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
 
     if( patientPosition.find("FF") != string::npos ) {
 
-        //dcos[0][0] *=-1;
-        //dcos[1][0] *=-1;
-        //dcos[2][0] *=-1;
+        //  =================================================
+        //  if feet first entry, reverse RL and SI direction: 
+        //  =================================================
 
-        //dcos[0][2] *=-1;
-        //dcos[1][2] *=-1;
-        //dcos[2][2] *=-1;
+    //  fix dcos for epsiAxis
+        int epsiAxis = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1;
+        dcos[epsiAxis][0] *=-1;
+        dcos[epsiAxis][1] *=-1;
+        dcos[epsiAxis][2] *=-1;
 
-        dcos[0][0] *=-1;
-        dcos[0][1] *=-1;
-        dcos[0][2] *=-1;
-
-        dcos[2][0] *=-1;
-        dcos[2][1] *=-1;
-        dcos[2][2] *=-1;
     }
 
 
