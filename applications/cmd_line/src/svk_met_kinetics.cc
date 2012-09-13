@@ -193,7 +193,7 @@ int main (int argc, char** argv)
     svkDynamicMRIAlgoTemplate* dynamics = svkDynamicMRIAlgoTemplate::New();
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
-    dynamics->SetInputConnection( 2, reader2->GetOutputPort() ); 
+    dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
     dynamics->Update();
 
 
