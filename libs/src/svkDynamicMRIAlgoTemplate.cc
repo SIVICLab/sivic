@@ -468,8 +468,10 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 
     voxelValue=Kpl;
 
-    float* calculatedLacKinetics = new float[numPts]; 
-    this->calculateLactateKinetics(x, numPts, metKinetics1, calculatedLacKinetics);  
+    float* calculatedLacKinetics = new float[numPts];
+	//float* calculatedPyrKinetics = new float[numPts];
+	//float* calculatedUreaKinetics = new float[numPts];
+    this->calculateLactateKinetics(x, numPts, metKinetics0, metKinetics1, calculatedLacKinetics);  
     delete[] calculatedLacKinetics; 
 
 	return voxelValue;
@@ -480,13 +482,26 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 /*! 
  *  Function to caluculate the lactate kinetic trace from the best fit params for this voxel
  */
-void svkDynamicMRIAlgoTemplate::calculateLactateKinetics(double* fittedModelParams, int numTimePts, float* metKinetics1, float* lacKinetics ) 
+void svkDynamicMRIAlgoTemplate::calculateLactateKinetics(double* fittedModelParams, int numTimePts,float* metKinetics0, float* metKinetics1, float* calculatedLacKinetics ) 
 {
-    
+  double T1all = 1/fittedModelParams[0];
+  double t_arrival = fittedModelParams[1]; 
+  double Kpl       = fittedModelParams[2];
+  
     //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
-    //  each time point   
-    for ( int t = 0; t < numTimePts; t++ ) {
-    }
+    //  each time point
+    //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
+  
+  for ( int t = 0; t < numTimePts; t++ ) {
+	/* PYRUVATE */
+    // calculatedPyrKinetics[t] = metKinetics0[0]*exp(-((1/T1all)+Kpl-t_arrival)*t);
+	
+	/* LACTATE */
+	calculatedLacKinetics[t] = metKinetics0[0]*Kpl*(exp(-t*(1/T1all))-exp(-((1/T1all)+Kpl-t_arrival)*t))/(Kpl-t_arrival)+metKinetics1[0]*exp(-t*(1/T1all));
+	/* UREA */
+	// calculatedUreaKinetics[t] = metKinetics2[0]*exp(-((1/T1all)-t_arrival)*t);
+  }
+  return calculatedLacKinetics;
 }
 
 
