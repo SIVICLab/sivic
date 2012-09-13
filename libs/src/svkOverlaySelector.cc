@@ -180,16 +180,9 @@ void svkOverlaySelector::RedrawRubberBand()
 {
   // Update the rubber band on the screen
   int *size = this->Interactor->GetRenderWindow()->GetSize();  
-  this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->DrawOff();
-  
-  //this->Interactor->GetRenderWindow()->GetRGBACharPixelData(0, 0, size[0]-1, size[1]-1, 1, this->PixelArray);
-  //this->Interactor->GetRenderWindow()->Frame(); 
-  vtkUnsignedCharArray *tmpPixelArray = vtkUnsignedCharArray::New();
-  vtkUnsignedCharArray *tmpPixelArray2 = vtkUnsignedCharArray::New();
-  //this->Interactor->GetRenderWindow()->GetRGBACharPixelData(0, 0, size[0]-1, size[1]-1, 1, tmpPixelArray);  
-  tmpPixelArray->DeepCopy(this->PixelArray);
-  tmpPixelArray2->DeepCopy(this->PixelArray);
 
+  vtkUnsignedCharArray *tmpPixelArray = vtkUnsignedCharArray::New();
+  tmpPixelArray->DeepCopy(this->PixelArray);
   unsigned char *pixels = tmpPixelArray->GetPointer(0);
 
   int min[2], max[2];
@@ -233,24 +226,12 @@ void svkOverlaySelector::RedrawRubberBand()
     pixels[4*(i*size[0]+max[0])+1] = 255 ^ pixels[4*(i*size[0]+max[0])+1];
     pixels[4*(i*size[0]+max[0])+2] = 255 ^ pixels[4*(i*size[0]+max[0])+2];
     }
+
   this->Interactor->GetRenderWindow()->SetRGBACharPixelData(0, 0, size[0]-1, size[1]-1, pixels, 0);
   //this->Interactor->GetRenderWindow()->SetRGBACharPixelData(0, 0, size[0]-1, size[1]-1, tmpPixelArray, 0);
-  this->Interactor->GetRenderWindow()->CopyResultFrame();
   this->Interactor->GetRenderWindow()->Frame();
-  this->Interactor->GetRenderWindow()->MakeCurrent(); 
   
-  this->Interactor->Render();
-  
-  this->Interactor->GetRenderWindow()->SetRGBACharPixelData(0, 0, size[0]-1, size[1]-1, tmpPixelArray2, 0);
-  //this->Interactor->GetRenderWindow()->CopyResultFrame();
-  //this->Interactor->GetRenderWindow()->Frame();
-  //this->Interactor->GetRenderWindow()->MakeCurrent(); 
   tmpPixelArray->Delete();
-  tmpPixelArray2->Delete();
-  this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->DrawOn();
-  //this->Interactor->GetRenderWindow()->CopyResultFrame();
-  //this->Interactor->GetRenderWindow()->Frame();
-  //this->Interactor->GetRenderWindow()->MakeCurrent(); 
 }
 
 
