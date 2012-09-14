@@ -32,9 +32,13 @@
               </df>
               <df name="svk_app_template.dir">
               </df>
+              <df name="svk_circular_shift.dir">
+              </df>
               <df name="svk_create_dcmraw.dir">
               </df>
               <df name="svk_dcmdump.dir">
+              </df>
+              <df name="svk_fft.dir">
               </df>
               <df name="svk_file_convert.dir">
               </df>
@@ -60,8 +64,10 @@
               </df>
             </df>
             <in>svk_app_template.cc</in>
+            <in>svk_circular_shift.cc</in>
             <in>svk_create_dcmraw.cc</in>
             <in>svk_dcmdump.cc</in>
+            <in>svk_fft.cc</in>
             <in>svk_file_convert.cc</in>
             <in>svk_gepfile_reader.cc</in>
             <in>svk_get_filetype.cc</in>
@@ -102,6 +108,10 @@
           <df name="SIVIC_MRSI.xcodeproj">
           </df>
           <df name="SIVIC_OSIRIX_0.4_PKG.pmdoc">
+          </df>
+          <df name="SIVIC_OSX_STANDALONE_PKG.pmdoc">
+          </df>
+          <df name="standalone">
           </df>
           <in>SIVIC_MRSIFilter.h</in>
           <in>SIVIC_MRSIFilter.mm</in>
@@ -236,6 +246,8 @@
                     </df>
                     <df name="svk_spec_diff.dir">
                     </df>
+                    <df name="svk_surface_area.dir">
+                    </df>
                     <df name="svk_svrecon.dir">
                     </df>
                   </df>
@@ -316,6 +328,8 @@
                     </df>
                     <df name="svk_spec_diff.dir">
                     </df>
+                    <df name="svk_surface_area.dir">
+                    </df>
                     <df name="svk_svrecon.dir">
                     </df>
                   </df>
@@ -391,6 +405,8 @@
                     <df name="svk_reslice.dir">
                     </df>
                     <df name="svk_spec_diff.dir">
+                    </df>
+                    <df name="svk_surface_area.dir">
                     </df>
                     <df name="svk_svrecon.dir">
                     </df>
@@ -1132,6 +1148,8 @@
           <in>svkVarianReader.h</in>
           <in>svkVarianUCSF2DcsiMapper.cc</in>
           <in>svkVarianUCSF2DcsiMapper.h</in>
+          <in>svkVarianUCSFEPSI2DMapper.cc</in>
+          <in>svkVarianUCSFEPSI2DMapper.h</in>
           <in>svkXYPlotActor.cc</in>
           <in>svkXYPlotActor.h</in>
         </df>
@@ -1951,8 +1969,8 @@
               <pElem>../../../../libs/gnu/trunk/SunOS_sparc</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>__STDC_VERSION__=199901L</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>__STDC_VERSION__=199901L</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -2182,11 +2200,11 @@
           </incDir>
           <preprocessorList>
             <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
             <Elem>NDEBUG</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -2200,11 +2218,11 @@
             <pElem>applications/../libs/src</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
             <Elem>DEBUG_BUILD</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -2241,10 +2259,10 @@
           <preprocessorList>
             <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_ADAPT_DCMTK</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -3053,8 +3071,8 @@
               <pElem>../../../../libs/gnu/trunk/SunOS_sparc</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>__STDC_VERSION__=199901L</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>__STDC_VERSION__=199901L</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -3227,10 +3245,10 @@
       <item path="applications/sivic_app/src/sivic.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3240,10 +3258,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3253,10 +3271,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3266,10 +3284,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3279,10 +3297,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3292,10 +3310,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3305,10 +3323,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3318,10 +3336,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3331,10 +3349,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3344,10 +3362,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3357,10 +3375,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3370,10 +3388,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3383,10 +3401,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3396,10 +3414,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3409,10 +3427,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3422,10 +3440,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3435,10 +3453,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3448,10 +3466,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3461,10 +3479,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3474,10 +3492,10 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -3539,11 +3557,11 @@
           </incDir>
           <preprocessorList>
             <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
             <Elem>NDEBUG</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -3568,10 +3586,10 @@
             <pElem>applications/cmd_line/src</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
             <Elem>NDEBUG</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -3599,8 +3617,8 @@
             <pElem>/netopt/tcltk/include</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>SVK_ADAPT_DCMTK</Elem>
             <Elem>HAVE_CONFIG_H</Elem>
+            <Elem>SVK_ADAPT_DCMTK</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
           </preprocessorList>
         </ccTool>
@@ -4349,8 +4367,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4358,8 +4376,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4367,8 +4385,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4380,8 +4398,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4389,8 +4407,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4398,8 +4416,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4407,8 +4425,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4416,8 +4434,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4428,8 +4446,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4437,8 +4455,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4446,8 +4464,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4455,17 +4473,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkDICOMRawDataWriter.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4473,8 +4491,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4482,8 +4500,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4491,8 +4509,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4500,8 +4518,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4509,17 +4527,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkDataModel.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4527,8 +4545,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4536,8 +4554,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4545,8 +4563,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4554,8 +4572,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4563,8 +4581,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4572,8 +4590,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4581,8 +4599,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4590,8 +4608,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4599,8 +4617,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4608,8 +4626,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4617,8 +4635,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4626,17 +4644,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkDdfVolumeReader.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4644,8 +4662,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4653,17 +4671,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkEPSIPhaseCorrect.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4671,8 +4689,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4680,8 +4698,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4689,26 +4707,26 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkGEPFileMapper.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkGEPFileMapperMBrease.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4718,18 +4736,18 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkGEPFileMapperUCSF.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4739,9 +4757,9 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4751,18 +4769,18 @@
             flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkGEPFileReader.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4770,8 +4788,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4779,8 +4797,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4788,8 +4806,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4797,8 +4815,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4806,17 +4824,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkIdfVolumeWriter.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=8</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4824,8 +4842,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4836,8 +4854,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4845,8 +4863,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4854,17 +4872,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkImageData.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4872,8 +4890,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4881,8 +4899,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4890,8 +4908,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4899,8 +4917,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4908,8 +4926,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4920,8 +4938,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4929,8 +4947,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4938,17 +4956,17 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkImageReaderFactory.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
+            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
             <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4959,8 +4977,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4968,8 +4986,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4980,8 +4998,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4989,8 +5007,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4998,8 +5016,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5007,8 +5025,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5016,8 +5034,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5025,8 +5043,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5034,8 +5052,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5043,8 +5061,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5052,8 +5070,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5064,8 +5082,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5073,8 +5091,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5082,8 +5100,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5091,8 +5109,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5100,8 +5118,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5109,8 +5127,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5118,8 +5136,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5127,8 +5145,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5139,8 +5157,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5148,8 +5166,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5157,8 +5175,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5166,8 +5184,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5175,8 +5193,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5187,8 +5205,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5196,8 +5214,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5208,8 +5226,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5220,8 +5238,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5229,8 +5247,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5238,8 +5256,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5250,8 +5268,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5259,8 +5277,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5268,8 +5286,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5277,8 +5295,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5289,8 +5307,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5298,8 +5316,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5307,8 +5325,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5316,8 +5334,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5325,8 +5343,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5334,8 +5352,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5343,8 +5361,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5352,8 +5370,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5361,8 +5379,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5370,8 +5388,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5379,8 +5397,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5391,8 +5409,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5400,8 +5418,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5409,8 +5427,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5418,8 +5436,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5427,8 +5445,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5439,8 +5457,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5448,8 +5466,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5457,8 +5475,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5466,8 +5484,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5475,8 +5493,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5484,8 +5502,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5493,8 +5511,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5502,8 +5520,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5514,8 +5532,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5523,8 +5541,8 @@
         <ccTool>
           <preprocessorList>
             <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
             <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5852,8 +5870,8 @@
               <pElem>../../../../libs/gnu/trunk/SunOS_sparc</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>__STDC_VERSION__=199901L</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>__STDC_VERSION__=199901L</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -6258,11 +6276,11 @@
           </incDir>
           <preprocessorList>
             <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
             <Elem>NDEBUG</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -6275,11 +6293,11 @@
             <pElem>/netopt/tcltk/include</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
             <Elem>DEBUG_BUILD</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -6315,12 +6333,12 @@
             <pElem>/netopt/tcltk/include</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>SVK_ADAPT_DCMTK</Elem>
             <Elem>HAVE_CONFIG_H</Elem>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>SVK_ADAPT_DCMTK</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
