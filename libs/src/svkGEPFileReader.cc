@@ -503,8 +503,18 @@ void svkGEPFileReader::SetTemperature( float temp )
 {
     float* flagTemp = new float(temp);
     // possibly enforce use of vtk primitive types, everything is then a vtkObject and we have a pseudo homogeneous container.
-    this->inputArgs[ "temperature" ] = static_cast<void*>( flagTemp );
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "temperature", static_cast<void*>( flagTemp ) ) );
 
+}
+
+/*!
+ *  Sets the value of chop for the acquisition. 
+ */
+void svkGEPFileReader::SetChop( bool chop )
+{
+    bool* chopTmp = new bool(chop); 
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "chop", static_cast<void*>(chopTmp) ) );
+    
 }
 
 

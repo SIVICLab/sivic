@@ -126,7 +126,11 @@ int svkGEPFileMapperMBrease::GetNumberSuppressedAcquisitions()
  */
 bool svkGEPFileMapperMBrease::IsChopOn()
 {
+    //  Set default value: 
     bool chop = true ;
+
+    //  reset if manually overridden by user:
+    this->GetInputArgBoolValue("chop", &chop); 
 
     return chop;
 }

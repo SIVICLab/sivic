@@ -781,6 +781,9 @@ bool svkGEPFileMapper::IsChopOn()
         chop = true; 
     }
 
+    //  reset if manually overridden by user:
+    this->GetInputArgBoolValue("chop", &chop); 
+
     return chop;
 }
 
@@ -2664,6 +2667,70 @@ void svkGEPFileMapper::GetOriginFromCenter( double center[3], int numVoxels[3], 
     }
 }
 
+
+/*!
+ *  Returns true if the inputArgs map key is set
+ */
+bool svkGEPFileMapper::isInputArgSet(vtkstd::string argName)
+{
+    bool isArgDefined;
+    
+    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    it = this->inputArgs.find( argName );
+    if ( it != this->inputArgs.end() ) {
+        isArgDefined = true;            
+    } else {
+        isArgDefined = false;            
+    }
+    return isArgDefined; 
+}
+
+
+/*!
+ *  Sets the inputArg value for the specified key as a string.  If the value is not set, then argValue
+ *  is not modified. Return value is true if the arg was found, or false if not set. 
+ */
+bool svkGEPFileMapper::GetInputArgStringValue(vtkstd::string argName, vtkstd::string* argValue)
+{
+    if ( this->isInputArgSet(argName) ) {
+
+        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        it = this->inputArgs.find( argName);
+        if ( it != this->inputArgs.end() ) {
+            argValue->assign(*( static_cast< vtkstd::string* >( this->inputArgs[ it->first ] ) ));
+        }
+        return true; 
+
+    } else {
+
+        return false; 
+
+    }
+}
+
+
+/*!
+ *  Sets the inputArg value for the specified key as a string.  If the value is not set, then argValue
+ *  is not modified. Return value is true if the arg was found, or false if not set. 
+ */
+bool svkGEPFileMapper::GetInputArgBoolValue(vtkstd::string argName, bool* argValue)
+{
+    if ( this->isInputArgSet(argName) ) {
+
+        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        it = this->inputArgs.find( argName);
+        if ( it != this->inputArgs.end() ) {
+            *argValue = (*( static_cast< bool* >( this->inputArgs[ it->first ] ) ) );
+        }
+        return true; 
+
+    } else {
+
+        return false; 
+
+    }
+
+}
 
 
 /*!

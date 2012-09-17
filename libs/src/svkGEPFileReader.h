@@ -96,6 +96,7 @@ class svkGEPFileReader : public svkImageReader2
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ); 
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ); 
         void                SetTemperature( float temp ); 
+        void                SetChop( bool chop ); 
         void                PrintHeader();
         void                OnlyParseHeader();
         void                Deidentify( string studyID ); 

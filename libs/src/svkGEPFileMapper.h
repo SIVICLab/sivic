@@ -206,6 +206,10 @@ class svkGEPFileMapper : public vtkObject
         svkMRSIOD*                              iod;
         double                                  progress; 
 
+        bool                                    isInputArgSet(vtkstd::string argName);
+        bool                                    GetInputArgStringValue(vtkstd::string argName, vtkstd::string* argValue);
+        bool                                    GetInputArgBoolValue(vtkstd::string argName, bool* argValue);
+
 
 };
 
