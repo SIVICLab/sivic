@@ -3,6 +3,176 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="trunk" root=".">
       <df name="applications">
+        <df name="cmd_line">
+          <df name="Linux_x86_64">
+          </df>
+          <df name="Linux_x86_64_debug">
+          </df>
+          <df name="src">
+            <df name="CMakeFiles">
+              <df name="CMakeRelink.dir">
+              </df>
+              <df name="svk_app_template.dir">
+              </df>
+              <df name="svk_create_dcmraw.dir">
+              </df>
+              <df name="svk_dcmdump.dir">
+              </df>
+              <df name="svk_fft.dir">
+              </df>
+              <df name="svk_file_convert.dir">
+              </df>
+              <df name="svk_gepfile_reader.dir">
+              </df>
+              <df name="svk_get_filetype.dir">
+              </df>
+              <df name="svk_integrate_dynamic.dir">
+              </df>
+              <df name="svk_met_kinetics.dir">
+              </df>
+              <df name="svk_multi_view.dir">
+              </df>
+              <df name="svk_point_selector.dir">
+              </df>
+              <df name="svk_quantify.dir">
+              </df>
+              <df name="svk_quick_view.dir">
+              </df>
+              <df name="svk_reslice.dir">
+              </df>
+              <df name="svk_spec_diff.dir">
+              </df>
+              <df name="svk_surface_area.dir">
+              </df>
+              <df name="svk_svrecon.dir">
+              </df>
+            </df>
+            <in>svk_app_template.cc</in>
+            <in>svk_create_dcmraw.cc</in>
+            <in>svk_dcmdump.cc</in>
+            <in>svk_fft.cc</in>
+            <in>svk_file_convert.cc</in>
+            <in>svk_gepfile_reader.cc</in>
+            <in>svk_get_filetype.cc</in>
+            <in>svk_integrate_dynamic.cc</in>
+            <in>svk_met_kinetics.cc</in>
+            <in>svk_multi_view.cc</in>
+            <in>svk_point_selector.cc</in>
+            <in>svk_quantify.cc</in>
+            <in>svk_quick_view.cc</in>
+            <in>svk_reslice.cc</in>
+            <in>svk_spec_diff.cc</in>
+            <in>svk_surface_area.cc</in>
+            <in>svk_svrecon.cc</in>
+          </df>
+        </df>
+        <df name="osirix_plugin">
+          <df name="English.lproj">
+          </df>
+          <df name="OsiriX Headers">
+            <in>DCMPix.h</in>
+            <in>DCMView.h</in>
+            <in>DicomImage.h</in>
+            <in>DicomSeries.h</in>
+            <in>MyPoint.h</in>
+            <in>Notifications.h</in>
+            <in>OSIWindowController.h</in>
+            <in>PluginFilter.h</in>
+            <in>ROI.h</in>
+            <in>Schedulable.h</in>
+            <in>Scheduler.h</in>
+            <in>StaticScheduler.h</in>
+            <in>ViewerController.h</in>
+            <in>browserController.h</in>
+            <in>dicomFile.h</in>
+          </df>
+          <df name="SIVIC_MRSI.xcodeproj">
+          </df>
+          <df name="SIVIC_OSIRIX_0.4_PKG.pmdoc">
+          </df>
+          <df name="SIVIC_OSX_STANDALONE_PKG.pmdoc">
+          </df>
+          <df name="standalone">
+          </df>
+          <in>SIVIC_MRSIFilter.h</in>
+          <in>SIVIC_MRSIFilter.mm</in>
+        </df>
+        <df name="sivic_app">
+          <df name="Linux_x86_64">
+          </df>
+          <df name="Linux_x86_64_debug">
+          </df>
+          <df name="src">
+            <df name="CMakeFiles">
+              <df name="CMakeRelink.dir">
+              </df>
+              <df name="sivic.dir">
+              </df>
+              <df name="sivicGUI.dir">
+              </df>
+              <df name="SivicKWCallbacksLib.dir">
+              </df>
+            </df>
+            <in>SivicKWCallbacksLibInit.cxx</in>
+            <in>sivic.cc</in>
+            <in>sivicApp.cc</in>
+            <in>sivicApp.h</in>
+            <in>sivicBasicTest.cc</in>
+            <in>sivicBasicTest.h</in>
+            <in>sivicCombineWidget.cc</in>
+            <in>sivicCombineWidget.h</in>
+            <in>sivicDSCWidget.cc</in>
+            <in>sivicDSCWidget.h</in>
+            <in>sivicDataWidget.cc</in>
+            <in>sivicDataWidget.h</in>
+            <in>sivicImageDataWidget.cc</in>
+            <in>sivicImageDataWidget.h</in>
+            <in>sivicImageViewWidget.cc</in>
+            <in>sivicImageViewWidget.h</in>
+            <in>sivicKWCompositeWidget.cc</in>
+            <in>sivicKWCompositeWidget.h</in>
+            <in>sivicPreferencesWidget.cc</in>
+            <in>sivicPreferencesWidget.h</in>
+            <in>sivicPreprocessingWidget.cc</in>
+            <in>sivicPreprocessingWidget.h</in>
+            <in>sivicProcessingWidget.cc</in>
+            <in>sivicProcessingWidget.h</in>
+            <in>sivicQuantificationWidget.cc</in>
+            <in>sivicQuantificationWidget.h</in>
+            <in>sivicSpectraRangeWidget.cc</in>
+            <in>sivicSpectraRangeWidget.h</in>
+            <in>sivicSpectraViewWidget.cc</in>
+            <in>sivicSpectraViewWidget.h</in>
+            <in>sivicTestCase.cc</in>
+            <in>sivicTestCase.h</in>
+            <in>sivicTestSuite.cc</in>
+            <in>sivicTestSuite.h</in>
+            <in>sivicViewRenderingWidget.cc</in>
+            <in>sivicViewRenderingWidget.h</in>
+            <in>sivicWindowLevelWidget.cc</in>
+            <in>sivicWindowLevelWidget.h</in>
+            <in>svkSecondaryCaptureFormatter.cc</in>
+            <in>svkSecondaryCaptureFormatter.h</in>
+            <in>vtkSivicController.cc</in>
+            <in>vtkSivicController.h</in>
+            <in>vtkSivicControllerTcl.cxx</in>
+          </df>
+        </df>
+        <df name="slicer_plugin">
+          <df name="MRSpectroscopy">
+            <in>vtkMRMLsvkImageDataNode.cc</in>
+            <in>vtkMRMLsvkImageDataNode.h</in>
+            <in>vtkMRMLsvkImageDataStorageNode.cc</in>
+            <in>vtkMRMLsvkImageDataStorageNode.h</in>
+            <in>vtkMRSpectroscopyGUI.cxx</in>
+            <in>vtkMRSpectroscopyGUI.h</in>
+            <in>vtkMRSpectroscopyLogic.cxx</in>
+            <in>vtkMRSpectroscopyLogic.h</in>
+            <in>vtkMRSpectroscopyWin32Header.h</in>
+          </df>
+        </df>
+      </df>
+      <df name="applications.bak">
         <df name="CMakeFiles">
         </df>
         <df name="cmd_line">
@@ -65,7 +235,6 @@
             </df>
             <in>svk_app_template.cc</in>
             <in>svk_circular_shift.cc</in>
-            <in>svk_create_dcmraw.cc</in>
             <in>svk_dcmdump.cc</in>
             <in>svk_fft.cc</in>
             <in>svk_file_convert.cc</in>
@@ -224,9 +393,13 @@
                   <df name="CMakeFiles">
                     <df name="svk_app_template.dir">
                     </df>
+                    <df name="svk_circular_shift.dir">
+                    </df>
                     <df name="svk_create_dcmraw.dir">
                     </df>
                     <df name="svk_dcmdump.dir">
+                    </df>
+                    <df name="svk_fft.dir">
                     </df>
                     <df name="svk_file_convert.dir">
                     </df>
@@ -283,6 +456,8 @@
               <df name="CompilerIdCXX">
                 <in>CMakeCXXCompilerId.cpp</in>
               </df>
+              <df name="Progress">
+              </df>
             </df>
             <df name="libs">
               <df name="Linux_i686">
@@ -306,9 +481,13 @@
                   <df name="CMakeFiles">
                     <df name="svk_app_template.dir">
                     </df>
+                    <df name="svk_circular_shift.dir">
+                    </df>
                     <df name="svk_create_dcmraw.dir">
                     </df>
                     <df name="svk_dcmdump.dir">
+                    </df>
+                    <df name="svk_fft.dir">
                     </df>
                     <df name="svk_file_convert.dir">
                     </df>
@@ -386,7 +565,11 @@
                   <df name="CMakeFiles">
                     <df name="svk_app_template.dir">
                     </df>
+                    <df name="svk_circular_shift.dir">
+                    </df>
                     <df name="svk_dcmdump.dir">
+                    </df>
+                    <df name="svk_fft.dir">
                     </df>
                     <df name="svk_file_convert.dir">
                     </df>
@@ -397,6 +580,8 @@
                     <df name="svk_integrate_dynamic.dir">
                     </df>
                     <df name="svk_multi_view.dir">
+                    </df>
+                    <df name="svk_point_selector.dir">
                     </df>
                     <df name="svk_quantify.dir">
                     </df>
@@ -445,6 +630,8 @@
               <df name="CompilerIdCXX">
                 <in>CMakeCXXCompilerId.cpp</in>
               </df>
+              <df name="Progress">
+              </df>
             </df>
             <df name="libs">
               <df name="src">
@@ -473,6 +660,31 @@
         </df>
         <df name="CompilerIdCXX">
           <in>CMakeCXXCompilerId.cpp</in>
+        </df>
+        <df name="Progress">
+          <in>1</in>
+          <in>10</in>
+          <in>100</in>
+          <in>11</in>
+          <in>12</in>
+          <in>13</in>
+          <in>14</in>
+          <in>15</in>
+          <in>2</in>
+          <in>26</in>
+          <in>27</in>
+          <in>29</in>
+          <in>30</in>
+          <in>4</in>
+          <in>5</in>
+          <in>6</in>
+          <in>7</in>
+          <in>8</in>
+          <in>87</in>
+          <in>9</in>
+          <in>98</in>
+          <in>99</in>
+          <in>count.txt</in>
         </df>
       </df>
       <df name="libs">
@@ -890,6 +1102,8 @@
             </df>
             <df name="svkadapt.dir">
             </df>
+            <df name="svkNumerical.dir">
+            </df>
           </df>
           <df name="libsvk">
             <df name="html">
@@ -967,6 +1181,8 @@
           <in>svkDdfVolumeWriter.h</in>
           <in>svkDetailedPlotDirector.cc</in>
           <in>svkDetailedPlotDirector.h</in>
+          <in>svkDynamicMRIAlgoTemplate.cc</in>
+          <in>svkDynamicMRIAlgoTemplate.h</in>
           <in>svkEPSIPhaseCorrect.cc</in>
           <in>svkEPSIPhaseCorrect.h</in>
           <in>svkEnhancedMRIIOD.cc</in>
@@ -1159,7 +1375,11 @@
         </df>
       </df>
       <df name="LocalMake">
+        <df name="Linux_i686">
+        </df>
         <df name="Linux_x86_64">
+        </df>
+        <df name="SunOS_sparc">
         </df>
       </df>
       <df name="test_data">
@@ -1572,6 +1792,8 @@
           </df>
           <df name="TEST_MCHK_READ_SYM_EPSI">
           </df>
+          <df name="TEST_MCHK_READ_SYM_EPSI_DYNAMIC">
+          </df>
           <df name="TEST_MCHK_SIG5XV2_2_IDF">
           </df>
           <df name="TEST_MCHK_SIGLX2_2_IDF">
@@ -1627,6 +1849,18 @@
           <df name="output">
           </df>
         </df>
+        <df name="sym_epsi_dynamic">
+          <df name="input">
+          </df>
+          <df name="out">
+          </df>
+        </df>
+        <df name="sym_epsi_dynamic.bak">
+          <df name="input">
+          </df>
+          <df name="out">
+          </df>
+        </df>
         <df name="varian">
           <df name="fdf">
             <df name="input">
@@ -1663,28 +1897,6 @@
           <df name="[">
           </df>
           <df name="]">
-          </df>
-          <df name="bako">
-            <in>assertFailTest.cc</in>
-            <in>returnFailure.cc</in>
-            <in>runtimeException.cc</in>
-            <in>svkIdfWriterTest.cc</in>
-            <in>svkImageFourierCenterTest.cc</in>
-            <in>svkImageLinearPhaseTest.cc</in>
-            <in>svkImagePadFilterTest.cc</in>
-            <in>svkInstantiationTest.cc</in>
-            <in>svkMriImageFFTTest.cc</in>
-            <in>svkMrsCombine.cc</in>
-            <in>svkMrsImageFFT.cc</in>
-            <in>svkMrsZeroFill.cc</in>
-            <in>svkOverlayViewTest.cc</in>
-            <in>svkPlotGridViewMultiTraceTest.cc</in>
-            <in>svkPlotGridViewTest.cc</in>
-            <in>svkSincInterpolateTest.cc</in>
-            <in>svkSpectraReferenceViewTest.cc</in>
-            <in>svkTestUtils.cc</in>
-            <in>svkTestUtils.h</in>
-            <in>vtkBaselineTest.cc</in>
           </df>
           <df name="CMakeFiles">
             <df name="assertFailTest.dir">
@@ -2037,16 +2249,6 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="applications/osirix_plugin/OsiriX Headers/DCMPix.h"
             ex="true"
             tool="3"
@@ -2128,16 +2330,6 @@
             flavor="0">
       </item>
       <item path="applications/osirix_plugin/SIVIC_MRSIFilter.mm"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
             flavor="0">
@@ -2755,70 +2947,6 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="tests/src/bako/assertFailTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/returnFailure.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/runtimeException.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkIdfWriterTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageFourierCenterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageLinearPhaseTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImagePadFilterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkInstantiationTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMriImageFFTTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsCombine.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsImageFFT.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsZeroFill.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkOverlayViewTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewMultiTraceTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSincInterpolateTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSpectraReferenceViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="tests/src/bako/vtkBaselineTest.cc" ex="true" tool="1" flavor="0">
-      </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="4">
         <ccTool>
           <incDir>
@@ -3137,15 +3265,305 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/DCMPix.h"
             ex="true"
-            tool="0"
+            tool="3"
             flavor="0">
       </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/DCMView.h"
             ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/DicomImage.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/DicomSeries.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/MyPoint.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/Notifications.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/OSIWindowController.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/PluginFilter.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/ROI.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/Schedulable.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/Scheduler.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/StaticScheduler.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/ViewerController.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/browserController.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/OsiriX Headers/dicomFile.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications.bak/osirix_plugin/SIVIC_MRSIFilter.h"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
+      <item path="applications/cmd_line/src/svk_app_template.cc"
+            ex="false"
             tool="1"
             flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_create_dcmraw.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_dcmdump.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_fft.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_file_convert.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_gepfile_reader.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_get_filetype.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_integrate_dynamic.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_met_kinetics.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_multi_view.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_point_selector.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_quantify.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_quick_view.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_reslice.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_spec_diff.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_surface_area.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_svrecon.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="applications/osirix_plugin/OsiriX Headers/DCMPix.h"
             ex="true"
@@ -3232,24 +3650,21 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
+      <item path="applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
+            ex="false"
             tool="1"
             flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>libs/src</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivic.cc" ex="false" tool="1" flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicApp.cc"
@@ -3257,12 +3672,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicBasicTest.cc"
@@ -3270,12 +3682,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicCombineWidget.cc"
@@ -3283,12 +3692,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicDSCWidget.cc"
@@ -3296,12 +3702,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicDataWidget.cc"
@@ -3309,12 +3712,19 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="applications/sivic_app/src/sivicImageDataWidget.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicImageViewWidget.cc"
@@ -3322,12 +3732,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicKWCompositeWidget.cc"
@@ -3335,12 +3742,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicPreferencesWidget.cc"
@@ -3348,12 +3752,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicPreprocessingWidget.cc"
@@ -3361,12 +3762,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicProcessingWidget.cc"
@@ -3374,12 +3772,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicQuantificationWidget.cc"
@@ -3387,12 +3782,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicSpectraRangeWidget.cc"
@@ -3400,12 +3792,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicSpectraViewWidget.cc"
@@ -3413,12 +3802,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicTestCase.cc"
@@ -3426,12 +3812,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicTestSuite.cc"
@@ -3439,12 +3822,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicViewRenderingWidget.cc"
@@ -3452,12 +3832,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/sivicWindowLevelWidget.cc"
@@ -3465,12 +3842,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/svkSecondaryCaptureFormatter.cc"
@@ -3478,12 +3852,9 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/sivic_app/src/vtkSivicController.cc"
@@ -3491,12 +3862,19 @@
             tool="1"
             flavor="0">
         <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="applications/sivic_app/src/vtkSivicControllerTcl.cxx"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="applications/slicer_plugin/MRSpectroscopy/vtkMRMLsvkImageDataNode.cc"
@@ -3568,7 +3946,6 @@
       <folder path="trunk/applications">
         <ccTool>
           <incDir>
-            <pElem>libs/src</pElem>
             <pElem>/netopt/dicom/include</pElem>
             <pElem>/netopt/kwwidgets_2.0_56/include/KWWidgets</pElem>
             <pElem>/netopt/include/vtk-5.6</pElem>
@@ -3577,6 +3954,8 @@
           <preprocessorList>
             <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -3584,13 +3963,8 @@
         <ccTool>
           <incDir>
             <pElem>applications/cmd_line/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="trunk/applications/sivic_app">
@@ -3598,6 +3972,9 @@
           <incDir>
             <pElem>applications/sivic_app/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="trunk/libs/examples">
@@ -4041,12 +4418,6 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="libs/src/bak/svk4DImageData.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkAlgoTemplate.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkApodizationWindow.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkBoxPlot.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkBurnResearchPixels.h" ex="true" tool="3" flavor="0">
@@ -4054,8 +4425,6 @@
       <item path="libs/src/bak/svkByteSwap.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkCoilCombine.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkCorrectDCOffset.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkDICOMEnhancedMRIWriter.h"
             ex="true"
@@ -4082,33 +4451,9 @@
       </item>
       <item path="libs/src/bak/svkDataModel.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkDataValidator.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkDataView.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkDataViewController.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmHeader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmMriVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmMrsVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmRawDataReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmtkAdapter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmtkException.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmtkIod.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDcmtkUtils.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDdfVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDdfVolumeWriter.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkDetailedPlotDirector.h"
             ex="true"
@@ -4117,56 +4462,7 @@
       </item>
       <item path="libs/src/bak/svkEPSIPhaseCorrect.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkEnhancedMRIIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkFastCellData.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkFdfVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEImageHeader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapper.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapperMBrease.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapperMPCSIOBL.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapperUCSF.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapperUCSFfidcsi.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileMapperUCSFfidcsiDev0.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPFileReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGEPostageStampReader.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGESigna5XReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkGESignaLX2Reader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkIdfVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkIdfVolumeWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageAlgorithm.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkImageAlgorithmExecuter.h"
             ex="true"
@@ -4177,13 +4473,9 @@
       </item>
       <item path="libs/src/bak/svkImageCopy.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkImageData.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkImageDataFactory.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkImageFourierCenter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageInPlaceFilter.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkImageLinearPhase.h" ex="true" tool="3" flavor="0">
       </item>
@@ -4196,15 +4488,6 @@
       </item>
       <item path="libs/src/bak/svkImageMathematics.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkImageReader2.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageReaderFactory.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageTopologyGenerator.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
       <item path="libs/src/bak/svkImageView2D.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkImageView2DController.h"
@@ -4216,33 +4499,14 @@
       </item>
       <item path="libs/src/bak/svkImageWriterFactory.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkIntegratePeak.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkLookupTable.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkMRIIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMRSIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMetaboliteMap.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkMetaboliteRatioZScores.h"
             ex="true"
             tool="3"
             flavor="0">
       </item>
-      <item path="libs/src/bak/svkMriImageData.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkMriImageFFT.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMriZeroFill.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsApodizationFilter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsImageData.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkMrsImageFFT.h" ex="true" tool="3" flavor="0">
       </item>
@@ -4252,12 +4516,6 @@
             ex="true"
             tool="3"
             flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsLinearPhase.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsTopoGenerator.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsZeroFill.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkMultiCoilPhase.h" ex="true" tool="3" flavor="0">
       </item>
@@ -4287,10 +4545,6 @@
             tool="3"
             flavor="0">
       </item>
-      <item path="libs/src/bak/svkPACSInterface.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkPhaseSpec.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkPlotGridView.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkPlotGridViewController.h"
@@ -4301,8 +4555,6 @@
       <item path="libs/src/bak/svkPlotLine.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkPlotLineGrid.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkProvenance.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkQuantifyDSC.h" ex="true" tool="3" flavor="0">
       </item>
@@ -4315,22 +4567,12 @@
       </item>
       <item path="libs/src/bak/svkSCIOD.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkSatBandSet.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSdbmVolumeReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSiemensRdaReader.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkSincInterpolationFilter.h"
             ex="true"
             tool="3"
             flavor="0">
       </item>
       <item path="libs/src/bak/svkSpecGridSelector.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSpecPoint.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSpecUtils.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkSpectraReferenceView.h"
             ex="true"
@@ -4344,17 +4586,7 @@
       </item>
       <item path="libs/src/bak/svkUCSFPACSInterface.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/bak/svkUCSFUtils.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkUtils.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/bak/svkVarianCSFidMapper.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkVarianFidMapper.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkVarianFidReader.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkVarianReader.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/bak/svkVarianUCSF2DcsiMapper.h"
             ex="true"
@@ -4480,10 +4712,13 @@
       </item>
       <item path="libs/src/svkDICOMRawDataWriter.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4676,6 +4911,8 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="libs/src/svkDynamicMRIAlgoTemplate.h" ex="true" tool="3" flavor="0">
+      </item>
       <item path="libs/src/svkEPSIPhaseCorrect.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
@@ -4714,10 +4951,13 @@
       </item>
       <item path="libs/src/svkGEPFileMapper.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4777,10 +5017,13 @@
       </item>
       <item path="libs/src/svkGEPFileReader.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -4963,10 +5206,13 @@
       </item>
       <item path="libs/src/svkImageReaderFactory.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>NDEBUG</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -5556,70 +5802,6 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="tests/src/bako/assertFailTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/returnFailure.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/runtimeException.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkIdfWriterTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageFourierCenterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageLinearPhaseTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImagePadFilterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkInstantiationTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMriImageFFTTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsCombine.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsImageFFT.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsZeroFill.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkOverlayViewTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewMultiTraceTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSincInterpolateTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSpectraReferenceViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="tests/src/bako/vtkBaselineTest.cc" ex="true" tool="1" flavor="0">
-      </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <incDir>
@@ -5936,16 +6118,6 @@
             tool="1"
             flavor="0">
       </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="applications/cmd_line/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="applications/osirix_plugin/OsiriX Headers/DCMPix.h"
             ex="true"
             tool="3"
@@ -6027,16 +6199,6 @@
             flavor="0">
       </item>
       <item path="applications/osirix_plugin/SIVIC_MRSIFilter.mm"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="applications/sivic_app/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
             flavor="0">
@@ -6775,70 +6937,6 @@
             ex="true"
             tool="1"
             flavor="0">
-      </item>
-      <item path="tests/src/bako/assertFailTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/returnFailure.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/runtimeException.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkIdfWriterTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageFourierCenterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImageLinearPhaseTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkImagePadFilterTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkInstantiationTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMriImageFFTTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsCombine.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsImageFFT.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkMrsZeroFill.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkOverlayViewTest.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewMultiTraceTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkPlotGridViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSincInterpolateTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkSpectraReferenceViewTest.cc"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.cc" ex="true" tool="1" flavor="0">
-      </item>
-      <item path="tests/src/bako/svkTestUtils.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="tests/src/bako/vtkBaselineTest.cc" ex="true" tool="1" flavor="0">
       </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="0">
         <ccTool>
