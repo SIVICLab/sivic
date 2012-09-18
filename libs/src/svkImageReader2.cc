@@ -128,17 +128,20 @@ vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
 vtkstd::string svkImageReader2::GetFileExtension(const char* fname)
 {
     vtkstd::string volumeFileName(fname);
-    size_t position;
 
-    char fnameFullPath[200] = "";
-    //  should disregard leading dots in path, so convert to full path: 
-    svkUtils::GetRealpath(fname, sizeof(fnameFullPath), fnameFullPath);
-    string volumeFileNameFullPath(fnameFullPath); 
-    position = volumeFileNameFullPath.find_last_of( "." );
+    //  should disregard leading dots in path, so first get 
+    //  substring following last "/", if it exists. 
+    size_t pathPosition = volumeFileName.find_last_of( "/" );
+    if ( pathPosition != vtkstd::string::npos ) {
+        volumeFileName.assign( volumeFileName.substr(pathPosition + 1) );
+    }
+
+    size_t position = volumeFileName.find_last_of( "." );
     vtkstd::string fileExtension(""); 
     if ( position != string::npos && position != 0) {
-        fileExtension.assign( volumeFileNameFullPath.substr(position + 1) );
+        fileExtension.assign( volumeFileName.substr(position + 1) );
     } 
+
     return fileExtension;
 }
 
