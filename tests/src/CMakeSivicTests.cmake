@@ -67,7 +67,12 @@ file( MAKE_DIRECTORY [ ${TEST_RESULTS_ROOT} ] )
 #   Flags for diff to avoid errors from minor differences in 
 #   paths and rootnames in header files and provenance. 
 #############################################################
-SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --ignore-matching-lines=minimum: --exclude=.svn)
+IF(WIN32)
+    # Windows prints expenontial incorrectly so we have to ignore the max/min values for now.
+    SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --ignore-matching-lines=minimum: --exclude=.svn)
+ELSE(WIN32)
+    SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --exclude=.svn)
+ENDIF(WIN32)
 SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
 
 ########################
@@ -391,7 +396,7 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/reslicing/axial_to_oblique)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_reslice -i ${TEST_CASE_ROOT}/input/axial_vol.idf --target ${TEST_CASE_ROOT}/input/oblique_mrsvol.ddf -o${TEST_RESULTS_PATH}/out -t 3 )
 
 SET( TEST_NAME TEST_OBLIQUE_RESLICE_DIFF)
-ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${TEST_PLATFORM}/out )
 SET_TESTS_PROPERTIES(TEST_OBLIQUE_RESLICE_DIFF PROPERTIES DEPENDS TEST_MCHK_OBLIQUE_RESLICE)
 
 
@@ -660,7 +665,7 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_postage_stamp)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/000001.DCM -o ${TEST_RESULTS_PATH}/out -t2 )
 
 SET( TEST_NAME TEST_GE_POSTAGE_TO_DDF_DIFF )
-ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${TEST_PLATFORM}/output )
 SET_TESTS_PROPERTIES(TEST_GE_POSTAGE_TO_DDF_DIFF PROPERTIES DEPENDS TEST_MCHK_GE_POSTAGE_TO_DDF)
 
 
@@ -674,7 +679,7 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/mrs_apodization)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkMrsApodizationFilterTest  ${SVK_TEST_ROOT}/ge_pfiles/20x/input/20_x_raw ${TEST_RESULTS_PATH}/out )
 
 SET( TEST_NAME TEST_MRS_APODIZATION_DIFF)
-ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${TEST_PLATFORM}/out )
 SET_TESTS_PROPERTIES(TEST_MRS_APODIZATION_DIFF PROPERTIES DEPENDS TEST_MCHK_MRS_APODIZATION)
 
 
