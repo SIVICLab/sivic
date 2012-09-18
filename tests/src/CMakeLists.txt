@@ -59,18 +59,26 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(PLATFORM Linux_x86_64)
     ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES i686)
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    SET(PLATFORM_LIBS z)
 ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     IF (CMAKE_SYSTEM_NAME MATCHES Darwin)
         SET(PLATFORM Darwin_i386)
-    ELSE (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    IF (CMAKE_SYSTEM_NAME MATCHES SunOS)
         SET(PLATFORM SunOS_sparc)
         SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "-xO3 -DNDEBUG")
 
         SET(CMAKE_CXX_LINK_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS "-xO3 -DNDEBUG")
-    ENDIF (CMAKE_SYSTEM_NAME MATCHES Darwin)
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES SunOS)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
+
+
+IF(WIN32)
+    SET(GNU_DIFFUTILS_PATH CACHE PATH "Location of gnu diffutils installation. Provides diff command for testing on Windows." )
+ENDIF(WIN32)
+
 
 SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
 SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
@@ -87,6 +95,10 @@ SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
+SET(DCMTK_OFLOG "")
+if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
 
 ###################################
 #   VTK
@@ -98,7 +110,10 @@ IF (USE_VTK_FILE)
 ENDIF (USE_VTK_FILE)
 
 FIND_PATH(DCMTK_DIR dctk.h)
-ADD_DEFINITIONS(-DHAVE_CONFIG_H) 
+
+IF( NOT WIN32 )
+	ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+ENDIF( NOT WIN32 )
 
 
 
@@ -115,11 +130,21 @@ LINK_DIRECTORIES(
     ${DCMTK_DIR}/lib
 )
 
+IF(WIN32)
+	SET(PLATFORM_INCLUDE ../../libs/getopt)
+ENDIF(WIN32)
+
 INCLUDE_DIRECTORIES(
     ./
     ../../libs/src
     ${DCMTK_DIR}/include
+    ${PLATFORM_INCLUDE}
 )
+
+IF(WIN32)
+	SET(PLATFORM_LIBS getopt
+	                  netapi32)
+ENDIF(WIN32)
 
 ADD_LIBRARY( 
     svkTest
@@ -140,7 +165,8 @@ SET(SVK_LIBS
     svkadapt 
     dcmdata
     ofstd 
-    z
+    ${DCMTK_OFLOG}
+    ${PLATFORM_LIBS}
     vtkHybrid
 )
 

@@ -49,6 +49,7 @@
 #include <vtkImageData.h>
 
 #include <svkImageData.h>
+#include <svkUtils.h>
 
 
 namespace svk {

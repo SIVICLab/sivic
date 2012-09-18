@@ -545,3 +545,19 @@ int svkUtils::GetNumberOfDigits( int number, bool isMinusDigit )
 	}
 	return numDigits;
 }
+
+
+/*! 
+ * Method expands relative paths.
+ */
+void svkUtils::GetRealpath( const char * path, int size, char* realpath )
+{
+
+#ifndef WIN32
+    char* fnameFullPath = realpath(path, NULL);
+    memcopy( realpath, fnameFullPath, size * sizeof(char) );
+#else
+    GetFullPathName(path, size, realpath, NULL);
+#endif
+
+}

@@ -39,6 +39,15 @@
  */
 
 
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
+#include <getopt.h>
+#include <unistd.h>
+#endif
+
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
@@ -47,8 +56,6 @@
 #include <svkImageReaderFactory.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <getopt.h>
 #include <string.h>
 #include <svkDataModel.h>
 #include <vtkAxesActor.h>
