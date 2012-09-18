@@ -557,7 +557,7 @@ void svkUtils::GetRealpath( const char * path, int size, char* resultRealpath )
     char* fnameFullPath = realpath(path, NULL);
     memcpy( resultRealpath, fnameFullPath, size * sizeof(char) );
 #else
-    GetFullPathName(path, size, realpath, NULL);
+    GetFullPathName(path, size, resultRealpath, NULL);
 #endif
 
 }
