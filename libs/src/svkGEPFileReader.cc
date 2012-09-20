@@ -79,6 +79,7 @@ svkGEPFileReader::svkGEPFileReader()
     this->progressCallback->SetClientData( (void*)this );
 
     this->onlyParseHeader = false; 
+    this->checkSeriesUID = true; 
 }
 
 
@@ -254,6 +255,9 @@ void svkGEPFileReader::ExecuteInformation()
     //  called, then reset the array.
     this->tmpFileNames = vtkStringArray::New();
     this->tmpFileNames->DeepCopy(this->FileNames);
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    }  	 	 
     this->FileNames->Delete();
     this->FileNames = NULL;
 
@@ -269,6 +273,9 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
 
     this->FileNames = vtkStringArray::New();
     this->FileNames->DeepCopy(this->tmpFileNames);
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        cout << "FNCHECK: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    }  	 	 
     this->tmpFileNames->Delete();
     this->tmpFileNames = NULL;
 
@@ -619,12 +626,31 @@ svkGEPFileMapper* svkGEPFileReader::GetMapper()
 void svkGEPFileReader::ReadGEPFile()
 {
 
-    cout << "FN: " << this->GetFileName() << endl;
+    if (this->GetDebug()) { 
+        cout << "FN: " << this->GetFileName() << endl;
+    }
+    vtkstd::string refSUID = this->GetSeriesUID( this->GetFileName());
+    
     this->GlobFileNames();  	 	 
-    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {      	 	 
-        cout << "list raw files: " << this->GetFileNames()->GetValue(fileNumber) << endl;  	 	 
+
+    vtkStringArray* validatedFileNames = vtkStringArray::New();
+    //  Verify that all the pfiles belong to the same series (same 
+    //  series instance uid as specified input file): 
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        if ( this->GetSeriesUID(this->GetFileNames()->GetValue(fileNumber)).compare(refSUID) == 0)  {
+            validatedFileNames->InsertNextValue( this->GetFileNames()->GetValue(fileNumber) );               
+        } 
     }  	 	 
-    cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl; 
+
+    this->SetFileNames(validatedFileNames); 
+
+    if (this->GetDebug()) { 
+        for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+               cout << "VALIDATEDFN: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+        }  	 	 
+        cout << "LOAD: " << this->GetFileNames()->GetValue(0) << endl; 
+    }
+
 
     try {
 
@@ -652,6 +678,39 @@ void svkGEPFileReader::ReadGEPFile()
         cerr << "ERROR opening or reading GE P-File (" << this->GetFileName() << "): " << e.what() << endl;
     }
 
+}
+
+
+/*  
+ *  Quick parse of header to get seriesInstanceUID
+ */
+vtkstd::string svkGEPFileReader::GetSeriesUID(const char* fname)
+{
+    vtkstd::string seriesInstanceUID;     
+
+    //  to avoid recursion when getting the seriesUID from just one file: 
+    if ( this->checkSeriesUID ) {
+
+        try {
+
+            svkGEPFileReader* tmpReader = svkGEPFileReader::New();
+            tmpReader->SetFileName(fname);
+            tmpReader->OnlyParseHeader(); 
+            tmpReader->checkSeriesUID = false; 
+            tmpReader->OnlyReadOneInputFile(); 
+            tmpReader->Update();
+            seriesInstanceUID = ( tmpReader->GetPFMap() )["rhs.series_uid"][3]; 
+            tmpReader->Delete();    
+
+        } catch (const exception& e) {
+            cerr << "ERROR opening or reading GE P-File (" << this->GetFileName() << "): " << e.what() << endl;
+        }
+    } else {
+        seriesInstanceUID = "0"; 
+    }
+
+    return seriesInstanceUID;     
+    
 }
 
 

@@ -111,6 +111,8 @@ class svkGEPFileReader : public svkImageReader2
             return "GE pfile";
         } 
 
+        bool                             checkSeriesUID;  
+
 
     protected:
 
@@ -156,7 +158,7 @@ class svkGEPFileReader : public svkImageReader2
         int                 GetNumBytesInField( vtkstd::string key ); 
         void                DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString); 
         bool                IsFieldChar( vtkstd::string key ); 
-
+        vtkstd::string      GetSeriesUID(const char* fname); 
 
         //  Members:
         ifstream*                        gepf;
