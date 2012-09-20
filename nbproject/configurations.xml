@@ -3,6 +3,8 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="trunk" root=".">
       <df name="applications">
+        <df name="CMakeFiles">
+        </df>
         <df name="cmd_line">
           <df name="Linux_x86_64">
           </df>
@@ -499,6 +501,8 @@
                     </df>
                     <df name="svk_multi_view.dir">
                     </df>
+                    <df name="svk_point_selector.dir">
+                    </df>
                     <df name="svk_quantify.dir">
                     </df>
                     <df name="svk_quick_view.dir">
@@ -660,31 +664,6 @@
         </df>
         <df name="CompilerIdCXX">
           <in>CMakeCXXCompilerId.cpp</in>
-        </df>
-        <df name="Progress">
-          <in>1</in>
-          <in>10</in>
-          <in>100</in>
-          <in>11</in>
-          <in>12</in>
-          <in>13</in>
-          <in>14</in>
-          <in>15</in>
-          <in>2</in>
-          <in>26</in>
-          <in>27</in>
-          <in>29</in>
-          <in>30</in>
-          <in>4</in>
-          <in>5</in>
-          <in>6</in>
-          <in>7</in>
-          <in>8</in>
-          <in>87</in>
-          <in>9</in>
-          <in>98</in>
-          <in>99</in>
-          <in>count.txt</in>
         </df>
       </df>
       <df name="libs">
@@ -1472,7 +1451,13 @@
         <df name="ge_postage_stamp">
           <df name="input">
           </df>
-          <df name="output">
+          <df name="Linux_x86_64">
+            <df name="output">
+            </df>
+          </df>
+          <df name="Win32">
+            <df name="output">
+            </df>
           </df>
         </df>
         <df name="ge_sdbm_files">
@@ -1576,7 +1561,13 @@
           </df>
         </df>
         <df name="mrs_apodization">
-          <df name="out">
+          <df name="Linux_x86_64">
+            <df name="out">
+            </df>
+          </df>
+          <df name="Win32">
+            <df name="out">
+            </df>
           </df>
         </df>
         <df name="mrs_fft">
@@ -1679,7 +1670,13 @@
           <df name="axial_to_oblique">
             <df name="input">
             </df>
-            <df name="out">
+            <df name="Linux_x86_64">
+              <df name="out">
+              </df>
+            </df>
+            <df name="Win32">
+              <df name="out">
+              </df>
             </df>
           </df>
         </df>
@@ -1846,13 +1843,25 @@
         <df name="sym_epsi">
           <df name="input">
           </df>
-          <df name="output">
+          <df name="Linux_x86_64">
+            <df name="output">
+            </df>
+          </df>
+          <df name="Win32">
+            <df name="output">
+            </df>
           </df>
         </df>
         <df name="sym_epsi_dynamic">
           <df name="input">
           </df>
-          <df name="out">
+          <df name="Linux_x86_64">
+            <df name="out">
+            </df>
+          </df>
+          <df name="Win32">
+            <df name="out">
+            </df>
           </df>
         </df>
         <df name="sym_epsi_dynamic.bak">
