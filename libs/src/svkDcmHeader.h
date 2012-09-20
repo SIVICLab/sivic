@@ -664,6 +664,8 @@ class svkDcmHeader: public vtkObject
         void                Deidentify( PHIType phyType, string patientId, string studyId );   
 
         static bool         IsFileDICOM( vtkstd::string fname); 
+        static svkDcmHeader::DcmPixelDataFormat  GetVtkDataTypeFromSvkDataType( vtkIdType vtkType); 
+
         
 
     protected:

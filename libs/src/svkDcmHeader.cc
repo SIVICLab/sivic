@@ -1912,6 +1912,28 @@ void svkDcmHeader::InitRawDataModule( vtkstd::string contentDate, vtkstd::string
 
 
 /*!
+ * 
+ */
+svkDcmHeader::DcmPixelDataFormat svkDcmHeader::GetVtkDataTypeFromSvkDataType( vtkIdType vtkType)
+{
+    if ( vtkType == VTK_DOUBLE ) {
+        return svkDcmHeader::SIGNED_FLOAT_8;
+    } else if ( vtkType == VTK_FLOAT ) {
+        return svkDcmHeader::SIGNED_FLOAT_4;
+    } else if ( vtkType == VTK_FLOAT ) {
+        return svkDcmHeader::SIGNED_FLOAT_4;
+    } else if ( vtkType == VTK_UNSIGNED_CHAR) {
+        return svkDcmHeader::UNSIGNED_INT_1;
+    } else if ( vtkType == VTK_UNSIGNED_SHORT) {
+        return svkDcmHeader::UNSIGNED_INT_2;
+    } else if ( vtkType == VTK_SHORT) {
+        return svkDcmHeader::SIGNED_INT_2;
+    } else {
+        return svkDcmHeader::UNDEFINED; 
+    }
+}
+
+/*!
  *  Initializes an MR Image Storage header from an Enhanced  MRI Storage header. 
  */
 int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dataType )

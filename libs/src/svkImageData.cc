@@ -257,7 +257,8 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
     if( src->GetPointData()->GetScalars()) {
         this->GetPointData()->SetActiveScalars( src->GetPointData()->GetScalars()->GetName() );
     }
-	this->GetDcmHeader()->SetPixelDataType( castToFormat );
+    //  arg should be type DcmPixelDataFormat
+	this->GetDcmHeader()->SetPixelDataType( svkDcmHeader::GetVtkDataTypeFromSvkDataType(dataTypeVtk) );
     this->SetScalarType( dataTypeVtk );
 }
 
