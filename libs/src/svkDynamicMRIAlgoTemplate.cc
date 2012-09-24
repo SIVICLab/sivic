@@ -252,19 +252,57 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 	
     //  get num points in kinetic trace: 
     int numPts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+
+	/* Get other parameters outside of kinetics that describe kinetics */
 	
-    //  Get max and min intensity data point for upper and lower bounds:
+    //  Get max(aka peak hieght) and min intensity data point for upper and lower bounds:
     float maxValue0 = metKinetics0[0];
 	float maxValue1 = metKinetics1[0];
 	float maxValue2 = metKinetics2[0];	
 	float minValue0 = metKinetics0[0];
 	float minValue1 = metKinetics1[0];
 	float minValue2 = metKinetics2[0];
+
+	//  Get arrival time:
+    float arrival0 = 0;
+	float arrival1 = 0;	
+	float arrival2 = 0;
+
+	//  Get area under curve time:
+    float AreaUnderCurve0 = metKinetics0[0];
+	float AreaUnderCurve1 = metKinetics1[0];	
+	float AreaUnderCurve2 = metKinetics2[0];
+	
+	//  Get approximate Full Width Half Max:
+    float t_start_FWHM0 = 0; float t_end_FWHM0 = 0; 
+	float t_start_FWHM1 = 0; float t_end_FWHM1 = 0; 	
+	float t_start_FWHM2 = 0; float t_end_FWHM2 = 0; 
+
+	//  Get Mean Time:
+    float MeanTime0 = 0;
+	float MeanTime1 = 0;	
+	float MeanTime2 = 0;	
 	
     for ( int t = 0; t < numPts; t++ ) {
-        cout << "   val: " << t << " " << metKinetics0[t] << " " << metKinetics1[t] << " " <<  metKinetics2[t] << endl;
+	  cout << "   val: " << t << " " << metKinetics0[t] << " " << metKinetics1[t] << " " <<  metKinetics2[t] << endl;
+
+	  if (t > 0){
+	  /* Calculate AUC */
+	  AreaUnderCurve0 = AreaUnderCurve0 + metKinetics0[t-1];
+	  AreaUnderCurve1 = AreaUnderCurve1 + metKinetics1[t-1];
+	  AreaUnderCurve2 = AreaUnderCurve2 + metKinetics2[t-1];
+	  
+	  /* Calculate MT */
+	  //MeanTime0[t] = t*(metKinetics0[t]/metKinetics0[t]) + MeanTime0[t-1];
+	  //MeanTime1[t] = t* (metKinetics1[t]/metKinetics1[t]) + MeanTime1[t-1];
+	  //MeanTime2[t] = t* (metKinetics2[t]/metKinetics2[t]) + MeanTime2[t-1];
+	  }
+
+	  /* Calculate max(aka peak hieght), min, & arrival time */
         if ( metKinetics0[t] > maxValue0) {
 		  maxValue0 = metKinetics0[ t ];
+		  arrival0 = t;
 		}
 		if ( metKinetics0[t] < minValue0) {
 		  minValue0 = metKinetics0[ t ];
@@ -272,6 +310,7 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 
 		if ( metKinetics1[t] > maxValue1) {
 		  maxValue1 = metKinetics1[ t ];
+		  arrival1 = t;
 		}
 		if ( metKinetics1[t] < minValue1) {
 		  minValue1 = metKinetics1[ t ];
@@ -279,12 +318,60 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 
 		if ( metKinetics2[t] > maxValue2) {
 		  maxValue2 = metKinetics2[ t ];
+		  arrival2 = t;
 		}
 		if ( metKinetics2[t] < minValue2) {
 		  minValue2 = metKinetics2[ t ];
 		}
 		  
     }
+
+	/* calculate approximate FWHM */
+
+	// PYRUVATE 
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics0[t] >  0.5*maxValue0){
+		t_start_FWHM0 = t;
+		break;
+	  }
+	}
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics0[numPts-t] >  0.5*maxValue0){
+		t_end_FWHM0 = numPts-t;
+		break;
+	  }
+	}
+	// LACTATE
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics1[t] >  0.5*maxValue1){
+		t_start_FWHM1 = t;
+		break;
+	  }
+	}
+	//UREA
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics1[numPts-t] >  0.5*maxValue1){
+		t_end_FWHM1 = numPts-t;
+		break;
+	  }
+	}
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics2[t] >  0.5*maxValue2){
+		t_start_FWHM2 = t;
+		break;
+	  }
+	}
+	for ( int t = 0; t < numPts; t++ ) {
+	  if ( metKinetics2[numPts-t] >  0.5*maxValue2){
+		t_end_FWHM2 = numPts-t;
+		break;
+	  }
+	}
+
+	float FWHM0 = t_end_FWHM0- t_start_FWHM0;
+	float FWHM1 = t_end_FWHM1- t_start_FWHM1;  
+	float FWHM2 = t_end_FWHM2- t_start_FWHM2;	
+	  
 
 	
     //  Set up dynamic variable arrray for cmin_pack 
@@ -437,19 +524,22 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
     //double T1p = 1/x[4];
 	//double T1l = 1/x[5];
 	//double T1u = 1/x[6];
+    //double t_arrival = x[1]; 
+  
     double T1all     = 1/x[0];
-    double t_arrival = x[1]; 
-    double Kpl       = x[2];
+    double Kpl       = x[1];
 	
 	cout << " Two Site Exchange assuming back reaction is zero and acq starts after bolus" << endl;
 	printf("\n");
+	/* Dealing with all of these parameters later */
 	//cout << "   Klp: " << Klp   << endl;
 	//cout << "   T1p: " << T1p << endl;
 	//cout << "   Tl1: " << T1l << endl;
 	//cout << "   Tlu: " << T1u << endl;
+	//cout << "   Bolus arrival time: " << t_arrival  << endl;
+	//printf("\n");
+	
 	cout << "   Kpl: " << Kpl << endl;
-	printf("\n");
-	cout << "   Bolus arrival time: " << t_arrival  << endl;
 	printf("\n");
 	cout << "   T1 all metabolites: " << T1all  << endl;
 	printf("\n");
@@ -466,11 +556,17 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 	delete[] wa3;
 	delete[] wa4;
 
-    voxelValue=Kpl;
-
+    // Add a reasonable mask 
+	if (maxValue1 > 5*minValue1){
+    voxelValue=FWHM1;
+	}else{
+	  voxelValue = 0;
+	}
+	
     float* calculatedLacKinetics = new float[numPts];
 	//float* calculatedPyrKinetics = new float[numPts];
 	//float* calculatedUreaKinetics = new float[numPts];
+	
     this->calculateLactateKinetics(x, numPts, metKinetics0, metKinetics1, calculatedLacKinetics);  
     delete[] calculatedLacKinetics; 
 
@@ -485,8 +581,8 @@ double svkDynamicMRIAlgoTemplate::GetKineticsMapVoxelValue(float* metKinetics0, 
 void svkDynamicMRIAlgoTemplate::calculateLactateKinetics(double* fittedModelParams, int numTimePts,float* metKinetics0, float* metKinetics1, float* calculatedLacKinetics ) 
 {
   double T1all = 1/fittedModelParams[0];
-  double t_arrival = fittedModelParams[1]; 
-  double Kpl       = fittedModelParams[2];
+  double Kpl       = fittedModelParams[1];
+  //double t_arrival = fittedModelParams[1]; deal with perfusion later
   
     //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
     //  each time point
@@ -497,11 +593,12 @@ void svkDynamicMRIAlgoTemplate::calculateLactateKinetics(double* fittedModelPara
     // calculatedPyrKinetics[t] = metKinetics0[0]*exp(-((1/T1all)+Kpl-t_arrival)*t);
 	
 	/* LACTATE */
-	calculatedLacKinetics[t] = metKinetics0[0]*Kpl*(exp(-t*(1/T1all))-exp(-((1/T1all)+Kpl-t_arrival)*t))/(Kpl-t_arrival)+metKinetics1[0]*exp(-t*(1/T1all));
+	calculatedLacKinetics[t] = metKinetics0[0]*(-exp(-t/T1all-t*Kpl)+exp(-t/T1all))+metKinetics1[0]*exp(-t/T1all);
+	// if using t_arrival:  calculatedLacKinetics[t] = metKinetics0[0]*Kpl*(exp(-t*(1/T1all))-exp(-((1/T1all)+Kpl-t_arrival)*t))/(Kpl-t_arrival)+metKinetics1[0]*exp(-t*(1/T1all));
 	/* UREA */
 	// calculatedUreaKinetics[t] = metKinetics2[0]*exp(-((1/T1all)-t_arrival)*t);
   }
-  return calculatedLacKinetics;
+  //return calculatedLacKinetics;
 }
 
 
@@ -555,7 +652,10 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
   // double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, 0,0,x[1]-x[0]};
 
   /* Use when inital conditions are not estimated (PYR, LAC, LAC) */
-   double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, x[2],0,-x[0]};
+  // double K[] = {x[1]-x[0]-x[2],0,0,x[2],-x[0],0, x[2],0,-x[0]};
+
+  /* Use when inital conditions are not estimated (PYR, LAC, LAC)  ignoring urea and perfusion for now*/
+  double K[] = {-x[0]-x[1],0,0,x[1],-x[0],0, 0,0,0};
   
   /* Test on pyruvate data only estimates T1p */
   // double K[] = {x[1]-x[0],0,0,   0,x[1]-x[0],0,    0,0,x[1]-x[0]};
@@ -567,9 +667,12 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
  /* need to define TR, flip earlier*/
   int j=1;
 
- for (int mm = 0; mm<numMets; mm++){
-		for  ( int t = 1; t < numTimePoints; t++ ){
+  /* For now use a set bolus arrival time to simplify perfusion*/
+  int t_arrival = 2;
 
+ for (int mm = 0; mm<numMets; mm++){
+   for  ( int t = 1; t < numTimePoints; t++ ){
+	 
 		  /* find residuals at x */
 		  if ( pfa != 0){
 			/* correct for progressive flip angle*/
@@ -577,6 +680,10 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
 			fvec[(mm-1)*numTimePoints+t] =y[(mm-1)*numTimePoints+t]- (exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1]*cos(flip*pi/180);
 		  }
 		  if (pfa == 0){
+			//	if ( t < t_arrival){
+			//	  fvec[(mm-1)*numTimePoints+t] = 0 ;
+			//	}
+				
 			/* PYRUVATE */
 			if (mm==0){
 			  fvec[(mm)*numTimePoints+t] = metKinetics0[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
@@ -586,7 +693,7 @@ int fcn_lmdif(void *p, int combinedNumberOfTimePoints, int numMets, const double
 			  fvec[(mm)*numTimePoints+t] = metKinetics1[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
 			}
 			/* UREA */
-			if (mm==1){
+			if (mm==2){
 			  fvec[(mm)*numTimePoints+t] = metKinetics2[t]-(exp(K[(mm-1)*numMets+0]*TR)+exp(K[(mm-1)*numMets+1]*TR)+exp(K[(mm-1)*numMets+2]*TR))*fvec[(mm-1)*numTimePoints+t-1];
 			}
 			//cout<< " fvec =  " << fvec[(mm-1)*numTimePoints+t] << " at " << t << " and metabolite "<< mm << endl;
