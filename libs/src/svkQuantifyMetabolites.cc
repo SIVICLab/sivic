@@ -711,7 +711,7 @@ int svkQuantifyMetabolites::FillOutputPortInformation( int vtkNotUsed(port), vtk
 string svkQuantifyMetabolites::GetDefaultXMLFileName()
 {
     string fileName = getenv("HOME"); 
-    fileName.append("/.SIVICQuant_0_9_3.xml" );
+    fileName.append("/.SIVICQuant.xml" );
     return fileName;
 }
 
@@ -785,7 +785,7 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "       Beck Olson" << endl
         << "-->" << endl
         << " "  << endl
-        << " <SVK_MRS_QUANTIFICATION version=\"0.9.0\">" << endl
+        << " <SVK_MRS_QUANTIFICATION version=\""<<  string(SVK_RELEASE_VERSION) <<"\">" << endl
         << " " << endl
         << " -- 1H Brain " << endl
         << "  <APPLICATION nucleus=\"1H\" anatomy=\"brain\"> " << endl
