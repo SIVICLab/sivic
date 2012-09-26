@@ -2890,6 +2890,41 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
     }
 
 
+}
+
+/* 
+ *  In place modification of specified raw file field.  
+ */
+void svkGEPFileReader::ModifyRawField( string rawField, string value)
+{
+
+    this->OnlyParseHeader(); 
+    this->ReadGEPFile(); 
+
+    //  Now the pfMap has been initialized as follows.  Use the 
+    //  Offsets and field sizes to replace the appropriate bytes with 
+    //  the deidentification ID:
+    //  key        pfMap[key][0]    pfMap[key][1] pfMap[key][2] pfMap[key][3]
+    //  ----------------------------------------------------------------------
+    //  fieldName  nativeType       numElements   offset        stringValue
+
+    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {      	 	 
+        fstream* fs = new fstream();
+        fs->exceptions( fstream::eofbit | fstream::failbit | fstream::badbit );
+        fs->open( this->GetFileNames()->GetValue(fileNumber), ios::binary | ios::in | ios::out );
+
+        if ( fs->is_open() ) {
+            //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
+            this->DeidentifyField( fs, rawField, value);
+            fs->close();
+        } else {
+            cout << "ERROR: Could not open raw file for modification: " << this->GetFileNames()->GetValue(0) << endl;
+            exit(1);
+        }
+
+        delete fs; 
+    }
+
 }    
 
 

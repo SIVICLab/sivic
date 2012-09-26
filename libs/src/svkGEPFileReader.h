@@ -100,6 +100,8 @@ class svkGEPFileReader : public svkImageReader2
         void                PrintHeader();
         void                OnlyParseHeader();
         void                Deidentify( string studyID ); 
+        void                ModifyRawField( string rawField, string value); 
+
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
                                                  GetPFMap(); 
         static float        LookupRawVersion(float rdbmRev, float rdbmRevSwapped); 
