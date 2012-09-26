@@ -252,6 +252,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_gepfile_modify
+    svk_gepfile_modify.cc 
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_gepfile_modify
+	${SVK_LIBS}
+)
+
 
 ADD_EXECUTABLE(
     svk_get_filetype
