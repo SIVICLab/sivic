@@ -253,12 +253,12 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svk_gepfile_modify
-    svk_gepfile_modify.cc 
+    svk_gepfile_anon
+    svk_gepfile_anon.cc 
 )
 
 TARGET_LINK_LIBRARIES(
-    svk_gepfile_modify
+    svk_gepfile_anon
 	${SVK_LIBS}
 )
 
@@ -392,7 +392,7 @@ IF (!WIN32)
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_multi_view )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_reader )
 	INSTALL_PROGRAMS( /local/bin FILES
-../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_modify )
+../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_anon )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_spec_diff )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_integrate_dynamic )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quantify )
