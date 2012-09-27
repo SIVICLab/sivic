@@ -75,7 +75,6 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
-    usemsg += "                   [ --deid_type type [ --deid_pat_id id ] [ --deid_study_id id ]  ] \n";
     usemsg += "                   [ -u | -s ] [ -anh ] \n";
     usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
     usemsg += "                   [ --chop on/off ] \n";
@@ -86,11 +85,6 @@ int main (int argc, char** argv)
     usemsg += "   -t                type    Target data type: \n";
     usemsg += "                                 2 = UCSF DDF      \n";
     usemsg += "                                 4 = DICOM_MRS (default)    \n";
-    usemsg += "   --deid_type       type    Type of deidentification: \n";  
-    usemsg += "                                 1 = limited (default) \n";  
-    usemsg += "                                 2 = deidentified \n";  
-    usemsg += "   --deid_pat_id     id      Use the specified patient id to deidentify patient level PHI fields. \n";          
-    usemsg += "   --deid_study_id   id      Use the specified study id to deidentify study level PHI fields. \n";  
     usemsg += "   -u                        If single voxel, write only unsuppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -s                        If single voxel, write only suppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -a                        If single voxel, write average of the specified data  \n"; 
@@ -102,7 +96,6 @@ int main (int argc, char** argv)
     usemsg += "   --chop             on/off Set chop value manually \n"; 
     usemsg += "   --no_dc_correction        Turns DC Offset correction off. \n"; 
     usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data \n";
-    usemsg += "   --raw_anon         id     Deidentifies the raw file using the specified study ID.\n";
     usemsg += "   -h                        Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
@@ -116,15 +109,11 @@ int main (int argc, char** argv)
     bool average = false; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     int oneTimePtPerFile = false; 
-    svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED; 
-    string deidPatId = ""; 
-    string deidStudyId = ""; 
     float temp = UNDEFINED_TEMP; 
     vtkstd::string chopString = ""; 
     bool chop; 
     bool dcCorrection = true; 
     bool printHeader = false; 
-    string rawAnonId = ""; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -132,12 +121,8 @@ int main (int argc, char** argv)
         FLAG_ONE_TIME_PT = 0, 
         FLAG_DC_CORRECTION, 
         FLAG_PRINT_HEADER, 
-        FLAG_DEID_TYPE, 
-        FLAG_DEID_PAT_ID, 
-        FLAG_DEID_STUDY_ID, 
         FLAG_TEMP, 
-        FLAG_CHOP, 
-        FLAG_RAW_ANON
+        FLAG_CHOP 
     }; 
 
 
@@ -147,12 +132,8 @@ int main (int argc, char** argv)
         {"one_time_pt",      no_argument,       NULL,  FLAG_ONE_TIME_PT},
         {"no_dc_correction", no_argument,       NULL,  FLAG_DC_CORRECTION},
         {"print_header",     no_argument,       NULL,  FLAG_PRINT_HEADER},
-        {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE},
-        {"deid_pat_id",      required_argument, NULL,  FLAG_DEID_PAT_ID},
-        {"deid_study_id",    required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {"temp",             required_argument, NULL,  FLAG_TEMP},
         {"chop",             required_argument, NULL,  FLAG_CHOP},
-        {"raw_anon",         required_argument, NULL,  FLAG_RAW_ANON},
         {0, 0, 0, 0}
     };
 
@@ -190,23 +171,11 @@ int main (int argc, char** argv)
             case FLAG_PRINT_HEADER:
                 printHeader = true; 
                 break;
-            case FLAG_DEID_TYPE:
-                deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));  
-                break;
-            case FLAG_DEID_PAT_ID:
-                deidPatId.assign( optarg ); 
-                break;
-            case FLAG_DEID_STUDY_ID:
-                deidStudyId.assign( optarg ); 
-                break;
             case FLAG_TEMP:
                 temp = atof( optarg ); 
                 break;
             case FLAG_CHOP:
                 chopString.assign(optarg);
-                break;
-            case FLAG_RAW_ANON:
-                rawAnonId.assign( optarg ); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -243,22 +212,6 @@ int main (int argc, char** argv)
         }
     }
 
-    // ===============================================  
-    //  If only anonymizing the raw file, just do that 
-    //  and exit
-    // ===============================================  
-    if ( rawAnonId.compare("") != 0 ) {
-        vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
-        readerFactory->QuickParse();
-        svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
-        if (reader == NULL) {
-            cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
-            exit(1);
-        }
-        reader->SetFileName( inputFileName.c_str() );
-        reader->Deidentify(rawAnonId);
-        exit(0);
-    }
 
     //  if chop was specified, must be either On or Off
     if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 || chopString.compare("off") != 0 ))  {
@@ -278,19 +231,6 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    // ===============================================  
-    //  validate deidentification args:  
-    // ===============================================  
-    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED &&
-         deidType != svkDcmHeader::PHI_LIMITED &&
-         deidType != svkDcmHeader::PHI_IDENTIFIED) 
-    {
-        cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
-        cout << usemsg << endl;
-        exit(1); 
-    } else {
-        cout << "Deidentify data: type = " << deidType << endl; 
-    }
 
     cout << "file name: " << inputFileName << endl;
 
@@ -341,20 +281,6 @@ int main (int argc, char** argv)
         reader->SetMapperBehavior( svkGEPFileMapper::LOAD_RAW ); 
     }
 
-    // ===============================================  
-    //  Set up deidentification options: 
-    // ===============================================  
-    if ( deidType != svkDcmHeader::PHI_IDENTIFIED ) { 
-        if ( deidPatId.compare("") != 0 && deidStudyId.compare("") != 0 ) { 
-            reader->SetDeidentify( deidType, deidPatId, deidStudyId ); 
-        } else if ( deidPatId.compare("") != 0 ) {
-            reader->SetDeidentify( deidType, deidPatId ); 
-        } else if ( deidStudyId.compare("") != 0 ) {
-            reader->SetDeidentify( deidType, deidStudyId ); 
-        } else {
-            reader->SetDeidentify( deidType ); 
-        }
-    }
 
     if ( temp != UNDEFINED_TEMP ) { 
         reader->SetTemperature( temp ); 

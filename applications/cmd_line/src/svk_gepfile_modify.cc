@@ -74,32 +74,66 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_modify -i input_file_name -f field_name [-v value]\n"; 
-    usemsg += "\n";  
-    usemsg += "   -i    name        Name of file to modify. \n"; 
-    usemsg += "   -f    field_name  e.g. rhs.series_desc \n";
-    usemsg += "   -v    value       value, optional.  If not specified will blank the field.\n";
-    usemsg += "   -h                        Print this help mesage. \n";  
-    usemsg += "\n";  
-    usemsg += "Modify a GE PFile.\n";  
+    usemsg += "svk_gepfile_anon   -i input_file_name                                \n"; 
+    usemsg += "                   (--deid_type type                                 \n";
+    usemsg += "                                      [ --deid_id id ]               \n";
+    usemsg += "                                      [ --deid_studyUID uid]         \n";
+    usemsg += "                                      [ --deid_seriesUID uid]        \n";
+    usemsg += "                   )                                                 \n";
+    usemsg += "                   ||                                                \n";
+    usemsg += "                   (-i input_file_name -f field_name [-v value])     \n"; 
+    usemsg += "                                                                     \n";  
+    usemsg += "   -i            file_name   Name of GE Pfile to modify.             \n"; 
+    usemsg += "   --deid_type   type        Type of deidentification:               \n";  
+    usemsg += "                                 1 = limited                         \n";  
+    usemsg += "                                 2 = deidentified(default)           \n";  
+    usemsg += "   --deid_id     id          Use the specified study id in place of  \n"; 
+    usemsg += "                             PHI fields(default = DEIDENTIFIED).     \n"; 
+    usemsg += "                             UIDs are generated or specified separately. \n"; 
+    usemsg += "   --study_uid   uid         Use the specified Study UID to deidentify.  \n"; 
+    usemsg += "   --series_uid  uid         Use the specified Series UID to deidentify. \n"; 
+    usemsg += "   -f            field_name  Specific field to modify,                   \n"; 
+    usemsg += "                             e.g. rhs.series_desc                        \n";
+    usemsg += "   -v            value       Field value.  If not specified will         \n"; 
+    usemsg += "                             clear the field.                            \n"; 
+    usemsg += "   -h                        Print this help mesage.                     \n";  
+    usemsg += "                                                                         \n";  
+    usemsg += "Program to anonymize or modify a GE PFile.                               \n"; 
+    usemsg += "Progam will either deidentify the file, or modify an individual field.   \n"; 
+    usemsg += "With no options specified, the program will deid the specified           \n"; 
+    usemsg += "specified raw file                                                       \n"; 
     usemsg += "\n";  
 
 
     string inputFileName; 
+    svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_DEIDENTIFIED; 
+    string deidId = ""; 
+    string seriesUID = ""; 
+    string studyUID = ""; 
     string field = ""; 
     string value = ""; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_DEID_TYPE, 
+        FLAG_DEID_ID, 
+        FLAG_STUDY_UID,
+        FLAG_SERIES_UID
     }; 
 
 
     static struct option long_options[] =
     {
-        /* This option sets a flag. */
+        // set long flags: 
+        {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE},
+        {"deid_id",          required_argument, NULL,  FLAG_DEID_ID},
+        {"study_uid",         required_argument, NULL,  FLAG_STUDY_UID}, 
+        {"series_uid",        required_argument, NULL,  FLAG_SERIES_UID}, 
         {0, 0, 0, 0}
     };
+
+
 
     // ===============================================  
     //  Process flags and arguments
@@ -110,6 +144,18 @@ int main (int argc, char** argv)
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
+                break;
+            case FLAG_DEID_TYPE:
+                deidType = static_cast<svkDcmHeader::PHIType>(atoi( optarg));  
+                break;
+            case FLAG_DEID_ID:
+                deidId.assign( optarg ); 
+                break;
+            case FLAG_STUDY_UID:
+                studyUID.assign( optarg ); 
+                break;
+            case FLAG_SERIES_UID:
+                seriesUID.assign( optarg ); 
                 break;
             case 'f':
                 field.assign( optarg );
@@ -132,25 +178,32 @@ int main (int argc, char** argv)
 
     // ===============================================  
     //  validate that: 
-    //      an output name was supplied
-    //      that not suppresses and unsuppressed were both specified 
-    //      that only the supported output types was requested. 
-    //      
+    //      an input file name was supplied
+    //      that either a field or deidType and ID were specified. 
     // ===============================================  
-    if ( inputFileName.length() == 0 ) {
+    if ( argc != 0 || inputFileName.length() == 0 ) {
         cout << "An input file must be specified. " << endl; 
         cout << usemsg << endl;
         exit(1); 
     } 
 
+    // ================================================================================  
+    // ================================================================================  
+    //  Either modify a single field if specified, or 
+    //  deintify the file. 
+    // ================================================================================  
+    // ================================================================================  
+
     // ===============================================  
-    //  If only anonymizing the raw file, just do that 
-    //  and exit
+    // ===============================================  
+    //  Modify a specific field: 
+    // ===============================================  
     // ===============================================  
     if ( field.compare("") != 0 ) {
         vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
         readerFactory->QuickParse();
-        svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
+        svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( 
+                readerFactory->CreateImageReader2(inputFileName.c_str()) );
         if (reader == NULL) {
             cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
             exit(1);
@@ -163,8 +216,54 @@ int main (int argc, char** argv)
 
 
     // ===============================================  
-    //  Clean up: 
     // ===============================================  
+    //  Deidentify the file. 
+    // ===============================================  
+    // ===============================================  
+
+    // ===============================================  
+    //  validate deidentification args:  
+    // ===============================================  
+    if ( deidType != svkDcmHeader::PHI_DEIDENTIFIED &&
+         deidType != svkDcmHeader::PHI_LIMITED)
+    {
+        cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
+        cout << usemsg << endl;
+        exit(1); 
+    } else {
+        cout << "Deidentify data: type = " << deidType << endl; 
+    }
+
+
+    // ===============================================  
+    //  Set up deidentification options: 
+    // ===============================================  
+    vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
+    readerFactory->QuickParse();
+    svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( 
+                readerFactory->CreateImageReader2(inputFileName.c_str()) );
+    if (reader == NULL) {
+        cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
+        exit(1);
+    }
+    reader->SetFileName( inputFileName.c_str() );
+
+    //  set type and id
+    if ( deidId.compare("") != 0 ) {
+        reader->SetDeidentify( deidType, deidId ); 
+    } else {
+        reader->SetDeidentify( deidType ); 
+    }
+
+    //  set UIDs 
+    if ( studyUID.compare("") != 0 ) {
+        reader->SetDeidentificationStudyUID( studyUID ); 
+    }
+    if ( seriesUID.compare("") != 0 ) {
+        reader->SetDeidentificationSeriesUID( seriesUID ); 
+    }
+
+    reader->Deidentify();
 
     return 0; 
 }
