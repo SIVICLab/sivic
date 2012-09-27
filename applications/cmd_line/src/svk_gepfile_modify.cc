@@ -74,11 +74,11 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_modify -i input_file_name -f field_name -v value\n"; 
+    usemsg += "svk_gepfile_modify -i input_file_name -f field_name [-v value]\n"; 
     usemsg += "\n";  
     usemsg += "   -i    name        Name of file to modify. \n"; 
     usemsg += "   -f    field_name  e.g. rhs.series_desc \n";
-    usemsg += "   -v    value       value \n";
+    usemsg += "   -v    value       value, optional.  If not specified will blank the field.\n";
     usemsg += "   -h                        Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Modify a GE PFile.\n";  
@@ -139,6 +139,7 @@ int main (int argc, char** argv)
     // ===============================================  
     if ( inputFileName.length() == 0 ) {
         cout << "An input file must be specified. " << endl; 
+        cout << usemsg << endl;
         exit(1); 
     } 
 
