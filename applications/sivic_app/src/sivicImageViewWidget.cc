@@ -766,6 +766,7 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->volumeSlider->GetWidget() ) {
         int volume = static_cast<int>(this->volumeSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
+        	this->sivicController->SyncDisplayVolumes( this->model->GetDataObject("AnatomicalData"), volume );
             svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveImageVolume( volume );
         }
         stringstream increment;
@@ -780,8 +781,14 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->overlayVolumeSlider->GetWidget() ) {
         int volume = static_cast<int>(this->overlayVolumeSlider->GetValue()) - 1;
         if( event != vtkKWScale::ScaleValueStartChangingEvent ) {
-            svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveOverlayVolume( volume );
-            svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
+        	if( this->model->DataExists("OverlayData")) {
+        		this->sivicController->SyncDisplayVolumes( this->model->GetDataObject("OverlayData"), volume );
+				svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveOverlayVolume( volume );
+        	} else if ( this->model->DataExists("MetaboliteData")){
+        		this->sivicController->SyncDisplayVolumes( this->model->GetDataObject("MetaboliteData"), volume );
+				svkOverlayView::SafeDownCast( this->overlayController->GetView() )->SetActiveOverlayVolume( volume );
+				svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
+        	}
         }
         stringstream increment;
         increment << "SetValue " << volume + 2;

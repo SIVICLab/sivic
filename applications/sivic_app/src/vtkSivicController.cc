@@ -78,6 +78,7 @@ vtkSivicController::vtkSivicController()
     this->exitSivicCallback = vtkCallbackCommand::New();
     this->exitSivicCallback->SetCallback( ExitSivic );
     this->exitSivicCallback->SetClientData( (void*)this );
+    this->synchronizeVolumes = true;
 
     
 }
@@ -1043,8 +1044,13 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 } else if ( lut == "Reverse Color LUT" ) {
                     this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 }
+                int currentVolume = static_cast<int>(this->imageViewWidget->overlayVolumeSlider->GetValue());
                 this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
-                this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
+                if( currentVolume - 1 < data->GetPointData()->GetNumberOfArrays()) {
+					this->imageViewWidget->overlayVolumeSlider->SetValue( currentVolume );
+                } else {
+					this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
+                }
 				this->imageViewWidget->overlayVolumeSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent);
                 double* pixelRange = data->GetPointData()->GetArray(0)->GetRange();
                 double window;
@@ -1227,6 +1233,13 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 	if( toggleDraw ) {
 		this->DrawOff();
 	}
+    char registryValue[100] = "";
+    this->app->GetRegistryValue( 0, "defaults", "sync_volumes", registryValue );
+    if( registryValue != NULL && strcmp( registryValue, "OFF" ) == 0 ) {
+    	this->synchronizeVolumes = false;
+    } else {
+    	this->synchronizeVolumes = true;
+    }
     char satBandRed[50]="";
     this->app->GetRegistryValue( 0, "sat_bands", "red", satBandRed );
     char satBandBlue[50]="";
@@ -1598,7 +1611,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             size_t found;
             found = lastPathString.find_last_of("/");
 
-            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
+            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
@@ -1616,7 +1629,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         }
     
         // Check to see which extention to filter for.
-        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
+        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
 			char defaultSpectraExtension[100] = "";
@@ -1669,6 +1682,8 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             this->OpenImage( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "image_dynamic" ) == 0 ) {
             this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
+        } else if( openTypeString.compare( "add_image_dynamic" ) == 0 ) {
+            this->Add4DImageData( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "overlay" ) == 0 ) {
             this->OpenOverlay( dlg->GetFileName(), onlyReadOneInputFile );
         } else if( openTypeString.compare( "spectra" ) == 0 ) {
@@ -2545,6 +2560,7 @@ void vtkSivicController::DisplayWindowLevelWindow()
 void vtkSivicController::SetSpecUnitsCallback(int targetUnits)
 {
     this->spectraRangeWidget->SetSpecUnitsCallback( static_cast<svkSpecPoint::UnitType>(targetUnits) );
+    this->quantificationWidget->SetSpecUnits( static_cast<svkSpecPoint::UnitType>(targetUnits) );
 }
 
 
@@ -3500,6 +3516,78 @@ void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& pp
 svk4DImageData* vtkSivicController::GetActive4DImageData()
 {
     return svkPlotGridView::SafeDownCast(this->plotController->GetView())->GetActiveInput();
+}
+
+
+/*!
+ *  Method will set the currently displayed volume for any data set that matches the
+ *  number of volumes of the input data set. We are making an assumption here that if
+ *  two datasets have the same number of volumes then those volumes represent the same
+ *  data.
+ */
+void vtkSivicController::SyncDisplayVolumes(svkImageData* data, int volume, int volumeIndex )
+{
+	if( data != NULL && this->synchronizeVolumes) {
+
+		// Lets determine how many volumes the input data set has
+		int inputNumVolumes = -1;
+		if( data->IsA("svk4DImageData")) {
+			inputNumVolumes = svk4DImageData::SafeDownCast( data )->GetVolumeIndexSize( volumeIndex );
+		} else {
+			inputNumVolumes = data->GetPointData()->GetNumberOfArrays();
+		}
+		if( inputNumVolumes < 0) {
+			cout << "ERROR: No volumes found!" << endl;
+			return;
+		}
+
+		// Check if the 4D timepoints or channels match the input data
+		if ( this->GetActive4DImageData() != NULL ) {
+			int num4DTimepoints = this->GetActive4DImageData()->GetVolumeIndexSize( svkMrsImageData::TIMEPOINT );
+			int num4DChannels = this->GetActive4DImageData()->GetVolumeIndexSize( svkMrsImageData::CHANNEL );
+			if( inputNumVolumes == num4DTimepoints && this->spectraViewWidget->timePointSlider->GetValue() != volume + 1 ) {
+				this->spectraViewWidget->timePointSlider->SetValue( volume + 1 );
+			} else if( inputNumVolumes == num4DChannels && this->spectraViewWidget->channelSlider->GetValue() != volume + 1 ) {
+				this->spectraViewWidget->channelSlider->SetValue( volume + 1 );
+			}
+		}
+
+		// Check if the reference/anatomical image matches the input data
+		if ( this->model->DataExists("AnatomicalData") ) {
+			int anatNumVolumes = this->model->GetDataObject("AnatomicalData")->GetPointData()->GetNumberOfArrays();
+			if ( inputNumVolumes == anatNumVolumes ) {
+				// Now lets update the slider value if necessary
+				if( this->imageViewWidget->volumeSlider->GetValue() != volume + 1 ) {
+					this->imageViewWidget->volumeSlider->SetValue( volume + 1 );
+				}
+			}
+		}
+
+		// Check if the metabolite overlay matches the input data
+		if ( this->model->DataExists("MetaboliteData") ) {
+			int metabNumVolumes = this->model->GetDataObject("MetaboliteData")->GetPointData()->GetNumberOfArrays();
+			if ( inputNumVolumes == metabNumVolumes ) {
+				if( !this->model->DataExists("OverlayData") ) {
+					if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
+						this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+					}
+				} else {
+					svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
+				}
+			}
+		}
+
+		// Check if the image overlay matches the input data
+		if ( this->model->DataExists("OverlayData") ) {
+			int overlayNumVolumes = this->model->GetDataObject("OverlayData")->GetPointData()->GetNumberOfArrays();
+			if ( inputNumVolumes == overlayNumVolumes ) {
+				if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
+					this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+				}
+			}
+		}
+
+	}
 }
 
 

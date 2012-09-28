@@ -157,8 +157,8 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max, int volNumber)
         int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
         int numPixels = cols * rows * slices; 
 
-        min = 0.;
-        max = 0.;
+        min = VTK_DOUBLE_MAX;
+        max = VTK_DOUBLE_MIN;
         double* doublePixels = static_cast<double *>( 
                 vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
         );

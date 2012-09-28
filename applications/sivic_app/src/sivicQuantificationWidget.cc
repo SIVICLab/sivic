@@ -31,6 +31,7 @@ sivicQuantificationWidget::sivicQuantificationWidget()
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
+    this->units = svkSpecPoint::PPM;
 }
 
 
@@ -128,6 +129,37 @@ void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double p
     }
 }
 
+void sivicQuantificationWidget::SetSpecUnits( svkSpecPoint::UnitType units )
+{
+	svkImageData* data = this->model->GetDataObject( "SpectroscopicData" );
+	if( this->units != units && data != NULL ) {
+		svkSpecPoint* point = svkSpecPoint::New();
+		point->SetDcmHeader( data->GetDcmHeader() );
+		for (int i = 0; i < this->numMets; i++ ) {
+			double* wholeRange = this->metRangeVector[i]->GetWholeRange();
+
+			double oldWholeRangeStart = wholeRange[0];
+			double oldWholeRangeEnd   = wholeRange[1];
+
+            double newWholeRangeStart = point->ConvertPosUnits( oldWholeRangeStart, this->units, units );
+            double newWholeRangeEnd   = point->ConvertPosUnits( oldWholeRangeEnd, this->units, units );
+
+			double* range      = this->metRangeVector[i]->GetRange();
+
+			double oldRangeStart = range[0];
+			double oldRangeEnd   = range[1];
+
+            double newRangeStart = point->ConvertPosUnits( oldRangeStart, this->units, units );
+            double newRangeEnd   = point->ConvertPosUnits( oldRangeEnd, this->units, units );
+
+			this->metRangeVector[i]->SetWholeRange(newWholeRangeStart, newWholeRangeEnd);
+			this->metRangeVector[i]->SetRange(newRangeStart, newRangeEnd);
+		}
+		this->units = units;
+		point->Delete();
+	}
+}
+
 
 /*! 
  *  Method responds to callbacks setup in CreateWidget
@@ -155,15 +187,18 @@ void sivicQuantificationWidget::ExecuteQuantification()
 
         this->mrsQuant->SetInput( data );
         this->mrsQuant->LimitToSelectedVolume();
+		svkSpecPoint* point = svkSpecPoint::New();
+		point->SetDcmHeader( data->GetDcmHeader() );
 
         //  update XML from current slider positions:
         for (int i = 0; i < this->numMets; i++ ) {
-            float minPPM   = this->metRangeVector[i]->GetEntry1()->GetValueAsDouble();
-            float maxPPM   = this->metRangeVector[i]->GetEntry2()->GetValueAsDouble();
+            float minPPM   = point->ConvertPosUnits( this->metRangeVector[i]->GetEntry1()->GetValueAsDouble(), this->units, svkSpecPoint::PPM);
+            float maxPPM   = point->ConvertPosUnits( this->metRangeVector[i]->GetEntry2()->GetValueAsDouble(), this->units, svkSpecPoint::PPM);
             float peakPPM  = static_cast< float > ( (maxPPM + minPPM)/2 );
             float widthPPM = static_cast< float > ( fabs( ( maxPPM - minPPM) ) ); 
             this->mrsQuant->ModifyRegion( i, peakPPM, widthPPM ); 
         }
+        point->Delete();
 
         this->mrsQuant->Update();
 

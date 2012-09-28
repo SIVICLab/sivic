@@ -225,6 +225,7 @@ class vtkSivicController : public vtkObject
         void                       TurnOnPlotView();
         void                       SetActive4DImageData( int index );
         svk4DImageData*            GetActive4DImageData();
+        void                       SyncDisplayVolumes(svkImageData* data, int volume, int volumeIndex = -1 );
 
         //svkInspectingWidget*       GetView();
         svkDataModel*              GetModel();
@@ -289,6 +290,7 @@ class vtkSivicController : public vtkObject
         svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
         vtkKWWindowBase*               windowLevelWindow;
         vtkKWWindowBase*               preferencesWindow;
+        bool						   synchronizeVolumes;
 
 
 };

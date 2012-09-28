@@ -68,6 +68,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
         void                                EnableWidgets(); 
+        void								SetSpecUnits( svkSpecPoint::UnitType units );
         vtkstd::vector < vtkstd::string >   modelMetNames;
 
 
@@ -110,6 +111,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         vtkstd::vector < vtkstd::string >   metNames;
         int                                 numMets; 
         bool                                isEnabled; 
+        svkSpecPoint::UnitType              units;
 
         sivicQuantificationWidget(const sivicQuantificationWidget&);   // Not implemented.
         void operator=(const sivicQuantificationWidget&);  // Not implemented.

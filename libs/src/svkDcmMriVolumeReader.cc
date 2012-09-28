@@ -209,8 +209,6 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
 
     int numBytesPerVol     = numPixelsInSlice * numSlices * dataWordSize;
     string voiLUTFunction  = this->GetOutput()->GetDcmHeader()->GetStringValue("VOILUTFunction" );
-    double voiWindowCenter = this->GetOutput()->GetDcmHeader()->GetDoubleValue("WindowCenter" );
-    double voiWindowWidth  = this->GetOutput()->GetDcmHeader()->GetDoubleValue("WindowWidth" );
 
     bool isVOILUTDefined = false;
     if( voiLUTFunction.compare("LINEAR") == 0 ) {
@@ -247,13 +245,20 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
         if( isVOILUTDefined ) {
         	int floatWordSize = 4;
 			void* imageFloatData = (void* ) malloc( numPixelsInSlice * numSlices * floatWordSize );
-			this->GetVOILUTScaledPixels((float*)imageFloatData, (unsigned short*)imageData, voiWindowCenter, voiWindowWidth, numSlices*numPixelsInSlice);
+            svkImageData* tmpImage = svkMriImageData::New(); 
+            tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( vol ) );
+			double voiWindowCenter = tmpImage->GetDcmHeader()->GetDoubleValue("WindowCenter" );
+			double voiWindowWidth  = tmpImage->GetDcmHeader()->GetDoubleValue("WindowWidth" );
+			this->GetVOILUTScaledPixels((float*)imageFloatData,
+					                    (unsigned short*)imageData ,
+					                    voiWindowCenter, voiWindowWidth, numSlices * numPixelsInSlice);
 			delete (unsigned short*)imageData;
 			imageData = imageFloatData;
 			// The image has now been scaled so we can remove the scaling tags
 			this->GetOutput()->GetDcmHeader()->RemoveElement("VOILUTFunction" );
 			this->GetOutput()->GetDcmHeader()->RemoveElement("WindowCenter" );
 			this->GetOutput()->GetDcmHeader()->RemoveElement("WindowWidth" );
+            tmpImage->Delete();
         }
 
         array->SetVoidArray( (void*)(imageData), numPixelsInSlice * numSlices, 0);
