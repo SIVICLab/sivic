@@ -24,6 +24,10 @@
               </df>
               <df name="svk_file_convert.dir">
               </df>
+              <df name="svk_gepfile_anon.dir">
+              </df>
+              <df name="svk_gepfile_modify.dir">
+              </df>
               <df name="svk_gepfile_reader.dir">
               </df>
               <df name="svk_get_filetype.dir">
@@ -54,6 +58,7 @@
             <in>svk_dcmdump.cc</in>
             <in>svk_fft.cc</in>
             <in>svk_file_convert.cc</in>
+            <in>svk_gepfile_anon.cc</in>
             <in>svk_gepfile_reader.cc</in>
             <in>svk_get_filetype.cc</in>
             <in>svk_integrate_dynamic.cc</in>
@@ -1437,6 +1442,8 @@
           </df>
           <df name="20x">
             <df name="input">
+              <df name="test">
+              </df>
             </df>
             <df name="Linux_x86_64">
             </df>
@@ -1752,6 +1759,8 @@
           <df name="TEST_MCHK_GEPFILE_2_DDF_2">
           </df>
           <df name="TEST_MCHK_GEPFILE_2_DDF_LAC">
+          </df>
+          <df name="TEST_MCHK_GEPFILE_ANON">
           </df>
           <df name="TEST_MCHK_IDF_2_IDF_INT2">
           </df>
@@ -3354,226 +3363,6 @@
             tool="3"
             flavor="0">
       </item>
-      <item path="applications/cmd_line/src/svk_app_template.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_create_dcmraw.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_dcmdump.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_fft.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_file_convert.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_gepfile_reader.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.0"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_get_filetype.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_integrate_dynamic.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_met_kinetics.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_multi_view.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_point_selector.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_quantify.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_quick_view.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_reslice.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_spec_diff.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_surface_area.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="applications/cmd_line/src/svk_svrecon.cc"
-            ex="false"
-            tool="1"
-            flavor="0">
-        <ccTool>
-          <incDir>
-            <pElem>/netopt/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
       <item path="applications/osirix_plugin/OsiriX Headers/DCMPix.h"
             ex="true"
             tool="3"
@@ -3672,7 +3461,7 @@
       <item path="applications/sivic_app/src/sivic.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <incDir>
-            <pElem>libs/src</pElem>
+            <pElem>applications/../libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3682,7 +3471,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3692,7 +3481,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3702,7 +3491,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3712,7 +3501,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3722,7 +3511,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3732,7 +3521,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3742,7 +3531,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3752,7 +3541,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3762,7 +3551,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3772,7 +3561,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3782,7 +3571,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3792,7 +3581,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3802,7 +3591,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3812,7 +3601,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3822,7 +3611,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3832,7 +3621,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3842,7 +3631,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3852,7 +3641,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3862,7 +3651,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3872,7 +3661,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3882,7 +3671,7 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>applications/../libs/src</pElem>
+            <pElem>libs/src</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -3961,10 +3750,12 @@
             <pElem>/netopt/tcltk/include</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>DEBUG_BUILD</Elem>
             <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.3"</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -3972,7 +3763,8 @@
         <ccTool>
           <incDir>
             <pElem>applications/cmd_line/src</pElem>
-            <pElem>libs/src</pElem>
+            <pElem>/netopt/include</pElem>
+            <pElem>applications/../libs/src</pElem>
           </incDir>
         </ccTool>
       </folder>
@@ -3982,7 +3774,7 @@
             <pElem>applications/sivic_app/src</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>DEBUG_BUILD</Elem>
+            <Elem>SVK_USE_GL2PS</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -4859,9 +4651,12 @@
       </item>
       <item path="libs/src/svkDcmtkAdapter.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4920,7 +4715,20 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="libs/src/svkDynamicMRIAlgoTemplate.h" ex="true" tool="3" flavor="0">
+      <item path="libs/src/svkDynamicMRIAlgoTemplate.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="libs/src/svkEPSIPhaseCorrect.cc" ex="false" tool="1" flavor="0">
         <ccTool>
@@ -5140,9 +4948,12 @@
       </item>
       <item path="libs/src/svkImageDataFactory.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -5680,9 +5491,12 @@
       </item>
       <item path="libs/src/svkSpecPoint.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
