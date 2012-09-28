@@ -73,7 +73,7 @@ IF(WIN32)
 ELSE(WIN32)
     SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --exclude=.svn)
 ENDIF(WIN32)
-SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
+SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0000" --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
 
 ########################
 #   
