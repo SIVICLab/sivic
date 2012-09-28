@@ -50,6 +50,9 @@
 
 #include <sys/stat.h>
 
+#define  UNASSIGNED_ID ""
+#define  UNASSIGNED_UID ""
+
 
 using namespace svk;
 
@@ -79,7 +82,14 @@ svkGEPFileReader::svkGEPFileReader()
     this->progressCallback->SetClientData( (void*)this );
 
     this->onlyParseHeader = false; 
-    this->checkSeriesUID = true; 
+    this->checkSeriesUID  = true; 
+
+    this->deidStudyId     = UNASSIGNED_ID; 
+    this->phiType         = svkDcmHeader::PHI_IDENTIFIED; 
+    this->deidStudyUID    = UNASSIGNED_UID; 
+    this->deidSeriesUID   = UNASSIGNED_UID; 
+    this->deidImageUID    = UNASSIGNED_UID; 
+    this->deidLandmarkUID = UNASSIGNED_UID; 
 }
 
 
@@ -455,18 +465,20 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
 
 
 /*!
- *  Sets mapper's data deidentification behavior.  
+ *  Sets mapper's data deidentification behavior.  All PHI fields will be replaced with 
+ *  this value in the loaded DCM header. 
  */
 void svkGEPFileReader::SetDeidentify(svkDcmHeader::PHIType phiType) 
 {
     svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
+    this->phiType = phiType; 
 }
 
 
 /*!
- *  Sets string to use for identification.  All PHI fields will be replace with this 
- *  value. See !svkDcmHeader::Deidentify().  
+ *  Sets string to use for identification.  All PHI fields will be replaced with this 
+ *  value in the loaded DCM header. See !svkDcmHeader::Deidentify().  
  */
 void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ) 
 {
@@ -474,12 +486,14 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::str
     vtkstd::string* idTmp = new vtkstd::string(deidentificationId);
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( idTmp );
+    this->phiType = phiType; 
+    this->deidStudyId = deidentificationId; 
 }
 
 
 /*!
- *  Sets string to use for identification.  All PHI fields will be replace with this 
- *  value. See !svkDcmHeader::Deidentify().  
+ *  Sets string to use for identification.  All PHI fields will be replaced with this 
+ *  value in the loaded DCM header. See !svkDcmHeader::Deidentify().  
  */
 void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ) 
 {
@@ -489,6 +503,8 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::str
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "patientDeidentificationId" ] = static_cast<void*>( patIdTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( studyIdTmp);
+    this->phiType = phiType; 
+    this->deidStudyId = studyId; 
 }
 
 
@@ -699,6 +715,7 @@ vtkstd::string svkGEPFileReader::GetSeriesUID(const char* fname)
             tmpReader->checkSeriesUID = false; 
             tmpReader->OnlyReadOneInputFile(); 
             tmpReader->Update();
+            //  this will be the compressed value, but serves the purpose.     
             seriesInstanceUID = ( tmpReader->GetPFMap() )["rhs.series_uid"][3]; 
             tmpReader->Delete();    
 
@@ -990,8 +1007,9 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
         ossValue << charVal;
         delete [] charVal; 
     } else if ( type.compare("UID") == 0) {
-        char* charVal = new char[numElements];  
+        char* charVal = new char[numElements+1];  
         this->gepf->read( charVal, 1 * numElements );
+        charVal[numElements] = '\0'; 
         ossValue << charVal;
         delete [] charVal; 
         //  Uncompress UIDfields:
@@ -1010,6 +1028,82 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
     }
 
     return ossValue.str();
+}
+
+
+/*!
+ *  The following code for compresses the UIDs as required by GE
+ *  input long_uid, and get short_uid out
+ */
+int svkGEPFileReader::GECompressUID(unsigned char *short_uid, char *long_uid)
+{
+    const int UID_FAIL = 0;  
+    const int UID_OK = 1;
+    const int UID_LEN = 64;
+    const int RT_FOUR_BITS = 0x0f;
+    const int LT_FOUR_BITS = 0xf0;
+    const int DB_UID_LEN = 32;
+
+    int i, len;
+
+    //memset(long_uid, '\0', UID_LEN + 1);
+
+    if((len = strlen((char *)long_uid)) > UID_LEN) {
+        return(UID_FAIL);
+    }
+
+    //  compress the uid so that the first char of the long uid goes into the
+    //  left 4 bits of the first short_uid element. 
+    //  The 2nd char of the long goes into the right 4 bits of the first short_uid element. 
+    //  etc. 
+    char leftBits;  
+    char rightBits;  
+    int  lastIndex = 0;
+    for(i = 0; i < len; i++) {
+      
+        // Shift the hex range for the numeric ASCII chars to hex 0x0: 
+        if( 0x30 <= long_uid[i] && long_uid[i] <= 0x39) {
+            long_uid[i] -= ('0' - 1);
+        } else if (long_uid[i] == '.') {
+            long_uid[i] = 0xb; 
+        } else if (long_uid[i] == '\0') {
+            long_uid[i] = 0x0; 
+        } else {
+            return(UID_FAIL);
+        }
+
+        //  Now encode the even chars in the left 4 bits of the 
+        //  short_uid elements, and the odd chars in the right 
+        //  4 bits of the same elements of the short_uid.  
+
+        //  get the left 4 bytes of the short_uid element:  
+        if(i % 2 == 0) { 
+            //  mask out the left 4 bits to 0
+            leftBits = long_uid[i] & RT_FOUR_BITS; 
+            //  shift the right 4 bits over to the left. 
+            leftBits <<= 4; 
+            //  mask out the right 4 bits to 0 just to be sure. 
+            leftBits &= LT_FOUR_BITS; 
+        } else {
+            //  mask out the left 4 bits to 0
+            rightBits = long_uid[i] & RT_FOUR_BITS;  
+            short_uid[i/2] = leftBits | rightBits; 
+            lastIndex = i/2;
+        }
+
+    }
+
+    //  if there are an odd number of chars in the array, make sure to add the remaining leftBits: 
+    if ( i == len && len % 2 != 0 ) {
+        short_uid[i/2] = leftBits; 
+        lastIndex = i/2;
+    }
+
+    for(i = lastIndex + 1 ; i < 32; i++) {
+        short_uid[i] = 0x0;
+    }
+
+    return(UID_OK);
 }
 
 
@@ -1070,6 +1164,20 @@ vtkstd::string svkGEPFileReader::UncompressUID(const char* compressedUID)
     char uncompressedUID[BUFSIZ];
     this->GEUncompressUID((unsigned char*)compressedUID, uncompressedUID);
     return vtkstd::string(uncompressedUID);
+}
+
+
+/*
+ *  Compresses the UID for raw header. 
+ */
+vtkstd::string svkGEPFileReader::CompressUID(char* uncompressedUID)
+{
+    char compressedUID[BUFSIZ];
+    if ( ! this->GECompressUID((unsigned char*)compressedUID, uncompressedUID) ) {
+        cout << "ERROR! Value does not represent a valid UID: " << uncompressedUID << endl;
+        exit(1);
+    }
+    return vtkstd::string(compressedUID);
 }
 
 
@@ -2793,11 +2901,7 @@ svkGEPFileReader::GetPFMap()
  */
 int svkGEPFileReader::GetNumElementsInField( vtkstd::string key )
 {
-    int numElements;
-    istringstream* iss = new istringstream();
-    iss->str( this->pfMap[key][1] );
-    *iss >> numElements;
-    delete iss;
+    int numElements =svkUtils::StringToInt( this->pfMap[key][1] ); 
     return numElements; 
 }
 
@@ -2840,7 +2944,7 @@ int svkGEPFileReader::GetNumBytesInField( vtkstd::string key )
 
 
 /*
- *  Get the number of bytes in the header field for the specified key:
+ *  Return true if the raw field is of type char. 
  */
 bool svkGEPFileReader::IsFieldChar( vtkstd::string key )
 {
@@ -2851,7 +2955,21 @@ bool svkGEPFileReader::IsFieldChar( vtkstd::string key )
     } else {
         return false; 
     }
+}
 
+
+/*
+ *  Return true if the raw field is of type char. 
+ */
+bool svkGEPFileReader::IsFieldUID( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("UID") == 0) {
+        return true; 
+    } else {
+        return false; 
+    }
 }
 
 
@@ -2873,19 +2991,39 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
     numBytes    = this->GetNumBytesInField( key ); 
     offset      = svkUtils::StringToInt( this->pfMap[key][2] ); 
 
+    //  Replace numBytes at offset position with the deidString
+    //  set the put pointer to the correct offset
     if ( fs->is_open() ) {
 
         if ( this->IsFieldChar( key ) ) {
-            cout << "replace char bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
 
-            //  Replace numBytes at offset position with the deidString
-            //  set the put pointer to the correct offset
+            //  =======================================    
+            //  CHAR
+            //  =======================================    
+            cout << "replace char bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( deidString.c_str(), numBytes);
-            //cout << "rdbm rev" << rdbmRev << " " << rdbmRevSwapped <<  endl;
+
+        } else if ( this->IsFieldUID( key ) ) {
+            
+            //  =======================================    
+            //  UID 
+            //  UID fields are DICOM VR=UI and type 1, 
+            //  so they must have values and the values must be valid.  
+            //  therefore, if the deidString isn't a valid UID, we should
+            //  generate one here. 
+            //  =======================================    
+            cout << "replace UID with " << key << " -> " << deidString <<  " nb: " << numBytes << endl; 
+            vtkstd::string compressedUID = this->CompressUID( (char*)deidString.c_str() );  
+            //cout << "CHECK UID: " <<  this->UncompressUID( compressedUID.c_str() ) << endl;;  
+            fs->seekp( offset, ios_base::beg );
+            fs->write( compressedUID.c_str(), numBytes);
 
         } else {
-            cout << "replace bytes with " << key << " -> " << 0 << endl; 
+
+            // other data types need to be replace with the appropriate data type:  
+            cout << "WARNING: Unsupported field change: " << key  << endl; 
+
         }
     }
 
@@ -2914,7 +3052,6 @@ void svkGEPFileReader::ModifyRawField( string rawField, string value)
         fs->open( this->GetFileNames()->GetValue(fileNumber), ios::binary | ios::in | ios::out );
 
         if ( fs->is_open() ) {
-            //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
             this->DeidentifyField( fs, rawField, value);
             fs->close();
         } else {
@@ -2928,14 +3065,71 @@ void svkGEPFileReader::ModifyRawField( string rawField, string value)
 }    
 
 
+/*!
+ *  Set the StudyInstanceUID to be used for deidentification:  
+ */
+void svkGEPFileReader::SetDeidentificationStudyUID(vtkstd::string deidStudyUID) 
+{
+    this->deidStudyUID.assign(deidStudyUID); 
+}
+
+/*!
+ *  Set the SeriesInstanceUID to be used for deidentification:  
+ */
+void svkGEPFileReader::SetDeidentificationSeriesUID(vtkstd::string deidSeriesUID) 
+{
+    this->deidSeriesUID.assign(deidSeriesUID); 
+}
+
+/*!
+ *  Set the Image InstanceUID to be used for deidentification:  
+ */
+void svkGEPFileReader::SetDeidentificationInstanceUID(vtkstd::string deidImageUID) 
+{
+    this->deidImageUID.assign(deidSeriesUID); 
+}
+
+/*!
+ *  Set the Landmark UID to be used for deidentification:  
+ */
+void svkGEPFileReader::SetDeidentificationLandmarkUID(vtkstd::string deidLandmarkUID) 
+{
+    this->deidLandmarkUID.assign(deidLandmarkUID); 
+}
+
+
 /* 
  *  In place deidentification of raw file with study ID:
- */
-void svkGEPFileReader::Deidentify( string studyID )
+ *  By default this will generate new unique UIDs for the object, unless
+ *  values have been specified in SetDeidentification*UID methods.
+ */ 
+void svkGEPFileReader::Deidentify()
 {
 
     this->OnlyParseHeader(); 
     this->ReadGEPFile(); 
+
+    //  If ID isn't specified, then use default here: 
+    if ( this->deidStudyId.compare(UNASSIGNED_ID) == 0 ) {
+        this->deidStudyId = "DEIDENTIFIED"; 
+    } 
+
+    //  If UIDs aren't specified, then generate them here: 
+    if ( this->deidStudyUID.compare(UNASSIGNED_UID) == 0 ) {
+        this->deidStudyUID = this->GetOutput()->GetDcmHeader()->GenerateUniqueUID();
+    } 
+
+    if ( this->deidSeriesUID.compare(UNASSIGNED_UID) == 0 ) {
+        this->deidSeriesUID = this->GetOutput()->GetDcmHeader()->GenerateUniqueUID();
+    } 
+
+    if ( this->deidImageUID.compare(UNASSIGNED_UID) == 0 ) {
+        this->deidImageUID = this->GetOutput()->GetDcmHeader()->GenerateUniqueUID();
+    } 
+
+    if ( this->deidLandmarkUID.compare(UNASSIGNED_UID) == 0 ) {
+        this->deidLandmarkUID = this->GetOutput()->GetDcmHeader()->GenerateUniqueUID();
+    } 
 
     //  Now the pfMap has been initialized as follows.  Use the 
     //  Offsets and field sizes to replace the appropriate bytes with 
@@ -2951,24 +3145,26 @@ void svkGEPFileReader::Deidentify( string studyID )
 
         if ( fs->is_open() ) {
             //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets:
-            this->DeidentifyField( fs, "rhe.refphy",        studyID);
-            this->DeidentifyField( fs, "rhe.ex_no",         studyID);
-            this->DeidentifyField( fs, "rhe.reqnum",        studyID);
-            this->DeidentifyField( fs, "rhe.reqnumff",      studyID);
-            this->DeidentifyField( fs, "rhe.study_uid",     studyID);
-            this->DeidentifyField( fs, "rhe.patid",         studyID);
-            this->DeidentifyField( fs, "rhe.patidff",       studyID);
-            this->DeidentifyField( fs, "rhe.patname",       studyID);
-            this->DeidentifyField( fs, "rhe.patnameff",     studyID);
-            this->DeidentifyField( fs, "rhe.hospname",      studyID);
-            this->DeidentifyField( fs, "rhs.landmark_uid",  studyID);
-            this->DeidentifyField( fs, "rhs.series_uid",    studyID);
-            this->DeidentifyField( fs, "rhi.image_uid",     studyID);
+            this->DeidentifyField( fs, "rhe.refphy",        this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.ex_no",         this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.reqnum",        this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.reqnumff",      this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.study_uid",     this->deidStudyUID);
+            this->DeidentifyField( fs, "rhe.patid",         this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.patidff",       this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.patname",       this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.patnameff",     this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.hospname",      this->deidStudyId);
+            this->DeidentifyField( fs, "rhs.landmark_uid",  this->deidLandmarkUID);
+            this->DeidentifyField( fs, "rhs.series_uid",    this->deidSeriesUID);
+            this->DeidentifyField( fs, "rhi.image_uid",     this->deidImageUID);
 
             //  These fields are not removed from PHI_LIMITED data sets
-            this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
-            this->DeidentifyField( fs, "rhe.dateofbirth",   "");
-            this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+            if (this->phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
+                this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
+                this->DeidentifyField( fs, "rhe.dateofbirth",   "");
+                this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+            }
 
             fs->close();
         } else {
@@ -2981,7 +3177,7 @@ void svkGEPFileReader::Deidentify( string studyID )
 
 }
 
-
+ 
 /*!
  *
  */

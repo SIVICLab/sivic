@@ -133,10 +133,10 @@ class svkDcmHeader: public vtkObject
          *  Factory method with specific imlementation in adapter sub-class. 
          *  create the implementation specific adaptee type (e.g. DcmFileFormat for DCMTK).  
          */
-        virtual void        CreateIOD(DcmIodType iodType) = 0;
-        virtual void        SetSOPClassUID(DcmIodType iodType) = 0;
-        virtual void        PrintDcmHeader() = 0;
-        virtual void        PrintDcmHeader(ostream& os) = 0;
+        virtual void    CreateIOD(DcmIodType iodType) = 0;
+        virtual void    SetSOPClassUID(DcmIodType iodType) = 0;
+        virtual void    PrintDcmHeader() = 0;
+        virtual void    PrintDcmHeader(ostream& os) = 0;
 
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 
@@ -150,6 +150,11 @@ class svkDcmHeader: public vtkObject
          *  the string representation of the field in the DICOM dictionary being used. 
          */
         virtual void    InsertUniqueUID(const char* name) = 0;
+
+        /*! 
+         *  Utility method to generate a new unique DICOM UID. 
+         */
+        virtual vtkstd::string GenerateUniqueUID() = 0;
 
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 
@@ -498,7 +503,7 @@ class svkDcmHeader: public vtkObject
          *
          *  \param fileName  name of the output file root (no extension). 
          */
-        virtual void  WriteDcmFile(string fileName) = 0;
+        virtual void    WriteDcmFile(string fileName) = 0;
 
 
         /*!
@@ -508,7 +513,7 @@ class svkDcmHeader: public vtkObject
          * 
          *  Returns 0 for success, 1 for failure.  
          */
-        virtual int   ReadDcmFile(string fileName, int max_length = 0) = 0;
+        virtual int     ReadDcmFile(string fileName, int max_length = 0) = 0;
 
 
         /*! 
@@ -518,7 +523,7 @@ class svkDcmHeader: public vtkObject
          *
          *   \param headerCopy header object to copy current object into. 
          */
-        virtual void        CopyDcmHeader(svkDcmHeader* headerCopy) = 0;
+        virtual void    CopyDcmHeader(svkDcmHeader* headerCopy) = 0;
 
 
         /*! 
@@ -529,47 +534,47 @@ class svkDcmHeader: public vtkObject
          *
          *   \param headerCopy header object to copy current object into. 
          */
-        void    MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesDescription);
+        void            MakeDerivedDcmHeader(svkDcmHeader* headerCopy, string seriesDescription);
 
         /*!
          *  Inplace version. 
          */
-        void    MakeDerivedDcmHeader(string seriesDescription = ""); 
+        void            MakeDerivedDcmHeader(string seriesDescription = ""); 
 
 
         /*!
          *  Check whether an element exists in the DICOM header object. 
          */
-        virtual bool        ElementExists(const char* elementName, const char* parentSeqName = NULL) = 0;
+        virtual bool    ElementExists(const char* elementName, const char* parentSeqName = NULL) = 0;
 
 
         /*!
          *  determines whether insert new element statements replace existing values or not. 
          */
-        virtual void        ReplaceOldElements( bool replaceElements ) = 0;
+        virtual void    ReplaceOldElements( bool replaceElements ) = 0;
 
 
-        vtkstd::string      GetDcmPatientName( vtkstd::string PatientName ); 
-        void                SetDcmPatientName( vtkstd::string PatientName );
-        void                SetPixelDataType( DcmPixelDataFormat dataType );
-        int                 GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
+        vtkstd::string  GetDcmPatientName( vtkstd::string PatientName ); 
+        void            SetDcmPatientName( vtkstd::string PatientName );
+        void            SetPixelDataType( DcmPixelDataFormat dataType );
+        int             GetPixelDataType( int vtkDataType = svkDcmHeader::UNDEFINED );
 
-        int                 GetOrigin( double origin[3], int frameNumber = 0 );
-        void                GetPixelSpacing(double spacing[3]);
-        void                GetPixelSize(double size[3]);
-        void                GetOrientation(double orientation[2][3]);
-        Orientation         GetOrientationType();
-        int                 GetOrientationIndex( svkDcmHeader::Orientation orientation );
-        void                GetNormalVector(double normal[3]);
-        void                GetDataDcos(
+        int             GetOrigin( double origin[3], int frameNumber = 0 );
+        void            GetPixelSpacing(double spacing[3]);
+        void            GetPixelSize(double size[3]);
+        void            GetOrientation(double orientation[2][3]);
+        Orientation     GetOrientationType();
+        int             GetOrientationIndex( svkDcmHeader::Orientation orientation );
+        void            GetNormalVector(double normal[3]);
+        void            GetDataDcos(
                                 double dcos[3][3], 
                                 DcmDataOrderingDirection dataSliceOrder = SLICE_ORDER_UNDEFINED 
-                            );
-        void                SetSliceOrder( DcmDataOrderingDirection sliceOrderVal );
-        int                 GetNumberOfCoils(); 
-        int                 GetNumberOfSlices(); 
-        static int          GetNumberOfDimensionIndices(int numTimePts, int numCoils); 
-        static void         SetDimensionIndices(
+                        );
+        void            SetSliceOrder( DcmDataOrderingDirection sliceOrderVal );
+        int             GetNumberOfCoils(); 
+        int             GetNumberOfSlices(); 
+        static int      GetNumberOfDimensionIndices(int numTimePts, int numCoils); 
+        static void     SetDimensionIndices(
                                 unsigned int* indexValues, 
                                 int numFrameIndices, 
                                 int sliceNum, 
@@ -578,92 +583,92 @@ class svkDcmHeader: public vtkObject
                                 int numTimePts, 
                                 int numCoils
                             ); 
-        int                 GetNumberOfTimePoints(); 
-        void                UpdateNumTimePoints(); 
-        void                UpdateNumCoils();
+        int             GetNumberOfTimePoints(); 
+        void            UpdateNumTimePoints(); 
+        void            UpdateNumCoils();
 
-        int                 GetDimensionIndexPosition(string indexLabel); 
-        int                 GetNumberOfFramesInDimension( int dimensionIndex ); 
+        int             GetDimensionIndexPosition(string indexLabel); 
+        int             GetNumberOfFramesInDimension( int dimensionIndex ); 
 
         //==================================================
         //  DICOM IE and macro initialization methods:
         //==================================================
-        void                InitPatientModule(
+        void            InitPatientModule(
                                 vtkstd::string PatientName,
                                 vtkstd::string patientID,
                                 vtkstd::string PatientBirthDate,
                                 vtkstd::string PatientSex
-                            );
+                        );
 
-        void                InitGeneralStudyModule(
+        void            InitGeneralStudyModule(
                                 vtkstd::string studyDate,
                                 vtkstd::string studyTime,
                                 vtkstd::string referringPhysiciansName,
                                 vtkstd::string studyID,
                                 vtkstd::string accessionNumber, 
                                 vtkstd::string studyInstanceUID
-                            );
-        void                InitGeneralSeriesModule(
+                        );
+        void            InitGeneralSeriesModule(
                                 vtkstd::string seriesNumber,
                                 vtkstd::string seriesDescription,
                                 vtkstd::string patientPosition
-                            );
-        void                InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType);
-        void                InitImagePlaneModule( 
+                        );
+        void            InitImagePixelModule( int rows, int columns, svkDcmHeader::DcmPixelDataFormat dataType);
+        void            InitImagePlaneModule( 
                                 vtkstd::string imagePositionPatient, 
                                 vtkstd::string pixelSpacing = "", 
                                 vtkstd::string imageOrientationPatient = "", 
                                 vtkstd::string sliceThickness = ""
-                            );
-        void                InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime); 
-        void                InitPlaneOrientationMacro( double dcos[3][3] ); 
-        void                InitPlaneOrientationMacro( vtkstd::string orientationString );
-        void                InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
-        void                InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
-        void                InitPerFrameFunctionalGroupSequence(
+                        );
+        void            InitMRImageModule( vtkstd::string repetitionTime, vtkstd::string echoTime); 
+        void            InitPlaneOrientationMacro( double dcos[3][3] ); 
+        void            InitPlaneOrientationMacro( vtkstd::string orientationString );
+        void            InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
+        void            InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
+        void            InitPerFrameFunctionalGroupSequence(
                                 double toplc[3], 
                                 double voxelSpacing[3],
                                 double dcos[3][3], 
                                 int numSlices, 
                                 int numTimePts, 
                                 int numCoils
-                            ); 
-        void                InitVOILUTModule(float center, float width); 
-        void                InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
-        void                InitMRImagingModifierMacro(
+                        ); 
+        void            InitVOILUTModule(float center, float width); 
+        void            InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
+        void            InitMRImagingModifierMacro(
                                 float transmitFreq,
                                 float pixelBandwidth,
                                 vtkstd::string magTransfer = "NONE",
                                 vtkstd::string bloodNulling = "NO"
-                            );
-        void                InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]);
-        void                InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1);
-        void                InitMREchoMacro(float TE = UNKNOWN_TIME );
-        void                InitMRModifierMacro(float inversionTime = UNKNOWN_TIME);
-        void                InitMRTransmitCoilMacro(
+                        );
+        void            InitVolumeLocalizationSeq(float size[3], float center[3], float dcos[3][3]);
+        void            InitMRTimingAndRelatedParametersMacro(float tr = UNKNOWN_TIME, float flipAngle= -999, int numEchoes = 1);
+        void            InitMREchoMacro(float TE = UNKNOWN_TIME );
+        void            InitMRModifierMacro(float inversionTime = UNKNOWN_TIME);
+        void            InitMRTransmitCoilMacro(
                                 string coilMfg = "UNKNOWN", 
                                 string coilName = "UNKNOWN", 
                                 string coilType = "UNKNOWN"
-                            );
-        void                InitMRAveragesMacro(int numAverages = 1);
-        void                InitRawDataModule(
+                        );
+        void            InitMRAveragesMacro(int numAverages = 1);
+        void            InitRawDataModule(
                                 vtkstd::string contentDate,
                                 vtkstd::string contentTime,
                                 void* rawFile
                             );
 
-        int                 ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
-        int                 ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
+        int             ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
+        int             ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
 
 
         //==================================================
         //  Deidentification methods
         //==================================================
-        void                Deidentify( PHIType phiType ); 
-        void                Deidentify( PHIType phiType, string id );   
-        void                Deidentify( PHIType phyType, string patientId, string studyId );   
+        void            Deidentify( PHIType phiType ); 
+        void            Deidentify( PHIType phiType, string id );   
+        void            Deidentify( PHIType phyType, string patientId, string studyId );   
 
-        static bool         IsFileDICOM( vtkstd::string fname); 
+        static bool     IsFileDICOM( vtkstd::string fname); 
         static svkDcmHeader::DcmPixelDataFormat  GetVtkDataTypeFromSvkDataType( vtkIdType vtkType); 
 
         

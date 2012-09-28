@@ -94,17 +94,24 @@ class svkGEPFileReader : public svkImageReader2
         void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type);
         void                SetDeidentify( svkDcmHeader::PHIType phiType ); 
         void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ); 
-        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ); 
+        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, 
+                                           vtkstd::string studyId ); 
+        void                SetDeidentificationStudyUID(   vtkstd::string deidStudyUID); 
+        void                SetDeidentificationSeriesUID(  vtkstd::string deidSeriesUID); 
+        void                SetDeidentificationInstanceUID(vtkstd::string deidImageUID); 
+        void                SetDeidentificationLandmarkUID(vtkstd::string deidLandmarkUID); 
+
         void                SetTemperature( float temp ); 
         void                SetChop( bool chop ); 
         void                PrintHeader();
         void                OnlyParseHeader();
-        void                Deidentify( string studyID ); 
+        void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
                                                  GetPFMap(); 
         static float        LookupRawVersion(float rdbmRev, float rdbmRevSwapped); 
+
 
 
         // Description: 
@@ -145,6 +152,8 @@ class svkGEPFileReader : public svkImageReader2
         vtkstd::string      GetFieldAsString(vtkstd::string key); 
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 
         vtkstd::string      UncompressUID(const char* compressedUID); 
+        int                 GECompressUID(unsigned char* short_uid, char* long_uid); 
+        vtkstd::string      CompressUID(char* compressedUID); 
         float               GetPFileVersion(); 
         svkGEPFileMapper*   GetPFileMapper(); 
         static void         UpdateProgressCallback(
@@ -160,19 +169,27 @@ class svkGEPFileReader : public svkImageReader2
         int                 GetNumBytesInField( vtkstd::string key ); 
         void                DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString); 
         bool                IsFieldChar( vtkstd::string key ); 
+        bool                IsFieldUID( vtkstd::string key ); 
         vtkstd::string      GetSeriesUID(const char* fname); 
 
         //  Members:
-        ifstream*                        gepf;
-        float                            pfileVersion;
-        svkGEPFileMapper*                mapper;
+        ifstream*                       gepf;
+        float                           pfileVersion;
+        svkGEPFileMapper*               mapper;
        
         vtkstd::map < vtkstd::string, void* >            
-                                         inputArgs; 
+                                        inputArgs; 
 
-        vtkCallbackCommand*              progressCallback;
-        bool                             onlyParseHeader;  
-        vtkStringArray*                  tmpFileNames;
+        vtkCallbackCommand*             progressCallback;
+        bool                            onlyParseHeader;  
+        vtkStringArray*                 tmpFileNames;
+
+        svkDcmHeader::PHIType           phiType; 
+        vtkstd::string                  deidStudyId; 
+        vtkstd::string                  deidStudyUID; 
+        vtkstd::string                  deidSeriesUID; 
+        vtkstd::string                  deidImageUID; 
+        vtkstd::string                  deidLandmarkUID; 
 };
 
 

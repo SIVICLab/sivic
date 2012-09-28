@@ -521,6 +521,17 @@ void svkDcmtkAdapter::InsertUniqueUID(const char* name)
     this->Modified();
 }
 
+/*! 
+ *  Static utility method to generate a new unique DICOM UID. 
+ */
+vtkstd::string svkDcmtkAdapter::GenerateUniqueUID()
+{
+    char uid[100];
+    string newUID( dcmGenerateUniqueIdentifier(uid, SITE_INSTANCE_UID_ROOT) ); 
+    return newUID; 
+}
+
+
 
 /*!
  * Sets the value of a given tag.

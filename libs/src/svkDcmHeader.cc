@@ -2249,9 +2249,9 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->SetValue( "SOPInstanceUID",                studyId); 
             this->SetValue( "AccessionNumber",               studyId); 
             this->SetValue( "InstitutionName",               studyId); 
-            this->SetValue( "ReferringPhysicianName",       studyId); 
+            this->SetValue( "ReferringPhysicianName",        studyId); 
             this->SetValue( "ReferencedSOPInstanceUID",      studyId); 
-            this->SetValue( "PatientName",                  patientId); 
+            this->SetValue( "PatientName",                   patientId); 
             this->SetValue( "PatientID",                     patientId); 
             this->SetValue( "StudyInstanceUID",              studyId); 
             this->SetValue( "SeriesInstanceUID",             studyId); 
@@ -2270,7 +2270,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->SetValue( "SeriesDate",                    studyId); 
             this->SetValue( "AcquisitionDate",               studyId); 
             this->SetValue( "ContentDate",                   studyId); 
-            this->SetValue( "PatientBirthDate",             patientId); 
+            this->SetValue( "PatientBirthDate",              patientId); 
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
