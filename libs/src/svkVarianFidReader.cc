@@ -131,6 +131,21 @@ int svkVarianFidReader::CanReadFile(const char* fname)
                 vtkDebugMacro(
                     << this->GetClassName() << "::CanReadFile(): It's a Varian FID File: " << fileToCheck
                 );
+
+                //  Now check to see if it's a supported sequence: 
+                this->SetFileName( fname ); 
+                this->ParseFid(); 
+                if ( this->mapper != NULL )  {
+                    mapper->Delete(); 
+                    this->mapper = NULL; 
+                }
+                //  should be a mapper factory to get psd specific instance:
+                this->mapper = this->GetFidMapper();
+                if ( this->mapper == NULL ) {
+                    cout  << " Not a know FID sequnce.  Can not read file."   << endl;
+                    return 0;
+                }
+
                 return 1;
             }
         } else {
@@ -221,6 +236,10 @@ void svkVarianFidReader::InitDcmHeader()
     this->ParseFid(); 
 
     //  should be a mapper factory to get psd specific instance:
+    if ( this->mapper != NULL )  {
+        mapper->Delete(); 
+        this->mapper = NULL; 
+    }
     this->mapper = this->GetFidMapper();
     this->mapper->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
@@ -267,10 +286,14 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
         // UCSF 2DCSI :
         aMapper =  svkVarianUCSFEPSI2DMapper::New();
 
-    } else {
+    } else if ( seqfil.compare("episense_ce") == 0) {
+
         aMapper = svkVarianCSFidMapper::New();
 
+    } else { 
+        cout << "Not a supported Varian sequence" << endl;
     }
+
     return aMapper; 
 }
 

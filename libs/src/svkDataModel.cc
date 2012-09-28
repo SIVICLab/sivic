@@ -96,7 +96,7 @@ svkDataModel::~svkDataModel()
  */
 bool svkDataModel::AddDataObject( string objectName, svkImageData* dataObject )
 {
-    if( DataExists( objectName ) ) {
+    if( DataExists( objectName ) || dataObject == NULL ) {
         return 0;
     } else {
         allDataObjectsByKeyName[ objectName ] = dataObject; 
@@ -156,7 +156,7 @@ void svkDataModel::RemoveAllDataObjects( )
  */ 
 bool svkDataModel::ChangeDataObject( string objectName, svkImageData* dataObject )
 {
-    if( DataExists( objectName ) ) {
+    if( DataExists( objectName ) || dataObject == NULL ) {
         if( allDataObjectsByKeyName[ objectName ] != NULL ) {
             allDataObjectsByKeyName[ objectName ]->Delete();
             allDataObjectsByKeyName[ objectName ] = NULL;

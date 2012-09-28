@@ -847,6 +847,9 @@ void vtkSivicController::Open4DImage( const char* fileName, bool onlyReadOneInpu
     if (newData == NULL) {
 
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
+	    if( toggleDraw ) {
+		    this->DrawOn();
+	    }
         return;
     } else {
         this->Open4DImage( newData,  stringFilename, oldData );
