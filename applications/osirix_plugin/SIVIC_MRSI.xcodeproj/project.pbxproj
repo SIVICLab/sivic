@@ -54,9 +54,9 @@
 		921B50FC109BA6E500134C22 /* DicomImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicomImage.h; sourceTree = "<group>"; };
 		921B50FD109BA6E500134C22 /* browserController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = browserController.h; sourceTree = "<group>"; };
 		921B5142109BAF0700134C22 /* sivic */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = sivic; path = ../sivic_app/Darwin_i386/sivic; sourceTree = SOURCE_ROOT; };
-		92A2BAF810B3D48A00877E0F /* dicom.dic */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = dicom.dic; path = /usr/share/dcmtk/dicom.dic; sourceTree = "<absolute>"; };
+		92A2BAF810B3D48A00877E0F /* dicom.dic */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = dicom.dic; path = /usr/local/dicom/share/dcmtk/dicom.dic; sourceTree = "<absolute>"; };
 		92A2BD29109AAA8200A29D8F /* sivic.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = sivic.sh; sourceTree = "<group>"; };
-		AB5D36050680E57E00F4007A /* SIVIC_MRSI.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SIVIC_MRSI.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB5D36050680E57E00F4007A /* SIVIC_MRSI.osirixplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SIVIC_MRSI.osirixplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABA48A640680BB600089EB4F /* SIVIC_MRSIFilter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SIVIC_MRSIFilter.h; sourceTree = "<group>"; };
 		ABA48A660680BB690089EB4F /* SIVIC_MRSIFilter.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = SIVIC_MRSIFilter.mm; sourceTree = "<group>"; };
 		ABB76339067FB2A8000912C1 /* DCMPix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DCMPix.h; sourceTree = "<group>"; };
@@ -143,7 +143,7 @@
 		19C28FB8FE9D52D311CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AB5D36050680E57E00F4007A /* SIVIC_MRSI.bundle */,
+				AB5D36050680E57E00F4007A /* SIVIC_MRSI.osirixplugin */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -228,7 +228,7 @@
 			name = SIVIC_MRSI;
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = Invert;
-			productReference = AB5D36050680E57E00F4007A /* SIVIC_MRSI.bundle */;
+			productReference = AB5D36050680E57E00F4007A /* SIVIC_MRSI.osirixplugin */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -328,9 +328,9 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)";
 				LIBRARY_SEARCH_PATHS = (
 					/usr/X11R6/lib,
-					/Users/jasonc/svn/surbeck/brain/sivic/trunk/libs/Darwin_i386,
-					/Users/jasonc/svn/surbeck/brain/sivic/trunk/applications/sivic_app/Darwin_i386,
-					"/usr/local/lib/vtk-5.4",
+					/Users/jasonc/sivic/trunk/libs/Darwin_i386,
+					/Users/jasonc/sivic/trunk/applications/sivic_app/Darwin_i386,
+					"/usr/local/lib/vtk-5.6",
 					"/usr/local/lib/KWWidgets/**",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
