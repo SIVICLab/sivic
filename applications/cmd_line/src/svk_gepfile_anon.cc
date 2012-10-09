@@ -209,6 +209,7 @@ int main (int argc, char** argv)
             exit(1);
         }
         reader->SetFileName( inputFileName.c_str() );
+        reader->OnlyReadOneInputFile();
         reader->ModifyRawField(field, value);
         reader->Delete();
         exit(0);
@@ -247,6 +248,7 @@ int main (int argc, char** argv)
         exit(1);
     }
     reader->SetFileName( inputFileName.c_str() );
+    reader->OnlyReadOneInputFile();
 
     //  set type and id
     if ( deidId.compare("") != 0 ) {
