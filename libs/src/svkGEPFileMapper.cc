@@ -2335,18 +2335,19 @@ void svkGEPFileMapper::GetXYZIndices(int dataIndex, int* x, int* y, int* z)
 
     this->GetNumVoxels(numVoxels);
 
-    int numPtsX = numVoxels[0];
-    int numPtsY = numVoxels[1];
-    int numPtsZ = numVoxels[2];
-
-    *z = static_cast <int> ( dataIndex/(numPtsX * numPtsY) );
+    *z = static_cast <int> ( dataIndex/(numVoxels[0] * numVoxels[1]) );
 
     if ( this->IsSwapOn() ) {
-		*x = static_cast <int> ((dataIndex - (*z * numPtsX * numPtsY))/numPtsY);
-		*y = numVoxels[1] - static_cast <int> ( dataIndex%numPtsY ) - 1;
+
+    	// If swap is on use numVoxels[1] for x dimension and numVoxels[0] for y dimension
+		*x = static_cast <int> ((dataIndex - (*z * numVoxels[0] * numVoxels[1]))/numVoxels[1]);
+
+    	// In addition to swapping reverse the y direction
+		*y = numVoxels[1] - static_cast <int> ( dataIndex%numVoxels[1] ) - 1;
+
     } else {
-		*x = static_cast <int> ( dataIndex%numPtsX );
-		*y = static_cast <int> ((dataIndex - (*z * numPtsX * numPtsY))/numPtsX);
+		*x = static_cast <int> ( dataIndex%numVoxels[0] );
+		*y = static_cast <int> ((dataIndex - (*z * numVoxels[0] * numVoxels[1]))/numVoxels[0]);
     }
 }
 
