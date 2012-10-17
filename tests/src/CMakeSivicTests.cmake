@@ -159,8 +159,15 @@ SET( TEST_NAME TEST_11XPF_2_DDF_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${DEFAULT_TEST_PLATFORM} )
 SET_TESTS_PROPERTIES(TEST_11XPF_2_DDF_DIFF PROPERTIES DEPENDS TEST_MCHK_11XPF_2_DDF)
 
-########################
+##################################################################
 #   9X GE Raw With Swap to DDF
+#
+#   NOTE: The input for this test was modified so that rhr.rh_user7 
+#         rhr.rh_user8, and rhr.rh_user9 values match the FOV.
+#         This test passing does not show that 9x reading is
+#         correct for GE Data, but just that the swap logic is
+#         returning the expected result.
+#
 ########################
 SET( TEST_NAME TEST_MCHK_9XPF_SWAP_DDF)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
