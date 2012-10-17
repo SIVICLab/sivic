@@ -2973,6 +2973,21 @@ bool svkGEPFileReader::IsFieldUID( vtkstd::string key )
 }
 
 
+/*
+ *  Return true if the raw field is of type float 4.
+ */
+bool svkGEPFileReader::IsFieldFloat4( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("FLOAT_4") == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 
 /*
  *  In place deidentification of field
@@ -3003,7 +3018,18 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
             cout << "replace char bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( deidString.c_str(), numBytes);
+        } else if ( this->IsFieldFloat4( key ) ) {
 
+
+            //  =======================================
+            //  Float
+            //  =======================================
+            float value = svkUtils::StringToFloat(deidString);
+            if( this->GetSwapBytes() ) {
+				vtkByteSwap::SwapVoidRange((void *)&value, 1, sizeof(float));
+            }
+            fs->seekp( offset, ios_base::beg );
+            fs->write( (char*)(&value), numBytes);
         } else if ( this->IsFieldUID( key ) ) {
             
             //  =======================================    
