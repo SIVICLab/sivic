@@ -152,7 +152,7 @@ class svkGEPFileMapper : public vtkObject
         bool                    IsSwapOn(); 
         bool                    Is2D(); 
         virtual bool            IsChopOn(); 
-        void                    GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z); 
+        void                    GetXYZIndices(int dataIndex, int* x, int* y, int* z);
         void                    UpdateProgress(double amount);
         virtual void            ModifyBehavior( svkImageData* data ); 
         void                    RedimensionModifiedSVData( svkImageData* data ); 
