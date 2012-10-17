@@ -2233,11 +2233,12 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
     int slices = numVoxels[2];
     int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
     int timePtOffset = cols * rows * slices;
+	int arraysPerVolume = cols * rows * slices;
 
 
     //  Preallocate data arrays. The API only permits dynamic assignmet at end of CellData, so for
     //  swapped cases where we need to insert data out of order they need to be preallocated.
-    for (int arrayNumber = 0; arrayNumber < cols * rows * slices * numTimePts * numCoils; arrayNumber++) { 
+    for (int arrayNumber = 0; arrayNumber < arraysPerVolume * numTimePts * numCoils; arrayNumber++) {
         vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
         data->GetCellData()->AddArray(dataArray); 
         dataArray->Delete(); 
@@ -2285,40 +2286,31 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
             progressStream <<"Reading Time Point " << timePt+1 << "/"
                            << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
             this->SetProgressText( progressStream.str().c_str() );
+			for (int arrayNumber = 0; arrayNumber < arraysPerVolume; arrayNumber++) {
+				this->GetXYZIndices(arrayNumber, &x, &y, &z);
 
-            for (int index2 = 0; index2 < numVoxels[2] ; index2++) {
-                for (int index1 = 0; index1 < numVoxels[1]; index1++) {
-                    for (int index0 = 0; index0 < numVoxels[0]; index0++) {
-                        
-                        this->GetXYZIndices(index0, index1, index2, &x, &y, &z);  
+				//  Linear index of current cell in target svkImageData
+				int linearIndex =  x
+						   + ( numVoxels[0] ) * y
+						   + ( numVoxels[0] * numVoxels[1] ) * z
+						   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt
+						   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts ) * coilNum;
 
-                        //  Linear index of current cell in target svkImageData 
-                        int index =  x 
-                                   + ( numVoxels[0] ) * y  
-                                   + ( numVoxels[0] * numVoxels[1] ) * z  
-                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] ) * timePt  
-                                   + ( numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts ) * coilNum; 
+				//  if k-space sampling was used check if the point was sampled, or if it needs
+				//  to be zero-padded in the grid.
+				//  if zero-padding don't increment the data pointer offset.
+				bool wasSampled = this->WasIndexSampled(x, y, z);
+				SetCellSpectrum(data, wasSampled, offset, linearIndex, x, y, z, timePt, coilNum);
+				if ( wasSampled ) {
+					offset += numPtsPerSpectrum;
+					pFileOffset += numPtsPerSpectrum;
+				}
 
-                        //  if k-space sampling was used check if the point was sampled, or if it needs
-                        //  to be zero-padded in the grid. 
-                        //  if zero-padding don't increment the data pointer offset. 
-                        bool wasSampled = this->WasIndexSampled(x, y, z);
-                        SetCellSpectrum(data, wasSampled, offset, index, x, y, z, timePt, coilNum);
-                        if ( wasSampled ) {
-                            offset += numPtsPerSpectrum; 
-                            pFileOffset += numPtsPerSpectrum;
-                        } 
-
-                    }
-
-                    this->progress = (((z) * (numVoxels[0]) * (numVoxels[1]) ) + ( (y) * (numVoxels[0]) ))
-                                       /((double)denominator);
-                    this->UpdateProgress( this->progress );
-
-                }
-            }
-        }
-    }
+				this->progress = arrayNumber/((double)arraysPerVolume);
+				this->UpdateProgress( this->progress );
+			}
+		}
+	}
 
     pFile->close(); 
     delete pFile;
@@ -2337,31 +2329,30 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
  *  svkImageData arrays. If swap is true, then the data indices are swapped 
  *  and ky is flipped. 
  */
-void svkGEPFileMapper::GetXYZIndices(int index0, int index1, int index2, int* x, int* y, int* z)
+void svkGEPFileMapper::GetXYZIndices(int dataIndex, int* x, int* y, int* z)
 {
+    int numVoxels[3];
+
+    this->GetNumVoxels(numVoxels);
+
+    int numPtsX = numVoxels[0];
+    int numPtsY = numVoxels[1];
+    int numPtsZ = numVoxels[2];
+
+    *z = static_cast <int> ( dataIndex/(numPtsX * numPtsY) );
+
     if ( this->IsSwapOn() ) {
-
-        int numVoxels[3]; 
-        this->GetNumVoxels( numVoxels ); 
-
-        *x = index1; 
-        *y = numVoxels[1] - index0 - 1; 
-        *z = index2; 
-
+		*x = static_cast <int> ((dataIndex - (*z * numPtsX * numPtsY))/numPtsY);
+		*y = numVoxels[1] - static_cast <int> ( dataIndex%numPtsY ) - 1;
     } else {
-
-        *x = index0; 
-        *y = index1; 
-        *z = index2; 
-
+		*x = static_cast <int> ( dataIndex%numPtsX );
+		*y = static_cast <int> ((dataIndex - (*z * numPtsX * numPtsY))/numPtsX);
     }
-
-    return; 
 }
 
 
 /*!
- *  
+ *
  */
 void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int offset, int index, int x, int y, int z, int timePoint, int coilNum)
 {
