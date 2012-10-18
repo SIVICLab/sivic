@@ -498,8 +498,6 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             if( string(centerDefault) != "" ) {
                 center = atof( centerDefault );
             }
-cout << "APOD CENTER: " << center  << endl;
-            fwhh = 15; 
             svkApodizationWindow::GetGaussianWindow( window, data, fwhh, center );
             af->SetInput( data );
             af->SetWindow( window );
