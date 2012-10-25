@@ -554,7 +554,14 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 }
             }
 
-            void* pfileBuffer = new char[ static_cast<int>(pfileSize) ]; 
+            //  Allocate a buffer with an extra word just in case we have partial word data, see below
+            //  Zero pad the ending bytes: 
+            int pad = sizeof(float); 
+            int allocationSize = static_cast<int>(pfileSize) + pad; 
+            void* pfileBuffer = new char[ static_cast<int>(allocationSize) ]; 
+            for ( int j = allocationSize; j >= static_cast<int>(pfileSize); j--) { 
+                static_cast<char*>(pfileBuffer)[j] = '0'; 
+            }   
             pFile->seekg(0, ios::beg);
             pFile->read( static_cast<char*>(pfileBuffer), pfileSize );
 
@@ -596,12 +603,19 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 static_cast<int>(pfileSize) 
             );
 
+            //  if the size isn't divisible by sizeof(float), 
+            //  then pad to include partial word
+            int numRawFileWords = pfileSize/sizeof(float); 
+            if ( pfileSize % sizeof(float) != 0 ) { 
+                numRawFileWords += 1; 
+            } 
+
             this->dcmHeader->AddSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
                 "SVK_FILE_CONTENTS",
                 static_cast<float*>(pfileBuffer),
-                pfileSize/sizeof(float) + 1 
+                numRawFileWords 
             );
 
         } catch (ifstream::failure e) {
