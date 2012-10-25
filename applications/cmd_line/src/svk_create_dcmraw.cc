@@ -284,6 +284,7 @@ bool VerifyExtractedFileDigests( string inputRawFileName  )
         string digestExtracted = GetHash( fileName, sha1DigestExtracted ); 
         if ( digestExtracted.compare(sha1Digest) != 0 ) {
             cout << "ERROR DIGEST( " << fileName << "): " <<  digestExtracted << " != " << sha1Digest << endl;
+            cout << endl;
             verified = false; 
         }
 
