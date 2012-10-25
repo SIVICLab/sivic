@@ -601,7 +601,7 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 fileNum,
                 "SVK_FILE_CONTENTS",
                 static_cast<float*>(pfileBuffer),
-                pfileSize/sizeof(float) 
+                pfileSize/sizeof(float) + 1 
             );
 
         } catch (ifstream::failure e) {

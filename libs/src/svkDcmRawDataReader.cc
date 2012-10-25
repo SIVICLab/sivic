@@ -186,7 +186,7 @@ void svkDcmRawDataReader::ExtractFiles()
                 "SVK_FILE_NUM_BYTES"
             );
 
-        long unsigned int numValues =  numBytes / sizeof(float); 
+        long unsigned int numValues =  numBytes / sizeof(float) + 1; 
         float* fileBuffer = new float[ numValues ]; 
 
         hdr->GetFloatSequenceItemElement(
