@@ -58,7 +58,8 @@ using namespace svk;
 
 
 //  function declarations
-string GetHash( string inputRawFileName, unsigned char* sha1Digest ); 
+bool VerifyExtractedFileDigests( string rawFileName  ); 
+string GetHash( string rawFileName, unsigned char* sha1Digest ); 
 
 
 int main (int argc, char** argv)
@@ -192,6 +193,20 @@ int main (int argc, char** argv)
 
         reader->Delete();
 
+        //  Now, get the SVK_FILE_SET_SEQUENCE from the DICOM RawStorage object and 
+        //  verify that the SVK_FILE_SHA1_DIGEST matches with a hash generated from 
+        //  the extracted file. 
+        if ( ! VerifyExtractedFileDigests( inputRawFileName  ) )  {
+            cout << endl;
+            cout << "######################################" << endl;
+            cout << "ERROR, extracted file digest doesn't "  <<endl; 
+            cout << "match input raw data. "                 << endl;
+            cout << "######################################" << endl;
+            cout << endl;
+            exit(1); 
+        }
+        
+
     } else {    
 
         unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
@@ -233,11 +248,58 @@ int main (int argc, char** argv)
 }
 
 
+/*!
+ *  Verify the digest of the extracted raw files:
+ */
+bool VerifyExtractedFileDigests( string inputRawFileName  )  
+{
+
+    bool verified = true; 
+
+    svkImageData* tmp = svkMriImageData::New(); 
+    tmp->GetDcmHeader()->ReadDcmFile( inputRawFileName );
+
+    svkDcmHeader* hdr = tmp->GetDcmHeader();
+    int numberOfEncapsulatedFiles = hdr->GetNumberOfItemsInSequence( "SVK_FILE_SET_SEQUENCE" );
+
+    for ( int fileNum = 0; fileNum < numberOfEncapsulatedFiles; fileNum++ ) {
+
+        vtkstd::string fileName =  
+            hdr->GetStringSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_NAME"
+            );
+
+        vtkstd::string sha1Digest =  
+            hdr->GetStringSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                "SVK_FILE_SHA1_DIGEST"
+            );
+
+
+        unsigned char* sha1DigestExtracted = new unsigned char[SHA_DIGEST_LENGTH];
+        fileName.append(".extracted"); 
+        string digestExtracted = GetHash( fileName, sha1DigestExtracted ); 
+        if ( digestExtracted.compare(sha1Digest) != 0 ) {
+            cout << "ERROR DIGEST( " << fileName << "): " <<  digestExtracted << " != " << sha1Digest << endl;
+            verified = false; 
+        }
+
+    }
+
+    tmp->Delete();
+
+    return verified; 
+}
+
 
 /*
  *  Gets the sha1Digest of the specified file.  
  */
-string GetHash( string inputRawFileName, unsigned char* sha1Digest ) {
+string GetHash( string rawFileName, unsigned char* sha1Digest ) 
+{
 
     string sha1DigestString; 
 
@@ -246,7 +308,7 @@ string GetHash( string inputRawFileName, unsigned char* sha1Digest ) {
 
     try {
 
-        inputStream->open( inputRawFileName.c_str(), ios::binary);
+        inputStream->open( rawFileName.c_str(), ios::binary);
 
         inputStream->seekg(0, ios::end);
 
@@ -268,7 +330,7 @@ string GetHash( string inputRawFileName, unsigned char* sha1Digest ) {
         printf(" \n");
 
    } catch (ifstream::failure e) {
-        cout << "ERROR: Exception opening/reading file " << inputRawFileName << " => " << e.what() << endl;
+        cout << "ERROR: Exception opening/reading file " << rawFileName << " => " << e.what() << endl;
         exit(1);
     }
 
