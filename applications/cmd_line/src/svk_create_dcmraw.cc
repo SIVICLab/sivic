@@ -58,7 +58,7 @@ using namespace svk;
 
 
 //  function declarations
-bool VerifyExtractedFileDigests( string rawFileName  ); 
+bool VerifyExtractedFileDigests( string outputDir,  string rawFileName  ); 
 string GetHash( string rawFileName, unsigned char* sha1Digest ); 
 
 
@@ -196,7 +196,7 @@ int main (int argc, char** argv)
         //  Now, get the SVK_FILE_SET_SEQUENCE from the DICOM RawStorage object and 
         //  verify that the SVK_FILE_SHA1_DIGEST matches with a hash generated from 
         //  the extracted file. 
-        if ( ! VerifyExtractedFileDigests( inputRawFileName  ) )  {
+        if ( ! VerifyExtractedFileDigests( outputDir, inputRawFileName  ) )  {
             cout << endl;
             cout << "######################################" << endl;
             cout << "ERROR, extracted file digest doesn't "  <<endl; 
@@ -251,7 +251,7 @@ int main (int argc, char** argv)
 /*!
  *  Verify the digest of the extracted raw files:
  */
-bool VerifyExtractedFileDigests( string inputRawFileName  )  
+bool VerifyExtractedFileDigests( string outputDir, string inputRawFileName  )  
 {
 
     bool verified = true; 
@@ -281,6 +281,9 @@ bool VerifyExtractedFileDigests( string inputRawFileName  )
 
         unsigned char* sha1DigestExtracted = new unsigned char[SHA_DIGEST_LENGTH];
         fileName.append(".extracted"); 
+        if ( outputDir.size() > 0 ) {
+            fileName = outputDir + "/" + fileName;  
+        }
         string digestExtracted = GetHash( fileName, sha1DigestExtracted ); 
         if ( digestExtracted.compare(sha1Digest) != 0 ) {
             cout << "ERROR DIGEST( " << fileName << "): " <<  digestExtracted << " != " << sha1Digest << endl;
