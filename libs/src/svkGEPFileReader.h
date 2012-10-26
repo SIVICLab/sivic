@@ -171,6 +171,7 @@ class svkGEPFileReader : public svkImageReader2
         bool                IsFieldChar( vtkstd::string key ); 
         bool                IsFieldUID( vtkstd::string key ); 
         bool                IsFieldFloat4( vtkstd::string key );
+        bool                IsFieldInt4( vtkstd::string key );
         vtkstd::string      GetSeriesUID(const char* fname); 
 
         //  Members:

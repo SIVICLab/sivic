@@ -2988,6 +2988,20 @@ bool svkGEPFileReader::IsFieldFloat4( vtkstd::string key )
 }
 
 
+/*
+ *  Return true if the raw field is of type int 4.
+ */
+bool svkGEPFileReader::IsFieldInt4( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("INT_4") == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 /*
  *  In place deidentification of field
@@ -3022,12 +3036,26 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
 
 
             //  =======================================
-            //  Float
+            //  Float 4
             //  =======================================
             float value = svkUtils::StringToFloat(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, sizeof(float));
             }
+            cout << "replace float bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
+            fs->seekp( offset, ios_base::beg );
+            fs->write( (char*)(&value), numBytes);
+        } else if ( this->IsFieldInt4( key ) ) {
+
+
+            //  =======================================
+            //  Int 4
+            //  =======================================
+            int value = svkUtils::StringToInt(deidString);
+            if( this->GetSwapBytes() ) {
+				vtkByteSwap::SwapVoidRange((void *)&value, 1, sizeof(int));
+            }
+            cout << "replace int bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( (char*)(&value), numBytes);
         } else if ( this->IsFieldUID( key ) ) {
@@ -3187,9 +3215,11 @@ void svkGEPFileReader::Deidentify()
 
             //  These fields are not removed from PHI_LIMITED data sets
             if (this->phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
+                string deidDate = svkUtils::IntToString(VTK_INT_MIN);
                 this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
                 this->DeidentifyField( fs, "rhe.dateofbirth",   "");
                 this->DeidentifyField( fs, "rhr.rh_scan_date",  "");
+                this->DeidentifyField( fs, "rhe.ex_datetime",  deidDate );
             }
 
             fs->close();
