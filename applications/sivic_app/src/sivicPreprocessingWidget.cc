@@ -485,7 +485,7 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             float dwellTime = 1./bandwidth; 
             int numFreqPts = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );     
             
-            int echoCenter = 0; 
+            float echoCenter = 0; 
             if ( data->GetDcmHeader()->ElementExists( "SVK_ECHO_CENTER_PT" ) ) {
                 echoCenter = data->GetDcmHeader()->GetFloatValue( "SVK_ECHO_CENTER_PT" );     
             }
