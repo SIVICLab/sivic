@@ -211,7 +211,7 @@ int main (int argc, char** argv)
 
         unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
         string digest = GetHash( inputRawFileName, sha1Digest ); 
-        cout << "DIGEST STRING: " << digest << endl;
+        cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
     
         svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
         rawWriter->SetFileName( inputRawFileName.c_str() );
@@ -219,6 +219,7 @@ int main (int argc, char** argv)
 
         for (int i = 0; i < associatedFiles.size(); i++ ) {
             string digest = GetHash( associatedFiles[i], sha1Digest ); 
+            cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
             rawWriter->AddAssociatedFile( associatedFiles[i], digest );     
         }
 
