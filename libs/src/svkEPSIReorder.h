@@ -67,10 +67,20 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         static svkEPSIReorder* New();
         vtkTypeRevisionMacro( svkEPSIReorder, svkImageInPlaceFilter);
 
-        void            SetNumEPSIkRead( int numKspaceSamples );
-        void            SetEPSIAxis( int epsiAxis );
-        void            SetEPSIOrigin( float epsiOrigin );
-        float           GetEPSIOrigin();
+       typedef enum {
+            UNDEFINED_EPSI_TYPE = 0,
+            FLYBACK,
+            SYMMETRIC, 
+            INTERLEAVED 
+        } EPSIType;
+
+        void            SetEPSIType( svkEPSIReorder::EPSIType epsiType );  
+        void            SetNumEPSILobes( int numLobes );  
+        void            SetNumSamplesPerLobe( int numSamples ); 
+        void            SetNumSamplesToSkip( int numSamplesToSkip );
+        void            SetEPSIAxis( int EPSIaxis ); 
+        virtual int     GetNumEPSIAcquisitions();
+        virtual int     GetNumEPSIFrequencyPoints();
 
 
     protected:
@@ -90,11 +100,11 @@ class svkEPSIReorder : public svkImageInPlaceFilter
 
     private: 
 
-        int             numEPSIkRead;
+        EPSIType        epsiType; 
+        int             numLobes;
+        int             numSamplesPerLobe; 
+        int             numSamplesToSkip; 
         int             epsiAxis;
-        float           epsiOrigin;
-        svkImageData*   tmpData; 
-
 
 };
 

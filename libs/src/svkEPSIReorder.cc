@@ -43,7 +43,7 @@
 
 #include <svkEPSIReorder.h>
 #include <svkMrsLinearPhase.h> 
-
+#define UNDEFINED_EPSI_AXIS -1
 
 using namespace svk;
 
@@ -65,9 +65,10 @@ svkEPSIReorder::svkEPSIReorder()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     //  Initialize any member variables
-    this->numEPSIkRead = 0;
-    this->epsiAxis = -1;
-    this->epsiOrigin = -1;
+    this->epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE; 
+    this->numSamplesPerLobe = 0; 
+    this->numSamplesToSkip = 0; 
+    this->epsiAxis = UNDEFINED_EPSI_AXIS;
 
 }
 
@@ -81,57 +82,91 @@ svkEPSIReorder::~svkEPSIReorder()
 
 
 /*!
- *  Set the number of k-space samples along the EPSI encoding 
- *  direction (number of samples per lobe). This is the number
- *  of samples per echo in the EPSI acquisition trajetory (not 
- *  necessarily the final k-space dimensionality). 
- */
-void svkEPSIReorder::SetNumEPSIkRead( int numKspacePoints )
-{
-    this->numEPSIkRead = numKspacePoints;
-}
-
-
-/*!
  *  Set the axis index corresponding to the EPSI encoding (0,1 or 2). 
  */
-void svkEPSIReorder::SetEPSIAxis( int epsiAxis)
+void svkEPSIReorder::SetEPSIAxis( int epsiAxis )
 {
     this->epsiAxis = epsiAxis;
 }
 
 
 /*!
- *  Set the origin index along the EPSI encoding axis 
- *  default = (numEPSIkRead-1)/2. See notes for 
- *  GetEPSIOrigin.  
- */
-void svkEPSIReorder::SetEPSIOrigin( float epsiOrigin )
+ *  Set the type of EPSI sequence 
+ */ 
+void svkEPSIReorder::SetEPSIType( svkEPSIReorder::EPSIType epsiType )
 {
-    this->epsiOrigin = epsiOrigin;
+    this->epsiType = epsiType; 
 }
 
 
 /*!
- *  Get the origin index along the EPSI encoding axis 
- *  default = (numEPSIkRead-1)/2. This is the c-lang  
- *  index, thus the -1, e.g.: if numEPSIkRead is 8,  
- *  and data index varies from 0-7, the default origin 
- *  index is 3.5.  However, should depend on whether 
- *  k=0 was sampled or not.  If not, (default, then origin
- *  is .5 higher. 
+ *  Set the number of lobes in the EPSI acquisition
  */
-float svkEPSIReorder::GetEPSIOrigin()
+void svkEPSIReorder::SetNumEPSILobes( int numLobes )
 {
-    bool k0Sampled = false; 
-    if ( this->epsiOrigin < 0 ) { 
-        if (k0Sampled) { 
-            this->epsiOrigin = (this->numEPSIkRead - 1) / 2.;
-        } else { 
-            this->epsiOrigin = (this->numEPSIkRead) / 2.;
-        }
-    }
-    return this->epsiOrigin; 
+    this->numLobes = numLobes; 
+}
+
+
+/*!
+ *  Set the number of lobes in the EPSI acquisition
+ */
+void svkEPSIReorder::SetNumSamplesPerLobe( int numSamplesPerLobe )
+{
+    this->numSampesPerLobe = numSampelsPerLobe; 
+}
+
+
+/*!
+ *  Set the number of samples to skip between lobes. Different from 
+ *  the initial offset (firstSampleToRead). 
+ */
+void svkEPSIReorder::SetNumSamplesToSkip( int numSamplesToSkip)
+{
+    this->numSamplesToSkip = numSamplesToSkip; 
+}
+
+
+/*!
+ *  Virtual method that returns the number of spec frequency points
+ *  in the acquisition.  May be reimplemented for specific EPSI 
+ *  acquisitions. 
+ */
+int svkEPSIReorder::GetNumEPSIFrequencyPoints()
+{
+    if ( this->episType == svkEPSIReorder::UNDEFINED ) {
+        cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
+        exit(1); 
+    } elsif ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+        int numFreqPts = this->numLobes;     
+    } elsif ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+        int numFreqPts = this->numLobes / 2;     
+    } elsif ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+        cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
+        exit(1); 
+    } 
+    //cout << "Num Freq Pts: "<< numFreqPts << endl;
+}
+
+/*!
+ *  Virtual method that returns the number of acquisitions in the 
+ *  sequence.  For example symmetric EPSI contains 2, one during the 
+ *  positive gradient and one during the negative gradient. 
+ */
+int svkEPSIReorder::GetNumEPSIAcquisitions()
+{
+    if ( this->episType == svkEPSIReorder::UNDEFINED ) {
+        cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
+        exit(1); 
+    } elsif ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+        return 1; 
+    } elsif ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+        return 2; 
+        int numFreqPts = this->numLobes / 2;     
+    } elsif ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+        cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
+        exit(1); 
+    } 
 }
 
 
@@ -151,92 +186,9 @@ int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector**
     //  Get pointer to input data set. 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
-    //  Get pointer to data's meta-data header (DICOM object). 
-    svkDcmHeader* hdr = mrsData->GetDcmHeader();  
-
-    //  Lookup any data set attributes from header required for algorithm (See DICOM IOD for field names):
-    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
-    int cols       = hdr->GetIntValue( "Columns" );
-    int rows       = hdr->GetIntValue( "Rows" );
-    int slices     = hdr->GetNumberOfSlices();
-    int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
-
-    //  Initialize the spatial and spectral factor in the EPSI phase correction: 
-    //  One phase factor for each value of k in EPSI axis
-    vtkImageComplex** epsiPhaseArray = new vtkImageComplex*[ this->numEPSIkRead ];  
-    for (int i = 0; i < this->numEPSIkRead; i++ ) {
-        epsiPhaseArray[i] = new vtkImageComplex[ numSpecPts ];  
-    }
-    this->CreateEPSIReorderionFactors( epsiPhaseArray, numSpecPts ); 
-
-    float cmplxPtIn[2]; 
-    float cmplxPtPhased[2]; 
-    float epsiPhase[2]; 
-    int   epsiIndex; 
-    vtkImageComplex* ktCorrection = new vtkImageComplex[2]; 
-
-    //  Inverse Fourier Transform spectral data to frequency domain to 
-    //  apply linear phase shift: 
-    this->SpectralFFT( svkMrsImageFFT::FORWARD); 
-
-    //  Iterate through 3D spatial locations
-    for (int lobe = 0; lobe < numLobes; lobe++) {
-        for (int z = 0; z < slices; z++) {
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
-
-                    //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis 
-                    if ( this->epsiAxis == 2 ) {
-                        epsiIndex = z; 
-                    } else if ( this->epsiAxis == 1 ) {
-                        epsiIndex = y; 
-                    } else if ( this->epsiAxis == 0 ) {
-                        epsiIndex = x; 
-                    }
-
-                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, 0, lobe) );
-
-                    //  Iterate over frequency points in spectrum and apply phase correction:
-                    for ( int freq = 0; freq < numSpecPts; freq++ ) {
-                    
-                        spectrum->GetTupleValue(freq, cmplxPtIn);
-
-                        epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
-                        epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
-
-                        //  data * e(i * X)
-                        //cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] - cmplxPtIn[1] * epsiPhase[1]; 
-                        //cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] + cmplxPtIn[0] * epsiPhase[1]; 
-
-                        //  data * e(-i * X)
-                        cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
-                        cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
-
-                        //cout << "spec: " << cmplxPtIn[0] << " " << cmplxPtIn[1] << " -> " << cmplxPtPhased[0] 
-                        //  << " " << cmplxPtPhased[1] << endl;
-
-                        spectrum->SetTuple(freq, cmplxPtPhased); 
-    
-                    }
-
-                }
-            }
-        }
-    }
-
-
-    //  Forward Fourier Transform spectral data to back to time domain, should now be shifted.   
-    this->SpectralFFT( svkMrsImageFFT::REVERSE); 
-
-
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
-
-    for (int i = 0; i < this->numEPSIkRead; i++ ) {
-        delete [] epsiPhaseArray[i]; 
-    }
-    delete [] epsiPhaseArray; 
 
     return 1; 
 } 
@@ -252,6 +204,7 @@ int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector**
  */
 void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 {
+
     //  Reorder data.  This requires adding data arrays 
     //  to accommodate the spectra at the new k-space points 
     //  points extracted from the EPSI encoding 
@@ -277,48 +230,10 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  Reset hdr value (DataPointColumns)
     //===========
     int numEPSIPts= hdr->GetIntValue( "DataPointColumns" );
-    //cout << "Num EPSI Pts: "<< numEPSIPts << endl;
 
     //  this is the number of lobes in the EPSI sampling. For symmetric 
     //  epsi this is twice the number of frequence points (pos + neg)    
-    int numSymmetricEPSILobes = this->GetHeaderValueAsInt( "rhr.rh_user10" );
-    int numFreqPts = numSymmetricEPSILobes / 2;     
-    //cout << "Num Freq Pts: "<< numFreqPts << endl;
-
-
-    //============================================================
-    //  Read EPSI acquisition params from raw header: 
-    //============================================================
-
-    //  dwell time time between k-space points
-    int deltaT = this->GetHeaderValueAsInt( "rhr.rh_user12" );
-
-    //  time for plateau encoding (gradient duratation)
-    int plateauTime = this->GetHeaderValueAsInt( "rhr.rh_user13" );
-
-    //  time for ramp in one direction
-    int rampTime = this->GetHeaderValueAsInt( "rhr.rh_user15" );
-
-    //  number of samples at start
-    int numSkip = this->GetHeaderValueAsInt( "rhr.rh_user22" );
-
-    //  number of samples per lobe (ramps + plateau)  
-    //  num spectral samples in FID is num time_pts / this value (
-    int numRead = (plateauTime + 2 * rampTime)/deltaT;
-
-    //============================================================
-    //Q:  is the number of EPSI phase encodes equal to numRead or numEPSIkSpacePoints?
-    //  I think it starts at numRead, and gets sampled down to numEPSIkSpacePoints (23-18)
-    //  after ramp sampling... i think
-    //============================================================
-    //===========
-    //  Reset hdr value (num cols?)
-    //===========
-    int numEPSIkSpacePts = this->GetHeaderValueAsInt( "rhr.rh_user9" );
-
-    //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
-    //  epsi k-space encodes into this field: 
-    int epsiAxis = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1;
+    int numFreqPts = this->GetNumEPSIFrequencyPoints(); 
 
     //  Get the input dimensionality (EPSI)
     int numEPSIVoxels[3]; 
@@ -329,15 +244,14 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     numVoxels[0] = numEPSIVoxels[0]; 
     numVoxels[1] = numEPSIVoxels[1]; 
     numVoxels[2] = numEPSIVoxels[2]; 
-    numVoxels[ epsiAxis ] = numRead; 
-    //numVoxels[ epsiAxis ] = numEPSIkSpacePts; 
+    numVoxels[ this->epsiAxis ] = this->numSamplesPerLobe; 
 
     //  Set the number of reordered voxels (target dimensionality of this method)
     int reorderedVoxels[3]; 
     reorderedVoxels[0] = numVoxels[0]; 
     reorderedVoxels[1] = numVoxels[1]; 
     reorderedVoxels[2] = numVoxels[2]; 
-    reorderedVoxels[ epsiAxis ] = numVoxels[epsiAxis] - 2; //throw out first and last samples
+    reorderedVoxels[ this->epsiAxis ] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; 
 
     //cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
@@ -347,7 +261,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //============================================================
     int numTimePoints = 1; 
     int timePoint = 0;
-    int numCoils = 2; //lobes
+    int numCoils = this->GetNumEPSIAcquisitions(); 
     int coilNum = 0; 
 
     //============================================================
@@ -367,7 +281,8 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     for (int i = 0; i < 3; i++) {
         numReorderedVoxels *= reorderedVoxels[i];  
     }
-    numReorderedVoxels *= numTimePoints * numCoils; //2 lobes
+
+    numReorderedVoxels *= numTimePoints * numCoils; //remember, numCoils is number of acquisitions 
     for (int arrayNumber = 0; arrayNumber < numReorderedVoxels; arrayNumber++) {
         vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
         dataArray->SetNumberOfComponents( numComponents );
@@ -394,21 +309,21 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                 rangeMax[1] = yEPSI;
                 rangeMax[2] = zEPSI;
                 //  throw out the first and last points (zero crossing)
-                rangeMin[epsiAxis] = 0; 
-                rangeMax[epsiAxis] = numVoxels[epsiAxis] - 2; 
+                rangeMin[this->epsiAxis] = 0; 
+                rangeMax[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; 
 
                 
                 //============================================================
                 //  allocate an array for both the positive and negative lobes of 
                 //  the symmetric EPSI encoding:
                 //============================================================
-                int lobeStride = numRead;  
+                int lobeStride = this->numSamplesPerLobe;  
 
                 //  set the current index along the EPSI dimension
                 //  Initialize first point to skip + throw out first point (zero crossing)
                 int currentEPSIPt = numSkip + 1;   
 
-                rangeMax[epsiAxis] -= 1;    //  other indices have zero range 
+                rangeMax[this->epsiAxis] -= 1;    //  other indices have zero range 
                 //  first loop over epsi-kspace points for first lobe, then for 2nd lobe, etc.
                 for (int lobe = 0; lobe < 2; lobe++ ) { 
                     for (int z = rangeMin[2]; z < rangeMax[2] + 1; z++ ) { 
@@ -422,13 +337,10 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * lobe 
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * timePoint;
  
-                                //cout << "   target index(xyzlobe): " << x << " " 
-                                    //<< y << " " << z << " " << lobe  << " index: " << index << endl;
                                 vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
                                 char arrayName[30];
                                 sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePoint, lobe);
-                                //cout << "reordered Array name (" << index << ") = " << arrayName << endl; 
                                 dataArray->SetName(arrayName);
 
                                 //  reorder EPSI data, throwng away the first and last 
@@ -442,20 +354,16 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                                     tuple[0] = epsiTuple[0]; 
                                     tuple[1] = epsiTuple[1]; 
                                     dataArray->SetTuple( i, tuple );
-
-                                    //cout << "       extract spectrum  epsiOffset: " 
-                                    //<< epsiOffset << " target index " << i << endl;
-                                    //if ( i <  10 ) { 
-                                        //cout << "fist 2 values or val0:  " << epsiTuple[0] << " " << epsiTuple[1] << endl;                                     //}
                                 }
 
                                 currentEPSIPt++; 
                             }
                         }
                     }
+
                     //  between lobes, throw out the last and first point before resuming sampling
                     //  These are the zero crossings in symmetric EPSI. 
-                    currentEPSIPt +=2; 
+                    currentEPSIPt += this->numSamplesToSkip; 
                 }
             }
         }
@@ -466,11 +374,10 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  Redimension the meta data and set the new arrays:
     //  =================================================
     data->DeepCopy( reorderedImageData ); 
-    numVoxels[epsiAxis] = numVoxels[epsiAxis] - 2; //   first and last point were thrown out
+    numVoxels[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; //   first and last point were thrown out
     int numVoxelsOriginal[3]; 
     this->GetNumVoxels( numVoxelsOriginal ); 
     this->RedimensionData( data, numVoxelsOriginal, numVoxels, numFreqPts ); 
-
 
 }
 
