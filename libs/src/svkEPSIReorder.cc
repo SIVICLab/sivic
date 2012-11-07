@@ -43,6 +43,9 @@
 
 #include <svkEPSIReorder.h>
 #include <svkMrsLinearPhase.h> 
+#include <svkRawMapperUtils.h> 
+
+
 #define UNDEFINED_EPSI_AXIS -1
 
 using namespace svk;
@@ -91,6 +94,15 @@ void svkEPSIReorder::SetEPSIAxis( int epsiAxis )
 
 
 /*!
+ *  Get the axis index corresponding to the EPSI encoding (0,1 or 2). 
+ */
+int svkEPSIReorder::GetEPSIAxis()
+{
+    return this->epsiAxis;
+}
+
+
+/*!
  *  Set the type of EPSI sequence 
  */ 
 void svkEPSIReorder::SetEPSIType( svkEPSIReorder::EPSIType epsiType )
@@ -113,19 +125,46 @@ void svkEPSIReorder::SetNumEPSILobes( int numLobes )
  */
 void svkEPSIReorder::SetNumSamplesPerLobe( int numSamplesPerLobe )
 {
-    this->numSampesPerLobe = numSampelsPerLobe; 
+    this->numSamplesPerLobe = numSamplesPerLobe; 
+}
+
+/*!
+ *  Set the number of lobes in the EPSI acquisition
+ */
+int svkEPSIReorder::GetNumSamplesPerLobe( )
+{
+    return this->numSamplesPerLobe;
 }
 
 
 /*!
  *  Set the number of samples to skip between lobes. Different from 
- *  the initial offset (firstSampleToRead). 
+ *  the initial offset (firstSample). 
  */
 void svkEPSIReorder::SetNumSamplesToSkip( int numSamplesToSkip)
 {
     this->numSamplesToSkip = numSamplesToSkip; 
 }
 
+/*!
+ *  Set the first sample to read when reordering the EPSI data. A few 
+ *  samples may be skipped at the begining. 
+ */
+void svkEPSIReorder::SetFirstSample( int firstSample )
+{
+    this->firstSample = firstSample; 
+}
+
+
+/*!
+ *  Set the numVoxels before reordering
+ */
+void svkEPSIReorder::SetNumVoxelsOriginal( int numVoxels[3] )
+{
+    this->numVoxelsOriginal[0] = numVoxels[0]; 
+    this->numVoxelsOriginal[1] = numVoxels[1]; 
+    this->numVoxelsOriginal[2] = numVoxels[2]; 
+}
 
 /*!
  *  Virtual method that returns the number of spec frequency points
@@ -134,19 +173,22 @@ void svkEPSIReorder::SetNumSamplesToSkip( int numSamplesToSkip)
  */
 int svkEPSIReorder::GetNumEPSIFrequencyPoints()
 {
-    if ( this->episType == svkEPSIReorder::UNDEFINED ) {
+    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
-    } elsif ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
         int numFreqPts = this->numLobes;     
-    } elsif ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
         int numFreqPts = this->numLobes / 2;     
-    } elsif ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
         cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
         exit(1); 
-    } 
-    //cout << "Num Freq Pts: "<< numFreqPts << endl;
+    } else {
+        cout << "ERROR( " << this->GetClassName() << "): UNSUPPORTED EPSI TYPE " << endl;
+        exit(1); 
+    }
 }
+
 
 /*!
  *  Virtual method that returns the number of acquisitions in the 
@@ -155,15 +197,15 @@ int svkEPSIReorder::GetNumEPSIFrequencyPoints()
  */
 int svkEPSIReorder::GetNumEPSIAcquisitions()
 {
-    if ( this->episType == svkEPSIReorder::UNDEFINED ) {
+    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
-    } elsif ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
         return 1; 
-    } elsif ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
         return 2; 
         int numFreqPts = this->numLobes / 2;     
-    } elsif ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
         cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
         exit(1); 
     } 
@@ -178,13 +220,14 @@ int svkEPSIReorder::GetNumEPSIAcquisitions()
 int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( this->numEPSIkRead == 0  || this->epsiAxis < 0 ) {
+    if ( this->epsiType == UNDEFINED_EPSI_TYPE  || this->epsiAxis == UNDEFINED_EPSI_AXIS ) {
         cout << "ERROR, must specify the epsiAxis and number of sample k-space points per lobe" << endl;
         return 1; 
     }
 
     //  Get pointer to input data set. 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    this->ReorderEPSIData( mrsData ); 
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -235,15 +278,11 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  epsi this is twice the number of frequence points (pos + neg)    
     int numFreqPts = this->GetNumEPSIFrequencyPoints(); 
 
-    //  Get the input dimensionality (EPSI)
-    int numEPSIVoxels[3]; 
-    this->GetNumVoxels( numEPSIVoxels ); 
-
     //  Set the actual number of k-space points sampled:
     int numVoxels[3]; 
-    numVoxels[0] = numEPSIVoxels[0]; 
-    numVoxels[1] = numEPSIVoxels[1]; 
-    numVoxels[2] = numEPSIVoxels[2]; 
+    numVoxels[0] = this->numVoxelsOriginal[0]; 
+    numVoxels[1] = this->numVoxelsOriginal[1]; 
+    numVoxels[2] = this->numVoxelsOriginal[2]; 
     numVoxels[ this->epsiAxis ] = this->numSamplesPerLobe; 
 
     //  Set the number of reordered voxels (target dimensionality of this method)
@@ -270,7 +309,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //============================================================
     svkImageData* reorderedImageData = svkMrsImageData::New();
     reorderedImageData->DeepCopy( data ); 
-    this->RemoveArrays( reorderedImageData ); 
+    svkImageData::RemoveArrays( reorderedImageData ); 
 
     //============================================================
     //  Preallocate data arrays for reordered data. The API only permits dynamic 
@@ -292,9 +331,9 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     }
 
     
-    for (int zEPSI = 0; zEPSI < numEPSIVoxels[2]; zEPSI++ ) { 
-        for (int yEPSI = 0; yEPSI < numEPSIVoxels[1]; yEPSI++ ) { 
-            for (int xEPSI = 0; xEPSI < numEPSIVoxels[0]; xEPSI++ ) { 
+    for (int zEPSI = 0; zEPSI < this->numVoxelsOriginal[2]; zEPSI++ ) { 
+        for (int yEPSI = 0; yEPSI < this->numVoxelsOriginal[1]; yEPSI++ ) { 
+            for (int xEPSI = 0; xEPSI < this->numVoxelsOriginal[0]; xEPSI++ ) { 
 
                 vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(
                         svkMrsImageData::SafeDownCast(data)->GetSpectrum( xEPSI, yEPSI, zEPSI, timePoint, 0) );
@@ -321,7 +360,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
                 //  set the current index along the EPSI dimension
                 //  Initialize first point to skip + throw out first point (zero crossing)
-                int currentEPSIPt = numSkip + 1;   
+                int currentEPSIPt = this->firstSample;   
 
                 rangeMax[this->epsiAxis] -= 1;    //  other indices have zero range 
                 //  first loop over epsi-kspace points for first lobe, then for 2nd lobe, etc.
@@ -376,8 +415,9 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     data->DeepCopy( reorderedImageData ); 
     numVoxels[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; //   first and last point were thrown out
     int numVoxelsOriginal[3]; 
-    this->GetNumVoxels( numVoxelsOriginal ); 
-    this->RedimensionData( data, numVoxelsOriginal, numVoxels, numFreqPts ); 
+    svkRawMapperUtils::RedimensionData( data, this->numVoxelsOriginal, numVoxels, numFreqPts ); 
+
+    reorderedImageData->Delete();
 
 }
 

@@ -45,6 +45,8 @@
 #include <svkMrsImageFlip.h>
 #include <svkMrsImageFourierCenter.h>
 #include <svkEPSIPhaseCorrect.h>
+#include <svkEPSIReorder.h>
+#include <svkRawMapperUtils.h>
 #include <vtkDebugLeaks.h>
 
 
@@ -187,7 +189,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
 
             //  First time around set up the target data struct
             tmpImageDynamic->DeepCopy(tmpImage); 
-            this->RemoveArrays( tmpImageDynamic ); 
+            svkImageData::RemoveArrays( tmpImageDynamic ); 
 
             //  ========================================
             //  Preallocate all arrays for data set.  
@@ -376,17 +378,21 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     int numEPSIPts= hdr->GetIntValue( "DataPointColumns" );
     //cout << "Num EPSI Pts: "<< numEPSIPts << endl;
 
+    //====================================================
+    svkEPSIReorder* reorder = svkEPSIReorder::New();    
+    reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
+
+    //  between lobes, throw out the last and first point before resuming sampling
+    //  These are the zero crossings in symmetric EPSI. 
+    reorder->SetNumSamplesToSkip( 2 ); 
+
     //  this is the number of lobes in the EPSI sampling. For symmetric 
     //  epsi this is twice the number of frequence points (pos + neg)    
-    int numSymmetricEPSILobes = this->GetHeaderValueAsInt( "rhr.rh_user10" );
-    int numFreqPts = numSymmetricEPSILobes / 2;     
-    //cout << "Num Freq Pts: "<< numFreqPts << endl;
-
+    reorder->SetNumEPSILobes( this->GetHeaderValueAsInt( "rhr.rh_user10") ); 
 
     //============================================================
     //  Read EPSI acquisition params from raw header: 
     //============================================================
-
     //  dwell time time between k-space points
     int deltaT = this->GetHeaderValueAsInt( "rhr.rh_user12" );
 
@@ -396,13 +402,25 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  time for ramp in one direction
     int rampTime = this->GetHeaderValueAsInt( "rhr.rh_user15" );
 
-    //  number of samples at start
-    int numSkip = this->GetHeaderValueAsInt( "rhr.rh_user22" );
-
     //  number of samples per lobe (ramps + plateau)  
     //  num spectral samples in FID is num time_pts / this value (
-    int numRead = (plateauTime + 2 * rampTime)/deltaT;
+    reorder->SetNumSamplesPerLobe( ( plateauTime + 2 * rampTime) / deltaT );
 
+    //  number of samples at start.  add 1 for the zero crossing
+    reorder->SetFirstSample( this->GetHeaderValueAsInt( "rhr.rh_user22" ) + 1 );
+
+    //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
+    //  epsi k-space encodes into this field: 
+    reorder->SetEPSIAxis( this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 );
+
+
+    //  set the original input dimensionality:
+    int numEPSIVoxels[3]; 
+    this->GetNumVoxels( numEPSIVoxels ); 
+    reorder->SetNumVoxelsOriginal( numEPSIVoxels ); 
+
+    //====================================================
+/*
     //============================================================
     //Q:  is the number of EPSI phase encodes equal to numRead or numEPSIkSpacePoints?
     //  I think it starts at numRead, and gets sampled down to numEPSIkSpacePoints (23-18)
@@ -411,11 +429,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //===========
     //  Reset hdr value (num cols?)
     //===========
-    int numEPSIkSpacePts = this->GetHeaderValueAsInt( "rhr.rh_user9" );
-
-    //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
-    //  epsi k-space encodes into this field: 
-    int epsiAxis = this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1;
 
     //  Get the input dimensionality (EPSI)
     int numEPSIVoxels[3]; 
@@ -427,7 +440,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     numVoxels[1] = numEPSIVoxels[1]; 
     numVoxels[2] = numEPSIVoxels[2]; 
     numVoxels[ epsiAxis ] = numRead; 
-    //numVoxels[ epsiAxis ] = numEPSIkSpacePts; 
 
     //  Set the number of reordered voxels (target dimensionality of this method)
     int reorderedVoxels[3]; 
@@ -567,6 +579,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     int numVoxelsOriginal[3]; 
     this->GetNumVoxels( numVoxelsOriginal ); 
     this->RedimensionData( data, numVoxelsOriginal, numVoxels, numFreqPts ); 
+*/
 
     //  =================================================
     //  Apply linear phase correction to correct for EPSI sampling of 
@@ -575,13 +588,20 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //          the correction is a function of the distance along the epsi-axis (k/t) with pivots 
     //          at the center of each dimension
     //  =================================================
-    this->EPSIPhaseCorrection( data, numVoxels, numRead, epsiAxis);  
+//  this may or may not work after refactoring:
+    int numVoxels[3]; 
+    this->GetNumVoxels( numVoxels ); 
+    int numSamplesPerLobe = reorder->GetNumSamplesPerLobe();
+    int epsiAxis = reorder->GetEPSIAxis();
+    this->EPSIPhaseCorrection( data, numVoxels, numSamplesPerLobe, epsiAxis);  
  
     //  =================================================
     //  Reverse first, third, etc lobe k-space spectra along 
     //  epsi axis.. Initial graidient lobe is negative and 
     //  requires flipping of every other lobe. 
     //  =================================================
+    int numFreqPts = reorder->GetNumEPSIFrequencyPoints(); 
+
     if ( this->GetDebug() ) {
         this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before flip lobe"); 
         this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "before flip lobe"); 
@@ -629,7 +649,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     this->InitK0Sampled();
 
-    reorderedImageData->Delete(); 
+    reorder->Delete(); 
 
 }
 
@@ -1036,7 +1056,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
     // Now reinit the DICOM header
     regridDims[epsiAxis] = integralMax; 
-    this->RedimensionData( data, numVoxels, regridDims, numSpecPts); 
+    svkRawMapperUtils::RedimensionData( data, numVoxels, regridDims, numSpecPts); 
 
     delete [] waveFormIntegralNorm;
     delete [] epsiKData0;
@@ -1372,83 +1392,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ZeroFill( svkImageData* data )
 
 }
 
-
-/*!
- *  Remove the original EPSI arrays from the svkImageData. 
- *  at this point. 
- */
-void svkGEPFileMapperUCSFfidcsiDev0::RemoveArrays( svkImageData* data )
-{
-
-    int numCoils = 2;//data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints(); 
-
-    //  get the original EPSI dimensionality:
-    int numVoxels[3];
-    data->GetNumberOfVoxels(numVoxels);
-
-    //  Remove all original arrays
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-            for (int z = 0; z < numVoxels[2]; z++) {
-                for (int y = 0; y < numVoxels[1]; y++) {
-                    for (int x = 0; x < numVoxels[0]; x++) {
-                        char arrayName[30];
-                        sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
-                        //cout << "remove array: " << arrayName << endl;
-                        data->GetCellData()->RemoveArray( arrayName );
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-
-/*!
- *  Redimension after reordering epsi dimension.  Should have 2 lobes
- *  at this point. 
- */
-void svkGEPFileMapperUCSFfidcsiDev0::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts )
-{
-
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
-    int numCoils = 2; //data->GetDcmHeader()->GetNumberOfCoils(); //num lobes
-
-    //  This is the original origin based on the reduced dimensionality in the EPSI direction
-    double origin[3];
-    data->GetDcmHeader()->GetOrigin( origin, 0 );
-
-    double voxelSpacing[3];
-    data->GetDcmHeader()->GetPixelSpacing( voxelSpacing );
-
-    double dcos[3][3];
-    data->GetDcmHeader()->GetDataDcos( dcos );
-
-    double center[3]; 
-    this->GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
-
-    //  Now calcuate the new origin based on the reordered dimensionality: 
-    double newOrigin[3]; 
-    this->GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
-
-    svkDcmHeader* hdr = data->GetDcmHeader();     
-    hdr->SetValue( "Columns", numVoxelsReordered[0]);
-    hdr->SetValue( "Rows", numVoxelsReordered[1]);
-    hdr->SetValue( "DataPointColumns", numFreqPts );
-
-    data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        newOrigin,
-        voxelSpacing,
-        dcos,
-        numVoxelsReordered[2], 
-        numTimePts,
-        numCoils 
-    );
-
-    data->SyncVTKImageDataToDcmHeader(); 
-}
 
 
 /*!

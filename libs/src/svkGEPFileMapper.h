@@ -98,6 +98,20 @@ class svkGEPFileMapper : public vtkObject
         vtkstd::string          GetProgressText( );
         void                    SetProgressText( vtkstd::string progressText );
         static vtkstd::string   ConvertGEDateToDICOM( vtkstd::string geDate ); 
+        static void             GetOriginFromCenter( 
+                                             double center[3], 
+                                             int numVoxels[3], 
+                                             double voxelSpacing[3], 
+                                             double dcos[3][3], 
+                                             double origin[3] 
+                                ); 
+        static void             GetCenterFromOrigin( 
+                                             double origin[3], 
+                                             int numVoxels[3], 
+                                             double voxelSpacing[3], 
+                                             double dcos[3][3], 
+                                             double center[3] 
+                                ); 
 
 
     protected:
@@ -177,20 +191,6 @@ class svkGEPFileMapper : public vtkObject
         float                   GetHeaderValueAsFloat(vtkstd::string key);
         vtkstd::string          GetHeaderValueAsString(vtkstd::string key);
         virtual bool            WasIndexSampled(int xIndex, int yIndex, int zIndex); 
-        void                    GetOriginFromCenter( 
-                                             double center[3], 
-                                             int numVoxels[3], 
-                                             double voxelSpacing[3], 
-                                             double dcos[3][3], 
-                                             double origin[3] 
-                                ); 
-        void                    GetCenterFromOrigin( 
-                                             double origin[3], 
-                                             int numVoxels[3], 
-                                             double voxelSpacing[3], 
-                                             double dcos[3][3], 
-                                             double center[3] 
-                                ); 
 
 
         vtkstd::string                          progressText;

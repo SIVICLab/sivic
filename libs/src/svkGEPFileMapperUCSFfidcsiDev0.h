@@ -101,6 +101,10 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         static svkGEPFileMapperUCSFfidcsiDev0* New();
 
         virtual void    ReadData(vtkStringArray* pFileNames, svkImageData* data); 
+        static void     RedimensionData( svkImageData* data, 
+                                         int* numVoxelsOriginal, 
+                                         int* numVoxelsReordered, 
+                                         int numFreqPts ); 
 
 
     protected:
@@ -122,8 +126,6 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
     private: 
 
         void                    ReorderEPSIData( svkImageData* data ); 
-        void                    RemoveArrays( svkImageData* data ); 
-        void                    RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts ); 
         void                    EPSIPhaseCorrection( 
                                     svkImageData* data, 
                                     int* numVoxels, 

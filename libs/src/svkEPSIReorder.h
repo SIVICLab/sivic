@@ -77,8 +77,12 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         void            SetEPSIType( svkEPSIReorder::EPSIType epsiType );  
         void            SetNumEPSILobes( int numLobes );  
         void            SetNumSamplesPerLobe( int numSamples ); 
+        int             GetNumSamplesPerLobe(); 
+        void            SetFirstSample( int firstSample );
         void            SetNumSamplesToSkip( int numSamplesToSkip );
         void            SetEPSIAxis( int EPSIaxis ); 
+        int             GetEPSIAxis(); 
+        void            SetNumVoxelsOriginal( int numVoxels[3] );
         virtual int     GetNumEPSIAcquisitions();
         virtual int     GetNumEPSIFrequencyPoints();
 
@@ -103,8 +107,14 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         EPSIType        epsiType; 
         int             numLobes;
         int             numSamplesPerLobe; 
+        int             firstSample; 
         int             numSamplesToSkip; 
         int             epsiAxis;
+
+        void            ReorderEPSIData( svkImageData* data ); 
+        int             numVoxelsOriginal[3];
+        int             numVoxelsReordered[3];
+
 
 };
 

@@ -99,7 +99,6 @@ class svkDSCMap: public svkImageAlgorithm
 
 
         virtual void            UpdateProvenance();
-        void                    RedimensionData(); 
         virtual void            GenerateMap() = 0; 
         double                  GetNoise( float* imgPtr ); 
         double                  GetNormalizationFactor();

@@ -1677,3 +1677,37 @@ svkImageData* svkImageData::GetSourceData()
 {
 	return this->source;
 }
+
+
+
+/*!
+ *  Remove the cell data arrays from an svkImageData object. 
+ *  Used when redimensioning data. 
+ */
+void svkImageData::RemoveArrays( svkImageData* data )
+{
+    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+
+    //  get the original EPSI dimensionality:
+    int numVoxels[3];
+    data->GetNumberOfVoxels(numVoxels);
+
+    //  Remove all original arrays
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        for (int timePt = 0; timePt < numTimePts; timePt++) {
+            for (int z = 0; z < numVoxels[2]; z++) {
+                for (int y = 0; y < numVoxels[1]; y++) {
+                    for (int x = 0; x < numVoxels[0]; x++) {
+                        char arrayName[30];
+                        sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
+                        //cout << "remove array: " << arrayName << endl;
+                        data->GetCellData()->RemoveArray( arrayName );
+                    }
+                }
+            }
+        }
+    }
+}
+
+

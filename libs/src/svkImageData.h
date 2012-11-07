@@ -260,6 +260,8 @@ class svkImageData: public vtkImageData
         // REQUIRED?
         virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);
 
+        static  void                  RemoveArrays( svkImageData* data ); 
+
         
     protected:
 
