@@ -64,6 +64,7 @@ sivicApp::sivicApp()
     this->overlayWindowLevelWidget = sivicWindowLevelWidget::New();
     this->overlayWindowLevelWidget->SetSliderLabel("Overlay Window Level");
     this->preferencesWidget     = sivicPreferencesWidget::New();
+    this->voxelTaggingWidget    = sivicVoxelTaggingWidget::New();
     this->spectraRangeWidget    = sivicSpectraRangeWidget::New();
     this->viewRenderingWidget   = sivicViewRenderingWidget::New();
     this->tabbedPanel           = vtkKWNotebook::New();
@@ -153,6 +154,11 @@ sivicApp::~sivicApp()
     if( this->preferencesWidget != NULL ) {
         this->preferencesWidget->Delete();
         this->preferencesWidget = NULL;
+    }
+
+    if( this->voxelTaggingWidget != NULL ) {
+        this->voxelTaggingWidget->Delete();
+        this->voxelTaggingWidget = NULL;
     }
 
     if( this->overlayWindowLevelWidget != NULL ) {
@@ -340,6 +346,10 @@ int sivicApp::Build( int argc, char* argv[] )
     this->preferencesWidget->SetOverlayController(this->sivicController->GetOverlayController());
     this->preferencesWidget->SetSivicController(this->sivicController);
 
+    this->voxelTaggingWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->voxelTaggingWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->voxelTaggingWidget->SetSivicController(this->sivicController);
+
     this->overlayWindowLevelWidget->SetPlotController(this->sivicController->GetPlotController());
     this->overlayWindowLevelWidget->SetOverlayController(this->sivicController->GetOverlayController());
     this->overlayWindowLevelWidget->SetSivicController(this->sivicController);
@@ -358,6 +368,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetWindowLevelWidget( windowLevelWidget );
     this->sivicController->SetOverlayWindowLevelWidget( overlayWindowLevelWidget );
     this->sivicController->SetPreferencesWidget( preferencesWidget );
+    this->sivicController->SetVoxelTaggingWidget( voxelTaggingWidget );
     this->sivicController->SetSpectraRangeWidget( spectraRangeWidget );
     this->sivicController->SetDSCWidget( dscWidget );
 
@@ -496,7 +507,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             4, "&Save Metabolite Maps", this->sivicController, "SaveMetaboliteMaps");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Open 1 Channel of Spectra", this->sivicController, "OpenFile spectra_one_channel NULL 1");
+            5, "&Save Voxel Tags", this->sivicController, "SaveVoxelTagData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             6, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
@@ -517,9 +528,11 @@ int sivicApp::Build( int argc, char* argv[] )
             0, "&Show Window Level", this->sivicController, "DisplayWindowLevelWindow");
     this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
             1, "&Preferences", this->sivicController, "DisplayPreferencesWindow");
+    this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(
+            2, "&Voxel Tagging", this->sivicController, "DisplayVoxelTaggingWindow");
 #if defined(DEBUG_BUILD)
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            2, "&Run Tests", this->sivicController, "RunTestingSuite");
+            3, "&Run Tests", this->sivicController, "RunTestingSuite");
 #endif
     this->sivicKWApp->SetHelpDialogStartingPage("http://sivic.sourceforge.net");
     this->sivicWindow->Display();

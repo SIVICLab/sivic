@@ -415,8 +415,8 @@ void sivicImageViewWidget::CreateWidget()
     this->overlayVolumeSlider->SetOrientationToHorizontal();
     this->overlayVolumeSlider->SetLabelText("Volume");
     this->overlayVolumeSlider->SetLabelWidth( overlayLabelWidth );
-    this->overlayVolumeSlider->SetValue(0);
-    this->overlayVolumeSlider->SetRange( 0, 0 );
+    this->overlayVolumeSlider->SetValue(1);
+    this->overlayVolumeSlider->SetRange( 1, 1 );
     this->overlayVolumeSlider->SetBalloonHelpString("Adjusts the volume of image overlay.");
     this->overlayVolumeSlider->EnabledOff();
     this->overlayVolumeSlider->SetEntryPositionToRight();

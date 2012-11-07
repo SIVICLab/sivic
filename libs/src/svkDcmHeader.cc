@@ -988,6 +988,24 @@ int svkDcmHeader::GetNumberOfSlices()
 
 
 /*!
+ *  Uses the dimension index sequence to determine the slice for the frame.
+ */
+int svkDcmHeader::GetSliceForFrame( int frame )
+{
+	int sliceIndex = this->GetDimensionIndexPosition("Slice");
+	int slice = this->GetIntSequenceItemElement(
+		"FrameContentSequence",
+		0,
+		"DimensionIndexValues",
+		"PerFrameFunctionalGroupsSequence",
+		frame,
+		sliceIndex
+	);
+	return slice;
+}
+
+
+/*!
  *  Get the number of Dimension indices requred 
  *  for specifying the frame's slice, time, coil. 
  *  See FrameContentSequence DimensionIndexValues

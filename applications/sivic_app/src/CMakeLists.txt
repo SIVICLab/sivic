@@ -196,6 +196,7 @@ ADD_LIBRARY(
     sivicQuantificationWidget.cc
     sivicWindowLevelWidget.cc
     sivicPreferencesWidget.cc
+    sivicVoxelTaggingWidget.cc
     sivicKWCompositeWidget.cc
     vtkSivicController.cc
     sivicBasicTest.cc

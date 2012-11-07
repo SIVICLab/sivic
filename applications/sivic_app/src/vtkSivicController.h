@@ -77,6 +77,7 @@
 #include <stdio.h>
 
 #include <svkUtils.h>
+#include <svkVoxelTaggingUtils.h>
 #include <svkDataViewController.h>
 #include <svkSecondaryCaptureFormatter.h>
 #include <svkImageWriterFactory.h> 
@@ -98,6 +99,7 @@
 #include <svkSpecPoint.h>
 
 #include <sivicPreferencesWidget.h>
+#include <sivicVoxelTaggingWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicDataWidget.h>
 #include <sivicImageDataWidget.h>
@@ -151,6 +153,7 @@ class vtkSivicController : public vtkObject
         void                       SetWindowLevelWidget( sivicWindowLevelWidget* windowLevelWidget );
         void                       SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget );
         void                       SetPreferencesWidget( sivicPreferencesWidget* preferencesWidget );
+        void                       SetVoxelTaggingWidget( sivicVoxelTaggingWidget* voxelTaggingWidget );
         void                       SetSlice( int slice, bool centerImage = true );
         void                       SetImageSlice( int slice, string orientation );
         void                       SetModel( svkDataModel* ); 
@@ -174,6 +177,7 @@ class vtkSivicController : public vtkObject
         void                       SaveData();    
         void                       SaveData( char* fileName );    
         void                       SaveMetaboliteMaps();    
+        void                       SaveVoxelTagData();
         void                       SaveMetMapData( svkImageData* image, char* fileName, 
                                         int writetType = 5); //svkImageWriterFactory::DICOM_MRI 
         void                       SaveSecondaryCapture( char* captureType );    
@@ -203,6 +207,7 @@ class vtkSivicController : public vtkObject
         void                       DisplayInfo();
         void                       DisplayWindowLevelWindow();
         void                       DisplayPreferencesWindow();
+        void                       DisplayVoxelTaggingWindow();
         void                       RunTestingSuite();
         void                       SetSpecUnitsCallback( int targetUnits );
         void                       SetComponentCallback( int targetComponent );
@@ -285,11 +290,13 @@ class vtkSivicController : public vtkObject
         sivicWindowLevelWidget*        windowLevelWidget;
         sivicWindowLevelWidget*        overlayWindowLevelWidget;
         sivicPreferencesWidget*        preferencesWidget;
+        sivicVoxelTaggingWidget*       voxelTaggingWidget;
         svkPlotGridViewController*     plotController;
         svkOverlayViewController*      overlayController;
         svkSecondaryCaptureFormatter*  secondaryCaptureFormatter;
         vtkKWWindowBase*               windowLevelWindow;
         vtkKWWindowBase*               preferencesWindow;
+        vtkKWWindowBase*               voxelTaggingWindow;
         bool						   synchronizeVolumes;
 
 

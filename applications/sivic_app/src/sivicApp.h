@@ -64,6 +64,7 @@
 #include <sivicSpectraViewWidget.h>
 #include <sivicWindowLevelWidget.h>
 #include <sivicPreferencesWidget.h>
+#include <sivicVoxelTaggingWidget.h>
 #include <sivicSpectraRangeWidget.h>
 #include <sivicDataWidget.h>
 #include <sivicImageDataWidget.h>
@@ -115,6 +116,7 @@ class sivicApp
         sivicWindowLevelWidget*    windowLevelWidget;
         sivicWindowLevelWidget*    overlayWindowLevelWidget;
         sivicPreferencesWidget*    preferencesWidget;
+        sivicVoxelTaggingWidget*   voxelTaggingWidget;
         sivicSpectraRangeWidget*   spectraRangeWidget;
         vtkKWUserInterfacePanel*   uiPanel;
         vtkKWNotebook*             tabbedPanel;

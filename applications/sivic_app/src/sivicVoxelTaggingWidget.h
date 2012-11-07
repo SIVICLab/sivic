@@ -32,78 +32,73 @@
  *  $Date$
  */
 
-#ifndef SVK_DSC_WIDGET_H 
-#define SVK_DSC_WIDGET_H 
+#ifndef SVK_VOXEL_TAGGING_WIDGET_H
+#define SVK_VOXEL_TAGGING_WIDGET_H
 
-#include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
 #include <vtkKWTkUtilities.h>
-#include <vtkKWPushButton.h>
-#include <vtkKWMenuButtonWithLabel.h>
+#include <vtkKWApplication.h>
+#include <vtkKWTopLevel.h>
+#include <vtkKWCheckButton.h>
+#include <vtkKWSeparator.h>
 
+#include <svkDataView.h>
 #include <svkDataModel.h>
-#include <svkDSCDeltaR2.h>
-#include <svkQuantifyDSC.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
+#include <svkPlotGridView.h>
 #include <sivicKWCompositeWidget.h>
-
+#include <vtkKWMultiColumnListWithScrollbars.h>
+#include <vtkKWMultiColumnListWithLabel.h>
+#include <vtkKWPushButton.h>
 #include <string.h>
+#include <vector>
+
 
 using namespace svk; 
 
-class sivicDSCWidget : public sivicKWCompositeWidget
+class sivicVoxelTaggingWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicDSCWidget *New();
-        vtkTypeRevisionMacro(sivicDSCWidget,sivicKWCompositeWidget);
-        vtkstd::vector < vtkstd::string >   modelDSCNames;
+        static sivicVoxelTaggingWidget *New();
+        vtkTypeRevisionMacro(sivicVoxelTaggingWidget,sivicKWCompositeWidget);
 
+		void   UpdateTagsList( );
 
     protected:
 
-
-        sivicDSCWidget();
-        ~sivicDSCWidget();
-
-        vtkKWMenuButtonWithLabel*       dscRepresentationSelector;
-        vtkKWPushButton*                generateMapsButton;
-        vtkKWLabel*                     dscLabel; 
-        vtkKWMenuButtonWithLabel*       mapViewSelector;
-
+        sivicVoxelTaggingWidget();
+        ~sivicVoxelTaggingWidget();
         
+        vtkKWPushButton*                createTagVolumeButton;
+        vtkKWPushButton*                addTagButton;
+        vtkKWPushButton*                removeTagButton;
+
+        void CreateTagVolume();
+        void AddTag();
+        void RemoveTag(int tagVolumeNumber);
+        void SetTagName(string tagName, int tagVolume );
+        void SetTagValue(int tagValue, int tagVolume );
         // Description:
         // Create the widget.
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
-        void            ResetRange();
-        void            SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation); 
-        void            SetOverlay( vtkstd::string modelObjectName); 
+
 
 
     private:
 
-        vtkCallbackCommand*                 progressCallback;
+        vector<string> tagNames;
+        vector<int> tagValues;
+        vtkKWMultiColumnListWithScrollbars* tagsTable;
 
-        void                                ExecuteDSC();
-        void                                ExecuteQuantification();
-        static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
-
-        svkQuantifyDSC*                     dscQuant;
-        vtkstd::vector < vtkstd::string >   dscNames;
-
-
-
-
-        sivicDSCWidget(const sivicDSCWidget&);   // Not implemented.
-        void operator=(const sivicDSCWidget&);  // Not implemented.
-        svkDSCDeltaR2*                      dscRep;
-
+        sivicVoxelTaggingWidget(const sivicVoxelTaggingWidget&);   // Not implemented.
+        void operator=(const sivicVoxelTaggingWidget&);  // Not implemented.
         
 };
 
-#endif //SVK_DSC_WIDGET_H 
+#endif //SVK_VOXEL_TAGGING_WIDGET_H

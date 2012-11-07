@@ -843,7 +843,13 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
     if( selectionArea != NULL && dataVector[MR4D] != NULL) {
         double worldStart[3]; 
         double worldEnd[3]; 
+        bool tagVoxel = false;
         if( !isWorldCords ) {
+        	if( svkVoxelTaggingUtils::IsImageVoxelTagData( this->dataVector[MET])
+        	  && fabs(selectionArea[0] - selectionArea[2]) < 5
+        	  &&  fabs(selectionArea[1] - selectionArea[3]) < 5 ) {
+        		tagVoxel = true;
+        	}
             vtkCoordinate* coordStart = vtkCoordinate::New();
             vtkCoordinate* coordEnd = vtkCoordinate::New();
             coordStart->SetCoordinateSystemToDisplay();
@@ -877,7 +883,11 @@ void svkPlotGridView::SetSelection( double* selectionArea, bool isWorldCords )
 
         int tlcBrcImageData[2];
         svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
-        this->SetTlcBrc( tlcBrcImageData );
+        if( tagVoxel && tlcBrcImageData[0] == tlcBrcImageData[1] ) {
+        	svkVoxelTaggingUtils::ToggleVoxelTag(this->dataVector[MET], tlcBrcImageData[0]);
+        } else {
+			this->SetTlcBrc( tlcBrcImageData );
+        }
 
     } 
     this->rwi->Render();
@@ -937,10 +947,16 @@ int* svkPlotGridView::HighlightSelectionVoxels()
  */
 void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
 {
-    if( dataVector[MR4D] != NULL && data != NULL ) {
+	if( dataVector[MR4D] != NULL && data != NULL ) {
         double* spacing = data->GetSpacing();
+        svkLabeledDataMapper* metMapper = svkLabeledDataMapper::New();
+        // Check for voxel tag information
+  	    if( svkVoxelTaggingUtils::IsImageVoxelTagData( data )) {
+			metMapper->SetDisplayTags(true);
+			metMapper->GetLabelTextProperty()->SetVerticalJustificationToTop();
+			metMapper->GetLabelTextProperty()->SetJustificationToLeft();
+  	    }
 
-        vtkLabeledDataMapper* metMapper = vtkLabeledDataMapper::New();
         svkImageClip* metTextClipper = svkImageClip::New();
         metTextClipper->SetInput( this->dataVector[MET] );
         metMapper->SetInput( metTextClipper->GetOutput() );
@@ -1101,6 +1117,9 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
         double dAxial = 0;
         double dHorizontal = 2.1;
         double dVertical   = 3.2;
+        if( svkVoxelTaggingUtils::IsImageVoxelTagData( this->dataVector[MET])){
+        	dVertical = 2.4;
+        }
         double dDepth      = 2.0;
         double* spacing = this->dataVector[MET]->GetSpacing();
        
@@ -1176,7 +1195,7 @@ void svkPlotGridView::UpdateMetaboliteTextDisplacement()
 
         // Now lets apply the transform...
         optimus->Translate( displacement );
-        vtkLabeledDataMapper::SafeDownCast( 
+        svkLabeledDataMapper::SafeDownCast( 
                 vtkActor2D::SafeDownCast( 
                     this->GetProp( svkPlotGridView::OVERLAY_TEXT ) )->GetMapper())->SetTransform(optimus);
         optimus->Delete();
@@ -1253,7 +1272,7 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
     this->plotGrids[0]->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
 
     if( vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper() != NULL ) {
-        vtkLabeledDataMapper::SafeDownCast( 
+        svkLabeledDataMapper::SafeDownCast(
                 vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
             ->GetLabelTextProperty()->SetColor(textColor);
     }

@@ -421,6 +421,30 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
+    // ===================================================
+    //  Private Additions For SIVIC Voxel Tagging
+    // ===================================================
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1025, EVR_SQ,
+            "SVK_VOXEL_TAGGING_SEQUENCE",
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR"
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1026, EVR_SH,
+            "SVK_VOXEL_TAG_NAME",
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR"
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1027, EVR_US,
+            "SVK_VOXEL_TAG_VALUE",
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR"
+        )
+    );
+
     dcmDataDict.unlock();
 }
 

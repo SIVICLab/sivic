@@ -173,6 +173,8 @@ void sivicViewRenderingWidget::ProcessCallbackCommandEvents( vtkObject *caller, 
             && event == vtkCommand::SelectionChangedEvent ) {
         int * tlcBrc = plotController->GetTlcBrc();
         overlayController->SetTlcBrc( tlcBrc );
+        // Temporary kludge to get updates to pass through
+        overlayController->GetView()->GetRenderer( svkOverlayView::PRIMARY )->Modified();
         this->specViewerWidget->Render();
         this->viewerWidget->Render();
     } 

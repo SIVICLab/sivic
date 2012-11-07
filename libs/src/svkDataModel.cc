@@ -290,7 +290,12 @@ svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
         reader->AddObserver(vtkCommand::ProgressEvent, progressCallback);
         reader->SetFileName( fileName.c_str() );
         reader->Update();
-        myData = reader->GetOutput();
+        vtkInformation* readerInformation = reader->GetOutputPortInformation(0);
+        const char* dataType = readerInformation->Get(vtkDataObject::DATA_TYPE_NAME());
+
+        // We are going to decouple the data from the reader to avoid downstream update issues
+        myData = svkImageDataFactory::CreateInstance( dataType );
+        myData->ShallowCopy( reader->GetOutput() );
 
         reader->RemoveObserver(progressCallback);
     } else {

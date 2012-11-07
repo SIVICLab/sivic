@@ -584,6 +584,7 @@ class svkDcmHeader: public vtkObject
                                 int numCoils
                             ); 
         int             GetNumberOfTimePoints(); 
+        int				GetSliceForFrame( int frame );
         void            UpdateNumTimePoints(); 
         void            UpdateNumCoils();
 

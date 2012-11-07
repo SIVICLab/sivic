@@ -200,6 +200,38 @@ void svkMriImageData::GetAutoWindowLevel( double& window, double& level, int num
 
 
 /*!
+ *  Uses the dimension index sequence to determine the volume for the frame.
+ */
+int svkMriImageData::GetVolumeIndexForFrame( int frame )
+{
+	// Get the number of volume dimensions
+	int numDims = this->GetDcmHeader()->GetNumberOfItemsInSequence("DimensionIndexSequence");
+	int sliceIndex = this->GetDcmHeader()->GetDimensionIndexPosition("Slice");
+	int volumeIndex = 0;
+	int lastIndexSize = 1;
+	for( int i = 0; i < numDims; i++) {
+        int indexValue = this->GetDcmHeader()->GetIntSequenceItemElement(
+            "FrameContentSequence",
+            0,
+            "DimensionIndexValues",
+            "PerFrameFunctionalGroupsSequence",
+            frame,
+            i
+        );
+		int indexSize = this->GetDcmHeader()->GetNumberOfFramesInDimension(i);
+		// Skip the slice index
+		if( i != sliceIndex ) {
+			volumeIndex +=  indexValue * lastIndexSize;
+			lastIndexSize *= indexSize;
+		}
+
+    }
+
+	return volumeIndex;
+}
+
+
+/*!
  * Calculates the center of mass of a volume using the pixel intensities as
  * 'mass'. Just a weighted average location.
  */

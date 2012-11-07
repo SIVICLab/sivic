@@ -394,6 +394,13 @@ void vtkSivicController::SetPreferencesWidget( sivicPreferencesWidget* preferenc
 }
 
 //! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetVoxelTaggingWidget( sivicVoxelTaggingWidget* voxelTaggingWidget )
+{
+    this->voxelTaggingWidget = voxelTaggingWidget;
+    this->voxelTaggingWidget->SetModel(this->model);
+}
+
+//! Sets this widget controllers view, also passes along its model
 void vtkSivicController::SetOverlayWindowLevelWidget( sivicWindowLevelWidget* overlayWindowLevelWidget )
 {
     this->overlayWindowLevelWidget = overlayWindowLevelWidget;
@@ -1045,8 +1052,13 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->SetLUTCallback( svkLookupTable::REVERSE_COLOR );
                 }
                 int currentVolume = static_cast<int>(this->imageViewWidget->overlayVolumeSlider->GetValue());
-                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, data->GetPointData()->GetNumberOfArrays());
-                if( currentVolume - 1 < data->GetPointData()->GetNumberOfArrays()) {
+                int numVolumes = data->GetPointData()->GetNumberOfArrays();
+                bool isImageVoxelTags = svkVoxelTaggingUtils::IsImageVoxelTagData(data);
+                if( isImageVoxelTags ) {
+                	numVolumes = 1;
+                }
+                this->imageViewWidget->overlayVolumeSlider->SetRange( 1, numVolumes);
+                if( currentVolume - 1 < numVolumes) {
 					this->imageViewWidget->overlayVolumeSlider->SetValue( currentVolume );
                 } else {
 					this->imageViewWidget->overlayVolumeSlider->SetValue( 1 );
@@ -1822,6 +1834,52 @@ void vtkSivicController::SaveMetaboliteMaps()
 }
 
 
+/*
+ *  Saves voxel tag data maps to user specified loction
+ */
+void vtkSivicController::SaveVoxelTagData()
+{
+	svkImageData* voxelTagData = this->model->GetDataObject( "VoxelTagData" );
+	if( voxelTagData != NULL ) {
+		vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
+		dlg->SetApplication(app);
+		dlg->SaveDialogOn();
+		dlg->Create();
+		dlg->SetInitialFileName("");
+		//  kludge to differentiate between enhanced and multi-frame (dcm versus DCM)
+		dlg->SetFileTypes("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+		dlg->SetDefaultExtension("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+		dlg->Invoke();
+		if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
+			string filename = dlg->GetFileName();
+			char* cStrFilename = new char [filename.size()+1];
+			strcpy (cStrFilename, filename.c_str());
+
+			vtkstd::string root = svkImageReader2::GetFileRoot( cStrFilename );
+			vtkstd::string ext = svkImageReader2::GetFileExtension( cStrFilename );
+			int fileType;
+			if ( ext.compare("DCM") == 0 ) {
+				fileType = 5;       // MRI
+			} else if ( ext.compare("dcm") == 0 ) {
+				fileType = 6;       // Enhanced MRI
+			} else if ( ext.compare("idf") == 0 ) {
+				fileType = 3;
+			}
+			string fname( root + "VoxelTagData" );
+
+			this->SaveMetMapData(
+					voxelTagData,
+					const_cast<char*>( fname.c_str() ),
+                fileType
+				);
+		}
+		dlg->Delete();
+	} else {
+		this->PopupMessage("No tag data loaded!");
+	}
+
+}
+
 
 /*! 
  *  Writes metabolite image files 
@@ -2057,7 +2115,7 @@ void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber,
 
 /*
     if ( this->model->DataExists("MetaboliteData") ) {
-        vtkLabeledDataMapper::SafeDownCast(
+        svkLabeledDataMapper::SafeDownCast(
             vtkActor2D::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())->GetLabelTextProperty()->SetFontSize(12);
     }
     this->viewRenderingWidget->imageInfoActor->GetTextProperty()->SetFontSize(13);
@@ -2483,6 +2541,50 @@ void vtkSivicController::DisplayPreferencesWindow()
     // Add Window if not found.
     if( !foundPreferencesWindow ) {
         app->AddWindow( this->preferencesWindow );
+    }
+}
+
+//! Callback.
+void vtkSivicController::DisplayVoxelTaggingWindow()
+{
+    if( this->voxelTaggingWindow == NULL ) {
+        this->voxelTaggingWindow = vtkKWWindowBase::New();
+        this->app->AddWindow( this->voxelTaggingWindow );
+        this->voxelTaggingWindow->SetTitle("Voxel Tagging");
+        this->voxelTaggingWindow->Create();
+        this->voxelTaggingWindow->SetSize( 250, 300);
+        this->voxelTaggingWidget->SetParent( this->voxelTaggingWindow->GetViewFrame() );
+        this->voxelTaggingWidget->Create();
+        this->app->Script("grid %s -in %s -row 0 -column 0 -sticky wnse -pady 2 "
+                , this->voxelTaggingWidget->GetWidgetName(), this->voxelTaggingWindow->GetViewFrame()->GetWidgetName());
+
+        this->app->Script("grid rowconfigure %s 0  -weight 1"
+                , this->voxelTaggingWindow->GetViewFrame()->GetWidgetName() );
+        this->app->Script("grid columnconfigure %s 0  -weight 1"
+                , this->voxelTaggingWindow->GetViewFrame()->GetWidgetName() );
+    }
+
+    int toggleDraw = this->GetDraw();
+    if( toggleDraw ) {
+        this->DrawOff();
+    }
+    this->voxelTaggingWidget->UpdateTagsList();
+    this->voxelTaggingWindow->Display();
+    if( toggleDraw ) {
+        this->DrawOn();
+    }
+
+    // Check to see if the window has already been added
+    bool foundVoxelTaggingWindow = false;
+    for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
+        if( app->GetNthWindow(i) == this->voxelTaggingWindow ) {
+            foundVoxelTaggingWindow = true;
+        }
+    }
+
+    // Add Window if not found.
+    if( !foundVoxelTaggingWindow ) {
+        app->AddWindow( this->voxelTaggingWindow );
     }
 }
 
@@ -3565,24 +3667,30 @@ void vtkSivicController::SyncDisplayVolumes(svkImageData* data, int volume, int 
 
 		// Check if the metabolite overlay matches the input data
 		if ( this->model->DataExists("MetaboliteData") ) {
-			int metabNumVolumes = this->model->GetDataObject("MetaboliteData")->GetPointData()->GetNumberOfArrays();
-			if ( inputNumVolumes == metabNumVolumes ) {
-				if( !this->model->DataExists("OverlayData") ) {
-					if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
-						this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+			bool isImageVoxelTags = svkVoxelTaggingUtils::IsImageVoxelTagData(this->model->GetDataObject("MetaboliteData"));
+			if( !isImageVoxelTags ) {
+				int metabNumVolumes = this->model->GetDataObject("MetaboliteData")->GetPointData()->GetNumberOfArrays();
+				if ( inputNumVolumes == metabNumVolumes ) {
+					if( !this->model->DataExists("OverlayData") ) {
+						if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
+							this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+						}
+					} else {
+						svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
 					}
-				} else {
-					svkPlotGridView::SafeDownCast( this->plotController->GetView() )->SetActiveOverlayVolume( volume );
 				}
 			}
 		}
 
 		// Check if the image overlay matches the input data
 		if ( this->model->DataExists("OverlayData") ) {
-			int overlayNumVolumes = this->model->GetDataObject("OverlayData")->GetPointData()->GetNumberOfArrays();
-			if ( inputNumVolumes == overlayNumVolumes ) {
-				if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
-					this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+			bool isImageVoxelTags = svkVoxelTaggingUtils::IsImageVoxelTagData(this->model->GetDataObject("OverlayData"));
+			if( !isImageVoxelTags ) {
+				int overlayNumVolumes = this->model->GetDataObject("OverlayData")->GetPointData()->GetNumberOfArrays();
+				if ( inputNumVolumes == overlayNumVolumes ) {
+					if( this->imageViewWidget->overlayVolumeSlider->GetValue() != volume + 1 ) {
+						this->imageViewWidget->overlayVolumeSlider->SetValue( volume + 1 );
+					}
 				}
 			}
 		}

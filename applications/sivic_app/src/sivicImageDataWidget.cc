@@ -26,10 +26,10 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/sivicImageDataWidget.cc $
- *  $Rev: 1123 $
- *  $Author: beckn8tor $
- *  $Date: 2011-11-08 14:46:45 -0800 (Tue, 08 Nov 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  */
 
 
@@ -38,7 +38,7 @@
 #include <vtkSivicController.h>
 
 vtkStandardNewMacro( sivicImageDataWidget );
-vtkCxxRevisionMacro( sivicImageDataWidget, "$Revision: 1123 $");
+vtkCxxRevisionMacro( sivicImageDataWidget, "$Revision$");
 
 
 /*! 

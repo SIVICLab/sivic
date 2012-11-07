@@ -46,6 +46,7 @@
 #include <vtkInformation.h>
 
 #include <svkDICOMImageWriter.h>
+#include <svkMriImageData.h>
 
 
 namespace svk {

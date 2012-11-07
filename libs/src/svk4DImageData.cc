@@ -289,7 +289,7 @@ void  svk4DImageData::GetZeroImage( svkImageData* image )
     		volumeIndex[i] = 0;
     	}
     	this->GetImage( image, 0, "ZeroImage", volumeIndex, 0);
-    	image->GetPointData()->GetScalars()->FillComponent(0,1);
+    	image->GetPointData()->GetScalars()->FillComponent(0,0);
 
     }
 }

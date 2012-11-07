@@ -46,7 +46,7 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkProp3DCollection.h>
-#include <vtkLabeledDataMapper.h>
+#include <svkLabeledDataMapper.h>
 #include <vtkSelectVisiblePoints.h>
 #include <svkImageClip.h>
 #include <vtkImageActor.h>
@@ -64,6 +64,7 @@
 #include <svkLookupTable.h>
 #include <svkImageClip.h>
 #include <svkSatBandSet.h>
+#include <svkVoxelTaggingUtils.h>
 #include <vtkCellCenters.h>
 #include <vtkXYPlotActor.h>
 #include <vtkCursor2D.h>

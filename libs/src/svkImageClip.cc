@@ -79,6 +79,7 @@ int svkImageClip::RequestData(
     if( this->GetInput() != NULL ) {
         svkImageData::SafeDownCast(this->GetInput())->GetDcos(dcos); 
         svkImageData::SafeDownCast(this->GetOutputDataObject(0))->SetDcos(dcos); 
+        svkImageData::SafeDownCast(this->GetOutputDataObject(0))->SetDcmHeader( svkImageData::SafeDownCast(this->GetInput())->GetDcmHeader());
     }
 
     return vtkImageClip::RequestData( request, inputVector, outputVector);

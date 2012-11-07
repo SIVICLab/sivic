@@ -54,6 +54,9 @@
 #include <vtkImageFlip.h>
 #include <vtkCallbackCommand.h>
 #include <svkImageReaderFactory.h>
+#include <svkImageDataFactory.h>
+#include <vtkAlgorithmOutput.h>
+#include <vtkTrivialProducer.h>
 
 #include <vtkImageViewer2.h>
 #include <vtkRenderer.h>

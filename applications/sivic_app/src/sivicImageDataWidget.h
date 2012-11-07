@@ -26,10 +26,10 @@
  *  OF SUCH DAMAGE.
  */
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/sivic_app/src/sivicImageDataWidget.h $
- *  $Rev: 1105 $
- *  $Author: jccrane $
- *  $Date: 2011-10-11 23:34:06 -0700 (Tue, 11 Oct 2011) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  */
 
 #ifndef SVK_IMAGE_DATA_WIDGET_H

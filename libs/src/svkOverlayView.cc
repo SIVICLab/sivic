@@ -741,7 +741,13 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
     if( selectionArea != NULL && dataVector[MR4D] != NULL) {
         double worldStart[3]; 
         double worldEnd[3]; 
+        bool tagVoxel = false;
         if( !isWorldCords ) {
+        	if( svkVoxelTaggingUtils::IsImageVoxelTagData( this->dataVector[OVERLAY])
+        	  && fabs(selectionArea[0] - selectionArea[2]) < 5
+        	  &&  fabs(selectionArea[1] - selectionArea[3]) < 5 ) {
+        		tagVoxel = true;
+        	}
             vtkCoordinate* coordStart = vtkCoordinate::New();
             vtkCoordinate* coordEnd = vtkCoordinate::New();
             coordStart->SetCoordinateSystemToDisplay();
@@ -775,7 +781,11 @@ void svkOverlayView::SetSelection( double* selectionArea, bool isWorldCords )
 
         int tlcBrcImageData[2];
         svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetTlcBrcInUserSelection( tlcBrcImageData, selection, this->orientation, this->slice );
-        this->SetTlcBrc( tlcBrcImageData );
+        if( tagVoxel && tlcBrcImageData[0] == tlcBrcImageData[1] ) {
+        	svkVoxelTaggingUtils::ToggleVoxelTag(this->dataVector[OVERLAY], tlcBrcImageData[0]);
+        } else {
+			this->SetTlcBrc( tlcBrcImageData );
+        }
     } else if( dataVector[MR4D] != NULL ) {
 
         //What should we do when the mri data is null, but the mrs is not....

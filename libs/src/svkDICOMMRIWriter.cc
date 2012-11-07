@@ -136,11 +136,9 @@ void svkDICOMMRIWriter::Write()
     this->MaximumFileNumber = numFrames;  
     int numVolumes = numFrames / numSlices; 
     int pixelsPerSlice = cols * rows; 
-
-    int frame = -1;
-    for (int slice = 0; slice < numSlices; slice++ ) { 
-        for (int volume = 0; volume < numVolumes; volume++ ) { 
-            frame++;
+    for( int frame = 0; frame < numFrames; frame++ ) {
+    		int slice = this->GetImageDataInput(0)->GetDcmHeader()->GetSliceForFrame( frame );
+    		int volume = svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetVolumeIndexForFrame( frame );
             this->FileNumber = frame + 1;
             this->MinimumFileNumber = this->FileNumber;
             this->FilesDeleted = 0;
@@ -188,8 +186,7 @@ void svkDICOMMRIWriter::Write()
                 this->DeleteFiles();
                 return;
             }
-        }
-    }
+	}
 
     mriHeader->Delete();
     delete [] this->InternalFileName;
@@ -242,7 +239,6 @@ void svkDICOMMRIWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber,
             unsigned short* pixelData = static_cast<unsigned short*>(
                 static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
             );
-                cout << *this->GetImageDataInput(0) << endl;
             dcmHeader->SetValue(
                   "PixelData",
                   &(pixelData[offset]), 

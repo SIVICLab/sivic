@@ -72,6 +72,7 @@
 #include <svkImageMapToColors.h>
 #include <svkLookupTable.h>
 #include <svkSatBandSet.h>
+#include <svkVoxelTaggingUtils.h>
 
 #include <svkBurnResearchPixels.h>
 #include <svkSincInterpolationFilter.h>
