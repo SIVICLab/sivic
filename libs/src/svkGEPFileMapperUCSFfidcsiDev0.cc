@@ -380,6 +380,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //====================================================
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
+    reorder->SetInput( data ); 
     reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
 
     //  between lobes, throw out the last and first point before resuming sampling
@@ -418,6 +419,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     int numEPSIVoxels[3]; 
     this->GetNumVoxels( numEPSIVoxels ); 
     reorder->SetNumVoxelsOriginal( numEPSIVoxels ); 
+    reorder->Update();
 
     //====================================================
 /*
@@ -593,14 +595,20 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     this->GetNumVoxels( numVoxels ); 
     int numSamplesPerLobe = reorder->GetNumSamplesPerLobe();
     int epsiAxis = reorder->GetEPSIAxis();
-    this->EPSIPhaseCorrection( data, numVoxels, numSamplesPerLobe, epsiAxis);  
+    int numFreqPts = reorder->GetNumEPSIFrequencyPoints(); 
+
+    if ( this->GetDebug() ) {
+        this->PrintSpecPts(reorder->GetOutput(), numFreqPts, 0, 0, 0, 0, 0, "before phase lobe"); 
+        this->PrintSpecPts(reorder->GetOutput(), numFreqPts, 0, 0, 0, 0, 1, "before pahse lobe"); 
+    }
+
+    this->EPSIPhaseCorrection( reorder->GetOutput(), numVoxels, numSamplesPerLobe, epsiAxis);  
  
     //  =================================================
     //  Reverse first, third, etc lobe k-space spectra along 
     //  epsi axis.. Initial graidient lobe is negative and 
     //  requires flipping of every other lobe. 
     //  =================================================
-    int numFreqPts = reorder->GetNumEPSIFrequencyPoints(); 
 
     if ( this->GetDebug() ) {
         this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before flip lobe"); 
@@ -738,6 +746,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::FlipAxis( svkImageData* data, int axis, int
  */
 void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int deltaT, int plateauTime, int rampTime, int epsiAxis )
 {
+
+    int numLobes = 2; //for symmetric epsi pos/neg gradient
+
     //  get the EPSI sampling waveform: 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
     int numVoxels[3];  
@@ -886,7 +897,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     int timePt = 0; // always 0 for this methods, only handles one time point at a time
     float* epsiKData0 = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
-    for ( int lobe = 0; lobe < 2; lobe++) {
+    for ( int lobe = 0; lobe < numLobes; lobe++) {
         //cout << "LOBE: " << lobe << endl;
         for ( int slice = 0; slice < regridDims[2]; slice++) {
             for ( int row = 0; row < regridDims[1]; row++) {
@@ -1027,7 +1038,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     //  Remove all arrays with epsiAxis dimension greater
     //  than  integralMax, and reinit the DcmHeader!!!
     int numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
-    for ( int lobe = 0; lobe < 2; lobe++) { // lobes are stored as coils or channels
+    for ( int lobe = 0; lobe < numLobes; lobe++) { // lobes are stored as coils or channels
         for (int timePt = 0; timePt < numTimePoints; timePt++) {
             for ( int slice = 0; slice < regridDims[2]; slice++) {
                 for ( int row = 0; row < regridDims[1]; row++) {
@@ -1056,7 +1067,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
     // Now reinit the DICOM header
     regridDims[epsiAxis] = integralMax; 
-    svkRawMapperUtils::RedimensionData( data, numVoxels, regridDims, numSpecPts); 
+    int numCoils = numLobes;  
+    svkRawMapperUtils::RedimensionData( data, numVoxels, regridDims, numSpecPts, numCoils); 
 
     delete [] waveFormIntegralNorm;
     delete [] epsiKData0;

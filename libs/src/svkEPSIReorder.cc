@@ -173,13 +173,14 @@ void svkEPSIReorder::SetNumVoxelsOriginal( int numVoxels[3] )
  */
 int svkEPSIReorder::GetNumEPSIFrequencyPoints()
 {
+    int numFreqPts;
     if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
     } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
-        int numFreqPts = this->numLobes;     
+        numFreqPts = this->numLobes;     
     } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
-        int numFreqPts = this->numLobes / 2;     
+        numFreqPts = this->numLobes / 2;     
     } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
         cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
         exit(1); 
@@ -187,6 +188,7 @@ int svkEPSIReorder::GetNumEPSIFrequencyPoints()
         cout << "ERROR( " << this->GetClassName() << "): UNSUPPORTED EPSI TYPE " << endl;
         exit(1); 
     }
+    return numFreqPts; 
 }
 
 
@@ -197,18 +199,24 @@ int svkEPSIReorder::GetNumEPSIFrequencyPoints()
  */
 int svkEPSIReorder::GetNumEPSIAcquisitions()
 {
+    int numAcquisitions; 
+
     if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
     } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
-        return 1; 
+        numAcquisitions = 1; 
     } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
-        return 2; 
-        int numFreqPts = this->numLobes / 2;     
+        numAcquisitions = 2; 
     } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
         cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
         exit(1); 
-    } 
+    } else {
+        cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
+        exit(1); 
+    }
+    
+    return numAcquisitions; 
 }
 
 
@@ -300,7 +308,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //============================================================
     int numTimePoints = 1; 
     int timePoint = 0;
-    int numCoils = this->GetNumEPSIAcquisitions(); 
+    int numEPSIAcquisitions = this->GetNumEPSIAcquisitions(); 
     int coilNum = 0; 
 
     //============================================================
@@ -321,7 +329,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         numReorderedVoxels *= reorderedVoxels[i];  
     }
 
-    numReorderedVoxels *= numTimePoints * numCoils; //remember, numCoils is number of acquisitions 
+    numReorderedVoxels *= numTimePoints * numEPSIAcquisitions; 
     for (int arrayNumber = 0; arrayNumber < numReorderedVoxels; arrayNumber++) {
         vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
         dataArray->SetNumberOfComponents( numComponents );
@@ -363,8 +371,9 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                 int currentEPSIPt = this->firstSample;   
 
                 rangeMax[this->epsiAxis] -= 1;    //  other indices have zero range 
-                //  first loop over epsi-kspace points for first lobe, then for 2nd lobe, etc.
-                for (int lobe = 0; lobe < 2; lobe++ ) { 
+                //  first loop over epsi-kspace points for each acquisition, i.e. 2 for symmetric epsi, 1 for flyback.  
+                //  For sym epsi these are the pos/neg gradient sampling.
+                for (int acq = 0; acq < numEPSIAcquisitions; acq++ ) { 
                     for (int z = rangeMin[2]; z < rangeMax[2] + 1; z++ ) { 
                         for (int y = rangeMin[1]; y < rangeMax[1] + 1; y++ ) { 
                             for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
@@ -373,13 +382,13 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                                 int index =  x
                                           + ( reorderedVoxels[0] ) * y
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] ) * z
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * lobe 
+                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * acq 
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * timePoint;
  
                                 vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
                                 char arrayName[30];
-                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePoint, lobe);
+                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePoint, acq);
                                 dataArray->SetName(arrayName);
 
                                 //  reorder EPSI data, throwng away the first and last 
@@ -415,7 +424,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     data->DeepCopy( reorderedImageData ); 
     numVoxels[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; //   first and last point were thrown out
     int numVoxelsOriginal[3]; 
-    svkRawMapperUtils::RedimensionData( data, this->numVoxelsOriginal, numVoxels, numFreqPts ); 
+    svkRawMapperUtils::RedimensionData( data, this->numVoxelsOriginal, numVoxels, numFreqPts, numEPSIAcquisitions ); 
 
     reorderedImageData->Delete();
 

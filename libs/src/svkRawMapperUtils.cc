@@ -41,6 +41,7 @@
 
 
 #include <svkRawMapperUtils.h>
+#include <svkGEPFileMapper.h>
 #include <vtkDebugLeaks.h>
 
 
@@ -48,46 +49,18 @@ using namespace svk;
 
 
 vtkCxxRevisionMacro(svkRawMapperUtils, "$Rev: 1346 $");
-vtkStandardNewMacro(svkRawMapperUtils);
-
-
-/*!
- *
- */
-svkRawMapperUtils::svkRawMapperUtils()
-{
-
-#if VTK_DEBUG_ON
-    this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkRawMapperUtils");
-#endif
-
-    vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
-
-}
-
-
-/*!
- *
- */
-svkRawMapperUtils::~svkRawMapperUtils()
-{
-    vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
-}
 
 
 
 /*!
- *  Redimension after reordering epsi dimension.  Should have 2 lobes
- *  at this point. 
+ *  Redimension data after changing number of voxels and time points.  Requires explicitly setting the numCoils/Channels:  
  */
-void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts )
+void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts, int numCoils )
 {
 
     svkDcmHeader* hdr = data->GetDcmHeader();     
 
     int numTimePts = hdr->GetNumberOfTimePoints();
-    int numCoils = hdr->GetNumberOfCoils(); //num lobes
 
     //  This is the original origin based on the reduced dimensionality in the EPSI direction
     double origin[3];

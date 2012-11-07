@@ -43,6 +43,10 @@
 #define SVK_RAW_MAPPER_UTILS_H
 
 
+#include <vtkObject.h>
+#include <svkImageData.h>
+
+
 namespace svk {
 
 
@@ -55,12 +59,12 @@ class svkRawMapperUtils : public vtkObject
     public:
 
         vtkTypeRevisionMacro( svkRawMapperUtils, vtkObject );
-        static svkRawMapperUtils* New();
 
         static void     RedimensionData( svkImageData* data, 
                                          int* numVoxelsOriginal, 
                                          int* numVoxelsReordered, 
-                                         int numFreqPts ); 
+                                         int numFreqPts, 
+                                         int numCoil); 
 
 
 }; 
