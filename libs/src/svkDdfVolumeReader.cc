@@ -230,6 +230,8 @@ void svkDdfVolumeReader::ExecuteData(vtkDataObject* output)
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
 
+    this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
+
 }
 
 
@@ -782,7 +784,7 @@ void svkDdfVolumeReader::InitPatientModule()
     this->GetOutput()->GetDcmHeader()->InitPatientModule(
         this->GetOutput()->GetDcmHeader()->GetDcmPatientName(  ddfMap["patientName"] ),  
         ddfMap["patientId"], 
-        ddfMap["dateOfBirth"], 
+        this->RemoveSlashesFromDate( &(ddfMap["dateOfBirth"]) ), 
         ddfMap["sex"] 
     );
 
