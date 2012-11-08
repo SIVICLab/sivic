@@ -391,7 +391,10 @@ svkImageData* svkImageReader2::GetOutput(int port)
 vtkstd::string svkImageReader2::RemoveSlashesFromDate(vtkstd::string* slashDate)
 {
 
-    if ( slashDate->length() > 0 ) {
+    //  string should not be empty or "blank"
+    size_t pos = slashDate->find_first_not_of(" ");
+
+    if ( slashDate->length() > 0 && pos != string::npos ) {
         size_t delim;
         delim = slashDate->find_first_of('/');
         vtkstd::string month = slashDate->substr(0, delim);
