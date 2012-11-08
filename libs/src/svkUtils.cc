@@ -340,6 +340,18 @@ string svkUtils::IntToString( int intVal )
 }
 
 
+/*!
+ *  @param doubleVal
+ *  @return string equivalent
+ */
+string svkUtils::DoubleToString( double doubleVal )
+{
+    ostringstream intStream;
+    intStream << doubleVal;
+    return intStream.str();
+}
+
+
 void svkUtils::StringToColorArray( double color[3], string colorString )
 {
     vector<string> colors = svkUtils::SplitString( colorString, " ");
