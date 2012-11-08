@@ -346,6 +346,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_reorder_epsi
+    svk_reorder_epsi.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_reorder_epsi
+	${SVK_LIBS}
+)
+
 if ( BUILD_CMINPACK )
     ADD_EXECUTABLE(
         svk_met_kinetics

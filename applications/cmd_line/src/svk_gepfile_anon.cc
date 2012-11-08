@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_gepfile_reader.cc $
- *  $Rev: 1355 $
- *  $Author: jccrane $
- *  $Date: 2012-09-17 16:16:46 -0700 (Mon, 17 Sep 2012) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

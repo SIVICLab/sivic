@@ -555,6 +555,8 @@
               <df name="CompilerIdCXX">
                 <in>CMakeCXXCompilerId.cpp</in>
               </df>
+              <df name="Progress">
+              </df>
             </df>
             <df name="libs">
               <df name="Linux_x86_64">
@@ -816,261 +818,6 @@
         <df name="Linux_x86_64_debug">
         </df>
         <df name="src">
-          <df name="bak">
-            <in>svk4DImageData.cc</in>
-            <in>svk4DImageData.h</in>
-            <in>svkAlgoTemplate.cc</in>
-            <in>svkAlgoTemplate.h</in>
-            <in>svkApodizationWindow.cc</in>
-            <in>svkApodizationWindow.h</in>
-            <in>svkAreaPicker.cc</in>
-            <in>svkAreaPicker.h</in>
-            <in>svkBoxPlot.cc</in>
-            <in>svkBoxPlot.h</in>
-            <in>svkBurnResearchPixels.cc</in>
-            <in>svkBurnResearchPixels.h</in>
-            <in>svkByteSwap.cc</in>
-            <in>svkByteSwap.h</in>
-            <in>svkCoilCombine.cc</in>
-            <in>svkCoilCombine.h</in>
-            <in>svkCorrectDCOffset.cc</in>
-            <in>svkCorrectDCOffset.h</in>
-            <in>svkDICOMEnhancedMRIWriter.cc</in>
-            <in>svkDICOMEnhancedMRIWriter.h</in>
-            <in>svkDICOMImageWriter.cc</in>
-            <in>svkDICOMImageWriter.h</in>
-            <in>svkDICOMMRIWriter.cc</in>
-            <in>svkDICOMMRIWriter.h</in>
-            <in>svkDICOMMRSWriter.cc</in>
-            <in>svkDICOMMRSWriter.h</in>
-            <in>svkDICOMRawDataWriter.cc</in>
-            <in>svkDICOMRawDataWriter.h</in>
-            <in>svkDICOMSCWriter.cc</in>
-            <in>svkDICOMSCWriter.h</in>
-            <in>svkDSCDeltaR2.cc</in>
-            <in>svkDSCDeltaR2.h</in>
-            <in>svkDSCMap.cc</in>
-            <in>svkDSCMap.h</in>
-            <in>svkDSCPeakHeight.cc</in>
-            <in>svkDSCPeakHeight.h</in>
-            <in>svkDSCRecovery.cc</in>
-            <in>svkDSCRecovery.h</in>
-            <in>svkDataModel.cc</in>
-            <in>svkDataModel.h</in>
-            <in>svkDataValidator.cc</in>
-            <in>svkDataValidator.h</in>
-            <in>svkDataView.cc</in>
-            <in>svkDataView.h</in>
-            <in>svkDataViewController.cc</in>
-            <in>svkDataViewController.h</in>
-            <in>svkDcmHeader.cc</in>
-            <in>svkDcmHeader.h</in>
-            <in>svkDcmMriVolumeReader.cc</in>
-            <in>svkDcmMriVolumeReader.h</in>
-            <in>svkDcmMrsVolumeReader.cc</in>
-            <in>svkDcmMrsVolumeReader.h</in>
-            <in>svkDcmRawDataReader.cc</in>
-            <in>svkDcmRawDataReader.h</in>
-            <in>svkDcmVolumeReader.cc</in>
-            <in>svkDcmVolumeReader.h</in>
-            <in>svkDcmtkAdapter.cc</in>
-            <in>svkDcmtkAdapter.h</in>
-            <in>svkDcmtkException.cc</in>
-            <in>svkDcmtkException.h</in>
-            <in>svkDcmtkIod.cc</in>
-            <in>svkDcmtkIod.h</in>
-            <in>svkDcmtkUtils.cc</in>
-            <in>svkDcmtkUtils.h</in>
-            <in>svkDdfVolumeReader.cc</in>
-            <in>svkDdfVolumeReader.h</in>
-            <in>svkDdfVolumeWriter.cc</in>
-            <in>svkDdfVolumeWriter.h</in>
-            <in>svkDetailedPlotDirector.cc</in>
-            <in>svkDetailedPlotDirector.h</in>
-            <in>svkEPSIPhaseCorrect.cc</in>
-            <in>svkEPSIPhaseCorrect.h</in>
-            <in>svkEnhancedMRIIOD.cc</in>
-            <in>svkEnhancedMRIIOD.h</in>
-            <in>svkFastCellData.cc</in>
-            <in>svkFastCellData.h</in>
-            <in>svkFdfVolumeReader.cc</in>
-            <in>svkFdfVolumeReader.h</in>
-            <in>svkGEImageHeader.h</in>
-            <in>svkGEPFileMapper.cc</in>
-            <in>svkGEPFileMapper.h</in>
-            <in>svkGEPFileMapperMBrease.cc</in>
-            <in>svkGEPFileMapperMBrease.h</in>
-            <in>svkGEPFileMapperMPCSIOBL.cc</in>
-            <in>svkGEPFileMapperMPCSIOBL.h</in>
-            <in>svkGEPFileMapperUCSF.cc</in>
-            <in>svkGEPFileMapperUCSF.h</in>
-            <in>svkGEPFileMapperUCSFfidcsi.cc</in>
-            <in>svkGEPFileMapperUCSFfidcsi.h</in>
-            <in>svkGEPFileMapperUCSFfidcsiDev0.cc</in>
-            <in>svkGEPFileMapperUCSFfidcsiDev0.h</in>
-            <in>svkGEPFileReader.cc</in>
-            <in>svkGEPFileReader.h</in>
-            <in>svkGEPostageStampReader.cc</in>
-            <in>svkGEPostageStampReader.h</in>
-            <in>svkGESigna5XReader.cc</in>
-            <in>svkGESigna5XReader.h</in>
-            <in>svkGESignaLX2Reader.cc</in>
-            <in>svkGESignaLX2Reader.h</in>
-            <in>svkIOD.cc</in>
-            <in>svkIOD.h</in>
-            <in>svkIdfVolumeReader.cc</in>
-            <in>svkIdfVolumeReader.h</in>
-            <in>svkIdfVolumeWriter.cc</in>
-            <in>svkIdfVolumeWriter.h</in>
-            <in>svkImageAlgorithm.cc</in>
-            <in>svkImageAlgorithm.h</in>
-            <in>svkImageAlgorithmExecuter.cc</in>
-            <in>svkImageAlgorithmExecuter.h</in>
-            <in>svkImageClip.cc</in>
-            <in>svkImageClip.h</in>
-            <in>svkImageCopy.cc</in>
-            <in>svkImageCopy.h</in>
-            <in>svkImageData.cc</in>
-            <in>svkImageData.h</in>
-            <in>svkImageDataFactory.cc</in>
-            <in>svkImageDataFactory.h</in>
-            <in>svkImageFourierCenter.cc</in>
-            <in>svkImageFourierCenter.h</in>
-            <in>svkImageInPlaceFilter.cc</in>
-            <in>svkImageInPlaceFilter.h</in>
-            <in>svkImageLinearPhase.cc</in>
-            <in>svkImageLinearPhase.h</in>
-            <in>svkImageMapToColors.cc</in>
-            <in>svkImageMapToColors.h</in>
-            <in>svkImageMapToWindowLevelColors.cc</in>
-            <in>svkImageMapToWindowLevelColors.h</in>
-            <in>svkImageMathematics.cc</in>
-            <in>svkImageMathematics.h</in>
-            <in>svkImageReader2.cc</in>
-            <in>svkImageReader2.h</in>
-            <in>svkImageReaderFactory.cc</in>
-            <in>svkImageReaderFactory.h</in>
-            <in>svkImageTopologyGenerator.cc</in>
-            <in>svkImageTopologyGenerator.h</in>
-            <in>svkImageView2D.cc</in>
-            <in>svkImageView2D.h</in>
-            <in>svkImageView2DController.cc</in>
-            <in>svkImageView2DController.h</in>
-            <in>svkImageViewer2.cc</in>
-            <in>svkImageViewer2.h</in>
-            <in>svkImageWriter.cc</in>
-            <in>svkImageWriter.h</in>
-            <in>svkImageWriterFactory.cc</in>
-            <in>svkImageWriterFactory.h</in>
-            <in>svkIntegratePeak.cc</in>
-            <in>svkIntegratePeak.h</in>
-            <in>svkLookupTable.cc</in>
-            <in>svkLookupTable.h</in>
-            <in>svkMRIIOD.cc</in>
-            <in>svkMRIIOD.h</in>
-            <in>svkMRSIOD.cc</in>
-            <in>svkMRSIOD.h</in>
-            <in>svkMetaboliteMap.cc</in>
-            <in>svkMetaboliteMap.h</in>
-            <in>svkMetaboliteRatioZScores.cc</in>
-            <in>svkMetaboliteRatioZScores.h</in>
-            <in>svkMriImageData.cc</in>
-            <in>svkMriImageData.h</in>
-            <in>svkMriImageFFT.cc</in>
-            <in>svkMriImageFFT.h</in>
-            <in>svkMriZeroFill.cc</in>
-            <in>svkMriZeroFill.h</in>
-            <in>svkMrsApodizationFilter.cc</in>
-            <in>svkMrsApodizationFilter.h</in>
-            <in>svkMrsImageData.cc</in>
-            <in>svkMrsImageData.h</in>
-            <in>svkMrsImageFFT.cc</in>
-            <in>svkMrsImageFFT.h</in>
-            <in>svkMrsImageFlip.cc</in>
-            <in>svkMrsImageFlip.h</in>
-            <in>svkMrsImageFourierCenter.cc</in>
-            <in>svkMrsImageFourierCenter.h</in>
-            <in>svkMrsLinearPhase.cc</in>
-            <in>svkMrsLinearPhase.h</in>
-            <in>svkMrsTopoGenerator.cc</in>
-            <in>svkMrsTopoGenerator.h</in>
-            <in>svkMrsZeroFill.cc</in>
-            <in>svkMrsZeroFill.h</in>
-            <in>svkMultiCoilPhase.cc</in>
-            <in>svkMultiCoilPhase.h</in>
-            <in>svkMultiWindowToImageFilter.cc</in>
-            <in>svkMultiWindowToImageFilter.h</in>
-            <in>svkObliqueReslice.cc</in>
-            <in>svkObliqueReslice.h</in>
-            <in>svkOpenGLOrientedImageActor.cc</in>
-            <in>svkOpenGLOrientedImageActor.h</in>
-            <in>svkOrientedImageActorFactory.cc</in>
-            <in>svkOrientedImageActorFactory.h</in>
-            <in>svkOverlaySelector.cc</in>
-            <in>svkOverlaySelector.h</in>
-            <in>svkOverlayView.cc</in>
-            <in>svkOverlayView.h</in>
-            <in>svkOverlayViewController.cc</in>
-            <in>svkOverlayViewController.h</in>
-            <in>svkPACSInterface.cc</in>
-            <in>svkPACSInterface.h</in>
-            <in>svkPhaseSpec.cc</in>
-            <in>svkPhaseSpec.h</in>
-            <in>svkPlotGridView.cc</in>
-            <in>svkPlotGridView.h</in>
-            <in>svkPlotGridViewController.cc</in>
-            <in>svkPlotGridViewController.h</in>
-            <in>svkPlotLine.cc</in>
-            <in>svkPlotLine.h</in>
-            <in>svkPlotLineGrid.cc</in>
-            <in>svkPlotLineGrid.h</in>
-            <in>svkProvenance.cc</in>
-            <in>svkProvenance.h</in>
-            <in>svkQuantifyDSC.cc</in>
-            <in>svkQuantifyDSC.h</in>
-            <in>svkQuantifyMetabolites.cc</in>
-            <in>svkQuantifyMetabolites.h</in>
-            <in>svkRawIOD.cc</in>
-            <in>svkRawIOD.h</in>
-            <in>svkSCIOD.cc</in>
-            <in>svkSCIOD.h</in>
-            <in>svkSatBandSet.cc</in>
-            <in>svkSatBandSet.h</in>
-            <in>svkSdbmVolumeReader.cc</in>
-            <in>svkSdbmVolumeReader.h</in>
-            <in>svkSiemensRdaReader.cc</in>
-            <in>svkSiemensRdaReader.h</in>
-            <in>svkSincInterpolationFilter.cc</in>
-            <in>svkSincInterpolationFilter.h</in>
-            <in>svkSpecGridSelector.cc</in>
-            <in>svkSpecGridSelector.h</in>
-            <in>svkSpecPoint.cc</in>
-            <in>svkSpecPoint.h</in>
-            <in>svkSpecUtils.cc</in>
-            <in>svkSpecUtils.h</in>
-            <in>svkSpectraReferenceView.cc</in>
-            <in>svkSpectraReferenceView.h</in>
-            <in>svkSpectraReferenceViewController.cc</in>
-            <in>svkSpectraReferenceViewController.h</in>
-            <in>svkUCSFPACSInterface.cc</in>
-            <in>svkUCSFPACSInterface.h</in>
-            <in>svkUCSFUtils.cc</in>
-            <in>svkUCSFUtils.h</in>
-            <in>svkUtils.cc</in>
-            <in>svkUtils.h</in>
-            <in>svkVarianCSFidMapper.cc</in>
-            <in>svkVarianCSFidMapper.h</in>
-            <in>svkVarianFidMapper.cc</in>
-            <in>svkVarianFidMapper.h</in>
-            <in>svkVarianFidReader.cc</in>
-            <in>svkVarianFidReader.h</in>
-            <in>svkVarianReader.cc</in>
-            <in>svkVarianReader.h</in>
-            <in>svkVarianUCSF2DcsiMapper.cc</in>
-            <in>svkVarianUCSF2DcsiMapper.h</in>
-            <in>svkXYPlotActor.cc</in>
-            <in>svkXYPlotActor.h</in>
-          </df>
           <df name="CMakeFiles">
             <df name="CMakeTmp">
               <df name="CMakeFiles">
@@ -1171,6 +918,8 @@
           <in>svkDynamicMRIAlgoTemplate.h</in>
           <in>svkEPSIPhaseCorrect.cc</in>
           <in>svkEPSIPhaseCorrect.h</in>
+          <in>svkEPSIReorder.cc</in>
+          <in>svkEPSIReorder.h</in>
           <in>svkEnhancedMRIIOD.cc</in>
           <in>svkEnhancedMRIIOD.h</in>
           <in>svkFastCellData.cc</in>
@@ -1456,6 +1205,12 @@
             <df name="Linux_x86_64">
             </df>
           </df>
+          <df name="9x_swap">
+            <df name="input">
+            </df>
+            <df name="Linux_x86_64">
+            </df>
+          </df>
         </df>
         <df name="ge_postage_stamp">
           <df name="input">
@@ -1732,6 +1487,8 @@
           </df>
           <df name="TEST_MCHK_20XPF_2_DDF">
           </df>
+          <df name="TEST_MCHK_9XPF_SWAP_DDF">
+          </df>
           <df name="TEST_MCHK_COMBINE">
           </df>
           <df name="TEST_MCHK_DCMMRI_2_DCMMRI">
@@ -1813,6 +1570,14 @@
           <df name="TEST_PHASE_SPEC">
           </df>
           <df name="VTK_RENDER_MCHK">
+          </df>
+        </df>
+        <df name="sample_epsi">
+          <df name="input">
+            <df name="development">
+            </df>
+          </df>
+          <df name="out">
           </df>
         </df>
         <df name="sat_bands">
@@ -2895,8 +2660,6 @@
             ex="true"
             tool="1"
             flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageWriter.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkAlgoTemplate.h" ex="true" tool="3" flavor="0">
       </item>
@@ -4220,183 +3983,6 @@
             ex="true"
             tool="1"
             flavor="0">
-      </item>
-      <item path="libs/src/bak/svkBoxPlot.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkBurnResearchPixels.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkByteSwap.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkCoilCombine.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMEnhancedMRIWriter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMImageWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMMRIWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMMRSWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMRawDataWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDICOMSCWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDSCDeltaR2.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDSCMap.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDSCPeakHeight.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDSCRecovery.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDataModel.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDataView.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDataViewController.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkDetailedPlotDirector.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkEPSIPhaseCorrect.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkIdfVolumeWriter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageAlgorithmExecuter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageClip.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageCopy.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageDataFactory.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageFourierCenter.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageLinearPhase.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageMapToColors.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageMapToWindowLevelColors.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageMathematics.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageView2D.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageView2DController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageViewer2.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageWriterFactory.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMRIIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMetaboliteRatioZScores.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMriImageFFT.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsImageFFT.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsImageFlip.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMrsImageFourierCenter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMultiCoilPhase.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkMultiWindowToImageFilter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkObliqueReslice.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkOpenGLOrientedImageActor.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkOrientedImageActorFactory.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkOverlaySelector.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkOverlayView.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkOverlayViewController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkPlotGridView.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkPlotGridViewController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkPlotLine.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkPlotLineGrid.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkQuantifyDSC.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkQuantifyMetabolites.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkRawIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSCIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSincInterpolationFilter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSpecGridSelector.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSpectraReferenceView.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkSpectraReferenceViewController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkUCSFPACSInterface.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkVarianCSFidMapper.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/bak/svkVarianUCSF2DcsiMapper.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="libs/src/bak/svkXYPlotActor.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svk4DImageData.cc" ex="false" tool="1" flavor="0">
         <ccTool>
@@ -6746,8 +6332,6 @@
             ex="true"
             tool="1"
             flavor="0">
-      </item>
-      <item path="libs/src/bak/svkImageWriter.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkAreaPicker.cc" ex="true" tool="1" flavor="0">
       </item>
