@@ -44,9 +44,11 @@
 #include <svkEPSIReorder.h>
 #include <svkMrsLinearPhase.h> 
 #include <svkRawMapperUtils.h> 
+#include <svkUtils.h> 
 
 
-#define UNDEFINED_EPSI_AXIS -1
+#define UNDEFINED_NUM_SAMPLES -1
+#define UNDEFINED_NUM_LOBES -1
 
 using namespace svk;
 
@@ -69,9 +71,11 @@ svkEPSIReorder::svkEPSIReorder()
 
     //  Initialize any member variables
     this->epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE; 
-    this->numSamplesPerLobe = 0; 
+    this->numSamplesPerLobe = UNDEFINED_NUM_SAMPLES; 
+    this->numLobes = UNDEFINED_NUM_LOBES; 
     this->numSamplesToSkip = 0; 
-    this->epsiAxis = UNDEFINED_EPSI_AXIS;
+    this->firstSample = 0; 
+    this->epsiAxis = svkEPSIReorder::UNDEFINED_EPSI_AXIS;
 
 }
 
@@ -87,7 +91,7 @@ svkEPSIReorder::~svkEPSIReorder()
 /*!
  *  Set the axis index corresponding to the EPSI encoding (0,1 or 2). 
  */
-void svkEPSIReorder::SetEPSIAxis( int epsiAxis )
+void svkEPSIReorder::SetEPSIAxis( svkEPSIReorder::EPSIAxis epsiAxis )
 {
     this->epsiAxis = epsiAxis;
 }
@@ -96,7 +100,7 @@ void svkEPSIReorder::SetEPSIAxis( int epsiAxis )
 /*!
  *  Get the axis index corresponding to the EPSI encoding (0,1 or 2). 
  */
-int svkEPSIReorder::GetEPSIAxis()
+svkEPSIReorder::EPSIAxis svkEPSIReorder::GetEPSIAxis()
 {
     return this->epsiAxis;
 }
@@ -126,20 +130,31 @@ void svkEPSIReorder::SetNumEPSILobes( int numLobes )
 void svkEPSIReorder::SetNumSamplesPerLobe( int numSamplesPerLobe )
 {
     this->numSamplesPerLobe = numSamplesPerLobe; 
+
 }
 
 /*!
- *  Set the number of lobes in the EPSI acquisition
+ *  Get the number of lobes in the EPSI acquisition.  If the number
+ *  of samples per lobe has not been explicitly set via SetNumEPSISamplesPerLobe, 
+ *  then infer it by dividing the number of samples in the entire EPSI waveform
+ *  by the number of lobes. 
  */
 int svkEPSIReorder::GetNumSamplesPerLobe( )
 {
+    if ( this->numSamplesPerLobe == UNDEFINED_NUM_SAMPLES  ) {
+        if ( this->numLobes != UNDEFINED_NUM_LOBES && this->GetImageDataInput(0) != NULL ) {
+            this->numSamplesPerLobe = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue("DataPointColumns")/ this->numLobes; 
+        } else {
+            cout << "ERROR, can not determine the number of samples per lobe" << endl; 
+        }    
+    } 
     return this->numSamplesPerLobe;
 }
 
 
 /*!
  *  Set the number of samples to skip between lobes. Different from 
- *  the initial offset (firstSample). 
+ *  the initial offset (firstSample).  This is 0 by default.  
  */
 void svkEPSIReorder::SetNumSamplesToSkip( int numSamplesToSkip)
 {
@@ -148,7 +163,8 @@ void svkEPSIReorder::SetNumSamplesToSkip( int numSamplesToSkip)
 
 /*!
  *  Set the first sample to read when reordering the EPSI data. A few 
- *  samples may be skipped at the begining. 
+ *  samples may be skipped at the begining. To include the first point
+ *  set to 0 (default).    
  */
 void svkEPSIReorder::SetFirstSample( int firstSample )
 {
@@ -228,7 +244,10 @@ int svkEPSIReorder::GetNumEPSIAcquisitions()
 int svkEPSIReorder::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( this->epsiType == UNDEFINED_EPSI_TYPE  || this->epsiAxis == UNDEFINED_EPSI_AXIS ) {
+    if ( this->epsiType == UNDEFINED_EPSI_TYPE || 
+        this->epsiAxis == svkEPSIReorder::UNDEFINED_EPSI_AXIS || 
+        this->numLobes == UNDEFINED_NUM_LOBES 
+    ) {
         cout << "ERROR, must specify the epsiAxis and number of sample k-space points per lobe" << endl;
         return 1; 
     }
@@ -286,19 +305,21 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  epsi this is twice the number of frequence points (pos + neg)    
     int numFreqPts = this->GetNumEPSIFrequencyPoints(); 
 
+    int epsiDir  = static_cast<int>( this->GetEPSIAxis() ); 
+
     //  Set the actual number of k-space points sampled:
     int numVoxels[3]; 
     numVoxels[0] = this->numVoxelsOriginal[0]; 
     numVoxels[1] = this->numVoxelsOriginal[1]; 
     numVoxels[2] = this->numVoxelsOriginal[2]; 
-    numVoxels[ this->epsiAxis ] = this->numSamplesPerLobe; 
+    numVoxels[ epsiDir ] = this->GetNumSamplesPerLobe();
 
     //  Set the number of reordered voxels (target dimensionality of this method)
     int reorderedVoxels[3]; 
     reorderedVoxels[0] = numVoxels[0]; 
     reorderedVoxels[1] = numVoxels[1]; 
     reorderedVoxels[2] = numVoxels[2]; 
-    reorderedVoxels[ this->epsiAxis ] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; 
+    reorderedVoxels[ epsiDir ] = numVoxels[epsiDir] - this->numSamplesToSkip; 
 
     //cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
@@ -356,21 +377,21 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                 rangeMax[1] = yEPSI;
                 rangeMax[2] = zEPSI;
                 //  throw out the first and last points (zero crossing)
-                rangeMin[this->epsiAxis] = 0; 
-                rangeMax[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; 
+                rangeMin[epsiDir] = 0; 
+                rangeMax[epsiDir] = numVoxels[epsiDir] - this->numSamplesToSkip; 
 
                 
                 //============================================================
                 //  allocate an array for both the positive and negative lobes of 
                 //  the symmetric EPSI encoding:
                 //============================================================
-                int lobeStride = this->numSamplesPerLobe;  
+                int lobeStride = this->GetNumSamplesPerLobe();  
 
                 //  set the current index along the EPSI dimension
                 //  Initialize first point to skip + throw out first point (zero crossing)
                 int currentEPSIPt = this->firstSample;   
 
-                rangeMax[this->epsiAxis] -= 1;    //  other indices have zero range 
+                rangeMax[epsiDir] -= 1;    //  other indices have zero range 
                 //  first loop over epsi-kspace points for each acquisition, i.e. 2 for symmetric epsi, 1 for flyback.  
                 //  For sym epsi these are the pos/neg gradient sampling.
                 for (int acq = 0; acq < numEPSIAcquisitions; acq++ ) { 
@@ -422,11 +443,75 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  Redimension the meta data and set the new arrays:
     //  =================================================
     data->DeepCopy( reorderedImageData ); 
-    numVoxels[this->epsiAxis] = numVoxels[this->epsiAxis] - this->numSamplesToSkip; //   first and last point were thrown out
+    numVoxels[epsiDir] = numVoxels[epsiDir] - this->numSamplesToSkip; //   first and last point were thrown out
     int numVoxelsOriginal[3]; 
     svkRawMapperUtils::RedimensionData( data, this->numVoxelsOriginal, numVoxels, numFreqPts, numEPSIAcquisitions ); 
 
+    this->UpdateReorderedParams( data, numVoxels ); 
+
+    data->GetProvenance()->AddAlgorithm( this->GetClassName() );
+
     reorderedImageData->Delete();
+
+}
+
+
+/*!
+ *  Reset the "Reordered" parameters in the header, including the sweepwidth: 
+ */
+void svkEPSIReorder::UpdateReorderedParams( svkImageData* data, int numVoxels[3] )
+{
+
+    float sweepWidthOriginal = data->GetDcmHeader()->GetFloatValue( "SpectralWidth" ); 
+    float sweepWidth = sweepWidthOriginal / this->GetNumSamplesPerLobe(); 
+    data->GetDcmHeader()->SetValue(
+        "SpectralWidth",
+        sweepWidth
+    );
+
+
+    data->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedPhaseColumns",
+        numVoxels[0], 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    data->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedPhaseRows",
+        numVoxels[1], 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    data->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedOutOfPlanePhaseSteps",
+        numVoxels[2], 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
+
+    double toplc[3];
+    data->GetDcmHeader()->GetOrigin(toplc, 0);
+    string toplcString = 
+        svkUtils::DoubleToString(toplc[0]) + '\\' +
+        svkUtils::DoubleToString(toplc[1]) + '\\' +
+        svkUtils::DoubleToString(toplc[2]); 
+
+    data->GetDcmHeader()->AddSequenceItemElement(
+        "MRSpectroscopyFOVGeometrySequence",
+        0,
+        "SVK_SpectroscopyAcqReorderedTLC",
+        toplcString, 
+        "SharedFunctionalGroupsSequence",
+        0
+    );
 
 }
 

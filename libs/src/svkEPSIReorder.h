@@ -74,17 +74,24 @@ class svkEPSIReorder : public svkImageInPlaceFilter
             INTERLEAVED 
         } EPSIType;
 
-        void            SetEPSIType( svkEPSIReorder::EPSIType epsiType );  
-        void            SetNumEPSILobes( int numLobes );  
-        void            SetNumSamplesPerLobe( int numSamples ); 
-        int             GetNumSamplesPerLobe(); 
-        void            SetFirstSample( int firstSample );
-        void            SetNumSamplesToSkip( int numSamplesToSkip );
-        void            SetEPSIAxis( int EPSIaxis ); 
-        int             GetEPSIAxis(); 
-        void            SetNumVoxelsOriginal( int numVoxels[3] );
-        virtual int     GetNumEPSIAcquisitions();
-        virtual int     GetNumEPSIFrequencyPoints();
+       typedef enum {
+            UNDEFINED_EPSI_AXIS = -1,
+            COLS,
+            ROWS, 
+            SLICES 
+        } EPSIAxis;
+
+        void                        SetEPSIType( svkEPSIReorder::EPSIType epsiType );  
+        void                        SetNumEPSILobes( int numLobes );  
+        void                        SetNumSamplesPerLobe( int numSamples ); 
+        int                         GetNumSamplesPerLobe(); 
+        void                        SetFirstSample( int firstSample );
+        void                        SetNumSamplesToSkip( int numSamplesToSkip );
+        void                        SetEPSIAxis( svkEPSIReorder::EPSIAxis epsiAxis ); 
+        svkEPSIReorder::EPSIAxis    GetEPSIAxis(); 
+        void                        SetNumVoxelsOriginal( int numVoxels[3] );
+        virtual int                 GetNumEPSIAcquisitions();
+        virtual int                 GetNumEPSIFrequencyPoints();
 
 
     protected:
@@ -109,9 +116,11 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         int             numSamplesPerLobe; 
         int             firstSample; 
         int             numSamplesToSkip; 
-        int             epsiAxis;
+        EPSIAxis        epsiAxis;
 
         void            ReorderEPSIData( svkImageData* data ); 
+        void            UpdateReorderedParams( svkImageData* data, int numVoxels[3] ); 
+
         int             numVoxelsOriginal[3];
         int             numVoxelsReordered[3];
 

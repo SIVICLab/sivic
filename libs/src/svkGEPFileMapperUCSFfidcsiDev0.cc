@@ -412,7 +412,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     //  EPSI Axis (user9) defines which axis is epsi encoded.  Swap the value of 
     //  epsi k-space encodes into this field: 
-    reorder->SetEPSIAxis( this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 );
+    reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( this->GetHeaderValueAsInt( "rhr.rh_user20" ) - 1 ) );
 
 
     //  set the original input dimensionality:
@@ -421,168 +421,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     reorder->SetNumVoxelsOriginal( numEPSIVoxels ); 
     reorder->Update();
 
-    //====================================================
-/*
-    //============================================================
-    //Q:  is the number of EPSI phase encodes equal to numRead or numEPSIkSpacePoints?
-    //  I think it starts at numRead, and gets sampled down to numEPSIkSpacePoints (23-18)
-    //  after ramp sampling... i think
-    //============================================================
-    //===========
-    //  Reset hdr value (num cols?)
-    //===========
-
-    //  Get the input dimensionality (EPSI)
-    int numEPSIVoxels[3]; 
-    this->GetNumVoxels( numEPSIVoxels ); 
-
-    //  Set the actual number of k-space points sampled:
-    int numVoxels[3]; 
-    numVoxels[0] = numEPSIVoxels[0]; 
-    numVoxels[1] = numEPSIVoxels[1]; 
-    numVoxels[2] = numEPSIVoxels[2]; 
-    numVoxels[ epsiAxis ] = numRead; 
-
-    //  Set the number of reordered voxels (target dimensionality of this method)
-    int reorderedVoxels[3]; 
-    reorderedVoxels[0] = numVoxels[0]; 
-    reorderedVoxels[1] = numVoxels[1]; 
-    reorderedVoxels[2] = numVoxels[2]; 
-    reorderedVoxels[ epsiAxis ] = numVoxels[epsiAxis] - 2; //throw out first and last samples
-
-    //cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
-
-    //============================================================
-    //  Reorder the data: 
-    //============================================================
-    int numTimePoints = 1; 
-    int timePoint = 0;
-    int numCoils = 2; //lobes
-    int coilNum = 0; 
-
-    //============================================================
-    //  create a data set to store the new reordered data arrays. 
-    //  Remove all the original arrays from it. 
-    //============================================================
-    svkImageData* reorderedImageData = svkMrsImageData::New();
-    reorderedImageData->DeepCopy( data ); 
-    this->RemoveArrays( reorderedImageData ); 
-
-    //============================================================
-    //  Preallocate data arrays for reordered data. The API only permits dynamic 
-    //  assignmet at end of CellData, so for swapped cases where we need to insert 
-    //  data out of order they need to be preallocated.
-    //============================================================
-    int numReorderedVoxels = 1;
-    for (int i = 0; i < 3; i++) {
-        numReorderedVoxels *= reorderedVoxels[i];  
-    }
-    numReorderedVoxels *= numTimePoints * numCoils; //2 lobes
-    for (int arrayNumber = 0; arrayNumber < numReorderedVoxels; arrayNumber++) {
-        vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
-        dataArray->SetNumberOfComponents( numComponents );
-        dataArray->SetNumberOfTuples( numFreqPts );
-        reorderedImageData->GetCellData()->AddArray(dataArray);
-        dataArray->Delete();
-    }
-
-    
-    for (int zEPSI = 0; zEPSI < numEPSIVoxels[2]; zEPSI++ ) { 
-        for (int yEPSI = 0; yEPSI < numEPSIVoxels[1]; yEPSI++ ) { 
-            for (int xEPSI = 0; xEPSI < numEPSIVoxels[0]; xEPSI++ ) { 
-
-                vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(
-                        svkMrsImageData::SafeDownCast(data)->GetSpectrum( xEPSI, yEPSI, zEPSI, timePoint, 0) );
-    
-                //  define range of spatial dimension to expand (i.e. epsiAxis):  
-                int rangeMin[3]; 
-                rangeMin[0] = xEPSI; 
-                rangeMin[1] = yEPSI; 
-                rangeMin[2] = zEPSI; 
-                int rangeMax[3]; 
-                rangeMax[0] = xEPSI; 
-                rangeMax[1] = yEPSI;
-                rangeMax[2] = zEPSI;
-                //  throw out the first and last points (zero crossing)
-                rangeMin[epsiAxis] = 0; 
-                rangeMax[epsiAxis] = numVoxels[epsiAxis] - 2; 
-
-                
-                //============================================================
-                //  allocate an array for both the positive and negative lobes of 
-                //  the symmetric EPSI encoding:
-                //============================================================
-                int lobeStride = numRead;  
-
-                //  set the current index along the EPSI dimension
-                //  Initialize first point to skip + throw out first point (zero crossing)
-                int currentEPSIPt = numSkip + 1;   
-
-                rangeMax[epsiAxis] -= 1;    //  other indices have zero range 
-                //  first loop over epsi-kspace points for first lobe, then for 2nd lobe, etc.
-                for (int lobe = 0; lobe < 2; lobe++ ) { 
-                    for (int z = rangeMin[2]; z < rangeMax[2] + 1; z++ ) { 
-                        for (int y = rangeMin[1]; y < rangeMax[1] + 1; y++ ) { 
-                            for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
-
-                                //  Add arrays to the new data set at the correct array index: 
-                                int index =  x
-                                          + ( reorderedVoxels[0] ) * y
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] ) * z
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * lobe 
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * timePoint;
- 
-                                //cout << "   target index(xyzlobe): " << x << " " 
-                                    //<< y << " " << z << " " << lobe  << " index: " << index << endl;
-                                vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
-
-                                char arrayName[30];
-                                sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePoint, lobe);
-                                //cout << "reordered Array name (" << index << ") = " << arrayName << endl; 
-                                dataArray->SetName(arrayName);
-
-                                //  reorder EPSI data, throwng away the first and last 
-                                //  point (zero crossing). 
-                                float epsiTuple[2]; 
-                                float tuple[2]; 
-                                int epsiOffset; 
-                                for (int i = 0; i < numFreqPts; i++) {
-                                    epsiOffset = (lobeStride * 2 * i ) + currentEPSIPt;
-                                    epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
-                                    tuple[0] = epsiTuple[0]; 
-                                    tuple[1] = epsiTuple[1]; 
-                                    dataArray->SetTuple( i, tuple );
-
-                                    //cout << "       extract spectrum  epsiOffset: " 
-                                    //<< epsiOffset << " target index " << i << endl;
-                                    //if ( i <  10 ) { 
-                                        //cout << "fist 2 values or val0:  " << epsiTuple[0] << " " << epsiTuple[1] << endl;                                     //}
-                                }
-
-                                currentEPSIPt++; 
-                            }
-                        }
-                    }
-                    //  between lobes, throw out the last and first point before resuming sampling
-                    //  These are the zero crossings in symmetric EPSI. 
-                    currentEPSIPt +=2; 
-                }
-            }
-        }
-    }
-
-
-    //  =================================================
-    //  Redimension the meta data and set the new arrays:
-    //  =================================================
-    data->DeepCopy( reorderedImageData ); 
-    numVoxels[epsiAxis] = numVoxels[epsiAxis] - 2; //   first and last point were thrown out
-    int numVoxelsOriginal[3]; 
-    this->GetNumVoxels( numVoxelsOriginal ); 
-    this->RedimensionData( data, numVoxelsOriginal, numVoxels, numFreqPts ); 
-*/
-
     //  =================================================
     //  Apply linear phase correction to correct for EPSI sampling of 
     //  spectra: 
@@ -590,11 +428,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //          the correction is a function of the distance along the epsi-axis (k/t) with pivots 
     //          at the center of each dimension
     //  =================================================
-//  this may or may not work after refactoring:
     int numVoxels[3]; 
     this->GetNumVoxels( numVoxels ); 
     int numSamplesPerLobe = reorder->GetNumSamplesPerLobe();
-    int epsiAxis = reorder->GetEPSIAxis();
+    int epsiAxis = static_cast<int>( reorder->GetEPSIAxis() );
     int numFreqPts = reorder->GetNumEPSIFrequencyPoints(); 
 
     if ( this->GetDebug() ) {
@@ -603,6 +440,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     }
 
     this->EPSIPhaseCorrection( reorder->GetOutput(), numVoxels, numSamplesPerLobe, epsiAxis);  
+
+    //  EPSIReorder tries to automatically set the sweepwidth, but reset it here to the know value
+    data->GetDcmHeader()->SetValue(
+        "SpectralWidth",
+        581
+    );
  
     //  =================================================
     //  Reverse first, third, etc lobe k-space spectra along 
