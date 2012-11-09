@@ -404,7 +404,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                                           + ( reorderedVoxels[0] ) * y
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] ) * z
                                           + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] ) * acq 
-                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * 2 ) * timePoint;
+                                          + ( reorderedVoxels[0] * reorderedVoxels[1] * reorderedVoxels[2] * numEPSIAcquisitions ) * timePoint;
  
                                 vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray(index);
 
@@ -418,7 +418,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                                 float tuple[2]; 
                                 int epsiOffset; 
                                 for (int i = 0; i < numFreqPts; i++) {
-                                    epsiOffset = (lobeStride * 2 * i ) + currentEPSIPt;
+                                    epsiOffset = (lobeStride * numEPSIAcquisitions * i ) + currentEPSIPt;
                                     epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
                                     tuple[0] = epsiTuple[0]; 
                                     tuple[1] = epsiTuple[1]; 
