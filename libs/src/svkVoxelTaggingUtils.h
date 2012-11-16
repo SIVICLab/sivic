@@ -71,6 +71,8 @@ class svkVoxelTaggingUtils : public vtkObject
 		static void             AddTagToVoxelData( svkImageData* voxelTagData, string tagName, int tagValue );
 		static void             RemoveTagFromVoxelData( svkImageData* voxelTagData, int tagVolume );
 		static map<int, string> GetTagValueToNameMap( svkImageData* voxelTagData );
+		static int              GetMaximumTagValue( svkImageData* voxelTagData );
+		static int              GetMinimumTagValue( svkImageData* voxelTagData );
 		static int              GetPointDataScalarVolumeIndex( svkImageData* voxelTagData );
 
         // vtk type revision macro

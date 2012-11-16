@@ -67,7 +67,6 @@ class sivicVoxelTaggingWidget : public sivicKWCompositeWidget
         static sivicVoxelTaggingWidget *New();
         vtkTypeRevisionMacro(sivicVoxelTaggingWidget,sivicKWCompositeWidget);
 
-		void   UpdateTagsList( );
 
     protected:
 
@@ -78,7 +77,11 @@ class sivicVoxelTaggingWidget : public sivicKWCompositeWidget
         vtkKWPushButton*                addTagButton;
         vtkKWPushButton*                removeTagButton;
 
+        void ReadDefaultTagsFromRegistry();
+        void UpdateTagsInRegistry();
+        int  GetNumberOfTagsInRegistry();
         void CreateTagVolume();
+		void UpdateTagsList( );
         void AddTag();
         void RemoveTag(int tagVolumeNumber);
         void SetTagName(string tagName, int tagVolume );

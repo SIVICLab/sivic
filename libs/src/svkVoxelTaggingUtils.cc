@@ -251,7 +251,6 @@ void svkVoxelTaggingUtils::RemoveTagFromVoxelData( svkImageData* voxelTagData, i
 		if( tagVolume >= 0 && tagVolume < numTags ) {
 			vector<string> tagNames;
 			vector<int> tagValues;
-			int numTags = svkVoxelTaggingUtils::GetNumberOfTags( voxelTagData );
 			for( int i = 0; i < numTags; i++ ) {
 				tagNames.push_back( svkVoxelTaggingUtils::GetTagName( voxelTagData, i));
 				tagValues.push_back( svkVoxelTaggingUtils::GetTagValue( voxelTagData, i));
@@ -267,7 +266,7 @@ void svkVoxelTaggingUtils::RemoveTagFromVoxelData( svkImageData* voxelTagData, i
 
 			// We need to track the current scalars so we can reset it once the extra volume is removed
 			int scalarIndex = svkVoxelTaggingUtils::GetPointDataScalarVolumeIndex( voxelTagData );
-			if( scalarIndex > tagVolume ) {
+			if( scalarIndex >= tagVolume && scalarIndex != 0 ) {
 				scalarIndex--;
 			}
 
@@ -308,6 +307,44 @@ map<int, string> svkVoxelTaggingUtils::GetTagValueToNameMap( svkImageData* voxel
 	}
 
 	return voxelTagDefinitions;
+}
+
+
+/*!
+ *  Gets the maximum tag value.
+ */
+int svkVoxelTaggingUtils::GetMaximumTagValue( svkImageData* voxelTagData )
+{
+	int max = -1;
+	if( svkVoxelTaggingUtils::IsImageVoxelTagData( voxelTagData )) {
+		int numTags = svkVoxelTaggingUtils::GetNumberOfTags( voxelTagData );
+		for( int i = 0; i < numTags; i++ ) {
+			int tagValue = svkVoxelTaggingUtils::GetTagValue( voxelTagData, i );
+			if( tagValue > max ) {
+				max = tagValue;
+			}
+		}
+	}
+	return max;
+}
+
+
+/*!
+ *  Gets the minimum tag value.
+ */
+int svkVoxelTaggingUtils::GetMinimumTagValue( svkImageData* voxelTagData )
+{
+	int min = -1;
+	if( svkVoxelTaggingUtils::IsImageVoxelTagData( voxelTagData )) {
+		int numTags = svkVoxelTaggingUtils::GetNumberOfTags( voxelTagData );
+		for( int i = 0; i < numTags; i++ ) {
+			int tagValue = svkVoxelTaggingUtils::GetTagValue( voxelTagData, i );
+			if( tagValue < min || i == 0 ) {
+				min = tagValue;
+			}
+		}
+	}
+	return min;
 }
 
 

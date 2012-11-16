@@ -45,8 +45,6 @@ vtkCxxRevisionMacro( sivicVoxelTaggingWidget, "$Revision$");
  */
 sivicVoxelTaggingWidget::sivicVoxelTaggingWidget()
 {
-    this->tagNames.push_back("ROI");
-    this->tagValues.push_back(1);
 	this->tagsTable = NULL;
 	this->createTagVolumeButton = NULL;
 
@@ -82,12 +80,107 @@ sivicVoxelTaggingWidget::~sivicVoxelTaggingWidget()
 
 
 /*!
+ * Loads tags from registry.
+ */
+void sivicVoxelTaggingWidget::ReadDefaultTagsFromRegistry()
+{
+    this->tagNames.clear();
+    this->tagValues.clear();
+    int numTags = this->GetNumberOfTagsInRegistry();
+    if( numTags == 0 ) {
+		// If no tags were found lets create one default tag:
+		this->tagNames.push_back("ROI");
+		this->tagValues.push_back(1);
+    } else {
+		for( int i = 0; i < numTags; i++ ) {
+			// Get the tag Name
+			char tagName[100] = "";
+			string tagNameKey = "tag_name_";
+			tagNameKey.append( svkUtils::IntToString( i+1 ) );
+			this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagNameKey.c_str() , tagName );
+
+			char tagValue[100] = "";
+			string tagValueKey = "tag_value_";
+			tagValueKey.append( svkUtils::IntToString( i+1 ) );
+			this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagValueKey.c_str() , tagValue );
+
+			this->tagNames.push_back( tagName );
+			this->tagValues.push_back( svkUtils::StringToInt(tagValue) );
+		}
+    }
+
+    this->UpdateTagsList();
+}
+
+
+/*!
+ *  Writes the current tags into the registry.
+ */
+void sivicVoxelTaggingWidget::UpdateTagsInRegistry()
+{
+	//First we need to remove any old tags
+	int numTagsInRegistry = this->GetNumberOfTagsInRegistry();
+	for( int i = 0; i < numTagsInRegistry; i++ ) {
+		string tagNameKey = "tag_name_";
+		tagNameKey.append( svkUtils::IntToString( i + 1 ) );
+		this->GetApplication()->DeleteRegistryValue(0, "voxel_tagging", tagNameKey.c_str());
+
+		string tagValueKey = "tag_value_";
+		tagValueKey.append( svkUtils::IntToString( i + 1 ) );
+		this->GetApplication()->DeleteRegistryValue(0, "voxel_tagging", tagValueKey.c_str());
+	}
+
+	// Then add back in our current tags
+	for( int i = 0; i < this->tagNames.size(); i++ ) {
+		string tagNameKey = "tag_name_";
+		tagNameKey.append( svkUtils::IntToString( i + 1 ) );
+		this->GetApplication()->SetRegistryValue(0, "voxel_tagging", tagNameKey.c_str(), this->tagNames[i].c_str() );
+
+		string tagValueKey = "tag_value_";
+		tagValueKey.append( svkUtils::IntToString( i + 1 ) );
+		this->GetApplication()->SetRegistryValue(0, "voxel_tagging", tagValueKey.c_str(), svkUtils::IntToString(this->tagValues[i]).c_str() );
+	}
+}
+
+
+/*!
+ * Returns the number of tags currently in the registry.
+ */
+int sivicVoxelTaggingWidget::GetNumberOfTagsInRegistry()
+{
+	bool lastTagFound = false;
+    int numTags = 0;
+    while ( !lastTagFound ) {
+
+    	// Get the tag Name
+		char tagName[100] = "";
+		string tagNameKey = "tag_name_";
+		tagNameKey.append( svkUtils::IntToString( numTags + 1 ) );
+		this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagNameKey.c_str() , tagName );
+
+		char tagValue[100] = "";
+		string tagValueKey = "tag_value_";
+		tagValueKey.append( svkUtils::IntToString( numTags + 1 ) );
+		this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagValueKey.c_str() , tagValue );
+		if( strcmp(tagName, "") == 0 || strcmp(tagValue, "") == 0  ) {
+			lastTagFound = true;
+		} else {
+			numTags++;
+		}
+    }
+
+    return numTags;
+}
+
+
+/*!
  * Initializes a tagging volume for the currently active 4DImageData.
  */
 void sivicVoxelTaggingWidget::CreateTagVolume()
 {
 	svk4DImageData* voxelData = this->sivicController->GetActive4DImageData();
 	if( voxelData != NULL ) {
+		this->ReadDefaultTagsFromRegistry();
 		svkMriImageData* voxelTagData = svkVoxelTaggingUtils::CreateVoxelTagData( voxelData, this->tagNames, this->tagValues );
 		this->model->AddDataObject("VoxelTagData", voxelTagData );
 		this->sivicController->OpenOverlayFromModel("VoxelTagData");
@@ -107,17 +200,13 @@ void sivicVoxelTaggingWidget::AddTag()
 	svkImageData* voxelTagData = this->model->GetDataObject("VoxelTagData");
 	if( voxelTagData!= NULL ) {
 		string newTagName = "New Tag";
-		int newTagValue = 0;
-		for( int i = 0; i < this->tagValues.size(); i++ ) {
-			if( this->tagValues[i] > newTagValue ) {
-				newTagValue = this->tagValues[i];
-			}
-		}
+		int newTagValue = svkVoxelTaggingUtils::GetMaximumTagValue( voxelTagData );
 		newTagValue++;
 		svkVoxelTaggingUtils::AddTagToVoxelData( voxelTagData, newTagName, newTagValue);
 		this->tagNames.push_back(newTagName);
 		this->tagValues.push_back(newTagValue);
 		this->UpdateTagsList();
+		this->UpdateTagsInRegistry();
 	}
 }
 
@@ -128,10 +217,10 @@ void sivicVoxelTaggingWidget::AddTag()
 void sivicVoxelTaggingWidget::RemoveTag(int tagVolumeNumber)
 {
 	svkImageData* voxelTagData = this->model->GetDataObject("VoxelTagData");
-	if( voxelTagData!= NULL ) {
+	if( voxelTagData!= NULL && this->tagsTable->GetWidget()->GetNumberOfRows() > 1 ) {
 		int selectedRow = -1;
 		this->tagsTable->GetWidget()->GetSelectedRows(&selectedRow);
-		int volumeNumber = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow,0);
+		int volumeNumber = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow,0) - 1;
 		if( volumeNumber < this->tagNames.size() && volumeNumber >= 0 ) {
 			svkVoxelTaggingUtils::RemoveTagFromVoxelData( voxelTagData, volumeNumber);
 			this->tagNames.erase(this->tagNames.begin() + volumeNumber);
@@ -140,6 +229,7 @@ void sivicVoxelTaggingWidget::RemoveTag(int tagVolumeNumber)
 			this->overlayController->GetView()->GetRenderer(svkOverlayView::PRIMARY)->Modified();
 			this->overlayController->GetView()->Refresh();
 			this->plotController->GetView()->Refresh();
+		    this->UpdateTagsInRegistry();
 		}
 	}
 }
@@ -153,6 +243,7 @@ void sivicVoxelTaggingWidget::SetTagName( string tagName, int tagVolume )
 	svkImageData* voxelTagData = this->model->GetDataObject("VoxelTagData");
 	if( voxelTagData != NULL ) {
 		svkVoxelTaggingUtils::SetTagName(voxelTagData, tagName, tagVolume);
+		this->UpdateTagsInRegistry();
 	}
 
 }
@@ -166,6 +257,7 @@ void sivicVoxelTaggingWidget::SetTagValue(int tagValue, int tagVolume)
 	svkImageData* voxelTagData = this->model->GetDataObject("VoxelTagData");
 	if( voxelTagData != NULL ) {
 		svkVoxelTaggingUtils::SetTagValue(voxelTagData, tagValue, tagVolume);
+		this->UpdateTagsInRegistry();
 	}
 
 }
@@ -244,7 +336,7 @@ void sivicVoxelTaggingWidget::UpdateTagsList( )
 	this->tagsTable->GetWidget()->DeleteAllRows();
 
     for( int i = 0; i < this->tagNames.size(); i ++ ) {
-		this->tagsTable->GetWidget()->InsertCellText(i, 0, svkUtils::IntToString(i).c_str());
+		this->tagsTable->GetWidget()->InsertCellText(i, 0, svkUtils::IntToString(i+1).c_str());
 		this->tagsTable->GetWidget()->InsertCellText(i, 1, this->tagNames[i].c_str());
 		this->tagsTable->GetWidget()->InsertCellText(i, 2, svkUtils::IntToString(this->tagValues[i]).c_str());
     }
@@ -267,11 +359,11 @@ void sivicVoxelTaggingWidget::ProcessCallbackCommandEvents( vtkObject *caller, u
     	svkImageData* voxelTagData = this->model->GetDataObject("VoxelTagData");
 		int selectedRow = -1;
 		this->tagsTable->GetWidget()->GetSelectedRows(&selectedRow);
-		int selectedVolume = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow, 0);
+		int selectedVolume = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow, 0) - 1;
 		string selectedTagName = this->tagsTable->GetWidget()->GetCellText(selectedRow, 1);
 		int selectedTagValue = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow, 2);
 		if( selectedRow >= 0 && selectedRow < this->tagsTable->GetWidget()->GetNumberOfRows() && voxelTagData != NULL ) {
-			int volumeNumber = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow,0);
+			int volumeNumber = this->tagsTable->GetWidget()->GetCellTextAsInt(selectedRow,0) - 1;
 			svkOverlayView::SafeDownCast(this->overlayController->GetView())->SetActiveOverlayVolume( volumeNumber );
 			//voxelTagData->GetPointData()->SetActiveScalars( voxelTagData->GetPointData()->GetArray( volumeNumber)->GetName() );
 			voxelTagData->Modified();
