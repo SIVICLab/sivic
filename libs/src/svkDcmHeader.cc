@@ -2042,6 +2042,11 @@ int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dat
         )
     ); 
 
+    if( this->ElementExists("SVK_VOXEL_TAGGING_SEQUENCE")) {
+		mri->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR");
+		this->CopySequence( mri, "SVK_VOXEL_TAGGING_SEQUENCE");
+    }
+
 
     return 0; 
 }

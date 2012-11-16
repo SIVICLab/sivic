@@ -193,7 +193,7 @@ svkMriImageData* svkVoxelTaggingUtils::CreateVoxelTagData( svk4DImageData* volum
 		voxelTagData = svkMriImageData::New();
 		volumeToTag->GetZeroImage( voxelTagData );
 		voxelTagData->GetDcmHeader()->SetValue( "SVK_PRIVATE_TAG",  "SVK_PRIVATE_CREATOR");
-
+	    voxelTagData->GetDcmHeader()->InsertEmptyElement( "SVK_VOXEL_TAGGING_SEQUENCE" );
 		// Get the number of tuples
 		int numTuples = voxelTagData->GetPointData()->GetArray(0)->GetNumberOfTuples();
 

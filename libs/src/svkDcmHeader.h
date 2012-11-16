@@ -381,6 +381,12 @@ class svkDcmHeader: public vtkObject
                             int parentSeqItemPosition = 0
                         ) = 0;
 
+        /*!
+         *  Method to copy a sequence from one header to another. Useful when
+         *  when creating derived datasets.
+         */
+        virtual void    CopySequence( svkDcmHeader* target, const char* seqName ) = 0;
+
 
         /*! 
          *  Method to clear all items from a sequence of items 

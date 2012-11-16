@@ -1133,6 +1133,26 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
 
 /*!
+ *  Copies a top-level sequence from this header to the target header.
+ */
+void svkDcmtkAdapter::CopySequence( svkDcmHeader* target, const char* seqName )
+{
+    DcmSequenceOfItems* seq;
+    OFCondition status = this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
+    if ( seq == NULL || status != EC_Normal ) {
+        cout << "Sequence Not Found--" << seqName << endl;
+    } else {
+		if (dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile != NULL) {
+			DcmElement* element;
+			this->dcmFile->getDataset()->findAndCopyElement( GetDcmTagKey( seqName ), element);
+			dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile->getDataset()->insert(element, OFTrue, OFTrue);
+		}
+
+    }
+}
+
+
+/*!
  *  Removes all items from the specified sequence
  *
  *  \param seqName the string name of the parent sequence to clear
