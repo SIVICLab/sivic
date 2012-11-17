@@ -86,6 +86,8 @@ class sivicVoxelTaggingWidget : public sivicKWCompositeWidget
         void RemoveTag(int tagVolumeNumber);
         void SetTagName(string tagName, int tagVolume );
         void SetTagValue(int tagValue, int tagVolume );
+        void GetTagsFromData( svkImageData* voxelTagData );
+
         // Description:
         // Create the widget.
         virtual void    CreateWidget();

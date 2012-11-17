@@ -263,6 +263,31 @@ void sivicVoxelTaggingWidget::SetTagValue(int tagValue, int tagVolume)
 }
 
 
+/*!
+ * Pulls tags from a dataset which are then used for tagging and
+ * inserted into the registry.
+ */
+void sivicVoxelTaggingWidget::GetTagsFromData( svkImageData* voxelTagData )
+{
+	if( svkVoxelTaggingUtils::IsImageVoxelTagData( voxelTagData )) {
+		int numTags = svkVoxelTaggingUtils::GetNumberOfTags( voxelTagData );
+		if( numTags > 0 ) {
+			this->tagNames.clear();
+			this->tagValues.clear();
+			for( int i = 0; i < numTags; i++ ) {
+				this->tagNames.push_back( svkVoxelTaggingUtils::GetTagName( voxelTagData, i));
+				this->tagValues.push_back( svkVoxelTaggingUtils::GetTagValue( voxelTagData, i));
+			}
+			// If the widget has already been created we should update the lists etc.
+			if( this->tagsTable != NULL ) {
+				this->UpdateTagsList();
+				this->UpdateTagsInRegistry();
+			}
+		}
+	}
+}
+
+
 /*! 
  *  Method in superclass to be overriden to add our custom widgets.
  */
@@ -288,7 +313,6 @@ void sivicVoxelTaggingWidget::CreateWidget()
     this->tagsTable->GetWidget()->ColumnEditableOn(col_index);
     col_index = this->tagsTable->GetWidget()->AddColumn("Tag Value");
     this->tagsTable->GetWidget()->ColumnEditableOn(col_index);
-    this->tagsTable->EnabledOff();
 
     this->createTagVolumeButton = vtkKWPushButton::New();
     this->createTagVolumeButton->SetParent( this );
@@ -322,6 +346,12 @@ void sivicVoxelTaggingWidget::CreateWidget()
     this->AddCallbackCommandObserver( this->createTagVolumeButton, vtkKWPushButton::InvokedEvent );
     this->AddCallbackCommandObserver( this->removeTagButton, vtkKWPushButton::InvokedEvent );
     this->AddCallbackCommandObserver( this->addTagButton, vtkKWPushButton::InvokedEvent );
+
+	if( !this->model->DataExists("VoxelTagData") ) {
+		this->tagsTable->EnabledOff();
+		this->UpdateTagsList();
+		this->UpdateTagsInRegistry();
+	}
 
 }
 

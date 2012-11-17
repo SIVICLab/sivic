@@ -1055,6 +1055,12 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 int numVolumes = data->GetPointData()->GetNumberOfArrays();
                 bool isImageVoxelTags = svkVoxelTaggingUtils::IsImageVoxelTagData(data);
                 if( isImageVoxelTags ) {
+                	this->voxelTaggingWidget->GetTagsFromData(data);
+                	if( this->model->DataExists("VoxelTagData")) {
+						this->model->ChangeDataObject( "VoxelTagData", data );
+                	} else {
+						this->model->AddDataObject( "VoxelTagData", data );
+                	}
                 	numVolumes = 1;
                 }
                 this->imageViewWidget->overlayVolumeSlider->SetRange( 1, numVolumes);
