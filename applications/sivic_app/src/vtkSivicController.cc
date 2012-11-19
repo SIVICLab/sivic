@@ -1841,12 +1841,12 @@ void vtkSivicController::SaveMetaboliteMaps()
 
 
 /*
- *  Saves voxel tag data maps to user specified loction
+ *  Saves image data stored in model to disk.
  */
-void vtkSivicController::SaveVoxelTagData()
+void vtkSivicController::SaveImageFromModel( const char* modelObjectName )
 {
-	svkImageData* voxelTagData = this->model->GetDataObject( "VoxelTagData" );
-	if( voxelTagData != NULL ) {
+	svkImageData* data = this->model->GetDataObject( modelObjectName );
+	if( data != NULL ) {
 		vtkKWFileBrowserDialog *dlg = vtkKWFileBrowserDialog::New();
 		dlg->SetApplication(app);
 		dlg->SaveDialogOn();
@@ -1871,17 +1871,17 @@ void vtkSivicController::SaveVoxelTagData()
 			} else if ( ext.compare("idf") == 0 ) {
 				fileType = 3;
 			}
-			string fname( root + "VoxelTagData" );
+			string fname( root + modelObjectName );
 
 			this->SaveMetMapData(
-					voxelTagData,
+					data,
 					const_cast<char*>( fname.c_str() ),
                 fileType
 				);
 		}
 		dlg->Delete();
 	} else {
-		this->PopupMessage("No tag data loaded!");
+		this->PopupMessage("Could not locate dataset in model!");
 	}
 
 }
@@ -3814,6 +3814,10 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
     invocationString = "OpenImageFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
+    invocationString = "SaveImageFromModel ";
+    invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
+    rightClickMenu->AddRadioButton("Save Image", this, invocationString.c_str());
+
 	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
 		invocationString = "Open4DImageFromModel ";
 		invocationString.append( objectNameString );

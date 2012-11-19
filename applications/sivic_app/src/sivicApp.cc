@@ -507,7 +507,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             4, "&Save Metabolite Maps", this->sivicController, "SaveMetaboliteMaps");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Save Voxel Tags", this->sivicController, "SaveVoxelTagData");
+            5, "&Save Voxel Tags", this->sivicController, "SaveImageFromModel VoxelTagData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             6, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
