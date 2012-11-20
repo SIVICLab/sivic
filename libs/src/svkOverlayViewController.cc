@@ -914,21 +914,25 @@ void svkOverlayViewController::UpdateSelection(vtkObject* subject, unsigned long
 {
     svkOverlayViewController* dvController = static_cast<svkOverlayViewController*>(thisObject);
     svkOverlaySelector* myRubberband = dvController->dragSelectStyle;
+    // Make sure we are in selection mode
+    if( myRubberband->GetInteraction() == vtkInteractorStyleRubberBand2D::SELECTING ) {
 
-    vtkRenderWindowInteractor *rwi =
-            vtkRenderWindowInteractor::SafeDownCast( subject );
-    double* selectionArea = new double[4];
-    if (dvController->GetDebug()) {
-        cout<<"start position ="<<myRubberband->GetStartX()<<","<<myRubberband->GetStartY()<<endl;
-        cout<<"end position ="<<myRubberband->GetEndX()<<","<<myRubberband->GetEndY()<<endl;
-    }    
-    selectionArea[0] = static_cast<double>(myRubberband->GetStartX());
-    selectionArea[1] = static_cast<double>(myRubberband->GetStartY());
-    selectionArea[2] = static_cast<double>(myRubberband->GetEndX());
-    selectionArea[3] = static_cast<double>(myRubberband->GetEndY()),
-    static_cast<svkOverlayView*>(dvController->GetView())->SetSelection( selectionArea);
-    rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
-    delete[] selectionArea;
+		vtkRenderWindowInteractor *rwi =
+				vtkRenderWindowInteractor::SafeDownCast( subject );
+		double* selectionArea = new double[4];
+		if (dvController->GetDebug()) {
+			cout<<"start position ="<<myRubberband->GetStartX()<<","<<myRubberband->GetStartY()<<endl;
+			cout<<"end position ="<<myRubberband->GetEndX()<<","<<myRubberband->GetEndY()<<endl;
+		}
+		selectionArea[0] = static_cast<double>(myRubberband->GetStartX());
+		selectionArea[1] = static_cast<double>(myRubberband->GetStartY());
+		selectionArea[2] = static_cast<double>(myRubberband->GetEndX());
+		selectionArea[3] = static_cast<double>(myRubberband->GetEndY());
+
+		static_cast<svkOverlayView*>(dvController->GetView())->SetSelection( selectionArea);
+		rwi->InvokeEvent(vtkCommand::SelectionChangedEvent);
+		delete[] selectionArea;
+    }
 }
 
 
