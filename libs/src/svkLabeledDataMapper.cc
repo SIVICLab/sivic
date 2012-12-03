@@ -103,7 +103,7 @@ void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int i
 // ----------------------------------------------------------------------
 
 template<typename T>
-void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int index, const T *array, bool useTags, map<int, string> voxelTagDefinitions)
+void svkLabeledDataMapper_PrintComponent(char *output, const char *format, int index, const T *array, bool useTags, vtkstd::map<int, vtkstd::string> voxelTagDefinitions)
 {
 	int length = 0;
     if( useTags ) {
@@ -620,7 +620,7 @@ void svkLabeledDataMapper::BuildLabelsInternal(vtkDataSet* input)
   vtkIntArray *typeArr = vtkIntArray::SafeDownCast(
     this->GetInputAbstractArrayToProcess(0, input));
 
-  map<int, string> voxelTagDefinitions;
+  vtkstd::map<int, vtkstd::string> voxelTagDefinitions;
   if( input->IsA("svkMriImageData")) {
 	  voxelTagDefinitions = svk::svkVoxelTaggingUtils::GetTagValueToNameMap( svk::svkMriImageData::SafeDownCast(input) );
   }

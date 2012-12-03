@@ -838,6 +838,15 @@ int sivicApp::Start( int argc, char* argv[] )
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
         tmp->Delete();
 
+        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+        svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+        if ( reader->isA("svkGEPostageStampReader") ) {
+            SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2" ) {
+        }
+        readerFactory->Delete();
+        reader->Delete();
+
+
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
             if ( loadOrder[i-1] == refImageIndex ) {
