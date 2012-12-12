@@ -839,9 +839,9 @@ int sivicApp::Start( int argc, char* argv[] )
         tmp->Delete();
 
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
-        if ( reader->isA("svkGEPostageStampReader") ) {
-            SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2" ) {
+        svkImageReader2* reader = readerFactory->CreateImageReader2(argv[ loadOrder[i-1] ]);
+        if ( reader->IsA("svkGEPostageStampReader") ) {
+            SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
         readerFactory->Delete();
         reader->Delete();

@@ -991,6 +991,23 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
         } else {
 
             resultInfo = this->overlayController->GetDataCompatibility( data, svkOverlayView::OVERLAY );
+			//  Precheck to see if valdation errors should be overridden:
+			if( resultInfo.compare("") != 0 ) {
+
+				string resultInfoMsg  = "WARNING: Datasets may not be compatible! \n";
+				resultInfoMsg += "Do you want to attempt to display them anyway? \n";
+				resultInfoMsg += "Info:\n";
+				resultInfoMsg += resultInfo;
+				int dialogStatus = this->PopupMessage( resultInfoMsg, vtkKWMessageDialog::StyleYesNo );
+
+				//  If user wants to continue anyway, unset the info results
+				if ( dialogStatus == 2 ) {
+					resultInfo = "";
+					this->overlayController->GetView()->ValidationOff();
+					this->plotController->GetView()->ValidationOff();
+				}
+
+			}
             if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
             	// Lets make sure the first volume is currently the active scalars
             	data->GetPointData()->SetActiveScalars( data->GetPointData()->GetArray(0)->GetName());
