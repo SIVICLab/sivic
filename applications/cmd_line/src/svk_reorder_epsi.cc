@@ -214,7 +214,6 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
-
     //  Reorder/sample EPSI data: 
     svkEPSIReorder* reorder = svkEPSIReorder::New();
     reorder->SetInput( reader->GetOutput() ); 
@@ -225,7 +224,7 @@ int main (int argc, char** argv)
     reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( axis ) );
     int numVoxels[3]; 
     reader->GetOutput()->GetNumberOfVoxels( numVoxels);
-    reorder->SetNumVoxelsOriginal( numVoxels ); 
+    //reorder->SetNumVoxelsOriginal( numVoxels ); 
     reorder->Update();
 
     // ===============================================  
