@@ -150,7 +150,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::GetCenterFromRawFile( double* center )
 void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 {
 
-    svkImageData* tmpImageDynamic = svkMrsImageData::New();
+    svkMrsImageData* tmpImageDynamic = svkMrsImageData::New();
     tmpImageDynamic->DeepCopy( data ); 
 
     int numTimePts = pFileNames->GetNumberOfValues(); 
@@ -176,6 +176,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
 
         //  Do all the usual data loading stuff:
         this->Superclass::ReadData( tmpArray, tmpImage);  //new
+
         this->progress = (float)timePt/numTimePts; 
         this->UpdateProgress( this->progress );
 
@@ -197,14 +198,10 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
             //  location in AddReorderedTimePoint 
             //  ========================================
             svkDcmHeader* hdr = tmpImage->GetDcmHeader();
-            int voxels[3]; 
-            voxels[0] = hdr->GetIntValue( "Columns" );
-            voxels[1] = hdr->GetIntValue( "Rows" );
-            voxels[2] = hdr->GetNumberOfSlices();
-            int totalNumArrays = numTimePts; 
-            totalNumArrays *= voxels[0] * voxels[1] * voxels[2]; 
-            totalNumArrays *= 2; // numLobes 
-           
+            svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector(); 
+            int totalNumArrays = hdr->GetNumberOfCells( &dimensionVector ); 
+            totalNumArrays *= numTimePts;  
+
             vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
             int numComponents;
             if ( dataRepresentation == "COMPLEX" ) {
@@ -220,39 +217,66 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
                 tmpImageDynamic->GetCellData()->AddArray(dataArray);
                 dataArray->Delete();
             }
+            tmpImageDynamic->GetDcmHeader()->SetDimensionIndexSize(svkDcmHeader::TIME_INDEX, numTimePts - 1);
+            //tmpImageDynamic->GetDcmHeader()->PrintDcmHeader();
         } 
-        //cout << "tmpDynamic: " << *tmpImageDynamic << endl;
 
         this->AddReorderedTimePoint(tmpImageDynamic, tmpImage, timePt, numTimePts); 
-        //cout << "tmp: " << *tmpImage << endl;
-        //tmpImage->GetDcmHeader()->PrintDcmHeader() ;
-        //cout << "tmpDynamic: " << *tmpImageDynamic << endl;
-        //tmpImageDynamic->GetDcmHeader()->PrintDcmHeader() ;
 
         tmpArray->Delete();
         tmpImage->Delete();
-
-        
     }  	 
+
 
     data->DeepCopy( tmpImageDynamic ); 
 
-    //cout << "data: " << *data << endl;
-    data->GetDcmHeader()->PrintDcmHeader();
+    /*if ( this->GetDebug() ) {
+        for (int fn=0; fn<3; fn++) {
+        int numFreqPts = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+        svkDcmHeader::DimensionVector ddv = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector dli = ddv;  //copy for specific loop 
+        cout << endl << "DDV 1 " << ddv.size() << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&ddv); 
+        cout << "DLI 1 " <<  dli.size() << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&dli); 
+        //  reset the new spatial dims:
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::COL_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::ROW_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::SLICE_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::TIME_INDEX, fn); 
+        cout << endl << "DDV 2" << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&ddv); 
+        cout << "DLI 2" << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&dli); 
+
+        cout << endl << "DDV" << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&ddv); 
+        cout << "DLI" << endl;
+        svkDcmHeader::PrintDimensionIndexVector(&dli); 
+
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        this->PrintSpecPts(data, numFreqPts, &ddv, &dli, "resampled lobe"); 
+
+        svk4DImageData::SetDimensionVectorIndex(&dli, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        this->PrintSpecPts(data, numFreqPts, &ddv, &dli, "resampled lobe"); 
+        }
+    }*/
+
 
     // now that the header and dimensionality are set correctly, reset this param:
     data->SyncVTKImageDataToDcmHeader(); 
-    this->InitK0Sampled(); 
-    //cout << "data: " << *data << endl;
-    data->GetDcmHeader()->PrintDcmHeader();
+    this->InitK0Sampled( data->GetDcmHeader() ); 
+
 }
 
 
 /*!
  *
  */
-void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkImageData* dynamicImage, svkImageData* tmpImage, int timePt, int numTimePts)
+void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkMrsImageData* dynamicImage, svkImageData* tmpImage, int timePt, int numTimePts)
 {
+    //dynamicImage->GetDcmHeader()->PrintDcmHeader(); 
+    //tmpImage->GetDcmHeader()->PrintDcmHeader(); 
 
     svkDcmHeader* hdr = tmpImage->GetDcmHeader();
     vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
@@ -271,53 +295,73 @@ void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkImageData* dynamic
     voxels[1] = hdr->GetIntValue( "Rows" );
     voxels[2] = hdr->GetNumberOfSlices();
 
-    int numCoils = 2;    //  num lobes = 2
+    //  Get the values from the single time point image (tmpImage): 
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector indexVector = dimensionVector; 
 
-    for (int coil = 0; coil < numCoils; coil++) {
-        for (int z = 0; z < voxels[2]; z++) {
-            for (int y = 0; y < voxels[1]; y++) {
-                for (int x = 0; x < voxels[0]; x++) {
+    svkDcmHeader::DimensionVector dynamicDimensionVector = dynamicImage->GetDcmHeader()->GetDimensionIndexVector();  
+    svkDcmHeader::DimensionVector dynamicIndexVector = dynamicDimensionVector; 
 
-                    //  Get index of array in target image. 
-                    int targetIndex =  x
-                            + ( voxels[0] ) * y
-                            + ( voxels[0] * voxels[1] ) * z
-                            + ( voxels[0] * voxels[1] * voxels[2] ) * timePt 
-                            + ( voxels[0] * voxels[1] * voxels[2] * numTimePts ) * coil; 
+    //  GetNumber of cells in non-dynamic image:
+    int numCells = hdr->GetNumberOfCells( &dimensionVector ); 
+     
+    for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
-                    vtkDataArray* targetDataArray = dynamicImage->GetCellData()->GetArray(targetIndex);
+        //  Get the dimensionVector index for the non-dynamic image: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
+
+        //  Take those indices and insert them into the target dynamicIndexVector together with the
+        //  current time point: 
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::COL_INDEX, 
+                hdr->GetDimensionValue( &indexVector, svkDcmHeader::COL_INDEX ) ); 
+
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::ROW_INDEX, 
+                hdr->GetDimensionValue( &indexVector, svkDcmHeader::ROW_INDEX ) ); 
+
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::SLICE_INDEX, 
+                hdr->GetDimensionValue( &indexVector, svkDcmHeader::SLICE_INDEX ) ); 
+
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::CHANNEL_INDEX, 
+                hdr->GetDimensionValue( &indexVector, svkDcmHeader::CHANNEL_INDEX ) ); 
+
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::EPSI_ACQ_INDEX, 
+                hdr->GetDimensionValue( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX) ); 
+
+        svk4DImageData::SetDimensionVectorIndex( &dynamicIndexVector, svkDcmHeader::TIME_INDEX, timePt); 
+
+        //  Get index of array in target dynamic image. 
+        int targetCellIndex =  svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dynamicDimensionVector, &dynamicIndexVector); 
+
+        //  Get array from target dynamic image: 
+        vtkDataArray* targetDataArray = dynamicImage->GetCellData()->GetArray(targetCellIndex);
+
+        //  Set it's array name from the current target DimensionVector  
+        //cout << "DIM" << endl;
+        //svkDcmHeader::PrintDimensionIndexVector(&dynamicDimensionVector);
+        //cout << "INDEX" << endl;
+        //svkDcmHeader::PrintDimensionIndexVector(&dynamicIndexVector);
+        dynamicImage->SetArrayName( targetDataArray, &dynamicIndexVector ); 
     
-                    char targetArrayName[30];
-                    sprintf(targetArrayName, "%d %d %d %d %d", x, y, z, timePt, coil);
-                    //cout << "ArrayName: " << targetArrayName << endl;    
-                    targetDataArray->SetName( targetArrayName );
+        //  Now get the array from the single time point input image and map it onto the
+        //  array in the target image: 
+        vtkDataArray* tmpDataArray = tmpImage->GetCellData()->GetArray( cellID );
 
-                    //  Add arrays to the new data set at the correct array index:
-                    //  Get the data array from the single time point tmpImage:     
-                    int index =  x
-                            + ( voxels[0] ) * y
-                            + ( voxels[0] * voxels[1] ) * z
-                            + ( voxels[0] * voxels[1] * voxels[2] ) * coil; 
+        double* tmpTuple; 
+        float dynamicTuple[2]; 
+        for (int i = 0; i < numFreqPts; i++) {
+            tmpTuple = tmpDataArray->GetTuple(i); 
+            dynamicTuple[0] = tmpTuple[0]; 
+            dynamicTuple[1] = tmpTuple[1]; 
+            targetDataArray->SetTuple( i, dynamicTuple );
+        }    
 
-                    vtkDataArray* tmpDataArray = tmpImage->GetCellData()->GetArray(index);
-
-                    double* tmpTuple; 
-                    float dynamicTuple[2]; 
-                    for (int i = 0; i < numFreqPts; i++) {
-                        tmpTuple = tmpDataArray->GetTuple(i); 
-                        dynamicTuple[0] = tmpTuple[0]; 
-                        dynamicTuple[1] = tmpTuple[1]; 
-                        targetDataArray->SetTuple( i, dynamicTuple );
-                    }    
-
-                }
-            }
-        }
     }
 
     int currentNumTimePts = timePt + 1; 
 
     //  This is the original origin based on the reduced dimensionality in the EPSI direction
+    //  the dynamicIndexVector should contain the current dimensionality limits for the 
+    //  dynamic image with the new time point added: 
     hdr = dynamicImage->GetDcmHeader();
     double origin[3];
     hdr->GetOrigin( origin, 0 );
@@ -327,14 +371,12 @@ void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkImageData* dynamic
 
     double dcos[3][3];
     hdr->GetDataDcos( dcos );
-
+    
     hdr->InitPerFrameFunctionalGroupSequence(
         origin,
         voxelSpacing,
         dcos,
-        voxels[2], 
-        currentNumTimePts,
-        numCoils 
+        &dynamicDimensionVector 
     );
 
     dynamicImage->SyncVTKImageDataToDcmHeader(); 
@@ -378,9 +420,15 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     int numEPSIPts= hdr->GetIntValue( "DataPointColumns" );
     //cout << "Num EPSI Pts: "<< numEPSIPts << endl;
 
+    //data->GetDcmHeader()->PrintDcmHeader(); 
+    data->GetDcmHeader()->GetDimensionIndexVector(); 
     //====================================================
+    //use tmp
+    svkMrsImageData* tmpReorderData = svkMrsImageData::New();
+    tmpReorderData->DeepCopy( data ); 
+
     svkEPSIReorder* reorder = svkEPSIReorder::New();    
-    reorder->SetInput( data ); 
+    reorder->SetInput( tmpReorderData ); 
     reorder->SetEPSIType( svkEPSIReorder::SYMMETRIC ); 
 
     //  between lobes, throw out the last and first point before resuming sampling
@@ -418,7 +466,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  set the original input dimensionality:
     int numEPSIVoxels[3]; 
     this->GetNumVoxels( numEPSIVoxels ); 
-    reorder->SetNumVoxelsOriginal( numEPSIVoxels ); 
+    tmpReorderData->GetDcmHeader()->GetDimensionIndexVector(); 
     reorder->Update();
 
     //  =================================================
@@ -434,12 +482,32 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     int epsiAxis = static_cast<int>( reorder->GetEPSIAxis() );
     int numFreqPts = reorder->GetNumEPSIFrequencyPoints(); 
 
+    //reorder->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
+    //reorder->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+
+    data->DeepCopy( reorder->GetOutput() ); 
     if ( this->GetDebug() ) {
-        this->PrintSpecPts(reorder->GetOutput(), numFreqPts, 0, 0, 0, 0, 0, "before phase lobe"); 
-        this->PrintSpecPts(reorder->GetOutput(), numFreqPts, 0, 0, 0, 0, 1, "before pahse lobe"); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
+        //  reset the new spatial dims:
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::COL_INDEX, 1); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::ROW_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::SLICE_INDEX, 0); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before phase lobe"); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before phase lobe"); 
     }
 
-    this->EPSIPhaseCorrection( reorder->GetOutput(), numVoxels, numSamplesPerLobe, epsiAxis);  
+    //data->GetDcmHeader()->PrintDcmHeader(); 
+    //data->GetDcmHeader()->GetDimensionIndexVector(); 
+
+    this->EPSIPhaseCorrection( data, numVoxels, numSamplesPerLobe, epsiAxis);  
+
+    //data->GetDcmHeader()->PrintDcmHeader(); 
+    //data->GetDcmHeader()->GetDimensionIndexVector(); 
 
     //  EPSIReorder tries to automatically set the sweepwidth, but reset it here to the know value
     data->GetDcmHeader()->SetValue(
@@ -454,30 +522,65 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
 
     if ( this->GetDebug() ) {
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before flip lobe"); 
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "before flip lobe"); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
+        //  reset the new spatial dims:
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::COL_INDEX, 1); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::ROW_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::SLICE_INDEX, 0); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before flip lobe"); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before flip lobe"); 
     }
 
     //  flip first lobe along epsiAxis
     //  first gradient is negative in this sequence:
     this->FlipAxis( data, epsiAxis, 0);    
 
+    //data->GetDcmHeader()->PrintDcmHeader(); 
+    //data->GetDcmHeader()->GetDimensionIndexVector(); 
+
     if ( this->GetDebug() ) {
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "before resampled lobe"); 
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "before resampled lobe"); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
+        //  reset the new spatial dims:
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::COL_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::ROW_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::SLICE_INDEX, 0); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before resampled lobe"); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "before resampled lobe"); 
     }
 
     //  =================================================
     //  resample ramp data 
     //  =================================================
     this->ResampleRamps( data, deltaT, plateauTime, rampTime, epsiAxis ); 
+    //data->GetDcmHeader()->PrintDcmHeader(); 
+    //data->GetDcmHeader()->GetDimensionIndexVector(); 
 
     //  This results in a match to Matlab when comparing the k-space data output:     
     //  final_datap(:,:,:,:,t) = fftshift(fftn(kdatap));
     //  final_datan(:,:,:,:,t) = fftshift(fftn(kdatan));
     if ( this->GetDebug() ) {
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 0, "resampled lobe"); 
-        this->PrintSpecPts(data, numFreqPts, 0, 0, 0, 0, 1, "resampled lobe"); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector loopIndex = dimensionVector;  //copy for specific loop 
+        //  reset the new spatial dims:
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::COL_INDEX, 1); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::ROW_INDEX, 0); 
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::SLICE_INDEX, 0); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "resampled lobe"); 
+
+        svk4DImageData::SetDimensionVectorIndex(&loopIndex, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        this->PrintSpecPts(data, numFreqPts, &dimensionVector, &loopIndex, "resampled lobe"); 
     }
 
     //  =================================================
@@ -498,21 +601,28 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
     //  =================================================
     this->ModifyForPatientEntry(data); 
 
-    this->InitK0Sampled();
+    this->InitK0Sampled( data->GetDcmHeader() );
 
     reorder->Delete(); 
-
 }
 
 
 /*  
  *  util method for debugging
  */
-void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, int x, int y, int z, int timePt, int channel, vtkstd::string comment )
+void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, vtkstd::string comment )
 {
-    vtkFloatArray* specLobe = vtkFloatArray::SafeDownCast(svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel));  
+    //svkDcmHeader::PrintDimensionIndexVector( dimensionVector);
+    //svkDcmHeader::PrintDimensionIndexVector(loopIndex);
+    int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( dimensionVector, loopIndex ); 
+
+    cout.setf(ios::fixed, ios::floatfield);
+    cout.setf(ios::showpoint);
+
+    vtkFloatArray* specLobe = vtkFloatArray::SafeDownCast(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIndex )); 
     for (int p=0; p<numFreqPts; p++ ) {
-        cout << comment << " " << channel << ": " << specLobe->GetValue(p*2) << " " << specLobe->GetValue(p*2+1) << endl;
+        int epsiAcqNum = svkDcmHeader::GetDimensionValue(loopIndex, svkDcmHeader::EPSI_ACQ_INDEX);
+        //cout << comment << " " << epsiAcqNum << ": " << setw(14) << setprecision(2) << specLobe->GetValue(p*2) << " " << setw(14) << setprecision(2) << specLobe->GetValue(p*2+1) << endl;
     }
     cout << endl;
 }
@@ -539,6 +649,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::EPSIPhaseCorrection( svkImageData* data, in
     epsiPhase->SetNumEPSIkRead( numRead );
     epsiPhase->SetEPSIAxis( epsiAxis );
     epsiPhase->SetInput( tmpData ); 
+    //tmpData->GetDcmHeader()->PrintDcmHeader(); 
     epsiPhase->Update(); 
 
     data->DeepCopy( epsiPhase->GetOutput() ); 
@@ -737,6 +848,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     // loop over all dims other than the epsi k-space dimension: 
     regridDims[epsiAxis] = 1;  
 
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;  
+
     int timePt = 0; // always 0 for this methods, only handles one time point at a time
     float* epsiKData0 = new float[ numEPSIVoxels * 2 ];
     float* overgrid = new float[ gridSize *2 ];
@@ -756,8 +870,16 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             } else if ( epsiAxis == 2 ) {
                                 slice = epsiK;         
                             }
+
+                            //  set the index values for this specific loop
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::COL_INDEX, col); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::ROW_INDEX, row); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
+                            int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector); 
+
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, timePt, lobe) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIndex ) 
                             );
 
                             //  epsiKData0 is equivalent to kte3 and kto3 in Matlab implementation
@@ -842,9 +964,15 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
                             //cout << "assign spectrum tuple col, row, slice, freq: " 
                                 //<< col << " " << row << " " << slice << " " << freq << endl;
+                            //  set the index values for this specific loop
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::COL_INDEX, col); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::ROW_INDEX, row); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
+                            int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector); 
 
                             vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( 
-                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( col, row, slice, timePt, lobe) 
+                                svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIndex ) 
                             );
 
                             tuple[0] = epsiKData[k].Real; 
@@ -897,10 +1025,15 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                                 slice = epsiK;         
                             }
 
-                            char arrayName[30];
-                            sprintf(arrayName, "%d %d %d %d %d", col, row, slice, timePt, lobe);
-                            //cout << "REGRID remove array: " << arrayName << endl;
-                            data->GetCellData()->RemoveArray( arrayName );
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::COL_INDEX, col); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::ROW_INDEX, row); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::SLICE_INDEX, slice); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::TIME_INDEX, timePt); 
+                            svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::EPSI_ACQ_INDEX, lobe); 
+
+                            vtkstd::string arrayName = svk4DImageData::GetArrayName( &loopVector ); 
+                            data->GetCellData()->RemoveArray( arrayName.c_str() );
+
                         }
                     }
                 }
@@ -910,8 +1043,15 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
 
     // Now reinit the DICOM header
     regridDims[epsiAxis] = integralMax; 
-    int numCoils = numLobes;  
-    svkRawMapperUtils::RedimensionData( data, numVoxels, regridDims, numSpecPts, numCoils); 
+
+    //  reset the new spatial dims:
+    svk4DImageData::SetDimensionVectorIndex(&dimensionVector, svkDcmHeader::COL_INDEX, regridDims[0] - 1); 
+    svk4DImageData::SetDimensionVectorIndex(&dimensionVector, svkDcmHeader::ROW_INDEX, regridDims[1] - 1); 
+    svk4DImageData::SetDimensionVectorIndex(&dimensionVector, svkDcmHeader::SLICE_INDEX, regridDims[2] - 1); 
+
+    //data->GetDcmHeader()->PrintDcmHeader();    
+    svkRawMapperUtils::RedimensionData( data, numVoxels, &dimensionVector, numSpecPts); 
+    //data->GetDcmHeader()->PrintDcmHeader();    
 
     delete [] waveFormIntegralNorm;
     delete [] epsiKData0;
@@ -1298,14 +1438,13 @@ void svkGEPFileMapperUCSFfidcsiDev0::ModifyForPatientEntry( svkImageData* data )
     double newOrigin[3]; 
     this->GetOriginFromCenter( center, numVoxels, voxelSpacing, dcos, newOrigin ); 
 
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
 
     data->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
         newOrigin,
         voxelSpacing,
         dcos,
-        data->GetDcmHeader()->GetNumberOfSlices(),
-        data->GetDcmHeader()->GetNumberOfTimePoints(),
-        data->GetDcmHeader()->GetNumberOfCoils()
+        &dimensionVector
     );
 
     data->SyncVTKImageDataToDcmHeader(); 

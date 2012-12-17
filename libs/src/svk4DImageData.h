@@ -83,6 +83,22 @@ class svk4DImageData: public svkImageData
         vtkDataArray*  GetArrayFromID( int index, int* indexArray = NULL );
         vtkDataArray*  GetArray(int x, int y, int z, int* indexArray = NULL );
         vtkDataArray*  GetArray( int* indexArray );
+        void           SetArrayName( 
+                            vtkDataArray* array, 
+                            svkDcmHeader::DimensionVector* dimensionVector
+                       ); 
+        static vtkstd::string GetArrayName( 
+                            svkDcmHeader::DimensionVector* dimensionVector
+                       ); 
+        static void    SetDimensionVectorIndex(
+                            svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionIndexLabel indexDimension, 
+                            int index
+                       );
+        static void    SetDimensionVectorIndex(svkDcmHeader::DimensionVector* dimensionVector, int index, int indexValue); 
+
+        static void    GetSpatialDimensions(svkDcmHeader::DimensionVector* dimensionVector, int* numVoxels);
+        static bool    IsIndexInExtent( int* extent, svkDcmHeader::DimensionVector* indexVector );  
 
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
         virtual int    GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
@@ -110,7 +126,14 @@ class svk4DImageData: public svkImageData
         void           SetImage( vtkImageData* image, int point,  int* indexArray = NULL );
         virtual void   UpdateRange(int component );
         int            GetNumberOfSlices( svkDcmHeader::Orientation sliceOrientation);
-        virtual void   EstimateDataRange( double range[2], int minPt, int maxPt, int component, int* tlcBrc = NULL, int* indexArray = NULL );
+        virtual void   EstimateDataRange( 
+                            double range[2], 
+                            int minPt, 
+                            int maxPt, 
+                            int component, 
+                            int* tlcBrc = NULL, 
+                            int* indexArray = NULL );
+
         //void           InitializeDataArrays();
         virtual int    GetVolumeIndexSize( int volumeIndex );
         virtual int    GetNumberOfVolumeDimensions( );

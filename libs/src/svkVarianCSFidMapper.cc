@@ -148,15 +148,6 @@ void svkVarianCSFidMapper::InitMultiFrameFunctionalGroupsModule()
         this->GetHeaderValueAsString( "time_svfdate" )
     );
 
-    this->numSlices = this->GetHeaderValueAsInt("np") / 2;
-    //this->numSlices = 1;
-    int numEchoes = this->GetHeaderValueAsInt("ne");
-
-    this->dcmHeader->SetValue(
-        "NumberOfFrames",
-        this->numSlices * numEchoes
-    );
-
     this->InitPerFrameFunctionalGroupMacros();
 
 }
@@ -353,18 +344,19 @@ void svkVarianCSFidMapper::InitPerFrameFunctionalGroupMacros()
                 volumeTlcUserFrame[i] -= dcos[j][i] * ( fov[j] - pixelSpacing[j] )/2;
             }
         }
-
-        //svkVarianReader::UserToMagnet(volumeTlcUserFrame, volumeTlcMagnetFrame, dcos);
-        //delete [] volumeTlcUserFrame;
-
     }
 
-    //int numSlices = 1; 
-    int numSlices = this->GetHeaderValueAsInt("np", 0) / 2;
+    this->numSlices = this->GetHeaderValueAsInt("np") / 2;
+    int numEchoes = this->GetHeaderValueAsInt("ne");
+
+    svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector(); 
+    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices - 1);
 
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
-        volumeTlcUserFrame, pixelSpacing, dcos, numSlices, 1, 1
-        //volumeTlcMagnetFrame, pixelSpacing, dcos, numSlices, 1, 1
+        volumeTlcUserFrame, 
+        pixelSpacing, 
+        dcos, 
+        &dimensionVector        
     ); 
     delete[] volumeTlcUserFrame; 
     delete[] volumeTlcMagnetFrame; 
@@ -633,59 +625,6 @@ void svkVarianCSFidMapper::InitMRReceiveCoilMacro()
         "SharedFunctionalGroupsSequence",
         0
     );
-
-}
-
-
-/*!
- *
- */
-void svkVarianCSFidMapper::InitMultiFrameDimensionModule()
-{
-    int indexCount = 0; 
-    this->dcmHeader->AddSequenceItemElement(
-        "DimensionIndexSequence",
-        indexCount,
-        "DimensionDescriptionLabel",
-        "Slice"
-    );
-
-/*
-    if (this->GetNumTimePoints() > 1) {
-        indexCount++; 
-        this->dcmHeader->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            indexCount,
-            "DimensionDescriptionLabel",
-            "Time Point"
-        );
-    }
-*/
-
-//    if (this->GetNumCoils() > 1) {
-//        indexCount++; 
-//        this->dcmHeader->AddSequenceItemElement(
- //           "DimensionIndexSequence",
-  //          indexCount,
-   //         "DimensionDescriptionLabel",
-    //        "Coil Number"
-     //   );
-
-//
-//        this->dmHeader()->AddSequenceItemElement(
-//            "DimensionIndexSequence",
-//            1,
-//            "DimensionIndexPointer",
-//            "18H\\00H\\47H\\90"
-//        );
-//        this->dcmHeader->AddSequenceItemElement(
-//            "DimensionIndexSequence",
-//            1,
-//            "FunctionalGroupPointer",
-//            //"MultiCoilDefinitionSequence"
-//            "18H\\00H\\47H\\90"
-//        );
-//  }
 
 }
 

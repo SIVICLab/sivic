@@ -42,6 +42,8 @@
 
 #include <svk4DImageData.h>
 #include <svkEnhancedMRIIOD.h>
+#include <svkUtils.h>
+#include <svkDcmHeader.h>
 
 
 using namespace svk;
@@ -571,6 +573,95 @@ vtkDataArray* svk4DImageData::GetArrayFromID( int index, int* indexArray )
     int indexZ;
     this->GetIndexFromID( index, &indexX, &indexY, &indexZ );
     return this->GetArray( indexX, indexY, indexZ, indexArray );
+}
+
+
+/*!
+ *  Takes vector of dimension indices and constructs an array name for the cell data (vtkDataArray). 
+ *  Will always be at least: "col row slice", but may have additional indices appended as well.
+ */
+void svk4DImageData::SetArrayName( vtkDataArray* array, svkDcmHeader::DimensionVector* dimensionVector )
+{
+    array->SetName( this->GetArrayName( dimensionVector ).c_str() );
+}
+
+
+/*!
+ *  Takes vector of dimension indices and constructs an array name for the cell data lookup. 
+ */
+vtkstd::string svk4DImageData::GetArrayName( svkDcmHeader::DimensionVector* dimensionVector )
+{
+    vtkstd::string arrayName; 
+    int numDims =  dimensionVector->size();
+    for ( int dimIndex = 0; dimIndex < numDims; dimIndex++) {
+
+        //  Get the value for this index    
+        int dimValue = svkDcmHeader::GetDimensionValue(dimensionVector, dimIndex); 
+        arrayName.append( svkUtils::IntToString(dimValue) );
+        if ( dimIndex < numDims - 1) {
+            arrayName.append(" "); 
+        }    
+
+    }
+    return arrayName; 
+
+}
+
+
+/*!
+ *  Sets an index value for the specified dimension
+ */
+void svk4DImageData::SetDimensionVectorIndex(svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel indexDimension, int indexValue)
+{
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first; 
+        if ( dimLabel == indexDimension ) {
+            (*(*dimensionVector)[i].begin()).second = indexValue; 
+             return; 
+        }  
+    }  
+}
+
+
+/*!
+ *  Sets an index value for the specified dimension
+ */
+void svk4DImageData::SetDimensionVectorIndex(svkDcmHeader::DimensionVector* dimensionVector, int index, int indexValue)
+{
+    (*(*dimensionVector)[index].begin()).second = indexValue; 
+}
+
+                           
+/*!
+ *  Get the spatial dimensions from the DimensionVector.  This is 1 more than the max value in each index: 
+ */
+void svk4DImageData::GetSpatialDimensions(svkDcmHeader::DimensionVector* dimensionVector, int* numVoxels)
+{
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first; 
+        if ( dimLabel == svkDcmHeader::COL_INDEX) {
+            numVoxels[0] = (*(*dimensionVector)[i].begin()).second + 1; 
+        } else if ( dimLabel == svkDcmHeader::ROW_INDEX) {
+            numVoxels[1] = (*(*dimensionVector)[i].begin()).second + 1; 
+        } else if ( dimLabel == svkDcmHeader::SLICE_INDEX) {
+            numVoxels[2] = (*(*dimensionVector)[i].begin()).second + 1; 
+        }  
+    }  
+}
+
+
+/*!
+ * 
+ */
+bool svk4DImageData::IsIndexInExtent( int* extent, svkDcmHeader::DimensionVector* indexVector )  
+{
+    for (int i = 0; i < 3; i++ ) {
+        int index = svkDcmHeader::GetDimensionValue( indexVector, i);
+        if ( index < extent[i*2] || index > extent[i*2+1] ) {
+            return false; 
+        }
+    }
+    return true; 
 }
 
 

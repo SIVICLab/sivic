@@ -288,11 +288,6 @@ void svkDcmMriVolumeReader::InitMultiFrameFunctionalGroupsModule()
 
     this->numFrames =  this->GetFileNames()->GetNumberOfValues(); 
 
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "NumberOfFrames",
-        this->numFrames
-    );
-
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
 
@@ -425,8 +420,16 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
     double dcos[3][3];
     tmpImage->GetDcmHeader()->GetDataDcos( dcos ); 
 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+            &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
+
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSize, dcos, numSlices, this->numVolumes, 1
+                toplc,        
+                pixelSize,  
+                dcos,  
+                &dimensionVector
     );
 
 }

@@ -112,14 +112,16 @@ class svkFdfVolumeReader : public svkVarianReader
         void                             InitAcquisitionContextModule();
         void                             InitSharedFunctionalGroupMacros();
         void                             InitPerFrameFunctionalGroupMacros();
-        void                             InitFrameContentMacro();
-        void                             InitPlanePositionMacro();
+        //void                             InitFrameContentMacro();
+        //void                             InitPlanePositionMacro();
         void                             InitPixelMeasuresMacro();
         void                             InitPlaneOrientationMacro();
         void                             InitMRReceiveCoilMacro();
         void                             ReadFdfFiles();
         vtkstd::string                   VarianToDicomDate(vtkstd::string* volumeDate);
         vtkstd::string                   GetDcmPatientPositionString();
+        void                             GetTLCAndSliceSpacing(double* toplc, double* sliceSpacing); 
+        void                             GetPixelSize( double* pixelSize);
         void                             ParseFdf();
         int                              GetFdfKeyValuePair( vtkStringArray* keySet = NULL);
         void                             SetKeysToSearch(vtkStringArray* fltArray, int fileIndex);

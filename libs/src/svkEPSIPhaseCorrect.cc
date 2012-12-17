@@ -157,10 +157,6 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
     //  Lookup any data set attributes from header required for algorithm (See DICOM IOD for field names):
     int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
-    int cols       = hdr->GetIntValue( "Columns" );
-    int rows       = hdr->GetIntValue( "Rows" );
-    int slices     = hdr->GetNumberOfSlices();
-    int numLobes   = hdr->GetNumberOfCoils();  // e.g. symmetric EPSI has pos + neg lobes
 
     //  Initialize the spatial and spectral factor in the EPSI phase correction: 
     //  One phase factor for each value of k in EPSI axis
@@ -180,55 +176,52 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     //  apply linear phase shift: 
     this->SpectralFFT( svkMrsImageFFT::FORWARD); 
 
-    //  Iterate through 3D spatial locations
-    for (int lobe = 0; lobe < numLobes; lobe++) {
-        for (int z = 0; z < slices; z++) {
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
+     //  Get the Dimension Index and index values  
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector indexVector = dimensionVector; 
 
-                    //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis 
-                    if ( this->epsiAxis == 2 ) {
-                        epsiIndex = z; 
-                    } else if ( this->epsiAxis == 1 ) {
-                        epsiIndex = y; 
-                    } else if ( this->epsiAxis == 0 ) {
-                        epsiIndex = x; 
-                    }
+    //  GetNumber of cells in the image:
+    int numCells = hdr->GetNumberOfCells( &dimensionVector ); 
+     
+    for (int cellID = 0; cellID < numCells; cellID++ ) { 
+        //cout << "CELLID: " << cellID << endl;
+        //  Get the dimensionVector index for current cell -> indexVector: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
 
-                    vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( x, y, z, 0, lobe) );
-
-                    //  Iterate over frequency points in spectrum and apply phase correction:
-                    for ( int freq = 0; freq < numSpecPts; freq++ ) {
-                    
-                        spectrum->GetTupleValue(freq, cmplxPtIn);
-
-                        epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
-                        epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
-
-                        //  data * e(i * X)
-                        //cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] - cmplxPtIn[1] * epsiPhase[1]; 
-                        //cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] + cmplxPtIn[0] * epsiPhase[1]; 
-
-                        //  data * e(-i * X)
-                        cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
-                        cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
-
-                        //cout << "spec: " << cmplxPtIn[0] << " " << cmplxPtIn[1] << " -> " << cmplxPtPhased[0] 
-                        //  << " " << cmplxPtPhased[1] << endl;
-
-                        spectrum->SetTuple(freq, cmplxPtPhased); 
-    
-                    }
-
-                }
-            }
+        //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis 
+        if ( this->epsiAxis == 2 ) {
+            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::SLICE_INDEX);  
+        } else if ( this->epsiAxis == 1 ) {
+            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::ROW_INDEX);  
+        } else if ( this->epsiAxis == 0 ) {
+            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::COL_INDEX);  
         }
-    }
+       
+        //cout << "cellID " << cellID << endl;
+        //svkDcmHeader::PrintDimensionIndexVector(&indexVector); 
 
+        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( cellID ) );
+
+        //  Iterate over frequency points in spectrum and apply phase correction:
+        for ( int freq = 0; freq < numSpecPts; freq++ ) {
+                    
+            spectrum->GetTupleValue(freq, cmplxPtIn);
+            //cout << "confirm spec values: " << cmplxPtIn[0] << ", " << cmplxPtIn[1] << endl;
+
+            epsiPhase[0] = epsiPhaseArray[epsiIndex][freq].Real; 
+            epsiPhase[1] = epsiPhaseArray[epsiIndex][freq].Imag; 
+
+            cmplxPtPhased[0] = cmplxPtIn[0] * epsiPhase[0] + cmplxPtIn[1] * epsiPhase[1]; 
+            cmplxPtPhased[1] = cmplxPtIn[1] * epsiPhase[0] - cmplxPtIn[0] * epsiPhase[1]; 
+
+            spectrum->SetTuple(freq, cmplxPtPhased); 
+    
+        }
+
+    }
 
     //  Forward Fourier Transform spectral data to back to time domain, should now be shifted.   
     this->SpectralFFT( svkMrsImageFFT::REVERSE); 
-
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();

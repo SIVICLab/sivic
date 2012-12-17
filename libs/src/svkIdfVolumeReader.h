@@ -105,7 +105,6 @@ class svkIdfVolumeReader : public svkImageReader2
         void            InitGeneralEquipmentModule();
         void            InitImagePixelModule();
         void            InitMultiFrameFunctionalGroupsModule();
-        void            InitMultiFrameDimensionModule();
         void            InitAcquisitionContextModule();
         void            InitSharedFunctionalGroupMacros();
         void            InitPerFrameFunctionalGroupMacros();

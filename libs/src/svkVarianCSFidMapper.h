@@ -99,7 +99,6 @@ class svkVarianCSFidMapper : public svkVarianFidMapper
         ~svkVarianCSFidMapper();
   
         virtual void    InitMultiFrameFunctionalGroupsModule();
-        virtual void    InitMultiFrameDimensionModule();
         virtual void    InitAcquisitionContextModule();
         virtual void    InitPlaneOrientationMacro(); 
         virtual void    InitSharedFunctionalGroupMacros();

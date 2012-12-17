@@ -51,8 +51,9 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <set>
-#include <map>
+#include <vtkstd/set>
+#include <vtkstd/map>
+#include <vtkstd/vector>
 
 
 namespace svk {
@@ -117,6 +118,18 @@ class svkDcmHeader: public vtkObject
             PHI_LIMITED, 
             PHI_DEIDENTIFIED 
         } PHIType;
+
+
+        typedef enum {
+            COL_INDEX    = -2, 
+            ROW_INDEX    = -1, 
+            SLICE_INDEX    = 0,     //  first index in DimensionIndexSequence
+            TIME_INDEX     = 1, 
+            CHANNEL_INDEX  = 2,  
+            EPSI_ACQ_INDEX = 3 
+        } DimensionIndexLabel;
+
+        typedef vtkstd::vector< vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> > DimensionVector; 
 
         static const float UNKNOWN_TIME;
         static const vtkstd::string UNKNOWN_STRING;
@@ -595,7 +608,36 @@ class svkDcmHeader: public vtkObject
         void            UpdateNumCoils();
 
         int             GetDimensionIndexPosition(string indexLabel); 
+        vtkstd::string  GetDimensionIndexLabel(int dimensionIndexNumber ); 
+        void            AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionIndexLabel indexType, int maxIndex = 0); 
+        void            SetDimensionIndexSize( 
+                            svkDcmHeader::DimensionIndexLabel indexType, int maxIndex); 
+
+        
+        static void     PrintDimensionIndexVector( svkDcmHeader::DimensionVector* dimensionVector );
+        DimensionVector GetDimensionIndexVector(); 
+
+        static DimensionIndexLabel StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString );
+        static vtkstd::string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
+        static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, 
+                                            svkDcmHeader::DimensionIndexLabel dimensionLabel); 
+        static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index);
+        static void     SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index, int value);
+        static void     SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionIndexLabel indexType, int value); 
+        static bool     IsDimensionDefined(svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionIndexLabel indexType); 
+        static void     GetDimensionVectorIndexFromFrame( svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionVector* loopIndex, int frame);
+        static void     GetDimensionVectorIndexFromCellID( svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionVector* loopIndex, int cellID); 
+        static int      GetCellIDFromDimensionVectorIndex( svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionVector* loopIndex); 
+
         int             GetNumberOfFramesInDimension( int dimensionIndex ); 
+        int             GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector);
+        int             GetNumberOfFrames(svkDcmHeader::DimensionVector* dimensionVector);
 
         //==================================================
         //  DICOM IE and macro initialization methods:
@@ -632,6 +674,7 @@ class svkDcmHeader: public vtkObject
         void            InitPlaneOrientationMacro( vtkstd::string orientationString );
         void            InitPixelMeasuresMacro( vtkstd::string pixelSizes, vtkstd::string sliceThickness );
         void            InitMultiFrameDimensionModule( int numSlices, int numTimePts, int numCoils ); 
+        void            InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector* dimensionVector); 
         void            InitPerFrameFunctionalGroupSequence(
                                 double toplc[3], 
                                 double voxelSpacing[3],
@@ -640,6 +683,13 @@ class svkDcmHeader: public vtkObject
                                 int numTimePts, 
                                 int numCoils
                         ); 
+        void            InitPerFrameFunctionalGroupSequence(
+                                double toplc[3], 
+                                double voxelSpacing[3],
+                                double dcos[3][3], 
+                                svkDcmHeader::DimensionVector* dimensionVector
+                        ); 
+
         void            InitVOILUTModule(float center, float width); 
         void            InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
         void            InitMRImagingModifierMacro(
@@ -707,14 +757,22 @@ class svkDcmHeader: public vtkObject
                                              double toplc[3], double voxelSpacing[3],
                                              double dcos[3][3], int numSlices, int numTimePts, int numCoils
                                     ); 
+        void                        InitPlanePositionMacro(
+                                             double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector); 
 
         void                        InitFrameContentMacro( 
                                         int numSlices = -1, 
                                         int numTimePts = -1, 
                                         int numCoils  = -1
                                     ); 
+        void                        InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensionVector); 
+
         int                         GetNumberOfFrames(); 
 
+        void                        Redimension(svkDcmHeader::DimensionVector* dimensionVector);
+
+                                           
 };
 
 

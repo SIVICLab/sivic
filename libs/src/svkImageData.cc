@@ -41,6 +41,7 @@
 
 
 #include <svkImageData.h>
+#include <svk4DImageData.h>
 
 
 using namespace svk;
@@ -1686,27 +1687,15 @@ svkImageData* svkImageData::GetSourceData()
  */
 void svkImageData::RemoveArrays( svkImageData* data )
 {
-    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = dimensionVector; 
 
-    //  get the original EPSI dimensionality:
-    int numVoxels[3];
-    data->GetNumberOfVoxels(numVoxels);
+    int numCells = data->GetDcmHeader()->GetNumberOfCells( &dimensionVector );
 
-    //  Remove all original arrays
-    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
-        for (int timePt = 0; timePt < numTimePts; timePt++) {
-            for (int z = 0; z < numVoxels[2]; z++) {
-                for (int y = 0; y < numVoxels[1]; y++) {
-                    for (int x = 0; x < numVoxels[0]; x++) {
-                        char arrayName[30];
-                        sprintf(arrayName, "%d %d %d %d %d", x, y, z, timePt, coilNum);
-                        //cout << "remove array: " << arrayName << endl;
-                        data->GetCellData()->RemoveArray( arrayName );
-                    }
-                }
-            }
-        }
+    for ( int cellID = 0; cellID < numCells; cellID++) {
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID); 
+        vtkstd::string arrayName = svk4DImageData::GetArrayName(&loopVector); 
+        data->GetCellData()->RemoveArray( arrayName.c_str() );
     }
 }
 

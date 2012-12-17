@@ -147,7 +147,7 @@ class svkGEPFileMapper : public vtkObject
         virtual vtkstd::string  GetVolumeLocalizationTechnique();
         virtual void            InitVolumeLocalizationSeq();
         virtual void            InitMRSpectroscopyDataModule();
-        virtual void            InitK0Sampled();
+        virtual void            InitK0Sampled( svkDcmHeader* hdr );
 
         virtual void            GetCenterFromRawFile( double* center );
         virtual float           GetFrequencyOffset(); 

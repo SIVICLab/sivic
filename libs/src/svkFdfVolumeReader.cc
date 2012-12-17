@@ -449,11 +449,9 @@ void svkFdfVolumeReader::InitGeneralEquipmentModule()
  */
 void svkFdfVolumeReader::InitImagePixelModule()
 {
-
     this->GetOutput()->GetDcmHeader()->SetValue( "Columns", this->GetHeaderValueAsInt("matrix[]", 0) );
     this->GetOutput()->GetDcmHeader()->SetValue( "Rows", this->GetHeaderValueAsInt("matrix[]", 1) );
     this->GetOutput()->GetDcmHeader()->SetPixelDataType( this->GetFileType() );
-
 }
 
 
@@ -463,25 +461,8 @@ void svkFdfVolumeReader::InitImagePixelModule()
  */
 void svkFdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
 {
-
-/*
-    this->GetOutput()->GetDcmHeader()->SetValue(
-        "ContentDate",
-        fdfMap[ "studyDate" ] 
-    );
-*/
-
-    this->numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
-
-    this->GetOutput()->GetDcmHeader()->SetValue( 
-        "NumberOfFrames", 
-        this->numSlices
-    ); 
-
-
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
-
 }
 
 
@@ -517,52 +498,29 @@ void svkFdfVolumeReader::InitSharedFunctionalGroupMacros()
  */
 void svkFdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 {
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
-}
 
+    double dcos[3][3];
+    this->GetOutput()->GetDcmHeader()->SetSliceOrder( this->dataSliceOrder );
+    this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
 
+    double pixelSpacing[3]; 
+    this->GetPixelSize( pixelSpacing ); 
 
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkFdfVolumeReader::InitFrameContentMacro()
-{
-    for (int i = 0; i < this->numSlices; i++) {
+    double toplc[3]; 
+    double sliceSpacing; 
+    this->GetTLCAndSliceSpacing(toplc, &sliceSpacing ); 
+    pixelSpacing[2] = sliceSpacing; 
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    this->numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
+    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-    }
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+                toplc,        
+                pixelSpacing,  
+                dcos,  
+                &dimensionVector
+    );
 }
 
 
@@ -585,12 +543,12 @@ void svkFdfVolumeReader::InitFrameContentMacro()
  *      y = (dcos10 * X) + (dcos11 * Y) + (dcos12 * Z)
  *      z = (dcos20 * X) + (dcos21 * Y) + (dcos22 * Z)
  */
-void svkFdfVolumeReader::InitPlanePositionMacro()
+void svkFdfVolumeReader::GetTLCAndSliceSpacing(double* toplc, double* sliceSpacing)
 {
 
     /*  
-     *  First do all calculations in the user frame (cols, rows, slices)  Nice and
-     *  rectalinear.  Then next convert to Magnet frame.  Finally consider patient orientation
+     *  First do all calculations in the user frame (cols, rows, slices)  
+     *  Then next convert to Magnet frame.  Finally consider patient orientation
      *  to convert to LPS.  
      */
     double dcos[3][3];
@@ -632,13 +590,16 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
      *  If 3D vol, calculate slice position, otherwise use value encoded 
      *  into slice header
      */
-    for (int i = 0; i < this->GetHeaderValueAsInt("matrix[]", 2); i++) {
+    int slices = this->GetHeaderValueAsInt("matrix[]", 2); 
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
+    //  by default the slice spacing is the same as the pixel size, but 
+    //  if there are more than one slices, then compute the value below
+    double pixelSize[3];
+    this->GetPixelSize(pixelSize); 
+    *sliceSpacing = pixelSpacing[2]; 
+
+    for (int i = 0; i < slices; i++) {
+
 
         //  Need to displace along normal from tlc of slice: 
         //  add displacement along normal vector to get toplc for each frame:
@@ -660,13 +621,13 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
             double* tlcUserFrame = new double[3];  
             for (int j = 0; j < 2; j++) {
                 tlcUserFrame[j] = centerUserFrame[j] 
-                                 - ( this->GetHeaderValueAsFloat("roi[]", j) - pixelSpacing[j] )/2; 
+                    - ( this->GetHeaderValueAsFloat("roi[]", j) - pixelSpacing[j] )/2; 
             }
             tlcUserFrame[2] = centerUserFrame[2]; 
 
             //  and convert to LPS (magnet) frame: 
             this->UserToMagnet(tlcUserFrame, frameLPSPosition, dcos);  
-                
+                        
             delete [] tlcUserFrame; 
 
         } else {
@@ -677,28 +638,43 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
 
         }
 
-        for (int j = 0; j < 3; j++) {
-            ostringstream oss;
-            oss.precision(8);
-            oss << frameLPSPosition[j];
-            imagePositionPatient += oss.str();
-            if (j < 2) {
-                imagePositionPatient += '\\';
+        if ( i == 0 ) {
+            for (int index = 0; index < 3; index++) {
+                toplc[index] = frameLPSPosition[index]; 
             }
         }
+    }
 
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient",
-            imagePositionPatient,
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
+    //  If there is one slice the spacing is the same as the pixel size
+    if ( slices > 1) {
+
+        *sliceSpacing = 0;
+        for (int i = 0; i < 3; i++ ) {
+            *sliceSpacing += pow(toplc[i] - frameLPSPosition[i], 2);
+        }
+        *sliceSpacing = pow(*sliceSpacing, .5)/(slices-1);
+
     }
 
     delete[] volumeTlcLPSFrame;
 
+}
+
+
+
+
+/*!
+ * Compute the pixel spacing in the slice direction to account for gaps
+ */
+void svkFdfVolumeReader::GetPixelSize( double* pixelSize)
+{
+    float fov; 
+    float numPixels; 
+    for (int i = 0; i < 3; i++) {
+        fov        = fabs( GetHeaderValueAsFloat("roi[]", i) );
+        numPixels  = GetHeaderValueAsFloat("matrix[]", i);
+        pixelSize[i] = fov/numPixels; 
+    }
 }
 
 
@@ -708,17 +684,13 @@ void svkFdfVolumeReader::InitPlanePositionMacro()
 void svkFdfVolumeReader::InitPixelMeasuresMacro()
 {
 
-    float fov[3]; 
-    float numPixels[3]; 
-    float pixelSize[3]; 
-    vtkstd::string pixelSizeString[3]; 
+    double pixelSize[3]; 
+    this->GetPixelSize( pixelSize );
 
     //  These are in the user frame: (cols, rows, slice) 
+    vtkstd::string pixelSizeString[3]; 
     for (int i = 0; i < 3; i++) {
         ostringstream oss;
-        fov[i]       = fabs( GetHeaderValueAsFloat("roi[]", i) );
-        numPixels[i] = GetHeaderValueAsFloat("matrix[]", i);
-        pixelSize[i] = fov[i]/numPixels[i]; 
         oss << pixelSize[i];
         pixelSizeString[i].assign( oss.str() );
     }

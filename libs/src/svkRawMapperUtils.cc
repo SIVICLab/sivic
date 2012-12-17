@@ -55,7 +55,7 @@ vtkCxxRevisionMacro(svkRawMapperUtils, "$Rev: 1346 $");
 /*!
  *  Redimension data after changing number of voxels and time points.  Requires explicitly setting the numCoils/Channels:  
  */
-void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOriginal, int* numVoxelsReordered, int numFreqPts, int numCoils )
+void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOriginal, svkDcmHeader::DimensionVector* reorderedDimensionVector, int numFreqPts) 
 {
 
     svkDcmHeader* hdr = data->GetDcmHeader();     
@@ -76,6 +76,9 @@ void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOrigi
     svkGEPFileMapper::GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
 
     //  Now calcuate the new origin based on the reordered dimensionality: 
+    int numVoxelsReordered[3]; 
+    svk4DImageData::GetSpatialDimensions(reorderedDimensionVector, numVoxelsReordered); 
+
     double newOrigin[3]; 
     svkGEPFileMapper::GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
 
@@ -87,9 +90,7 @@ void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOrigi
         newOrigin,
         voxelSpacing,
         dcos,
-        numVoxelsReordered[2], 
-        numTimePts,
-        numCoils 
+        reorderedDimensionVector
     );
 
     data->SyncVTKImageDataToDcmHeader(); 

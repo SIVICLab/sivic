@@ -42,6 +42,7 @@
 
 
 #include <svkDcmHeader.h>
+#include <vector>
 
 
 using namespace svk;
@@ -870,11 +871,9 @@ int svkDcmHeader::GetNumberOfCoils()
 void svkDcmHeader::UpdateNumCoils()
 {
     this->numCoils = 1;
-
-    //  Determine which index in the DimensionIndexValues attribute represents
-    //  the coil number index.  Should use "DimensionIndexPointer" (to do).
-    int coilIndexNumber = this->GetDimensionIndexPosition( "Coil Number" ); 
-    this->numCoils = this->GetNumberOfFramesInDimension( coilIndexNumber ); 
+    this->numCoils = 1;
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
+    this->numCoils = this->GetDimensionValue(&dimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1;
 }
 
 
@@ -899,14 +898,8 @@ int svkDcmHeader::GetNumberOfTimePoints()
  */
 void svkDcmHeader::UpdateNumTimePoints()
 {
-    this->numTimePts = 1;
-
-    //  Determine which index in the DimensionIndexValues attribute represents
-    //  the coil number index.  Should use "DimensionIndexPointer" (to do).
-    int timeIndexNumber = GetDimensionIndexPosition( "Time Point" ); 
-    if (timeIndexNumber != -1 ) {
-        this->numTimePts = GetNumberOfFramesInDimension( timeIndexNumber ); 
-    }
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
+    this->numTimePts = this->GetDimensionValue(&dimensionVector, svkDcmHeader::TIME_INDEX) + 1;
 }
 
 
@@ -941,26 +934,52 @@ int svkDcmHeader::GetDimensionIndexPosition(string indexLabel)
 
 
 /*!
+ *  Gets the index labe at the specified DimensionIndex position( start index at 0)
+ */
+vtkstd::string svkDcmHeader::GetDimensionIndexLabel(int dimensionIndexNumber )    
+{
+    vtkstd::string dimensionIndexLabel = ""; 
+
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+    if ( dimensionIndexNumber < numDims ) { 
+        
+        dimensionIndexLabel = this->GetStringSequenceItemElement(
+            "DimensionIndexSequence",
+            dimensionIndexNumber, 
+            "DimensionDescriptionLabel",
+            NULL, 
+            dimensionIndexNumber 
+        );
+    }
+
+    return dimensionIndexLabel; 
+}
+
+
+/*!
  *  Gets the number of frames in the specified dimension. 
+ *  Iterates over each frame in the FrameContentSequence and gets the set of unique
+ *  values for the specified dimensionIndex.  This is therefore the 
+ *  dimension size of the specified index.
  */
 int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
 {
-    int numberOfFrames = this->GetNumberOfFrames();
 
     int numFramesInDimension; 
 
     if ( dimensionIndex >= 0 ) {
-        set <int> frames;
-        for (int i = 0; i < numberOfFrames; i++ ) {
 
-            //get number of coils and divide numberof frames by it to get number of slices
+        int numberOfFrames = this->GetNumberOfFrames();
+        set <int> frames;
+        for (int frameNum = 0; frameNum < numberOfFrames; frameNum++ ) {
+
             int value = this->GetIntSequenceItemElement(
                 "FrameContentSequence",
-                0, //frame number
+                0, 
                 "DimensionIndexValues",
                 "PerFrameFunctionalGroupsSequence",
-                i,
-                dimensionIndex  // position of the coil index in the index array. 
+                frameNum,
+                dimensionIndex  // position of the specific index in the DimensionIndexSequence . 
             );
             frames.insert(value);
         }
@@ -980,10 +999,9 @@ int svkDcmHeader::GetNumberOfFramesInDimension( int dimensionIndex )
  */
 int svkDcmHeader::GetNumberOfSlices()
 {
-    int numberOfFrames = this->GetNumberOfFrames();
-    int numberOfCoils = this->GetNumberOfCoils();
-    int numberOfTimePts = this->GetNumberOfTimePoints();
-    return numberOfFrames/(numberOfCoils * numberOfTimePts ) ;
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
+    int numSlices = this->GetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
+    return numSlices; 
 }
 
 
@@ -1006,7 +1024,7 @@ int svkDcmHeader::GetSliceForFrame( int frame )
 
 
 /*!
- *  Get the number of Dimension indices requred 
+ *  Get the number of Dimension indices required 
  *  for specifying the frame's slice, time, coil. 
  *  See FrameContentSequence DimensionIndexValues
  */
@@ -1026,7 +1044,7 @@ int svkDcmHeader::GetNumberOfDimensionIndices(int numTimePts, int numCoils)
 
 
 /*!
- *  Get the Dimension Indices for a given slice, timePt and Coil
+ *  Get the Dimension Index Values for a set of indices 
  */
 void svkDcmHeader::SetDimensionIndices(unsigned int* indexValues, int numFrameIndices, int sliceNum, int timePt, int coilNum, int numTimePts, int numCoils)
 {
@@ -1326,6 +1344,31 @@ void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double v
     this->InitPlaneOrientationMacro( dcos ); 
     this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, numSlices, numTimePts, numCoils); 
 }
+
+
+/*!
+ *  Generalized form of method that uses DimensionVector.  
+ *  The rows of the dimensionVector contain the max index of that dimension, i.e. size -1. 
+ *  Initializes the Per Frame Functional Gruop Sequence and attributes derived from 
+ *  method args, eg. dcos -> ImageOrientationPatient.  
+ */
+void svkDcmHeader::InitPerFrameFunctionalGroupSequence(double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector) 
+{
+
+    this->ClearSequence( "PerFrameFunctionalGroupsSequence" );
+
+    //  obtain the number of frames for each dimension. 
+    //  skip the first 2 dimensions: cols, rows: 
+    int numFrames = this->GetNumberOfFrames(dimensionVector);
+    this->SetValue( "NumberOfFrames", numFrames); 
+    this->InitMultiFrameDimensionModule( dimensionVector ); 
+
+    this->InitFrameContentMacro( dimensionVector ); 
+    this->InitPlaneOrientationMacro( dcos ); 
+    this->InitPlanePositionMacro( toplc, voxelSpacing, dcos, dimensionVector); 
+}
+ 
  
 
 /*!
@@ -1342,7 +1385,7 @@ void svkDcmHeader::InitMultiFrameDimensionModule( int numSlices, int numTimePts,
         "DimensionIndexSequence",
         indexCount,
         "DimensionDescriptionLabel",
-        "Slice"
+        this->DimensionIndexLabelToString( svkDcmHeader::SLICE_INDEX)
     );
 
     if ( numTimePts > 1 ) {
@@ -1351,7 +1394,7 @@ void svkDcmHeader::InitMultiFrameDimensionModule( int numSlices, int numTimePts,
             "DimensionIndexSequence",
             indexCount,
             "DimensionDescriptionLabel",
-            "Time Point"
+            this->DimensionIndexLabelToString( svkDcmHeader::TIME_INDEX)
         );
     }
 
@@ -1361,8 +1404,191 @@ void svkDcmHeader::InitMultiFrameDimensionModule( int numSlices, int numTimePts,
             "DimensionIndexSequence",
             indexCount,
             "DimensionDescriptionLabel",
-            "Coil Number"
+            this->DimensionIndexLabelToString( svkDcmHeader::CHANNEL_INDEX)
         );
+    }
+}
+
+
+/*!
+ *  Generalized version of InitMultiFrameDimensionModule that adds an item to the
+ *  sequence for each dimension type represented in the DimensionVector. 
+ */
+void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector* dimensionVector) 
+{
+
+    this->ClearSequence( "DimensionIndexSequence" );
+
+    int numSequenceDims = dimensionVector->size();     
+    int indexCount = 0;
+    // start from 2, since cols and rows aren't included 
+    for ( int dim = 2; dim < numSequenceDims; dim++) {
+
+        vtkstd::map< svkDcmHeader::DimensionIndexLabel, int > row; 
+        vtkstd::map< svkDcmHeader::DimensionIndexLabel, int >::iterator it; 
+
+        row = (*dimensionVector)[dim]; 
+        it =   row.begin(); 
+        svkDcmHeader::DimensionIndexLabel dimLabel = it->first;  
+
+        cout << "dimlabel: " << this->DimensionIndexLabelToString( dimLabel ) << endl;
+
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            indexCount,
+            "DimensionDescriptionLabel",
+            this->DimensionIndexLabelToString( dimLabel ) 
+        );
+        indexCount++; 
+
+    }
+}
+
+
+/*
+ *  gets the dimension indices for the specified frame number and puts them into the 
+ *  loopIndex svkDcmHeader::DimensionVector. 
+ */
+void svkDcmHeader::GetDimensionVectorIndexFromFrame( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, int frame) 
+{
+
+    cout << "frame : " << frame << endl;
+    int minDimension = 2; 
+     
+    for ( int dimension = minDimension; dimension < dimensionVector->size(); dimension++ ) {
+
+        //  Init each dim to 0:     
+        svkDcmHeader::SetDimensionValue( loopIndex, dimension, 0); 
+
+        int innerSize = 1; 
+        int currentSize = 1; 
+        for ( int innerDimension = minDimension; innerDimension < dimension; innerDimension++ ) {
+            innerSize *= ( svkDcmHeader::GetDimensionValue(dimensionVector, innerDimension) + 1); 
+        }
+        currentSize = innerSize * ( svkDcmHeader::GetDimensionValue(dimensionVector, dimension) + 1);
+
+        int remainder = frame % currentSize; 
+        int indexValue = remainder / innerSize; 
+        svkDcmHeader::SetDimensionValue( loopIndex, dimension, indexValue); 
+
+    }
+}
+
+
+/*
+ *  gets the dimension indices for the specified cellID number and puts them into the 
+ *  loopIndex svkDcmHeader::DimensionVector.  
+ */
+void svkDcmHeader::GetDimensionVectorIndexFromCellID( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, int cellID) 
+{
+    cout << "cell ID: " << cellID << endl;
+     
+    for ( int dimension = 0; dimension < dimensionVector->size(); dimension++ ) {
+
+        //  Init each dim to 0:     
+        svkDcmHeader::SetDimensionValue( loopIndex, dimension, 0); 
+
+        int innerSize = 1; 
+        int currentSize = 1; 
+        for ( int innerDimension = 0; innerDimension < dimension; innerDimension++ ) {
+            innerSize *= ( svkDcmHeader::GetDimensionValue(dimensionVector, innerDimension) + 1); 
+        }
+        currentSize = innerSize * ( svkDcmHeader::GetDimensionValue(dimensionVector, dimension) + 1);
+
+        int remainder = cellID % currentSize; 
+        int indexValue = remainder / innerSize; 
+        svkDcmHeader::SetDimensionValue( loopIndex, dimension, indexValue); 
+
+    }
+}
+
+
+/*
+ *  gets the cell data index number corresponding to the DimensionIndex values specified in the 
+ *  loopIndex svkDcmHeader::DimensionVector. 
+ */
+int svkDcmHeader::GetCellIDFromDimensionVectorIndex( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex) 
+{
+    int cellIndex = 0; 
+
+    for ( int dimension = 0; dimension < dimensionVector->size(); dimension++ ) {
+
+        //  get sum of inner loops relative to current dimension: 
+        int innerSize = 1; // default for innermost loop
+        for ( int innerDimension = 0; innerDimension < dimension; innerDimension++ ) {
+            innerSize *= ( svkDcmHeader::GetDimensionValue(dimensionVector, innerDimension) + 1); 
+        }
+
+        cellIndex += innerSize * svkDcmHeader::GetDimensionValue(loopIndex, dimension); 
+
+    }
+
+    return cellIndex; 
+
+
+}
+
+
+/*!
+ *  Generalized form of method to init PlanePosition Macro using dimensions in DimensionVector
+ */
+void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3],
+                                             double dcos[3][3], svkDcmHeader::DimensionVector* dimensionVector) 
+{
+
+    int frame = 0;
+
+    //  make a copy to hold the indices of the current loop
+    svkDcmHeader::DimensionVector loopIndex = *dimensionVector; 
+
+    int numFrames = this->GetNumberOfFrames(dimensionVector);
+
+    for ( int frame = 0; frame < numFrames; frame++) {
+
+        //  Loop over dimensions outter to the slice dimension
+        svkDcmHeader::GetDimensionVectorIndexFromFrame(dimensionVector, &loopIndex, frame );
+
+        float displacement[3]={0,0,0};
+        float frameLPSPosition[3]={0,0,0};
+
+        int sliceNumber = svkDcmHeader::GetDimensionValue(&loopIndex, svkDcmHeader::SLICE_INDEX); 
+
+        this->AddSequenceItemElement(
+            "PerFrameFunctionalGroupsSequence",
+            sliceNumber,
+            "PlanePositionSequence"
+        );
+       
+        //add displacement along normal vector:
+        for (int j = 0; j < 3; j++) {
+            displacement[j] = dcos[2][j] * voxelSpacing[2] * sliceNumber;
+        }
+
+        for(int j = 0; j < 3; j++) { //L, P, S
+            frameLPSPosition[j] = toplc[j] +  displacement[j] ;
+        }
+
+        string imagePositionPatient;
+        for (int j = 0; j < 3; j++) {
+            ostringstream oss;
+            oss.setf(ios::fixed);
+            oss.precision(5);
+            oss << frameLPSPosition[j];
+            imagePositionPatient += oss.str();
+            if (j < 2) {
+                imagePositionPatient += '\\';
+            }
+        }
+
+        this->AddSequenceItemElement(
+            "PlanePositionSequence",
+            0,
+            "ImagePositionPatient",
+            imagePositionPatient,
+            "PerFrameFunctionalGroupsSequence",
+            frame
+        );
+
     }
 }
 
@@ -1423,6 +1649,91 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
             }
         }
     }
+}
+
+
+/*!
+ *  Generalized form of Init method using DimensionVector. 
+ */
+void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensionVector)
+{
+
+    int numFrameIndices = dimensionVector->size() - 2;  // don't include cols and rows 
+    unsigned int* indexValues = new unsigned int[numFrameIndices];
+
+    //  set up vector to store indices for a given frame: 
+    svkDcmHeader::DimensionVector loopIndex = *dimensionVector; 
+
+    //  convert each frame into a set of dimension index values, by converting the 
+    //  frame index into a dimension index. 
+    int numFrames = this->GetNumberOfFrames(dimensionVector);
+
+    for ( int frame = 0; frame < numFrames; frame++) {
+        
+        // get the indices for this frame: 
+
+        svkDcmHeader::GetDimensionVectorIndexFromFrame( dimensionVector, &loopIndex, frame); 
+        
+        for (int i = 0; i < numFrameIndices; i++) {
+            indexValues[i] = svkDcmHeader::GetDimensionValue( &loopIndex, i+2); 
+        }
+
+        //cout << "INDEX ARRAY : " << frame << " => "; 
+        //for (int i = 0; i<numFrameIndices; i++) {
+            //cout <<  indexValues[i] << " " ; 
+        //}
+        //cout << endl;
+
+
+        this->AddSequenceItemElement(
+            "PerFrameFunctionalGroupsSequence",
+            frame,
+            "FrameContentSequence"
+        );
+
+        this->AddSequenceItemElement(
+            "FrameContentSequence",
+            0,
+            "DimensionIndexValues",
+            indexValues,        //  array of vals
+            numFrameIndices,    // num values in array
+            "PerFrameFunctionalGroupsSequence",
+            frame
+        );
+
+        this->AddSequenceItemElement(
+            "FrameContentSequence",
+            0,
+            "FrameAcquisitionDateTime",
+            "EMPTY_ELEMENT",
+            "PerFrameFunctionalGroupsSequence",
+            frame
+        );
+
+        this->AddSequenceItemElement(
+            "FrameContentSequence",
+            0,
+            "FrameReferenceDateTime",
+            "EMPTY_ELEMENT",
+            "PerFrameFunctionalGroupsSequence",
+            frame
+        );
+
+        this->AddSequenceItemElement(
+            "FrameContentSequence",
+            0,
+            "FrameAcquisitionDuration",
+            "-1",
+            "PerFrameFunctionalGroupsSequence",
+            frame
+        );
+
+        this->PrintDcmHeader();
+    }
+
+    this->SetValue( "NumberOfFrames", numFrames); 
+
+    delete[] indexValues;
 }
 
 
@@ -2367,3 +2678,284 @@ int svkDcmHeader::GetNumberOfFrames()
     return numberOfFrames; 
 }
 
+
+/*  
+ *  Gets the number of frames defined by a svkDcmHeader DimensionVector instance
+ *  the DimensionVector input should be initialized so that each index value is the
+ *  max value for that dimension. Since indexing starts at 0 this is 1 less than the
+ *  dimension size. 
+ */
+int svkDcmHeader::GetNumberOfFrames(svkDcmHeader::DimensionVector* dimensionVector)
+{
+    int numFrames = 1; 
+    //the dimension index sequence starts at index 0, so ignore cols and rows
+    for ( int dim = 2; dim < dimensionVector->size(); dim++) {
+        int dimSize = svkDcmHeader::GetDimensionValue ( dimensionVector, dim ) + 1; 
+        numFrames *= dimSize;  
+        if (this->GetDebug()) {
+            cout << "NUM FRAMES: DIM SIZE " << dim << " => " << dimSize << endl;
+        }
+    }
+    return numFrames; 
+
+}
+
+/*  
+ *  Gets the number of cells defined by a svkDcmHeader DimensionVector instance
+ *  the DimensionVector input should be initialized so that each index value is the
+ *  max value for that dimension. Since indexing starts at 0 this is 1 less than the
+ *  dimension size. 
+ */
+int svkDcmHeader::GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector)
+{
+    int numCells = 1; 
+    //the dimension index sequence starts at index 0, so ignore cols and rows
+    for ( int dim = 0; dim < dimensionVector->size(); dim++) {
+        int dimSize = svkDcmHeader::GetDimensionValue ( dimensionVector, dim ) + 1; 
+        numCells *= dimSize;  
+    }
+    return numCells; 
+
+}
+
+
+/*!
+ *  Get the value of the specified dimension: 
+ *  Default is 1 point (or max index = 0)
+ */
+int svkDcmHeader::GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel dimensionLabel)
+{
+    int value = 0; 
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first; 
+        if ( dimLabel == dimensionLabel ) {
+            value = (*(*dimensionVector)[i].begin()).second; 
+        }
+    }
+    return value;
+}
+
+
+/*!
+ *  Get the value of the specified dimension.  The index starts at 2 for slice, the inner most 
+ *  loop in any DimensionVector.  
+ */
+int svkDcmHeader::GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index)
+{
+    return (*(*dimensionVector)[index].begin()).second; 
+}
+
+
+/*!
+ *  Set the value of the specified dimension.  
+ */
+void svkDcmHeader::SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index, int value)
+{
+    (*(*dimensionVector)[index].begin()).second = value; 
+}
+
+
+/*!
+ *  Set the value of the specified dimension.  
+ */
+void svkDcmHeader::SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel indexType, int value)
+{
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first; 
+        if ( dimLabel == indexType ) {
+            (*(*dimensionVector)[i].begin()).second = value; 
+        }
+    }
+}
+
+
+/*!
+ *  Set the value of the specified dimension.  
+ */
+bool svkDcmHeader::IsDimensionDefined(svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel indexType)
+{
+    bool isDefined = false; 
+
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first; 
+        if ( dimLabel == indexType ) {
+            isDefined = true; 
+            break; 
+        }
+    }
+    return isDefined; 
+}
+
+
+/*!
+ *  Returns a data structure representing the current data set dimensions and dimension
+ *  labels. This includes the 3 spatial dimensions: cols, rows, and   DimensionIndexSequence.  
+ *  which includes at least the slice index, but often additional dimensions. 
+ *  Returns a vector or maps.  The vector order is from innermost data looping
+ *  in the PerFrameFunctionalGroup sequence, to outter most.  Slice is always
+ *  present and represents the first index in thsi sequence. 
+ *      vector index:  position in dimension index sequence
+ *          - map: string key representing the dimensionIndexLabel
+ *          - map: int max index value  representing the size-1 of the dimension in the current data set  
+ */
+svkDcmHeader::DimensionVector  svkDcmHeader::GetDimensionIndexVector()
+{
+    svkDcmHeader::DimensionVector dimensionIndexVector; 
+    vtkstd::map < DimensionIndexLabel, int> indexRowMap;  
+
+    //Start with cols and rows:     
+    indexRowMap.insert( pair<DimensionIndexLabel, int>( svkDcmHeader::COL_INDEX, this->GetIntValue("Columns")-1) );
+    dimensionIndexVector.push_back(indexRowMap);                    
+    indexRowMap.clear();
+
+    indexRowMap.insert( pair<DimensionIndexLabel, int>( svkDcmHeader::ROW_INDEX, this->GetIntValue("Rows")-1) );
+    dimensionIndexVector.push_back(indexRowMap);                    
+    indexRowMap.clear();
+
+    //  Now add the items in the dimensionIndexSequence: 
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+    for (int dimensionIndex = 0; dimensionIndex < numDims; dimensionIndex++) {
+
+        vtkstd::string dimensionLabelString = this->GetDimensionIndexLabel(dimensionIndex); 
+        svkDcmHeader::DimensionIndexLabel dimensionLabel = this->StringToDimensionIndexLabel( dimensionLabelString); 
+        int dimensionMaxIndex = this->GetNumberOfFramesInDimension( dimensionIndex ) - 1; 
+
+        indexRowMap.insert( pair<DimensionIndexLabel, int>( dimensionLabel, dimensionMaxIndex) );
+        dimensionIndexVector.push_back(indexRowMap);                    
+        indexRowMap.clear();
+
+    }                    
+
+    if (this->GetDebug()) {
+        svkDcmHeader::PrintDimensionIndexVector( &dimensionIndexVector ); 
+    }
+
+    return dimensionIndexVector; 
+}
+
+
+void svkDcmHeader::PrintDimensionIndexVector( svkDcmHeader::DimensionVector* dimensionVector )
+{
+    for (int i = 0; i < dimensionVector->size(); i++) {    
+        //  Get the value for this index    
+        int dimLabel = static_cast<int>( (*(*dimensionVector)[i].begin()).first ); 
+        int dimValue = svkDcmHeader::GetDimensionValue( dimensionVector, i); 
+        cout << "DIMENSION INDEX LABEL: " << dimLabel << " => " << dimValue << endl;
+    }
+}
+
+
+/*!
+ *  Adds a dimension to the existing DimensionVector.  Applies the new dimension to the DICOM 
+ *  DimensionIndexSequence. 
+ *  By default sets the size of the new dimension to 1 (max value = 0) in the DimensionVector. 
+ */
+void svkDcmHeader::AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel indexType, int maxIndex)
+{
+
+    if ( maxIndex < 0 ) {
+        cerr << "ERROR(svkDcmHeader::AddDImensionIndex dim size must be >= 1 " << endl;
+        exit(1);
+    }
+
+    //  If the dimension is already defined, the just return; 
+    if ( ! svkDcmHeader::IsDimensionDefined( dimensionVector, indexType) ) {
+        vtkstd::map < DimensionIndexLabel, int> indexRowMap;  
+        indexRowMap.insert( pair<DimensionIndexLabel, int>( indexType, maxIndex) );
+        dimensionVector->push_back(indexRowMap);                    
+        this->Redimension( dimensionVector );
+    }    
+}
+
+
+/*!
+ *  Resets the Frame content and image position patient based on the new dimensionality 
+ *  in the dimensionVector. 
+ */
+void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* dimensionVector)
+{
+
+    double dcos[3][3]; 
+    this->GetDataDcos(dcos); 
+       
+    double toplc[3];
+    this->GetOrigin( toplc, 0 );
+       
+    double pixelSpacing[3];
+    this->GetPixelSpacing( pixelSpacing );
+       
+    this->InitPerFrameFunctionalGroupSequence(toplc, pixelSpacing,  dcos, dimensionVector) ; 
+
+    this->InitMultiFrameDimensionModule( dimensionVector ); 
+
+}
+
+/*!
+ *  resets a dimension size for existing dimension
+ */
+void svkDcmHeader::SetDimensionIndexSize( svkDcmHeader::DimensionIndexLabel indexType, int maxIndex)
+{
+
+    if ( maxIndex < 0 ) {
+        cerr << "ERROR(svkDcmHeader::AddDImensionIndex dim size must be >= 1 " << endl;
+        exit(1);
+    }
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
+    svkDcmHeader::SetDimensionValue( &dimensionVector, static_cast<int>(indexType)+2, maxIndex); 
+    svkDcmHeader::PrintDimensionIndexVector( &dimensionVector );
+    this->Redimension( &dimensionVector );
+}
+
+
+/*!
+ *  Convert between stirng and svkDcmHeader::DimensionIndexLabel 
+ *  These are the string representations of the DICOM DimensionIndexLabel attribute. 
+ */
+svkDcmHeader::DimensionIndexLabel svkDcmHeader::StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString )
+{
+
+    DimensionIndexLabel indexLabel;     
+
+    //  case insensitive matching:  
+    for (size_t i=0; i<dimensionIndexLabelString.length(); ++i) {
+        dimensionIndexLabelString[i] = toupper(dimensionIndexLabelString[i]);
+    }    
+
+    if ( dimensionIndexLabelString.compare("SLICE") == 0 ) {
+        indexLabel = svkDcmHeader::SLICE_INDEX;        
+    } else if ( dimensionIndexLabelString.compare("TIME") == 0 ) {
+        indexLabel = svkDcmHeader::TIME_INDEX;        
+    } else if ( dimensionIndexLabelString.compare("CHANNEL") == 0 ) {
+        indexLabel = svkDcmHeader::CHANNEL_INDEX;        
+    } else if ( dimensionIndexLabelString.compare("EPSI_ACQ") == 0 ) {
+        indexLabel = svkDcmHeader::EPSI_ACQ_INDEX;        
+    }
+
+    return indexLabel; 
+
+}
+
+
+/*!
+ *  Convert between strng and svkDcmHeader::DimensionIndexLabel 
+ *  These are the string representations of the DICOM DimensionIndexLabel attribute. 
+ */
+vtkstd::string svkDcmHeader::DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label) 
+{
+
+    vtkstd::string indexLabelString = ""; 
+    int labelIndex = static_cast<int>(label); 
+
+    if ( labelIndex == 0 ) { 
+        indexLabelString = "SLICE"; 
+    } else if ( labelIndex == 1 ) {
+        indexLabelString = "TIME"; 
+    } else if ( labelIndex == 2 ) {
+        indexLabelString = "CHANNEL"; 
+    } else if ( labelIndex == 3 ) {
+        indexLabelString = "EPSI_ACQ"; 
+    }
+
+    return indexLabelString; 
+
+}

@@ -104,14 +104,15 @@ void svkCorrectDCOffset::CorrectDCOffset()
 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) );
 
-    int cols               = mrsData->GetDcmHeader()->GetIntValue( "Columns" );
-    int rows               = mrsData->GetDcmHeader()->GetIntValue( "Rows" );
-    int slices             = mrsData->GetDcmHeader()->GetNumberOfSlices();
-    int numKspacePts       = cols * rows * slices; 
-    int numTimePts         = mrsData->GetDcmHeader()->GetNumberOfTimePoints();
-    int numVoxelsPerVolume = numKspacePts * numTimePts; 
+    svkDcmHeader::DimensionVector fullDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector channelDimensionVector = fullDimensionVector;  
+    //  analyze one channel at a time: 
+    svkDcmHeader::SetDimensionValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+    svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
+
+    int numVoxelsPerChannel = mrsData->GetDcmHeader()->GetNumberOfCells( &channelDimensionVector ); 
     int numSpecPts         = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    int numCoils           = mrsData->GetDcmHeader()->GetNumberOfCoils();
+    int numCoils           = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX); 
 
     string representation = mrsData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
@@ -129,13 +130,20 @@ void svkCorrectDCOffset::CorrectDCOffset()
     int channelVoxelIndex0 = 0;
     for ( int coil = 0; coil < numCoils; coil++ ) {
 
-        offset[0] = 0.0;    // real
-        offset[1] = 0.0;    // imaginary
+        offset[0] = 0.0;    // DC offset real
+        offset[1] = 0.0;    // DC offset imaginary
         numSampledFIDs = 0; 
 
-        for( int voxelId = channelVoxelIndex0; voxelId < channelVoxelIndex0 + numVoxelsPerVolume; voxelId++ ) {
 
-            spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( voxelId) );
+        for( int cellID = 0; cellID < numVoxelsPerChannel; cellID++ ) {
+
+            //  Get the dimensions for the single channel.  reset the channel index and get the 
+            //  actual cellID for this channel 
+            svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
+            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
+            int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
+
+            spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID) );
 
             if ( this->WasKSpacePtSampled( spectrum, numSpecPts * numComponents  ) ) {
 
@@ -153,9 +161,15 @@ void svkCorrectDCOffset::CorrectDCOffset()
         offset[1] = offset[1] / ( numSampledFIDs * fractionOfSpectrum );
 
         //  correct the spectra from this coil; 
-        for( int voxelId = channelVoxelIndex0; voxelId < (channelVoxelIndex0 + numVoxelsPerVolume); voxelId++ ) {
+        for( int cellID = 0; cellID < numVoxelsPerChannel; cellID++ ) {
 
-            spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( voxelId) );
+            //  Get the dimensions for the single channel.  reset the channel index and get the 
+            //  actual cellID for this channel 
+            svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
+            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
+            int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
+
+            spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID ) );
 
             if ( this->WasKSpacePtSampled( spectrum, numSpecPts * numComponents  ) ) {
 
@@ -170,7 +184,6 @@ void svkCorrectDCOffset::CorrectDCOffset()
                 }
             }
         }
-        channelVoxelIndex0 = channelVoxelIndex0 + numVoxelsPerVolume; 
     }
 
     this->GetInput()->Modified();

@@ -293,6 +293,10 @@ void svkImageReader2::SetupOutputExtent()
     numVoxels[0] = this->GetOutput()->GetDcmHeader()->GetIntValue("Columns");
     numVoxels[1] = this->GetOutput()->GetDcmHeader()->GetIntValue("Rows");
     numVoxels[2] = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
+    cout << "SIR2: extent: " << numVoxels[2] << endl;
+    svkDcmHeader::DimensionVector dim = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::PrintDimensionIndexVector(&dim); 
+
 
     if ( strcmp( this->GetOutput()->GetClassName(), "svkMrsImageData") == 0 ) {
         this->SetDataExtent(

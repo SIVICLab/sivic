@@ -339,6 +339,7 @@ void svkMrsImageFFT::UpdateOrigin()
     int numSlices = data->GetDcmHeader()->GetNumberOfSlices();
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
+
     double dcos[3][3]={{0,0,0},{0,0,0},{0,0,0}}; 
 
     data->GetDcmHeader()->GetDataDcos( dcos ); 
@@ -389,8 +390,6 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     spatialDims[2] -= 1;
     int numFrequencyPoints = data->GetCellData()->GetNumberOfTuples();
     int numComponents = data->GetCellData()->GetNumberOfComponents();
-    int numCoils = data->GetDcmHeader()->GetNumberOfCoils();
-    int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     double progress = 0;
     int ranges[3];
     ranges[0] = this->updateExtent[1]-this->updateExtent[0]+1;
@@ -398,59 +397,71 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     ranges[2] = this->updateExtent[5]-this->updateExtent[4]+1;
     int denominator = ranges[2] * ranges[0] * ranges[1] + ranges[1] * ranges[0] + ranges[0];
 
-    for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
-        for( int coilNum = 0; coilNum < numCoils; coilNum++ ) { 
-            ostringstream progressStream;
-            progressStream <<"Executing FFT for Time Point " << timePt+1 << "/"
-                           << numTimePts << " and Channel: " << coilNum+1 << "/" << numCoils;
-            this->SetProgressText( progressStream.str().c_str() );
-            for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
-                progress = (((z-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
-                this->UpdateProgress( progress );
-                for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
-                    for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
 
-                        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, coilNum) );
+    //  Get the Dimension Index and index values  
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector indexVector = dimensionVector; 
 
-                        vtkImageComplex* imageComplexTime      = new vtkImageComplex[ numFrequencyPoints ];
-                        vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
-                        vtkImageComplex* imageOut; 
+    //  GetNumber of cells in the image:
+    int numCells = data->GetDcmHeader()->GetNumberOfCells( &dimensionVector ); 
 
-                        //  time to frequency: 
-                        if ( this->mode == FORWARD ) {
+    for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
-                            this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
+        //  Get the dimensionVector index for current cell -> indexVector: 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
 
-                            fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+        int slice = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::SLICE_INDEX);
 
-                            // For a FORWARD FFT, shift the frequency data to put 0 frequency at the center index point.
-                            this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
+        ostringstream progressStream;
+        progressStream <<"Executing FFT for cell " << cellID + 1 << "/" << numCells ;
+                          
+        this->SetProgressText( progressStream.str().c_str() );
 
-                            imageOut = imageComplexFrequency; 
+        progress = (((slice-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
+        this->UpdateProgress( progress );
 
-                        } else if (this->mode == REVERSE ) {
-
-                            this->ConvertArrayToImageComplex( spectrum, imageComplexFrequency);
-
-                            //  For a Reverse FFT, shift the frequency data to put 0 frequency at the first index point 
-                            //  prior to RFFT.
-                            this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
-
-                            fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
-
-                            imageOut = imageComplexTime; 
-
-                        }
-
-                        for (int i = 0; i < numFrequencyPoints; i++) {
-                            spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
-                        }
-
-                    }
-                }
-            }
+        if ( ! svk4DImageData::IsIndexInExtent( this->updateExtent, &indexVector) ) {
+            continue; 
         }
+
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+            svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID ) 
+        ); 
+
+        vtkImageComplex* imageComplexTime      = new vtkImageComplex[ numFrequencyPoints ];
+        vtkImageComplex* imageComplexFrequency = new vtkImageComplex[ numFrequencyPoints ];
+        vtkImageComplex* imageOut; 
+
+        //  time to frequency: 
+        if ( this->mode == FORWARD ) {
+
+            this->ConvertArrayToImageComplex( spectrum, imageComplexTime );
+
+            fourierFilter->ExecuteFft( imageComplexTime, imageComplexFrequency, numFrequencyPoints ); 
+
+            // For a FORWARD FFT, shift the frequency data to put 0 frequency at the center index point.
+            this->FFTShift( imageComplexFrequency, numFrequencyPoints ); 
+
+            imageOut = imageComplexFrequency; 
+
+        } else if (this->mode == REVERSE ) {
+
+            this->ConvertArrayToImageComplex( spectrum, imageComplexFrequency);
+
+            //  For a Reverse FFT, shift the frequency data to put 0 frequency at the first index point 
+            //  prior to RFFT.
+            this->IFFTShift( imageComplexFrequency, numFrequencyPoints ); 
+
+            fourierFilter->ExecuteRfft( imageComplexFrequency, imageComplexTime, numFrequencyPoints ); 
+
+            imageOut = imageComplexTime; 
+
+        }
+
+        for (int i = 0; i < numFrequencyPoints; i++) {
+            spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
+        }
+
     }
 
     //  Update the DICOM header to reflect the spectral domain changes:

@@ -191,12 +191,18 @@ void svkIOD::InitMultiFrameFunctionalGroupsModule()
 
 
 /*!
- *
+ *  Defaults to a single frame Dimension representing the slice 
  */
 void svkIOD::InitMultiFrameDimensionModule()
 {
     this->dcmHeader->InsertEmptyElement( "DimensionOrganizationSequence" );
     this->dcmHeader->InsertEmptyElement( "DimensionIndexSequence" );
+    //  Every object exists in 3D and therefore has a slice index 
+    this->dcmHeader->SetValue( "Rows", 1 );
+    this->dcmHeader->SetValue( "Columns", 1 );
+    svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector();
+    this->dcmHeader->AddDimensionIndex(&dimensionVector, svkDcmHeader::SLICE_INDEX);  
+    this->dcmHeader->InitMultiFrameDimensionModule( &dimensionVector ); 
 }
 
 

@@ -409,11 +409,6 @@ void svkGEPFileMapper::InitMultiFrameFunctionalGroupsModule()
         svkImageReader2::RemoveSlashesFromDate( &dcmDate ) 
     );
 
-    this->dcmHeader->SetValue( 
-        "NumberOfFrames", 
-        this->GetNumFrames() 
-    );
-
     InitPerFrameFunctionalGroupMacros();
 
 }
@@ -468,13 +463,16 @@ void svkGEPFileMapper::InitPerFrameFunctionalGroupMacros()
     int numCoils = this->GetNumCoils();
     int numTimePts = this->GetNumTimePoints();
 
+    svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector(); 
+    svkDcmHeader::SetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
+    this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts - 1 );
+    this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils - 1 );
+
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
             toplc, 
             voxelSpacing,
             dcos, 
-            numSlices, 
-            numTimePts, 
-            numCoils
+            &dimensionVector
     );
 
     delete[] center; 
@@ -1855,7 +1853,7 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
     this->dcmHeader->SetValue( "SVK_RowsDomain", spatialDomain);
     this->dcmHeader->SetValue( "SVK_SliceDomain", spatialDomain );
 
-    this->InitK0Sampled();
+    this->InitK0Sampled( this->dcmHeader );
 }
 
 
@@ -1864,7 +1862,7 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
  *  dimensions of the dataset (odd/even).
  *
  */
-void svkGEPFileMapper::InitK0Sampled()
+void svkGEPFileMapper::InitK0Sampled( svkDcmHeader* hdr )
 {
     string kSpaceSymmetry;
     if ( this->pfileVersion > 9 ) {
@@ -1877,9 +1875,9 @@ void svkGEPFileMapper::InitK0Sampled()
     //  If k-space data and sym is even: set to NO (assume GE data with even num pts)
     //  method: bool isK0Sampled( sym(even/odd), dimension(even/odd) );
     int numVoxels[3];
-    numVoxels[0] = this->dcmHeader->GetIntValue( "Columns");
-    numVoxels[1] = this->dcmHeader->GetIntValue( "Rows");
-    numVoxels[2] = this->dcmHeader->GetNumberOfSlices();
+    numVoxels[0] = hdr->GetIntValue( "Columns");
+    numVoxels[1] = hdr->GetIntValue( "Rows");
+    numVoxels[2] = hdr->GetNumberOfSlices();
 
     string k0Sampled = "YES";
     //cout << "Num Voxels :" << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
@@ -1900,9 +1898,9 @@ void svkGEPFileMapper::InitK0Sampled()
             k0Sampled = "YES";
         }
     }
-    this->dcmHeader->SetValue( "SVK_K0Sampled", k0Sampled);
-
+    hdr->SetValue( "SVK_K0Sampled", k0Sampled);
 }
+
 
 /*
  *  Gets the center of the acquisition grid.  May vary between sequences.
@@ -2188,7 +2186,6 @@ bool svkGEPFileMapper::WasIndexSampled(int indexX, int indexY, int indexZ)
  */
 void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
 {
-
     int numCoils = this->GetNumCoils(); 
     int numTimePts = this->GetNumTimePoints(); 
     int numSpecPts = this->GetHeaderValueAsInt( "rhr.rh_frame_size" ); 

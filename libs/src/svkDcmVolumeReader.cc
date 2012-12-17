@@ -215,18 +215,19 @@ void svkDcmVolumeReader::InitSliceOrder()
 void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string fileEnd)
 {
 
-    this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
-    if (this->numFrames > 1) {
-
+    if ( fileStart.compare(fileEnd) != 0 ) {
 
         double origin0[3];
-        this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
+        svkImageData* tmpImage0 = svkMriImageData::New();
+        tmpImage0->GetDcmHeader()->ReadDcmFile( fileEnd ); 
+        tmpImage0->GetDcmHeader()->GetOrigin(origin0); // zero indexed!
+        tmpImage0->Delete();
 
         double origin1[3];
-        svkImageData* tmpImage = svkMriImageData::New();
-        tmpImage->GetDcmHeader()->ReadDcmFile( fileEnd ); 
-        tmpImage->GetDcmHeader()->GetOrigin(origin1); // zero indexed!
-        tmpImage->Delete();
+        svkImageData* tmpImage1 = svkMriImageData::New();
+        tmpImage1->GetDcmHeader()->ReadDcmFile( fileEnd ); 
+        tmpImage1->GetDcmHeader()->GetOrigin(origin1); // zero indexed!
+        tmpImage1->Delete();
 
         //  Determine whether the data is ordered with or against the slice normal direction.
         double normal[3];
@@ -246,7 +247,9 @@ void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string
         } else {
             this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_NEG_NORMAL;
         }
+
         math->Delete();
+
     } else {
         this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
     }
@@ -802,6 +805,11 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
 void svkDcmVolumeReader::InitDcmHeader()
 {
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->FileName, 100000000 ); 
+
+    //rewrite the DimensionIndexSequence if necessary:
+    cout << "INIT THE HEADER   " << endl;
+    svkDcmHeader::DimensionVector vec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::PrintDimensionIndexVector(&vec);
 }
 
 

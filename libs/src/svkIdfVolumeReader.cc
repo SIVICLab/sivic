@@ -297,6 +297,8 @@ void svkIdfVolumeReader::ExecuteData(vtkDataObject* output)
     //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
     //  been allocated. but that requires the number of components to be specified. 
     this->GetOutput()->GetIncrements(); 
+    this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+
 }
 
 
@@ -362,7 +364,6 @@ void svkIdfVolumeReader::InitDcmHeader()
     this->InitGeneralEquipmentModule();
     this->InitImagePixelModule();
     this->InitMultiFrameFunctionalGroupsModule();
-    this->InitMultiFrameDimensionModule();
     this->InitAcquisitionContextModule();
 
     if (this->GetDebug()) {
@@ -510,39 +511,10 @@ void svkIdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     this->numVolumes = this->GetFileNames()->GetNumberOfValues();
     this->numFrames = this->numSlices * this->numVolumes; 
 
-    this->GetOutput()->GetDcmHeader()->SetValue( "NumberOfFrames", this->numFrames ); 
-
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
     delete iss; 
-}
-
-
-/*! 
- *  
- */
-void svkIdfVolumeReader::InitMultiFrameDimensionModule()
-{
-
-    int indexCount = 0;
-
-    this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-        "DimensionIndexSequence",
-        indexCount,
-        "DimensionDescriptionLabel",
-        "Slice"
-    );
-
-    if (this->numVolumes > 1) {
-        indexCount++;
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "DimensionIndexSequence",
-            indexCount,
-            "DimensionDescriptionLabel",
-            "Time Point"
-        );
-    }
-
+    this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
 }
 
 
@@ -613,8 +585,16 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
         delete issSize; 
     }
 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+            &dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numVolumes-1);
+
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
-        toplc, pixelSize, dcos, this->numSlices, 1, this->numVolumes 
+                toplc,        
+                pixelSize,  
+                dcos,  
+                &dimensionVector
     );
 }
 

@@ -90,10 +90,10 @@ class svkDdfVolumeWriter : public svkImageWriter
         void             GetDDFOrientation(float orientation[6]);
         vtkstd::string   GetDimensionDomain( vtkstd::string dimensionDomainString ); 
         vtkstd::string   GetDDFPatientName(vtkstd::string PatientName);
-        vtkstd::string   GetFileRootName(vtkstd::string fileRoot, int coiNum, int timePt = 0); 
+        vtkstd::string   GetFileRootName(vtkstd::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
         void             SetNumberTimePointsPerFile(int numTimePts);
         bool             AllTimePointsInEachFile(); 
-        void             InitSpecData(float* specData, int coilNum, int timePt); 
+        void             InitSpecData(float* specData, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector); 
         void             InitHeader(ofstream* out, vtkstd::string fileName);
 
         int              numTimePtsPerFile; 

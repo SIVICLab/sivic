@@ -42,11 +42,15 @@
 
 
 #include <svkDdfVolumeWriter.h>
+#include <svk4DImageData.h>
+#include <svkDcmHeader.h>
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkByteSwap.h>
+
+#include "svkUtils.h"
 
 
 using namespace svk;
@@ -204,11 +208,22 @@ void svkDdfVolumeWriter::WriteFiles()
 
     vtkstd::string fileName;
 
+    svkDcmHeader::DimensionVector origDimensionVector = hdr->GetDimensionIndexVector(); 
+    svkDcmHeader::DimensionVector dimensionVector = origDimensionVector; 
+    svkDcmHeader::DimensionVector loopVector = dimensionVector; 
+
     //  looping varies depending on how many time points go into each file:
     if ( this->AllTimePointsInEachFile() ) {
-        for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
 
-            fileName = this->GetFileRootName(fileRoot, coilNum);
+        //  In this case we only want to loop over dimensions other than the time dimension, so set 
+        //  time to a single value in this vector:
+        svk4DImageData::SetDimensionVectorIndex(&dimensionVector, svkDcmHeader::TIME_INDEX, 0);
+
+        int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
+
+        for (int frame = 0; frame < numFrames; frame++) {
+
+            fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
 
             ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
             ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
@@ -217,7 +232,10 @@ void svkDdfVolumeWriter::WriteFiles()
             }
 
             for (int timePt = 0; timePt < numTimePts; timePt++) {
-                this->InitSpecData(specData, coilNum, timePt); 
+                hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
+                svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::TIME_INDEX, timePt);
+                svkDcmHeader::PrintDimensionIndexVector(&loopVector); 
+                this->InitSpecData(specData, &origDimensionVector, &loopVector); 
             }
 
             this->InitHeader( &hdrOut, fileName ); 
@@ -235,30 +253,33 @@ void svkDdfVolumeWriter::WriteFiles()
 
     } else if ( ! this->AllTimePointsInEachFile() ) {
 
-        for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
+        //  In this case we only want to loop over dimensions other than the time dimension, so set 
+        //  time to a single value in this vector:
 
-            for (int timePt = 0; timePt < numTimePts; timePt++) {
+        int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
+        for (int frame = 0; frame < numFrames; frame++) {
 
-                fileName = this->GetFileRootName(fileRoot, coilNum, timePt);
+            fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
 
-                ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
-                ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
-                if( !cmplxOut || !hdrOut ) {
-                    throw runtime_error("Cannot open .ddf or .cmplx file for writing");
-                }
-
-                this->InitSpecData(specData, coilNum, timePt); 
-                this->InitHeader( &hdrOut, fileName );
-
-                //  cmplx files are by definition big endian:
-                #ifndef VTK_WORDS_BIGENDIAN
-                    vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
-                #endif
-
-                cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
-                cmplxOut.close();
-                hdrOut.close(); 
+            ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
+            ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
+            if( !cmplxOut || !hdrOut ) {
+                throw runtime_error("Cannot open .ddf or .cmplx file for writing");
             }
+
+            hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
+            this->InitSpecData(specData, &dimensionVector, &loopVector); 
+
+            this->InitHeader( &hdrOut, fileName );
+
+            //  cmplx files are by definition big endian:
+            #ifndef VTK_WORDS_BIGENDIAN
+                vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
+            #endif
+
+            cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
+            cmplxOut.close();
+            hdrOut.close(); 
         }
     }
 
@@ -271,9 +292,10 @@ void svkDdfVolumeWriter::WriteFiles()
  *  Loops over x,y,z spatial indices to initialize the specData buffer from data in the 
  *  svkImageData object.  The specData buffer is what gets written to the
  *  cmplx file.  With the exception of the offsetOut, this is the same for both blocks of 
- *  WriteData()
+ *  WriteData().  The dimensionVector argument is the current set of indices to write, not necessarily
+ *  the data dimensionality. 
  */
-void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt ) 
+void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector) 
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -282,6 +304,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
     int slices     = hdr->GetNumberOfSlices();  
     int numTimePts = hdr->GetNumberOfTimePoints();  
     int specPts    = hdr->GetIntValue( "DataPointColumns" );
+    int timePt     = svkDcmHeader::GetDimensionValue(indexVector, svkDcmHeader::TIME_INDEX);
 
     int numComponents = 1;
     vtkstd::string representation = hdr->GetStringValue( "DataRepresentation" );
@@ -289,7 +312,6 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
         numComponents = 2;
     }
 
-    int dataLengthPerFile = cols * rows * slices * specPts * numComponents * this->GetNumberTimePointsPerFile(); 
     int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
     int timePtOffset = cols * rows * slices; 
 
@@ -302,22 +324,31 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
 
-                int offsetOut = ( cols * rows * z ) + ( cols * y ) + x; 
+                svk4DImageData::SetDimensionVectorIndex(indexVector, svkDcmHeader::COL_INDEX, x);
+                svk4DImageData::SetDimensionVectorIndex(indexVector, svkDcmHeader::ROW_INDEX, y);
+                svk4DImageData::SetDimensionVectorIndex(indexVector, svkDcmHeader::SLICE_INDEX, z);
+
                 //  If all time points written to a single ddf file, then add the time
                 //  offset in the output file here, otherwise time doesn't 
                 //  affect the offset as each time point goes to a separate file
                 //  However, the input offset does get incremented
+                int offsetOut = ( cols * rows * z ) + ( cols * y ) + x; 
                 if (  this->AllTimePointsInEachFile() ) {
                     offsetOut += ( timePt * timePtOffset );
                 }
 
-                int offset = offsetOut + coilNum * coilOffset;
+                //int offset = offsetOut + coilNum * coilOffset;
+                //if (  ! this->AllTimePointsInEachFile() ) {
+                 //   offset += timePt * timePtOffset;
+                //}
+                //cout << "DV: " << endl;
+                //svkDcmHeader::PrintDimensionIndexVector(dimensionVector); 
+                //cout << "IV: " << endl;
+                //svkDcmHeader::PrintDimensionIndexVector(indexVector); 
 
-                if (  ! this->AllTimePointsInEachFile() ) {
-                    offset += timePt * timePtOffset;
-                }
-
-                fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+                int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(dimensionVector, indexVector); 
+                //cout << "CELLID: " << cellID << endl;
+                fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID) );
 
                 for (int i = 0; i < specPts; i++) {
 
@@ -325,6 +356,9 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, int coilNum, int timePt )
 
                     for (int j = 0; j < numComponents; j++) {
                         specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
+                    }
+                    if (i < 5) {
+                        cout << "check write: " << setw(14) << setprecision(2) << dataTuple[0] << " " << setw(14) << setprecision(2) << dataTuple[1] << endl;
                     }
                 }
             }
@@ -1051,31 +1085,41 @@ vtkstd::string svkDdfVolumeWriter::GetDimensionDomain( vtkstd::string dimensionD
  *  indicate time_pt or coil number for multi-file output of dataset, e.g. 
  *  each coil written to a separate ddf/cmplx file pair. 
  */
-vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, int coilNum, int timePt)
+vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame ) 
 {
 
-    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
-    int numCoils   = hdr->GetNumberOfCoils();
-    int numTimePts = hdr->GetNumberOfTimePoints();
-    int fileNum = -1; 
+    svkDcmHeader::DimensionVector loopVector = *dimensionVector;     
+    svkDcmHeader::GetDimensionVectorIndexFromFrame(dimensionVector, &loopVector, frame);
+
+    //  See if any non time dimension has length > 1: 
+    vtkstd::string dimLabel = ""; 
+    vtkstd::string extraDimLabel = ""; 
+    int numDimsToRepresent = 0; 
+    int implicitDimensionIndex = 1; 
+    for ( int i = 3; i < dimensionVector->size(); i++) {
+        int dimSize = svkDcmHeader::GetDimensionValue(dimensionVector, i); 
+        if ( dimSize > 0 ) {
+            numDimsToRepresent++; 
+            if ( numDimsToRepresent == 1) {
+                implicitDimensionIndex = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
+                dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
+            }
+            vtkstd::string type = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexLabel(i-2);
+            //cout << "TYPE: " << type << endl;
+            if ( numDimsToRepresent > 1 ) {
+                extraDimLabel.append("_"); 
+                extraDimLabel.append(type); 
+                int dimValue = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
+                extraDimLabel.append( svkUtils::IntToString(dimValue) ); 
+            }
+        }
+    }
 
     //  construct file number.  By default this reflects the coil number, 
     //  but dependeing on numTimePtsPerFile, may also reflect time point.
-    if ( numCoils > 1 &&  this->AllTimePointsInEachFile() ) {
-        fileNum = coilNum; 
-    } else if ( 
-        (numCoils > 1 || numTimePts > 1 ) 
-        && ! this->AllTimePointsInEachFile() ) 
-    {
-        fileNum = (coilNum * numTimePts) + timePt; 
-    } 
-
-    if ( fileNum >= 0 ) {
-        vtkstd::string coilString;
-        ostringstream oss;
-        //  Add 1 to the file number so indexing doesn't start at 0. 
-        oss << fileNum + 1;
-        fileRoot.assign( fileRoot + "_" + oss.str() ) ;
+    if ( numDimsToRepresent >=1 ) {
+        dimLabel.append(extraDimLabel); 
+        fileRoot.assign( fileRoot + "_" + dimLabel ) ;
     } else {
         fileRoot.assign( fileRoot );  
     }

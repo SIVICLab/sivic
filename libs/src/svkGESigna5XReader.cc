@@ -2005,7 +2005,8 @@ void svkGESigna5XReader::InitMultiFrameFunctionalGroupsModule()
     }
  
     this->numFrames =  this->GetFileNames()->GetNumberOfValues();
-  
+ 
+    /*
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "NumberOfFrames", 
         this->numFrames 
@@ -2015,6 +2016,7 @@ void svkGESigna5XReader::InitMultiFrameFunctionalGroupsModule()
         "InstanceNumber", 
         (int)this->imageHeader->MR_Image_Number 
     );
+    */
 
     this->GetOutput()->GetDcmHeader()->SetValue( 
         "ContentDate", 
@@ -2025,7 +2027,6 @@ void svkGESigna5XReader::InitMultiFrameFunctionalGroupsModule()
         "ContentTime", 
         vtkstd::string(this->imageHeader->MR_Timestamp_Of_Last_Change_Time) 
     );
-
 
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
@@ -2922,8 +2923,53 @@ void svkGESigna5XReader::InitMRAveragesMacro()
  */
 void svkGESigna5XReader::InitPerFrameFunctionalGroupMacros()
 {
-    this->InitFrameContentMacro();
-    this->InitPlanePositionMacro();
+
+    /*
+     *  Iterate over slices (frames) and copy ImagePositions
+     */
+    double toplc[3];
+    double dcos[3][3];
+    for (int i = 0; i < 1; i++ ) {
+    //for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) { 
+
+        GESignaHeader* tmpImage = ReadHeader( this->GetFileNames()->GetValue( i ) );
+        if( tmpImage == NULL ) {
+            vtkWarningWithObjectMacro(this, "Unable to read GE Signa 5X header");
+            return;
+        }
+        double row[3];
+        double col[3];
+        double normal[3];
+        this->CalculateTopLeftHandCornerAndRowColumnAndNormalVectors(tmpImage, toplc, row, col, normal);
+        dcos[0][0] = row[0]; 
+        dcos[0][1] = row[1]; 
+        dcos[0][2] = row[2]; 
+        dcos[1][0] = col[0]; 
+        dcos[1][1] = col[1]; 
+        dcos[1][2] = col[2]; 
+        dcos[2][0] = normal[0]; 
+        dcos[2][1] = normal[1]; 
+        dcos[2][2] = normal[2]; 
+
+        delete tmpImage; 
+    }
+
+    double pixelSize[3];
+    pixelSize[0] =  this->imageHeader->MR_Image_Pixel_Size_X; 
+    pixelSize[1] =  this->imageHeader->MR_Image_Pixel_Size_Y;
+    pixelSize[2] =  this->imageHeader->MR_Slice_Thickness;
+
+
+    svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
+    int numSlices = this->GetFileNames()->GetNumberOfValues(); 
+    svkDcmHeader::SetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
+
+    this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
+                toplc,        
+                pixelSize,  
+                dcos,  
+                &dimensionVector
+    );
 }
 
 /*!
@@ -3211,93 +3257,6 @@ void svkGESigna5XReader::InitMRPulseSequenceModule()
         "NumberOfKSpaceTrajectories", 
         1 
     );
-}
-
-/*!
- *  Mandatory, Must be a per-frame functional group
- */
-void svkGESigna5XReader::InitFrameContentMacro()
-{
-    for (int i = 0; i < this->numFrames; i++) {
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "FrameContentSequence"
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDateTime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameReferenceDatetime",
-            "EMPTY_ELEMENT",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "FrameContentSequence",
-            0,
-            "FrameAcquisitionDuration",
-            "-1",
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-    }
-}
-
-/*!
- *
- */
-void svkGESigna5XReader::InitPlanePositionMacro()
-{
-
-    /*
-     *  Iterate over slices (frames) and copy ImagePositions
-     */
-    for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) { 
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PerFrameFunctionalGroupsSequence",
-            i,
-            "PlanePositionSequence"
-        );
-
-        GESignaHeader* tmpImage = ReadHeader( this->GetFileNames()->GetValue( i ) );
-        if( tmpImage == NULL ) {
-            vtkWarningWithObjectMacro(this, "Unable to read GE Signa 5X header");
-            return;
-        }
-        double position[3];
-        double row[3];
-        double col[3];
-        double normal[3];
-        this->CalculateTopLeftHandCornerAndRowColumnAndNormalVectors(tmpImage,position,row,col,normal);
-
-        ostringstream ost;
-        ost << fixed << setprecision(6) << position[0] 
-            << "\\" << position[1] << "\\"<< position[2];     
-
-        this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
-            "PlanePositionSequence",
-            0,
-            "ImagePositionPatient", 
-            ost.str(),
-            "PerFrameFunctionalGroupsSequence",
-            i
-        );
-
-        delete tmpImage; 
-    }
 }
 
 

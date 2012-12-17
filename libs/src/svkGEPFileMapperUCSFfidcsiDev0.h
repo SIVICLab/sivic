@@ -148,7 +148,7 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         double                  GetModifiedBessel0( float arg ); 
         void                    GetRolloffCorrection( int gridSize, float width, float beta, float* apodCor); 
         void                    AddReorderedTimePoint(
-                                    svkImageData* dynamicImage, 
+                                    svkMrsImageData* dynamicImage, 
                                     svkImageData* tmpImage, 
                                     int timePt, 
                                     int numTimePts
@@ -156,9 +156,11 @@ class svkGEPFileMapperUCSFfidcsiDev0 : public svkGEPFileMapperUCSF
         void                    PrintSpecPts( 
                                     svkImageData* data, 
                                     int numFreqPts, 
-                                    int x, int y, int z, int timePt, int channel, 
+                                    svkDcmHeader::DimensionVector* dimensionVector, 
+                                    svkDcmHeader::DimensionVector* loopIndex, 
                                     vtkstd::string comment 
                                 ); 
+
 
 
 }; 

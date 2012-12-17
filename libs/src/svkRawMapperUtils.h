@@ -45,6 +45,7 @@
 
 #include <vtkObject.h>
 #include <svkImageData.h>
+#include <svkDcmHeader.h>
 
 
 namespace svk {
@@ -62,10 +63,9 @@ class svkRawMapperUtils : public vtkObject
 
         static void     RedimensionData( svkImageData* data, 
                                          int* numVoxelsOriginal, 
-                                         int* numVoxelsReordered, 
-                                         int numFreqPts, 
-                                         int numCoil); 
-
+                                         svkDcmHeader::DimensionVector* reorderedDimensionVector, 
+                                         int numFreqPts
+                                       ); 
 
 }; 
 
