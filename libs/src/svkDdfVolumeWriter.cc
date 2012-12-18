@@ -77,6 +77,7 @@ svkDdfVolumeWriter::svkDdfVolumeWriter()
 
     //default value to indicate undefined, gets initialized in Write method  
     this->numTimePtsPerFile = 0;    
+    this->useDescriptiveFileNames = false;    
 }
 
 
@@ -1081,6 +1082,15 @@ vtkstd::string svkDdfVolumeWriter::GetDimensionDomain( vtkstd::string dimensionD
 
 
 /*!
+ *  Use descriptive file names to indicate dimension indices. 
+ */
+void svkDdfVolumeWriter::UseDescriptiveFileNames() 
+{
+    this->useDescriptiveFileNames = true; 
+}
+
+
+/*!
  *  Takes a file root name and appends the necessary numerical extension to 
  *  indicate time_pt or coil number for multi-file output of dataset, e.g. 
  *  each coil written to a separate ddf/cmplx file pair. 
@@ -1096,33 +1106,85 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
     vtkstd::string extraDimLabel = ""; 
     int numDimsToRepresent = 0; 
     int implicitDimensionIndex = 1; 
-    for ( int i = 3; i < dimensionVector->size(); i++) {
-        int dimSize = svkDcmHeader::GetDimensionValue(dimensionVector, i); 
-        if ( dimSize > 0 ) {
-            numDimsToRepresent++; 
-            if ( numDimsToRepresent == 1) {
-                implicitDimensionIndex = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
-                dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
-            }
-            vtkstd::string type = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexLabel(i-2);
-            //cout << "TYPE: " << type << endl;
-            if ( numDimsToRepresent > 1 ) {
-                extraDimLabel.append("_"); 
-                extraDimLabel.append(type); 
-                int dimValue = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
-                extraDimLabel.append( svkUtils::IntToString(dimValue) ); 
+
+
+    if ( this->useDescriptiveFileNames == true ) {
+        for ( int i = 3; i < dimensionVector->size(); i++) {
+            int dimSize = svkDcmHeader::GetDimensionValue(dimensionVector, i); 
+            if ( dimSize > 0 ) {
+                numDimsToRepresent++; 
+                if ( numDimsToRepresent == 1) {
+                    implicitDimensionIndex = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
+                    dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
+                }
+
+                if ( numDimsToRepresent > 1 ) {
+                    extraDimLabel.append("_"); 
+                    vtkstd::string type = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexLabel(i-2);
+                    //cout << "TYPE: " << type << endl;
+                    extraDimLabel.append(type); 
+                    int dimValue = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
+                    extraDimLabel.append( svkUtils::IntToString(dimValue) ); 
+                }
             }
         }
+        //  construct file number.  By default this reflects the coil number, 
+        //  but dependeing on numTimePtsPerFile, may also reflect time point.
+        if ( numDimsToRepresent >=1 ) {
+            dimLabel.append(extraDimLabel); 
+            fileRoot.assign( fileRoot + "_" + dimLabel ) ;
+        } else {
+            fileRoot.assign( fileRoot );  
+        }
+
+    } else if ( this->useDescriptiveFileNames == false ) {
+
+        for ( int i = 3; i < dimensionVector->size(); i++) {
+            int dimSize = svkDcmHeader::GetDimensionValue(dimensionVector, i); 
+            if ( dimSize > 0 ) {
+                numDimsToRepresent++; 
+                if ( numDimsToRepresent == 1) {
+                    implicitDimensionIndex = svkDcmHeader::GetDimensionValue(&loopVector, i) + 1; 
+                    dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
+                }
+            }
+        }
+   
+        //  construct file number.  By default this reflects the coil number,
+        //  but dependeing on numTimePtsPerFile, may also reflect time point.
+        int fileNum = -1; 
+        int numCoils   = svkDcmHeader::GetDimensionValue(dimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+        int numTimePts = svkDcmHeader::GetDimensionValue(dimensionVector, svkDcmHeader::TIME_INDEX) + 1; 
+        int coilNum    = svkDcmHeader::GetDimensionValue(&loopVector, svkDcmHeader::CHANNEL_INDEX); 
+        int timePt     = svkDcmHeader::GetDimensionValue(&loopVector, svkDcmHeader::TIME_INDEX); 
+        //cout << "coils: " << numCoils << " tp: " << numTimePts << " cindex " << coilNum << " tindex: "  << timePt << endl;
+        if ( numCoils > 1 &&  this->AllTimePointsInEachFile() ) {
+            fileNum = coilNum; 
+            //cout << "c1: " << fileNum << endl;
+        } else if ( 
+            (numCoils > 1 || numTimePts > 1 ) 
+            && ! this->AllTimePointsInEachFile() ) 
+        {
+            fileNum = (coilNum * numTimePts) + timePt; 
+            //cout << "c2: " << fileNum << endl;
+        } 
+
+        if ( fileNum >= 0 ) {
+           vtkstd::string coilString;
+           ostringstream oss;
+           //  Add 1 to the file number so indexing doesn't start at 0.
+           oss << fileNum + 1;
+           fileRoot.assign( fileRoot + "_" + oss.str() ) ;
+        } else if ( dimLabel.size() > 0 ) {
+           fileRoot.assign( fileRoot + "_" + dimLabel ) ;
+        } else {
+           fileRoot.assign( fileRoot ); 
+        }
+        //cout << "ddf FN: " << fileNum << " -> " << fileRoot << endl;
+
     }
 
-    //  construct file number.  By default this reflects the coil number, 
-    //  but dependeing on numTimePtsPerFile, may also reflect time point.
-    if ( numDimsToRepresent >=1 ) {
-        dimLabel.append(extraDimLabel); 
-        fileRoot.assign( fileRoot + "_" + dimLabel ) ;
-    } else {
-        fileRoot.assign( fileRoot );  
-    }
+
 
     return fileRoot;
 }

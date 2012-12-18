@@ -1452,7 +1452,7 @@ void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector*
 void svkDcmHeader::GetDimensionVectorIndexFromFrame( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, int frame) 
 {
 
-    cout << "frame : " << frame << endl;
+    //cout << "frame : " << frame << endl;
     int minDimension = 2; 
      
     for ( int dimension = minDimension; dimension < dimensionVector->size(); dimension++ ) {
@@ -1481,7 +1481,7 @@ void svkDcmHeader::GetDimensionVectorIndexFromFrame( svkDcmHeader::DimensionVect
  */
 void svkDcmHeader::GetDimensionVectorIndexFromCellID( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, int cellID) 
 {
-    cout << "cell ID: " << cellID << endl;
+    //cout << "cell ID: " << cellID << endl;
      
     for ( int dimension = 0; dimension < dimensionVector->size(); dimension++ ) {
 

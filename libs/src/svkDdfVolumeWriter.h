@@ -72,6 +72,7 @@ class svkDdfVolumeWriter : public svkImageWriter
         void            SetOneTimePointsPerFile();
         int             GetNumberTimePointsPerFile(); 
         virtual void    Write();
+        void            UseDescriptiveFileNames();
 
 
     protected:
@@ -98,6 +99,7 @@ class svkDdfVolumeWriter : public svkImageWriter
 
         int              numTimePtsPerFile; 
         static const int ALL_TIME_PTS_IN_FILE; 
+        bool             useDescriptiveFileNames;
 
 };
 
