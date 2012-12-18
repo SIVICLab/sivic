@@ -357,9 +357,9 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
                     for (int j = 0; j < numComponents; j++) {
                         specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
                     }
-                    if (i < 5) {
-                        cout << "check write: " << setw(14) << setprecision(2) << dataTuple[0] << " " << setw(14) << setprecision(2) << dataTuple[1] << endl;
-                    }
+                    //if (i < 5) {
+                     //   cout << "check write: " << setw(14) << setprecision(2) << dataTuple[0] << " " << setw(14) << setprecision(2) << dataTuple[1] << endl;
+                    //}
                 }
             }
         }
