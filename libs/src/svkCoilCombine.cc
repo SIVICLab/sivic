@@ -111,6 +111,7 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
     //  Redimension data set:
     this->RedimensionData(); 
     //cout << "RD: " << *( this->GetImageDataInput(0) ) << endl;;
+    //this->GetImageDataInput(0)->GetDcmHeader()->PrintDcmHeader();
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -141,6 +142,7 @@ void svkCoilCombine::RequestAdditionData()
     // For each voxel, add data from individual voxels:  
     float cmplxPt0[2];
     float cmplxPtN[2];
+    //data->GetDcmHeader()->PrintDcmHeader();
     for (int timePt = 0; timePt < numTimePts; timePt++) {
         for (int z = 0; z < numVoxels[2]; z++) {
             for (int y = 0; y < numVoxels[1]; y++) {
