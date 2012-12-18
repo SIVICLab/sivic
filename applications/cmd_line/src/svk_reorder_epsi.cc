@@ -222,8 +222,8 @@ int main (int argc, char** argv)
     reorder->SetNumEPSILobes( numLobes );
     reorder->SetFirstSample( first );
     reorder->SetEPSIAxis( static_cast<svkEPSIReorder::EPSIAxis>( axis ) );
-    int numVoxels[3]; 
-    reader->GetOutput()->GetNumberOfVoxels( numVoxels);
+    //int numVoxels[3]; 
+    //reader->GetOutput()->GetNumberOfVoxels( numVoxels);
     //reorder->SetNumVoxelsOriginal( numVoxels ); 
     reorder->Update();
 
