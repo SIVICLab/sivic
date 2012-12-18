@@ -1728,7 +1728,7 @@ void svkDcmHeader::InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensi
             frame
         );
 
-        this->PrintDcmHeader();
+        //this->PrintDcmHeader();
     }
 
     this->SetValue( "NumberOfFrames", numFrames); 
@@ -2925,7 +2925,7 @@ svkDcmHeader::DimensionIndexLabel svkDcmHeader::StringToDimensionIndexLabel( vtk
         indexLabel = svkDcmHeader::SLICE_INDEX;        
     } else if ( dimensionIndexLabelString.compare("TIME") == 0 ) {
         indexLabel = svkDcmHeader::TIME_INDEX;        
-    } else if ( dimensionIndexLabelString.compare("CHANNEL") == 0 ) {
+    } else if ( (dimensionIndexLabelString.compare("CHANNEL") == 0 ) || (dimensionIndexLabelString.find("COIL") != string::npos) ) {
         indexLabel = svkDcmHeader::CHANNEL_INDEX;        
     } else if ( dimensionIndexLabelString.compare("EPSI_ACQ") == 0 ) {
         indexLabel = svkDcmHeader::EPSI_ACQ_INDEX;        

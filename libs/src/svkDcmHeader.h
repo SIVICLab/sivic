@@ -727,6 +727,7 @@ class svkDcmHeader: public vtkObject
 
         static bool     IsFileDICOM( vtkstd::string fname); 
         static svkDcmHeader::DcmPixelDataFormat  GetVtkDataTypeFromSvkDataType( vtkIdType vtkType); 
+        void            Redimension(svkDcmHeader::DimensionVector* dimensionVector);
 
         
 
@@ -770,7 +771,6 @@ class svkDcmHeader: public vtkObject
 
         int                         GetNumberOfFrames(); 
 
-        void                        Redimension(svkDcmHeader::DimensionVector* dimensionVector);
 
                                            
 };
