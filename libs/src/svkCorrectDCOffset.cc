@@ -105,14 +105,19 @@ void svkCorrectDCOffset::CorrectDCOffset()
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) );
 
     svkDcmHeader::DimensionVector fullDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    //cout << "FULL" << endl;
+    //svkDcmHeader::PrintDimensionIndexVector(&fullDimensionVector);
+
     svkDcmHeader::DimensionVector channelDimensionVector = fullDimensionVector;  
     //  analyze one channel at a time: 
     svkDcmHeader::SetDimensionValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+    //cout << "SUBSET FULL" << endl;
+    //svkDcmHeader::PrintDimensionIndexVector(&channelDimensionVector);
     svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
 
     int numVoxelsPerChannel = mrsData->GetDcmHeader()->GetNumberOfCells( &channelDimensionVector ); 
     int numSpecPts         = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    int numCoils           = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX); 
+    int numCoils           = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
     string representation = mrsData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
@@ -128,6 +133,8 @@ void svkCorrectDCOffset::CorrectDCOffset()
     int numSampledFIDs = 0; 
 
     int channelVoxelIndex0 = 0;
+
+    //  correct each coil separately
     for ( int coil = 0; coil < numCoils; coil++ ) {
 
         offset[0] = 0.0;    // DC offset real
@@ -142,7 +149,6 @@ void svkCorrectDCOffset::CorrectDCOffset()
             svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
             svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
             int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
-
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID) );
 
             if ( this->WasKSpacePtSampled( spectrum, numSpecPts * numComponents  ) ) {
