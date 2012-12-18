@@ -137,7 +137,6 @@ void svkDcmVolumeReader::ExecuteInformation()
             vtkErrorMacro("Unable to open file " << this->FileName );
             return;
         }
-
         this->InitDcmHeader();
         this->InitSliceOrder();
 
@@ -151,6 +150,10 @@ void svkDcmVolumeReader::ExecuteInformation()
         this->GetOutput()->GetIncrements();
         this->SetupOutputInformation();
 
+        //rewrite the DimensionIndexSequence if necessary:
+        svkDcmHeader::DimensionVector vec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::PrintDimensionIndexVector(&vec);
+        this->GetOutput()->GetDcmHeader()->Redimension(&vec); 
     }
 
     this->InitPrivateHeader();
@@ -806,10 +809,6 @@ void svkDcmVolumeReader::InitDcmHeader()
 {
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->FileName, 100000000 ); 
 
-    //rewrite the DimensionIndexSequence if necessary:
-    cout << "INIT THE HEADER   " << endl;
-    svkDcmHeader::DimensionVector vec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-    svkDcmHeader::PrintDimensionIndexVector(&vec);
 }
 
 
