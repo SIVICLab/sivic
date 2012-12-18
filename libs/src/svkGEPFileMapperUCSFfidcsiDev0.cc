@@ -612,6 +612,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
  */
 void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFreqPts, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex, vtkstd::string comment )
 {
+    return; 
     //svkDcmHeader::PrintDimensionIndexVector( dimensionVector);
     //svkDcmHeader::PrintDimensionIndexVector(loopIndex);
     int cellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex( dimensionVector, loopIndex ); 
@@ -622,7 +623,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::PrintSpecPts( svkImageData* data, int numFr
     vtkFloatArray* specLobe = vtkFloatArray::SafeDownCast(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellIndex )); 
     for (int p=0; p<numFreqPts; p++ ) {
         int epsiAcqNum = svkDcmHeader::GetDimensionValue(loopIndex, svkDcmHeader::EPSI_ACQ_INDEX);
-        //cout << comment << " " << epsiAcqNum << ": " << setw(14) << setprecision(2) << specLobe->GetValue(p*2) << " " << setw(14) << setprecision(2) << specLobe->GetValue(p*2+1) << endl;
+        cout << comment << " " << epsiAcqNum << ": " << setw(14) << setprecision(2) << specLobe->GetValue(p*2) << " " << setw(14) << setprecision(2) << specLobe->GetValue(p*2+1) << endl;
     }
     cout << endl;
 }
