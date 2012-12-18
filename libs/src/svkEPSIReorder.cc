@@ -466,6 +466,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  Redimension the meta data and set the new arrays:
     //  =================================================
 
+    reorderedImageData->GetDcmHeader()->PrintDcmHeader();
     data->DeepCopy( reorderedImageData ); 
     /*
     for ( int i = 0; i < 3; i++) {
@@ -480,16 +481,16 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     */
 
     int numVoxelsOriginal[3];  
-    numVoxelsOriginal[0] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::COL_INDEX);
-    numVoxelsOriginal[1] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::ROW_INDEX);
-    numVoxelsOriginal[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX);
+    numVoxelsOriginal[0] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::COL_INDEX) + 1;
+    numVoxelsOriginal[1] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::ROW_INDEX) + 1;
+    numVoxelsOriginal[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     svkRawMapperUtils::RedimensionData( data, numVoxelsOriginal, &outDimensionVector, numFreqPts); 
 
     //vtkDataArray* test2 = data->GetCellData()->GetArray( 328 );
     //cout << "TEST 328 2: " << test2->GetTuple(0)[0] << endl;
     //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
 
-    this->UpdateReorderedParams( data, numVoxels ); 
+    this->UpdateReorderedParams( data, reorderedVoxels ); 
 
     data->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
