@@ -1,0 +1,330 @@
+#!/usr/bin/perl
+
+# 
+#   Copyright © 2009-2011 The Regents of the University of California.
+#   All Rights Reserved.
+# 
+#   Redistribution and use in source and binary forms, with or without
+#   modification, are permitted provided that the following conditions are met:
+#   •   Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#   •   Redistributions in binary form must reproduce the above copyright notice,
+#       this list of conditions and the following disclaimer in the documentation
+#       and/or other materials provided with the distribution.
+#   •   None of the names of any campus of the University of California, the name
+#       "The Regents of the University of California," or the names of any of its
+#       contributors may be used to endorse or promote products derived from this
+#       software without specific prior written permission.
+# 
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#   IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+#   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+#   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+#   OF SUCH DAMAGE.
+# /
+
+
+# 
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+# 
+#   Authors:
+#       Jason C. Crane, Ph.D.
+#       Beck Olson
+#  
+
+use strict;
+use File::Basename;
+use Cwd;
+use Getopt::Long;
+use Pod::Usage;
+use Switch;
+
+sub diff_images($$);
+
+
+Getopt::Long::config("bundling");
+GetOptions(
+    "v"              =>\my $verbose,
+    "display_sub"    =>\my $displaySub,
+    "display_cmp"    =>\my $displayCmp,
+    "print_pixels"   =>\my $printPixels,
+    "detailed"       =>\my $detailed,
+    "help"           =>\my $help
+) or pod2usage(-verbose=>2, -exitval=>2);
+
+my $numArgs = $#ARGV + 1;
+
+# Define image magick commands
+my $imConvert   = "/netopt/ImageMagick/bin/convert";
+my $imCompare   = "/netopt/ImageMagick/bin/compare";
+my $imComposite = "/netopt/ImageMagick/bin/composite";
+my $imDisplay   = "/netopt/ImageMagick/bin/display";
+
+if( $help || $numArgs != 2 ) {
+    pod2usage(-verbose=>2, -exitval=>2);
+}
+
+my $sourceOne = $ARGV[0];
+my $sourceTwo = $ARGV[1];
+
+if( ! -e $sourceOne ) {
+    print( "$sourceOne: No such file or directory\n");
+    exit(1);
+}
+
+if( ! -e $sourceTwo ) {
+    print( "$sourceTwo: No such file or directory\n");
+    exit(1);
+} 
+
+# If the user set detailed turn on all output
+if( $detailed ) {
+    $displaySub  = 1;
+    $displayCmp  = 1;
+    $printPixels = 1;
+}
+
+my $outputDir = "im_diff_results";
+if( -d $outputDir ) {
+    system( "rm -r im_diff_results" );
+}
+
+my( @imagesOne, @imagesTwo );
+
+# If its a directory push all image names, otherwise just push the filename
+if( -d $sourceOne ) {
+    opendir(DIR, $sourceOne);
+    @imagesOne = readdir(DIR); 
+} else {
+    push( @imagesOne, $sourceOne );
+}
+
+
+# If its a directory push all image names, otherwise just push the filename
+if( -d $sourceTwo ) {
+    opendir(DIR, $sourceTwo);
+    @imagesTwo = readdir(DIR); 
+} else {
+    push( @imagesTwo, $sourceTwo );
+}
+###############################################################################
+#
+# Lets use an image hash that will contain filenames as keys and as values:
+# 
+#    0 = image exists in both sets
+#    1 = image exists in set 1 ONLY
+#    2 = image exists in set 2 ONLY
+#
+###############################################################################
+my %imageHash;
+
+# Push set one into the hash
+foreach (@imagesOne) {
+    my $image = $_;
+    if( !($image =~ m/^\..*/) ) {
+        # 1 is set for an image in set 1 only
+        $imageHash{$image} = 1;
+    }
+}
+
+# Push set two into the hash
+foreach (@imagesTwo) {
+    my $image = $_;
+    if( !($image =~ m/^\..*/) ) {
+        if( exists $imageHash{$image} ) {
+            # 0 is set for an image in both sets
+            $imageHash{$image} = 0;
+        } else {
+            # 2 is set for an image in set 2 only
+            $imageHash{$image} = 2;
+        }
+    }
+}
+
+
+my $dirOne = "./"; 
+if( -d $sourceOne ) {
+    $dirOne = $sourceOne;
+}
+
+my $dirTwo = "./"; 
+if( -d $sourceTwo ) {
+    $dirTwo = $sourceTwo;
+}
+
+my $diffFound = 0;
+
+###############################################################################
+#
+# We have two cases here. One is that there are only two images, one from each
+# group. In this case we want to IGNORE filenames and just diff the two files.
+# This case is ONLY true if there are only two images files, one from the first
+# source argument and one from the second. Otherwise we diff by name the common
+# files in both directories.
+#
+###############################################################################
+
+my @sortedImages = sort (keys %imageHash) ;
+if( $#sortedImages == 1 && $imageHash{$sortedImages[0]} + $imageHash{$sortedImages[1]} == 3 ) {
+
+    # We only have two images so lets diff them directly
+
+    my $imageOne;
+    my $imageTwo;
+
+    if( $imageHash{$sortedImages[0]} == 1 ) {
+        $imageOne = $sortedImages[0]; 
+        $imageTwo = $sortedImages[1]; 
+    } else {
+        $imageOne = $sortedImages[1]; 
+        $imageTwo = $sortedImages[0]; 
+    } 
+
+    my $diffResult = diff_images("$dirOne/$imageOne", "$dirTwo/$imageTwo");
+    if( $diffResult  != 0 ) {
+        $diffFound = 1;
+    }
+
+} else {
+
+    foreach my $image ( @sortedImages ) {
+
+        if( $imageHash{$image} == 0 ) {
+            my $diffResult = diff_images("$dirOne/$image", "$dirTwo/$image");
+            if( $diffResult  != 0 ) {
+                $diffFound = 1;
+            }
+        } elsif ( $imageHash{$image} == 1 ) {
+            print "$image is ONLY in the first sets.\n";
+            $diffFound = 1;
+            } elsif ( $imageHash{$image} == 2 ) {
+            print "$image is ONLY in the second sets.\n";
+        $diffFound = 1;
+        } else {
+            print "ERROR! Unexpected case... Aborting!\n"; 
+            exit(1);
+        }
+    }
+}
+
+if( $diffFound ) {
+    print "Diffs Found!\n";
+    exit(1);
+} else {
+    print "All images found are identical!\n";
+    exit(0);
+}
+
+
+sub diff_images($$)
+{
+    my ($imageOne, $imageTwo) = @_;
+    my $result = system("diff -s $imageOne $imageTwo >& /dev/null" );
+    if( $result != 0 ) {
+        if( ! -d $outputDir ) {
+            system( "mkdir $outputDir" );
+        }
+        print "##################################################################\n";
+        print "$imageOne and $imageTwo differ!\n";
+        my $combined_name = basename($imageOne);
+        if( basename($imageOne) ne basename($imageTwo) ) {
+            $combined_name .= basename($imageTwo);
+        }
+
+        my $compareCmd = "$imCompare $imageOne $imageTwo $outputDir/${combined_name}_im_cmp.tiff";
+        if( system($compareCmd) ) {
+            print "ERROR! Could not compare images $imageOne and $imageTwo!\n";
+            exit(1);
+        }
+
+        my $subtractCmd = "$imComposite -compose subtract $imageOne $imageTwo $outputDir/${combined_name}_im_sub.tiff";
+        if( system($subtractCmd) ) {
+            print "ERROR! Could not subtract images $imageOne and $imageTwo!\n";
+            exit(1);
+        }
+
+        if( $printPixels ) { 
+            my $listDiffPixels = "$imConvert $outputDir/${combined_name}_im_sub.tiff text:- | grep -v black";
+            print "\nDIFFERENT PIXELS:\n\n";
+            if( system($listDiffPixels) ) {
+                print "ERROR! Could not display pixels!\n";
+                exit(1);
+            }
+            print "\n\n";
+        }
+
+        if( $displaySub ) { 
+            my $displaySubCmd = "$imDisplay $outputDir/${combined_name}_im_sub.tiff";
+            if( system($displaySubCmd) ) {
+                print "ERROR! Could not display images!\n";
+                exit(1);
+            }
+        }
+
+        if( $displayCmp ) { 
+            my $displayCmpCmd = "$imDisplay $outputDir/${combined_name}_im_cmp.tiff";
+            if( system($displayCmpCmd) ) {
+                print "ERROR! Could not display images!\n";
+                exit(1);
+            }
+        }
+        print "##################################################################\n\n";
+    }
+    return $result;
+}
+
+################################################################################
+#
+#   POD usage docs
+#
+################################################################################
+
+=head1 NAME
+
+im_diff
+
+=head1 SYNOPSIS
+    
+    im_diff image_or_dir image_or_dir [ --display_sub --display_cmp --help
+                                        --print_pixels --detailed -v ]
+
+        --display_sub  will display subtracted images
+        --display_cmp  will display comparison images
+        --print_pixels will print the pixels that are different 
+        --detailed     enables --display_sub, --display_cmp, and --print_pixels
+        --help         will display help message
+        -v             will turn on verbose mode
+
+=head1 DESCRIPTION 
+
+    This script uses image magick to diff two directories or images. By default
+    it will create a folder called 'im_diff_results' that well contain two
+    images for every image pair found to be different. Files containing im_sub
+    are the resulte of using the image magick 'composite' command to subtract
+    two images:
+         
+        composite -compose subtract image_one image_two output_root_im_sub.tiff;
+
+    The second image is the result of using the image magick 'compare' tool
+    which highligts differences between the images in red:
+
+        compare image_one image_two output_root__im_cmp.tiff
+
+    If the user specifys the corresponding display flags then these images will
+    by rendered to the screen using the image magick 'display' command. If the
+    user enables the --print_pixels flag then the different pixels will be
+    print to screen using the image magick 'convert' tool to convert the 
+    subtracted image to pixels, and then grepping the black (no difference)
+    pixels away. If the user specifies the --detailed flag then all the above
+    flags will be turned on.
+
+=cut
+
