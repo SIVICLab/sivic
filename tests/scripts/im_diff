@@ -216,10 +216,15 @@ if( $#sortedImages == 1 && $imageHash{$sortedImages[0]} + $imageHash{$sortedImag
 }
 
 if( $diffFound ) {
-    print "Diffs Found!\n";
+    print "    IMAGES ARE DIFFERENT!\n\n";
+    print "    See result files in \'$outputDir\' directory.\n";
+    print "    Use --help for a description of result files.\n\n";
+    print "##################################################################\n\n";
     exit(1);
 } else {
-    print "All images found are identical!\n";
+    print "\n##################################################################\n\n";
+    print "    All images found are identical!\n\n";
+    print "##################################################################\n\n";
     exit(0);
 }
 
@@ -306,24 +311,28 @@ im_diff
 =head1 DESCRIPTION 
 
     This script uses image magick to diff two directories or images. By default
-    it will create a folder called 'im_diff_results' that well contain two
+    it will create a folder called 'im_diff_results' that will contain two
     images for every image pair found to be different. Files containing im_sub
-    are the resulte of using the image magick 'composite' command to subtract
+    are the result of using the image magick 'composite' command to subtract
     two images:
          
-        composite -compose subtract image_one image_two output_root_im_sub.tiff;
+        composite -compose subtract image_one image_two output_root_im_sub.tiff
 
     The second image is the result of using the image magick 'compare' tool
     which highligts differences between the images in red:
 
-        compare image_one image_two output_root__im_cmp.tiff
-
+        compare image_one image_two output_root_im_cmp.tiff
+    
     If the user specifys the corresponding display flags then these images will
     by rendered to the screen using the image magick 'display' command. If the
-    user enables the --print_pixels flag then the different pixels will be
-    print to screen using the image magick 'convert' tool to convert the 
+    user enables the --print_pixels flag then the difference in the pixels will 
+    be printed to screen using the image magick 'convert' tool to convert the 
     subtracted image to pixels, and then grepping the black (no difference)
-    pixels away. If the user specifies the --detailed flag then all the above
+    pixels away.
+
+        convert output_root_im_sub.tiff text:- | grep -v black
+
+    Finally if the user specifies the --detailed flag then all the above
     flags will be turned on.
 
 =cut
