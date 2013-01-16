@@ -74,6 +74,7 @@ ELSE(WIN32)
     SET( DIFF_OPT --ignore-matching-lines=SVK_ --ignore-matching-lines=root --exclude=.svn)
 ENDIF(WIN32)
 SET( DIFF_OPT_DCM --ignore-matching-lines=UID --ignore-matching-lines="0002,0000" --ignore-matching-lines="0002,0012" --ignore-matching-lines="0002,0013" --ignore-matching-lines="0008,0000" --ignore-matching-lines="0020,0000" --exclude=.svn )
+STRING(REPLACE ";" " " DIFF_OPT_DCM_STR "${DIFF_OPT_DCM}")
 
 ########################
 #   
@@ -769,6 +770,32 @@ ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE
 SET( TEST_NAME TEST_MULTI_VOL_IDF_2_IDF_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output_idf )
 SET_TESTS_PROPERTIES(TEST_MULTI_VOL_IDF_2_IDF_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_IDF_2_IDF)
+
+########################
+#   multi-volume IDF 2 DICOM test: 
+########################
+SET( TEST_NAME TEST_MCHK_MULTI_VOL_IDF_2_DCM)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol_1.idf -o ${TEST_RESULTS_PATH}/out -t5 )
+
+SET( TEST_NAME TEST_MULTI_VOL_IDF_2_DCM_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcm --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_MULTI_VOL_IDF_2_DCM_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_IDF_2_DCM)
+
+########################
+#   multi-volume IDF 2 DICOM Enhanced test: 
+########################
+SET( TEST_NAME TEST_MCHK_MULTI_VOL_IDF_2_DCMENH)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol_1.idf -o ${TEST_RESULTS_PATH}/out -t6 )
+
+SET( TEST_NAME TEST_MULTI_VOL_IDF_2_DCMENH_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcmenh --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_MULTI_VOL_IDF_2_DCMENH_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_IDF_2_DCMENH)
 
 ########################
 #   Reorder flyback data

@@ -1010,7 +1010,7 @@ int svkDcmHeader::GetNumberOfSlices()
  */
 int svkDcmHeader::GetSliceForFrame( int frame )
 {
-	int sliceIndex = this->GetDimensionIndexPosition("Slice");
+	int sliceIndex = this->GetDimensionIndexPosition("SLICE");
 	int slice = this->GetIntSequenceItemElement(
 		"FrameContentSequence",
 		0,

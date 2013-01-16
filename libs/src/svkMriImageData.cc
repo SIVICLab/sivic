@@ -206,7 +206,7 @@ int svkMriImageData::GetVolumeIndexForFrame( int frame )
 {
 	// Get the number of volume dimensions
 	int numDims = this->GetDcmHeader()->GetNumberOfItemsInSequence("DimensionIndexSequence");
-	int sliceIndex = this->GetDcmHeader()->GetDimensionIndexPosition("Slice");
+	int sliceIndex = this->GetDcmHeader()->GetDimensionIndexPosition("SLICE");
 	int volumeIndex = 0;
 	int lastIndexSize = 1;
 	for( int i = 0; i < numDims; i++) {
