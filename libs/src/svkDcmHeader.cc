@@ -1010,16 +1010,10 @@ int svkDcmHeader::GetNumberOfSlices()
  */
 int svkDcmHeader::GetSliceForFrame( int frame )
 {
-	int sliceIndex = this->GetDimensionIndexPosition("SLICE");
-	int slice = this->GetIntSequenceItemElement(
-		"FrameContentSequence",
-		0,
-		"DimensionIndexValues",
-		"PerFrameFunctionalGroupsSequence",
-		frame,
-		sliceIndex
-	);
-	return slice;
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector frameIndexVector = dimensionVector;
+    this->GetDimensionVectorIndexFromFrame( &dimensionVector, &frameIndexVector, frame);
+    return svkDcmHeader::GetDimensionValue( &frameIndexVector, svkDcmHeader::SLICE_INDEX);
 }
 
 
@@ -2947,7 +2941,7 @@ vtkstd::string svkDcmHeader::DimensionIndexLabelToString( svkDcmHeader::Dimensio
     int labelIndex = static_cast<int>(label); 
 
     if ( labelIndex == 0 ) { 
-        indexLabelString = "SLICE"; 
+        indexLabelString = "SLICE";
     } else if ( labelIndex == 1 ) {
         indexLabelString = "TIME"; 
     } else if ( labelIndex == 2 ) {
