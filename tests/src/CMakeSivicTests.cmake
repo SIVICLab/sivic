@@ -781,7 +781,7 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol_1.idf -o ${TEST_RESULTS_PATH}/out -t5 )
 
 SET( TEST_NAME TEST_MULTI_VOL_IDF_2_DCM_DIFF)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcm --diff_opts ${DIFF_OPT_DCM_STR} )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcm --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
 SET_TESTS_PROPERTIES(TEST_MULTI_VOL_IDF_2_DCM_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_IDF_2_DCM)
 
 ########################
@@ -794,7 +794,7 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/vol_1.idf -o ${TEST_RESULTS_PATH}/out -t6 )
 
 SET( TEST_NAME TEST_MULTI_VOL_IDF_2_DCMENH_DIFF)
-ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcmenh --diff_opts ${DIFF_OPT_DCM_STR} )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_idf_to_dcmenh --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
 SET_TESTS_PROPERTIES(TEST_MULTI_VOL_IDF_2_DCMENH_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_IDF_2_DCMENH)
 
 ########################
