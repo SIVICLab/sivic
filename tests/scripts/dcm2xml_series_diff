@@ -48,6 +48,7 @@ GetOptions(
     "dir_one=s"   => \my $series_dir_one,
     "dir_two=s"   => \my $series_dir_two,
     "diff_opts=s" => \my $diff_opts,
+    "bin_dir=s"   => \my $bin_dir,
     "v"           => \my $verbose,
     "help"        => \my $help,
 ) or pod2usage(-verbose=>2, -exitval=>2);
@@ -58,6 +59,13 @@ if( !defined($series_dir_one) || !defined($series_dir_two) || defined($help) ) {
 
 if( !defined($diff_opts) ) {
     $diff_opts = "";
+}
+
+if( !defined($bin_dir) ) { 
+    $bin_dir = "";
+} else {
+    # Make sure there is a slash
+    $bin_dir .= "/";
 }
 
 # If we are not in verbose mode let's redirect the output
@@ -87,7 +95,7 @@ mkdir "$temp_dir/xml_two" or die $!;
 # First we convert to xml files....
 ##############################################################################
 
-my $convert_to_xml = "dcm2xml +M +Wb ";
+my $convert_to_xml = "${bin_dir}dcm2xml  +M +Wb ";
 
 # get the filenames for the first directory
 chdir $series_dir_one;
@@ -161,13 +169,16 @@ dcm2xml_series_diff
 
 Diffs two DICOM series dirs. Filenames must be the same. Files are first 
 converted to xml then they are diffed directly. Any options to diff can be
-passed in with the --diff_opts flage, but they must be quoted.
+passed in with the --diff_opts flage, but they must be quoted. Requires
+dcmtk's dcm2xml installed.
 
 dcm2xml_series_diff --dir_one series_dir_one --dir_two series_dir_two
                     [--diff_opts "-options for_diff"]
+                    [--bin_dir "/usr/bin"]
 
         -v                        display debugging messages
         --help                    print usage message
+        --bin_dir                 bin directory for dcm2xml 
 
 =head1 DESCRIPTION
 
