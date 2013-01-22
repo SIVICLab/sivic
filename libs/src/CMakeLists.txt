@@ -182,29 +182,8 @@ ADD_LIBRARY(
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
     svkUCSFPACSInterface.cc
-    svkDataView.cc
-    svkDataViewController.cc
-    svkImageView2D.cc
-    svkImageView2DController.cc
 	svkDataModel.cc
 	svkDataValidator.cc
-    svkSatBandSet.cc
-    svkBoxPlot.cc
-    svkPlotLine.cc
-    svkPlotLineGrid.cc
-    svkSpecGridSelector.cc
-    svkPlotGridView.cc
-    svkPlotGridViewController.cc
-    svkXYPlotActor.cc
-    svkDetailedPlotDirector.cc
-    svkOverlaySelector.cc
-    svkOverlayView.cc
-    svkOverlayViewController.cc
-    svkSpectraReferenceView.cc
-    svkSpectraReferenceViewController.cc
-    svkImageTopologyGenerator.cc
-    svkImageViewer2.cc
-    svkMrsTopoGenerator.cc
     svkImageInPlaceFilter.cc    
     svkPhaseSpec.cc
     svkAlgoTemplate.cc
@@ -220,8 +199,6 @@ ADD_LIBRARY(
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc
     svkImageLinearPhase.cc
-    svkImageMapToWindowLevelColors.cc
-    svkImageMapToColors.cc
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkDSCDeltaR2.cc
@@ -241,8 +218,6 @@ ADD_LIBRARY(
     svkMRIIOD.cc
     svkEnhancedMRIIOD.cc
     svkRawIOD.cc
-    svkOpenGLOrientedImageActor.cc
-    svkOrientedImageActorFactory.cc
     svkLookupTable.cc
     svkByteSwap.cc
     svkMultiCoilPhase.cc
@@ -256,6 +231,32 @@ ADD_LIBRARY(
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
+)
+
+ADD_LIBRARY(
+    svkviz
+    svkDataView.cc
+    svkDataViewController.cc
+    svkPlotGridView.cc
+    svkPlotGridViewController.cc
+    svkDetailedPlotDirector.cc
+    svkXYPlotActor.cc
+    svkOverlaySelector.cc
+    svkOverlayView.cc
+    svkOverlayViewController.cc
+    svkLabeledDataMapper.cc
+    svkSatBandSet.cc
+    svkImageTopologyGenerator.cc
+    svkMrsTopoGenerator.cc
+    svkBoxPlot.cc
+    svkPlotLine.cc
+    svkPlotLineGrid.cc
+    svkSpecGridSelector.cc
+    svkImageViewer2.cc
+    svkImageMapToWindowLevelColors.cc
+    svkImageMapToColors.cc
+    svkOpenGLOrientedImageActor.cc
+    svkOrientedImageActorFactory.cc
     svkLabeledDataMapper.cc
 )
 

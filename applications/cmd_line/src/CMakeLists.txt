@@ -172,23 +172,27 @@ if ( BUILD_CMINPACK )
 endif( BUILD_CMINPACK )
 
 SET(SVK_LIBS
-    vtkRendering
-    vtkGraphics
+    svk 
+    svkadapt 
     vtkImaging
     vtkIO
     vtkFiltering
     vtkCommon
-    vtkVolumeRendering
-    svkadapt 
-    svk 
-    vtkHybrid
-    svkadapt 
     dcmdata
     ofstd 
     ${DCMTK_OFLOG}
     ${PLATFORM_LIBS}
     ${CMINPACK_LIBS}
 )
+
+SET(SVK_VIZ_LIBS
+    svkviz
+    vtkRendering
+    vtkVolumeRendering
+    vtkGraphics
+    vtkHybrid
+)
+
 
 
 
@@ -219,6 +223,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_quick_view 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -229,6 +234,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_point_selector 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -239,6 +245,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_multi_view 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -332,6 +339,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svk_surface_area
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 

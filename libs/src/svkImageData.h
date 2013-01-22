@@ -59,7 +59,6 @@
 #include <vtkUnsignedShortArray.h>
 #include <vtkShortArray.h>
 #include <vtkFloatArray.h>
-#include <vtkActorCollection.h>
 #include <vtkDataSetAttributes.h>
 #include <vtkXMLDataElement.h>
 #include <vtkIndent.h>
@@ -256,9 +255,6 @@ class svkImageData: public vtkImageData
         svkImageData*      GetSourceData();
 
         void               SyncVTKImageDataToDcmHeader(); 
-
-        // REQUIRED?
-        virtual vtkActorCollection*   GetTopoActorCollection(int actorIndex);
 
         static  void                  RemoveArrays( svkImageData* data ); 
 

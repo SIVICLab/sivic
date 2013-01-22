@@ -58,12 +58,6 @@
 #include <vtkAlgorithmOutput.h>
 #include <vtkTrivialProducer.h>
 
-#include <vtkImageViewer2.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkCamera.h>
-#include <vtkImageActor.h>
 #include <vtkAlgorithm.h>
 #include <vtkImageReader2.h>
 

@@ -71,6 +71,7 @@
 #include <vtkCleanPolyData.h>
 #include <vtkPolyDataPointSampler.h>
 #include <svkDetailedPlotDirector.h>
+#include <svkMrsTopoGenerator.h>
 
 #include <vector>
 

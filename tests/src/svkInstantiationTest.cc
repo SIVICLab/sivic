@@ -95,8 +95,6 @@
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageTopologyGenerator.h>
-#include <svkImageView2DController.h>
-#include <svkImageView2D.h>
 #include <svkImageViewer2.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
@@ -244,10 +242,6 @@ int main ( int argc, char** argv )
     obj = svkImageReaderFactory::New();
     obj->Delete();
     obj = svkImageTopologyGenerator::New();
-    obj->Delete();
-    obj = svkImageView2DController::New();
-    obj->Delete();
-    obj = svkImageView2D::New();
     obj->Delete();
     obj = svkImageViewer2::New();
     obj->Delete();

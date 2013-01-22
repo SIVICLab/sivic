@@ -56,7 +56,6 @@ vtkStandardNewMacro(svkMrsImageData);
 svkMrsImageData::svkMrsImageData()
 {
     this->numChannels = 0;
-    this->topoGenerator = svkMrsTopoGenerator::New();
 }
 
 

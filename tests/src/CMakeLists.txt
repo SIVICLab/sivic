@@ -153,20 +153,23 @@ ADD_LIBRARY(
 
 
 SET(SVK_LIBS
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
-    vtkImaging
-    vtkIO
-    vtkFiltering
-    vtkCommon
     svkTest
     svk 
     svkadapt 
+    vtkIO
+    vtkImaging
+    vtkFiltering
+    vtkCommon
     dcmdata
     ofstd 
     ${DCMTK_OFLOG}
     ${PLATFORM_LIBS}
+)
+
+SET(SVK_VIZ_LIBS
+    svkviz
+    vtkRendering
+    vtkGraphics
     vtkHybrid
 )
 
@@ -178,6 +181,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     vtkBaselineTest
+	${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -233,6 +237,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkPlotGridViewTest
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -243,6 +248,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkOverlayViewTest
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -253,6 +259,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkInstantiationTest
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -263,16 +270,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     svkPlotGridViewMultiTraceTest
-	${SVK_LIBS}
-)
-
-ADD_EXECUTABLE(
-    svkSpectraReferenceViewTest
-    svkSpectraReferenceViewTest.cc
-)
-
-TARGET_LINK_LIBRARIES(
-    svkSpectraReferenceViewTest
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -390,6 +388,7 @@ ADD_EXECUTABLE(
  )
 TARGET_LINK_LIBRARIES(
     svkMri4DImageDataTest
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 

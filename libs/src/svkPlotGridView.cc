@@ -260,7 +260,9 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             this->tlcBrc[0] = 0;
             this->tlcBrc[1] = svk4DImageData::SafeDownCast(this->dataVector[MR4D])->GetIDFromIndex( maxIndex[0], maxIndex[1], maxIndex[2] );
             if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
-                vtkActorCollection* selectionBoxTopology = dataVector[MR4D]->GetTopoActorCollection(svkMrsImageData::VOL_SELECTION);
+                svkMrsTopoGenerator* topoGenerator = svkMrsTopoGenerator::New(); 
+                vtkActorCollection* selectionBoxTopology = topoGenerator->GetTopoActorCollection( dataVector[MR4D], svk4DImageData::VOL_SELECTION);
+                topoGenerator->Delete();
                 // Case for no selection Box
                 if( selectionBoxTopology != NULL ) {
                     selectionBoxTopology->InitTraversal();

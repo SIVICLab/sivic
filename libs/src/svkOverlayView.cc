@@ -246,7 +246,10 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 0, 0 );
 
     // Now we need to grab the selection box
-    vtkActorCollection* selectionTopo = dataVector[MR4D]->GetTopoActorCollection( 1 );
+    svkMrsTopoGenerator* topoGenerator = svkMrsTopoGenerator::New();
+    vtkActorCollection* selectionTopo = topoGenerator->GetTopoActorCollection( dataVector[MR4D], svk4DImageData::VOL_SELECTION);
+    topoGenerator->Delete();
+
 
     // Case for no selection box
     if( selectionTopo != NULL ) {

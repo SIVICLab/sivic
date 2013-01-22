@@ -225,6 +225,7 @@ TARGET_LINK_LIBRARIES(
     vtkFiltering
     vtkCommon
     sivicGUI
+    svkviz
     svk 
     svkadapt
     dcmdata
