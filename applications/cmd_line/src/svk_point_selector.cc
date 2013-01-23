@@ -63,6 +63,9 @@ extern "C" {
 #include <vtkGlyph3D.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Factory.h>
+#include <vtkProperty.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPlane.h>
 #include <svkImageViewer2.h>
 #include <svkImageMapToColors.h>
 #include <svkLookupTable.h>

@@ -52,10 +52,6 @@
 #include <vtkImageFFT.h>
 #include <vtkImageRFFT.h>
 #include <svkImageLinearPhase.h>
-#include <vtkImageViewer2.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkImageActor.h>
 #include <svkImageFourierCenter.h>
 
 #include <svkImageInPlaceFilter.h>

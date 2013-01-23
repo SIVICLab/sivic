@@ -46,9 +46,11 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkImageData.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkPlanesIntersection.h>
+#include <vtkHexahedron.h>
 #include <svk4DImageData.h>
 #include <svkMriImageData.h>
-#include <svkMrsTopoGenerator.h>
 
 
 namespace svk {

@@ -53,6 +53,7 @@
 #include <vtkPlane.h>
 #include <vtkPlaneCollection.h>
 #include <vtkCollectionIterator.h>
+#include <vtkAbstractMapper.h>
 #include <svkDataViewController.h>
 
 #include <vector>

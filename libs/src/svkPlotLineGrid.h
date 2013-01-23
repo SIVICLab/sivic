@@ -64,7 +64,9 @@
 #include <svk4DImageData.h>
 #include <svkMrsImageData.h>
 #include <vtkPolyDataCollection.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkLODActor.h>
+#include <vtkProperty.h>
 
 
 namespace svk {

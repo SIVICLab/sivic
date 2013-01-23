@@ -59,7 +59,6 @@ vtkStandardNewMacro(svk4DImageData);
 svk4DImageData::svk4DImageData()
 {
 
-    this->topoGenerator = NULL;
 
 }
 
@@ -79,10 +78,6 @@ vtkObject* svk4DImageData::NewObject()
 svk4DImageData::~svk4DImageData()
 {
     vtkDebugMacro(<<"svk4DImageData::~svk4DImageData");
-    if( topoGenerator != NULL ) {
-        topoGenerator->Delete();
-        topoGenerator = NULL;
-    }
 }
 
 

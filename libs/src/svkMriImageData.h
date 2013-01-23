@@ -53,6 +53,7 @@
 #include <svk4DImageData.h>
 #include <vtkImageAccumulate.h>
 #include <vtkCallbackCommand.h>
+#include <vtkPolyData.h>
 #include <svkFastCellData.h>
 
 

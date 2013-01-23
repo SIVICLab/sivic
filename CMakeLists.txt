@@ -68,7 +68,9 @@ FIND_PACKAGE(VTK REQUIRED)
 ###################################
 #   KWWidgets
 ###################################
-FIND_PACKAGE(KWWidgets REQUIRED)
+IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
+    FIND_PACKAGE(KWWidgets REQUIRED)
+ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
 
 ###################################
 #   DCMTK (DCMTK_DIR is the root include dir

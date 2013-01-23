@@ -67,7 +67,6 @@
 #include <svkDcmtkAdapter.h>
 #include <svkDcmHeader.h>
 #include <svkProvenance.h>
-#include <svkImageTopologyGenerator.h>
 
 #include <assert.h>
 #include <set>
@@ -79,9 +78,6 @@ namespace svk {
 using namespace std;
 using namespace svk;
 
-
-//  Forward declaration
-class svkImageTopologyGenerator;
 
 
 /*!
@@ -267,8 +263,6 @@ class svkImageData: public vtkImageData
         //  Members:
         svkDcmHeader*                   dcmHeader;
         svkProvenance*                  provenance;
-        // REQUIRED?
-        svkImageTopologyGenerator*      topoGenerator;
 
         svkImageData*                   source;
 

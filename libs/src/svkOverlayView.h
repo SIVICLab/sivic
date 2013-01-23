@@ -73,6 +73,7 @@
 #include <svkLookupTable.h>
 #include <svkSatBandSet.h>
 #include <svkVoxelTaggingUtils.h>
+#include <svkMrsTopoGenerator.h>
 
 #include <svkBurnResearchPixels.h>
 #include <svkSincInterpolationFilter.h>

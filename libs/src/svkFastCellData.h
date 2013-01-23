@@ -48,6 +48,7 @@
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 
 namespace svk {
 

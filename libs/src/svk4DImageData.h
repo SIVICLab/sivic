@@ -45,6 +45,7 @@
 
 
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
 #include <vtkImageData.h>
 #include <vtkDoubleArray.h>
 

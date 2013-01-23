@@ -57,7 +57,6 @@ vtkStandardNewMacro(svkMriImageData);
  */
 svkMriImageData::svkMriImageData()
 {
-    topoGenerator = NULL;
     pixelBuffer = NULL;
 #if VTK_DEBUG_ON
     this->DebugOn();

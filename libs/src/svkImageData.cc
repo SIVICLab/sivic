@@ -109,11 +109,6 @@ svkImageData::~svkImageData()
         this->provenance = NULL;
     }
 
-    if (this->topoGenerator != NULL ) {
-        this->topoGenerator->Delete();
-        this->topoGenerator = NULL;
-    }
-
 	if( this->source != NULL ) {
 		this->source->Delete( );
 		this->source = NULL;

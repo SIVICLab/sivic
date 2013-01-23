@@ -233,32 +233,34 @@ ADD_LIBRARY(
     svkMrsApodizationFilter.cc
 )
 
-ADD_LIBRARY(
-    svkviz
-    svkDataView.cc
-    svkDataViewController.cc
-    svkPlotGridView.cc
-    svkPlotGridViewController.cc
-    svkDetailedPlotDirector.cc
-    svkXYPlotActor.cc
-    svkOverlaySelector.cc
-    svkOverlayView.cc
-    svkOverlayViewController.cc
-    svkLabeledDataMapper.cc
-    svkSatBandSet.cc
-    svkImageTopologyGenerator.cc
-    svkMrsTopoGenerator.cc
-    svkBoxPlot.cc
-    svkPlotLine.cc
-    svkPlotLineGrid.cc
-    svkSpecGridSelector.cc
-    svkImageViewer2.cc
-    svkImageMapToWindowLevelColors.cc
-    svkImageMapToColors.cc
-    svkOpenGLOrientedImageActor.cc
-    svkOrientedImageActorFactory.cc
-    svkLabeledDataMapper.cc
-)
+IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
+    ADD_LIBRARY(
+        svkviz
+        svkDataView.cc
+        svkDataViewController.cc
+        svkPlotGridView.cc
+        svkPlotGridViewController.cc
+        svkDetailedPlotDirector.cc
+        svkXYPlotActor.cc
+        svkOverlaySelector.cc
+        svkOverlayView.cc
+        svkOverlayViewController.cc
+        svkLabeledDataMapper.cc
+        svkSatBandSet.cc
+        svkImageTopologyGenerator.cc
+        svkMrsTopoGenerator.cc
+        svkBoxPlot.cc
+        svkPlotLine.cc
+        svkPlotLineGrid.cc
+        svkSpecGridSelector.cc
+        svkImageViewer2.cc
+        svkImageMapToWindowLevelColors.cc
+        svkImageMapToColors.cc
+        svkOpenGLOrientedImageActor.cc
+        svkOrientedImageActorFactory.cc
+        svkLabeledDataMapper.cc
+    )
+ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
 
 
 ADD_LIBRARY(

@@ -48,9 +48,8 @@
 #include <vtkInformation.h>
 #include <vtkDataObject.h>
 #include <vtkImageClip.h>
+#include <svkMriImageData.h>
 #include <vtkInstantiator.h>
-
-#include <svkOrientedImageActorFactory.h>
 
 
 namespace svk {
