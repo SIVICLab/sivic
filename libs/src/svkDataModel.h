@@ -48,7 +48,6 @@
 #include <map>
 #include <vtkObject.h>
 #include <string>
-#include <vtkDICOMImageReader.h>
 #include <vtkImageData.h>
 #include <vtkObjectFactory.h>
 #include <vtkImageFlip.h>
