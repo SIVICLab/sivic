@@ -515,7 +515,12 @@ double* svkImageData::GetPoint (vtkIdType ptId)
         return x;
     }
 
-    switch (this->DataDescription) {
+#if (VTK_MAJOR_VERSION == 5 && VTK_MINOR_VERSION > 6 ) || VTK_MAJOR_VERSION >= 6
+  switch (this->GetDataDescription())
+#else
+  switch (this->DataDescription)
+#endif
+    {
         case VTK_EMPTY:
             return x;
         case VTK_SINGLE_POINT:
@@ -599,7 +604,11 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
     return NULL;
     }
 
+#if (VTK_MAJOR_VERSION >= 5 && VTK_MINOR_VERSION > 6 ) || VTK_MAJOR_VERSION >= 6
+  switch (this->GetDataDescription())
+#else
   switch (this->DataDescription)
+#endif
     {
     case VTK_EMPTY:
       return NULL;
@@ -706,7 +715,11 @@ void svkImageData::GetCell (vtkIdType cellId, vtkGenericCell *cell)
     return;
     }
 
+#if (VTK_MAJOR_VERSION >= 5 && VTK_MINOR_VERSION > 6 ) || VTK_MAJOR_VERSION >= 6
+  switch (this->GetDataDescription())
+#else
   switch (this->DataDescription)
+#endif
     {
     case VTK_EMPTY:
       cell->SetCellTypeToEmptyCell();
