@@ -574,7 +574,7 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
 {
     // Source here is pulled from vtkImageData, has been modified, 
     // and should work, but needs to be checked
-    vtkCell *cell = NULL;
+    vtkCell *cell = this->Superclass::GetCell(cellId);
     int loc[3];
     vtkIdType idx, npts;
     int iMin, iMax, jMin, jMax, kMin, kMax;
@@ -602,29 +602,24 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
   switch (this->DataDescription)
     {
     case VTK_EMPTY:
-      //cell = this->EmptyCell;
       return NULL;
 
     case VTK_SINGLE_POINT: // cellId can only be = 0
-      cell = this->Vertex;
       break;
 
     case VTK_X_LINE:
       iMin = cellId;
       iMax = cellId + 1;
-      cell = this->Line;
       break;
 
     case VTK_Y_LINE:
       jMin = cellId;
       jMax = cellId + 1;
-      cell = this->Line;
       break;
 
     case VTK_Z_LINE:
       kMin = cellId;
       kMax = cellId + 1;
-      cell = this->Line;
       break;
 
     case VTK_XY_PLANE:
@@ -632,7 +627,6 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
       iMax = iMin + 1;
       jMin = cellId / (dims[0]-1);
       jMax = jMin + 1;
-      cell = this->Pixel;
       break;
 
     case VTK_YZ_PLANE:
@@ -640,7 +634,6 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
       jMax = jMin + 1;
       kMin = cellId / (dims[1]-1);
       kMax = kMin + 1;
-      cell = this->Pixel;
       break;
 
     case VTK_XZ_PLANE:
@@ -648,7 +641,6 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
       iMax = iMin + 1;
       kMin = cellId / (dims[0]-1);
       kMax = kMin + 1;
-      cell = this->Pixel;
       break;
 
     case VTK_XYZ_GRID:
@@ -658,7 +650,6 @@ vtkCell* svkImageData::GetCell (vtkIdType cellId)
       jMax = jMin + 1;
       kMin = cellId / ((dims[0] - 1) * (dims[1] - 1));
       kMax = kMin + 1;
-      cell = this->Voxel;
       break;
     }
 
