@@ -1140,12 +1140,20 @@ void svkDcmtkAdapter::CopySequence( svkDcmHeader* target, const char* seqName )
     DcmSequenceOfItems* seq;
     OFCondition status = this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
     if ( seq == NULL || status != EC_Normal ) {
-        cout << "Sequence Not Found--" << seqName << endl;
+        cout << "WARNING: Sequence Not Found--" << seqName << endl;
     } else {
 		if (dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile != NULL) {
-			DcmElement* element;
-			this->dcmFile->getDataset()->findAndCopyElement( GetDcmTagKey( seqName ), element);
-			dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile->getDataset()->insert(element, OFTrue, OFTrue);
+			DcmElement* newElement;
+
+            DcmElement *elem = NULL;
+            // find the element 
+            OFCondition status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( seqName ), elem );
+            if (status.good()) {
+                // create copy of element 
+                newElement = OFstatic_cast(DcmElement *, elem->clone());
+                dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile->getDataset()->insert(newElement, OFTrue, OFTrue);
+            } 
+
 		}
 
     }
