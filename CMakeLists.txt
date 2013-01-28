@@ -45,6 +45,7 @@ ENDIF(COMMAND CMAKE_POLICY)
 INCLUDE( CMakeSivicInclude.cmake )
 
 option( BUILD_LIBRARY "Build library." TRUE )
+option( BUILD_VIZ_LIBRARY "Build visualization library." TRUE )
 option( BUILD_SIVIC "Build stand-alone application." TRUE )
 option( BUILD_EXAMPLES "Build examples." FALSE )
 option( BUILD_APPS "Build mini-applications." FALSE )
@@ -70,6 +71,10 @@ FIND_PACKAGE(VTK REQUIRED)
 ###################################
 IF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
     FIND_PACKAGE(KWWidgets REQUIRED)
+    IF( NOT BUILD_VIZ_LIBRARY  )
+        message( FATAL_ERROR "ERROR: You must turn BUILD_VIZ_LIBRARY on to build requested components (BUILD_SIVIC, BUILD_EXAMPLES, BUILD_APPS, BUILD_OSIRIX, BUILD_SLICER)")
+    ENDIF( NOT BUILD_VIZ_LIBRARY )
+    
 ENDIF( BUILD_SIVIC OR BUILD_EXAMPLES OR BUILD_APPS OR BUILD_OSIRIX OR BUILD_SLICER )
 
 ###################################
