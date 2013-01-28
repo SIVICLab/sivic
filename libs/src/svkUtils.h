@@ -98,6 +98,7 @@ class svkUtils : public vtkObject
         static double         StringToDouble( string doubleString );
         static float          StringToFloat(  string floatString );
         static int            StringToInt(  string intString );
+        static long int       StringToLInt(  string longIntString );
         static void           StringToColorArray( double color[3], string colorString );
         static string         IntToString( int intVal ); 
         static string         DoubleToString( double doubleVal ); 

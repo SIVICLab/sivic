@@ -329,6 +329,22 @@ int svkUtils::StringToInt( string intString )
 
 
 /*!
+ *
+ * @param intString
+ * @return
+ */
+long int svkUtils::StringToLInt( string longIntString )
+{
+    istringstream* iss = new istringstream();
+    long int value;
+    iss->str( longIntString );
+    *iss >> value;
+    delete iss;
+    return value;
+}
+
+
+/*!
  *  @param intVal
  *  @return string equivalent
  */
