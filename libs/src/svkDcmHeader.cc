@@ -424,7 +424,7 @@ int svkDcmHeader::GetOrientationIndex( svkDcmHeader::Orientation orientation )
 {
 
     // First we need our dcos
-    double dcos[3][3];
+    double dcos[3][3] = {{0}};
     this->GetDataDcos(dcos);
 
     // We need to map each row of the dcos to be AXIAL, SAGITTAL, or CORONAL....
@@ -2426,7 +2426,7 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
     //  Per Frame Functinal Groups Module
     //
     int numSlices = this->GetNumberOfSlices();
-    double dcos[3][3];
+    double dcos[3][3] = {{0}};
     this->GetDataDcos( dcos );
 
     double pixelSpacing[3];
@@ -2869,7 +2869,7 @@ void svkDcmHeader::AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVe
 void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* dimensionVector)
 {
 
-    double dcos[3][3]; 
+    double dcos[3][3] = {{0}};
     this->GetDataDcos(dcos); 
        
     double toplc[3];

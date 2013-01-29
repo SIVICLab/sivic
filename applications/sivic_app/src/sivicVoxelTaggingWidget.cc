@@ -349,6 +349,7 @@ void sivicVoxelTaggingWidget::CreateWidget()
 
 	if( !this->model->DataExists("VoxelTagData") ) {
 		this->tagsTable->EnabledOff();
+		this->ReadDefaultTagsFromRegistry();
 		this->UpdateTagsList();
 		this->UpdateTagsInRegistry();
 	}

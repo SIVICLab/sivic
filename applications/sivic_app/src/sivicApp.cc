@@ -497,7 +497,7 @@ int sivicApp::Build( int argc, char* argv[] )
 
 
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            0, "&Save Data", this->sivicController, "SaveData");
+            0, "&Save Active Spectroscopic Data", this->sivicController, "SaveData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             1, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
