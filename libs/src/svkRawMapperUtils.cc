@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/src/svkRawMapperUtils.cc $
- *  $Rev: 1346 $
- *  $Author: jccrane $
- *  $Date: 2012-09-13 14:39:01 -0700 (Thu, 13 Sep 2012) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkRawMapperUtils, "$Rev: 1346 $");
+vtkCxxRevisionMacro(svkRawMapperUtils, "$Rev$");
 
 
 
