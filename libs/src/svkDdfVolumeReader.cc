@@ -930,7 +930,7 @@ void svkDdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
     this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
-            &dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numTimePts - 1 );
+            &dimensionVector, svkDcmHeader::TIME_INDEX, this->numTimePts - 1 );
 
     this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
             &dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numCoils - 1 );

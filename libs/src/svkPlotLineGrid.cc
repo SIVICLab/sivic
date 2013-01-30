@@ -571,7 +571,7 @@ void svkPlotLineGrid::GenerateActor()
                           this->data->GetSpacing()[2] };
 
     // TODO: Generalize for oblique single voxel
-    if( acquisitionType == "SINGLE VOXEL" ) {
+    if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->data)->HasSelectionBox() ) {
         svkMrsImageData::SafeDownCast(this->data)->GetSelectionBoxSpacing( spacing );
         svkMrsImageData::SafeDownCast(this->data)->GetSelectionBoxOrigin( origin );
     } 

@@ -244,7 +244,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             this->GetRenderer( svkPlotGridView::PRIMARY)->AddActor( this->GetProp( svkPlotGridView::PLOT_LINES ) );
             if( data->IsA("svkMrsImageData")) {
                 string acquisitionType = data->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-                if( acquisitionType == "SINGLE VOXEL" ) {
+                if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(data)->HasSelectionBox()) {
                     this->TurnPropOff( svkPlotGridView::PLOT_GRID );
                 } else {
                     this->TurnPropOn( svkPlotGridView::PLOT_GRID );
@@ -1611,7 +1611,7 @@ void svkPlotGridView::AlignCamera( )
         if( this->dataVector[MR4D]->IsA("svkMrsImageData")) {
             string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         }
-        if( acquisitionType == "SINGLE VOXEL" ) {
+        if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
             memcpy( bounds, this->GetProp( VOL_SELECTION )->GetBounds(), sizeof(double)*6 );
         } else {
             this->plotGrids[0]->CalculateTlcBrcBounds( bounds, this->tlcBrc );

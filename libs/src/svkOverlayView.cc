@@ -273,10 +273,10 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
    
     this->SetProp( svkOverlayView::PLOT_GRID, this->GetProp( svkOverlayView::PLOT_GRID ) );
     string acquisitionType = dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    if( acquisitionType != "SINGLE VOXEL" ) {
-        this->TurnPropOn( svkOverlayView::PLOT_GRID );
-    } else {
+    if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
         this->TurnPropOff( svkOverlayView::PLOT_GRID );
+    } else {
+        this->TurnPropOn( svkOverlayView::PLOT_GRID );
     }
 
     this->SetSlice( slice );

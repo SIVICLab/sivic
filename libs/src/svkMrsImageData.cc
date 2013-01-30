@@ -193,7 +193,7 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
     //  this should be the origin of the selection box
     //  (i.e. treat as a single slice).
     string acquisitionType = this->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    if( acquisitionType == "SINGLE VOXEL" ) {
+    if( acquisitionType == "SINGLE VOXEL" && this->HasSelectionBox() ) {
         double origin[3] = {0,0,0};
         double spacing[3] = {0,0,0};
         this->GetSelectionBoxCenter( origin );
