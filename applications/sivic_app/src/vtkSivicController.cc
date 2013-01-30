@@ -3142,7 +3142,8 @@ void vtkSivicController::EnableWidgets()
             this->imageViewWidget->sagittalSlider->EnabledOn();
         }
         this->windowLevelWidget->EnabledOn();
-        if( model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetNumberOfTimePoints() > 1) {
+        if( model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetNumberOfTimePoints() > 1
+          || model->GetDataObject("AnatomicalData")->GetDcmHeader()->GetNumberOfCoils() > 1) {
             this->imageViewWidget->volumeSlider->EnabledOn();
         }
 

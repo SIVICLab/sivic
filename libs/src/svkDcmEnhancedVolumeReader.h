@@ -40,77 +40,52 @@
  */
 
 
-#ifndef SVK_IMAGE_READER_FACTORY_H
-#define SVK_IMAGE_READER_FACTORY_H
+#ifndef SVK_DCM_ENHANCED_VOLUME_READER_H
+#define SVK_DCM_ENHANCED_VOLUME_READER_H
 
-
-#include <vtkObjectFactory.h>
-#include <vtkImageReader2Factory.h>
-
-#include <svkIdfVolumeReader.h>
-#include <svkDcmMriVolumeReader.h>
-#include <svkDcmMrsVolumeReader.h>
-#include <svkDcmEnhancedVolumeReader.h>
-#include <svkDdfVolumeReader.h>
-#include <svkFdfVolumeReader.h>
-#include <svkVarianFidReader.h>
-#include <svkSdbmVolumeReader.h>
-#include <svkSiemensRdaReader.h>
-#include <svkGEPFileReader.h>
-#include <svkGESigna5XReader.h>
-#include <svkGESignaLX2Reader.h>
-#include <svkGEPostageStampReader.h>
-#include <svkDcmRawDataReader.h>
+#include <svkDcmVolumeReader.h>
 
 
 namespace svk {
 
 
-using namespace std;
-
-
 /*! 
- *  Factory pattern Base class extended from vtkFramework:  
+ *  
  */
 
-class svkImageReaderFactory : public vtkImageReader2Factory 
+class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader 
 {
 
     public:
 
-        static svkImageReaderFactory* New();
-        vtkTypeRevisionMacro(svkImageReaderFactory, vtkImageReader2Factory);
+        static svkDcmEnhancedVolumeReader* New();
+        vtkTypeRevisionMacro( svkDcmEnhancedVolumeReader, svkDcmVolumeReader );
+
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "DICOM Enhanced File";
+        }
+
 
         //  Methods:
-        svkImageReader2*    CreateImageReader2( const char* path );
-        void                QuickParse(); 
+        virtual int CanReadFile(const char* fname);
 
 
     protected:
 
-        svkImageReaderFactory();
-        ~svkImageReaderFactory();
+        svkDcmEnhancedVolumeReader();
+        ~svkDcmEnhancedVolumeReader();
+
+        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
+        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
 
 
     private:
 
-        //  Members:
-        svkDcmMriVolumeReader*      dcmMriVolReader;
-        svkDcmMrsVolumeReader*      dcmMrsVolReader;
-        svkDcmEnhancedVolumeReader* dcmEnhancedVolReader;
-        svkIdfVolumeReader*         idfVolReader;
-        svkDdfVolumeReader*         ddfVolReader;
-        svkFdfVolumeReader*         fdfVolReader;
-        svkVarianFidReader*         fidVolReader;
-        svkSdbmVolumeReader*        sdbmVolReader;
-        svkSiemensRdaReader*        rdaVolReader;
-        svkGEPFileReader*           gePFileReader;
-        svkGESigna5XReader*         geSigna5XReader;
-        svkGESignaLX2Reader*        geSignaLX2Reader;
-        svkGEPostageStampReader*    gePostageStampReader;
-        svkDcmRawDataReader*        dcmRawDataReader;
-
-        bool                        quickParse; 
+        virtual void    LoadData(svkImageData* data); 
+        virtual void    InitPrivateHeader(); 
 
 };
 
@@ -118,5 +93,5 @@ class svkImageReaderFactory : public vtkImageReader2Factory
 }   //svk
 
 
-#endif //SVK_IMAGE_READER_FACTORY_H
+#endif //SVK_DCM_ENHANCED_VOLUME_READER_H
 
