@@ -834,10 +834,18 @@ void sivicImageViewWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsi
     } else if( caller == this->plotGridButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         string acquisitionType = "UNKNOWN";
         svk4DImageData* activeData = this->sivicController->GetActive4DImageData();
+        bool isSingleVoxel = false;
+        bool hasSelectionBox = false;
         if( activeData != NULL && activeData->IsA("svkMrsImageData")) {
             acquisitionType = activeData->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+            if( acquisitionType == "SINGLE VOXEL"){
+            	isSingleVoxel = true;
+            }
+            hasSelectionBox = svkMrsImageData::SafeDownCast(activeData)->HasSelectionBox();
         }
-        if ( this->plotGridButton->GetSelectedState() && acquisitionType != "SINGLE VOXEL") {
+        bool plotGridOn = this->plotGridButton->GetSelectedState();
+
+        if ( plotGridOn && !(isSingleVoxel && hasSelectionBox) ) {
             this->overlayController->TurnPropOn( svkOverlayView::PLOT_GRID );
         } else {
             this->overlayController->TurnPropOff( svkOverlayView::PLOT_GRID );

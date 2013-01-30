@@ -3052,7 +3052,7 @@ void vtkSivicController::EnableWidgets()
         if( activeData->IsA("svkMrsImageData") ) {
             string acquisitionType = model->GetDataObject( "SpectroscopicData" )->
                                GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-            if( acquisitionType == "SINGLE VOXEL" ) {
+            if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(model->GetDataObject( "SpectroscopicData" ))->HasSelectionBox() ) {
                 this->imageViewWidget->plotGridButton->EnabledOff();
             } else {
 				this->imageViewWidget->plotGridButton->EnabledOn();
