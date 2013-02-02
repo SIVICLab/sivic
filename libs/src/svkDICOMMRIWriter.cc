@@ -255,8 +255,8 @@ void svkDICOMMRIWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber,
             dcmHeader->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
 
             unsigned short* pixelData = new unsigned short[dataLength];  
-            float slope; 
-            float intercept; 
+            double slope;
+            double intercept;
             this->GetShortScaledPixels( pixelData, slope, intercept, sliceNumber, volNumber ); 
             
             dcmHeader->SetValue(
@@ -287,9 +287,9 @@ void svkDICOMMRIWriter::InitPixelData( svkDcmHeader* dcmHeader, int sliceNumber,
                 //      slope and intercept are for real -> short, we need the 
                 //      inverse transformation here that a downstream application:
                 //      can use to regenerate the original values:
-                float slopeReverse = 1/slope;  
+                double slopeReverse = 1/slope;
                 int shortMin = VTK_UNSIGNED_SHORT_MIN; 
-                float interceptReverse = inputRangeMin - shortMin/slope;
+                double interceptReverse = inputRangeMin - shortMin/slope;
                 dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse ); 
 
             }

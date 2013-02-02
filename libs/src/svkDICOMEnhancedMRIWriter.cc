@@ -86,6 +86,9 @@ svkDICOMEnhancedMRIWriter::~svkDICOMEnhancedMRIWriter()
 void svkDICOMEnhancedMRIWriter::Write()
 {
 
+    //  Make sure the series is unique:
+    this->GetImageDataInput(0)->GetDcmHeader()->MakeDerivedDcmHeader();
+
     this->SetErrorCode(vtkErrorCode::NoError);
 
     if (! this->FileName ) {
@@ -212,14 +215,11 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
         case svkDcmHeader::SIGNED_FLOAT_4:
         case svkDcmHeader::SIGNED_FLOAT_8:
         {
-            //  Fix BitsAllocated, etc to be represent 
-            //  signed short data
-            dcmHeader->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
 
             unsigned short* pixelData = new unsigned short[dataLength];
 
-            float slope; 
-            float intercept; 
+            double slope;
+            double intercept;
             for (int volume = 0; volume < numVolumes; volume++ ) {
                 offset = dataLength/numVolumes * volume; 
                 this->GetShortScaledPixels( pixelData, slope, intercept, -1, volume); 
@@ -248,6 +248,11 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
                 }
                     
             }
+
+            //  Fix BitsAllocated, etc to be represent
+            //  signed short data
+            dcmHeader->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
+
             vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
             if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
 

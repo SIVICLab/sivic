@@ -168,6 +168,15 @@ class svkDcmtkAdapter: public svkDcmHeader
                             const char* parentSeqName = NULL, 
                             int         parentSeqItemPosition = 0
                         );
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int         seqItemPosition,
+                            const char* elementName,
+                            double      value,
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0
+                        );
+                        
 
         virtual void    CopySequence( svkDcmHeader* target, const char* seqName );
 

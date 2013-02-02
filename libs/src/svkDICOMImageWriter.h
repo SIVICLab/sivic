@@ -49,6 +49,7 @@
 
 #include <svkImageWriter.h>
 #include <svkImageData.h>
+#include <svkUtils.h>
 
 
 namespace svk {
@@ -76,7 +77,7 @@ class svkDICOMImageWriter : public svkImageWriter
         ~svkDICOMImageWriter();
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        void            GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber, int volNumber ); 
+        void            GetShortScaledPixels( unsigned short* shortPixels, double& slope, double& intercept, int sliceNumber, int volNumber );
         void            GetPixelRange(double& min, double& max, int volNumber); 
         virtual int     GetDataLength() = 0;
         

@@ -189,6 +189,12 @@ void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const double valu
         case EVR_UT:
         case EVR_SH:
         case EVR_ST:
+        	/*
+        	 * Decimal Strings Limit us to 16 characters. A double in exponential
+        	 * notation can take up to 6 extra characters leaving only 10 for
+        	 * significant digits.
+        	 */
+        	ss<<setprecision(10);
             ss<<value;
             handleError(item->putAndInsertString(tag,ss.str().c_str()), "setValue(double)", &tag);
             break;

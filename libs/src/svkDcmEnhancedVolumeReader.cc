@@ -113,13 +113,14 @@ int svkDcmEnhancedVolumeReader::CanReadFile(const char* fname)
  */
 void svkDcmEnhancedVolumeReader::InitPrivateHeader()
 {
-
+	// Required by parent class, not sure if we need anything here.
 }
 
 
 /*! 
- * DOES THIS NEED TO SUPPORT FLOATING POINT DATA???
- *  
+ *  Loads the data. If the data header contains a RescaleSlope and Rescale Intercept
+ *  That are not 1 and 0 respectively then the data will be loaded into doubles and
+ *  rescaled.
  */
 void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 {
@@ -129,22 +130,40 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
     int numSlices = svkDcmHeader::GetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     int numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
     this->numVolumes = numFrames / numSlices;
-    svkDcmHeader::PrintDimensionIndexVector( &dimensionVector );
 
     int numPixelsInSlice   = rows * columns;
-    int dataWordSize       = 2;
+    int dataWordSize       = 2; // Size of data stored in Enhanced Object, always short
     int numPixelsInVolume  = numPixelsInSlice * numSlices;
     int numBytesPerVol     = numPixelsInVolume * dataWordSize;
 
-    /*
-     *  Iterate over slices (frames) and copy ImagePositions
-     */
+    // Get the Pixel Data from the DICOM header.
 	void* imageData = (void* ) malloc( numBytesPerVol*this->numVolumes );
 	this->GetOutput()->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData), numPixelsInVolume*this->numVolumes );
+
+	// If necessary convert the pixel data to doubles...
+	if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+		int doubleWordSize = 8;
+		void* imageDoubleData = (void* ) malloc( numPixelsInVolume * this->numVolumes * doubleWordSize );
+		double intercept = 0;
+		double slope = 1;
+		this->GetPixelTransform( intercept, slope, this->GetOutput()->GetDcmHeader());
+		this->GetRescaledPixels((double*)imageDoubleData,
+					                    (unsigned short*)imageData ,
+					                    intercept, slope, numPixelsInVolume * this->numVolumes);
+		delete (unsigned short*)imageData;
+		imageData = imageDoubleData;
+	}
+
+	// Create vtk Point Data arrays for each volume.
     for (int vol = 0; vol < this->numVolumes; vol++) {
 
         vtkDataArray* array = NULL;
-		array = vtkUnsignedShortArray::New();
+        if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+        	array = vtkDoubleArray::New();
+        } else {
+			array = vtkUnsignedShortArray::New();
+        }
+
 		array->SetNumberOfComponents(1);
 		array->SetNumberOfTuples(rows*columns*numSlices);
 
@@ -154,7 +173,11 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
 
-        array->SetVoidArray( (short*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+        if( this->IsDataFloatingPoint( this->GetOutput()) ) {
+			array->SetVoidArray( (double*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+        } else {
+			array->SetVoidArray( (short*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+        }
         if (vol == 0 ) {
             data->GetPointData()->SetScalars(array);
         } else {
@@ -174,21 +197,60 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 
 
 /*!
- *  Returns the pixel type
+ * Get the slope and intercept from the PixelValueTransformationSequence in the DICOM Header.
  */
-svkDcmHeader::DcmPixelDataFormat svkDcmEnhancedVolumeReader::GetFileType()
+void svkDcmEnhancedVolumeReader::GetPixelTransform(double& intercept, double& slope, svkDcmHeader* header)
 {
-    //string voiLUTFunction  = this->GetOutput()->GetDcmHeader()->GetStringValue("VOILUTFunction" );
-    //if( voiLUTFunction.compare("LINEAR") == 0 ) {
-	//	return svkDcmHeader::SIGNED_FLOAT_4;
-    //} else {
-	return svkDcmHeader::UNSIGNED_INT_2;
-	//}
+    string interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "SharedFunctionalGroupsSequence" );
+    string slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "SharedFunctionalGroupsSequence" );
+	intercept = svkUtils::StringToDouble( interceptString );
+	slope = svkUtils::StringToDouble( slopeString );
 }
 
 
 /*!
- *
+ *  Check if data is actually floating point data. The data is floating point unless the
+ *  RescaleIntercept is 0 and the RescaleSlope is 1.
+ */
+bool svkDcmEnhancedVolumeReader::IsDataFloatingPoint(svkImageData* image)
+{
+	bool isDataFloats = true;
+	double intercept = 0;
+	double slope = 1;
+	this->GetPixelTransform( intercept, slope, this->GetOutput()->GetDcmHeader());
+	if( intercept == 0 && slope == 1 ) {
+		isDataFloats = false;
+	}
+	return isDataFloats;
+}
+
+
+/*!
+ * Rescales the short data to floating point data using an intercept and slope.
+ */
+void svkDcmEnhancedVolumeReader::GetRescaledPixels(double* doublePixels, unsigned short* shortPixels, double intercept, double slope, int numberOfValues )
+{
+	for( int i = 0; i < numberOfValues; i++ ) {
+		doublePixels[i] = slope*shortPixels[i] + intercept;
+	}
+}
+
+
+/*!
+ *  Returns the pixel type. Either unsinged int or float.
+ */
+svkDcmHeader::DcmPixelDataFormat svkDcmEnhancedVolumeReader::GetFileType()
+{
+	if( this->IsDataFloatingPoint( this->GetOutput()) ) {
+		return svkDcmHeader::SIGNED_FLOAT_8;
+    } else {
+		return svkDcmHeader::UNSIGNED_INT_2;
+	}
+}
+
+
+/*!
+ *  Define the output data type. This is used to initialize the output object.
  */
 int svkDcmEnhancedVolumeReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {

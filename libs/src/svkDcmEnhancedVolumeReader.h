@@ -50,9 +50,8 @@ namespace svk {
 
 
 /*! 
- *  
+ *  Reads DICOM MR Enhanced Objects SOPClassUID = 1.2.840.10008.5.1.4.1.1.4.1.
  */
-
 class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader 
 {
 
@@ -61,26 +60,27 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
         static svkDcmEnhancedVolumeReader* New();
         vtkTypeRevisionMacro( svkDcmEnhancedVolumeReader, svkDcmVolumeReader );
 
-
         // Description: 
         // A descriptive name for this format
         virtual const char* GetDescriptiveName() {
-            return "DICOM Enhanced File";
+            return "DICOM MR Enhanced Object";
         }
-
 
         //  Methods:
         virtual int CanReadFile(const char* fname);
-
 
     protected:
 
         svkDcmEnhancedVolumeReader();
         ~svkDcmEnhancedVolumeReader();
 
-        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
+		void         GetPixelTransform(double& intercept, double& slope, svkDcmHeader* header);
+		virtual bool IsDataFloatingPoint(svkImageData* image);
+		void         GetRescaledPixels(double* doublePixels, unsigned short* shortPixels, double intercept, double slope, int numberOfValues );
 
+		// Required from parent class
+        virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
+        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
 
     private:
 

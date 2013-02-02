@@ -395,6 +395,21 @@ class svkDcmHeader: public vtkObject
                         ) = 0;
 
         /*!
+         *  Method to add an item to a DICOM Sequence by specifying the SQ name and
+         *  the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number.
+         */
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int seqItemPosition,
+                            const char* elementName,
+                            double value,
+                            const char* parentSeqName = NULL,
+                            int parentSeqItemPosition = 0
+                        ) = 0;
+         
+
+        /*!
          *  Method to copy a sequence from one header to another. Useful when
          *  when creating derived datasets.
          */
@@ -691,7 +706,7 @@ class svkDcmHeader: public vtkObject
                         ); 
 
         void            InitVOILUTModule(float center, float width); 
-        void            InitPixelValueTransformationMacro(float slope = 1, float intercept = 0);
+        void            InitPixelValueTransformationMacro(double slope = 1.00000, double intercept = 0.00000);
         void            InitMRImagingModifierMacro(
                                 float transmitFreq,
                                 float pixelBandwidth,

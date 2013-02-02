@@ -180,7 +180,7 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max, int volNumber)
  *  Returns a signed short array, together with the intercept and slope of the linear scaling 
  *  transformation ( shortVal = floatVal * slope + intercept).    
  */
-void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, float& slope, float& intercept, int sliceNumber, int volNumber)
+void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, double& slope, double& intercept, int sliceNumber, int volNumber)
 {
 
     //  Get the input range for scaling:
@@ -220,14 +220,14 @@ void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, flo
         );
 
         for (int i = 0; i < dataLength; i++) {
-            shortPixels[i] = static_cast<unsigned short> ( slope * floatPixels[offset + i] + intercept ); 
+            shortPixels[i] = static_cast<unsigned short> (svkUtils::NearestInt( slope * floatPixels[offset + i] + intercept ) );
         }
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
         double* doublePixels = static_cast<double *>( 
             vtkDoubleArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
         );
         for (int i = 0; i < dataLength; i++) {
-            shortPixels[i] = static_cast<unsigned short> ( slope * doublePixels[offset + i] + intercept ); 
+            shortPixels[i] = static_cast<unsigned short> (svkUtils::NearestInt( slope * doublePixels[offset + i] + intercept ) );
         }
     }
 

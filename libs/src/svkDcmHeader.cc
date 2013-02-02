@@ -1844,7 +1844,7 @@ void svkDcmHeader::InitVOILUTModule(float center, float width)
 /*!
  *  Set the linear scaling factors in the Pixel Value Transformation Macro
  */
-void svkDcmHeader::InitPixelValueTransformationMacro(float slope, float intercept)
+void svkDcmHeader::InitPixelValueTransformationMacro(double slope, double intercept)
 {
 
     this->AddSequenceItemElement(

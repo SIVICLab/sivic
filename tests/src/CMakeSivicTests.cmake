@@ -808,8 +808,21 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/multi_volume)
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/enh.dcm -o ${TEST_RESULTS_PATH}/out -t6 )
 
 SET( TEST_NAME TEST_MULTI_VOL_DCMENH_2_DCMENH_DIFF)
-ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${TEST_RESULTS_PATH}/out.dcm ${TEST_CASE_ROOT}/input/enh.dcm )
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_dcmenh_to_dcmenh --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
 SET_TESTS_PROPERTIES(TEST_MULTI_VOL_DCMENH_2_DCMENH_DIFF PROPERTIES DEPENDS TEST_MCHK_MULTI_VOL_DCMENH_2_DCMENH)
+
+########################
+#   multi-volume DICOM Enhanced 2 DICOM Enhanced test: 
+########################
+SET( TEST_NAME TEST_MCHK_FLOAT_DCMENH_2_DCMENH)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/enhanced_dicom)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_file_convert -i ${TEST_CASE_ROOT}/input/float.dcm -o ${TEST_RESULTS_PATH}/out -t6 )
+
+SET( TEST_NAME TEST_FLOAT_DCMENH_2_DCMENH_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/output_float --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_FLOAT_DCMENH_2_DCMENH_DIFF PROPERTIES DEPENDS TEST_MCHK_FLOAT_DCMENH_2_DCMENH)
 
 ########################
 #   Reorder flyback data

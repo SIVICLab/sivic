@@ -419,7 +419,7 @@ vector<string> svkUtils::SplitString( string str, string token )
  *   Returns the nearest int.  For values at the mid-point,
  *   the value is rounded to the larger int.
  */
-int svkUtils::NearestInt(float x)
+int svkUtils::NearestInt(double x)
 {
     int x_to_int;
     x_to_int = (int) x;

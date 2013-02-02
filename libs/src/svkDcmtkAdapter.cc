@@ -1235,6 +1235,37 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
 
 /*!
+ *  Add an item to the specified item in the specified sequence(seqName), where the nestedSequence is 
+ *  nested within a specific parent sequence(parentSeqName) and item(parentSeqItemPosition).
+ *
+ *  \param seqName the string name of the parent sequence
+ *  \param seqItemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *  \param value the value of the element being added to the specified item
+ *  \param parentSeqName the string name of the parent sequence
+ *  \param parentSeqItemPosition the position of the item in that sequence 
+ */
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, double value, const char* parentSeqName, int parentSeqItemPosition)
+{
+    DcmItem* dataset = this->dcmFile->getDataset();
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    svkDcmtkUtils::setValue(
+        this->GetDcmItem(dataset, seqName, seqItemPosition),
+        GetDcmTag(elementName),
+        value
+    );
+    this->Modified();
+}
+
+
+/*!
  *  Get an item from the specified item in the specified sequence.
  *
  *  \param seqName the string name of the sequence

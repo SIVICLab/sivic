@@ -344,6 +344,10 @@ void svkImageReader2::SetupOutputScalarData()
             this->SetDataScalarTypeToFloat();
             this->dataArray = vtkFloatArray::New();
             this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_4 );
+        } else if (  this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_8 ) {
+            this->SetDataScalarTypeToDouble();
+            this->dataArray = vtkDoubleArray::New();
+            this->GetOutput()->GetDcmHeader()->SetPixelDataType( svkDcmHeader::SIGNED_FLOAT_8 );
         } else {
             vtkErrorWithObjectMacro( this, "Unsupported data type: " << this->GetFileType() );
         }
