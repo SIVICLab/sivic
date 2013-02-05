@@ -65,6 +65,7 @@ using namespace svk;
 void MemoryTest( );
 void RenderingTest( );
 void OrientationTest( );
+void ColorMapTest( );
 void DisplayUsage( );
 
 struct globalArgs_t {
@@ -131,6 +132,9 @@ int main ( int argc, char** argv )
                         testFunction = OrientationTest;
                         globalArgs.showSatBands = true;
                         cout<<" Executing Sat Band Test... "<<endl;
+                    } else if( strcmp( optarg, "ColorMapTest" ) == 0 ) {
+                        testFunction = ColorMapTest;
+                        cout<<" Executing Color Map Test... "<<endl;
                     } 
                     break;
                 case 'i':
@@ -365,6 +369,127 @@ void OrientationTest()
         window->Render();
         svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
     }
+    if( spectra != NULL ) {
+        spectra->Delete();
+    }
+    if( overlay != NULL ) {
+        overlay->Delete();
+    }
+
+    model->Delete();
+    window->Delete();
+    overlayController->Delete();
+    image->Delete();
+    
+}
+
+
+void ColorMapTest()
+{
+    if( globalArgs.firstImageName == NULL  || 
+        globalArgs.firstSpectraName == NULL || 
+        globalArgs.firstOverlayName   == NULL ) {
+        DisplayUsage();
+        cout << endl << " ERROR: ";
+        cout << "At least an image, a spectra, and an overlay must be specified to run this test! " << endl; 
+    }
+
+    string rootName = "";
+    string imageRoot = string( globalArgs.firstImageName );
+    size_t ext = imageRoot.find_last_of(".");
+    size_t path = imageRoot.find_last_of("/");
+    rootName = imageRoot.substr(path+1,ext-path-1);
+
+
+    svkDataModel* model = svkDataModel::New();
+    
+    svkImageData* spectra = NULL; 
+    if( globalArgs.firstSpectraName != NULL ) {
+        spectra = model->LoadFile( globalArgs.firstSpectraName );
+        spectra->Register(NULL);
+        spectra->Update();
+    }
+
+    svkImageData* image = NULL; 
+    if( globalArgs.firstImageName != NULL ) {
+        image = model->LoadFile( globalArgs.firstImageName );
+        image->Register(NULL);
+        image->Update();
+    }
+    svkImageData* overlay = NULL; 
+    if( globalArgs.firstOverlayName != NULL ) {
+        overlay = model->LoadFile( globalArgs.firstOverlayName );
+        overlay->Register(NULL);
+        overlay->Update();
+    }
+
+    
+    vtkRenderWindow* window = vtkRenderWindow::New(); 
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkOverlayViewController* overlayController = svkOverlayViewController::New();
+
+    overlayController->SetRWInteractor( rwi );
+
+    window->SetSize(600,600);
+
+
+    if( globalArgs.disableValidation ) {
+        overlayController->GetView()->ValidationOff();
+    }
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
+    overlayController->SetInput( image, 0  );
+
+    if( spectra != NULL ) {
+        overlayController->SetInput( spectra, 1  );
+    }
+
+    if( overlay != NULL ) {
+        overlayController->SetInput( overlay, 2 );
+    }
+    window->GetRenderers()->GetFirstRenderer()->DrawOn( );
+    
+    
+    overlayController->GetView()->SetOrientation( svkDcmHeader::AXIAL);
+    overlayController->SetSlice( spectra->GetNumberOfSlices(svkDcmHeader::AXIAL)/2 );
+    svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+    overlayController->SetOverlayOpacity( 1 );
+    overlayController->SetOverlayThreshold( 0 );
+    window->Render();
+    stringstream filename;
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "COLOR.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    overlayController->SetLUT( svkLookupTable::GREY_SCALE );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "GREY_SCALE.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    overlayController->SetLUT( svkLookupTable::HURD );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "HURD.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    overlayController->SetLUT( svkLookupTable::CYAN_HOT );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "CYAN_HOT.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    overlayController->SetLUT( svkLookupTable::FIRE );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "FIRE.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    overlayController->SetOverlayThreshold( 100 );
+    overlayController->SetLUT( svkLookupTable::REVERSE_COLOR );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "REVERSE_COLOR.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    
     if( spectra != NULL ) {
         spectra->Delete();
     }

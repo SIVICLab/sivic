@@ -141,6 +141,20 @@ ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT
 SET_TESTS_PROPERTIES(OVERLAY_MET_RENDER_DIFF PROPERTIES DEPENDS OVERLAY_MET_RENDER_MCHK)
 
 #############################################################
+# Check to see if you can see all the color maps.
+#############################################################
+SET( TEST_NAME COLOR_MAP_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t ColorMapTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME COLOR_MAP_RENDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_7/${PLATFORM} )
+SET_TESTS_PROPERTIES(COLOR_MAP_RENDER_DIFF PROPERTIES DEPENDS COLOR_MAP_RENDER_MCHK)
+
+#############################################################
 # Check to see if you can render spectra and an overlay from
 # a phantom.
 #############################################################
