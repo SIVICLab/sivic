@@ -250,7 +250,6 @@ IF( BUILD_VIZ_LIBRARY )
         svkSatBandSet.cc
         svkImageTopologyGenerator.cc
         svkMrsTopoGenerator.cc
-        svkBoxPlot.cc
         svkPlotLine.cc
         svkPlotLineGrid.cc
         svkSpecGridSelector.cc

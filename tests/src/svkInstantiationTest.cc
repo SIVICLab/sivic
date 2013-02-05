@@ -41,7 +41,6 @@
 
 
 #include <svkAlgoTemplate.h>
-#include <svkBoxPlot.h>
 #include <svkBurnResearchPixels.h>
 #include <svkByteSwap.h>
 #include <svkCoilCombine.h>
@@ -144,8 +143,6 @@ int main ( int argc, char** argv )
 {
     vtkObject* obj;
     obj = svkBurnResearchPixels::New();
-    obj->Delete();
-    obj = svkBoxPlot::New();
     obj->Delete();
     obj = svkByteSwap::New();
     obj->Delete();

@@ -79,6 +79,8 @@ namespace svk {
  *        RenderOpaqueGemoetry, but when you use Get/SetProperty it has to be
  *        manually passed to this internal actor. This may be the only way to do
  *        it, but it may be worth checking out to see if there is a better way.
+ *
+ *  NOTE: This class is deprecated and no longer in use.
  */ 
 class svkBoxPlot : public vtkOpenGLActor
 {

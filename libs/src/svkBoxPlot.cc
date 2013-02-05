@@ -37,6 +37,8 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
+ *
+ *  NOTE: This class is deprecated and no longer in use.
  */
 
 
