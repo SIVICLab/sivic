@@ -626,6 +626,7 @@ class svkDcmHeader: public vtkObject
         vtkstd::string  GetDimensionIndexLabel(int dimensionIndexNumber ); 
         void            AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionIndexLabel indexType, int maxIndex = 0); 
+        void            RemoveDimensionIndex( svkDcmHeader::DimensionIndexLabel indexType ); 
         void            SetDimensionIndexSize( 
                             svkDcmHeader::DimensionIndexLabel indexType, int maxIndex); 
 
@@ -635,6 +636,7 @@ class svkDcmHeader: public vtkObject
 
         static DimensionIndexLabel StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString );
         static vtkstd::string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
+        static DimensionIndexLabel GetDimensionLabelFromIndex( svkDcmHeader::DimensionVector* dimensionVector, int index ); 
         static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, 
                                             svkDcmHeader::DimensionIndexLabel dimensionLabel); 
         static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index);
@@ -651,7 +653,7 @@ class svkDcmHeader: public vtkObject
                             svkDcmHeader::DimensionVector* loopIndex); 
 
         int             GetNumberOfFramesInDimension( int dimensionIndex ); 
-        int             GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector);
+        static int      GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector);
         int             GetNumberOfFrames(svkDcmHeader::DimensionVector* dimensionVector);
 
         //==================================================

@@ -2731,6 +2731,15 @@ int svkDcmHeader::GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVect
 
 
 /*!
+ *  Gets the Dimension label for the specified numeric index
+ */
+svkDcmHeader::DimensionIndexLabel svkDcmHeader::GetDimensionLabelFromIndex( svkDcmHeader::DimensionVector* dimensionVector, int index )
+{
+    return (*(*dimensionVector)[index].begin()).first; 
+
+}
+
+/*!
  *  Get the value of the specified dimension.  The index starts at 2 for slice, the inner most 
  *  loop in any DimensionVector.  
  */
@@ -2858,6 +2867,26 @@ void svkDcmHeader::AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVe
         indexRowMap.insert( pair<DimensionIndexLabel, int>( indexType, maxIndex) );
         dimensionVector->push_back(indexRowMap);                    
         this->Redimension( dimensionVector );
+    }    
+}
+
+
+/*!
+ *  Remove a dimension from Dimension Index Sequence
+ */
+void svkDcmHeader::RemoveDimensionIndex( svkDcmHeader::DimensionIndexLabel indexType )
+{
+    svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
+    //  If the dimension is defined, then remove it; 
+    if ( svkDcmHeader::IsDimensionDefined( &dimensionVector, indexType) ) {
+        string indexString = svkDcmHeader::DimensionIndexLabelToString( indexType ); 
+
+        //  Add 2 for cols and rows ,which are in dimension vector, but not in DICOM
+        // dimension index sequence. 
+        svkDcmHeader::DimensionVector::iterator itToRemove = 
+                    dimensionVector.begin() + this->GetDimensionIndexPosition(indexString) + 2;
+        dimensionVector.erase(itToRemove);                    
+        this->Redimension( &dimensionVector );
     }    
 }
 
