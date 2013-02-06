@@ -47,6 +47,8 @@
 #include <svkSpecUtils.h>
 #include <vtkByteSwap.h>
 
+#include "svkEPSIReorder.h"
+
 using namespace svk;
 
 
@@ -2032,6 +2034,30 @@ int svkGEPFileMapper::GetNumTimePoints()
 
 
 /*!
+ */
+int svkGEPFileMapper::GetNumEPSIAcquisitions() 
+{
+
+    //  If this is not an EPSI acquisition return 1
+    int numAcquisitions = 1;     
+    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    it = this->inputArgs.find( "epsiType" );
+
+    int epsiType;
+    if ( it != this->inputArgs.end() ) {
+        svkEPSIReorder::EPSIType epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
+        if ( epsiType == svkEPSIReorder::SYMMETRIC || epsiType == svkEPSIReorder::INTERLEAVED ) {
+            numAcquisitions = 2; 
+        }
+    } 
+
+    return numAcquisitions; 
+
+}
+
+
+
+/*!
  *  Determine whether to add a dummy scan. The assumption is that
  *  the number of dummy scans should be equal to the number of coils 
  *  or numCoils * numTimePts (e.g. for a spectral editing sequence). 
@@ -2431,7 +2457,6 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
     //
     if ( behaviorFlag == svkGEPFileMapper::UNDEFINED ) {
 
-
         //  If single voxel default to loading the averaged 
         //  of the suppressed acquisitions. 
         if ( (numVoxels[0] * numVoxels[1] * numVoxels[2] == 1) 
@@ -2541,9 +2566,128 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
         //  SpectrallySelectedSuppression accordingly:
         this->dcmHeader->SetValue( "SpectrallySelectedSuppression", "NONE" ); 
 
+    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_EPSI ) {
+
+        cout << "LOAD_EPSI" << endl;
+        //  if we are manually reordering EPSI data, then redimension the data 
+        //  dimensions if necessary so that they correctly reflect the organization, 
+        //  then call svkEPSIReorder with the correct params.
+        this->ReorderEPSI( svkMrsImageData::SafeDownCast( data) );
+
     } else {
 
         cout << "UNSUPPORTED BEHAVIOR" << endl;
+
+    }
+
+}
+
+
+/*!
+ *  Modify behavior for EPSI data.  
+ */
+void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
+{
+
+    svkDcmHeader* hdr = data->GetDcmHeader();
+
+    int numAcquisitions = this->GetNumEPSIAcquisitions(); 
+
+    //  if more than 1 EPSI acquisition (i.e interleaved or symmetric, the time index should be rewritten as 
+    //  EPSIAcq.  
+
+    if ( numAcquisitions > 1 ) {
+
+        svkDcmHeader::DimensionVector dimensionVectorIn = hdr->GetDimensionIndexVector();
+
+        //  Also, currently doesn't support dynamic data, so if more than one time point, exit: 
+        int numTimePts = svkDcmHeader::GetDimensionValue(&dimensionVectorIn, svkDcmHeader::TIME_INDEX); 
+        if (numTimePts > 1 ) {
+            cout << "ERROR:  svkGEPFileMapper does not currently support dynamic EPSI reordering " << endl;
+            exit(1);
+        }
+
+        //  Add EPSI_ACQ_INDEX, initially with only one point (default)
+        hdr->AddDimensionIndex( &dimensionVectorIn, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+
+        svkDcmHeader::DimensionVector indexVector = dimensionVectorIn;
+
+        //  GetNumber of cells  and rewrite their meta-data (dimension indices and array names: 
+        //  Need to iterate over every cell in order to rewrite the array names.  The number of cells
+        //  will not change, but their dimension labels will (time->epsiACQ
+        int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVectorIn);
+       
+        for (int cellID = 0; cellID < numCells; cellID++ ) {
+       
+            //  Get the dimensionVector index for the non-dynamic image: 
+            svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVectorIn, &indexVector, cellID );
+
+            int timePt = svkDcmHeader::GetDimensionValue(&indexVector, svkDcmHeader::TIME_INDEX); 
+
+            //  relable the 2nd time point as the 2nd EPSI Acq point
+            if ( timePt == 1 ) {
+
+                svk4DImageData::SetDimensionVectorIndex( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX, timePt); 
+                svk4DImageData::SetDimensionVectorIndex( &indexVector, svkDcmHeader::TIME_INDEX, 0);
+            }
+
+            //  Get array from target dynamic image: 
+            vtkDataArray* dataArray = data->GetCellData()->GetArray(cellID);
+
+            data->SetArrayName( dataArray, &indexVector );
+
+        }
+
+        hdr->SetDimensionIndexSize(svkDcmHeader::TIME_INDEX, 0); 
+        hdr->SetDimensionIndexSize(svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+
+
+        vtkstd::map < vtkstd::string, void* >::iterator  it;
+
+        it = this->inputArgs.find( "epsiType" );
+        svkEPSIReorder::EPSIType epsiType;
+        if ( it != this->inputArgs.end() ) {
+            epsiType = *( static_cast< svkEPSIReorder::EPSIType* >( this->inputArgs[ it->first ] ) );
+        }
+
+        it = this->inputArgs.find( "epsiAxis" );
+        svkEPSIReorder::EPSIAxis epsiAxis; 
+        if ( it != this->inputArgs.end() ) {
+            epsiAxis= *( static_cast< svkEPSIReorder::EPSIAxis* >( this->inputArgs[ it->first ] ) );
+        }
+
+        it = this->inputArgs.find( "epsiNumSkip" );
+        int epsiNumSkip;
+        if ( it != this->inputArgs.end() ) {
+            epsiNumSkip = *( static_cast< int* >( this->inputArgs[ it->first ] ) );
+        }
+
+        it = this->inputArgs.find( "epsiNumLobes" );
+        int epsiNumLobes;
+        if ( it != this->inputArgs.end() ) {
+            epsiNumLobes = *( static_cast< int* >( this->inputArgs[ it->first ] ) );
+        }
+
+        it = this->inputArgs.find( "epsiFirst" );
+        int epsiFirst;
+        if ( it != this->inputArgs.end() ) {
+            epsiFirst = *( static_cast< int* >( this->inputArgs[ it->first ] ) );
+        }
+
+        svkMrsImageData* tmpData = svkMrsImageData::New();
+        tmpData->ShallowCopy( data );
+
+        svkEPSIReorder* reorder = svkEPSIReorder::New();
+        reorder->SetInput( tmpData ); 
+        reorder->SetEPSIType( epsiType );
+        reorder->SetEPSIAxis( epsiAxis );
+        reorder->SetNumSamplesToSkip( epsiNumSkip);
+        reorder->SetNumEPSILobes( epsiNumLobes );
+        reorder->SetFirstSample( epsiFirst );
+        reorder->Update();
+
+        data->ShallowCopy( reorder->GetOutput() );
+
     }
 
 }

@@ -75,16 +75,19 @@ class svkGEPFileMapper : public vtkObject
          */
         enum MapperBehavior {
             UNDEFINED = 0, 
-            // load the entire data set as is, no averaging or data extraction.
+            //  load the entire data set as is, no averaging or data extraction.
             LOAD_RAW, 
-            // if suppressed and unsuppressed data, load only the unsuppressed acquisitions
+            //  if suppressed and unsuppressed data, load only the unsuppressed acquisitions
             LOAD_RAW_UNSUPPRESSED, 
-            // if suppressed and unsuppressed data, load only the suppressed acquisitions
+            //  if suppressed and unsuppressed data, load only the suppressed acquisitions
             LOAD_RAW_SUPPRESSED,       
-            // if suppressed and unsuppressed data, load only the average of the unsuppressed acquisitions
+            //  if suppressed and unsuppressed data, load only the average of the unsuppressed acquisitions
             LOAD_AVG_UNSUPPRESSED, 
-            // if suppressed and unsuppressed data, load only the average of the suppressed acquisitions
-            LOAD_AVG_SUPPRESSED    
+            //  if suppressed and unsuppressed data, load only the average of the suppressed acquisitions
+            LOAD_AVG_SUPPRESSED,
+            //  if EPSI data not handled intrinsically by the reader needs to be handled through command
+            //  line args:
+            LOAD_EPSI
         };
 
         virtual void            InitializeDcmHeader(
@@ -160,6 +163,7 @@ class svkGEPFileMapper : public vtkObject
         int                     GetNumFrames(); 
         virtual int             GetNumTimePoints(); 
         virtual int             GetNumDummyScans(); 
+        virtual int             GetNumEPSIAcquisitions(); 
         bool                    AddDummy( int offset, int coilNum, int timePt ); 
         void                    GetDcos( double dcos[3][3] ); 
         virtual float           GetPPMRef(); 
@@ -209,6 +213,8 @@ class svkGEPFileMapper : public vtkObject
         bool                                    isInputArgSet(vtkstd::string argName);
         bool                                    GetInputArgStringValue(vtkstd::string argName, vtkstd::string* argValue);
         bool                                    GetInputArgBoolValue(vtkstd::string argName, bool* argValue);
+
+        virtual void                            ReorderEPSI( svkMrsImageData* data );
 
 
 };
