@@ -90,6 +90,10 @@ int main (int argc, char** argv)
     usemsg += "   --algo              type  Quantification algorithm :          \n"; 
     usemsg += "                                 1 = Peak Ht (default)           \n";  
     usemsg += "                                 2 = Integration                 \n";  
+    usemsg += "                                 3 = Line Width                  \n";
+    usemsg += "                                 4 = Magnitude Peak Ht           \n";
+    usemsg += "                                 5 = Magnitude Integration       \n";
+    usemsg += "                                 6 = Magnitude Line Width        \n";
     usemsg += "   -h                        print help mesage.                  \n";  
     usemsg += " \n";  
     usemsg += "Generates metabolite map volume by direct integration of input spectra over \n"; 
@@ -178,6 +182,14 @@ int main (int argc, char** argv)
                     algo = svkMetaboliteMap::PEAK_HT; 
                 } else if ( algoInt == 2 ) {
                     algo = svkMetaboliteMap::INTEGRATE; 
+                } else if ( algoInt == 3 ) {
+                    algo = svkMetaboliteMap::LINE_WIDTH;
+                } else if ( algoInt == 4 ) {
+                    algo = svkMetaboliteMap::MAG_PEAK_HT;
+                } else if ( algoInt == 5 ) {
+                    algo = svkMetaboliteMap::MAG_INTEGRATE;
+                } else if ( algoInt == 6 ) {
+                    algo = svkMetaboliteMap::MAG_LINE_WIDTH;
                 } else {
                     cout << "ERROR: invalid algorithm: " << algoInt << endl;
                     cout << usemsg << endl;
@@ -302,6 +314,30 @@ int main (int argc, char** argv)
         if ( isVerbose || algo == svkMetaboliteMap::PEAK_HT) {
             quant->SetAlgorithmToPeakHeight();
             quant->SetSeriesDescription( qtyName + "peak ht metabolite map" ); 
+            quant->Update();
+        }
+
+        if ( isVerbose || algo == svkMetaboliteMap::LINE_WIDTH) {
+            quant->SetAlgorithmToLineWidth();
+            quant->SetSeriesDescription( qtyName + "line width metabolite map" );
+            quant->Update();
+        }
+
+        if ( isVerbose || algo == svkMetaboliteMap::MAG_INTEGRATE ) {
+            quant->SetAlgorithmToMagIntegrate();
+            quant->SetSeriesDescription( qtyName + "magnitude area metabolite map" );
+            quant->Update();
+        }
+
+        if ( isVerbose || algo == svkMetaboliteMap::MAG_PEAK_HT) {
+            quant->SetAlgorithmToMagPeakHeight();
+            quant->SetSeriesDescription( qtyName + "magnitude peak ht metabolite map" );
+            quant->Update();
+        }
+
+        if ( isVerbose || algo == svkMetaboliteMap::MAG_LINE_WIDTH) {
+            quant->SetAlgorithmToMagLineWidth();
+            quant->SetSeriesDescription( qtyName + "magnitude line width metabolite map" );
             quant->Update();
         }
     

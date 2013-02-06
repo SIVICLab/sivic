@@ -476,6 +476,74 @@ SET_TESTS_PROPERTIES(TEST_INTEGRATE_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_IN
 
 
 ########################
+#   Metabolite Map Generation
+########################
+SET( TEST_NAME TEST_MCHK_MAG_INTEGRATE_MET_MAP)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 6 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 5)
+
+SET( TEST_NAME TEST_MAG_INTEGRATE_MET_MAP_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/out_2 --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_MAG_INTEGRATE_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_MAG_INTEGRATE_MET_MAP)
+
+########################
+#   Metabolite Map Generation
+########################
+SET( TEST_NAME TEST_MCHK_PEAK_HT_MET_MAP)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 6 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 1)
+
+SET( TEST_NAME TEST_PEAK_HT_MET_MAP_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/out_3 --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_PEAK_HT_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_PEAK_HT_MET_MAP)
+
+
+########################
+#   Metabolite Map Generation
+########################
+SET( TEST_NAME TEST_MCHK_MAG_PEAK_HT_MET_MAP)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 6 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 4)
+
+SET( TEST_NAME TEST_MAG_PEAK_HT_MET_MAP_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/out_4 --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_MAG_PEAK_HT_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_MAG_PEAK_HT_MET_MAP)
+
+
+########################
+#   Metabolite Map Generation
+########################
+SET( TEST_NAME TEST_MCHK_LINE_WIDTH_MET_MAP)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 6 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 3)
+
+SET( TEST_NAME TEST_LINE_WIDTH_MET_MAP_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/out_5 --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_LINE_WIDTH_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_LINE_WIDTH_MET_MAP)
+
+
+########################
+#   Metabolite Map Generation
+########################
+SET( TEST_NAME TEST_MCHK_MAG_LINE_WIDTH_MET_MAP)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/met_maps/integration_pk_ht)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_quantify -i ${TEST_CASE_ROOT}/input/mrs.ddf -o${TEST_RESULTS_PATH}/out -t 6 --peak_center 1.99 --peak_width .4 --peak_name NAA --algo 6)
+
+SET( TEST_NAME TEST_MAG_LINE_WIDTH_MET_MAP_DIFF)
+ADD_TEST(${TEST_NAME}  ${TEST_SCRIPT_PATH}/dcm2xml_series_diff --dir_one ${TEST_RESULTS_PATH} --dir_two ${TEST_CASE_ROOT}/out_6 --bin_dir ${DCMTK_DIR}/bin --diff_opts ${DIFF_OPT_DCM_STR} )
+SET_TESTS_PROPERTIES(TEST_MAG_LINE_WIDTH_MET_MAP_DIFF PROPERTIES DEPENDS TEST_MCHK_MAG_LINE_WIDTH_MET_MAP)
+
+########################
 #   MRS FFT test: 
 ########################
 SET( TEST_NAME TEST_MCHK_MRS_FFT )

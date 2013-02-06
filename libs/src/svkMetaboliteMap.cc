@@ -474,7 +474,7 @@ float svkMetaboliteMap::GetWidthInHz( int startPt, int endPt)
 
     float startPtHz = point->ConvertPosUnits( startPt, svkSpecPoint::PTS, svkSpecPoint::Hz ); 
     float endPtHz   = point->ConvertPosUnits( endPt,   svkSpecPoint::PTS, svkSpecPoint::Hz ); 
-    float deltaHz = endPtHz - startPtHz; 
+    float deltaHz = fabs(endPtHz - startPtHz);
     point->Delete();
     return deltaHz; 
 }
