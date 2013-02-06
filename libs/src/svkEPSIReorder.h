@@ -90,6 +90,7 @@ class svkEPSIReorder : public svkImageInPlaceFilter
         void                        SetEPSIAxis( svkEPSIReorder::EPSIAxis epsiAxis ); 
         svkEPSIReorder::EPSIAxis    GetEPSIAxis(); 
         virtual int                 GetNumEPSIAcquisitions();
+        virtual int                 GetNumEPSIAcquisitionsPerFID();
         virtual int                 GetNumEPSIFrequencyPoints();
 
 

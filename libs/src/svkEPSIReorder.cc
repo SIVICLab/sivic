@@ -188,8 +188,7 @@ int svkEPSIReorder::GetNumEPSIFrequencyPoints()
     } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
         numFreqPts = this->numLobes / 2;     
     } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
-        cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
-        exit(1); 
+        numFreqPts = this->numLobes;     
     } else {
         cout << "ERROR( " << this->GetClassName() << "): UNSUPPORTED EPSI TYPE " << endl;
         exit(1); 
@@ -215,14 +214,39 @@ int svkEPSIReorder::GetNumEPSIAcquisitions()
     } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
         numAcquisitions = 2; 
     } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
-        cout << "ERROR( " << this->GetClassName() << "): INTERLEAVED EPSI not yet supported." << endl;
-        exit(1); 
+        numAcquisitions = 2; 
     } else {
         cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
         exit(1); 
     }
     
     return numAcquisitions; 
+}
+
+
+/*!
+ *  Virtual method that returns the number of acquisitions in each FID 
+ *  1, except for symmetric which has interleaved pos/neg lobes. 
+ */
+int svkEPSIReorder::GetNumEPSIAcquisitionsPerFID()
+{
+    int numAcquisitionsPerFID; 
+
+    if ( this->epsiType == svkEPSIReorder::UNDEFINED_EPSI_TYPE ) {
+        cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
+        exit(1); 
+    } else if ( this->epsiType == svkEPSIReorder::FLYBACK ) {
+        numAcquisitionsPerFID = 1; 
+    } else if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+        numAcquisitionsPerFID = 2;  //for symmetric they are alternating in the same FID
+    } else if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+        numAcquisitionsPerFID = 1;  // here they are already separated out into 2 "time points"
+    } else {
+        cout << "ERROR( " << this->GetClassName() << "): EPSI TYPE is undefined" << endl;
+        exit(1); 
+    }
+    
+    return numAcquisitionsPerFID; 
 }
 
 
@@ -270,7 +294,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  points extracted from the EPSI encoding 
 
     //  Preallocate data arrays. We can't override the original arrays, 
-    //  until the reordering is complette, so use these as the 
+    //  until the reordering is complete, so use these as the 
     //  target arrays. 
 
     //  Allocate arrays for all How many k-space points were acquired in all?
@@ -308,6 +332,8 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     numVoxels[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     numVoxels[ epsiDir ] = this->GetNumSamplesPerLobe();
 
+    int numChannels = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+
     //  Set the number of reordered voxels (target dimensionality of this method)
     int reorderedVoxels[3]; 
     reorderedVoxels[0] = numVoxels[0]; 
@@ -315,7 +341,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     reorderedVoxels[2] = numVoxels[2]; 
     reorderedVoxels[ epsiDir ] = numVoxels[epsiDir] - this->numSamplesToSkip; 
 
-    //cout << "full dimensionality = " << numVoxels[0] << " " << numVoxels[1] << " " << numVoxels[2] << endl;
+    //cout << "full dimensionality = " << reorderedVoxels[0] << " " << reorderedVoxels[1] << " " << reorderedVoxels[2] << endl;
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //============================================================
@@ -324,7 +350,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     int numTimePoints = 1; 
     int timePoint = 0;
     int numEPSIAcquisitions = this->GetNumEPSIAcquisitions(); 
-    int coilNum = 0; 
+    int numEPSIAcquisitionsPerFID = this->GetNumEPSIAcquisitionsPerFID(); 
 
     //============================================================
     //  create a data set to store the new reordered data arrays. 
@@ -345,8 +371,6 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     reorderedImageData->GetDcmHeader()->AddDimensionIndex( &outDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, numEPSIAcquisitions - 1 ); 
     svkDcmHeader::DimensionVector outLoopVector = outDimensionVector; 
 
-    //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector);
-
 
     //============================================================
     //  Preallocate data arrays for reordered data. The API only permits dynamic 
@@ -358,7 +382,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         numReorderedVoxels *= reorderedVoxels[i];  
     }
 
-    numReorderedVoxels *= numTimePoints * numEPSIAcquisitions; 
+    numReorderedVoxels *= numTimePoints * numEPSIAcquisitions * numChannels; 
     for (int arrayNumber = 0; arrayNumber < numReorderedVoxels; arrayNumber++) {
         vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
         dataArray->SetNumberOfComponents( numComponents );
@@ -367,18 +391,18 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         dataArray->Delete();
     }
 
-    
     //  GetNumber of cells in the input image to loop over for reordering:
     int numCells = hdr->GetNumberOfCells( &inputDimensionVector ); 
+
+
     for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
-        //cout << "CELLID: " << cellID << endl;
         //  Get the dimensionVector index for current cell -> indexVector: 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &inputDimensionVector, &inputLoopVector, cellID ); 
+        //svkDcmHeader::PrintDimensionIndexVector(&inputLoopVector); 
 
         //  convert these indices to a frame number
         vtkFloatArray* epsiSpectrum = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID) );
-        //cout << "got spectrum? " << epsiSpectrum << endl;
     
         //  define range of spatial dimension to expand (i.e. epsiAxis):  
         int xEPSI = svkDcmHeader::GetDimensionValue( &inputLoopVector, svkDcmHeader::COL_INDEX); 
@@ -399,13 +423,12 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
         //============================================================
         //  allocate an array for both the positive and negative lobes of 
-        //  the symmetric EPSI encoding:
+        //  the symmetric EPSI encoding, or both interleaves for interleaved EPSI:
         //============================================================
         int lobeStride = this->GetNumSamplesPerLobe();  
 
         //  set the current index along the EPSI dimension
         //  Initialize first point to skip + throw out first point (zero crossing)
-        int currentEPSIPt = this->firstSample;   
 
         rangeMax[epsiDir] -= 1;    //  other indices have zero range 
         //  first loop over epsi-kspace points for each acquisition, i.e. 2 for symmetric epsi, 1 for flyback.  
@@ -415,70 +438,86 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         for (int dim = 0; dim < numDims; dim++) {
             svk4DImageData::SetDimensionVectorIndex(&outLoopVector, dim, 0); 
         }
-        for (int acq = 0; acq < numEPSIAcquisitions; acq++ ) { 
-            for (int z = rangeMin[2]; z < rangeMax[2] + 1; z++ ) { 
-                for (int y = rangeMin[1]; y < rangeMax[1] + 1; y++ ) { 
-                    for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
+        int numChannels = svkDcmHeader::GetDimensionValue(&outLoopVector, svkDcmHeader::CHANNEL_INDEX); 
 
-                        //  Initialize the dimensionVector with the current cell array indices: 
-                        svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::COL_INDEX, x); 
-                        svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::ROW_INDEX, y); 
-                        svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::SLICE_INDEX, z); 
-                        svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::EPSI_ACQ_INDEX, acq); 
+        int currentAcq; 
 
-                        //  Now get the cell ID for this set of indices: 
-                        int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &outDimensionVector, &outLoopVector ); 
-                        //cout << "CELL ID: " << cellID << " " << x << " " << y << " " << z << " " << acq << endl;
-                        //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
-                        //svkDcmHeader::PrintDimensionIndexVector(&outLoopVector); 
+        currentAcq = svkDcmHeader::GetDimensionValue(&inputLoopVector, svkDcmHeader::EPSI_ACQ_INDEX); //testing
 
-                        vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray( cellID );
-                        reorderedImageData->SetArrayName( dataArray, &outLoopVector); 
+        numChannels = 1; 
 
-                        //  init the dimensionVector with the current value in each dimension and pass that to 
-                        //  reorder EPSI data, throwing away the first and last 
-                        //  point (zero crossing). 
-                        float epsiTuple[2]; 
-                        float tuple[2]; 
-                        int epsiOffset; 
-                        for (int i = 0; i < numFreqPts; i++) {
-                            epsiOffset = (lobeStride * numEPSIAcquisitions * i ) + currentEPSIPt;
-                            epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
-                            tuple[0] = epsiTuple[0]; 
-                            tuple[1] = epsiTuple[1]; 
-                            //cout << "TUPPLE: " << epsiOffset << " " << tuple[0] << " " << tuple[1] << endl;
+        int currentEPSIPt = this->firstSample;   
 
-                            dataArray->SetTuple( i, tuple );
+        for (int acq = 0; acq < numEPSIAcquisitionsPerFID; acq++ ) { //testing
+
+            //  For symmetric EPSI, EPSI_ACQ_INDEX isn't initialized in the input data, 
+            //  so set it here: 
+            if ( this->epsiType == svkEPSIReorder::SYMMETRIC ) {
+                currentAcq = acq; //testing
+            }
+
+            //  If numAcqs Per FID = 1, then reset the currentEPSIPt being read
+            //  to the start of the FID: 
+            //  if ( numEPSIAcquisitionsPerFID == 1 ) 
+            if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+                currentEPSIPt = this->firstSample;   
+            }
+
+            for (int channel = 0; channel < numChannels; channel++ ) { 
+                for (int z = rangeMin[2]; z < rangeMax[2] + 1; z++ ) { 
+                    for (int y = rangeMin[1]; y < rangeMax[1] + 1; y++ ) { 
+                        for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
+
+                            //  Initialize the dimensionVector with the current cell array indices: 
+                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::COL_INDEX, x); 
+                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::ROW_INDEX, y); 
+                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::SLICE_INDEX, z); 
+                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
+                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::EPSI_ACQ_INDEX, currentAcq); 
+
+                            //  Now get the cell ID for this set of indices: 
+                            int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &outDimensionVector, &outLoopVector ); 
+                            //cout << "test 2 CELL ID: " << cellID << " " << x << " " << y << " " << z << " " << currentAcq << endl;
+                            //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
+                            //svkDcmHeader::PrintDimensionIndexVector(&outLoopVector); 
+
+                            vtkDataArray* dataArray = reorderedImageData->GetCellData()->GetArray( cellID );
+                            reorderedImageData->SetArrayName( dataArray, &outLoopVector); 
+                            //cout << "ARRAY NAME:  " << reorderedImageData->GetArrayName(&outLoopVector) << endl;
+
+                            //  init the dimensionVector with the current value in each dimension and pass that to 
+                            //  reorder EPSI data, throwing away the first and last 
+                            //  point (zero crossing). 
+                            float epsiTuple[2]; 
+                            float tuple[2]; 
+                            int epsiOffset; 
+                            for (int i = 0; i < numFreqPts; i++) {
+                                epsiOffset = (lobeStride * numEPSIAcquisitionsPerFID * i ) + currentEPSIPt;
+                                epsiSpectrum->GetTupleValue(epsiOffset, epsiTuple); 
+                                tuple[0] = epsiTuple[0]; 
+                                tuple[1] = epsiTuple[1]; 
+                                if ( i < 1 ) {
+                                    //cout << "REORDER TUPPLE: " << epsiOffset << " " << tuple[0] << " " << tuple[1] << endl;
+                                }
+
+                                dataArray->SetTuple( i, tuple );
+                            }
+                            currentEPSIPt++; // increment the k-space point on the lobe
                         }
-
-                        currentEPSIPt++; 
                     }
-
                 }
             }
             //  between lobes, throw out the last and first point before resuming sampling
             //  These are the zero crossings in symmetric EPSI. 
             currentEPSIPt += this->numSamplesToSkip; 
-        }
+        }  //testing
     }
 
     //  =================================================
     //  Redimension the meta data and set the new arrays:
     //  =================================================
 
-    reorderedImageData->GetDcmHeader()->PrintDcmHeader();
     data->DeepCopy( reorderedImageData ); 
-    /*
-    for ( int i = 0; i < 3; i++) {
-        cout << "NUMVOX: " << numVoxels[i] << endl;
-    }
-    for ( int dim = 0; dim < outDimensionVector.size(); dim++) {
-        int dimSize = svkDcmHeader::GetDimensionValue ( &outDimensionVector, dim ) + 1; 
-        cout << "NUM FRAMES: DIM SIZE " << dim << " => " << dimSize << endl;
-    }
-    vtkDataArray* test = data->GetCellData()->GetArray( 328 );
-    cout << "TEST 328: " << test->GetTuple(0)[0] << endl;
-    */
 
     int numVoxelsOriginal[3];  
     numVoxelsOriginal[0] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::COL_INDEX) + 1;
@@ -486,15 +525,107 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     numVoxelsOriginal[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     svkRawMapperUtils::RedimensionData( data, numVoxelsOriginal, &outDimensionVector, numFreqPts); 
 
-    //vtkDataArray* test2 = data->GetCellData()->GetArray( 328 );
-    //cout << "TEST 328 2: " << test2->GetTuple(0)[0] << endl;
-    //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector); 
+    //  if interleaved EPSI, then interleave here. 
+    if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
+
+        //  combine interleaved data points here.  The spectra will be doubled in size, 
+        //  but EPSI index will get dropped.so.. allocate a new data 
+        //  set with 1/2 as many arrays, each with twice as many points.
+
+        svkMrsImageData* dataTmp = svkMrsImageData::New();
+        dataTmp->DeepCopy( data ); 
+        svkImageData::RemoveArrays( dataTmp ); 
+
+        //  Remove the EPSI dimension from the Dimension Index
+        dataTmp->GetDcmHeader()->RemoveDimensionIndex( svkDcmHeader::EPSI_ACQ_INDEX ); 
+        dataTmp->GetDcmHeader()->SetValue( "DataPointColumns", numFreqPts * 2 ); 
+        float originalSweepWidth = dataTmp->GetDcmHeader()->GetFloatValue("SpectralWidth"); 
+        dataTmp->GetDcmHeader()->SetValue( "SpectralWidth", originalSweepWidth * 2 ); 
+
+        //  Allocate arrays for target data set: 
+        for (int arrayNumber = 0; arrayNumber < numReorderedVoxels/2; arrayNumber++) {
+            vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+            dataArray->SetNumberOfComponents( numComponents );
+            dataArray->SetNumberOfTuples( numFreqPts * 2 );
+            dataTmp->GetCellData()->AddArray(dataArray);
+            dataArray->Delete();
+        }
+
+        svkDcmHeader::DimensionVector outputDimensions = dataTmp->GetDcmHeader()->GetDimensionIndexVector(); 
+        svkDcmHeader::DimensionVector outputLoopVector = outputDimensions; 
+        
+        //  Now, iterate over frames for 1 EPSI index, but get spectra from both indices
+        //  and interleave the data into the new data set. 
+        svkDcmHeader::DimensionVector epsiDimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
+        svkDcmHeader::DimensionVector loopVector0 = epsiDimensionVector;    // interleave 0
+        svkDcmHeader::DimensionVector loopVector1;                          // interleave 1
+        svk4DImageData::SetDimensionVectorIndex(&epsiDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        int numCells = svkDcmHeader::GetNumberOfCells( &epsiDimensionVector ); 
+        for (int cellID = 0; cellID < numCells; cellID++ ) { 
+
+            //cout << "CELLID: " << cellID << endl;
+            //  Get the dimensionVector index for current cell for both EPSI interleaves: 
+            svkDcmHeader::GetDimensionVectorIndexFromCellID( &epsiDimensionVector, &loopVector0, cellID ); 
+            loopVector1 = loopVector0; 
+            svkDcmHeader::SetDimensionValue(&loopVector1, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+
+            //for all indices except EPSI, map to outputDimensions 
+            for ( int i = 0; i < loopVector0.size(); i++ ) {
+                svkDcmHeader::DimensionIndexLabel dimLabel = svkDcmHeader::GetDimensionLabelFromIndex( &loopVector0, i );   
+                if ( dimLabel != svkDcmHeader::EPSI_ACQ_INDEX ) {
+                    int dimValue = svkDcmHeader::GetDimensionValue(&loopVector0, i); 
+                    svkDcmHeader::SetDimensionValue(&outputLoopVector, dimLabel, dimValue);         
+                }
+            }
+
+            //  Now get all 3 spectra: 
+            int cellID0   = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&epsiDimensionVector, &loopVector0); 
+            int cellID1   = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&epsiDimensionVector, &loopVector1); 
+            int cellIDOut = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&outputDimensions, &outputLoopVector); 
+
+            vtkFloatArray* epsiSpectrum0  
+                    = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID0 ) );
+            vtkFloatArray* epsiSpectrum1  
+                    = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID1 ) );
+            vtkFloatArray* outputSpectrum 
+                    = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(dataTmp)->GetSpectrum( cellIDOut ) );
+
+            //  Loop over frequency points and interleave
+            float tuple0[2]; 
+            float tuple1[2]; 
+            float tupleOut0[2]; 
+            float tupleOut1[2]; 
+
+            vtkDataArray* outArray = dataTmp->GetCellData()->GetArray( cellIDOut );
+            dataTmp->SetArrayName( outArray, &outputLoopVector ); 
+
+            for ( int i = 0; i < numFreqPts; i++  ) {
+
+                epsiSpectrum0->GetTupleValue(i, tuple0); 
+                epsiSpectrum1->GetTupleValue(i, tuple1); 
+
+                tupleOut0[0] = tuple0[0]; 
+                tupleOut0[1] = tuple0[1]; 
+                tupleOut1[0] = tuple1[0]; 
+                tupleOut1[1] = tuple1[1]; 
+                //cout << "CHECK TUPLES: " << tupleOut0[0] << " " << tupleOut0[1] << " " << tupleOut1[0] << " " << tupleOut1[1] << endl;
+                outArray->SetTuple( i*2 , tupleOut0 );
+                outArray->SetTuple( i*2 + 1 , tupleOut1 );
+
+            }
+
+        }
+
+        data->DeepCopy( dataTmp ); 
+
+    }
 
     this->UpdateReorderedParams( data, reorderedVoxels ); 
 
     data->GetProvenance()->AddAlgorithm( this->GetClassName() );
 
     reorderedImageData->Delete();
+
 
 }
 
