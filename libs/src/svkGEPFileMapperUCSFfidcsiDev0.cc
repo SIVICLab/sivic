@@ -199,7 +199,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
             //  ========================================
             svkDcmHeader* hdr = tmpImage->GetDcmHeader();
             svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector(); 
-            int totalNumArrays = hdr->GetNumberOfCells( &dimensionVector ); 
+            int totalNumArrays = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
             totalNumArrays *= numTimePts;  
 
             vtkstd::string dataRepresentation = hdr->GetStringValue( "DataRepresentation" );
@@ -303,7 +303,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::AddReorderedTimePoint(svkMrsImageData* dyna
     svkDcmHeader::DimensionVector dynamicIndexVector = dynamicDimensionVector; 
 
     //  GetNumber of cells in non-dynamic image:
-    int numCells = hdr->GetNumberOfCells( &dimensionVector ); 
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
      
     for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
