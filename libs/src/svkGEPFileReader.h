@@ -52,6 +52,7 @@
 #include <svkGEPFileMapperUCSFfidcsi.h>
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
 #include <svkGEPFileMapperMPCSIOBL.h>
+#include <svkEPSIReorder.h>
 
 #include <vtkstd/map>
 #include <vtkstd/vector>
@@ -104,6 +105,12 @@ class svkGEPFileReader : public svkImageReader2
         void                SetTemperature( float temp ); 
         void                SetChop( bool chop ); 
         void                PrintHeader();
+        void                SetEPSIParams( 
+                                svkEPSIReorder::EPSIType type, 
+                                svkEPSIReorder::EPSIAxis axis, 
+                                int first, 
+                                int numLobes, 
+                                int numSkip ); 
         void                OnlyParseHeader();
         void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
@@ -170,8 +177,11 @@ class svkGEPFileReader : public svkImageReader2
         void                DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString); 
         bool                IsFieldChar( vtkstd::string key ); 
         bool                IsFieldUID( vtkstd::string key ); 
+        bool                IsFieldInt2( vtkstd::string key );
         bool                IsFieldFloat4( vtkstd::string key );
         bool                IsFieldInt4( vtkstd::string key );
+        bool                IsFieldLInt4( vtkstd::string key );
+        bool                IsFieldLInt8( vtkstd::string key );
         vtkstd::string      GetSeriesUID(const char* fname); 
 
         //  Members:
@@ -192,6 +202,7 @@ class svkGEPFileReader : public svkImageReader2
         vtkstd::string                  deidSeriesUID; 
         vtkstd::string                  deidImageUID; 
         vtkstd::string                  deidLandmarkUID; 
+
 };
 
 

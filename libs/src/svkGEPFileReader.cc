@@ -306,6 +306,8 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         vtkstd::string pfileName = this->GetFileNames()->GetValue(0); 
         //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
+vtkDataArray* test = data->GetCellData()->GetArray(0);
+cout << "TEST 0: " << test->GetTuple(0)[0] << endl;
 
         //  resync any header changes with the svkImageData object's member variables
         this->SetupOutputInformation(); 
@@ -460,6 +462,28 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
         cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
+
+}
+
+
+/*!
+ */
+void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReorder::EPSIAxis axis, int first, int numLobes, int numSkip ) 
+{
+
+    int* epsiType     = new int (type);
+    int* epsiAxis     = new int (axis);
+    int* epsiFirst    = new int (first);
+    int* epsiNumLobes = new int (numLobes);
+    int* epsiNumSkip  = new int (numSkip);
+
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiType",     static_cast<void*>( epsiType ) ) );
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiAxis",     static_cast<void*>( epsiAxis ) ) );
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiFirst",    static_cast<void*>( epsiFirst ) ) );
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiNumLobes", static_cast<void*>( epsiNumLobes ) ) );
+    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiNumSkip",  static_cast<void*>( epsiNumSkip ) ) );
+
+    this->SetMapperBehavior( svkGEPFileMapper::LOAD_EPSI );
 
 }
 
@@ -2989,6 +3013,21 @@ bool svkGEPFileReader::IsFieldFloat4( vtkstd::string key )
 
 
 /*
+ *  Return true if the raw field is of type int 2.
+ */
+bool svkGEPFileReader::IsFieldInt2( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("INT_2") == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/*
  *  Return true if the raw field is of type int 4.
  */
 bool svkGEPFileReader::IsFieldInt4( vtkstd::string key )
@@ -3002,6 +3041,35 @@ bool svkGEPFileReader::IsFieldInt4( vtkstd::string key )
     }
 }
 
+
+/*
+ *  Return true if the raw field is of type long int .
+ */
+bool svkGEPFileReader::IsFieldLInt4( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("LINT_4") == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/*
+ *  Return true if the raw field is of type long int .
+ */
+bool svkGEPFileReader::IsFieldLInt8( vtkstd::string key )
+{
+    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+
+    if ( type.compare("LINT_8") == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 /*
  *  In place deidentification of field
@@ -3032,8 +3100,8 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
             cout << "replace char bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( deidString.c_str(), numBytes);
-        } else if ( this->IsFieldFloat4( key ) ) {
 
+        } else if ( this->IsFieldFloat4( key ) ) {
 
             //  =======================================
             //  Float 4
@@ -3045,8 +3113,21 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
             cout << "replace float bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( (char*)(&value), numBytes);
-        } else if ( this->IsFieldInt4( key ) ) {
 
+        } else if ( this->IsFieldInt2( key ) ) {
+
+            //  =======================================
+            //  Int 2
+            //  =======================================
+            int value = svkUtils::StringToInt(deidString);
+            if( this->GetSwapBytes() ) {
+				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes); 
+            }
+            cout << "replace short int bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
+            fs->seekp( offset, ios_base::beg );
+            fs->write( (char*)(&value), numBytes);
+
+        } else if ( this->IsFieldInt4( key ) ) {
 
             //  =======================================
             //  Int 4
@@ -3058,6 +3139,33 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
             cout << "replace int bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
             fs->seekp( offset, ios_base::beg );
             fs->write( (char*)(&value), numBytes);
+
+        } else if ( this->IsFieldLInt4( key ) ) {
+
+            //  =======================================
+            //  Long Int 4
+            //  =======================================
+            int value = svkUtils::StringToInt(deidString);
+            if( this->GetSwapBytes() ) {
+				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes); 
+            }
+            cout << "replace int bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
+            fs->seekp( offset, ios_base::beg );
+            fs->write( (char*)(&value), numBytes);
+
+        } else if ( this->IsFieldLInt8( key ) ) {
+
+            //  =======================================
+            //  Long Int 8
+            //  =======================================
+            long int value = svkUtils::StringToLInt(deidString);
+            if( this->GetSwapBytes() ) {
+				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes);
+            }
+            cout << "replace int bytes with " << key << " -> " << deidString << " " << numBytes << endl; 
+            fs->seekp( offset, ios_base::beg );
+            fs->write( (char*)(&value), numBytes);
+
         } else if ( this->IsFieldUID( key ) ) {
             
             //  =======================================    
