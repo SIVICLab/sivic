@@ -56,6 +56,7 @@
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
 #include <svkImageAlgorithm.h>
+#include <svkEPSIReorder.h>
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -65,8 +66,9 @@ extern "C" {
 #endif
 #define UNDEFINED_TEMP -1111
 
-using namespace svk;
+#define UNDEFINED -1
 
+using namespace svk;
 
 
 int main (int argc, char** argv)
@@ -78,13 +80,23 @@ int main (int argc, char** argv)
     usemsg += "                   [ -u | -s ] [ -anh ] \n";
     usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
     usemsg += "                   [ --chop on/off ] \n";
-    usemsg += "                   [ --print_header ] \n";
-    usemsg += "\n";  
-    usemsg += "   -i                name    Name of file to convert. \n"; 
-    usemsg += "   -o                name    Name of outputfile. \n";
-    usemsg += "   -t                type    Target data type: \n";
-    usemsg += "                                 2 = UCSF DDF      \n";
-    usemsg += "                                 4 = DICOM_MRS (default)    \n";
+    usemsg += "                   -------------------------------------------------------------- \n"; 
+    usemsg += "                   [                                                              \n";
+    usemsg += "                     --epsi_type     type                                         \n";
+    usemsg += "                     --epsi_axis     axis                                         \n";
+    usemsg += "                     --epsi_lobes    num                                          \n";
+    usemsg += "                     --epsi_skip     num                                          \n";
+    usemsg += "                     --epsi_first    num                                          \n";
+    usemsg += "                   ]                                                              \n";
+    usemsg += "                   -------------------------------------------------------------- \n"; 
+    usemsg += "                   [ --print_header ]                                             \n";
+    usemsg += "                                                                                  \n";  
+    usemsg += "                                                                                  \n";  
+    usemsg += "   -i                name    Name of file to convert.                             \n"; 
+    usemsg += "   -o                name    Name of outputfile.                                  \n";
+    usemsg += "   -t                type    Target data type:                                    \n";
+    usemsg += "                                 2 = UCSF DDF                                     \n";
+    usemsg += "                                 4 = DICOM_MRS (default)                          \n";
     usemsg += "   -u                        If single voxel, write only unsuppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -s                        If single voxel, write only suppressed data (individual acqs. preserved) \n"; 
     usemsg += "   -a                        If single voxel, write average of the specified data  \n"; 
@@ -95,6 +107,17 @@ int main (int argc, char** argv)
     usemsg += "                             set the chemical shift of water. \n"; 
     usemsg += "   --chop             on/off Set chop value manually \n"; 
     usemsg += "   --no_dc_correction        Turns DC Offset correction off. \n"; 
+    usemsg += "---------------------------------------------------------------------------------    \n"; 
+    usemsg += "   --epsi_type    type       Specify 1 (flyback), 2(symmetric), 3(interleaved).      \n";
+    usemsg += "   --epsi_axis    axis       EPSI axis 1, 2, 3                                       \n";
+    usemsg += "   --epsi_lobes   num        Num lobes in EPSI waveform                              \n";
+    usemsg += "                             Not all samples will be represented in output data      \n";
+    usemsg += "                             (see skip and first                                     \n";
+    usemsg += "   --epsi_skip    num        Num samples to skip between in each cycle of waveform   \n";
+    usemsg += "   --epsi_first   num        First input sample to write out, represents an initial  \n";
+    usemsg += "                             offset of skipped samples (samples start at 1). By      \n";
+    usemsg += "                             default first is set to 1, so no initial offset.        \n";
+    usemsg += "---------------------------------------------------------------------------------    \n"; 
     usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data \n";
     usemsg += "   -h                        Print this help mesage. \n";  
     usemsg += "\n";  
@@ -104,16 +127,22 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName;
-    bool unsuppressed = false; 
-    bool suppressed = false; 
-    bool average = false; 
+    bool unsuppressed    = false; 
+    bool suppressed      = false; 
+    bool average         = false; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     int oneTimePtPerFile = false; 
-    float temp = UNDEFINED_TEMP; 
+    float temp           = UNDEFINED_TEMP; 
     vtkstd::string chopString = ""; 
     bool chop; 
-    bool dcCorrection = true; 
-    bool printHeader = false; 
+    bool dcCorrection    = true; 
+    bool printHeader     = false; 
+    svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
+    int  epsiAxis        = UNDEFINED;
+    int  epsiNumLobes    = UNDEFINED;
+    int  epsiSkip        = UNDEFINED;
+    int  epsiFirst       = 0;
+
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -122,7 +151,12 @@ int main (int argc, char** argv)
         FLAG_DC_CORRECTION, 
         FLAG_PRINT_HEADER, 
         FLAG_TEMP, 
-        FLAG_CHOP 
+        FLAG_CHOP, 
+        FLAG_EPSI_TYPE, 
+        FLAG_EPSI_AXIS,
+        FLAG_EPSI_NUM_LOBES,
+        FLAG_EPSI_SKIP,
+        FLAG_EPSI_FIRST
     }; 
 
 
@@ -134,6 +168,11 @@ int main (int argc, char** argv)
         {"print_header",     no_argument,       NULL,  FLAG_PRINT_HEADER},
         {"temp",             required_argument, NULL,  FLAG_TEMP},
         {"chop",             required_argument, NULL,  FLAG_CHOP},
+        {"epsi_type",        required_argument, NULL,  FLAG_EPSI_TYPE},
+        {"epsi_axis",        required_argument, NULL,  FLAG_EPSI_AXIS},
+        {"epsi_lobes",       required_argument, NULL,  FLAG_EPSI_NUM_LOBES},
+        {"epsi_skip",        required_argument, NULL,  FLAG_EPSI_SKIP},
+        {"epsi_first",       required_argument, NULL,  FLAG_EPSI_FIRST},
         {0, 0, 0, 0}
     };
 
@@ -177,6 +216,22 @@ int main (int argc, char** argv)
             case FLAG_CHOP:
                 chopString.assign(optarg);
                 break;
+            case FLAG_EPSI_TYPE:
+                epsiType = static_cast<svkEPSIReorder::EPSIType>(atoi(optarg));
+                break;
+            case FLAG_EPSI_AXIS:
+                //  axis ordering starts at 0
+                epsiAxis = atoi( optarg ) - 1;
+                break;
+            case FLAG_EPSI_NUM_LOBES:
+                epsiNumLobes = atoi(optarg);
+                break;
+            case FLAG_EPSI_SKIP:
+                epsiSkip = atoi(optarg);
+                break;
+            case FLAG_EPSI_FIRST:
+                epsiFirst = atoi(optarg) - 1;
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -201,6 +256,7 @@ int main (int argc, char** argv)
         cout << "An input file must be specified to print the header. " << endl; 
         exit(1); 
     } else if (! printHeader) {
+
         if ( 
             argc != 0 ||  inputFileName.length() == 0  
             || outputFileName.length() == 0 
@@ -210,6 +266,19 @@ int main (int argc, char** argv)
             cout << usemsg << endl;
             exit(1); 
         }
+        //  validate EPSI input if necessary:
+        if ( epsiType != svkEPSIReorder::UNDEFINED_EPSI_TYPE ) { 
+            if (
+                epsiNumLobes == UNDEFINED ||
+                epsiSkip == UNDEFINED ||
+                epsiFirst < 0 ||
+                epsiAxis < 0  || epsiAxis > 2 
+            ) {
+                cout << usemsg << endl;
+                exit(1);
+            }
+        }
+    
     }
 
 
@@ -225,7 +294,7 @@ int main (int argc, char** argv)
     //  that the output type must be ddf 
     // ===============================================  
     if ( oneTimePtPerFile && dataTypeOut != svkImageWriterFactory::DDF ) {
-        cout << "Error: -n flag and -t flag conflict. " << endl;
+        cout << "Error: -one_time_pt flag and -t flag conflict. " << endl;
         cout << "        num time points option only supported for ddf output" << endl;
         cout << usemsg << endl;
         exit(1); 
@@ -286,12 +355,25 @@ int main (int argc, char** argv)
         reader->SetTemperature( temp ); 
     }
 
+
     if ( chopString.compare("") != 0) { 
         if ( chopString.compare("on") == 0 ) { 
             reader->SetChop( true ); 
         } else if ( chopString.compare("off") == 0 ) { 
             reader->SetChop( false ); 
         }
+    }
+
+
+    //  Set EPSI params if necessary in reader: 
+    if ( epsiType != svkEPSIReorder::UNDEFINED_EPSI_TYPE ) { 
+        reader->SetEPSIParams( 
+            epsiType, 
+            static_cast<svkEPSIReorder::EPSIAxis>(epsiAxis), 
+            epsiFirst,  
+            epsiNumLobes, 
+            epsiSkip 
+        );
     }
 
     
@@ -324,6 +406,7 @@ int main (int argc, char** argv)
         cerr << "Can not determine writer of type: " << dataTypeOut << endl;
         exit(1);
     }
+
 
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
