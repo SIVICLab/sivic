@@ -121,9 +121,6 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(SVK_LIBS
-    vtkRendering
-    vtkGraphics
-    vtkHybrid
     vtkImaging
     vtkIO
     vtkFiltering
@@ -137,6 +134,14 @@ SET(SVK_LIBS
 )
 
 
+SET(SVK_VIZ_LIBS
+    svkviz
+    vtkRendering
+    vtkVolumeRendering
+    vtkGraphics
+    vtkHybrid
+)
+
 
 ADD_EXECUTABLE(
     test_read_write 
@@ -146,6 +151,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_read_write 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -156,6 +162,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_mvc
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -166,6 +173,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_new_del
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -177,6 +185,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageData
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -187,6 +196,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkOrientedImageCopy
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -207,6 +217,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageReaderFactory
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -219,6 +230,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkBoxPlot 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -230,6 +242,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkPlotLine 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -242,6 +255,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageTopologyGenerator 
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -254,6 +268,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_grid_topo_order
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -266,6 +281,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkMultiWindowToImageFilter
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -277,6 +293,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_vtkRenderLoop
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -290,6 +307,7 @@ IF (SVK_USE_GL2PS)
 
     TARGET_LINK_LIBRARIES(
         test_vtkGL2PSExporter
+        ${SVK_VIZ_LIBS}
         ${SVK_LIBS}
     )
 
@@ -301,6 +319,7 @@ IF (SVK_USE_GL2PS)
 
     TARGET_LINK_LIBRARIES(
         test_vtkGL2PSExporterImages
+        ${SVK_VIZ_LIBS}
         ${SVK_LIBS}
     )
 ENDIF(SVK_USE_GL2PS)
@@ -314,6 +333,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_actorSizeRectGrid
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -326,6 +346,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_actorSizeIndividual
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -338,6 +359,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_rectilnearGrid
+    ${SVK_VIZ_LIBS}
 	${SVK_LIBS}
 )
 
@@ -349,6 +371,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkDICOMMRSWriter
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -369,6 +392,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkOrientedImageData
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -379,6 +403,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageViewer2
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -389,6 +414,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkOrientedImageActor
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -399,6 +425,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkPhase
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -410,6 +437,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkIdfWriter
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -420,6 +448,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkSpectraPhaserWidget
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -430,6 +459,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkSinglePlotExtraction
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -440,6 +470,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkDataModel
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -450,6 +481,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkFormatConverter
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -460,6 +492,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageCopy
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -470,6 +503,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkObliqueReslice
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -480,6 +514,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkMrsImageFFT
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -490,6 +525,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkMrsImageFFTSpatial
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -500,6 +536,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkMrsImageExtract
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -510,6 +547,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_vtkImageFFT
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -520,6 +558,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_vtkImageFourierCenter
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -530,6 +569,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkMCPhase
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -540,6 +580,7 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkUCSFUtils
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
 
@@ -550,5 +591,6 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     test_svkImageAlgorithmExecuter
+    ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
 )
