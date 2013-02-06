@@ -287,6 +287,7 @@ class svkImageData: public vtkImageData
 
         void    CastDataArrays( int vtkDataArrayType, vtkDataSetAttributes* fieldData );
 
+        void    CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat);
 };
 
 

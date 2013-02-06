@@ -137,13 +137,7 @@ void svkImageData::PrintSelf( ostream &os, vtkIndent indent )
 void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
     this->Superclass::DeepCopy( src );
-    if( src->IsA("svkImageData") ) {
-        svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
-    }
-    this->CopyDcos( src );
-    if( castToFormat != svkDcmHeader::UNDEFINED ) {
-        this->CastDataFormat( castToFormat );
-    }
+    this->CopyMetaData(src, castToFormat); 
 }
 
 
@@ -154,6 +148,13 @@ void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataForma
 void svkImageData::ShallowCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
     this->Superclass::ShallowCopy( src );
+    this->CopyMetaData(src, castToFormat); 
+}
+
+/*!
+ */
+void svkImageData::CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
+{
     if( src->IsA("svkImageData") ) {
         svkImageData::SafeDownCast(src)->GetDcmHeader()->MakeDerivedDcmHeader(this->GetDcmHeader(), ""); 
     }
@@ -161,7 +162,9 @@ void svkImageData::ShallowCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataFo
     if( castToFormat != svkDcmHeader::UNDEFINED ) {
         this->CastDataFormat( castToFormat );
     }
+
 }
+
 
 
 /*!
@@ -1663,7 +1666,7 @@ void svkImageData::RemoveArrays( svkImageData* data )
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector loopVector = dimensionVector; 
 
-    int numCells = data->GetDcmHeader()->GetNumberOfCells( &dimensionVector );
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
     for ( int cellID = 0; cellID < numCells; cellID++) {
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID); 
