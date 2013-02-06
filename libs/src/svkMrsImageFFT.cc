@@ -403,7 +403,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     svkDcmHeader::DimensionVector indexVector = dimensionVector; 
 
     //  GetNumber of cells in the image:
-    int numCells = data->GetDcmHeader()->GetNumberOfCells( &dimensionVector ); 
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
 
     for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
