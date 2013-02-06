@@ -181,7 +181,7 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
     svkDcmHeader::DimensionVector indexVector = dimensionVector; 
 
     //  GetNumber of cells in the image:
-    int numCells = hdr->GetNumberOfCells( &dimensionVector ); 
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector ); 
      
     for (int cellID = 0; cellID < numCells; cellID++ ) { 
         //cout << "CELLID: " << cellID << endl;
