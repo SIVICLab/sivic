@@ -115,9 +115,9 @@ void svkCorrectDCOffset::CorrectDCOffset()
     //svkDcmHeader::PrintDimensionIndexVector(&channelDimensionVector);
     svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
 
-    int numVoxelsPerChannel = mrsData->GetDcmHeader()->GetNumberOfCells( &channelDimensionVector ); 
-    int numSpecPts         = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    int numCoils           = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+    int numVoxelsPerChannel = svkDcmHeader::GetNumberOfCells( &channelDimensionVector ); 
+    int numSpecPts          = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numCoils            = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
     string representation = mrsData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
@@ -141,7 +141,6 @@ void svkCorrectDCOffset::CorrectDCOffset()
         offset[1] = 0.0;    // DC offset imaginary
         numSampledFIDs = 0; 
 
-
         for( int cellID = 0; cellID < numVoxelsPerChannel; cellID++ ) {
 
             //  Get the dimensions for the single channel.  reset the channel index and get the 
@@ -150,6 +149,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
             svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
             int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID) );
+            //svkDcmHeader::PrintDimensionIndexVector(&indexVector);
 
             if ( this->WasKSpacePtSampled( spectrum, numSpecPts * numComponents  ) ) {
 
