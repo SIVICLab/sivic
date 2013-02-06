@@ -220,11 +220,16 @@ void svkDdfVolumeWriter::WriteFiles()
         //  time to a single value in this vector:
         svk4DImageData::SetDimensionVectorIndex(&dimensionVector, svkDcmHeader::TIME_INDEX, 0);
 
-        int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
+        //  Squash the slice frame to a single value.  The slice frame dimension will get looped 
+        //  over inside InitSpecData.  numFrames, will only account for other dimensions.  
+        svkDcmHeader::DimensionVector noSliceVector = dimensionVector; 
+        svk4DImageData::SetDimensionVectorIndex(&noSliceVector, svkDcmHeader::SLICE_INDEX, 0);
+
+        int numFrames = hdr->GetNumberOfFrames(&noSliceVector); 
 
         for (int frame = 0; frame < numFrames; frame++) {
 
-            fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
+            fileName = this->GetFileRootName(fileRoot, &noSliceVector, frame);
 
             ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
             ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
@@ -233,7 +238,7 @@ void svkDdfVolumeWriter::WriteFiles()
             }
 
             for (int timePt = 0; timePt < numTimePts; timePt++) {
-                hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
+                hdr->GetDimensionVectorIndexFromFrame(&noSliceVector, &loopVector, frame);
                 svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::TIME_INDEX, timePt);
                 svkDcmHeader::PrintDimensionIndexVector(&loopVector); 
                 this->InitSpecData(specData, &origDimensionVector, &loopVector); 
@@ -348,7 +353,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
                 //svkDcmHeader::PrintDimensionIndexVector(indexVector); 
 
                 int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(dimensionVector, indexVector); 
-                //cout << "CELLID: " << cellID << endl;
+                svkDcmHeader::PrintDimensionIndexVector(indexVector);
                 fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID) );
 
                 for (int i = 0; i < specPts; i++) {
@@ -358,9 +363,6 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
                     for (int j = 0; j < numComponents; j++) {
                         specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
                     }
-                    //if (i < 5) {
-                     //   cout << "check write: " << setw(14) << setprecision(2) << dataTuple[0] << " " << setw(14) << setprecision(2) << dataTuple[1] << endl;
-                    //}
                 }
             }
         }
