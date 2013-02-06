@@ -143,11 +143,7 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
 {
 
     vtkDebugMacro(<<"svkDICOMSCWRiter::WriteSlice()");
-    int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
-    int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
-    int slices = (this->GetImageDataInput(0)->GetExtent() ) [5]; 
-    int numCoils = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfCoils(); 
-    int numTimePts = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints(); 
+
     int specPts = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "DataPointColumns" ); 
     string representation = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "DataRepresentation" ); 
 
@@ -158,16 +154,15 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    int dataLengthPerCoil = cols * rows * slices * specPts * numComponents * numTimePts;
-    int dataLength = dataLengthPerCoil * numCoils;
-    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
-    int timePtOffset = cols * rows * slices;
+    svkDcmHeader::DimensionVector dimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector(); 
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector); 
+
+    int dataLength = numCells * specPts * numComponents ;
 
     float* specData = new float [ dataLength ];
     int index = 0;
 
     cout << "extent: " << *(this->GetImageDataInput(0)) << endl;
-    cout << "DCMRS WRITER: DATA LENGTH: " << dataLength << " " << cols << " " << rows << " " << slices << endl;
 
     vtkFloatArray* fa; 
     float* dataTuple = new float[numComponents];  
@@ -178,34 +173,22 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
         isTimeDomain = true; 
     }
 
-    for (int coilNum = 0; coilNum < numCoils; coilNum ++) {
-        for (int timePt = 0; timePt < numTimePts; timePt ++) {
-            for (int z = 0; z < slices; z++) {
-                for (int y = 0; y < rows; y++) {
-                    for (int x = 0; x < cols; x++) {
+    for (int cellID = 0; cellID < numCells; cellID++ ) { 
 
-                        int offset = ( cols * rows * z ) + ( cols * y ) + x
-                                     + ( timePt * timePtOffset )
-                                     + ( coilNum * coilOffset );
+        fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID ) );
+        
+        for (int i = 0; i < specPts; i++) {
+        
+            fa->GetTupleValue(i, dataTuple);  
 
-                        fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( offset ) );
+            //  According to DICOM Part 3 C.8.14.4.1, time domain data should be 
+            //  ordered from low to high frequency (or as the complex conjugate):
+            if (numComponents == 2 && isTimeDomain ) {
+                dataTuple[1] *= -1;     //invert the imaginary component
+            }
         
-                        for (int i = 0; i < specPts; i++) {
-        
-                            fa->GetTupleValue(i, dataTuple);  
-
-                            //  According to DICOM Part 3 C.8.14.4.1, time domain data should be 
-                            //  ordered from low to high frequency (or as the complex conjugate):
-                            if (numComponents == 2 && isTimeDomain ) {
-                                dataTuple[1] *= -1;     //invert the imaginary component
-                            }
-        
-                            for (int j = 0; j < numComponents; j++) {
-                                specData[ (offset * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
-                            }
-                        }
-                    }
-                }
+            for (int j = 0; j < numComponents; j++) {
+                specData[ (cellID * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
             }
         }
     }
