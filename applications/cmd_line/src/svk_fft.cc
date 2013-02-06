@@ -85,16 +85,17 @@ int main (int argc, char** argv)
     usemsg += "   -t                type   Target data type: \n";
     usemsg += "                                 2 = UCSF DDF      \n";
     usemsg += "                                 4 = DICOM_MRS (default)    \n";
-    usemsg += "   --spec                   transform spectral domain \n"; 
+    usemsg += "   --spec                   transform spectral domain only\n"; 
     usemsg += "   -h                       Print this help mesage. \n";  
     usemsg += "\n";  
-    usemsg += "Transforms specified domain.\n";  
+    usemsg += "Performs spatial/spectral FFTs.  If specified will transform only the specified domain.\n";  
     usemsg += "\n";  
 
 
     string inputFileName; 
     string outputFileName;
-    bool transformSpecDomain = false; 
+    bool transformSpecDomain = true; 
+    bool transformSpatialDomain = true; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -132,6 +133,7 @@ int main (int argc, char** argv)
                 break;
             case FLAG_TRANSFORM_SPEC_DOMAIN:
                 transformSpecDomain = true;
+                transformSpatialDomain = false; 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -155,10 +157,10 @@ int main (int argc, char** argv)
     if ( argc != 0 ||  inputFileName.length() == 0  
          || outputFileName.length() == 0 
          || ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF ) 
-         || ( transformSpecDomain == false )
-        ) {
-            cout << usemsg << endl;
-            exit(1); 
+         
+    ) {
+        cout << usemsg << endl;
+        exit(1); 
     }
 
     cout << "file name: " << inputFileName << endl;
@@ -201,6 +203,21 @@ int main (int argc, char** argv)
         imageFFT->Update();
         imageFFT->Delete();
     }
+
+    if (transformSpatialDomain ) { 
+
+        svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
+
+        spatialRFFT->SetInput( reader->GetOutput() );
+        spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+        spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+        spatialRFFT->SetPreCorrectCenter( true );
+        spatialRFFT->SetPostCorrectCenter( true );
+        spatialRFFT->Update();
+        spatialRFFT->Delete();
+
+    }
+
 
 
     // ===============================================  
