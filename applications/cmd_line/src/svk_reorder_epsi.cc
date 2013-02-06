@@ -75,7 +75,7 @@ int main (int argc, char** argv)
     usemsg += "svk_reorder_epsi -i input_file_name -o output_file_name [ -t output_data_type ]      \n"; 
     usemsg += "                  --lobes                 num                                        \n";
     usemsg += "                  --skip                  num                                        \n";
-    usemsg += "                  [ --first                 num ]                                    \n";
+    usemsg += "                [ --first                 num ]                                    \n";
     usemsg += "                  --axis                  axis                                       \n";
     usemsg += "                  --type                  type                                       \n";
     usemsg += "                                                                                     \n";  
