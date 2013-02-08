@@ -367,7 +367,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::ROW_INDEX, reorderedVoxels[1] - 1); 
     svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::SLICE_INDEX, reorderedVoxels[2] - 1); 
     svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints - 1); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0); 
+    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels - 1); 
     reorderedImageData->GetDcmHeader()->AddDimensionIndex( &outDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, numEPSIAcquisitions - 1 ); 
     svkDcmHeader::DimensionVector outLoopVector = outDimensionVector; 
 
@@ -438,13 +438,13 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         for (int dim = 0; dim < numDims; dim++) {
             svk4DImageData::SetDimensionVectorIndex(&outLoopVector, dim, 0); 
         }
-        int numChannels = svkDcmHeader::GetDimensionValue(&outLoopVector, svkDcmHeader::CHANNEL_INDEX); 
+        int numChannels = svkDcmHeader::GetDimensionValue(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
         int currentAcq; 
 
         currentAcq = svkDcmHeader::GetDimensionValue(&inputLoopVector, svkDcmHeader::EPSI_ACQ_INDEX); //testing
 
-        numChannels = 1; 
+        //numChannels = 1; 
 
         int currentEPSIPt = this->firstSample;   
 
@@ -516,7 +516,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  =================================================
     //  Redimension the meta data and set the new arrays:
     //  =================================================
-
+    //cout << *reorderedImageData << endl;
     data->DeepCopy( reorderedImageData ); 
 
     int numVoxelsOriginal[3];  
@@ -525,16 +525,18 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     numVoxelsOriginal[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     svkRawMapperUtils::RedimensionData( data, numVoxelsOriginal, &outDimensionVector, numFreqPts); 
 
+
     //  if interleaved EPSI, then interleave here. 
     if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
 
         //  combine interleaved data points here.  The spectra will be doubled in size, 
         //  but EPSI index will get dropped.so.. allocate a new data 
         //  set with 1/2 as many arrays, each with twice as many points.
-
         svkMrsImageData* dataTmp = svkMrsImageData::New();
+        //cout << *data << endl;
         dataTmp->DeepCopy( data ); 
         svkImageData::RemoveArrays( dataTmp ); 
+        //cout << *dataTmp << endl;
 
         //  Remove the EPSI dimension from the Dimension Index
         dataTmp->GetDcmHeader()->RemoveDimensionIndex( svkDcmHeader::EPSI_ACQ_INDEX ); 
@@ -543,6 +545,8 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         dataTmp->GetDcmHeader()->SetValue( "SpectralWidth", originalSweepWidth * 2 ); 
 
         //  Allocate arrays for target data set: 
+        //cout << "nrv: " << numReorderedVoxels/2 << endl;
+        //cout << *dataTmp << endl;
         for (int arrayNumber = 0; arrayNumber < numReorderedVoxels/2; arrayNumber++) {
             vtkDataArray* dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
             dataArray->SetNumberOfComponents( numComponents );
@@ -582,6 +586,12 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             int cellID0   = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&epsiDimensionVector, &loopVector0); 
             int cellID1   = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&epsiDimensionVector, &loopVector1); 
             int cellIDOut = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&outputDimensions, &outputLoopVector); 
+            //cout << "OD: " << cellID0 << endl;
+            //svkDcmHeader::PrintDimensionIndexVector(&outputDimensions);
+            //cout << "OLV: " << cellIDOut << endl;
+            //svkDcmHeader::PrintDimensionIndexVector(&outputLoopVector);
+
+            //cout << *dataTmp << endl;
 
             vtkFloatArray* epsiSpectrum0  
                     = static_cast<vtkFloatArray*>(svkMrsImageData::SafeDownCast(data)->GetSpectrum( cellID0 ) );
@@ -616,6 +626,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 
         }
 
+        //cout << *dataTmp << endl;
         data->DeepCopy( dataTmp ); 
 
     }

@@ -2841,9 +2841,11 @@ void svkDcmHeader::PrintDimensionIndexVector( svkDcmHeader::DimensionVector* dim
 {
     for (int i = 0; i < dimensionVector->size(); i++) {    
         //  Get the value for this index    
-        int dimLabel = static_cast<int>( (*(*dimensionVector)[i].begin()).first ); 
+        svkDcmHeader::DimensionIndexLabel label = (*(*dimensionVector)[i].begin()).first ; 
+        int dimLabel = static_cast<int>( label ); 
+        string dimLabelString = svkDcmHeader::DimensionIndexLabelToString( label ); 
         int dimValue = svkDcmHeader::GetDimensionValue( dimensionVector, i); 
-        cout << "DIMENSION INDEX LABEL: " << dimLabel << " => " << dimValue << endl;
+        cout << "DIMENSION INDEX LABEL: " << dimLabel << " => " << dimValue << " (" << dimLabelString << ")" << endl;
     }
 }
 
