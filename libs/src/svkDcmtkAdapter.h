@@ -250,6 +250,7 @@ class svkDcmtkAdapter: public svkDcmHeader
     private:
 
         //  Methods:
+        const DcmDictEntry* FindEntry( const char* name );
         DcmTag              GetDcmTag(const char* name);
         DcmTagKey           GetDcmTagKey(const char* name);
         DcmItem*            GetDcmItem(DcmItem* dataset, const char* seqName, int itemPosition);

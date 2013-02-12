@@ -1460,6 +1460,30 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
 
 
 /*!
+ *  Gets the DcmDictEntry for a given character string. First the foundEntries
+ *  map is searched, and if the entry is not found the dcmtk global dictionary
+ *  is searched. This is for performance reasons and should have the same
+ *  behavior as searching the dcmtk global dictionary every time.
+ *
+ *  NOTE: If the dictionary is changed while the application is running then
+ *        it is possible for the foundEntries map to become out of date.
+ *
+ *  \param name the name of the DcmDictEntry you wish to get
+ *
+ *  \return the DcmDictEntry of the input name
+ */
+const DcmDictEntry* svkDcmtkAdapter::FindEntry( const char* name )
+{
+    if ( this->foundEntries[name] == NULL  ) {
+    	// The hash created an entry on the null check, lets remove it
+    	this->foundEntries.erase(name);
+    	this->foundEntries[name] = privateDic->findEntry( name );
+    }
+    return this->foundEntries[name];
+}
+
+
+/*!
  *  Gets the DcmTagKey for a given character string
  *
  *  \param name the name of the DcmTagKey you wish to get
@@ -1475,12 +1499,7 @@ DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name)
 {
 
     DcmTag tag;
-    if ( this->foundEntries[name] == NULL  ) {
-    	// The hash created an entry on the null check, lets remove it
-    	this->foundEntries.erase(name);
-    	this->foundEntries[name] = privateDic->findEntry( name );
-    } 
-    const DcmDictEntry *dicEnt = this->foundEntries[name];
+    const DcmDictEntry *dicEnt = this->FindEntry(name);
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
     } else {
@@ -1506,12 +1525,7 @@ DcmTag svkDcmtkAdapter::GetDcmTag(const char* name)
 
     DcmTag tag;
 
-    if ( this->foundEntries[name] == NULL  ) {
-        	// The hash created an entry on the null check, lets remove it
-    	this->foundEntries.erase(name);
-    	this->foundEntries[name] = privateDic->findEntry( name );
-    }
-    const DcmDictEntry *dicEnt = this->foundEntries[name];
+    const DcmDictEntry *dicEnt = this->FindEntry(name);
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
         tag.setVR( dicEnt->getVR() );
