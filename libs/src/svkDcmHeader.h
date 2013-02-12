@@ -764,12 +764,14 @@ class svkDcmHeader: public vtkObject
         int                         numCoils;
         unsigned long               lastUpdateTime; 
         DcmDataOrderingDirection    dataSliceOrder;
+        DimensionVector             dimensionIndexVector; 
 
         void                        UpdateSpatialParams();
         void                        UpdateOrientation();
         void                        UpdatePixelSpacing();
         void                        UpdatePixelSize();
         void                        UpdateOrigin0();
+        void                        UpdateDimensionIndexVector(); 
 
         void                        InitPlanePositionMacro(
                                              double toplc[3], double voxelSpacing[3],

@@ -659,6 +659,7 @@ void svkDcmHeader::UpdateSpatialParams()
     this->UpdatePixelSize();
     this->UpdateOrigin0();
     this->UpdatePixelSpacing();
+    this->UpdateDimensionIndexVector();
 }
 
 
@@ -2803,6 +2804,20 @@ bool svkDcmHeader::IsDimensionDefined(svkDcmHeader::DimensionVector* dimensionVe
  */
 svkDcmHeader::DimensionVector  svkDcmHeader::GetDimensionIndexVector()
 {
+    if ( this->WasModified() ) {
+        this->UpdateSpatialParams();
+    }
+
+    // Lets make sure the DimensionIndexVector is Initialized
+    if( this->dimensionIndexVector.empty() ) {
+        this->UpdateDimensionIndexVector();
+    }
+    return this->dimensionIndexVector;
+}
+
+
+void  svkDcmHeader::UpdateDimensionIndexVector()
+{
     svkDcmHeader::DimensionVector dimensionIndexVector; 
     vtkstd::map < DimensionIndexLabel, int> indexRowMap;  
 
@@ -2833,7 +2848,7 @@ svkDcmHeader::DimensionVector  svkDcmHeader::GetDimensionIndexVector()
         svkDcmHeader::PrintDimensionIndexVector( &dimensionIndexVector ); 
     }
 
-    return dimensionIndexVector; 
+    this->dimensionIndexVector = dimensionIndexVector; 
 }
 
 

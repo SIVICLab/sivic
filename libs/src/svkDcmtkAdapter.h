@@ -259,9 +259,16 @@ class svkDcmtkAdapter: public svkDcmHeader
 
 
         //  Members:
-        svkDcmtkIod*        dcmFile; 
-        OFBool              replaceOldElements;
-        DcmDataDictionary*  privateDic;
+        svkDcmtkIod*                     dcmFile;
+        OFBool                           replaceOldElements;
+        DcmDataDictionary*               privateDic;
+        // For performance we store some entries from the dictionary.
+        map<string, const DcmDictEntry*> foundEntries;
+
+        // Static Members:
+        static bool         privateElementsAdded;
+
+
 
 };
 

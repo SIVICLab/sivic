@@ -46,6 +46,7 @@
 using namespace svk;
 
 
+bool svkDcmtkAdapter::privateElementsAdded = false;
 vtkCxxRevisionMacro(svkDcmtkAdapter, "$Rev$");
 vtkStandardNewMacro(svkDcmtkAdapter);
 
@@ -64,9 +65,19 @@ svkDcmtkAdapter::svkDcmtkAdapter()
     this->dcmFile = new svkDcmtkIod();
     this->replaceOldElements = OFFalse; 
 
-    this->SetPrivateDictionaryElements(); 
+    if( !svkDcmtkAdapter::privateElementsAdded ) {
+		this->SetPrivateDictionaryElements();
 
-    this->SetGEPrivateDictionaryElements(); 
+		this->SetGEPrivateDictionaryElements();
+		svkDcmtkAdapter::privateElementsAdded = true;
+    }
+
+    // The only way to get a pointer to the global dictionary is by locking it.
+	this->privateDic = &( dcmDataDict.wrlock() );
+
+	// We don't want to hold the  lock so lets unlock it.
+	dcmDataDict.unlock();
+
 
 }
 
@@ -1464,8 +1475,12 @@ DcmTagKey svkDcmtkAdapter::GetDcmTagKey(const char* name)
 {
 
     DcmTag tag;
-
-    const DcmDictEntry *dicEnt = privateDic->findEntry( name );
+    if ( this->foundEntries[name] == NULL  ) {
+    	// The hash created an entry on the null check, lets remove it
+    	this->foundEntries.erase(name);
+    	this->foundEntries[name] = privateDic->findEntry( name );
+    } 
+    const DcmDictEntry *dicEnt = this->foundEntries[name];
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
     } else {
@@ -1491,7 +1506,12 @@ DcmTag svkDcmtkAdapter::GetDcmTag(const char* name)
 
     DcmTag tag;
 
-    const DcmDictEntry *dicEnt = this->privateDic->findEntry( name );
+    if ( this->foundEntries[name] == NULL  ) {
+        	// The hash created an entry on the null check, lets remove it
+    	this->foundEntries.erase(name);
+    	this->foundEntries[name] = privateDic->findEntry( name );
+    }
+    const DcmDictEntry *dicEnt = this->foundEntries[name];
     if (dicEnt != NULL) {
         tag.set( dicEnt->getKey() );
         tag.setVR( dicEnt->getVR() );
