@@ -279,6 +279,11 @@ void sivicQuantificationWidget::EnableWidgets()
     if ( this->isEnabled == false ) {
 
         svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+    	char quantFileName[150];
+        this->GetApplication()->GetRegistryValue( 0, "defaults", "quant_file", quantFileName );
+        if( quantFileName != NULL && svkUtils::FilePathExists( quantFileName ) ) {
+        	this->mrsQuant->SetXMLFileName( quantFileName );
+        }
         this->mrsQuant->SetInput( data );
 
         vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 

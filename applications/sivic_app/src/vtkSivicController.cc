@@ -1758,6 +1758,7 @@ void vtkSivicController::SaveData()
     dlg->SetInitialFileName("E1S1I1");
     dlg->SetFileTypes("{{DICOM MR Spectroscopy} {.dcm}} {{UCSF Volume File} {.ddf}}");
     dlg->SetDefaultExtension("{{DICOM MR Spectroscoy} {.dcm}} {{UCSF Volume File} {.ddf}}");
+	dlg->RetrieveLastPathFromRegistry("lastPath");
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
         string filename = dlg->GetFileName(); 
@@ -1813,6 +1814,7 @@ void vtkSivicController::SaveMetaboliteMaps()
     //  kludge to differentiate between enhanced and multi-frame (dcm versus DCM)
     dlg->SetFileTypes("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
     dlg->SetDefaultExtension("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+	dlg->RetrieveLastPathFromRegistry("lastPath");
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
         string filename = dlg->GetFileName();
@@ -1872,6 +1874,7 @@ void vtkSivicController::SaveImageFromModel( const char* modelObjectName )
 		//  kludge to differentiate between enhanced and multi-frame (dcm versus DCM)
 		dlg->SetFileTypes("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
 		dlg->SetDefaultExtension("{{DICOM MRI} {.DCM}} {{DICOM Enhanced MRI} {.dcm}} {{UCSF Volume File} {.idf}}");
+	    dlg->RetrieveLastPathFromRegistry("lastPath");
 		dlg->Invoke();
 		if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
 			string filename = dlg->GetFileName();
@@ -1994,6 +1997,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
         dlg->SetDefaultExtension("{{DICOM Secondary Capture} {.dcm}} {{TIFF} {.tiff}} {{JPEG} {.jpeg}} {{PS} {.ps}} {{EPS} {.eps}} {{PDF} {.pdf}} {{SVG} {.svg}} {{All files} {.*}}");
     }
 #endif
+	dlg->RetrieveLastPathFromRegistry("lastPath");
     dlg->Invoke();
     if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
         string filename = dlg->GetFileName(); 

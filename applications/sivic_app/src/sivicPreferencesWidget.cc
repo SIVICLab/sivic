@@ -45,6 +45,7 @@ vtkCxxRevisionMacro( sivicPreferencesWidget, "$Revision$");
  */
 sivicPreferencesWidget::sivicPreferencesWidget()
 {
+    this->settings.push_back( "defaults/quant_file/Names the file to be used for metabolite quantification. Default is .SIVICQuantrc.xml in USER_HOME");
     this->settings.push_back( "defaults/sync_volumes/When set to ON (default) then all compatible volumes will be changed one switching volumes. (ON | OFF)");
     this->settings.push_back( "defaults/sync_components/Set to 'active' to update only active trace's component, otherwise update all traces. (active or all)");
     this->settings.push_back( "defaults/printer/Name of the printer to use when printing.");
