@@ -514,7 +514,6 @@ void svkIdfVolumeReader::InitMultiFrameFunctionalGroupsModule()
     this->InitSharedFunctionalGroupMacros();
     this->InitPerFrameFunctionalGroupMacros();
     delete iss; 
-    this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
 }
 
 

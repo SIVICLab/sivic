@@ -1426,8 +1426,6 @@ void svkDcmHeader::InitMultiFrameDimensionModule( svkDcmHeader::DimensionVector*
         it =   row.begin(); 
         svkDcmHeader::DimensionIndexLabel dimLabel = it->first;  
 
-        cout << "dimlabel: " << this->DimensionIndexLabelToString( dimLabel ) << endl;
-
         this->AddSequenceItemElement(
             "DimensionIndexSequence",
             indexCount,

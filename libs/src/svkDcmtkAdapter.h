@@ -246,6 +246,8 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    ReplaceOldElements( bool replaceElements );
 
+        virtual void    HandleTagNotFoundException( const svkTagNotFound& e);
+
 
     private:
 

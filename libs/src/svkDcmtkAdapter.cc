@@ -809,10 +809,12 @@ string svkDcmtkAdapter::GetStringValue(const char* name)
 {
     try {
         return this->dcmFile->getStringValue( GetDcmTagKey(name) ); 
+    } catch (const svkTagNotFound& e) {
+        this->HandleTagNotFoundException(e);
     } catch (const exception& e) {
         cerr << "ERROR: " << e.what() << endl;
-        return string(""); 
     }
+	return string("");
 
 }
 
@@ -829,10 +831,12 @@ string svkDcmtkAdapter::GetStringValue(const char* name, int pos)
 {
     try {
         return this->dcmFile->getStringValue( GetDcmTagKey(name), pos ); 
+    } catch (const svkTagNotFound& e) {
+        this->HandleTagNotFoundException(e);
     } catch (const exception& e) {
         cerr << "ERROR: " << e.what() << endl;
-        return string(""); 
     }
+	return string("");
 }
 
 
@@ -1151,7 +1155,9 @@ void svkDcmtkAdapter::CopySequence( svkDcmHeader* target, const char* seqName )
     DcmSequenceOfItems* seq;
     OFCondition status = this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
     if ( seq == NULL || status != EC_Normal ) {
-        cout << "WARNING: Sequence Not Found--" << seqName << endl;
+    	if( this->GetDebug() ) {
+			cout << "WARNING: Sequence Not Found--" << seqName << endl;
+    	}
     } else {
 		if (dynamic_cast<svkDcmtkAdapter*>(target)->dcmFile != NULL) {
 			DcmElement* newElement;
@@ -1181,7 +1187,9 @@ void svkDcmtkAdapter::ClearSequence(const char* seqName)
     DcmSequenceOfItems* seq; 
     OFCondition status = this->dcmFile->getDataset()->findAndGetSequence(  GetDcmTagKey( seqName ), seq, true);
     if ( seq == NULL || status != EC_Normal ) {
-        cout << "Sequence Not Found" << seqName << endl;
+    	if( this->GetDebug() ) {
+			cout << "Sequence Not Found" << seqName << endl;
+    	}
     } else {
         seq->clear();
     }
@@ -1574,7 +1582,9 @@ DcmSequenceOfItems* svkDcmtkAdapter::GetDcmSequence(const char* seqName)
     DcmSequenceOfItems* sequence = NULL; 
     OFCondition status = this->dcmFile->getDataset()->findAndGetSequence( GetDcmTagKey(seqName), sequence, true ); 
     if ( sequence == NULL || status != EC_Normal ) {
-        cout << "Sequence Not Found" << seqName << endl;
+    	if( this->GetDebug() ) {
+			cout << "Sequence Not Found" << seqName << endl;
+    	}
     }
     
     return sequence; 
@@ -1755,4 +1765,16 @@ void svkDcmtkAdapter::ReplaceOldElements( bool replaceOldElements )
     } else {
         this->replaceOldElements = OFFalse; 
     }
+}
+
+
+/*!
+ *  Some exceptions are acceptable so lets filter those out. If in debug mode
+ *  report all exceptions.
+ */
+void svkDcmtkAdapter::HandleTagNotFoundException( const svkTagNotFound& e )
+{
+	if( this->GetDebug() ) {
+        cout << "EXCEPTION: " << e.what() << endl;
+	}
 }
