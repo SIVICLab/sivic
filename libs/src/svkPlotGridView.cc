@@ -91,7 +91,7 @@ svkPlotGridView::svkPlotGridView()
     this->SetProp( svkPlotGridView::VOL_SELECTION, NULL );
     this->SetProp( svkPlotGridView::PLOT_LINES, this->plotGrids[0]->GetPlotGridActor()  );
 
-    svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+    svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
 	vtkActor2D* metActor = vtkActor2D::New();
 	this->SetProp( svkPlotGridView::OVERLAY_TEXT, metActor );
@@ -387,7 +387,7 @@ void svkPlotGridView::RemoveInput(int index)
             if( ren->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE )) ) {
                 ren->RemoveActor(this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
             }
-            svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+            svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
             this->SetProp( svkPlotGridView::OVERLAY_IMAGE, overlayActor );
             overlayActor->InterpolateOff();
             overlayActor->Delete();
@@ -1018,7 +1018,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         this->windowLevel->Update( );
 
 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(this->windowLevel->GetOutput());
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetInput(this->windowLevel->GetOutput());
         bool isOverlayImageOn = this->IsPropOn(svkPlotGridView::OVERLAY_IMAGE); 
         if( this->GetRenderer( svkPlotGridView::PRIMARY)->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) ) ) {
             this->GetRenderer( svkPlotGridView::PRIMARY)->RemoveActor( this->GetProp( svkPlotGridView::OVERLAY_IMAGE) );
@@ -1097,7 +1097,7 @@ void svkPlotGridView::UpdateMetaboliteImage(int* tlcBrc)
             }
         }
     }
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]);
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetDisplayExtent(tlcIndex[0], brcIndex[0], tlcIndex[1], brcIndex[1], tlcIndex[2], brcIndex[2]);
     this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
 }
 
@@ -1444,7 +1444,7 @@ int*  svkPlotGridView::GetVolumeIndexArray( )
 void svkPlotGridView::SetOverlayOpacity( double opacity )
 {
     if( this->dataVector[MET] != NULL ) {
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( opacity );
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( opacity );
     }
 }
 

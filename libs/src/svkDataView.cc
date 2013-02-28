@@ -234,16 +234,6 @@ void svkDataView::TurnPropOn(int propIndex)
     if ( propIndex < this->propCollection.size() ) {
         if (this->propCollection[propIndex] != NULL) { 
             this->propCollection[propIndex]->VisibilityOn();
-            // We need to force a render after the change-- not sure why
-            this->propCollection[propIndex]->Modified();
-            for( vector<vtkRenderer*>::iterator iter = this->renCollection.begin();
-                iter != this->renCollection.end(); ++iter) {
-                if( (*iter) != NULL ) {
-                    (*iter)->Render();
-                    (*iter)->Modified();
-                }
-            }
- 
         }
     }
 }
@@ -256,15 +246,6 @@ void svkDataView::TurnPropOff(int propIndex)
     if ( propIndex < this->propCollection.size() ) {
         if (this->propCollection[propIndex] != NULL) { 
             this->propCollection[propIndex]->VisibilityOff();
-            // We need to force a render after the change-- not sure why
-            this->propCollection[propIndex]->Modified();
-            for( vector<vtkRenderer*>::iterator iter = this->renCollection.begin();
-                iter != this->renCollection.end(); ++iter) {
-                if( (*iter) != NULL ) {
-                    (*iter)->Render();
-                    (*iter)->Modified();
-                }
-            }
         }
     }
 }

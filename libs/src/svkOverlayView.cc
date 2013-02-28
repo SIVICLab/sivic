@@ -102,27 +102,27 @@ svkOverlayView::svkOverlayView()
 
     this->SetProp( svkOverlayView::VOL_SELECTION, NULL );
 
-    svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+    svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::AXIAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
-    svkOpenGLOrientedImageActor* overlayActorBack = svkOpenGLOrientedImageActor::New();
+    svkOrientedImageActor* overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::AXIAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
-    overlayActor = svkOpenGLOrientedImageActor::New();
+    overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::CORONAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
-    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::CORONAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
-    overlayActor = svkOpenGLOrientedImageActor::New();
+    overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
-    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
@@ -851,12 +851,12 @@ int* svkOverlayView::HighlightSelectionVoxels()
 void svkOverlayView::SetOverlayOpacity( double opacity ) 
 {
     this->overlayOpacity = opacity;
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->SetOpacity(opacity);  
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->SetOpacity(opacity);   
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->SetOpacity(opacity);
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->SetOpacity(opacity);
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->SetOpacity(opacity) ;
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->SetOpacity(opacity) ;
 }
 
 
@@ -1154,30 +1154,30 @@ void svkOverlayView::SetSliceOverlay() {
         sagittalExtent[ sagittalIndex *2 ] = overlaySliceSagittal; 
         sagittalExtent[ sagittalIndex *2 + 1 ] = overlaySliceSagittal; 
 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
                                )->SetDisplayExtent( axialExtent );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
                                )->SetDisplayExtent( axialExtent );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
                                )->SetDisplayExtent( coronalExtent );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
                                )->SetDisplayExtent( coronalExtent );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
                                )->SetDisplayExtent( sagittalExtent );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
                                )->SetDisplayExtent( sagittalExtent );
 
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
-                             )->SetUserTransform( transformFrontAxial );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+                             )->SetUserTransform(transformFrontAxial );
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
                              )->SetUserTransform( transformBackAxial );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
                              )->SetUserTransform( transformFrontCoronal );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
                              )->SetUserTransform( transformBackCoronal );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
                              )->SetUserTransform( transformFrontSagittal );
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
                              )->SetUserTransform( transformBackSagittal );
 
         transformFrontAxial->Delete();
@@ -1222,32 +1222,32 @@ void svkOverlayView::SetupOverlay()
     // We need to kill the old actors, window levelers, and the color transfer otherwise update cause problems
     // (seg faults in vtkLookupTable) when switching from a larger dataset to a smaller dataset
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ) );
-    svkOpenGLOrientedImageActor* overlayActor = svkOpenGLOrientedImageActor::New();
+    svkOrientedImageActor* overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::AXIAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ) );
-    svkOpenGLOrientedImageActor* overlayActorBack = svkOpenGLOrientedImageActor::New();
+    svkOrientedImageActor* overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::AXIAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ) );
-    overlayActor = svkOpenGLOrientedImageActor::New();
+    overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::CORONAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ) );
-    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::CORONAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
 
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ) );
-    overlayActor = svkOpenGLOrientedImageActor::New();
+    overlayActor = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT, overlayActor );
     overlayActor->Delete();
 
     this->GetRenderer( svkOverlayView::PRIMARY )->RemoveViewProp( this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ) );
-    overlayActorBack = svkOpenGLOrientedImageActor::New();
+    overlayActorBack = svkOrientedImageActor::New();
     this->SetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK, overlayActorBack );
     overlayActorBack->Delete();
     
@@ -1300,17 +1300,17 @@ void svkOverlayView::SetupOverlay()
     this->windowLevelerSagittal->SetOutputFormatToRGBA();
     this->windowLevelerSagittal->Update();
 
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT )
                                    )->SetInput( this->windowLevelerAxial->GetOutput() );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK )
                                    )->SetInput( this->windowLevelerAxial->GetOutput() );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT )
                                    )->SetInput( this->windowLevelerCoronal->GetOutput() );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK )
                                    )->SetInput( this->windowLevelerCoronal->GetOutput() );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT )
                                    )->SetInput( this->windowLevelerSagittal->GetOutput() );
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK )
                                    )->SetInput( this->windowLevelerSagittal->GetOutput() );
 
     this->SetInterpolationType( this->interpolationType );
@@ -1417,24 +1417,24 @@ void svkOverlayView::SetInterpolationType( int interpolationType )
         if( this->interpOverlay == dataVector[OVERLAY] ) {
             this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
         }
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOff();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOff();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOff();
     } else if (interpolationType == LINEAR) {
         this->interpolationType = LINEAR; 
         // Check to see if the current overlay is interpolated already
         if( this->interpOverlay == dataVector[OVERLAY] ) {
             this->SetInput( svkMriImageData::SafeDownCast(sincInterpolation->GetInput()), OVERLAY );
         }
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
-        svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_BACK ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::CORONAL_OVERLAY_BACK ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_FRONT ))->InterpolateOn();
+        svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::SAGITTAL_OVERLAY_BACK ))->InterpolateOn();
     } else if (interpolationType == SINC) {
         this->interpolationType = SINC; 
         if( this->interpOverlay != dataVector[OVERLAY] ) {
@@ -1553,7 +1553,7 @@ void svkOverlayView::SetLUT( svkLookupTable::svkLookupTableType type )
     vtkScalarBarActor::SafeDownCast(this->GetProp( svkOverlayView::COLOR_BAR )
                                     )->SetLookupTable( this->colorTransfer );
 
-    svkOpenGLOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->Modified( );    
+    svkOrientedImageActor::SafeDownCast(this->GetProp( svkOverlayView::AXIAL_OVERLAY_FRONT ))->Modified( );
 
     this->Refresh();
 }
@@ -2079,7 +2079,13 @@ void svkOverlayView::AlignCamera()
     this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL_OUTLINE) );
     this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL) );
     this->GetRenderer( svkOverlayView::PRIMARY)->RemoveViewProp( this->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE) );
+    
+    // For consistency with VTK6 we remove the clipping planes, reset the camera, then put them back.
+    if( vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID )) && vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID ))->GetMapper()) {
+		vtkActor::SafeDownCast( this->GetProp( svkOverlayView::PLOT_GRID ))->GetMapper()->RemoveAllClippingPlanes();
+    }
     this->imageViewer->ResetCamera();
+    this->GenerateClippingPlanes();
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL_OUTLINE) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_CORONAL) );

@@ -234,6 +234,12 @@ ADD_LIBRARY(
     svkMrsApodizationFilter.cc
 )
 
+SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)
+
+IF (VTK_MAJOR_VERSION EQUAL 5 AND VTK_MINOR_VERSION LESS 10)
+    SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkOpenGLOrientedImageActor.cc)
+ENDIF (VTK_MAJOR_VERSION EQUAL 5 AND VTK_MINOR_VERSION LESS 10)
+
 IF( BUILD_VIZ_LIBRARY )
     ADD_LIBRARY(
         svkviz
@@ -256,9 +262,8 @@ IF( BUILD_VIZ_LIBRARY )
         svkImageViewer2.cc
         svkImageMapToWindowLevelColors.cc
         svkImageMapToColors.cc
-        svkOpenGLOrientedImageActor.cc
-        svkOrientedImageActorFactory.cc
         svkLabeledDataMapper.cc
+        ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )
 

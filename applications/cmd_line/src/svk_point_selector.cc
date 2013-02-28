@@ -109,7 +109,7 @@ struct globalVariables {
 	vector<vtkCornerAnnotation*>         annotations;
 	vector<svkImageMapToColors*>         colorMappers;
 	vector<svkImageViewer2*>             imageViewers;
-	vector<svkOpenGLOrientedImageActor*> overlayActors;
+	vector<svkOrientedImageActor*> overlayActors;
 	vector<vtkRenderer*>                 renderers;
 	vector<vtkTransform*>                transformers;
 	vtkSphereSource*                     sphere;
@@ -322,7 +322,7 @@ int main ( int argc, char** argv )
 		if( globalVars.overlayData != NULL ) {
 			globalVars.transformers.push_back(vtkTransform::New());
 			globalVars.colorMappers[i]->SetInput(globalVars.overlayData);
-			globalVars.overlayActors.push_back( svkOpenGLOrientedImageActor::New() );
+			globalVars.overlayActors.push_back( svkOrientedImageActor::New() );
 			globalVars.overlayActors[i]->SetInput(globalVars.colorMappers[i]->GetOutput());
 			globalVars.overlayActors[i]->SetUserTransform( globalVars.transformers[i] );
 			globalVars.overlayActors[i]->InterpolateOn();

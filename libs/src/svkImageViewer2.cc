@@ -70,9 +70,9 @@ svkImageViewer2::svkImageViewer2()
     this->coronalSlice  = 0;
     this->sagittalSlice = 0;
 
-    this->axialImageActor = svkOpenGLOrientedImageActor::New();
-    this->coronalImageActor = svkOpenGLOrientedImageActor::New();
-    this->sagittalImageActor = svkOpenGLOrientedImageActor::New();
+    this->axialImageActor = svkOrientedImageActor::New();
+    this->coronalImageActor = svkOrientedImageActor::New();
+    this->sagittalImageActor = svkOrientedImageActor::New();
 
     this->data = NULL;
 
@@ -689,6 +689,8 @@ void svkImageViewer2::SetInteractorStyle( vtkInteractorStyleImage* style )
         vtkCommand::ResetWindowLevelEvent, cbk);
       this->InteractorStyle->AddObserver(
         vtkCommand::EndWindowLevelEvent, cbk);
+      this->InteractorStyle->AddObserver(
+        vtkCommand::InteractionEvent, cbk);
       cbk->Delete();
 }
 
@@ -714,9 +716,9 @@ svkDcmHeader::Orientation svkImageViewer2::GetOrientation( )
 /*!
  *
  */
-svkOpenGLOrientedImageActor* svkImageViewer2::GetImageActor( svkDcmHeader::Orientation actorOrientation )
+svkOrientedImageActor* svkImageViewer2::GetImageActor( svkDcmHeader::Orientation actorOrientation )
 {
-    svkOpenGLOrientedImageActor* actor = NULL;
+    svkOrientedImageActor* actor = NULL;
     actorOrientation = (actorOrientation == svkDcmHeader::UNKNOWN_ORIENTATION ) ?
                                 this->GetInput()->GetDcmHeader()->GetOrientationType() : actorOrientation;
     switch ( actorOrientation ) {

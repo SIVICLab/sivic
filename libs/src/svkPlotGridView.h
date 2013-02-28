@@ -50,7 +50,6 @@
 #include <vtkSelectVisiblePoints.h>
 #include <svkImageClip.h>
 #include <vtkImageActor.h>
-#include <svkOpenGLOrientedImageActor.h>
 #include <vtkTextProperty.h>
 #include <vtkDoubleArray.h>
 #include <vtkExtractEdges.h>
@@ -72,6 +71,7 @@
 #include <vtkPolyDataPointSampler.h>
 #include <svkDetailedPlotDirector.h>
 #include <svkMrsTopoGenerator.h>
+#include <svkOrientedImageActor.h>
 
 #include <vector>
 

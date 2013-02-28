@@ -108,8 +108,7 @@
 #include <svkMrsTopoGenerator.h>
 #include <svkMultiCoilPhase.h>
 #include <svkObliqueReslice.h>
-#include <svkOpenGLOrientedImageActor.h>
-#include <svkOrientedImageActorFactory.h>
+#include <svkOrientedImageActor.h>
 #include <svkOverlaySelector.h>
 #include <svkOverlayViewController.h>
 #include <svkOverlayView.h>
@@ -268,9 +267,7 @@ int main ( int argc, char** argv )
     obj->Delete();
     obj = svkObliqueReslice::New();
     obj->Delete();
-    obj = svkOpenGLOrientedImageActor::New();
-    obj->Delete();
-    obj = svkOrientedImageActorFactory::New();
+    obj = svkOrientedImageActor::New();
     obj->Delete();
     obj = svkOverlaySelector::New();
     obj->Delete();

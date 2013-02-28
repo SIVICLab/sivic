@@ -429,7 +429,7 @@ double svkMetaboliteMap::GetLineWidth( float* specPtr, int startPt, int endPt )
     //  Calculate Peak Max Ht and position.  then get position when intensity is 
     //  1/2 that.  
 
-    int peakPosPt; 
+    int peakPosPt = startPt; 
     double peakHt = specPtr[ 2 * startPt ];
     for ( int pt = startPt; pt <= endPt; pt ++ ) {
         if ( specPtr[2*pt] > peakHt ) {
@@ -441,7 +441,7 @@ double svkMetaboliteMap::GetLineWidth( float* specPtr, int startPt, int endPt )
     double halfHeight = peakHt/2.;
 
     //  Get fist 1/2 height point
-    int fwhmPt1; 
+    int fwhmPt1 = startPt; 
     for ( int pt = startPt; pt <= peakPosPt; pt ++ ) {
         if ( specPtr[2*pt] > halfHeight ) {
             fwhmPt1 = pt; 
@@ -449,7 +449,7 @@ double svkMetaboliteMap::GetLineWidth( float* specPtr, int startPt, int endPt )
         }
     }
 
-    int fwhmPt2; 
+    int fwhmPt2 = endPt; 
     for ( int pt = peakPosPt; pt <= endPt; pt ++ ) {
         if ( specPtr[2*pt] < halfHeight ) {
             fwhmPt2 = pt; 
@@ -486,17 +486,17 @@ float svkMetaboliteMap::GetWidthInHz( int startPt, int endPt)
 double svkMetaboliteMap::GetMagPeakHt( float* specPtr, int startPt, int endPt)
 {
 
-    double magPeakHt  = pow( specPtr[2 * startPt], 2);
+    float magPeakHt  = pow( specPtr[2 * startPt], 2);
     magPeakHt += pow( specPtr[2 * startPt + 1], 2);
-    magPeakHt = pow( magPeakHt, 0.5);
+    magPeakHt = pow( magPeakHt, 0.5f);
 
-    double magPeakHtTmp;
+    float magPeakHtTmp = magPeakHt;
     
     for ( int pt = startPt; pt <= endPt; pt++ ) {
 
         magPeakHtTmp  = pow( specPtr[ 2 * pt], 2);
         magPeakHtTmp += pow( specPtr[ 2 * pt + 1], 2);
-        magPeakHtTmp  = pow(magPeakHtTmp, 0.5);
+        magPeakHtTmp  = pow(magPeakHtTmp, 0.5f);
 
         if ( magPeakHtTmp > magPeakHt ) {
             magPeakHt = magPeakHtTmp;

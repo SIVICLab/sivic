@@ -356,7 +356,7 @@ void svkOverlayViewController::CreateDataVisualization( )
     this->myRenderWindow->SetNumberOfLayers(2);
     this->view->GetRenderer(svkOverlayView::MOUSE_LOCATION)->SetLayer(1);
     this->view->GetRenderer(svkOverlayView::PRIMARY)->SetLayer(0);
-    this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
+    this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
     this->view->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );
      
     this->rwi->AddObserver(vtkCommand::MouseMoveEvent, cursorLocationCB);
@@ -368,6 +368,7 @@ void svkOverlayViewController::CreateDataVisualization( )
     colorOverlayStyle->AddObserver(vtkCommand::WindowLevelEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::EndWindowLevelEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::ResetWindowLevelEvent, colorOverlayCB);
+    colorOverlayStyle->AddObserver(vtkCommand::InteractionEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::PickEvent, colorOverlayCB);
     colorOverlayStyle->AddObserver(vtkCommand::StartPickEvent, colorOverlayCB);
     
@@ -589,7 +590,7 @@ void svkOverlayViewController::UseSelectionStyle()
             this->myRenderWindow->SetNumberOfLayers(2);
             this->view->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );
         }
-        this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOn();
+        this->view->GetRenderer(svkOverlayView::PRIMARY)->BackingStoreOff();
         
       
         // We are going to turn the sat bands off if they were on just for resetting the camera

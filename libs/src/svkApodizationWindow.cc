@@ -83,7 +83,7 @@ void svkApodizationWindow::GetLorentzianWindow( vtkFloatArray* window,  float fw
 
         for( int i = 0; i < numPoints; i++ ) {
             // NOTE: fabs is used here in case we want to alter the center of the window in the future.
-            float value = exp( -fwhh * vtkMath::Pi()* fabs( dt * i ) );
+            float value = exp( -fwhh * vtkMath::Pi()* fabsf( dt * i ) );
             for( int j = 0; j < numComponents; j++ ) {
 				window->SetComponent( i, j, value );
             }

@@ -59,7 +59,9 @@
 
 #include <svkImageMapToWindowLevelColors.h>
 #include <svkImageData.h>
-#include <svkOpenGLOrientedImageActor.h>
+#include <svkOrientedImageActor.h>
+#include <vtkRenderer.h>
+#include <vtkCollectionIterator.h>
 
 
 namespace svk {
@@ -89,7 +91,7 @@ class svkImageViewer2 : public vtkImageViewer2
         virtual void SetColorWindow(double s);
         virtual void                      SetOrientation( svkDcmHeader::Orientation orientation );
         virtual svkDcmHeader::Orientation GetOrientation( );
-        virtual svkOpenGLOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
+        virtual svkOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
         virtual svkImageData* GetInput();
         virtual bool          AreOrthogonalImagesOn();
         void SetInteractorStyle( vtkInteractorStyleImage* style );
@@ -114,9 +116,9 @@ class svkImageViewer2 : public vtkImageViewer2
         void InitializeOrthogonalActors();
 
         void                  InstallPipeline();
-        svkOpenGLOrientedImageActor*             axialImageActor;
-        svkOpenGLOrientedImageActor*             coronalImageActor;
-        svkOpenGLOrientedImageActor*             sagittalImageActor;
+        svkOrientedImageActor*             axialImageActor;
+        svkOrientedImageActor*             coronalImageActor;
+        svkOrientedImageActor*             sagittalImageActor;
 
         //svkOpenGLOrientedImageActor*             orthImageActor1;
         //svkOpenGLOrientedImageActor*             orthImageActor2;

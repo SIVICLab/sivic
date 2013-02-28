@@ -40,57 +40,29 @@
  */
 
 
-#ifndef SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
-#define SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
+#ifndef SVK_ORIENTED_IMAGE_ACTOR
+#define SVK_ORIENTED_IMAGE_ACTOR
 
+#if (VTK_MAJOR_VERSION == 5 && VTK_MINOR_VERSION < 10 ) 
+#include <svkOpenGLOrientedImageActor.h>
+#else
+#include <svkImageActor.h>
+#endif
 
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkImageMapToWindowLevelColors.h>
-#include <vtkInstantiator.h>
-#include <svkMriImageData.h>
-
-
+/*
+ * This header simply manages which version of the svkImageActor to use.
+ * Starting with version 5.10 the image actor classes were significantly
+ * reworked and not backwards compatible.
+ */
 namespace svk {
 
-
-
-/*! 
- *  This class is designed to be a an svk replacement for vtkImageMapToWindowLevelColors.
- *  The only differences are that this class will instantiate an svkImageData
- *  object for output, and it will copy the dcos of the input on GetOutput().
- */
-class svkImageMapToWindowLevelColors : public vtkImageMapToWindowLevelColors
-{
-
-    public:
-
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageMapToWindowLevelColors, vtkImageMapToWindowLevelColors );
-   
-        static svkImageMapToWindowLevelColors*  New();  
-        
-        svkImageData*                   GetImageDataInput(int port);
-
-
-
-    protected:        
-        svkImageMapToWindowLevelColors();
-        ~svkImageMapToWindowLevelColors();
-        int RequestData(
-          vtkInformation *request,
-          vtkInformationVector **inputVector,
-          vtkInformationVector *outputVector);
-
-        //virtual int FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info);
-        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info);
-
-
-};
-
+#if (VTK_MAJOR_VERSION == 5 && VTK_MINOR_VERSION < 10 ) 
+typedef svkOpenGLOrientedImageActor svkOrientedImageActor;
+#else
+typedef svkImageActor svkOrientedImageActor;
+#endif
 
 }   //svk
 
 
-#endif //SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
+#endif //SVK_ORIENTED_IMAGE_ACTOR

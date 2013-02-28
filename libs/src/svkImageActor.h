@@ -40,57 +40,58 @@
  */
 
 
-#ifndef SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
-#define SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
+#ifndef SVK_IMAGE_ACTOR
+#define SVK_IMAGE_ACTOR
 
 
+#include <svkImageData.h>
+#include <map>
+#include <vtkObject.h>
+#include <string>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkDataObject.h>
-#include <vtkImageMapToWindowLevelColors.h>
-#include <vtkInstantiator.h>
-#include <svkMriImageData.h>
+#include <vtkObjectBase.h>
+#include <vtkTransform.h>
+#include <vtkImageActor.h>
+#include <vtkCallbackCommand.h>
+#include <vtkImageProperty.h>
 
+#include <svkImageData.h>
 
 namespace svk {
 
 
+using std::string;
+using std::map;
+
 
 /*! 
- *  This class is designed to be a an svk replacement for vtkImageMapToWindowLevelColors.
- *  The only differences are that this class will instantiate an svkImageData
- *  object for output, and it will copy the dcos of the input on GetOutput().
+ * vtkImageActor assumes axis alignment so to support oblique data this class
+ * was created.
+ *
+ * This class uses the input image's dcos to apply additional transform to the
+ * vtkImageActor. This transform makes the actor render in the correct
+ * real-world (LPS) coordinate system.
  */
-class svkImageMapToWindowLevelColors : public vtkImageMapToWindowLevelColors
+class svkImageActor : public vtkImageActor
 {
 
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageMapToWindowLevelColors, vtkImageMapToWindowLevelColors );
+        vtkTypeRevisionMacro( svkImageActor,vtkImageActor );
    
-        static svkImageMapToWindowLevelColors*  New();  
+        static svkImageActor*  New();
+        void ComputeMatrix();
+
+    protected: 
+
+        svkImageActor();
+        ~svkImageActor();
         
-        svkImageData*                   GetImageDataInput(int port);
-
-
-
-    protected:        
-        svkImageMapToWindowLevelColors();
-        ~svkImageMapToWindowLevelColors();
-        int RequestData(
-          vtkInformation *request,
-          vtkInformationVector **inputVector,
-          vtkInformationVector *outputVector);
-
-        //virtual int FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info);
-        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info);
-
-
 };
 
 
 }   //svk
 
 
-#endif //SVK_IMAGE_MAP_TO_WINDOW_LEVEL_COLORS_H
+#endif //SVK_IMAGE_ACTOR
