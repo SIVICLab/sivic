@@ -176,37 +176,48 @@ int main (int argc, char** argv)
     refReader->Update(); 
     svkMrsImageData* refData = svkMrsImageData::SafeDownCast( refReader->GetOutput() ); 
 
+    svkDcmHeader::DimensionVector fullDimensionVector = refData->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector channelDimensionVector = fullDimensionVector;  
+    //  analyze one channel at a time: 
+    svkDcmHeader::SetDimensionValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+    svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
 
-    //Only DDF, so only 1 channel of data:
-    int cols               = refData->GetDcmHeader()->GetIntValue( "Columns" );
-    int rows               = refData->GetDcmHeader()->GetIntValue( "Rows" );
-    int slices             = refData->GetDcmHeader()->GetNumberOfSlices();
-    int numVoxels          = cols * rows * slices;
-    int numTimePts         = refData->GetDcmHeader()->GetNumberOfTimePoints();
-    int numVoxelsPerVolume = numVoxels * numTimePts;
-    int numSpecPts         = refData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numVoxelsPerChannel = svkDcmHeader::GetNumberOfCells( &channelDimensionVector ); 
+    int numSpecPts          = refData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numChannels         = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
-    string representation = refData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
+    string representation   = refData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
     if (representation.compare("COMPLEX") == 0) {
         numComponents = 2;
     }
 
-    vtkFloatArray* refSpectrum; 
-    vtkFloatArray* testSpectrum; 
-    float* refPtr; 
-    float* testPtr; 
+    //  diff each coil separately
+    for ( int channel = 0; channel < numChannels; channel++ ) {
+        cout << "diff channel " << channel << endl;
 
-    for( int voxelId = 0; voxelId < numVoxelsPerVolume; voxelId++ ) {
+        for( int cellID = 0; cellID < numVoxelsPerChannel; cellID++ ) {
 
-        refSpectrum = static_cast< vtkFloatArray* >( refData->GetSpectrum( voxelId) );
-        testSpectrum = static_cast< vtkFloatArray* >( testData->GetSpectrum( voxelId) );
-        refPtr = refSpectrum->GetPointer(0);
-        testPtr = testSpectrum->GetPointer(0);
+            //  Get the dimensions for the single channel.  reset the channel index and get the 
+            //  actual cellID for this channel 
+            svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
+            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, channel);
+            int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
 
-        for (int i = 0; i < numSpecPts * numComponents; i++) {
+            vtkFloatArray* refSpectrum; 
+            vtkFloatArray* testSpectrum; 
+            float* refPtr; 
+            float* testPtr; 
 
-            testPtr[i] = testPtr[i] - refPtr[i]; 
+            refSpectrum = static_cast< vtkFloatArray* >( refData->GetSpectrum( absoluteCellID) );
+            testSpectrum = static_cast< vtkFloatArray* >( testData->GetSpectrum( absoluteCellID) );
+            refPtr = refSpectrum->GetPointer(0);
+            testPtr = testSpectrum->GetPointer(0);
+
+            for (int i = 0; i < numSpecPts * numComponents; i++) {
+    
+                testPtr[i] = testPtr[i] - refPtr[i]; 
+            }
         }
     }
 

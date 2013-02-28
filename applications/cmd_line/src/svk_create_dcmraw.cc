@@ -243,6 +243,7 @@ int main (int argc, char** argv)
         }
     
         rawWriter->Delete(); 
+
     }
 
     return 0; 
@@ -318,13 +319,13 @@ string GetHash( string rawFileName, unsigned char* sha1Digest )
         inputStream->seekg(0, ios::end);
 
         // get-ptr position is now same as file size
-        ios::pos_type fileSize = inputStream->tellg();  
-        cout << "FILE SIZE = " << static_cast<int>(fileSize) << endl;
+        streampos fileSize = inputStream->tellg();  
+        cout << "FILE SIZE = " << fileSize << endl;
 
-        void* fileBuffer = new char[static_cast<int>(fileSize)];
+        void* fileBuffer = new char[ fileSize ];
         inputStream->seekg(0, ios::beg);
         inputStream->read( static_cast<char*>(fileBuffer), fileSize);
-
+ 
         SHA1( static_cast<unsigned char*>(fileBuffer), fileSize,  sha1Digest);
 
         char buf[3]; 
@@ -333,6 +334,7 @@ string GetHash( string rawFileName, unsigned char* sha1Digest )
             sha1DigestString.append(buf); 
         }
         printf(" \n");
+        delete [] fileBuffer; 
 
    } catch (ifstream::failure e) {
         cout << "ERROR: Exception opening/reading file " << rawFileName << " => " << e.what() << endl;
