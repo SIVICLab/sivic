@@ -343,6 +343,8 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
 
     bool elementsExist = true; 
     int elementID = 0; 
+    bool denominatorFound = false;
+    bool numeratorFound = false;
     while ( elementsExist ) {
 
         vtkXMLDataElement* nestedXML = ratioXML->GetNestedElement(elementID); 
@@ -362,11 +364,13 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
                 mathN->Update();
                 numeratorImage->DeepCopy( mathN->GetOutput() ); 
                 mathN->SetInput1( numeratorImage ); 
+                numeratorFound = true;
             } else if ( quantType.compare("DENOMINATOR") == 0 ) {
                 mathD->SetInput2( this->metMapVector[quantNum] ); 
                 mathD->Update();
                 denominatorImage->DeepCopy( mathD->GetOutput() ); 
                 mathD->SetInput1( denominatorImage ); 
+                denominatorFound = true;
             }
             
         } else {
@@ -375,6 +379,21 @@ void svkQuantifyMetabolites::GetNumeratorAndDenominatorImages( vtkXMLDataElement
         }
     }
 
+    // If the numerator or denominator was not found, set that image to have value 1
+    if( !denominatorFound && svkMriImageData::SafeDownCast(denominatorImage) ) {
+    	svkMriImageData* imageOnes = svkMriImageData::New();
+    	imageOnes->CopyAndFillComponents(denominatorImage, 1);
+    	denominatorImage->ShallowCopy(imageOnes);
+    	imageOnes->Delete();
+    	imageOnes = NULL;
+    }
+    if( !numeratorFound && svkMriImageData::SafeDownCast(numeratorImage) ) {
+    	svkMriImageData* imageOnes = svkMriImageData::New();
+    	imageOnes->CopyAndFillComponents(numeratorImage, 1);
+    	numeratorImage->ShallowCopy(imageOnes);
+    	imageOnes->Delete();
+    	imageOnes = NULL;
+    }
 
     mathN->Delete();
     mathD->Delete();

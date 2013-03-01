@@ -142,6 +142,10 @@ class svkImageData: public vtkImageData
                                 vtkImageData* src, 
                                 svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
                            );
+        virtual void       CopyAndFillComponents(
+                                vtkImageData* src, double fillValue,
+                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED
+                           );
         virtual void       CastDataFormat( svkDcmHeader::DcmPixelDataFormat castToFormat );
         virtual void       CopyAndCastFrom( vtkImageData* inData, int extent[6] );
         virtual void       CopyAndCastFrom( 

@@ -166,11 +166,19 @@ void svkImageData::CopyMetaData( vtkDataObject* src, svkDcmHeader::DcmPixelDataF
 }
 
 
+/*!
+ *  First calls CopyStructure, then also copies the dcos, and DICOM header.
+ */
+void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
+{
+	this->CopyAndFillComponents(src, 0, castToFormat);
+}
+
 
 /*!
  *  First calls CopyStructure, then also copies the dcos, and DICOM header. 
  */
-void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat castToFormat)
+void svkImageData::CopyAndFillComponents( vtkImageData* src, double fillValue, svkDcmHeader::DcmPixelDataFormat castToFormat)
 {
 
     if( src->IsA("svkImageData") ) {
@@ -223,7 +231,7 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
         emptyArray->SetNumberOfTuples( numCellTuples );
         emptyArray->SetName( src->GetCellData()->GetArray(i)->GetName() );
         for( int j = 0; j < emptyArray->GetNumberOfComponents(); j++ ) {
-            emptyArray->FillComponent( j, 0 );
+            emptyArray->FillComponent( j, fillValue );
         }
         this->GetCellData()->AddArray( emptyArray );
     }
@@ -248,7 +256,7 @@ void svkImageData::ZeroCopy( vtkImageData* src, svkDcmHeader::DcmPixelDataFormat
         emptyArray->SetNumberOfTuples( numPointTuples );
         emptyArray->SetName( src->GetPointData()->GetArray(i)->GetName());
         for( int j = 0; j < emptyArray->GetNumberOfComponents(); j++ ) {
-            emptyArray->FillComponent( j, 0 );
+            emptyArray->FillComponent( j, fillValue );
         }
         this->GetPointData()->AddArray( emptyArray );
     }
