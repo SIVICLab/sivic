@@ -166,10 +166,13 @@ void svkFastCellData::FastSetArray(int i, vtkAbstractArray *data)
  */
 void svkFastCellData::FinishFastAdd()
 {
-    vtkAbstractArray* toRemove = vtkDataArray::CreateArray( this->GetArray(0)->GetDataType() );
-    this->AddArray( toRemove );
-    this->RemoveArray( this->GetNumberOfArrays() - 1 );
-    toRemove->Delete();
+    //  If no arrays, then skip this method:
+    if ( this->GetArray(0) )  {
+        vtkAbstractArray* toRemove = vtkDataArray::CreateArray( this->GetArray(0)->GetDataType() );
+        this->AddArray( toRemove );
+        this->RemoveArray( this->GetNumberOfArrays() - 1 );
+        toRemove->Delete();
+    }
 }
 
 
@@ -180,8 +183,9 @@ void svkFastCellData::FinishFastAdd()
  *
  * @param fd
  */
-void svkFastCellData::DeepCopy(vtkCellData *fd)
+void svkFastCellData::DeepCopy(vtkFieldData *fd)
 {
+
     this->Initialize(); //free up memory
 
     vtkDataSetAttributes* dsa = vtkDataSetAttributes::SafeDownCast(fd);
@@ -213,3 +217,24 @@ void svkFastCellData::DeepCopy(vtkCellData *fd)
         this->vtkFieldData::DeepCopy(fd);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Copy a field by reference counting the data arrays.
+void svkFastCellData::ShallowCopy(vtkFieldData *f)
+{
+
+    this->AllocateArrays(f->GetNumberOfArrays());
+    this->NumberOfActiveArrays = 0;
+
+    for ( int i=0; i < f->GetNumberOfArrays(); i++ )
+    {
+        this->NumberOfActiveArrays++;
+        this->FastSetArray(i, f->GetAbstractArray(i));
+    }
+
+    this->CopyFlags(f);
+
+    this->FinishFastAdd();
+}
+

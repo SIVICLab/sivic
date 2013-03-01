@@ -84,7 +84,13 @@ class svkFastCellData : public vtkCellData
 
         //! Method must be called after using FastAddArray
         virtual void FinishFastAdd();
-        virtual void DeepCopy(vtkCellData *fd);
+        virtual void DeepCopy(vtkFieldData *fd);
+
+        //  Description:
+        //  reimplement the vtk version from vtkFieldData: 
+        //  Copy a field by reference counting the data arrays.
+        virtual void ShallowCopy(vtkFieldData *da);
+
 
 };
 
