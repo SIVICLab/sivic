@@ -42,6 +42,8 @@
 
 #include <svkDcmtkAdapter.h>
 
+#include "svkUtils.h"
+
 
 using namespace svk;
 
@@ -416,10 +418,24 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1022, EVR_LO, 
+            "SVK_FILE_NUM_BYTES_LONG", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
     //  Block containing a GE PFile. 
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1023, EVR_OF, 
             "SVK_FILE_CONTENTS", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1028, EVR_SQ, 
+            "SVK_FILE_CONTENT_SEQUENCE", 
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
         )
     );
@@ -455,6 +471,8 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
             1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR"
         )
     );
+
+    //  Next element number should be 29 (not 28!). 
 
     dcmDataDict.unlock();
 }
@@ -937,6 +955,38 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
  *  \param seqName the string name of the parent sequence
  *  \param seqItemPosition the position of the item in that sequence 
  *  \param elementName the name of the element being added to the specified item
+ *  \param value the value of the element being added to the specified item
+ *  \param parentSeqName the string name of the parent sequence
+ *  \param parentSeqItemPosition the position of the item in that sequence 
+ */
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, long int value, const char* parentSeqName, int parentSeqItemPosition)
+{
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    svkDcmtkUtils::setValue(
+        this->GetDcmItem(dataset, seqName, seqItemPosition),    
+        GetDcmTag(elementName), 
+        value 
+    );
+
+    this->Modified();
+}
+
+
+/*!
+ *  Add an item to the specified item in the specified sequence(seqName), where the sequence is 
+ *  nested within a specific parent sequence(parentSeqName) and item(parentSeqItemPosition).
+ *
+ *  \param seqName the string name of the parent sequence
+ *  \param seqItemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
  *  \param values array of value of the element being added to the specified item
  *  \param numValues  number of values in values array. 
  *  \param parentSeqName the string name of the parent sequence
@@ -1107,7 +1157,7 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
  *  \param parentSeqName the string name of the parent sequence
  *  \param parentSeqItemPosition the position of the item in that sequence 
  */
-void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, float* values, int numValues, const char* parentSeqName, int parentSeqItemPosition)
+void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName, float* values, unsigned long int numValues, const char* parentSeqName, int parentSeqItemPosition)
 {
     OFCondition status; 
     DcmItem* dataset = this->dcmFile->getDataset(); 
@@ -1123,9 +1173,8 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
 
     //  Insert a dummy val. This was the only way I was able to get this to work
     //  for inserting multiple vals.  I'm probably missing something, but it works. 
-    Float32 dummyVal = 99.; 
+    Float32 dummyVal = 99.;  
     newItem->putAndInsertFloat32( GetDcmTag( elementName), dummyVal) ;
-
 
     //  Now get the element and add the array to it:    
     DcmElement* element;
@@ -1134,15 +1183,10 @@ void svkDcmtkAdapter::AddSequenceItemElement(const char* seqName, int seqItemPos
         cerr << "Error: cannot get element(" << status.text() << ")" << endl;
     }
 
-    Float32* inputArray = new Float32[numValues]; 
-    for (int i = 0; i < numValues; i++) {
-        inputArray[i] = (Float32)values[i]; 
-    }
     status = element->putFloat32Array(values, numValues);
     if (status.bad()) {
         cerr << "Error: could not insert element(" << status.text() << ")" << endl;
     }
-    delete[] inputArray;
     this->Modified();
 }
 
@@ -1312,6 +1356,40 @@ int svkDcmtkAdapter::GetIntSequenceItemElement(const char* seqName, int seqItemP
     );
 }
 
+
+/*!
+ *  Get an item from the specified item in the specified sequence.
+ *
+ *  \param seqName the string name of the sequence
+ *  \param itemPosition the position of the item in that sequence 
+ *  \param elementName the name of the element being added to the specified item
+ *
+ *  \return integer value of the item element 
+ */
+long int svkDcmtkAdapter::GetLongIntSequenceItemElement(const char* seqName, int seqItemPosition, const char* elementName,  const char* parentSeqName, int parentSeqItemPosition, int pos)
+{
+
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    string longString = svkDcmtkUtils::getStringValue(
+        this->GetDcmItem(dataset, seqName, seqItemPosition),
+        GetDcmTagKey(elementName), 
+        pos
+    );
+    return svkUtils::StringToLInt(longString); 
+    //return svkDcmtkUtils::getLongIntValue(
+     //   this->GetDcmItem(dataset, seqName, seqItemPosition),
+      //  GetDcmTagKey(elementName), 
+       // pos
+    //);
+}
 
 /*!
  *  Get an item from the specified item in the specified sequence.

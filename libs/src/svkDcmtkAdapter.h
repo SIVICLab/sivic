@@ -148,7 +148,7 @@ class svkDcmtkAdapter: public svkDcmHeader
                             int         seqItemPosition,
                             const char* elementName,
                             float*      values,
-                            int         numValues, 
+                            unsigned long int numValues, 
                             const char* parentSeqName = NULL,
                             int         parentSeqItemPosition = 0
                         );
@@ -157,6 +157,14 @@ class svkDcmtkAdapter: public svkDcmHeader
                             int         seqItemPosition, 
                             const char* elementName, 
                             int         value, 
+                            const char* parentSeqName = NULL, 
+                            int         parentSeqItemPosition = 0
+                        );
+        virtual void    AddSequenceItemElement(
+                            const char* seqName, 
+                            int         seqItemPosition, 
+                            const char* elementName, 
+                            long int    value, 
                             const char* parentSeqName = NULL, 
                             int         parentSeqItemPosition = 0
                         );
@@ -187,6 +195,14 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    RemoveElement(const char* elementName); 
 
         virtual int     GetIntSequenceItemElement(
+                            const char* seqName, 
+                            int         seqItemPosition, 
+                            const char* elementName,
+                            const char* parentSeqName = NULL, 
+                            int         parentSeqItemPosition = 0, 
+                            int         pos = 0    
+                        );
+        virtual long int GetLongIntSequenceItemElement(
                             const char* seqName, 
                             int         seqItemPosition, 
                             const char* elementName,
