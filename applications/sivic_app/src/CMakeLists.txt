@@ -229,8 +229,8 @@ TARGET_LINK_LIBRARIES(
     svk 
     svkadapt
     dcmdata
-    ofstd 
     ${DCMTK_OFLOG}
+    ofstd 
     ${KWWidgets_LIBRARIES}
     #KWCallbacksExampleLib
     SivicKWCallbacksLib
