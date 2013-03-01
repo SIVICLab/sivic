@@ -286,7 +286,7 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* parentSeqName, 
-                            int parentSeqItemPosition, 
+                            int         parentSeqItemPosition, 
                             const char* elementName
                         ) = 0;
 
@@ -297,11 +297,11 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
-                            string value, 
+                            string      value, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
 
@@ -312,12 +312,12 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
                             char*       values, 
                             int         numValues, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
 
@@ -327,13 +327,28 @@ class svkDcmHeader: public vtkObject
          *  specify the parent SQ and item number. 
          */
         virtual void    AddSequenceItemElement(
-                            const char* seqName,
-                            int seqItemPosition,
-                            const char* elementName,
+                            const char*     seqName,
+                            int             seqItemPosition,
+                            const char*     elementName,
                             unsigned short* values, 
-                            int numValues, 
-                            const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int             numValues, 
+                            const char*     parentSeqName = NULL,
+                            int             parentSeqItemPosition = 0
+                        ) = 0;
+
+        /*! 
+         *  Method to add a multi-valued item to a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number. 
+         */
+        virtual void    AddSequenceItemElement(
+                            const char*     seqName,
+                            int             seqItemPosition,
+                            const char*     elementName,
+                            unsigned int*   values, 
+                            int             numValues, 
+                            const char*     parentSeqName = NULL,
+                            int             parentSeqItemPosition = 0
                         ) = 0;
 
         /*! 
@@ -343,27 +358,12 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
-                            unsigned int* values, 
-                            int numValues, 
+                            float*      values, 
+                            unsigned long int  numValues, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
-                        ) = 0;
-
-        /*! 
-         *  Method to add a multi-valued item to a DICOM Sequence by specifying the SQ 
-         *  name and the item's position in the sequence. Optionally, for nested sequences
-         *  specify the parent SQ and item number. 
-         */
-        virtual void    AddSequenceItemElement(
-                            const char* seqName,
-                            int seqItemPosition,
-                            const char* elementName,
-                            float* values, 
-                            int numValues, 
-                            const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
         /*! 
@@ -373,11 +373,11 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
-                            int value, 
+                            int         value, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0 
+                            int         parentSeqItemPosition = 0 
                         ) = 0;
 
         /*! 
@@ -387,11 +387,25 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
-                            float value, 
+                            long int    value, 
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0 
+                        ) = 0;
+
+        /*! 
+         *  Method to add an item to a DICOM Sequence by specifying the SQ name and
+         *  the item's position in the sequence. Optionally, for nested sequences
+         *  specify the parent SQ and item number. 
+         */
+        virtual void    AddSequenceItemElement(
+                            const char* seqName,
+                            int         seqItemPosition,
+                            const char* elementName,
+                            float       value, 
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
         /*!
@@ -401,11 +415,11 @@ class svkDcmHeader: public vtkObject
          */
         virtual void    AddSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
-                            double value,
+                            double      value,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
          
 
@@ -444,13 +458,31 @@ class svkDcmHeader: public vtkObject
          */
         virtual int     GetIntSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0, 
-                            int pos = 0
+                            int         parentSeqItemPosition = 0, 
+                            int         pos = 0
                         ) = 0;
 
+        /*! 
+         *  Method to get an item's element from a DICOM Sequence by specifying the SQ 
+         *  name and the item's position in the sequence. Optionally, for nested sequences 
+         *  specify the parent SQ and item number.
+         *  \param seqName  camel case string name of DICOM field  
+         *  \param seqItemPosition  int value for sequence item in which element is found 
+         *  \param elementName camel case string name of dicom field  
+         *  \param parentSeqName optional camel case string name of parent DICOM sequence. 
+         *  \param parentSeqItemPosition optional int value for parent sequence item. 
+         */
+        virtual long int GetLongIntSequenceItemElement(
+                            const char* seqName, 
+                            int         seqItemPosition, 
+                            const char* elementName,
+                            const char* parentSeqName = NULL,
+                            int         parentSeqItemPosition = 0, 
+                            int         pos = 0
+                        ) = 0;
         /*! 
          *  Method to get an item's element from a DICOM Sequence by specifying the SQ 
          *  name and the item's position in the sequence. Optionally, for nested sequences 
@@ -500,10 +532,10 @@ class svkDcmHeader: public vtkObject
          */
         virtual string  GetStringSequenceItemElement(
                             const char* seqName,
-                            int seqItemPosition,
+                            int         seqItemPosition,
                             const char* elementName,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
         /*! 
@@ -513,11 +545,11 @@ class svkDcmHeader: public vtkObject
          */
         virtual string  GetStringSequenceItemElement(
                             const char* seqName, 
-                            int seqItemPosition, 
+                            int         seqItemPosition, 
                             const char* elementName, 
-                            int pos,
+                            int         pos,
                             const char* parentSeqName = NULL,
-                            int parentSeqItemPosition = 0
+                            int         parentSeqItemPosition = 0
                         ) = 0;
 
 
