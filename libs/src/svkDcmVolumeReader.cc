@@ -808,7 +808,6 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
 void svkDcmVolumeReader::InitDcmHeader()
 {
     this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->FileName, 100000000 ); 
-
 }
 
 
