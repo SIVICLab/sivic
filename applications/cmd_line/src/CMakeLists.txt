@@ -179,8 +179,8 @@ SET(SVK_LIBS
     vtkFiltering
     vtkCommon
     dcmdata
-    ofstd 
     ${DCMTK_OFLOG}
+    ofstd 
     ${PLATFORM_LIBS}
     ${CMINPACK_LIBS}
 )
