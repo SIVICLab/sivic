@@ -71,6 +71,9 @@ class svkDcmtkUtils
         static void setValue(DcmItem* item, const DcmTag &tag, const int value, const int pos = 0)
                 throw (overflow_error, svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
+        static void setValue(DcmItem* item, const DcmTag &tag, const long int value)
+                throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR); 
+
         static void setValue(DcmItem* item, const DcmTag &tag, const float value)
                 throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
@@ -83,6 +86,9 @@ class svkDcmtkUtils
 
 
         static int getIntValue(DcmItem* item, const DcmTagKey &tag, const int pos = 0) 
+            throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
+
+        static long int getLongIntValue(DcmItem* item, const DcmTagKey &tag, const int pos = 0) 
             throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR);
 
         static float getFloatValue(DcmItem* item, const DcmTagKey &tag, int pos = 0)

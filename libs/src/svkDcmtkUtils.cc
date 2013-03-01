@@ -117,6 +117,53 @@ void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const int value, 
  *  @throws svkTagNotFound
  *  @throws IncomPatibleVR
  */
+void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const long int value)
+    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
+{
+
+    stringstream ss;
+    switch(tag.getEVR()) {
+        case EVR_FL:
+            if( value > LONG_MAX || value < LONG_MIN )
+                throw overflow_error("setValue(long int)");
+            handleError(item->putAndInsertUint16(tag, value), "setValue(long)", &tag);
+            break;
+
+        case EVR_OF:
+            if( value > LONG_MAX || value < LONG_MIN )
+                throw overflow_error("setValue(long int)");
+            handleError(item->putAndInsertFloat32(tag,value), "setValue(long)", &tag);
+            break;
+
+        case EVR_FD:
+            handleError(item->putAndInsertFloat64(tag,(Float64)value), "setValue(long)", &tag);
+            break;
+
+        case EVR_AS:
+        case EVR_CS:
+        case EVR_DS:
+        case EVR_IS:
+        case EVR_LO:
+        case EVR_LT:
+        case EVR_UT:
+        case EVR_SH:
+        case EVR_ST:
+            ss<<fixed<<setprecision(15)<<value;
+            handleError(item->putAndInsertString(tag,ss.str().c_str()), "setValue(long)", &tag);
+            break;
+    
+        default:
+            throw svkIncompatibleVR(string("setValue(float): ") +
+                            tag.getVR().getVRName());
+    }
+}
+
+
+/*! applies to float32, float64 and string VRs.
+ *  @throws svkDicomRunTimeError
+ *  @throws svkTagNotFound
+ *  @throws IncomPatibleVR
+ */
 void svkDcmtkUtils::setValue(DcmItem* item, const DcmTag &tag, const float value)
     throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
 {
@@ -284,6 +331,41 @@ int svkDcmtkUtils::getIntValue(DcmItem* item, const DcmTagKey &tag, const int po
 
 }
 
+
+/*! applies to values, represented as short, int, integer string.
+ *  @throws svkDicomRunTimeError
+ *  @throws svkTagNotFound
+ *  @throws svkIncompatibleVR
+ */
+long int svkDcmtkUtils::getLongIntValue(DcmItem* item, const DcmTagKey &tag, const int pos) 
+    throw (svkDicomRunTimeError, svkTagNotFound, svkIncompatibleVR)
+{
+
+    //  Tag not const, since it may be resolved
+    long int value = 0;
+
+    //  Get VR
+    DcmStack stack;
+    handleError(item->search(tag, stack), "getIntValue");
+    DcmElement *elem = (DcmElement *)stack.top();
+    if (elem == NULL) throw svkTagNotFound(tag, "getIntValue: ");                                                                       
+    switch (elem->ident()){
+        case EVR_UL:
+        case EVR_up:
+        case EVR_SL:
+        case EVR_IS:
+        case EVR_US:
+        case EVR_xs:
+        case EVR_SS:
+            handleError(item->findAndGetLongInt(tag, value, pos),"getLongIntValue", &tag);
+            break;
+        default:
+            throw svkIncompatibleVR(string("getLongIntValue: ") +
+                DcmVR(elem->ident()).getVRName());
+    }
+    return value;
+
+}
 
 /*! applies to values, represented as short, int, integer string,
  *  float, double, decimal string.
