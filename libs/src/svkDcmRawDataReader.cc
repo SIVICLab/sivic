@@ -162,7 +162,6 @@ void svkDcmRawDataReader::ExtractFiles()
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     int numberOfEncapsulatedFiles = hdr->GetNumberOfItemsInSequence( "SVK_FILE_SET_SEQUENCE" );
 
-
     for ( int fileNum = 0; fileNum < numberOfEncapsulatedFiles; fileNum++ ) {
 
         vtkstd::string fileName =  
@@ -179,55 +178,180 @@ void svkDcmRawDataReader::ExtractFiles()
                 "SVK_FILE_SHA1_DIGEST"
             );
 
-        long unsigned int numBytes=  
-            hdr->GetIntSequenceItemElement(
-                "SVK_FILE_SET_SEQUENCE",
-                fileNum,
-                "SVK_FILE_NUM_BYTES"
-            );
-
-
-        //  if the size isn't divisible by sizeof(float), 
-        //  then pad to include partial word
-        long unsigned int numValues =  numBytes / sizeof(float); 
-        if ( numBytes % sizeof(float) != 0 ) {
-            numValues += 1;
+        //  For backward compatibility with old element
+        long unsigned int pfileSize;   
+        if ( hdr->ElementExists( "SVK_FILE_NUM_BYTES", "SVK_FILE_SET_SEQUENCE") ) {
+            pfileSize =  
+                hdr->GetIntSequenceItemElement(
+                    "SVK_FILE_SET_SEQUENCE",
+                    fileNum,
+                    "SVK_FILE_NUM_BYTES"
+                );
+        } else {
+            pfileSize =  
+                hdr->GetLongIntSequenceItemElement(
+                    "SVK_FILE_SET_SEQUENCE",
+                    fileNum,
+                    "SVK_FILE_NUM_BYTES_LONG"
+                );
         }
-        float* fileBuffer = new float[ numValues ]; 
 
-        hdr->GetFloatSequenceItemElement(
-                "SVK_FILE_SET_SEQUENCE",
-                fileNum,
-                "SVK_FILE_CONTENTS",
-                fileBuffer, 
-                numValues
-            );
 
-        //  If an output directory was provided, prepend the filename:
-        vtkstd::string outputFileName = fileName; 
-        if ( this->outDir.size() > 0 ) {
-            outputFileName = outDir + "/" + fileName; 
+        //  For backward compatibility, check to see fi SVK_FILE_CONTENTS element
+        //  exists. If so, read data from there. Otherwise:
+        //  loop over each item in the SVK_FILE_CONTENT_SEQUENCE 
+        //  First, determine number of items in this sequence.  
+        if ( hdr->ElementExists( "SVK_FILE_NUM_BYTES", "SVK_FILE_CONTENTS") ) {
+
+            this->LegacyParsing( fileName, fileNum, pfileSize);
+
+        } else {
+
+            //  If an output directory was provided, prepend the filename:
+            vtkstd::string outputFileName = fileName; 
+            if ( this->outDir.size() > 0 ) {
+                outputFileName = outDir + "/" + fileName; 
+            }
+            outputFileName.append(".extracted"); 
+            ofstream outputFile ( outputFileName.c_str(), ios::binary );
+            if( !outputFile) { 
+                cout << "Cannot open file to extract raw data to: " << outputFileName << endl;
+                this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+            }
+            
+
+            //  if the size isn't divisible by sizeof(float), 
+            //  then pad to include partial word
+            long int readStrideBytes = 1000000000;
+
+            long unsigned int numValues =  readStrideBytes / sizeof(float); 
+            if (  pfileSize % sizeof(float) != 0 ) {
+                numValues += 1;
+            }
+            float* fileBuffer = new float[ numValues ]; 
+
+            int pfileSection = 0; 
+            int byte = 0; 
+
+            int numberOfItems = hdr->GetNumberOfItemsInSequence("SVK_FILE_CONTENT_SEQUENCE");
+            //cout << "NUMBER OF ITEMS COMPRISING PFILE: " << numberOfItems << endl;
+
+            for ( int item = 0; item < numberOfItems; item++ ) {
+
+                //  To reduce footprint, read header without long fields, and 
+                //  loadElement on demand.  
+                svkImageData* tmpDcm = svkMriImageData::New();
+                tmpDcm->GetDcmHeader()->ReadDcmFile( this->FileName);
+
+                //  First determine how many bytes are in this section (item). 
+                long int numBytesInSection; 
+                long int numWordsInSection; 
+
+                numBytesInSection = pfileSize - pfileSection * readStrideBytes; 
+                numWordsInSection = numBytesInSection / sizeof(float); 
+                if ( numBytesInSection > readStrideBytes ) {
+                    numBytesInSection = readStrideBytes; 
+                    numWordsInSection = numBytesInSection / sizeof(float); 
+                } else {
+                    //  Handle remainder bytes to ensure they are of size divisible 
+                    //  by sizeof(float). 
+
+                    //  if the size isn't divisible by sizeof(float), 
+                    //  then pad to include partial word
+                    if ( numWordsInSection % sizeof(float) != 0 ) { 
+                        long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
+                        numWordsInSection = numWordsInSection + 1; 
+                    } 
+                }
+                //cout << "READ ITEM: " << item << endl;
+                //cout << "READ ITEM: numWordsInSection: " << numWordsInSection << endl;
+                //cout << "READ ITEM: numBytesInSection: " << numBytesInSection << endl;
+               
+                tmpDcm->GetDcmHeader()->GetFloatSequenceItemElement(
+                    "SVK_FILE_CONTENT_SEQUENCE",
+                    item,
+                    "SVK_FILE_CONTENTS",
+                    fileBuffer, 
+                    numWordsInSection, 
+                    "SVK_FILE_SET_SEQUENCE",
+                    fileNum
+                );
+
+                //cout << "done READ ITEM " << endl;
+
+                outputFile.write( (char *)fileBuffer, numBytesInSection); 
+
+                //cout << "done Write ITEM " << endl;
+
+                if( outputFile.bad() ) { 
+                    cout << "Error extracting DICOM Raw Data to disk: " << outputFileName << endl;
+                    this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+                }
+
+                byte += readStrideBytes; 
+                pfileSection ++; 
+
+                tmpDcm->Delete();
+
+            }
+
+            outputFile.close(); 
+
+            if (fileBuffer != NULL) {
+                delete[] fileBuffer; 
+            }
+
+
         }
-        outputFileName.append(".extracted"); 
-        ofstream outputFile ( outputFileName.c_str(), ios::binary );
-        if( !outputFile) { 
-            cout << "Cannot open file to extract raw data to: " << outputFileName << endl;
-            this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
-        }
+    }
+
+}
+
+
+void svkDcmRawDataReader::LegacyParsing(string fileName, int fileNum, long int numBytes)
+{
+
+    //  if the size isn't divisible by sizeof(float), 
+    //  then pad to include partial word
+    long unsigned int numValues =  numBytes / sizeof(float); 
+    if ( numBytes % sizeof(float) != 0 ) {
+        numValues += 1;
+    }
+    float* fileBuffer = new float[ numValues ]; 
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    hdr->GetFloatSequenceItemElement(
+        "SVK_FILE_SET_SEQUENCE",
+        fileNum,
+        "SVK_FILE_CONTENTS",
+        fileBuffer, 
+        numValues
+    );
+
+    //  If an output directory was provided, prepend the filename:
+    vtkstd::string outputFileName = fileName; 
+    if ( this->outDir.size() > 0 ) {
+        outputFileName = outDir + "/" + fileName; 
+    }
+    outputFileName.append(".extracted"); 
+
+    ofstream outputFile ( outputFileName.c_str(), ios::binary );
+    if( !outputFile) { 
+        cout << "Cannot open file to extract raw data to: " << outputFileName << endl;
+        this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+    }
         
-        outputFile.write( (char *)fileBuffer, numBytes); 
+    outputFile.write( (char *)fileBuffer, numBytes); 
 
-        if( outputFile.bad() ) { 
-            cout << "Error extracting DICOM Raw Data to disk: " << outputFileName << endl;
-            this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
-        }
+    if( outputFile.bad() ) { 
+        cout << "Error extracting DICOM Raw Data to disk: " << outputFileName << endl;
+        this->SetErrorCode( vtkErrorCode::CannotOpenFileError );
+    }
 
-        outputFile.close(); 
+    outputFile.close(); 
 
-        if (fileBuffer != NULL) {
-            delete[] fileBuffer; 
-        }
-
+    if (fileBuffer != NULL) {
+        delete[] fileBuffer; 
     }
 
 }

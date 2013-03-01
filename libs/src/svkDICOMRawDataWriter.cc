@@ -482,7 +482,7 @@ void svkDICOMRawDataWriter::InitGeneralEquipmentModule()
 void svkDICOMRawDataWriter::InitRawDataModule()
 {
 
-    int raw_pass_size = this->GetHeaderValueAsInt("rhr.rh_raw_pass_size");
+    long int raw_pass_size = this->GetHeaderValueAsLongInt("rhr.rh_raw_pass_size");
     int raw_offset = this->GetHeaderValueAsInt("rhr.rdb_hdr_off_data");
     this->computedPFileSize = raw_pass_size + raw_offset; 
 
@@ -541,12 +541,12 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
             pFile->seekg(0, ios::end);
             // get-ptr position is now same as file size
-            ios::pos_type pfileSize = pFile->tellg();  
-            cout << "PFILE SIZE = " << static_cast<int>(pfileSize) << endl;
+            long int pfileSize = pFile->tellg();  
+            cout << "PFILE SIZE = " << pfileSize << endl;
 
             //  for the pfile, make sure the file size is as expceted: 
             if ( this->associatedFiles[fileNum][2].compare("GE PFile") == 0 ) { 
-                if ( static_cast<int>(pfileSize) != this->computedPFileSize ) { 
+                if ( pfileSize != this->computedPFileSize ) { 
                     cout << "GEPFile Size on disk doesn't match expectation based on header info: " << endl; 
                     cout << pfileSize << " vs " << this->computedPFileSize  << endl; 
                     this->SetErrorCode( vtkErrorCode::PrematureEndOfFileError); 
@@ -554,16 +554,6 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 }
             }
 
-            //  Allocate a buffer with an extra word just in case we have partial word data, see below
-            //  Zero pad the ending bytes: 
-            int pad = sizeof(float); 
-            int allocationSize = static_cast<int>(pfileSize) + pad; 
-            void* pfileBuffer = new char[ static_cast<int>(allocationSize) ]; 
-            for ( int j = allocationSize; j >= static_cast<int>(pfileSize); j--) { 
-                static_cast<char*>(pfileBuffer)[j] = '0'; 
-            }   
-            pFile->seekg(0, ios::beg);
-            pFile->read( static_cast<char*>(pfileBuffer), pfileSize );
 
             this->dcmHeader->SetValue(
                 "SVK_PRIVATE_TAG",
@@ -596,27 +586,95 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 this->associatedFiles[fileNum][1]
             );
 
-            this->dcmHeader->AddSequenceItemElement(
-                "SVK_FILE_SET_SEQUENCE",
-                fileNum,
-                "SVK_FILE_NUM_BYTES",
-                static_cast<int>(pfileSize) 
-            );
-
-            //  if the size isn't divisible by sizeof(float), 
-            //  then pad to include partial word
-            int numRawFileWords = pfileSize/sizeof(float); 
-            if ( pfileSize % sizeof(float) != 0 ) { 
-                numRawFileWords += 1; 
-            } 
 
             this->dcmHeader->AddSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
-                "SVK_FILE_CONTENTS",
-                static_cast<float*>(pfileBuffer),
-                numRawFileWords 
+                "SVK_FILE_NUM_BYTES_LONG",
+                pfileSize 
             );
+
+
+            //  ==============================================================    
+            //  Here, add an item for each 4294967292 bytes in the raw data.  
+            //  DICOM limits the size of field to 2^32 - 4 bytes.  For 32 bit 
+            //  words this is :
+            //  ==============================================================    
+            this->dcmHeader->AddSequenceItemElement(
+                "SVK_FILE_SET_SEQUENCE",
+                fileNum,
+                // 0, 
+                "SVK_FILE_CONTENT_SEQUENCE"
+            );
+
+
+            //  Loop over parts of the data set here, to handle very large raw 
+            //  files in memory.  Read in blocks of at most 500MB in length.  Note 
+            //  that this is evenly divisible into 4 byte words. See below
+
+            //  Allocate a buffer with an extra word just in case we have partial word data, see below
+            //  Zero pad the ending bytes: 
+            long int readStrideBytes = 1000000000;
+
+            long int allocationSize = pfileSize + sizeof(float); 
+
+            //  allocate up to readStrideBytes of memory for reading data: 
+            if ( allocationSize > readStrideBytes ) {
+                allocationSize = readStrideBytes; 
+            }
+
+            void* pfileBuffer = new char[ allocationSize ]; 
+
+
+            //  read and insert into DICOM object blocks of up to readStridBytes
+            //  in length. 
+            int pfileSection = 0; 
+            for ( long int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
+
+                //  First determine how many bytes are in this section (item). 
+                long int numBytesInSection; 
+                long int numWordsInSection; 
+
+                numBytesInSection = pfileSize - pfileSection * readStrideBytes; 
+                numWordsInSection = numBytesInSection / sizeof(float); 
+                if ( numBytesInSection > readStrideBytes ) {
+                    numBytesInSection = readStrideBytes; 
+                    numWordsInSection = numBytesInSection / sizeof(float); 
+                } else {
+                    //  Handle remainder bytes to ensure they are of size divisible 
+                    //  by sizeof(float). 
+
+                    //  if the size isn't divisible by sizeof(float), 
+                    //  then pad to include partial word
+                    if ( numWordsInSection % sizeof(float) != 0 ) { 
+                        long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
+                        numWordsInSection = numWordsInSection + 1; 
+                        for ( long int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
+                            static_cast<char*>(pfileBuffer)[j] = '0'; 
+                        }   
+                    } 
+                }
+
+                pFile->seekg(0, ios::beg);
+                pFile->seekg(byte, ios::beg);
+                pFile->read( static_cast<char*>(pfileBuffer), numBytesInSection);
+
+                this->dcmHeader->AddSequenceItemElement(
+                    "SVK_FILE_CONTENT_SEQUENCE",
+                    pfileSection,
+                    "SVK_FILE_CONTENTS",
+                    static_cast<float*>(pfileBuffer),
+                    numWordsInSection, 
+                    "SVK_FILE_SET_SEQUENCE",
+                    fileNum 
+                );
+    
+
+                pfileSection++; 
+            }
+
+            delete [] pfileBuffer; 
+
 
         } catch (ifstream::failure e) {
             cout << "ERROR: Exception opening/reading file " << this->associatedFiles[fileNum][0] << " => " << e.what() << endl;
@@ -653,6 +711,20 @@ int svkDICOMRawDataWriter::GetHeaderValueAsInt(vtkstd::string key)
     return value;
 }
 
+
+/*!
+ *  returns the value for the specified key as an int.
+ */
+long int svkDICOMRawDataWriter::GetHeaderValueAsLongInt(vtkstd::string key)
+{
+    istringstream* iss = new istringstream();
+    long int value;
+
+    iss->str( this->pfMap[key][3] );
+    *iss >> value;
+    delete iss;
+    return value;
+}
 
 
 /*!

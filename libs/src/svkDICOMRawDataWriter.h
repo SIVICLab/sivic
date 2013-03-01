@@ -105,12 +105,13 @@ class svkDICOMRawDataWriter : public svkImageWriter
         void            InitGeneralEquipmentModule(); 
         void            InitRawDataModule(); 
         int             GetHeaderValueAsInt(vtkstd::string key); 
+        long int        GetHeaderValueAsLongInt(vtkstd::string key); 
 
         //  Members:
         svkDcmHeader*                   dcmHeader;
         string                          sha1Digest; 
         vector < vector <string > >     associatedFiles; 
-        int                             computedPFileSize; 
+        long int                        computedPFileSize; 
         vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >     pfMap;
         bool                            reuseSeriesUID; 
         bool                            reuseInstanceUID; 
