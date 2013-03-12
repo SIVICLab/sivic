@@ -28,6 +28,9 @@ SIVIC is an open-source standards-based software framework and application suite
         <a href="apps/svk_gepfile_reader.html"/>svk_gepfile_reader</a>
     </li>
     <li>
+        <a href="apps/svk_gepfile_anon.html"/>svk_gepfile_anon</a>
+    </li>
+    <li>
         <a href="apps/svk_reslice.html"/>svk_reslice</a>
     </li>
     <li>
@@ -44,6 +47,33 @@ SIVIC is an open-source standards-based software framework and application suite
     </li>
     <li>
         <a href="apps/svk_multi_view.html"/>svk_multi_view</a>
+    </li>
+    <li>
+        <a href="apps/svk_get_filetype.html"/>svk_get_filetype</a>
+    </li>
+    <li>
+        <a href="apps/svk_reslice.html"/>svk_reslice</a>
+    </li>
+    <li>
+        <a href="apps/svk_fft.html"/>svk_fft</a>
+    </li>
+    <li>
+        <a href="apps/svk_integrate_dynamic.html"/>svk_integrate_dynamic</a>
+    </li>
+    <li>
+        <a href="apps/svk_reorder_epsi.html"/>svk_reorder_epsi</a>
+    </li>
+    <li>
+        <a href="apps/svk_surface_area.html"/>svk_surface_area</a>
+    </li>
+    <li>
+        <a href="apps/svk_svrecon.html"/>svk_svrecon</a>
+    </li>
+    <li>
+        <a href="apps/svk_point_selector.html"/>svk_point_selector</a>
+    </li>
+    <li>
+        <a href="apps/svk_create_dcmraw.html"/>svk_create_dcmraw</a>
     </li>
 
 

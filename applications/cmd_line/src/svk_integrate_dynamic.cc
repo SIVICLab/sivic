@@ -148,12 +148,6 @@ int main (int argc, char** argv)
 
     argc -= optind;
     argv += optind;
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
-    cout << dataTypeOut << endl;
-    cout << peak_center_ppm << endl;
-    cout << peak_width_ppm << endl;
-    cout << peak_name<< endl;
 
     if ( argc != 0 ||  inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut >= svkImageWriterFactory::LAST_TYPE || 
