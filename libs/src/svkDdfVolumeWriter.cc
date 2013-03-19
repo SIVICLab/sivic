@@ -77,7 +77,7 @@ svkDdfVolumeWriter::svkDdfVolumeWriter()
 
     //default value to indicate undefined, gets initialized in Write method  
     this->numTimePtsPerFile = 0;    
-    this->useDescriptiveFileNames = false;    
+    this->useDescriptiveFileNames = false;  
 }
 
 
@@ -230,6 +230,8 @@ void svkDdfVolumeWriter::WriteFiles()
         for (int frame = 0; frame < numFrames; frame++) {
 
             fileName = this->GetFileRootName(fileRoot, &noSliceVector, frame);
+            //svkDcmHeader::PrintDimensionIndexVector(&noSliceVector);
+            //cout << "DDF FILE NAMEa: " << frame << " = " << fileName << endl;
 
             ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
             ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
@@ -240,7 +242,7 @@ void svkDdfVolumeWriter::WriteFiles()
             for (int timePt = 0; timePt < numTimePts; timePt++) {
                 hdr->GetDimensionVectorIndexFromFrame(&noSliceVector, &loopVector, frame);
                 svk4DImageData::SetDimensionVectorIndex(&loopVector, svkDcmHeader::TIME_INDEX, timePt);
-                svkDcmHeader::PrintDimensionIndexVector(&loopVector); 
+                //svkDcmHeader::PrintDimensionIndexVector(&loopVector); 
                 this->InitSpecData(specData, &origDimensionVector, &loopVector); 
             }
 
@@ -266,6 +268,7 @@ void svkDdfVolumeWriter::WriteFiles()
         for (int frame = 0; frame < numFrames; frame++) {
 
             fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
+            //cout << "DDF FILE NAMEb: " << frame << " = " << fileName << endl;
 
             ofstream cmplxOut( ( fileName + dataExtension ).c_str(), ios::binary);
             ofstream hdrOut(   ( fileName + hdrExtension ).c_str() );
@@ -353,7 +356,7 @@ void svkDdfVolumeWriter::InitSpecData(float* specData, svkDcmHeader::DimensionVe
                 //svkDcmHeader::PrintDimensionIndexVector(indexVector); 
 
                 int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(dimensionVector, indexVector); 
-                svkDcmHeader::PrintDimensionIndexVector(indexVector);
+                //svkDcmHeader::PrintDimensionIndexVector(indexVector);
                 fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID) );
 
                 for (int i = 0; i < specPts; i++) {
@@ -1221,6 +1224,7 @@ int svkDdfVolumeWriter::GetNumberTimePointsPerFile()
 
 /*!
  *  Method to check weather all time points are written to each file. 
+ *  If only one time point then return true. 
  */
 bool svkDdfVolumeWriter::AllTimePointsInEachFile()
 {
