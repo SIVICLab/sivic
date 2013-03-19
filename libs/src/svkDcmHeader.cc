@@ -70,6 +70,17 @@ svkDcmHeader::svkDcmHeader()
     this->lastUpdateTime = this->GetMTime(); 
     this->dataSliceOrder = SLICE_ORDER_UNDEFINED;
     this->numTimePts = 1;
+
+    this->orientation[0][0] = 0; 
+    this->orientation[0][1] = 0; 
+    this->orientation[0][2] = 0; 
+    this->orientation[1][0] = 0; 
+    this->orientation[1][1] = 0; 
+    this->orientation[1][2] = 0; 
+    this->origin0[0] = 0; 
+    this->origin0[1] = 0; 
+    this->origin0[2] = 0; 
+    
 }
 
 
@@ -2454,7 +2465,7 @@ int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, v
 
     mri->InitPixelMeasuresMacro(  pixelSizes, sliceThickness );
 
-   mri->AddSequenceItemElement(
+    mri->AddSequenceItemElement(
             "SharedFunctionalGroupsSequence",
             0,
             "PlaneOrientationSequence"
