@@ -84,6 +84,10 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
  */
 svkDICOMRawDataWriter::~svkDICOMRawDataWriter()
 {
+    if ( this->dcmHeader != NULL ) {
+        this->dcmHeader->Delete(); 
+        this->dcmHeader = NULL; 
+    }
 }
 
 
@@ -165,6 +169,7 @@ void svkDICOMRawDataWriter::Write()
     svkImageReaderFactory* readerFactory =svkImageReaderFactory::New();
     readerFactory->QuickParse();
     svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(this->FileName) );
+    readerFactory->Delete(); 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << this->FileName << endl;
         exit(1);
@@ -284,6 +289,7 @@ void svkDICOMRawDataWriter::Write()
 
     delete [] this->InternalFileName;
     this->InternalFileName = NULL;
+    reader->Delete();
 
 }
 
@@ -529,7 +535,6 @@ void svkDICOMRawDataWriter::InitRawDataModule()
         string(timeBuf)
     ); 
 
-
     for ( int fileNum = 0; fileNum < this->associatedFiles.size(); fileNum++ ) {
 
         ifstream* pFile = new ifstream();
@@ -614,9 +619,9 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
             //  Allocate a buffer with an extra word just in case we have partial word data, see below
             //  Zero pad the ending bytes: 
-            long int readStrideBytes = 1000000000;
+            int readStrideBytes = 1000000000;
 
-            long int allocationSize = pfileSize + sizeof(float); 
+            int allocationSize = pfileSize + sizeof(float); 
 
             //  allocate up to readStrideBytes of memory for reading data: 
             if ( allocationSize > readStrideBytes ) {
@@ -625,15 +630,14 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
             void* pfileBuffer = new char[ allocationSize ]; 
 
-
             //  read and insert into DICOM object blocks of up to readStridBytes
             //  in length. 
             int pfileSection = 0; 
-            for ( long int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
+            for ( int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
 
                 //  First determine how many bytes are in this section (item). 
-                long int numBytesInSection; 
-                long int numWordsInSection; 
+                int numBytesInSection; 
+                int numWordsInSection; 
 
                 numBytesInSection = pfileSize - pfileSection * readStrideBytes; 
                 numWordsInSection = numBytesInSection / sizeof(float); 
@@ -646,10 +650,10 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
                     //  if the size isn't divisible by sizeof(float), 
                     //  then pad to include partial word
-                    if ( numWordsInSection % sizeof(float) != 0 ) { 
-                        long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
+                    if ( numBytesInSection % sizeof(float) != 0 ) { 
+                        int numBytesInSectionTmp = numBytesInSection + sizeof(float);
                         numWordsInSection = numWordsInSection + 1; 
-                        for ( long int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
+                        for ( int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
                             static_cast<char*>(pfileBuffer)[j] = '0'; 
                         }   
                     } 
@@ -672,8 +676,8 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
                 pfileSection++; 
             }
-
-            delete [] pfileBuffer; 
+            delete [] static_cast<char*>(pfileBuffer); 
+            pfileBuffer = NULL; 
 
 
         } catch (ifstream::failure e) {
@@ -682,6 +686,7 @@ void svkDICOMRawDataWriter::InitRawDataModule()
         }
 
         pFile->close();
+        delete pFile; 
     }
 
 }
