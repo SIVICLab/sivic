@@ -365,6 +365,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_dcm_deid   
+    svk_dcm_deid.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_dcm_deid 
+	${SVK_LIBS}
+)
+
 if ( BUILD_CMINPACK )
     ADD_EXECUTABLE(
         svk_met_kinetics
