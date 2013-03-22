@@ -237,6 +237,11 @@ class svkDcmHeader: public vtkObject
         */
         virtual void    SetValue(const char* name, float* values, int numValues) = 0;
 
+        /*
+         *  Sets values recursively into sub sequences
+         */
+        virtual void    ModifyValueRecursive(const char* name, string value) = 0;
+
         /*! 
          *  Method to get a DICOM tag by specifying it's name and value. The name should be 
          *  the string representation of the field in the DICOM dictionary being used. 

@@ -727,6 +727,33 @@ void svkDcmtkAdapter::SetValue(const char* name, float* values, int numValues)
 
 
 /*!
+ * Sets the array of value for a given tag.
+ *
+ * \param name the name of the tag whose value you wish to set
+ *
+ * \param values the pointer to the array of values you wish the tag to have 
+ *
+ * \param numValues the number of elements in the array of values
+ */
+void svkDcmtkAdapter::ModifyValueRecursive(const char* name, string value)
+{
+    DcmStack stack; 
+    OFCondition status = this->dcmFile->getDataset()->findAndGetElements( GetDcmTagKey( name ), stack); 
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    while ( !stack.empty() ) {
+        DcmElement* of = static_cast<DcmElement*>(stack.pop());  
+        status = of->putString(value.c_str());
+        if (status.bad()) {
+            cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+        }
+    }
+    this->Modified();
+}
+
+/*!
  * Gets the value of a given tag as an integer.
  *
  * \param name the name of the tag whose value you wish to get

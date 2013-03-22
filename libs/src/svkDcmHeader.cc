@@ -2584,31 +2584,37 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
     //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED || phiType == PHI_LIMITED ) {
 
-            this->SetValue( "SOPInstanceUID",                studyId); 
-            this->SetValue( "AccessionNumber",               studyId); 
-            this->SetValue( "InstitutionName",               studyId); 
-            this->SetValue( "ReferringPhysicianName",        studyId); 
-            this->SetValue( "ReferencedSOPInstanceUID",      studyId); 
-            this->SetValue( "PatientName",                   patientId); 
-            this->SetValue( "PatientID",                     patientId); 
-            this->SetValue( "StudyInstanceUID",              studyId); 
-            this->SetValue( "SeriesInstanceUID",             studyId); 
-            this->SetValue( "StudyID",                       studyId); 
-            this->SetValue( "FrameOfReferenceUID",           studyId); 
-            this->SetValue( "BurnedInAnnotation",            studyId); 
-            this->SetValue( "UID",                           studyId); 
-            this->SetValue( "StorageMediaFileSetUID",        studyId); 
-            this->SetValue( "ReferencedFrameOfReferenceUID", studyId); 
-            this->SetValue( "RelatedFrameOfReferenceUID",    studyId); 
+            this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
+            this->ModifyValueRecursive( "AccessionNumber",               studyId); 
+this->SetValue( "InstitutionName",                   studyId); 
+            this->ModifyValueRecursive( "InstitutionName",               studyId); 
+            this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
+            this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
+            this->ModifyValueRecursive( "PatientName",                   patientId); 
+            this->ModifyValueRecursive( "PatientID",                     patientId); 
+            this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
+            this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
+            this->ModifyValueRecursive( "StudyID",                       studyId); 
+            this->ModifyValueRecursive( "FrameOfReferenceUID",           studyId); 
+this->SetValue( "BurnedInAnnotation",                   studyId); 
+            this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
+            this->ModifyValueRecursive( "UID",                           studyId); 
+            this->ModifyValueRecursive( "StorageMediaFileSetUID",        studyId); 
+            this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", studyId); 
+            this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    studyId); 
     }   
 
     //  These fields are not removed from PHI_LIMITED data sets 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
             string emptyString = "";
-            this->SetValue( "StudyDate",                     emptyString); 
-            this->SetValue( "SeriesDate",                    emptyString); 
-            this->SetValue( "AcquisitionDate",               emptyString); 
-            this->SetValue( "ContentDate",                   emptyString); 
+this->SetValue( "StudyDate",                     emptyString); 
+this->SetValue( "SeriesDate",                    emptyString); 
+this->SetValue( "AcquisitionDate",               emptyString); 
+this->SetValue( "ContentDate",                   emptyString); 
+            this->ModifyValueRecursive( "StudyDate",                     emptyString); 
+            this->ModifyValueRecursive( "SeriesDate",                    emptyString); 
+            this->ModifyValueRecursive( "AcquisitionDate",               emptyString); 
+            this->ModifyValueRecursive( "ContentDate",                   emptyString); 
             this->SetValue( "PatientBirthDate",              emptyString); 
     }
 

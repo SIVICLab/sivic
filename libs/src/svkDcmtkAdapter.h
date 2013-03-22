@@ -94,6 +94,8 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    SetValue(const char* name, unsigned short* values, int numValues);
         virtual void    SetValue(const char* name, signed short* values, int numValues);
         virtual void    SetValue(const char* name, float* values, int numValues);
+        virtual void    ModifyValueRecursive(const char* name, string value); 
+
 
         virtual void    GetShortValue(const char* name, short* values, long unsigned int numValues); 
         virtual int     GetIntValue(const char *name);
