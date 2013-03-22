@@ -2586,7 +2586,6 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
 
             this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
             this->ModifyValueRecursive( "AccessionNumber",               studyId); 
-this->SetValue( "InstitutionName",                   studyId); 
             this->ModifyValueRecursive( "InstitutionName",               studyId); 
             this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
             this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
@@ -2596,7 +2595,6 @@ this->SetValue( "InstitutionName",                   studyId);
             this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
             this->ModifyValueRecursive( "StudyID",                       studyId); 
             this->ModifyValueRecursive( "FrameOfReferenceUID",           studyId); 
-this->SetValue( "BurnedInAnnotation",                   studyId); 
             this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
             this->ModifyValueRecursive( "UID",                           studyId); 
             this->ModifyValueRecursive( "StorageMediaFileSetUID",        studyId); 
@@ -2607,10 +2605,6 @@ this->SetValue( "BurnedInAnnotation",                   studyId);
     //  These fields are not removed from PHI_LIMITED data sets 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
             string emptyString = "";
-this->SetValue( "StudyDate",                     emptyString); 
-this->SetValue( "SeriesDate",                    emptyString); 
-this->SetValue( "AcquisitionDate",               emptyString); 
-this->SetValue( "ContentDate",                   emptyString); 
             this->ModifyValueRecursive( "StudyDate",                     emptyString); 
             this->ModifyValueRecursive( "SeriesDate",                    emptyString); 
             this->ModifyValueRecursive( "AcquisitionDate",               emptyString); 
