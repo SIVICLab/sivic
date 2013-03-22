@@ -148,7 +148,7 @@ int main (int argc, char** argv)
     if ( seriesUID.size() == 0 ) {
         image->GetDcmHeader()->InsertUniqueUID("SeriesInstanceUID");
     } else {
-        image->GetDcmHeader()->SetValue("SerieInstanceUID", seriesUID );
+        image->GetDcmHeader()->SetValue("SeriesInstanceUID", seriesUID );
     }
     image->GetDcmHeader()->InsertUniqueUID("SOPInstanceUID");
     image->GetDcmHeader()->WriteDcmFile(inputFileName); 
