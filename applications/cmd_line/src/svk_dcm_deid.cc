@@ -72,6 +72,8 @@ int main (int argc, char** argv)
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of dcm file to deidentify                  \n"; 
     usemsg += "   -r    deid id             replacement id                                  \n"; 
+    usemsg += "   --stu UID                 use the specified StudyInstanceUID              \n";
+    usemsg += "   --seu UID                 use the specified SeriesInstanceUID             \n";
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Deidentify a DICOM file.                                                     \n"; 
@@ -79,11 +81,22 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string deidID = ""; 
+    string studyUID = ""; 
+    string seriesUID = ""; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
+    enum FLAG_NAME {
+        FLAG_STUDY_UID = 0,
+        FLAG_SERIES_UID
+    };
+
+
     static struct option long_options[] =
     {
+        /* This option sets a flag. */
+        {"stu",             required_argument, NULL,  FLAG_STUDY_UID},
+        {"seu",             required_argument, NULL,  FLAG_SERIES_UID},
         {0, 0, 0, 0}
     };
 
@@ -100,6 +113,12 @@ int main (int argc, char** argv)
                 break;
             case 'r':
                 deidID.assign( optarg );
+                break;
+            case FLAG_STUDY_UID:
+                studyUID.assign(optarg); 
+                break;
+            case FLAG_SERIES_UID:
+                seriesUID.assign( optarg ); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -121,8 +140,16 @@ int main (int argc, char** argv)
     svkImageData* image = svkMriImageData::New(); 
     image->GetDcmHeader()->ReadDcmFile( inputFileName, 10000000000 );
     image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, deidID); 
-    image->GetDcmHeader()->InsertUniqueUID("StudyInstanceUID");
-    image->GetDcmHeader()->InsertUniqueUID("SeriesInstanceUID");
+    if ( studyUID.size() == 0 ) {
+        image->GetDcmHeader()->InsertUniqueUID("StudyInstanceUID");
+    } else {
+        image->GetDcmHeader()->SetValue("StudyInstanceUID", studyUID );
+    }
+    if ( seriesUID.size() == 0 ) {
+        image->GetDcmHeader()->InsertUniqueUID("SeriesInstanceUID");
+    } else {
+        image->GetDcmHeader()->SetValue("SerieInstanceUID", seriesUID );
+    }
     image->GetDcmHeader()->InsertUniqueUID("SOPInstanceUID");
     image->GetDcmHeader()->WriteDcmFile(inputFileName); 
     image->Delete(); 
