@@ -569,12 +569,22 @@ class svkDcmHeader: public vtkObject
          */
         virtual int     GetNumberOfItemsInSequence( const char* seqName ) = 0;
 
+
         /*!
          *  Writes the DICOM file to the specified file name  
          *
          *  \param fileName  name of the output file root (no extension). 
          */
         virtual void    WriteDcmFile(string fileName) = 0;
+
+
+        /*!
+         *  Writes the DICOM file to the specified file name  
+         *  and using RLE lossless compression transfer syntax
+         *
+         *  \param fileName  name of the output file root (no extension). 
+         */
+        virtual void    WriteDcmFileCompressed(string fileName) = 0;
 
 
         /*!
