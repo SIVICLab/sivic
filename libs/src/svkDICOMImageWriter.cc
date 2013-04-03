@@ -66,6 +66,8 @@ svkDICOMImageWriter::svkDICOMImageWriter()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
+    this->useLosslessCompression = false; 
 }
 
 
@@ -233,3 +235,11 @@ void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, dou
 
 }
 
+
+/*!
+ *  Use lossless compression transfer syntax. 
+ */
+void svkDICOMImageWriter::UseLosslessCompression() 
+{
+    this->useLosslessCompression = true; 
+}

@@ -70,6 +70,7 @@ class svkDICOMImageWriter : public svkImageWriter
         void            SetInput(int index, vtkDataObject* input);
         vtkDataObject*  GetInput(int port);
         svkImageData*   GetImageDataInput(int port);
+        void            UseLosslessCompression(); 
 
     protected:
 
@@ -80,6 +81,7 @@ class svkDICOMImageWriter : public svkImageWriter
         void            GetShortScaledPixels( unsigned short* shortPixels, double& slope, double& intercept, int sliceNumber, int volNumber );
         void            GetPixelRange(double& min, double& max, int volNumber); 
         virtual int     GetDataLength() = 0;
+        bool            useLosslessCompression; 
         
 };
 
