@@ -51,6 +51,7 @@ extern "C" {
 #endif
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
+#include <svkDICOMImageWriter.h>
 #include <svkIdfVolumeReader.h>
 #include <svkDdfVolumeReader.h>
 #include <svkDcmVolumeReader.h>
@@ -72,29 +73,32 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type \n"; 
-    usemsg += "                 [ --deid_type type [ --deid_id id ] ] [-h]                   \n";
-    usemsg += "\n";  
-    usemsg += "   -i            input_file_name     Name of file to convert.        \n"; 
-    usemsg += "   -o            output_file_name    Name of outputfile.             \n";  
-    usemsg += "   -t            output_data_type    Target data type:               \n";  
-    usemsg += "                                         2 = UCSF DDF                \n";  
-    usemsg += "                                         3 = UCSF IDF                \n";  
-    usemsg += "                                         4 = DICOM_MRS               \n";  
-    usemsg += "                                         5 = DICOM_MRI               \n";  
-    usemsg += "                                         6 = DICOM_Enhanced MRI      \n";  
-    usemsg += "                                         9 = VTI                     \n";
-    usemsg += "   --deid_type   type                Type of deidentification:     \n";
-    usemsg += "                                         1 = limited (default)       \n";
-    usemsg += "                                         2 = deidentified            \n";
-    usemsg += "   --deid_id     id                  Replace PHI with this identifier \n"; 
+    usemsg += "svk_file_convert -i input_file_name -o output_file_name -t output_data_type  \n"; 
+    usemsg += "                 [ --deid_type type [ --deid_id id ] ] [-h]                  \n";
+    usemsg += "                                                                             \n";  
+    usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
+    usemsg += "   -o            output_file_name    Name of outputfile.                     \n";  
+    usemsg += "   -t            output_data_type    Target data type:                       \n";  
+    usemsg += "                                         2 = UCSF DDF                        \n";  
+    usemsg += "                                         3 = UCSF IDF                        \n";  
+    usemsg += "                                         4 = DICOM_MRS                       \n";  
+    usemsg += "                                         5 = DICOM_MRI                       \n";  
+    usemsg += "                                         6 = DICOM_Enhanced MRI              \n";  
+    usemsg += "                                         9 = VTI                             \n";
+    usemsg += "   -c                                Use loss compression transfer           \n"; 
+    usemsg += "                                     syntax for output_data_type 5 or 6.     \n"; 
+    usemsg += "                                         2 = UCSF DDF                        \n";  
+    usemsg += "   --deid_type   type                Type of deidentification:               \n";
+    usemsg += "                                         1 = limited (default)               \n";
+    usemsg += "                                         2 = deidentified                    \n";
+    usemsg += "   --deid_id     id                  Replace PHI with this identifier        \n"; 
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
-    usemsg += "   -h                                Print help mesage. \n";  
-    usemsg += " \n";  
-    usemsg += "Converts the input file to the specified target file type \n";  
-    usemsg += "\n";  
+    usemsg += "   -h                                Print help mesage.                      \n";  
+    usemsg += "                                                                             \n";  
+    usemsg += "Converts the input file to the specified target file type                    \n";  
+    usemsg += "                                                                             \n";  
 
     string inputFileName; 
     string outputFileName; 
@@ -102,6 +106,7 @@ int main (int argc, char** argv)
     svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_IDENTIFIED;
     string deidStudyId = ""; 
     bool   burnResearchHeader = false;  
+    bool   useCompression = false;  
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -125,7 +130,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:cbh", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -147,6 +152,9 @@ int main (int argc, char** argv)
                 burnResearchHeader = true; 
                 break;
 #endif
+            case 'c':
+                useCompression = true; 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -167,6 +175,14 @@ int main (int argc, char** argv)
      */
     if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
         dataTypeOut < 0 || dataTypeOut > svkImageWriterFactory::LAST_TYPE + 1 ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
+    if ( useCompression && 
+        (dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+            && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI ) ) {
+        cout << "Can only specify compression with DICOM_MRI or DICOM_ENHANCED_MRI output types" << endl;
         cout << usemsg << endl;
         exit(1); 
     }
@@ -259,9 +275,12 @@ int main (int argc, char** argv)
 		writerFactory->Delete();
 		writer->SetFileName( outputFileName.c_str() );
 		writer->SetInput( currentImage );
+        if ( useCompression ) {
+           svkDICOMImageWriter::SafeDownCast( writer )->UseLosslessCompression();  
+        }
 		writer->Write();
 		writer->Delete();
-    } else if (dataTypeOut == svkImageWriterFactory::LAST_TYPE + 1 ) {
+    } else if (dataTypeOut == 9 ) {
         vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
         writer->SetFileName( outputFileName.c_str() );
         writer->SetInput( currentImage );
