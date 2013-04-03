@@ -179,7 +179,11 @@ void svkDICOMMRIWriter::Write()
                 volume 
             );
 
-            mriHeader->WriteDcmFile(this->InternalFileName); 
+            if ( this->useLosslessCompression ) {
+                mriHeader->WriteDcmFileCompressed(this->InternalFileName); 
+            } else {
+                mriHeader->WriteDcmFile(this->InternalFileName); 
+            }
 
             if (this->ErrorCode == vtkErrorCode::OutOfDiskSpaceError) {
                 vtkErrorMacro("Ran out of disk space; deleting file(s) already written");
