@@ -43,6 +43,9 @@
 #include <svkDcmtkAdapter.h>
 
 #include "svkUtils.h"
+#include "dcmtk/dcmdata/dcrleerg.h" 
+#include "dcmtk/dcmdata/dcrledrg.h" 
+
 
 
 using namespace svk;
@@ -1762,6 +1765,31 @@ void  svkDcmtkAdapter::WriteDcmFile(string fileName)
 
 
 /*!
+ *   Writes the DICOM file to the specified file name
+ *   and using RLE Lossless compression transfer syntax. 
+ *
+ *   \param fileName  name of the output file root (no extension).
+ */
+void  svkDcmtkAdapter::WriteDcmFileCompressed(string fileName) 
+{
+    // register RLE compression codec
+    DcmRLEEncoderRegistration::registerCodecs(); 
+
+    OFCondition status = this->dcmFile->chooseRepresentation(EXS_RLELossless, NULL);
+    if (status.bad()) {
+        cerr << "Error: cannot set RLE Representation (" << status.text() << ")" << endl;
+    }
+
+    status = this->dcmFile->saveFile(fileName.c_str(), EXS_RLELossless);
+    if (status.bad()) {
+        cerr << "Error: cannot write DICOM file (" << status.text() << ")" << endl;
+    }
+    DcmRLEEncoderRegistration::cleanup();
+
+}
+
+
+/*!
  *   Read the DICOM file to the specified file name
  *
  *   \param fileName  name of the output file root (no extension).
@@ -1784,6 +1812,24 @@ int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
         cerr << "Error: cannot read DICOM file (" << status.text() << ")" << endl;
         return 1; 
     }
+
+    //  get the input transfer syntax.. if RLELossless, then 
+    //  decode. 
+    E_TransferSyntax opt_oxfer = EXS_LittleEndianExplicit;
+    DcmXfer opt_oxferSyn(opt_oxfer); 
+    DcmXfer original_xfer(this->dcmFile->getDataset()->getOriginalXfer());
+    if ( this->dcmFile->getDataset()->getOriginalXfer() == EXS_RLELossless ) {
+        // register RLE compression codec
+        DcmRLEDecoderRegistration::registerCodecs();
+
+        status = this->dcmFile->chooseRepresentation(EXS_LittleEndianExplicit, NULL);
+        if (status.bad()) {
+            cerr << "Error: cannot decode RLE Representation (" << status.text() << ")" << endl;
+            return 1; 
+        }
+        DcmRLEDecoderRegistration::cleanup();
+    }
+
 
     this->Modified();
     return 0; 
