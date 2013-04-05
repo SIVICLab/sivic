@@ -258,7 +258,7 @@ void svkDcmRawDataReader::ExtractFiles()
 
                     //  if the size isn't divisible by sizeof(float), 
                     //  then pad to include partial word
-                    if ( numWordsInSection % sizeof(float) != 0 ) { 
+                    if ( numBytesInSection % sizeof(float) != 0 ) { 
                         long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
                         numWordsInSection = numWordsInSection + 1; 
                     } 
