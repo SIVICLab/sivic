@@ -85,7 +85,7 @@ int main (int argc, char** argv)
     usemsg += "                                         5 = DICOM_MRI                       \n";  
     usemsg += "                                         6 = DICOM_Enhanced MRI              \n";  
     usemsg += "                                         9 = VTI                             \n";
-    usemsg += "   -c                                Use loss compression transfer           \n"; 
+    usemsg += "   -c                                Use lossless compression transfer       \n"; 
     usemsg += "                                     syntax for output_data_type 5 or 6.     \n"; 
     usemsg += "                                         2 = UCSF DDF                        \n";  
     usemsg += "   --deid_type   type                Type of deidentification:               \n";
