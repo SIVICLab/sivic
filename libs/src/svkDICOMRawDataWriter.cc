@@ -553,7 +553,6 @@ void svkDICOMRawDataWriter::InitRawDataModule()
             if ( this->associatedFiles[fileNum][2].compare("GE PFile") == 0 ) { 
                 if ( pfileSize != this->computedPFileSize ) { 
                     cout << "GEPFile Size on disk doesn't match expectation based on header info: " << endl; 
-                    cout << pfileSize << " vs " << this->computedPFileSize  << endl; 
                     this->SetErrorCode( vtkErrorCode::PrematureEndOfFileError); 
                     continue; 
                 }
@@ -619,9 +618,9 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
             //  Allocate a buffer with an extra word just in case we have partial word data, see below
             //  Zero pad the ending bytes: 
-            int readStrideBytes = 1000000000;
+            long int readStrideBytes = 1000000000;
 
-            int allocationSize = pfileSize + sizeof(float); 
+            long int allocationSize = pfileSize + sizeof(float); 
 
             //  allocate up to readStrideBytes of memory for reading data: 
             if ( allocationSize > readStrideBytes ) {
@@ -632,12 +631,11 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
             //  read and insert into DICOM object blocks of up to readStridBytes
             //  in length. 
-            int pfileSection = 0; 
-            for ( int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
-
+            long int pfileSection = 0; 
+            for ( long int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
                 //  First determine how many bytes are in this section (item). 
-                int numBytesInSection; 
-                int numWordsInSection; 
+                long int numBytesInSection; 
+                long int numWordsInSection; 
 
                 numBytesInSection = pfileSize - pfileSection * readStrideBytes; 
                 numWordsInSection = numBytesInSection / sizeof(float); 
@@ -651,9 +649,9 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                     //  if the size isn't divisible by sizeof(float), 
                     //  then pad to include partial word
                     if ( numBytesInSection % sizeof(float) != 0 ) { 
-                        int numBytesInSectionTmp = numBytesInSection + sizeof(float);
+                        long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
                         numWordsInSection = numWordsInSection + 1; 
-                        for ( int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
+                        for ( long int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
                             static_cast<char*>(pfileBuffer)[j] = '0'; 
                         }   
                     } 
