@@ -2630,12 +2630,11 @@ bool svkDcmHeader::IsFileDICOM( vtkstd::string fname)
     try {
         ifstream* file = new ifstream();
         file->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
-
         file->open( fname.c_str(), ios::binary ); 
 
         // get length of file:
         file->seekg (0, ios::end);
-        int fileLength = file->tellg();
+        long int fileLength = file->tellg();
 
         if ( fileLength >= 131 ) {
 

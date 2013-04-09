@@ -443,6 +443,13 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
+    privateDic->addEntry( new DcmDictEntry(
+            0x7777, 0x1029, EVR_LO, 
+            "SVK_ZLIB_INFLATED_SIZE", 
+            1, 1, "private", OFFalse, "SVK_PRIVATE_CREATOR" 
+        )
+    );
+
     //  Set point position of echo center 
     privateDic->addEntry( new DcmDictEntry(
             0x7777, 0x1024, EVR_DS, 
@@ -475,7 +482,7 @@ void svkDcmtkAdapter::SetPrivateDictionaryElements()
         )
     );
 
-    //  Next element number should be 29 (not 28!). 
+    //  Next element number should be 30 (not 28!). 
 
     dcmDataDict.unlock();
 }
@@ -1719,6 +1726,43 @@ int svkDcmtkAdapter::GetNumberOfElements(const char* elementName)
     return numberOfElements;  
 
 }
+
+
+/*!
+ *  Returns the length of the element 
+ *
+ *  \param elementName the name of the tag you wish to know the number of elements in
+ *
+ *  \return the length of elements in the given tag 
+ */
+int svkDcmtkAdapter::GetSequenceItemElementLength(const char* seqName, int seqItemPosition, const char* elementName, const char* parentSeqName, int parentSeqItemPosition) 
+{
+
+    int length = 0; 
+
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    dataset = this->GetDcmItem(dataset, seqName, seqItemPosition);
+
+    DcmElement* of;
+    float* floatArray;
+    OFCondition status = dataset->findAndGetElement( GetDcmTagKey( elementName ), of);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+
+    length = of->getLength();
+
+    return length; 
+}
+
 
 
 /*!

@@ -38,7 +38,7 @@
  *      Beck Olson
  */
 
-
+#include <vtkZLibDataCompressor.h>
 
 #include <svkDICOMRawDataWriter.h>
 #include <svkRawIOD.h>
@@ -590,7 +590,6 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 this->associatedFiles[fileNum][1]
             );
 
-
             this->dcmHeader->AddSequenceItemElement(
                 "SVK_FILE_SET_SEQUENCE",
                 fileNum,
@@ -627,54 +626,80 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 allocationSize = readStrideBytes; 
             }
 
-            void* pfileBuffer = new char[ allocationSize ]; 
+            void* pfileBuffer = new unsigned char[ allocationSize ]; 
 
             //  read and insert into DICOM object blocks of up to readStridBytes
             //  in length. 
             long int pfileSection = 0; 
             for ( long int byte = 0; byte < pfileSize; byte += readStrideBytes ) {
+
                 //  First determine how many bytes are in this section (item). 
                 long int numBytesInSection; 
-                long int numWordsInSection; 
 
                 numBytesInSection = pfileSize - pfileSection * readStrideBytes; 
-                numWordsInSection = numBytesInSection / sizeof(float); 
                 if ( numBytesInSection > readStrideBytes ) {
                     numBytesInSection = readStrideBytes; 
-                    numWordsInSection = numBytesInSection / sizeof(float); 
-                } else {
-                    //  Handle remainder bytes to ensure they are of size divisible 
-                    //  by sizeof(float). 
-
-                    //  if the size isn't divisible by sizeof(float), 
-                    //  then pad to include partial word
-                    if ( numBytesInSection % sizeof(float) != 0 ) { 
-                        long int numBytesInSectionTmp = numBytesInSection + sizeof(float);
-                        numWordsInSection = numWordsInSection + 1; 
-                        for ( long int j = numBytesInSectionTmp; j >= numBytesInSection; j--) { 
-                            static_cast<char*>(pfileBuffer)[j] = '0'; 
-                        }   
-                    } 
-                }
+                } 
+                cout << "section: " << pfileSection << endl;
+                cout << "num bytes: " << numBytesInSection << endl;
 
                 pFile->seekg(0, ios::beg);
                 pFile->seekg(byte, ios::beg);
                 pFile->read( static_cast<char*>(pfileBuffer), numBytesInSection);
 
+                //  Compress buffer: 
+                vtkZLibDataCompressor* zlib = vtkZLibDataCompressor::New();
+                size_t maxLengthDeflated = zlib->GetMaximumCompressionSpace(numBytesInSection); 
+                cout << "max length deflated: " << maxLengthDeflated << endl;
+                //  pad out to integral number of float words: 
+                size_t remainder =  maxLengthDeflated % sizeof(float); 
+                if ( remainder > 0 ) {
+                    remainder = 4 - remainder; 
+                }
+                void* deflatedBuffer = new unsigned char[maxLengthDeflated + remainder];
+                size_t lengthDeflated = zlib->Compress(
+                        static_cast<unsigned char*>(pfileBuffer), numBytesInSection, 
+                        static_cast<unsigned char*>(deflatedBuffer), maxLengthDeflated ); 
+                
+                this->dcmHeader->AddSequenceItemElement(
+                    "SVK_FILE_CONTENT_SEQUENCE",
+                    pfileSection, 
+                    "SVK_ZLIB_INFLATED_SIZE", 
+                    numBytesInSection, 
+                    "SVK_FILE_SET_SEQUENCE", 
+                    fileNum
+                );
+
+                //  After deflating with zlib: if the size (lengthDeflated) isn't divisible 
+                //  by sizeof(float), then zero pad to include partial word: 
+                cout << "length deflated1: " << lengthDeflated << endl;
+                size_t deflatedRemainder = lengthDeflated % sizeof(float); 
+                if ( deflatedRemainder != 0 ) { 
+                    deflatedRemainder = 4 - deflatedRemainder; 
+                    long int lengthDeflatedTmp = lengthDeflated + deflatedRemainder; 
+                    for ( long int j = lengthDeflatedTmp; j >= lengthDeflated; j--) { 
+                        static_cast<char*>(deflatedBuffer)[j] = '0'; 
+                    }   
+                    lengthDeflated = lengthDeflatedTmp; 
+                }
+                long int numWordsInSection = lengthDeflated/sizeof(float); 
+                cout << "length deflated2: " << lengthDeflated << endl;
+
                 this->dcmHeader->AddSequenceItemElement(
                     "SVK_FILE_CONTENT_SEQUENCE",
                     pfileSection,
                     "SVK_FILE_CONTENTS",
-                    static_cast<float*>(pfileBuffer),
+                    static_cast<float*>(deflatedBuffer),
                     numWordsInSection, 
                     "SVK_FILE_SET_SEQUENCE",
                     fileNum 
                 );
-    
+   
+                delete [] static_cast<unsigned char*>(deflatedBuffer); 
 
                 pfileSection++; 
             }
-            delete [] static_cast<char*>(pfileBuffer); 
+            delete [] static_cast<unsigned char*>(pfileBuffer); 
             pfileBuffer = NULL; 
 
 

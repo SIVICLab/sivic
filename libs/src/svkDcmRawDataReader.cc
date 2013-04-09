@@ -40,6 +40,7 @@
  */
 
 
+#include <vtkZLibDataCompressor.h>
 
 #include <svkDcmRawDataReader.h>
 #include <svkDcmHeader.h>
@@ -266,6 +267,22 @@ void svkDcmRawDataReader::ExtractFiles()
                 //cout << "READ ITEM: " << item << endl;
                 //cout << "READ ITEM: numWordsInSection: " << numWordsInSection << endl;
                 //cout << "READ ITEM: numBytesInSection: " << numBytesInSection << endl;
+
+                //  If the element was zlib deflated, then detect that and load appropriately 
+                bool dataDeflated = false; 
+                if( tmpDcm->GetDcmHeader()->ElementExists( "SVK_ZLIB_INFLATED_SIZE") ) {
+                    // Get length to read (byes); 
+                    long int lengthBytesDeflated = tmpDcm->GetDcmHeader()->GetSequenceItemElementLength(
+                        "SVK_FILE_CONTENT_SEQUENCE",
+                        item,
+                        "SVK_FILE_CONTENTS",
+                        "SVK_FILE_SET_SEQUENCE",
+                        fileNum
+                    ); 
+                    long int numDeflatedWords = lengthBytesDeflated / sizeof(float); 
+                    numWordsInSection = numDeflatedWords; 
+                    dataDeflated = true; 
+                }
                
                 tmpDcm->GetDcmHeader()->GetFloatSequenceItemElement(
                     "SVK_FILE_CONTENT_SEQUENCE",
@@ -277,9 +294,34 @@ void svkDcmRawDataReader::ExtractFiles()
                     fileNum
                 );
 
-                //cout << "done READ ITEM " << endl;
+                if ( dataDeflated ) {
+                    vtkZLibDataCompressor* zlib = vtkZLibDataCompressor::New(); 
+                    size_t originalInflatedSize = tmpDcm->GetDcmHeader()
+                        ->GetLongIntSequenceItemElement(
+                        "SVK_FILE_CONTENT_SEQUENCE",
+                        item,
+                        "SVK_ZLIB_INFLATED_SIZE",
+                        "SVK_FILE_SET_SEQUENCE",
+                        fileNum
+                    );
+                    unsigned char* deflatedBuffer = new unsigned char[originalInflatedSize]; 
 
-                outputFile.write( (char *)fileBuffer, numBytesInSection); 
+                    size_t inflatedSize = zlib->Uncompress( 
+                            (unsigned char*)(fileBuffer), numWordsInSection * sizeof(float), 
+                            deflatedBuffer, originalInflatedSize ); 
+                    if ( inflatedSize == originalInflatedSize ) {
+                        outputFile.write( (char *)deflatedBuffer, originalInflatedSize); 
+                    } else {
+                        cout << "ERROR: could not deflate SVK_FILE_CONTENTS" << endl;
+                        exit(1); 
+                    }
+
+                    delete [] deflatedBuffer; 
+
+                } else {
+
+                    outputFile.write( (char *)fileBuffer, numBytesInSection); 
+                }
 
                 //cout << "done Write ITEM " << endl;
 

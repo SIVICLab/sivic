@@ -676,7 +676,12 @@ class svkDcmHeader: public vtkObject
         void            RemoveDimensionIndex( svkDcmHeader::DimensionIndexLabel indexType ); 
         void            SetDimensionIndexSize( 
                             svkDcmHeader::DimensionIndexLabel indexType, int maxIndex); 
-
+        virtual int     GetSequenceItemElementLength(
+                            const char* seqName, 
+                            int seqItemPosition, 
+                            const char* elementName, 
+                            const char* parentSeqName, 
+                            int parentSeqItemPosition) = 0; 
         
         static void     PrintDimensionIndexVector( svkDcmHeader::DimensionVector* dimensionVector );
         DimensionVector GetDimensionIndexVector(); 
