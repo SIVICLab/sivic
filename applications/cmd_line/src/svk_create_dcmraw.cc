@@ -334,7 +334,7 @@ string GetHash( string rawFileName, unsigned char* sha1Digest )
             sha1DigestString.append(buf); 
         }
         printf(" \n");
-        delete [] fileBuffer; 
+        delete [] static_cast<char*>(fileBuffer); 
 
    } catch (ifstream::failure e) {
         cout << "ERROR: Exception opening/reading file " << rawFileName << " => " << e.what() << endl;
