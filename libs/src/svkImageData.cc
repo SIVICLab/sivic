@@ -130,6 +130,17 @@ void svkImageData::PrintSelf( ostream &os, vtkIndent indent )
 
 
 /*!
+ *  Calls two-argument version of the method. We want to make sure we retain
+ *  the polymorphic properties of this method so we can't use a default
+ *  argument otherwise the method would be hidden to the base class.
+ */
+void svkImageData::DeepCopy( vtkDataObject* src )
+{
+    this->DeepCopy( src, svkDcmHeader::UNDEFINED );
+}
+
+
+/*!
  *  DeepCopy creates a deep copy of svkImageData, including orientation information.
  *  First calls vtkImageData's deep copy, then also copies the dcos.  Creates a derived
  *  copy of the DICOM header. 
@@ -138,6 +149,17 @@ void svkImageData::DeepCopy( vtkDataObject* src, svkDcmHeader::DcmPixelDataForma
 {
     this->Superclass::DeepCopy( src );
     this->CopyMetaData(src, castToFormat); 
+}
+
+
+/*!
+ *  Calls two-argument version of the method. We want to make sure we retain
+ *  the polymorphic properties of this method so we can't use a default
+ *  argument otherwise the method would be hidden to the base class.
+ */
+void svkImageData::ShallowCopy( vtkDataObject* src )
+{
+    this->ShallowCopy( src, svkDcmHeader::UNDEFINED );
 }
 
 

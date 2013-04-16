@@ -130,13 +130,15 @@ class svkImageData: public vtkImageData
 
 
         // Copy and Cast Methods
+        virtual void       DeepCopy( vtkDataObject* src );
         virtual void       DeepCopy( 
                                 vtkDataObject* src, 
-                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
+                                svkDcmHeader::DcmPixelDataFormat castToFormat 
                            );
+        virtual void       ShallowCopy( vtkDataObject* src );
         virtual void       ShallowCopy( 
                                 vtkDataObject* src, 
-                                svkDcmHeader::DcmPixelDataFormat castToFormat = svkDcmHeader::UNDEFINED 
+                                svkDcmHeader::DcmPixelDataFormat castToFormat 
                            );
         virtual void       ZeroCopy( 
                                 vtkImageData* src, 
