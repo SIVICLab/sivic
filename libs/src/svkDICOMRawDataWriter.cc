@@ -696,6 +696,7 @@ void svkDICOMRawDataWriter::InitRawDataModule()
                 );
    
                 delete [] static_cast<unsigned char*>(deflatedBuffer); 
+                zlib->Delete(); 
 
                 pfileSection++; 
             }
