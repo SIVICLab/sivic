@@ -317,6 +317,7 @@ void svkDcmRawDataReader::ExtractFiles()
                     }
 
                     delete [] deflatedBuffer; 
+                    zlib->Delete(); 
 
                 } else {
 
