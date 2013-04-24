@@ -260,6 +260,12 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual int     GetNumberOfElements( const char* elementName );
         virtual int     GetNumberOfItemsInSequence( const char* seqName ); 
+        virtual int     GetNumberOfItemsInSequence(
+                            const char* seqName, 
+                            const char* parentSeqName, 
+                            int parentSeqItemPosition
+                        ); 
+        
 
         virtual void    WriteDcmFile(string fileName);
         virtual void    WriteDcmFileCompressed(string fileName);

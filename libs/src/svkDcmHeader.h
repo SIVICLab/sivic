@@ -569,6 +569,15 @@ class svkDcmHeader: public vtkObject
          */
         virtual int     GetNumberOfItemsInSequence( const char* seqName ) = 0;
 
+       
+        /*!
+         *  Returns the number of items in a nested sequence
+         */
+        virtual int     GetNumberOfItemsInSequence(
+                            const char* seqName, 
+                            const char* parentSeqName, 
+                            int parentSeqItemPosition
+                        ) = 0; 
 
         /*!
          *  Writes the DICOM file to the specified file name  

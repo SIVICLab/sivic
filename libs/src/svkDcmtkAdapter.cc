@@ -1792,6 +1792,40 @@ int svkDcmtkAdapter::GetNumberOfItemsInSequence( const char* seqName)
 
 
 /*!
+ *  Returns the number of items in the specified sequence. 
+ *
+ *  \param seqName the name of the sequence you wish to know the number of elements in 
+ *
+ *  \return the number of elements in the given sequence
+ */
+int svkDcmtkAdapter::GetNumberOfItemsInSequence(const char* seqName, const char* parentSeqName, int parentSeqItemPosition)
+{
+    DcmItem* dataset = this->dcmFile->getDataset(); 
+
+    if (parentSeqName != NULL) {
+        DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
+        if (seq != NULL ) {
+            dataset = seq->getItem(parentSeqItemPosition);
+        }
+    }
+
+    //DcmItem* tmpItem = this->GetDcmItem(dataset, seqName, seqItemPosition);    
+
+    DcmSequenceOfItems* sequence = NULL; 
+    OFCondition status = dataset->findAndGetSequence( GetDcmTagKey(seqName), sequence, true ); 
+
+    int itemCount = 0; 
+    if (sequence != NULL ) {
+        while( sequence->getItem(itemCount) != NULL) {   
+            itemCount++; 
+        }
+    }
+
+    return itemCount; 
+}
+
+
+/*!
  *   Writes the DICOM file to the specified file name
  *
  *   \param fileName  name of the output file root (no extension).

@@ -234,7 +234,8 @@ void svkDcmRawDataReader::ExtractFiles()
             int pfileSection = 0; 
             int byte = 0; 
 
-            int numberOfItems = hdr->GetNumberOfItemsInSequence("SVK_FILE_CONTENT_SEQUENCE");
+            int numberOfItems = hdr->GetNumberOfItemsInSequence("SVK_FILE_CONTENT_SEQUENCE", "SVK_FILE_SET_SEQUENCE", fileNum); 
+
             //cout << "NUMBER OF ITEMS COMPRISING PFILE: " << numberOfItems << endl;
 
             for ( int item = 0; item < numberOfItems; item++ ) {
