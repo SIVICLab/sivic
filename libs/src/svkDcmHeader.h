@@ -252,6 +252,12 @@ class svkDcmHeader: public vtkObject
          *  Method to get a DICOM tag by specifying it's name and value. The name should be 
          *  the string representation of the field in the DICOM dictionary being used. 
          */
+        virtual unsigned short   GetShortValue(const char* name, long unsigned int position) = 0;
+
+        /*! 
+         *  Method to get a DICOM tag by specifying it's name and value. The name should be 
+         *  the string representation of the field in the DICOM dictionary being used. 
+         */
         virtual int     GetIntValue(const char *name) = 0;
 
         /*! 

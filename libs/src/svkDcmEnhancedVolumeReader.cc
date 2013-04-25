@@ -64,6 +64,7 @@ svkDcmEnhancedVolumeReader::svkDcmEnhancedVolumeReader()
     vtkDebugLeaks::ConstructClass("svkDcmEnhancedVolumeReader");
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
+    this->useDoublePrecision = false;
 }
 
 
@@ -73,6 +74,17 @@ svkDcmEnhancedVolumeReader::svkDcmEnhancedVolumeReader()
 svkDcmEnhancedVolumeReader::~svkDcmEnhancedVolumeReader()
 {
     vtkDebugMacro(<<this->GetClassName() << "::~" << this->GetClassName() << "()");
+}
+
+
+/*! 
+ * Set to true if the data should be interpreted as double precision.
+ * This is unlikely BUT hypothetically the slope and intercept fields
+ * allow for double precision. This precision is most likely artificial.
+ */
+void svkDcmEnhancedVolumeReader::UseDoublePrecision( bool useDoublePrecision )
+{
+    this->useDoublePrecision = useDoublePrecision;
 }
 
 
@@ -137,53 +149,85 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
     int numBytesPerVol     = numPixelsInVolume * dataWordSize;
 
     // Get the Pixel Data from the DICOM header.
-	void* imageData = (void* ) malloc( numBytesPerVol*this->numVolumes );
+	void* imageData = NULL;
+    if( this->numVolumes == 1 && !this->IsDataFloatingPoint( this->GetOutput()) ) {
+        imageData = this->GetOutput()->GetPointData()->GetScalars()->GetVoidPointer(0);
+    } else {
+	    imageData = (void*) malloc( numBytesPerVol*this->numVolumes );
+    }
 	this->GetOutput()->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData), numPixelsInVolume*this->numVolumes );
 
-	// If necessary convert the pixel data to doubles...
-	if( this->IsDataFloatingPoint( this->GetOutput())  ) {
-		int doubleWordSize = 8;
-		void* imageDoubleData = (void* ) malloc( numPixelsInVolume * this->numVolumes * doubleWordSize );
+	// If necessary convert the pixel data to floating point...
+    if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+        int wordSize = 4;
+        if( this->useDoublePrecision ) {
+            wordSize = 8;
+        }
+       
+        void* imageFloatData = NULL; 
+        if( this->numVolumes == 1 ) {
+            imageFloatData = this->GetOutput()->GetPointData()->GetScalars()->GetVoidPointer(0);
+        } else {
+            imageFloatData = (void* ) malloc( numPixelsInVolume * this->numVolumes * wordSize );
+        }
 		double intercept = 0;
 		double slope = 1;
 		this->GetPixelTransform( intercept, slope, this->GetOutput()->GetDcmHeader());
-		this->GetRescaledPixels((double*)imageDoubleData,
+        if( this->useDoublePrecision ) {
+            this->GetRescaledPixels((double*)imageFloatData,
 					                    (unsigned short*)imageData ,
 					                    intercept, slope, numPixelsInVolume * this->numVolumes);
-		delete (unsigned short*)imageData;
-		imageData = imageDoubleData;
+        } else {
+            this->GetRescaledPixels((float*)imageFloatData,
+					                    (unsigned short*)imageData ,
+					                    intercept, slope, numPixelsInVolume * this->numVolumes);
+        }
+        delete (unsigned short*)imageData;
+		imageData = imageFloatData;
 	}
 
 	// Create vtk Point Data arrays for each volume.
     for (int vol = 0; vol < this->numVolumes; vol++) {
 
         vtkDataArray* array = NULL;
-        if( this->IsDataFloatingPoint( this->GetOutput())  ) {
-        	array = vtkDoubleArray::New();
+        if( this->numVolumes > 1 ) {
+            if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+                if( this->useDoublePrecision ) {
+                    array = vtkDoubleArray::New();
+                } else {
+                    array = vtkFloatArray::New();
+                }
+            } else {
+                array = vtkUnsignedShortArray::New();
+            }
+
+            array->SetNumberOfComponents(1);
+            array->SetNumberOfTuples(rows*columns*numSlices);
         } else {
-			array = vtkUnsignedShortArray::New();
+            array = this->GetOutput()->GetPointData()->GetScalars();
         }
-
-		array->SetNumberOfComponents(1);
-		array->SetNumberOfTuples(rows*columns*numSlices);
-
         ostringstream volNumber;
         volNumber << vol;
         vtkstd::string arrayNameString("pixels");
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
+        if( this->numVolumes > 1 ) {
+            if( this->IsDataFloatingPoint( this->GetOutput()) ) {
+                if( this->useDoublePrecision ) {
+                    array->SetVoidArray( (double*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+                } else {
+                    array->SetVoidArray( (float*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+                }
+            } else {
+                array->SetVoidArray( (short*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
+            }
+            if( vol == 0 ) {
+                data->GetPointData()->SetScalars(array);
+            } else {
+                data->GetPointData()->AddArray(array);
+            }
 
-        if( this->IsDataFloatingPoint( this->GetOutput()) ) {
-			array->SetVoidArray( (double*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
-        } else {
-			array->SetVoidArray( (short*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
         }
-        if (vol == 0 ) {
-            data->GetPointData()->SetScalars(array);
-        } else {
-            data->GetPointData()->AddArray(array);
-        }
-
         if( vol % 2 == 0 ) { // update progress every other volume
 			ostringstream progressStream;
 			progressStream <<"Reading Volume " << vol << " of " << this->numVolumes;
@@ -192,7 +236,6 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
         }
 
     }
-
 }
 
 
@@ -237,15 +280,47 @@ void svkDcmEnhancedVolumeReader::GetRescaledPixels(double* doublePixels, unsigne
 
 
 /*!
+ * Rescales the short data to floating point data using an intercept and slope.
+ */
+void svkDcmEnhancedVolumeReader::GetRescaledPixels(float* floatPixels, unsigned short* shortPixels, double intercept, double slope, int numberOfValues )
+{
+	for( int i = 0; i < numberOfValues; i++ ) {
+		floatPixels[i] = slope*shortPixels[i] + intercept;
+	}
+}
+
+
+/*!
  *  Returns the pixel type. Either unsinged int or float.
  */
 svkDcmHeader::DcmPixelDataFormat svkDcmEnhancedVolumeReader::GetFileType()
 {
 	if( this->IsDataFloatingPoint( this->GetOutput()) ) {
-		return svkDcmHeader::SIGNED_FLOAT_8;
+        if ( this->useDoublePrecision ) {
+            return svkDcmHeader::SIGNED_FLOAT_8;
+        } else {
+            return svkDcmHeader::SIGNED_FLOAT_4;
+        }
     } else {
 		return svkDcmHeader::UNSIGNED_INT_2;
 	}
+}
+
+
+/*!
+ *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
+ *  Called before ExecuteData()
+ */
+void svkDcmEnhancedVolumeReader::ExecuteInformation()
+{
+    Superclass::ExecuteInformation();
+    if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+        if( this->useDoublePrecision ) {
+            this->GetOutput()->SetScalarType( VTK_DOUBLE );
+        } else {
+            this->GetOutput()->SetScalarType( VTK_FLOAT );
+        }
+    } 
 }
 
 

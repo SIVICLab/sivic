@@ -838,6 +838,26 @@ void svkDcmtkAdapter::GetShortValue(const char* name, short* values, long unsign
 }
 
 
+/*!
+ * Gets the value at a given position for a given tag.
+ *
+ * \param name the name of the tag whose value you wish to set
+ *
+ * \param position the position in the array of the value
+ *
+ */
+unsigned short svkDcmtkAdapter::GetShortValue(const char* name, long unsigned int position)
+{
+    DcmElement* of;
+    Uint16 shortValue;
+    OFCondition status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( name ), of);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+    of->getUint16( shortValue, position );
+    return static_cast<unsigned short> ( shortValue );
+
+}
 
 
 /*!

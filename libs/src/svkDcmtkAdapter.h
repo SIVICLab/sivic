@@ -98,6 +98,7 @@ class svkDcmtkAdapter: public svkDcmHeader
 
 
         virtual void    GetShortValue(const char* name, short* values, long unsigned int numValues); 
+        virtual unsigned short   GetShortValue(const char* name, long unsigned int position ); 
         virtual int     GetIntValue(const char *name);
         virtual float   GetFloatValue(const char *name);
         virtual void    GetFloatValue(const char* name, float* values, long unsigned int numValues); 
