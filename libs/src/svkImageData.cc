@@ -785,7 +785,7 @@ void svkImageData::GetCell (vtkIdType cellId, vtkGenericCell *cell)
       iMax = iMin + 1;
       jMin = cellId / (dims[0]-1);
       jMax = jMin + 1;
-      cell->SetCellTypeToPixel();
+      cell->SetCellTypeToQuad();
       break;
 
     case VTK_YZ_PLANE:
@@ -793,7 +793,7 @@ void svkImageData::GetCell (vtkIdType cellId, vtkGenericCell *cell)
       jMax = jMin + 1;
       kMin = cellId / (dims[1]-1);
       kMax = kMin + 1;
-      cell->SetCellTypeToPixel();
+      cell->SetCellTypeToQuad();
       break;
 
     case VTK_XZ_PLANE:
@@ -801,7 +801,7 @@ void svkImageData::GetCell (vtkIdType cellId, vtkGenericCell *cell)
       iMax = iMin + 1;
       kMin = cellId / (dims[0]-1);
       kMax = kMin + 1;
-      cell->SetCellTypeToPixel();
+      cell->SetCellTypeToQuad();
       break;
 
     case VTK_XYZ_GRID:
@@ -846,10 +846,114 @@ void svkImageData::GetCell (vtkIdType cellId, vtkGenericCell *cell)
  */
 void svkImageData::GetCellBounds (vtkIdType cellId, double bounds[6])
 {
-    vtkGenericCell* cell = vtkGenericCell::New();
-    this->GetCell(cellId, cell);
-    cell->GetBounds( bounds );
-    cell->Delete();
+  int loc[3], iMin, iMax, jMin, jMax, kMin, kMax;
+  double x[3];
+  const double *origin = this->Origin;
+  const double *spacing = this->Spacing;
+  const int* extent = this->Extent;
+
+  vtkIdType dims[3];
+  dims[0] = extent[1] - extent[0] + 1;
+  dims[1] = extent[3] - extent[2] + 1;
+  dims[2] = extent[5] - extent[4] + 1;
+
+  iMin = iMax = jMin = jMax = kMin = kMax = 0;
+
+  if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0)
+    {
+    vtkErrorMacro("Requesting cell bounds from an empty image.");
+    bounds[0] = bounds[1] = bounds[2] = bounds[3]
+      = bounds[4] = bounds[5] = 0.0;
+    return;
+    }
+
+#if (VTK_MAJOR_VERSION >= 5 && VTK_MINOR_VERSION > 6 ) || VTK_MAJOR_VERSION >= 6
+  switch (this->GetDataDescription())
+#else
+  switch (this->DataDescription)
+#endif
+    {
+    case VTK_EMPTY:
+      return;
+
+    case VTK_SINGLE_POINT: // cellId can only be = 0
+      break;
+
+    case VTK_X_LINE:
+      iMin = cellId;
+      iMax = cellId + 1;
+      break;
+
+    case VTK_Y_LINE:
+      jMin = cellId;
+      jMax = cellId + 1;
+      break;
+
+    case VTK_Z_LINE:
+      kMin = cellId;
+      kMax = cellId + 1;
+      break;
+
+    case VTK_XY_PLANE:
+      iMin = cellId % (dims[0]-1);
+      iMax = iMin + 1;
+      jMin = cellId / (dims[0]-1);
+      jMax = jMin + 1;
+      break;
+
+    case VTK_YZ_PLANE:
+      jMin = cellId % (dims[1]-1);
+      jMax = jMin + 1;
+      kMin = cellId / (dims[1]-1);
+      kMax = kMin + 1;
+      break;
+
+    case VTK_XZ_PLANE:
+      iMin = cellId % (dims[0]-1);
+      iMax = iMin + 1;
+      kMin = cellId / (dims[0]-1);
+      kMax = kMin + 1;
+      break;
+
+    case VTK_XYZ_GRID:
+      iMin = cellId % (dims[0] - 1);
+      iMax = iMin + 1;
+      jMin = (cellId / (dims[0] - 1)) % (dims[1] - 1);
+      jMax = jMin + 1;
+      kMin = cellId / ((dims[0] - 1) * (dims[1] - 1));
+      kMax = kMin + 1;
+      break;
+    }
+
+  // carefully compute the bounds
+    bounds[0] = bounds[2] = bounds[4] =  VTK_DOUBLE_MAX;
+    bounds[1] = bounds[3] = bounds[5] =  VTK_DOUBLE_MIN;
+
+  // Extract point coordinates and point ids
+    for (loc[2]=kMin; loc[2]<=kMax; loc[2]++) {
+        for (loc[1]=jMin; loc[1]<=jMax; loc[1]++) {
+            for (loc[0]=iMin; loc[0]<=iMax; loc[0]++) {
+
+                // Loop over x-y-z coordinates
+                for( int i = 0; i <3; i++ ) {
+                    // Start at the origin
+                    x[i] = origin[i];
+                    for( int j=0; j<3; j++) {
+                        // Add the components for dim i
+                        x[i] += (loc[j]+extent[j*2]) * spacing[j] * dcos[j][i];
+                    }
+                    if( x[i] < bounds[2*i] ) {
+                        bounds[2*i] = x[i];
+                    } 
+                    if( x[i] > bounds[2*i+1] ) {
+                        bounds[2*i+1] = x[i];
+                    }
+                }
+
+            }
+        }
+    }
+
 }
 
 

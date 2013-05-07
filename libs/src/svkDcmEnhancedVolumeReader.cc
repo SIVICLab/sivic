@@ -65,6 +65,7 @@ svkDcmEnhancedVolumeReader::svkDcmEnhancedVolumeReader()
 #endif
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
     this->useDoublePrecision = false;
+    this->rescalePixels = true;
 }
 
 
@@ -85,6 +86,15 @@ svkDcmEnhancedVolumeReader::~svkDcmEnhancedVolumeReader()
 void svkDcmEnhancedVolumeReader::UseDoublePrecision( bool useDoublePrecision )
 {
     this->useDoublePrecision = useDoublePrecision;
+}
+
+
+/*! 
+ * If set to true then rescale data to floating point when appropriate.
+ */
+void svkDcmEnhancedVolumeReader::SetRescalePixels( bool rescalePixels )
+{
+    this->rescalePixels = rescalePixels;
 }
 
 
@@ -150,15 +160,19 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 
     // Get the Pixel Data from the DICOM header.
 	void* imageData = NULL;
-    if( this->numVolumes == 1 && !this->IsDataFloatingPoint( this->GetOutput()) ) {
+    if( this->numVolumes == 1 && !this->ArePixelsScaled( ) ) {
         imageData = this->GetOutput()->GetPointData()->GetScalars()->GetVoidPointer(0);
     } else {
 	    imageData = (void*) malloc( numBytesPerVol*this->numVolumes );
     }
 	this->GetOutput()->GetDcmHeader()->GetShortValue( "PixelData", ((short *)imageData), numPixelsInVolume*this->numVolumes );
 
+    // Lets go ahead and free the short data now that we have a copy of it.
+    this->GetOutput()->GetDcmHeader()->ClearElement("PixelData");
+    this->GetOutput()->GetDcmHeader()->RemoveElement("PixelData");
+
 	// If necessary convert the pixel data to floating point...
-    if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+    if( this->ArePixelsScaled( )) {
         int wordSize = 4;
         if( this->useDoublePrecision ) {
             wordSize = 8;
@@ -191,7 +205,7 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 
         vtkDataArray* array = NULL;
         if( this->numVolumes > 1 ) {
-            if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+            if( this->ArePixelsScaled( )  ) {
                 if( this->useDoublePrecision ) {
                     array = vtkDoubleArray::New();
                 } else {
@@ -212,7 +226,7 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
         arrayNameString.append(volNumber.str());
         array->SetName( arrayNameString.c_str() );
         if( this->numVolumes > 1 ) {
-            if( this->IsDataFloatingPoint( this->GetOutput()) ) {
+            if( this->ArePixelsScaled( ) ) {
                 if( this->useDoublePrecision ) {
                     array->SetVoidArray( (double*)(imageData) + vol*numPixelsInVolume , numPixelsInVolume, 0);
                 } else {
@@ -255,7 +269,7 @@ void svkDcmEnhancedVolumeReader::GetPixelTransform(double& intercept, double& sl
  *  Check if data is actually floating point data. The data is floating point unless the
  *  RescaleIntercept is 0 and the RescaleSlope is 1.
  */
-bool svkDcmEnhancedVolumeReader::IsDataFloatingPoint(svkImageData* image)
+bool svkDcmEnhancedVolumeReader::IsDataFloatingPoint( )
 {
 	bool isDataFloats = true;
 	double intercept = 0;
@@ -265,6 +279,15 @@ bool svkDcmEnhancedVolumeReader::IsDataFloatingPoint(svkImageData* image)
 		isDataFloats = false;
 	}
 	return isDataFloats;
+}
+
+
+/*!
+ *  Check if the data needs to be rescaled.
+ */
+bool svkDcmEnhancedVolumeReader::ArePixelsScaled( )
+{
+    return (this->IsDataFloatingPoint() && this->rescalePixels);
 }
 
 
@@ -295,7 +318,7 @@ void svkDcmEnhancedVolumeReader::GetRescaledPixels(float* floatPixels, unsigned 
  */
 svkDcmHeader::DcmPixelDataFormat svkDcmEnhancedVolumeReader::GetFileType()
 {
-	if( this->IsDataFloatingPoint( this->GetOutput()) ) {
+	if( this->ArePixelsScaled( ) ) {
         if ( this->useDoublePrecision ) {
             return svkDcmHeader::SIGNED_FLOAT_8;
         } else {
@@ -314,7 +337,7 @@ svkDcmHeader::DcmPixelDataFormat svkDcmEnhancedVolumeReader::GetFileType()
 void svkDcmEnhancedVolumeReader::ExecuteInformation()
 {
     Superclass::ExecuteInformation();
-    if( this->IsDataFloatingPoint( this->GetOutput())  ) {
+    if( this->ArePixelsScaled( )  ) {
         if( this->useDoublePrecision ) {
             this->GetOutput()->SetScalarType( VTK_DOUBLE );
         } else {

@@ -61,6 +61,7 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
         vtkTypeRevisionMacro( svkDcmEnhancedVolumeReader, svkDcmVolumeReader );
 
         void UseDoublePrecision( bool useDoublePrecision );
+        void SetRescalePixels( bool rescalePixels );
 
         // Description: 
         // A descriptive name for this format
@@ -77,7 +78,8 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
         ~svkDcmEnhancedVolumeReader();
 
 		void         GetPixelTransform(double& intercept, double& slope, svkDcmHeader* header);
-		virtual bool IsDataFloatingPoint(svkImageData* image);
+		virtual bool IsDataFloatingPoint( );
+		virtual bool ArePixelsScaled( );
 		void         GetRescaledPixels(double* doublePixels, unsigned short* shortPixels, double intercept, double slope, int numberOfValues );
 		void         GetRescaledPixels(float* doublePixels, unsigned short* shortPixels, double intercept, double slope, int numberOfValues );
 
@@ -89,6 +91,7 @@ class svkDcmEnhancedVolumeReader : public svkDcmVolumeReader
     private:
         
         bool useDoublePrecision;
+        bool rescalePixels;
 
         virtual void    LoadData(svkImageData* data); 
         virtual void    InitPrivateHeader(); 
