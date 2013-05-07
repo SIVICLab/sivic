@@ -83,6 +83,7 @@ vtkSivicController::vtkSivicController()
     this->exitSivicCallback->SetCallback( ExitSivic );
     this->exitSivicCallback->SetClientData( (void*)this );
     this->synchronizeVolumes = true;
+    this->anatomyType = vtkSivicController::ANATOMY_BRAIN; 
 
     
 }
@@ -3893,4 +3894,18 @@ void vtkSivicController::DisplayHeader( char* objectName )
 	} else {
 		cout << "No object name:" << objectName << " in model " << endl;
 	}
+}
+
+
+/*
+ *  Sets the anatomy type for the application, to control metabolite quant and other functional switches. 
+ */
+void SetAnatomyType(int anatomyType) 
+{
+
+    if ( anatomyType == vtkSivicController::ANATOMY_BRAIN ) { 
+        this->anatomyType = vtkSivicController::ANATOMY_BRAIN; 
+    } else if ( anatomyType == vtkSivicController::ANATOMY_PROSTATE) { 
+        this->anatomyType = vtkSivicController::ANATOMY_PROSTATE; 
+    }
 }

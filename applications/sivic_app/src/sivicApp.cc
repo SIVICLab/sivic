@@ -825,7 +825,7 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
         switch (i) {
             case 'a':
                 anatomyType = atoi( optarg);
-                //this->sivicController->SetAnatomyType(anatomyType); 
+                this->sivicController->SetAnatomyType(anatomyType); 
                 break;
             case 'h':
                 cout << usemsg << endl;

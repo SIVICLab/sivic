@@ -262,6 +262,8 @@ class vtkSivicController : public vtkObject
         void					   GenerateTraces( char* sourceImage );
         void					   DisplayImageDataInfo(int row, int column, int x, int y);
         void					   DisplayHeader( char* objectName );
+        void                       SetAnatomyType(int anatomyType);  
+
  
     protected:
 
@@ -303,6 +305,7 @@ class vtkSivicController : public vtkObject
         vtkKWWindowBase*               preferencesWindow;
         vtkKWWindowBase*               voxelTaggingWindow;
         bool						   synchronizeVolumes;
+        int                            anatomyType; 
 
 
 };
