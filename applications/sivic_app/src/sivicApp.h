@@ -126,6 +126,8 @@ class sivicApp
         // Methods
         void PopulateMainToolbar( vtkKWToolbar* toolbar );
         void GetWelcomeMessage( vtkKWText* text );
+        int  ParseCommandLineArgs( int* argc, char* argv[] ); 
+
         
 };
 

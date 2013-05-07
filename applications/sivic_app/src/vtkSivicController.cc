@@ -47,6 +47,10 @@ using namespace svk;
 vtkStandardNewMacro( vtkSivicController );
 vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 
+const int vtkSivicController::ANATOMY_BRAIN = 0;
+const int vtkSivicController::ANATOMY_PROSTATE = 1;
+
+
 //static int nearestInt(float x); 
 
 //! Constructor

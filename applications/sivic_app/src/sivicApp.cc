@@ -33,6 +33,16 @@
  *  $Date$
  */
 
+
+#ifdef WIN32
+extern "C" {
+#include <getopt.h>
+}
+#else
+#include <getopt.h>
+#include <unistd.h>
+#endif
+
 #include <sivicApp.h>
 
 #include <vtkJPEGReader.h>
@@ -779,10 +789,67 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
 
 
 /*! 
- *  Start the application.
+ *  Start the application and parse command line arguments. 
+ */
+int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
+{
+
+
+    string usemsg("\n") ;
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "  \n";
+    usemsg += "sivic -a anatomy     Anatomy preferences     \n";
+    usemsg += "                         brain (default)     \n";
+    usemsg += "                         prostate            \n";
+    usemsg += "   -h                                Print help mesage.                      \n";
+    usemsg += "                                                                             \n";
+    usemsg += "Converts the input file to the specified target file type                    \n";
+    usemsg += "                                                                             \n";
+
+    int anatomyType = vtkSivicController::ANATOMY_BRAIN;
+
+    enum FLAG_NAME {
+    };
+
+
+    static struct option long_options[] =
+    {
+        {0, 0, 0, 0}
+    };
+
+    /*
+     *  Process flags and arguments
+     */
+    int i;
+    int option_index = 0;
+    while ((i = getopt_long(*argc, argv, "a:h", long_options, &option_index)) != EOF) {
+        switch (i) {
+            case 'a':
+                anatomyType = atoi( optarg);
+                //this->sivicController->SetAnatomyType(anatomyType); 
+                break;
+            case 'h':
+                cout << usemsg << endl;
+                exit(1);
+                break;
+            default:
+                ;
+        }
+    }
+
+    *argc -= optind;
+    argv += optind;
+
+}
+
+
+/*! 
+ *  Start the application and parse command line arguments. 
  */
 int sivicApp::Start( int argc, char* argv[] )
 {
+
+    this->ParseCommandLineArgs(&argc, argv); 
+
 
     //  Preparse the MR Image objects to try and detect which is an overlay:
     //  Assume that the reference image is higher res than the overlay
