@@ -50,7 +50,6 @@ vtkCxxRevisionMacro( vtkSivicController, "$Revision$");
 const int vtkSivicController::ANATOMY_BRAIN = 0;
 const int vtkSivicController::ANATOMY_PROSTATE = 1;
 
-
 //static int nearestInt(float x); 
 
 //! Constructor
@@ -3557,7 +3556,7 @@ void vtkSivicController::PushToPACS()
         int firstSlice = outputImage->GetExtent()[4];
         int lastSlice = outputImage->GetExtent()[5];
 
-        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory );
+        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory, static_cast<svkPACSInterface::AnatomyType>(this->anatomyType) );
         if (!pacsSendSuccess ) { 
             string errorMessage("ERROR: Could not send to PACS: ");
             errorMessage.append(pacsInterface->GetPACSTargetString());
@@ -3900,7 +3899,7 @@ void vtkSivicController::DisplayHeader( char* objectName )
 /*
  *  Sets the anatomy type for the application, to control metabolite quant and other functional switches. 
  */
-void SetAnatomyType(int anatomyType) 
+void vtkSivicController::SetAnatomyType(int anatomyType) 
 {
 
     if ( anatomyType == vtkSivicController::ANATOMY_BRAIN ) { 

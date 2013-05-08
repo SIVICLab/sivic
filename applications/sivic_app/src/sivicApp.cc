@@ -805,7 +805,7 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     usemsg += "Converts the input file to the specified target file type                    \n";
     usemsg += "                                                                             \n";
 
-    int anatomyType = vtkSivicController::ANATOMY_BRAIN;
+    int anatomyType = svkPACSInterface::ANATOMY_BRAIN;
 
     enum FLAG_NAME {
     };

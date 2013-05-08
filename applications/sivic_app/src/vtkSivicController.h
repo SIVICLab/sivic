@@ -128,16 +128,15 @@ class vtkSivicController : public vtkObject
 {
     public:
 
-        // wrapper doesn't permit enums, so... 
-        static const int ANATOMY_BRAIN;
-        static const int ANATOMY_PROSTATE;
-
-   
         vtkTypeRevisionMacro( vtkSivicController, vtkObject );
         static vtkSivicController* New(); 
 
         vtkSivicController();
         ~vtkSivicController();
+
+        //wrapper doesn't permit enums, so... 
+        static const int ANATOMY_BRAIN;
+        static const int ANATOMY_PROSTATE;
 
 
         void                       SetApplication( vtkKWApplication* app );
