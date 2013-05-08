@@ -64,13 +64,18 @@ class svkPACSInterface : public vtkObject
     // if these are accessed only via the corresponding controller, then these don't need to be public
     public:
 
+        typedef enum {
+            ANATOMY_BRAIN = 0,
+            ANATOMY_PROSTATE
+        } AnatomyType; 
+
         vtkTypeRevisionMacro( svkPACSInterface, vtkObject);
 
         //! Create a connection to PACS. Return true if the connection can be made.        
         virtual bool                    Connect() = 0;
 
         //! Send a set of images to PACS. Returns true if the images can be sent.       
-        virtual bool                    SendImagesToPACS( string sourceDirectory ) = 0;
+        virtual bool                    SendImagesToPACS( string sourceDirectory, svkPACSInterface::AnatomyType anatomyType ) = 0;
 
         //! Close the PACS connection. Returns true if the connection closes cleanly.       
         virtual bool                    Disconnect() = 0;

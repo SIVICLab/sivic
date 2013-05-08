@@ -75,7 +75,7 @@ class svkUCSFPACSInterface : public svkPACSInterface
 
   
         bool Connect();
-        bool SendImagesToPACS( string sourceDirectory );
+        bool SendImagesToPACS( string sourceDirectory, svkPACSInterface::AnatomyType anatomyType );
         bool Disconnect();
 
     protected:

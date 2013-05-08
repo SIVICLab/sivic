@@ -87,18 +87,28 @@ bool svkUCSFPACSInterface::Connect()
  *
  *  \param sourceDirectory a string containing the source directory.
  *  \return true of the copy succeeds, otherwise false.
+ *  
+ *  If this is for the Brain group, reidentify images using BRAIN DB (type 0). 
+ *  For prostate (type 1), images are aleady identified. 
  */
-bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory  )
+bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory, svkPACSInterface::AnatomyType anatomyType  )
 {
     bool success = true;
     int result = 0;
 
 #ifndef WIN32
     stringstream sendToPACSCommand;
+
     sendToPACSCommand << "send_to_pacs --in_dir " << sourceDirectory;
     if( this->pacsTarget.compare("") != 0 ) {
         sendToPACSCommand << " --test_dir " << this->pacsTarget;
     }
+
+    if ( anatomyType == svkPACSInterface::ANATOMY_PROSTATE ) { 
+        cout << "PROSTATE GROUP PACS TRANSFER NOT YET IMPLEMENTED" << endl;
+        return false; 
+    }
+
     cout << "Send to PACS command: " << sendToPACSCommand.str() << endl;
     result = system( sendToPACSCommand.str().c_str() );
     if( result != 0 ) {
