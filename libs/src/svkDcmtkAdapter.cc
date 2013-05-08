@@ -873,8 +873,11 @@ unsigned short svkDcmtkAdapter::GetPixelValue( long unsigned int position )
 
     OFCondition status; 
 
+    DcmTagKey pixelDataTag; 
+    pixelDataTag.setGroup(0x7fe0); 
+    pixelDataTag.setElement(0x0010); 
     if ( pixelDataElement == NULL ) {
-        status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( "PixelData"), pixelDataElement);
+        status = this->dcmFile->getDataset()->findAndGetElement( pixelDataTag , pixelDataElement);
         if (status.bad()) {
             cerr << "Error: cannot get element(" << status.text() << ")" << endl;
         }
