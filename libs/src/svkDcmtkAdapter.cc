@@ -83,6 +83,8 @@ svkDcmtkAdapter::svkDcmtkAdapter()
 	// We don't want to hold the  lock so lets unlock it.
 	dcmDataDict.unlock();
 
+    pixelDataElement == NULL;
+
 
 }
 
@@ -830,7 +832,10 @@ void svkDcmtkAdapter::GetShortValue(const char* name, short* values, long unsign
     if (status.bad()) {
         cerr << "Error: cannot get element(" << status.text() << ")" << endl;
     }
-    of->getUint16Array( shortArray );
+    status = of->getUint16Array( shortArray );
+    if (status.bad()) {
+        cerr << "Error: cannot get Uint16Array for(" << status.text() << ")" << endl;
+    }
 
     memcpy( values, shortArray, 2 * numValues );
 
@@ -855,6 +860,28 @@ unsigned short svkDcmtkAdapter::GetShortValue(const char* name, long unsigned in
         cerr << "Error: cannot get element(" << status.text() << ")" << endl;
     }
     of->getUint16( shortValue, position );
+    return static_cast<unsigned short> ( shortValue );
+
+}
+
+
+/*!
+ *  Return one short word at the specified index from the PixelData field.  
+ */
+unsigned short svkDcmtkAdapter::GetPixelValue( long unsigned int position )
+{
+
+    OFCondition status; 
+
+    if ( pixelDataElement == NULL ) {
+        status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( "PixelData"), pixelDataElement);
+        if (status.bad()) {
+            cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+        }
+    }
+
+    Uint16 shortValue;
+    pixelDataElement->getUint16( shortValue, position );
     return static_cast<unsigned short> ( shortValue );
 
 }

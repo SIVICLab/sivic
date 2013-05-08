@@ -98,7 +98,8 @@ class svkDcmtkAdapter: public svkDcmHeader
 
 
         virtual void    GetShortValue(const char* name, short* values, long unsigned int numValues); 
-        virtual unsigned short   GetShortValue(const char* name, long unsigned int position ); 
+        virtual unsigned short GetShortValue(const char* name, long unsigned int position ); 
+        virtual unsigned short GetPixelValue(long unsigned int position);
         virtual int     GetIntValue(const char *name);
         virtual float   GetFloatValue(const char *name);
         virtual void    GetFloatValue(const char* name, float* values, long unsigned int numValues); 
@@ -299,6 +300,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         DcmDataDictionary*               privateDic;
         // For performance we store some entries from the dictionary.
         map<string, const DcmDictEntry*> foundEntries;
+        DcmElement*                      pixelDataElement; 
 
         // Static Members:
         static bool         privateElementsAdded;
