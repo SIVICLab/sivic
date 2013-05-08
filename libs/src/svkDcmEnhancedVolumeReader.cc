@@ -169,7 +169,6 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 
     // Lets go ahead and free the short data now that we have a copy of it.
     this->GetOutput()->GetDcmHeader()->ClearElement("PixelData");
-    this->GetOutput()->GetDcmHeader()->RemoveElement("PixelData");
 
 	// If necessary convert the pixel data to floating point...
     if( this->ArePixelsScaled( )) {
