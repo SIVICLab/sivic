@@ -108,6 +108,14 @@ ELSE( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
 	SET(PLATFORM_INCLUDE ../getopt)
 ENDIF( NOT CMAKE_SYSTEM_NAME MATCHES Windows)
 
+# if dcmtk 3.6, need to add liboflog:
+SET(DCMTK_OFLOG "")
+if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+    SET(DCMTK_OFLOG oflog )
+endif (EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
+
+
+
 LINK_DIRECTORIES(
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
@@ -129,6 +137,7 @@ SET(SVK_LIBS
     svkadapt 
     vtkHybrid
     dcmdata
+    ${DCMTK_OFLOG}
     ofstd 
     ${PLATFORM_LIBS}    
 )
@@ -592,5 +601,15 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     test_svkImageAlgorithmExecuter
     ${SVK_VIZ_LIBS}
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    test_svkDcmQuickRead
+    test_svkDcmQuickRead.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    test_svkDcmQuickRead
     ${SVK_LIBS}
 )

@@ -1,8 +1,8 @@
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/examples/test_vtkRenderLoop.cc $
- *  $Rev: 1 $
- *  $Author: jccrane $
- *  $Date: 2009-11-25 02:04:25 -0800 (Wed, 25 Nov 2009) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

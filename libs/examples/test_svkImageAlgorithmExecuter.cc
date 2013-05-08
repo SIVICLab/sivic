@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/libs/examples/test_svkImageViewer2.cc $ 
- *  $Rev: 116 $
- *  $Author: beckn8tor $
- *  $Date: 2010-02-08 14:21:06 -0800 (Mon, 08 Feb 2010) $
+ *  $URL$ 
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
