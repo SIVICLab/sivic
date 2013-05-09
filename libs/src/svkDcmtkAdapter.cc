@@ -83,7 +83,7 @@ svkDcmtkAdapter::svkDcmtkAdapter()
 	// We don't want to hold the  lock so lets unlock it.
 	dcmDataDict.unlock();
 
-    pixelDataElement == NULL;
+    this->pixelDataElement = NULL;
 
 
 }
@@ -876,15 +876,15 @@ unsigned short svkDcmtkAdapter::GetPixelValue( long unsigned int position )
     DcmTagKey pixelDataTag; 
     pixelDataTag.setGroup(0x7fe0); 
     pixelDataTag.setElement(0x0010); 
-    if ( pixelDataElement == NULL ) {
-        status = this->dcmFile->getDataset()->findAndGetElement( pixelDataTag , pixelDataElement);
+    if ( this->pixelDataElement == NULL ) {
+        status = this->dcmFile->getDataset()->findAndGetElement( pixelDataTag, this->pixelDataElement);
         if (status.bad()) {
             cerr << "Error: cannot get element(" << status.text() << ")" << endl;
         }
     }
 
     Uint16 shortValue;
-    pixelDataElement->getUint16( shortValue, position );
+    this->pixelDataElement->getUint16( shortValue, position );
     return static_cast<unsigned short> ( shortValue );
 
 }
