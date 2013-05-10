@@ -232,6 +232,7 @@ ADD_LIBRARY(
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
     svkExtractVOI.cc
+    svkDICOMParser.cc
 )
 
 SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)
