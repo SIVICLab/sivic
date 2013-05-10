@@ -104,9 +104,11 @@ bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory, svkPACSInte
         sendToPACSCommand << " --test_dir " << this->pacsTarget;
     }
 
+    //  If not brain group data, then input images should already be identified
+    //  therefore do not try to look up PHI in brain group DB when pushing to PACS.
     if ( anatomyType == svkPACSInterface::ANATOMY_PROSTATE ) { 
-        cout << "PROSTATE GROUP PACS TRANSFER NOT YET IMPLEMENTED" << endl;
-        return false; 
+        sendToPACSCommand << " --no_reid " ;
+        sendToPACSCommand << " --test_dir /tmp " ;
     }
 
     cout << "Send to PACS command: " << sendToPACSCommand.str() << endl;
