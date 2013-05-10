@@ -3037,6 +3037,10 @@ long int svkDcmHeader::GetPixelDataOffset( string fileName )
 short svkDcmHeader::GetPixelValueAsShort( long int offsetToPixelData, long int pixelIndex, string fileName) 
 {
 
+    if ( offsetToPixelData < 0 ) {
+        return VTK_SHORT_MIN; 
+    }
+
     ifstream* dcmFS = new ifstream();
     dcmFS->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
