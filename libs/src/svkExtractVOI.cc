@@ -41,10 +41,10 @@
  */
 
 /*
- *  $URL: $
- *  $Rev: $
- *  $Author: $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -62,7 +62,7 @@
 #include "vtkPointData.h"
 using namespace svk;
 
-vtkCxxRevisionMacro(svkExtractVOI, "$Rev: 1320 $");
+vtkCxxRevisionMacro(svkExtractVOI, "$Rev$");
 vtkStandardNewMacro(svkExtractVOI);
 
 // Construct object to extract all of the input data.
