@@ -728,6 +728,12 @@ class svkDcmHeader: public vtkObject
         int             GetNumberOfFramesInDimension( int dimensionIndex ); 
         static int      GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector);
         int             GetNumberOfFrames(svkDcmHeader::DimensionVector* dimensionVector);
+        static long int GetPixelDataOffset( string fileName ); 
+        static short    GetPixelValueAsShort( 
+                            long int offsetToPixelData, 
+                            long int pixelIndex, 
+                            string fileName); 
+
 
         //==================================================
         //  DICOM IE and macro initialization methods:

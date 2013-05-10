@@ -42,6 +42,7 @@
 
 
 #include <svkDcmHeader.h>
+#include <svkDICOMParser.h>
 #include <vector>
 
 
@@ -3006,4 +3007,60 @@ vtkstd::string svkDcmHeader::DimensionIndexLabelToString( svkDcmHeader::Dimensio
 
     return indexLabelString; 
 
+}
+
+
+/*
+ *  Returns offset to PixelData field in DICOM file: 
+ */
+long int svkDcmHeader::GetPixelDataOffset( string fileName ) 
+{
+    svkDICOMParser* dcmParser = new svkDICOMParser();
+
+    long int pixelDataOffset = dcmParser->GetPixelDataFileOffset(fileName); 
+
+    delete dcmParser; 
+
+    return pixelDataOffset; 
+
+}
+
+
+/*
+ *  Returns a single pixel value at the specified index. 
+ *  input:  
+ *      offsetToPixelData is the return from GetPixelDataOffset.  It is the
+ *          byte offset from the start fo the DICOM file to the start of the PixelData element. 
+ *      pixelIndex
+ *      fileName    file to read from 
+ */
+short svkDcmHeader::GetPixelValueAsShort( long int offsetToPixelData, long int pixelIndex, string fileName) 
+{
+
+    ifstream* dcmFS = new ifstream();
+    dcmFS->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+
+    void* pixelValue = new short;
+
+    try {
+
+        dcmFS->open( fileName.c_str(), ios::binary );
+        dcmFS->seekg(0, ios::beg);
+
+        int wordSizeBytes = 2;     
+        long int offset = offsetToPixelData + (wordSizeBytes * pixelIndex);
+
+        dcmFS->seekg(offset, ios::beg);
+
+        dcmFS->read( static_cast<char*>(pixelValue), 2);
+
+        dcmFS->close();
+
+    } catch (ifstream::failure e) {
+
+        cout << "ERROR: Exception opening/reading file " << endl;
+
+    }
+
+    return *( static_cast<short*>(pixelValue) );  
 }
