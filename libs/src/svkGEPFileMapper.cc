@@ -2311,6 +2311,7 @@ void svkGEPFileMapper::ReadData(vtkStringArray* pFileNames, svkImageData* data)
             this->SetProgressText( progressStream.str().c_str() );
 			for (int arrayNumber = 0; arrayNumber < arraysPerVolume; arrayNumber++) {
 				this->GetXYZIndices(arrayNumber, &x, &y, &z);
+                                //cout << " indices: " << x << " " << y << " " << z << endl;
 
 				//  Linear index of current cell in target svkImageData
 				int linearIndex =  x
@@ -2598,6 +2599,8 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
 
     if ( numAcquisitions > 1 ) {
 
+
+
         svkDcmHeader::DimensionVector dimensionVectorIn = hdr->GetDimensionIndexVector();
 
         //  Also, currently doesn't support dynamic data, so if more than one time point, exit: 
@@ -2606,6 +2609,40 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
             cout << "ERROR:  svkGEPFileMapper does not currently support dynamic EPSI reordering " << endl;
             exit(1);
         }
+
+
+        //  -----------------------------------------------------------------------------
+        //  Allocate new svkMrsImageData object for reordered cell data time->epsi_acq 
+        //  dimension.  Changing loop order requires renumbering cell data arrays.
+        //  -----------------------------------------------------------------------------
+        svkMrsImageData* dataTmp = svkMrsImageData::New();
+        dataTmp->DeepCopy( data ); 
+        svkImageData::RemoveArrays( dataTmp ); 
+
+        svkDcmHeader::DimensionVector dimensionVectorTmp = dataTmp->GetDcmHeader()->GetDimensionIndexVector(); 
+        dataTmp->GetDcmHeader()->AddDimensionIndex( &dimensionVectorTmp, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+        svk4DImageData::SetDimensionVectorIndex( &dimensionVectorTmp, svkDcmHeader::TIME_INDEX, 0);
+
+        //  Allocate arrays for target data set: 
+        svkFastCellData* cellDataTmp = static_cast<svkFastCellData*>(dataTmp->GetCellData()); 
+        int numCellsTmp = svkDcmHeader::GetNumberOfCells(&dimensionVectorTmp); 
+
+        cellDataTmp->AllocateArrays( numCellsTmp ); 
+        vtkDataArray* dataArray = NULL;
+        svkDcmHeader::DimensionVector loopIndexTmp = dimensionVectorTmp; 
+        for (int arrayNumber = 0; arrayNumber < numCellsTmp; arrayNumber++) {
+            dataArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+            cellDataTmp->FastAddArray( dataArray );
+            dataArray->FastDelete();
+
+            //  Set the array name:     
+            svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVectorTmp, &loopIndexTmp, arrayNumber);
+            dataTmp->SetArrayName( dataArray, &loopIndexTmp );
+        }
+        cellDataTmp->FinishFastAdd();
+        //  -----------------------------------------------------------------------------
+
+
 
         //  Add EPSI_ACQ_INDEX, initially with only one point (default)
         hdr->AddDimensionIndex( &dimensionVectorIn, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
@@ -2624,7 +2661,7 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
 
             int timePt = svkDcmHeader::GetDimensionValue(&indexVector, svkDcmHeader::TIME_INDEX); 
 
-            //  relable the 2nd time point as the 2nd EPSI Acq point
+            //  relabel the 2nd time point as the 2nd EPSI Acq point
             if ( timePt == 1 ) {
 
                 svk4DImageData::SetDimensionVectorIndex( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX, timePt); 
@@ -2633,10 +2670,14 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
 
             //  Get array from target dynamic image: 
             vtkDataArray* dataArray = data->GetCellData()->GetArray(cellID);
-
             data->SetArrayName( dataArray, &indexVector );
 
-        }
+            int targetCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimensionVectorTmp, &indexVector); 
+            dataTmp->GetCellData()->GetArray( targetCellID )->DeepCopy(dataArray); 
+
+        } 
+
+        data->DeepCopy( dataTmp ); 
 
         hdr->SetDimensionIndexSize(svkDcmHeader::TIME_INDEX, 0); 
         hdr->SetDimensionIndexSize(svkDcmHeader::EPSI_ACQ_INDEX, 1); 
@@ -2687,6 +2728,9 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         reorder->Update();
 
         data->ShallowCopy( reorder->GetOutput() );
+
+        dataTmp->Delete();
+
 
     }
 
