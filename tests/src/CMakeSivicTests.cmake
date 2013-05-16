@@ -912,7 +912,7 @@ SET( TEST_NAME TEST_MCHK_REORDER_INTERLEAVED_EPSI)
 SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/sample_epsi)
-ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input_interleaved/t8000_interleaved_1coil -o ${TEST_RESULTS_PATH}/out_interleaved -t2 --epsi_lobes 552 --epsi_skip 7 --epsi_axis 2 --epsi_type 3)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input_interleaved/t8000_2coil -o ${TEST_RESULTS_PATH}/out_interleaved -t2 --epsi_lobes 552 --epsi_skip 7 --epsi_axis 2 --epsi_type 3)
 
 SET( TEST_NAME TEST_REORDER_INTERLEAVED_EPSI_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_interleaved)
