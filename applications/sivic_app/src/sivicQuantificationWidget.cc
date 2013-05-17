@@ -281,6 +281,9 @@ void sivicQuantificationWidget::EnableWidgets()
         svkImageData* data = this->model->GetDataObject("SpectroscopicData");
     	char quantFileName[150];
         this->GetApplication()->GetRegistryValue( 0, "defaults", "quant_file", quantFileName );
+
+        this->mrsQuant->SetAnatomyType( static_cast<svkTypes::AnatomyType>(this->sivicController->anatomyType) );
+
         if( quantFileName != NULL && svkUtils::FilePathExists( quantFileName ) ) {
         	this->mrsQuant->SetXMLFileName( quantFileName );
         }
@@ -348,7 +351,10 @@ void sivicQuantificationWidget::EnableWidgets()
         }
 
         //  Set default value
-        vtkstd::string mapSelectLabel = this->metNames[0]; 
+        vtkstd::string mapSelectLabel = ""; 
+        if (this->numMets > 0 ) {
+            mapSelectLabel = this->metNames[0]; 
+        }
         this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
         this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
 

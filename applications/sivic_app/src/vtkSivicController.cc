@@ -3556,7 +3556,7 @@ void vtkSivicController::PushToPACS()
         int firstSlice = outputImage->GetExtent()[4];
         int lastSlice = outputImage->GetExtent()[5];
 
-        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory, static_cast<svkPACSInterface::AnatomyType>(this->anatomyType) );
+        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory, static_cast<svkTypes::AnatomyType>(this->anatomyType) );
         if (!pacsSendSuccess ) { 
             string errorMessage("ERROR: Could not send to PACS: ");
             errorMessage.append(pacsInterface->GetPACSTargetString());

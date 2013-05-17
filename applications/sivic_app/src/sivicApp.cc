@@ -796,16 +796,20 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
 
 
     string usemsg("\n") ;
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "  \n";
-    usemsg += "sivic -a anatomy     Anatomy preferences     \n";
-    usemsg += "                         brain (default)     \n";
-    usemsg += "                         prostate            \n";
-    usemsg += "   -h                                Print help mesage.                      \n";
-    usemsg += "                                                                             \n";
-    usemsg += "Converts the input file to the specified target file type                    \n";
-    usemsg += "                                                                             \n";
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                   "\n";
+    usemsg += "                                                             \n";
+    usemsg += "sivic [-a anatomy [-h]                                       \n";
+    usemsg += "                                                             \n";
+    usemsg += "     -a anatomy      Anatomy preferences                     \n";
+    usemsg += "                         brain (default)                     \n";
+    usemsg += "                         prostate                            \n";
+    usemsg += "     -h              Print help mesage.                      \n";
+    usemsg += "                                                             \n";
+    usemsg += "SIVIC GUI.                                                   \n";
+    usemsg += "                                                             \n";
 
-    int anatomyType = svkPACSInterface::ANATOMY_BRAIN;
+    string anatomyTypeString = "brain";  
+    int anatomyType = svkTypes::ANATOMY_BRAIN;
 
     enum FLAG_NAME {
     };
@@ -816,6 +820,7 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
         {0, 0, 0, 0}
     };
 
+
     /*
      *  Process flags and arguments
      */
@@ -824,8 +829,11 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     while ((i = getopt_long(*argc, argv, "a:h", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'a':
-                anatomyType = atoi( optarg);
-                this->sivicController->SetAnatomyType(anatomyType); 
+                anatomyTypeString.assign( optarg );
+                anatomyType = svkTypes::GetAnatomyType(anatomyTypeString); 
+                if ( anatomyType != -1 ) {
+                    this->sivicController->SetAnatomyType(anatomyType); 
+                }
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -835,6 +843,7 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
                 ;
         }
     }
+
 
     *argc -= optind;
     argv += optind;

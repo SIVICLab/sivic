@@ -263,6 +263,8 @@ class vtkSivicController : public vtkObject
         void					   DisplayHeader( char* objectName );
         void                       SetAnatomyType(int anatomyType);  
 
+        int                        anatomyType; 
+
  
     protected:
 
@@ -304,7 +306,6 @@ class vtkSivicController : public vtkObject
         vtkKWWindowBase*               preferencesWindow;
         vtkKWWindowBase*               voxelTaggingWindow;
         bool						   synchronizeVolumes;
-        int                            anatomyType; 
 
 
 };
