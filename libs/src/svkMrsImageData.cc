@@ -274,6 +274,7 @@ void svkMrsImageData::EstimateDataRange( double range[2], int minPt, int maxPt, 
         }
 }
 
+
 bool svkMrsImageData::HasSelectionBox( )
 {
 	bool hasSelectionBox = false;
@@ -283,6 +284,7 @@ bool svkMrsImageData::HasSelectionBox( )
     }
     return hasSelectionBox;
 }
+
 
 /*!
  *  Creates an unstructured grid that represents the selection box.

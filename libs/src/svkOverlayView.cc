@@ -245,22 +245,26 @@ void svkOverlayView::SetupMsInput( bool resetViewState )
     //vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 1, 0 );
     vtkActor::SafeDownCast( GetProp( svkOverlayView::PLOT_GRID) )->GetProperty()->SetDiffuseColor( 0, 0, 0 );
 
-    // Now we need to grab the selection box
-    svkMrsTopoGenerator* topoGenerator = svkMrsTopoGenerator::New();
-    vtkActorCollection* selectionTopo = topoGenerator->GetTopoActorCollection( dataVector[MR4D], svk4DImageData::VOL_SELECTION);
-    topoGenerator->Delete();
+    if ( svkMrsImageData::SafeDownCast(this->dataVector[MR4D]) != NULL ) {
 
+        // Now we need to grab the selection box
+        svkMrsTopoGenerator* topoGenerator = svkMrsTopoGenerator::New();
 
-    // Case for no selection box
-    if( selectionTopo != NULL ) {
-        selectionTopo->InitTraversal();
-        if( this->GetRenderer( svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION) ) ) {
-            this->GetRenderer( svkOverlayView::PRIMARY)->RemoveActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+        vtkActorCollection* selectionTopo = topoGenerator->GetTopoActorCollection( 
+                dataVector[MR4D], svk4DImageData::VOL_SELECTION);
+        topoGenerator->Delete();
+
+       // Case for no selection box
+        if( selectionTopo != NULL ) {
+            selectionTopo->InitTraversal();
+            if( this->GetRenderer( svkOverlayView::PRIMARY)->HasViewProp( this->GetProp( svkOverlayView::VOL_SELECTION) ) ) {
+                this->GetRenderer( svkOverlayView::PRIMARY)->RemoveActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+            }
+            this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
+            this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
+            this->TurnPropOn( svkOverlayView::VOL_SELECTION );
+            selectionTopo->Delete();
         }
-        this->SetProp( svkOverlayView::VOL_SELECTION, selectionTopo->GetNextActor());     
-        this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::VOL_SELECTION) );
-        this->TurnPropOn( svkOverlayView::VOL_SELECTION );
-        selectionTopo->Delete();
     }
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::PLOT_GRID ) );
     this->GetRenderer( svkOverlayView::PRIMARY)->AddActor( this->GetProp( svkOverlayView::SAT_BANDS_AXIAL) );
