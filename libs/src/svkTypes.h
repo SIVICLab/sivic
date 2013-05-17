@@ -40,55 +40,56 @@
  */
 
 
-#ifndef SVK_UCSFPACS_INTERFACE_H
-#define SVK_UCSFPACS_INTERFACE_H
+#ifndef  SVK_TYPES_H           
+#define  SVK_TYPES_H          
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <svkPACSInterface.h>
-#include <svkUtils.h>
-#include <svkUCSFUtils.h>
-#include <svkTypes.h>
+
+//#include <vtkObjectFactory.h>
+
 
 namespace svk {
 
 
 using namespace std;
 
-/*!
- *   This is current for UCSF only. This method will do the following...
- *   
- *   1. Create a temporary directary in the pacsDirectory below. \n
- *   2. Verify that it can write to this path. \n
- *   3. Copy all images to the PACS temporary directory. \n
- *   4. Reidentify these images in the temporary directory. \n
- *   5. Move the images to the PACS directory. \n
- *   6. Delete the temporary PACS directory. \n
- */
-class svkUCSFPACSInterface : public svkPACSInterface 
+
+class svkTypes : public vtkObject
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkUCSFPACSInterface, svkPACSInterface);
-    
-        static svkUCSFPACSInterface* New();
+        vtkTypeRevisionMacro( svkTypes, vtkObject);
 
-  
-        bool Connect();
-        bool SendImagesToPACS( string sourceDirectory, svkTypes::AnatomyType anatomyType );
-        bool Disconnect();
+        typedef enum {
+            ANATOMY_UNDEFINED = -1,
+            ANATOMY_BRAIN = 0,
+            ANATOMY_PROSTATE
+        } AnatomyType;
 
-    protected:
+        static string  GetAnatomyTypeString( AnatomyType anatomyType ) 
+        {
+            if ( anatomyType == ANATOMY_BRAIN ) {
+                return string("brain"); 
+            } else if ( anatomyType == ANATOMY_PROSTATE) {
+                return string("prostate"); 
+            }  else {
+                return "UNDEFINED"; 
+            }
+        }
 
-        svkUCSFPACSInterface();
-        ~svkUCSFPACSInterface();
-
+        static svkTypes::AnatomyType GetAnatomyType( string anatomyType) 
+        {
+            if ( anatomyType.compare("brain") == 0 ) {
+                return svkTypes::ANATOMY_BRAIN; 
+            } else if ( anatomyType.compare("prostate") == 0 ) {
+                return svkTypes::ANATOMY_PROSTATE; 
+            } else {
+                return svkTypes::ANATOMY_UNDEFINED; 
+            }
+        }
 };
 
+}
 
-}   //svk
-
-
-#endif //SVK_UCSFPACS_INTERFACE_H
+#endif //SVK_TYPES_H
 

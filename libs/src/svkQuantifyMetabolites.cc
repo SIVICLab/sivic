@@ -79,6 +79,7 @@ svkQuantifyMetabolites::svkQuantifyMetabolites()
     this->mrsXML = NULL;
     this->useSelectedVolumeFraction = 0;
     this->selectedVolumeMask = NULL;
+    this->anatomyType = svkTypes::ANATOMY_BRAIN; 
 
 }
 
@@ -322,6 +323,14 @@ void svkQuantifyMetabolites::GenerateRatioMaps()
         ratioIndex++; 
     }
 
+}
+
+/*!
+ *
+ */
+void svkQuantifyMetabolites::SetAnatomyType(svkTypes::AnatomyType anatomyType)
+{
+    this->anatomyType = anatomyType; 
 }
 
 
@@ -569,25 +578,41 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
 			this->mrsXML->PrintXML(cout, vtkIndent());
 		}
 
-    
-        //  Get the application specific sub-element (i.e. 1H Brain, 13C prostate, etc.)
-        string nucleus = "13C"; 
-        if ( this->GetImageDataInput(0) != NULL ) { 
-            nucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
-        } 
-        if ( nucleus.compare( "13C" ) == 0 ) {
-            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "13C");
-        } else {
-			if( this->GetDebug() ) {
-				this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H")->PrintXML(cout, vtkIndent());
-			}
-            this->mrsXML = this->mrsXML->FindNestedElementWithNameAndAttribute("APPLICATION", "nucleus", "1H");
+        //  =========================================
+        //  Search for the application specific sub-element 
+        //  (i.e. 1H Brain, 13C prostate, etc.)
+        //  =========================================
+        int numApplicationElements = this->mrsXML->GetNumberOfNestedElements();     
+        vtkXMLDataElement* applicationElement = NULL; 
+
+        for (int i = 0; i < numApplicationElements; i++ ) {
+
+            //  Anatomy 
+            string anatomy = svkTypes::GetAnatomyTypeString( this->anatomyType);
+
+            //  Nucleus
+            string nucleus = "13C"; 
+            if ( this->GetImageDataInput(0) != NULL ) { 
+                nucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
+            } 
+
+            applicationElement = this->mrsXML->GetNestedElement(i); 
+            string applicationNucleus = applicationElement->GetAttribute("nucleus"); 
+            string applicationAnatomy = applicationElement->GetAttribute("anatomy"); 
+            if ( applicationAnatomy.compare(anatomy) == 0 && applicationNucleus.compare(nucleus) == 0 ) {
+                this->mrsXML = applicationElement; 
+                if( this->GetDebug() ) {
+                    cout << "TARGET: " << anatomy << " " << nucleus << endl;
+                    this->mrsXML->PrintXML(cout, vtkIndent());
+                }
+                break; 
+            }
+            
         }
 
     } 
 
     vtkXMLDataElement* regionXML;
-
 
     while ( parseRegions ) {
 
@@ -891,6 +916,73 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "         <DENOMINATOR quant_id=\"2\">" << endl
         << "         </DENOMINATOR>" << endl
         << "     </ZSCORE>" << endl
+        << " " << endl
+        << "  </APPLICATION> " << endl
+        << " " << endl
+        << " " << endl
+        << " -- 1H Prostate  " << endl
+        << "  <APPLICATION nucleus=\"1H\" anatomy=\"prostate\"> " << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"CHOLINE\"   peak_ppm=\"3.1455\" width_ppm=\".1758\">" << endl
+        << "     </REGION>" << endl
+        << "     <REGION id=\"1\" name=\"CREATINE\"  peak_ppm=\"3.06\"  width_ppm=\".18\">" << endl
+        << "     </REGION>" << endl
+        << "     <REGION id=\"2\" name=\"CITRATE\"   peak_ppm=\"1.9833\"  width_ppm=\".13\">" << endl
+        << "     </REGION>" << endl
+        << " " << endl
+        << "     -- cho peak ht" << endl
+        << "     <QUANT id=\"0\" region=\"0\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- creatine peak ht" << endl
+        << "     <QUANT id=\"1\" region=\"1\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- cit peak ht" << endl
+        << "     <QUANT id=\"2\" region=\"2\">" << endl
+        << "         <ALGO name=\"PEAK_HT\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- cho integrated area" << endl
+        << "     <QUANT id=\"3\" region=\"0\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- creatine integrated area" << endl
+        << "     <QUANT id=\"4\" region=\"1\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- citrate integrated area" << endl
+        << "     <QUANT id=\"5\" region=\"2\">" << endl
+        << "         <ALGO name=\"INTEGRATE\">" << endl
+        << "         </ALGO>" << endl
+        << "     </QUANT>" << endl
+        << " " << endl
+        << "     -- ratio of choline to cit peak ht" << endl
+        << "     <RATIO id=\"0\" name=\"CHO/CIT_PEAK_HT\">" << endl
+        << "         <NUMERATOR quant_id=\"0\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <DENOMINATOR quant_id=\"2\">" << endl
+        << "         </DENOMINATOR>" << endl
+        << "     </RATIO>" << endl
+        << " " << endl
+        << "     -- ratio of choline + creatine to cit peak ht" << endl
+        << "     <RATIO id=\"2\" name=\"CHO+CRE/CIT INTEGRATE\">" << endl
+        << "         <NUMERATOR quant_id=\"4\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <NUMERATOR quant_id=\"5\">" << endl
+        << "         </NUMERATOR>" << endl
+        << "         <DENOMINATOR quant_id=\"6\">" << endl
+        << "         </DENOMINATOR>" << endl
+        << "     </RATIO>" << endl
         << " " << endl
         << "  </APPLICATION> " << endl
         << " " << endl

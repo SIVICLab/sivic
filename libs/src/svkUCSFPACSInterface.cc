@@ -91,7 +91,7 @@ bool svkUCSFPACSInterface::Connect()
  *  If this is for the Brain group, reidentify images using BRAIN DB (type 0). 
  *  For prostate (type 1), images are aleady identified. 
  */
-bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory, svkPACSInterface::AnatomyType anatomyType  )
+bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory, svkTypes::AnatomyType anatomyType  )
 {
     bool success = true;
     int result = 0;
@@ -106,7 +106,7 @@ bool svkUCSFPACSInterface::SendImagesToPACS( string sourceDirectory, svkPACSInte
 
     //  If not brain group data, then input images should already be identified
     //  therefore do not try to look up PHI in brain group DB when pushing to PACS.
-    if ( anatomyType == svkPACSInterface::ANATOMY_PROSTATE ) { 
+    if ( anatomyType == svkTypes::ANATOMY_PROSTATE ) { 
         sendToPACSCommand << " --no_reid " ;
         sendToPACSCommand << " --test_dir /tmp " ;
     }

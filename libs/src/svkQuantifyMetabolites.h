@@ -55,6 +55,8 @@
 #include <svkDcmHeader.h>
 #include <svkEnhancedMRIIOD.h>
 
+#include "svkTypes.h"
+
 
 namespace svk {
 
@@ -87,6 +89,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         void                                                ModifyRegion( int regionID, float peakPPM, float widthPPM ); 
         static void                                         WriteDefaultXMLTemplate( string fileName, bool clobber = false ); 
         static string                                       GetDefaultXMLFileName(); 
+        void                                                SetAnatomyType( svkTypes::AnatomyType anatomyType);
 
 
     protected:
@@ -134,6 +137,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         short*                              selectedVolumeMask;
         vtkXMLDataElement*                  mrsXML;
         vtkXMLDataElement*                  applicationXML;
+        svkTypes::AnatomyType               anatomyType; 
 
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)
