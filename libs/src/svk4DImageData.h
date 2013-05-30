@@ -102,8 +102,6 @@ class svk4DImageData: public svkImageData
         static bool    IsIndexInExtent( int* extent, svkDcmHeader::DimensionVector* indexVector );  
 
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
-        virtual int    GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
-
 
         void           GetTlcBrcInUserSelection( 
                             int tlcBrc[2], 

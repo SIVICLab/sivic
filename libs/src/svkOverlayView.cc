@@ -644,7 +644,15 @@ int svkOverlayView::FindSpectraSlice( int imageSlice, svkDcmHeader::Orientation 
     double imageSliceCenter[3];
     this->dataVector[MRI]->GetSliceOrigin( imageSlice, imageSliceCenter, orientation );
     int index = this->dataVector[MR4D]->GetOrientationIndex( orientation );
-    double tolerance = this->dataVector[MR4D]->GetSpacing()[index]/2.0;
+	double spacing[3] = {0,0,0};
+    this->dataVector[MR4D]->GetSpacing(spacing);
+    if( svkMrsImageData::SafeDownCast( this->dataVector[MR4D]) ) {
+    	string acquisitionType = this->dataVector[MR4D]->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    	if( acquisitionType == "SINGLE VOXEL" && svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->HasSelectionBox() ) {
+    		svkMrsImageData::SafeDownCast(this->dataVector[MR4D])->GetSelectionBoxSpacing( spacing );
+    	}
+    }
+    double tolerance = spacing[index]/2.0;
     spectraSlice = this->dataVector[MR4D]->GetClosestSlice( imageSliceCenter, orientation, tolerance );
     return spectraSlice;
 }

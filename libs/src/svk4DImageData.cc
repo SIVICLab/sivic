@@ -182,25 +182,6 @@ int svk4DImageData::GetLastSlice( svkDcmHeader::Orientation sliceOrientation )
 
 
 /*!
- *  Gets the closests slice for a given LPS coordinate, and a sliceOrientation.
- *
- *  \param posLPS the position in LPS coordinates
- *  \param orientation the orientation of the slice you wish to select 
- */
-int svk4DImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
-{
-
-    double origin[3] = {0,0,0};
-    this->GetDcmHeader()->GetOrigin(origin, 0);
-    double* spacing = this->GetSpacing();
-
-    int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing ); 
-
-    return slice;
-}
-
-
-/*!
  *  This will get the top left corner, and bottom right hand corner (low index-high index) for 
  *  a given selection and slice. It assumes the userSelection defines a minimum and maximum
  *  range and that the user wishes to select all voxels within that range (for a given slice)

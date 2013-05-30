@@ -101,7 +101,7 @@ class svkMrsImageData: public svk4DImageData
 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 );
 
-        int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation );
+        int            GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation, double tolerance = -1 );
 
         void           EstimateDataRange( double range[2], int minPt, int maxPt, int component, int* tlcBrc = NULL, int timePoint = 0, int channel = 0   );
 

@@ -186,7 +186,7 @@ void svkMrsImageData::SetImage( vtkImageData* image, int point, int timePoint, i
  *  \param posLPS the position in LPS coordinates
  *  \param orientation the orientation of the slice you wish to select
  */
-int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation )
+int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation sliceOrientation, double tolerance )
 {
 
     int slice = -1;
@@ -198,9 +198,9 @@ int svkMrsImageData::GetClosestSlice(double* posLPS, svkDcmHeader::Orientation s
         double spacing[3] = {0,0,0};
         this->GetSelectionBoxCenter( origin );
         this->GetSelectionBoxSpacing( spacing );
-        int slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing );
+        slice = this->FindMatchingSlice( posLPS, sliceOrientation, origin, spacing, tolerance );
     } else {
-       slice = Superclass::GetClosestSlice( posLPS, sliceOrientation );
+       slice = Superclass::GetClosestSlice( posLPS, sliceOrientation, tolerance );
     }
 
     return slice;
