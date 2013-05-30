@@ -127,7 +127,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
     this->dcmHeader->InsertEmptyElement( "VolumeLocalizationSequence" );
 
     //  Get Center Location Values
-    float selBoxCenter[3]; 
+    double selBoxCenter[3]; 
     this->GetSelBoxCenter( selBoxCenter );
 
     vtkstd::string midSlabPosition;
@@ -141,7 +141,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
     }
 
     //  Get Thickness Values
-    float selBoxSize[3]; 
+    double selBoxSize[3]; 
     this->GetSelBoxSize( selBoxSize );
 
     double dcos[3][3]; 
@@ -190,7 +190,7 @@ void svkGEPFileMapper::InitVolumeLocalizationSeq()
 /*
  *
  */
-void svkGEPFileMapper::GetSelBoxCenter( float selBoxCenter[3] )
+void svkGEPFileMapper::GetSelBoxCenter( double selBoxCenter[3] )
 {
     //  Center position is taken from user variables.  The Z "slice"
     //  position used to be taken from the image header "image.loc",
@@ -207,7 +207,7 @@ void svkGEPFileMapper::GetSelBoxCenter( float selBoxCenter[3] )
 /*
  *
  */
-void svkGEPFileMapper::GetSelBoxSize( float selBoxSize[3] )
+void svkGEPFileMapper::GetSelBoxSize( double selBoxSize[3] )
 {
     selBoxSize[0] = 0.0;
     double dcos[3][3]; 
@@ -491,9 +491,29 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
     //  rhi.scanspacing (space in mm between scans)
     //  Need to get the FOV and the number of phase encodes to get the spatial resolution:
     //  should the methods for obtaining the resolution and spacing be virtual in a subclass?
-    
+
     double voxelSpacing[3]; 
-    this->GetVoxelSpacing( voxelSpacing); 
+
+    int numVoxels[3];
+    this->GetNumVoxels( numVoxels ); 
+    int totalVoxels =  numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+
+    if ( totalVoxels > 1 ) { 
+    
+        this->GetVoxelSpacing( voxelSpacing); 
+
+    } else {
+
+        //  If PRESS SV, then set pixel size to PRESS box dimensions: 
+        vtkstd::string localizationType; 
+        localizationType = this->GetVolumeLocalizationTechnique(); 
+
+        if ( localizationType.compare("PRESS") == 0 )  { 
+            //  Get Thickness Values
+            this->GetSelBoxSize( voxelSpacing );
+        }
+
+    }
 
     vtkstd::string pixelSpacing;
     ostringstream oss;
@@ -511,7 +531,6 @@ void svkGEPFileMapper::InitPixelMeasuresMacro()
         pixelSpacing,                    
         oss.str()
     );
-
 }
 
 

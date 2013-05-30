@@ -176,8 +176,8 @@ class svkGEPFileMapper : public vtkObject
         void                    RedimensionModifiedSVData( svkImageData* data ); 
         virtual int             GetNumberUnsuppressedAcquisitions(); 
         virtual int             GetNumberSuppressedAcquisitions(); 
-        virtual void            GetSelBoxCenter( float selBoxCenter[3] ); 
-        virtual void            GetSelBoxSize( float selBoxSize[3] ); 
+        virtual void            GetSelBoxCenter( double selBoxCenter[3] ); 
+        virtual void            GetSelBoxSize( double selBoxSize[3] ); 
 
 
         void                    SetCellSpectrum( 
