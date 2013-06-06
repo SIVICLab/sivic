@@ -115,9 +115,14 @@ INCLUDE_DIRECTORIES(
     ${DCMTK_DIR}/include
 	${PLATFORM_INCLUDE}
 )
+
 if ( BUILD_CMINPACK )
     INCLUDE_DIRECTORIES ( ${CMINPACK_DIR}/include )
 endif( BUILD_CMINPACK )
+
+if ( BUILD_CLAPACK )
+    INCLUDE_DIRECTORIES ( ${CLAPACK_DIR}/INCLUDE)
+endif( BUILD_CLAPACK )
 
 
 IF(WIN32)
@@ -285,6 +290,14 @@ IF ( BUILD_CMINPACK )
         svkDynamicMRIAlgoTemplate.cc 
     )
 ENDIF ( BUILD_CMINPACK )
+
+IF ( BUILD_CLAPACK )
+    ADD_LIBRARY(
+        svkNumerical2
+
+        svkHSVD.cc 
+    )
+ENDIF ( BUILD_CLAPACK )
 
 #IF (BUILD_TESTS)
 #    ENABLE_TESTING()
