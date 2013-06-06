@@ -54,6 +54,7 @@ option( BUILD_SLICER "Build Slicer Plugin." FALSE )
 option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
 option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 option( BUILD_CMINPACK "For building classes that rely on cminpack fitting routines."  FALSE )
+option( BUILD_CLAPACK "For building classes that rely on clapack fitting routines."  FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 
@@ -127,5 +128,9 @@ endif ( BUILD_TESTS )
 if( BUILD_CMINPACK )
     FIND_PATH( CMINPACK_DIR REQUIRED )
 endif ( BUILD_CMINPACK )
+
+if( BUILD_CLAPACK )
+    FIND_PATH( CLAPACK_DIR REQUIRED )
+endif ( BUILD_CLAPACK )
 
 INSTALL_FILES( /local/sivic FILES README LICENSE)
