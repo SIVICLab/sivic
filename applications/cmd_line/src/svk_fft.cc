@@ -86,6 +86,7 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = UCSF DDF      \n";
     usemsg += "                                 4 = DICOM_MRS (default)    \n";
     usemsg += "   --spec                   transform spectral domain only\n"; 
+    usemsg += "   --spatial                transform spatial domain only\n"; 
     usemsg += "   -h                       Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Performs spatial/spectral FFTs.  If specified will transform only the specified domain.\n";  
@@ -102,7 +103,8 @@ int main (int argc, char** argv)
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
-        FLAG_TRANSFORM_SPEC_DOMAIN = 0
+        FLAG_TRANSFORM_SPEC_DOMAIN = 0, 
+        FLAG_TRANSFORM_SPATIAL_DOMAIN = 1
     }; 
 
 
@@ -110,6 +112,7 @@ int main (int argc, char** argv)
     {
         /* This option sets a flag. */
         {"spec",      no_argument,       NULL,  FLAG_TRANSFORM_SPEC_DOMAIN},
+        {"spatial",   no_argument,       NULL,  FLAG_TRANSFORM_SPATIAL_DOMAIN},
         {0, 0, 0, 0}
     };
 
@@ -134,6 +137,10 @@ int main (int argc, char** argv)
             case FLAG_TRANSFORM_SPEC_DOMAIN:
                 transformSpecDomain = true;
                 transformSpatialDomain = false; 
+                break;
+            case FLAG_TRANSFORM_SPATIAL_DOMAIN:
+                transformSpecDomain = false;
+                transformSpatialDomain = true; 
                 break;
             case 'h':
                 cout << usemsg << endl;

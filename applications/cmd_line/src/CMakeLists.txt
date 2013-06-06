@@ -149,6 +149,10 @@ if ( BUILD_CMINPACK )
     LINK_DIRECTORIES( ${CMINPACK_DIR}/lib )
 endif( BUILD_CMINPACK )
 
+if ( BUILD_CLAPACK )
+    LINK_DIRECTORIES( ${CLAPACK_DIR} )
+endif( BUILD_CLAPACK )
+
 IF(WIN32)
 	SET(PLATFORM_INCLUDE ../../../libs/getopt)
 ENDIF(WIN32)
@@ -162,6 +166,10 @@ if ( BUILD_CMINPACK )
     INCLUDE_DIRECTORIES( ${CMINPACK_DIR}/include )
 endif( BUILD_CMINPACK )
 
+if ( BUILD_CLAPACK )
+    INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
+endif( BUILD_CLAPACK )
+
 IF(WIN32)
 	SET(PLATFORM_LIBS getopt
 	                  netapi32)
@@ -171,7 +179,18 @@ if ( BUILD_CMINPACK )
     SET( CMINPACK_LIBS svkNumerical cminpack )
 endif( BUILD_CMINPACK )
 
+if ( BUILD_CLAPACK )
+    SET( CLAPACK_LIBS 
+        svkNumerical2 
+        ${CLAPACK_DIR}/libclapack.a
+        ${CLAPACK_DIR}/libf2c.a 
+        ${CLAPACK_DIR}/libclapack.a
+        ${CLAPACK_DIR}/libcblas.a 
+    )
+endif( BUILD_CLAPACK )
+
 SET(SVK_LIBS
+    ${CLAPACK_LIBS}
     svk 
     svkadapt 
     vtkImaging
@@ -355,6 +374,7 @@ TARGET_LINK_LIBRARIES(
 )
 
 
+
 ADD_EXECUTABLE(
     svk_reorder_epsi
     svk_reorder_epsi.cc
@@ -386,6 +406,19 @@ if ( BUILD_CMINPACK )
         ${SVK_LIBS}
     )
 endif ( BUILD_CMINPACK )
+
+if ( BUILD_CLAPACK )
+    ADD_EXECUTABLE(
+        svk_hsvd
+        svk_hsvd.cc
+    )
+
+    TARGET_LINK_LIBRARIES(
+        svk_hsvd
+	    ${SVK_LIBS}
+    )
+endif ( BUILD_CLAPACK )
+
 
 #   Your app here (set ADD_EXECUTABLE, TARGET_LINK_LIBRARIES)
 ADD_EXECUTABLE(

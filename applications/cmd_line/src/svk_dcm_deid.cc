@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_create_dcmraw.cc $
- *  $Rev: 1493 $
- *  $Author: jccrane $
- *  $Date: 2013-02-28 15:52:23 -0800 (Thu, 28 Feb 2013) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
