@@ -3049,20 +3049,25 @@ short svkDcmHeader::GetPixelValueAsShort( long int offsetToPixelData, long int p
     try {
 
         dcmFS->open( fileName.c_str(), ios::binary );
-        dcmFS->seekg(0, ios::beg);
+        if( dcmFS != NULL && dcmFS->good() ) {
+            dcmFS->seekg(0, ios::beg);
 
-        int wordSizeBytes = 2;     
-        long int offset = offsetToPixelData + (wordSizeBytes * pixelIndex);
+            int wordSizeBytes = 2;     
+            long int offset = offsetToPixelData + (wordSizeBytes * pixelIndex);
 
-        dcmFS->seekg(offset, ios::beg);
+            dcmFS->seekg(offset, ios::beg);
 
-        dcmFS->read( static_cast<char*>(pixelValue), 2);
+            dcmFS->read( static_cast<char*>(pixelValue), 2);
 
-        dcmFS->close();
+            dcmFS->close();
+        } else {
+            return VTK_SHORT_MIN;
+        }
 
     } catch (ifstream::failure e) {
 
         cout << "ERROR: Exception opening/reading file " << endl;
+        return VTK_SHORT_MIN;
 
     }
 
