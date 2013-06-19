@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_phase_spec.cc $
- *  $Rev: 1562 $
- *  $Author: beckn8tor $
- *  $Date: 2013-06-19 10:19:49 -0700 (Wed, 19 Jun 2013) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
