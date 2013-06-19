@@ -171,40 +171,20 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
     // Let's create the phase array for the linear phase
     vtkImageComplex* linearPhaseArray = new vtkImageComplex[ numFrequencyPoints ];
+    vtkImageComplex* reversePhaseArray = NULL;
+
+	// If the pivot point has changed we'll need reverse the current phase, then apply the new phase
     if ( this->linearPhasePivotTarget == this->linearPhasePivot ) {
 		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, deltaLinearPhase, this->linearPhasePivot);
     } else {
-		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, -1*this->linearPhase, this->linearPhasePivot);
-		cosPhase = static_cast<float>( cos( -1*this->phase0 ) );
-		sinPhase = static_cast<float>( sin( -1*this->phase0 ) );
-		for( int channel = firstChannel; channel < lastChannel; channel++ ) {
-			for( int timePt = 0; timePt < numTimePts; timePt++ ) {
-				for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
-					for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
-						for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
-							vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
-							specPtr = spectrum->GetPointer(0);
-
-							//cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
-							for (int i = 0; i < numFrequencyPoints; i++) {
-
-								re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
-								im = specPtr[2*i] * sinPhase + specPtr[2*i+1] * cosPhase;
-
-								// And apply the phase values
-								specPtr[2*i]   = ( linearPhaseArray[i].Real*re - linearPhaseArray[i].Imag*im );
-								specPtr[2*i+1] = ( linearPhaseArray[i].Real*im + linearPhaseArray[i].Imag*re );
-							}
-						}
-					}
-
-				}
-			}
-		}
+		reversePhaseArray = new vtkImageComplex[ numFrequencyPoints ];
+		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, reversePhaseArray, -1*this->linearPhase, this->linearPhasePivot);
 		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, this->linearPhaseTarget, this->linearPhasePivotTarget);
 		cosPhase = static_cast<float>( cos( this->phase0Target ) );
 		sinPhase = static_cast<float>( sin( this->phase0Target ) );
     }
+    float reverseCosPhase = static_cast<float>( cos( -1*this->phase0 ) );
+    float reverseSinPhase = static_cast<float>( sin( -1*this->phase0 ) );
 
     for( int channel = firstChannel; channel < lastChannel; channel++ ) { 
         for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
@@ -216,6 +196,16 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
                         //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
                         for (int i = 0; i < numFrequencyPoints; i++) {
+							// If the pivot point has changed we'll need reverse the current phase, then apply the new phase
+                        	// TODO: If possible make this algorithm not in place so that we do not have to reverse this.
+                        	if( reversePhaseArray != NULL ) {
+								re = specPtr[2*i] * reverseCosPhase - specPtr[2*i+1] * reverseSinPhase;
+								im = specPtr[2*i] * reverseSinPhase + specPtr[2*i+1] * reverseCosPhase;
+
+								// And apply the phase values
+								specPtr[2*i]   = ( reversePhaseArray[i].Real*re - reversePhaseArray[i].Imag*im );
+								specPtr[2*i+1] = ( reversePhaseArray[i].Real*im + reversePhaseArray[i].Imag*re );
+                        	}
 
                             re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
                             im = specPtr[2*i] * sinPhase + specPtr[2*i+1] * cosPhase;
@@ -231,6 +221,9 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
         }
     }
     delete[] linearPhaseArray;
+    if( reversePhaseArray != NULL ) {
+		delete[] reversePhaseArray;
+    }
 
 
     this->phase0 =  this->phase0Target;

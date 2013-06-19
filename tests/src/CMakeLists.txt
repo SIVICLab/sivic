@@ -382,6 +382,16 @@ ADD_EXECUTABLE(
      svkMrsApodizationFilterTest
        ${SVK_LIBS}
  )
+
+ADD_EXECUTABLE(
+    svkZeroLinearPhaseTest
+    svkZeroLinearPhaseTest.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svkZeroLinearPhaseTest
+	${SVK_LIBS}
+)
 ADD_EXECUTABLE(
      svkMri4DImageDataTest
      svkMri4DImageDataTest.cc

@@ -309,6 +309,7 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
     } else if( caller == this->phasePivotEntry->GetWidget() ) {
 
     	this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
+		this->phaser->Update();
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -508,6 +509,9 @@ void sivicProcessingWidget::InitializePhaser()
     if( this->model->DataExists("SpectroscopicData") ) {
         svkImageData* data = this->model->GetDataObject("SpectroscopicData");
         this->phaser->SetInput( data );
+        int pivotPoint = data->GetCellData()->GetNumberOfTuples() / 2;
+        this->phaser->SetLinearPhasePivot( pivotPoint );
+        this->phasePivotEntry->GetWidget()->SetValueAsInt( pivotPoint );
         this->SetPhaseUpdateExtent();
     }
     this->phaseSlider->SetValue(0.0);
