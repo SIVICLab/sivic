@@ -673,6 +673,19 @@ SET( TEST_NAME TEST_PHASE_SPEC_DIFF )
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
 SET_TESTS_PROPERTIES(TEST_PHASE_SPEC_DIFF PROPERTIES DEPENDS TEST_PHASE_SPEC )
 
+##################################################################
+#   Spectra zero and linear phase test in the spectral domain. 
+##################################################################
+SET( TEST_NAME TEST_MCHK_PHASE_ZERO_LINEAR_SPEC )
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME} )
+file( MAKE_DIRECTORY [ ${TEST_RESULTS_PATH} ] )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/phase_zero_linear_spec)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_phase_spec -i ${SVK_TEST_ROOT}/mrs_fft/out/recon.ddf -o ${TEST_RESULTS_PATH}/out -z 77 -l -227 -p 117 -t 2 )
+
+SET( TEST_NAME TEST_PHASE_ZERO_LINEAR_SPEC_DIFF )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out )
+SET_TESTS_PROPERTIES(TEST_PHASE_ZERO_LINEAR_SPEC_DIFF PROPERTIES DEPENDS TEST_MCHK_PHASE_ZERO_LINEAR_SPEC )
+
 
 ##############################
 #   Image linear phase test: 

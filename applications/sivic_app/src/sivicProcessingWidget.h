@@ -42,6 +42,7 @@
 #include <vtkKWCheckButton.h>
 #include <vtkKWCheckButtonSet.h>
 #include <vtkKWPushButton.h>
+#include <vtkKWEntryWithLabel.h>
 
 #include <svkDataModel.h>
 #include <svkPhaseSpec.h>
@@ -76,8 +77,10 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         vtkKWCheckButton*               phaseAllVoxelsButton;
         vtkKWCheckButton*               phaseAllChannelsButton;
         vtkKWScaleWithEntry*            phaseSlider;
+        vtkKWScaleWithEntry*            linearPhaseSlider;
         vtkKWPushButton*                fftButton;
         vtkKWPushButton*                phaseButton;
+        vtkKWEntryWithLabel*            phasePivotEntry;
 
         
         // Description:
@@ -95,6 +98,7 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
 
         void                        SetPhaseUpdateExtent();
         void                        UpdatePhaseSliderBindings();
+        void                        UpdateLinearPhaseSliderBindings();
         bool                        phaseChangeInProgress;
         void                        ExecuteFFT();
         void                        ExecuteRecon();

@@ -62,7 +62,9 @@ svkPhaseSpec::svkPhaseSpec()
 
     this->phase0 = 0.0;
     this->phase0Target = 0.0;
-    cmplxSpec = new float[2]; 
+    this->linearPhase = 0.0;
+    this->linearPhaseTarget = 0.0;
+    cmplxSpec = new float[2];
 
     //  Start index for update extent
     this->updateExtent[0] = -1;  
@@ -71,6 +73,8 @@ svkPhaseSpec::svkPhaseSpec()
     this->updateExtent[3] = -1;  
     this->updateExtent[4] = -1;  
     this->updateExtent[5] = -1;  
+    this->linearPhasePivot = 0;
+    this->linearPhasePivotTarget = 0;
 
     this->channelToPhase = -1; 
 }
@@ -126,11 +130,12 @@ int svkPhaseSpec::RequestInformation( vtkInformation* request, vtkInformationVec
  */
 int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    if ( this->phase0Target == this->phase0 ) {
+    if ( this->phase0Target == this->phase0 && this->linearPhaseTarget == this->linearPhase && this->linearPhasePivotTarget == this->linearPhasePivot ) {
         return 1; 
     } 
 
     float deltaPhase0 =  this->phase0Target - this->GetPhase0();
+    float deltaLinearPhase =  this->linearPhaseTarget - this->GetLinearPhase();
 
     float cosPhase = static_cast<float>( cos( deltaPhase0 ) );
     float sinPhase = static_cast<float>( sin( deltaPhase0 ) );
@@ -163,7 +168,44 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
         firstChannel = this->channelToPhase; 
         lastChannel = this->channelToPhase + 1; 
     }
-        
+
+    // Let's create the phase array for the linear phase
+    vtkImageComplex* linearPhaseArray = new vtkImageComplex[ numFrequencyPoints ];
+    if ( this->linearPhasePivotTarget == this->linearPhasePivot ) {
+		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, deltaLinearPhase, this->linearPhasePivot);
+    } else {
+		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, -1*this->linearPhase, this->linearPhasePivot);
+		cosPhase = static_cast<float>( cos( -1*this->phase0 ) );
+		sinPhase = static_cast<float>( sin( -1*this->phase0 ) );
+		for( int channel = firstChannel; channel < lastChannel; channel++ ) {
+			for( int timePt = 0; timePt < numTimePts; timePt++ ) {
+				for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
+					for (int y = this->updateExtent[2]; y <= this->updateExtent[3]; y++) {
+						for (int x = this->updateExtent[0]; x <= this->updateExtent[1]; x++) {
+							vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
+							specPtr = spectrum->GetPointer(0);
+
+							//cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
+							for (int i = 0; i < numFrequencyPoints; i++) {
+
+								re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
+								im = specPtr[2*i] * sinPhase + specPtr[2*i+1] * cosPhase;
+
+								// And apply the phase values
+								specPtr[2*i]   = ( linearPhaseArray[i].Real*re - linearPhaseArray[i].Imag*im );
+								specPtr[2*i+1] = ( linearPhaseArray[i].Real*im + linearPhaseArray[i].Imag*re );
+							}
+						}
+					}
+
+				}
+			}
+		}
+		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, this->linearPhaseTarget, this->linearPhasePivotTarget);
+		cosPhase = static_cast<float>( cos( this->phase0Target ) );
+		sinPhase = static_cast<float>( sin( this->phase0Target ) );
+    }
+
     for( int channel = firstChannel; channel < lastChannel; channel++ ) { 
         for( int timePt = 0; timePt < numTimePts; timePt++ ) { 
             for (int z = this->updateExtent[4]; z <= this->updateExtent[5]; z++) {
@@ -175,15 +217,12 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
                         //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
                         for (int i = 0; i < numFrequencyPoints; i++) {
 
-                            //spectrum->GetTupleValue(i, this->cmplxSpec);
-
                             re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
                             im = specPtr[2*i] * sinPhase + specPtr[2*i+1] * cosPhase;
-                            specPtr[2*i] = re; 
-                            specPtr[2*i+1] = im; 
 
-                            //spectrum->SetTuple( i, this->cmplxSpec );
-
+                            // And apply the phase values
+                            specPtr[2*i]   = ( linearPhaseArray[i].Real*re - linearPhaseArray[i].Imag*im );
+                            specPtr[2*i+1] = ( linearPhaseArray[i].Real*im + linearPhaseArray[i].Imag*re );
                         }
                     }
                 }
@@ -191,10 +230,12 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
             }
         }
     }
+    delete[] linearPhaseArray;
 
 
     this->phase0 =  this->phase0Target;
-
+    this->linearPhase =  this->linearPhaseTarget;
+    this->linearPhasePivot = this->linearPhasePivotTarget;
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
@@ -223,6 +264,30 @@ float svkPhaseSpec::GetPhase0()
 
 
 /*! 
+ *  Sets the linear phase to apply to spectra.
+ */
+void svkPhaseSpec::SetLinearPhase(float linearPhase)
+{
+    this->linearPhaseTarget = linearPhase;
+}
+
+
+/*!
+ *  This returns the current data phase, which may differ from the
+ *  value input to SetLinearPhase until the data has been updated.
+ */
+float svkPhaseSpec::GetLinearPhase()
+{
+    return this->linearPhase;
+}
+
+void svkPhaseSpec::SetLinearPhasePivot(int linearPhasePivot)
+{
+	this->linearPhasePivotTarget = linearPhasePivot;
+}
+
+
+/*!
  *  Sets the extent over which the phasing should be applied.      
  *  Takes 2 sets of x,y,z indices that specify the extent range 
  *  in 3D.  
@@ -270,5 +335,23 @@ int svkPhaseSpec::FillInputPortInformation( int vtkNotUsed(port), vtkInformation
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
     return 1;
 }
+
+
+/*!
+ *  PrintSelf method calls parent class PrintSelf, then prints the dcos.
+ *
+ */
+void svkPhaseSpec::PrintSelf( ostream &os, vtkIndent indent )
+{
+    Superclass::PrintSelf( os, indent );
+    os << "channelToPhase        :" << this->channelToPhase << endl;
+    os << "phase0                :" << this->phase0 << endl;
+    os << "phase0Target          :" << this->phase0Target << endl;
+    os << "linearPhase           :" << this->linearPhase << endl;
+    os << "linearPhaseTarget     :" << this->linearPhaseTarget << endl;
+    os << "linearPhasePivot      :" << this->linearPhasePivot << endl;
+    os << "linearPhasePivotTarget:" << this->linearPhasePivotTarget << endl;
+}
+
 
 

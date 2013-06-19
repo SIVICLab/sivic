@@ -121,9 +121,8 @@ float svkSpecUtils::GetPPMRef(float transmitFreq, float freqOffset, float temp )
  *  On output the vtkImageComplex variable phaseArray contains the phase factors
  *  to be applied to each point.
  */
-void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift)
+void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift, int origin)
 {
-    int origin = N/2;
     double phaseIncrement;
     double mult;
     for( int i = 0; i <  N; i++ ) {
@@ -133,4 +132,14 @@ void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArra
         phaseArray[i].Imag = sin(mult);
     }
 
+}
+
+
+/*!
+ *  Default uses N/2 as origin.
+ */
+void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift)
+{
+	int origin = N/2;
+	svkSpecUtils::CreateLinearPhaseShiftArray(N, phaseArray, shift, origin);
 }

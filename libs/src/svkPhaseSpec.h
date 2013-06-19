@@ -48,8 +48,10 @@
 #include <vtkObjectFactory.h>
 #include <vtkInformation.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkImageFourierFilter.h>
 
 #include <svkImageInPlaceFilter.h>
+#include <svkSpecUtils.h>
 
 
 namespace svk {
@@ -72,9 +74,13 @@ class svkPhaseSpec : public svkImageInPlaceFilter
 
         void            SetPhase0(float phase0);
         float           GetPhase0();
+        void            SetLinearPhase(float phase0);
+        float           GetLinearPhase();
+        void            SetLinearPhasePivot(int linearPhasePivot);
         void            SetUpdateExtent(int* start, int* end);
         void            SetChannel(int channel);
         void            PhaseAllChannels();
+		virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
 
     protected:
@@ -101,11 +107,15 @@ class svkPhaseSpec : public svkImageInPlaceFilter
     private:
         
         //  Members:
-        float           phase0;  
-        float           phase0Target;  
+        float           phase0;
+        float           phase0Target;
+        float           linearPhase;
+        float           linearPhaseTarget;
         float*          cmplxSpec;
         int             updateExtent[6]; 
         int             channelToPhase; 
+        int 			linearPhasePivot;
+        int 			linearPhasePivotTarget;
 
 };
 

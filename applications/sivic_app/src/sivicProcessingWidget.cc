@@ -1,4 +1,31 @@
 /*
+ *  Copyright © 2009-2011 The Regents of the University of California.
+ *  All Rights Reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *  •   Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *  •   Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *  •   None of the names of any campus of the University of California, the name
+ *      "The Regents of the University of California," or the names of any of its
+ *      contributors may be used to endorse or promote products derived from this
+ *      software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ *  OF SUCH DAMAGE.
+ */
+/*
  *  $URL$
  *  $Rev$
  *  $Author$
@@ -20,11 +47,13 @@ vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
 sivicProcessingWidget::sivicProcessingWidget()
 {
     this->phaseSlider = NULL;
+    this->linearPhaseSlider = NULL;
     this->phaser = svkPhaseSpec::New();
     this->phaseAllVoxelsButton = NULL;
     this->phaseAllChannelsButton = NULL;
     this->fftButton = NULL;
     this->phaseButton = NULL;
+    this->phasePivotEntry = NULL;
     this->phaseChangeInProgress = 0;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
@@ -45,6 +74,11 @@ sivicProcessingWidget::~sivicProcessingWidget()
         this->phaseSlider = NULL;
     }
 
+    if( this->linearPhaseSlider != NULL ) {
+        this->linearPhaseSlider->Delete();
+        this->linearPhaseSlider = NULL;
+    }
+
     if( this->phaser != NULL ) {
         this->phaser->Delete();
         this->phaser = NULL;
@@ -60,6 +94,10 @@ sivicProcessingWidget::~sivicProcessingWidget()
         this->phaseButton= NULL;
     }
 
+    if( this->phasePivotEntry != NULL ) {
+        this->phasePivotEntry->Delete();
+        this->phasePivotEntry= NULL;
+    }
 
 }
 
@@ -87,13 +125,29 @@ void sivicProcessingWidget::CreateWidget()
     this->phaseSlider->Create();
     this->phaseSlider->SetEntryWidth( 4 );
     this->phaseSlider->SetOrientationToHorizontal();
-    this->phaseSlider->SetLabelText("Phase");
+    this->phaseSlider->SetLabelText("Zero Phase");
+    this->phaseSlider->SetLabelWidth( 10 );
     this->phaseSlider->SetValue(0);
     this->phaseSlider->SetRange( -180, 180 );
     this->phaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
     this->phaseSlider->EnabledOff();
     this->phaseSlider->SetEntryPositionToRight();
     this->phaseSlider->SetLabelPositionToLeft();
+
+    this->linearPhaseSlider = vtkKWScaleWithEntry::New();
+    this->linearPhaseSlider->SetParent(this);
+    this->linearPhaseSlider->Create();
+    this->linearPhaseSlider->SetEntryWidth( 4 );
+    this->linearPhaseSlider->SetOrientationToHorizontal();
+    this->linearPhaseSlider->SetLabelText("Linear Phase");
+    this->linearPhaseSlider->SetLabelWidth( 10 );
+    this->linearPhaseSlider->SetValue(0);
+    this->linearPhaseSlider->SetRange( -2048, 2048 );
+    this->linearPhaseSlider->SetResolution( 0.1 );
+    this->linearPhaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
+    this->linearPhaseSlider->EnabledOff();
+    this->linearPhaseSlider->SetEntryPositionToRight();
+    this->linearPhaseSlider->SetLabelPositionToLeft();
 
 
     vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
@@ -131,17 +185,34 @@ void sivicProcessingWidget::CreateWidget()
     this->phaseButton->SetText( "Phase On Water");
     this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
 
-    this->Script("grid %s -row 0 -column 0 -pady 3 -columnspan 2 -sticky nwes -pady 5", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -pady 3 -columnspan 2 -sticky nwes", checkButtons->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -pady 3 -sticky we -padx 4 -pady 1", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 1 -pady 3 -sticky we -padx 4 -pady 1", this->phaseButton->GetWidgetName() );
+    this->phasePivotEntry = vtkKWEntryWithLabel::New();
+    this->phasePivotEntry->GetLabel()->SetText("Pivot Point ");
+    this->phasePivotEntry->GetWidget()->SetWidth(5);
+    this->phasePivotEntry->SetParent( this );
+    this->phasePivotEntry->Create( );
+    this->phasePivotEntry->EnabledOff();
+    this->phasePivotEntry->SetLabelWidth(10);
+    this->phasePivotEntry->GetWidget()->SetRestrictValueToInteger();
+    this->phasePivotEntry->SetLabelPositionToLeft();
 
-    this->Script("grid rowconfigure %s 0  -weight 0", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 1  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2  -weight 2", this->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky nwes", this->phaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", this->linearPhaseSlider->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nwes ", this->phasePivotEntry->GetWidgetName() );
+    this->Script("grid %s -row 2 -column 2 -columnspan 4 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 0 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 3 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->phaseButton->GetWidgetName() );
+
+    this->Script("grid rowconfigure %s 0  -weight 2", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 1  -weight 2", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
+    this->Script("grid rowconfigure %s 3  -weight 2", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 3 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 4 -weight 1", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 5 -weight 1", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver(
         this->overlayController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
@@ -154,6 +225,12 @@ void sivicProcessingWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->phaseSlider, vtkKWScale::ScaleValueStartChangingEvent );
     this->AddCallbackCommandObserver(
+        this->linearPhaseSlider, vtkKWScale::ScaleValueChangedEvent );
+    this->AddCallbackCommandObserver(
+        this->linearPhaseSlider, vtkKWScale::ScaleValueChangingEvent );
+    this->AddCallbackCommandObserver(
+        this->linearPhaseSlider, vtkKWScale::ScaleValueStartChangingEvent );
+    this->AddCallbackCommandObserver(
         this->phaseAllVoxelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
     this->AddCallbackCommandObserver(
         this->phaseAllChannelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
@@ -161,6 +238,8 @@ void sivicProcessingWidget::CreateWidget()
         this->fftButton, vtkKWPushButton::InvokedEvent );
     this->AddCallbackCommandObserver(
         this->phaseButton, vtkKWPushButton::InvokedEvent );
+    this->AddCallbackCommandObserver(
+        this->phasePivotEntry->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
     checkButtons->Delete();
 
@@ -200,6 +279,25 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
             default:
                 cout << "Got a unknown event!" << endl;
         }
+    } else if( caller == this->linearPhaseSlider ) {
+        switch ( event ) {
+            case vtkKWScale::ScaleValueChangedEvent:
+                this->phaseChangeInProgress = 0;
+                this->UpdateLinearPhaseSliderBindings();
+                break;
+            case vtkKWScale::ScaleValueChangingEvent:
+                this->phaser->SetLinearPhase( (-this->linearPhaseSlider->GetValue())/360.0 );
+                this->phaser->Update();
+                if( !this->phaseChangeInProgress ) {
+                    this->UpdateLinearPhaseSliderBindings();
+                }
+                break;
+            case vtkKWScale::ScaleValueStartChangingEvent:
+                this->phaseChangeInProgress = 1;
+                break;
+            default:
+                cout << "Got a unknown event!" << endl;
+        }
     } else if( caller == this->phaseAllChannelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         this->SetPhaseUpdateExtent();
     } else if( caller == this->phaseAllVoxelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
@@ -208,6 +306,9 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
         this->ExecuteRecon();
     } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
+    } else if( caller == this->phasePivotEntry->GetWidget() ) {
+
+    	this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -261,6 +362,23 @@ void sivicProcessingWidget::UpdatePhaseSliderBindings()
     this->phaseSlider->RemoveBinding( "<Right>");
     this->phaseSlider->AddBinding( "<Right>", this->phaseSlider, increment.str().c_str() );
     this->phaseSlider->Focus(); 
+}
+
+
+/*!
+ *  Updates/Adds keyboard bindings to the phase slider when it is in focus.
+ */
+void sivicProcessingWidget::UpdateLinearPhaseSliderBindings()
+{
+    stringstream increment;
+    stringstream decrement;
+    increment << "SetValue " << this->linearPhaseSlider->GetValue() + this->linearPhaseSlider->GetResolution();
+    decrement << "SetValue " << this->linearPhaseSlider->GetValue() - this->linearPhaseSlider->GetResolution();
+    this->linearPhaseSlider->RemoveBinding( "<Left>");
+    this->linearPhaseSlider->AddBinding( "<Left>", this->linearPhaseSlider, decrement.str().c_str() );
+    this->linearPhaseSlider->RemoveBinding( "<Right>");
+    this->linearPhaseSlider->AddBinding( "<Right>", this->linearPhaseSlider, increment.str().c_str() );
+    this->linearPhaseSlider->Focus();
 }
 
 
@@ -393,6 +511,7 @@ void sivicProcessingWidget::InitializePhaser()
         this->SetPhaseUpdateExtent();
     }
     this->phaseSlider->SetValue(0.0);
+    this->linearPhaseSlider->SetValue(0.0);
 
 }
 

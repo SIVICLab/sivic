@@ -386,6 +386,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_phase_spec
+    svk_phase_spec.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_phase_spec
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_dcm_deid   
     svk_dcm_deid.cc
 )

@@ -1866,7 +1866,7 @@ void vtkSivicController::SaveMetaboliteMaps()
 /*
  *  Saves image data stored in model to disk.
  */
-void vtkSivicController::SaveImageFromModel( const char* modelObjectName )
+void vtkSivicController::SaveImageFromModel( const char* modelObjectName, bool appendModelName  )
 {
 	svkImageData* data = this->model->GetDataObject( modelObjectName );
 	if( data != NULL ) {
@@ -1895,7 +1895,12 @@ void vtkSivicController::SaveImageFromModel( const char* modelObjectName )
 			} else if ( ext.compare("idf") == 0 ) {
 				fileType = 3;
 			}
-			string fname( root + modelObjectName );
+			string fname( root );
+
+			// If the model object name is not a file name, append it
+		    if ( appendModelName) {
+		    	fname.append(modelObjectName);
+			}
 
 			this->SaveMetMapData(
 					data,
@@ -3117,6 +3122,8 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->processingWidget->phaseSlider->EnabledOn(); 
+		this->processingWidget->phasePivotEntry->EnabledOn();
+        this->processingWidget->linearPhaseSlider->EnabledOn();
         this->processingWidget->phaseAllChannelsButton->EnabledOn(); 
         this->processingWidget->phaseAllVoxelsButton->EnabledOn(); 
         this->spectraRangeWidget->componentSelectBox->EnabledOn();
@@ -3206,6 +3213,8 @@ void vtkSivicController::DisableWidgets()
     this->spectraRangeWidget->ySpecRange->EnabledOff();
 
     this->processingWidget->phaseSlider->EnabledOff(); 
+    this->processingWidget->linearPhaseSlider->EnabledOff();
+    this->processingWidget->phasePivotEntry->EnabledOff();
     this->processingWidget->phaseAllChannelsButton->EnabledOff(); 
     this->processingWidget->phaseAllVoxelsButton->EnabledOff(); 
     this->processingWidget->fftButton->EnabledOff(); 
@@ -3842,6 +3851,7 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
     invocationString = "SaveImageFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
+    invocationString.append( " 0");
     rightClickMenu->AddRadioButton("Save Image", this, invocationString.c_str());
 
 	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
