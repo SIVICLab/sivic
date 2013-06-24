@@ -175,27 +175,28 @@ class svkHSVD : public svkImageInPlaceFilter
         void    CheckOutputSpectralDomain(); 
 
 
+
         void    MatMat( 
-                    const doublecomplex* dc, 
-                    const doublecomplex* dc, 
+                    const doublecomplex* matrix1, 
+                    const doublecomplex* matrix2, 
                     int m, 
                     int n, 
-                    doublecomplex* dc
+                    doublecomplex* result 
         );
 
         void    MatSq( 
-                    const doublecomplex* dc, 
+                    const doublecomplex* matrix, 
                     int m, 
                     int n, 
-                    doublecomplex* dc
+                    doublecomplex* result 
         );
 
         void    MatVec( 
-                    const doublecomplex* dc, 
-                    const doublecomplex* dc, 
+                    const doublecomplex* matrix, 
+                    const doublecomplex* vector, 
                     int m, 
                     int n, 
-                    doublecomplex* dc
+                    doublecomplex* result 
         );
 
         vector< vector< float > >   filterRules; 
