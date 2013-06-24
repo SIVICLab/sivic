@@ -126,9 +126,11 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     //   for each cell /spectrum: 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-    //numCells = 1; 
+    int firstCell = 0;
+    numCells = 1600; 
 
-    for ( int cellID = 0; cellID < numCells; cellID++ ) {
+    for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
+    //for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
 
         cout << "HSVD Cell: " << cellID << endl;
         vector< vector< double > >  hsvdModel;    
@@ -629,12 +631,6 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         hsvdModel->push_back(poleParams); 
     }      
        
-       /// At this point the parameters in "Par" should be used to
-       /// reconstruct the modeled signal, which then should be
-       /// subtracted from the original spectrum.
-       /// This is code I still have to add.
-       
-       /// Jason, here the in place filter should just calculate the difference between
 }
 
 
@@ -705,7 +701,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
            
 
             if ( addSVDComponent ) {
-            //if ( 1 ) {
+            //if ( 0 ) {
 
                 double PI      = vtkMath::Pi(); 
                 double dT      =  1./hdr->GetFloatValue( "SpectralWidth" );  
@@ -750,9 +746,12 @@ void svkHSVD::SubtractFilter()
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
     //numCells = 1; 
+    int firstCell = 0; 
+    numCells = 1600; 
     int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
 
-    for ( int cellID = 0; cellID < numCells; cellID++ ) {
+    for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
+    //for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
         vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
@@ -766,11 +765,11 @@ void svkHSVD::SubtractFilter()
             filterSpectrum->GetTupleValue(i, filterTuple);
 
             //  production
-            ///*
+            
             spectrum->GetTupleValue(i, tuple);
             tuple[0] -= filterTuple[0]; 
             tuple[1] -= filterTuple[1]; 
-            //*/ 
+             
 
             //  testing
             /*         
