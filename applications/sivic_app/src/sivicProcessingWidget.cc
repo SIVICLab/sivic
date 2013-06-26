@@ -306,10 +306,11 @@ void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, uns
         this->ExecuteRecon();
     } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
-    } else if( caller == this->phasePivotEntry->GetWidget() ) {
-
+    } else if( caller == this->phasePivotEntry->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
     	this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
-		this->phaser->Update();
+    	if( this->phaser->GetInput() != NULL ) {
+			this->phaser->Update();
+    	}
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
