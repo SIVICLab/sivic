@@ -1102,10 +1102,15 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 this->overlayWindowLevelWidget->SetWindowRange( 0, pixelRange[1] - pixelRange[0] ); 
                 this->overlayWindowLevelWidget->SetWindow( window ); 
                 this->overlayWindowLevelWidget->SetOverlayDataName( overlayDataName ); 
+                string currentThresholdType = this->thresholdType;
+                this->SetThresholdTypeToPercent();
+                this->imageViewWidget->overlayThresholdSlider->SetValue( 0.0 );
+
                 this->imageViewWidget->colorBarButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayButton->InvokeEvent( vtkKWCheckButton::SelectedStateChangedEvent );
                 this->imageViewWidget->overlayOpacitySlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
                 this->imageViewWidget->overlayThresholdSlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent );
+                this->SetThresholdType( currentThresholdType);
 
             } else {
                 string message = "ERROR: Dataset is not compatible and will not be loaded.\nInfo:\n";
