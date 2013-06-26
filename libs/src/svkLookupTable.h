@@ -67,6 +67,7 @@ class svkLookupTable : public vtkLookupTable
             HURD, 
             CYAN_HOT,
             FIRE,
+            CNI_FIXED,
             NONE
         } svkLookupTableType;
 
@@ -75,6 +76,8 @@ class svkLookupTable : public vtkLookupTable
 
 
         //  Methods
+        virtual void       SetTableRange(double min, double max);
+
         void               SetAlphaThreshold(double thresholdPercentage);
         double             GetAlphaThreshold();
 

@@ -148,7 +148,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t ColorMapTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER} ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t ColorMapTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf --cni_overlay  ${TEST_CASE_ROOT}/input/met_cni.idf -p ${TEST_RESULTS_PATH} )
 
 SET( TEST_NAME COLOR_MAP_RENDER_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_7/${PLATFORM} )

@@ -77,6 +77,15 @@ svkLookupTable::svkLookupTableType svkLookupTable::GetLUTType()
 	return this->type;
 }
 
+
+//! Used to stop range changes for FIXED colormaps.
+void svkLookupTable::SetTableRange(double rmin, double rmax)
+{
+	if( this->type != svkLookupTable::CNI_FIXED) {
+		Superclass::SetTableRange(rmin, rmax);
+	}
+}
+
 //
 void svkLookupTable::SetLUTType(svkLookupTableType type)
 {
@@ -892,7 +901,16 @@ void svkLookupTable::SetLUTType(svkLookupTableType type)
         SetTableValue(253, 255./255, 255./255, 255./255);
         SetTableValue(254, 255./255, 255./255, 255./255);
         SetTableValue(255, 255./255, 255./255, 255./255);
+    } else if ( this->type == svkLookupTable::CNI_FIXED ) {
 
+        this->SetNumberOfColors(svkLookupTable::NUM_COLORS);
+        this->SetNumberOfTableValues(svkLookupTable::NUM_COLORS);
+        this->SetValueRange(0,1);
+        this->SetHueRange(0,1);
+        this->SetSaturationRange(1,1);
+        this->SetAlphaRange(1.,1.);
+        this->TableRange[0] = -4;
+        this->TableRange[1] = 4;
 
     } else {
     	this->type = NONE;

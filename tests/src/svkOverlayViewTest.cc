@@ -75,6 +75,7 @@ struct globalArgs_t {
     char *secondSpectraName;  /* -S option */
     char *firstOverlayName;   /* -o  option */
     char *secondOverlayName;  /* -O option */
+    char *cniOverlayName;     /* -c option */
     char *outputPath;         /* -p option */
     bool disableValidation;  /* -d option */
     bool showSatBands;
@@ -88,11 +89,12 @@ static const struct option longOpts[] = {
     { "second_spectra",     required_argument, NULL, 'S' },
     { "overlay",            required_argument, NULL, 'o' },
     { "second_overlay",     required_argument, NULL, 'O' },
+    { "cni_overlay",        required_argument, NULL, 'c' },
     { "output_path",        required_argument, NULL, 'p' },
     { "disable_validation", no_argument,       NULL, 'd' },
     { NULL,                 no_argument,       NULL,  0  }
 };
-static const char *optString = "t:i:I:s:S:o:O:p:d";
+static const char *optString = "t:i:I:s:S:o:O:c:p:d";
 
 
 int main ( int argc, char** argv )
@@ -154,6 +156,9 @@ int main ( int argc, char** argv )
                     break;
                 case 'O': 
                     globalArgs.secondOverlayName = optarg;
+                    break;
+                case 'c': 
+                    globalArgs.cniOverlayName = optarg;
                     break;
                 case 'p': 
                     globalArgs.outputPath = optarg;
@@ -423,6 +428,13 @@ void ColorMapTest()
         overlay->Update();
     }
 
+    svkImageData* cniOverlay = NULL; 
+    if( globalArgs.cniOverlayName != NULL ) {
+        cniOverlay = model->LoadFile( globalArgs.cniOverlayName );
+        cniOverlay->Register(NULL);
+        cniOverlay->Update();
+    } 
+
     
     vtkRenderWindow* window = vtkRenderWindow::New(); 
     vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
@@ -489,12 +501,26 @@ void ColorMapTest()
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "REVERSE_COLOR.tiff" ;
     svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+
+    if( cniOverlay != NULL ) {
+        overlayController->SetInput( cniOverlay, 2 );
+    }
+
+    overlayController->SetOverlayThreshold( 0 );
+    overlayController->SetLUT( svkLookupTable::CNI_FIXED );
+    window->Render();
+    filename.str("");
+    filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "CNI_FIXED.tiff" ;
+    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
     
     if( spectra != NULL ) {
         spectra->Delete();
     }
     if( overlay != NULL ) {
         overlay->Delete();
+    }
+    if( cniOverlay != NULL ) {
+        cniOverlay->Delete();
     }
 
     model->Delete();

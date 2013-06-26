@@ -281,6 +281,10 @@ void sivicImageViewWidget::CreateWidget()
     invocation << "SetLUTCallback " << svkLookupTable::REVERSE_COLOR << endl;
     lutMenu->AddRadioButton("Reverse Color LUT", this->sivicController, invocation.str().c_str());
 
+    invocation.str("");
+    invocation << "SetLUTCallback " << svkLookupTable::CNI_FIXED << endl;
+    lutMenu->AddRadioButton("Fixed CNI LUT", this->sivicController, invocation.str().c_str());
+
     this->lutBox->GetWidget()->SetValue( "Color LUT" );
 
     this->thresholdType = vtkKWMenuButtonWithLabel::New();   
@@ -697,6 +701,7 @@ void sivicImageViewWidget::UpdateThreshold( )
             this->overlayThresholdSlider->RemoveBinding( "<Right>");
             this->overlayThresholdSlider->AddBinding( "<Right>", this->overlayThresholdSlider, increment.str().c_str() );
         }
+        this->overlayThresholdSlider->SetRange( dataRange[0], dataRange[1] );
     } else {
 
         this->sivicController->SetOverlayThreshold( this->overlayThresholdSlider->GetValue() );
