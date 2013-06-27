@@ -127,10 +127,10 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
     int firstCell = 0;
-    numCells = 1600; 
+    //numCells = 1600; 
 
-    for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
-    //for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
+
+    for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
 
         cout << "HSVD Cell: " << cellID << endl;
         vector< vector< double > >  hsvdModel;    
@@ -687,14 +687,15 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
                 if (
                     //( sweepWidth * freq >= this->filterRules[filterRule][0] 
                         //&& sweepWidth * freq <= this->filterRules[filterRule][1] ) 
-                    ( 1 * freq >= this->filterRules[filterRule][0] 
-                        && 1 * freq <= this->filterRules[filterRule][1] ) 
+                    ( -1 * freq >= this->filterRules[filterRule][0] 
+                        && -1 * freq <= this->filterRules[filterRule][1] ) 
                     || damp < -1. * this->filterRules[filterRule][2]
                 )  {
                     addSVDComponent = true;
                     if ( i == 0 ) {
                         //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
-                                //<< " to " << this->filterRules[filterRule][1] << endl;
+                               //<< " to " << this->filterRules[filterRule][1] << endl;
+                        //cout << "AMP: " << amp << " FREQ " << freq << endl ;
                     }
                 }
             }
@@ -747,11 +748,11 @@ void svkHSVD::SubtractFilter()
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
     //numCells = 1; 
     int firstCell = 0; 
-    numCells = 1600; 
+    //numCells = 1600; 
     int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
 
-    for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
-    //for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
+    //for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
+    for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
 
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
         vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
