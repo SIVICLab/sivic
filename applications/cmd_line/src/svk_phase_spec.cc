@@ -74,7 +74,7 @@ int main (int argc, char** argv)
     usemsg += "svk_phase_spec -i input_file_name [-z zero_order_phase -l linear_phase -p pivot_point";
     usemsg += " -t output_data_type -o output_root]\n";
     usemsg += "   -i        name    Name of file to phase.                                  \n"; 
-    usemsg += "   -f        number  Zero order phase value.                                 \n"; 
+    usemsg += "   -z        number  Zero order phase value.                                 \n"; 
     usemsg += "   -l        number  Linear phase value.                                     \n";
     usemsg += "   -p        integer Linear phase pivot point.                               \n";
     usemsg += "   -t        type    Target data type:                                       \n";
