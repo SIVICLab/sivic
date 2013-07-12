@@ -598,14 +598,25 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
 
             applicationElement = this->mrsXML->GetNestedElement(i); 
             string applicationNucleus = applicationElement->GetAttribute("nucleus"); 
-            string applicationAnatomy = applicationElement->GetAttribute("anatomy"); 
-            if ( applicationAnatomy.compare(anatomy) == 0 && applicationNucleus.compare(nucleus) == 0 ) {
-                this->mrsXML = applicationElement; 
-                if( this->GetDebug() ) {
-                    cout << "TARGET: " << anatomy << " " << nucleus << endl;
-                    this->mrsXML->PrintXML(cout, vtkIndent());
+            string applicationAnatomy = "";
+            const char* anatomyCharArray = applicationElement->GetAttribute("anatomy");
+            if( anatomyCharArray != NULL ) {
+                applicationAnatomy = applicationElement->GetAttribute("anatomy") ;
+
+            }
+            if( applicationNucleus.compare(nucleus) == 0 ) {
+               // Check if the anatomy matches OR if the anatomy is blank meaning its the default case
+                if ( applicationAnatomy.empty() || applicationAnatomy.compare(anatomy) == 0 ) {
+                    this->mrsXML = applicationElement;
+                    if( this->GetDebug() ) {
+                        cout << "TARGET: " << anatomy << " " << nucleus << endl;
+                        this->mrsXML->PrintXML(cout, vtkIndent());
+                    }
+                    // If this was the default case (anatomy is NULL) keep searching for a specific anatomy, otherwise break.
+                    if( !applicationAnatomy.empty() ) {
+                        break;
+                    }
                 }
-                break; 
             }
             
         }
@@ -988,7 +999,7 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << " " << endl
         << " " << endl
         << " -- 13C Prostate  " << endl
-        << "  <APPLICATION nucleus=\"13C\" anatomy=\"prostate\">      " << endl
+        << "  <APPLICATION nucleus=\"13C\">      " << endl
         << " " << endl
         << "     <REGION id=\"0\" name=\"LACTATE\"  peak_ppm=\"186\"  width_ppm=\"3\"> " << endl
         << "     </REGION> " << endl
