@@ -70,6 +70,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                               "\n";   
     usemsg += "svk_hsvd -i input_file_name -o output_file_name [ -t output_data_type ]  \n"; 
+    usemsg += "         [ -fb ] [ -m order ] [ -h ]                                      \n"; 
     usemsg += "                                                                         \n";  
     usemsg += "   -i                name   Name of file to convert.                     \n"; 
     usemsg += "   -o                name   Name of outputfile.                          \n";
@@ -77,6 +78,9 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = UCSF DDF                            \n";
     usemsg += "                                 4 = DICOM_MRS (default)                 \n";
     usemsg += "   -f                       Write out filter image                       \n"; 
+    usemsg += "   -b                       only filter spectra in selection box, others \n"; 
+    usemsg += "                            are zeroed out.                              \n"; 
+    usemsg += "   -m                order  model order (default = 25)                   \n"; 
     usemsg += "   -h                       Print this help mesage.                      \n";  
     usemsg += "                                                                         \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                  \n";  
@@ -88,6 +92,8 @@ int main (int argc, char** argv)
     string inputFileName; 
     string outputFileName;
     bool writeFilter = false; 
+    int modelOrder = 25; 
+    bool limitToSelectionBox = false; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -110,7 +116,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:fh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:m:fbh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -123,6 +129,12 @@ int main (int argc, char** argv)
                 break;
             case 'f':
                 writeFilter = true; 
+                break;
+            case 'b':
+                limitToSelectionBox = true; 
+                break;
+            case 'm':
+                modelOrder = atoi( optarg ); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -187,7 +199,10 @@ int main (int argc, char** argv)
         hsvd->ExportFilterImage(); 
     }
     hsvd->SetInput( reader->GetOutput() ); 
-    //hsvd->AddPPMFrequencyFilterRule( 20., -20. ); 
+    hsvd->SetModelOrder( modelOrder ); 
+    if ( limitToSelectionBox ) {
+        hsvd->OnlyFitSpectraInVolumeLocalization(); 
+    }
     hsvd->AddPPMFrequencyFilterRule( downfieldPPMLimit, 4.2 ); 
     hsvd->Update();
 
