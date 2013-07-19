@@ -1,5 +1,5 @@
 ##
-#  Copyright © 2009-2011 The Regents of the University of California.
+#  Copyright © 2009-2013 The Regents of the University of California.
 #  All Rights Reserved.
 #
 #  Redistribution and use in source and binary forms, with or without 
@@ -170,11 +170,31 @@ LINK_DIRECTORIES(
     ${DCMTK_DIR}/lib
 )
 
+if ( BUILD_CLAPACK )
+    LINK_DIRECTORIES( ${CLAPACK_DIR} )
+endif( BUILD_CLAPACK )
+
+
 INCLUDE_DIRECTORIES(
     ./
     ../../../libs/src/
     ${DCMTK_DIR}/include
 )
+
+if ( BUILD_CLAPACK )
+    INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
+endif( BUILD_CLAPACK )
+
+if ( BUILD_CLAPACK )
+    SET( CLAPACK_LIBS 
+        svkNumerical2 
+        ${CLAPACK_DIR}/libclapack.a
+        ${CLAPACK_DIR}/libf2c.a 
+        ${CLAPACK_DIR}/libclapack.a
+        ${CLAPACK_DIR}/libcblas.a 
+    )
+endif( BUILD_CLAPACK )
+
 
 
 ADD_LIBRARY( 
@@ -189,6 +209,7 @@ ADD_LIBRARY(
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
     sivicPreprocessingWidget.cc
+    sivicPostprocessingWidget.cc
     sivicDataWidget.cc
     sivicImageDataWidget.cc
     sivicCombineWidget.cc
@@ -216,7 +237,12 @@ ADD_EXECUTABLE(
 
 TARGET_LINK_LIBRARIES(
     sivic
-    
+
+    sivicGUI
+    ${CLAPACK_LIBS}
+    svkviz
+    svk 
+    svkadapt
     vtkRendering
     vtkGraphics
     vtkHybrid
@@ -224,10 +250,6 @@ TARGET_LINK_LIBRARIES(
     vtkIO
     vtkFiltering
     vtkCommon
-    sivicGUI
-    svkviz
-    svk 
-    svkadapt
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 

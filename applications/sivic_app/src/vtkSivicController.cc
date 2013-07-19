@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2013 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -318,6 +318,14 @@ void vtkSivicController::SetPreprocessingWidget( sivicPreprocessingWidget* prepr
 {
     this->preprocessingWidget = preprocessingWidget;
     this->preprocessingWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetPostprocessingWidget( sivicPostprocessingWidget* postprocessingWidget)
+{
+    this->postprocessingWidget = postprocessingWidget;
+    this->postprocessingWidget->SetModel(this->model);
 }
 
 
@@ -3127,7 +3135,11 @@ void vtkSivicController::EnableWidgets()
 
             this->quantificationWidget->EnableWidgets();
 
-        }
+        } 
+        this->postprocessingWidget->hsvdButton->EnabledOn(); 
+        this->postprocessingWidget->removeH20Button->EnabledOn(); 
+        this->postprocessingWidget->removeLipidButton->EnabledOn(); 
+        this->postprocessingWidget->selectionBoxOnlyButton->EnabledOn(); 
         this->imageViewWidget->satBandButton->EnabledOn();
         this->imageViewWidget->satBandButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->imageViewWidget->satBandOutlineButton->EnabledOn();

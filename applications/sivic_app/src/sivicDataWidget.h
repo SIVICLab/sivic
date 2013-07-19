@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2013 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -37,6 +37,8 @@
 
 #include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
+
+#include <svkHSVD.h>
 #include <svkDataModel.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>

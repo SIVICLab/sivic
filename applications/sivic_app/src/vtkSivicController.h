@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2013 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -88,6 +88,7 @@
 #include <vtkDataObjectCollection.h>
 #include <sivicProcessingWidget.h>
 #include <sivicPreprocessingWidget.h>
+#include <sivicPostprocessingWidget.h>
 #include <sivicQuantificationWidget.h>
 #include <sivicCombineWidget.h>
 #include <sivicDSCWidget.h>
@@ -146,6 +147,7 @@ class vtkSivicController : public vtkObject
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );
+        void                       SetPostprocessingWidget( sivicPostprocessingWidget* postprocessingWidget );
         void                       SetDataWidget( sivicDataWidget* dataWidget );
         void                       SetImageDataWidget( sivicImageDataWidget* imageDataWidget );
         void                       SetQuantificationWidget( sivicQuantificationWidget* quantificationWidget );
@@ -287,6 +289,7 @@ class vtkSivicController : public vtkObject
         sivicViewRenderingWidget*      viewRenderingWidget;
         sivicProcessingWidget*         processingWidget;
         sivicPreprocessingWidget*      preprocessingWidget;
+        sivicPostprocessingWidget*     postprocessingWidget;
         sivicDataWidget*               dataWidget;
         sivicImageDataWidget*          imageDataWidget;
         sivicQuantificationWidget*     quantificationWidget;

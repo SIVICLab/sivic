@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2013 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -62,6 +62,7 @@ sivicApp::sivicApp()
     this->exitStatus            = 0;
     this->processingWidget      = sivicProcessingWidget::New();
     this->preprocessingWidget   = sivicPreprocessingWidget::New();
+    this->postprocessingWidget  = sivicPostprocessingWidget::New();
     this->dataWidget            = sivicDataWidget::New();
     this->imageDataWidget       = sivicImageDataWidget::New();
     this->quantificationWidget  = sivicQuantificationWidget::New();
@@ -118,6 +119,11 @@ sivicApp::~sivicApp()
     if( this->preprocessingWidget != NULL ) {
         this->preprocessingWidget->Delete();
         this->preprocessingWidget = NULL;
+    }
+
+    if( this->postprocessingWidget != NULL ) {
+        this->postprocessingWidget->Delete();
+        this->postprocessingWidget = NULL;
     }
 
     if( this->dataWidget != NULL ) {
@@ -293,6 +299,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->preprocessingWidget->SetSivicController(this->sivicController);
     this->preprocessingWidget->Create();
 
+    this->postprocessingWidget->SetParent(tabbedPanel );
+    this->postprocessingWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->postprocessingWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->postprocessingWidget->SetSivicController(this->sivicController);
+    this->postprocessingWidget->Create();
+
     this->processingWidget->SetParent(tabbedPanel );
     this->processingWidget->SetPlotController(this->sivicController->GetPlotController());
     this->processingWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -369,6 +381,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
     this->sivicController->SetPreprocessingWidget( preprocessingWidget );
+    this->sivicController->SetPostprocessingWidget( postprocessingWidget );
     this->sivicController->SetDataWidget( dataWidget );
     this->sivicController->SetImageDataWidget( imageDataWidget );
     this->sivicController->SetCombineWidget( combineWidget );
@@ -391,18 +404,20 @@ int sivicApp::Build( int argc, char* argv[] )
     this->tabbedPanel->AddPage("4D Data", "4D Data.", NULL);
     vtkKWWidget* dataPanel = tabbedPanel->GetFrame("4D Data");
 
+    this->tabbedPanel->AddPage("Preproc", "Preprocessing.", NULL);
+    vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preproc");
 
-    this->tabbedPanel->AddPage("Preprocess", "Preprocessing.", NULL);
-    vtkKWWidget* preprocessingPanel = tabbedPanel->GetFrame("Preprocess");
+    this->tabbedPanel->AddPage("Recon", "MRS recon.", NULL);
+    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("Recon");
 
-    this->tabbedPanel->AddPage("MRS Recon", "MRS recon.", NULL);
-    vtkKWWidget* processingPanel = tabbedPanel->GetFrame("MRS Recon");
+    this->tabbedPanel->AddPage("Comb", "Coil Combination", NULL);
+    vtkKWWidget* combinePanel = tabbedPanel->GetFrame("Comb");
 
-    this->tabbedPanel->AddPage("Combine", "Combine", NULL);
-    vtkKWWidget* combinePanel = tabbedPanel->GetFrame("Combine");
+    this->tabbedPanel->AddPage("PostProc", "post process.", NULL);
+    vtkKWWidget* postprocessingPanel = tabbedPanel->GetFrame("PostProc");
 
-    this->tabbedPanel->AddPage("MRS Quant", "MRS Quant.", NULL);
-    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("MRS Quant");
+    this->tabbedPanel->AddPage("Quant", "MRS Quant.", NULL);
+    vtkKWWidget* quantificationPanel = tabbedPanel->GetFrame("Quant");
 
     this->tabbedPanel->AddPage("DSC", "DSC", NULL);
     vtkKWWidget* dscPanel = tabbedPanel->GetFrame("DSC");
@@ -446,6 +461,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->combineWidget->GetWidgetName(), combinePanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
+              this->postprocessingWidget->GetWidgetName(), postprocessingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->quantificationWidget->GetWidgetName(), quantificationPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s",

@@ -32,19 +32,20 @@
  *  $Date$
  */
 
-#ifndef SVK_DSC_WIDGET_H 
-#define SVK_DSC_WIDGET_H 
+#ifndef SVK_POSTPROCESSING_WIDGET_H 
+#define SVK_POSTPROCESSING_WIDGET_H 
 
 #include <vtkKWCompositeWidget.h>
 #include <vtkObjectFactory.h>
 #include <vtkKWTkUtilities.h>
+#include <vtkKWScaleWithEntry.h>
+#include <vtkKWCheckButton.h>
+#include <vtkKWCheckButtonSet.h>
 #include <vtkKWPushButton.h>
-#include <vtkKWMenuButtonWithLabel.h>
+#include <vtkKWEntryWithLabel.h>
 
 #include <svkHSVD.h>
 #include <svkDataModel.h>
-#include <svkDSCDeltaR2.h>
-#include <svkQuantifyDSC.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
 #include <sivicKWCompositeWidget.h>
@@ -53,28 +54,27 @@
 
 using namespace svk; 
 
-class sivicDSCWidget : public sivicKWCompositeWidget
+class sivicPostprocessingWidget : public sivicKWCompositeWidget
 {
 
     friend class vtkSivicController;
 
     public:
 
-        static sivicDSCWidget *New();
-        vtkTypeRevisionMacro(sivicDSCWidget,sivicKWCompositeWidget);
-        vtkstd::vector < vtkstd::string >   modelDSCNames;
+        static sivicPostprocessingWidget *New();
+        vtkTypeRevisionMacro(sivicPostprocessingWidget,sivicKWCompositeWidget);
 
 
     protected:
 
 
-        sivicDSCWidget();
-        ~sivicDSCWidget();
+        sivicPostprocessingWidget();
+        ~sivicPostprocessingWidget();
 
-        vtkKWMenuButtonWithLabel*       dscRepresentationSelector;
-        vtkKWPushButton*                generateMapsButton;
-        vtkKWLabel*                     dscLabel; 
-        vtkKWMenuButtonWithLabel*       mapViewSelector;
+        vtkKWPushButton*                hsvdButton;
+        vtkKWCheckButton*               removeH20Button;
+        vtkKWCheckButton*               removeLipidButton;
+        vtkKWCheckButton*               selectionBoxOnlyButton;
 
         
         // Description:
@@ -82,29 +82,20 @@ class sivicDSCWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
-        void            SetDSCRepresentationCallback( svkDSCDeltaR2::representation representation); 
-        void            SetOverlay( vtkstd::string modelObjectName); 
+
 
 
     private:
 
-        vtkCallbackCommand*                 progressCallback;
+        vtkCallbackCommand*         progressCallback;
 
-        void                                ExecuteDSC();
-        void                                ExecuteQuantification();
-        static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
-
-        svkQuantifyDSC*                     dscQuant;
-        vtkstd::vector < vtkstd::string >   dscNames;
+        void                        ExecuteHSVD();
+        static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
 
+        sivicPostprocessingWidget(const sivicPostprocessingWidget&);   // Not implemented.
+        void operator=(const sivicPostprocessingWidget&);  // Not implemented.
 
-
-        sivicDSCWidget(const sivicDSCWidget&);   // Not implemented.
-        void operator=(const sivicDSCWidget&);  // Not implemented.
-        svkDSCDeltaR2*                      dscRep;
-
-        
 };
 
-#endif //SVK_DSC_WIDGET_H 
+#endif //SVK_POSTPROCESSING_WIDGET_H 

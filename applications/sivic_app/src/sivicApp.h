@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2013 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -57,6 +57,7 @@
 #include <vtkPNGReader.h>
 #include <vtkJPEGReader.h>
 
+#include <svkHSVD.h>
 #include <svkOverlayViewController.h>
 #include <vtkSivicController.h>
 #include <sivicViewRenderingWidget.h>
@@ -105,6 +106,7 @@ class sivicApp
         vtkSivicController*        sivicController;
         sivicViewRenderingWidget*  viewRenderingWidget;
         sivicPreprocessingWidget*  preprocessingWidget;
+        sivicPostprocessingWidget* postprocessingWidget;
         sivicDataWidget*           dataWidget;
         sivicImageDataWidget*      imageDataWidget;
         sivicProcessingWidget*     processingWidget;
