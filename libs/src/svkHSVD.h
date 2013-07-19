@@ -100,13 +100,17 @@ using namespace std;
 
 
 /*! 
- *  Class to use HSVD algorithm to model time domain spectrum
+ *  Class to apply HSVD algorithm to model time domain spectrum
  *  primarily for removal of unwanted spectral components such as
- *  water or fat.  
+ *  water or fat.  This underlying algorithm in this class is based 
+ *  on code implemented by Bjoern Menze, Ph.D (Zurich) and 
+ *  B. Michael Kelm,  Ph.D.(Erlangen).  
  * 
- *  References/Attributions to be inserted.
+ *  References: 
+ *      Pijnappel WWF, van den Boogart A, de Beer R, van Ormondt D. 
+ *      SVD-based quantification of magnetic resonance signals. J Magn Reson 1992. 97: 122-134
  * 
- *  This class was developed: 
+ *  This SIVIC class was developed by: 
  *      Bjoern Menze, Ph.D. 
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
@@ -139,6 +143,8 @@ class svkHSVD : public svkImageInPlaceFilter
 
         void                ExportFilterImage(); 
         svkMrsImageData*    GetFilterImage(); 
+        void                OnlyFitSpectraInVolumeLocalization();
+        void                SetModelOrder( int modelOrder );
 
 
     protected:
@@ -203,6 +209,8 @@ class svkHSVD : public svkImageInPlaceFilter
         svkMrsImageData*            filterImage; 
         bool                        isInputInTimeDomain; 
         bool                        exportFilterImage; 
+        bool                        onlyFitInVolumeLocalization; 
+        int                         modelOrder; 
 
 };
 

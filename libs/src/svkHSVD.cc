@@ -55,6 +55,8 @@ vtkCxxRevisionMacro(svkHSVD, "$Rev$");
 vtkStandardNewMacro(svkHSVD);
 
 
+/*!
+ */
 svkHSVD::svkHSVD()
 {
 
@@ -65,10 +67,13 @@ svkHSVD::svkHSVD()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
     this->isInputInTimeDomain = false; 
     this->exportFilterImage = false; 
+    this->onlyFitInVolumeLocalization = false; 
+    this->modelOrder = 25; 
 
 }
 
-
+/*!
+ */
 svkHSVD::~svkHSVD()
 {
     
@@ -78,6 +83,25 @@ svkHSVD::~svkHSVD()
     }
 
 }
+
+
+/*!
+ *  Number of basis functions in HSVD model (default = 25). 
+ */
+void svkHSVD::SetModelOrder(int modelOrder)
+{
+    this->modelOrder = modelOrder; 
+}
+
+
+/*!
+ *  Default is to fit all voxels. 
+ */
+void svkHSVD::OnlyFitSpectraInVolumeLocalization()
+{
+    this->onlyFitInVolumeLocalization = true; 
+}
+
 
 
 /*!
@@ -129,11 +153,32 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     int firstCell = 0;
     //numCells = 1600; 
 
+    float tolerance = .5;     
+    short* selectionBoxMask = new short[numCells];
+    data->GetSelectionBoxMask(selectionBoxMask, tolerance); 
+
+    double progress = 0; 
 
     for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
 
         cout << "HSVD Cell: " << cellID << endl;
+        ostringstream progressStream;
+        progressStream << "Executing HSVD for voxel " << cellID + 1 << "/" << numCells;
+        this->SetProgressText( progressStream.str().c_str() );
+        if( cellID %16 == 0 ) {
+            progress = (cellID + 1)/((double)numCells);
+            this->UpdateProgress( progress );
+        }
         vector< vector< double > >  hsvdModel;    
+
+        //  If only fitting within selection box, then skip over
+        //  voxels outside. 
+        if ( this->onlyFitInVolumeLocalization == true ) { 
+            if ( selectionBoxMask[cellID] == 0 ) {
+                   continue; 
+               }
+        }
+
         this->HSVD(cellID, &hsvdModel); 
        
         if ( this->GetDebug() ) {
@@ -393,7 +438,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     //  in the model.. number of polesused to model 
     //  the input spectrum. 
     // ----------------------------------------
-    int peakNumber = 25;
+    int peakNumber = this->modelOrder;
 
     integer k = peakNumber;
     doublecomplex *u = new doublecomplex[ l * k ];
@@ -981,7 +1026,6 @@ void svkHSVD::MatMat(const doublecomplex* matrix1, const doublecomplex* matrix2,
         }
     }
 }
- 
 
 
 /*!
