@@ -165,7 +165,7 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
         ostringstream progressStream;
         progressStream << "Executing HSVD for voxel " << cellID + 1 << "/" << numCells;
         this->SetProgressText( progressStream.str().c_str() );
-        if( cellID %16 == 0 ) {
+        if( cellID %4 == 0 ) {
             progress = (cellID + 1)/((double)numCells);
             this->UpdateProgress( progress );
         }
@@ -721,6 +721,10 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
             double freq  = (*hsvdModel)[pole][2]; 
             double damp  = (*hsvdModel)[pole][3]; 
 
+            if ( this->GetDebug() && i == 0) {
+                cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
+            }
+
             
             addSVDComponent = false;
 
@@ -740,7 +744,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
                     if ( i == 0 ) {
                         //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
                                //<< " to " << this->filterRules[filterRule][1] << endl;
-                        //cout << "AMP: " << amp << " FREQ " << freq << endl ;
+                        cout << "   AMP: " << amp << " FREQ " << freq << endl ;
                     }
                 }
             }
@@ -762,7 +766,9 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
                 double phi     = phase;
 
                 if ( this->GetDebug() ) {
+                    if ( i == 0 ) {
                     //cout << "       amp frequency phi damping : " <<  amp << " " << omegaT << " "  << phi << " " << damping<< endl;
+                    }
                 }
 
                 filterTuple[0] += (amp * cos( phi + omegaT ) * damping);
@@ -862,6 +868,41 @@ void svkHSVD::AddFrequencyAndDampingFilterRule( float frequencyLimit1PPM, float 
     point->Delete();
 
 }
+
+/*!
+ *  Remove H20 from proton spectra (all frequencies downfield of 4.2PPM, i.e. higher PPM). 
+ */
+void svkHSVD::RemoveH20On()
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    svkDcmHeader* hdr = data->GetDcmHeader(); 
+
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( hdr );
+
+    float downfieldPPMLimit = point->ConvertPosUnits( 0, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    this->AddPPMFrequencyFilterRule( downfieldPPMLimit, 4.2 );
+
+}
+
+
+/*!
+ *  Remove lipid from proton spectra (all frequencies upfield of 1.8 PPM, i.e. lower PPM). 
+ */
+void svkHSVD::RemoveLipidOn()
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    svkDcmHeader* hdr = data->GetDcmHeader(); 
+
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( hdr );
+
+    int maxPoint = hdr->GetIntValue( "DataPointColumns" );
+    float upfieldPPMLimit = point->ConvertPosUnits( maxPoint, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    this->AddPPMFrequencyFilterRule( 1.8, upfieldPPMLimit );
+
+}
+
 
 
 /*!

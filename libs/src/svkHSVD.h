@@ -125,6 +125,8 @@ class svkHSVD : public svkImageInPlaceFilter
         static svkHSVD* New();
         vtkTypeRevisionMacro( svkHSVD, svkImageInPlaceFilter);
 
+        void    RemoveH20On(); 
+        void    RemoveLipidOn(); 
         
         void    AddPPMFrequencyFilterRule( 
                     float frequencyLimit1PPM, 
