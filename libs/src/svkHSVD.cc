@@ -1251,11 +1251,12 @@ void svkHSVD::svkHSVDExecute(int ext[6], int id)
 
 
 
-//----------------------------------------------------------------------------
-// This method is passed a input and output Datas, and executes the filter
-// algorithm to fill the output from the inputs.
-// It just executes a switch statement to call the correct function for
-// the Datas data types.
+/*! 
+ *  This method is passed a input and output Datas, and executes the filter
+ *  algorithm to fill the output from the inputs.
+ *  It just executes a switch statement to call the correct function for
+ *  the Datas data types.
+ */
 void svkHSVD::ThreadedRequestData(
   vtkInformation * vtkNotUsed( request ), 
   vtkInformationVector ** vtkNotUsed( inputVector ), 
@@ -1265,12 +1266,9 @@ void svkHSVD::ThreadedRequestData(
   int outExt[6], int id)
 {
 
-    cout << endl << "THREADED EXECUTE " << endl ;
-    cout << endl <<  endl;
-
+    cout << "THREADED EXECUTE " << id << endl ;
 
     this->svkHSVDExecute(outExt, id);
-
                           
 }
 
