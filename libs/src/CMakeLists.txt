@@ -190,6 +190,7 @@ ADD_LIBRARY(
 	svkDataModel.cc
 	svkDataValidator.cc
     svkImageInPlaceFilter.cc    
+    svkThreadedImageAlgorithm.cc
     svkPhaseSpec.cc
     svkAlgoTemplate.cc
     svkEPSIPhaseCorrect.cc

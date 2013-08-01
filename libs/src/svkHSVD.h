@@ -49,6 +49,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkInformation.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <svkThreadedImageAlgorithm.h>
 
 #include <svkImageInPlaceFilter.h>
 
@@ -79,7 +80,7 @@ extern "C" {
         integer *lwork, doublereal *rwork, integer *info);
     int zungqr_(integer *m, integer *n, integer *k,
         doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *
-        work, integer *lwork, integer *info);
+        work, integer *lwork, integer *info); 
     int ztrtrs_(char *uplo, char *trans, char *diag, integer *n,
         integer *nrhs, doublecomplex *a, integer *lda, doublecomplex *b,
         integer *ldb, integer *info);
@@ -90,8 +91,6 @@ extern "C" {
 }
 
 
-
-
 namespace svk {
 
 
@@ -100,6 +99,8 @@ using namespace std;
 
 
 /*! 
+ * .NAME svkHSVD - HSVD and baseline fitting of spectra. 
+ * .SECTION Description
  *  Class to apply HSVD algorithm to model time domain spectrum
  *  primarily for removal of unwanted spectral components such as
  *  water or fat.  This underlying algorithm in this class is based 
@@ -116,35 +117,34 @@ using namespace std;
  *      Beck Olson
  *  
  */
-class svkHSVD : public svkImageInPlaceFilter
+class svkHSVD : public svkThreadedImageAlgorithm
 {
-
 
     public:
 
         static svkHSVD* New();
-        vtkTypeRevisionMacro( svkHSVD, svkImageInPlaceFilter);
+        vtkTypeRevisionMacro( svkHSVD, svkThreadedImageAlgorithm);
 
-        void    RemoveH20On(); 
-        void    RemoveLipidOn(); 
-        
-        void    AddPPMFrequencyFilterRule( 
-                    float frequencyLimit1PPM, 
+        void    RemoveH20On();
+        void    RemoveLipidOn();
+
+        void    AddPPMFrequencyFilterRule(
+                    float frequencyLimit1PPM,
                     float frequencyLimit2PPM
-        ); 
-
-        void    AddFrequencyAndDampingFilterRule( 
-                    float frequencyLimit1PPM, 
-                    float frequencyLimit2PPM, 
-                    float dampingThreshold 
-        ); 
-
-        void    AddDampingFilterRule( 
-                    float dampingThreshold 
         );
 
-        void                ExportFilterImage(); 
-        svkMrsImageData*    GetFilterImage(); 
+        void    AddFrequencyAndDampingFilterRule(
+                    float frequencyLimit1PPM,
+                    float frequencyLimit2PPM,
+                    float dampingThreshold
+        );
+
+        void    AddDampingFilterRule(
+                    float dampingThreshold
+        );
+
+        void                ExportFilterImage();
+        svkMrsImageData*    GetFilterImage();
         void                OnlyFitSpectraInVolumeLocalization();
         void                SetModelOrder( int modelOrder );
 
@@ -159,60 +159,84 @@ class svkHSVD : public svkImageInPlaceFilter
 
         //  Methods:
         virtual int     RequestInformation(
-                            vtkInformation* request, 
+                            vtkInformation* request,
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+
+
         virtual int     RequestData(
-                            vtkInformation* request, 
+                            vtkInformation* request,
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector
                         );
+
+
+        virtual void ThreadedRequestData(
+                            vtkInformation* request, 
+                            vtkInformationVector** inputVector, 
+                            vtkInformationVector* outputVector,
+                            vtkImageData*** inData, 
+                            vtkImageData** outData,
+                            int extent[6], 
+                            int threadId
+                    );
+        static int*  progress;
+
 
 
     private:
+
+
 
         typedef std::complex<float>         complexf;
         typedef std::complex<double>        complexd;
         typedef std::complex<long double>   complexld;
 
-        void    HSVD( int cellID, vector< vector <double> >* hsvdModel ); 
-        void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel); 
-        void    SubtractFilter(); 
-        void    CheckInputSpectralDomain(); 
-        void    CheckOutputSpectralDomain(); 
+        void    svkHSVDExecute(int ext[6], int id); 
+        void    HSVDFitCellSpectrum( int cellID );
+        void    HSVD( int cellID, vector< vector <double> >* hsvdModel );
+        void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel);
+        void    SubtractFilter();
+        void    CheckInputSpectralDomain();
+        void    CheckOutputSpectralDomain();
 
 
 
-        void    MatMat( 
-                    const doublecomplex* matrix1, 
-                    const doublecomplex* matrix2, 
-                    int m, 
-                    int n, 
-                    doublecomplex* result 
+        void    MatMat(
+                    const doublecomplex* matrix1,
+                    const doublecomplex* matrix2,
+                    int m,
+                    int n,
+                    doublecomplex* result
         );
 
-        void    MatSq( 
-                    const doublecomplex* matrix, 
-                    int m, 
-                    int n, 
-                    doublecomplex* result 
+        void    MatSq(
+                    const doublecomplex* matrix,
+                    int m,
+                    int n,
+                    doublecomplex* result
         );
 
-        void    MatVec( 
-                    const doublecomplex* matrix, 
-                    const doublecomplex* vector, 
-                    int m, 
-                    int n, 
-                    doublecomplex* result 
+        void    MatVec(
+                    const doublecomplex* matrix,
+                    const doublecomplex* vector,
+                    int m,
+                    int n,
+                    doublecomplex* result
         );
 
-        vector< vector< float > >   filterRules; 
-        svkMrsImageData*            filterImage; 
-        bool                        isInputInTimeDomain; 
-        bool                        exportFilterImage; 
-        bool                        onlyFitInVolumeLocalization; 
-        int                         modelOrder; 
+        vector< vector< float > >   filterRules;
+        svkMrsImageData*            filterImage;
+        bool                        isInputInTimeDomain;
+        bool                        exportFilterImage;
+        bool                        onlyFitInVolumeLocalization;
+        int                         modelOrder;
+        short*                      selectionBoxMask;
+
+        int                         numTimePoints;
+        double                      spectralWidth; 
+
 
 };
 
@@ -221,4 +245,8 @@ class svkHSVD : public svkImageInPlaceFilter
 
 
 #endif //SVK_HSVD_H
+
+
+
+
 

@@ -45,7 +45,11 @@
 #include <svkSpecPoint.h>
 #include <svkMrsImageFFT.h>
 
-//#include <clapack.h>
+#include <vtkObjectFactory.h>
+#include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 
 using namespace svk;
@@ -54,6 +58,7 @@ using namespace svk;
 vtkCxxRevisionMacro(svkHSVD, "$Rev$");
 vtkStandardNewMacro(svkHSVD);
 
+int* svkHSVD::progress; //  static pointer 
 
 /*!
  */
@@ -69,8 +74,12 @@ svkHSVD::svkHSVD()
     this->exportFilterImage = false; 
     this->onlyFitInVolumeLocalization = false; 
     this->modelOrder = 25; 
+    this->SetNumberOfThreads(16);
+    //this->SetNumberOfThreads(1);
+    svkHSVD::progress = NULL; 
 
 }
+
 
 /*!
  */
@@ -135,13 +144,19 @@ int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector**
 /*! 
  *
  */
+
 int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
     //  Make sure input spectra are in time domain for HSVD filter. 
     this->CheckInputSpectralDomain(); 
+
+    this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    this->spectralWidth = data->GetDcmHeader()->GetFloatValue( "SpectralWidth" );
+
 
     //  make a copy of the input image to put the filter image into
     this->filterImage = svkMrsImageData::New(); 
@@ -150,57 +165,38 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     //   for each cell /spectrum: 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-    int firstCell = 0;
-    //numCells = 1600; 
 
     float tolerance = .5;     
-    short* selectionBoxMask = new short[numCells];
+    this->selectionBoxMask = new short[numCells];
     data->GetSelectionBoxMask(selectionBoxMask, tolerance); 
 
-    double progress = 0; 
-
-    for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
-
-        cout << "HSVD Cell: " << cellID << endl;
-        ostringstream progressStream;
-        progressStream << "Executing HSVD for voxel " << cellID + 1 << "/" << numCells;
-        this->SetProgressText( progressStream.str().c_str() );
-        if( cellID %4 == 0 ) {
-            progress = (cellID + 1)/((double)numCells);
-            this->UpdateProgress( progress );
+    if ( svkHSVD::progress == NULL ) {
+        int numThreads = this->GetNumberOfThreads();
+        svkHSVD::progress = new int[numThreads]; 
+        for ( int t = 0; t < numThreads; t++ ) {
+            svkHSVD::progress[t] = 0; 
         }
-        vector< vector< double > >  hsvdModel;    
+    }
 
-        //  If only fitting within selection box, then skip over
-        //  voxels outside. 
-        if ( this->onlyFitInVolumeLocalization == true ) { 
-            if ( selectionBoxMask[cellID] == 0 ) {
-                   continue; 
-               }
-        }
+    ostringstream progressStream;
+    progressStream << "Executing HSVD ";
+    this->SetProgressText( progressStream.str().c_str() );
+    this->UpdateProgress(.0);
 
-        this->HSVD(cellID, &hsvdModel); 
-       
-        if ( this->GetDebug() ) {
-            for ( int pole = 0; pole < hsvdModel.size(); pole++) {
+    //  This will call HSVDFitCellSpectrum foreach cell within the 
+    //  sub-extent within each thread.
+    this->Superclass::RequestData(
+        request,
+        inputVector,
+        outputVector
+    );
 
-                double amp   = (hsvdModel)[pole][0]; 
-                double phase = (hsvdModel)[pole][1]; 
-                double freq  = (hsvdModel)[pole][2]; 
-                double damp  = (hsvdModel)[pole][3]; 
-                //cout << "POLE " << pole << " : " << freq << "           " << amp << " " << phase << " " << damp << endl; 
-                if ( this->GetDebug() ) {
-                    //cout << "    HSVD POLE " << setw(5) << pole << ": " << setw(10) << amp << " " << freq
-                        //<< " " << setw(20) << " " << phase << " " << setw(20) << damp << endl; 
-                }
-            }
-        }
-
-        this->GenerateHSVDFilterModel( cellID, &hsvdModel ); 
+    if ( svkHSVD::progress != NULL ) {
+        delete [] svkHSVD::progress; 
+        svkHSVD::progress = NULL; 
     }
 
     //  Subtract Filter Spectrum from the input data
-    cout << "HSVD Apply Filter: " << endl;
     this->SubtractFilter();
 
 
@@ -211,8 +207,52 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     this->GetInput()->Modified();
     this->GetInput()->Update();
 
+    delete [] this->selectionBoxMask; 
+
+
     return 1; 
 } 
+
+
+/*!
+ *
+ */
+void svkHSVD::HSVDFitCellSpectrum( int cellID ) 
+{
+
+    //cout << "HSVD Cell: " << cellID << endl;
+    vector< vector< double > >  hsvdModel;    
+
+    //  If only fitting within selection box, then skip over
+    //  voxels outside. 
+    if ( this->onlyFitInVolumeLocalization == true ) { 
+        if ( this->selectionBoxMask[cellID] == 0 ) {
+               return; 
+           }
+    }
+
+    this->HSVD(cellID, &hsvdModel); 
+   
+    if ( this->GetDebug() ) {
+        for ( int pole = 0; pole < hsvdModel.size(); pole++) {
+
+            double amp   = (hsvdModel)[pole][0]; 
+            double phase = (hsvdModel)[pole][1]; 
+            double freq  = (hsvdModel)[pole][2]; 
+            double damp  = (hsvdModel)[pole][3]; 
+            //cout << "POLE " << pole << " : " << freq << "           " << amp << " " << phase << " " << damp << endl; 
+            if ( this->GetDebug() ) {
+                //cout << "    HSVD POLE " << setw(5) << pole << ": " << setw(10) << amp << " " << freq
+                    //<< " " << setw(20) << " " << phase << " " << setw(20) << damp << endl; 
+            }
+        }
+    }
+
+    this->GenerateHSVDFilterModel( cellID, &hsvdModel ); 
+}
+
+
+
 
 
 /*!
@@ -313,18 +353,13 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     svkDcmHeader* hdr = data->GetDcmHeader(); 
 
     //  some information about the spectrum to be processed
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+    int numTimePoints = this->numTimePoints; 
 
     //  dwelltime in seconds: 
-    double _RealDwellTime =  1./hdr->GetFloatValue( "SpectralWidth" );  
+    double _RealDwellTime =  1./(this->spectralWidth); 
 
     integer       numTimePointsLong = (integer) numTimePoints;
-    //const double  dt                = _RealDwellTime * 1.e-9;
-    //const double  dt                = _RealDwellTime * 1.e-6;
-    //const double  dt                = _RealDwellTime * 1.e-3;
     const double  dt                = _RealDwellTime;       // dwell time in seconds
-    //const double  dt                = _RealDwellTime * 1.e3;        convert to miliseconds
-    //const double  dt                = _RealDwellTime * 1.e6;
     const double  dt2pi             = dt * 2. * M_PI;
     integer       l                 = numTimePointsLong / 4;
     integer       m                 = numTimePointsLong - l + 1;
@@ -339,11 +374,10 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     int y;
     int z;
     float tupleIn[2];
+
     for( int t = 0; t < numTimePointsLong; t++ ){
         //complexf val;
         spectrum->GetTupleValue(t, tupleIn);
-
-
 
         //signal[t].r = static_cast<doublereal>(std::real(tupleIn[0]));
         //signal[t].i = static_cast<doublereal>(std::imag(tupleIn[1]));
@@ -369,7 +403,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     }
 
     //////////////////////////////////////////////////////////////////////
-    // start the processing of the individual spectrum
+    // start the processing of the individual spectra
     //////////////////////////////////////////////////////////////////////
 
     const int length_multiplications = l * ( m + numTimePointsLong )/2;
@@ -690,10 +724,10 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
 
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+    int numTimePoints = this->numTimePoints; 
 
     //  dwelltime in milisec: 
-    double sweepWidth =  hdr->GetFloatValue( "SpectralWidth" );  
+    double sweepWidth =  this->spectralWidth; 
     bool    addSVDComponent;
 
     vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
@@ -722,7 +756,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
             double damp  = (*hsvdModel)[pole][3]; 
 
             if ( this->GetDebug() && i == 0) {
-                cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
+                //cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
             }
 
             
@@ -744,7 +778,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
                     if ( i == 0 ) {
                         //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
                                //<< " to " << this->filterRules[filterRule][1] << endl;
-                        cout << "   AMP: " << amp << " FREQ " << freq << endl ;
+                        //cout << "   AMP: " << amp << " FREQ " << freq << endl ;
                     }
                 }
             }
@@ -754,7 +788,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
             //if ( 0 ) {
 
                 double PI      = vtkMath::Pi(); 
-                double dT      =  1./hdr->GetFloatValue( "SpectralWidth" );  
+                double dT      =  1./sweepWidth; 
 
                 //  get angular frequency argument
                 double omegaT  = 2. * PI * freq * i * dT;
@@ -800,7 +834,7 @@ void svkHSVD::SubtractFilter()
     //numCells = 1; 
     int firstCell = 0; 
     //numCells = 1600; 
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+    int numTimePoints = this->numTimePoints; 
 
     //for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
     for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
@@ -883,6 +917,8 @@ void svkHSVD::RemoveH20On()
     float downfieldPPMLimit = point->ConvertPosUnits( 0, svkSpecPoint::PTS, svkSpecPoint::PPM);
     this->AddPPMFrequencyFilterRule( downfieldPPMLimit, 4.2 );
 
+    point->Delete();
+
 }
 
 
@@ -897,10 +933,11 @@ void svkHSVD::RemoveLipidOn()
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( hdr );
 
-    int maxPoint = hdr->GetIntValue( "DataPointColumns" );
+    int maxPoint = this->numTimePoints; 
     float upfieldPPMLimit = point->ConvertPosUnits( maxPoint, svkSpecPoint::PTS, svkSpecPoint::PPM);
     this->AddPPMFrequencyFilterRule( 1.8, upfieldPPMLimit );
 
+    point->Delete();
 }
 
 
@@ -929,8 +966,8 @@ void svkHSVD::AddPPMFrequencyFilterRule( float frequencyLimit1PPM, float frequen
     filter.push_back( lowFrequencyLimitHz ); 
     filter.push_back( highFrequencyLimitHz ); 
     filter.push_back( dampingThreshold ); 
-    cout << "SET FILTER: " << frequencyLimit1PPM << " to " << frequencyLimit2PPM << endl;
-    cout << "SET FILTER: " << lowFrequencyLimitHz  << " to " << highFrequencyLimitHz << endl;
+    //cout << "SET FILTER: " << frequencyLimit1PPM << " to " << frequencyLimit2PPM << endl;
+    //cout << "SET FILTER: " << lowFrequencyLimitHz  << " to " << highFrequencyLimitHz << endl;
     this->filterRules.push_back( filter );
 
     point->Delete();
@@ -946,7 +983,7 @@ void svkHSVD::AddDampingFilterRule( float dampingThreshold )
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
-    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+    int numTimePoints = this->numTimePoints; 
 
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
@@ -1164,3 +1201,76 @@ void matMat(const doublecomplex* matrix1, const doublecomplex* matrix2, int m, i
     }
 }
  
+
+/*!
+ *  Loop through spectra within the specified sub-extent and apply HSVD to each. 
+ */   
+void svkHSVD::svkHSVDExecute(int ext[6], int id) 
+{
+    vtkIdType in1Inc0, in1Inc1, in1Inc2;
+
+    // Get information to march through data
+    this->GetImageDataInput(0)->GetContinuousIncrements(ext, in1Inc0, in1Inc1, in1Inc2);
+    //cout << "   outExt sub: " << id << " " << ext[0] << " " << ext[1] << endl;
+    //cout << "   outExt sub: " << id << " " << ext[2] << " " << ext[3] << endl;
+    //cout << "   outExt sub: " << id << " " << ext[4] << " " << ext[5] << endl;
+    //cout << endl <<  endl;
+    
+
+    // Loop through spectra in the given extent 
+    svkDcmHeader::DimensionVector dimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    //svkDcmHeader::PrintDimensionIndexVector(&dimensionVector); 
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;
+
+    
+    int numThreads = this->GetNumberOfThreads();
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+    for (int cellID = 0; cellID < numCells; cellID++) {
+
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+        bool isCellInSubExtent = svk4DImageData::IsIndexInExtent( ext, &loopVector ); 
+        if ( isCellInSubExtent ) { 
+            //cout << "CELL TO FIT: " << cellID << endl;
+            this->HSVDFitCellSpectrum( cellID ); 
+            svkHSVD::progress[id]++; 
+
+            int cellCount = 0; 
+            for ( int t = 0; t < numThreads; t++ ) {
+                cellCount = cellCount + svkHSVD::progress[t]; 
+            }
+            int percent = 100 * (double)cellCount/(double)numCells; 
+            if ( id == 0 && percent % 1 == 0 ) {
+                //cout << " CC: " << id << " " << percent << endl; 
+                this->UpdateProgress(percent/100.);
+            }
+        }
+
+    }
+
+}
+
+
+
+//----------------------------------------------------------------------------
+// This method is passed a input and output Datas, and executes the filter
+// algorithm to fill the output from the inputs.
+// It just executes a switch statement to call the correct function for
+// the Datas data types.
+void svkHSVD::ThreadedRequestData(
+  vtkInformation * vtkNotUsed( request ), 
+  vtkInformationVector ** vtkNotUsed( inputVector ), 
+  vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData, 
+  vtkImageData **outData,
+  int outExt[6], int id)
+{
+
+    cout << endl << "THREADED EXECUTE " << endl ;
+    cout << endl <<  endl;
+
+
+    this->svkHSVDExecute(outExt, id);
+
+                          
+}
+
