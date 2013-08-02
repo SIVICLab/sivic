@@ -191,13 +191,13 @@ int main (int argc, char** argv)
     //  fft
     // ===============================================  
 
+    svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader();
     if ( transformSpecDomain ) {
 
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
         imageFFT->SetInput( reader->GetOutput() );
 
         imageFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL ); 
-        svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader();
         string specDomain = hdr->GetStringValue( "SignalDomainColumns"); 
         if ( specDomain.compare("TIME") == 0 ) {
             //  time to frequency: 
@@ -217,7 +217,13 @@ int main (int argc, char** argv)
 
         spatialRFFT->SetInput( reader->GetOutput() );
         spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-        spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+
+        string domainCol = hdr->GetStringValue( "SVK_ColumnsDomain");
+        if ( domainCol.compare("SPACE") == 0) {
+            spatialRFFT->SetFFTMode( svkMrsImageFFT::FORWARD);
+        } else {
+            spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+        }
         spatialRFFT->SetPreCorrectCenter( true );
         spatialRFFT->SetPostCorrectCenter( true );
         spatialRFFT->Update();
