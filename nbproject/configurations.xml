@@ -42,6 +42,8 @@
               </df>
               <df name="svk_multi_view.dir">
               </df>
+              <df name="svk_phase_spec.dir">
+              </df>
               <df name="svk_point_selector.dir">
               </df>
               <df name="svk_quantify.dir">
@@ -72,6 +74,7 @@
             <in>svk_integrate_dynamic.cc</in>
             <in>svk_met_kinetics.cc</in>
             <in>svk_multi_view.cc</in>
+            <in>svk_phase_spec.cc</in>
             <in>svk_point_selector.cc</in>
             <in>svk_quantify.cc</in>
             <in>svk_quick_view.cc</in>
@@ -129,6 +132,7 @@
               <df name="SivicKWCallbacksLib.dir">
               </df>
             </df>
+            <in>SivicKWCallbacksLibInit.cxx</in>
             <in>sivic.cc</in>
             <in>sivicApp.cc</in>
             <in>sivicApp.h</in>
@@ -146,6 +150,8 @@
             <in>sivicImageViewWidget.h</in>
             <in>sivicKWCompositeWidget.cc</in>
             <in>sivicKWCompositeWidget.h</in>
+            <in>sivicPostprocessingWidget.cc</in>
+            <in>sivicPostprocessingWidget.h</in>
             <in>sivicPreferencesWidget.cc</in>
             <in>sivicPreferencesWidget.h</in>
             <in>sivicPreprocessingWidget.cc</in>
@@ -172,6 +178,7 @@
             <in>svkSecondaryCaptureFormatter.h</in>
             <in>vtkSivicController.cc</in>
             <in>vtkSivicController.h</in>
+            <in>vtkSivicControllerTcl.cxx</in>
           </df>
         </df>
         <df name="slicer_plugin">
@@ -400,6 +407,112 @@
         <df name="Debug">
         </df>
         <df name="Release">
+          <df name="Linux_x86_64">
+            <df name="applications">
+              <df name="cmd_line">
+                <df name="Linux_x86_64">
+                </df>
+                <df name="src">
+                  <df name="CMakeFiles">
+                    <df name="svk_app_template.dir">
+                    </df>
+                    <df name="svk_create_dcmraw.dir">
+                    </df>
+                    <df name="svk_dcm_deid.dir">
+                    </df>
+                    <df name="svk_dcmdump.dir">
+                    </df>
+                    <df name="svk_fft.dir">
+                    </df>
+                    <df name="svk_file_convert.dir">
+                    </df>
+                    <df name="svk_gepfile_anon.dir">
+                    </df>
+                    <df name="svk_gepfile_reader.dir">
+                    </df>
+                    <df name="svk_get_filetype.dir">
+                    </df>
+                    <df name="svk_hsvd.dir">
+                    </df>
+                    <df name="svk_integrate_dynamic.dir">
+                    </df>
+                    <df name="svk_multi_view.dir">
+                    </df>
+                    <df name="svk_phase_spec.dir">
+                    </df>
+                    <df name="svk_point_selector.dir">
+                    </df>
+                    <df name="svk_quantify.dir">
+                    </df>
+                    <df name="svk_quick_view.dir">
+                    </df>
+                    <df name="svk_reorder_epsi.dir">
+                    </df>
+                    <df name="svk_reslice.dir">
+                    </df>
+                    <df name="svk_spec_diff.dir">
+                    </df>
+                    <df name="svk_surface_area.dir">
+                    </df>
+                    <df name="svk_svrecon.dir">
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="sivic_app">
+                <df name="Linux_x86_64">
+                </df>
+                <df name="src">
+                  <df name="CMakeFiles">
+                    <df name="sivic.dir">
+                    </df>
+                    <df name="sivicGUI.dir">
+                    </df>
+                    <df name="SivicKWCallbacksLib.dir">
+                    </df>
+                  </df>
+                  <in>SivicKWCallbacksLibInit.cxx</in>
+                  <in>vtkSivicControllerTcl.cxx</in>
+                </df>
+              </df>
+            </df>
+            <df name="CMakeFiles">
+              <df name="CMakeTmp">
+                <df name="CMakeFiles">
+                  <df name="cmTryCompileExec.dir">
+                  </df>
+                </df>
+              </df>
+              <df name="CompilerIdC">
+                <in>CMakeCCompilerId.c</in>
+              </df>
+              <df name="CompilerIdCXX">
+                <in>CMakeCXXCompilerId.cpp</in>
+              </df>
+            </df>
+            <df name="libs">
+              <df name="Linux_x86_64">
+              </df>
+              <df name="src">
+                <df name="CMakeFiles">
+                  <df name="svk.dir">
+                  </df>
+                  <df name="svkadapt.dir">
+                  </df>
+                  <df name="svkNumerical2.dir">
+                  </df>
+                  <df name="svkviz.dir">
+                  </df>
+                </df>
+              </df>
+            </df>
+          </df>
+        </df>
+      </df>
+      <df name="Build.bak">
+        <df name="Debug">
+        </df>
+        <df name="Release">
           <df name="Linux_i686">
             <df name="applications">
               <df name="cmd_line">
@@ -491,8 +604,6 @@
           <df name="Linux_x86_64">
             <df name="applications">
               <df name="cmd_line">
-                <df name="Linux_x86_64">
-                </df>
                 <df name="src">
                   <df name="CMakeFiles">
                     <df name="svk_app_template.dir">
@@ -539,8 +650,6 @@
                 </df>
               </df>
               <df name="sivic_app">
-                <df name="Linux_x86_64">
-                </df>
                 <df name="src">
                   <df name="CMakeFiles">
                     <df name="sivic.dir">
@@ -551,7 +660,6 @@
                     </df>
                   </df>
                   <in>SivicKWCallbacksLibInit.cxx</in>
-                  <in>vtkSivicControllerTcl.cxx</in>
                 </df>
               </df>
             </df>
@@ -568,10 +676,10 @@
               <df name="CompilerIdCXX">
                 <in>CMakeCXXCompilerId.cpp</in>
               </df>
+              <df name="Progress">
+              </df>
             </df>
             <df name="libs">
-              <df name="Linux_x86_64">
-              </df>
               <df name="src">
                 <df name="CMakeFiles">
                   <df name="svk.dir">
@@ -1125,6 +1233,8 @@
           <in>svkSpectraReferenceView.h</in>
           <in>svkSpectraReferenceViewController.cc</in>
           <in>svkSpectraReferenceViewController.h</in>
+          <in>svkThreadedImageAlgorithm.cc</in>
+          <in>svkThreadedImageAlgorithm.h</in>
           <in>svkTypes.h</in>
           <in>svkUCSFPACSInterface.cc</in>
           <in>svkUCSFPACSInterface.h</in>
@@ -1148,10 +1258,6 @@
           <in>svkVoxelTaggingUtils.h</in>
           <in>svkXYPlotActor.cc</in>
           <in>svkXYPlotActor.h</in>
-        </df>
-        <df name="SunOS_sparc">
-        </df>
-        <df name="SunOS_sparc_debug">
         </df>
       </df>
       <df name="LocalMake">
@@ -1299,6 +1405,12 @@
             </df>
             <df name="Linux_x86_64">
             </df>
+          </df>
+        </df>
+        <df name="hsvd">
+          <df name="input">
+          </df>
+          <df name="output">
           </df>
         </df>
         <df name="idf_files">
@@ -1499,6 +1611,12 @@
           <df name="out">
           </df>
         </df>
+        <df name="phase_zero_linear_spec">
+          <df name="out">
+          </df>
+          <df name="out_2">
+          </df>
+        </df>
         <df name="raw_dicom">
           <df name="input">
             <df name="compression">
@@ -1557,6 +1675,8 @@
           <df name="SAG_IMAGE_SPEC_RENDER_MCHK">
           </df>
           <df name="SAG_SPEC_RENDER_MCHK">
+          </df>
+          <df name="TEST_HSVD">
           </df>
           <df name="TEST_MCHK_11XPF_2_DDF">
           </df>
@@ -1655,6 +1775,10 @@
           <df name="TEST_MCHK_ODD_SINC_INTERPOLATE">
           </df>
           <df name="TEST_MCHK_PEAK_HT_MET_MAP">
+          </df>
+          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC">
+          </df>
+          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC_2">
           </df>
           <df name="TEST_MCHK_RDA_2_DDF">
           </df>
@@ -1909,6 +2033,8 @@
             </df>
             <df name="svkTest.dir">
             </df>
+            <df name="svkZeroLinearPhaseTest.dir">
+            </df>
             <df name="vtkBaselineTest.dir">
             </df>
           </df>
@@ -2045,6 +2171,7 @@
           <in>svkSpectraReferenceViewTest.cc</in>
           <in>svkTestUtils.cc</in>
           <in>svkTestUtils.h</in>
+          <in>svkZeroLinearPhaseTest.cc</in>
           <in>vtkBaselineTest.cc</in>
         </df>
       </df>
@@ -2088,26 +2215,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -2124,16 +2231,6 @@
             flavor="0">
       </item>
       <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
             flavor="0">
@@ -3102,26 +3199,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -3138,16 +3215,6 @@
             flavor="0">
       </item>
       <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
             flavor="0">
@@ -5739,26 +5806,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_i686/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -5775,16 +5822,6 @@
             flavor="0">
       </item>
       <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/SunOS_sparc/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
             flavor="0">
