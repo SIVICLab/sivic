@@ -530,7 +530,7 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             2, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            3, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE 0");
+            3, "&Save Secondary Capture Report", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             4, "&Save One Slice Combined Capture", this->sivicController, "SaveSecondaryCapture COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
@@ -671,7 +671,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     scButton->SetParent( toolbar->GetFrame() );
     scButton->Create();
     scButton->SetImageToPredefinedIcon( vtkKWIcon::IconCamera ); 
-    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture COMBINED_CAPTURE");
+    scButton->SetCommand( this->sivicController, "SaveSecondaryCapture COMBINED_CAPTURE 1");
     scButton->SetBalloonHelpString( "Take a secondary capture." );
     toolbar->AddWidget( scButton );
 
