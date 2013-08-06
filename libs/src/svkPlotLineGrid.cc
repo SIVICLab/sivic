@@ -634,6 +634,7 @@ void svkPlotLineGrid::GenerateActor()
 
                 tmpXYPlot->SetPointRange(plotRangeX1, plotRangeX2);
                 tmpXYPlot->SetValueRange(plotRangeY1, plotRangeY2);
+                tmpXYPlot->SetComponent(this->plotComponent);
             }
         }
     }
@@ -924,9 +925,26 @@ void svkPlotLineGrid::UpdateOrientation()
  *
  * @return
  */
-vector<int> svkPlotLineGrid::GetVolumeIndexArray( )
+vector<int> svkPlotLineGrid::GetVolumeIndexVector( )
 {
     return this->volumeIndexVector;
+
+}
+
+
+/*!
+ *
+ * @return
+ */
+void svkPlotLineGrid::SetVolumeIndexVector( vector<int> volumeIndexVector )
+{
+    if( this->volumeIndexVector.size() == volumeIndexVector.size()){
+        for( int i = 0; i < this->volumeIndexVector.size(); i ++ ) {
+            this->SetVolumeIndex(volumeIndexVector[i], i);
+        }
+    } else {
+    	cout << "ERROR: Could update volume index vector due to length mismatch." << endl;
+    }
 
 }
 

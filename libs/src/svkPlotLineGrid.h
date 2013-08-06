@@ -110,7 +110,8 @@ class svkPlotLineGrid : public vtkObject
         void                    AlignCamera( bool invertView = 1 );
         void                    SetComponent( svkPlotLine::PlotComponent component );
         svkPlotLine::PlotComponent                     GetComponent( );
-        vtkstd::vector<int>     GetVolumeIndexArray( );
+        vtkstd::vector<int>     GetVolumeIndexVector( );
+        void                    SetVolumeIndexVector( vtkstd::vector<int> );
         void                    SetVolumeIndex( int index, int volumeIndex = 0 );
         int                     GetVolumeIndex( int volumeIndex = 0 );
         void                    UpdateDataArrays(int tlc, int brc);

@@ -526,29 +526,31 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             0, "&Save Active Spectroscopic Data", this->sivicController, "SaveData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            1, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE");
+            1, "&Save Spectra Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            2, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE");
+            2, "&Save Image Secondary Capture", this->sivicController, "SaveSecondaryCapture IMAGE_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            3, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE");
+            3, "&Save Combined Secondary Capture", this->sivicController, "SaveSecondaryCapture SPECTRA_WITH_OVERVIEW_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            4, "&Save Metabolite Maps", this->sivicController, "SaveMetaboliteMaps");
+            4, "&Save One Slice Combined Capture", this->sivicController, "SaveSecondaryCapture COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            5, "&Save Voxel Tags", this->sivicController, "SaveImageFromModel VoxelTagData");
+            5, "&Save Metabolite Maps", this->sivicController, "SaveMetaboliteMaps");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            6, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
+            6, "&Save Voxel Tags", this->sivicController, "SaveImageFromModel VoxelTagData");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            7, "&Print All Slices", this->sivicController, "Print COMBINED_CAPTURE 0");
+            7, "&Print Current Slice", this->sivicController, "Print COMBINED_CAPTURE 1");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            8, "&Print Images Only", this->sivicController, "Print IMAGE_CAPTURE 0");
+            8, "&Print All Slices", this->sivicController, "Print COMBINED_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            9, "&Save Session", this->sivicController, "SaveSession");
+            9, "&Print Images Only", this->sivicController, "Print IMAGE_CAPTURE 0");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            10, "&Restore Session", this->sivicController, "RestoreSession");
+            10, "&Save Session", this->sivicController, "SaveSession");
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
-            11, "&Close All", this->sivicController, "ResetApplication");
+            11, "&Restore Session", this->sivicController, "RestoreSession");
+    this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
+            12, "&Close All", this->sivicController, "ResetApplication");
     this->sivicKWApp->GetNthWindow(0)->GetHelpMenu()->InsertCommand(
-            12, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
+            13, "&Sivic Help Resources", this->sivicController, "DisplayInfo");
 
     // Tools menu
     this->sivicKWApp->GetNthWindow(0)->GetWindowMenu()->InsertCommand(

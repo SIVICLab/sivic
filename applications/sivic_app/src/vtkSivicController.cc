@@ -1992,7 +1992,7 @@ void vtkSivicController::SaveData( char* fileName )
 
 
 //! Saves a secondary capture.
-void vtkSivicController::SaveSecondaryCapture( char* captureType )
+void vtkSivicController::SaveSecondaryCapture( char* captureType, int outputOption )
 {
     svk4DImageData* activeData = this->GetActive4DImageData();
     if( activeData == NULL ) {
@@ -2027,7 +2027,7 @@ void vtkSivicController::SaveSecondaryCapture( char* captureType )
         string filename = dlg->GetFileName(); 
         char* cStrFilename = new char [filename.size()+1];
         strcpy (cStrFilename, filename.c_str());
-        this->SaveSecondaryCapture( cStrFilename, seriesNumber, captureType );
+        this->SaveSecondaryCapture( cStrFilename, seriesNumber, captureType, outputOption );
     } 
     dlg->Delete();
 }

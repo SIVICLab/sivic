@@ -334,6 +334,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             plotGrids[0]->GetIntensityWLRange(minInt, maxInt);
             plotGrids[index-1]->SetIntensityWLRange(minInt, maxInt, this->tlcBrc);
             plotGrids[index-1]->SetComponent( plotGrids[0]->GetComponent() );
+            plotGrids[index-1]->SetVolumeIndexVector( plotGrids[0]->GetVolumeIndexVector() );
             int colorIndex = index-1;
             while( colorIndex >= this->numColors ) {
                 colorIndex -= this->numColors;
