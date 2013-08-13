@@ -183,7 +183,8 @@ class vtkSivicController : public vtkObject
         void                       SaveData();    
         void                       SaveData( char* fileName );    
         void                       SaveMetaboliteMaps();    
-        void                       SaveImageFromModel(const char* modelObjectName, bool appendModelName = true);
+        void                       SaveImageFromModel(const char* modelObjectName);
+        void                       SaveImageFromModel(const char* modelObjectName, bool appendModelName);
         void                       SaveMetMapData( svkImageData* image, char* fileName, 
                                         int writetType = 5); //svkImageWriterFactory::DICOM_MRI 
         void                       SaveSecondaryCapture( char* captureType, int outputOption = 0 );

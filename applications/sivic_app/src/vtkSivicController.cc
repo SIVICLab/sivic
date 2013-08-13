@@ -1881,6 +1881,15 @@ void vtkSivicController::SaveMetaboliteMaps()
 /*
  *  Saves image data stored in model to disk.
  */
+void vtkSivicController::SaveImageFromModel( const char* modelObjectName )
+{
+    this->SaveImageFromModel( modelObjectName, true);
+}
+
+
+/*
+ *  Saves image data stored in model to disk.
+ */
 void vtkSivicController::SaveImageFromModel( const char* modelObjectName, bool appendModelName  )
 {
 	svkImageData* data = this->model->GetDataObject( modelObjectName );
