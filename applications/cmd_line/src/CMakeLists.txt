@@ -1,5 +1,5 @@
 #
-#   Copyright © 2009-2012 The Regents of the University of California.
+#   Copyright © 2009-2013 The Regents of the University of California.
 #   All Rights Reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -145,9 +145,25 @@ LINK_DIRECTORIES(
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
 )
+
+
 if ( BUILD_CMINPACK )
+
+    ###################################
+    #   ITK 
+    ###################################
+    ADD_DEFINITIONS(-DITK_BUILD)
+    FIND_PACKAGE( ITK REQUIRED )
+    IF(ITK_FOUND)
+        INCLUDE(${ITK_USE_FILE})
+    ELSE(ITK_FOUND)
+        MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
+    ENDIF(ITK_FOUND)
+
     LINK_DIRECTORIES( ${CMINPACK_DIR}/lib )
+
 endif( BUILD_CMINPACK )
+
 
 if ( BUILD_CLAPACK )
     LINK_DIRECTORIES( ${CLAPACK_DIR} )
@@ -176,7 +192,16 @@ IF(WIN32)
 ENDIF(WIN32)
 
 if ( BUILD_CMINPACK )
-    SET( CMINPACK_LIBS svkNumerical cminpack )
+    SET( CMINPACK_LIBS 
+        svkNumerical 
+        cminpack 
+        ITKDICOMParser
+    )
+    SET( CMINPACK_LIBS_PRE
+        ITKOptimizers
+        ITKCommon
+        ITKDICOMParser
+    ) 
 endif( BUILD_CMINPACK )
 
 if ( BUILD_CLAPACK )
@@ -190,6 +215,7 @@ if ( BUILD_CLAPACK )
 endif( BUILD_CLAPACK )
 
 SET(SVK_LIBS
+    ${CMINPACK_LIBS}
     ${CLAPACK_LIBS}
     svk 
     svkadapt 
@@ -201,7 +227,7 @@ SET(SVK_LIBS
     ${DCMTK_OFLOG}
     ofstd 
     ${PLATFORM_LIBS}
-    ${CMINPACK_LIBS}
+    ${CMINPACK_LIBS_PRE}
 )
 
 SET(SVK_VIZ_LIBS
@@ -239,7 +265,6 @@ ADD_EXECUTABLE(
     svk_quick_view
     svk_quick_view.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_quick_view 
     ${SVK_VIZ_LIBS}
@@ -250,7 +275,6 @@ ADD_EXECUTABLE(
     svk_point_selector
     svk_point_selector.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_point_selector 
     ${SVK_VIZ_LIBS}
@@ -261,7 +285,6 @@ ADD_EXECUTABLE(
     svk_multi_view
     svk_multi_view.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_multi_view 
     ${SVK_VIZ_LIBS}
@@ -272,7 +295,6 @@ ADD_EXECUTABLE(
     svk_gepfile_reader
     svk_gepfile_reader.cc 
 )
-
 TARGET_LINK_LIBRARIES(
     svk_gepfile_reader
 	${SVK_LIBS}
@@ -282,7 +304,6 @@ ADD_EXECUTABLE(
     svk_gepfile_anon
     svk_gepfile_anon.cc 
 )
-
 TARGET_LINK_LIBRARIES(
     svk_gepfile_anon
 	${SVK_LIBS}
@@ -293,7 +314,6 @@ ADD_EXECUTABLE(
     svk_get_filetype
     svk_get_filetype.cc 
 )
-
 TARGET_LINK_LIBRARIES(
     svk_get_filetype
 	${SVK_LIBS}
@@ -303,7 +323,6 @@ ADD_EXECUTABLE(
     svk_spec_diff
     svk_spec_diff.cc 
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_spec_diff
     ${SVK_LIBS}
@@ -314,7 +333,6 @@ ADD_EXECUTABLE(
     svk_integrate_dynamic
     svk_integrate_dynamic.cc
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_integrate_dynamic
     ${SVK_LIBS}
@@ -325,7 +343,6 @@ ADD_EXECUTABLE(
     svk_quantify
     svk_quantify.cc
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_quantify
     ${SVK_LIBS}
@@ -335,7 +352,6 @@ ADD_EXECUTABLE(
     svk_reslice
     svk_reslice.cc
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_reslice
     ${SVK_LIBS}
@@ -345,7 +361,6 @@ ADD_EXECUTABLE(
     svk_svrecon
     svk_svrecon.cc
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_svrecon
     ${SVK_LIBS}
@@ -355,7 +370,6 @@ ADD_EXECUTABLE(
     svk_surface_area
     svk_surface_area.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_surface_area
     ${SVK_VIZ_LIBS}
@@ -367,7 +381,6 @@ ADD_EXECUTABLE(
     svk_fft
     svk_fft.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_fft
 	${SVK_LIBS}
@@ -379,7 +392,6 @@ ADD_EXECUTABLE(
     svk_reorder_epsi
     svk_reorder_epsi.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_reorder_epsi
 	${SVK_LIBS}
@@ -389,7 +401,6 @@ ADD_EXECUTABLE(
     svk_phase_spec
     svk_phase_spec.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_phase_spec
 	${SVK_LIBS}
@@ -399,22 +410,31 @@ ADD_EXECUTABLE(
     svk_dcm_deid   
     svk_dcm_deid.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svk_dcm_deid 
 	${SVK_LIBS}
 )
 
 if ( BUILD_CMINPACK )
+
     ADD_EXECUTABLE(
         svk_met_kinetics
         svk_met_kinetics.cc
     )
- 
     TARGET_LINK_LIBRARIES(
         svk_met_kinetics
         ${SVK_LIBS}
     )
+
+    ADD_EXECUTABLE(
+        svk_auto_phase 
+        svk_auto_phase.cc 
+    )
+    TARGET_LINK_LIBRARIES(
+        svk_auto_phase
+        ${SVK_LIBS}
+    )
+ 
 endif ( BUILD_CMINPACK )
 
 if ( BUILD_CLAPACK )
@@ -422,7 +442,6 @@ if ( BUILD_CLAPACK )
         svk_hsvd
         svk_hsvd.cc
     )
-
     TARGET_LINK_LIBRARIES(
         svk_hsvd
 	    ${SVK_LIBS}
@@ -435,7 +454,6 @@ ADD_EXECUTABLE(
     svk_app_template
     svk_app_template.cc
 )
- 
 TARGET_LINK_LIBRARIES(
     svk_app_template
     ${SVK_LIBS}
@@ -449,7 +467,6 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         svk_create_dcmraw
         svk_create_dcmraw.cc
     )
- 
     TARGET_LINK_LIBRARIES(
         svk_create_dcmraw
         ${SVK_LIBS}
