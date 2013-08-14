@@ -461,6 +461,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     zheevd_( &flag1, &flag2, &l, hankel2, &l, eigenvalues, workspace1, 
             &workspace1_size, workspace2,&workspace2_size, workspace3, 
             &workspace3_size, &info );
+    //cout << "INFO(" << cellID << "): 1 " << info << endl; 
 
     delete[] eigenvalues;
     delete[] workspace1;
@@ -525,6 +526,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     //  Reference to zgeqp3 from lapack: 
     //  http://www.netlib.org/lapack/complex16/zgeqp3.f
     zgeqp3_(&k,&k,ub_ub,&k,pivot,scal_refl,workspace4,&workspace4_size,workspace5,&info);
+    //cout << "INFO(" << cellID << "): 2 " << info << endl; 
     delete[] workspace4;
     delete[] workspace5;
 
@@ -539,6 +541,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         q[i].i = ub_ub[i].i;
     }
     zungqr_(&k,&k,&k,q,&k,scal_refl,workspace6,&workspace6_size,&info);
+    //cout << "INFO(" << cellID << "): 3 " << info << endl; 
 
     delete[] workspace6;
 
@@ -554,6 +557,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
    	char flag3 = 'N';               // R is not transposed
     char flag4 = 'N';               // diagonals are not 1
     ztrtrs_(&flag2,&flag3,&flag4,&k,&k,ub_ub,&k,q_ub_ut,&k,&info);
+    //cout << "INFO(" << cellID << "): 4 " << info << endl; 
     delete[] ub_ub;
 
     doublecomplex *pivot_permutation = new doublecomplex[k*k];
@@ -583,6 +587,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
 
 
     zgeev_(&flag5,&flag6,&k,least_sq_solve,&k,freq_damp,left_eigenvec,&left_eigenvec_size,right_eigenvec,&right_eigenvec_size, workspace7,&workspace7_size,workspace8,&info);
+    //cout << "INFO(" << cellID << "): 5 " << info << endl; 
 
     delete[] workspace7;
     delete[] workspace8;
@@ -627,6 +632,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     for ( int i = 0; i < 2*k; ++i )
         workspace10[i] = 0.;
     zgeqp3_(&k, &k, vandermonde2, &k, pivot, scal_refl, workspace9, &workspace9_size, workspace10, &info);
+    //cout << "INFO(" << cellID << "): 6 " << info << endl; 
     delete[] workspace9;
     delete[] workspace10;
 
@@ -640,6 +646,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         q[i].i = vandermonde2[i].i;
     }
     zungqr_( &k, &k, &k, q, &k,scal_refl, workspace11, &workspace11_size, &info);
+    //cout << "INFO(" << cellID << "): 7 " << info << endl; 
     delete[] workspace11;
     delete[] scal_refl;
     // ----------------------------------------
@@ -656,6 +663,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     flag4 = 'N';        // diagonals are not 1
     integer dim_rhs = 1;
     ztrtrs_( &flag2, &flag3, &flag4, &k,&dim_rhs, vandermonde2, &k, q_vandermonde_signal, &k, &info);
+    //cout << "INFO(" << cellID << "): 8 " << info << endl; 
     delete[] vandermonde2;
 
     doublecomplex* complex_amplitude = new doublecomplex[k];
