@@ -80,7 +80,8 @@ class svkPhaseSpec : public svkImageInPlaceFilter
         void            SetUpdateExtent(int* start, int* end);
         void            SetChannel(int channel);
         void            PhaseAllChannels();
-		virtual void    PrintSelf( ostream &os, vtkIndent indent );
+        static void     ZeroOrderPhase(float phi0, float* cmplxPt); 
+        virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
 
     protected:

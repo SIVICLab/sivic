@@ -175,13 +175,13 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
 	// If the pivot point has changed we'll need reverse the current phase, then apply the new phase
     if ( this->linearPhasePivotTarget == this->linearPhasePivot ) {
-		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, deltaLinearPhase, this->linearPhasePivot);
+        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, deltaLinearPhase, this->linearPhasePivot);
     } else {
-		reversePhaseArray = new vtkImageComplex[ numFrequencyPoints ];
-		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, reversePhaseArray, -1*this->linearPhase, this->linearPhasePivot);
-		svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, this->linearPhaseTarget, this->linearPhasePivotTarget);
-		cosPhase = static_cast<float>( cos( this->phase0Target ) );
-		sinPhase = static_cast<float>( sin( this->phase0Target ) );
+        reversePhaseArray = new vtkImageComplex[ numFrequencyPoints ];
+        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, reversePhaseArray, -1*this->linearPhase, this->linearPhasePivot);
+        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, this->linearPhaseTarget, this->linearPhasePivotTarget);
+        cosPhase = static_cast<float>( cos( this->phase0Target ) );
+        sinPhase = static_cast<float>( sin( this->phase0Target ) );
     }
     float reverseCosPhase = static_cast<float>( cos( -1*this->phase0 ) );
     float reverseSinPhase = static_cast<float>( sin( -1*this->phase0 ) );
@@ -196,15 +196,15 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
                         //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
                         for (int i = 0; i < numFrequencyPoints; i++) {
-							// If the pivot point has changed we'll need reverse the current phase, then apply the new phase
-                        	// TODO: If possible make this algorithm not in place so that we do not have to reverse this.
+                            // If the pivot point has changed we'll need reverse the current phase, then apply the new phase
+                            // TODO: If possible make this algorithm not in place so that we do not have to reverse this.
                         	if( reversePhaseArray != NULL ) {
 								re = specPtr[2*i] * reverseCosPhase - specPtr[2*i+1] * reverseSinPhase;
-								im = specPtr[2*i] * reverseSinPhase + specPtr[2*i+1] * reverseCosPhase;
+                                im = specPtr[2*i] * reverseSinPhase + specPtr[2*i+1] * reverseCosPhase;
 
-								// And apply the phase values
-								specPtr[2*i]   = ( reversePhaseArray[i].Real*re - reversePhaseArray[i].Imag*im );
-								specPtr[2*i+1] = ( reversePhaseArray[i].Real*im + reversePhaseArray[i].Imag*re );
+                                // And apply the phase values
+                                specPtr[2*i]   = ( reversePhaseArray[i].Real*re - reversePhaseArray[i].Imag*im );
+                                specPtr[2*i+1] = ( reversePhaseArray[i].Real*im + reversePhaseArray[i].Imag*re );
                         	}
 
                             re = specPtr[2*i] * cosPhase - specPtr[2*i+1] * sinPhase;
@@ -222,9 +222,8 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     }
     delete[] linearPhaseArray;
     if( reversePhaseArray != NULL ) {
-		delete[] reversePhaseArray;
+        delete[] reversePhaseArray;
     }
-
 
     this->phase0 =  this->phase0Target;
     this->linearPhase =  this->linearPhaseTarget;
@@ -235,6 +234,25 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
 
     return 1; 
 } 
+
+
+/*! 
+ *  Applies a zero order phase to the complex values input tuple, representing the re and im
+ *  intensity at a given frequency point. 
+ *  inputs: 
+ *      phi0, phase in radians
+ *      cmplxPt, complex float array with 2 elements: real, imaginary 
+ */
+void svkPhaseSpec::ZeroOrderPhase(float phi0, float* cmplxPt)
+{
+    float cosPhase = static_cast<float>( cos( phi0) );
+    float sinPhase = static_cast<float>( sin( phi0) );
+    float re = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
+    float im = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
+    cmplxPt[0] = re; 
+    cmplxPt[1] = im; 
+
+}
 
 
 /*! 
