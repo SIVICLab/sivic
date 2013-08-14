@@ -55,6 +55,9 @@ namespace svk {
 
 
 using namespace svk;
+#ifdef ITK_BUILD 
+using namespace itkdicomparser;
+#endif
 
 
 /*!
@@ -75,8 +78,6 @@ class svkDICOMParser : public DICOMParser
 
         DICOMFile*  dcmFile; 
         
-
-
 
 };
 

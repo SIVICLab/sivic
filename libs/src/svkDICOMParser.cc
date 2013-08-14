@@ -79,7 +79,12 @@ long int svkDICOMParser::GetPixelDataFileOffset(string fileName)
     this->OpenFile(fileName);
 
     this->dcmFile = this->GetDICOMFile();
-    this->IsDICOMFile(dcmFile);
+
+#ifdef ITK_BUILD 
+    itkdicomparser::DICOMFile(dcmFile);
+#else 
+    IsDICOMFile(dcmFile);
+#endif
 
     long fileSize = this->dcmFile->GetSize();
 
@@ -94,7 +99,13 @@ long int svkDICOMParser::GetPixelDataFileOffset(string fileName)
 
         int length = 0;
         DICOMParser::VRTypes mytype = DICOMParser::VR_UNKNOWN;
+#ifdef ITK_BUILD 
+        //IsValidRepresentation(short unsigned int&, int&, itkdicomparser::DICOMParser::VRTypes&)
+#else
         this->IsValidRepresentation(representation, length, mytype);
+#endif
+
+
 
         //  check for PixelData element, skip all others: 
         if ( group == 0x7FE0 && element == 0x0010 ) {
