@@ -260,6 +260,15 @@ void svkDetailedPlotDirector::SetPlotColor( int plotIndex, double* rgb)
 }
 
 
+void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
+{
+    #if VTK_MINOR_VERSION >= 6
+        this->xyPlotActor->GetChartBoxProperty()->SetColor(rgb);
+    #endif
+
+}
+
+
 /*!
  *  Sets the line width.
  */

@@ -1273,7 +1273,8 @@ void svkPlotGridView::SetColorSchema( int colorSchema )
     } 
     this->GetRenderer( svkPlotGridView::PRIMARY )->SetBackground( backgroundColor );
     this->plotGrids[0]->GetPlotGridActor()->GetProperty()->SetColor( foregroundColor );
-
+    this->detailedPlotDirector->SetBackgroundColor(backgroundColor);
+    this->detailedPlotDirector->SetPlotColor( 0, foregroundColor );
     if( vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper() != NULL ) {
         svkLabeledDataMapper::SafeDownCast(
                 vtkActor2D::SafeDownCast( this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->GetMapper())
