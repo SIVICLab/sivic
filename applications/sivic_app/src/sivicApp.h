@@ -126,9 +126,11 @@ class sivicApp
         vtkKWApplication*          sivicKWApp;
 
         // Methods
-        void PopulateMainToolbar( vtkKWToolbar* toolbar );
-        void GetWelcomeMessage( vtkKWText* text );
-        int  ParseCommandLineArgs( int* argc, char* argv[] ); 
+        void    PopulateMainToolbar( vtkKWToolbar* toolbar );
+        void    GetWelcomeMessage( vtkKWText* text );
+        char**  ParseCommandLineArgs( int* argc, char* argv[] ); 
+        
+        vector< string >    inputFiles; 
 
         
 };

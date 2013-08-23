@@ -810,7 +810,7 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
 /*! 
  *  Start the application and parse command line arguments. 
  */
-int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
+char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
 {
 
 
@@ -822,6 +822,8 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     usemsg += "     -a anatomy      Anatomy preferences                     \n";
     usemsg += "                         brain (default)                     \n";
     usemsg += "                         prostate                            \n";
+    usemsg += "     -i fileName     DICOM FIle name, may specify multiple,  \n";
+    usemsg += "                     e.g MRS, MRI (ref and overlay).         \n";
     usemsg += "     -h              Print help mesage.                      \n";
     usemsg += "                                                             \n";
     usemsg += "SIVIC GUI.                                                   \n";
@@ -845,7 +847,7 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
      */
     int i;
     int option_index = 0;
-    while ((i = getopt_long(*argc, argv, "a:h", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(*argc, argv, "a:i:h", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'a':
                 anatomyTypeString.assign( optarg );
@@ -853,6 +855,9 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
                 if ( anatomyType != -1 ) {
                     this->sivicController->SetAnatomyType(anatomyType); 
                 }
+                break;
+            case 'i':
+                this->inputFiles.push_back( optarg );
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -863,9 +868,16 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
         }
     }
 
-
     *argc -= optind;
     argv += optind;
+
+    if ( *argc != 0 ) {
+        cout << "ERROR: invalid arguments" << *argc << endl;
+        cout << usemsg << endl;
+        exit(1);
+    }
+
+    return argv; 
 
 }
 
@@ -876,7 +888,11 @@ int sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
 int sivicApp::Start( int argc, char* argv[] )
 {
 
-    this->ParseCommandLineArgs(&argc, argv); 
+
+    argv = this->ParseCommandLineArgs(&argc, argv); 
+
+    //  argc is reduced by 1 after ParseCommandLineArgs, so it only reflects the 
+    //  remaining args after the program name, if any
 
 
     //  Preparse the MR Image objects to try and detect which is an overlay:
@@ -887,13 +903,21 @@ int sivicApp::Start( int argc, char* argv[] )
     int refColumns = 0; 
     int overlayRows = 10000000; 
     int overlayColumns = 10000000; 
-    for (int i=1 ; i < argc; i++) {
+
+    for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
         svkImageData* tmp = svkMriImageData::New();
-        tmp->GetDcmHeader()->ReadDcmFile( argv[i] );
+        int status = tmp->GetDcmHeader()->ReadDcmFile( this->inputFiles[i] ) ;
+        if (status == 1 ) {
+            cout << "ERROR: Can not read specified input file (not DICOM): " << this->inputFiles[i] << endl;
+            return 0; 
+        } 
+
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
+
         //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
+
             int rows = tmp->GetDcmHeader()->GetIntValue( "Rows" ) ;
             int columns = tmp->GetDcmHeader()->GetIntValue( "Columns" ) ;
             //cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
@@ -902,6 +926,7 @@ int sivicApp::Start( int argc, char* argv[] )
                 refColumns = columns; 
                 refImageIndex = i; 
             } 
+
             if ( rows < overlayRows && columns < overlayColumns) {
                 overlayRows = rows; 
                 overlayColumns = columns; 
@@ -912,7 +937,7 @@ int sivicApp::Start( int argc, char* argv[] )
     }
 
     vtkstd::vector< int >   loadOrder; 
-    for (int i = 1; i < argc; i++) {
+    for (int i = 0 ; i < this->inputFiles.size(); i++) {
         if ( i != overlayImageIndex ) {
             loadOrder.push_back(i);
         }
@@ -920,21 +945,21 @@ int sivicApp::Start( int argc, char* argv[] )
     //  Load overlay last:
     loadOrder.push_back(overlayImageIndex);
 
-    for (int i=1 ; i < argc; i++) {
-        //cout << "loading order: " << loadOrder[i-1] << endl;
+    for (int i = 0 ; i < this->inputFiles.size(); i++) {
+        //cout << "loading order: " << loadOrder[i] << endl;
     }
 
     //  Check each argv and set the load file type 
-    for (int i=1 ; i < argc; i++) {
+    for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
         //cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
         svkImageData* tmp = svkMriImageData::New();
-        tmp->GetDcmHeader()->ReadDcmFile( argv[ loadOrder[i-1] ] );
+        tmp->GetDcmHeader()->ReadDcmFile( this->inputFiles[ loadOrder[i] ] );
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
         tmp->Delete();
 
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2(argv[ loadOrder[i-1] ]);
+        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[ loadOrder[i] ].c_str());
         if ( reader->IsA("svkGEPostageStampReader") ) {
             SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
@@ -942,16 +967,17 @@ int sivicApp::Start( int argc, char* argv[] )
         reader->Delete();
 
 
+        //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
-            if ( loadOrder[i-1] == refImageIndex ) {
-                this->GetView()->OpenFile("command_line_image", argv[ loadOrder[i-1] ]); 
+            if ( loadOrder[i] == refImageIndex ) {
+                this->GetView()->OpenFile("command_line_image", this->inputFiles[ loadOrder[i] ].c_str() ); 
             } else {
-                this->GetView()->OpenFile("command_line_overlay", argv[ loadOrder[i-1] ]); 
+                this->GetView()->OpenFile("command_line_overlay", this->inputFiles[ loadOrder[i] ].c_str() ); 
             }
 
         } else if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {
-            this->GetView()->OpenFile("command_line_spectra", argv[ loadOrder[i-1] ]); 
+            this->GetView()->OpenFile("command_line_spectra", this->inputFiles[ loadOrder[i] ].c_str() ); 
         }
     }
     
