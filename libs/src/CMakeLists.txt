@@ -82,7 +82,6 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
-FIND_PACKAGE(VTK REQUIRED)
 
 ###################################
 #   VTK
@@ -91,6 +90,8 @@ FIND_PACKAGE( VTK REQUIRED )
 IF(VTK_FOUND)
   INCLUDE(${VTK_USE_FILE})
 ENDIF(VTK_FOUND)
+
+
 
 ###################################
 #   KWWidgets
@@ -221,6 +222,7 @@ ADD_LIBRARY(
     svkIOD.cc
     svkSCIOD.cc
     svkMRSIOD.cc
+    svkMRSNoise.cc
     svkMRIIOD.cc
     svkEnhancedMRIIOD.cc
     svkRawIOD.cc
@@ -285,9 +287,22 @@ ADD_LIBRARY(
 )
 
 IF ( BUILD_CMINPACK )
+
+    ADD_DEFINITIONS(-DITK_BUILD)
+    ###################################
+    #   ITK 
+    ###################################
+    FIND_PACKAGE( ITK REQUIRED )
+    IF(ITK_FOUND)
+        INCLUDE(${ITK_USE_FILE})
+    ELSE(ITK_FOUND)
+        MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
+    ENDIF(ITK_FOUND)
+
     ADD_LIBRARY(
         svkNumerical
 
+        svkMRSAutoPhase.cc
         svkDynamicMRIAlgoTemplate.cc 
     )
 ENDIF ( BUILD_CMINPACK )
