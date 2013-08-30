@@ -73,6 +73,7 @@ class svkMRSNoise : public svkImageInPlaceFilter
         vtkTypeRevisionMacro( svkMRSNoise, svkImageInPlaceFilter);
 
         float           GetNoiseSD(); 
+        float           GetMean(); 
         void            OnlyUseSelectionBox();
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
@@ -109,6 +110,7 @@ class svkMRSNoise : public svkImageInPlaceFilter
 
         //  Members:
         float           noiseSD;
+        float           noiseWindowMean;
         int 			onlyUseSelectionBox;
         short*          selectionBoxMask;
         vtkFloatArray*  averageSpectrum; 

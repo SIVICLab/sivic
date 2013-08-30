@@ -141,6 +141,8 @@ void svkMRSNoise::CalculateNoiseSD()
     float tuple[2];
     float avTuple[2];
     float noiseSDTmp = 0; 
+    double meanTmp = 0; 
+
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         if (this->onlyUseSelectionBox == true ) {
@@ -152,12 +154,16 @@ void svkMRSNoise::CalculateNoiseSD()
         // average in this spectrum
         vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
         mean = this->CalcWindowMean( spectrum, this->noiseWindowStartPt, this->noiseWindowEndPt ); 
+        meanTmp += mean; 
         noiseSDTmp += this->CalcWindowSD( spectrum, mean, this->noiseWindowStartPt, this->noiseWindowEndPt ); 
 
         numVoxelsAveraged++; 
     }
 
     this->noiseSD = noiseSDTmp / numVoxelsAveraged; 
+
+    //   init the global mean value (baseline value 
+    this->noiseWindowMean = meanTmp / numVoxelsAveraged; 
 
     return; 
 }
@@ -304,7 +310,6 @@ void svkMRSNoise::InitAverageSpectrum()
 } 
 
 
-
 /*! 
  *  Get the noise SD
  */
@@ -313,6 +318,14 @@ float svkMRSNoise::GetNoiseSD()
     return this->noiseSD;
 }
 
+
+/*! 
+ *  Get the noise SD
+ */
+float svkMRSNoise::GetMean()
+{
+    return this->noiseWindowMean;
+}
 
 
 /*! 

@@ -56,11 +56,9 @@
 #include <complex>
 #include <svkDcmHeader.h>
 
-#include <cminpack.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#define real __cminpack_real__
 
 
 namespace svk {

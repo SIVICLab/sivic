@@ -51,7 +51,6 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <svkThreadedImageAlgorithm.h>
 
-#include <svkImageInPlaceFilter.h>
 
 #include <complex>
 
