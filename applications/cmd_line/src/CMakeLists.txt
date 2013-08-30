@@ -398,6 +398,16 @@ TARGET_LINK_LIBRARIES(
 
 
 ADD_EXECUTABLE(
+    svk_peak_pick
+    svk_peak_pick.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_peak_pick
+	${SVK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
     svk_reorder_epsi
     svk_reorder_epsi.cc
 )

@@ -37,7 +37,7 @@
  *      Jason C. Crane, Ph.D.
  *      Beck Olson
  *
- *  Utility application for determine noise SD from MRS data set. 
+ *  Utility application to detect peaks in spectra. 
  *
  */
 
@@ -47,6 +47,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkDcmHeader.h>
+#include <svkMRSPeakPick.h>
 #include <svkMRSNoise.h>
 
 
@@ -67,19 +68,21 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                               "\n";   
-    usemsg += "svk_noise -i input_file_name                                             \n"; 
-    usemsg += "         [ -b ] [ -h ]                                                   \n"; 
+    usemsg += "svk_peak_pick -i input_file_name                                         \n"; 
+    usemsg += "         [ -s S/N] [ -b ] [ -h ]                                         \n"; 
     usemsg += "                                                                         \n";  
-    usemsg += "   -i                name   Name of file to convert.                     \n"; 
-    usemsg += "   -b                       only include spectra in selection box.       \n"; 
-    usemsg += "   -h                       Print this help mesage.                      \n";  
+    usemsg += "   -i    name    Name of file to convert.                                \n"; 
+    usemsg += "   -b            only include spectra in selection box.                  \n"; 
+    usemsg += "   -s    S/N     Find peaks over this S/N value (defalut = 3).           \n"; 
+    usemsg += "   -h            Print this help mesage.                                 \n";  
     usemsg += "                                                                         \n";  
-    usemsg += "Determines noise in baseline of MRS data set.                            \n";  
+    usemsg += "Locates peaks in spectra.                                                \n";  
     usemsg += "\n";  
 
 
     string inputFileName; 
     bool limitToSelectionBox = false; 
+    float  signalToNoise = 3;  
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -102,13 +105,16 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:bh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:bs:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
             case 'b':
                 limitToSelectionBox = true; 
+                break;
+            case 's':
+                signalToNoise =  atof(optarg);
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -154,25 +160,60 @@ int main (int argc, char** argv)
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
 
     // ===============================================  
-    //  HSVD DATA   
+    //  Pick Peaks 
     // ===============================================  
-    svkMRSNoise* noise = svkMRSNoise::New();
-    noise->SetInput( reader->GetOutput() ); 
+    svkMRSPeakPick* peaks = svkMRSPeakPick::New();
+    peaks->SetInput( reader->GetOutput() ); 
     if ( limitToSelectionBox ) {
-        noise->OnlyUseSelectionBox(); 
+        peaks->OnlyUseSelectionBox(); 
     }
-    noise->Update();
-    float noiseSD = noise->GetNoiseSD(); 
-    float mean = noise->GetMeanBaseline(); 
-    cout << "NOISE SD: " << noiseSD << endl;
-    cout << "Mean Baseline: " << mean << endl;
+    peaks->Update();
+
+
+////////////////////////////////////////////////////
+// temporary test: put data in cell0
+svkMRSNoise* noise = svkMRSNoise::New();
+noise->SetInput( reader->GetOutput() );
+if ( limitToSelectionBox ) {
+    noise->OnlyUseSelectionBox();
+}
+noise->Update();
+
+svkMrsImageData* data = svkMrsImageData::SafeDownCast(reader->GetOutput()); 
+int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+vtkFloatArray* cell0 = static_cast<vtkFloatArray*>( data->GetSpectrum( 0 ) );
+float tupleAv[2];
+float tuple[2];
+
+vtkFloatArray* avSpec = noise->GetAverageMagnitudeSpectrum();
+for (int i = 0; i < numTimePoints; i++ ) { 
+    avSpec->GetTupleValue(i, tupleAv);
+    cell0->GetTupleValue(i, tuple);
+    tuple[0] = tupleAv[0];
+    tuple[1] = tupleAv[1];
+    cell0->SetTuple(i, tuple);
+}   
+noise->Delete(); 
+vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
+svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::DDF));
+writer->SetFileName( "magcheck" ); 
+writer->SetInput( reader->GetOutput() );
+writer->Write();
+writer->Delete();
+
+////////////////////////////////////////////////////
+
+    //float = noise->GetNoiseSD(); 
+    //float mean = noise->GetMeanBaseline(); 
+    //cout << "NOISE SD: " << noiseSD << endl;
+    //cout << "Mean Baseline: " << mean << endl;
     //float mean = noise->GetMean(); 
 
     // ===============================================  
     //  Clean up: 
     // ===============================================  
     reader->Delete();
-    noise->Delete();
+    peaks->Delete();
 
     return 0; 
 }
