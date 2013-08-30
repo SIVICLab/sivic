@@ -170,6 +170,22 @@ LINK_DIRECTORIES(
     ${DCMTK_DIR}/lib
 )
 
+if ( BUILD_CMINPACK )
+
+    ###################################
+    #   ITK 
+    ###################################
+    ADD_DEFINITIONS(-DITK_BUILD)
+    FIND_PACKAGE( ITK REQUIRED )
+    IF(ITK_FOUND)
+        INCLUDE(${ITK_USE_FILE})
+    ELSE(ITK_FOUND)
+        MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
+    ENDIF(ITK_FOUND)
+
+endif( BUILD_CMINPACK )
+
+
 if ( BUILD_CLAPACK )
     LINK_DIRECTORIES( ${CLAPACK_DIR} )
 endif( BUILD_CLAPACK )
@@ -181,11 +197,21 @@ INCLUDE_DIRECTORIES(
     ${DCMTK_DIR}/include
 )
 
-if ( BUILD_CLAPACK )
-    INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
-endif( BUILD_CLAPACK )
+if ( BUILD_CMINPACK )
+    SET( CMINPACK_LIBS 
+        svkNumerical 
+        ITKDICOMParser
+    )
+    SET( CMINPACK_LIBS_PRE
+        ITKOptimizers
+        ITKCommon
+        ITKDICOMParser
+    )
+endif( BUILD_CMINPACK )
+
 
 if ( BUILD_CLAPACK )
+    INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
     SET( CLAPACK_LIBS 
         svkNumerical2 
         ${CLAPACK_DIR}/libclapack.a
@@ -239,6 +265,7 @@ TARGET_LINK_LIBRARIES(
     sivic
 
     sivicGUI
+    ${CMINPACK_LIBS}
     ${CLAPACK_LIBS}
     svkviz
     svk 
@@ -258,6 +285,7 @@ TARGET_LINK_LIBRARIES(
     SivicKWCallbacksLib
 	${ZLIB}
     ${NETAPI}
+    ${CMINPACK_LIBS_PRE}
 
 )
 

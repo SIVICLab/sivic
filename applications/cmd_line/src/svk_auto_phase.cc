@@ -28,10 +28,10 @@
 
 
 /*
- *  $URL: https://sivic.svn.sourceforge.net/svnroot/sivic/trunk/applications/cmd_line/src/svk_met_kinetics.cc $
- *  $Rev: 1350 $
- *  $Author: jccrane $
- *  $Date: 2012-09-13 15:16:12 -0700 (Thu, 13 Sep 2012) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *   

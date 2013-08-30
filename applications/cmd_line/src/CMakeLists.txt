@@ -387,6 +387,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 
+ADD_EXECUTABLE(
+    svk_noise
+    svk_noise.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_noise
+	${SVK_LIBS}
+)
+
 
 ADD_EXECUTABLE(
     svk_reorder_epsi
