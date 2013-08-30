@@ -40,15 +40,14 @@
  */
 
 
-#ifndef SVK_MRS_NOISE_H
-#define SVK_MRS_NOISE_H
+#ifndef SVK_MRS_PEAK_PICK_H
+#define SVK_MRS_PEAK_PICK_H
 
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
 #include <vtkInformation.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageFourierFilter.h>
 
 #include <svkImageInPlaceFilter.h>
 #include <svkSpecUtils.h>
@@ -67,27 +66,26 @@ using namespace std;
  *  Once the region is defined, the noise SD is computed as an average value of noise SD computed at
  *  each voxel over the identified frequency range.  
  */
-class svkMRSNoise : public svkImageInPlaceFilter
+class svkMRSPeakPick : public svkImageInPlaceFilter
 {
 
     public:
 
-        static svkMRSNoise* New();
-        vtkTypeRevisionMacro( svkMRSNoise, svkImageInPlaceFilter);
+        static svkMRSPeakPick* New();
+        vtkTypeRevisionMacro( svkMRSPeakPick, svkImageInPlaceFilter);
 
-        float           GetNoiseSD(); 
-        float           GetMagnitudeNoiseSD(); 
-        float           GetMeanBaseline(); 
-        float           GetMagnitudeMeanBaseline(); 
+        float           SetNoiseSD(float noise); 
+        float           SetBaselineValue(float baseline); 
+        float           SetSNLimit(float sn); 
+        float           SetResolutionHeightFraction(float resolveHeightFraction); 
         void            OnlyUseSelectionBox();
-        vtkFloatArray*  GetAverageMagnitudeSpectrum(); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
 
     protected:
 
-        svkMRSNoise();
-        ~svkMRSNoise();
+        svkMRSPeakPick();
+        ~svkMRSPeakPick();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
@@ -107,24 +105,17 @@ class svkMRSNoise : public svkImageInPlaceFilter
 
     private:
         
-        void            InitAverageSpectrum(); 
-        void            FindNoiseWindow();
-        void            CalculateNoiseSD(); 
-        float           CalcWindowSD( vtkFloatArray* spectrum, float mean, int startPt, int endPt ); 
-        float           CalcWindowMean( vtkFloatArray* spectrum, int startPt, int endPt ); 
+        void            PickPeaks(); 
 
 
         //  Members:
         float           noiseSD;
-        float           magnitudeNoiseSD;
-        float           noiseWindowMean;
-        float           magnitudeNoiseWindowMean;
+        float           snLimit;
+        float           baselineValue; 
+        float           resolveHeightFraction; 
         int 			onlyUseSelectionBox;
         short*          selectionBoxMask;
         vtkFloatArray*  averageSpectrum; 
-        int             noiseWindowStartPt; 
-        int             noiseWindowEndPt; 
-
 
 
 };
@@ -133,5 +124,5 @@ class svkMRSNoise : public svkImageInPlaceFilter
 }   //svk
 
 
-#endif //SVK_MRS_NOISE_H
+#endif //SVK_MRS_PEAK_PICK_H
 

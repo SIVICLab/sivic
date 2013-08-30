@@ -223,6 +223,7 @@ ADD_LIBRARY(
     svkSCIOD.cc
     svkMRSIOD.cc
     svkMRSNoise.cc
+    svkMRSPeakPick.cc
     svkMRIIOD.cc
     svkEnhancedMRIIOD.cc
     svkRawIOD.cc

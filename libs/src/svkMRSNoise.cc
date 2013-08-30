@@ -99,18 +99,15 @@ int svkMRSNoise::RequestData( vtkInformation* request, vtkInformationVector** in
     this->selectionBoxMask = new short[numCells];
     data->GetSelectionBoxMask(selectionBoxMask, tolerance); 
 
+    //  steps: 
+    //  get average spectrum (in selection box)?
+    //  break spectrum up into small sections and find the section with the smallest SD
+    //  calculate the average SD in that region from each voxel 
     this->InitAverageSpectrum(); 
     this->FindNoiseWindow();
     this->CalculateNoiseSD(); 
 
     delete [] this->selectionBoxMask; 
-
-
-
-    //  steps: 
-    //  get average spectrum (in selection box)?
-    //  break spectrum up into small sections and find the section with the smallest SD
-    //  calculate the average SD in that region from each voxel 
 
     
     //  Trigger observer update via modified event:
@@ -138,8 +135,6 @@ void svkMRSNoise::CalculateNoiseSD()
 
     //  First calculate the value for a voxel, then the SD for that same voxel
     float mean = 0; 
-    float tuple[2];
-    float avTuple[2];
     float noiseSDTmp = 0; 
     double meanTmp = 0; 
 
@@ -171,7 +166,7 @@ void svkMRSNoise::CalculateNoiseSD()
 
 /*!
  *  Calculate SD of intensities within specified pt range of given spectrum, using the specified mean value for 
- *  the same range. 
+ *  the same range.  Inclusive of end points. 
  */
 float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startPt, int endPt )
 {
@@ -179,15 +174,13 @@ float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startP
     double noise = 0;  
     float tuple[2];
 
-    //for (int i = startPt; i <= endPt; i++ ) {
-    for (int i = startPt; i < endPt; i++ ) {
+    for (int i = startPt; i <= endPt; i++ ) {
         spectrum->GetTupleValue(i, tuple); 
         double value = (tuple[0] - mean) * (tuple[0] - mean ); 
         noise += value; 
     }
 
-    //noise = noise / (endPt - startPt + 1); 
-    noise = noise / (endPt - startPt); 
+    noise = noise / (endPt - startPt + 1); 
     float noiseSD = pow(noise, 0.5); 
 
     return noiseSD; 
@@ -195,21 +188,19 @@ float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startP
 
 
 /*!
- *  Calculate mean value within specified pt range of given spectrum. 
+ *  Calculate mean value within specified pt range of given spectrum (inclusive of end 
+ *  points. 
  */
 float svkMRSNoise::CalcWindowMean( vtkFloatArray* spectrum, int startPt, int endPt )
 {
     float mean = 0; 
     float tuple[2];
-
-    //for (int i = startPt; i <= endPt; i++ ) {   //inclusive
-    for (int i = startPt; i < endPt; i++ ) {
+    for (int i = startPt; i <= endPt; i++ ) {   //inclusive
         spectrum->GetTupleValue(i, tuple); 
         mean += tuple[0]; 
     }
 
-    //mean = mean / (endPt - startPt + 1);    // inclusive
-    mean = mean / (endPt - startPt); 
+    mean = mean / (endPt - startPt + 1);    // inclusive
 
     return mean; 
 }
@@ -230,14 +221,16 @@ void svkMRSNoise::FindNoiseWindow()
     float tuple[2];
     int startPoint = 0; 
     double noise = FLT_MAX; 
-
+    double mean; 
+    //cout << "window size: " << noiseWindow << endl;
     for ( int i = startPoint; i < numTimePoints - noiseWindow; i++ ) {
 
         double noiseTmp = 0; 
-        double mean = 0; 
+        mean = 0; 
 
-        mean = this->CalcWindowMean( this->averageSpectrum, i, i+noiseWindow ); 
-        noiseTmp = this->CalcWindowSD( this->averageSpectrum, mean, i, i+noiseWindow ); 
+        //cout << "calc noise in window:  " << i << " " << i + noiseWindow << endl;
+        mean = this->CalcWindowMean( this->averageSpectrum, i, i + noiseWindow ); 
+        noiseTmp = this->CalcWindowSD( this->averageSpectrum, mean, i, i + noiseWindow ); 
 
         if ( noiseTmp < noise ) {
             noise = noiseTmp; 
@@ -246,7 +239,14 @@ void svkMRSNoise::FindNoiseWindow()
             //cout << "current: " <<  this->noiseWindowStartPt <<  " " << noise << endl;
         }
     }
+
+    //  Preserver the stat values from the average magnitude spectrum: 
+    this->magnitudeNoiseWindowMean = mean;
+    this->magnitudeNoiseSD = noise;
+
     cout << "WINDOW: " << this->noiseWindowStartPt << " -> " << this->noiseWindowEndPt << endl;
+    cout << "Av Mag Spec noisd sd: " << this->magnitudeNoiseSD << endl;
+    cout << "Av Mag Spec baseline value: " << this->magnitudeNoiseWindowMean << endl;
 }
 
 
@@ -320,11 +320,40 @@ float svkMRSNoise::GetNoiseSD()
 
 
 /*! 
- *  Get the noise SD
+ *  Get the noise SD from average magnitude spectrum
  */
-float svkMRSNoise::GetMean()
+float svkMRSNoise::GetMagnitudeNoiseSD()
+{
+    return this->magnitudeNoiseSD;
+}
+
+
+/*! 
+ *  Get the mean value of the baseline in the window used for 
+ *  SD calc. 
+ */
+float svkMRSNoise::GetMeanBaseline()
 {
     return this->noiseWindowMean;
+}
+
+
+/*! 
+ *  Get the mean value of the baseline in the window used for 
+ *  SD calc. 
+ */
+float svkMRSNoise::GetMagnitudeMeanBaseline()
+{
+    return this->magnitudeNoiseWindowMean;
+}
+
+
+/*!
+ *  Returns the average magnitude spectrum
+ */
+vtkFloatArray*  svkMRSNoise::GetAverageMagnitudeSpectrum()
+{
+    return this->averageSpectrum;
 }
 
 
