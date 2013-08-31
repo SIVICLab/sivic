@@ -63,9 +63,10 @@ svkMRSPeakPick::svkMRSPeakPick()
 
     this->noiseSD = 0.0;
     this->baselineValue = FLT_MAX;
-    this->snLimit = 3;
+    this->snLimit = 40;
     this->onlyUseSelectionBox = false;
     this->resolveHeightFraction = 0.7; 
+    this->resolveHeightFraction = 0.5; 
 }
 
 
@@ -104,6 +105,8 @@ int svkMRSPeakPick::RequestData( vtkInformation* request, vtkInformationVector**
     this->averageSpectrum = noise->GetAverageMagnitudeSpectrum(); 
 
     this->PickPeaks();
+    this->InitPeakRanges(); 
+    this->PrintPeaks(); 
 
     noise->Delete(); 
 
@@ -112,6 +115,70 @@ int svkMRSPeakPick::RequestData( vtkInformation* request, vtkInformationVector**
     this->GetInput()->Update();
 
     return 1; 
+}
+
+/*!
+ *  Now that the peaks have been identified, define some ranges.  These
+ *  Ranges are not for quantification, but for other algorithms to use as a
+ *  guide when evaluating peaks, i.e. auto phasing algos.     
+ */
+void svkMRSPeakPick::InitPeakRanges()
+{
+
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    
+    //  Define a reasonable width about the peak that defines it. 
+    float tuple[2];
+    float previousPt = FLT_MIN;   
+    float resolveHeight = FLT_MIN; 
+
+    //  when comparing the derivative, is should be larger in magnitude than the
+    //  noiseSD: 
+    float derivativeLimit = this->noiseSD * this->snLimit; 
+
+    for ( int i = 0; i < this->peakVector.size(); i++ ) {
+
+        int startPt = this->peakVector[i][0];
+        int peakPt= this->peakVector[i][1]; 
+        int endPt= this->peakVector[i][2]; 
+        bool resetStart = false; 
+
+        this->averageSpectrum->GetTupleValue(peakPt, tuple);
+        float signal = tuple[0] - this->baselineValue;
+        float peakHeight = signal;  
+        resolveHeight = peakHeight * this->resolveHeightFraction;
+        
+        
+        for ( int freq = startPt; freq <= endPt;freq++ ) {
+            //cout << "freq"  << freq << endl; 
+
+            this->averageSpectrum->GetTupleValue(freq, tuple);
+            signal = tuple[0] - this->baselineValue;
+
+            float derivative = signal - previousPt; 
+            
+            //  reset the starting point as far to the left as possible. 
+            if ( ! resetStart ) {
+                if (  freq < peakPt && derivative > derivativeLimit )  {
+                //if ( signal >= resolveHeight && freq < peakPt && derivative > derivativeLimit )  {
+                    //cout << "NEW START: " << " " << i << " " << freq<< endl;
+                    //  reset start point
+                    this->peakVector[i][0] = freq; 
+                    resetStart = true; 
+                }
+            }
+            if (  freq > peakPt && derivative < derivativeLimit )  {
+            //if ( signal <= resolveHeight && freq > peakPt && derivative < derivativeLimit )  {
+                //  reset end point
+                this->peakVector[i][2] = freq; 
+            }
+            previousPt = signal; 
+            
+        }
+    }
+
+    return; 
 }
 
 
@@ -156,7 +223,16 @@ void svkMRSPeakPick::PickPeaks()
         //  Once signal drops below half height of local max, grab the local max value and reset
         //  variables to search for next peak:     
         if ( signal <= resolveHeight ) { 
-            cout << "Found Peak: " << peakPt << " = " << localMax << endl;
+            vector < int > peak; 
+            int numPeaks = this->peakVector.size(); 
+            int startPt = 0; 
+            if ( numPeaks > 0 ) {
+                startPt = this->peakVector[ numPeaks-1][2];  
+            }
+            int endPt = i; 
+            this->InitPeakVector( &peak, startPt, peakPt, endPt); 
+            this->peakVector.push_back(peak); 
+            //cout << "Found Peak: " << peakPt << " = " << localMax << endl;
             localMax = FLT_MIN; 
             resolveHeight = FLT_MIN; 
         }
@@ -167,6 +243,27 @@ void svkMRSPeakPick::PickPeaks()
     return; 
 }
 
+
+/*!
+ *
+ */
+void svkMRSPeakPick::PrintPeaks()
+{
+    for ( int i = 0; i < this->peakVector.size(); i++ ) {
+        cout << "peak " << i << " = " << this->peakVector[i][0] << " " << this->peakVector[i][1] << " " << this->peakVector[i][2] << endl;
+    }
+}
+
+
+/*  Initialize the peakVector, a vector of peak definitions: : 
+ *      peakVector[i] = peakStartPt, peakPos, peakEndPt
+ */ vector < vector < float > > peakVector;
+void svkMRSPeakPick::InitPeakVector( vector<int>* peak, int startPt, int peakPt, int endPt) 
+{
+    peak->push_back(startPt); 
+    peak->push_back(peakPt); 
+    peak->push_back(endPt); 
+}
 
 
 /*! 

@@ -79,7 +79,9 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         float           SetSNLimit(float sn); 
         float           SetResolutionHeightFraction(float resolveHeightFraction); 
         void            OnlyUseSelectionBox();
+        void            PrintPeaks(); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
+
 
 
     protected:
@@ -106,6 +108,8 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
     private:
         
         void            PickPeaks(); 
+        void            InitPeakVector( vector<int>* peak, int startPt, int peakPt, int endPt); 
+        void            InitPeakRanges(); 
 
 
         //  Members:
@@ -116,6 +120,8 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         int 			onlyUseSelectionBox;
         short*          selectionBoxMask;
         vtkFloatArray*  averageSpectrum; 
+
+        vector < vector < int > > peakVector; 
 
 
 };
