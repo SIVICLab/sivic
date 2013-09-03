@@ -86,6 +86,9 @@ void svkDICOMMRIWriter::Write()
     this->SetErrorCode(vtkErrorCode::NoError);
 
     //  If a file name is not know then use a generic format (E#S#I#)
+    if ( this->seriesNumber != svkImageWriter::UNDEFINED_SERIES_NUMBER ) { 
+        this->GetImageDataInput(0)->GetDcmHeader()->SetValue( "SeriesNumber", this->seriesNumber );
+    }
     if (! this->FileName ) {
         vtkstd::string prefix = 
                 this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue( "StudyID" ) + 
@@ -129,7 +132,7 @@ void svkDICOMMRIWriter::Write()
         dataType
     );
     if ( this->seriesNumber != svkImageWriter::UNDEFINED_SERIES_NUMBER ) { 
-        this->GetImageDataInput(0)->GetDcmHeader()->SetValue("SeriesNumber", this->seriesNumber); 
+        mriHeader->SetValue("SeriesNumber", this->seriesNumber); 
     }
 
     int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" );
