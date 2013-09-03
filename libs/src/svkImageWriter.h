@@ -68,6 +68,10 @@ class svkImageWriter : public vtkImageWriter
         static svkImageWriter* New();
         vtkTypeRevisionMacro( svkImageWriter, vtkImageWriter);
 
+        typedef enum {
+            UNDEFINED_SERIES_NUMBER = -1000
+        } seriesNumStatus; 
+
         // Description:
         // The main interface which triggers the writer to start.
         virtual void    Update();

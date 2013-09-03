@@ -62,6 +62,7 @@ svkImageWriter::svkImageWriter()
 #endif
 
     vtkDebugMacro(<< "svkImageWriter::svkImageWriter");
+    this->seriesNumber = UNDEFINED_SERIES_NUMBER;
 
 }
 

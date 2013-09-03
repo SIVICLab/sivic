@@ -128,6 +128,9 @@ void svkDICOMMRIWriter::Write()
         mriHeader, 
         dataType
     );
+    if ( this->seriesNumber != svkImageWriter::UNDEFINED_SERIES_NUMBER ) { 
+        this->GetImageDataInput(0)->GetDcmHeader()->SetValue("SeriesNumber", this->seriesNumber); 
+    }
 
     int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" );
     int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" );
@@ -197,7 +200,6 @@ void svkDICOMMRIWriter::Write()
     this->InternalFileName = NULL;
 
 }
-
 
 /*!
  *  Write the pixel data to the PixelData DICOM element.       
