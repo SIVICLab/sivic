@@ -118,7 +118,7 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
     }
 
     if ( isDcmMri ) {
-        cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck << endl;
+        vtkDebugMacro(<<this->GetClassName() << "::CanReadFile(): It's a DICOM MRI File: " <<  fileToCheck );
         return 1;
     }
 

@@ -162,8 +162,6 @@ void svkDICOMMRSWriter::InitSpectroscopyData()
     float* specData = new float [ dataLength ];
     int index = 0;
 
-    cout << "extent: " << *(this->GetImageDataInput(0)) << endl;
-
     vtkFloatArray* fa; 
     float* dataTuple = new float[numComponents];  
       

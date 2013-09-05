@@ -81,8 +81,12 @@ svkPlotLine::svkPlotLine()
     this->origin[0] = 0;
     this->origin[1] = 0;
     this->origin[2] = 0;
+    this->spacing[0] = 0;
+    this->spacing[1] = 0;
+    this->spacing[2] = 0;
     this->numComponents = 0;
     this->generatePolyData = true;
+    this->dcos = NULL;
 }
 
 

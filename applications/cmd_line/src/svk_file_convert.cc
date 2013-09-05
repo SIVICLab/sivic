@@ -95,6 +95,7 @@ int main (int argc, char** argv)
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
+    usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Converts the input file to the specified target file type                    \n";  
@@ -107,6 +108,7 @@ int main (int argc, char** argv)
     string deidStudyId = ""; 
     bool   burnResearchHeader = false;  
     bool   useCompression = false;  
+    bool   verbose = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -130,7 +132,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:t:cbh", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:t:cbhv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -154,6 +156,9 @@ int main (int argc, char** argv)
 #endif
             case 'c':
                 useCompression = true; 
+                break;
+            case 'v':
+                verbose = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -187,9 +192,11 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
-    cout << dataTypeOut << endl;
+    if( verbose ) {
+        cout << inputFileName << endl;
+        cout << outputFileName << endl;
+        cout << dataTypeOut << endl;
+    }
 
     // ===============================================
     //  validate deidentification args:
@@ -207,11 +214,13 @@ int main (int argc, char** argv)
         cout << "Error: invalid deidentificatin type: " << deidType <<  endl;
         cout << usemsg << endl;
         exit(1);
-    } else {
+    } else if ( verbose ) {
         cout << "Deidentify data: type = " << deidType << endl;
     }
 
-    cout << "file name: " << inputFileName << endl;
+    if( verbose ) {
+        cout << "file name: " << inputFileName << endl;
+    }
 
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();

@@ -800,6 +800,18 @@
 }
 
 {
+   <nvidia_6>
+   Memcheck:Cond
+   obj:/usr/lib64/libnvidia-glcore.so.290.10
+
+}
+{
+   <nvidia_7>
+   Memcheck:Value8
+   obj:/usr/lib64/libnvidia-glcore.so.290.10
+}
+
+{
    <x11_leak>
    Memcheck:Leak
    fun:malloc
@@ -857,4 +869,3 @@
    fun:XtOpenDisplay
    fun:_ZN26vtkXRenderWindowInteractor10InitializeEv
 }
-

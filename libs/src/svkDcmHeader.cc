@@ -69,7 +69,7 @@ svkDcmHeader::svkDcmHeader()
     vtkDebugMacro(<<this->GetClassName()<<":svkDcmHeader");
 
     this->lastUpdateTime = this->GetMTime(); 
-    this->dataSliceOrder = SLICE_ORDER_UNDEFINED;
+    this->dataSliceOrder = svkDcmHeader::INCREMENT_ALONG_POS_NORMAL;
     this->numTimePts = 1;
 
     this->orientation[0][0] = 0; 
@@ -2951,7 +2951,9 @@ void svkDcmHeader::SetDimensionIndexSize( svkDcmHeader::DimensionIndexLabel inde
     }
     svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
     svkDcmHeader::SetDimensionValue( &dimensionVector, static_cast<int>(indexType)+2, maxIndex); 
-    svkDcmHeader::PrintDimensionIndexVector( &dimensionVector );
+    if (this->GetDebug()) {
+        svkDcmHeader::PrintDimensionIndexVector( &dimensionVector );
+    }
     this->Redimension( &dimensionVector );
 }
 

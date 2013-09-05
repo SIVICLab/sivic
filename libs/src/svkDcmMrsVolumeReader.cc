@@ -94,7 +94,7 @@ int svkDcmMrsVolumeReader::CanReadFile(const char* fname)
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {           
 
-            cout << this->GetClassName() << "::CanReadFile(): It's a DICOM MRS File: " <<  fileToCheck << endl;
+            vtkDebugMacro(<<this->GetClassName() << "::CanReadFile(): It's a DICOM MRS file " << fileToCheck );
 
             this->SetFileName(fname);
 

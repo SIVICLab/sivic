@@ -116,7 +116,7 @@ int svkDcmEnhancedVolumeReader::CanReadFile(const char* fname)
 
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
-            cout << this->GetClassName() << "::CanReadFile(): It's a DICOM Enhanced File: " <<  fileToCheck << endl;
+            vtkDebugMacro(<<this->GetClassName() << "::CanReadFile(): It's a DICOM Enhanced file " << fileToCheck );
 
             this->SetFileName(fname);
 

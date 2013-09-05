@@ -152,7 +152,9 @@ void svkDcmVolumeReader::ExecuteInformation()
 
         //rewrite the DimensionIndexSequence if necessary:
         svkDcmHeader::DimensionVector vec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-        svkDcmHeader::PrintDimensionIndexVector(&vec);
+        if (this->GetDebug()) {
+            svkDcmHeader::PrintDimensionIndexVector(&vec);
+        }
         this->GetOutput()->GetDcmHeader()->Redimension(&vec); 
     }
 
