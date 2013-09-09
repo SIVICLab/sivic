@@ -194,7 +194,7 @@ void svkDICOMRawDataWriter::Write()
             pos = fileNameString.rfind(".DCM");
             if( pos == string::npos ) {
                 fileNameString+=".dcm";
-                delete this->FileName;
+                delete[] this->FileName;
                 this->FileName = new char[fileNameString.size() + 1];
                 strcpy(this->FileName, fileNameString.c_str());
             }
@@ -206,7 +206,7 @@ void svkDICOMRawDataWriter::Write()
             pos = filePatternString.rfind(".DCM");
             if( pos == string::npos ) {
                 filePatternString+=".dcm";
-                delete this->FilePattern;
+                delete[] this->FilePattern;
                 this->FilePattern = new char[filePatternString.size() + 1];
                 strcpy(this->FilePattern, filePatternString.c_str());
             }
@@ -216,14 +216,14 @@ void svkDICOMRawDataWriter::Write()
             size_t pos = filePrefixString.rfind(".dcm");
             if( pos != string::npos ) {
                 filePrefixString.replace(pos, pos + 4, "");
-                delete this->FilePrefix;
+                delete[] this->FilePrefix;
                 this->FilePrefix = new char[filePrefixString.size() + 1];
                 strcpy(this->FilePrefix, filePrefixString.c_str());
             }
             pos = filePrefixString.rfind(".DCM");
             if( pos != string::npos ) {
                 filePrefixString.replace(pos, pos + 4, "");
-                delete this->FilePrefix;
+                delete[] this->FilePrefix;
                 this->FilePrefix = new char[filePrefixString.size() + 1];
                 strcpy(this->FilePrefix, filePrefixString.c_str());
             }

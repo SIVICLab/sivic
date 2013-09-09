@@ -58,6 +58,7 @@ svkDataModel::svkDataModel()
 #endif
 
     reader = NULL;
+    this->currentData = NULL;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgressCallback );
     this->progressCallback->SetClientData( (void*)this );
@@ -81,6 +82,10 @@ svkDataModel::~svkDataModel()
     if( this->progressCallback != NULL ) {
         this->progressCallback->Delete();
         this->progressCallback = NULL;
+    }
+    if( this->currentData != NULL ) {
+        this->currentData->Delete();
+        this->currentData = NULL;
     }
 }
 
@@ -268,7 +273,6 @@ string svkDataModel::GetDataFileName(string objectName)
 svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
 {
     float* imageOrigin;
-    svkImageData* myData = NULL;
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
 
     /* We keep a reader as a member variable so as to give the caller an opportunity
@@ -293,9 +297,13 @@ svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
         vtkInformation* readerInformation = reader->GetOutputPortInformation(0);
         const char* dataType = readerInformation->Get(vtkDataObject::DATA_TYPE_NAME());
 
+        if( this->currentData != NULL ) {
+            this->currentData->Delete();
+            this->currentData = NULL;
+        }
         // We are going to decouple the data from the reader to avoid downstream update issues
-        myData = svkImageDataFactory::CreateInstance( dataType );
-        myData->ShallowCopy( reader->GetOutput() );
+        this->currentData = svkImageDataFactory::CreateInstance( dataType );
+        this->currentData->ShallowCopy( reader->GetOutput() );
 
         reader->RemoveObserver(progressCallback);
     } else {
@@ -304,7 +312,7 @@ svkImageData* svkDataModel::LoadFile( string fileName, bool onlyOneInputFile )
 
     }
     
-    return myData;
+    return this->currentData;
 }
 
 

@@ -461,6 +461,8 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         for (int i = 0; i < numFrequencyPoints; i++) {
             spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
         }
+        delete[] imageComplexTime;
+        delete[] imageComplexFrequency;
 
     }
 

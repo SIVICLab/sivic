@@ -132,6 +132,11 @@ svkPlotLineGrid::~svkPlotLineGrid()
         this->mapper = NULL;
     }
 
+    if( this->points != NULL ) {
+        this->points->Delete();
+        this->points = NULL;
+    }
+
 }
 
 svk4DImageData* svkPlotLineGrid::GetInput()

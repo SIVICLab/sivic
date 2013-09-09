@@ -333,6 +333,7 @@ void svkDcmVolumeReader::InitFileNames()
     double referenceNormal[3]; 
     tmp->GetDcmHeader()->GetNormalVector( referenceNormal );
     tmp->Delete();
+    tmp = NULL;
 
     vtkStringArray* fileNames =  sortFileNames->GetFileNames();
 
@@ -377,7 +378,10 @@ void svkDcmVolumeReader::InitFileNames()
             }
 
             vtkstd::vector< vtkstd::string > dcmFileAttributes;  
-
+            if( tmp != NULL ) {
+                tmp->Delete();
+                tmp = NULL;
+            }
             tmp = svkMriImageData::New(); 
             tmp->GetDcmHeader()->ReadDcmFile( fileNames->GetValue(i) );
             dcmFileAttributes.push_back( fileNames->GetValue(i) ); 
@@ -442,7 +446,6 @@ void svkDcmVolumeReader::InitFileNames()
             //  add the file attributes to the series attribute vector:
             dcmSeriesAttributes.push_back( dcmFileAttributes ); 
 
-            tmp->Delete();
             if( i % 2 == 0 ) { // Only update progress every other iteration
 				ostringstream progressStream;
 				progressStream <<"Reading DICOM Header " << i << " of " <<  fileNames->GetNumberOfValues();
@@ -575,6 +578,10 @@ void svkDcmVolumeReader::InitFileNames()
     //  the slice thickness differs from distance between samples.
     this->SetSliceSpacing( tmp->GetDcmHeader(), uniqueSlices.size(), dcmSeriesAttributes );
 
+    if( tmp != NULL ) {
+        tmp->Delete();
+        tmp = NULL;
+    }
     globFileNames->Delete();
     sortFileNames->Delete();
 

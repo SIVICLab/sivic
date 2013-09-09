@@ -102,5 +102,8 @@ int main (int argc, char** argv)
     data = NULL;
     model->Delete();
     model = NULL;
+    spatialRFFT->Delete();
+    spatialFFT->Delete();
+    targetData->Delete();
     return 0;
 }

@@ -301,6 +301,11 @@ int main (int argc, char** argv)
 
     reader->Delete();
 
+#if defined( UCSF_INTERNAL )
+
+    burn->Delete();
+
+#endif
 
     return 0; 
 }

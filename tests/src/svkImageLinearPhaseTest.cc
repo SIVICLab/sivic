@@ -167,7 +167,9 @@ void TestPhase( string name, double shiftWindow[3], svkImageData* data )
 
     phase->Delete();
     fft->Delete();
+    rfft->Delete();
     center->Delete();
+    fftPhased->Delete();
     uncenter->Delete();
 }
 

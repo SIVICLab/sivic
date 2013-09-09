@@ -85,6 +85,10 @@ svkImageData::svkImageData()
     this->range[2][0] = VTK_DOUBLE_MAX;
     this->range[2][1] = -VTK_DOUBLE_MAX;
 
+    if( this->CellData != NULL ) {
+        this->CellData->Delete();
+        this->CellData = NULL;
+    }
     this->CellData = svkFastCellData::New();
     this->lastUpdateTime = this->GetMTime();
     this->source = NULL;

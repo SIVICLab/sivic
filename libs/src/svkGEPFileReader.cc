@@ -683,6 +683,7 @@ void svkGEPFileReader::ReadGEPFile()
     }  	 	 
 
     this->SetFileNames(validatedFileNames); 
+    validatedFileNames->Delete();
 
     if (this->GetDebug()) { 
         for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  

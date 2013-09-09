@@ -56,6 +56,7 @@
 #include <svkImageDataFactory.h>
 #include <vtkAlgorithmOutput.h>
 #include <vtkTrivialProducer.h>
+#include <vtkSmartPointer.h>
 
 #include <vtkAlgorithm.h>
 #include <vtkImageReader2.h>
@@ -151,7 +152,7 @@ class svkDataModel : public vtkObject
         map<string, void*> modelState;
         svkImageReader2* reader;
 
-        svkImageData* data;
+        svkImageData* currentData;
     
         string progressText;
         vtkCallbackCommand* progressCallback;

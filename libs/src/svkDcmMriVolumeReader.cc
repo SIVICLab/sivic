@@ -268,6 +268,9 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
             data->GetPointData()->AddArray(array);
         }
 
+        // This array has been attached to the point data so lets release our local reference.
+        array->Delete();
+
         if( vol % 2 == 0 ) { // update progress every other volume
 			ostringstream progressStream;
 			progressStream <<"Reading Volume " << vol << " of " << this->numVolumes;
@@ -431,6 +434,7 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
                 dcos,  
                 &dimensionVector
     );
+    tmpImage->Delete();
 
 }
 

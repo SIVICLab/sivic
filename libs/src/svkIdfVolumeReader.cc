@@ -220,6 +220,9 @@ void svkIdfVolumeReader::ReadVolumeFile()
             data->GetPointData()->AddArray(array);
         }
 
+        // We can now get rid of of our local reference to the array
+        array->Delete();
+
         volumeDataIn->close();
         delete volumeDataIn;
     }

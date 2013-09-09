@@ -90,6 +90,7 @@ int main (int argc, char** argv)
 
     model->Delete();
     data->Delete();
+    window->Delete();
 
     return 0; 
 }
