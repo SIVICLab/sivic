@@ -46,6 +46,7 @@ else
     plugin_path_tmp="/Users/${USER}/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources"
     plugin_path=`echo ${plugin_path_tmp} | sed 's/ /\\ /'`
 fi
+plugin_path='/Applications/SIVIC.app/Contents/Resources'
 echo ${plugin_path}
 
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
