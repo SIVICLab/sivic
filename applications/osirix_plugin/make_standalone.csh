@@ -12,7 +12,7 @@ cp -rp plugin_depends/libtcl8.5.dylib   SIVIC.app/Contents/Resources
 cp -rp plugin_depends/libtk8.5.dylib    SIVIC.app/Contents/Resources
 cp standalone/Info.plist                SIVIC.app/Contents
 #cp tmpicns.rsrc                         SIVIC.app/Contents/Resources
-cp Icons/prism_blue.icns                SIVIC.app/Contents/Resources
+cp Icons/prism_blue.icns                SIVIC.app/Contents/Resources/prism.icns
 
 chmod -R 775 SIVIC.app
 
