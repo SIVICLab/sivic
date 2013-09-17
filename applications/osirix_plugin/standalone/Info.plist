@@ -2,23 +2,29 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDisplayName</key>
-	<string>SIVIC</string>
-    <key>CFBundleIconFile</key>
-	<string>tempicns.rsrc</string>
-	<key>CFBundleIdentifier</key>
-	<string>SIVIC</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>SIVIC</string>
-	<key>CFBundleVersion</key>
-	<string>0.9.3</string>
+	<string>SIVIC_MRSI</string>
+	<key>CFBundleIconFile</key>
+	<string>prism_blue.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string></string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleSignature</key>
 	<string>SIVIC</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
+	<key>MenuTitles</key>
+	<array>
+		<string>SIVIC_MRSI</string>
+	</array>
+	<key>NSPrincipalClass</key>
+	<string>SIVIC_MRSIFilter</string>
+	<key>pluginType</key>
+	<string>Database</string>
 </dict>
 </plist>

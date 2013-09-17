@@ -6,6 +6,10 @@
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>SIVIC_MRSI</string>
+	<key>CFBundleIconFile</key>
+	<string>prism_blue.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string></string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>

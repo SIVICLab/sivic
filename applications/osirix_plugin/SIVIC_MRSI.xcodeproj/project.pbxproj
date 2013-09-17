@@ -13,6 +13,7 @@
 		920263DD10980254007A8293 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 920263DB10980254007A8293 /* Foundation.framework */; };
 		920263DE10980254007A8293 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 920263DC10980254007A8293 /* AppKit.framework */; };
 		920263E41098027E007A8293 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 920263E31098027E007A8293 /* Cocoa.framework */; };
+		9215AB8617E81AFD0041BF15 /* prism_blue.icns in Resources */ = {isa = PBXBuildFile; fileRef = 9215AB8517E81AFD0041BF15 /* prism_blue.icns */; };
 		921B50FE109BA6E500134C22 /* DicomSeries.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FB109BA6E500134C22 /* DicomSeries.h */; };
 		921B50FF109BA6E500134C22 /* DicomImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FC109BA6E500134C22 /* DicomImage.h */; };
 		921B5100109BA6E500134C22 /* browserController.h in Headers */ = {isa = PBXBuildFile; fileRef = 921B50FD109BA6E500134C22 /* browserController.h */; };
@@ -50,6 +51,7 @@
 		920263DB10980254007A8293 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		920263DC10980254007A8293 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		920263E31098027E007A8293 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		9215AB8517E81AFD0041BF15 /* prism_blue.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = prism_blue.icns; path = Icons/prism_blue.icns; sourceTree = "<group>"; };
 		921B50FB109BA6E500134C22 /* DicomSeries.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicomSeries.h; sourceTree = "<group>"; };
 		921B50FC109BA6E500134C22 /* DicomImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicomImage.h; sourceTree = "<group>"; };
 		921B50FD109BA6E500134C22 /* browserController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = browserController.h; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 		089C167CFE841241C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9215AB8517E81AFD0041BF15 /* prism_blue.icns */,
 				8D5B49B7048680CD000E48DA /* Info.plist */,
 				089C167DFE841241C02AAC07 /* InfoPlist.strings */,
 			);
@@ -264,6 +267,7 @@
 				92A2BD2A109AAA8200A29D8F /* sivic.sh in Resources */,
 				921B5143109BAF0700134C22 /* sivic in Resources */,
 				92A2BAF910B3D48A00877E0F /* dicom.dic in Resources */,
+				9215AB8617E81AFD0041BF15 /* prism_blue.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,7 +361,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.4 /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/include/KWWidgets /usr/X11R6/include /usr/local/include/vtk-5.6 /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src /usr/local/dicom/include";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -403,6 +407,7 @@
 					"$(OTHER_CFLAGS)",
 					"-DHAVE_CONFIG_H",
 					"-fPIC",
+					"-DSYS_F2C_OSIRIX",
 				);
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -412,7 +417,7 @@
 				PRODUCT_NAME = SIVIC_MRSI;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				USER_HEADER_SEARCH_PATHS = "/usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
+				USER_HEADER_SEARCH_PATHS = "/Users/jasonc/freeware/clapack-3.2.1-CMAKE/INCLUDE /usr/X11R6/include /usr/local/include/KWWidgets /usr/local/include/vtk-5.6 /usr/local/dicom/include /Users/jasonc/sivic/trunk/libs/src /Users/jasonc/sivic/trunk/applications/sivic_app/src";
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
