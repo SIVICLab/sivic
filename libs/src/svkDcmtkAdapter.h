@@ -97,6 +97,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    ModifyValueRecursive(const char* name, string value); 
 
 
+        virtual void    GetByteValue(const char* name, char* values, long unsigned int numValues); 
         virtual void    GetShortValue(const char* name, short* values, long unsigned int numValues); 
         virtual unsigned short GetShortValue(const char* name, long unsigned int position ); 
         virtual unsigned short GetPixelValue(long unsigned int position);
@@ -280,6 +281,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    ReplaceOldElements( bool replaceElements );
 
         virtual void    HandleTagNotFoundException( const svkTagNotFound& e);
+        virtual string  GetDcmNameFromTag( string groupElementString ); 
 
 
     private:
@@ -292,6 +294,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         DcmSequenceOfItems* GetDcmSequence(const char* seqName); 
         void                SetPrivateDictionaryElements(); 
         void                SetGEPrivateDictionaryElements();
+
 
 
         //  Members:

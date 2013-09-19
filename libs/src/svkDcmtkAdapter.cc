@@ -824,6 +824,35 @@ void svkDcmtkAdapter::GetFloatValue(const char* name, float* values, long unsign
  *
  * \param numValues the number of elements in the array of values
  */
+void svkDcmtkAdapter::GetByteValue(const char* name, char* values, long unsigned int numValues)
+{
+    DcmElement* of;
+    Uint8* byteArray;
+    OFCondition status = this->dcmFile->getDataset()->findAndGetElement( GetDcmTagKey( name ), of);
+    if (status.bad()) {
+        cerr << "Error: cannot get element(" << status.text() << ")" << endl;
+    }
+    status = of->getUint8Array( byteArray );
+    if (status.bad()) {
+        cerr << "Error: cannot get Uint8Array for(" << status.text() << ")" << endl;
+    }
+
+    int sizeOfByte = 1; 
+    memcpy( values, byteArray, sizeOfByte * numValues );
+
+    this->Modified();
+}
+
+
+/*!
+ * Gets the array of values for a given tag.
+ *
+ * \param name the name of the tag whose value you wish to set
+ *
+ * \param values the pointer to the array of values you wish the tag to have
+ *
+ * \param numValues the number of elements in the array of values
+ */
 void svkDcmtkAdapter::GetShortValue(const char* name, short* values, long unsigned int numValues)
 {
     DcmElement* of;
@@ -1653,6 +1682,39 @@ const DcmDictEntry* svkDcmtkAdapter::FindEntry( const char* name )
     	this->foundEntries[name] = privateDic->findEntry( name );
     }
     return this->foundEntries[name];
+}
+
+
+/*!
+ *  Lookup a name from a group/element
+ *  Args: groupElementString "(gggg,eeee)"
+ */
+string svkDcmtkAdapter::GetDcmNameFromTag( string groupElementString ) 
+{
+    size_t delimit = groupElementString.find_first_of(","); 
+    string group   = groupElementString.substr(1, delimit ); 
+    string element = groupElementString.substr(delimit+1, 4); 
+
+    istringstream* issG = new istringstream();
+    unsigned short hexGroup = 0.0;
+    issG->str( group );
+    *issG >> hex >>  hexGroup;
+    delete issG;
+
+    istringstream* issE = new istringstream();
+    unsigned short hexElement = 0.0;
+    issE->str( element );
+    *issE >> hex >> hexElement;
+    delete issE;
+
+    DcmTagKey tagKey;
+    tagKey.setGroup( hexGroup ); 
+    tagKey.setElement( hexElement ); 
+
+    DcmTag tag = DcmTag(tagKey); 
+    string name = tag.getTagName(); 
+
+    return name;  
 }
 
 
