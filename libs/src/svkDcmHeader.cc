@@ -956,6 +956,12 @@ vtkstd::string svkDcmHeader::GetDimensionIndexLabel(int dimensionIndexNumber )
     int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
     if ( dimensionIndexNumber < numDims ) { 
         
+        if ( ! this->ElementExists( "DimensionDescriptionLabel", "DimensionIndexSequence") == true ) {
+            //  insert the description label: 
+            this->InsertDimensionIndexLabels(); 
+        }
+
+        //  Type 3 
         dimensionIndexLabel = this->GetStringSequenceItemElement(
             "DimensionIndexSequence",
             dimensionIndexNumber, 
@@ -966,6 +972,69 @@ vtkstd::string svkDcmHeader::GetDimensionIndexLabel(int dimensionIndexNumber )
     }
 
     return dimensionIndexLabel; 
+}
+
+
+/*!
+ *   Fill in type 3 label fields in DimensionIndexSequence if missing:  
+ */ 
+void svkDcmHeader::InsertDimensionIndexLabels( )
+{
+
+    int numDims = this->GetNumberOfItemsInSequence("DimensionIndexSequence");
+
+    for (int dimNum = 0; dimNum < numDims; dimNum++ ) {
+
+        string dimensionIndexPointer= ""; 
+        string dimensionFunctionalGroupPointer = ""; 
+        string dimensionIndexLabel = ""; 
+
+        //  Type 1
+        if ( this->ElementExists( "DimensionIndexPointer", "DimensionIndexSequence") == true ) {
+            dimensionIndexPointer = this->GetStringSequenceItemElement(
+                "DimensionIndexSequence",
+                dimNum, 
+                "DimensionIndexPointer",
+                NULL, 
+                dimNum
+            );
+            //cout << "dimensionIndexPointer" << dimensionIndexPointer << endl;
+            string tagName = this->GetDcmNameFromTag( dimensionIndexPointer ); 
+            cout << "TN: " << tagName << endl;
+            dimensionIndexLabel = tagName; 
+            if (dimNum == 0) {
+                dimensionIndexLabel = "TIME"; 
+            } else {
+                dimensionIndexLabel = "SLICE"; 
+            } 
+            
+        }
+
+        //  Type 1c
+        //if ( this->ElementExists( "FunctionalGroupPointer", "DimensionIndexSequence") == true ) {
+            //dimensionFunctionalGroupPointer = this->GetStringSequenceItemElement(
+                //"DimensionIndexSequence",
+                //dimensionIndexNumber, 
+                //"FunctionalGroupPointer",
+                //NULL, 
+                //dimensionIndexNumber 
+            //);
+            ////cout << "dimensionFunctionalGroupPointer" << dimensionFunctionalGroupPointer << endl;
+            //string tagName = this->GetDcmNameFromTag( dimensionIndexPointer ); 
+            //cout << "TN: " << tagName << endl;
+        //}
+        this->AddSequenceItemElement(
+            "DimensionIndexSequence",
+            dimNum,
+            "DimensionDescriptionLabel",
+            //this->DimensionIndexLabelToString( svkDcmHeader::TIME_INDEX)
+            dimensionIndexLabel
+        );
+    }
+
+    this->PrintDcmHeader(); 
+
+    return;  
 }
 
 

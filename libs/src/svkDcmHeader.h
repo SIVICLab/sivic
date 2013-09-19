@@ -246,6 +246,12 @@ class svkDcmHeader: public vtkObject
          *  Method to get a DICOM tag by specifying it's name and value. The name should be 
          *  the string representation of the field in the DICOM dictionary being used. 
          */
+        virtual void    GetByteValue(const char* name, char* values, long unsigned int numValues) = 0;
+
+        /*! 
+         *  Method to get a DICOM tag by specifying it's name and value. The name should be 
+         *  the string representation of the field in the DICOM dictionary being used. 
+         */
         virtual void    GetShortValue(const char* name, short* values, long unsigned int numValues) = 0;
 
         /*! 
@@ -812,6 +818,8 @@ class svkDcmHeader: public vtkObject
 
         int             ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
         int             ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
+        virtual string  GetDcmNameFromTag( string groupElementString ) = 0; 
+
 
 
         //==================================================
@@ -868,6 +876,7 @@ class svkDcmHeader: public vtkObject
         void                        InitFrameContentMacro( svkDcmHeader::DimensionVector* dimensionVector); 
 
         int                         GetNumberOfFrames(); 
+        void                        InsertDimensionIndexLabels( ); 
 
 
                                            
