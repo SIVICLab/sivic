@@ -1032,8 +1032,6 @@ void svkDcmHeader::InsertDimensionIndexLabels( )
         );
     }
 
-    this->PrintDcmHeader(); 
-
     return;  
 }
 
