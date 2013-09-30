@@ -267,6 +267,8 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReadData(vtkStringArray* pFileNames, svkIma
     data->SyncVTKImageDataToDcmHeader(); 
     this->InitK0Sampled( data->GetDcmHeader() ); 
 
+    tmpImageDynamic->Delete();
+
 }
 
 
@@ -603,6 +605,7 @@ void svkGEPFileMapperUCSFfidcsiDev0::ReorderEPSIData( svkImageData* data )
 
     this->InitK0Sampled( data->GetDcmHeader() );
 
+    tmpReorderData->Delete();
     reorder->Delete(); 
 }
 
@@ -914,8 +917,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                         //      ->  ifft   (k to spatial domain) 
                         //      ->  fftShift ( x=0 to middle)
                         //================================================
-                        vtkImageComplex* epsiKData = new vtkImageComplex[ gridSize ];
-                        vtkImageComplex* epsiXData = new vtkImageComplex[ gridSize ];
+                        int offset = static_cast<int>(floor(integralMax/2.)); 
+                        vtkImageComplex* epsiKData = new vtkImageComplex[ gridSize + offset];
+                        vtkImageComplex* epsiXData = new vtkImageComplex[ gridSize + offset];
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiKData[i].Real = overgrid[i*2];
                             epsiKData[i].Imag = overgrid[i*2+1];
@@ -933,7 +937,6 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
                             //cout << "epsiXData: " << epsiXData[i].Real << " " << epsiXData[i].Imag   << endl;
                         }
 
-                        int offset = static_cast<int>(floor(integralMax/2.)); 
                         for( int i = 0; i < gridSize; i++ ) {
                             epsiXData[i].Real = epsiXData[i + offset].Real; 
                             epsiXData[i].Imag = epsiXData[i + offset].Imag; 
@@ -1054,6 +1057,9 @@ void svkGEPFileMapperUCSFfidcsiDev0::ResampleRamps( svkImageData* data, int delt
     svkRawMapperUtils::RedimensionData( data, numVoxels, &dimensionVector, numSpecPts); 
     //data->GetDcmHeader()->PrintDcmHeader();    
 
+    delete [] kn;
+    delete [] knNorm;
+    delete [] waveFormTmp;
     delete [] waveFormIntegralNorm;
     delete [] epsiKData0;
     delete [] overgrid; 
