@@ -256,6 +256,142 @@ void svkPhaseSpec::ZeroOrderPhase(float phi0, float* cmplxPt)
 
 
 /*! 
+ *  Applies a zero order phase to the complex spectrum. 
+ *  inputs: 
+ *      phi0, phase in radians
+ *      spectrum 
+ */
+void svkPhaseSpec::ZeroOrderPhase(float phi0, vtkFloatArray* spectrum)
+{
+
+    float cosPhase = static_cast<float>( cos( phi0) );
+    float sinPhase = static_cast<float>( sin( phi0) );
+
+    int numPoints = spectrum->GetNumberOfTuples();     
+
+    float cmplxPt[2]; 
+    for ( int i = 0; i < numPoints; i++ ) {
+
+        spectrum->GetTupleValue(i, cmplxPt);
+        float re = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
+        float im = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
+        cmplxPt[0] = re; 
+        cmplxPt[1] = im; 
+        spectrum->SetTuple(i, cmplxPt); 
+
+    }
+
+}
+
+
+/*! 
+ *  Applies  first order phase to the complex spectrum. 
+ *  inputs: 
+ *      phi0, phase in radians
+ *      phi1, phase in radians (pivot at center of spectrum (assume 0Hz 
+ *      spectrum 
+ */
+void svkPhaseSpec::FirstOrderPhase(float phi1, int pivotPoint, vtkFloatArray* spectrum)
+{
+
+
+    //  Get zero order phase factors, with 0 pivot.  
+    int numPoints = spectrum->GetNumberOfTuples();     
+
+    vtkImageComplex* linearPhaseArray = new vtkImageComplex[ numPoints ];
+    svkSpecUtils::CreateLinearPhaseShiftArray( 
+                numPoints, 
+                linearPhaseArray, 
+                phi1, 
+                pivotPoint);
+
+    float cmplxPt[2]; 
+    for ( int i = 0; i < numPoints; i++ ) {
+
+        spectrum->GetTupleValue(i, cmplxPt);
+
+        //  apply first order phase
+        float re1 = ( linearPhaseArray[i].Real * cmplxPt[0] - linearPhaseArray[i].Imag * cmplxPt[1] );
+        float im1 = ( linearPhaseArray[i].Real * cmplxPt[1] + linearPhaseArray[i].Imag * cmplxPt[0] );
+
+        //  update the spectrum; 
+        cmplxPt[0] = re1; 
+        cmplxPt[1] = im1; 
+        spectrum->SetTuple(i, cmplxPt); 
+
+    }
+
+}
+
+
+/*! 
+ *  Applies a zero and first order phase to the complex spectrum. 
+ *  inputs: 
+ *      phi0, phase in radians
+ *      phi1, phase in radians (pivot at center of spectrum (assume 0Hz 
+ *      spectrum 
+ */
+void svkPhaseSpec::FirstOrderPhase( float phi0, vtkImageComplex* linearPhaseArray, vtkFloatArray* spectrum)
+{
+
+    //  Get global zero order phase factor
+    float cosPhase = static_cast<float>( cos( phi0) );
+    float sinPhase = static_cast<float>( sin( phi0) );
+
+    int numPoints = spectrum->GetNumberOfTuples();     
+    float cmplxPt[2]; 
+    for ( int i = 0; i < numPoints; i++ ) {
+
+        spectrum->GetTupleValue(i, cmplxPt);
+
+        //  apply zero-order phase
+        float re0 = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
+        float im0 = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
+        //cout << "phased values 0 " << re0 << endl;
+        //cout << "lpa: " << linearPhaseArray[i].Real << endl;
+
+        //  apply first order phase
+        float re1 = ( linearPhaseArray[i].Real * re0 - linearPhaseArray[i].Imag * im0 );
+        float im1 = ( linearPhaseArray[i].Real * im0 + linearPhaseArray[i].Imag * re0 );
+
+        //  update the spectrum; 
+        cmplxPt[0] = re1; 
+        cmplxPt[1] = im1; 
+        //cout << "phased values1 " << re1 << endl;
+        spectrum->SetTuple(i, cmplxPt); 
+
+    }
+
+
+}
+
+
+/*! 
+ *  Applies a zero and first order phase to the complex spectrum. 
+ *  inputs: 
+ *      phi0, phase in radians
+ *      phi1, phase in radians (pivot at center of spectrum (assume 0Hz 
+ *      spectrum 
+ */
+void svkPhaseSpec::FirstOrderPhase(float phi0, float phi1, int pivotPoint, vtkFloatArray* spectrum)
+{
+
+    //  Get zero order phase factors, with 0 pivot.  
+    int numPoints = spectrum->GetNumberOfTuples();     
+
+    vtkImageComplex* linearPhaseArray = new vtkImageComplex[ numPoints ];
+    svkSpecUtils::CreateLinearPhaseShiftArray( 
+                numPoints, 
+                linearPhaseArray, 
+                phi1, 
+                pivotPoint);
+
+    svkPhaseSpec::FirstOrderPhase(phi0, linearPhaseArray, spectrum); 
+
+}
+
+
+/*! 
  *  Sets the zero order phase to apply to spectra.  Phase is input in degrees. 
  */
 void svkPhaseSpec::SetPhase0(float phase0)

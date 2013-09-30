@@ -72,15 +72,24 @@ class svkPhaseSpec : public svkImageInPlaceFilter
         static svkPhaseSpec* New();
         vtkTypeRevisionMacro( svkPhaseSpec, svkImageInPlaceFilter);
 
-        void            SetPhase0(float phase0);
+        void            SetPhase0( float phase0 );
         float           GetPhase0();
-        void            SetLinearPhase(float phase0);
+        void            SetLinearPhase( float phase0 );
         float           GetLinearPhase();
-        void            SetLinearPhasePivot(int linearPhasePivot);
-        void            SetUpdateExtent(int* start, int* end);
-        void            SetChannel(int channel);
+        void            SetLinearPhasePivot( int linearPhasePivot );
+        void            SetUpdateExtent( int* start, int* end );
+        void            SetChannel( int channel);
         void            PhaseAllChannels();
-        static void     ZeroOrderPhase(float phi0, float* cmplxPt); 
+        static void     ZeroOrderPhase( float phi0, float* cmplxPt ); 
+        static void     ZeroOrderPhase( float phi0, vtkFloatArray* spectrum ); 
+        static void     FirstOrderPhase( float phi1, int pivotPoint, vtkFloatArray* spectrum ); 
+        static void     FirstOrderPhase( float phi0, 
+                                         vtkImageComplex* linearPhaseArray, 
+                                         vtkFloatArray* spectrum); 
+        static void     FirstOrderPhase( float phi0, 
+                                         float phi1, 
+                                         int pivotPoint, 
+                                         vtkFloatArray* spectrum ); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
 
 
