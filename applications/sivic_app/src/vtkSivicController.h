@@ -87,6 +87,7 @@
 #include <svkDataValidator.h>
 #include <vtkDataObjectCollection.h>
 #include <sivicProcessingWidget.h>
+#include <sivicPhaseWidget.h>
 #include <sivicPreprocessingWidget.h>
 #include <sivicPostprocessingWidget.h>
 #include <sivicQuantificationWidget.h>
@@ -146,6 +147,7 @@ class vtkSivicController : public vtkObject
         //void                       SetView( svkInspectingWidget* );
         void                       SetViewRenderingWidget( sivicViewRenderingWidget* viewRenderingWidget);
         void                       SetProcessingWidget( sivicProcessingWidget* processingWidget );
+        void                       SetPhaseWidget( sivicPhaseWidget* phaseWidget );
         void                       SetPreprocessingWidget( sivicPreprocessingWidget* preprocessingWidget );
         void                       SetPostprocessingWidget( sivicPostprocessingWidget* postprocessingWidget );
         void                       SetDataWidget( sivicDataWidget* dataWidget );
@@ -289,6 +291,7 @@ class vtkSivicController : public vtkObject
         vtkImageData*                  spectraData;
         sivicViewRenderingWidget*      viewRenderingWidget;
         sivicProcessingWidget*         processingWidget;
+        sivicPhaseWidget*              phaseWidget;
         sivicPreprocessingWidget*      preprocessingWidget;
         sivicPostprocessingWidget*     postprocessingWidget;
         sivicDataWidget*               dataWidget;

@@ -162,8 +162,20 @@ int main (int argc, char** argv)
     // ===============================================  
     svkMRSAutoPhase* phaser = svkMRSAutoPhase::New();
     phaser->SetInputConnection(0, reader->GetOutputPort(0) ); 
-    phaser->SetPhasingModel(svkMRSAutoPhase::MIN_AREA_MAX_POSITIVE_0); 
-    //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_MAGNITUDE_DIFF_0); 
+    phaser->OnlyUseSelectionBox();
+
+    svkMRSAutoPhase::phasingModel model;
+    //model =  svkMRSAutoPhase::MAX_PEAK_HTS_0;
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_0); 
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_1); 
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0); 
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
+        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_01); 
+    model = svkMRSAutoPhase::MAX_PEAK_HTS_01; 
+    //model =  svkMRSAutoPhase::MAX_PEAK_HTS_1;
+
+    phaser->SetPhasingModel( model ); 
     phaser->Update();
 
 
@@ -179,7 +191,11 @@ int main (int argc, char** argv)
         cerr << "Can not create writer " << endl;
         exit(1);
     }
-   
+
+outputFileName.append("_");    
+stringstream modelString(stringstream::in | stringstream::out);
+modelString << model;
+outputFileName.append(modelString.str());    
     writer->SetFileName( outputFileName.c_str() );
 
     // ===============================================  

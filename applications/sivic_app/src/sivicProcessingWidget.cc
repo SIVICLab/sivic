@@ -46,15 +46,9 @@ vtkCxxRevisionMacro( sivicProcessingWidget, "$Revision$");
  */
 sivicProcessingWidget::sivicProcessingWidget()
 {
-    this->phaseSlider = NULL;
-    this->linearPhaseSlider = NULL;
-    this->phaser = svkPhaseSpec::New();
-    this->phaseAllVoxelsButton = NULL;
-    this->phaseAllChannelsButton = NULL;
     this->fftButton = NULL;
-    this->phaseButton = NULL;
-    this->phasePivotEntry = NULL;
-    this->phaseChangeInProgress = 0;
+    this->spatialButton = NULL;
+    this->spectralButton = NULL;
     this->progressCallback = vtkCallbackCommand::New();
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
@@ -69,34 +63,9 @@ sivicProcessingWidget::sivicProcessingWidget()
 sivicProcessingWidget::~sivicProcessingWidget()
 {
 
-    if( this->phaseSlider != NULL ) {
-        this->phaseSlider->Delete();
-        this->phaseSlider = NULL;
-    }
-
-    if( this->linearPhaseSlider != NULL ) {
-        this->linearPhaseSlider->Delete();
-        this->linearPhaseSlider = NULL;
-    }
-
-    if( this->phaser != NULL ) {
-        this->phaser->Delete();
-        this->phaser = NULL;
-    }
-
     if( this->fftButton != NULL ) {
         this->fftButton->Delete();
         this->fftButton= NULL;
-    }
-
-    if( this->phaseButton != NULL ) {
-        this->phaseButton->Delete();
-        this->phaseButton= NULL;
-    }
-
-    if( this->phasePivotEntry != NULL ) {
-        this->phasePivotEntry->Delete();
-        this->phasePivotEntry= NULL;
     }
 
 }
@@ -120,92 +89,44 @@ void sivicProcessingWidget::CreateWidget()
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
 
-    this->phaseSlider = vtkKWScaleWithEntry::New();
-    this->phaseSlider->SetParent(this);
-    this->phaseSlider->Create();
-    this->phaseSlider->SetEntryWidth( 4 );
-    this->phaseSlider->SetOrientationToHorizontal();
-    this->phaseSlider->SetLabelText("Zero Phase");
-    this->phaseSlider->SetLabelWidth( 10 );
-    this->phaseSlider->SetValue(0);
-    this->phaseSlider->SetRange( -180, 180 );
-    this->phaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
-    this->phaseSlider->EnabledOff();
-    this->phaseSlider->SetEntryPositionToRight();
-    this->phaseSlider->SetLabelPositionToLeft();
-
-    this->linearPhaseSlider = vtkKWScaleWithEntry::New();
-    this->linearPhaseSlider->SetParent(this);
-    this->linearPhaseSlider->Create();
-    this->linearPhaseSlider->SetEntryWidth( 4 );
-    this->linearPhaseSlider->SetOrientationToHorizontal();
-    this->linearPhaseSlider->SetLabelText("Linear Phase");
-    this->linearPhaseSlider->SetLabelWidth( 10 );
-    this->linearPhaseSlider->SetValue(0);
-    this->linearPhaseSlider->SetRange( -2048, 2048 );
-    this->linearPhaseSlider->SetResolution( 0.1 );
-    this->linearPhaseSlider->SetBalloonHelpString("Adjusts the phase of the spectroscopic data.");
-    this->linearPhaseSlider->EnabledOff();
-    this->linearPhaseSlider->SetEntryPositionToRight();
-    this->linearPhaseSlider->SetLabelPositionToLeft();
-
-
     vtkKWCheckButtonSet* checkButtons = vtkKWCheckButtonSet::New();
     checkButtons->SetParent( this );
     checkButtons->PackHorizontallyOn( );
     checkButtons->ExpandWidgetsOn( );
     checkButtons->Create();
 
-    this->phaseAllVoxelsButton = checkButtons->AddWidget(0);
-    this->phaseAllVoxelsButton->SetParent(this);
-    this->phaseAllVoxelsButton->Create();
-    this->phaseAllVoxelsButton->EnabledOff();
-    this->phaseAllVoxelsButton->SetText("Apply to All Voxels");
-    this->phaseAllVoxelsButton->SelectedStateOn();
+    this->spatialButton = checkButtons->AddWidget(0);
+    this->spatialButton->SetParent(this);
+    this->spatialButton->Create();
+    this->spatialButton->EnabledOff();
+    this->spatialButton->SetText("spatial domain");
+    this->spatialButton->SelectedStateOn();
 
-    this->phaseAllChannelsButton = checkButtons->AddWidget(1);
-    this->phaseAllChannelsButton->SetParent(this);
-    this->phaseAllChannelsButton->Create();
-    this->phaseAllChannelsButton->EnabledOff();
-    this->phaseAllChannelsButton->SetText("Apply to All Channels");
-    this->phaseAllChannelsButton->SelectedStateOff();
+    this->spectralButton = checkButtons->AddWidget(1);
+    this->spectralButton->SetParent(this);
+    this->spectralButton->Create();
+    this->spectralButton->EnabledOff();
+    this->spectralButton->SetText("spectral domain");
+    this->spectralButton->SelectedStateOn();
 
-    
     this->fftButton = vtkKWPushButton::New();
     this->fftButton->SetParent( this );
     this->fftButton->Create( );
     this->fftButton->EnabledOff();
-    this->fftButton->SetText( "Reconstruct");
+    this->fftButton->SetText( "Transform" );
     this->fftButton->SetBalloonHelpString("Prototype Single Voxel FFT.");
 
-    this->phaseButton = vtkKWPushButton::New();
-    this->phaseButton->SetParent( this );
-    this->phaseButton->Create( );
-    this->phaseButton->EnabledOff();
-    this->phaseButton->SetText( "Phase On Water");
-    this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
-
-    this->phasePivotEntry = vtkKWEntryWithLabel::New();
-    this->phasePivotEntry->GetLabel()->SetText("Pivot Point ");
-    this->phasePivotEntry->GetWidget()->SetWidth(5);
-    this->phasePivotEntry->SetParent( this );
-    this->phasePivotEntry->Create( );
-    this->phasePivotEntry->EnabledOff();
-    this->phasePivotEntry->SetLabelWidth(10);
-    this->phasePivotEntry->GetWidget()->SetRestrictValueToInteger();
-    this->phasePivotEntry->SetLabelPositionToLeft();
-
-    this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky nwes", this->phaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", this->linearPhaseSlider->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nwes ", this->phasePivotEntry->GetWidgetName() );
-    this->Script("grid %s -row 2 -column 2 -columnspan 4 -sticky nwes", checkButtons->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->fftButton->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 3 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->phaseButton->GetWidgetName() );
+    //this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky nwes", this->phaseSlider->GetWidgetName() );
+    //this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", this->linearPhaseSlider->GetWidgetName() );
+    //this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nwes ", this->phasePivotEntry->GetWidgetName() );
+    //this->Script("grid %s -row 2 -column 2 -columnspan 4 -sticky nwes", checkButtons->GetWidgetName() );
+    this->Script("grid %s -row 0 -column 0 -columnspan 6 -sticky we -padx 4 -pady 2 ", this->fftButton->GetWidgetName() );
+    this->Script("grid %s -row 1 -column 2 -columnspan 6 -sticky nwes", checkButtons->GetWidgetName() );
 
     this->Script("grid rowconfigure %s 0  -weight 2", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1  -weight 2", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
-    this->Script("grid rowconfigure %s 3  -weight 2", this->GetWidgetName() );
+    //this->Script("grid rowconfigure %s 2  -weight 1", this->GetWidgetName() );
+    //this->Script("grid rowconfigure %s 3  -weight 2", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 1", this->GetWidgetName() );
     this->Script("grid columnconfigure %s 1 -weight 1", this->GetWidgetName() );
@@ -219,27 +140,11 @@ void sivicProcessingWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->plotController->GetRWInteractor(), vtkCommand::SelectionChangedEvent );
     this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseSlider, vtkKWScale::ScaleValueStartChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->linearPhaseSlider, vtkKWScale::ScaleValueChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->linearPhaseSlider, vtkKWScale::ScaleValueChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->linearPhaseSlider, vtkKWScale::ScaleValueStartChangingEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseAllVoxelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseAllChannelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
-    this->AddCallbackCommandObserver(
         this->fftButton, vtkKWPushButton::InvokedEvent );
-    this->AddCallbackCommandObserver(
-        this->phaseButton, vtkKWPushButton::InvokedEvent );
-    this->AddCallbackCommandObserver(
-        this->phasePivotEntry->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
+    //this->AddCallbackCommandObserver(
+        //this->spatialButton, vtkKWCheckButton::SelectedStateChangedEvent );
+    //this->AddCallbackCommandObserver(
+        //this->spectralButton, vtkKWCheckButton::SelectedStateChangedEvent );
 
     checkButtons->Delete();
 
@@ -251,137 +156,13 @@ void sivicProcessingWidget::CreateWidget()
  */
 void sivicProcessingWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
-    // Respond to a selection change in the overlay view
-    if (  caller == this->plotController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
 
-        this->SetPhaseUpdateExtent();
-
-    // Respond to a selection change in the plot grid view 
-    } else if (  caller == this->overlayController->GetRWInteractor() && event == vtkCommand::SelectionChangedEvent ) {
-
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->phaseSlider ) {
-        switch ( event ) {
-            case vtkKWScale::ScaleValueChangedEvent:
-                this->phaseChangeInProgress = 0;
-                this->UpdatePhaseSliderBindings();
-                break;
-            case vtkKWScale::ScaleValueChangingEvent:
-                this->phaser->SetPhase0( this->phaseSlider->GetValue() );
-                this->phaser->Update();
-                if( !this->phaseChangeInProgress ) {
-                    this->UpdatePhaseSliderBindings();
-                }
-                break;
-            case vtkKWScale::ScaleValueStartChangingEvent:
-                this->phaseChangeInProgress = 1;
-                break;
-            default:
-                cout << "Got a unknown event!" << endl;
-        }
-    } else if( caller == this->linearPhaseSlider ) {
-        switch ( event ) {
-            case vtkKWScale::ScaleValueChangedEvent:
-                this->phaseChangeInProgress = 0;
-                this->UpdateLinearPhaseSliderBindings();
-                break;
-            case vtkKWScale::ScaleValueChangingEvent:
-                this->phaser->SetLinearPhase( (-this->linearPhaseSlider->GetValue())/360.0 );
-                this->phaser->Update();
-                if( !this->phaseChangeInProgress ) {
-                    this->UpdateLinearPhaseSliderBindings();
-                }
-                break;
-            case vtkKWScale::ScaleValueStartChangingEvent:
-                this->phaseChangeInProgress = 1;
-                break;
-            default:
-                cout << "Got a unknown event!" << endl;
-        }
-    } else if( caller == this->phaseAllChannelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->phaseAllVoxelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
-        this->SetPhaseUpdateExtent();
-    } else if( caller == this->fftButton && event == vtkKWPushButton::InvokedEvent ) {
+    if( caller == this->fftButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecuteRecon();
-    } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecutePhase();
-    } else if( caller == this->phasePivotEntry->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
-    	this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
-    	if( this->phaser->GetInput() != NULL ) {
-			this->phaser->Update();
-    	}
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
 
-
-/*!
- *  Sets the correct update extent for phasing
- */
-void sivicProcessingWidget::SetPhaseUpdateExtent()
-{
-    int* start = new int[3];
-    int* end = new int[3];
-    start[0] = -1;
-    start[1] = -1;
-    start[2] = -1;
-    end[0] = -1;
-    end[1] = -1;
-    end[2] = -1;
-
-    if ( this->phaseAllChannelsButton->GetSelectedState() ) {
-        this->phaser->PhaseAllChannels();
-    } else if(  this->model->DataExists("SpectroscopicData") ) {
-            this->phaser->SetChannel( this->plotController->GetVolumeIndex( svkMrsImageData::CHANNEL ) );
-    }
-
-    if ( this->phaseAllVoxelsButton->GetSelectedState() ) {
-        this->phaser->SetUpdateExtent(start, end );
-    } else {
-        int* range = new int[2];
-        range = this->plotController->GetTlcBrc();
-        this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[0], start);
-        this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[1], end);
-        this->phaser->SetUpdateExtent(start, end );
-    }
-    delete[] start;
-    delete[] end;
-}
-
-
-/*!
- *  Updates/Adds keyboard bindings to the phase slider when it is in focus.
- */
-void sivicProcessingWidget::UpdatePhaseSliderBindings()
-{
-    stringstream increment;
-    stringstream decrement;
-    increment << "SetValue " << this->phaseSlider->GetValue() + this->phaseSlider->GetResolution();
-    decrement << "SetValue " << this->phaseSlider->GetValue() - this->phaseSlider->GetResolution();
-    this->phaseSlider->RemoveBinding( "<Left>");
-    this->phaseSlider->AddBinding( "<Left>", this->phaseSlider, decrement.str().c_str() );
-    this->phaseSlider->RemoveBinding( "<Right>");
-    this->phaseSlider->AddBinding( "<Right>", this->phaseSlider, increment.str().c_str() );
-    this->phaseSlider->Focus(); 
-}
-
-
-/*!
- *  Updates/Adds keyboard bindings to the phase slider when it is in focus.
- */
-void sivicProcessingWidget::UpdateLinearPhaseSliderBindings()
-{
-    stringstream increment;
-    stringstream decrement;
-    increment << "SetValue " << this->linearPhaseSlider->GetValue() + this->linearPhaseSlider->GetResolution();
-    decrement << "SetValue " << this->linearPhaseSlider->GetValue() - this->linearPhaseSlider->GetResolution();
-    this->linearPhaseSlider->RemoveBinding( "<Left>");
-    this->linearPhaseSlider->AddBinding( "<Left>", this->linearPhaseSlider, decrement.str().c_str() );
-    this->linearPhaseSlider->RemoveBinding( "<Right>");
-    this->linearPhaseSlider->AddBinding( "<Right>", this->linearPhaseSlider, increment.str().c_str() );
-    this->linearPhaseSlider->Focus();
-}
 
 
 /*!
@@ -420,28 +201,53 @@ void sivicProcessingWidget::ExecuteRecon()
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
     if( data != NULL ) {
 
-        svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
 
-        spatialRFFT->SetInput( data );
-        spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
-        spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
-        spatialRFFT->SetPreCorrectCenter( true );
-        spatialRFFT->SetPostCorrectCenter( true );
-        spatialRFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Spatial Recon...");
-        spatialRFFT->Update();
-        spatialRFFT->RemoveObserver( progressCallback );
+        // Get data spectral dimension, and transform appropriately:
+        svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
+        cout << "SSSPATIAL: " << this->spatialButton->GetSelectedState() << endl; 
+        cout << "SSSPECTRAL: " << this->spectralButton->GetSelectedState() << endl; 
+        if ( this->spatialButton->GetSelectedState() ) {
+
+            string spatialDomain0 = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+            string spatialDomain1 = data->GetDcmHeader()->GetStringValue( "SVK_RowsDomain");
+            string spatialDomain2 = data->GetDcmHeader()->GetStringValue( "SVK_SliceDomain");
+
+            spatialFFT->SetInput( data );
+            spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+            if ( spatialDomain0.compare("KSPACE") == 0 && spatialDomain1.compare("KSPACE") == 0 && spatialDomain2.compare("KSPACE") == 0 )  {
+                spatialFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+            } else {
+                spatialFFT->SetFFTMode( svkMrsImageFFT::FORWARD);
+            }
+            spatialFFT->SetPreCorrectCenter( true );
+            spatialFFT->SetPostCorrectCenter( true );
+            spatialFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+            this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing Spatial Recon...");
+            spatialFFT->Update();
+            spatialFFT->RemoveObserver( progressCallback );
+        }
 
         svkMrsImageFFT* spectralFFT = svkMrsImageFFT::New();
-        spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
-        spectralFFT->SetInput( spatialRFFT->GetOutput() );
-        spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
-        spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
-        spectralFFT->Update();
-        data->Modified();
-        data->Update();
-        spectralFFT->RemoveObserver( progressCallback);
+        if ( this->spectralButton->GetSelectedState() ) {
+            string domain = data->GetDcmHeader()->GetStringValue("SignalDomainColumns");
+            spectralFFT->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+            this->GetApplication()->GetNthWindow(0)->SetStatusText("Executing FFT...");
+            if ( this->spatialButton->GetSelectedState() ) {
+                spectralFFT->SetInput( spatialFFT->GetOutput() );
+            } else {
+                spectralFFT->SetInput( data );
+            }
+            spectralFFT->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+            if ( domain.compare("TIME") == 0 ) {
+                spectralFFT->SetFFTMode( svkMrsImageFFT::FORWARD );
+            } else {
+                spectralFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+            }
+            spectralFFT->Update();
+            data->Modified();
+            data->Update();
+            spectralFFT->RemoveObserver( progressCallback);
+        }
         
 
         bool useFullFrequencyRange = 1;
@@ -459,7 +265,7 @@ void sivicProcessingWidget::ExecuteRecon()
         //this->plotController->SetInput(data);
         //this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
         //this->plotController->GetView()->Refresh();
-        spatialRFFT->Delete();
+        spatialFFT->Delete();
         spectralFFT->Delete();
         this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
         this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
@@ -467,58 +273,6 @@ void sivicProcessingWidget::ExecuteRecon()
 
 }
 
-
-/*!
- *  Executes the Phasing.
- */
-void sivicProcessingWidget::ExecutePhase() 
-{
-    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    if( data != NULL ) {
-        // We'll turn the renderer off to avoid rendering intermediate steps
-        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkMultiCoilPhase* multiCoilPhase = svkMultiCoilPhase::New();
-        multiCoilPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
-        multiCoilPhase->SetInput( data );
-        multiCoilPhase->Update();
-        data->Modified();
-        multiCoilPhase->RemoveObserver( progressCallback);
-        multiCoilPhase->Delete();
-        bool useFullFrequencyRange = 0;
-        bool useFullAmplitudeRange = 1;
-        bool resetAmplitude = 1;
-        bool resetFrequency = 0;
-        string stringFilename = "PhasedData";
-        this->sivicController->Open4DImage( data, stringFilename);
-        this->sivicController->EnableWidgets( );
-        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
-        //                                   resetAmplitude, resetFrequency );
-        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
-        this->plotController->GetView()->Refresh();
-        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
-        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
-    }
-}
-
-
-void sivicProcessingWidget::InitializePhaser()
-{
-    if( this->phaser != NULL ) {
-        this->phaser->Delete();
-    }
-    this->phaser = svkPhaseSpec::New();
-    if( this->model->DataExists("SpectroscopicData") ) {
-        svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-        this->phaser->SetInput( data );
-        int pivotPoint = data->GetCellData()->GetNumberOfTuples() / 2;
-        this->phaser->SetLinearPhasePivot( pivotPoint );
-        this->phasePivotEntry->GetWidget()->SetValueAsInt( pivotPoint );
-        this->SetPhaseUpdateExtent();
-    }
-    this->phaseSlider->SetValue(0.0);
-    this->linearPhaseSlider->SetValue(0.0);
-
-}
 
 void sivicProcessingWidget::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {

@@ -61,6 +61,7 @@ sivicApp::sivicApp()
     // For returnting the application status
     this->exitStatus            = 0;
     this->processingWidget      = sivicProcessingWidget::New();
+    this->phaseWidget           = sivicPhaseWidget::New();
     this->preprocessingWidget   = sivicPreprocessingWidget::New();
     this->postprocessingWidget  = sivicPostprocessingWidget::New();
     this->dataWidget            = sivicDataWidget::New();
@@ -114,6 +115,11 @@ sivicApp::~sivicApp()
     if( this->processingWidget != NULL ) {
         this->processingWidget->Delete();
         this->processingWidget = NULL;
+    }
+
+    if( this->phaseWidget != NULL ) {
+        this->phaseWidget->Delete();
+        this->phaseWidget = NULL;
     }
 
     if( this->preprocessingWidget != NULL ) {
@@ -311,6 +317,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->processingWidget->SetSivicController(this->sivicController);
     this->processingWidget->Create();
 
+    this->phaseWidget->SetParent(tabbedPanel );
+    this->phaseWidget->SetPlotController(this->sivicController->GetPlotController());
+    this->phaseWidget->SetOverlayController(this->sivicController->GetOverlayController());
+    this->phaseWidget->SetSivicController(this->sivicController);
+    this->phaseWidget->Create();
+
     this->combineWidget->SetParent(tabbedPanel );
     this->combineWidget->SetPlotController(this->sivicController->GetPlotController());
     this->combineWidget->SetOverlayController(this->sivicController->GetOverlayController());
@@ -380,6 +392,7 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->sivicController->SetViewRenderingWidget( viewRenderingWidget );
     this->sivicController->SetProcessingWidget( processingWidget );
+    this->sivicController->SetPhaseWidget( phaseWidget );
     this->sivicController->SetPreprocessingWidget( preprocessingWidget );
     this->sivicController->SetPostprocessingWidget( postprocessingWidget );
     this->sivicController->SetDataWidget( dataWidget );
@@ -409,6 +422,9 @@ int sivicApp::Build( int argc, char* argv[] )
 
     this->tabbedPanel->AddPage("Recon", "MRS recon.", NULL);
     vtkKWWidget* processingPanel = tabbedPanel->GetFrame("Recon");
+
+    this->tabbedPanel->AddPage("Phase", "Phasing", NULL);
+    vtkKWWidget* phasePanel = tabbedPanel->GetFrame("Phase");
 
     this->tabbedPanel->AddPage("Comb", "Coil Combination", NULL);
     vtkKWWidget* combinePanel = tabbedPanel->GetFrame("Comb");
@@ -459,6 +475,8 @@ int sivicApp::Build( int argc, char* argv[] )
               this->preprocessingWidget->GetWidgetName(), preprocessingPanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->processingWidget->GetWidgetName(), processingPanel->GetWidgetName());
+    this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
+              this->phaseWidget->GetWidgetName(), phasePanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 
               this->combineWidget->GetWidgetName(), combinePanel->GetWidgetName());
     this->sivicKWApp->Script("pack %s -side top -anchor nw -expand y -fill both -padx 4 -pady 2 -in %s", 

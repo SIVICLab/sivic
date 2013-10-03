@@ -110,6 +110,7 @@ class sivicApp
         sivicDataWidget*           dataWidget;
         sivicImageDataWidget*      imageDataWidget;
         sivicProcessingWidget*     processingWidget;
+        sivicPhaseWidget*          phaseWidget;
         sivicQuantificationWidget* quantificationWidget;
         sivicCombineWidget*        combineWidget;
         sivicDSCWidget*            dscWidget;

@@ -234,6 +234,7 @@ ADD_LIBRARY(
     sivicSpectraRangeWidget.cc
     sivicViewRenderingWidget.cc
     sivicProcessingWidget.cc
+    sivicPhaseWidget.cc
     sivicPreprocessingWidget.cc
     sivicPostprocessingWidget.cc
     sivicDataWidget.cc

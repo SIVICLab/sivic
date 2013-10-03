@@ -207,7 +207,7 @@ void vtkSivicController::SetActive4DImageData( int index )
             } else {
                 this->model->ChangeDataObject("4DImageData", newData );
             }
-            this->processingWidget->InitializePhaser();
+            this->phaseWidget->InitializePhaser();
             //  assume that only one dimensin is > 1 to determine number of volumes for slider range: 
             int numVolumes; 
             int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
@@ -310,6 +310,14 @@ void vtkSivicController::SetProcessingWidget( sivicProcessingWidget* processingW
 {
     this->processingWidget = processingWidget;
     this->processingWidget->SetModel(this->model);
+}
+
+
+//! Sets this widget controllers view, also passes along its model
+void vtkSivicController::SetPhaseWidget( sivicPhaseWidget* phaseWidget)
+{
+    this->phaseWidget = phaseWidget;
+    this->phaseWidget->SetModel(this->model);
 }
 
 
@@ -743,7 +751,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         
         this->SetPreferencesFromRegistry();
 
-        this->processingWidget->InitializePhaser();
+        this->phaseWidget->InitializePhaser();
 
         if( newData->IsA("svkMrsImageData")) {
             this->spectraRangeWidget->point->SetDcmHeader( newData->GetDcmHeader() );
@@ -2550,7 +2558,7 @@ void vtkSivicController::HighlightSelectionBoxVoxels()
     this->plotController->HighlightSelectionVoxels();
     this->viewRenderingWidget->specViewerWidget->Render();
     this->viewRenderingWidget->viewerWidget->Render();
-    this->processingWidget->SetPhaseUpdateExtent();
+    this->phaseWidget->SetPhaseUpdateExtent();
 }
 
 
@@ -3116,6 +3124,9 @@ void vtkSivicController::EnableWidgets()
     if ( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
         string domain = model->GetDataObject( "SpectroscopicData" )->GetDcmHeader()->GetStringValue("SignalDomainColumns");
         int numChannels = svkMrsImageData::SafeDownCast( model->GetDataObject("SpectroscopicData"))->GetDcmHeader()->GetNumberOfCoils();
+        this->processingWidget->fftButton->EnabledOn(); 
+        this->processingWidget->spatialButton->EnabledOn(); 
+        this->processingWidget->spectralButton->EnabledOn(); 
         if( domain == "TIME" ) {
             this->preprocessingWidget->applyButton->EnabledOn(); 
             this->preprocessingWidget->zeroFillSelectorSpec->EnabledOn();
@@ -3124,8 +3135,7 @@ void vtkSivicController::EnableWidgets()
             this->preprocessingWidget->zeroFillSelectorSlices->EnabledOn();
             this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
             this->preprocessingWidget->customValueEntry->EnabledOn();
-            this->processingWidget->fftButton->EnabledOn(); 
-            this->processingWidget->phaseButton->EnabledOff(); 
+            this->phaseWidget->phaseButton->EnabledOff(); 
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
 			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
@@ -3133,8 +3143,7 @@ void vtkSivicController::EnableWidgets()
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
         } else {
-            this->processingWidget->fftButton->EnabledOff(); 
-            this->processingWidget->phaseButton->EnabledOn(); 
+            this->phaseWidget->phaseButton->EnabledOn(); 
             if( numChannels > 1 ) {
 				this->combineWidget->magnitudeCombinationButton->EnabledOn();
 				this->combineWidget->additionCombinationButton->EnabledOn();
@@ -3153,11 +3162,11 @@ void vtkSivicController::EnableWidgets()
         this->imageViewWidget->satBandButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
         this->imageViewWidget->satBandOutlineButton->EnabledOn();
         this->imageViewWidget->satBandOutlineButton->InvokeEvent(vtkKWCheckButton::SelectedStateChangedEvent);
-        this->processingWidget->phaseSlider->EnabledOn(); 
-		this->processingWidget->phasePivotEntry->EnabledOn();
-        this->processingWidget->linearPhaseSlider->EnabledOn();
-        this->processingWidget->phaseAllChannelsButton->EnabledOn(); 
-        this->processingWidget->phaseAllVoxelsButton->EnabledOn(); 
+        this->phaseWidget->phaseSlider->EnabledOn(); 
+		this->phaseWidget->phasePivotEntry->EnabledOn();
+        this->phaseWidget->linearPhaseSlider->EnabledOn();
+        this->phaseWidget->phaseAllChannelsButton->EnabledOn(); 
+        this->phaseWidget->phaseAllVoxelsButton->EnabledOn(); 
         this->spectraRangeWidget->componentSelectBox->EnabledOn();
         if( numChannels > 1 ) {
             this->spectraViewWidget->channelSlider->EnabledOn();
@@ -3244,13 +3253,13 @@ void vtkSivicController::DisableWidgets()
     this->spectraRangeWidget->xSpecRange->EnabledOff();
     this->spectraRangeWidget->ySpecRange->EnabledOff();
 
-    this->processingWidget->phaseSlider->EnabledOff(); 
-    this->processingWidget->linearPhaseSlider->EnabledOff();
-    this->processingWidget->phasePivotEntry->EnabledOff();
-    this->processingWidget->phaseAllChannelsButton->EnabledOff(); 
-    this->processingWidget->phaseAllVoxelsButton->EnabledOff(); 
+    this->phaseWidget->phaseSlider->EnabledOff(); 
+    this->phaseWidget->linearPhaseSlider->EnabledOff();
+    this->phaseWidget->phasePivotEntry->EnabledOff();
+    this->phaseWidget->phaseAllChannelsButton->EnabledOff(); 
+    this->phaseWidget->phaseAllVoxelsButton->EnabledOff(); 
     this->processingWidget->fftButton->EnabledOff(); 
-    this->processingWidget->phaseButton->EnabledOff(); 
+    this->phaseWidget->phaseButton->EnabledOff(); 
 	this->combineWidget->magnitudeCombinationButton->EnabledOff();
 	this->combineWidget->additionCombinationButton->EnabledOff();
 

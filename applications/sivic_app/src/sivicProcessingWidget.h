@@ -46,9 +46,7 @@
 
 #include <svkHSVD.h>
 #include <svkDataModel.h>
-#include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
-#include <svkCoilCombine.h>
 #include <svkMultiCoilPhase.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
@@ -75,13 +73,9 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
         sivicProcessingWidget();
         ~sivicProcessingWidget();
 
-        vtkKWCheckButton*               phaseAllVoxelsButton;
-        vtkKWCheckButton*               phaseAllChannelsButton;
-        vtkKWScaleWithEntry*            phaseSlider;
-        vtkKWScaleWithEntry*            linearPhaseSlider;
+        vtkKWCheckButton*               spatialButton;
+        vtkKWCheckButton*               spectralButton;
         vtkKWPushButton*                fftButton;
-        vtkKWPushButton*                phaseButton;
-        vtkKWEntryWithLabel*            phasePivotEntry;
 
         
         // Description:
@@ -94,20 +88,11 @@ class sivicProcessingWidget : public sivicKWCompositeWidget
 
     private:
 
-        svkPhaseSpec*               phaser;
         vtkCallbackCommand*         progressCallback;
 
-        void                        SetPhaseUpdateExtent();
-        void                        UpdatePhaseSliderBindings();
-        void                        UpdateLinearPhaseSliderBindings();
-        bool                        phaseChangeInProgress;
         void                        ExecuteFFT();
         void                        ExecuteRecon();
-        void                        ExecutePhase();
-        void                        InitializePhaser();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
-
-
 
         sivicProcessingWidget(const sivicProcessingWidget&);   // Not implemented.
         void operator=(const sivicProcessingWidget&);  // Not implemented.
