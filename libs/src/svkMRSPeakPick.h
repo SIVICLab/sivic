@@ -80,7 +80,14 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         float           SetResolutionHeightFraction(float resolveHeightFraction); 
         void            OnlyUseSelectionBox();
         void            PrintPeaks(); 
+        float           GetPeakHeight( vtkFloatArray* spectrum, int peakNum ); 
+        float           GetPeakSymmetry( vtkFloatArray* spectrum, int peakNum ); 
+        float           GetPeakHeightAtPeakPos( vtkFloatArray* spectrum, int peakNum ); 
+        float           GetPeakArea( vtkFloatArray* spectrum, int peakNum ); 
+        float           GetAvRMSPeakHeight( int peakNum ); 
         virtual void    PrintSelf( ostream &os, vtkIndent indent );
+        int             GetNumPeaks(); 
+        void            GetPeakDefinition( int peakNum, int* startPt, int* peakPt, int* EndPt ); 
 
 
 
@@ -109,7 +116,7 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         
         void            PickPeaks(); 
         void            InitPeakVector( vector<int>* peak, int startPt, int peakPt, int endPt); 
-        void            InitPeakRanges(); 
+        void            RefinePeakRanges(); 
 
 
         //  Members:
@@ -122,6 +129,7 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         vtkFloatArray*  averageSpectrum; 
 
         vector < vector < int > > peakVector; 
+        vector < float >          peakHeightVector; 
 
 
 };

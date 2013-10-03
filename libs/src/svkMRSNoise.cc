@@ -349,7 +349,7 @@ float svkMRSNoise::GetMagnitudeMeanBaseline()
 
 
 /*!
- *  Returns the average magnitude spectrum
+ *  Returns the average (RMS) magnitude spectrum
  */
 vtkFloatArray*  svkMRSNoise::GetAverageMagnitudeSpectrum()
 {

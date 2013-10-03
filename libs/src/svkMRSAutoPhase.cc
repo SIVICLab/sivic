@@ -39,14 +39,13 @@
  *      Beck Olson,
  */
 
-#include <itkPowellOptimizer.h>
-#include <vnl/vnl_math.h>
 int POWELL_CALLS_TO_GET_VALUE = 0;
 
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkImageFourierFilter.h> // for vtkImageComplex struct
+#include <vtkMath.h>
 
 #include <svkMRSAutoPhase.h>
 #include <svkSpecUtils.h>
@@ -79,16 +78,17 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
         itkNewMacro( Self );
         itkTypeMacro( PowellBoundedCostFunction, SingleValuedCostFunction );
 
-        //  number of parameters in model (dimensionality of parameter space)
-        //  for zero order phase this is 1: 
-        enum { NumParameters = 1 };
-  
         typedef Superclass::ParametersType      ParametersType;
         typedef Superclass::DerivativeType      DerivativeType;
         typedef Superclass::MeasureType         MeasureType ;
+        void    SetModel( svkMRSAutoPhase::phasingModel model) {
+            this->phasingModel = model; 
+        }
         
         PowellBoundedCostFunction() 
         {
+            this->copySpectrum = vtkFloatArray::New();
+            this->zeroOrderPhasePeak = 0;  
         }
 
 
@@ -98,26 +98,24 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*  
-         *  returns the cost function for the current param values: 
-         *  typedef double MeasureType
+        /*!
+         *  Cost function based on finding the global maximum peak height
          */
-        MeasureType  GetValue( const ParametersType & parameters ) const
-        { 
+        MeasureType  GetValueMaxGlobalPeakHt0( const ParametersType& parameters) const
+        {
+
             ++POWELL_CALLS_TO_GET_VALUE;
         
             double phi0 = parameters[0];
-            //double phi1 = parameters[1];
         
-            cout << "      GetValue( " ;
-            cout << phi0 * 180 / 3.1415 << " ";
+            cout << "      GetValue_A( " ;
+            cout << phi0 * 180. / vtkMath::Pi() << " ";
             cout << ") = ";
         
             double peakHeight = FLT_MIN; 
             float cmplxPt[2];
             int minPt = 0; 
             int maxPt = this->numFreqPoints; 
-            //int minPt = 191; 
             double tmp; 
             for  ( int t = minPt; t < maxPt; t++ ){
 
@@ -133,7 +131,304 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
 
             }
             MeasureType measure = peakHeight; 
-            cout << "                          " << measure << endl; 
+            return measure;
+        }
+
+
+        /*!
+         *  Cost function based on maximizing autodetected  peak areas.
+         *  areas are weighted by their height in the magnitude spectrum.   
+         *  Area takes into account the line shape (absorptive vs dispersive)
+         *  more than simply using peak height. 
+         */
+        MeasureType  GetValueMaxPeakHts0( const ParametersType& parameters) const
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi0 = parameters[0];
+
+            svkPhaseSpec::ZeroOrderPhase( phi0, this->copySpectrum); 
+
+            cout << "      GetValue_B( " ;
+            cout << phi0 * 180. / vtkMath::Pi() << " ";
+            cout << ") = ";
+
+            double sumPeakDiffs = 0; 
+            int numPeaks = this->peaks->GetNumPeaks();  
+            for (int i = 0; i < numPeaks; i++) {
+
+                float targetHeight = this->peaks->GetAvRMSPeakHeight(i); 
+                float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum, i); 
+
+                //  weight high SN peaks more: 
+                //  peak area works better than peak height (maximizes
+                //  absorption mode more accurately)
+                sumPeakDiffs += (500*targetHeight - peakAreaValue )* targetHeight;
+            }
+
+            MeasureType measure = sumPeakDiffs; 
+            return measure;
+        }
+
+
+        /*!
+         *  Cost function based on finding the difference between peaks in spectrum 
+         *  and average RMS spectrum.  Differences are weighted by the ht
+         *  of the peak in the magnitude spectrum. 
+         */
+        MeasureType  GetValueDiffFromMagnitude0( const ParametersType& parameters) const 
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi0 = parameters[0];
+
+            svkPhaseSpec::ZeroOrderPhase( phi0, this->copySpectrum); 
+
+            cout << "      GetValue_C( " ;
+            cout << phi0 * 180. / vtkMath::Pi() << " ";
+            cout << ") = ";
+
+            double sumPeakDiffs = 0; 
+            int numPeaks = this->peaks->GetNumPeaks();  
+            for (int i = 0; i < numPeaks; i++) {
+            //for (int i = 2; i < numPeaks; i++) {
+
+                float targetHeight = this->peaks->GetAvRMSPeakHeight(i); 
+                float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum, i); 
+                sumPeakDiffs += (500*targetHeight - peakAreaValue) * targetHeight;
+
+            }
+
+            MeasureType measure = sumPeakDiffs; 
+            return measure;
+        }
+
+
+        /*!
+         *  Version that only gets phase from one peak (zeroOrderPhasePeak). 
+         *  Cost function based on finding the difference between peaks in spectrum 
+         *  and average RMS spectrum.  Differences are weighted by the ht
+         *  of the peak in the magnitude spectrum. 
+         */
+        MeasureType  GetValueDiffFromMagnitude0OnePeak( const ParametersType& parameters) const 
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+            cout << "   GetValue_D" << endl;
+        
+            double phi0 = parameters[0];
+
+            svkPhaseSpec::ZeroOrderPhase( phi0, this->copySpectrum); 
+
+            double sumPeakDiffs = 0; 
+            int zeroOrderPeak = this->zeroOrderPhasePeak; 
+            float targetHeight = this->peaks->GetAvRMSPeakHeight( zeroOrderPeak ); 
+            float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum,  zeroOrderPeak ); 
+            sumPeakDiffs += (500*targetHeight - peakAreaValue) * targetHeight;
+
+            MeasureType measure = sumPeakDiffs; 
+            return measure;
+        }
+
+
+        /*!
+         *  Version that only gets phase from one peak (zeroOrderPhasePeak). 
+         *  Cost function based on finding the difference between peaks in spectrum 
+         *  and average RMS spectrum.  Differences are weighted by the ht
+         *  of the peak in the magnitude spectrum. 
+         */
+        MeasureType  GetValueMaxPeakHt0OnePeak( const ParametersType& parameters) const 
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi0 = parameters[0];
+            svkPhaseSpec::ZeroOrderPhase( phi0, this->copySpectrum); 
+
+            cout << "   GetValue_E: " <<  phi0 ;
+
+            double sumPeak = 0; 
+            int zeroOrderPeak = this->zeroOrderPhasePeak; 
+            float targetHeight = this->peaks->GetAvRMSPeakHeight( zeroOrderPeak ); 
+            float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum,  zeroOrderPeak ); 
+            float peakAreaSym = this->peaks->GetPeakSymmetry(this->copySpectrum,  zeroOrderPeak ); 
+
+            // maximize peak integrated area, the higher the area, the more negative the contribution 
+            sumPeak =  -1 * peakAreaValue;  
+
+            // maximize symmetry : the more symmetric the smaller the contribution 
+            sumPeak += peakAreaSym; 
+
+            MeasureType measure = sumPeak; 
+            return measure;
+        }
+
+
+        /*!
+         *  Cost function based on maximizing autodetected peak areas.
+         *  areas are weighted by their height in the magnitude spectrum.   
+         *  Area takes into account the line shape (absorptive vs dispersive)
+         *  more than simply using peak height. 
+         */
+        MeasureType  GetValueMaxPeakHts1( const ParametersType& parameters) const
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi1 = parameters[0];
+            cout << "   GetValue_F" << phi1 ;
+
+            int startPt; 
+            int peakPt; 
+            int endPt; 
+            this->peaks->GetPeakDefinition( this->zeroOrderPhasePeak, &startPt, &peakPt, &endPt ); 
+
+            svkPhaseSpec::FirstOrderPhase( phi1, peakPt, this->copySpectrum); 
+
+            double sumPeakDiffs = 0; 
+            int numPeaks = this->peaks->GetNumPeaks();  
+            for (int i = 0; i < numPeaks; i++) {
+                // This peak should already be zero order phased.
+                if ( i != this->zeroOrderPhasePeak ) {
+
+                    float targetHeight = this->peaks->GetAvRMSPeakHeight(i); 
+                    float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum, i); 
+                    float peakAreaSym = this->peaks->GetPeakSymmetry(this->copySpectrum, i); 
+
+                    //  weight high SN peaks more: 
+                    //  peak area works better than peak height (maximizes
+                    //  absorption mode more accurately)
+                    sumPeakDiffs += -1 * peakAreaValue * targetHeight;
+                    sumPeakDiffs += peakAreaSym * targetHeight;
+                }
+            }
+
+            MeasureType measure = sumPeakDiffs; 
+            return measure;
+        }
+
+        /*!
+         *  Cost function based on maximizing integrated area (zero and first order).  
+         *  areas are weighted by their height in the magnitude spectrum.   
+         *  Area takes into account the line shape (absorptive vs dispersive)
+         *  more than simply using peak height. 
+         */
+        MeasureType  GetValueMaxInt01( const ParametersType& parameters) const
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi0 = parameters[0];
+            double phi1 = parameters[1] + this->numFirstOrderPhaseValues/2;
+            //cout << " phi0, phi1 => " << phi0 << " " << phi1 <<  endl;
+
+#ifndef SWARM
+            if ( phi0 > vtkMath::Pi() || phi0 < -1*vtkMath::Pi() || phi1 > this->numFreqPoints || phi1 < 0 ) {
+                cout << "OUT OF BOUNDS" << endl;
+                return DBL_MIN; 
+            }
+#endif
+
+            cout << "      GetValue_G( "  << static_cast<int>(phi0 * 180. / vtkMath::Pi()) << ", " << phi1 << ") = ";
+
+            svkPhaseSpec::FirstOrderPhase( phi0, this->linearPhaseArrays[static_cast<int>(phi1)], this->copySpectrum); 
+
+            double sumPeaks = 0; 
+            int numPeaks = this->peaks->GetNumPeaks();  
+//for (int i = 0; i < numPeaks; i++) {
+            for (int i = 2; i < numPeaks; i++) {
+
+                float targetHeight = this->peaks->GetAvRMSPeakHeight(i); 
+                float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum, i); 
+                float peakAreaSym = this->peaks->GetPeakSymmetry(this->copySpectrum, i); 
+
+                //  weight high SN peaks more: 
+                //  peak area works better than peak height (maximizes
+                //  absorption mode more accurately)
+                //sumPeaks += (50*targetHeight - peakAreaValue )* targetHeight;
+                //sumPeaks += (-1 * peakAreaValue ) / targetHeight;
+
+                //  maximize peak height and symmetry, divide by target height to normalize weights
+                //  across spectrum.   
+                sumPeaks += (-1 * peakAreaValue ) / (targetHeight * targetHeight);
+                sumPeaks += ( peakAreaSym ) / (targetHeight * targetHeight);
+            }
+
+            MeasureType measure = sumPeaks; 
+            return measure;
+        }
+
+
+        /*!
+         *  Cost function based on maximizing autodetected peak areas.
+         *  areas are weighted by their height in the magnitude spectrum.   
+         *  Area takes into account the line shape (absorptive vs dispersive)
+         *  more than simply using peak height. 
+         */
+        MeasureType  GetValueDiffFromMagnitude1( const ParametersType& parameters) const
+        {
+            ++POWELL_CALLS_TO_GET_VALUE;
+            cout << "   GetValue_H" << endl;
+        
+            double phi1 = parameters[0];
+
+            int startPt; 
+            int peakPt; 
+            int endPt; 
+            this->peaks->GetPeakDefinition( this->zeroOrderPhasePeak, &startPt, &peakPt, &endPt ); 
+
+            svkPhaseSpec::FirstOrderPhase( phi1, peakPt, this->copySpectrum); 
+
+            double sumPeakDiffs = 0; 
+            int numPeaks = this->peaks->GetNumPeaks();  
+            for (int i = 0; i < numPeaks; i++) {
+                // This peak should already be zero order phased.
+                if ( i != this->zeroOrderPhasePeak ) {
+
+                    float targetHeight = this->peaks->GetAvRMSPeakHeight(i); 
+                    float peakAreaValue = this->peaks->GetPeakArea(this->copySpectrum, i); 
+
+                    //  weight high SN peaks more: 
+                    //  peak area works better than peak height (maximizes
+                    //  absorption mode more accurately)
+                    sumPeakDiffs += (500*targetHeight - peakAreaValue) * targetHeight;
+                }
+            }
+
+            MeasureType measure = sumPeakDiffs; 
+            return measure;
+        }
+
+
+        /*  
+         *  returns the cost function for the current param values: 
+         *  typedef double MeasureType
+         */
+        MeasureType  GetValue( const ParametersType & parameters ) const
+        { 
+
+            double cost;  
+
+            // make a member variable (copy)
+            //cout << "copy spectrum" << endl;
+            this->copySpectrum->DeepCopy(this->spectrum); 
+
+            if ( this->phasingModel == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
+                cost = GetValueMaxGlobalPeakHt0( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {
+                cost = GetValueMaxPeakHts0( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0 ) {
+                cost = GetValueDiffFromMagnitude0( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HTS_1) {
+                cost = GetValueMaxPeakHts1( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK ) {
+                cost = GetValueMaxPeakHt0OnePeak( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK ) {
+                cost = GetValueDiffFromMagnitude0OnePeak( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1 ) {
+                cost = GetValueDiffFromMagnitude1( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HTS_01 ) {
+                cost = GetValueMaxInt01( parameters ); 
+            }
+
+            MeasureType measure = cost; 
+            cout << "                          cost: " << measure << endl; 
             return measure;
         }
 
@@ -143,8 +438,15 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
          */  
         unsigned int GetNumberOfParameters(void) const
         {
-            return NumParameters;
+            int numParameters = 1; 
+
+            if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HTS_01 ) {
+                numParameters = 2; 
+            }
+
+            return numParameters;
         }
+
 
         /*
          *
@@ -164,12 +466,64 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
         }
 
 
+        /*
+         *
+         */  
+        void SetPeakPicker( svkMRSPeakPick* peaks )  
+        {
+            this->peaks = peaks;
+        }
+
+        /*
+         *
+         */  
+        void SetLinearPhaseArrays( vtkImageComplex** linearPhaseArrays)  
+        {
+            this->linearPhaseArrays = linearPhaseArrays;
+        }
+
+
+        /*
+         *
+         */  
+        void SetNumFirstOrderPhaseValues( int numPhaseValues )  
+        {
+            this->numFirstOrderPhaseValues = numPhaseValues;
+        }
+
+
+        /*
+         *
+         */  
+        void SetZeroOrderPhasePeak( int peakNum)  
+        {
+            this->zeroOrderPhasePeak = peakNum;
+        }
+
+
+        /*
+         *
+         */  
+        int GetZeroOrderPhasePeak( )  
+        {
+            return this->zeroOrderPhasePeak;
+        }
+
+
     private:
 
-            vtkFloatArray*  spectrum;
-            int             numFreqPoints; 
+            vtkFloatArray*                  spectrum;
+            vtkFloatArray*                  copySpectrum;
+            int                             numFreqPoints; 
+            svkMRSAutoPhase::phasingModel   phasingModel; 
+            svkMRSPeakPick*                 peaks;
+            int                             zeroOrderPhasePeak;  
+            vtkImageComplex**               linearPhaseArrays;
+            int                             numFirstOrderPhaseValues; 
+
 
 };
+
 
 
 /*!
@@ -186,9 +540,22 @@ svkMRSAutoPhase::svkMRSAutoPhase()
     //  1 required input ports: 
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfThreads(16);
+    this->SetNumberOfThreads(1);
     svkMRSAutoPhase::progress = NULL;
-    this->SetPhasingModel(svkMRSAutoPhase::MIN_AREA_0); 
+    this->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
+    this->onlyUseSelectionBox = false; 
+    this->linearPhaseArrays = NULL; 
 
+}
+
+
+
+/*! 
+ *  Sets the linear phase to apply to spectra.
+ */
+void svkMRSAutoPhase::OnlyUseSelectionBox()
+{
+    this->onlyUseSelectionBox = true;
 }
 
 
@@ -241,10 +608,33 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
+
+    //  Locate peaks in spectra:     
+    this->peakPicker = svkMRSPeakPick::New();
+    this->peakPicker->SetInput( data );
+    if ( this->onlyUseSelectionBox ) { 
+        this->peakPicker->OnlyUseSelectionBox();
+    }
+    this->peakPicker->Update();
+    cout << "NUM PEAKS: " << this->peakPicker->GetNumPeaks() << endl;
+
+
     //  Make sure input spectra are in frequency domain
     //this->CheckInputSpectralDomain();
 
     this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+
+    //   for each cell /spectrum: 
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+    float tolerance = .5;     
+    this->selectionBoxMask = new short[numCells];
+    data->GetSelectionBoxMask(selectionBoxMask, tolerance);
+
+    //  Initialize first order phase arrays (e.g. -1 to 1 in nuTimePoint intervals): 
+    this->InitLinearPhaseArrays(); 
+
 
     if ( svkMRSAutoPhase::progress == NULL ) {
         int numThreads = this->GetNumberOfThreads();
@@ -279,9 +669,58 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     this->GetInput()->Modified();
     this->GetInput()->Update();
 
+    delete [] this->selectionBoxMask; 
+
+    this->peakPicker->Delete(); 
+
     return 1;
 };
 
+
+/*
+ * 
+ */
+int svkMRSAutoPhase::GetPivot()
+{
+    //int pivot = this->numTimePoints/2; 
+    int start; 
+    int peak; 
+    int end; 
+    int zeroOrderPhasePeak = this->GetZeroOrderPhasePeak( ); 
+    this->peakPicker->GetPeakDefinition( zeroOrderPhasePeak, &start, &peak, &end ); 
+    cout << "ZOPP: " << zeroOrderPhasePeak << " " << peak << endl;
+    int pivot = peak; 
+    return pivot; 
+}
+
+/*! 
+ *  Initialize the array of linear phase correction factors for performance 
+ */
+void svkMRSAutoPhase::InitLinearPhaseArrays() 
+{
+    this->numFirstOrderPhaseValues = this->numTimePoints*4;  
+
+    this->linearPhaseArrays = new vtkImageComplex*[ this->numFirstOrderPhaseValues ]; 
+
+    int pivot = this->GetPivot(); 
+
+    for (int i = 0; i < this->numFirstOrderPhaseValues; i++) {
+
+        float phi1 = i - this->numFirstOrderPhaseValues/2;  
+        phi1 = phi1/360.; 
+
+        // Each phase value defines an array of linear phase correction factors for the spectra: 
+        vtkImageComplex* linearPhaseArrayTmp = new vtkImageComplex[ this->numTimePoints ];
+        svkSpecUtils::CreateLinearPhaseShiftArray( 
+                this->numTimePoints, 
+                linearPhaseArrayTmp, 
+                phi1, 
+                pivot);
+
+        this->linearPhaseArrays[i] = linearPhaseArrayTmp; 
+        //cout << "LPA Init: " << i << " = " << this->linearPhaseArrays[i][0].Real<< endl;
+    }
+}
 
 /*! 
  *  This method is passed an input and output Data, and executes the filter
@@ -326,6 +765,9 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
         bool isCellInSubExtent = svk4DImageData::IsIndexInExtent( ext, &loopVector ); 
+   
+        //  each thread operates on a sub-extent.  Check to see if the cell is in the 
+        //  current cell's sub-extent.  If so, fit it.
         if ( isCellInSubExtent ) { 
 
             cout << "CELL TO FIT: " << cellID << endl;
@@ -353,47 +795,165 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
  */
 void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
 {
-
     if ( this->GetDebug() ) {
         cout << "AutoPhase Spectrum: " << cellID << endl;
         cout << "TIME POINTS: " << this->numTimePoints << endl;
     }
+
+    //  If only fitting within selection box, then skip over
+    //  voxels outside. 
+    if ( this->onlyUseSelectionBox == true ) { 
+        if ( this->selectionBoxMask[cellID] == 0 ) {
+               return; 
+           }
+    }
+
+    //  if first order fitting, fit in two passes
+    if ( this->phaseModelType == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1 || this->phaseModelType == MAX_PEAK_HTS_1 ) {
+        this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK); 
+        //this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK); 
+        this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HTS_1); 
+        //this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
+    } else {
+        this->FitPhase( cellID, this->phaseModelType ); 
+    }
+
+}
+
+/*
+*/
+int svkMRSAutoPhase::GetZeroOrderPhasePeak( )
+{
+    int peakNum; 
+    // Pick the peak for zero order phasing: 
+    float height = 0; 
+    for ( int i = 1; i < this->peakPicker->GetNumPeaks() - 1 ; i++ ) {
+        float tmpHt = this->peakPicker->GetAvRMSPeakHeight(i); 
+        if ( tmpHt > height ) { 
+            peakNum = i; 
+        }
+    }
+    return peakNum; 
+}
+
+/*!
+ * 
+ */
+#ifdef SWARM
+void svkMRSAutoPhase::InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::ParticleSwarmOptimizer::Pointer itkOptimizer )
+#else
+void svkMRSAutoPhase::InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::PowellOptimizer::Pointer itkOptimizer )
+#endif
+
+{
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
 
     //========================================================
     //  ITK Optimization 
-    //==================
-    typedef itk::PowellOptimizer        OptimizerType;
-    typedef OptimizerType::ScalesType   ScalesType;
-    // Declaration of a itkOptimizer
-    OptimizerType::Pointer  itkOptimizer = OptimizerType::New();
-    // Declaration of the CostFunction 
-    PowellBoundedCostFunction::Pointer costFunction = PowellBoundedCostFunction::New();
-
+    //========================================================
+    PowellBoundedCostFunction::Pointer  costFunction = PowellBoundedCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
-    typedef PowellBoundedCostFunction::ParametersType ParametersType;
-
-    const unsigned int spaceDimension = 
-                      costFunction->GetNumberOfParameters();
-
+    costFunction->SetModel( model ); 
     costFunction->SetSpectrum( spectrum ); 
     costFunction->SetNumFreqPoints(this->numTimePoints ); 
+    costFunction->SetPeakPicker( this->peakPicker ); 
+    costFunction->SetLinearPhaseArrays( this->linearPhaseArrays ); 
+    costFunction->SetNumFirstOrderPhaseValues( this->numFirstOrderPhaseValues ); 
+    costFunction->SetZeroOrderPhasePeak ( this->GetZeroOrderPhasePeak() ); 
 
-    // We start not so far from  | 2 -2 |
+    //  set dimensionality of parameter space: 
+    const unsigned int spaceDimension = costFunction->GetNumberOfParameters();
+    typedef PowellBoundedCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( spaceDimension );
-    initialPosition[0] =  0;
+    initialPosition[0] =  0.;
+    if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_01) {
+        initialPosition[1] =  0.;
+    }
 
-    //  maximize total peak height
-    itkOptimizer->SetMaximize( true );
-    itkOptimizer->SetStepLength( 1 );
-    itkOptimizer->SetStepTolerance( 0.1 );
-    itkOptimizer->SetValueTolerance( 0.1 );
-    itkOptimizer->SetMaximumIteration( 100 );
+#ifdef SWARM 
+
+        //  Set bounds
+        itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
+        // Zero order phase range radians
+        if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_1 ) {
+            // first order range of values: 
+            int upperBound =  this->numFirstOrderPhaseValues/2 - 1; 
+            int lowerBound =  -1 * upperBound;  
+            bounds.push_back( std::make_pair( lowerBound, upperBound) );
+        } else {
+            bounds.push_back( std::make_pair( -1 * vtkMath::Pi(), vtkMath::Pi()) ); 
+            if ( spaceDimension == 2 ) {
+                // first order range of values: 
+                int upperBound =  this->numFirstOrderPhaseValues/2 - 1; 
+                int lowerBound =  -1 * upperBound;  
+                bounds.push_back( std::make_pair( lowerBound, upperBound) );
+            }
+        }
+        itkOptimizer->SetParameterBounds( bounds );
+
+        unsigned int numberOfParticles = 10;
+        unsigned int maxIterations = 100;
+        double xTolerance = 0.1;
+        double fTolerance = 0.1;
+        itk::ParticleSwarmOptimizer::ParametersType 
+            initialParameters( spaceDimension ), finalParameters;
+        itkOptimizer->SetNumberOfParticles( numberOfParticles );
+        itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
+        itkOptimizer->SetParametersConvergenceTolerance( xTolerance,
+                                                   costFunction->GetNumberOfParameters() );
+        itkOptimizer->SetFunctionConvergenceTolerance( fTolerance );
+        itkOptimizer->SetInitializeNormalDistribution( false ); // use uniform distribution
+
+#else
+
+        itkOptimizer->SetStepLength( 1 );
+        itkOptimizer->SetStepTolerance( 1);
+        itkOptimizer->SetValueTolerance( 1 );
+        itkOptimizer->SetMaximumIteration( 10000 );
+#endif 
 
     itkOptimizer->SetInitialPosition( initialPosition );
+
+}
+
+
+/*!
+ * 
+ */
+void svkMRSAutoPhase::FitPhase( int cellID, svkMRSAutoPhase::phasingModel model)  
+{
+#ifdef SWARM 
+        typedef itk::ParticleSwarmOptimizer        OptimizerType;
+#else
+        typedef itk::PowellOptimizer        OptimizerType;
+#endif
+
+    OptimizerType::Pointer              itkOptimizer = OptimizerType::New();
+    this->InitOptimizer( cellID, model, itkOptimizer ); 
+
+#ifndef SWARM 
+        //  maximize total peak height
+        if ( model == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
+            itkOptimizer->SetMaximize( true );
+        } else if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {
+            itkOptimizer->SetMaximize( true );
+        } else if ( model == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0 ) {
+            itkOptimizer->SetMaximize( false );
+        } else if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_1 ) {
+            itkOptimizer->SetMaximize( true );
+        } else if ( model == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0) {
+            itkOptimizer->SetMaximize( false );
+        } else if ( model == svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK) {
+            itkOptimizer->SetMaximize( true );
+        } else if ( model == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK) {
+            itkOptimizer->SetMaximize( false );
+        } else if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_01) {
+            itkOptimizer->SetMaximize( true );
+        }
+#endif
 
     try { 
         itkOptimizer->StartOptimization();
@@ -406,57 +966,56 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
         return; 
     }
 
+    typedef PowellBoundedCostFunction::ParametersType ParametersType;
     ParametersType finalPosition = itkOptimizer->GetCurrentPosition();
-    cout << "Solution        = (";
-    cout << finalPosition[0] << "," ;
-    cout << ")" << endl;  
 
     //
     // check results to see if it is within range
     //
     bool pass = true;
-    //double trueParameters[2] = { 2, -2 };
-    //for( unsigned int j = 0; j < 2; j++ ) {
-        //if( vnl_math_abs( finalPosition[j] - trueParameters[j] ) > 0.01 ) {
-            //pass = false;
-        //}
-    //}
 
     // Exercise various member functions.
-    cout << "Maximize: " << itkOptimizer->GetMaximize() << endl;
-    cout << "StepLength: " << itkOptimizer->GetStepLength();
-    cout << endl;
-    cout << "CurrentIteration: " << itkOptimizer->GetCurrentIteration();
     cout << endl;
 
     itkOptimizer->Print( cout );
 
-    cout << "Calls to GetValue = " << POWELL_CALLS_TO_GET_VALUE << endl;
-
     if( !pass ) {
         cout << "Test failed." << endl;
         return;
-        //return EXIT_FAILURE;
     }
 
     cout << "Test passed." << endl;
 
-    //
+    //  ===================================================
     //  Apply fitted phase values to spectrum: 
-    //
-    float phi0Final = finalPosition[0]; 
-    cout << "           PHI0 FINAL("<<cellID <<"): " << phi0Final * 180 / 3.1415<< endl;
-    float cmplxPt[2];
-    for (int i = 0; i < this->numTimePoints; i++) {
-            
-        spectrum->GetTupleValue(i, cmplxPt);
-        svk::svkPhaseSpec::ZeroOrderPhase(phi0Final, cmplxPt); 
-             
-        spectrum->SetTuple(i, cmplxPt); 
+    //  ===================================================
+      
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+
+    if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_1  || model == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1 ) {
+
+        float phi1Final = finalPosition[0] + this->numFirstOrderPhaseValues/2; 
+        cout << "           PHI1 FINAL(" <<cellID << "): " << phi1Final << endl;
+        int pivot = this->GetPivot(); 
+        svkPhaseSpec::FirstOrderPhase( phi1Final, pivot, spectrum); 
+
+    } else if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_01 ) { 
+
+        double phi0Final = finalPosition[0]; 
+        double phi1Final = finalPosition[1] + this->numFirstOrderPhaseValues/2; 
+        cout << " FINAL: " << phi0Final * 180/vtkMath::Pi() << ", " << phi1Final <<  endl; 
+        svkPhaseSpec::FirstOrderPhase( phi0Final, this->linearPhaseArrays[static_cast<int>(phi1Final)], spectrum); 
+
+    } else {
+
+        float phi0Final = finalPosition[0]; 
+        cout << "           PHI0 FINAL("<<cellID <<"): " << phi0Final * 180. / vtkMath::Pi() << endl;
+        svkPhaseSpec::ZeroOrderPhase( phi0Final, spectrum); 
+
     }
 
     return;
-
 }
 
 

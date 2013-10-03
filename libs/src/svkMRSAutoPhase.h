@@ -43,6 +43,10 @@
 #ifndef SVK_MRS_AUTO_PHASE_H
 #define SVK_MRS_AUTO_PHASE_H
 
+#define SWARM
+
+#include <itkPowellOptimizer.h>
+#include <itkParticleSwarmOptimizer.h>
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
@@ -52,6 +56,7 @@
 #include <svkMrsImageData.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <svkThreadedImageAlgorithm.h>
+#include <svkMRSPeakPick.h>
 
 #include <complex>
 #include <svkDcmHeader.h>
@@ -78,15 +83,25 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
 
         vtkTypeRevisionMacro( svkMRSAutoPhase, svkThreadedImageAlgorithm);
         static          svkMRSAutoPhase* New();
+        
 
+        //  _0 are zero order models
+        //  _1 are first order models
         typedef enum {
             UNDEFINED = -1, 
-            MIN_AREA_0 = 0, 
-            MIN_AREA_MAX_POSITIVE_0, 
-            MIN_MAGNITUDE_DIFF_0
+            MAX_GLOBAL_PEAK_HT_0, 
+            MAX_PEAK_HTS_0, 
+            MIN_DIFF_FROM_MAG_0, 
+            MAX_PEAK_HT_0_ONE_PEAK, 
+            MIN_DIFF_FROM_MAG_0_ONE_PEAK, 
+            MAX_PEAK_HTS_1, 
+            MIN_DIFF_FROM_MAG_1, 
+            MAX_PEAK_HTS_01        
         } phasingModel;
 
         void            SetPhasingModel(svkMRSAutoPhase::phasingModel model); 
+        void            OnlyUseSelectionBox(); 
+
 
 
     protected:
@@ -125,15 +140,33 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         static int*     progress;
 
 
-
-
     private:
 
+        void            InitLinearPhaseArrays(); 
         void            AutoPhaseExecute(int* outExt, int id); 
         void            AutoPhaseSpectrum( int cellID );
+        void            FitPhase( int cellID, svkMRSAutoPhase::phasingModel model ); 
+        int             GetZeroOrderPhasePeak( ); 
+        int             GetPivot(); 
+
+
+#ifdef SWARM
+        void            InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::ParticleSwarmOptimizer::Pointer itkOptimizer ); 
+#else
+        void            InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::PowellOptimizer::Pointer itkOptimizer ); 
+#endif
+
+
 
         int                             numTimePoints;
         svkMRSAutoPhase::phasingModel   phaseModelType; 
+        svkMRSPeakPick*                 peakPicker; 
+        bool                            onlyUseSelectionBox; 
+        short*                          selectionBoxMask;
+        vtkImageComplex**               linearPhaseArrays; 
+        int                             numFirstOrderPhaseValues;
+
+
 
 };
 
