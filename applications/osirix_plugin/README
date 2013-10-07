@@ -43,10 +43,9 @@ sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
 ICON:  use ing2icns:  drag a png file into app and export as icns
 click o SIVIC.app and "get info", then drag the newly created .icns file onto the icon
 
-##################
+#################################
 make the standalone version:
-##################
+#################################
 run make_standalone.csh
-open SIVIC.app getinfo and drag sivic_logo.jpg onto the app icon
 
-build project which includes SIVIC.app
+build project in packagemaker which includes SIVIC.app
