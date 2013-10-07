@@ -40,6 +40,7 @@
  *      Beck Olson
  */
 
+#pragma once 
 
 #ifndef SVK_HSVD_H
 #define SVK_HSVD_H
@@ -67,6 +68,9 @@ extern "C" { // C interface
 //  For some reason including the clapack.h inside the above extern"C" block
 //  doesn't work as expected. 
 extern "C" {
+// Here too, OsX seems to have header defs for these already which causes a definition
+// conflict when building the OsiriX plugin
+#ifndef SYS_F2C_OSIRIX
     int zheev_(char *jobz, char *uplo, integer *n, doublecomplex
         *a, integer *lda, doublereal *w, doublecomplex *work, integer *lwork,
         doublereal *rwork, integer *info);
@@ -87,6 +91,7 @@ extern "C" {
         doublecomplex *a, integer *lda, doublecomplex *w, doublecomplex *vl,
         integer *ldvl, doublecomplex *vr, integer *ldvr, doublecomplex *work,
         integer *lwork, doublereal *rwork, integer *info);
+#endif
 }
 
 
