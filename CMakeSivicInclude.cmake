@@ -1,5 +1,5 @@
 # 
-#   Copyright © 2009-2010 The Regents of the University of California.
+#   Copyright © 2009-2013 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -30,5 +30,5 @@
 
 SET(SVK_MAJOR_VERSION 0)
 SET(SVK_MINOR_VERSION 9)
-SET(SVK_PATCH_VERSION 5)
+SET(SVK_PATCH_VERSION 6)
 SET(SVK_RELEASE_VERSION "${SVK_MAJOR_VERSION}.${SVK_MINOR_VERSION}.${SVK_PATCH_VERSION}")
