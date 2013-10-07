@@ -181,7 +181,7 @@ float svkMRSNoise::CalcWindowSD( vtkFloatArray* spectrum, float mean, int startP
     }
 
     noise = noise / (endPt - startPt + 1); 
-    float noiseSD = pow(noise, 0.5); 
+    float noiseSD = pow(static_cast<double>(noise), static_cast<double>(0.5)); 
 
     return noiseSD; 
 }
@@ -292,7 +292,7 @@ void svkMRSNoise::InitAverageSpectrum()
             spectrum->GetTupleValue(i, tuple); 
             this->averageSpectrum->GetTupleValue(i, avTuple); 
             float rms =  tuple[0]*tuple[0] + tuple[1]*tuple[1];  
-            rms =  pow( rms, 0.5); 
+            rms =  pow( static_cast<double>(rms), static_cast<double>(0.5)); 
             avTuple[0] = avTuple[0] + rms; 
             //avTuple[1] = avTuple[1] + tuple[1];  
             this->averageSpectrum->SetTuple(i, avTuple); 
