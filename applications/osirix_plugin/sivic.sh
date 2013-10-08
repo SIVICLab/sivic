@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 
-#   Copyright © 2009-2011 The Regents of the University of California.
+#   Copyright © 2009-2013 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ else
     plugin_path_tmp="/Users/${USER}/Library/Application Support/OsiriX/Plugins/SIVIC_MRSI.osirixplugin/Contents/Resources"
     plugin_path=`echo ${plugin_path_tmp} | sed 's/ /\\ /'`
 fi
-plugin_path='/Applications/SIVIC.app/Contents/Resources'
+#plugin_path='/Applications/SIVIC.app/Contents/Resources'
 echo ${plugin_path}
 
 DYLD_FRAMEWORK_PATH="${plugin_path}/Frameworks"
