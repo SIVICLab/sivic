@@ -1643,7 +1643,7 @@ string svkDcmtkAdapter::GetStringSequenceItemElement(const char* seqName, int se
     DcmItem* dataset = this->dcmFile->getDataset(); 
 
     if (parentSeqName != NULL) {
-        dataset == NULL; 
+        dataset = NULL; 
         DcmSequenceOfItems* seq = GetDcmSequence(parentSeqName);
         if (seq != NULL ) {
             dataset = seq->getItem(parentSeqItemPosition);
