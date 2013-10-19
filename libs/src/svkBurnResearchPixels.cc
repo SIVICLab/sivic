@@ -4224,7 +4224,7 @@ char* svkBurnResearchPixels::GetPixelHeader()
 
         cout << "ResearchHeader: Unsupported image size: " << imageSize << endl;
         // throw error 
-        throw runtime_error("ResearchHeader:  Unsupported image size: " + imageSize);
+        throw runtime_error("ResearchHeader:  Unsupported image size: " + svkUtils::IntToString(imageSize) );
     }
 
     return headerPixels; 
