@@ -41,6 +41,7 @@
 
 
 #include <vtkImageAccumulate.h>
+#include <svkUtils.h>
 #include <svkBurnResearchPixels.h>
 
 
