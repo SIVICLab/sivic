@@ -81,6 +81,8 @@ int main (int argc, char** argv)
     usemsg += "   -b                       only filter spectra in selection box, others \n"; 
     usemsg += "                            are zeroed out.                              \n"; 
     usemsg += "   -m                order  model order (default = 25)                   \n"; 
+    usemsg += "   -w                       remove water (downfield of 4.2PPM )          \n"; 
+    usemsg += "   -l                       remove lipid (upfield of 1.8PPM )          \n"; 
     usemsg += "   -h                       Print this help mesage.                      \n";  
     usemsg += "                                                                         \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                  \n";  
@@ -94,6 +96,8 @@ int main (int argc, char** argv)
     bool writeFilter = false; 
     int modelOrder = 25; 
     bool limitToSelectionBox = false; 
+    bool filterWater = false; 
+    bool filterLipid = false; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -116,7 +120,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:m:fbh", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:m:fbwlh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -135,6 +139,12 @@ int main (int argc, char** argv)
                 break;
             case 'm':
                 modelOrder = atoi( optarg ); 
+                break;
+            case 'w':
+                filterWater = true; 
+                break;
+            case 'l':
+                filterLipid = true; 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -169,6 +179,11 @@ int main (int argc, char** argv)
 
     cout << "file name: " << inputFileName << endl;
 
+    //  if no filters specified, then just filter water:
+    if ( !filterWater && !filterLipid ) {
+        filterWater = true; 
+    }
+
 
     // ===============================================  
     //  Use a reader factory to get the correct reader  
@@ -188,8 +203,7 @@ int main (int argc, char** argv)
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( hdr ); 
-    float downfieldPPMLimit = point->ConvertPosUnits( 0, svkSpecPoint::PTS, svkSpecPoint::PPM);
-    cout << "LIMIT: " << downfieldPPMLimit << endl;
+    int numFreqPoints = hdr->GetIntValue( "DataPointColumns" );
 
     // ===============================================  
     //  HSVD DATA   
@@ -203,7 +217,14 @@ int main (int argc, char** argv)
     if ( limitToSelectionBox ) {
         hsvd->OnlyFitSpectraInVolumeLocalization(); 
     }
-    hsvd->AddPPMFrequencyFilterRule( downfieldPPMLimit, 4.2 ); 
+    if ( filterWater ) {
+        cout << "Filter Water " << endl;
+        hsvd->RemoveH20On();
+    }
+    if ( filterLipid ) {
+        cout << "Filter Lipid " << endl;
+        hsvd->RemoveLipidOn();
+    }
     hsvd->Update();
 
     // ===============================================  
