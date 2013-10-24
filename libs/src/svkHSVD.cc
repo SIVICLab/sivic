@@ -942,7 +942,7 @@ void svkHSVD::RemoveLipidOn()
     point->SetDcmHeader( hdr );
 
     int maxPoint = this->numTimePoints; 
-    float upfieldPPMLimit = point->ConvertPosUnits( maxPoint, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    float upfieldPPMLimit = point->ConvertPosUnits( maxPoint-1, svkSpecPoint::PTS, svkSpecPoint::PPM);
     this->AddPPMFrequencyFilterRule( 1.8, upfieldPPMLimit );
 
     point->Delete();
