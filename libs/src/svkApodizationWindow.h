@@ -54,8 +54,9 @@ namespace svk {
 
 
 using namespace std;
+
 /*! 
- *  UCSF specific utilities.
+ *  Apodization window.
  */
 class svkApodizationWindow : public vtkObject
 {
