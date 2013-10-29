@@ -251,6 +251,24 @@ void svkMRSNoise::FindNoiseWindow()
 
 
 /*!
+ *  Get the start point for the noise window. 
+ */
+int svkMRSNoise::GetNoiseStartPoint()
+{
+    return this->noiseWindowStartPt; 
+}
+
+
+/*!
+ *  Get the start point for the noise window. 
+ */
+int svkMRSNoise::GetNoiseEndPoint()
+{
+    return this->noiseWindowEndPt; 
+}
+
+
+/*!
  *  Returns the average magnitude spectrum in component 1. 
  *  Look at magnitude spectra at this point in case the
  *  input is multi-channel, to maximize the identification of noise
