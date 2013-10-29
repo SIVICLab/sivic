@@ -44,6 +44,7 @@
 #include <svkHSVD.h>
 #include <svkSpecPoint.h>
 #include <svkMrsImageFFT.h>
+//#include <svkApodizationWindow.h>
 
 #include <vtkObjectFactory.h>
 #include <vtkImageData.h>
@@ -169,6 +170,14 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     float tolerance = .5;     
     this->selectionBoxMask = new short[numCells];
     data->GetSelectionBoxMask(selectionBoxMask, tolerance); 
+
+    //===========================================
+    //  try apodizing the spectrum here: 
+    //===========================================
+    //this->apodizationWindow = vtkFloatArray::New();
+    //float fwhh = .1;
+    //svkApodizationWindow::GetLorentzianWindow( this->apodizationWindow, data, fwhh );
+    //===========================================
 
     if ( svkHSVD::progress == NULL ) {
         int numThreads = this->GetNumberOfThreads();
@@ -378,6 +387,15 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     for( int t = 0; t < numTimePointsLong; t++ ){
         //complexf val;
         spectrum->GetTupleValue(t, tupleIn);
+        //=====================================
+        // apodize tmp
+        //=====================================
+        //float windowTuple[2]; 
+        //this->apodizationWindow->GetTupleValue(t, windowTuple); 
+        //tupleIn[0] *= windowTuple[0] ;
+        //tupleIn[1] *= windowTuple[1] ;
+        // =======================
+
 
         //signal[t].r = static_cast<doublereal>(std::real(tupleIn[0]));
         //signal[t].i = static_cast<doublereal>(std::imag(tupleIn[1]));

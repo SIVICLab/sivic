@@ -240,6 +240,8 @@ class svkHSVD : public svkThreadedImageAlgorithm
 
         int                         numTimePoints;
         double                      spectralWidth; 
+        //vtkFloatArray*              apodizationWindow;
+
 
 
 };
