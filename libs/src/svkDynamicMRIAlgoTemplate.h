@@ -54,6 +54,9 @@
 #include <svkDcmHeader.h>
 
 #include <cminpack.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 #define real __cminpack_real__
 
 
@@ -113,11 +116,18 @@ class svkDynamicMRIAlgoTemplate: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        double                  GetKineticsMapVoxelValue( float* metKinetics0, float* metKinetics1, float* metKinetics3); 
+        double                  GetKineticsMapVoxelValue( float* metKinetics0, float* metKinetics1, float* metKinetics3);
+        void                    CalculateLactateKinetics( double* fittedModelParams, 
+                                                          int numTimePts,
+														  float* metKinetics0,
+                                                          float* metKinetics1, 
+                                                          float* lacKinetics ); 
 
 
-
-
+        float*                  metKinetics0;
+        float*                  metKinetics1;
+        float*                  metKinetics2;
+        int                     currentTimePoint; 
 
 };
 

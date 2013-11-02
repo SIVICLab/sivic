@@ -99,6 +99,35 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
+         *  Cost function based on maximizing the intensity of the first FID point. 
+         */
+        MeasureType  GetFirstPointPhaseValue0( const ParametersType& parameters) const
+        {
+
+            ++POWELL_CALLS_TO_GET_VALUE;
+        
+            double phi0 = parameters[0];
+        
+            double intensity = FLT_MIN; 
+            float cmplxPt[2];
+            double tmp; 
+
+            // apply zero order phase to data:  
+            this->copySpectrum->GetTupleValue(0, cmplxPt);
+            svk::svkPhaseSpec::ZeroOrderPhase(phi0, cmplxPt);
+
+            //  maximize positive peak height (minimize negative peak ht) 
+            tmp = cmplxPt[0];
+            if ( tmp >= intensity) {
+                intensity= tmp; 
+            }
+
+            MeasureType measure = intensity; 
+            return measure;
+        }
+
+
+        /*!
          *  Cost function based on finding the global maximum peak height
          */
         MeasureType  GetValueMaxGlobalPeakHt0( const ParametersType& parameters) const
@@ -410,6 +439,8 @@ class PowellBoundedCostFunction : public itk::SingleValuedCostFunction
             this->copySpectrum->DeepCopy(this->spectrum); 
 
             if ( this->phasingModel == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
+                cost = GetFirstPointPhaseValue0( parameters ); 
+            } else if ( this->phasingModel == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
                 cost = GetValueMaxGlobalPeakHt0( parameters ); 
             } else if ( this->phasingModel == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {
                 cost = GetValueMaxPeakHts0( parameters ); 
@@ -594,9 +625,7 @@ void svkMRSAutoPhase::SetPhasingModel(svkMRSAutoPhase::phasingModel modelType)
  */
 int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
     return 1; 
-
 }
 
 
@@ -632,9 +661,12 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     this->selectionBoxMask = new short[numCells];
     data->GetSelectionBoxMask(selectionBoxMask, tolerance);
 
+    //  Setup:  if firstorder, then transform to time domain
+oy
     //  Initialize first order phase arrays (e.g. -1 to 1 in nuTimePoint intervals): 
     this->InitLinearPhaseArrays(); 
 
+    
 
     if ( svkMRSAutoPhase::progress == NULL ) {
         int numThreads = this->GetNumberOfThreads();
@@ -721,6 +753,7 @@ void svkMRSAutoPhase::InitLinearPhaseArrays()
         //cout << "LPA Init: " << i << " = " << this->linearPhaseArrays[i][0].Real<< endl;
     }
 }
+
 
 /*! 
  *  This method is passed an input and output Data, and executes the filter
@@ -809,7 +842,7 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
     }
 
     //  if first order fitting, fit in two passes
-    if ( this->phaseModelType == svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1 || this->phaseModelType == MAX_PEAK_HTS_1 ) {
+    if ( this->phaseModelType > svkMRSAutoPhase::LAST_ZERO_ORDER_ALGO )  {
         this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK); 
         //this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK); 
         this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HTS_1); 
@@ -835,6 +868,7 @@ int svkMRSAutoPhase::GetZeroOrderPhasePeak( )
     }
     return peakNum; 
 }
+
 
 /*!
  * 
@@ -936,7 +970,9 @@ void svkMRSAutoPhase::FitPhase( int cellID, svkMRSAutoPhase::phasingModel model)
 
 #ifndef SWARM 
         //  maximize total peak height
-        if ( model == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
+        if ( model == svkMRSAutoPhase::FIRST_POINT_PHASE_0 ) {
+            itkOptimizer->SetMaximize( true );
+        } else if ( model == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
             itkOptimizer->SetMaximize( true );
         } else if ( model == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {
             itkOptimizer->SetMaximize( true );

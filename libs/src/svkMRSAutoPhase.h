@@ -89,11 +89,13 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         //  _1 are first order models
         typedef enum {
             UNDEFINED = -1, 
+            FIRST_POINT_0, 
             MAX_GLOBAL_PEAK_HT_0, 
             MAX_PEAK_HTS_0, 
             MIN_DIFF_FROM_MAG_0, 
             MAX_PEAK_HT_0_ONE_PEAK, 
             MIN_DIFF_FROM_MAG_0_ONE_PEAK, 
+            LAST_ZERO_ORDER_ALGO, 
             MAX_PEAK_HTS_1, 
             MIN_DIFF_FROM_MAG_1, 
             MAX_PEAK_HTS_01        
