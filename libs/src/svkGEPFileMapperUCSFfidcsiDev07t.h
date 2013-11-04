@@ -43,7 +43,7 @@
 #define SVK_GE_PFILE_MAPPER_UCSF_FIDCSI_DEV0_7T_H
 
 
-#include <svkGEPFileMapper.h>
+#include <svkGEPFileMapperUCSFfidcsi.h>
 
 
 namespace svk {

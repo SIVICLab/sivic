@@ -51,6 +51,7 @@
 #include <svkGEPFileMapperUCSF.h>
 #include <svkGEPFileMapperUCSFfidcsi.h>
 #include <svkGEPFileMapperUCSFfidcsiDev0.h>
+#include <svkGEPFileMapperUCSFfidcsiDev07t.h>
 #include <svkGEPFileMapperMPCSIOBL.h>
 #include <svkEPSIReorder.h>
 

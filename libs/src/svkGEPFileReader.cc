@@ -625,6 +625,11 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
 
+    } else if ( psd.find("fidcsi_dev07t") != vtkstd::string::npos ) {
+
+        //  fidcsi ucsf sequence 
+        aMapper = svkGEPFileMapperUCSFfidcsiDev07t::New();
+
     } else if ( psd.find("fidcsi") != vtkstd::string::npos ) {
 
         //  fidcsi ucsf sequence 
