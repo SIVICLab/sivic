@@ -95,7 +95,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
             MIN_DIFF_FROM_MAG_0, 
             MAX_PEAK_HT_0_ONE_PEAK, 
             MIN_DIFF_FROM_MAG_0_ONE_PEAK, 
-            LAST_ZERO_ORDER_ALGO, 
+            LAST_ZERO_ORDER_MODEL, 
             MAX_PEAK_HTS_1, 
             MIN_DIFF_FROM_MAG_1, 
             MAX_PEAK_HTS_01        
@@ -150,6 +150,8 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         void            FitPhase( int cellID, svkMRSAutoPhase::phasingModel model ); 
         int             GetZeroOrderPhasePeak( ); 
         int             GetPivot(); 
+        void            PrePhaseSetup();
+        void            PostPhaseCleanup(); 
 
 
 #ifdef SWARM
@@ -167,6 +169,8 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         short*                          selectionBoxMask;
         vtkImageComplex**               linearPhaseArrays; 
         int                             numFirstOrderPhaseValues;
+        bool                            isInputInTimeDomain;
+
 
 
 

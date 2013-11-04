@@ -48,6 +48,7 @@ int POWELL_CALLS_TO_GET_VALUE = 0;
 #include <vtkMath.h>
 
 #include <svkMRSAutoPhase.h>
+#include <svkMRSImageFFT.h>
 #include <svkSpecUtils.h>
 #include <svkPhaseSpec.h>
 
@@ -662,11 +663,8 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     data->GetSelectionBoxMask(selectionBoxMask, tolerance);
 
     //  Setup:  if firstorder, then transform to time domain
-oy
     //  Initialize first order phase arrays (e.g. -1 to 1 in nuTimePoint intervals): 
-    this->InitLinearPhaseArrays(); 
-
-    
+    this->PrePhaseSetup();
 
     if ( svkMRSAutoPhase::progress == NULL ) {
         int numThreads = this->GetNumberOfThreads();
@@ -694,8 +692,7 @@ oy
         svkMRSAutoPhase::progress = NULL;
     }
 
-    //  Make sure input spectra are in time domain for HSVD filter. 
-    //this->CheckOutputSpectralDomain();
+    this->PostPhaseCleanup();
 
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
@@ -707,6 +704,82 @@ oy
 
     return 1;
 };
+
+
+/*!
+ *
+ */
+void svkMRSAutoPhase::PrePhaseSetup()
+{
+
+    //  First order phase is in time domain: 
+    if (this->phaseModelType >= FIRST_POINT_0) { 
+
+        //  Get the domain of the input spectra:  time/frequency
+        svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+        string spectralDomain = data->GetDcmHeader()->GetStringValue( "SignalDomainColumns");
+        if ( spectralDomain.compare("TIME") == 0 ) {
+            this->isInputInTimeDomain = true;
+        } else {
+            this->isInputInTimeDomain = false;
+        }
+    
+        //  if necessary, transform data to time domain: 
+        if ( this->isInputInTimeDomain == false ) {
+    
+            svkMrsImageFFT* fft = svkMrsImageFFT::New();
+            fft->SetInput( data );
+    
+            fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    
+            //  frequency to time: 
+            fft->SetFFTMode( svkMrsImageFFT::REVERSE );
+    
+            fft->Update();
+            fft->Delete();
+    
+        }
+    }
+
+    if (this->phaseModelType >= LAST_ZERO_ORDER_MODEL) {
+        this->InitLinearPhaseArrays(); 
+    }
+}
+
+
+/*!
+ *
+ */
+void svkMRSAutoPhase::PostPhaseCleanup()
+{
+
+    //  First order phase is in time domain: 
+    if (this->phaseModelType >= FIRST_POINT_0) { 
+
+
+        //  if necessary, transform data to time domain: 
+        if ( this->isInputInTimeDomain == false ) {
+
+            svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    
+            svkMrsImageFFT* fft = svkMrsImageFFT::New();
+            fft->SetInput( data );
+    
+            fft->SetFFTDomain( svkMrsImageFFT::SPECTRAL );
+    
+            //  frequency to time: 
+            fft->SetFFTMode( svkMrsImageFFT::FORWARD );
+    
+            fft->Update();
+            fft->Delete();
+    
+        }
+    }
+
+    if (this->phaseModelType >= LAST_ZERO_ORDER_MODEL) {
+        this->InitLinearPhaseArrays(); 
+    }
+}
 
 
 /*
@@ -842,7 +915,7 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
     }
 
     //  if first order fitting, fit in two passes
-    if ( this->phaseModelType > svkMRSAutoPhase::LAST_ZERO_ORDER_ALGO )  {
+    if ( this->phaseModelType > svkMRSAutoPhase::LAST_ZERO_ORDER_MODEL)  {
         this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK); 
         //this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK); 
         this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HTS_1); 
@@ -970,7 +1043,7 @@ void svkMRSAutoPhase::FitPhase( int cellID, svkMRSAutoPhase::phasingModel model)
 
 #ifndef SWARM 
         //  maximize total peak height
-        if ( model == svkMRSAutoPhase::FIRST_POINT_PHASE_0 ) {
+        if ( model == svkMRSAutoPhase::FIRST_POINT_0 ) {
             itkOptimizer->SetMaximize( true );
         } else if ( model == svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0 ) {
             itkOptimizer->SetMaximize( true );
