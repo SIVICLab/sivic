@@ -166,6 +166,7 @@ ADD_LIBRARY(
     svkGEPFileMapperUCSF.cc
     svkGEPFileMapperUCSFfidcsi.cc
     svkGEPFileMapperUCSFfidcsiDev0.cc
+    svkGEPFileMapperUCSFfidcsiDev07t.cc
     svkGEPFileMapperMPCSIOBL.cc
     svkRawMapperUtils.cc
     svkIdfVolumeReader.cc
