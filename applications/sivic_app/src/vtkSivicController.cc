@@ -3135,7 +3135,8 @@ void vtkSivicController::EnableWidgets()
             this->preprocessingWidget->zeroFillSelectorSlices->EnabledOn();
             this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
             this->preprocessingWidget->customValueEntry->EnabledOn();
-            this->phaseWidget->phaseButton->EnabledOff(); 
+            this->phaseWidget->phaseH20Button->EnabledOff(); 
+            this->phaseWidget->phase0Button->EnabledOff(); 
 			this->combineWidget->magnitudeCombinationButton->EnabledOff();
 			this->combineWidget->additionCombinationButton->EnabledOff();
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Time" );
@@ -3143,7 +3144,8 @@ void vtkSivicController::EnableWidgets()
             this->spectraRangeWidget->SetSpecUnitsCallback(svkSpecPoint::PTS);
             this->spectraRangeWidget->unitSelectBox->EnabledOff();
         } else {
-            this->phaseWidget->phaseButton->EnabledOn(); 
+            this->phaseWidget->phaseH20Button->EnabledOn(); 
+            this->phaseWidget->phase0Button->EnabledOn(); 
             if( numChannels > 1 ) {
 				this->combineWidget->magnitudeCombinationButton->EnabledOn();
 				this->combineWidget->additionCombinationButton->EnabledOn();
@@ -3259,7 +3261,8 @@ void vtkSivicController::DisableWidgets()
     this->phaseWidget->phaseAllChannelsButton->EnabledOff(); 
     this->phaseWidget->phaseAllVoxelsButton->EnabledOff(); 
     this->processingWidget->fftButton->EnabledOff(); 
-    this->phaseWidget->phaseButton->EnabledOff(); 
+    this->phaseWidget->phaseH20Button->EnabledOff(); 
+    this->phaseWidget->phase0Button->EnabledOff(); 
 	this->combineWidget->magnitudeCombinationButton->EnabledOff();
 	this->combineWidget->additionCombinationButton->EnabledOff();
 

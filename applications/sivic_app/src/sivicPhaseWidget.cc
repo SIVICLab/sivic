@@ -35,6 +35,9 @@
 #include <svkSpecPoint.h>
 #include <sivicPhaseWidget.h>
 #include <vtkSivicController.h>
+#ifdef ITK_BUILD
+#include <svkMRSAutoPhase.h>
+#endif
 
 vtkStandardNewMacro( sivicPhaseWidget );
 vtkCxxRevisionMacro( sivicPhaseWidget, "$Revision$");
@@ -51,7 +54,8 @@ sivicPhaseWidget::sivicPhaseWidget()
     this->phaser = svkPhaseSpec::New();
     this->phaseAllVoxelsButton = NULL;
     this->phaseAllChannelsButton = NULL;
-    this->phaseButton = NULL;
+    this->phaseH20Button = NULL;
+    this->phase0Button = NULL;
     this->phasePivotEntry = NULL;
     this->phaseChangeInProgress = 0;
     this->progressCallback = vtkCallbackCommand::New();
@@ -81,9 +85,14 @@ sivicPhaseWidget::~sivicPhaseWidget()
         this->phaser = NULL;
     }
 
-    if( this->phaseButton != NULL ) {
-        this->phaseButton->Delete();
-        this->phaseButton= NULL;
+    if( this->phaseH20Button != NULL ) {
+        this->phaseH20Button->Delete();
+        this->phaseH20Button= NULL;
+    }
+
+    if( this->phase0Button != NULL ) {
+        this->phase0Button->Delete();
+        this->phase0Button= NULL;
     }
 
     if( this->phasePivotEntry != NULL ) {
@@ -175,12 +184,19 @@ void sivicPhaseWidget::CreateWidget()
     this->selectionBoxOnlyButton->SetText("Only selection box");
     this->selectionBoxOnlyButton->SelectedStateOn();
 
-    this->phaseButton = vtkKWPushButton::New();
-    this->phaseButton->SetParent( this );
-    this->phaseButton->Create( );
-    this->phaseButton->EnabledOff();
-    this->phaseButton->SetText( "Phase On Water");
-    this->phaseButton->SetBalloonHelpString("Prototype Auto Phasing.");
+    this->phaseH20Button = vtkKWPushButton::New();
+    this->phaseH20Button->SetParent( this );
+    this->phaseH20Button->Create( );
+    this->phaseH20Button->EnabledOff();
+    this->phaseH20Button->SetText( "Phase On Water");
+    this->phaseH20Button->SetBalloonHelpString("Prototype Auto Phasing.");
+
+    this->phase0Button = vtkKWPushButton::New();
+    this->phase0Button->SetParent( this );
+    this->phase0Button->Create( );
+    this->phase0Button->EnabledOff();
+    this->phase0Button->SetText( "Zero Order ");
+    this->phase0Button->SetBalloonHelpString("Zero Order Phase.");
 
     this->phasePivotEntry = vtkKWEntryWithLabel::New();
     this->phasePivotEntry->GetLabel()->SetText("Pivot Point ");
@@ -196,7 +212,8 @@ void sivicPhaseWidget::CreateWidget()
     this->Script("grid %s -row 1 -column 0 -columnspan 6 -sticky nwes", this->linearPhaseSlider->GetWidgetName() );
     this->Script("grid %s -row 2 -column 0 -columnspan 2 -sticky nwes", this->phasePivotEntry->GetWidgetName() );
     this->Script("grid %s -row 2 -column 2 -columnspan 5 -sticky nwes", checkButtons->GetWidgetName() );
-    this->Script("grid %s -row 3 -column 0 -columnspan 6 -sticky we -padx 4 -pady 2 ", this->phaseButton->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 0 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->phaseH20Button->GetWidgetName() );
+    this->Script("grid %s -row 3 -column 3 -columnspan 3 -sticky we -padx 4 -pady 2 ", this->phase0Button->GetWidgetName() );
 
     //this->Script("grid %s -row 1 -column 0 -columnspan 1 -sticky w", this->selectionBoxOnlyButton->GetWidgetName() );
 
@@ -235,7 +252,9 @@ void sivicPhaseWidget::CreateWidget()
     this->AddCallbackCommandObserver(
         this->phaseAllChannelsButton, vtkKWCheckButton::SelectedStateChangedEvent );
     this->AddCallbackCommandObserver(
-        this->phaseButton, vtkKWPushButton::InvokedEvent );
+        this->phaseH20Button, vtkKWPushButton::InvokedEvent );
+    this->AddCallbackCommandObserver(
+        this->phase0Button, vtkKWPushButton::InvokedEvent );
     this->AddCallbackCommandObserver(
         this->phasePivotEntry->GetWidget(), vtkKWEntry::EntryValueChangedEvent );
 
@@ -300,8 +319,10 @@ void sivicPhaseWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned
         this->SetPhaseUpdateExtent();
     } else if( caller == this->phaseAllVoxelsButton && event == vtkKWCheckButton::SelectedStateChangedEvent) {
         this->SetPhaseUpdateExtent();
-    } else if( caller == this->phaseButton && event == vtkKWPushButton::InvokedEvent ) {
+    } else if( caller == this->phaseH20Button && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
+    } else if( caller == this->phase0Button && event == vtkKWPushButton::InvokedEvent ) {
+        this->ExecuteZeroOrderPhase();
     } else if( caller == this->phasePivotEntry->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
         this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
         if( this->phaser->GetInput() != NULL ) {
@@ -379,6 +400,7 @@ void sivicPhaseWidget::UpdateLinearPhaseSliderBindings()
     this->linearPhaseSlider->Focus();
 }
 
+
 /*!
  *  Executes the Phasing.
  */
@@ -409,6 +431,59 @@ void sivicPhaseWidget::ExecutePhase()
         this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
         this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
     }
+}
+
+
+/*!
+ *  Executes the Phasing.
+ */
+void sivicPhaseWidget::ExecuteZeroOrderPhase()
+{
+#ifdef ITK_BUILD
+    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+    if( data != NULL ) {
+        // We'll turn the renderer off to avoid rendering intermediate steps
+        this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
+        svkMRSAutoPhase* zeroOrderPhase = svkMRSAutoPhase::New();
+        zeroOrderPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+
+//phaser->SetInputConnection(0, reader->GetOutputPort(0) );
+//model =  svkMRSAutoPhase::MAX_PEAK_HTS_0;
+//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
+//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_0); 
+//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_1); 
+//phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0); 
+//phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
+//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_01); 
+//model =  svkMRSAutoPhase::MAX_PEAK_HTS_1;
+
+        zeroOrderPhase->SetInput( data );
+        zeroOrderPhase->OnlyUseSelectionBox();
+
+        svkMRSAutoPhase::phasingModel model;
+        model = svkMRSAutoPhase::FIRST_POINT_0; 
+        //model = svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK; 
+        zeroOrderPhase->SetPhasingModel( model );
+
+        zeroOrderPhase->Update();
+        data->Modified();
+        zeroOrderPhase->RemoveObserver( progressCallback);
+        zeroOrderPhase->Delete();
+        bool useFullFrequencyRange = 0;
+        bool useFullAmplitudeRange = 1;
+        bool resetAmplitude = 1;
+        bool resetFrequency = 0;
+        string stringFilename = "ZeoOrderPhasedData";
+        this->sivicController->Open4DImage( data, stringFilename);
+        this->sivicController->EnableWidgets( );
+        //this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange, 
+        //                                   resetAmplitude, resetFrequency );
+        this->plotController->GetView()->TurnRendererOn(svkPlotGridView::PRIMARY);
+        this->plotController->GetView()->Refresh();
+        this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
+        this->GetApplication()->GetNthWindow(0)->SetStatusText(" Done ");
+    }
+#endif
 }
 
 

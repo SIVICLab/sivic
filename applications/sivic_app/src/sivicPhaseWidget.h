@@ -75,7 +75,8 @@ class sivicPhaseWidget : public sivicKWCompositeWidget
         vtkKWCheckButton*               phaseAllChannelsButton;
         vtkKWScaleWithEntry*            phaseSlider;
         vtkKWScaleWithEntry*            linearPhaseSlider;
-        vtkKWPushButton*                phaseButton;
+        vtkKWPushButton*                phaseH20Button;
+        vtkKWPushButton*                phase0Button;
         vtkKWEntryWithLabel*            phasePivotEntry;
         vtkKWCheckButton*               selectionBoxOnlyButton;
 
@@ -99,6 +100,7 @@ class sivicPhaseWidget : public sivicKWCompositeWidget
         void                        UpdateLinearPhaseSliderBindings();
         bool                        phaseChangeInProgress;
         void                        ExecutePhase();
+        void                        ExecuteZeroOrderPhase();
         void                        InitializePhaser();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
