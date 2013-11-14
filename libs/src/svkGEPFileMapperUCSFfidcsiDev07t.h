@@ -66,7 +66,8 @@ class svkGEPFileMapperUCSFfidcsiDev07t : public svkGEPFileMapperUCSFfidcsi
         svkGEPFileMapperUCSFfidcsiDev07t();
         ~svkGEPFileMapperUCSFfidcsiDev07t();
 
-        virtual void    GetXYZIndices(int dataIndex, int* x, int* y, int* z); 
+        virtual void    InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray );
+
 
 };
 

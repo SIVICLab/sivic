@@ -76,31 +76,16 @@ svkGEPFileMapperUCSFfidcsiDev07t::~svkGEPFileMapperUCSFfidcsiDev07t()
 
 
 /*!
- *  7T version of fidcsi, flips x and y indices
+ *  Virtual method for initializing the spectrum array for a given cell. 
+ *  Frequency is reversed in this psd. 
  */
-void svkGEPFileMapperUCSFfidcsiDev07t::GetXYZIndices(int dataIndex, int* x, int* y, int* z)
+void svkGEPFileMapperUCSFfidcsiDev07t::InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray )
 {
-    int numVoxels[3];
 
-    this->GetNumVoxels(numVoxels);
-
-    *z = static_cast <int> ( dataIndex/(numVoxels[0] * numVoxels[1]) );
-
-    if ( this->IsSwapOn() ) {
-
-        // If swap is on use numVoxels[1] for x dimension and numVoxels[0] for y dimension
-        *x = static_cast <int> ((dataIndex - (*z * numVoxels[0] * numVoxels[1]))/numVoxels[1]);
-
-        // In addition to swapping reverse the y direction
-        *y = numVoxels[1] - static_cast <int> ( dataIndex%numVoxels[1] ) - 1;
-
-    } else {
-        *x = static_cast <int> ( dataIndex%numVoxels[0] );
-        *y = static_cast <int> ((dataIndex - (*z * numVoxels[0] * numVoxels[1]))/numVoxels[0]);
-    }
-
-    // flip xdir and ydir
-    *x = numVoxels[0] - *x -1;
-    *y = numVoxels[1] - *y -1;
-
+    //  write the complex conjugate of the data: 
+    //  z = RE + iIM
+    //  z' = RE - iIM
+    tuple[1] = -1 * tuple[1];  
+    dataArray->SetTuple( freqPt, tuple );
 }
+
