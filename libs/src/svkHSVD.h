@@ -53,17 +53,17 @@
 #include <svkThreadedImageAlgorithm.h>
 
 
-#include <complex>
-
 
 extern "C" { // C interface
+    #include "f2c.h"
     #undef max
     #undef min
     #undef small
     #undef large
     //#include "clapack.h"
-    #include "f2c.h"
 }
+
+#include <complex>
 
 //  For some reason including the clapack.h inside the above extern"C" block
 //  doesn't work as expected. 
