@@ -42,7 +42,6 @@
 
 #include <svkDcmMriVolumeReader.h>
 #include <svkMriImageData.h>
-//#include <vtkByteSwap.h>
 #include <vtkType.h>
 #include <vtkDebugLeaks.h>
 #include <vtkStringArray.h>
@@ -52,7 +51,6 @@
 #include <svkEnhancedMRIIOD.h>
 #include <vtkstd/vector>
 #include <vtkstd/utility>
-#include <vtkstd/algorithm>
 #include <sstream>
 
 

@@ -54,8 +54,6 @@
 #include <sys/stat.h>
 #include <vtkstd/string>
 #include <vtkstd/vector>
-#include <vtkstd/utility>
-#include <vtkstd/algorithm>
 #include <sstream>
 #include <time.h>
 #include <math.h>
