@@ -55,9 +55,9 @@
 #include <svkGEPFileMapperMPCSIOBL.h>
 #include <svkEPSIReorder.h>
 
-#include <vtkstd/map>
-#include <vtkstd/vector>
-#include <vtkstd/string>
+#include <map>
+#include <vector>
+#include <string>
 
 
 namespace svk {
@@ -95,13 +95,13 @@ class svkGEPFileReader : public svkImageReader2
         svkGEPFileMapper*   GetMapper(); 
         void                SetMapperBehavior(svkGEPFileMapper::MapperBehavior type);
         void                SetDeidentify( svkDcmHeader::PHIType phiType ); 
-        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ); 
-        void                SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, 
-                                           vtkstd::string studyId ); 
-        void                SetDeidentificationStudyUID(   vtkstd::string deidStudyUID); 
-        void                SetDeidentificationSeriesUID(  vtkstd::string deidSeriesUID); 
-        void                SetDeidentificationInstanceUID(vtkstd::string deidImageUID); 
-        void                SetDeidentificationLandmarkUID(vtkstd::string deidLandmarkUID); 
+        void                SetDeidentify( svkDcmHeader::PHIType phiType, string deidentificationId ); 
+        void                SetDeidentify( svkDcmHeader::PHIType phiType, string patientId, 
+                                           string studyId ); 
+        void                SetDeidentificationStudyUID(   string deidStudyUID); 
+        void                SetDeidentificationSeriesUID(  string deidSeriesUID); 
+        void                SetDeidentificationInstanceUID(string deidImageUID); 
+        void                SetDeidentificationLandmarkUID(string deidLandmarkUID); 
 
         void                SetTemperature( float temp ); 
         void                SetChop( bool chop ); 
@@ -115,8 +115,9 @@ class svkGEPFileReader : public svkImageReader2
         void                OnlyParseHeader();
         void                Deidentify( ); 
         void                ModifyRawField( string rawField, string value); 
+        void                SetPSDLogic( string psdName ); 
 
-        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
+        map <string, vector< string > >          
                                                  GetPFMap(); 
         static float        LookupRawVersion(float rdbmRev, float rdbmRevSwapped); 
 
@@ -145,23 +146,23 @@ class svkGEPFileReader : public svkImageReader2
         void                                     InitOffsetsMap();
         virtual void                             SetProvenance(); 
 
-        vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > >          
+        map <string, vector< string > >          
                                                  pfMap;
 
 
     private:
 
         //  Methods:
-        vtkstd::string      GetOffsetsString();
+        string              GetOffsetsString();
         virtual void        InitDcmHeader();
         void                PrintOffsets(); 
         void                DumpHeader();
         void                PrintKeyValuePairs();
-        vtkstd::string      GetFieldAsString(vtkstd::string key); 
+        string              GetFieldAsString(string key); 
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 
-        vtkstd::string      UncompressUID(const char* compressedUID); 
+        string              UncompressUID(const char* compressedUID); 
         int                 GECompressUID(unsigned char* short_uid, char* long_uid); 
-        vtkstd::string      CompressUID(char* compressedUID); 
+        string              CompressUID(char* compressedUID); 
         float               GetPFileVersion(); 
         svkGEPFileMapper*   GetPFileMapper(); 
         static void         UpdateProgressCallback(
@@ -173,24 +174,24 @@ class svkGEPFileReader : public svkImageReader2
         void                FillInMissingInfo(); 
         void                SetDataByteOrder(); 
         void                DeidentifyData(); 
-        int                 GetNumElementsInField( vtkstd::string key ); 
-        int                 GetNumBytesInField( vtkstd::string key ); 
-        void                DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString); 
-        bool                IsFieldChar( vtkstd::string key ); 
-        bool                IsFieldUID( vtkstd::string key ); 
-        bool                IsFieldInt2( vtkstd::string key );
-        bool                IsFieldFloat4( vtkstd::string key );
-        bool                IsFieldInt4( vtkstd::string key );
-        bool                IsFieldLInt4( vtkstd::string key );
-        bool                IsFieldLInt8( vtkstd::string key );
-        vtkstd::string      GetSeriesUID(const char* fname); 
+        int                 GetNumElementsInField( string key ); 
+        int                 GetNumBytesInField( string key ); 
+        void                DeidentifyField( fstream* fs, string key, string deidString); 
+        bool                IsFieldChar( string key ); 
+        bool                IsFieldUID( string key ); 
+        bool                IsFieldInt2( string key );
+        bool                IsFieldFloat4( string key );
+        bool                IsFieldInt4( string key );
+        bool                IsFieldLInt4( string key );
+        bool                IsFieldLInt8( string key );
+        string              GetSeriesUID(const char* fname); 
 
         //  Members:
         ifstream*                       gepf;
         float                           pfileVersion;
         svkGEPFileMapper*               mapper;
        
-        vtkstd::map < vtkstd::string, void* >            
+        map < string, void* >            
                                         inputArgs; 
 
         vtkCallbackCommand*             progressCallback;
@@ -198,11 +199,12 @@ class svkGEPFileReader : public svkImageReader2
         vtkStringArray*                 tmpFileNames;
 
         svkDcmHeader::PHIType           phiType; 
-        vtkstd::string                  deidStudyId; 
-        vtkstd::string                  deidStudyUID; 
-        vtkstd::string                  deidSeriesUID; 
-        vtkstd::string                  deidImageUID; 
-        vtkstd::string                  deidLandmarkUID; 
+        string                          deidStudyId; 
+        string                          deidStudyUID; 
+        string                          deidSeriesUID; 
+        string                          deidImageUID; 
+        string                          deidLandmarkUID; 
+        string                          psdLogic; 
 
 };
 

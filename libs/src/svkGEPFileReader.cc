@@ -90,6 +90,7 @@ svkGEPFileReader::svkGEPFileReader()
     this->deidSeriesUID   = UNASSIGNED_UID; 
     this->deidImageUID    = UNASSIGNED_UID; 
     this->deidLandmarkUID = UNASSIGNED_UID; 
+    this->psdLogic        = "";
 }
 
 
@@ -118,7 +119,7 @@ svkGEPFileReader::~svkGEPFileReader()
     }
 
     //  Now delete all the pointers to input args:  
-    vtkstd::map< vtkstd::string, void* >::iterator mapIter;
+    map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
          //delete this->inputArgs[ mapIter->first ];  
         cout << " need to clean up memory" << endl; 
@@ -164,12 +165,12 @@ int svkGEPFileReader::CanReadFile(const char* fname)
                 this->InitOffsetsMap(); 
 
                 if ( this->pfileVersion < 12 ) {
-                    vtkstd::string geLogo = this->GetFieldAsString( "rhr.rh_logo" );
-                    if ( geLogo.find("GE") != vtkstd::string::npos) {
+                    string geLogo = this->GetFieldAsString( "rhr.rh_logo" );
+                    if ( geLogo.find("GE") != string::npos) {
                         isGEPFile = true; 
                     }
                 } else {
-                    vtkstd::string offset = this->GetFieldAsString( "rhr.rdb_hdr_off_data" );
+                    string offset = this->GetFieldAsString( "rhr.rdb_hdr_off_data" );
                     if ( offset.compare("66072") == 0 || 
                          offset.compare("145908") == 0 || 
                          offset.compare("149788") == 0 ||
@@ -303,7 +304,7 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
         this->GetOutput()->SetDcos(dcos);
 
-        vtkstd::string pfileName = this->GetFileNames()->GetValue(0); 
+        string pfileName = this->GetFileNames()->GetValue(0); 
         //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
 vtkDataArray* test = data->GetCellData()->GetArray(0);
@@ -335,7 +336,7 @@ void svkGEPFileReader::SetProvenance()
 
     int argIndex = -1; 
 
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
+    map < string, void* >::iterator  it;
 
     it = this->inputArgs.find( "SetMapperBehavior" );
     if ( it != this->inputArgs.end() ) {
@@ -369,7 +370,7 @@ void svkGEPFileReader::SetProvenance()
                 this->GetClassName(),
                 argIndex,
                 "patientDeidentificationId",
-                *( static_cast<vtkstd::string*>( this->inputArgs[ it->first ] ) )
+                *( static_cast<string*>( this->inputArgs[ it->first ] ) )
             );
         }
 
@@ -380,7 +381,7 @@ void svkGEPFileReader::SetProvenance()
                 this->GetClassName(),
                 argIndex,
                 "studyDeidentificationId",
-                *( static_cast<vtkstd::string*>( this->inputArgs[ it->first ] ) )
+                *( static_cast<string*>( this->inputArgs[ it->first ] ) )
             );
         }
     }
@@ -435,7 +436,7 @@ void svkGEPFileReader::InitDcmHeader()
         ); 
 
         //  Deidentify data if necessary
-        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        map < string, void* >::iterator  it;
         it = this->inputArgs.find( "phiType" );
         if ( it != this->inputArgs.end() ) {
             this->DeidentifyData(); 
@@ -458,7 +459,7 @@ void svkGEPFileReader::SetMapperBehavior(svkGEPFileMapper::MapperBehavior type)
     svkGEPFileMapper::MapperBehavior* typeTmp = new svkGEPFileMapper::MapperBehavior(type); 
     this->inputArgs[ "SetMapperBehavior" ] = static_cast<void*>( typeTmp );
 
-    vtkstd::map< vtkstd::string, void* >::iterator mapIter;
+    map< string, void* >::iterator mapIter;
     for ( mapIter = this->inputArgs.begin(); mapIter != this->inputArgs.end(); ++mapIter ) {
         cout << "input args: " << mapIter->first << " = " << *( static_cast<svkGEPFileMapper::MapperBehavior*>( this->inputArgs[ mapIter->first ] ) )<< endl;
     }
@@ -477,11 +478,11 @@ void svkGEPFileReader::SetEPSIParams( svkEPSIReorder::EPSIType type, svkEPSIReor
     int* epsiNumLobes = new int (numLobes);
     int* epsiNumSkip  = new int (numSkip);
 
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiType",     static_cast<void*>( epsiType ) ) );
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiAxis",     static_cast<void*>( epsiAxis ) ) );
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiFirst",    static_cast<void*>( epsiFirst ) ) );
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiNumLobes", static_cast<void*>( epsiNumLobes ) ) );
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "epsiNumSkip",  static_cast<void*>( epsiNumSkip ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiType",     static_cast<void*>( epsiType ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiAxis",     static_cast<void*>( epsiAxis ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiFirst",    static_cast<void*>( epsiFirst ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiNumLobes", static_cast<void*>( epsiNumLobes ) ) );
+    this->inputArgs.insert( pair<string, void*>( "epsiNumSkip",  static_cast<void*>( epsiNumSkip ) ) );
 
     this->SetMapperBehavior( svkGEPFileMapper::LOAD_EPSI );
 
@@ -504,10 +505,10 @@ void svkGEPFileReader::SetDeidentify(svkDcmHeader::PHIType phiType)
  *  Sets string to use for identification.  All PHI fields will be replaced with this 
  *  value in the loaded DCM header. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string deidentificationId ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string deidentificationId ) 
 {
     svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
-    vtkstd::string* idTmp = new vtkstd::string(deidentificationId);
+    string* idTmp = new string(deidentificationId);
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( idTmp );
     this->phiType = phiType; 
@@ -519,11 +520,11 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::str
  *  Sets string to use for identification.  All PHI fields will be replaced with this 
  *  value in the loaded DCM header. See !svkDcmHeader::Deidentify().  
  */
-void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, vtkstd::string patientId, vtkstd::string studyId ) 
+void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string patientId, string studyId ) 
 {
     svkDcmHeader::PHIType* phiTypeTmp = new svkDcmHeader::PHIType(phiType);
-    vtkstd::string* patIdTmp = new vtkstd::string(patientId);
-    vtkstd::string* studyIdTmp = new vtkstd::string(studyId);
+    string* patIdTmp = new string(patientId);
+    string* studyIdTmp = new string(studyId);
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "patientDeidentificationId" ] = static_cast<void*>( patIdTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( studyIdTmp);
@@ -550,7 +551,7 @@ void svkGEPFileReader::SetTemperature( float temp )
 {
     float* flagTemp = new float(temp);
     // possibly enforce use of vtk primitive types, everything is then a vtkObject and we have a pseudo homogeneous container.
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "temperature", static_cast<void*>( flagTemp ) ) );
+    this->inputArgs.insert( pair<string, void*>( "temperature", static_cast<void*>( flagTemp ) ) );
 
 }
 
@@ -560,7 +561,7 @@ void svkGEPFileReader::SetTemperature( float temp )
 void svkGEPFileReader::SetChop( bool chop )
 {
     bool* chopTmp = new bool(chop); 
-    this->inputArgs.insert( pair<vtkstd::string, void*>( "chop", static_cast<void*>(chopTmp) ) );
+    this->inputArgs.insert( pair<string, void*>( "chop", static_cast<void*>(chopTmp) ) );
     
 }
 
@@ -571,26 +572,37 @@ void svkGEPFileReader::SetChop( bool chop )
 void svkGEPFileReader::DeidentifyData()
 {
 
-    vtkstd::map < vtkstd::string, void* >::iterator itPhi     = this->inputArgs.find( "phiType" );
-    vtkstd::map < vtkstd::string, void* >::iterator itPatId   = this->inputArgs.find( "patientDeidentificationId" );
-    vtkstd::map < vtkstd::string, void* >::iterator itStudyId = this->inputArgs.find( "studyDeidentificationId" );
+    map < string, void* >::iterator itPhi     = this->inputArgs.find( "phiType" );
+    map < string, void* >::iterator itPatId   = this->inputArgs.find( "patientDeidentificationId" );
+    map < string, void* >::iterator itStudyId = this->inputArgs.find( "studyDeidentificationId" );
 
     if ( itPatId != this->inputArgs.end() && itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
                                                 *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) ), 
-                                                *( static_cast< vtkstd::string* >( this->inputArgs[ itPatId->first ] ) ),
-                                                *( static_cast< vtkstd::string* >( this->inputArgs[ itStudyId->first ] ) ) 
+                                                *( static_cast< string* >( this->inputArgs[ itPatId->first ] ) ),
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) ) 
                                            ); 
     } else if ( itStudyId != this->inputArgs.end() ) { 
         this->GetOutput()->GetDcmHeader()->Deidentify( 
                                                 *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) ), 
-                                                *( static_cast< vtkstd::string* >( this->inputArgs[ itStudyId->first ] ) )
+                                                *( static_cast< string* >( this->inputArgs[ itStudyId->first ] ) )
                                            ); 
     } else {
         this->GetOutput()->GetDcmHeader()->Deidentify( 
                                                 *( static_cast< svkDcmHeader::PHIType* >( this->inputArgs[ itPhi->first ] ) )
                                            ); 
     }
+}
+
+
+/*
+ *  Method to reset the "psdname" which is used to select a particular mapper class strategy for 
+ *  reading parsing the data. 
+ */
+void svkGEPFileReader::SetPSDLogic( string psdName )
+{
+    this->psdLogic = psdName; 
+cout << "Check 2" << endl;
 }
 
 
@@ -602,11 +614,17 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
 {
     svkGEPFileMapper* aMapper = NULL; 
 
-    vtkstd::string psd = this->pfMap["rhi.psdname"][3];
+    string psd = this->pfMap["rhi.psdname"][3];
     //convert to lower case:
-    vtkstd::string::iterator it;
+    string::iterator it;
     for ( it = psd.begin(); it < psd.end(); it++ ) {
         *it = (char)tolower(*it);
+    }
+
+    //  reset the psd to determine the mapper logic strategy if necessary
+    if ( this->psdLogic.size() > 0 ) {
+        psd.assign( this->psdLogic ); 
+cout << "check 3 " << psd << endl;
     }
 
   
@@ -615,22 +633,22 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
         // product GE sequence:  
         aMapper = svkGEPFileMapper::New();
 
-    } else if ( psd.find("probe") != vtkstd::string::npos || psd.find("prose") != vtkstd::string::npos ) {
+    } else if ( psd.find("probe") != string::npos || psd.find("prose") != string::npos ) {
 
         //  Assume that if it's not an exact match that it is a UCSF research sequence. 
         aMapper = svkGEPFileMapperUCSF::New();
 
-    } else if ( psd.find("fidcsi_ucsf_dev0") != vtkstd::string::npos ) {
+    } else if ( psd.find("fidcsi_ucsf_dev0") != string::npos ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev0::New();
 
-    } else if ( psd.find("fidcsi_dev07t") != vtkstd::string::npos ) {
+    } else if ( psd.find("UCSF_MNS_7T") != string::npos ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev07t::New();
 
-    } else if ( psd.find("fidcsi") != vtkstd::string::npos ) {
+    } else if ( psd.find("fidcsi") != string::npos ) {
 
         //  fidcsi ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsi::New();
@@ -674,7 +692,7 @@ void svkGEPFileReader::ReadGEPFile()
     if (this->GetDebug()) { 
         cout << "FN: " << this->GetFileName() << endl;
     }
-    vtkstd::string refSUID = this->GetSeriesUID( this->GetFileName());
+    string refSUID = this->GetSeriesUID( this->GetFileName());
     
     this->GlobFileNames();  	 	 
 
@@ -730,9 +748,9 @@ void svkGEPFileReader::ReadGEPFile()
 /*  
  *  Quick parse of header to get seriesInstanceUID
  */
-vtkstd::string svkGEPFileReader::GetSeriesUID(const char* fname)
+string svkGEPFileReader::GetSeriesUID(const char* fname)
 {
-    vtkstd::string seriesInstanceUID;     
+    string seriesInstanceUID;     
 
     //  to avoid recursion when getting the seriesUID from just one file: 
     if ( this->checkSeriesUID ) {
@@ -776,8 +794,8 @@ void svkGEPFileReader::ParsePFile()
     this->SetDataByteOrder();
     this->InitOffsetsMap(); 
 
-    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
-    vtkstd::string key; 
+    map< string, vector<string> >::iterator mapIter;
+    string key; 
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
         key = mapIter->first; 
         this->pfMap[key].push_back( this->GetFieldAsString( key ) );
@@ -825,12 +843,12 @@ int svkGEPFileReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInform
 void svkGEPFileReader::PrintOffsets()
 {
     //  Print out key value pairs parsed from header:
-    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    map< string, vector<string> >::iterator mapIter;
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
 
         cout << "OFFSETS " << " " << mapIter->first << " = ";
     
-        vtkstd::vector<vtkstd::string>::iterator it;
+        vector<string>::iterator it;
         for ( it = this->pfMap[mapIter->first].begin() ; it < this->pfMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;           
         }
@@ -845,7 +863,7 @@ void svkGEPFileReader::PrintOffsets()
 void svkGEPFileReader::DumpHeader()
 {
     //  Print out key value pairs parsed from header:
-    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    map< string, vector<string> >::iterator mapIter;
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
         cout << setiosflags(ios::left) << setw(25) << mapIter->first << " = " <<  this->pfMap[mapIter->first][3] << endl;
     }
@@ -859,12 +877,12 @@ void svkGEPFileReader::PrintKeyValuePairs()
 {
 
     //  Print out key value pairs parsed from header:
-    vtkstd::map< vtkstd::string, vtkstd::vector<vtkstd::string> >::iterator mapIter;
+    map< string, vector<string> >::iterator mapIter;
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
 
         cout << "KEY:VALUE: " << " " << mapIter->first << " = ";
 
-        vtkstd::vector<vtkstd::string>::iterator it;
+        vector<string>::iterator it;
         for ( it = this->pfMap[mapIter->first].begin() ; it < this->pfMap[mapIter->first].end(); it++ ) {
             cout << " " << *it ;
         }
@@ -905,12 +923,12 @@ void svkGEPFileReader::SetDataByteOrder()
  */
 void svkGEPFileReader::InitOffsetsMap()
 {
-    vtkstd::string offsets = this->GetOffsetsString();
+    string offsets = this->GetOffsetsString();
 
     size_t delim;
 
-    vtkstd::string fieldName;
-    vtkstd::string val;
+    string fieldName;
+    string val;
 
     //  If pfMap has already been initialized with offsets, 
     //  then just return 
@@ -918,7 +936,7 @@ void svkGEPFileReader::InitOffsetsMap()
         return; 
     }
 
-    while ( (delim = offsets.find(",")) != vtkstd::string::npos ) {
+    while ( (delim = offsets.find(",")) != string::npos ) {
 
         fieldName = this->StripWhite( offsets.substr( 0, delim ) );
 
@@ -951,7 +969,7 @@ svkDcmHeader::DcmPixelDataFormat svkGEPFileReader::GetFileType()
  *
  *  Read from file, data of specified type and offset into a string.  
  */
-vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
+string svkGEPFileReader::GetFieldAsString( string key )
 {
 
     //  Seek to offset for the specified key:
@@ -964,7 +982,7 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
 
     ostringstream ossValue;
 
-    vtkstd::string type = this->StripWhite( this->pfMap[key][0] ); 
+    string type = this->StripWhite( this->pfMap[key][0] ); 
 
     int numElements;
     istringstream* iss = new istringstream();
@@ -1043,7 +1061,7 @@ vtkstd::string svkGEPFileReader::GetFieldAsString( vtkstd::string key )
         ossValue << charVal;
         delete [] charVal; 
         //  Uncompress UIDfields:
-        vtkstd::string tmp = this->UncompressUID( ossValue.str().c_str() );  
+        string tmp = this->UncompressUID( ossValue.str().c_str() );  
         ossValue.clear();     
         ossValue.str("");     
         ossValue << tmp ; 
@@ -1189,25 +1207,25 @@ int svkGEPFileReader::GEUncompressUID(unsigned char *short_uid, char *long_uid)
 /*
  *  Uncompresses the UID from the raw header. 
  */
-vtkstd::string svkGEPFileReader::UncompressUID(const char* compressedUID)
+string svkGEPFileReader::UncompressUID(const char* compressedUID)
 {
     char uncompressedUID[BUFSIZ];
     this->GEUncompressUID((unsigned char*)compressedUID, uncompressedUID);
-    return vtkstd::string(uncompressedUID);
+    return string(uncompressedUID);
 }
 
 
 /*
  *  Compresses the UID for raw header. 
  */
-vtkstd::string svkGEPFileReader::CompressUID(char* uncompressedUID)
+string svkGEPFileReader::CompressUID(char* uncompressedUID)
 {
     char compressedUID[BUFSIZ];
     if ( ! this->GECompressUID((unsigned char*)compressedUID, uncompressedUID) ) {
         cout << "ERROR! Value does not represent a valid UID: " << uncompressedUID << endl;
         exit(1);
     }
-    return vtkstd::string(compressedUID);
+    return string(compressedUID);
 }
 
 
@@ -1281,7 +1299,7 @@ float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped)
  *  Get a string containing a mapping of offsets and datatype for pfile fields. 
  *  for the specified pfile version. 
  */
-vtkstd::string svkGEPFileReader::GetOffsetsString()
+string svkGEPFileReader::GetOffsetsString()
 {
 
     //  fieldName                           nativeType  numElements offset stringValue
@@ -1289,7 +1307,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
     //  rhr.rh_rdbm_rev                    , FLOAT_4,   1   ,       0       value
     //  rhr.rh_logo                        , CHAR   ,   10  ,       34
 
-    vtkstd::string offsets; 
+    string offsets; 
 
     if ( (int)(this->pfileVersion) == 9 ) {
 
@@ -2929,7 +2947,7 @@ vtkstd::string svkGEPFileReader::GetOffsetsString()
 /*
  *
  */
-vtkstd::map <vtkstd::string, vtkstd::vector< vtkstd::string > > 
+map <string, vector< string > > 
 svkGEPFileReader::GetPFMap() 
 {
     return this->pfMap; 
@@ -2939,7 +2957,7 @@ svkGEPFileReader::GetPFMap()
 /*
  *  Get the number of elements in the header field for the specified key:
  */
-int svkGEPFileReader::GetNumElementsInField( vtkstd::string key )
+int svkGEPFileReader::GetNumElementsInField( string key )
 {
     int numElements =svkUtils::StringToInt( this->pfMap[key][1] ); 
     return numElements; 
@@ -2949,11 +2967,11 @@ int svkGEPFileReader::GetNumElementsInField( vtkstd::string key )
 /*
  *  Get the number of bytes in the header field for the specified key:
  */
-int svkGEPFileReader::GetNumBytesInField( vtkstd::string key )
+int svkGEPFileReader::GetNumBytesInField( string key )
 {
 
     int numElements = this->GetNumElementsInField( key );
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     int numBytes = 0;     
 
@@ -2986,9 +3004,9 @@ int svkGEPFileReader::GetNumBytesInField( vtkstd::string key )
 /*
  *  Return true if the raw field is of type char. 
  */
-bool svkGEPFileReader::IsFieldChar( vtkstd::string key )
+bool svkGEPFileReader::IsFieldChar( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("CHAR") == 0) {
         return true; 
@@ -3001,9 +3019,9 @@ bool svkGEPFileReader::IsFieldChar( vtkstd::string key )
 /*
  *  Return true if the raw field is of type char. 
  */
-bool svkGEPFileReader::IsFieldUID( vtkstd::string key )
+bool svkGEPFileReader::IsFieldUID( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("UID") == 0) {
         return true; 
@@ -3016,9 +3034,9 @@ bool svkGEPFileReader::IsFieldUID( vtkstd::string key )
 /*
  *  Return true if the raw field is of type float 4.
  */
-bool svkGEPFileReader::IsFieldFloat4( vtkstd::string key )
+bool svkGEPFileReader::IsFieldFloat4( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("FLOAT_4") == 0) {
         return true;
@@ -3031,9 +3049,9 @@ bool svkGEPFileReader::IsFieldFloat4( vtkstd::string key )
 /*
  *  Return true if the raw field is of type int 2.
  */
-bool svkGEPFileReader::IsFieldInt2( vtkstd::string key )
+bool svkGEPFileReader::IsFieldInt2( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("INT_2") == 0) {
         return true;
@@ -3046,9 +3064,9 @@ bool svkGEPFileReader::IsFieldInt2( vtkstd::string key )
 /*
  *  Return true if the raw field is of type int 4.
  */
-bool svkGEPFileReader::IsFieldInt4( vtkstd::string key )
+bool svkGEPFileReader::IsFieldInt4( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("INT_4") == 0) {
         return true;
@@ -3061,9 +3079,9 @@ bool svkGEPFileReader::IsFieldInt4( vtkstd::string key )
 /*
  *  Return true if the raw field is of type long int .
  */
-bool svkGEPFileReader::IsFieldLInt4( vtkstd::string key )
+bool svkGEPFileReader::IsFieldLInt4( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("LINT_4") == 0) {
         return true;
@@ -3076,9 +3094,9 @@ bool svkGEPFileReader::IsFieldLInt4( vtkstd::string key )
 /*
  *  Return true if the raw field is of type long int .
  */
-bool svkGEPFileReader::IsFieldLInt8( vtkstd::string key )
+bool svkGEPFileReader::IsFieldLInt8( string key )
 {
-    vtkstd::string type = this->StripWhite( this->pfMap[ key ][0] );
+    string type = this->StripWhite( this->pfMap[ key ][0] );
 
     if ( type.compare("LINT_8") == 0) {
         return true;
@@ -3087,10 +3105,11 @@ bool svkGEPFileReader::IsFieldLInt8( vtkstd::string key )
     }
 }
 
+
 /*
  *  In place deidentification of field
  */
-void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd::string deidString)
+void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidString)
 {
     int offset;
     int numBytes;
@@ -3192,7 +3211,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
             //  generate one here. 
             //  =======================================    
             cout << "replace UID with " << key << " -> " << deidString <<  " nb: " << numBytes << endl; 
-            vtkstd::string compressedUID = this->CompressUID( (char*)deidString.c_str() );  
+            string compressedUID = this->CompressUID( (char*)deidString.c_str() );  
             //cout << "CHECK UID: " <<  this->UncompressUID( compressedUID.c_str() ) << endl;;  
             fs->seekp( offset, ios_base::beg );
             fs->write( compressedUID.c_str(), numBytes);
@@ -3207,6 +3226,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, vtkstd::string key, vtkstd:
 
 
 }
+
 
 /* 
  *  In place modification of specified raw file field.  
@@ -3246,7 +3266,7 @@ void svkGEPFileReader::ModifyRawField( string rawField, string value)
 /*!
  *  Set the StudyInstanceUID to be used for deidentification:  
  */
-void svkGEPFileReader::SetDeidentificationStudyUID(vtkstd::string deidStudyUID) 
+void svkGEPFileReader::SetDeidentificationStudyUID(string deidStudyUID) 
 {
     this->deidStudyUID.assign(deidStudyUID); 
 }
@@ -3254,7 +3274,7 @@ void svkGEPFileReader::SetDeidentificationStudyUID(vtkstd::string deidStudyUID)
 /*!
  *  Set the SeriesInstanceUID to be used for deidentification:  
  */
-void svkGEPFileReader::SetDeidentificationSeriesUID(vtkstd::string deidSeriesUID) 
+void svkGEPFileReader::SetDeidentificationSeriesUID(string deidSeriesUID) 
 {
     this->deidSeriesUID.assign(deidSeriesUID); 
 }
@@ -3262,7 +3282,7 @@ void svkGEPFileReader::SetDeidentificationSeriesUID(vtkstd::string deidSeriesUID
 /*!
  *  Set the Image InstanceUID to be used for deidentification:  
  */
-void svkGEPFileReader::SetDeidentificationInstanceUID(vtkstd::string deidImageUID) 
+void svkGEPFileReader::SetDeidentificationInstanceUID(string deidImageUID) 
 {
     this->deidImageUID.assign(deidSeriesUID); 
 }
@@ -3270,7 +3290,7 @@ void svkGEPFileReader::SetDeidentificationInstanceUID(vtkstd::string deidImageUI
 /*!
  *  Set the Landmark UID to be used for deidentification:  
  */
-void svkGEPFileReader::SetDeidentificationLandmarkUID(vtkstd::string deidLandmarkUID) 
+void svkGEPFileReader::SetDeidentificationLandmarkUID(string deidLandmarkUID) 
 {
     this->deidLandmarkUID.assign(deidLandmarkUID); 
 }
