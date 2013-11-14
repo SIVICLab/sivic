@@ -119,6 +119,9 @@ int main (int argc, char** argv)
     usemsg += "                             default first is set to 1, so no initial offset.        \n";
     usemsg += "---------------------------------------------------------------------------------    \n"; 
     usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data \n";
+#ifdef UCSF_INTERNAL
+    usemsg += "   --ucsf_MNS_7T             Use reading logic specific to 7T MNS                    \n";
+#endif
     usemsg += "   -h                        Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
@@ -142,6 +145,7 @@ int main (int argc, char** argv)
     int  epsiNumLobes    = UNDEFINED;
     int  epsiSkip        = UNDEFINED;
     int  epsiFirst       = 0;
+    bool isUCSFMNS7T     = false;  
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
@@ -156,7 +160,8 @@ int main (int argc, char** argv)
         FLAG_EPSI_AXIS,
         FLAG_EPSI_NUM_LOBES,
         FLAG_EPSI_SKIP,
-        FLAG_EPSI_FIRST
+        FLAG_EPSI_FIRST, 
+        FLAG_UCSF_MNS_7T
     }; 
 
 
@@ -173,6 +178,7 @@ int main (int argc, char** argv)
         {"epsi_lobes",       required_argument, NULL,  FLAG_EPSI_NUM_LOBES},
         {"epsi_skip",        required_argument, NULL,  FLAG_EPSI_SKIP},
         {"epsi_first",       required_argument, NULL,  FLAG_EPSI_FIRST},
+        {"ucsf_MNS_7T",      no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
         {0, 0, 0, 0}
     };
 
@@ -231,6 +237,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_EPSI_FIRST:
                 epsiFirst = atoi(optarg) - 1;
+                break;
+            case FLAG_UCSF_MNS_7T:
+                isUCSFMNS7T = true; 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -376,7 +385,11 @@ int main (int argc, char** argv)
         );
     }
 
-    
+    //  if necessary, set the logic to override the default PSD determined logic in the Reader. 
+    if ( isUCSFMNS7T ) { 
+        reader->SetPSDLogic("UCSF_MNS_7T"); 
+    } 
+
     reader->Update(); 
 
     svkImageData* currentImage = svkMrsImageData::SafeDownCast( reader->GetOutput() ); 
