@@ -190,6 +190,9 @@ class svkGEPFileMapper : public vtkObject
                                     int channel = 0
                                 );
 
+        virtual void            InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray ); 
+
+
         int                     GetHeaderValueAsInt(vtkstd::string key);
         long long int           GetHeaderValueAsLongInt(vtkstd::string key); 
         float                   GetHeaderValueAsFloat(vtkstd::string key);

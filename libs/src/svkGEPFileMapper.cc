@@ -2435,7 +2435,7 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
         for (int i = 0; i < numFreqPts; i++) {
             tuple[0] = this->chopVal * this->specData[ offset + (i * numComponents) ]; 
             tuple[1] = this->chopVal * this->specData[ offset + (i * numComponents) + 1 ]; 
-            dataArray->SetTuple( i, tuple );  
+            this->InitSpecTuple(numFreqPts, i, tuple, dataArray); 
         }
     } else {
         tuple[0] = 0;  
@@ -2446,6 +2446,16 @@ void svkGEPFileMapper::SetCellSpectrum(vtkImageData* data, bool wasSampled, int 
     }
 
     return;
+}
+
+
+/*!
+ *  Virtual method for initializing the spectrum array for a given cell. 
+ *  Some data sets have time/frequency reversed
+ */
+void svkGEPFileMapper::InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray )
+{
+    dataArray->SetTuple( freqPt, tuple );  
 }
 
 
