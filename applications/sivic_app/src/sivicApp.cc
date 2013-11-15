@@ -730,13 +730,16 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     toolbar->AddWidget( wlResetButton );
 
     // Create Window Voxel Selection Reset 
-    vtkKWPushButton* vsResetButton = vtkKWPushButton::New();
+    vtkKWPushButtonWithMenu* vsResetButton = vtkKWPushButtonWithMenu::New();
     vsResetButton->SetParent( toolbar->GetFrame() );
     vsResetButton->Create();
     //vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconCameraMini ); 
-    vsResetButton->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera ); 
-    vsResetButton->SetCommand( this->sivicController, "HighlightSelectionBoxVoxels");
-    vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice." );
+    vsResetButton->GetMenuButton()->SetImageToPredefinedIcon( vtkKWIcon::IconResetCamera );
+    vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice or reset data range." );
+    vtkKWMenu* vsResetMenu = vsResetButton->GetMenu();
+    vsResetMenu->AddRadioButton("Reset View to Voxels Within Selection Box", this->sivicController, "HighlightSelectionBoxVoxels");
+    vsResetMenu->AddRadioButton("Reset Estimated 4D Amplitude Range", this->sivicController, "Reset4DAmplitudeRange 0");
+    vsResetMenu->AddRadioButton("Reset Full 4D Data Range", this->sivicController, "Reset4DAmplitudeRange 1");
     toolbar->AddWidget( vsResetButton );
 
     // Create Rotation Style 

@@ -3072,6 +3072,16 @@ void vtkSivicController::ResetRange( bool useFullFrequencyRange, bool useFullAmp
 
 
 /*!
+ *  Resets the amplitude range for the 4D data, either by estimation or full range.
+ */
+void vtkSivicController::Reset4DAmplitudeRange( bool useFullRange ) {
+    if( this->spectraRangeWidget != NULL ) {
+        this->spectraRangeWidget->ResetAmplitudeRange(useFullRange);
+    }
+}
+
+
+/*!
  * Resets the current channel and the number of channels 
  */
 void vtkSivicController::ResetChannel( )

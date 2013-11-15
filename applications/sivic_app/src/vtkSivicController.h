@@ -231,6 +231,7 @@ class vtkSivicController : public vtkObject
         void                       RestoreSession( );
         void                       ResetRange( bool useFullFrequencyRange = 0, bool useFullAmplitudeRange = 0,
                                                bool resetAmplitude = 1, bool resetFrequency = 1);
+        void                       Reset4DAmplitudeRange( bool useFullRange );
 
         void                       ResetChannel( );
         string                     GetPrinterName( );
