@@ -89,3 +89,13 @@ void svkGEPFileMapperUCSFfidcsiDev07t::InitSpecTuple( int numFreqPts, int freqPt
     dataArray->SetTuple( freqPt, tuple );
 }
 
+
+/*!
+ *  Gets the chemical shift reference taking into account acquisition frequency offset
+ *  and the acquisition sample temperature.
+ */
+float svkGEPFileMapperUCSFfidcsiDev07t::GetPPMRef()
+{
+    return 178;
+}
+

@@ -67,6 +67,7 @@ class svkGEPFileMapperUCSFfidcsiDev07t : public svkGEPFileMapperUCSFfidcsi
         ~svkGEPFileMapperUCSFfidcsiDev07t();
 
         virtual void    InitSpecTuple( int numFreqPts, int freqPt, float* tuple, vtkDataArray* dataArray );
+        virtual float   GetPPMRef();
 
 
 };
