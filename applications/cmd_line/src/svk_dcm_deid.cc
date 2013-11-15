@@ -138,7 +138,7 @@ int main (int argc, char** argv)
     }
 
     svkImageData* image = svkMriImageData::New(); 
-    image->GetDcmHeader()->ReadDcmFile( inputFileName, 10000000000 );
+    image->GetDcmHeader()->ReadDcmFile( inputFileName, VTK_LONG_MAX );
     image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, deidID); 
     if ( studyUID.size() == 0 ) {
         image->GetDcmHeader()->InsertUniqueUID("StudyInstanceUID");
