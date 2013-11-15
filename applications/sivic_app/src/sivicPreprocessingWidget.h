@@ -84,6 +84,7 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
         vtkKWMenuButton*                apodizationSelectorCols;
         vtkKWMenuButton*                apodizationSelectorRows;
         vtkKWMenuButton*                apodizationSelectorSlices;
+        vtkKWEntry*						apodFreqEntry;
         vtkKWEntry*						customValueEntry;
         vtkKWLabel*                     specLabel; 
         vtkKWLabel*                     colsLabel; 
@@ -97,6 +98,7 @@ class sivicPreprocessingWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
+        float           GetApodizationFWHH(); 
 
 
 

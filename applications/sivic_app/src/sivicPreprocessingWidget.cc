@@ -34,6 +34,7 @@ sivicPreprocessingWidget::sivicPreprocessingWidget()
     this->colsLabel = NULL;
     this->rowsLabel = NULL;
     this->slicesLabel = NULL;
+    this->apodFreqEntry = NULL;
     this->customValueEntry = NULL;
 
     this->progressCallback = vtkCallbackCommand::New();
@@ -112,6 +113,11 @@ sivicPreprocessingWidget::~sivicPreprocessingWidget()
     if( this->slicesLabel != NULL ) {
         this->slicesLabel->Delete();
         this->slicesLabel = NULL;
+    }
+
+    if( this->apodFreqEntry != NULL ) {
+        this->apodFreqEntry->Delete();
+        this->apodFreqEntry = NULL;
     }
 
     if( this->customValueEntry != NULL ) {
@@ -293,6 +299,12 @@ void sivicPreprocessingWidget::CreateWidget()
     apodizationTitle->SetJustificationToLeft();
     apodizationTitle->Create();
 
+    vtkKWLabel* hzTitle = vtkKWLabel::New(); 
+    hzTitle->SetText( string("Hz").c_str() );
+    hzTitle->SetParent(this);
+    hzTitle->SetJustificationToLeft();
+    hzTitle->Create();
+
     vtkKWLabel* specTitle = vtkKWLabel::New(); 
     specTitle->SetText( string("Spec").c_str() );
     specTitle->SetParent(this);
@@ -328,28 +340,35 @@ void sivicPreprocessingWidget::CreateWidget()
     this->customValueEntry->Create();
     this->customValueEntry->EnabledOff();
 
-    this->Script("grid %s -row 0 -column 1 -sticky wnse", specTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 2 -sticky wnse", colsTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 3 -sticky wnse", rowsTitle->GetWidgetName(), 4);
-    this->Script("grid %s -row 0 -column 4 -sticky wnse", sliceTitle->GetWidgetName(), 4);
+    this->apodFreqEntry = vtkKWEntry::New();
+    this->apodFreqEntry->SetParent(this);
+    this->apodFreqEntry->Create();
+    this->apodFreqEntry->EnabledOff();
+
+    this->Script("grid %s -row 0 -column 1 -sticky wnse", hzTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 2 -sticky wnse", specTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 3 -sticky wnse", colsTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 4 -sticky wnse", rowsTitle->GetWidgetName(), 4);
+    this->Script("grid %s -row 0 -column 5 -sticky wnse", sliceTitle->GetWidgetName(), 4);
 
 
     this->Script("grid %s -row 1 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 4);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 4", this->apodFreqEntry->GetWidgetName(), 1);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorSpec->GetWidgetName(),   2);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorCols->GetWidgetName(),   3);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorRows->GetWidgetName(),   4);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 2", this->apodizationSelectorSlices->GetWidgetName(), 5);
 
     this->Script("grid %s -row 2 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSpec->GetWidgetName(),   1);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorCols->GetWidgetName(),   2);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorRows->GetWidgetName(),   3);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSlices->GetWidgetName(), 4);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorSpec->GetWidgetName(),   2);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorCols->GetWidgetName(),   3);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorRows->GetWidgetName(),   4);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 2", this->zeroFillSelectorSlices->GetWidgetName(), 5);
 
 
-    this->Script("grid %s -row %d -column 0 -sticky nwse -padx 2 -pady 1", customTitle->GetWidgetName(), 3);
-    this->Script("grid %s -row %d -column 1 -sticky nwse -padx 2 -pady 1", this->customValueEntry->GetWidgetName(), 3);
-    this->Script("grid %s -row %d -column 4 -sticky nwse -padx 2 -pady 1", this->applyButton->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 1 -sticky nwse -padx 2 -pady 2", customTitle->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 2 -sticky nwse -padx 2 -pady 4", this->customValueEntry->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 5 -sticky nwse -padx 2 -pady 2", this->applyButton->GetWidgetName(), 3);
 
     this->Script("grid rowconfigure %s 0 -weight 0", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1 -weight 0", this->GetWidgetName() );
@@ -357,10 +376,11 @@ void sivicPreprocessingWidget::CreateWidget()
     this->Script("grid rowconfigure %s 3 -weight 0", this->GetWidgetName() );
 
     this->Script("grid columnconfigure %s 0 -weight 0 ", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 1 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 2 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 3 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
-    this->Script("grid columnconfigure %s 4 -weight 1 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 1 -weight 1 -uniform 1 -minsize 42", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 2 -weight 2 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 3 -weight 2 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 4 -weight 2 -uniform 1 -minsize 84", this->GetWidgetName() );
+    this->Script("grid columnconfigure %s 5 -weight 2 -uniform 1 -minsize 84", this->GetWidgetName() );
 
     this->AddCallbackCommandObserver( this->applyButton, vtkKWPushButton::InvokedEvent );
 
@@ -457,16 +477,8 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
             this->sivicController->ResetRange( useFullFrequencyRange, useFullAmplitudeRange,
                                           resetAmplitude, resetFrequency );
         }
-		float fwhh = 4.0f;
-	    vtkstd::string nucleus = data->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
-		if( nucleus.compare("13C") == 0 ) {
-			fwhh = 9.0f;
-		}
-		char fwhhDefault[50]="";
-		this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh", fwhhDefault  );
-		if( string(fwhhDefault) != "" ) {
-			fwhh = atof( fwhhDefault );
-		}
+
+        float fwhh = this->GetApodizationFWHH(); 
         if( apodizeSpec.compare("Lorentz") == 0 ) {
             svkMrsApodizationFilter* af = svkMrsApodizationFilter::New();
             vtkFloatArray* window = vtkFloatArray::New();
@@ -512,6 +524,39 @@ void sivicPreprocessingWidget::ExecutePreprocessing()
     }
     return; 
 
+}
+
+
+/*!
+ *  Executes the proprocessing filters.
+ */
+float sivicPreprocessingWidget::GetApodizationFWHH() 
+{
+    float fwhh;
+
+    svkImageData* data = this->model->GetDataObject("SpectroscopicData");
+
+
+    //  Initiall try to use a default with based on the nucleus (field strength): 
+    fwhh = 4.0f;
+    vtkstd::string nucleus = data->GetDcmHeader()->GetStringValue( "ResonantNucleus" );
+    if( nucleus.compare("13C") == 0 ) {
+        fwhh = 9.0f;
+    }
+
+    //  If there is a custom setting in the preferences, then use that
+    char fwhhDefault[50]="";
+    this->GetApplication()->GetRegistryValue( 0, "apodization", "fwhh", fwhhDefault  );
+    if( string(fwhhDefault) != "" ) {
+        fwhh = atof( fwhhDefault );
+    }
+
+    //  Finally, if user specified a value in entry box use, override fwhh with that that: 
+    float entryValue = this->apodFreqEntry->GetValueAsDouble(); 
+    if ( entryValue != 0 ) {
+        fwhh = entryValue; 
+    }
+    return fwhh; 
 }
 
 

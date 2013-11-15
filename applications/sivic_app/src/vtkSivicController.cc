@@ -3134,6 +3134,8 @@ void vtkSivicController::EnableWidgets()
             this->preprocessingWidget->zeroFillSelectorRows->EnabledOn();
             this->preprocessingWidget->zeroFillSelectorSlices->EnabledOn();
             this->preprocessingWidget->apodizationSelectorSpec->EnabledOn();
+            this->preprocessingWidget->apodFreqEntry->SetValueAsFormattedDouble( this->preprocessingWidget->GetApodizationFWHH(), 4 );
+            this->preprocessingWidget->apodFreqEntry->EnabledOn();
             this->preprocessingWidget->customValueEntry->EnabledOn();
             this->phaseWidget->phaseH20Button->EnabledOff(); 
             this->phaseWidget->phase0Button->EnabledOff(); 
@@ -3271,6 +3273,7 @@ void vtkSivicController::DisableWidgets()
     this->preprocessingWidget->zeroFillSelectorCols->EnabledOff();
     this->preprocessingWidget->zeroFillSelectorRows->EnabledOff();
     this->preprocessingWidget->zeroFillSelectorSlices->EnabledOff();
+	this->preprocessingWidget->apodFreqEntry->EnabledOff();
 	this->preprocessingWidget->customValueEntry->EnabledOff();
     this->preprocessingWidget->apodizationSelectorSpec->EnabledOff();
     this->preprocessingWidget->apodizationSelectorCols->EnabledOff();
