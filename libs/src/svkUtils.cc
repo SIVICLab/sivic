@@ -527,6 +527,13 @@ string svkUtils::SpacesTo_( vtkstd::string inputString )
  */
 bool svkUtils::AreValuesClose( double x, double y, double maxRatio )
 {
+
+    //  If the values are the same then return true, otherwise
+    //  carry on to check tolerance
+    if (x == y) {
+        return true; 
+    }
+
 	double ratio;
 	if( x > y ) {
 		ratio = y/x;
