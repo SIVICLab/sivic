@@ -193,6 +193,31 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
         }; 
     }
 
+    //  If single voxel do nothing: 
+    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    int numVoxels;
+    for ( int dim = 0; dim < 3; dim++) {
+        int dimSize = svkDcmHeader::GetDimensionValue ( &dimensionVector, dim ) + 1;
+        numVoxels *= dimSize;
+    }
+    if ( numVoxels == 1 ) {
+        //  Update the DICOM header to reflect the spatial domain changes:
+        if( this->mode == REVERSE ) {
+            data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "SPACE" );
+            data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "SPACE" );
+            data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "SPACE" );
+            data->GetDcmHeader()->RemoveElement("SVK_K0Sampled"); 
+        } else {
+            data->GetDcmHeader()->SetValue( "SVK_ColumnsDomain", "KSPACE" );
+            data->GetDcmHeader()->SetValue( "SVK_RowsDomain",    "KSPACE" );
+            data->GetDcmHeader()->SetValue( "SVK_SliceDomain",   "KSPACE" );
+            data->GetDcmHeader()->SetValue( "SVK_K0Sampled",    "YES");
+        }
+        return 1; 
+    }
+
+
+
     int numberOfPoints = data->GetCellData()->GetArray(0)->GetNumberOfTuples();
     int numChannels  = data->GetDcmHeader()->GetNumberOfCoils();
     int numTimePoints  = data->GetDcmHeader()->GetNumberOfTimePoints();
