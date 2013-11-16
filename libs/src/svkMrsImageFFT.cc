@@ -195,7 +195,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
 
     //  If single voxel do nothing: 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
-    int numVoxels;
+    int numVoxels = 1;
     for ( int dim = 0; dim < 3; dim++) {
         int dimSize = svkDcmHeader::GetDimensionValue ( &dimensionVector, dim ) + 1;
         numVoxels *= dimSize;
