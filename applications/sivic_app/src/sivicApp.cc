@@ -738,8 +738,8 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     vsResetButton->SetBalloonHelpString( "Highlight the voxels within the selection box of the current slice or reset data range." );
     vtkKWMenu* vsResetMenu = vsResetButton->GetMenu();
     vsResetMenu->AddRadioButton("Reset View to Voxels Within Selection Box", this->sivicController, "HighlightSelectionBoxVoxels");
-    vsResetMenu->AddRadioButton("Reset Estimated 4D Amplitude Range", this->sivicController, "Reset4DAmplitudeRange 0");
-    vsResetMenu->AddRadioButton("Reset Full 4D Data Range", this->sivicController, "Reset4DAmplitudeRange 1");
+    vsResetMenu->AddRadioButton("Reset 4D Amplitude Range To Current Voxels", this->sivicController, "Reset4DAmplitudeRange 0");
+    vsResetMenu->AddRadioButton("Reset 4D Amplitude Range To Full", this->sivicController, "Reset4DAmplitudeRange 1");
     toolbar->AddWidget( vsResetButton );
 
     // Create Rotation Style 

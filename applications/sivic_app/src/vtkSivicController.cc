@@ -2787,13 +2787,15 @@ void vtkSivicController::SetComponentCallback( int targetComponent)
         this->spectraRangeWidget->componentSelectBox->SetValue( "mag");
 
     }
+    /* Could not determine purpose of this block so it has been removed
     if( model->DataExists( "SpectroscopicData" ) ) {
         acquisitionType = model->GetDataObject( "SpectroscopicData" )->
             GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
         if( acquisitionType == "SINGLE VOXEL" ) {
             this->ResetRange(1,1);
-        } 
+        }
     }
+    */
 }
 
 

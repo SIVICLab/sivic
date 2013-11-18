@@ -341,14 +341,21 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
             this->xSpecRange->SetRange( min, max );
         }
         //We now need to reset the range of the plotController
+        double currentRange[2] = {this->xSpecRange->GetEntry1()->GetValueAsDouble(),
+                                  this->xSpecRange->GetEntry2()->GetValueAsDouble()};
+        // Adjust for 0 to 1 indexing if we are using points
+        if( this->specUnits == svkSpecPoint::PTS ) {
+            currentRange[0]--;
+            currentRange[1]--;
+        }
         float lowestPoint = this->ConvertPosUnits(
-            this->xSpecRange->GetEntry1()->GetValueAsDouble()-1,
+            currentRange[0],
             this->specUnits,
             svkSpecPoint::PTS
         );
 
         float highestPoint = this->ConvertPosUnits(
-            this->xSpecRange->GetEntry2()->GetValueAsDouble()-1,
+            currentRange[1],
             this->specUnits,
             svkSpecPoint::PTS
         );
