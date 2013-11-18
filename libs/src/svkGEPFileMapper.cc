@@ -1574,17 +1574,7 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
         0
     );
 
-    //  Use the mps freq and field strength to determine gamma which is 
-    //  characteristic of the isotop:
-    float gamma = ( this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7 )  
-            / ( this->GetHeaderValueAsFloat( "rhe.magstrength" ) / 10000. );
-   
-    vtkstd::string nucleus;  
-    if ( fabs( gamma - 42.57 ) < 0.1 ) {
-        nucleus.assign("1H");
-    } else if ( fabs( gamma - 10.7 ) <0.1 ) {
-        nucleus.assign("13C");
-    }
+    string nucleus = this->GetNucleus();
 
     this->dcmHeader->SetValue(
         "ResonantNucleus", 
@@ -1712,6 +1702,28 @@ void svkGEPFileMapper::InitMRSpectroscopyModule()
 }
 
 
+/*!
+ *
+ */
+string svkGEPFileMapper::GetNucleus()
+{
+
+    //  Use the mps freq and field strength to determine gamma which is 
+    //  characteristic of the isotop:
+    float gamma = ( this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7 )  
+            / ( this->GetHeaderValueAsFloat( "rhe.magstrength" ) / 10000. );
+   
+    vtkstd::string nucleus;  
+    if ( fabs( gamma - 42.57 ) < 0.1 ) {
+        nucleus.assign("1H");
+    } else if ( fabs( gamma - 10.7 ) <0.1 ) {
+        nucleus.assign("13C");
+    }
+
+    return nucleus; 
+}
+
+
 /*
  *  Returns the volume localization type, e.g. PRESS. 
  */
@@ -1752,26 +1764,36 @@ float svkGEPFileMapper::GetFrequencyOffset()
  */
 float svkGEPFileMapper::GetPPMRef() 
 {
-    float freqOffset;
 
-    if ( this->pfileVersion > 9 ) {
-        freqOffset = 0.0; 
-    } else {
-        freqOffset = this->GetHeaderValueAsFloat( "rhr.rh_user13" ); 
-    }
-
-    float transmitFreq = this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7; 
-
-    //  Get mapper behavior flag value:
-    vtkstd::map < vtkstd::string, void* >::iterator  it;
-    it = this->inputArgs.find( "temperature" );
+    string nucleus = this->GetNucleus(); 
 
     float ppmRef;
-    if ( it != this->inputArgs.end() ) {
-        float temp = *( static_cast< float* >( this->inputArgs[ it->first ] ) );
-        ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset, temp);
+    if ( nucleus.compare("13C") == 0 ) {
+
+        ppmRef = 178; 
+
     } else {
-        ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
+
+        float freqOffset;
+
+        if ( this->pfileVersion > 9 ) {
+            freqOffset = 0.0; 
+        } else {
+            freqOffset = this->GetHeaderValueAsFloat( "rhr.rh_user13" ); 
+        }
+
+        float transmitFreq = this->GetHeaderValueAsFloat( "rhr.rh_ps_mps_freq" ) * 1e-7; 
+
+        //  Get mapper behavior flag value:
+        vtkstd::map < vtkstd::string, void* >::iterator  it;
+        it = this->inputArgs.find( "temperature" );
+
+        if ( it != this->inputArgs.end() ) {
+            float temp = *( static_cast< float* >( this->inputArgs[ it->first ] ) );
+            ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset, temp);
+        } else {
+            ppmRef = svkSpecUtils::GetPPMRef(transmitFreq, freqOffset);
+        }
     }
 
     return ppmRef; 

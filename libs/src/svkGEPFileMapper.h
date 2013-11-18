@@ -218,6 +218,8 @@ class svkGEPFileMapper : public vtkObject
         bool                                    GetInputArgBoolValue(vtkstd::string argName, bool* argValue);
 
         virtual void                            ReorderEPSI( svkMrsImageData* data );
+        string                                  GetNucleus(); 
+
 
 
 };
