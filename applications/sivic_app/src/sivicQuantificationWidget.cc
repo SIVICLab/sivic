@@ -227,7 +227,7 @@ void sivicQuantificationWidget::ExecuteQuantification()
         this->mrsQuant->Update();
 
         vtkstd::vector< svkMriImageData* >* metMaps = this->mrsQuant->GetMetMaps(); 
-
+        this->modelMetNames.clear();
         for (int i = 0; i < metMaps->size(); i ++ ) {
 
             //
