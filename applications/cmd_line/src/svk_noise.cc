@@ -154,7 +154,7 @@ int main (int argc, char** argv)
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
 
     // ===============================================  
-    //  HSVD DATA   
+    //  Return noise value from data 
     // ===============================================  
     svkMRSNoise* noise = svkMRSNoise::New();
     noise->SetInput( reader->GetOutput() ); 
