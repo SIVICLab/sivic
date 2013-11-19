@@ -718,6 +718,30 @@ void svkQuantifyMetabolites::ModifyRegion( int regionID, float peakPPM, float wi
 void svkQuantifyMetabolites::SetXMLFileName( string xmlFileName )
 {
     this->xmlFileName = xmlFileName;  
+    // Now we have remove the old xml file
+    this->ClearXMLFile();
+}
+
+
+/*! Sets the current XML data to NULL
+ *  so the file will be re-read.
+ */
+void  svkQuantifyMetabolites::ClearXMLFile( )
+{
+    if( this->mrsXML != NULL ) {
+        this->mrsXML->Delete();
+        this->mrsXML = NULL;
+    }
+
+}
+
+
+/*!
+ *  Get the path to the current XML file
+ */
+string svkQuantifyMetabolites::GetXMLFileName( )
+{
+    return this->xmlFileName;
 }
 
 

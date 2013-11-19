@@ -80,6 +80,8 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         vtkTypeRevisionMacro( svkQuantifyMetabolites, svkImageAlgorithm);
 
         void                                                SetXMLFileName( vtkstd::string xmlFileName );     
+        vtkstd::string                                      GetXMLFileName( );
+        void                                                ClearXMLFile( );
         void                                                SetVerbose( bool isVerbose );     
         vtkstd::vector< svkMriImageData* >*                 GetMetMaps();
         void                                                LimitToSelectedVolume(float fraction = 0.5001); 
