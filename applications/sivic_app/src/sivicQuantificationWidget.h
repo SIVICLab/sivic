@@ -69,6 +69,7 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicQuantificationWidget,sivicKWCompositeWidget);
 
         void                                EnableWidgets(); 
+        void                                RefreshQuantFile();
         void								SetSpecUnits( svkSpecPoint::UnitType units );
         vtkstd::vector < vtkstd::string >   modelMetNames;
 
@@ -81,6 +82,8 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
 
         vtkKWMenuButtonWithLabel*                               mapViewSelector;
         vtkKWPushButton*                                        quantButton;
+        vtkKWPushButton*                                        openQuantFileButton;
+        vtkKWPushButton*                                        refreshQuantFileButton;
         vtkstd::vector < vtkKWRange* >                          metRangeVector;         
         vtkstd::vector < vtkKWLabel* >                          metLabelVector;  
 

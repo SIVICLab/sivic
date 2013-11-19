@@ -24,6 +24,8 @@ sivicQuantificationWidget::sivicQuantificationWidget()
 {
 
     this->quantButton = NULL;
+    this->openQuantFileButton = NULL;
+    this->refreshQuantFileButton = NULL;
     this->mrsQuant = NULL;
     this->mapViewSelector = NULL;   
     this->numMets = 0; 
@@ -44,6 +46,16 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
     if( this->quantButton != NULL ) {
         this->quantButton->Delete();
         this->quantButton= NULL;
+    }
+
+    if( this->refreshQuantFileButton != NULL ) {
+        this->refreshQuantFileButton->Delete();
+        this->refreshQuantFileButton= NULL;
+    }
+
+    if( this->openQuantFileButton != NULL ) {
+        this->openQuantFileButton->Delete();
+        this->openQuantFileButton= NULL;
     }
 
     if( this->mrsQuant != NULL ) {
@@ -168,6 +180,18 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
 {
     if( caller == this->quantButton && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecuteQuantification();
+    } else if( caller == this->refreshQuantFileButton && event == vtkKWPushButton::InvokedEvent ) {
+        this->RefreshQuantFile();
+    } else if( caller == this->openQuantFileButton && event == vtkKWPushButton::InvokedEvent ) {
+#ifndef WIN32
+#if defined(Darwin)
+        string openQuantFileCmd = "open ";
+#else
+        string openQuantFileCmd = "gnome-open ";
+#endif
+        openQuantFileCmd.append(this->mrsQuant->GetXMLFileName());
+        system(openQuantFileCmd.c_str());
+#endif
     } 
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 
@@ -279,26 +303,11 @@ void sivicQuantificationWidget::EnableWidgets()
     if ( this->isEnabled == false ) {
 
         svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    	char quantFileName[150];
-        this->GetApplication()->GetRegistryValue( 0, "defaults", "quant_file", quantFileName );
 
         this->mrsQuant->SetAnatomyType( static_cast<svkTypes::AnatomyType>(this->sivicController->anatomyType) );
 
-        if( quantFileName != NULL && svkUtils::FilePathExists( quantFileName ) ) {
-        	this->mrsQuant->SetXMLFileName( quantFileName );
-        }
         this->mrsQuant->SetInput( data );
-
-        vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector(); 
-        this->numMets = regionNameVector.size(); 
-        for (int i = 0; i < regionNameVector.size() ; i ++ ) {
-            string regionName = regionNameVector[i][0]; 
-            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
-            this->metNames.push_back( regionName ); 
-            this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.)); 
-            this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.)); 
-        }
+        this->RefreshQuantFile();
 
 
         //  Map View Selector
@@ -316,40 +325,6 @@ void sivicQuantificationWidget::EnableWidgets()
         mapViewMenu->SetFont("system 8");
 
     
-        double rangeMin; 
-        double rangeMax; 
-        double peakStart; 
-        double peakEnd; 
-    
-        int i; 
-        for ( i = 0; i < this->numMets; i++ ) {
-
-            string metName = this->metNames[i]; 
-            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
-            peakStart = peakPPM + (widthPPM/2.);
-            peakEnd   = peakPPM - (widthPPM/2.);
-            this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
-    
-            this->metRangeVector.push_back( vtkKWRange::New() ); 
-            this->metRangeVector[i]->SetParent(this);
-            this->metRangeVector[i]->SetLabelPositionToLeft();
-            this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
-            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
-            this->metRangeVector[i]->Create();
-            this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
-            this->metRangeVector[i]->EnabledOff();
-            this->metRangeVector[i]->SetSliderSize(1);
-            this->metRangeVector[i]->SetPadY(1);
-            this->metRangeVector[i]->SetEntry1PositionToLeft();
-            this->metRangeVector[i]->SetEntry2PositionToRight();
-            this->metRangeVector[i]->SetEntriesWidth(4);
-            this->metRangeVector[i]->SetResolution(.01);
-            this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
-            this->metRangeVector[i]->GetLabel()->SetWidth(10); 
-            this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
-        }
-
         //  Set default value
         vtkstd::string mapSelectLabel = ""; 
         if (this->numMets > 0 ) {
@@ -367,12 +342,24 @@ void sivicQuantificationWidget::EnableWidgets()
         this->quantButton->SetText( "Generate Maps");
         this->quantButton->SetBalloonHelpString("Prototype Metabolite Quantification ( peak ht and area ).");
 
+        this->refreshQuantFileButton = vtkKWPushButton::New();
+        this->refreshQuantFileButton->SetParent( this );
+        this->refreshQuantFileButton->Create( );
+        this->refreshQuantFileButton->EnabledOff();
+        this->refreshQuantFileButton->SetText( "Refresh");
+        this->refreshQuantFileButton->SetBalloonHelpString("Refresh the quantification file.");
 
-        //  Format the GUI grid in this panel:
-        for ( int i = 0; i < this->numMets; i++ ) {
-            this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
-        };
+        this->openQuantFileButton = vtkKWPushButton::New();
+        this->openQuantFileButton->SetParent( this );
+        this->openQuantFileButton->Create( );
+        this->openQuantFileButton->EnabledOff();
+        this->openQuantFileButton->SetText( "Edit Quant");
+        this->openQuantFileButton->SetBalloonHelpString("Edit the quantification file.");
+
+
         //this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
+        this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->refreshQuantFileButton->GetWidgetName(), 0);
+        this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->openQuantFileButton->GetWidgetName(), 1);
         this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
 
 
@@ -387,54 +374,107 @@ void sivicQuantificationWidget::EnableWidgets()
         this->AddCallbackCommandObserver(
             this->quantButton, vtkKWPushButton::InvokedEvent 
         );
+        this->AddCallbackCommandObserver(
+            this->openQuantFileButton, vtkKWPushButton::InvokedEvent
+        );
+        this->AddCallbackCommandObserver(
+            this->refreshQuantFileButton, vtkKWPushButton::InvokedEvent
+        );
     
         this->AddCallbackCommandObserver(
             this->mapViewSelector->GetWidget(), vtkKWMenu::MenuItemInvokedEvent
         );
     
-        vtkstd::string metName;
-        float metMin;
-        float metMax;
-
-
-        for ( i = 0; i < this->numMets; i++ ) {
-
-            string metName = this->metNames[i]; 
-            float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] ); 
-            float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] ); 
-            peakStart = peakPPM + (widthPPM/2.);
-            peakEnd   = peakPPM - (widthPPM/2.);
-            this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM); 
-    
-            this->metRangeVector.push_back( vtkKWRange::New() ); 
-            this->metRangeVector[i]->SetParent(this);
-            this->metRangeVector[i]->SetLabelPositionToLeft();
-            this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
-            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
-            this->metRangeVector[i]->Create();
-            this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
-            this->metRangeVector[i]->EnabledOff();
-            this->metRangeVector[i]->SetSliderSize(1);
-            this->metRangeVector[i]->SetPadY(1);
-            this->metRangeVector[i]->SetEntry1PositionToLeft();
-            this->metRangeVector[i]->SetEntry2PositionToRight();
-            this->metRangeVector[i]->SetEntriesWidth(4);
-            this->metRangeVector[i]->SetResolution(.01);
-            this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );  
-            this->metRangeVector[i]->GetLabel()->SetWidth(10); 
-            this->metRangeVector[i]->GetLabel()->SetFont("system 8"); 
-
-            this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
-            metMin = this->metQuantMap[metName][0]; 
-            metMax = this->metQuantMap[metName][1]; 
-            this->metRangeVector[i]->SetRange(metMin, metMax);
-            this->metRangeVector[i]->EnabledOn();
-        }
 
         this->quantButton->EnabledOn();
+        this->refreshQuantFileButton->EnabledOn();
+        this->openQuantFileButton->EnabledOn();
 
-        this->isEnabled = true; 
+        this->isEnabled = true;
     }
+
+}
+
+
+void sivicQuantificationWidget::RefreshQuantFile()
+{
+    
+    char quantFileName[150];
+    this->GetApplication()->GetRegistryValue( 0, "defaults", "quant_file", quantFileName );
+    if( quantFileName != NULL && svkUtils::FilePathExists( quantFileName ) ) {
+        this->mrsQuant->SetXMLFileName( quantFileName );
+    } else {
+        // We'll clear the old data so it gets re-read
+        this->mrsQuant->ClearXMLFile();
+    }
+    vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector();
+    this->numMets = regionNameVector.size();
+    for (int i = 0; i < regionNameVector.size() ; i ++ ) {
+        string regionName = regionNameVector[i][0];
+        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] );
+        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] );
+        if( i >= this->metNames.size() ) {
+            this->metNames.push_back( regionName );
+            this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.));
+            this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.));
+        } else {
+            this->metNames[i] = regionName;
+            this->metQuantMap[regionName][0] = (peakPPM + (widthPPM/2.));
+            this->metQuantMap[regionName][1] = (peakPPM - (widthPPM/2.));
+        }
+    }
+
+    double rangeMin;
+    double rangeMax;
+    double peakStart;
+    double peakEnd;
+
+    for ( int i = 0; i < this->numMets; i++ ) {
+
+        string metName = this->metNames[i];
+        float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] );
+        float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] );
+        peakStart = peakPPM + (widthPPM/2.);
+        peakEnd   = peakPPM - (widthPPM/2.);
+        this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM);
+
+        if( i >= this->metRangeVector.size()) {
+            this->metRangeVector.push_back( vtkKWRange::New() );
+        } else {
+            if( this->metRangeVector[i] != NULL ) {
+                this->Script("grid remove %s", this->metRangeVector[i]->GetWidgetName());
+                this->metRangeVector[i]->Delete();
+            }
+            this->metRangeVector[i] = vtkKWRange::New();
+        }
+        this->metRangeVector[i]->SetParent(this);
+        this->metRangeVector[i]->SetLabelPositionToLeft();
+        this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
+        this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+        this->metRangeVector[i]->Create();
+        this->metRangeVector[i]->SetRange(rangeMin, rangeMax);
+        this->metRangeVector[i]->EnabledOff();
+        this->metRangeVector[i]->SetSliderSize(1);
+        this->metRangeVector[i]->SetPadY(1);
+        this->metRangeVector[i]->SetEntry1PositionToLeft();
+        this->metRangeVector[i]->SetEntry2PositionToRight();
+        this->metRangeVector[i]->SetEntriesWidth(4);
+        this->metRangeVector[i]->SetResolution(.01);
+        this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );
+        this->metRangeVector[i]->GetLabel()->SetWidth(10);
+        this->metRangeVector[i]->GetLabel()->SetFont("system 8");
+
+        this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
+        float metMin = this->metQuantMap[metName][0];
+        float metMax = this->metQuantMap[metName][1];
+        this->metRangeVector[i]->SetRange(metMin, metMax);
+        this->metRangeVector[i]->EnabledOn();
+        this->metRangeVector[i]->GetLabel()->Modified();
+    }
+    //  Format the GUI grid in this panel:
+    for ( int i = 0; i < this->numMets; i++ ) {
+        this->Script("grid %s -row %d -column 0 -sticky we -padx 1", this->metRangeVector[i]->GetWidgetName(), i);
+    };
 
 }
 
