@@ -409,25 +409,28 @@ void sivicQuantificationWidget::RefreshQuantFile()
     }
     vtkstd::vector< vtkstd::vector< vtkstd::string > > regionNameVector = this->mrsQuant->GetRegionNameVector();
     this->numMets = regionNameVector.size();
+    this->metNames.clear();
+    this->metQuantMap.clear();
     for (int i = 0; i < regionNameVector.size() ; i ++ ) {
         string regionName = regionNameVector[i][0];
         float peakPPM  = this->mrsQuant->GetFloatFromString( regionNameVector[i][1] );
         float widthPPM = this->mrsQuant->GetFloatFromString( regionNameVector[i][2] );
-        if( i >= this->metNames.size() ) {
-            this->metNames.push_back( regionName );
-            this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.));
-            this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.));
-        } else {
-            this->metNames[i] = regionName;
-            this->metQuantMap[regionName][0] = (peakPPM + (widthPPM/2.));
-            this->metQuantMap[regionName][1] = (peakPPM - (widthPPM/2.));
-        }
+        this->metNames.push_back( regionName );
+        this->metQuantMap[regionName].push_back(peakPPM + (widthPPM/2.));
+        this->metQuantMap[regionName].push_back(peakPPM - (widthPPM/2.));
     }
 
     double rangeMin;
     double rangeMax;
     double peakStart;
     double peakEnd;
+    for( int i= 0; i < this->metRangeVector.size(); i++) {
+        if( this->metRangeVector[i] != NULL ) {
+            this->Script("grid remove %s", this->metRangeVector[i]->GetWidgetName());
+            this->metRangeVector[i]->Delete();
+        }
+    }
+    this->metRangeVector.clear();
 
     for ( int i = 0; i < this->numMets; i++ ) {
 
@@ -438,15 +441,7 @@ void sivicQuantificationWidget::RefreshQuantFile()
         peakEnd   = peakPPM - (widthPPM/2.);
         this->GetMRSFrequencyRange( peakStart, peakEnd, rangeMin, rangeMax, svkSpecPoint::PPM);
 
-        if( i >= this->metRangeVector.size()) {
-            this->metRangeVector.push_back( vtkKWRange::New() );
-        } else {
-            if( this->metRangeVector[i] != NULL ) {
-                this->Script("grid remove %s", this->metRangeVector[i]->GetWidgetName());
-                this->metRangeVector[i]->Delete();
-            }
-            this->metRangeVector[i] = vtkKWRange::New();
-        }
+        this->metRangeVector.push_back( vtkKWRange::New() );
         this->metRangeVector[i]->SetParent(this);
         this->metRangeVector[i]->SetLabelPositionToLeft();
         this->metRangeVector[i]->SetBalloonHelpString("Adjusts freq range of metabolite.");
