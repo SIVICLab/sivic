@@ -305,37 +305,37 @@ int main (int argc, char** argv)
         quant->SetPeakPosPPM( peakCenterPPM );
         quant->SetPeakWidthPPM( peakWidthPPM );
     
-        if ( isVerbose || algo == svkMetaboliteMap::INTEGRATE ) {
+        if ( algo == svkMetaboliteMap::INTEGRATE ) {
             quant->SetAlgorithmToIntegrate();
             quant->SetSeriesDescription( qtyName + "area metabolite map" ); 
             quant->Update();
         }
     
-        if ( isVerbose || algo == svkMetaboliteMap::PEAK_HT) {
+        if ( algo == svkMetaboliteMap::PEAK_HT) {
             quant->SetAlgorithmToPeakHeight();
             quant->SetSeriesDescription( qtyName + "peak ht metabolite map" ); 
             quant->Update();
         }
 
-        if ( isVerbose || algo == svkMetaboliteMap::LINE_WIDTH) {
+        if ( algo == svkMetaboliteMap::LINE_WIDTH) {
             quant->SetAlgorithmToLineWidth();
             quant->SetSeriesDescription( qtyName + "line width metabolite map" );
             quant->Update();
         }
 
-        if ( isVerbose || algo == svkMetaboliteMap::MAG_INTEGRATE ) {
+        if ( algo == svkMetaboliteMap::MAG_INTEGRATE ) {
             quant->SetAlgorithmToMagIntegrate();
             quant->SetSeriesDescription( qtyName + "magnitude area metabolite map" );
             quant->Update();
         }
 
-        if ( isVerbose || algo == svkMetaboliteMap::MAG_PEAK_HT) {
+        if ( algo == svkMetaboliteMap::MAG_PEAK_HT) {
             quant->SetAlgorithmToMagPeakHeight();
             quant->SetSeriesDescription( qtyName + "magnitude peak ht metabolite map" );
             quant->Update();
         }
 
-        if ( isVerbose || algo == svkMetaboliteMap::MAG_LINE_WIDTH) {
+        if ( algo == svkMetaboliteMap::MAG_LINE_WIDTH) {
             quant->SetAlgorithmToMagLineWidth();
             quant->SetSeriesDescription( qtyName + "magnitude line width metabolite map" );
             quant->Update();
