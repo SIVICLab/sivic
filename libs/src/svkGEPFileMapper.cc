@@ -1718,6 +1718,8 @@ string svkGEPFileMapper::GetNucleus()
         nucleus.assign("1H");
     } else if ( fabs( gamma - 10.7 ) <0.1 ) {
         nucleus.assign("13C");
+    } else if ( fabs( gamma - 17.235 ) <0.1 ) {
+        nucleus.assign("31P");
     }
 
     return nucleus; 

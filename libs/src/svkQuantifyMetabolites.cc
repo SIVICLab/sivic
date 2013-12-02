@@ -1159,6 +1159,39 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "   </APPLICATION> " << endl
         << " " << endl
         << " " << endl
+        << " -- 31P " << endl
+        << "  <APPLICATION nucleus=\"31P\">      " << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"PCr\"  peak_ppm=\"10\"  width_ppm=\"10\"> " << endl
+        << "     </REGION> " << endl
+        << " " << endl
+        << "     -- Pcr peak ht " << endl
+        << "     <QUANT id=\"0\" region=\"0\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr integrated area " << endl
+        << "     <QUANT id=\"1\" region=\"0\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr magnitude pk ht " << endl
+        << "     <QUANT id=\"2\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr magnitude integrated area " << endl
+        << "     <QUANT id=\"3\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "   </APPLICATION> " << endl
+        << " " << endl
+        << " " << endl
         << " </SVK_MRS_QUANTIFICATION> " << endl; 
 
             xmlOut.close();
