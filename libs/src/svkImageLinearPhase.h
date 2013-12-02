@@ -68,8 +68,8 @@
  
 
 
-#ifndef SVK_IMAGE_RFFT_H
-#define SVK_IMAGE_RFFT_H
+#ifndef SVK_IMAGE_LINEAR_PHASE_H
+#define SVK_IMAGE_LINEAR_PHASE_H
 
 #include <vtkImageData.h>
 #include <vtkMath.h>
@@ -127,4 +127,4 @@ class svkImageLinearPhase : public vtkImageFourierFilter
 
 } // svk
 
-#endif //SVK_IMAGE_RFFT_H
+#endif //SVK_IMAGE_LINEAR_PHASE_H
