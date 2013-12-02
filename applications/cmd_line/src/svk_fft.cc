@@ -78,18 +78,24 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_fft -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
-    usemsg += "                   --spec [ -h ] \n";
+    usemsg += "                   --spec [ --vsx ] [ -vsy ] [ --vsz ] --single [ -h ] \n";
     usemsg += "\n";  
-    usemsg += "   -i                name   Name of file to convert. \n"; 
-    usemsg += "   -o                name   Name of outputfile. \n";
-    usemsg += "   -t                type   Target data type: \n";
+    usemsg += "   -i            name        Name of file to convert. \n"; 
+    usemsg += "   -o            name        Name of outputfile. \n";
+    usemsg += "   -t            type        Target data type: \n";
     usemsg += "                                 2 = UCSF DDF      \n";
     usemsg += "                                 4 = DICOM_MRS (default)    \n";
-    usemsg += "   --spec                   transform spectral domain only\n"; 
-    usemsg += "   --spatial                transform spatial domain only\n"; 
-    usemsg += "   -h                       Print this help mesage. \n";  
+    usemsg += "   --spec                    transform spectral domain only\n"; 
+    usemsg += "   --spatial                 transform spatial domain only\n"; 
+    usemsg += "   --vsx         shiftX      Fractional voxel shift in X  \n"; 
+    usemsg += "   --vsy         shiftY      Fractional voxel shift in Y  \n"; 
+    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z  \n"; 
+    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z  \n"; 
+    usemsg += "   --single                  Only transform specified file if multiple in series \n"; 
+    usemsg += "   -h                        Print this help mesage. \n";  
     usemsg += "\n";  
-    usemsg += "Performs spatial/spectral FFTs.  If specified will transform only the specified domain.\n";  
+    usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified, \n"; 
+    usemsg += "will transform only the specified domain.\n";  
     usemsg += "\n";  
 
 
@@ -97,6 +103,11 @@ int main (int argc, char** argv)
     string outputFileName;
     bool transformSpecDomain = true; 
     bool transformSpatialDomain = true; 
+    bool onlyTransformSingle = true; 
+    double voxelShift[3]; 
+    voxelShift[0] = 0.; 
+    voxelShift[1] = 0.; 
+    voxelShift[2] = 0.; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
@@ -104,7 +115,11 @@ int main (int argc, char** argv)
 
     enum FLAG_NAME {
         FLAG_TRANSFORM_SPEC_DOMAIN = 0, 
-        FLAG_TRANSFORM_SPATIAL_DOMAIN = 1
+        FLAG_TRANSFORM_SPATIAL_DOMAIN, 
+        FLAG_VOXEL_SHIFT_X, 
+        FLAG_VOXEL_SHIFT_Y, 
+        FLAG_VOXEL_SHIFT_Z, 
+        FLAG_SINGLE
     }; 
 
 
@@ -113,6 +128,10 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"spec",      no_argument,       NULL,  FLAG_TRANSFORM_SPEC_DOMAIN},
         {"spatial",   no_argument,       NULL,  FLAG_TRANSFORM_SPATIAL_DOMAIN},
+        {"vsx",       required_argument, NULL,  FLAG_VOXEL_SHIFT_X},
+        {"vsy",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Y},
+        {"vsz",       required_argument, NULL,  FLAG_VOXEL_SHIFT_Z},
+        {"single",    no_argument,       NULL,  FLAG_SINGLE}, 
         {0, 0, 0, 0}
     };
 
@@ -141,6 +160,18 @@ int main (int argc, char** argv)
             case FLAG_TRANSFORM_SPATIAL_DOMAIN:
                 transformSpecDomain = false;
                 transformSpatialDomain = true; 
+                break;
+            case FLAG_VOXEL_SHIFT_X:
+                voxelShift[0] = atof( optarg );
+                break;
+            case FLAG_VOXEL_SHIFT_Y:
+                voxelShift[1] = atof( optarg );
+                break;
+            case FLAG_VOXEL_SHIFT_Z:
+                voxelShift[2] = atof( optarg );
+                break;
+            case FLAG_SINGLE: 
+                onlyTransformSingle = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -185,6 +216,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyTransformSingle == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     // ===============================================  
@@ -193,6 +227,7 @@ int main (int argc, char** argv)
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader();
     if ( transformSpecDomain ) {
+cout << "SPECTRAL" << endl;
 
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
         imageFFT->SetInput( reader->GetOutput() );
@@ -212,22 +247,25 @@ int main (int argc, char** argv)
     }
 
     if (transformSpatialDomain ) { 
+cout << "SPATIAL" << endl;
+        svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
 
-        svkMrsImageFFT* spatialRFFT = svkMrsImageFFT::New();
-
-        spatialRFFT->SetInput( reader->GetOutput() );
-        spatialRFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
+        spatialFFT->SetInput( reader->GetOutput() );
+        spatialFFT->SetFFTDomain( svkMrsImageFFT::SPATIAL );
 
         string domainCol = hdr->GetStringValue( "SVK_ColumnsDomain");
         if ( domainCol.compare("SPACE") == 0) {
-            spatialRFFT->SetFFTMode( svkMrsImageFFT::FORWARD);
+            spatialFFT->SetFFTMode( svkMrsImageFFT::FORWARD);
         } else {
-            spatialRFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
+            spatialFFT->SetFFTMode( svkMrsImageFFT::REVERSE );
         }
-        spatialRFFT->SetPreCorrectCenter( true );
-        spatialRFFT->SetPostCorrectCenter( true );
-        spatialRFFT->Update();
-        spatialRFFT->Delete();
+        spatialFFT->SetPreCorrectCenter( true );
+        spatialFFT->SetPostCorrectCenter( true );
+        if ( voxelShift[0] != 0 ||  voxelShift[1] != 0 || voxelShift[2] != 0 ) {
+            spatialFFT->SetVoxelShift( voxelShift );
+        }
+        spatialFFT->Update();
+        spatialFFT->Delete();
 
     }
 
