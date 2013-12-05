@@ -82,7 +82,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
     public:
 
         vtkTypeRevisionMacro( svkMRSAutoPhase, svkThreadedImageAlgorithm);
-        static          svkMRSAutoPhase* New();
+        //static          svkMRSAutoPhase* New();
         
 
         //  _0 are zero order models
@@ -101,7 +101,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
             MAX_PEAK_HTS_01        
         } phasingModel;
 
-        void            SetPhasingModel(svkMRSAutoPhase::phasingModel model); 
+        //void            SetPhasingModel(svkMRSAutoPhase::phasingModel model); 
         void            OnlyUseSelectionBox(); 
 
 
@@ -142,25 +142,21 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         static int*     progress;
 
 
-    private:
-
         void            InitLinearPhaseArrays(); 
         void            AutoPhaseExecute(int* outExt, int id); 
-        void            AutoPhaseSpectrum( int cellID );
-        void            FitPhase( int cellID, svkMRSAutoPhase::phasingModel model ); 
+        virtual void    AutoPhaseSpectrum( int cellID );
+        virtual void    FitPhase( int cellID ) = 0; 
         int             GetZeroOrderPhasePeak( ); 
         int             GetPivot(); 
-        void            PrePhaseSetup();
-        void            PostPhaseCleanup(); 
+        virtual void    PrePhaseSetup() = 0;
+        virtual void    PostPhaseCleanup() = 0; 
 
 
 #ifdef SWARM
-        void            InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::ParticleSwarmOptimizer::Pointer itkOptimizer ); 
+        virtual void    InitOptimizer( int cellID, itk::ParticleSwarmOptimizer::Pointer itkOptimizer ) = 0; 
 #else
-        void            InitOptimizer( int cellID, svkMRSAutoPhase::phasingModel model, itk::PowellOptimizer::Pointer itkOptimizer ); 
+        virtual void    InitOptimizer( int cellID, itk::PowellOptimizer::Pointer itkOptimizer ) = 0; 
 #endif
-
-
 
         int                             numTimePoints;
         svkMRSAutoPhase::phasingModel   phaseModelType; 
@@ -169,10 +165,6 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         short*                          selectionBoxMask;
         vtkImageComplex**               linearPhaseArrays; 
         int                             numFirstOrderPhaseValues;
-        bool                            isInputInTimeDomain;
-
-
-
 
 };
 

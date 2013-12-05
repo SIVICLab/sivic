@@ -207,6 +207,7 @@ ADD_LIBRARY(
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc
     svkImageLinearPhase.cc
+    svkImageFourierCenter.cc
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkDSCDeltaR2.cc
@@ -237,7 +238,8 @@ ADD_LIBRARY(
     svkUCSFUtils.cc
     svkUtils.cc
     svkVoxelTaggingUtils.cc
-    svkImageFourierCenter.cc
+    #svkImageFFT.cc
+    #svkImageRFFT.cc
     svkIntegratePeak.cc
     svkApodizationWindow.cc
     svkMrsApodizationFilter.cc
@@ -305,7 +307,9 @@ IF ( BUILD_CMINPACK )
         svkNumerical
 
         svkMRSAutoPhase.cc
-        svkDynamicMRIAlgoTemplate.cc 
+        #svkDynamicMRIAlgoTemplate.cc 
+        svkMRSFirstPointPhase.cc
+        svkMRSKinetics.cc 
     )
 ENDIF ( BUILD_CMINPACK )
 
