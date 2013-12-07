@@ -117,6 +117,23 @@ ENDIF( NOT WIN32 )
 
 
 
+if ( BUILD_CMINPACK )
+
+    ###################################
+    #   ITK 
+    ###################################
+    ADD_DEFINITIONS(-DITK_BUILD)
+    FIND_PACKAGE( ITK REQUIRED )
+    IF(ITK_FOUND)
+        INCLUDE(${ITK_USE_FILE})
+    ELSE(ITK_FOUND)
+        MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
+    ENDIF(ITK_FOUND)
+
+endif( BUILD_CMINPACK )
+
+
+
 ###################################
 #   CTEST 
 ###################################
@@ -152,7 +169,21 @@ ADD_LIBRARY(
 )
 
 
+if ( BUILD_CMINPACK )
+    SET( CMINPACK_LIBS 
+        svkNumerical 
+        ITKDICOMParser
+    )
+    SET( CMINPACK_LIBS_PRE
+        ITKOptimizers
+        ITKCommon
+        ITKDICOMParser
+    )
+endif( BUILD_CMINPACK )
+
+
 SET(SVK_LIBS
+    ${CMINPACK_LIBS}
     svkTest
     svk 
     svkadapt 
@@ -164,6 +195,7 @@ SET(SVK_LIBS
     ${DCMTK_OFLOG}
     ofstd 
     ${PLATFORM_LIBS}
+    ${CMINPACK_LIBS_PRE}
 )
 
 SET(SVK_VIZ_LIBS
