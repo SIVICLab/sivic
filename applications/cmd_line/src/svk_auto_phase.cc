@@ -49,6 +49,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkMRSAutoPhase.h>
+#include <svkMRSFirstPointPhase.h>
 
 #ifdef WIN32
 extern "C" {
@@ -68,13 +69,15 @@ int main (int argc, char** argv)
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_auto_phase -i input_filename -o output_filename [ -t output_data_type ] [ -h ] \n";
+    usemsg += "                                                    [ --single ] \n";
     usemsg += "                                                         \n";
     usemsg += "   -i            name   Name of input MRS file.          \n";
     usemsg += "   -o            name   Name of output file.             \n";
-    usemsg += "   -t                type   Target data type:            \n";
+    usemsg += "   -t            type   Target data type:            \n";
     usemsg += "                                 2 = UCSF DDF            \n";
     usemsg += "                                 4 = DICOM_MRS (default) \n";
-    usemsg += "   -h                       Print this help mesage.      \n";
+    usemsg += "   --single             Only phase specified file if multiple in series \n";
+    usemsg += "   -h                   Print this help mesage.      \n";
     usemsg += "                                                         \n";
     usemsg += "Auto phase spectra (zero and first order phaseing).      \n";
     usemsg += "                                                         \n";
@@ -83,15 +86,18 @@ int main (int argc, char** argv)
     string inputFileName;
     string outputFileName;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
+    bool onlyPhaseSingle = true;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
+        FLAG_SINGLE = 0
     };
 
 
     static struct option long_options[] =
     {
+        {"single",    no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -111,6 +117,9 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case FLAG_SINGLE:
+                onlyPhaseSingle = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -153,6 +162,9 @@ int main (int argc, char** argv)
 
     //  Read the data to initialize an svkImageData object
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyPhaseSingle == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update();
     
     //reader->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
@@ -160,11 +172,12 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Pass data through your algorithm:
     // ===============================================  
-    svkMRSAutoPhase* phaser = svkMRSAutoPhase::New();
+    svkMRSAutoPhase* phaser = svkMRSFirstPointPhase::New();
+    //svkMRSAutoPhase* phaser = svkMRSAutoPhase::New();
     phaser->SetInputConnection(0, reader->GetOutputPort(0) ); 
     phaser->OnlyUseSelectionBox();
 
-    svkMRSAutoPhase::phasingModel model;
+    //svkMRSAutoPhase::phasingModel model;
     //model =  svkMRSAutoPhase::MAX_PEAK_HTS_0;
         //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
         //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_0); 
@@ -172,10 +185,11 @@ int main (int argc, char** argv)
         //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0); 
         //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
         //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_01); 
-    model = svkMRSAutoPhase::MAX_PEAK_HTS_01; 
+    //model = svkMRSAutoPhase::MAX_PEAK_HTS_01; 
     //model =  svkMRSAutoPhase::MAX_PEAK_HTS_1;
+    //model =  svkMRSAutoPhase::FIRST_POINT_0;
 
-    phaser->SetPhasingModel( model ); 
+    //phaser->SetPhasingModel( model ); 
     phaser->Update();
 
 
@@ -192,10 +206,9 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-outputFileName.append("_");    
-stringstream modelString(stringstream::in | stringstream::out);
-modelString << model;
-outputFileName.append(modelString.str());    
+//stringstream modelString(stringstream::in | stringstream::out);
+//modelString << model;
+//outputFileName.append(modelString.str());    
     writer->SetFileName( outputFileName.c_str() );
 
     // ===============================================  
