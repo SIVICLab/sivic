@@ -194,7 +194,7 @@ ENDIF(WIN32)
 if ( BUILD_CMINPACK )
     SET( CMINPACK_LIBS 
         svkNumerical 
-        cminpack 
+        #cminpack 
         ITKDICOMParser
     )
     SET( CMINPACK_LIBS_PRE
@@ -365,6 +365,7 @@ TARGET_LINK_LIBRARIES(
     svk_svrecon
     ${SVK_LIBS}
 )
+
 
 ADD_EXECUTABLE(
     svk_surface_area
