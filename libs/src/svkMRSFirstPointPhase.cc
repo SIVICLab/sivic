@@ -46,7 +46,7 @@
 #include <vtkImageFourierFilter.h> // for vtkImageComplex struct
 #include <vtkMath.h>
 
-#include <svkPhaseCostFunction.h>
+#include <svkFirstPointPhaseCostFunction.h>
 #include <svkMRSFirstPointPhase.h>
 #include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
@@ -87,20 +87,20 @@ void svkMRSFirstPointPhase::PrePhaseSetup()
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
-    //  First order phase is in time domain: 
+    //  First point phase is in time domain: 
 
     //  Get the domain of the input spectra:  time/frequency
     string spectralDomain = data->GetDcmHeader()->GetStringValue( "SignalDomainColumns");
     if ( spectralDomain.compare("TIME") == 0 ) {
-        this->isInputInTimeDomain = true;
+        this->isSpectralFFTRequired = true;
         cout << "TIME DOMAIN INPUT" << endl;
     } else {
-        this->isInputInTimeDomain = false;
+        this->isSpectralFFTRequired = false;
         cout << "FREQ DOMAIN INPUT" << endl;
     }
 
     //  if necessary, transform data to time domain: 
-    if ( this->isInputInTimeDomain == false ) {
+    if ( this->isSpectralFFTRequired == false ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
         fft->SetInput( data );
@@ -127,7 +127,7 @@ void svkMRSFirstPointPhase::PostPhaseCleanup()
     //  First order phase is in time domain: 
 
     //  if necessary, transform data to time domain: 
-    if ( this->isInputInTimeDomain == false ) {
+    if ( this->isSpectralFFTRequired == false ) {
 
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
@@ -167,11 +167,9 @@ void svkMRSFirstPointPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poi
     //========================================================
     //  ITK Optimization 
     //========================================================
-    svkPhaseCostFunction::Pointer  costFunction = svkPhaseCostFunction::New();
-    //PowellBoundedCostFunction::Pointer  costFunction = PowellBoundedCostFunction::New();
+    svkPhaseCostFunction::Pointer costFunction = svkFirstPointPhaseCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
-    costFunction->SetModel( FIRST_POINT_0 ); 
     costFunction->SetSpectrum( spectrum ); 
     costFunction->SetNumFreqPoints(this->numTimePoints ); 
     costFunction->SetPeakPicker( this->peakPicker ); 
@@ -190,12 +188,6 @@ void svkMRSFirstPointPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poi
         itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
         // Zero order phase range radians
         bounds.push_back( std::make_pair( -1 * vtkMath::Pi(), vtkMath::Pi()) ); 
-        if ( spaceDimension == 2 ) {
-            // first order range of values: 
-            int upperBound =  this->numFirstOrderPhaseValues/2 - 1; 
-            int lowerBound =  -1 * upperBound;  
-            bounds.push_back( std::make_pair( lowerBound, upperBound) );
-        }
         itkOptimizer->SetParameterBounds( bounds );
 
         unsigned int numberOfParticles = 10;
@@ -211,9 +203,12 @@ void svkMRSFirstPointPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poi
         itkOptimizer->SetFunctionConvergenceTolerance( fTolerance );
         itkOptimizer->SetInitializeNormalDistribution( false ); // use uniform distribution
 
+        //  required to get reproducible results, otherwise uses random seed
+        itkOptimizer->SetUseSeed( true ); // use uniform distribution
+        itkOptimizer->SetSeed( 7 ); // use uniform distribution
+
 
 #else
-
         itkOptimizer->SetStepLength( 1 );
         itkOptimizer->SetStepTolerance( 1);
         itkOptimizer->SetValueTolerance( 1 );
@@ -232,12 +227,12 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
 {
 
 #ifdef SWARM 
-        typedef itk::ParticleSwarmOptimizer        OptimizerType;
+        typedef itk::ParticleSwarmOptimizer OptimizerType;
 #else
         typedef itk::PowellOptimizer        OptimizerType;
 #endif
 
-    OptimizerType::Pointer              itkOptimizer = OptimizerType::New();
+    OptimizerType::Pointer itkOptimizer = OptimizerType::New();
     this->InitOptimizer( cellID, itkOptimizer ); 
 
 #ifndef SWARM 

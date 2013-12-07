@@ -73,7 +73,6 @@ class svkMRSFirstPointPhase : public svkMRSAutoPhase
         svkMRSFirstPointPhase();
         ~svkMRSFirstPointPhase();
 
-        //virtual void    AutoPhaseSpectrum( int cellID );
         virtual void    FitPhase( int cellID ); 
         virtual void    PrePhaseSetup();
         virtual void    PostPhaseCleanup(); 
@@ -86,9 +85,6 @@ class svkMRSFirstPointPhase : public svkMRSAutoPhase
 #else
         virtual void    InitOptimizer( int cellID, itk::PowellOptimizer::Pointer itkOptimizer ); 
 #endif
-
-        bool                            isInputInTimeDomain;
-
 
 
 };

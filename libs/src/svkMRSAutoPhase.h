@@ -165,6 +165,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         short*                          selectionBoxMask;
         vtkImageComplex**               linearPhaseArrays; 
         int                             numFirstOrderPhaseValues;
+        bool                            isSpectralFFTRequired; 
 
 };
 
