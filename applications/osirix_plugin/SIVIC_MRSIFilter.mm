@@ -63,7 +63,7 @@
      */
     NSArray *currentSelection = [[BrowserController currentBrowser] databaseSelection];
 
-    printf("Number of browser selections: %d\n", [currentSelection count]);
+    NSLog(@"Number of browser selections: %lid", (unsigned long)[currentSelection count]);
 	
     /*
      *  Iterate over the currentSelection NSArray. For each object in NSArray,
@@ -84,9 +84,11 @@
 		if ((element = [setEnum nextObject]) != nil) {
             printf ("  Path to DICOM images: %s \n", [[element description] UTF8String]);
 			NSString* path = [element description];
-			NSString* argPath = [@"-i " stringByAppendingFormat:@"%@", path];
+			NSString* argPath = [@"" stringByAppendingFormat:@"%@", path];
  
-			printf ("image path arg: %s \n", [argPath UTF8String]); 
+			NSLog(@"image path arg: %s \n", [argPath UTF8String]);
+            [myFNArray insertObject: @" -i " atIndex:index];
+            index++;
 			[myFNArray insertObject: argPath atIndex:index];
 			index++; 
         } 
@@ -114,16 +116,20 @@
 	}
 	cout << "SIVIC: " << [sivicPath UTF8String] << endl;	
 	NSLog(@"PATH TO USE");
-	NSLog(sivicPath);
+	NSLog(@"%@", sivicPath);
 	 
 	if ( [myFNArray count] == 0 ) {
+        NSLog(@"FNArray 0");
 		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:nil]];
-	} else if ( [myFNArray count] == 1 ) {
-		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], nil]];
 	} else if ( [myFNArray count] == 2 ) {
+        NSLog(@"FNArray 1");
 		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], nil]];
-	} else if ( [myFNArray count] == 3 ) {
-		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], [myFNArray objectAtIndex:2], nil]];
+	} else if ( [myFNArray count] == 4 ) {
+        NSLog(@"FNArray 2");
+		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], [myFNArray objectAtIndex:2], [myFNArray objectAtIndex:3], nil]];
+	} else if ( [myFNArray count] == 6 ) {
+        NSLog(@"FNArray 3");
+		[NSTask launchedTaskWithLaunchPath: sivicPath arguments:[NSArray arrayWithObjects:[myFNArray objectAtIndex:0], [myFNArray objectAtIndex:1], [myFNArray objectAtIndex:2], [myFNArray objectAtIndex:3], [myFNArray objectAtIndex:4], [myFNArray objectAtIndex:5], nil]];
 	} 
 			
 	return 0; // No Errors
