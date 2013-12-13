@@ -87,11 +87,11 @@ svkDcmVolumeReader::~svkDcmVolumeReader()
 /*!
  *
  */
-bool svkDcmVolumeReader::ContainsProprietaryContent( svkImageData* data )
+svkDcmVolumeReader::ProprietarySOP svkDcmVolumeReader::ContainsProprietaryContent( svkImageData* data )
 {
 
     // Check if it contains GE spectroscopy content:
-    bool containsProprietaryContent = false;
+    ProprietarySOP proprietaryContent = svkDcmVolumeReader::DICOM_STD_SOP;
 
     if ( data->GetDcmHeader()->ElementExists("Manufacturer") == true && data->GetDcmHeader()->ElementExists("ImagedNucleus") == true ) {
         vtkstd::string mfg = data->GetDcmHeader()->GetStringValue( "Manufacturer" ) ;
@@ -108,12 +108,19 @@ bool svkDcmVolumeReader::ContainsProprietaryContent( svkImageData* data )
 
         if ( mfg == "GE MEDICAL SYSTEMS" ) {
             if ( imagedNucleus == "SPECT" || gePSSeq1 == "PROBE-P" || gePSSeq2 == "presscsi"  ) {
-                containsProprietaryContent = true;
+                proprietaryContent = svkDcmVolumeReader::DICOM_STD_SOP;
             }
+        }
+
+        if ( mfg.find("Bruker") != string::npos ) {
+            string seqName = data->GetDcmHeader()->GetStringValue( "SequenceName" ) ;
+            if ( seqName.find("CSI") != string::npos ) {
+                proprietaryContent = svkDcmVolumeReader::BRUKER_MRS_SOP;
+            } 
         }
     }
 
-    return containsProprietaryContent;
+    return proprietaryContent;
 }
 
 
@@ -297,6 +304,7 @@ void svkDcmVolumeReader::ExecuteData(vtkDataObject* output)
     this->LoadData(data);
 
 }
+
 
 /*!
  *  Parse through the DICOM images and determine which ones belong to the same series as the 
@@ -526,7 +534,10 @@ void svkDcmVolumeReader::InitFileNames()
     while ( seriesIt != dcmSeriesAttributes.end() ) { 
         uniqueSlices.insert( (*seriesIt)[6] ); 
         seriesIt++ ;
-    }
+    }                        
+
+    this->CleanAttributes( &uniqueSlices ); 
+
     //  there is one entry in the dcmSeriesAttributes vector for each DICOM file:
     dcmSeriesAttributes.size(); 
     int numDcmFiles = dcmSeriesAttributes.size();

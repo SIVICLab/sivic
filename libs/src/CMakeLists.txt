@@ -178,6 +178,7 @@ ADD_LIBRARY(
     svkDcmEnhancedVolumeReader.cc
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
+    svkBrukerDCMMRSReader.cc
     svkVarianReader.cc
     svkFdfVolumeReader.cc
     svkVarianFidReader.cc

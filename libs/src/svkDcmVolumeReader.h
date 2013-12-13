@@ -73,9 +73,16 @@ class svkDcmVolumeReader : public svkImageReader2
         svkDcmVolumeReader();
         ~svkDcmVolumeReader();
 
+        typedef enum {
+            DICOM_STD_SOP = 0,
+            GE_POSTAGE_STAMP_SOP,
+            BRUKER_MRS_SOP
+        } ProprietarySOP;
+
+
         virtual void                            ExecuteInformation();
         virtual void                            ExecuteData(vtkDataObject* output); 
-        bool                                    ContainsProprietaryContent( svkImageData* data );
+        ProprietarySOP                          ContainsProprietaryContent( svkImageData* data );
         void                                    InitFileNames(); 
         void                                    OnlyReadInputFile(); 
         void                                    SortFilesByImagePositionPatient(
@@ -96,6 +103,7 @@ class svkDcmVolumeReader : public svkImageReader2
         virtual bool                            CheckForMultiVolume(); 
         int                                     numVolumes; 
         float                                   GetSliceSpacing(); 
+        virtual void                            CleanAttributes( set < string >* uniqueSlices){ return; }; 
 
 
     private: 
