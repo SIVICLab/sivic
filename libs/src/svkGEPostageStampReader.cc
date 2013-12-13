@@ -100,7 +100,7 @@ int svkGEPostageStampReader::CanReadFile(const char* fname)
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
 
             //  Check for proprietary use of DICOM MR ImageStorage:
-            if ( this->ContainsProprietaryContent( tmp ) == true ) {
+            if ( this->ContainsProprietaryContent( tmp ) == svkDcmVolumeReader::GE_POSTAGE_STAMP_SOP ) {
                 this->SetFileName(fname);
                 isGEPostage = true;
             }
