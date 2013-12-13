@@ -74,6 +74,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->geSigna5XReader       = svkGESigna5XReader::New();
     this->geSignaLX2Reader      = svkGESignaLX2Reader::New();
     this->gePostageStampReader  = svkGEPostageStampReader::New();
+    this->brukerDCMMRSReader    = svkBrukerDCMMRSReader::New();
     this->dcmRawDataReader      = svkDcmRawDataReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
@@ -89,6 +90,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->geSigna5XReader );
     vtkImageReader2Factory::RegisterReader( this->geSignaLX2Reader );
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
+    vtkImageReader2Factory::RegisterReader( this->brukerDCMMRSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
 
     //  this can be used if only need to check file type for example.
@@ -167,6 +169,11 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->gePostageStampReader != NULL) {
         this->gePostageStampReader->Delete();
         this->gePostageStampReader = NULL;
+    }
+
+    if (this->brukerDCMMRSReader != NULL) {
+        this->brukerDCMMRSReader->Delete();
+        this->brukerDCMMRSReader = NULL;
     }
 
     if (this->dcmRawDataReader != NULL) {
