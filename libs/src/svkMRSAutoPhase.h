@@ -76,7 +76,6 @@ using namespace std;
  *  Algorithm for automatic phase correction of MR spectra. 
  */
 class svkMRSAutoPhase : public svkThreadedImageAlgorithm
-
 {
 
     public:
