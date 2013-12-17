@@ -81,8 +81,6 @@ sivicApp::sivicApp()
     this->viewRenderingWidget   = sivicViewRenderingWidget::New();
     this->tabbedPanel           = vtkKWNotebook::New();
 
-    // create default xml config file
-    svkQuantifyMetabolites::WriteDefaultXMLTemplate( "", false ); 
 
 }
 
@@ -586,6 +584,27 @@ int sivicApp::Build( int argc, char* argv[] )
 
 	string pathName = svkUtils::GetCurrentWorkingDirectory();
     this->sivicKWApp->SetRegistryValue( 0, "RunTime", "lastPath", pathName.c_str() );
+
+
+    // create default xml config file
+    bool updateXML = svkQuantifyMetabolites::ShouldUpgradeXML(); 
+    if ( updateXML ) {
+        string message = "Your quantification file is out of date.  Updating to latest default. \nOld version saved as "; 
+        message.append( svkQuantifyMetabolites::GetOldVersionName()); 
+        vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
+        messageDialog->SetApplication( this->sivicKWApp );
+        messageDialog->SetStyle( 0 );
+        messageDialog->Create();
+        messageDialog->SetOptions( vtkKWMessageDialog::ErrorIcon );
+        messageDialog->SetText(message.c_str());
+        messageDialog->Invoke();
+        int status = messageDialog->GetStatus();
+        messageDialog->Delete();
+
+        svkQuantifyMetabolites::SaveOldVersion(); 
+
+    }
+    svkQuantifyMetabolites::WriteDefaultXMLTemplate( "", updateXML ); 
 
 
 }

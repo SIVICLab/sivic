@@ -3685,7 +3685,7 @@ void vtkSivicController::ExitSivic(vtkObject* subject, unsigned long, void* this
 {
     // To end a KWW application you close all of its windows.
     
-    vtkKWApplication* app =static_cast<vtkSivicController*>(thisObject)->GetApplication();
+    vtkKWApplication* app = static_cast<vtkSivicController*>(thisObject)->GetApplication();
     for( int i = 0; i < app->GetNumberOfWindows(); i++ ) {
         if( app->GetNthWindow(i) != subject ) {
             app->GetNthWindow(i)->Close();

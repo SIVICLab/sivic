@@ -37,6 +37,7 @@
 #include <vtkSivicController.h>
 #ifdef ITK_BUILD
 #include <svkMRSAutoPhase.h>
+#include <svkMRSFirstPointPhase.h>
 #endif
 
 vtkStandardNewMacro( sivicPhaseWidget );
@@ -444,7 +445,7 @@ void sivicPhaseWidget::ExecuteZeroOrderPhase()
     if( data != NULL ) {
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkMRSAutoPhase* zeroOrderPhase = svkMRSAutoPhase::New();
+        svkMRSAutoPhase* zeroOrderPhase = svkMRSFirstPointPhase::New();
         zeroOrderPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
 //phaser->SetInputConnection(0, reader->GetOutputPort(0) );
@@ -463,7 +464,7 @@ void sivicPhaseWidget::ExecuteZeroOrderPhase()
         svkMRSAutoPhase::phasingModel model;
         model = svkMRSAutoPhase::FIRST_POINT_0; 
         //model = svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK; 
-        zeroOrderPhase->SetPhasingModel( model );
+        //zeroOrderPhase->SetPhasingModel( model );
 
         zeroOrderPhase->Update();
         data->Modified();
