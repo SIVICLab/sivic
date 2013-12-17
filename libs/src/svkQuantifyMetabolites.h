@@ -92,6 +92,9 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
         static void                                         WriteDefaultXMLTemplate( string fileName, bool clobber = false ); 
         static string                                       GetDefaultXMLFileName(); 
         void                                                SetAnatomyType( svkTypes::AnatomyType anatomyType);
+        static bool                                         ShouldUpgradeXML(); 
+        static string                                       GetOldVersionName(); 
+        static void                                         SaveOldVersion(); 
 
 
     protected:
@@ -113,6 +116,7 @@ class svkQuantifyMetabolites: public svkImageAlgorithm
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
+        static void             GetCurrentXMLVersion(string* v1, string* v2, string* v3); 
 
 
     private:

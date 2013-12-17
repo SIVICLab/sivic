@@ -55,6 +55,8 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#include "svkUtils.h"
+
 
 using namespace svk;
 
@@ -1192,9 +1194,123 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "   </APPLICATION> " << endl
         << " " << endl
         << " " << endl
+        << " -- 19F " << endl
+        << "  <APPLICATION nucleus=\"19F\">      " << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"19FMet\"  peak_ppm=\"0\"  width_ppm=\"10\"> " << endl
+        << "     </REGION> " << endl
+        << " " << endl
+        << "     -- Pcr peak ht " << endl
+        << "     <QUANT id=\"0\" region=\"0\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr integrated area " << endl
+        << "     <QUANT id=\"1\" region=\"0\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr magnitude pk ht " << endl
+        << "     <QUANT id=\"2\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- Pcr magnitude integrated area " << endl
+        << "     <QUANT id=\"3\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "   </APPLICATION> " << endl
+        << " " << endl
+        << " " << endl
         << " </SVK_MRS_QUANTIFICATION> " << endl; 
 
             xmlOut.close();
     }
+
+}
+
+
+/*
+ *  Generates z-score maps (metabolite indices) for the quantities specified in 
+ *  the input xml configuration file.  
+ */
+bool svkQuantifyMetabolites::ShouldUpgradeXML()
+{
+    bool shouldUpdate = false; 
+    string v1; 
+    string v2; 
+    string v3; 
+    svkQuantifyMetabolites::GetCurrentXMLVersion(&v1, &v2, &v3);
+
+    int upgradeV1 = 0; 
+    int upgradeV2 = 9; 
+    int upgradeV3 = 7; 
+    if ( svkUtils::StringToInt( v1 )  <= upgradeV1 
+            && svkUtils::StringToInt( v2 )  <= upgradeV2 
+            && svkUtils::StringToInt( v3 )  < upgradeV3 ) { 
+        shouldUpdate = true; 
+    }
+
+    return shouldUpdate;     
+
+}
+
+
+void svkQuantifyMetabolites::GetCurrentXMLVersion(string* v1, string* v2, string* v3)
+{
+
+    vtkXMLDataElement* xml = vtkXMLUtilities::ReadElementFromFile( 
+            svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str() 
+    );  
+    string xmlVersion( xml->GetAttributeValue( 0 ) );
+    //  Parse into 3 components: 
+    size_t delim;
+    delim = xmlVersion.find_first_of('.');
+    *v1 = xmlVersion.substr(0, delim );
+    xmlVersion.assign( xmlVersion.substr( delim + 1 ));
+
+    delim = xmlVersion.find_first_of('.');
+    *v2 = xmlVersion.substr( 0, delim );
+    xmlVersion.assign( xmlVersion.substr( delim +1 ));
+
+    delim = xmlVersion.find_first_of('.');
+    *v3 = xmlVersion.substr( 0, delim );
+}
+
+
+/*!
+ */
+void svkQuantifyMetabolites::SaveOldVersion()
+{
+    svkUtils::CopyFile( 
+        svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str(),
+        svkQuantifyMetabolites::GetOldVersionName().c_str()
+    ); 
+}
+
+
+/*!
+ */
+string svkQuantifyMetabolites::GetOldVersionName()
+{
+    string v1; 
+    string v2; 
+    string v3; 
+    svkQuantifyMetabolites::GetCurrentXMLVersion(&v1, &v2, &v3);
+
+    string backupName =  svkQuantifyMetabolites::GetDefaultXMLFileName(); 
+    backupName.append(".");
+    backupName.append(v1);
+    backupName.append(".");
+    backupName.append(v2);
+    backupName.append(".");
+    backupName.append(v3);
+    backupName.append(".bak");
+    return backupName; 
 
 }

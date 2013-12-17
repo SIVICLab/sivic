@@ -108,7 +108,7 @@ svkDcmVolumeReader::ProprietarySOP svkDcmVolumeReader::ContainsProprietaryConten
 
         if ( mfg == "GE MEDICAL SYSTEMS" ) {
             if ( imagedNucleus == "SPECT" || gePSSeq1 == "PROBE-P" || gePSSeq2 == "presscsi"  ) {
-                proprietaryContent = svkDcmVolumeReader::DICOM_STD_SOP;
+                proprietaryContent = svkDcmVolumeReader::GE_POSTAGE_STAMP_SOP;
             }
         }
 

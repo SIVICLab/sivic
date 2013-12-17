@@ -569,9 +569,12 @@ void svkBrukerDCMMRSReader::InitMRSpectroscopyModule()
     //  (0019,10a8) DS [1024.000000],
     //  we subsample 256 frequency pts, but these fields
     //  aren't present in all  PS data sets, so just hardcode for now
+
+    //  set correctly in LoadData
+    float spectralWidth = 0; 
     this->GetOutput()->GetDcmHeader()->SetValue(
         "SpectralWidth",
-        "250"
+        spectralWidth
     );
 
     this->GetOutput()->GetDcmHeader()->SetValue(
@@ -1166,6 +1169,16 @@ void svkBrukerDCMMRSReader::LoadData( svkImageData* data )
     this->numTimePts = this->GetOutput()->GetDcmHeader()->GetNumberOfTimePoints();
     int numCoils = this->GetOutput()->GetDcmHeader()->GetNumberOfCoils();
 
+
+    //  uses number of file: 
+    float spectralWidth = 
+            this->GetOutput()->GetDcmHeader()->GetFloatValue( "PixelBandwidth" ) 
+            * this->GetFileNames()->GetNumberOfValues(); 
+    this->GetOutput()->GetDcmHeader()->SetValue(
+        "SpectralWidth",
+        spectralWidth
+    );
+
     int numVoxels[3]; 
     data->GetNumberOfVoxels(numVoxels); 
 
@@ -1207,7 +1220,7 @@ void svkBrukerDCMMRSReader::LoadData( svkImageData* data )
 
         tmpImage->Delete();
     }
-    data->GetDcmHeader()->PrintDcmHeader(); 
+    data->GetDcmHeader()->RemoveElement("PixelData"); 
 
     delete [] specData; 
 
