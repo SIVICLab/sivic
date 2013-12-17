@@ -55,7 +55,7 @@ namespace svk {
  *  CSI, then this custom DICOM reader is used to map the data to an MRS object. 
  *  Currently this reader expects only 2D CSI data.
  * 
- *  Thanks to Yanurita Dwihapsari, Timothy Stait-Gardner, PhD and Bill S. Price, PhD 
+ *  Thanks to Yanurita Dwihapsari, Timothy Stait-Gardner, PhD and William S. Price, DSc. 
  *  of University of Western Sydney for providing sample Bruker data and helpful discussions.
  */
 
