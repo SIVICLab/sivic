@@ -27,6 +27,14 @@
 #  OF SUCH DAMAGE.
 #
 
+#
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
+#
+
+
 INSTALL_DIR=`dirname $0`
 ME=`basename $0`
 DCMDICTPATH="$INSTALL_DIR/../sivic/dcmtk/lib/dicom.dic"
