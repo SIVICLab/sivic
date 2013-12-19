@@ -196,8 +196,8 @@ void sivicPhaseWidget::CreateWidget()
     this->phase0Button->SetParent( this );
     this->phase0Button->Create( );
     this->phase0Button->EnabledOff();
-    this->phase0Button->SetText( "Zero Order ");
-    this->phase0Button->SetBalloonHelpString("Zero Order Phase.");
+    this->phase0Button->SetText( "First Pt Phase");
+    this->phase0Button->SetBalloonHelpString("First Pt Phase.");
 
     this->phasePivotEntry = vtkKWEntryWithLabel::New();
     this->phasePivotEntry->GetLabel()->SetText("Pivot Point ");
