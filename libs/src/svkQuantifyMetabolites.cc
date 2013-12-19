@@ -1249,7 +1249,7 @@ bool svkQuantifyMetabolites::ShouldUpgradeXML()
 
     int upgradeV1 = 0; 
     int upgradeV2 = 9; 
-    int upgradeV3 = 7; 
+    int upgradeV3 = 8; 
     if ( svkUtils::StringToInt( v1 )  <= upgradeV1 
             && svkUtils::StringToInt( v2 )  <= upgradeV2 
             && svkUtils::StringToInt( v3 )  < upgradeV3 ) { 
