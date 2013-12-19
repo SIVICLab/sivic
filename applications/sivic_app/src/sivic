@@ -34,4 +34,4 @@ DCMDICTPATH="$INSTALL_DIR/../sivic/dcmtk/lib/dicom.dic"
 export TK_LIBRARY
 export TCL_LIBRARY
 export DCMDICTPATH
-$INSTALL_DIR/../sivic/sivic
+$INSTALL_DIR/../sivic/sivic $*
