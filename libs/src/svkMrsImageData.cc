@@ -807,7 +807,7 @@ void svkMrsImageData::Get3DTlcBrcInSelectionBox( int tlcBrc[3], double tolerance
 
 
 /*!
- *  Generates data array representing binary mask indicating whether a given voxel is within
+ *  Generates a 3D data array representing binary mask indicating whether a given voxel is within
  *  the selection box or the specified fraction (tolerane) of a voxel is within the selection box.
  *  length of mask array is number of voxels in data set.  mask values are 0, not in selected
  *  volume, or 1, in selected volume.  Mask must be pre allocated.

@@ -241,7 +241,7 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
 #endif
 
     try { 
-        cout << "CELL ID: " << cellID << endl;
+        cout << "CELL ID Optimize: " << cellID << endl;
         itkOptimizer->StartOptimization();
     } catch( itk::ExceptionObject & e ) {
         cout << "Exception thrown ! " << endl;

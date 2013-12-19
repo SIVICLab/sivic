@@ -126,20 +126,21 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
-
-    //  Make sure input spectra are in frequency domain
-    //this->CheckInputSpectralDomain();
-
     this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
     //   for each cell /spectrum: 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-    cout << "NUMCELLS: " << numCells << endl;
+
+    int numSpatialVoxels = 1; 
+    for ( int dim = 0; dim < 3; dim++) {
+        int dimSize = svkDcmHeader::GetDimensionValue ( &dimensionVector, dim ) + 1; 
+        numSpatialVoxels *= dimSize;  
+    }
 
     float tolerance = .5;     
-    this->selectionBoxMask = new short[numCells];
-    data->GetSelectionBoxMask(selectionBoxMask, tolerance);
+    this->selectionBoxMask = new short[numSpatialVoxels];
+    data->GetSelectionBoxMask(this->selectionBoxMask, tolerance);
 
     //  Setup:  if firstorder, then transform to time domain
     //  Initialize first order phase arrays (e.g. -1 to 1 in nuTimePoint intervals): 
@@ -195,7 +196,6 @@ int svkMRSAutoPhase::GetPivot()
     int end; 
     int zeroOrderPhasePeak = this->GetZeroOrderPhasePeak( ); 
     this->peakPicker->GetPeakDefinition( zeroOrderPhasePeak, &start, &peak, &end ); 
-    cout << "ZOPP: " << zeroOrderPhasePeak << " " << peak << endl;
     int pivot = peak; 
     return pivot; 
 }
@@ -311,9 +311,21 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
     //  If only fitting within selection box, then skip over
     //  voxels outside. 
     if ( this->onlyUseSelectionBox == true ) { 
-        if ( this->selectionBoxMask[cellID] == 0 ) {
-               return; 
-           }
+
+        //  Determine if the spatial location of the current cell is within the 
+        //  selection box:     
+        svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        svkDcmHeader::DimensionVector spatialIndexVector = dimensionVector; 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID(&dimensionVector, &spatialIndexVector, cellID);
+        for ( int dim = 3; dim < dimensionVector.size(); dim++) {
+            svkDcmHeader::SetDimensionValue(&spatialIndexVector, dim, 0); 
+        }
+        int spatialCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&dimensionVector, &spatialIndexVector); 
+
+        if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
+            return; 
+        }
     }
 
     //  if first order fitting, fit in two passes
