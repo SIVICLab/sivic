@@ -75,11 +75,13 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_gepfile_reader -t test_file_name -r ref_file_name -o output_file_name  \n"; 
+    usemsg += "                   [ -v ] \n";
     usemsg += "                   [ -h ] \n";
     usemsg += "\n";  
     usemsg += "   -t    name   Name of file to test. \n"; 
     usemsg += "   -r    name   Name of reference file. \n"; 
     usemsg += "   -o    name   Name of outputfile. \n";
+    usemsg += "   -v           verbose  print diff pixels   \n"; 
     usemsg += "   -h           Print this help mesage. \n";  
     usemsg += "\n";  
     usemsg += "Application that diffs two MRS data files. \n"; 
@@ -90,6 +92,7 @@ int main (int argc, char** argv)
     string refFileName; 
     string outputFileName;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DDF;
+    bool isVerbose = false; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -108,7 +111,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "t:r:o:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "t:r:o:hv", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 't':
                 testFileName.assign( optarg );
@@ -118,6 +121,9 @@ int main (int argc, char** argv)
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case 'v':
+                isVerbose = true; 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -213,10 +219,19 @@ int main (int argc, char** argv)
             testSpectrum = static_cast< vtkFloatArray* >( testData->GetSpectrum( absoluteCellID) );
             refPtr = refSpectrum->GetPointer(0);
             testPtr = testSpectrum->GetPointer(0);
-
+            
+            bool cellDiff = false; 
             for (int i = 0; i < numSpecPts * numComponents; i++) {
-    
                 testPtr[i] = testPtr[i] - refPtr[i]; 
+                if ( isVerbose ) {
+                    if (testPtr[i] != 0 ) { 
+                        cout << "diff: " <<  i  << " " << testPtr[i] << " - " << refPtr[i] << " = " << testPtr[i] << endl;
+                        cellDiff = true; 
+                    }
+                }
+            }
+            if ( isVerbose && cellDiff ) {
+                cout << "Cell contains diffs: " << absoluteCellID << endl;
             }
         }
     }

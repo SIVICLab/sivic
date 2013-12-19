@@ -50,7 +50,8 @@
 #include <svkImageWriter.h>
 
 //  Insert your algorithm here in place of "AlgoTemplate":
-#include <svkDynamicMRIAlgoTemplate.h>
+//#include <svkDynamicMRIAlgoTemplate.h>
+#include <svkMRSKinetics.h>
 
 #ifdef WIN32
 extern "C" {
@@ -71,11 +72,11 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
     usemsg += "svk_met_kinetics -i1 met1 -i2 met2 -i3 met3 -o output_file_name [ -t output_data_type ] [ -h ] \n";
     usemsg += "\n";
-    usemsg += "   -i1               name   Name of met 1. \n";
-    usemsg += "   -i2               name   Name of met 2. \n";
-    usemsg += "   -i3               name   Name of met 3. \n";
-    usemsg += "   -o                name   Name of outputfile. \n";
-    usemsg += "   -t                type   Target data type: \n";
+    usemsg += "   --i1               name   Name of met 1. \n";
+    usemsg += "   --i2               name   Name of met 2. \n";
+    usemsg += "   --i3               name   Name of met 3. \n";
+    usemsg += "   -o                 name   Name of outputfile. \n";
+    usemsg += "   -t                 type   Target data type: \n";
     usemsg += "                                 3 = UCSF IDF    \n";
     usemsg += "                                 4 = DICOM_MRI (default)    \n";
     usemsg += "   -h                       Print this help mesage. \n";
@@ -190,7 +191,8 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Pass data through your algorithm:
     // ===============================================  
-    svkDynamicMRIAlgoTemplate* dynamics = svkDynamicMRIAlgoTemplate::New();
+    svkMRSKinetics* dynamics = svkMRSKinetics::New();
+    //svkDynamicMRIAlgoTemplate* dynamics = svkDynamicMRIAlgoTemplate::New();
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
@@ -202,7 +204,7 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRI ) ); 
+    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
     if ( writer == NULL ) {
