@@ -501,7 +501,6 @@ IF (!WIN32)
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_multi_view )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_reader )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_anon )
-
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_spec_diff )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_integrate_dynamic )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quantify )
@@ -514,20 +513,28 @@ IF (!WIN32)
 	    INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_hsvd)
     endif ( BUILD_CLAPACK )
 ELSE (!WIN32)
-	INSTALL_TARGETS( /local/bin svk_file_convert )
-	INSTALL_TARGETS( /local/bin svk_quick_view )
-	INSTALL_TARGETS( /local/bin svk_multi_view )
-	INSTALL_TARGETS( /local/bin svk_gepfile_reader )
-	INSTALL_TARGETS( /local/bin svk_spec_diff )
-	INSTALL_TARGETS( /local/bin svk_integrate_dynamic )
-	INSTALL_TARGETS( /local/bin svk_quantify )
-	INSTALL_TARGETS( /local/bin svk_reslice )
-	INSTALL_TARGETS( /local/bin svk_dcmdump )
-	INSTALL_TARGETS( /local/bin svk_surface_area)
-	INSTALL_TARGETS( /local/bin svk_point_selector)
-	INSTALL_TARGETS( /local/bin svk_phase_spec)
+    SET(APPS 
+        svk_file_convert 
+        svk_quick_view
+	    svk_gepfile_reader 
+	    svk_spec_diff 
+	    svk_integrate_dynamic 
+	    svk_quantify 
+	    svk_reslice 
+	    svk_dcmdump 
+	    #svk_surface_area 
+	    svk_point_selector 
+	    svk_phase_spec 
+    )
+    FOREACH(APP ${APPS})    
+        configure_file( svk_cmd_start ./${APP} [COPYONLY])
+	    INSTALL_TARGETS( /local/sivic svk_phase_spec )
+	    INSTALL_PROGRAMS( /local/bin FILES ${APP} )
+    ENDFOREACH(APP)
     if ( BUILD_CLAPACK )
-	    INSTALL_TARGETS( /local/bin svk_hsvd)
+        configure_file( svk_cmd_start svk_hsvd [COPYONLY])
+	    INSTALL_TARGETS( /local/sivic svk_hsvd )
+	    INSTALL_PROGRAMS( /local/bin FILES svk_hsvd )
     endif ( BUILD_CLAPACK )
 ENDIF (!WIN32)
 
