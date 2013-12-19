@@ -80,7 +80,6 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         sivicQuantificationWidget();
         ~sivicQuantificationWidget();
 
-        vtkKWMenuButtonWithLabel*                               mapViewSelector;
         vtkKWPushButton*                                        quantButton;
         vtkKWPushButton*                                        openQuantFileButton;
         vtkKWPushButton*                                        refreshQuantFileButton;

@@ -27,7 +27,6 @@ sivicQuantificationWidget::sivicQuantificationWidget()
     this->openQuantFileButton = NULL;
     this->refreshQuantFileButton = NULL;
     this->mrsQuant = NULL;
-    this->mapViewSelector = NULL;   
     this->numMets = 0; 
     this->isEnabled = false; 
     this->progressCallback = vtkCallbackCommand::New();
@@ -63,10 +62,6 @@ sivicQuantificationWidget::~sivicQuantificationWidget()
         this->mrsQuant= NULL;
     }
 
-    if( this->mapViewSelector != NULL ) {
-        this->mapViewSelector ->Delete();
-        this->mapViewSelector = NULL;
-    }
 }
 
 
@@ -205,7 +200,6 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
 void sivicQuantificationWidget::ExecuteQuantification() 
 {
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
-    vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
 
     if( data != NULL ) {
 
@@ -242,14 +236,6 @@ void sivicQuantificationWidget::ExecuteQuantification()
                 this->model->ChangeDataObject( this->modelMetNames[ i ], (*metMaps)[i]); 
             } else {
                 this->model->AddDataObject( this->modelMetNames[ i ], (*metMaps)[i]);
-
-                //  Add label to menu:
-                ostringstream mapNum;
-                mapNum <<  i; 
-                stringstream invocation; 
-                invocation.str("");
-                invocation << "MetMapViewCallback " << mapNum.str() << endl;
-                mapViewMenu->AddRadioButton(modelDataName.c_str(), this->sivicController, invocation.str().c_str());
             }
 
         }
@@ -257,17 +243,19 @@ void sivicQuantificationWidget::ExecuteQuantification()
         //  if overlay has not been initialized, the overlay with the first met map 
         //  otherwise grab the current menu value and use that to init the overlay
         if( this->model->DataExists( "MetaboliteData" ) == false ) {
-            vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-            this->mapViewSelector->GetWidget()->SetValue( this->modelMetNames[0].c_str() );
             this->SetOverlay( this->modelMetNames[0] ); 
-        }  else {
-            vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-            vtkstd::string menuValue = this->mapViewSelector->GetWidget()->GetValue();
-            if( this->model->DataExists( menuValue )) {
-                this->SetOverlay(  this->mapViewSelector->GetWidget()->GetValue()  );
-            } else {
-                this->mapViewSelector->GetWidget()->SetValue( this->modelMetNames[0].c_str() );
-                this->SetOverlay( this->modelMetNames[0] );
+        } else {
+            svkImageData* currentMetabolites = this->model->GetDataObject( "MetaboliteData" );
+            string currentDescription = currentMetabolites->GetDcmHeader()->GetStringValue("SeriesDescription");
+            map<string, svkImageData*> allDataObjects = this->model->GetAllDataObjects();
+            map<string,svkImageData*>::iterator it = allDataObjects.begin();
+            for( map<string, svkImageData*>::iterator iter = allDataObjects.begin(); iter != allDataObjects.end(); ++iter) {
+                svkImageData* image = iter->second;
+                if( iter->first != "AnatomicalData" && iter->first != "MetaboliteData" && iter->first != "OverlayData"
+                    && image->GetDcmHeader()->GetStringValue("SeriesDescription").compare(currentDescription) == 0){
+                    this->SetOverlay(iter->first);
+                    break;
+                }
             }
         }
 
@@ -276,8 +264,6 @@ void sivicQuantificationWidget::ExecuteQuantification()
         this->sivicController->EnableWidgets( );
 
     }
-
-    this->mapViewSelector->EnabledOn();
 
 }
 
@@ -310,30 +296,6 @@ void sivicQuantificationWidget::EnableWidgets()
         this->RefreshQuantFile();
 
 
-        //  Map View Selector
-        this->mapViewSelector = vtkKWMenuButtonWithLabel::New();
-        this->mapViewSelector->SetParent(this);
-        this->mapViewSelector->Create();
-        this->mapViewSelector->SetLabelText("Select Map");
-        this->mapViewSelector->SetLabelPositionToTop();
-        this->mapViewSelector->SetPadY(2);
-        this->mapViewSelector->GetWidget()->SetWidth(7);
-        this->mapViewSelector->EnabledOff();
-        this->mapViewSelector->GetLabel()->SetFont("system 8");
-        this->mapViewSelector->GetWidget()->SetFont("system 8");
-        vtkKWMenu* mapViewMenu = this->mapViewSelector->GetWidget()->GetMenu();
-        mapViewMenu->SetFont("system 8");
-
-    
-        //  Set default value
-        vtkstd::string mapSelectLabel = ""; 
-        if (this->numMets > 0 ) {
-            mapSelectLabel = this->metNames[0]; 
-        }
-        this->mapViewSelector->GetWidget()->SetValue( mapSelectLabel.c_str() );
-        this->mapViewSelector->GetWidget()->IndicatorVisibilityOn();
-
-
         //  Generate button
         this->quantButton = vtkKWPushButton::New();
         this->quantButton->SetParent( this );
@@ -357,7 +319,6 @@ void sivicQuantificationWidget::EnableWidgets()
         this->openQuantFileButton->SetBalloonHelpString("Edit the quantification file.");
 
 
-        //this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->mapViewSelector->GetWidgetName(), 0);
         this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->refreshQuantFileButton->GetWidgetName(), 0);
         this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->openQuantFileButton->GetWidgetName(), 1);
         this->Script("grid %s -row %d -column 1 -rowspan 2 -sticky ew -padx 3", this->quantButton->GetWidgetName(), 2);
@@ -381,9 +342,6 @@ void sivicQuantificationWidget::EnableWidgets()
             this->refreshQuantFileButton, vtkKWPushButton::InvokedEvent
         );
     
-        this->AddCallbackCommandObserver(
-            this->mapViewSelector->GetWidget(), vtkKWMenu::MenuItemInvokedEvent
-        );
     
 
         this->quantButton->EnabledOn();
@@ -428,6 +386,7 @@ void sivicQuantificationWidget::RefreshQuantFile()
         if( this->metRangeVector[i] != NULL ) {
             this->Script("grid remove %s", this->metRangeVector[i]->GetWidgetName());
             this->metRangeVector[i]->Delete();
+            this->metRangeVector[i] = NULL;
         }
     }
     this->metRangeVector.clear();

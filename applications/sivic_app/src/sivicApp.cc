@@ -587,8 +587,9 @@ int sivicApp::Build( int argc, char* argv[] )
 
 
     // create default xml config file
-    bool updateXML = svkQuantifyMetabolites::ShouldUpgradeXML(); 
-    if ( updateXML ) {
+    bool updateXML = svkQuantifyMetabolites::ShouldUpgradeXML();
+    struct stat buf;
+    if ( updateXML && stat(svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str(), &buf) == 0 ) {
         string message = "Your quantification file is out of date.  Updating to latest default. \nOld version saved as "; 
         message.append( svkQuantifyMetabolites::GetOldVersionName()); 
         vtkKWMessageDialog *messageDialog = vtkKWMessageDialog::New();
