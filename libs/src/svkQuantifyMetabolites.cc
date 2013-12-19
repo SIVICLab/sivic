@@ -1263,23 +1263,31 @@ bool svkQuantifyMetabolites::ShouldUpgradeXML()
 
 void svkQuantifyMetabolites::GetCurrentXMLVersion(string* v1, string* v2, string* v3)
 {
+    //  first check if the file exists (returns 0):
+    struct stat buf;
+    bool fileExists;
+    if (stat(svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str(), &buf) == 0) {
+        vtkXMLDataElement* xml = vtkXMLUtilities::ReadElementFromFile(
+                svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str()
+        );
+        string xmlVersion( xml->GetAttributeValue( 0 ) );
+        //  Parse into 3 components:
+        size_t delim;
+        delim = xmlVersion.find_first_of('.');
+        *v1 = xmlVersion.substr(0, delim );
+        xmlVersion.assign( xmlVersion.substr( delim + 1 ));
 
-    vtkXMLDataElement* xml = vtkXMLUtilities::ReadElementFromFile( 
-            svkQuantifyMetabolites::GetDefaultXMLFileName( ).c_str() 
-    );  
-    string xmlVersion( xml->GetAttributeValue( 0 ) );
-    //  Parse into 3 components: 
-    size_t delim;
-    delim = xmlVersion.find_first_of('.');
-    *v1 = xmlVersion.substr(0, delim );
-    xmlVersion.assign( xmlVersion.substr( delim + 1 ));
+        delim = xmlVersion.find_first_of('.');
+        *v2 = xmlVersion.substr( 0, delim );
+        xmlVersion.assign( xmlVersion.substr( delim +1 ));
 
-    delim = xmlVersion.find_first_of('.');
-    *v2 = xmlVersion.substr( 0, delim );
-    xmlVersion.assign( xmlVersion.substr( delim +1 ));
-
-    delim = xmlVersion.find_first_of('.');
-    *v3 = xmlVersion.substr( 0, delim );
+        delim = xmlVersion.find_first_of('.');
+        *v3 = xmlVersion.substr( 0, delim );
+    } else {
+        *v1 = "0";
+        *v2 = "0";
+        *v3 = "0";
+    }
 }
 
 

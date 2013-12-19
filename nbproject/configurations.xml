@@ -3,8 +3,6 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="trunk" root=".">
       <df name="applications">
-        <df name="CMakeFiles">
-        </df>
         <df name="cmd_line">
           <df name="Linux_x86_64">
           </df>
@@ -12,9 +10,9 @@
           </df>
           <df name="src">
             <df name="CMakeFiles">
-              <df name="CMakeRelink.dir">
-              </df>
               <df name="svk_app_template.dir">
+              </df>
+              <df name="svk_auto_phase.dir">
               </df>
               <df name="svk_create_dcmraw.dir">
               </df>
@@ -28,8 +26,6 @@
               </df>
               <df name="svk_gepfile_anon.dir">
               </df>
-              <df name="svk_gepfile_modify.dir">
-              </df>
               <df name="svk_gepfile_reader.dir">
               </df>
               <df name="svk_get_filetype.dir">
@@ -41,6 +37,10 @@
               <df name="svk_met_kinetics.dir">
               </df>
               <df name="svk_multi_view.dir">
+              </df>
+              <df name="svk_noise.dir">
+              </df>
+              <df name="svk_peak_pick.dir">
               </df>
               <df name="svk_phase_spec.dir">
               </df>
@@ -61,7 +61,12 @@
               <df name="svk_svrecon.dir">
               </df>
             </df>
+            <df name="ITKIOFactoryRegistration">
+              <in>itkImageIOFactoryRegisterManager.h</in>
+              <in>itkTransformIOFactoryRegisterManager.h</in>
+            </df>
             <in>svk_app_template.cc</in>
+            <in>svk_auto_phase.cc</in>
             <in>svk_create_dcmraw.cc</in>
             <in>svk_dcm_deid.cc</in>
             <in>svk_dcmdump.cc</in>
@@ -74,6 +79,8 @@
             <in>svk_integrate_dynamic.cc</in>
             <in>svk_met_kinetics.cc</in>
             <in>svk_multi_view.cc</in>
+            <in>svk_noise.cc</in>
+            <in>svk_peak_pick.cc</in>
             <in>svk_phase_spec.cc</in>
             <in>svk_point_selector.cc</in>
             <in>svk_quantify.cc</in>
@@ -87,6 +94,8 @@
         </df>
         <df name="osirix_plugin">
           <df name="English.lproj">
+          </df>
+          <df name="Icons">
           </df>
           <df name="OsiriX Headers">
             <in>DCMPix.h</in>
@@ -123,14 +132,16 @@
           </df>
           <df name="src">
             <df name="CMakeFiles">
-              <df name="CMakeRelink.dir">
-              </df>
               <df name="sivic.dir">
               </df>
               <df name="sivicGUI.dir">
               </df>
               <df name="SivicKWCallbacksLib.dir">
               </df>
+            </df>
+            <df name="ITKIOFactoryRegistration">
+              <in>itkImageIOFactoryRegisterManager.h</in>
+              <in>itkTransformIOFactoryRegisterManager.h</in>
             </df>
             <in>SivicKWCallbacksLibInit.cxx</in>
             <in>sivic.cc</in>
@@ -150,6 +161,8 @@
             <in>sivicImageViewWidget.h</in>
             <in>sivicKWCompositeWidget.cc</in>
             <in>sivicKWCompositeWidget.h</in>
+            <in>sivicPhaseWidget.cc</in>
+            <in>sivicPhaseWidget.h</in>
             <in>sivicPostprocessingWidget.cc</in>
             <in>sivicPostprocessingWidget.h</in>
             <in>sivicPreferencesWidget.cc</in>
@@ -195,591 +208,10 @@
           </df>
         </df>
       </df>
-      <df name="applications.bak">
-        <df name="CMakeFiles">
-        </df>
-        <df name="cmd_line">
-          <df name="Linux_i686">
-          </df>
-          <df name="Linux_x86_64">
-          </df>
-          <df name="Linux_x86_64_debug">
-          </df>
-          <df name="src">
-            <df name="CMakeFiles">
-              <df name="CMakeRelink.dir">
-              </df>
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-              <df name="Progress">
-              </df>
-              <df name="svk_app_template.dir">
-              </df>
-              <df name="svk_circular_shift.dir">
-              </df>
-              <df name="svk_create_dcmraw.dir">
-              </df>
-              <df name="svk_dcmdump.dir">
-              </df>
-              <df name="svk_fft.dir">
-              </df>
-              <df name="svk_file_convert.dir">
-              </df>
-              <df name="svk_gepfile_reader.dir">
-              </df>
-              <df name="svk_get_filetype.dir">
-              </df>
-              <df name="svk_integrate_dynamic.dir">
-              </df>
-              <df name="svk_multi_view.dir">
-              </df>
-              <df name="svk_quantify.dir">
-              </df>
-              <df name="svk_quick_view.dir">
-              </df>
-              <df name="svk_reslice.dir">
-              </df>
-              <df name="svk_spec_diff.dir">
-              </df>
-              <df name="svk_surface_area.dir">
-              </df>
-              <df name="svk_svrecon.dir">
-              </df>
-            </df>
-            <in>svk_app_template.cc</in>
-            <in>svk_circular_shift.cc</in>
-            <in>svk_dcmdump.cc</in>
-            <in>svk_fft.cc</in>
-            <in>svk_file_convert.cc</in>
-            <in>svk_gepfile_reader.cc</in>
-            <in>svk_get_filetype.cc</in>
-            <in>svk_integrate_dynamic.cc</in>
-            <in>svk_multi_view.cc</in>
-            <in>svk_quantify.cc</in>
-            <in>svk_quick_view.cc</in>
-            <in>svk_reslice.cc</in>
-            <in>svk_spec_diff.cc</in>
-            <in>svk_surface_area.cc</in>
-            <in>svk_svrecon.cc</in>
-          </df>
-          <df name="SunOS_sparc">
-          </df>
-          <df name="SunOS_sparc_debug">
-          </df>
-        </df>
-        <df name="osirix_plugin">
-          <df name="English.lproj">
-          </df>
-          <df name="OsiriX Headers">
-            <in>DCMPix.h</in>
-            <in>DCMView.h</in>
-            <in>DicomImage.h</in>
-            <in>DicomSeries.h</in>
-            <in>MyPoint.h</in>
-            <in>Notifications.h</in>
-            <in>OSIWindowController.h</in>
-            <in>PluginFilter.h</in>
-            <in>ROI.h</in>
-            <in>Schedulable.h</in>
-            <in>Scheduler.h</in>
-            <in>StaticScheduler.h</in>
-            <in>ViewerController.h</in>
-            <in>browserController.h</in>
-            <in>dicomFile.h</in>
-          </df>
-          <df name="SIVIC_MRSI.xcodeproj">
-          </df>
-          <df name="SIVIC_OSIRIX_0.4_PKG.pmdoc">
-          </df>
-          <df name="SIVIC_OSX_STANDALONE_PKG.pmdoc">
-          </df>
-          <df name="standalone">
-          </df>
-          <in>SIVIC_MRSIFilter.h</in>
-          <in>SIVIC_MRSIFilter.mm</in>
-        </df>
-        <df name="sivic_app">
-          <df name="Linux_i686">
-          </df>
-          <df name="Linux_x86_64">
-          </df>
-          <df name="Linux_x86_64_debug">
-          </df>
-          <df name="src">
-            <df name="CMakeFiles">
-              <df name="CMakeRelink.dir">
-              </df>
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-              <df name="Progress">
-              </df>
-              <df name="sivic.dir">
-              </df>
-              <df name="sivicGUI.dir">
-              </df>
-              <df name="SivicKWCallbacksLib.dir">
-              </df>
-            </df>
-            <in>SivicKWCallbacksLibInit.cxx</in>
-            <in>sivic.cc</in>
-            <in>sivicApp.cc</in>
-            <in>sivicApp.h</in>
-            <in>sivicBasicTest.cc</in>
-            <in>sivicBasicTest.h</in>
-            <in>sivicCombineWidget.cc</in>
-            <in>sivicCombineWidget.h</in>
-            <in>sivicDSCWidget.cc</in>
-            <in>sivicDSCWidget.h</in>
-            <in>sivicDataWidget.cc</in>
-            <in>sivicDataWidget.h</in>
-            <in>sivicImageDataWidget.cc</in>
-            <in>sivicImageDataWidget.h</in>
-            <in>sivicImageViewWidget.cc</in>
-            <in>sivicImageViewWidget.h</in>
-            <in>sivicKWCompositeWidget.cc</in>
-            <in>sivicKWCompositeWidget.h</in>
-            <in>sivicPreferencesWidget.cc</in>
-            <in>sivicPreferencesWidget.h</in>
-            <in>sivicPreprocessingWidget.cc</in>
-            <in>sivicPreprocessingWidget.h</in>
-            <in>sivicProcessingWidget.cc</in>
-            <in>sivicProcessingWidget.h</in>
-            <in>sivicQuantificationWidget.cc</in>
-            <in>sivicQuantificationWidget.h</in>
-            <in>sivicSpectraRangeWidget.cc</in>
-            <in>sivicSpectraRangeWidget.h</in>
-            <in>sivicSpectraViewWidget.cc</in>
-            <in>sivicSpectraViewWidget.h</in>
-            <in>sivicTestCase.cc</in>
-            <in>sivicTestCase.h</in>
-            <in>sivicTestSuite.cc</in>
-            <in>sivicTestSuite.h</in>
-            <in>sivicViewRenderingWidget.cc</in>
-            <in>sivicViewRenderingWidget.h</in>
-            <in>sivicWindowLevelWidget.cc</in>
-            <in>sivicWindowLevelWidget.h</in>
-            <in>svkSecondaryCaptureFormatter.cc</in>
-            <in>svkSecondaryCaptureFormatter.h</in>
-            <in>vtkSivicController.cc</in>
-            <in>vtkSivicController.h</in>
-            <in>vtkSivicControllerTcl.cxx</in>
-          </df>
-          <df name="SunOS_sparc">
-          </df>
-        </df>
-        <df name="slicer_plugin">
-          <df name="MRSpectroscopy">
-            <df name="CMakeFiles">
-            </df>
-            <in>vtkMRMLsvkImageDataNode.cc</in>
-            <in>vtkMRMLsvkImageDataNode.h</in>
-            <in>vtkMRMLsvkImageDataStorageNode.cc</in>
-            <in>vtkMRMLsvkImageDataStorageNode.h</in>
-            <in>vtkMRSpectroscopyGUI.cxx</in>
-            <in>vtkMRSpectroscopyGUI.h</in>
-            <in>vtkMRSpectroscopyLogic.cxx</in>
-            <in>vtkMRSpectroscopyLogic.h</in>
-            <in>vtkMRSpectroscopyWin32Header.h</in>
-          </df>
-        </df>
-      </df>
       <df name="Build">
         <df name="Debug">
         </df>
         <df name="Release">
-          <df name="Linux_x86_64">
-            <df name="applications">
-              <df name="cmd_line">
-                <df name="Linux_x86_64">
-                </df>
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="svk_app_template.dir">
-                    </df>
-                    <df name="svk_create_dcmraw.dir">
-                    </df>
-                    <df name="svk_dcm_deid.dir">
-                    </df>
-                    <df name="svk_dcmdump.dir">
-                    </df>
-                    <df name="svk_fft.dir">
-                    </df>
-                    <df name="svk_file_convert.dir">
-                    </df>
-                    <df name="svk_gepfile_anon.dir">
-                    </df>
-                    <df name="svk_gepfile_reader.dir">
-                    </df>
-                    <df name="svk_get_filetype.dir">
-                    </df>
-                    <df name="svk_hsvd.dir">
-                    </df>
-                    <df name="svk_integrate_dynamic.dir">
-                    </df>
-                    <df name="svk_multi_view.dir">
-                    </df>
-                    <df name="svk_phase_spec.dir">
-                    </df>
-                    <df name="svk_point_selector.dir">
-                    </df>
-                    <df name="svk_quantify.dir">
-                    </df>
-                    <df name="svk_quick_view.dir">
-                    </df>
-                    <df name="svk_reorder_epsi.dir">
-                    </df>
-                    <df name="svk_reslice.dir">
-                    </df>
-                    <df name="svk_spec_diff.dir">
-                    </df>
-                    <df name="svk_surface_area.dir">
-                    </df>
-                    <df name="svk_svrecon.dir">
-                    </df>
-                  </df>
-                </df>
-              </df>
-              <df name="sivic_app">
-                <df name="Linux_x86_64">
-                </df>
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="sivic.dir">
-                    </df>
-                    <df name="sivicGUI.dir">
-                    </df>
-                    <df name="SivicKWCallbacksLib.dir">
-                    </df>
-                  </df>
-                  <in>SivicKWCallbacksLibInit.cxx</in>
-                  <in>vtkSivicControllerTcl.cxx</in>
-                </df>
-              </df>
-            </df>
-            <df name="CMakeFiles">
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-            </df>
-            <df name="libs">
-              <df name="Linux_x86_64">
-              </df>
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="svk.dir">
-                  </df>
-                  <df name="svkadapt.dir">
-                  </df>
-                  <df name="svkNumerical2.dir">
-                  </df>
-                  <df name="svkviz.dir">
-                  </df>
-                </df>
-              </df>
-            </df>
-          </df>
-        </df>
-      </df>
-      <df name="Build.bak">
-        <df name="Debug">
-        </df>
-        <df name="Release">
-          <df name="Linux_i686">
-            <df name="applications">
-              <df name="cmd_line">
-                <df name="Linux_i686">
-                </df>
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="svk_app_template.dir">
-                    </df>
-                    <df name="svk_circular_shift.dir">
-                    </df>
-                    <df name="svk_create_dcmraw.dir">
-                    </df>
-                    <df name="svk_dcmdump.dir">
-                    </df>
-                    <df name="svk_fft.dir">
-                    </df>
-                    <df name="svk_file_convert.dir">
-                    </df>
-                    <df name="svk_gepfile_reader.dir">
-                    </df>
-                    <df name="svk_get_filetype.dir">
-                    </df>
-                    <df name="svk_integrate_dynamic.dir">
-                    </df>
-                    <df name="svk_multi_view.dir">
-                    </df>
-                    <df name="svk_quantify.dir">
-                    </df>
-                    <df name="svk_quick_view.dir">
-                    </df>
-                    <df name="svk_reslice.dir">
-                    </df>
-                    <df name="svk_spec_diff.dir">
-                    </df>
-                    <df name="svk_surface_area.dir">
-                    </df>
-                    <df name="svk_svrecon.dir">
-                    </df>
-                  </df>
-                </df>
-              </df>
-              <df name="sivic_app">
-                <df name="Linux_i686">
-                </df>
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="sivic.dir">
-                    </df>
-                    <df name="sivicGUI.dir">
-                    </df>
-                    <df name="SivicKWCallbacksLib.dir">
-                    </df>
-                  </df>
-                  <in>SivicKWCallbacksLibInit.cxx</in>
-                  <in>vtkSivicControllerTcl.cxx</in>
-                </df>
-              </df>
-            </df>
-            <df name="CMakeFiles">
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-              <df name="Progress">
-              </df>
-            </df>
-            <df name="libs">
-              <df name="Linux_i686">
-              </df>
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="svk.dir">
-                  </df>
-                  <df name="svkadapt.dir">
-                  </df>
-                </df>
-              </df>
-            </df>
-          </df>
-          <df name="Linux_x86_64">
-            <df name="applications">
-              <df name="cmd_line">
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="svk_app_template.dir">
-                    </df>
-                    <df name="svk_circular_shift.dir">
-                    </df>
-                    <df name="svk_create_dcmraw.dir">
-                    </df>
-                    <df name="svk_dcm_deid.dir">
-                    </df>
-                    <df name="svk_dcmdump.dir">
-                    </df>
-                    <df name="svk_fft.dir">
-                    </df>
-                    <df name="svk_file_convert.dir">
-                    </df>
-                    <df name="svk_gepfile_anon.dir">
-                    </df>
-                    <df name="svk_gepfile_reader.dir">
-                    </df>
-                    <df name="svk_get_filetype.dir">
-                    </df>
-                    <df name="svk_integrate_dynamic.dir">
-                    </df>
-                    <df name="svk_multi_view.dir">
-                    </df>
-                    <df name="svk_point_selector.dir">
-                    </df>
-                    <df name="svk_quantify.dir">
-                    </df>
-                    <df name="svk_quick_view.dir">
-                    </df>
-                    <df name="svk_reorder_epsi.dir">
-                    </df>
-                    <df name="svk_reslice.dir">
-                    </df>
-                    <df name="svk_spec_diff.dir">
-                    </df>
-                    <df name="svk_surface_area.dir">
-                    </df>
-                    <df name="svk_svrecon.dir">
-                    </df>
-                  </df>
-                </df>
-              </df>
-              <df name="sivic_app">
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="sivic.dir">
-                    </df>
-                    <df name="sivicGUI.dir">
-                    </df>
-                    <df name="SivicKWCallbacksLib.dir">
-                    </df>
-                  </df>
-                  <in>SivicKWCallbacksLibInit.cxx</in>
-                </df>
-              </df>
-            </df>
-            <df name="CMakeFiles">
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-              <df name="Progress">
-              </df>
-            </df>
-            <df name="libs">
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="svk.dir">
-                  </df>
-                  <df name="svkadapt.dir">
-                  </df>
-                  <df name="svkviz.dir">
-                  </df>
-                </df>
-              </df>
-            </df>
-          </df>
-          <df name="SunOS_sparc">
-            <df name="applications">
-              <df name="cmd_line">
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="svk_app_template.dir">
-                    </df>
-                    <df name="svk_circular_shift.dir">
-                    </df>
-                    <df name="svk_dcmdump.dir">
-                    </df>
-                    <df name="svk_fft.dir">
-                    </df>
-                    <df name="svk_file_convert.dir">
-                    </df>
-                    <df name="svk_gepfile_reader.dir">
-                    </df>
-                    <df name="svk_get_filetype.dir">
-                    </df>
-                    <df name="svk_integrate_dynamic.dir">
-                    </df>
-                    <df name="svk_multi_view.dir">
-                    </df>
-                    <df name="svk_point_selector.dir">
-                    </df>
-                    <df name="svk_quantify.dir">
-                    </df>
-                    <df name="svk_quick_view.dir">
-                    </df>
-                    <df name="svk_reslice.dir">
-                    </df>
-                    <df name="svk_spec_diff.dir">
-                    </df>
-                    <df name="svk_surface_area.dir">
-                    </df>
-                    <df name="svk_svrecon.dir">
-                    </df>
-                  </df>
-                </df>
-                <df name="SunOS_sparc">
-                </df>
-              </df>
-              <df name="sivic_app">
-                <df name="src">
-                  <df name="CMakeFiles">
-                    <df name="sivic.dir">
-                    </df>
-                    <df name="sivicGUI.dir">
-                    </df>
-                    <df name="SivicKWCallbacksLib.dir">
-                    </df>
-                  </df>
-                  <in>SivicKWCallbacksLibInit.cxx</in>
-                  <in>vtkSivicControllerTcl.cxx</in>
-                </df>
-                <df name="SunOS_sparc">
-                </df>
-              </df>
-            </df>
-            <df name="CMakeFiles">
-              <df name="CMakeTmp">
-                <df name="CMakeFiles">
-                  <df name="cmTryCompileExec.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="CompilerIdC">
-                <in>CMakeCCompilerId.c</in>
-              </df>
-              <df name="CompilerIdCXX">
-                <in>CMakeCXXCompilerId.cpp</in>
-              </df>
-              <df name="Progress">
-              </df>
-            </df>
-            <df name="libs">
-              <df name="src">
-                <df name="CMakeFiles">
-                  <df name="svk.dir">
-                  </df>
-                  <df name="svkadapt.dir">
-                  </df>
-                </df>
-              </df>
-              <df name="SunOS_sparc">
-              </df>
-            </df>
-          </df>
         </df>
       </df>
       <df name="CMakeFiles">
@@ -798,104 +230,6 @@
       </df>
       <df name="libs">
         <df name="examples">
-          <df name="CMakeFiles">
-            <df name="CMakeTmp">
-              <df name="CMakeFiles">
-                <df name="cmTryCompileExec.dir">
-                </df>
-              </df>
-            </df>
-            <df name="CompilerIdC">
-              <in>CMakeCCompilerId.c</in>
-            </df>
-            <df name="CompilerIdCXX">
-              <in>CMakeCXXCompilerId.cpp</in>
-            </df>
-            <df name="Progress">
-            </df>
-            <df name="test_actorSizeIndividual.dir">
-            </df>
-            <df name="test_actorSizeRectGrid.dir">
-            </df>
-            <df name="test_grid_topo_order.dir">
-            </df>
-            <df name="test_mvc.dir">
-            </df>
-            <df name="test_new_del.dir">
-            </df>
-            <df name="test_read_write.dir">
-            </df>
-            <df name="test_rectilnearGrid.dir">
-            </df>
-            <df name="test_svkBoxPlot.dir">
-            </df>
-            <df name="test_svkDataModel.dir">
-            </df>
-            <df name="test_svkDcmQuickRead.dir">
-            </df>
-            <df name="test_svkDetailedPlotView.dir">
-            </df>
-            <df name="test_svkDICOMMRSWriter.dir">
-            </df>
-            <df name="test_svkFormatConverter.dir">
-            </df>
-            <df name="test_svkIdfWriter.dir">
-            </df>
-            <df name="test_svkImageAlgorithmExecuter.dir">
-            </df>
-            <df name="test_svkImageCopy.dir">
-            </df>
-            <df name="test_svkImageData.dir">
-            </df>
-            <df name="test_svkImageReaderFactory.dir">
-            </df>
-            <df name="test_svkImageTopologyGenerator.dir">
-            </df>
-            <df name="test_svkImageViewer2.dir">
-            </df>
-            <df name="test_svkMCPhase.dir">
-            </df>
-            <df name="test_svkMrsImageExtract.dir">
-            </df>
-            <df name="test_svkMrsImageFFT.dir">
-            </df>
-            <df name="test_svkMrsImageFFTSpatial.dir">
-            </df>
-            <df name="test_svkMultiWindowToImageFilter.dir">
-            </df>
-            <df name="test_svkObliqueReslice.dir">
-            </df>
-            <df name="test_svkOrientedImageActor.dir">
-            </df>
-            <df name="test_svkOrientedImageCopy.dir">
-            </df>
-            <df name="test_svkOrientedImageData.dir">
-            </df>
-            <df name="test_svkOverlayView.dir">
-            </df>
-            <df name="test_svkPhase.dir">
-            </df>
-            <df name="test_svkPlotGridView.dir">
-            </df>
-            <df name="test_svkPlotLine.dir">
-            </df>
-            <df name="test_svkSinglePlotExtraction.dir">
-            </df>
-            <df name="test_svkSpectraPhaserWidget.dir">
-            </df>
-            <df name="test_svkUCSFUtils.dir">
-            </df>
-            <df name="test_vtkGL2PSExporter.dir">
-            </df>
-            <df name="test_vtkGL2PSExporterImages.dir">
-            </df>
-            <df name="test_vtkImageFFT.dir">
-            </df>
-            <df name="test_vtkImageFourierCenter.dir">
-            </df>
-            <df name="test_vtkRenderLoop.dir">
-            </df>
-          </df>
           <in>test_actorSizeIndividual.cc</in>
           <in>test_actorSizeRectGrid.cc</in>
           <in>test_grid_topo_order.cc</in>
@@ -941,8 +275,6 @@
           <in>getopt.h</in>
           <in>getopt_long.c</in>
         </df>
-        <df name="Linux_i686">
-        </df>
         <df name="Linux_x86_64">
         </df>
         <df name="Linux_x86_64_debug">
@@ -972,11 +304,9 @@
             <df name="svkviz.dir">
             </df>
           </df>
-          <df name="libsvk">
-            <df name="html">
-              <df name="apps">
-              </df>
-            </df>
+          <df name="ITKIOFactoryRegistration">
+            <in>itkImageIOFactoryRegisterManager.h</in>
+            <in>itkTransformIOFactoryRegisterManager.h</in>
           </df>
           <in>svk4DImageData.cc</in>
           <in>svk4DImageData.h</in>
@@ -988,6 +318,8 @@
           <in>svkAreaPicker.h</in>
           <in>svkBoxPlot.cc</in>
           <in>svkBoxPlot.h</in>
+          <in>svkBrukerDCMMRSReader.cc</in>
+          <in>svkBrukerDCMMRSReader.h</in>
           <in>svkBurnResearchPixels.cc</in>
           <in>svkBurnResearchPixels.h</in>
           <in>svkByteSwap.cc</in>
@@ -1028,7 +360,6 @@
           <in>svkDataViewController.h</in>
           <in>svkDcmEnhancedVolumeReader.cc</in>
           <in>svkDcmEnhancedVolumeReader.h</in>
-          <in>svkDcmFloatingPointSingle.cc</in>
           <in>svkDcmHeader.cc</in>
           <in>svkDcmHeader.h</in>
           <in>svkDcmMriVolumeReader.cc</in>
@@ -1067,6 +398,8 @@
           <in>svkFastCellData.h</in>
           <in>svkFdfVolumeReader.cc</in>
           <in>svkFdfVolumeReader.h</in>
+          <in>svkFirstOrderPhaseCostFunction.h</in>
+          <in>svkFirstPointPhaseCostFunction.h</in>
           <in>svkGEImageHeader.h</in>
           <in>svkGEPFileMapper.cc</in>
           <in>svkGEPFileMapper.h</in>
@@ -1080,6 +413,8 @@
           <in>svkGEPFileMapperUCSFfidcsi.h</in>
           <in>svkGEPFileMapperUCSFfidcsiDev0.cc</in>
           <in>svkGEPFileMapperUCSFfidcsiDev0.h</in>
+          <in>svkGEPFileMapperUCSFfidcsiDev07t.cc</in>
+          <in>svkGEPFileMapperUCSFfidcsiDev07t.h</in>
           <in>svkGEPFileReader.cc</in>
           <in>svkGEPFileReader.h</in>
           <in>svkGEPostageStampReader.cc</in>
@@ -1146,8 +481,18 @@
           <in>svkLookupTable.h</in>
           <in>svkMRIIOD.cc</in>
           <in>svkMRIIOD.h</in>
+          <in>svkMRSAutoPhase.cc</in>
+          <in>svkMRSAutoPhase.h</in>
+          <in>svkMRSFirstPointPhase.cc</in>
+          <in>svkMRSFirstPointPhase.h</in>
           <in>svkMRSIOD.cc</in>
           <in>svkMRSIOD.h</in>
+          <in>svkMRSKinetics.cc</in>
+          <in>svkMRSKinetics.h</in>
+          <in>svkMRSNoise.cc</in>
+          <in>svkMRSNoise.h</in>
+          <in>svkMRSPeakPick.cc</in>
+          <in>svkMRSPeakPick.h</in>
           <in>svkMetaboliteMap.cc</in>
           <in>svkMetaboliteMap.h</in>
           <in>svkMetaboliteRatioZScores.cc</in>
@@ -1193,6 +538,7 @@
           <in>svkOverlayViewController.h</in>
           <in>svkPACSInterface.cc</in>
           <in>svkPACSInterface.h</in>
+          <in>svkPhaseCostFunction.h</in>
           <in>svkPhaseSpec.cc</in>
           <in>svkPhaseSpec.h</in>
           <in>svkPlotGridView.cc</in>
@@ -1261,12 +607,14 @@
         </df>
       </df>
       <df name="LocalMake">
-        <df name="Linux_i686">
-        </df>
-        <df name="Linux_x86_64">
-        </df>
       </df>
       <df name="test_data">
+        <df name="bruker">
+          <df name="input">
+          </df>
+          <df name="output">
+          </df>
+        </df>
         <df name="combining">
           <df name="input">
           </df>
@@ -1354,6 +702,12 @@
             <df name="input">
             </df>
             <df name="Linux_x86_64">
+            </df>
+          </df>
+          <df name="23x">
+            <df name="input">
+            </df>
+            <df name="output">
             </df>
           </df>
           <df name="9x">
@@ -1510,7 +864,11 @@
         <df name="mrs_fft">
           <df name="input">
           </df>
+          <df name="input_2">
+          </df>
           <df name="out">
+          </df>
+          <df name="out_2">
           </df>
         </df>
         <df name="mrs_voxel_shift">
@@ -1607,6 +965,12 @@
             </df>
           </df>
         </df>
+        <df name="phase">
+          <df name="input_fp">
+          </df>
+          <df name="out_fp">
+          </df>
+        </df>
         <df name="phase_spec">
           <df name="out">
           </df>
@@ -1676,6 +1040,10 @@
           </df>
           <df name="SAG_SPEC_RENDER_MCHK">
           </df>
+          <df name="TEST_BRUKER_2_DCM">
+          </df>
+          <df name="TEST_FP_PHASE">
+          </df>
           <df name="TEST_HSVD">
           </df>
           <df name="TEST_MCHK_11XPF_2_DDF">
@@ -1687,6 +1055,8 @@
           <df name="TEST_MCHK_15XPF_2_DDF">
           </df>
           <df name="TEST_MCHK_20XPF_2_DDF">
+          </df>
+          <df name="TEST_MCHK_23XPF_2_DDF">
           </df>
           <df name="TEST_MCHK_9XPF_SWAP_DDF">
           </df>
@@ -1800,6 +1170,8 @@
           </df>
           <df name="TEST_MCHK_VARIANFID_2_DDF">
           </df>
+          <df name="TEST_MRS_FFT_VOXEL_SHIFT">
+          </df>
           <df name="TEST_PHASE_SPEC">
           </df>
           <df name="VTK_RENDER_MCHK">
@@ -1900,92 +1272,14 @@
           </df>
         </df>
       </df>
-      <df name="Testing">
-        <df name="Temporary">
-        </df>
-      </df>
       <df name="tests">
         <df name="Linux_x86_64">
-        </df>
-        <df name="Linux_x86_64_debug">
         </df>
         <df name="scripts">
         </df>
         <df name="src">
-          <df name="[">
-          </df>
-          <df name="]">
-          </df>
           <df name="CMakeFiles">
             <df name="assertFailTest.dir">
-            </df>
-            <df name="CMakeTmp">
-              <df name="CMakeFiles">
-                <df name="cmTryCompileExec.dir">
-                </df>
-              </df>
-            </df>
-            <df name="CompilerIdC">
-              <in>CMakeCCompilerId.c</in>
-            </df>
-            <df name="CompilerIdCXX">
-              <in>CMakeCXXCompilerId.cpp</in>
-            </df>
-            <df name="Continuous.dir">
-            </df>
-            <df name="ContinuousBuild.dir">
-            </df>
-            <df name="ContinuousConfigure.dir">
-            </df>
-            <df name="ContinuousCoverage.dir">
-            </df>
-            <df name="ContinuousMemCheck.dir">
-            </df>
-            <df name="ContinuousStart.dir">
-            </df>
-            <df name="ContinuousSubmit.dir">
-            </df>
-            <df name="ContinuousTest.dir">
-            </df>
-            <df name="ContinuousUpdate.dir">
-            </df>
-            <df name="Experimental.dir">
-            </df>
-            <df name="ExperimentalBuild.dir">
-            </df>
-            <df name="ExperimentalConfigure.dir">
-            </df>
-            <df name="ExperimentalCoverage.dir">
-            </df>
-            <df name="ExperimentalMemCheck.dir">
-            </df>
-            <df name="ExperimentalStart.dir">
-            </df>
-            <df name="ExperimentalSubmit.dir">
-            </df>
-            <df name="ExperimentalTest.dir">
-            </df>
-            <df name="ExperimentalUpdate.dir">
-            </df>
-            <df name="Nightly.dir">
-            </df>
-            <df name="NightlyBuild.dir">
-            </df>
-            <df name="NightlyConfigure.dir">
-            </df>
-            <df name="NightlyCoverage.dir">
-            </df>
-            <df name="NightlyMemCheck.dir">
-            </df>
-            <df name="NightlyMemoryCheck.dir">
-            </df>
-            <df name="NightlyStart.dir">
-            </df>
-            <df name="NightlySubmit.dir">
-            </df>
-            <df name="NightlyTest.dir">
-            </df>
-            <df name="NightlyUpdate.dir">
             </df>
             <df name="returnFailure.dir">
             </df>
@@ -1996,8 +1290,6 @@
             <df name="svkImageFourierCenterTest.dir">
             </df>
             <df name="svkImageLinearPhaseTest.dir">
-            </df>
-            <df name="svkImagePadFilterTest.dir">
             </df>
             <df name="svkInstantiationTest.dir">
             </df>
@@ -2017,8 +1309,6 @@
             </df>
             <df name="svkMrsLinearPhaseTest.dir">
             </df>
-            <df name="svkMrsZeroFill.dir">
-            </df>
             <df name="svkMrsZeroFillTest.dir">
             </df>
             <df name="svkOverlayViewTest.dir">
@@ -2029,120 +1319,22 @@
             </df>
             <df name="svkSincInterpolateTest.dir">
             </df>
-            <df name="svkSpectraReferenceViewTest.dir">
-            </df>
             <df name="svkTest.dir">
             </df>
             <df name="svkZeroLinearPhaseTest.dir">
             </df>
+            <df name="TEST_RAW_LINK.dir">
+            </df>
+            <df name="TEST_RAW_LINK_CMD.dir">
+            </df>
+            <df name="TEST_RAW_RMLINK.dir">
+            </df>
             <df name="vtkBaselineTest.dir">
             </df>
           </df>
-          <df name="dcm_series_diff_temp26105">
-            <df name="xml_one">
-            </df>
-            <df name="xml_two">
-            </df>
-          </df>
-          <df name="dcm_series_diff_temp664">
-            <df name="xml_one">
-            </df>
-            <df name="xml_two">
-            </df>
-          </df>
-          <df name="SVK_TEST_ROOT-NOTFOUND">
-            <df name="results_tmp">
-              <df name="TEST_GEPFILE_2_DDF_2">
-              </df>
-              <df name="TEST_GEPFILE_2_DDF_LAC">
-              </df>
-              <df name="TEST_MCHK_11XPF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_12XPF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_14XPF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_15XPF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_20XPF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_COMBINE">
-              </df>
-              <df name="TEST_MCHK_DCMMRI_2_DCMMRI">
-              </df>
-              <df name="TEST_MCHK_DCMMRI_2_IDF">
-              </df>
-              <df name="TEST_MCHK_DCMMRS_2_DCMMRS">
-              </df>
-              <df name="TEST_MCHK_DDF_2_DDF">
-              </df>
-              <df name="TEST_MCHK_EVEN_IMAGE_CENTER">
-              </df>
-              <df name="TEST_MCHK_EVEN_IMAGE_LINEAR_PHASE">
-              </df>
-              <df name="TEST_MCHK_EVEN_IMAGE_PAD">
-              </df>
-              <df name="TEST_MCHK_EVEN_MRI_FFT">
-              </df>
-              <df name="TEST_MCHK_EVEN_SINC_INTERPOLATE">
-              </df>
-              <df name="TEST_MCHK_FDF_2_IDF">
-              </df>
-              <df name="TEST_MCHK_GE_POSTAGE_TO_DDF">
-              </df>
-              <df name="TEST_MCHK_GEPFILE_2_DDF_1">
-              </df>
-              <df name="TEST_MCHK_GEPFILE_2_DDF_2">
-              </df>
-              <df name="TEST_MCHK_GEPFILE_2_DDF_LAC">
-              </df>
-              <df name="TEST_MCHK_IDF_2_IDF_INT2">
-              </df>
-              <df name="TEST_MCHK_IDF_2_IDF_REAL">
-              </df>
-              <df name="TEST_MCHK_INTEGRATE_MET_MAP">
-              </df>
-              <df name="TEST_MCHK_MRS_APODIZATION">
-              </df>
-              <df name="TEST_MCHK_MRS_FFT">
-              </df>
-              <df name="TEST_MCHK_MRS_VOXEL_SHIFT">
-              </df>
-              <df name="TEST_MCHK_MRS_ZERO_FILL">
-              </df>
-              <df name="TEST_MCHK_MULTI_VOL_DCM_2_IDF">
-              </df>
-              <df name="TEST_MCHK_MULTI_VOL_IDF_2_IDF">
-              </df>
-              <df name="TEST_MCHK_OBLIQUE_RESLICE">
-              </df>
-              <df name="TEST_MCHK_ODD_IMAGE_CENTER">
-              </df>
-              <df name="TEST_MCHK_ODD_IMAGE_LINEAR_PHASE">
-              </df>
-              <df name="TEST_MCHK_ODD_IMAGE_PAD">
-              </df>
-              <df name="TEST_MCHK_ODD_MRI_FFT">
-              </df>
-              <df name="TEST_MCHK_ODD_SINC_INTERPOLATE">
-              </df>
-              <df name="TEST_MCHK_RDA_2_DDF">
-              </df>
-              <df name="TEST_MCHK_READ_GE_SHF">
-              </df>
-              <df name="TEST_MCHK_READ_SYM_EPSI">
-              </df>
-              <df name="TEST_MCHK_SIG5XV2_2_IDF">
-              </df>
-              <df name="TEST_MCHK_SIGLX2_2_IDF">
-              </df>
-              <df name="TEST_MCHK_SIGNA5X_2_IDF">
-              </df>
-              <df name="TEST_MCHK_VARIANFID_2_DDF">
-              </df>
-              <df name="TEST_PHASE_SPEC">
-              </df>
-            </df>
+          <df name="ITKIOFactoryRegistration">
+            <in>itkImageIOFactoryRegisterManager.h</in>
+            <in>itkTransformIOFactoryRegisterManager.h</in>
           </df>
           <df name="Testing">
             <df name="Temporary">
@@ -2174,8 +1366,6 @@
           <in>svkZeroLinearPhaseTest.cc</in>
           <in>vtkBaselineTest.cc</in>
         </df>
-      </df>
-      <df name="web">
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -2215,26 +1405,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -2461,16 +1631,6 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="libs/examples/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="libs/examples/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="libs/examples/test_grid_topo_order.cc"
             ex="false"
             tool="1"
@@ -2931,16 +2091,6 @@
       </item>
       <item path="libs/src/svkVarianUCSF2DcsiMapper.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="tests/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="tests/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="4">
         <ccTool>
           <incDir>
@@ -3199,26 +2349,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -3227,211 +2357,6 @@
       <item path="CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
             ex="true"
             tool="1"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/DCMPix.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/DCMView.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/DicomImage.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/DicomSeries.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/MyPoint.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/Notifications.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/OSIWindowController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/PluginFilter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/ROI.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/Schedulable.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/Scheduler.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/StaticScheduler.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/ViewerController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/browserController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/OsiriX Headers/dicomFile.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/osirix_plugin/SIVIC_MRSIFilter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicApp.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicBasicTest.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicCombineWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicDSCWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicDataWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicImageDataWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicImageViewWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicKWCompositeWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicPreferencesWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicPreprocessingWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicProcessingWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicQuantificationWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicSpectraRangeWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicSpectraViewWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicTestCase.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicTestSuite.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicViewRenderingWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/sivicWindowLevelWidget.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/svkSecondaryCaptureFormatter.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/sivic_app/src/vtkSivicController.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/slicer_plugin/MRSpectroscopy/vtkMRMLsvkImageDataNode.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/slicer_plugin/MRSpectroscopy/vtkMRMLsvkImageDataStorageNode.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/slicer_plugin/MRSpectroscopy/vtkMRSpectroscopyGUI.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/slicer_plugin/MRSpectroscopy/vtkMRSpectroscopyLogic.h"
-            ex="true"
-            tool="3"
-            flavor="0">
-      </item>
-      <item path="applications.bak/slicer_plugin/MRSpectroscopy/vtkMRSpectroscopyWin32Header.h"
-            ex="true"
-            tool="3"
             flavor="0">
       </item>
       <item path="applications/cmd_line/src/svk_app_template.cc"
@@ -3842,16 +2767,6 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="libs/examples/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="libs/examples/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="libs/examples/test_grid_topo_order.cc"
             ex="false"
             tool="1"
@@ -5538,16 +4453,6 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="tests/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="tests/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <incDir>
@@ -5806,26 +4711,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/SivicKWCallbacksLibInit.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
-      <item path="Build/Release/Linux_x86_64/applications/sivic_app/src/vtkSivicControllerTcl.cxx"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
             ex="true"
             tool="0"
@@ -6229,16 +5114,6 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="libs/examples/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="libs/examples/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
-      </item>
       <item path="libs/examples/test_grid_topo_order.cc"
             ex="false"
             tool="1"
@@ -6643,16 +5518,6 @@
       <item path="libs/src/svkAreaPicker.cc" ex="true" tool="1" flavor="0">
       </item>
       <item path="libs/src/svkAreaPicker.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="tests/src/CMakeFiles/CompilerIdC/CMakeCCompilerId.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="tests/src/CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-            ex="true"
-            tool="1"
-            flavor="0">
       </item>
       <item path="tests/src/svkIdfWriterTest.cc" ex="false" tool="1" flavor="0">
         <ccTool>
