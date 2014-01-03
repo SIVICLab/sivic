@@ -524,53 +524,43 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
     )
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
-    SET(APPS 
-        svk_file_convert 
-        svk_quick_view
-	    svk_gepfile_reader 
-	    svk_spec_diff 
-	    svk_integrate_dynamic 
-	    svk_quantify 
-	    svk_reslice 
-	    svk_dcmdump 
-	    #svk_surface_area 
-	    svk_point_selector 
-	    svk_phase_spec 
-    )
-IF (!WIN32)	
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_file_convert )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quick_view )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_multi_view )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_reader )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_gepfile_anon )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_spec_diff )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_integrate_dynamic )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quantify )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_reslice )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_dcmdump )
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_surface_area)
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_point_selector)
-	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_phase_spec)
+SET(APPS 
+    svk_file_convert 
+    svk_quick_view
+    svk_multi_view
+    svk_gepfile_reader 
+    svk_spec_diff 
+    svk_integrate_dynamic 
+    svk_quantify 
+    svk_reslice 
+    svk_dcmdump 
+    #svk_surface_area 
+    svk_point_selector 
+    svk_phase_spec 
+)
+IF (NOT WIN32)	
     if ( BUILD_CLAPACK )
-	    INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_hsvd)
+        configure_file( svk_cmd_start ./svk_hsvd [COPYONLY])
+        INSTALL_TARGETS( /local/sivic svk_hsvd )
+        INSTALL_PROGRAMS( /local/bin FILES svk_hsvd )
     endif ( BUILD_CLAPACK )
     FOREACH(APP ${APPS})    
         configure_file( svk_cmd_start ./${APP} [COPYONLY])
-	    INSTALL_TARGETS( /local/sivic ${APP} )
-	    INSTALL_PROGRAMS( /local/bin FILES ${APP} )
+        INSTALL_TARGETS( /local/sivic ${APP} )
+        INSTALL_PROGRAMS( /local/bin FILES ${APP} )
     ENDFOREACH(APP)
-ELSE (!WIN32)
+ELSE (NOT WIN32)
     FOREACH(APP ${APPS})    
         configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
-	    INSTALL_TARGETS( /local/sivic ${APP} )
-	    INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
+        INSTALL_TARGETS( /local/sivic ${APP} )
+        INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
     ENDFOREACH(APP)
     if ( BUILD_CLAPACK )
         configure_file( svk_cmd_start.bat svk_hsvd.bat [COPYONLY])
-	    INSTALL_PROGRAMS( /local/sivic svk_hsvd )
-	    INSTALL_PROGRAMS( /local/bin FILES svk_hsvd.bat )
+        INSTALL_TARGETS( /local/sivic svk_hsvd )
+        INSTALL_PROGRAMS( /local/bin FILES svk_hsvd.bat )
     endif ( BUILD_CLAPACK )
-ENDIF (!WIN32)
+ENDIF (NOT WIN32)
 
 
 
