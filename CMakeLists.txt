@@ -57,6 +57,7 @@ option( BUILD_CMINPACK "For building classes that rely on cminpack fitting routi
 option( BUILD_CLAPACK "For building classes that rely on clapack fitting routines."  FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
+option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
@@ -133,5 +134,9 @@ endif ( BUILD_CMINPACK )
 if( BUILD_CLAPACK )
     FIND_PATH( CLAPACK_DIR REQUIRED )
 endif ( BUILD_CLAPACK )
+
+if( BUILD_CREATE_RAW )
+    FIND_PATH( OPENSSL_DIR REQUIRED )
+endif ( BUILD_CREATE_RAW )
 
 INSTALL_FILES( /local/sivic FILES README LICENSE)

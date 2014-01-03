@@ -74,10 +74,10 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
         static svkMRSPeakPick* New();
         vtkTypeRevisionMacro( svkMRSPeakPick, svkImageInPlaceFilter);
 
-        float           SetNoiseSD(float noise); 
-        float           SetBaselineValue(float baseline); 
+        void            SetNoiseSD(float noise); 
+        void            SetBaselineValue(float baseline); 
         float           SetSNLimit(float sn); 
-        float           SetResolutionHeightFraction(float resolveHeightFraction); 
+        void            SetResolutionHeightFraction(float resolveHeightFraction); 
         void            OnlyUseSelectionBox();
         void            PrintPeaks(); 
         float           GetPeakHeight( vtkFloatArray* spectrum, int peakNum ); 

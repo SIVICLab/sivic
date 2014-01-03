@@ -48,7 +48,7 @@
 #include <svkImageReader2.h>
 #include <svkGEImageHeader.h>
 #include <svkEnhancedMRIIOD.h>
-
+#include <algorithm>
 
 namespace svk {
 

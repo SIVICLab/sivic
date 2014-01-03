@@ -144,6 +144,7 @@ LINK_DIRECTORIES(
     ../../../libs/${PLATFORM}
     ../${PLATFORM}
     ${DCMTK_DIR}/lib
+    ${OPENSSL_DIR}/lib
 )
 
 
@@ -166,11 +167,16 @@ endif( BUILD_CMINPACK )
 
 
 if ( BUILD_CLAPACK )
-    LINK_DIRECTORIES( ${CLAPACK_DIR} )
+    IF(WIN32)
+    	LINK_DIRECTORIES( ${CLAPACK_DIR}/lib )
+    ELSE(WIN32)
+    	LINK_DIRECTORIES( ${CLAPACK_DIR} )
+    ENDIF(WIN32)
 endif( BUILD_CLAPACK )
 
+
 IF(WIN32)
-	SET(PLATFORM_INCLUDE ../../../libs/getopt)
+	SET(PLATFORM_INCLUDE ../../../libs/getopt ${OPENSSL_DIR}/include)
 ENDIF(WIN32)
 INCLUDE_DIRECTORIES(
     ./
@@ -205,13 +211,24 @@ if ( BUILD_CMINPACK )
 endif( BUILD_CMINPACK )
 
 if ( BUILD_CLAPACK )
-    SET( CLAPACK_LIBS 
-        svkNumerical2 
-        ${CLAPACK_DIR}/libclapack.a
-        ${CLAPACK_DIR}/libf2c.a 
-        ${CLAPACK_DIR}/libclapack.a
-        ${CLAPACK_DIR}/libcblas.a 
-    )
+    INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
+    IF(WIN32)
+        SET( CLAPACK_LIBS 
+            svkNumerical2 
+            lapack
+            libf2c.lib
+            lapack
+            blas
+        )
+    ELSE(WIN32)
+        SET( CLAPACK_LIBS 
+            svkNumerical2 
+            ${CLAPACK_DIR}/libclapack.a
+            ${CLAPACK_DIR}/libf2c.a 
+            ${CLAPACK_DIR}/libclapack.a
+            ${CLAPACK_DIR}/libcblas.a 
+        )
+    ENDIF(WIN32)
 endif( BUILD_CLAPACK )
 
 SET(SVK_LIBS
@@ -481,7 +498,7 @@ TARGET_LINK_LIBRARIES(
 
 
 
-#   libcrypto doesn't exist on solaris
+#   libcrypto doesn't exist on solaris or windows
 IF (CMAKE_SYSTEM_NAME MATCHES Linux)
     ADD_EXECUTABLE(
         svk_create_dcmraw
@@ -492,9 +509,34 @@ IF (CMAKE_SYSTEM_NAME MATCHES Linux)
         ${SVK_LIBS}
         crypto 
     )
+ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
+	# Assume Windows 32
+    ADD_EXECUTABLE(
+        svk_create_dcmraw
+        svk_create_dcmraw.cc
+    )
+    TARGET_LINK_LIBRARIES(
+        svk_create_dcmraw
+        ${SVK_LIBS}
+        ssleay32
+        libeay32
+
+    )
 ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
 
-
+    SET(APPS 
+        svk_file_convert 
+        svk_quick_view
+	    svk_gepfile_reader 
+	    svk_spec_diff 
+	    svk_integrate_dynamic 
+	    svk_quantify 
+	    svk_reslice 
+	    svk_dcmdump 
+	    #svk_surface_area 
+	    svk_point_selector 
+	    svk_phase_spec 
+    )
 IF (!WIN32)	
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_file_convert )
 	INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_quick_view )
@@ -512,29 +554,21 @@ IF (!WIN32)
     if ( BUILD_CLAPACK )
 	    INSTALL_PROGRAMS( /local/bin FILES ../${EXECUTABLE_OUTPUT_PATH}/svk_hsvd)
     endif ( BUILD_CLAPACK )
-ELSE (!WIN32)
-    SET(APPS 
-        svk_file_convert 
-        svk_quick_view
-	    svk_gepfile_reader 
-	    svk_spec_diff 
-	    svk_integrate_dynamic 
-	    svk_quantify 
-	    svk_reslice 
-	    svk_dcmdump 
-	    #svk_surface_area 
-	    svk_point_selector 
-	    svk_phase_spec 
-    )
     FOREACH(APP ${APPS})    
         configure_file( svk_cmd_start ./${APP} [COPYONLY])
 	    INSTALL_TARGETS( /local/sivic ${APP} )
 	    INSTALL_PROGRAMS( /local/bin FILES ${APP} )
     ENDFOREACH(APP)
+ELSE (!WIN32)
+    FOREACH(APP ${APPS})    
+        configure_file( svk_cmd_start.bat ${APP}.bat [COPYONLY])
+	    INSTALL_TARGETS( /local/sivic ${APP} )
+	    INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
+    ENDFOREACH(APP)
     if ( BUILD_CLAPACK )
-        configure_file( svk_cmd_start svk_hsvd [COPYONLY])
-	    INSTALL_TARGETS( /local/sivic svk_hsvd )
-	    INSTALL_PROGRAMS( /local/bin FILES svk_hsvd )
+        configure_file( svk_cmd_start.bat svk_hsvd.bat [COPYONLY])
+	    INSTALL_PROGRAMS( /local/sivic svk_hsvd )
+	    INSTALL_PROGRAMS( /local/bin FILES svk_hsvd.bat )
     endif ( BUILD_CLAPACK )
 ENDIF (!WIN32)
 

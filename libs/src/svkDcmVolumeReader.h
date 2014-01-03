@@ -46,6 +46,7 @@
 
 #include <svkImageReader2.h>
 #include <vector>
+#include <algorithm>
 
 
 namespace svk {

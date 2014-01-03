@@ -415,7 +415,13 @@ void svkDICOMRawDataWriter::InitGeneralSeriesModule()
     }
 
     time_t time = this->GetHeaderValueAsInt("rhe.ex_datetime");
-
+#ifdef WIN32
+    // Windows 32 crashes on negative time values
+    if( time < 0 ) {
+        time = 0;
+        cerr << "ERROR: Windows does not support negative date times when reading pfiles!" << endl;
+    }
+#endif
     //convert to Pacific time:  subtract 8 hours
     struct tm * timeinfo;
     timeinfo = localtime ( &time );
@@ -517,7 +523,13 @@ void svkDICOMRawDataWriter::InitRawDataModule()
 
 
     time_t time = this->GetHeaderValueAsInt("rhe.ex_datetime");
-
+#ifdef WIN32
+    // Windows 32 crashes on negative time values
+    if( time < 0 ) {
+        time = 0;
+        cerr << "ERROR: Windows does not support negative date times when reading pfiles!" << endl;
+    }
+#endif
     //convert to Pacific time:  subtract 8 hours
     struct tm * timeinfo;
     timeinfo = localtime ( &time );

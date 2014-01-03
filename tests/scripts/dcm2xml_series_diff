@@ -41,6 +41,7 @@ Getopt::Long::config("bundling");
 use Pod::Usage;
 use Cwd;
 use Cwd 'abs_path';
+use File::Path qw(remove_tree);
 
 sub exit_gracefully( $ );
 
@@ -49,6 +50,7 @@ GetOptions(
     "dir_two=s"   => \my $series_dir_two,
     "diff_opts=s" => \my $diff_opts,
     "bin_dir=s"   => \my $bin_dir,
+    "diff=s"      => \my $diff,
     "v"           => \my $verbose,
     "help"        => \my $help,
 ) or pod2usage(-verbose=>2, -exitval=>2);
@@ -68,9 +70,13 @@ if( !defined($bin_dir) ) {
     $bin_dir .= "/";
 }
 
+if( !defined($diff) ) { 
+    $diff = "diff";
+} 
+
 # If we are not in verbose mode let's redirect the output
 my $redirect_output ="";
-if( !$verbose ) { 
+if( !$verbose && $^O ne "MSWin32") { 
     $redirect_output =" >& /dev/null ";
 }
 
@@ -136,7 +142,7 @@ foreach my $file (@dcm_two_files) {
 # Then we diff the xml directories using any input options....
 ##############################################################################
 
-my $diff_cmd = "diff $diff_opts $xml_one_dir $xml_two_dir";
+my $diff_cmd = "$diff $diff_opts $xml_one_dir $xml_two_dir";
 
 if( system("$diff_cmd") != 0 ) {
     print "Series differ!\n"; 
@@ -151,7 +157,7 @@ exit_gracefully(1);
 
 sub exit_gracefully( $ ) {
     my ($exit_status) = @_;
-    system("rm -r $temp_dir");
+    remove_tree($temp_dir);
     exit( $exit_status );
 }
 
@@ -175,10 +181,12 @@ dcmtk's dcm2xml installed.
 dcm2xml_series_diff --dir_one series_dir_one --dir_two series_dir_two
                     [--diff_opts "-options for_diff"]
                     [--bin_dir "/usr/bin"]
+                    [--diff "C:\gnudiffutils\bin\diff.exe"]
 
         -v                        display debugging messages
         --help                    print usage message
         --bin_dir                 bin directory for dcm2xml 
+        --diff                    diff command to use (for Windows) 
 
 =head1 DESCRIPTION
 

@@ -438,7 +438,7 @@ void svkMRSPeakPick::InitPeakVector( vector<int>* peak, int startPt, int peakPt,
 /*! 
  *  Set the noise SD
  */
-float svkMRSPeakPick::SetNoiseSD(float noise )
+void svkMRSPeakPick::SetNoiseSD(float noise )
 {
     this->noiseSD = noise;
 }
@@ -450,7 +450,7 @@ float svkMRSPeakPick::SetNoiseSD(float noise )
  *  so set to 0.5. If the peak only needs to be resolved at
  *  0.7 of max then set to 0.7.  
  */
-float svkMRSPeakPick::SetResolutionHeightFraction(float resolveHeightFraction)
+void svkMRSPeakPick::SetResolutionHeightFraction(float resolveHeightFraction)
 {
     if (resolveHeightFraction < 0. || resolveHeightFraction > 1. ) {
         cout << "Warning, resolve height must be between 0 and 1.  Using default value" << endl;
@@ -464,7 +464,7 @@ float svkMRSPeakPick::SetResolutionHeightFraction(float resolveHeightFraction)
  *  Get the mean value of the baseline in the window used for 
  *  SD calc. 
  */
-float svkMRSPeakPick::SetBaselineValue(float baseline)
+void svkMRSPeakPick::SetBaselineValue(float baseline)
 {
     this->baselineValue = baseline;
 }

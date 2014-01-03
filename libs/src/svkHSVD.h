@@ -51,8 +51,10 @@
 #include <vtkInformation.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <svkThreadedImageAlgorithm.h>
-
-
+#ifdef WIN32
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif
 
 extern "C" { // C interface
     #include "f2c.h"
@@ -60,6 +62,7 @@ extern "C" { // C interface
     #undef min
     #undef small
     #undef large
+    #undef abs
     //#include "clapack.h"
 }
 

@@ -189,14 +189,23 @@ endif( BUILD_CMINPACK )
 
 
 if ( BUILD_CLAPACK )
-    LINK_DIRECTORIES( ${CLAPACK_DIR} )
+    IF(WIN32)
+    	LINK_DIRECTORIES( ${CLAPACK_DIR}/lib )
+    ELSE(WIN32)
+    	LINK_DIRECTORIES( ${CLAPACK_DIR} )
+    ENDIF(WIN32)
 endif( BUILD_CLAPACK )
 
+IF(WIN32)
+	SET(PLATFORM_LIBS getopt)
+	SET(PLATFORM_INCLUDE ../../../libs/getopt)
+ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(
     ./
     ../../../libs/src/
     ${DCMTK_DIR}/include
+    ${PLATFORM_INCLUDE}
 )
 
 if ( BUILD_CMINPACK )
@@ -214,13 +223,23 @@ endif( BUILD_CMINPACK )
 
 if ( BUILD_CLAPACK )
     INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
-    SET( CLAPACK_LIBS 
-        svkNumerical2 
-        ${CLAPACK_DIR}/libclapack.a
-        ${CLAPACK_DIR}/libf2c.a 
-        ${CLAPACK_DIR}/libclapack.a
-        ${CLAPACK_DIR}/libcblas.a 
-    )
+    IF(WIN32)
+        SET( CLAPACK_LIBS 
+            svkNumerical2 
+            lapack
+            libf2c.lib
+            lapack
+            blas
+        )
+    ELSE(WIN32)
+        SET( CLAPACK_LIBS 
+            svkNumerical2 
+            ${CLAPACK_DIR}/libclapack.a
+            ${CLAPACK_DIR}/libf2c.a 
+            ${CLAPACK_DIR}/libclapack.a
+            ${CLAPACK_DIR}/libcblas.a 
+        )
+    ENDIF(WIN32)
 endif( BUILD_CLAPACK )
 
 
@@ -288,17 +307,21 @@ TARGET_LINK_LIBRARIES(
     SivicKWCallbacksLib
 	${ZLIB}
     ${NETAPI}
+    ${PLATFORM_LIBS}
     ${CMINPACK_LIBS_PRE}
 
 )
 
 IF (!WIN32)
-	INSTALL_PROGRAMS( /local/sivic FILES ../${EXECUTABLE_OUTPUT_PATH}/sivic )	
+	INSTALL_PROGRAMS( /local/sivic FILES ../${EXECUTABLE_OUTPUT_PATH}/sivic )
+    INSTALL( DIRECTORY  ${VTK_DIR}/tk8.5 DESTINATION  local/sivic/vtk/lib)
+    INSTALL( DIRECTORY  ${VTK_DIR}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
 ELSE (!WIN32)
 	INSTALL_TARGETS( /local/sivic sivic )
+    INSTALL( DIRECTORY  ${VTK_DIR}/lib/tk8.5 DESTINATION  local/sivic/vtk/lib)
+    INSTALL( DIRECTORY  ${VTK_DIR}/lib/tcl8.5 DESTINATION  local/sivic/vtk/lib)
 ENDIF (!WIN32)
-INSTALL( DIRECTORY  ${VTK_DIR}/tk8.5 DESTINATION  local/sivic/vtk/lib)
-INSTALL( DIRECTORY  ${VTK_DIR}/tcl8.5 DESTINATION  local/sivic/vtk/lib)
+
 INSTALL_FILES( /local/sivic/dcmtk/lib FILES ${DCMTK_DIR}/share/dcmtk/dicom.dic )
 IF(WIN32)
 	INSTALL_PROGRAMS( /local/bin FILES sivic.bat )
