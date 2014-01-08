@@ -52,14 +52,8 @@ extern "C" {
 #include <svkDICOMRawDataWriter.h>
 #include <svkImageReaderFactory.h> 
 
-#include <openssl/sha.h>
 
 using namespace svk;
-
-
-//  function declarations
-bool VerifyExtractedFileDigests( string outputDir,  string rawFileName  ); 
-string GetHash( string rawFileName, unsigned char* sha1Digest ); 
 
 
 int main (int argc, char** argv)
