@@ -497,32 +497,34 @@ TARGET_LINK_LIBRARIES(
 )
 
 
+IF( BUILD_CREATE_RAW )
 
-#   libcrypto doesn't exist on solaris or windows
-IF (CMAKE_SYSTEM_NAME MATCHES Linux)
-    ADD_EXECUTABLE(
-        svk_create_dcmraw
-        svk_create_dcmraw.cc
-    )
-    TARGET_LINK_LIBRARIES(
-        svk_create_dcmraw
-        ${SVK_LIBS}
-        crypto 
-    )
-ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
-	# Assume Windows 32
-    ADD_EXECUTABLE(
-        svk_create_dcmraw
-        svk_create_dcmraw.cc
-    )
-    TARGET_LINK_LIBRARIES(
-        svk_create_dcmraw
-        ${SVK_LIBS}
-        ssleay32
-        libeay32
+    #   libcrypto doesn't exist on solaris or windows
+    IF (CMAKE_SYSTEM_NAME MATCHES Linux)
+        ADD_EXECUTABLE(
+            svk_create_dcmraw
+            svk_create_dcmraw.cc
+        )
+        TARGET_LINK_LIBRARIES(
+            svk_create_dcmraw
+            ${SVK_LIBS}
+            crypto 
+        )
+    ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
+        # Assume Windows 32
+        ADD_EXECUTABLE(
+            svk_create_dcmraw
+            svk_create_dcmraw.cc
+        )
+        TARGET_LINK_LIBRARIES(
+            svk_create_dcmraw
+            ${SVK_LIBS}
+            ssleay32
+            libeay32
 
-    )
-ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
+        )
+    ENDIF (CMAKE_SYSTEM_NAME MATCHES Linux)
+ENDIF ( BUILD_CREATE_RAW )
 
 SET(APPS 
     svk_file_convert 
