@@ -1272,7 +1272,7 @@ float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped)
     ossValueSwapped << rdbmRevSwapped;
     string rdbmRevSwappedString = ossValueSwapped.str();
 
-    if ( rdbmRev > 6.95 && rdbmRev < 8.0 ||  rdbmRevSwapped > 6.95 && rdbmRevSwapped < 8.0 ) { 
+    if ( (rdbmRev > 6.95 && rdbmRev < 8.0) ||  (rdbmRevSwapped > 6.95 && rdbmRevSwapped < 8.0) ) { 
         version = 9.0; 
     } else if ( rdbmRev == 9.0  || rdbmRevSwapped == 9.0  ) { 
         version = 11.0;
@@ -1290,6 +1290,8 @@ float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped)
         version = 20.0;
     } else if ( (int)rdbmRev == 21 || (int)rdbmRevSwapped == 21 ) { 
         version = 21.0;
+    } else if ( (int)rdbmRev == 24 || (int)rdbmRevSwapped == 24 ) { 
+        version = 24.0;
     } 
     return version; 
 }
@@ -2935,6 +2937,11 @@ string svkGEPFileReader::GetOffsetsString()
             rhs.series_uid                     , UID    , 32  , 145875,\
             rhs.landmark_uid                   , UID    , 32  , 145907,\
             rhs.anref                          , CHAR   , 3   , 145845,\
+        "); 
+
+    } else if ( (int)(this->pfileVersion) == 24 ) {
+
+        offsets.assign (" \
         "); 
 
     }
