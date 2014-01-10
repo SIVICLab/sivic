@@ -268,17 +268,17 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
     string loc0 =  *it0; 
     size_t delim0;
     delim0 = loc0.find_first_of('\\'); 
-    string first0 = loc0.substr(0, delim0 - 1);
+    string first0 = loc0.substr(0, delim0 );
     loc0.assign( loc0.substr( delim0 + 1 )); 
     float first0Float = svkUtils::StringToFloat(first0); 
 
     delim0 = loc0.find_first_of('\\'); 
-    string second0 = loc0.substr( 0, delim0 - 1 );
+    string second0 = loc0.substr( 0, delim0 );
     loc0.assign( loc0.substr( delim0 +1 )); 
     float second0Float = svkUtils::StringToFloat(second0); 
 
     delim0 = loc0.find_first_of('\\'); 
-    string third0 = loc0.substr( 0, delim0 - 1 );
+    string third0 = loc0.substr( 0, delim0 );
     float third0Float = svkUtils::StringToFloat(third0); 
     float tol = .000001; 
 
@@ -291,26 +291,25 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
 
         size_t delim;
         delim = loc.find_first_of('\\'); 
-        string first = loc.substr(0, delim-1);
+        string first = loc.substr(0, delim);
         loc.assign( loc.substr( delim + 1 )); 
 
         delim = loc.find_first_of('\\'); 
-        string second = loc.substr( 0, delim-1 );
-        loc.assign( loc.substr( delim +1 )); 
+        string second = loc.substr( 0, delim );
+        loc.assign( loc.substr( delim + 1 )); 
 
         delim = loc.find_first_of('\\'); 
-        string third = loc.substr( 0, delim-1 );
+        string third = loc.substr( 0, delim );
 
-        float firstFloat; 
-        float secondFloat; 
-        float thirdFloat; 
+        float firstFloat = first0Float; 
+        float secondFloat = second0Float; 
+        float thirdFloat = third0Float; 
         bool rewrite = false; 
         if ( first0.compare(first) != 0 ) {
             firstFloat = svkUtils::StringToFloat(first); 
             //check tolerance and fix
             if ( abs(firstFloat - first0Float) < tol ) { 
                 firstFloat = first0Float; 
-                rewrite = true; 
             }
         }
         if ( second0.compare(second) != 0 ) {
@@ -318,7 +317,6 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
             secondFloat = svkUtils::StringToFloat(second); 
             if ( abs(secondFloat - second0Float) < tol ) { 
                 secondFloat = second0Float; 
-                rewrite = true; 
             }
 
         }
@@ -327,22 +325,17 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
             thirdFloat = svkUtils::StringToFloat(third); 
             if ( abs(thirdFloat - third0Float) < tol ) { 
                 thirdFloat = third0Float; 
-                rewrite = true; 
             }
 
         }
 
-        if ( rewrite ) {
-            //concat the first, second, third
-            string fixedLoc = svkUtils::DoubleToString(firstFloat);     
-            fixedLoc.append("\\"); 
-            fixedLoc.append( svkUtils::DoubleToString(secondFloat) ); 
-            fixedLoc.append("\\"); 
-            fixedLoc.append( svkUtils::DoubleToString(thirdFloat) ); 
-            uniqueSlicesNew.insert( fixedLoc ); 
-        } else {
-            uniqueSlicesNew.insert (*it ); 
-        }
+        //concat the first, second, third
+        string fixedLoc = svkUtils::DoubleToString(firstFloat);     
+        fixedLoc.append("\\"); 
+        fixedLoc.append( svkUtils::DoubleToString(secondFloat) ); 
+        fixedLoc.append("\\"); 
+        fixedLoc.append( svkUtils::DoubleToString(thirdFloat) ); 
+        uniqueSlicesNew.insert( fixedLoc ); 
     }
 
     *uniqueSlices = uniqueSlicesNew; 
@@ -1238,10 +1231,15 @@ void svkBrukerDCMMRSReader::SetCellSpectrum(svkImageData* data, short* specData,
     int componentOffset = this->imageRows * this->imageCols;    // total size of 1 image
     float specVal[2];
 
+    /*
+    // NOTE: It appears that the most negative frequencey is in the first dicom
+    //       in the example used in testing so the spectrum is NOT rotated. This
+    //       needs to be validated with other datasets. 
     freqPt += this->numFreqPts/2;  
     if ( freqPt > this->numFreqPts - 1) {
         freqPt -= this->numFreqPts;  
     }
+    */
 
     for (int y = 0; y < this->imageRows; y++) {
         for (int x = 0; x < this->imageCols; x++ ) { 
