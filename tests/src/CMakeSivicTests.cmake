@@ -93,6 +93,19 @@ ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_TESTS}/svkInstantiationTest )
 #############################################################
 
 ########################
+#   24X GE Raw to DDF
+########################
+#SET( TEST_NAME TEST_MCHK_24XPF_2_DDF)
+#SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+#file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+#SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/ge_pfiles/24x)
+#ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_gepfile_reader -i ${TEST_CASE_ROOT}/input/24x -o${TEST_RESULTS_PATH}/out -t 2 )
+#
+#SET( TEST_NAME TEST_24XPF_2_DDF_DIFF)
+#ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/${TEST_PLATFORM}/output )
+#SET_TESTS_PROPERTIES(TEST_24XPF_2_DDF_DIFF PROPERTIES DEPENDS TEST_MCHK_24XPF_2_DDF)
+
+########################
 #   23X GE Raw to DDF
 ########################
 SET( TEST_NAME TEST_MCHK_23XPF_2_DDF)
