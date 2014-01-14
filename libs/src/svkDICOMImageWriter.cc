@@ -243,3 +243,4 @@ void svkDICOMImageWriter::UseLosslessCompression()
 {
     this->useLosslessCompression = true; 
 }
+
