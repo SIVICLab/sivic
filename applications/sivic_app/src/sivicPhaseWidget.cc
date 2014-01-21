@@ -352,8 +352,7 @@ void sivicPhaseWidget::SetPhaseUpdateExtent()
     if ( this->phaseAllVoxelsButton->GetSelectedState() ) {
         this->phaser->SetUpdateExtent(start, end );
     } else {
-        int* range = new int[2];
-        range = this->plotController->GetTlcBrc();
+        int* range = this->plotController->GetTlcBrc();
         this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[0], start);
         this->model->GetDataObject("SpectroscopicData")->GetIndexFromID(range[1], end);
         this->phaser->SetUpdateExtent(start, end );

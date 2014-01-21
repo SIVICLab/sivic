@@ -596,6 +596,8 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             this->UseRotationStyle();
         }
     }
+    // This is a temporary check to see if the orientations are okay with the new reslice implementation.
+    svkOverlayView::SafeDownCast(this->overlayController->GetView())->CheckDataOrientations();
 }
 
 
@@ -838,6 +840,8 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
     if( toggleDraw ) {
         this->DrawOn();
     }
+    // This is a temporary check to see if the orientations are okay with the new reslice implementation.
+    svkOverlayView::SafeDownCast(this->overlayController->GetView())->CheckDataOrientations();
 }
 
 
@@ -1066,6 +1070,8 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                     this->overlayWindowLevelWidget->SetSyncPlotGrid( false );
                     overlayDataName = "OverlayData";
                 }
+                this->UpdateModelForReslicedImage("OverlayData");
+                this->UpdateModelForReslicedImage("AnatomicalData");
                 string interp = (this->imageViewWidget->interpolationBox->GetWidget()->GetValue( ));
                 if( interp == "nearest neighbor" ) {
                     this->SetInterpolationCallback( 0 );
@@ -1133,6 +1139,7 @@ void vtkSivicController::OpenOverlay( svkImageData* data, string stringFilename 
                 message += resultInfo;
                 this->PopupMessage( message );
             }
+            svkOverlayView::SafeDownCast(this->overlayController->GetView())->CheckDataOrientations();
         }
         this->SetThresholdType( this->thresholdType );
         this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
@@ -1691,7 +1698,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         }
     
         // Check to see which extention to filter for.
-        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
+        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
 			char defaultSpectraExtension[100] = "";

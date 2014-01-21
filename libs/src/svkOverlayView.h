@@ -109,6 +109,7 @@ class svkOverlayView : public svkDataView
 
         // Methods:
         virtual void        SetInput( svkImageData* data, int index = 0);
+        virtual void        SetInputPostReslice( svkImageData* data, int index );
         virtual void        RemoveInput( int index );
         virtual void        SetSlice(int slice);
         virtual void        SetSlice(int slice, bool centerImage );
@@ -133,6 +134,7 @@ class svkOverlayView : public svkDataView
         void                SetColorOverlayLevel( double level ); 
         double              GetColorOverlayWindow( ); 
         double              GetColorOverlayLevel( );
+        bool                CheckDataOrientations();
 
         svkLookupTable*     GetLookupTable( );
 
@@ -243,8 +245,7 @@ class svkOverlayView : public svkDataView
     private:
 
         void                            SetSliceOverlay();
-        int                             InitReslice( svkImageData* data, int targetIndex ); 
-        void                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
+        bool                            ResliceImage(svkImageData* input, svkImageData* target, int targetIndex);
 
         double                          overlayOpacity;
         double                          overlayThreshold;

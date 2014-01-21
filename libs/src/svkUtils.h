@@ -102,6 +102,7 @@ class svkUtils : public vtkObject
         static void           StringToColorArray( double color[3], string colorString );
         static string         IntToString( int intVal ); 
         static string         DoubleToString( double doubleVal ); 
+        static string         Double3x3ToString( double doubleMatrix[][3] );
         static string         ColorArrayToString( double color[3] );
         static vector<string> SplitString( string str, string token );
         static string         GetFilenameFromFullPath( string fullPath );

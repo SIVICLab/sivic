@@ -367,6 +367,19 @@ string svkUtils::DoubleToString( double doubleVal )
     return intStream.str();
 }
 
+/*!
+ *  @param doubleVal
+ *  @return string equivalent
+ */
+string svkUtils::Double3x3ToString( double doubleMatrix[][3] )
+{
+    ostringstream intStream;
+    intStream << "|" << doubleMatrix[0][0] << "|" << doubleMatrix[0][1] << "|" << doubleMatrix[0][2] << "|\n";
+    intStream << "|" << doubleMatrix[1][0] << "|" << doubleMatrix[1][1] << "|" << doubleMatrix[1][2] << "|\n";
+    intStream << "|" << doubleMatrix[2][0] << "|" << doubleMatrix[2][1] << "|" << doubleMatrix[2][2] << "|\n";
+    return intStream.str();
+}
+
 
 void svkUtils::StringToColorArray( double color[3], string colorString )
 {

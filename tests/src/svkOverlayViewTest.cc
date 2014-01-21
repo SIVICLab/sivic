@@ -64,9 +64,15 @@ using namespace svk;
 
 void MemoryTest( );
 void RenderingTest( );
+void LoadOrderTest( );
 void OrientationTest( );
 void ColorMapTest( );
 void DisplayUsage( );
+struct ImageWithIndex {
+  int index;
+  svkImageData* image;
+} ;
+
 
 struct globalArgs_t {
     char *firstImageName;     /* -i  option */
@@ -137,7 +143,10 @@ int main ( int argc, char** argv )
                     } else if( strcmp( optarg, "ColorMapTest" ) == 0 ) {
                         testFunction = ColorMapTest;
                         cout<<" Executing Color Map Test... "<<endl;
-                    } 
+                    } else if( strcmp( optarg, "LoadOrderTest" ) == 0 ) {
+                        testFunction = LoadOrderTest;
+                        cout<<" Executing Load Order Test... "<<endl;
+                    }
                     break;
                 case 'i':
                     globalArgs.firstImageName = optarg;
@@ -615,6 +624,230 @@ void RenderingTest()
     
 }
 
+
+void LoadOrderTest()
+{
+    if( globalArgs.firstSpectraName  == NULL ||
+        globalArgs.secondSpectraName == NULL ||
+        globalArgs.firstOverlayName   == NULL ||
+        globalArgs.secondOverlayName  == NULL ||
+        globalArgs.firstImageName     == NULL ||
+        globalArgs.secondImageName    == NULL ) {
+        cout << endl << " ERROR: ";
+        cout <<" Two images, two spectra, and  two metabolite files must be specified to run the memory check! " << endl << endl;
+        DisplayUsage();
+    }
+
+    string rootName = "";
+    string imageRoot = string( globalArgs.firstImageName );
+    size_t ext = imageRoot.find_last_of(".");
+    size_t path = imageRoot.find_last_of("/");
+    rootName = imageRoot.substr(path+1,ext-path-1);
+
+    // READ DATA...
+    svkDataModel* model = svkDataModel::New();
+
+    svkImageData* firstSpectra = NULL;
+    firstSpectra = model->LoadFile( globalArgs.firstSpectraName );
+    firstSpectra->Register(NULL);
+    firstSpectra->Update();
+
+    svkImageData* secondSpectra = NULL;
+    secondSpectra = model->LoadFile( globalArgs.secondSpectraName );
+    secondSpectra->Register(NULL);
+    secondSpectra->Update();
+
+    svkImageData* firstImage = NULL;
+    firstImage = model->LoadFile( globalArgs.firstImageName );
+    firstImage->Register(NULL);
+    firstImage->Update();
+
+    svkImageData* secondImage = NULL;
+    secondImage = model->LoadFile( globalArgs.secondImageName );
+    secondImage->Register(NULL);
+    secondImage->Update();
+
+    svkImageData* firstOverlay = NULL;
+    firstOverlay = model->LoadFile( globalArgs.firstOverlayName );
+    firstOverlay->Register(NULL);
+    firstOverlay->Update();
+
+    svkImageData* secondOverlay = NULL;
+    secondOverlay = model->LoadFile( globalArgs.secondOverlayName );
+    secondOverlay->Register(NULL);
+    secondOverlay->Update();
+
+
+    // Load
+    vtkRenderWindow* window = vtkRenderWindow::New();
+    vtkRenderWindowInteractor* rwi = window->MakeRenderWindowInteractor();
+    svkOverlayViewController* overlayController = svkOverlayViewController::New();
+    overlayController->SetRWInteractor( rwi );
+    window->SetSize(600,600);
+
+    if( globalArgs.disableValidation ) {
+        overlayController->GetView()->ValidationOff();
+    }
+
+    window->GetRenderers()->GetFirstRenderer()->DrawOff( );
+
+    int counter = 0;
+    vector<vector<ImageWithIndex> > allTestsVector;
+    vector<ImageWithIndex> testImagesVector;
+    ImageWithIndex iwi;
+    /*********************************************************
+     *            IMAGE OVERLAY
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay;  testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE SPECTRA OVERLAY
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE SPECTRA OVERLAY SPECTRA
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = secondSpectra;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE SPECTRA OVERLAY IMAGE
+     *********************************************************/
+    iwi.index = 0; iwi.image = secondImage;    testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = firstImage; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE SPECTRA OVERLAY OVERLAY
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            SPECTRA IMAGE OVERLAY
+     *********************************************************/
+    iwi.index = 1; iwi.image = secondSpectra;    testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = secondImage;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+
+    /*********************************************************
+     *            SPECTRA IMAGE OVERLAY SPECTRA
+     *********************************************************/
+    iwi.index = 1; iwi.image = secondSpectra;    testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = secondImage;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            SPECTRA IMAGE OVERLAY IMAGE
+     *********************************************************/
+    iwi.index = 1; iwi.image = secondSpectra;    testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = secondImage;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = firstImage; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            SPECTRA IMAGE OVERLAY OVERLAY
+     *********************************************************/
+    iwi.index = 1; iwi.image = secondSpectra;    testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = secondImage;  testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE OVERLAY SPECTRA
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay;  testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = secondSpectra; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE OVERLAY SPECTRA IMAGE
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay;  testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = secondSpectra; testImagesVector.push_back(iwi);
+    iwi.index = 0; iwi.image = secondImage;   testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE OVERLAY SPECTRA OVERLAY
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay;  testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = secondSpectra; testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = secondOverlay; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+    /*********************************************************
+     *            IMAGE OVERLAY SPECTRA SPECTRA
+     *********************************************************/
+    iwi.index = 0; iwi.image = firstImage;    testImagesVector.push_back(iwi);
+    iwi.index = 2; iwi.image = firstOverlay;  testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = secondSpectra; testImagesVector.push_back(iwi);
+    iwi.index = 1; iwi.image = firstSpectra; testImagesVector.push_back(iwi);
+    allTestsVector.push_back(testImagesVector);
+    testImagesVector.clear();
+
+    for( int i = 0; i < allTestsVector.size(); i++ ) {
+        overlayController->Reset();
+        overlayController->SetRWInteractor( rwi );
+        window->GetRenderers()->GetFirstRenderer()->DrawOff( );
+        overlayController->GetView()->ValidationOff();
+        int numSlices = allTestsVector[i][0].image->GetNumberOfSlices();
+        for( int j = 0; j < allTestsVector[i].size(); j++ ) {
+            if(allTestsVector[i][j].image->GetNumberOfSlices() < numSlices ) {
+                numSlices = allTestsVector[i][j].image->GetNumberOfSlices();
+            }
+            overlayController->SetInput( allTestsVector[i][j].image, allTestsVector[i][j].index  );
+        }
+        svkOverlayView::SafeDownCast(overlayController->GetView())->CheckDataOrientations();
+
+        overlayController->GetView()->SetOrientation( firstImage->GetDcmHeader()->GetOrientationType());
+        svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
+
+        window->GetRenderers()->GetFirstRenderer()->DrawOn( );
+        for( int k = 0; k < numSlices; k++ ) {
+            stringstream filename;
+            filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << counter << ".tiff" ;
+            overlayController->SetSlice( k );
+            window->Render();
+            svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+            counter++;
+        }
+    }
+
+    firstSpectra->Delete();
+    secondSpectra->Delete();
+    firstOverlay->Delete();
+    secondOverlay->Delete();
+    model->Delete();
+    window->Delete();
+    overlayController->Delete();
+    firstImage->Delete();
+    secondImage->Delete();
+
+}
 
 void DisplayUsage( void )
 {

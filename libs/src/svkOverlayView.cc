@@ -388,7 +388,7 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
 
 /*!
  *   Sets the data object in the object, also sets the input to the
- *   vtkImageViewer2 and renders it.
+ *   vtkImageViewer2 and renders it. Reslices any images necesary
  *
  *   \param data the data you want to view
  *   \param index the index of the data you want to set
@@ -396,20 +396,56 @@ void svkOverlayView::SetupMrInput( bool resetViewState )
  */        
 void svkOverlayView::SetInput(svkImageData* data, int index)
 {
-    bool resetViewState = 1;
 
-    // Check data compatiblity
-    string resultInfo = this->GetDataCompatibility( data, index );
-    int indexModified = this->InitReslice( data, index ); 
-    if( indexModified == index ) {
-        return; // Case where the reslice handled the current input target
+    // Check for out of bounds
+    if( data != NULL && index <= OVERLAY && index >= 0 ) {
+        // Check for null datasets and out of bound data sets...
+        vector<svkImageData*> allImages( this->dataVector );
+        allImages.push_back( data );
+        svkImageData* resliceTargetData = NULL;
+        //First we determine which image to to reslice to
+        if( index == MR4D ) {
+            resliceTargetData = data;
+        } else {
+            float minPixelVolume = VTK_FLOAT_MAX;
+            for( int i = 0; i < allImages.size(); i++ ) {
+                if( allImages[i] != NULL ) {
+                    double* spacing = allImages[i]->GetSpacing();
+                    float volumeAtIndex = spacing[0] * spacing[1] * spacing[2];
+                    if( allImages[i]->IsA("svk4DImageData")) {
+                        // Always pick 4D data as reference if possible
+                        resliceTargetData = allImages[i];
+                        break;
+                    } else if( volumeAtIndex < minPixelVolume ) {
+                        resliceTargetData = allImages[i];
+                        minPixelVolume = volumeAtIndex;
+                    }
+                }
+            }
+        }
+        this->ResliceImage(this->dataVector[MRI], resliceTargetData , MRI);
+        this->ResliceImage(this->dataVector[OVERLAY], resliceTargetData , OVERLAY);
+        bool wasDataResliced = false;
+        if( index != MR4D ) {
+            wasDataResliced = this->ResliceImage(data, resliceTargetData , index);
+        }
+        if( !wasDataResliced ) {
+            this->SetInputPostReslice(data, index);
+        }
     }
+}
+
+
+/*!
+ *  Sets the input without reslicing.
+ */
+void svkOverlayView::SetInputPostReslice(svkImageData* data, int index)
+{
+    bool resetViewState = 1;
+    string resultInfo = this->GetDataCompatibility( data, index );
     if( strcmp( resultInfo.c_str(), "" ) == 0 ) { 
     
         if( dataVector[index] != NULL ) {
-            if( indexModified == -1 ) {// if the dataset was not resliced then do not reset view. 
-                //resetViewState = 0;
-            }
             dataVector[index]->Delete();
             dataVector[index] = NULL;
         }
@@ -425,7 +461,6 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
             SetupMsInput( resetViewState );
         } 
         this->Refresh();
-        //this->SetOrientation( this->orientation );
 
     } else {
 
@@ -434,8 +469,8 @@ void svkOverlayView::SetInput(svkImageData* data, int index)
         cout << message.c_str() << endl;
 
     }
-}
 
+}
 
 /*!
  * Removes a data input and the associated actors. Currently only implemented for overlay.
@@ -1606,7 +1641,24 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
                 resultInfo += validator->resultInfo.c_str();
                 resultInfo += "\n";
             }
-        } 
+        } else {
+            svkImageData* loadedImage = NULL;
+            if( targetIndex == MRI && this->dataVector[OVERLAY] != NULL ) {
+                loadedImage = this->dataVector[OVERLAY];
+            } else if ( targetIndex == OVERLAY && this->dataVector[MRI] != NULL ) {
+                loadedImage = this->dataVector[MRI];
+            }
+            if( loadedImage != NULL ) {
+                bool valid = validator->AreDataCompatible( data, loadedImage );
+                if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                    resultInfo = "Orientation mismatch: reslicing image data orientation.";
+                    resultInfo = "";
+                } else if ( !valid ) {
+                    resultInfo += validator->resultInfo.c_str();
+                    resultInfo += "\n";
+                }
+            }
+        }
 
     } else if( data->IsA("svk4DImageData") ) {
 
@@ -1635,61 +1687,66 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
 
 
 /*!
- *  Reslice data if necessary: 
- *
- * \return the index that was modified. Returns -1 if no reslice was done.
- */
-int svkOverlayView::InitReslice( svkImageData* data, int targetIndex )
-{
-    int indexModified = -1;
-    svkDataValidator* validator = svkDataValidator::New();
-    
-    // Check for null datasets and out of bound data sets...
-    if ( data == NULL || targetIndex > OVERLAY || targetIndex < 0 ) {
-
-        return indexModified; 
-
-    } else if( data->IsA("svkMriImageData") ) {
-        
-        if( dataVector[MR4D] != NULL ) {
-            bool valid = validator->AreDataCompatible( data, dataVector[MR4D] );
-            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                this->ResliceImage(data, dataVector[MR4D], targetIndex);
-                indexModified = targetIndex;
-            } 
-        } 
-
-    } else if( data->IsA("svk4DImageData") ) {
-
-        if( dataVector[MRI] != NULL ) {
-            bool valid = validator->AreDataCompatible( data, dataVector[MRI] ); 
-            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                this->ResliceImage(dataVector[MRI], data, MRI); 
-                indexModified = MRI;
-            } 
-        } 
-
-    } 
-    validator->Delete(); 
-
-    return indexModified; 
-}
-
-
-/*!
  *  Reslice images to MR4D orientation
  */
-void svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int targetIndex)    
+bool svkOverlayView::ResliceImage(svkImageData* input, svkImageData* target, int targetIndex)
 {
-    //  if (orthogonal orientations) {
-    svkObliqueReslice* reslicer = svkObliqueReslice::New();
-    reslicer->SetInput( input );
-    reslicer->SetTargetDcosFromImage( target );
-    reslicer->Update();
-    this->SetInput( reslicer->GetOutput(), targetIndex );
-    //}
+    bool didReslice = false;
+    if( input != NULL && target != NULL && input->IsA("svkMriImageData") ) {
+        svkDataValidator* validator = svkDataValidator::New();
+        bool valid = validator->AreDataCompatible( input, target );
+        if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+            svkObliqueReslice* reslicer = svkObliqueReslice::New();
+            reslicer->SetInput( input );
+            reslicer->SetTargetDcosFromImage( target );
+            reslicer->Update();
+            string resultInfo = this->GetDataCompatibility( reslicer->GetOutput(), targetIndex );
+            if( strcmp( resultInfo.c_str(), "" ) == 0 ) {
+                this->SetInputPostReslice( reslicer->GetOutput(), targetIndex );
+                didReslice = true;
+            }
+            reslicer->Delete();
+        }
+        validator->Delete();
+    }
+    if( didReslice ){
+        cout << "RESLICED INDEX: " << targetIndex << endl;
+    }
+    return didReslice;
 }
 
+bool svkOverlayView::CheckDataOrientations()
+{
+    bool orientationsOkay = true;
+    vector<svkImageData*> allImages( this->dataVector );
+    svkImageData* firstDataset = allImages[0];
+    double dcos[3][3];
+    firstDataset->GetDcos(dcos);
+    cout << "First DCOS:\n" << svkUtils::Double3x3ToString(dcos);
+    for( int i = 1; i < allImages.size(); i++ ) {
+        if( allImages[i] != NULL ) {
+            svkDataValidator* validator = svkDataValidator::New();
+            bool valid = validator->AreDataCompatible( allImages[i], firstDataset );
+            allImages[i]->GetDcos(dcos);
+            cout << "i=" << i << " dcos:\n" << svkUtils::Double3x3ToString(dcos);
+            if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                cout <<"-------------ORIENTATION CHECK FAILED FOR IMAGE AT INDEX: " << i << endl;
+                orientationsOkay = false;
+            } else {
+                cout << "ORIENTATION IS OKAY FOR INDEX: " << i <<endl;
+            }
+            validator->Delete();
+        } else {
+            cout << "i= " << i << " NO IMAGE LOADED " << endl;
+        }
+    }
+    if( !orientationsOkay  ) {
+        cerr << "FATAL ERROR: Orientations were not correctly re-sliced. Exiting sivic..." << endl;
+        exit(1);
+    }
+    return orientationsOkay;
+
+}
 
 //! Resets the window level, source taken from vtkImageViewer2
 void svkOverlayView::ResetWindowLevel()

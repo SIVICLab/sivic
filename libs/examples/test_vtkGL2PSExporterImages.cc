@@ -100,7 +100,7 @@ int main ( int argc, char** argv )
     
     int* extent = image->GetExtent();
     int newExtent[6];
-    memcpy( newExtent, extent, sizeof(double)*6);
+    memcpy( newExtent, extent, sizeof(int)*6);
     newExtent[4] = 10;
     newExtent[5] = 10;
     vtkImageClip* clip = vtkImageClip::New();

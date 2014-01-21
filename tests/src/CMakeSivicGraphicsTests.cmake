@@ -97,6 +97,20 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
 ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t MemoryTest --image ${TEST_CASE_ROOT}/input/refImage.idf --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf --second_image ${TEST_CASE_ROOT}/input/refImage.idf --second_spectra ${TEST_CASE_ROOT}/input/spec.ddf --second_overlay ${TEST_CASE_ROOT}/input/met.idf)
 
 #############################################################
+# Load Order Test for svkOverlayView 
+#############################################################
+SET( TEST_NAME OVERLAY_LOAD_ORDER_RENDER_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/reslicing/axial_to_oblique)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkOverlayViewTest -d -t LoadOrderTest --image ${TEST_CASE_ROOT}/input/axial_vol.idf --spectra ${TEST_CASE_ROOT}/input/oblique_mrsvol.ddf  --overlay ${TEST_CASE_ROOT}/input/oblique_vol.idf --second_image ${TEST_CASE_ROOT}/input/oblique_vol.idf --second_spectra ${TEST_CASE_ROOT}/input/axial_mrsvol.ddf --second_overlay ${TEST_CASE_ROOT}/input/axial_vol.idf -p ${TEST_RESULTS_PATH} ) 
+
+SET( TEST_NAME OVERLAY_LOAD_ORDER_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${PLATFORM} )
+SET_TESTS_PROPERTIES(OVERLAY_LOAD_ORDER_DIFF PROPERTIES DEPENDS PHANTOM_IMAGE_RENDER_MCHK)
+
+#############################################################
 # Check to see if you can render an image from a phantom 
 #############################################################
 SET( TEST_NAME PHANTOM_IMAGE_RENDER_MCHK)
