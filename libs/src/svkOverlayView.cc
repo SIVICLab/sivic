@@ -1650,7 +1650,7 @@ string svkOverlayView::GetDataCompatibility( svkImageData* data, int targetIndex
             }
             if( loadedImage != NULL ) {
                 bool valid = validator->AreDataCompatible( data, loadedImage );
-                if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
+                if( validator->IsOnlyError( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
                     resultInfo = "Orientation mismatch: reslicing image data orientation.";
                     resultInfo = "";
                 } else if ( !valid ) {
