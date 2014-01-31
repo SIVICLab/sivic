@@ -586,6 +586,7 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
         //  =========================================
         int numApplicationElements = this->mrsXML->GetNumberOfNestedElements();     
         vtkXMLDataElement* applicationElement = NULL; 
+        vtkXMLDataElement* bestApplication = NULL;
 
         for (int i = 0; i < numApplicationElements; i++ ) {
 
@@ -609,10 +610,10 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
             if( applicationNucleus.compare(nucleus) == 0 ) {
                // Check if the anatomy matches OR if the anatomy is blank meaning its the default case
                 if ( applicationAnatomy.empty() || applicationAnatomy.compare(anatomy) == 0 ) {
-                    this->mrsXML = applicationElement;
+                    bestApplication = applicationElement;
                     if( this->GetDebug() ) {
                         cout << "TARGET: " << anatomy << " " << nucleus << endl;
-                        this->mrsXML->PrintXML(cout, vtkIndent());
+                        bestApplication->PrintXML(cout, vtkIndent());
                     }
                     // If this was the default case (anatomy is NULL) keep searching for a specific anatomy, otherwise break.
                     if( !applicationAnatomy.empty() ) {
@@ -620,8 +621,8 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
                     }
                 }
             }
-            
         }
+        this->mrsXML = bestApplication;
 
     } 
 
