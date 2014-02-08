@@ -540,6 +540,7 @@ SET(APPS
     svk_point_selector 
     svk_phase_spec 
     svk_fft
+    svk_auto_phase
 )
 IF (NOT WIN32)	
     if ( BUILD_CLAPACK )
