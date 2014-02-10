@@ -41,7 +41,7 @@ Getopt::Long::config("bundling");
 use Pod::Usage;
 use Cwd;
 use Cwd 'abs_path';
-use File::Path qw(remove_tree);
+use File::Path qw(rmtree);
 
 sub exit_gracefully( $ );
 
@@ -157,7 +157,7 @@ exit_gracefully(1);
 
 sub exit_gracefully( $ ) {
     my ($exit_status) = @_;
-    remove_tree($temp_dir);
+    rmtree($temp_dir);
     exit( $exit_status );
 }
 
