@@ -119,6 +119,7 @@ int main (int argc, char** argv)
     usemsg += "                             default first is set to 1, so no initial offset.        \n";
     usemsg += "---------------------------------------------------------------------------------    \n"; 
     usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data \n";
+    usemsg += "   --print_short_header      Only prints limited PFile header key-value pairs.       \n";
 #ifdef UCSF_INTERNAL
     usemsg += "   --ucsf_MNS_7T             Use reading logic specific to 7T MNS                    \n";
 #endif
@@ -138,14 +139,15 @@ int main (int argc, char** argv)
     float temp           = UNDEFINED_TEMP; 
     vtkstd::string chopString = ""; 
     bool chop; 
-    bool dcCorrection    = true; 
-    bool printHeader     = false; 
+    bool dcCorrection     = true; 
+    bool printHeader      = false; 
+    bool printShortHeader = false; 
     svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
-    int  epsiAxis        = UNDEFINED;
-    int  epsiNumLobes    = UNDEFINED;
-    int  epsiSkip        = UNDEFINED;
-    int  epsiFirst       = 0;
-    bool isUCSFMNS7T     = false;  
+    int  epsiAxis         = UNDEFINED;
+    int  epsiNumLobes     = UNDEFINED;
+    int  epsiSkip         = UNDEFINED;
+    int  epsiFirst        = 0;
+    bool isUCSFMNS7T      = false;  
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
@@ -154,6 +156,7 @@ int main (int argc, char** argv)
         FLAG_ONE_TIME_PT = 0, 
         FLAG_DC_CORRECTION, 
         FLAG_PRINT_HEADER, 
+        FLAG_PRINT_SHORT_HEADER, 
         FLAG_TEMP, 
         FLAG_CHOP, 
         FLAG_EPSI_TYPE, 
@@ -168,17 +171,18 @@ int main (int argc, char** argv)
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"one_time_pt",      no_argument,       NULL,  FLAG_ONE_TIME_PT},
-        {"no_dc_correction", no_argument,       NULL,  FLAG_DC_CORRECTION},
-        {"print_header",     no_argument,       NULL,  FLAG_PRINT_HEADER},
-        {"temp",             required_argument, NULL,  FLAG_TEMP},
-        {"chop",             required_argument, NULL,  FLAG_CHOP},
-        {"epsi_type",        required_argument, NULL,  FLAG_EPSI_TYPE},
-        {"epsi_axis",        required_argument, NULL,  FLAG_EPSI_AXIS},
-        {"epsi_lobes",       required_argument, NULL,  FLAG_EPSI_NUM_LOBES},
-        {"epsi_skip",        required_argument, NULL,  FLAG_EPSI_SKIP},
-        {"epsi_first",       required_argument, NULL,  FLAG_EPSI_FIRST},
-        {"ucsf_MNS_7T",      no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
+        {"one_time_pt",         no_argument,       NULL,  FLAG_ONE_TIME_PT},
+        {"no_dc_correction",    no_argument,       NULL,  FLAG_DC_CORRECTION},
+        {"print_header",        no_argument,       NULL,  FLAG_PRINT_HEADER},
+        {"print_short_header",  no_argument,       NULL,  FLAG_PRINT_SHORT_HEADER},
+        {"temp",                required_argument, NULL,  FLAG_TEMP},
+        {"chop",                required_argument, NULL,  FLAG_CHOP},
+        {"epsi_type",           required_argument, NULL,  FLAG_EPSI_TYPE},
+        {"epsi_axis",           required_argument, NULL,  FLAG_EPSI_AXIS},
+        {"epsi_lobes",          required_argument, NULL,  FLAG_EPSI_NUM_LOBES},
+        {"epsi_skip",           required_argument, NULL,  FLAG_EPSI_SKIP},
+        {"epsi_first",          required_argument, NULL,  FLAG_EPSI_FIRST},
+        {"ucsf_MNS_7T",         no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
         {0, 0, 0, 0}
     };
 
@@ -215,6 +219,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_PRINT_HEADER:
                 printHeader = true; 
+                break;
+            case FLAG_PRINT_SHORT_HEADER:
+                printShortHeader = true; 
                 break;
             case FLAG_TEMP:
                 temp = atof( optarg ); 
@@ -261,10 +268,10 @@ int main (int argc, char** argv)
     //      that only the supported output types was requested. 
     //      
     // ===============================================  
-    if ( printHeader && inputFileName.length() == 0 ) {
+    if ( (printHeader || printShortHeader) && inputFileName.length() == 0 ) {
         cout << "An input file must be specified to print the header. " << endl; 
         exit(1); 
-    } else if (! printHeader) {
+    } else if (! printHeader && ! printShortHeader ) {
 
         if ( 
             argc != 0 ||  inputFileName.length() == 0  
@@ -317,10 +324,7 @@ int main (int argc, char** argv)
     //  type . 
     // ===============================================  
     vtkSmartPointer< svkImageReaderFactory > readerFactory = vtkSmartPointer< svkImageReaderFactory >::New(); 
-    if ( printHeader ) { 
-        readerFactory->QuickParse();
-    }
-    svkGEPFileReader* reader = svkGEPFileReader::SafeDownCast( readerFactory->CreateImageReader2(inputFileName.c_str()) );
+    svkGEPFileReader* reader = svkGEPFileReader::New(); 
 
     if (reader == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
@@ -330,10 +334,16 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
 
     //  If printing header just print and return
-    if ( printHeader ) {
+    if ( printHeader || printShortHeader ) {
+        reader->OnlyReadOneInputFile(); 
         reader->OnlyParseHeader();
         reader->Update();
-        reader->PrintHeader();
+        if ( printHeader ) {
+            reader->PrintHeader();
+        }
+        if ( printShortHeader ) {
+            reader->PrintShortHeader();
+        }
         exit(0);
     }
 
