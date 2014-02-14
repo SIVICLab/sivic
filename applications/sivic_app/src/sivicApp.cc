@@ -863,11 +863,16 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     usemsg += "     -a anatomy      Anatomy preferences                     \n";
     usemsg += "                         brain (default)                     \n";
     usemsg += "                         prostate                            \n";
-    usemsg += "     -i fileName     DICOM FIle name, may specify multiple,  \n";
-    usemsg += "                     e.g MRS, MRI (ref and overlay).         \n";
+    usemsg += "     -i fileName     input file name, may specify multiple,  \n";
+    usemsg += "                     instances of -i, e.g MRS, MRI (ref and  \n";
+    usemsg += "                     overlay). For series, only specify one  \n"; 
+    usemsg += "                     image from the series.                  \n"; 
     usemsg += "     -h              Print help mesage.                      \n";
     usemsg += "                                                             \n";
     usemsg += "SIVIC GUI.                                                   \n";
+    usemsg += "                                                             \n";
+    usemsg += "Example:                                                     \n";
+    usemsg += "sivic -i P1234 -i E1234S1I1.DCM -i E1234S2I1.DCM             \n";
     usemsg += "                                                             \n";
 
     string anatomyTypeString = "brain";  
@@ -947,12 +952,16 @@ int sivicApp::Start( int argc, char* argv[] )
 
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
-        svkImageData* tmp = svkMriImageData::New();
-        int status = tmp->GetDcmHeader()->ReadDcmFile( this->inputFiles[i] ) ;
-        if (status == 1 ) {
+        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[i].c_str() );
+        readerFactory->Delete();
+        if (reader == NULL ) {
             cout << "ERROR: Can not read specified input file (not DICOM): " << this->inputFiles[i] << endl;
             return 0; 
         } 
+        reader->SetFileName( this->inputFiles[i].c_str() );
+        reader->Update();
+        svkImageData* tmp =  reader->GetOutput();
 
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
 
@@ -974,7 +983,7 @@ int sivicApp::Start( int argc, char* argv[] )
                 overlayImageIndex = i; 
             }
         }
-        tmp->Delete();
+        reader->Delete();
     }
 
     vtkstd::vector< int >   loadOrder; 
@@ -994,13 +1003,22 @@ int sivicApp::Start( int argc, char* argv[] )
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
         //cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
-        svkImageData* tmp = svkMriImageData::New();
-        tmp->GetDcmHeader()->ReadDcmFile( this->inputFiles[ loadOrder[i] ] );
-        string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
-        tmp->Delete();
-
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[ loadOrder[i] ].c_str());
+        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[i].c_str() );
+        readerFactory->Delete();
+        if (reader == NULL ) {
+            cout << "ERROR: Can not read specified input file (not DICOM): " << this->inputFiles[i] << endl;
+            return 0; 
+        } 
+        reader->SetFileName( this->inputFiles[i].c_str() );
+        reader->Update();
+        svkImageData* tmp =  reader->GetOutput();
+
+        string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
+        reader->Delete(); 
+
+        readerFactory = svkImageReaderFactory::New();
+        reader = readerFactory->CreateImageReader2( this->inputFiles[ loadOrder[i] ].c_str());
         if ( reader->IsA("svkGEPostageStampReader") ) {
             SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
