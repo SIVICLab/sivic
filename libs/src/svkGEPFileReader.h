@@ -106,6 +106,7 @@ class svkGEPFileReader : public svkImageReader2
         void                SetTemperature( float temp ); 
         void                SetChop( bool chop ); 
         void                PrintHeader();
+        void                PrintShortHeader();
         void                SetEPSIParams( 
                                 svkEPSIReorder::EPSIType type, 
                                 svkEPSIReorder::EPSIAxis axis, 
@@ -157,6 +158,7 @@ class svkGEPFileReader : public svkImageReader2
         virtual void        InitDcmHeader();
         void                PrintOffsets(); 
         void                DumpHeader();
+        void                DumpShortHeader(); 
         void                PrintKeyValuePairs();
         string              GetFieldAsString(string key); 
         int                 GEUncompressUID(unsigned char* short_uid, char* long_uid); 

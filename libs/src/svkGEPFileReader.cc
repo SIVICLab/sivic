@@ -267,9 +267,9 @@ void svkGEPFileReader::ExecuteInformation()
     //  called, then reset the array.
     this->tmpFileNames = vtkStringArray::New();
     this->tmpFileNames->DeepCopy(this->FileNames);
-    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-        cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
-    }  	 	 
+    //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        //cout << "INIT TMP: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    //}  	 	 
     this->FileNames->Delete();
     this->FileNames = NULL;
 
@@ -285,9 +285,9 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
 
     this->FileNames = vtkStringArray::New();
     this->FileNames->DeepCopy(this->tmpFileNames);
-    for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
-        cout << "FNCHECK: " << this->GetFileNames()->GetValue(fileNumber) << endl;
-    }  	 	 
+    //for ( int fileNumber = 0; fileNumber < this->GetFileNames()->GetNumberOfValues(); fileNumber++ ) {  
+        //cout << "FNCHECK: " << this->GetFileNames()->GetValue(fileNumber) << endl;
+    //}  	 	 
     this->tmpFileNames->Delete();
     this->tmpFileNames = NULL;
 
@@ -308,8 +308,6 @@ void svkGEPFileReader::ExecuteData(vtkDataObject* output)
         string pfileName = this->GetFileNames()->GetValue(0); 
         //this->mapper->ReadData(pfileName, data);
         this->mapper->ReadData(this->GetFileNames(), data);
-vtkDataArray* test = data->GetCellData()->GetArray(0);
-cout << "TEST 0: " << test->GetTuple(0)[0] << endl;
 
         //  resync any header changes with the svkImageData object's member variables
         this->SetupOutputInformation(); 
@@ -545,6 +543,16 @@ void svkGEPFileReader::PrintHeader()
 
 
 /*!
+ *  Prints the GE PFile Header to stdout
+ */
+void svkGEPFileReader::PrintShortHeader()
+{
+    cout << "PRINT SHORT HEADER" << endl;
+    this->DumpShortHeader(); 
+}
+
+
+/*!
  *  Sets the acquisition temperature in degrees celcius.  
  *  Used to set the chemcial shift of water for the PPM reference.  
  */
@@ -603,7 +611,6 @@ void svkGEPFileReader::DeidentifyData()
 void svkGEPFileReader::SetPSDLogic( string psdName )
 {
     this->psdLogic = psdName; 
-cout << "Check 2" << endl;
 }
 
 
@@ -625,7 +632,6 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
     //  reset the psd to determine the mapper logic strategy if necessary
     if ( this->psdLogic.size() > 0 ) {
         psd.assign( this->psdLogic ); 
-        cout << "check 3 " << psd << endl;
     }
 
   
@@ -693,6 +699,7 @@ void svkGEPFileReader::ReadGEPFile()
     if (this->GetDebug()) { 
         cout << "FN: " << this->GetFileName() << endl;
     }
+        
     string refSUID = this->GetSeriesUID( this->GetFileName());
     
     this->GlobFileNames();  	 	 
@@ -868,6 +875,20 @@ void svkGEPFileReader::DumpHeader()
     for ( mapIter = this->pfMap.begin(); mapIter != this->pfMap.end(); ++mapIter ) {
         cout << setiosflags(ios::left) << setw(25) << mapIter->first << " = " <<  this->pfMap[mapIter->first][3] << endl;
     }
+}
+
+
+/*!
+ *  Prints the key value pairs parsed from the header.
+ */
+void svkGEPFileReader::DumpShortHeader()
+{
+    cout << setiosflags(ios::left) << setw(25) << "rhe.patname               = " <<  this->pfMap["rhe.patname"][3] << endl;
+    cout << setiosflags(ios::left) << setw(25) << "rhe.patid                 = " <<  this->pfMap["rhe.patid"][3] << endl;
+    cout << setiosflags(ios::left) << setw(25) << "rhr.rh_scan_date          = " <<  this->pfMap["rhr.rh_scan_date"][3] << endl;
+    cout << setiosflags(ios::left) << setw(25) << "rhr.rh_scan_time          = " <<  this->pfMap["rhr.rh_scan_time"][3] << endl;
+    cout << setiosflags(ios::left) << setw(25) << "rhe.ex_no                 = " <<  this->pfMap["rhe.ex_no"][3] << endl;
+    cout << setiosflags(ios::left) << setw(25) << "rhs.se_desc               = " <<  this->pfMap["rhs.se_desc"][3] << endl;
 }
 
 
