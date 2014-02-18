@@ -212,6 +212,108 @@
         <df name="Debug">
         </df>
         <df name="Release">
+          <df name="Linux_x86_64">
+            <df name="applications">
+              <df name="cmd_line">
+                <df name="Linux_x86_64">
+                </df>
+                <df name="src">
+                  <df name="CMakeFiles">
+                    <df name="svk_app_template.dir">
+                    </df>
+                    <df name="svk_dcm_deid.dir">
+                    </df>
+                    <df name="svk_dcmdump.dir">
+                    </df>
+                    <df name="svk_fft.dir">
+                    </df>
+                    <df name="svk_file_convert.dir">
+                    </df>
+                    <df name="svk_gepfile_anon.dir">
+                    </df>
+                    <df name="svk_gepfile_reader.dir">
+                    </df>
+                    <df name="svk_get_filetype.dir">
+                    </df>
+                    <df name="svk_hsvd.dir">
+                    </df>
+                    <df name="svk_integrate_dynamic.dir">
+                    </df>
+                    <df name="svk_multi_view.dir">
+                    </df>
+                    <df name="svk_noise.dir">
+                    </df>
+                    <df name="svk_peak_pick.dir">
+                    </df>
+                    <df name="svk_phase_spec.dir">
+                    </df>
+                    <df name="svk_point_selector.dir">
+                    </df>
+                    <df name="svk_quantify.dir">
+                    </df>
+                    <df name="svk_quick_view.dir">
+                    </df>
+                    <df name="svk_reorder_epsi.dir">
+                    </df>
+                    <df name="svk_reslice.dir">
+                    </df>
+                    <df name="svk_spec_diff.dir">
+                    </df>
+                    <df name="svk_surface_area.dir">
+                    </df>
+                    <df name="svk_svrecon.dir">
+                    </df>
+                  </df>
+                </df>
+              </df>
+              <df name="sivic_app">
+                <df name="Linux_x86_64">
+                </df>
+                <df name="src">
+                  <df name="CMakeFiles">
+                    <df name="sivic.dir">
+                    </df>
+                    <df name="sivicGUI.dir">
+                    </df>
+                    <df name="SivicKWCallbacksLib.dir">
+                    </df>
+                  </df>
+                  <in>SivicKWCallbacksLibInit.cxx</in>
+                  <in>vtkSivicControllerTcl.cxx</in>
+                </df>
+              </df>
+            </df>
+            <df name="CMakeFiles">
+              <df name="CMakeTmp">
+                <df name="CMakeFiles">
+                  <df name="cmTryCompileExec.dir">
+                  </df>
+                </df>
+              </df>
+              <df name="CompilerIdC">
+                <in>CMakeCCompilerId.c</in>
+              </df>
+              <df name="CompilerIdCXX">
+                <in>CMakeCXXCompilerId.cpp</in>
+              </df>
+            </df>
+            <df name="libs">
+              <df name="Linux_x86_64">
+              </df>
+              <df name="src">
+                <df name="CMakeFiles">
+                  <df name="svk.dir">
+                  </df>
+                  <df name="svkadapt.dir">
+                  </df>
+                  <df name="svkNumerical2.dir">
+                  </df>
+                  <df name="svkviz.dir">
+                  </df>
+                </df>
+              </df>
+            </df>
+          </df>
         </df>
       </df>
       <df name="CMakeFiles">
@@ -654,7 +756,11 @@
         <df name="enhanced_dicom">
           <df name="input">
           </df>
-          <df name="output_float">
+          <df name="Linux_x86_64">
+            <df name="output_float">
+            </df>
+          </df>
+          <df name="Win32">
           </df>
         </df>
         <df name="ge_pfiles">
@@ -707,7 +813,19 @@
           <df name="23x">
             <df name="input">
             </df>
-            <df name="output">
+            <df name="Linux_x86_64">
+              <df name="output">
+              </df>
+            </df>
+            <df name="Win32">
+              <df name="output">
+              </df>
+            </df>
+          </df>
+          <df name="24x">
+            <df name="input">
+            </df>
+            <df name="Linux_x86_64">
             </df>
           </df>
           <df name="9x">
@@ -976,9 +1094,13 @@
           </df>
         </df>
         <df name="phase_zero_linear_spec">
-          <df name="out">
+          <df name="Linux_x86_64">
+            <df name="out">
+            </df>
+            <df name="out_2">
+            </df>
           </df>
-          <df name="out_2">
+          <df name="Win32">
           </df>
         </df>
         <df name="raw_dicom">
@@ -989,6 +1111,10 @@
             </df>
           </df>
           <df name="input_2">
+            <df name="Linux_x86_64">
+            </df>
+            <df name="Win32">
+            </df>
           </df>
         </df>
         <df name="reslicing">
@@ -997,6 +1123,10 @@
             </df>
             <df name="Linux_x86_64">
               <df name="out">
+              </df>
+            </df>
+            <df name="render_results">
+              <df name="Linux_x86_64">
               </df>
             </df>
             <df name="Win32">
@@ -1017,6 +1147,8 @@
           <df name="ORIENTATION_RENDER_MCHK">
           </df>
           <df name="ORIENTATION_SPEC_MET_MCHK">
+          </df>
+          <df name="OVERLAY_LOAD_ORDER_RENDER_MCHK">
           </df>
           <df name="OVERLAY_MEMORY_RENDER_MCHK">
           </df>
@@ -1182,9 +1314,13 @@
           </df>
           <df name="input_interleaved">
           </df>
+          <df name="Linux_x86_64">
+            <df name="out_interleaved">
+            </df>
+          </df>
           <df name="out">
           </df>
-          <df name="out_interleaved">
+          <df name="Win32">
           </df>
         </df>
         <df name="sat_bands">
@@ -1272,6 +1408,10 @@
           </df>
         </df>
       </df>
+      <df name="Testing">
+        <df name="Temporary">
+        </df>
+      </df>
       <df name="tests">
         <df name="Linux_x86_64">
         </df>
@@ -1330,6 +1470,12 @@
             <df name="TEST_RAW_RMLINK.dir">
             </df>
             <df name="vtkBaselineTest.dir">
+            </df>
+          </df>
+          <df name="dcm_series_diff_temp32733">
+            <df name="xml_one">
+            </df>
+            <df name="xml_two">
             </df>
           </df>
           <df name="ITKIOFactoryRegistration">
