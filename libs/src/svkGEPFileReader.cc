@@ -1294,7 +1294,7 @@ float svkGEPFileReader::LookupRawVersion(float rdbmRev, float rdbmRevSwapped)
     ossValueSwapped << rdbmRevSwapped;
     string rdbmRevSwappedString = ossValueSwapped.str();
 
-    if ( (rdbmRev > 6.95 && rdbmRev < 8.0) ||  (rdbmRevSwapped > 6.95 && rdbmRevSwapped < 8.0) ) { 
+    if ( (rdbmRev > 6.95 && rdbmRev <= 8.0) ||  (rdbmRevSwapped > 6.95 && rdbmRevSwapped <= 8.0) ) { 
         version = 9.0; 
     } else if ( rdbmRev == 9.0  || rdbmRevSwapped == 9.0  ) { 
         version = 11.0;
