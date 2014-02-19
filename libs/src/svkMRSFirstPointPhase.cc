@@ -162,7 +162,7 @@ void svkMRSFirstPointPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poi
     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
     float cmplxPt[2];
     spectrum->GetTupleValue(0, cmplxPt);
-    cout << " cell: " << cellID << " -> " << cmplxPt[0] << endl;
+    //cout << " cell: " << cellID << " -> " << cmplxPt[0] << endl;
 
     //========================================================
     //  ITK Optimization 
@@ -241,7 +241,7 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
 #endif
 
     try { 
-        cout << "CELL ID Optimize: " << cellID << endl;
+        //cout << "CELL ID Optimize: " << cellID << endl;
         itkOptimizer->StartOptimization();
     } catch( itk::ExceptionObject & e ) {
         cout << "Exception thrown ! " << endl;
@@ -269,7 +269,7 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
         cout << "Test failed." << endl;
         return;
     } 
-    cout << "Test passed." << endl;
+    //cout << "Test passed." << endl;
 
     //  ===================================================
     //  Apply fitted phase values to spectrum: 

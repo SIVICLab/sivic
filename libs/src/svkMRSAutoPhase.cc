@@ -278,7 +278,7 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
         //  current cell's sub-extent.  If so, fit it.
         if ( isCellInSubExtent ) { 
 
-            cout << "CELL TO FIT: " << cellID << endl;
+            //cout << "CELL TO FIT: " << cellID << endl;
             this->AutoPhaseSpectrum( cellID );
 
             //  Update progress: 

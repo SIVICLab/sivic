@@ -86,7 +86,7 @@ class svkFirstPointPhaseCostFunction : public svkPhaseCostFunction
             tmp = -1*cmplxPt[0];
             //if ( tmp >= intensity) {
                 intensity= tmp; 
-                cout << "new phase: " << phi0 * 180. / vtkMath::Pi() << " " << intensity << endl;
+                //cout << "new phase: " << phi0 * 180. / vtkMath::Pi() << " " << intensity << endl;
             //}
 
             MeasureType measure = intensity; 
@@ -109,7 +109,7 @@ class svkFirstPointPhaseCostFunction : public svkPhaseCostFunction
             cost = GetFirstPointPhaseValue0( parameters ); 
 
             MeasureType measure = cost; 
-            cout << "                          cost: " << measure << endl; 
+            //cout << "                          cost: " << measure << endl; 
             return measure;
         }
 
