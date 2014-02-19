@@ -31,7 +31,7 @@
 /*
  * This code is derived from software contributed to The NetBSD Foundation.
  *
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2014 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
