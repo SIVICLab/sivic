@@ -227,7 +227,6 @@ int main (int argc, char** argv)
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader();
     if ( transformSpecDomain ) {
-cout << "SPECTRAL" << endl;
 
         svkMrsImageFFT* imageFFT = svkMrsImageFFT::New();
         imageFFT->SetInput( reader->GetOutput() );
@@ -247,7 +246,7 @@ cout << "SPECTRAL" << endl;
     }
 
     if (transformSpatialDomain ) { 
-cout << "SPATIAL" << endl;
+
         svkMrsImageFFT* spatialFFT = svkMrsImageFFT::New();
 
         spatialFFT->SetInput( reader->GetOutput() );
