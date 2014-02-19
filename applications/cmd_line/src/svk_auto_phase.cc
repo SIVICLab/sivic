@@ -77,6 +77,8 @@ int main (int argc, char** argv)
     usemsg += "                                 2 = UCSF DDF            \n";
     usemsg += "                                 4 = DICOM_MRS (default) \n";
     usemsg += "   --single             Only phase specified file if multiple in series \n";
+    usemsg += "   -a            type   Type of phasing.  Options: eries \n";
+    usemsg += "                                 1 = FIRST POINT PHASING \n";
     usemsg += "   -h                   Print this help mesage.      \n";
     usemsg += "                                                         \n";
     usemsg += "Auto phase spectra (zero and first order phaseing).      \n";
@@ -87,6 +89,8 @@ int main (int argc, char** argv)
     string outputFileName;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
     bool onlyPhaseSingle = true;
+    svkMRSAutoPhase::phasingModel phaseModelType = svkMRSAutoPhase::FIRST_POINT_0;
+
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
