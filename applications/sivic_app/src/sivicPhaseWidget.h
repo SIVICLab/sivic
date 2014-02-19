@@ -100,7 +100,7 @@ class sivicPhaseWidget : public sivicKWCompositeWidget
         void                        UpdateLinearPhaseSliderBindings();
         bool                        phaseChangeInProgress;
         void                        ExecutePhase();
-        void                        ExecuteZeroOrderPhase();
+        void                        ExecuteFirstPointPhase();
         void                        InitializePhaser();
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 

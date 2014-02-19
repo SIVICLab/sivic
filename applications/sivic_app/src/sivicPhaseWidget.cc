@@ -318,7 +318,7 @@ void sivicPhaseWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned
     } else if( caller == this->phaseH20Button && event == vtkKWPushButton::InvokedEvent ) {
         this->ExecutePhase();
     } else if( caller == this->phase0Button && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteZeroOrderPhase();
+        this->ExecuteFirstPointPhase();
     } else if( caller == this->phasePivotEntry->GetWidget() && event == vtkKWEntry::EntryValueChangedEvent) {
         this->phaser->SetLinearPhasePivot( this->phasePivotEntry->GetWidget()->GetValueAsInt() );
         if( this->phaser->GetInput() != NULL ) {
@@ -432,38 +432,26 @@ void sivicPhaseWidget::ExecutePhase()
 /*!
  *  Executes the Phasing.
  */
-void sivicPhaseWidget::ExecuteZeroOrderPhase()
+void sivicPhaseWidget::ExecuteFirstPointPhase()
 {
 #ifdef ITK_BUILD
+
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
     if( data != NULL ) {
+
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
-        svkMRSAutoPhase* zeroOrderPhase = svkMRSFirstPointPhase::New();
-        zeroOrderPhase->AddObserver(vtkCommand::ProgressEvent, progressCallback);
 
-//phaser->SetInputConnection(0, reader->GetOutputPort(0) );
-//model =  svkMRSAutoPhase::MAX_PEAK_HTS_0;
-//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
-//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_0); 
-//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_1); 
-//phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0); 
-//phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
-//phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_01); 
-//model =  svkMRSAutoPhase::MAX_PEAK_HTS_1;
 
-        zeroOrderPhase->SetInput( data );
-        zeroOrderPhase->OnlyUseSelectionBox();
-
-        svkMRSAutoPhase::phasingModel model;
-        model = svkMRSAutoPhase::FIRST_POINT_0; 
-        //model = svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK; 
-        //zeroOrderPhase->SetPhasingModel( model );
-
-        zeroOrderPhase->Update();
+        svkMRSAutoPhase* fptPhaser = svkMRSFirstPointPhase::New();
+        fptPhaser->AddObserver(vtkCommand::ProgressEvent, progressCallback);
+        fptPhaser->SetInput(0, data ); 
+        fptPhaser->OnlyUseSelectionBox();
+        fptPhaser->Update();
         data->Modified();
-        zeroOrderPhase->RemoveObserver( progressCallback);
-        zeroOrderPhase->Delete();
+        fptPhaser->RemoveObserver( progressCallback);
+        fptPhaser->Delete();
+
         bool useFullFrequencyRange = 0;
         bool useFullAmplitudeRange = 1;
         bool resetAmplitude = 1;
