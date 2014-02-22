@@ -104,7 +104,7 @@ class BoundedCostFunction : public itk::SingleValuedCostFunction
 
 
         /*!
-         *  Cost function based on maximizing the intensity of the first FID point. 
+         *  Cost function based on minimizing the residual of fitted and observed dynamics. 
          */
         MeasureType  GetResidual( const ParametersType& parameters) const
         {
@@ -189,7 +189,8 @@ cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << "
          */
         unsigned int GetNumberOfParameters(void) const
         {
-            int numParameters = 3;
+            //int numParameters = 3;
+            int numParameters = 2;
             return numParameters;
         }
 
@@ -440,9 +441,9 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
     typedef BoundedCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
-    initialPosition[0] =  0.;
-    initialPosition[1] =  0.;
-    initialPosition[2] =  0.;
+    initialPosition[0] =  .1;
+    initialPosition[1] =  .1;
+    //initialPosition[2] =  0.;
 
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
