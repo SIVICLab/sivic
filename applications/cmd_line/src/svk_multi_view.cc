@@ -218,8 +218,8 @@ int main ( int argc, char** argv )
     for( int i= optind; i < argc; i++ ) {
         index = i-optind;
         globalVars.annotations[index]->Delete();
-        renderWindows[index]->Delete();
         globalVars.viewers[index]->Delete();
+        renderWindows[index]->Delete();
     }
 
     if( globalVars.model != NULL ) {
