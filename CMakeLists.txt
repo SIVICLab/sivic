@@ -57,7 +57,7 @@ option( BUILD_CMINPACK "For building classes that rely on cminpack fitting routi
 option( BUILD_CLAPACK "For building classes that rely on clapack fitting routines."  FALSE )
 option( BUILD_PROFILER "Build stand-alone application." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
-option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
+option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" TRUE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
