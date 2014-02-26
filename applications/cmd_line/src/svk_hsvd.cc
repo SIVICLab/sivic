@@ -68,26 +68,27 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                               "\n";   
-    usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]  \n"; 
-    usemsg += "         [ -fb ] [ -m order ] [ -h ]                                      \n"; 
-    usemsg += "                                                                         \n";  
-    usemsg += "   -i                name   Name of file to convert.                     \n"; 
-    usemsg += "   -o                name   Root name of outputfile.                     \n";
-    usemsg += "   -t                type   Target data type:                            \n";
-    usemsg += "                                 2 = UCSF DDF                            \n";
-    usemsg += "                                 4 = DICOM_MRS (default)                 \n";
-    usemsg += "   -f                       Write out filter image                       \n"; 
-    usemsg += "   -b                       only filter spectra in selection box, others \n"; 
-    usemsg += "                            are zeroed out.                              \n"; 
-    usemsg += "   -m                order  model order (default = 25)                   \n"; 
-    usemsg += "   -w                       remove water (downfield of 4.2PPM )          \n"; 
-    usemsg += "   -l                       remove lipid (upfield of 1.8PPM )          \n"; 
-    usemsg += "   -h                       Print this help mesage.                      \n";  
-    usemsg += "                                                                         \n";  
-    usemsg += "HSVD filter to remove baseline components from spectra.                  \n";  
-    usemsg += "Default is to remove water by filtering all frequencies downfield        \n"; 
-    usemsg += "4.2 PPM.                                                                 \n"; 
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
+    usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]          \n"; 
+    usemsg += "         [ -fb ] [ -m order ] [ --single ] [ -h ]                                \n"; 
+    usemsg += "                                                                                 \n";  
+    usemsg += "   -i                name   Name of file to convert.                             \n"; 
+    usemsg += "   -o                name   Root name of outputfile.                             \n";
+    usemsg += "   -t                type   Target data type:                                    \n";
+    usemsg += "                                 2 = UCSF DDF                                    \n";
+    usemsg += "                                 4 = DICOM_MRS (default)                         \n";
+    usemsg += "   -f                       Write out filter image                               \n"; 
+    usemsg += "   -b                       only filter spectra in selection box, others         \n"; 
+    usemsg += "                            are zeroed out.                                      \n"; 
+    usemsg += "   -m                order  model order (default = 25)                           \n"; 
+    usemsg += "   -w                       remove water (downfield of 4.2PPM )                  \n"; 
+    usemsg += "   -l                       remove lipid (upfield of 1.8PPM )                    \n"; 
+    usemsg += "   --single                 Only transform specified file if multiple in series  \n";
+    usemsg += "   -h                       Print this help mesage.                              \n";  
+    usemsg += "                                                                                 \n";  
+    usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
+    usemsg += "Default is to remove water by filtering all frequencies downfield                \n"; 
+    usemsg += "4.2 PPM.                                                                         \n"; 
     usemsg += "\n";  
 
 
@@ -98,18 +99,21 @@ int main (int argc, char** argv)
     bool limitToSelectionBox = false; 
     bool filterWater = false; 
     bool filterLipid = false; 
+    bool onlyFilterSingleFile = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_SINGLE
     }; 
 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
+        {"single",    no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -145,6 +149,9 @@ int main (int argc, char** argv)
                 break;
             case 'l':
                 filterLipid = true; 
+                break;
+            case FLAG_SINGLE:
+                onlyFilterSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -198,6 +205,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyFilterSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
