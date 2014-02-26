@@ -295,7 +295,6 @@ void sivicQuantificationWidget::EnableWidgets()
         this->mrsQuant->SetInput( data );
         this->RefreshQuantFile();
 
-
         //  Generate button
         this->quantButton = vtkKWPushButton::New();
         this->quantButton->SetParent( this );
@@ -317,7 +316,6 @@ void sivicQuantificationWidget::EnableWidgets()
         this->openQuantFileButton->EnabledOff();
         this->openQuantFileButton->SetText( "Edit Quant");
         this->openQuantFileButton->SetBalloonHelpString("Edit the quantification file.");
-
 
         this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->refreshQuantFileButton->GetWidgetName(), 0);
         this->Script("grid %s -row %d -column 1 -rowspan 1 -sticky ew -padx 3", this->openQuantFileButton->GetWidgetName(), 1);
@@ -342,8 +340,6 @@ void sivicQuantificationWidget::EnableWidgets()
             this->refreshQuantFileButton, vtkKWPushButton::InvokedEvent
         );
     
-    
-
         this->quantButton->EnabledOn();
         this->refreshQuantFileButton->EnabledOn();
         this->openQuantFileButton->EnabledOn();
