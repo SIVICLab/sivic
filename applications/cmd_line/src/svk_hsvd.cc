@@ -69,11 +69,11 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                               "\n";   
-    usemsg += "svk_hsvd -i input_file_name -o output_file_name [ -t output_data_type ]  \n"; 
+    usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]  \n"; 
     usemsg += "         [ -fb ] [ -m order ] [ -h ]                                      \n"; 
     usemsg += "                                                                         \n";  
     usemsg += "   -i                name   Name of file to convert.                     \n"; 
-    usemsg += "   -o                name   Name of outputfile.                          \n";
+    usemsg += "   -o                name   Root name of outputfile.                     \n";
     usemsg += "   -t                type   Target data type:                            \n";
     usemsg += "                                 2 = UCSF DDF                            \n";
     usemsg += "                                 4 = DICOM_MRS (default)                 \n";
@@ -240,6 +240,9 @@ int main (int argc, char** argv)
         exit(1);
     }
 
+
+    //  Make sure the file name doesn't contain a root: 
+    outputFileName = svkImageReader2::GetFileRoot(outputFileName.c_str()); 
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
 
@@ -258,11 +261,15 @@ int main (int argc, char** argv)
     //  Write out the filter image if requested.
     if ( writeFilter ) {
 
+        svkImageWriter* filterWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+        if ( filterWriter == NULL ) {
+            cerr << "Can not determine filter writer of type: " << dataTypeOut << endl;
+            exit(1);
+        }
         string filterImageName = outputFileName; 
         filterImageName.append("_filter"); 
-        
-        writer->SetFileName( filterImageName.c_str() );
-        writer->SetInput( hsvd->GetFilterImage() ); 
+        filterWriter->SetFileName( filterImageName.c_str() );
+        filterWriter->SetInput( hsvd->GetFilterImage() ); 
 
         // ===============================================  
         //  Set the input command line into the data set 
@@ -273,7 +280,8 @@ int main (int argc, char** argv)
         // ===============================================  
         //  Write data to file: 
         // ===============================================  
-        writer->Write();
+        filterWriter->Write();
+        filterWriter->Delete();
         
     }
 
