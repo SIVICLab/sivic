@@ -67,15 +67,6 @@ class svkIdfVolumeReader : public svkImageReader2
         static svkIdfVolumeReader* New();
         vtkTypeRevisionMacro( svkIdfVolumeReader, svkImageReader2);
 
-        // Description: 
-        // A descriptive name for this format
-        virtual const char* GetDescriptiveName() {
-            return "IDF File";
-        }
-
-        //  Methods:
-        virtual int             CanReadFile(const char* fname);
-        void                    OnlyReadHeader(bool onlyReadHeader);
 
         typedef enum {
             BYTE_DATA = 2,
@@ -83,6 +74,23 @@ class svkIdfVolumeReader : public svkImageReader2
             FLT_DATA = 7
         } IDF_Data_Type;
 
+        typedef enum {
+            TIME_SERIES_DATA = 0,
+            MULTI_CHANNEL_DATA 
+        } MultiVolumeType;
+
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "IDF File";
+        }
+
+        void    SetMultiVolumeType(svkIdfVolumeReader::MultiVolumeType volumeType);   
+
+        //  Methods:
+        virtual int             CanReadFile(const char* fname);
+        void                    OnlyReadHeader(bool onlyReadHeader);
 
     protected:
 
@@ -143,6 +151,7 @@ class svkIdfVolumeReader : public svkImageReader2
         int                                     numFrames;
         int                                     numSlices;
         int                                     numVolumes;
+        svkIdfVolumeReader::MultiVolumeType     multiVolumeType;
 
 };
 

@@ -75,6 +75,10 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     this->numVolumes = 1; 
     this->onlyReadHeader = false;
 
+    //  If there are multiple volumes, by default treat as separate
+    //  channels of data. 
+    this->multiVolumeType = svkIdfVolumeReader::MULTI_CHANNEL_DATA; 
+
     // IDF files are always big-endian.
     this->SetDataByteOrderToBigEndian();
 
@@ -131,6 +135,15 @@ int svkIdfVolumeReader::CanReadFile(const char* fname)
         vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): s NOT a valid file: " << fileToCheck);
         return 0;
     }
+}
+
+
+/*!
+ *  Interpret the volumes as time points or channels.       
+ */
+void svkIdfVolumeReader::SetMultiVolumeType(svkIdfVolumeReader::MultiVolumeType volumeType)   
+{
+    this->multiVolumeType = volumeType; 
 }
 
 
@@ -589,8 +602,14 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
     svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
-    this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+
+    if ( this->multiVolumeType == svkIdfVolumeReader::MULTI_CHANNEL_DATA ) { 
+        this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
             &dimensionVector, svkDcmHeader::CHANNEL_INDEX, this->numVolumes-1);
+    } else if ( this->multiVolumeType == svkIdfVolumeReader::TIME_SERIES_DATA ) { 
+        this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
+            &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
+    } 
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
                 toplc,        
