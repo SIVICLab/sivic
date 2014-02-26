@@ -452,6 +452,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_scale_image
+    svk_scale_image.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_scale_image
+	${SVK_LIBS}
+)
+
 if ( BUILD_CMINPACK )
 
     ADD_EXECUTABLE(
@@ -540,6 +550,7 @@ SET(APPS
     svk_point_selector 
     svk_phase_spec 
     svk_fft
+    svk_scale_image
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
