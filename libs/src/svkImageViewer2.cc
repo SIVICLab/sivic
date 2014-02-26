@@ -158,6 +158,7 @@ public:
         {
         this->InitialWindow = this->IV->GetColorWindow();
         this->InitialLevel = this->IV->GetColorLevel();
+        this->HasWindowLevelStarted = true;
         return;
         }
       
@@ -226,19 +227,22 @@ public:
         {
         newLevel = dMin*(newLevel < 0 ? -1 : 1);
         }
-      
-      this->IV->SetColorWindow(newWindow);
-      this->IV->SetColorLevel(newLevel);
+      if( this->HasWindowLevelStarted ) {
+          this->IV->SetColorWindow(newWindow);
+          this->IV->SetColorLevel(newLevel);
+      }
       this->IV->Render();
       this->IV->GetRenderer()->GetRenderWindow()->GetInteractor()->InvokeEvent(vtkCommand::WindowLevelEvent);
       if (event == vtkCommand::EndWindowLevelEvent) {
           this->IV->GetRenderer()->GetRenderWindow()->GetInteractor()->InvokeEvent(vtkCommand::EndWindowLevelEvent);
+          this->HasWindowLevelStarted = false;
       }
     }
   
   vtkImageViewer2 *IV;
   double InitialWindow;
   double InitialLevel;
+  bool   HasWindowLevelStarted;
 };
 
 
@@ -681,6 +685,7 @@ void svkImageViewer2::SetInteractorStyle( vtkInteractorStyleImage* style )
 	this->InteractorStyle = style;
       vtkImageViewer2Callback *cbk = vtkImageViewer2Callback::New();
       cbk->IV = this;
+      cbk->HasWindowLevelStarted = false;
       this->InteractorStyle->AddObserver(
         vtkCommand::WindowLevelEvent, cbk);
       this->InteractorStyle->AddObserver(

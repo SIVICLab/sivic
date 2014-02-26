@@ -3173,9 +3173,12 @@ void vtkSivicController::EnableWidgets()
             }
             this->spectraRangeWidget->xSpecRange->SetLabelText( "Frequency" );
             this->spectraRangeWidget->unitSelectBox->EnabledOn();
-
-            this->quantificationWidget->EnableWidgets();
-
+            string nucleus = activeData->GetDcmHeader()->GetStringValue("ResonantNucleus");
+            if( !nucleus.empty() ) {
+                this->quantificationWidget->EnableWidgets();
+            } else {
+                cout << "WARNING: No nucleus found. Quantification will be disabled." << endl;
+            }
         } 
         this->postprocessingWidget->hsvdButton->EnabledOn(); 
         this->postprocessingWidget->removeH20Button->EnabledOn(); 

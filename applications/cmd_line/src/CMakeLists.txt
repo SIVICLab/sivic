@@ -540,14 +540,15 @@ SET(APPS
     svk_point_selector 
     svk_phase_spec 
     svk_fft
-    svk_auto_phase
 )
+if ( BUILD_CLAPACK )
+    LIST(APPEND APPS svk_hsvd)
+endif ( BUILD_CLAPACK )
+if ( BUILD_CMINPACK )
+    LIST(APPEND APPS svk_auto_phase)
+endif ( BUILD_CMINPACK )
+
 IF (NOT WIN32)	
-    if ( BUILD_CLAPACK )
-        configure_file( svk_cmd_start ./svk_hsvd [COPYONLY])
-        INSTALL_TARGETS( /local/sivic svk_hsvd )
-        INSTALL_PROGRAMS( /local/bin FILES svk_hsvd )
-    endif ( BUILD_CLAPACK )
     FOREACH(APP ${APPS})    
         configure_file( svk_cmd_start ./${APP} [COPYONLY])
         INSTALL_TARGETS( /local/sivic ${APP} )
@@ -559,11 +560,6 @@ ELSE (NOT WIN32)
         INSTALL_TARGETS( /local/sivic ${APP} )
         INSTALL_PROGRAMS( /local/bin FILES ${APP}.bat )
     ENDFOREACH(APP)
-    if ( BUILD_CLAPACK )
-        configure_file( svk_cmd_start.bat svk_hsvd.bat [COPYONLY])
-        INSTALL_TARGETS( /local/sivic svk_hsvd )
-        INSTALL_PROGRAMS( /local/bin FILES svk_hsvd.bat )
-    endif ( BUILD_CLAPACK )
 ENDIF (NOT WIN32)
 
 
