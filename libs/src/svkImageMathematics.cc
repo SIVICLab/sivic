@@ -92,8 +92,6 @@ void svkImageMathematics::Update()
   
     //  Set the active scalars for each relevant input and output arrays:    
     //  Determine number of input ports for this particular operation (1 or 2).    
-    //this->AllocateOutputData( this->GetOutput() ) ; 
-    //this->GetOutput()->DeepCopy( this->GetImageDataInput(0) );
     svkImageData* tmp = svkMriImageData::New();
     tmp->DeepCopy( this->GetImageDataInput(0) ); 
 
@@ -101,52 +99,18 @@ void svkImageMathematics::Update()
 
         if (this->GetInput(0)) {
             this->GetImageDataInput(0)->GetPointData()->SetActiveAttribute (vol, vtkDataSetAttributes::SCALARS); 
-
-            /* 
-            this->SetInputArrayToProcess(
-                    vol, 
-                    0, 
-                    0, 
-                    vtkDataObject::FIELD_ASSOCIATION_POINTS, 
-                    vtkDataSetAttributes::SCALARS
-            );
-            */
-           
         }    
 
         if (this->GetInput(1)) {
             this->GetImageDataInput(1)->GetPointData()->SetActiveAttribute (vol, vtkDataSetAttributes::SCALARS); 
-            /*           
-            this->SetInputArrayToProcess(
-                    vol, 
-                    1, 
-                    0, 
-                    vtkDataObject::FIELD_ASSOCIATION_POINTS, 
-                    vtkDataSetAttributes::SCALARS
-            );
-            */
             
         }    
     
         if (this->GetOutput()) {
             this->GetOutput()->GetPointData()->SetActiveAttribute(vtkDataSetAttributes::SCALARS, vol);
         }    
-    
         
-        //cout << "image data in0" << *this->GetImageDataInput(0) << endl;
-        //cout << "image data out0" << *this->GetOutput() << endl;
         this->Superclass::Update(); 
-
-        //  Debug: 
-        //cout << "image data out1" << *this->GetOutput() << endl;
-        //cout << "CHECK " << vol << endl;
-        //cout << "TUP335 in0: " << (this->GetImageDataInput(0)->GetPointData()->GetScalars()->GetTuple(335))[0] << endl;
-        //cout << "TUP335 in1: " << (this->GetImageDataInput(1)->GetPointData()->GetScalars()->GetTuple(335))[0] << endl;
-        //cout << "TUP335 outScalr: " << (this->GetOutput()->GetPointData()->GetScalars()->GetTuple(335))[0] << endl;
-        //cout << "TUP335 outarrayName: " << this->GetOutput()->GetPointData()->GetScalars()->GetName() << endl;
-        //cout << "TUP335 outarray: " << (this->GetOutput()->GetPointData()->GetArray(vol)->GetTuple(335))[0] << endl;
-        //cout << "TUP335 outarrayName: " << this->GetOutput()->GetPointData()->GetArray(vol)->GetName() << endl;
-        //cout << "loop done" << endl;
 
         //  Push results into corect array in tmp data
         tmp->GetPointData()->GetArray(vol)->DeepCopy( this->GetOutput()->GetPointData()->GetScalars() ); 
