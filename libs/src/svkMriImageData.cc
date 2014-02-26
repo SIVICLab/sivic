@@ -484,7 +484,7 @@ void svkMriImageData::InitializeCellDataArrays()
 	vtkAbstractArray* array = NULL;
 	int type = this->GetPointData()->GetArray(0)->GetDataType();
     // hardcode to FLOAT for now to avoid needing to retype downstream algos
-        type = VTK_FLOAT;
+    type = VTK_FLOAT;
     for( int channel = 0; channel < numChannels; channel++ ) {
         for (int z = 0; z < dims[2]; z++) {
             for (int y = 0; y < dims[1]; y++) {
