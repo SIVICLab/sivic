@@ -94,7 +94,7 @@ void sivicQuantificationWidget::CreateWidget()
  *  are provided, the range is relative to those parameters.  Otherwise (peakStart, peakEnd < 0 ) the 
  *  full range is returned. 
  */
-void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double peakEnd, double& min, double& max, svkSpecPoint::UnitType units)
+void sivicQuantificationWidget::GetMRSFrequencyRange( double &peakStart, double &peakEnd, double& min, double& max, svkSpecPoint::UnitType units)
 {
     min = 0.; 
     max = 0.; 
@@ -115,12 +115,19 @@ void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double p
             double peakEndPt   = point->ConvertPosUnits( peakEnd, units, svkSpecPoint::PTS ); 
 
             double deltaPts    = peakEndPt - peakStartPt;  
-            peakStartPt -= 3 * deltaPts;  
-            if ( peakStartPt < min ) {
+            double peakStartPtExtended = peakStartPt - 3 * deltaPts;
+            if ( peakStartPtExtended < min || peakStartPtExtended > max ) {
+                peakStartPtExtended = min;
+            }
+            if ( peakStartPt < min || peakStartPt > max ) {
                 peakStartPt = min;
             }
-            peakEndPt += 3 * deltaPts;  
-            if ( peakEndPt > max ) {
+
+            double peakEndPtExtended = peakEndPt + 3 * deltaPts;
+            if ( peakEndPtExtended > max  || peakEndPtExtended < min ) {
+                peakEndPtExtended = max;
+            }
+            if ( peakEndPt > max  || peakEndPt < min ) {
                 peakEndPt = max;
             }
     
@@ -128,8 +135,10 @@ void sivicQuantificationWidget::GetMRSFrequencyRange( double peakStart, double p
             string domain = model->GetDataObject( "SpectroscopicData" )
                                     ->GetDcmHeader()->GetStringValue("SignalDomainColumns");
             if( domain == "FREQUENCY" ) {
-                min = point->ConvertPosUnits( peakStartPt, svkSpecPoint::PTS, units ); 
-                max = point->ConvertPosUnits( peakEndPt, svkSpecPoint::PTS, units ); 
+                min = point->ConvertPosUnits( peakStartPtExtended, svkSpecPoint::PTS, this->units );
+                max = point->ConvertPosUnits( peakEndPtExtended, svkSpecPoint::PTS, this->units );
+                peakStart = point->ConvertPosUnits( peakStartPt, svkSpecPoint::PTS, this->units );
+                peakEnd = point->ConvertPosUnits( peakEndPt, svkSpecPoint::PTS, this->units );
                 point->Delete();
             }
         } 
@@ -413,11 +422,8 @@ void sivicQuantificationWidget::RefreshQuantFile()
         this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );
         this->metRangeVector[i]->GetLabel()->SetWidth(10);
         this->metRangeVector[i]->GetLabel()->SetFont("system 8");
-
         this->metRangeVector[i]->SetWholeRange(rangeMin, rangeMax);
-        float metMin = this->metQuantMap[metName][0];
-        float metMax = this->metQuantMap[metName][1];
-        this->metRangeVector[i]->SetRange(metMin, metMax);
+        this->metRangeVector[i]->SetRange(peakStart, peakEnd);
         this->metRangeVector[i]->EnabledOn();
         this->metRangeVector[i]->GetLabel()->Modified();
     }

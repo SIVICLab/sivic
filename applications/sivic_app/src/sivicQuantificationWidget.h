@@ -101,8 +101,8 @@ class sivicQuantificationWidget : public sivicKWCompositeWidget
         void                                ExecuteQuantification();
         static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
         void                                GetMRSFrequencyRange( 
-                                                double peakStart, 
-                                                double peakEnd, 
+                                                double& peakStart,
+                                                double& peakEnd,
                                                 double& min, 
                                                 double& max, 
                                                 svkSpecPoint::UnitType units
