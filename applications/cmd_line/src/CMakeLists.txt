@@ -462,6 +462,15 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_channel2time
+    svk_channel2time.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_channel2time
+	${SVK_LIBS}
+)
+
 if ( BUILD_CMINPACK )
 
     ADD_EXECUTABLE(
