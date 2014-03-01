@@ -588,16 +588,33 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
         vtkXMLDataElement* applicationElement = NULL; 
         vtkXMLDataElement* bestApplication = NULL;
 
+        //  =========================================
+        //  Check for valid match between "ResonantNucleus" from the data 
+        //  header and nucleus in Application element
+        //  =========================================
+        string headerNucleus = "13C"; 
+        bool supportedHeaderNucleus = false; 
+        if ( this->GetImageDataInput(0) != NULL ) { 
+            headerNucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
+        } 
+        for (int i = 0; i < numApplicationElements; i++ ) {
+            applicationElement = this->mrsXML->GetNestedElement(i); 
+            string applicationNucleus = applicationElement->GetAttribute("nucleus"); 
+            if( applicationNucleus.compare(headerNucleus) == 0 ) {
+                supportedHeaderNucleus = true; 
+                break; 
+            }
+        }
+        if ( !supportedHeaderNucleus ) {
+            headerNucleus.assign("DEFAULT"); 
+        }
+
+
+        //  Now find the correct application element: 
         for (int i = 0; i < numApplicationElements; i++ ) {
 
             //  Anatomy 
             string anatomy = svkTypes::GetAnatomyTypeString( this->anatomyType);
-
-            //  Nucleus
-            string nucleus = "13C"; 
-            if ( this->GetImageDataInput(0) != NULL ) { 
-                nucleus = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("ResonantNucleus"); 
-            } 
 
             applicationElement = this->mrsXML->GetNestedElement(i); 
             string applicationNucleus = applicationElement->GetAttribute("nucleus"); 
@@ -607,12 +624,12 @@ vtkstd::vector< vtkstd::vector< vtkstd::string > >  svkQuantifyMetabolites::GetR
                 applicationAnatomy = applicationElement->GetAttribute("anatomy") ;
 
             }
-            if( applicationNucleus.compare(nucleus) == 0 ) {
+            if( applicationNucleus.compare(headerNucleus) == 0 ) {
                // Check if the anatomy matches OR if the anatomy is blank meaning its the default case
                 if ( applicationAnatomy.empty() || applicationAnatomy.compare(anatomy) == 0 ) {
                     bestApplication = applicationElement;
                     if( this->GetDebug() ) {
-                        cout << "TARGET: " << anatomy << " " << nucleus << endl;
+                        cout << "TARGET: " << anatomy << " " << headerNucleus << endl;
                         bestApplication->PrintXML(cout, vtkIndent());
                     }
                     // If this was the default case (anatomy is NULL) keep searching for a specific anatomy, otherwise break.
@@ -1226,6 +1243,36 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "     </QUANT> " << endl
         << " " << endl
         << "   </APPLICATION> " << endl
+        << "  <APPLICATION nucleus=\"DEFAULT\">      " << endl
+        << " " << endl
+        << "     <REGION id=\"0\" name=\"Met1\"  peak_ppm=\"0\"  width_ppm=\"10000\"> " << endl
+        << "     </REGION> " << endl
+        << " " << endl
+        << "     -- met peak ht " << endl
+        << "     <QUANT id=\"0\" region=\"0\"> " << endl
+        << "         <ALGO name=\"PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- met integrated area " << endl
+        << "     <QUANT id=\"1\" region=\"0\"> " << endl
+        << "         <ALGO name=\"INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- met magnitude pk ht " << endl
+        << "     <QUANT id=\"2\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_PEAK_HT\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "     -- met magnitude integrated area " << endl
+        << "     <QUANT id=\"3\" region=\"0\"> " << endl
+        << "         <ALGO name=\"MAG_INTEGRATE\"> " << endl
+        << "         </ALGO> " << endl
+        << "     </QUANT> " << endl
+        << " " << endl
+        << "   </APPLICATION> " << endl
         << " " << endl
         << " " << endl
         << " </SVK_MRS_QUANTIFICATION> " << endl; 
@@ -1250,7 +1297,7 @@ bool svkQuantifyMetabolites::ShouldUpgradeXML()
 
     int upgradeV1 = 0; 
     int upgradeV2 = 9; 
-    int upgradeV3 = 8; 
+    int upgradeV3 = 10; 
     if ( svkUtils::StringToInt( v1 )  <= upgradeV1 
             && svkUtils::StringToInt( v2 )  <= upgradeV2 
             && svkUtils::StringToInt( v3 )  < upgradeV3 ) { 
