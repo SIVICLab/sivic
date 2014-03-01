@@ -63,6 +63,7 @@ vtkStandardNewMacro(svkMRSKinetics);
  */
 class BoundedCostFunction : public itk::SingleValuedCostFunction
 {
+
     public:
 
         typedef BoundedCostFunction             Self;
@@ -114,11 +115,14 @@ class BoundedCostFunction : public itk::SingleValuedCostFunction
 
             double residual = 0;  
 
-            for ( int t = 0; t < this->numTimePoints; t++ ) { 
+            int arrivalTime = 2; 
+            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) { 
+            //for ( int t = 0; t < this->numTimePoints; t++ ) { 
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
-                residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] ); 
-                residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] ); 
+                //residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] ); 
+                //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] ); 
             } 
+cout << "RESIDUAL: " << residual << endl;
 
             MeasureType measure = residual ;
 
@@ -136,31 +140,45 @@ class BoundedCostFunction : public itk::SingleValuedCostFunction
             double T1all  = 1/parameters[0];
             double Kpl    = parameters[1];
             int arrivalTime = 2;
+cout << "GUESSES: " << T1all << " " << Kpl  << endl;
   
             //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
             for ( int t = 0; t < this->numTimePoints; t++ ) {
 
-                if (t < arrivalTime ){
+                if (t < arrivalTime ) {
                     this->kineticModel0[t] = 0; 
                     this->kineticModel1[t] = 0; 
                     this->kineticModel2[t] = 0; 
                 }
                 if (t >= arrivalTime ) {  	  
 
+                    // old eqs: 
+                    //================================
                     // PYRUVATE 
-                    this->kineticModel0[t] = this->signal0[0] * exp( -((1/T1all) + Kpl - arrivalTime) * t );
+                    //this->kineticModel0[t] = this->signal0[0] * exp( -((1/T1all) + Kpl - arrivalTime) * t );
 	    
                     // UREA
-                    this->kineticModel1[t] = this->signal2[0] * exp( -((1/T1all) - arrivalTime ) * t);
+                    //this->kineticModel1[t] = this->signal2[0] * exp( -((1/T1all) - arrivalTime ) * t);
 	    
                     // LACTATE 
-                    this->kineticModel2[t] = this->signal0[ arrivalTime ] * (-exp( -t/T1all - t*Kpl ) + exp(-t/T1all)) 
-                                           + this->signal1[ arrivalTime ] * exp(-t/T1all);
+                    //this->kineticModel2[t] = this->signal0[ arrivalTime ] * (-exp( -t/T1all - t*Kpl ) + exp(-t/T1all)) 
+                                           //+ this->signal1[ arrivalTime ] * exp(-t/T1all);
+                    //================================
 
-cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << " " << this->kineticModel0[t] << endl;
+                    // PYRUVATE 
+                    this->kineticModel0[t] = this->signal0[arrivalTime] * exp( -((1/T1all) + Kpl) * (t- arrivalTime) );
+
+                    // UREA
+                    this->kineticModel1[t] = this->signal2[arrivalTime] * exp( -(1/T1all) * (t - arrivalTime));
+
+                    // LACTATE 
+                    this->kineticModel2[t] = this->signal0[ arrivalTime ] * (-exp( -t/T1all - (t- arrivalTime)*Kpl ) + exp(-(t- arrivalTime)/T1all))
+                                           + this->signal1[ arrivalTime ] * exp(-(t-arrivalTime)/T1all);
+
                 }
+                cout << "Estimated Pyruvate(" << t << "): " <<  this->kineticModel0[t] << endl; 
 	
             }
         }
@@ -201,7 +219,6 @@ cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << "
         void SetSignal0( float* signal)
         {
             this->signal0 = signal;
-            this->kineticModel0 = signal;
         }
 
         /*
@@ -210,7 +227,6 @@ cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << "
         void SetSignal1( float* signal)
         {
             this->signal1 = signal;
-            this->kineticModel1 = signal;
         }
 
         /*
@@ -219,7 +235,6 @@ cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << "
         void SetSignal2( float* signal)
         {
             this->signal2 = signal;
-            this->kineticModel2 = signal;
         }
 
         /*
@@ -228,6 +243,9 @@ cout << "Pyruvate: " << signal0[arrivalTime] << " " << signal1[arrivalTime] << "
         void SetNumTimePoints( int numTimePoints )
         {
             this->numTimePoints = numTimePoints;
+            this->kineticModel0 = new float [this->numTimePoints];
+            this->kineticModel1 = new float [this->numTimePoints];
+            this->kineticModel2 = new float [this->numTimePoints];
         }
 
 
@@ -260,6 +278,11 @@ svkMRSKinetics::svkMRSKinetics()
     this->newSeriesDescription = ""; 
     //  3 required input ports: 
     this->SetNumberOfInputPorts(3);
+
+    //  Outputports:  0 for fitted pyruvate kinetics
+    //  Outputports:  1 for metabolite map 
+    this->SetNumberOfOutputPorts(2); 
+    
 
 }
 
@@ -343,7 +366,14 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     int indexArray[1];
     indexArray[0] = 0;
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput() ), 
+        svkMriImageData::SafeDownCast( this->GetOutput(0) ), 
+        0, 
+        this->newSeriesDescription, 
+        indexArray, 
+        0 
+    ); 
+    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
+        svkMriImageData::SafeDownCast( this->GetOutput(1) ), 
         0, 
         this->newSeriesDescription, 
         indexArray, 
@@ -352,7 +382,7 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
 
     this->GenerateKineticParamMap();
 
-    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    svkDcmHeader* hdr = this->GetOutput(1)->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
     hdr->InsertUniqueUID("SOPInstanceUID");
     hdr->SetValue("SeriesDescription", this->newSeriesDescription);
@@ -369,19 +399,34 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
     svkMriImageData* data = svkMriImageData::SafeDownCast(this->GetImageDataInput(0) );
 
+    //  ===============================================
+    //  Create and initialize output data objects for fitted results: 
+    //  ===============================================
+    svkMriImageData* fittedPyrKinetics = svkMriImageData::SafeDownCast( this->GetOutput(0) );
+    fittedPyrKinetics->DeepCopy(data);
+
+    vtkFloatArray* templateArray = vtkFloatArray::SafeDownCast(
+            svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0)
+    );
+    int numVoxels[3];
+    this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+    for (int i = 0; i < totalVoxels; i++ ) {
+        vtkFloatArray* outputArray = vtkFloatArray::SafeDownCast(
+            fittedPyrKinetics->GetCellDataRepresentation()->GetArray(i)
+        );
+        outputArray->DeepCopy(templateArray); 
+    }
+
+
     //  problem with interpreting idf files as time points: 
     this->numTimePoints = data->GetDcmHeader()->GetNumberOfTimePoints();
-    this->numTimePoints = data->GetDcmHeader()->GetNumberOfCoils();
 
     this->ZeroData();
 
-    int numVoxels[3];
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
-    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-
     //  Get the data array to initialize.  
     vtkDataArray* kineticsMapArray;
-    kineticsMapArray = this->GetOutput()->GetPointData()->GetArray(0);
+    kineticsMapArray = this->GetOutput(1)->GetPointData()->GetArray(0);
 
     //  Add the output volume array to the correct array in the svkMriImageData object
     vtkstd::string arrayNameString("pixels");
@@ -393,24 +438,33 @@ void svkMRSKinetics::GenerateKineticParamMap()
     for (int i = 0; i < totalVoxels; i++ ) {
 
         cout << "VOXEL NUMBER: " << i << endl;
+        //cout << *this->GetImageDataInput(0)<< endl;
+        //cout << * svkMriImageData::SafeDownCast(this->GetImageDataInput(1)) << endl;
+        //cout << * svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation() << endl;
+        //cout << * svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(i)  << endl;
+        
         vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
             svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(i)
         );
+        cout << *kineticTrace0 << endl; 
         vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
             svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(i)
         );
         vtkFloatArray* kineticTrace2 = vtkFloatArray::SafeDownCast(
             svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(i)
         );
+        cout << "InputArray " << i << " : " << kineticTrace0 << endl;
 
         float* metKinetics0 = kineticTrace0->GetPointer(0);
-		float* metKinetics1 = kineticTrace1->GetPointer(0);
-		float* metKinetics2 = kineticTrace2->GetPointer(0);
-for (int b=0; b<16; b++) {
-cout << "MK: " << metKinetics0[b] << "      " << metKinetics1[b] << " " << metKinetics2[b] << endl;
-}
+        float* metKinetics1 = kineticTrace1->GetPointer(0);
+        float* metKinetics2 = kineticTrace2->GetPointer(0);
 
-        this->FitVoxelKinetics( metKinetics0, metKinetics1, metKinetics2  );
+        for (int b = 0; b < 16; b++) {
+            cout << "MK(" << b << "): " << metKinetics0[b] << endl; //"      " 
+                        //<< metKinetics1[b] << " " << metKinetics2[b] << endl;
+        }
+
+        this->FitVoxelKinetics( metKinetics0, metKinetics1, metKinetics2, i );
         voxelValue = this->GetKineticsMapVoxelValue(metKinetics0, metKinetics1, metKinetics2 ); 
 
         kineticsMapArray->SetTuple1(i, voxelValue);
@@ -432,6 +486,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     BoundedCostFunction::Pointer  costFunction = BoundedCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
+cout << "signal0(0) : " << metKinetics0[0] << endl; 
     costFunction->SetSignal0( metKinetics0 );
     costFunction->SetSignal1( metKinetics1 );
     costFunction->SetSignal2( metKinetics2 );
@@ -441,7 +496,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
     typedef BoundedCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
-    initialPosition[0] =  .1;
+    initialPosition[0] =  10;
     initialPosition[1] =  .1;
     //initialPosition[2] =  0.;
 
@@ -449,13 +504,13 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     // first order range of values: 
-    float upperBound = 1000;  
-    float lowerBound = -1000;
+    float upperBound = 100;  
+    float lowerBound = -100;
     //float upperBound = FLT_MAX;  
     //float lowerBound = FLT_MIN;
     bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 0
     bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 1
-    bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 2
+    //bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 2
     itkOptimizer->SetParameterBounds( bounds );
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
@@ -486,11 +541,11 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
  *      metKinetics2 = signal2
  *  Returns the best fitted metKinetics arrays. 
  */
-void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, float* metKinetics2 )
+void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, float* metKinetics2, int voxelIndex )
 {
 
     typedef itk::ParticleSwarmOptimizer OptimizerType;
-    OptimizerType::Pointer              itkOptimizer = OptimizerType::New();
+    OptimizerType::Pointer itkOptimizer = OptimizerType::New();
     this->InitOptimizer(  metKinetics0,  metKinetics1,  metKinetics2, itkOptimizer );
 
     try {
@@ -529,8 +584,59 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     //  ===================================================
     //  Write out fitted kinetics 
     //  ===================================================
-    //double phi0Final = finalPosition[0];
-    //double phi1Final = finalPosition[1]; 
+    double T1all  = 1/finalPosition[0];
+    double Kpl    = finalPosition[1];
+    cout << "T1all: " << T1all << endl;
+    cout << "Kpl:   " << Kpl   << endl;
+// print out fitted results: 
+float* kineticModel0 = new float [this->numTimePoints];
+float* kineticModel1 = new float [this->numTimePoints];
+float* kineticModel2 = new float [this->numTimePoints];
+vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
+    svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
+);
+vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
+    svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(voxelIndex)
+);
+vtkFloatArray* kineticTrace2 = vtkFloatArray::SafeDownCast(
+    svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(voxelIndex)
+);
+float* signal0 = kineticTrace0->GetPointer(0);
+float* signal1 = kineticTrace1->GetPointer(0);
+float* signal2 = kineticTrace2->GetPointer(0);
+int arrivalTime = 2; 
+//  write out results to imageDataOutput 
+vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
+    svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
+);
+//cout << "array: " << *outputDynamics0 << endl;
+// assign new data to voxelarray
+for ( int t = 0; t < this->numTimePoints; t++ ) {
+    if (t < arrivalTime ) {
+        kineticModel0[t] = 77; 
+        kineticModel1[t] = 77; 
+        kineticModel2[t] = 77; 
+    }
+    if (t >= arrivalTime ) {  	  
+        // PYRUVATE 
+        kineticModel0[t] = signal0[arrivalTime] * exp( -((1/T1all) + Kpl) * (t- arrivalTime) );
+       
+        // UREA
+        kineticModel1[t] = signal2[arrivalTime] * exp( -(1/T1all) * (t - arrivalTime));
+       
+        // LACTATE 
+        kineticModel2[t] = signal0[ arrivalTime ] * (-exp( -t/T1all - (t- arrivalTime)*Kpl ) + exp(-(t- arrivalTime)/T1all))
+               + signal1[ arrivalTime ] * exp(-(t-arrivalTime)/T1all);
+       
+    }
+    cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
+    outputDynamics0->SetTuple1(voxelIndex, kineticModel0[t]);
+}
+
+
+delete[] kineticModel0; 
+delete[] kineticModel1; 
+delete[] kineticModel2; 
 
     return;
 }
@@ -705,11 +811,12 @@ void svkMRSKinetics::ZeroData()
 {
 
     int numVoxels[3];
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
     double zeroValue = 0.;
     for (int i = 0; i < totalVoxels; i++ ) {
-        this->GetOutput()->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
+        this->GetOutput(0)->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
+        this->GetOutput(1)->GetPointData()->GetScalars()->SetTuple1(i, zeroValue);
     }
 }
 

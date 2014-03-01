@@ -124,16 +124,13 @@ class svkMRSKinetics: public svkImageAlgorithm
 														  float* metKinetics0,
                                                           float* metKinetics1, 
                                                           float* lacKinetics ); 
-        void                    FitVoxelKinetics( float* metKinetics0, float* metKinetics1, float* metKinetics2  );
+        void                    FitVoxelKinetics( float* metKinetics0, float* metKinetics1, float* metKinetics2, int voxelIndex );
         void                    InitOptimizer( 
                                     float* metKinetics0, 
                                     float* metKinetics1, 
                                     float* metKinetics2, 
                                     itk::ParticleSwarmOptimizer::Pointer itkOptimizer 
                                 );
-
-
-
 
         float*                  metKinetics0;
         float*                  metKinetics1;

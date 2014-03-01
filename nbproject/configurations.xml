@@ -4,12 +4,16 @@
     <df name="trunk" root=".">
       <df name="applications">
         <df name="cmd_line">
+          <df name="Linux_i686">
+          </df>
           <df name="Linux_x86_64">
           </df>
           <df name="Linux_x86_64_debug">
           </df>
           <df name="src">
             <df name="CMakeFiles">
+              <df name="CMakeRelink.dir">
+              </df>
               <df name="svk_app_template.dir">
               </df>
               <df name="svk_auto_phase.dir">
@@ -54,6 +58,8 @@
               </df>
               <df name="svk_reslice.dir">
               </df>
+              <df name="svk_scale_image.dir">
+              </df>
               <df name="svk_spec_diff.dir">
               </df>
               <df name="svk_surface_area.dir">
@@ -87,6 +93,7 @@
             <in>svk_quick_view.cc</in>
             <in>svk_reorder_epsi.cc</in>
             <in>svk_reslice.cc</in>
+            <in>svk_scale_image.cc</in>
             <in>svk_spec_diff.cc</in>
             <in>svk_surface_area.cc</in>
             <in>svk_svrecon.cc</in>
@@ -126,6 +133,8 @@
           <in>SIVIC_MRSIFilter.mm</in>
         </df>
         <df name="sivic_app">
+          <df name="Linux_i686">
+          </df>
           <df name="Linux_x86_64">
           </df>
           <df name="Linux_x86_64_debug">
@@ -143,7 +152,6 @@
               <in>itkImageIOFactoryRegisterManager.h</in>
               <in>itkTransformIOFactoryRegisterManager.h</in>
             </df>
-            <in>SivicKWCallbacksLibInit.cxx</in>
             <in>sivic.cc</in>
             <in>sivicApp.cc</in>
             <in>sivicApp.h</in>
@@ -191,7 +199,6 @@
             <in>svkSecondaryCaptureFormatter.h</in>
             <in>vtkSivicController.cc</in>
             <in>vtkSivicController.h</in>
-            <in>vtkSivicControllerTcl.cxx</in>
           </df>
         </df>
         <df name="slicer_plugin">
@@ -256,6 +263,8 @@
                     <df name="svk_reorder_epsi.dir">
                     </df>
                     <df name="svk_reslice.dir">
+                    </df>
+                    <df name="svk_scale_image.dir">
                     </df>
                     <df name="svk_spec_diff.dir">
                     </df>
@@ -376,6 +385,8 @@
           <in>getopt.c</in>
           <in>getopt.h</in>
           <in>getopt_long.c</in>
+        </df>
+        <df name="Linux_i686">
         </df>
         <df name="Linux_x86_64">
         </df>

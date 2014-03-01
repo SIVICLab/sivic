@@ -78,7 +78,7 @@ int main (int argc, char** argv)
     usemsg += "   -o                 name   Name of outputfile. \n";
     usemsg += "   -t                 type   Target data type: \n";
     usemsg += "                                 3 = UCSF IDF    \n";
-    usemsg += "                                 4 = DICOM_MRI (default)    \n";
+    usemsg += "                                 5 = DICOM_MRI (default)    \n";
     usemsg += "   -h                       Print this help mesage. \n";
     usemsg += "\n";
     usemsg += "Fit dynamic MRSI to metabolism kinetics model.\n";
@@ -180,6 +180,16 @@ int main (int argc, char** argv)
     }
 
     //  Read the data to initialize an svkImageData object
+    //  If volume files are being read, interpret them as a time series
+    if ( reader1->IsA("svkIdfVolumeReader") == true ) {
+        svkIdfVolumeReader::SafeDownCast( reader1 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
+    }
+    if ( reader2->IsA("svkIdfVolumeReader") == true ) {
+        svkIdfVolumeReader::SafeDownCast( reader2 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
+    }
+    if ( reader3->IsA("svkIdfVolumeReader") == true ) {
+        svkIdfVolumeReader::SafeDownCast( reader3 )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
+    }
     reader1->SetFileName( inputFileName1.c_str() );
     reader1->Update();
     reader2->SetFileName( inputFileName2.c_str() );
@@ -217,7 +227,8 @@ int main (int argc, char** argv)
     // ===============================================  
     //  Write output of algorithm to file:    
     // ===============================================  
-    writer->SetInput( dynamics->GetOutput() );
+    writer->SetInput( dynamics->GetOutput(0) );     // port 0 is pyr fitted values
+    //writer->SetInput( dynamics->GetOutput() );
     writer->Write();
 
 
