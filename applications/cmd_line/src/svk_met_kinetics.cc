@@ -208,6 +208,18 @@ int main (int argc, char** argv)
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
     dynamics->Update();
 
+//  write out results to imageDataOutput 
+//int voxelToTest = 0;
+//vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
+    //svkMriImageData::SafeDownCast(dynamics->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelToTest)
+//);
+//float tuple[1];
+//for ( int t = 0; t < 16; t++ ) {
+    //outputDynamics0->GetTupleValue(t, tuple);
+    //cout << "APPLICATION TUPLE TO TEST: " << t << " => " << tuple[0] << endl;
+//}
+
+
 
     // ===============================================  
     //  Use writer factory to create writer for specified
