@@ -79,6 +79,7 @@ class svkDICOMImageWriter : public svkImageWriter
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         void            GetShortScaledPixels( unsigned short* shortPixels, double& slope, double& intercept, int sliceNumber, int volNumber );
+        void            GetScaledPixels( unsigned short* shortPixels, double slope, double intercept, int sliceNumber, int volNumber );
         void            GetPixelRange(double& min, double& max, int volNumber); 
         virtual int     GetDataLength() = 0;
         bool            useLosslessCompression; 

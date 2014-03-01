@@ -179,13 +179,13 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
         case svkDcmHeader::UNSIGNED_INT_1:
         {
             // Dicom does not support the writing of 8 bit words so we will convert to 16
-            unsigned short* shortPixelData = new unsigned short[dataLength];
+            unsigned short* shortPixelData = new unsigned short[dataLength*numVolumes];
             for (int volume = 0; volume < numVolumes; volume++ ) {
-                offset = dataLength/numVolumes * volume; 
+                offset = dataLength * volume;
                 unsigned char* pixelData = static_cast<unsigned char*>(
                     static_cast<vtkUnsignedCharArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volume))->GetPointer(0)
                 );
-                for (int i = 0; i < dataLength/numVolumes; i++) {
+                for (int i = 0; i < dataLength; i++) {
                     shortPixelData[offset + i] = pixelData[offset + i];
                 }
                 dcmHeader->SetPixelDataType( svkDcmHeader::UNSIGNED_INT_2 );
@@ -193,7 +193,7 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
             dcmHeader->SetValue(
                   "PixelData",
                   shortPixelData,
-                  dataLength 
+                  dataLength * numVolumes
             );
             delete[] shortPixelData;
         }
@@ -201,18 +201,18 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
 
         case svkDcmHeader::UNSIGNED_INT_2:
         {
-            unsigned short* pixelData = new unsigned short[dataLength];
+            unsigned short* pixelData = new unsigned short[dataLength*numVolumes];
             for (int volume = 0; volume < numVolumes; volume++ ) {
-                offset = dataLength/numVolumes * volume; 
+                offset = dataLength * volume;
                 unsigned short* vol = static_cast<unsigned short*>(
                     static_cast<vtkUnsignedShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volume))->GetPointer(0)
                 );
-                memcpy( &pixelData[offset], vol, dataLength/numVolumes * 2 ) ; 
+                memcpy( &pixelData[offset], vol, dataLength * 2 ) ;
             }
             dcmHeader->SetValue(
                   "PixelData",
                   pixelData, 
-                  dataLength 
+                  dataLength*numVolumes
             );
         }
         break; 
@@ -221,20 +221,9 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
         case svkDcmHeader::SIGNED_FLOAT_8:
         {
 
-            unsigned short* pixelData = new unsigned short[dataLength];
+            unsigned short* pixelData = new unsigned short[dataLength*numVolumes];
 
-            double slope;
-            double intercept;
-            for (int volume = 0; volume < numVolumes; volume++ ) {
-                offset = dataLength/numVolumes * volume; 
-                this->GetShortScaledPixels( pixelData, slope, intercept, -1, volume); 
-            }
             
-            dcmHeader->SetValue(
-                  "PixelData",
-                  pixelData, 
-                  dataLength 
-            );
 
             //  Init Rescale Attributes:    
             //  For Enhanced MR Image Storage use the PixelValueTransformation Macro
@@ -254,32 +243,41 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
                     
             }
 
+            double deltaRangeIn = inputRangeMax - inputRangeMin;
+
+            //  Get the output range for scaling:
+            int shortMin = VTK_UNSIGNED_SHORT_MIN;
+            int shortMax = VTK_UNSIGNED_SHORT_MAX;
+            double deltaRangeOut = shortMax - shortMin;
+
+            //  apply linear mapping from float range to signed short range;
+            //  shortMax = inputRangeMax * m + b;
+            //  shortMin = inputRangeMin * m + b;
+            double slope = deltaRangeOut/deltaRangeIn;
+            double intercept = shortMin - inputRangeMin * ( deltaRangeOut/deltaRangeIn );
+
+            for (int volume = 0; volume < numVolumes; volume++ ) {
+                offset = (dataLength) * volume;
+                this->GetScaledPixels( pixelData+offset, slope, intercept, -1, volume);
+            }
+            dcmHeader->SetValue(
+                  "PixelData",
+                  pixelData,
+                  dataLength*numVolumes
+            );
+
             //  Fix BitsAllocated, etc to be represent
             //  signed short data
             dcmHeader->SetPixelDataType(svkDcmHeader::UNSIGNED_INT_2);
 
-            vtkstd::string SOPClassUID = dcmHeader->GetStringValue( "SOPClassUID" ) ;
-            if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" ) {
+            //  Enhanced MR Image Storage:
+            //      slope and intercept are for real -> short, we need the
+            //      inverse transformation here that a downstream application:
+            //      can use to regenerate the original values:
+            float slopeReverse = 1/slope;
+            float interceptReverse = inputRangeMin - shortMin/slope;
+            dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse );
 
-                //  MR Image Storage: 
-                //      convert slope and intercept to center and width:     
-                //      Get the pixel value range (defines the WL of VOI LUT):
-                double width = inputRangeMax - inputRangeMin;
-                double center = (inputRangeMax + inputRangeMin)/2;
-                dcmHeader->InitVOILUTModule( center, width ); 
-
-            } else {
-
-                //  Enhanced MR Image Storage: 
-                //      slope and intercept are for real -> short, we need the 
-                //      inverse transformation here that a downstream application:
-                //      can use to regenerate the original values:
-                float slopeReverse = 1/slope;  
-                int shortMin = VTK_UNSIGNED_SHORT_MIN; 
-                float interceptReverse = inputRangeMin - shortMin/slope;
-                dcmHeader->InitPixelValueTransformationMacro( slopeReverse, interceptReverse ); 
-
-            }
 
             delete[] pixelData; 
         }
@@ -287,19 +285,19 @@ void svkDICOMEnhancedMRIWriter::InitPixelData( svkDcmHeader* dcmHeader )
 
         case svkDcmHeader::SIGNED_INT_2: 
         {
-            short* pixelData = new short[dataLength];
+            short* pixelData = new short[dataLength*numVolumes];
             for (int volume = 0; volume < numVolumes; volume++ ) {
-                offset = dataLength/numVolumes * volume; 
+                offset = dataLength * volume;
 
                 short* vol = static_cast<short*>(
                     static_cast<vtkShortArray*>(this->GetImageDataInput(0)->GetPointData()->GetArray(volume))->GetPointer(0)
                 );
-                memcpy( &pixelData[offset], vol, dataLength/numVolumes * 2 ) ; 
+                memcpy( &pixelData[offset], vol, dataLength * 2 ) ;
             }
             dcmHeader->SetValue(
                   "PixelData",
                   pixelData, 
-                  dataLength 
+                  dataLength*numVolumes
             );
         }
         default:
@@ -322,7 +320,7 @@ int svkDICOMEnhancedMRIWriter::GetDataLength()
     int numFrames = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
     int numVolumes = numFrames / numSlices;
 
-    int dataLength = cols * rows * slices * numComponents * numVolumes;
+    int dataLength = cols * rows * slices * numComponents;
     return dataLength; 
 }
 

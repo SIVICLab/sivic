@@ -139,25 +139,30 @@ void svkDICOMImageWriter::GetPixelRange(double& min, double& max, int volNumber)
 {
     int dataType = 
             this->GetImageDataInput(0)->GetDcmHeader()->GetPixelDataType( this->GetImageDataInput(0)->GetScalarType() ); 
+    int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" );
+    int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" );
+    int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
+    int numPixels = cols * rows * slices;
 
     if (dataType == svkDcmHeader::SIGNED_FLOAT_4) {
 
-        vtkImageAccumulate* histo = vtkImageAccumulate::New();
-        histo->SetInput( this->GetImageDataInput(0) );
-        histo->Update();
+        min = VTK_FLOAT_MAX;
+        max = VTK_FLOAT_MIN;
+        float* floatPixels = static_cast<float *>(
+                vtkFloatArray::SafeDownCast(this->GetImageDataInput(0)->GetPointData()->GetArray(volNumber))->GetPointer(0)
+        );
 
-        //  Get the input range for scaling:
-        min = *( histo->GetMin() ); 
-        max = *( histo->GetMax() ); 
+        for (int i = 0; i < numPixels; i++ ) {
+            if ( floatPixels[i] > max ) {
+                max = floatPixels[i];
+            }
+            if ( floatPixels[i] < min ) {
+                min = floatPixels[i];
+            }
+        }
 
-        histo->Delete();
 
     } else if (dataType == svkDcmHeader::SIGNED_FLOAT_8) {
-
-        int cols = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Columns" ); 
-        int rows = this->GetImageDataInput(0)->GetDcmHeader()->GetIntValue( "Rows" ); 
-        int slices = (this->GetImageDataInput(0)->GetExtent() ) [5] - (this->GetImageDataInput(0)->GetExtent() ) [4] + 1;
-        int numPixels = cols * rows * slices; 
 
         min = VTK_DOUBLE_MAX;
         max = VTK_DOUBLE_MIN;
@@ -202,6 +207,17 @@ void svkDICOMImageWriter::GetShortScaledPixels( unsigned short* shortPixels, dou
     //  shortMin = inputRangeMin * m + b; 
     slope = deltaRangeOut/deltaRangeIn; 
     intercept = shortMin - inputRangeMin * ( deltaRangeOut/deltaRangeIn ); 
+    this->GetScaledPixels( shortPixels, slope, intercept, sliceNumber, volNumber);
+}
+
+
+/*!
+ *  Performs a linear mapping of floating point image values to 16 bit integer dynamic range.
+ *  Returns a signed short array, together with the intercept and slope of the linear scaling
+ *  transformation ( shortVal = floatVal * slope + intercept).
+ */
+void svkDICOMImageWriter::GetScaledPixels( unsigned short* shortPixels, double slope, double intercept, int sliceNumber, int volNumber)
+{
     if (this->GetDebug()) {
         cout << "DICOM MRI Writer float to int scaling (slope, intercept): " << slope << " " << intercept << endl;     
     }
