@@ -70,7 +70,10 @@ using namespace std;
 
 
 /*! 
- *  Demonstration template class to analyze dynamic MRI data. 
+ *  Kinetic fitting 
+ *      Christine Leon Swisher, PhD
+ *      Cornelius Von Morze, PhD
+ *      Jason C. Crane, PhD
  */
 class svkMRSKinetics: public svkImageAlgorithm
 {
@@ -103,7 +106,7 @@ class svkMRSKinetics: public svkImageAlgorithm
                                 );
 
         void                    ZeroData(); 
-
+        void                    SyncPointsFromCells(); 
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 

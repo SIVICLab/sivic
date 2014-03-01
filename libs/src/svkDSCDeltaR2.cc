@@ -47,7 +47,6 @@
 #include <vtkXMLUtilities.h>
 
 #include <svkDSCDeltaR2.h>
-#include <svkSpecPoint.h>
 
 
 using namespace svk;
