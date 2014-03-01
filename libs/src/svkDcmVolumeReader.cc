@@ -655,7 +655,10 @@ void svkDcmVolumeReader::GetVOILUTScaledPixels( float* floatPixels, unsigned sho
 	float outputRangeMin = center - window / 2.0;
 	float outputRangeMax = center + window / 2.0;
 	float deltaRangeOut = outputRangeMax - outputRangeMin;
-	float slope = deltaRangeOut/deltaRangeIn;
+	float slope = 0;
+    if ( deltaRangeIn != 0 ) {
+	    slope = deltaRangeOut/deltaRangeIn;
+    }
 	float intercept = outputRangeMin - inputRangeMin * ( slope );
 
 	for( int i = 0; i < numberOfValues; i++ ) {
