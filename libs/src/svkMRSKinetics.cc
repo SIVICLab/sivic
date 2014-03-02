@@ -111,7 +111,7 @@ class BoundedCostFunction : public itk::SingleValuedCostFunction
         {
             cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
    
-            this->GetKineticModel( parameters ); 
+            this->GetKineticModel( parameters, this->kineticModel0, this->kineticModel1, this->kineticModel2, this->signal0, this->signal1, this->signal2, this->numTimePoints ); 
 
             double residual = 0;  
 
@@ -122,7 +122,7 @@ class BoundedCostFunction : public itk::SingleValuedCostFunction
                 //residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] ); 
                 //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] ); 
             } 
-cout << "RESIDUAL: " << residual << endl;
+            cout << "RESIDUAL: " << residual << endl;
 
             MeasureType measure = residual ;
 
@@ -134,51 +134,46 @@ cout << "RESIDUAL: " << residual << endl;
          *  parameters are the current values of the 3 kinetic parameters, and kineticModel0-3 
          *  are calculated kinetics based on these 3 values.    
          */   
-        void GetKineticModel( const ParametersType& parameters ) const
+        //void GetKineticModel( const ParametersType& parameters ) const
+        static void GetKineticModel( const ParametersType& parameters, 
+                    float* kineticModel0, 
+                    float* kineticModel1, 
+                    float* kineticModel2, 
+                    float* signal0, 
+                    float* signal1, 
+                    float* signal2, 
+                    int numTimePoints 
+        ) 
         {
          
             double T1all  = 1/parameters[0];
             double Kpl    = parameters[1];
             int arrivalTime = 2;
-cout << "GUESSES: " << T1all << " " << Kpl  << endl;
+            cout << "GUESSES: " << T1all << " " << Kpl  << endl;
   
             //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
             //  each time point
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
-            for ( int t = 0; t < this->numTimePoints; t++ ) {
+            for ( int t = 0; t < numTimePoints; t++ ) {
 
                 if (t < arrivalTime ) {
-                    this->kineticModel0[t] = 0; 
-                    this->kineticModel1[t] = 0; 
-                    this->kineticModel2[t] = 0; 
+                    kineticModel0[t] = 0; 
+                    kineticModel1[t] = 0; 
+                    kineticModel2[t] = 0; 
                 }
                 if (t >= arrivalTime ) {  	  
-
-                    // old eqs: 
-                    //================================
                     // PYRUVATE 
-                    //this->kineticModel0[t] = this->signal0[0] * exp( -((1/T1all) + Kpl - arrivalTime) * t );
-	    
-                    // UREA
-                    //this->kineticModel1[t] = this->signal2[0] * exp( -((1/T1all) - arrivalTime ) * t);
-	    
-                    // LACTATE 
-                    //this->kineticModel2[t] = this->signal0[ arrivalTime ] * (-exp( -t/T1all - t*Kpl ) + exp(-t/T1all)) 
-                                           //+ this->signal1[ arrivalTime ] * exp(-t/T1all);
-                    //================================
-
-                    // PYRUVATE 
-                    this->kineticModel0[t] = this->signal0[arrivalTime] * exp( -((1/T1all) + Kpl) * (t- arrivalTime) );
+                    kineticModel0[t] = signal0[arrivalTime] * exp( -((1/T1all) + Kpl) * (t- arrivalTime) );
 
                     // UREA
-                    this->kineticModel1[t] = this->signal2[arrivalTime] * exp( -(1/T1all) * (t - arrivalTime));
+                    kineticModel1[t] = signal2[arrivalTime] * exp( -(1/T1all) * (t - arrivalTime));
 
                     // LACTATE 
-                    this->kineticModel2[t] = this->signal0[ arrivalTime ] * (-exp( -t/T1all - (t- arrivalTime)*Kpl ) + exp(-(t- arrivalTime)/T1all))
-                                           + this->signal1[ arrivalTime ] * exp(-(t-arrivalTime)/T1all);
+                    kineticModel2[t] = signal0[ arrivalTime ] * (-exp( -t/T1all - (t- arrivalTime)*Kpl ) + exp(-(t- arrivalTime)/T1all))
+                                           + signal1[ arrivalTime ] * exp(-(t-arrivalTime)/T1all);
 
                 }
-                cout << "Estimated Pyruvate(" << t << "): " <<  this->kineticModel0[t] << endl; 
+                cout << "Estimated Pyruvate(" << t << "): " <<  kineticModel0[t] << endl; 
 	
             }
         }
@@ -604,44 +599,29 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
 
     // print out fitted results: 
     vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
-    );
+        svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
     vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(voxelIndex)
-    );
+        svkMriImageData::SafeDownCast(this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
     vtkFloatArray* kineticTrace2 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(voxelIndex)
-    );
+        svkMriImageData::SafeDownCast(this->GetImageDataInput(2))->GetCellDataRepresentation()->GetArray(voxelIndex) ); 
+
     float* signal0 = kineticTrace0->GetPointer(0);
     float* signal1 = kineticTrace1->GetPointer(0);
     float* signal2 = kineticTrace2->GetPointer(0);
-    int arrivalTime = 2; 
-    //  write out results to imageDataOutput 
-    vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
-        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
-    );
+
     // assign new data to voxelarray
     float* kineticModel0 = new float [this->numTimePoints];
     float* kineticModel1 = new float [this->numTimePoints];
     float* kineticModel2 = new float [this->numTimePoints];
+    BoundedCostFunction::GetKineticModel( finalPosition, kineticModel0, kineticModel1, kineticModel2, signal0, signal1, signal2, this->numTimePoints ); 
+
+    //  write out results to imageDataOutput 
+    vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
+        svkMriImageData::SafeDownCast(this->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelIndex)
+    );
     for ( int t = 0; t < this->numTimePoints; t++ ) {
-        if (t < arrivalTime ) {
-            kineticModel0[t] = 0; 
-            kineticModel1[t] = 0; 
-            kineticModel2[t] = 0; 
-        }
-        if (t >= arrivalTime ) {  	  
-            // PYRUVATE 
-            kineticModel0[t] = signal0[arrivalTime] * exp( -((1/T1all) + Kpl) * (t- arrivalTime) );
-            // UREA
-            kineticModel1[t] = signal2[arrivalTime] * exp( -(1/T1all) * (t - arrivalTime));
-            // LACTATE 
-            kineticModel2[t] = signal0[ arrivalTime ] * (-exp( -t/T1all - (t- arrivalTime)*Kpl ) + exp(-(t- arrivalTime)/T1all))
-                + signal1[ arrivalTime ] * exp(-(t-arrivalTime)/T1all);
-        }
         cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
         outputDynamics0->SetTuple1(t, kineticModel0[t]);
-
     }
 
     delete[] kineticModel0; 
