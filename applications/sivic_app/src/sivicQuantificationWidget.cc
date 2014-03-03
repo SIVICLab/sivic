@@ -417,7 +417,7 @@ void sivicQuantificationWidget::RefreshQuantFile()
         this->metRangeVector[i]->SetPadY(1);
         this->metRangeVector[i]->SetEntry1PositionToLeft();
         this->metRangeVector[i]->SetEntry2PositionToRight();
-        this->metRangeVector[i]->SetEntriesWidth(4);
+        this->metRangeVector[i]->SetEntriesWidth(6);
         this->metRangeVector[i]->SetResolution(.01);
         this->metRangeVector[i]->SetLabelText( (this->metNames[i]).c_str() );
         this->metRangeVector[i]->GetLabel()->SetWidth(10);

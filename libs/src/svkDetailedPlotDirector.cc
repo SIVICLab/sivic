@@ -69,13 +69,16 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
 #endif
 
     this->xyPlotActor->LegendOn();
-    this->xyPlotActor->SetLegendPosition(0.75, 0.75);
+    this->xyPlotActor->SetLegendPosition(0.70, 0.70);
+    this->xyPlotActor->SetLegendPosition2(0.25, 0.2);
     this->glyphGenerator = vtkGlyphSource2D::New();
     this->glyphGenerator->SetGlyphTypeToNone();
     this->xyPlotActor->GetXAxisActor2D()->GetProperty()->SetColor(0,1,0);
     this->xyPlotActor->GetYAxisActor2D()->GetProperty()->SetColor(0,1,0);
+    this->xyPlotActor->GetLegendActor()->GetEntryTextProperty()->SetFontFamilyToCourier();
     this->xyPlotActor->SetAdjustXLabels(0);
     this->xyPlotActor->SetAdjustYLabels(0);
+    this->xyPlotActor->SetXLabelFormat("%0.2f");
     this->abscissa = NULL;
     this->numPoints = -1;
     this->cursorLocationCB = NULL;
@@ -175,6 +178,10 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
          */
         this->xyPlotActor->SetDataObjectXComponent(numPlots-1, 0);
         this->xyPlotActor->SetDataObjectYComponent(numPlots-1, component + 1);
+
+        // We need to call Modified on the Legend text to get around a VTK bug.
+        // Without this the font family goes back to default for added inputs
+        this->xyPlotActor->GetLegendActor()->GetEntryTextProperty()->Modified();
         this->xyPlotActor->GetLegendActor()->SetEntrySymbol(numPlots-1, this->glyphGenerator->GetOutput());
     }
 
@@ -538,7 +545,7 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
                 director->GetRuler()->SetTitlePosition(0.95);
             }
             std::stringstream xValue;
-            xValue.precision(3);
+            xValue.precision(4);
             xValue << u ;
             director->GetRuler()->SetTitle(xValue.str().c_str() );
             director->GetRuler()->SetVisibility( true );
@@ -546,7 +553,10 @@ void svkDetailedPlotDirector::UpdateCursorLocation( vtkObject* subject, unsigned
                 double plotValue = director->GetYValueFromXValue( i, u);
                 std::stringstream yValue;
                 yValue.precision(3);
-                yValue << plotValue;
+                if( plotValue >= 0 ) {
+                    yValue << "+";
+                }
+                yValue << std::scientific << plotValue;
                 director->GetPlotActor()->GetLegendActor()->SetEntryString(i, yValue.str().c_str());
             }
         } else {

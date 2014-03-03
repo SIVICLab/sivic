@@ -47,6 +47,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkDataArray.h>
 #include <vtkAxisActor2D.h>
+#include <vtkTextActor.h>
 #include <svkXYPlotActor.h>
 #include <vtkTextProperty.h>
 #include <svkXYPlotActor.h>
