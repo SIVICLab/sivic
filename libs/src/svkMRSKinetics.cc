@@ -821,7 +821,7 @@ void svkMRSKinetics::SyncPointsFromCells()
     int numCells = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
     svkImageData* imageData = this->GetOutput(0); 
-    float cellValueAtTime[2]; 
+    float cellValueAtTime[1]; 
 
     for ( int timePoint = 0; timePoint < this->numTimePoints; timePoint++ ) { 
 
