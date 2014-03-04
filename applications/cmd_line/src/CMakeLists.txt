@@ -566,6 +566,7 @@ if ( BUILD_CLAPACK )
 endif ( BUILD_CLAPACK )
 if ( BUILD_CMINPACK )
     LIST(APPEND APPS svk_auto_phase)
+    LIST(APPEND APPS svk_met_kinetics)
 endif ( BUILD_CMINPACK )
 
 IF (NOT WIN32)	

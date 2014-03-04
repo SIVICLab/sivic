@@ -1722,22 +1722,15 @@ bool svkOverlayView::CheckDataOrientations()
     svkImageData* firstDataset = allImages[0];
     double dcos[3][3];
     firstDataset->GetDcos(dcos);
-    cout << "First DCOS:\n" << svkUtils::Double3x3ToString(dcos);
     for( int i = 1; i < allImages.size(); i++ ) {
         if( allImages[i] != NULL ) {
             svkDataValidator* validator = svkDataValidator::New();
             bool valid = validator->AreDataCompatible( allImages[i], firstDataset );
             allImages[i]->GetDcos(dcos);
-            cout << "i=" << i << " dcos:\n" << svkUtils::Double3x3ToString(dcos);
             if( validator->IsInvalid( svkDataValidator::INVALID_DATA_ORIENTATION ) ) {
-                cout <<"-------------ORIENTATION CHECK FAILED FOR IMAGE AT INDEX: " << i << endl;
                 orientationsOkay = false;
-            } else {
-                cout << "ORIENTATION IS OKAY FOR INDEX: " << i <<endl;
             }
             validator->Delete();
-        } else {
-            cout << "i= " << i << " NO IMAGE LOADED " << endl;
         }
     }
     if( !orientationsOkay  ) {

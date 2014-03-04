@@ -379,7 +379,10 @@ void svkVarianFidMapper::InitPlaneOrientationMacro()
     eulerTransform->RotateZ( psi );
     vtkMatrix4x4* dcos = vtkMatrix4x4::New();
     eulerTransform->GetMatrix(dcos);
-    cout << *dcos << endl;
+
+    if (this->GetDebug()) {
+        cout << *dcos << endl;
+    }
 
     //  and analagous to the fdf reader, convert from LAI to LPS: 
     //dcos->SetElement(0, 0, dcos->GetElement(0, 0)  * 1 );

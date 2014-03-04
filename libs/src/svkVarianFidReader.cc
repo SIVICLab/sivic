@@ -183,7 +183,9 @@ void svkVarianFidReader::ExecuteData(vtkDataObject* output)
     //  been allocated. but that requires the number of components to be specified.
     this->GetOutput()->GetIncrements();
 
-    this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    if (this->GetDebug()) {
+        this->GetOutput()->GetDcmHeader()->PrintDcmHeader();
+    }
 
 }
 
@@ -323,7 +325,9 @@ void svkVarianFidReader::ParseFid()
     try { 
 
         this->ParseProcpar(fidFilePath);
-        this->PrintProcparKeyValuePairs();
+        if (this->GetDebug()) {
+            this->PrintProcparKeyValuePairs();
+        }
 
     } catch (const exception& e) {
         cerr << "ERROR opening or reading Varian fid file (" << fidFileName << "): " << e.what() << endl;
