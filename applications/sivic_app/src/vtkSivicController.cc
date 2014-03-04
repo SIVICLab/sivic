@@ -466,6 +466,10 @@ void vtkSivicController::OpenImage( const char* fileName, bool onlyReadOneInputF
 void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
 {
     svkImageData* oldData = this->model->GetDataObject( "AnatomicalData" );
+    bool wasDummyImage = false;
+    if( oldData != NULL && this->model->GetDataFileName("AnatomicalData" ).compare(DUMMY_IMAGE_NAME)== 0 ) {
+        wasDummyImage = true;
+    }
     if (data == NULL) {
         this->PopupMessage( "UNSUPPORTED FILE TYPE!");
     } else if( !data->IsA("svkMriImageData") ) {
@@ -529,7 +533,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             firstSlice = data->GetFirstSlice( svkDcmHeader::AXIAL );
             lastSlice = data->GetLastSlice( svkDcmHeader::AXIAL );
             this->imageViewWidget->axialSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-            if( oldData == NULL ) {
+            if( oldData == NULL || wasDummyImage ) {
                 this->imageViewWidget->axialSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "AXIAL" ) {
                 this->imageViewWidget->axialSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
@@ -537,7 +541,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             firstSlice = data->GetFirstSlice( svkDcmHeader::CORONAL );
             lastSlice = data->GetLastSlice( svkDcmHeader::CORONAL );
             this->imageViewWidget->coronalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-            if( oldData == NULL ) {
+            if( oldData == NULL || wasDummyImage ) {
                 this->imageViewWidget->coronalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "CORONAL" ){
                 this->imageViewWidget->coronalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
@@ -545,7 +549,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
             firstSlice = data->GetFirstSlice( svkDcmHeader::SAGITTAL );
             lastSlice = data->GetLastSlice( svkDcmHeader::SAGITTAL );
             this->imageViewWidget->sagittalSlider->SetRange( firstSlice + 1, lastSlice + 1); 
-            if( oldData == NULL ) {
+            if( oldData == NULL || wasDummyImage ) {
                 this->imageViewWidget->sagittalSlider->SetValue( ( lastSlice - firstSlice ) / 2 + 1);
             } else if( !this->GetActive4DImageData() || this->orientation != "SAGITTAL" ){
                 this->imageViewWidget->sagittalSlider->GetWidget()->InvokeEvent(vtkKWEntry::EntryValueChangedEvent); 
@@ -557,7 +561,7 @@ void vtkSivicController::OpenImage( svkImageData* data, string stringFilename )
                 this->overlayController->SetTlcBrc( plotController->GetTlcBrc() );
                 this->spectraViewWidget->sliceSlider->GetWidget()->InvokeEvent( vtkKWEntry::EntryValueChangedEvent); 
             }
-            if( oldData == NULL ) {
+            if( oldData == NULL || wasDummyImage ) {
                 switch( data->GetDcmHeader()->GetOrientationType() ) {
                     case svkDcmHeader::AXIAL:
                         this->SetOrientation( "AXIAL" );
@@ -824,10 +828,10 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
 
 		// If there is no reference image loaded lets create a default one.
         if( !this->model->DataExists( "AnatomicalData" ) ) {
-        	svkMriImageData* zeroImage = svkMriImageData::New();
-        	this->GetActive4DImageData()->GetZeroImage( zeroImage );
-        	this->OpenImage( zeroImage, "zeroImage");
-        	zeroImage->Delete();
+        	svkMriImageData* dummyImage = svkMriImageData::New();
+        	this->GetActive4DImageData()->GetZeroImage( dummyImage );
+        	this->OpenImage( dummyImage, DUMMY_IMAGE_NAME );
+        	dummyImage->Delete();
        }
     } else {
 

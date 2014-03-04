@@ -121,6 +121,7 @@
 #define PPM_13C_DEFAULT_MIN 250 
 #define PPM_13C_DEFAULT_MAX -50 
 #define SLIDER_RELATIVE_RESOLUTION 0.002 
+#define DUMMY_IMAGE_NAME "SIVIC_DUMMY_IMAGE"
 
 using namespace svk;
 using std::vector;
