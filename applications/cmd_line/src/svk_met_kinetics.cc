@@ -70,33 +70,41 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
-    usemsg += "svk_met_kinetics -i1 met1 -i2 met2 -i3 met3 -o output_file_name [ -t output_data_type ] [ -h ] \n";
+    usemsg += "svk_met_kinetics   --i1 name --i2 name --i3 name                         \n";
+    usemsg += "                 [ --mask name ] -o root [ -t output_data_type ] [ -h ]  \n";
     usemsg += "\n";
-    usemsg += "   --i1               name   Name of met 1. \n";
-    usemsg += "   --i2               name   Name of met 2. \n";
-    usemsg += "   --i3               name   Name of met 3. \n";
-    usemsg += "   -o                 name   Name of outputfile. \n";
-    usemsg += "   -t                 type   Target data type: \n";
-    usemsg += "                                 3 = UCSF IDF    \n";
-    usemsg += "                                 5 = DICOM_MRI (default)    \n";
-    usemsg += "   -h                       Print this help mesage. \n";
+    usemsg += "   --i1               name   Name of dynamic pyr signal file             \n";
+    usemsg += "   --i2               name   Name of dynamic lac signal file             \n";
+    usemsg += "   --i3               name   Name of dynamic urea signal file            \n";
+    usemsg += "   --mask             name   Name of mask file                           \n";
+    usemsg += "   -o                 root   Root Name of outputfile.  Will write:       \n";
+    usemsg += "                                        root_pyr_fit.dcm                 \n";
+    usemsg += "                                        root_lac_fit.dcm                 \n";
+    usemsg += "                                        root_urea_fit.dcm                \n";
+    usemsg += "   -t                 type   Target data type:                           \n";
+    usemsg += "                                 3 = UCSF IDF                            \n";
+    usemsg += "                                 5 = DICOM_MRI                           \n";
+    usemsg += "                                 6 = DICOM_ENHANCED_MRI (default)        \n";
+    usemsg += "   -h                       Print this help mesage.                      \n";
     usemsg += "\n";
-    usemsg += "Fit dynamic MRSI to metabolism kinetics model.\n";
+    usemsg += "Fit dynamic MRSI to metabolism kinetics model                            .\n";
     usemsg += "\n";
 
 
     string inputFileName1;
     string inputFileName2;
     string inputFileName3;
-    string outputFileName;
-    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRI;
+    string maskFileName;
+    string outputFileName = "";
+    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
         FLAG_IM_1 = 0, 
         FLAG_IM_2, 
-        FLAG_IM_3
+        FLAG_IM_3, 
+        FLAG_MASK 
     };
 
 
@@ -106,6 +114,7 @@ int main (int argc, char** argv)
         {"i1",      required_argument, NULL,  FLAG_IM_1},
         {"i2",      required_argument, NULL,  FLAG_IM_2},
         {"i3",      required_argument, NULL,  FLAG_IM_3},
+        {"mask",    required_argument, NULL,  FLAG_MASK},
         {0, 0, 0, 0}
     };
 
@@ -125,6 +134,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_IM_3:
                 inputFileName3.assign( optarg );
+                break;
+            case FLAG_MASK:
+                maskFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
@@ -150,7 +162,11 @@ int main (int argc, char** argv)
             || inputFileName2.length() == 0
             || inputFileName3.length() == 0
             || outputFileName.length() == 0
-            || ( dataTypeOut != svkImageWriterFactory::DICOM_MRI && dataTypeOut != svkImageWriterFactory::IDF )
+            || ( 
+                   dataTypeOut != svkImageWriterFactory::DICOM_MRI 
+                && dataTypeOut != svkImageWriterFactory::IDF 
+                && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI 
+                )
     ) {
             cout << usemsg << endl;
             exit(1); 
@@ -160,6 +176,7 @@ int main (int argc, char** argv)
     cout << inputFileName1 << endl;
     cout << inputFileName2 << endl;
     cout << inputFileName3 << endl;
+    cout << maskFileName << endl;
     cout << outputFileName << endl;
 
 
@@ -168,9 +185,13 @@ int main (int argc, char** argv)
     //  of the correct type for the input file format.
     // ===============================================
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader1 = readerFactory->CreateImageReader2(inputFileName1.c_str());
-    svkImageReader2* reader2 = readerFactory->CreateImageReader2(inputFileName2.c_str());
-    svkImageReader2* reader3 = readerFactory->CreateImageReader2(inputFileName3.c_str());
+    svkImageReader2* reader1    = readerFactory->CreateImageReader2( inputFileName1.c_str() );
+    svkImageReader2* reader2    = readerFactory->CreateImageReader2( inputFileName2.c_str() );
+    svkImageReader2* reader3    = readerFactory->CreateImageReader2( inputFileName3.c_str() );
+    svkImageReader2* readerMask; 
+    if ( maskFileName.size() > 0 ) {
+        readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
+    }
     readerFactory->Delete();
 
     if (reader1 == NULL || reader2 == NULL || reader3 == NULL) {
@@ -196,7 +217,10 @@ int main (int argc, char** argv)
     reader2->Update();
     reader3->SetFileName( inputFileName3.c_str() );
     reader3->Update();
-
+    if ( readerMask!= NULL ) { 
+        readerMask->SetFileName( maskFileName.c_str() );
+        readerMask->Update();
+    }
 
     // ===============================================  
     //  Pass data through your algorithm:
@@ -206,19 +230,10 @@ int main (int argc, char** argv)
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
+    if ( readerMask!= NULL ) { 
+        dynamics->SetInputConnection( 3, reader3->GetOutputPort() ); // input 3 is the mask
+    }
     dynamics->Update();
-
-//  write out results to imageDataOutput 
-//int voxelToTest = 0;
-//vtkFloatArray* outputDynamics0 = vtkFloatArray::SafeDownCast(
-    //svkMriImageData::SafeDownCast(dynamics->GetOutput(0))->GetCellDataRepresentation()->GetArray(voxelToTest)
-//);
-//float tuple[1];
-//for ( int t = 0; t < 16; t++ ) {
-    //outputDynamics0->GetTupleValue(t, tuple);
-    //cout << "APPLICATION TUPLE TO TEST: " << t << " => " << tuple[0] << endl;
-//}
-
 
 
     // ===============================================  
@@ -226,27 +241,41 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* pyrWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* lacWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* ureaWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
-    if ( writer == NULL ) {
-        cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_MRS << endl;
+    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL ) {
+        cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
         exit(1);
     }
-   
-    writer->SetFileName( outputFileName.c_str() );
+  
+    string pyrFile = outputFileName;  
+    string lacFile = outputFileName;  
+    string ureaFile = outputFileName;  
+    pyrFile.append("_pyr_fit");  
+    lacFile.append("_lac_fit");  
+    ureaFile.append("_urea_fit");  
+    pyrWriter->SetFileName( pyrFile.c_str() );
+    lacWriter->SetFileName( lacFile.c_str() );
+    ureaWriter->SetFileName( ureaFile.c_str() );
 
-    // ===============================================  
-    //  Write output of algorithm to file:    
-    // ===============================================  
-    writer->SetInput( dynamics->GetOutput(0) );     // port 0 is pyr fitted values
+    pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
+    lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
+    ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
     //writer->SetInput( dynamics->GetOutput() );
-    writer->Write();
+    pyrWriter->Write();
+    lacWriter->Write();
+    ureaWriter->Write();
+    // ===============================================  
 
 
     //  clean up:
     dynamics->Delete(); 
-    writer->Delete();
+    pyrWriter->Delete();
+    lacWriter->Delete();
+    ureaWriter->Delete();
     reader1->Delete();
     reader2->Delete();
     reader3->Delete();
