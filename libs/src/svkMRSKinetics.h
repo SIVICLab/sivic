@@ -140,6 +140,8 @@ class svkMRSKinetics: public svkImageAlgorithm
         float*                  metKinetics2;
         int                     currentTimePoint; 
         int                     numTimePoints; 
+        vtkDataArray*           mapArrayKpl; 
+        vtkDataArray*           mapArrayT1all; 
 
 };
 
