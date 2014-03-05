@@ -18,6 +18,8 @@
               </df>
               <df name="svk_auto_phase.dir">
               </df>
+              <df name="svk_channel2time.dir">
+              </df>
               <df name="svk_create_dcmraw.dir">
               </df>
               <df name="svk_dcm_deid.dir">
@@ -73,6 +75,8 @@
             </df>
             <in>svk_app_template.cc</in>
             <in>svk_auto_phase.cc</in>
+            <in>svk_average_spec.cc</in>
+            <in>svk_channel2time.cc</in>
             <in>svk_create_dcmraw.cc</in>
             <in>svk_dcm_deid.cc</in>
             <in>svk_dcmdump.cc</in>
@@ -152,6 +156,7 @@
               <in>itkImageIOFactoryRegisterManager.h</in>
               <in>itkTransformIOFactoryRegisterManager.h</in>
             </df>
+            <in>SivicKWCallbacksLibInit.cxx</in>
             <in>sivic.cc</in>
             <in>sivicApp.cc</in>
             <in>sivicApp.h</in>
@@ -199,6 +204,7 @@
             <in>svkSecondaryCaptureFormatter.h</in>
             <in>vtkSivicController.cc</in>
             <in>vtkSivicController.h</in>
+            <in>vtkSivicControllerTcl.cxx</in>
           </df>
         </df>
         <df name="slicer_plugin">
@@ -338,6 +344,8 @@
         <df name="CompilerIdCXX">
           <in>CMakeCXXCompilerId.cpp</in>
         </df>
+        <df name="Progress">
+        </df>
       </df>
       <df name="libs">
         <df name="examples">
@@ -421,6 +429,7 @@
             <in>itkImageIOFactoryRegisterManager.h</in>
             <in>itkTransformIOFactoryRegisterManager.h</in>
           </df>
+          <in>svk2SiteExchangeCostFunction.h</in>
           <in>svk4DImageData.cc</in>
           <in>svk4DImageData.h</in>
           <in>svkAlgoTemplate.cc</in>
@@ -588,6 +597,7 @@
           <in>svkImageWriterFactory.h</in>
           <in>svkIntegratePeak.cc</in>
           <in>svkIntegratePeak.h</in>
+          <in>svkKineticModelCostFunction.h</in>
           <in>svkLabeledDataMapper.cc</in>
           <in>svkLabeledDataMapper.h</in>
           <in>svkLookupTable.cc</in>
@@ -596,6 +606,8 @@
           <in>svkMRIIOD.h</in>
           <in>svkMRSAutoPhase.cc</in>
           <in>svkMRSAutoPhase.h</in>
+          <in>svkMRSAverageSpectra.cc</in>
+          <in>svkMRSAverageSpectra.h</in>
           <in>svkMRSFirstPointPhase.cc</in>
           <in>svkMRSFirstPointPhase.h</in>
           <in>svkMRSIOD.cc</in>
