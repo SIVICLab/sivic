@@ -59,7 +59,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#define real __cminpack_real__
 
 
 
@@ -82,6 +81,15 @@ class svkMRSKinetics: public svkImageAlgorithm
 
         vtkTypeRevisionMacro( svkMRSKinetics, svkImageAlgorithm);
         static                  svkMRSKinetics* New();
+
+        typedef enum {
+            SIG_PYR= 0,
+            SIG_LAC,
+            SIG_UREA,
+            MASK
+        } MODEL_INPUT;
+
+
 
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
@@ -121,13 +129,18 @@ class svkMRSKinetics: public svkImageAlgorithm
 
     private:
         void                    GenerateKineticParamMap();
-        double                  GetKineticsMapVoxelValue( float* metKinetics0, float* metKinetics1, float* metKinetics3);
         void                    CalculateLactateKinetics( double* fittedModelParams, 
                                                           int numTimePts,
 														  float* metKinetics0,
                                                           float* metKinetics1, 
                                                           float* lacKinetics ); 
-        void                    FitVoxelKinetics( float* metKinetics0, float* metKinetics1, float* metKinetics2, int voxelIndex );
+        void                    FitVoxelKinetics( 
+                                    float* metKinetics0, 
+                                    float* metKinetics1, 
+                                    float* metKinetics2, 
+                                    int voxelIndex 
+                                );
+
         void                    InitOptimizer( 
                                     float* metKinetics0, 
                                     float* metKinetics1, 
