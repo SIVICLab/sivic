@@ -173,11 +173,11 @@ int main (int argc, char** argv)
     }
 
 
-    cout << inputFileName1 << endl;
-    cout << inputFileName2 << endl;
-    cout << inputFileName3 << endl;
-    cout << maskFileName << endl;
-    cout << outputFileName << endl;
+    cout << "Input1: " << inputFileName1 << endl;
+    cout << "Input2: " << inputFileName2 << endl;
+    cout << "Input3: " << inputFileName3 << endl;
+    cout << "Mask: " << maskFileName << endl;
+    cout << "output root: " << outputFileName << endl;
 
 
     // ===============================================
@@ -188,7 +188,7 @@ int main (int argc, char** argv)
     svkImageReader2* reader1    = readerFactory->CreateImageReader2( inputFileName1.c_str() );
     svkImageReader2* reader2    = readerFactory->CreateImageReader2( inputFileName2.c_str() );
     svkImageReader2* reader3    = readerFactory->CreateImageReader2( inputFileName3.c_str() );
-    svkImageReader2* readerMask; 
+    svkImageReader2* readerMask = NULL; 
     if ( maskFileName.size() > 0 ) {
         readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
     }
@@ -230,7 +230,7 @@ int main (int argc, char** argv)
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
     if ( readerMask!= NULL ) { 
-        dynamics->SetInputConnection( 3, reader3->GetOutputPort() ); // input 3 is the mask
+        dynamics->SetInputConnection( 3, readerMask->GetOutputPort() ); // input 3 is the mask
     }
     dynamics->Update();
 
