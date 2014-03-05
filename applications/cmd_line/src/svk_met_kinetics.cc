@@ -226,7 +226,6 @@ int main (int argc, char** argv)
     //  Pass data through your algorithm:
     // ===============================================  
     svkMRSKinetics* dynamics = svkMRSKinetics::New();
-    //svkDynamicMRIAlgoTemplate* dynamics = svkDynamicMRIAlgoTemplate::New();
     dynamics->SetInputConnection( 0, reader1->GetOutputPort() ); 
     dynamics->SetInputConnection( 1, reader2->GetOutputPort() ); 
     dynamics->SetInputConnection( 2, reader3->GetOutputPort() ); 
@@ -241,12 +240,14 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* pyrWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* lacWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* ureaWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* pyrWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* lacWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* ureaWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* kplWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* t1allWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
-    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL ) {
+    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL || kplWriter == NULL || t1allWriter == NULL ) {
         cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
         exit(1);
     }
@@ -254,20 +255,34 @@ int main (int argc, char** argv)
     string pyrFile = outputFileName;  
     string lacFile = outputFileName;  
     string ureaFile = outputFileName;  
+    string kplFile = outputFileName;  
+    string t1allFile = outputFileName;  
+
     pyrFile.append("_pyr_fit");  
     lacFile.append("_lac_fit");  
     ureaFile.append("_urea_fit");  
+    kplFile.append("_Kpl");  
+    t1allFile.append("_T1all");  
+
     pyrWriter->SetFileName( pyrFile.c_str() );
     lacWriter->SetFileName( lacFile.c_str() );
     ureaWriter->SetFileName( ureaFile.c_str() );
+    kplWriter->SetFileName( kplFile.c_str() );
+    t1allWriter->SetFileName( t1allFile.c_str() );
 
     pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
     lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
     ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
-    //writer->SetInput( dynamics->GetOutput() );
+    kplWriter->SetInput( dynamics->GetOutput(3) );     // port 2 is urea fitted values
+    t1allWriter->SetInput( dynamics->GetOutput(4) );     // port 2 is urea fitted values
+cout << "D0 : " << *dynamics->GetOutput(0) << endl;
+dynamics->GetOutput(0)->GetDcmHeader()->PrintDcmHeader() ;
     pyrWriter->Write();
     lacWriter->Write();
     ureaWriter->Write();
+    kplWriter->Write();
+    t1allWriter->Write();
+
     // ===============================================  
 
 
@@ -276,6 +291,9 @@ int main (int argc, char** argv)
     pyrWriter->Delete();
     lacWriter->Delete();
     ureaWriter->Delete();
+    kplWriter->Delete();
+    t1allWriter->Delete();
+
     reader1->Delete();
     reader2->Delete();
     reader3->Delete();
