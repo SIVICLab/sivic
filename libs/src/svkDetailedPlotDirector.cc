@@ -167,6 +167,7 @@ void svkDetailedPlotDirector::AddInput( vtkDataArray* array, int component, vtkD
         dataObject->Delete();
         this->xyPlotActor->SetXValuesToValue();
         int numPlots = this->xyPlotActor->GetDataObjectInputList()->GetNumberOfItems();
+        this->xyPlotActor->GetLegendActor()->SetNumberOfEntries(numPlots);
         if( sourceToObserve != NULL ) {
             sourceToObserve->AddObserver(vtkCommand::ModifiedEvent, dataModifiedCB);
         }
@@ -264,6 +265,7 @@ void svkDetailedPlotDirector::RemoveInput( vtkDataArray* array )
 void svkDetailedPlotDirector::SetPlotColor( int plotIndex, double* rgb)
 {
     this->xyPlotActor->SetPlotColor(plotIndex, rgb);
+    this->Refresh();
 }
 
 
@@ -497,6 +499,7 @@ double svkDetailedPlotDirector::GetYValueFromXValue( int plotIndex, double xValu
  */
 void svkDetailedPlotDirector::Refresh()
 {
+    this->xyPlotActor->GetLegendActor()->GetEntryTextProperty()->Modified();
     this->xyPlotActor->Modified();
 }
 
