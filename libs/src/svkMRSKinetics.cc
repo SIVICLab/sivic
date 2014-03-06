@@ -52,6 +52,7 @@
 
 #include <svkKineticModelCostFunction.h>
 #include <svk2SiteExchangeCostFunction.h>
+#include <svk2SitePerfCostFunction.h>
 
 
 using namespace svk;
@@ -340,7 +341,8 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     //========================================================
     //  ITK Optimization 
     //========================================================
-    svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
+    //svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
+    svkKineticModelCostFunction::Pointer costFunction = svk2SitePerfCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
     costFunction->SetSignal0( metKinetics0 );
@@ -352,21 +354,29 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     const unsigned int paramSpaceDimensionality = costFunction->GetNumberOfParameters();
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
-    initialPosition[0] =  10;
-    initialPosition[1] =  .1;
-    //initialPosition[2] =  0.;
+
+    int TR = 5;
+    initialPosition[0] =  40/TR;
+    initialPosition[1] =  0.05/TR;
+    initialPosition[2] =  1;
+    initialPosition[3] =  1;
 
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     // first order range of values: 
-    float upperBound = 100;  
-    float lowerBound = -100;
-    //float upperBound = FLT_MAX;  
-    //float lowerBound = FLT_MIN;
-    bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 0
-    bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 1
-    //bounds.push_back( std::make_pair( lowerBound, upperBound) );    // bounds param 2
+    float upperBound0 = 50;  
+    float lowerBound0 = 1;
+    float upperBound1 = 1;  
+    float lowerBound1 = 0;
+    float upperBound2 = 100;  
+    float lowerBound2 = -100;
+    float upperBound3 = 100;  
+    float lowerBound3 = -100;
+    bounds.push_back( std::make_pair( lowerBound0, upperBound0 ) );    // bounds param 0
+    bounds.push_back( std::make_pair( lowerBound1, upperBound1 ) );    // bounds param 0
+    bounds.push_back( std::make_pair( lowerBound2, upperBound2 ) );    // bounds param 0
+    bounds.push_back( std::make_pair( lowerBound3, upperBound3 ) );    // bounds param 0
     itkOptimizer->SetParameterBounds( bounds );
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
@@ -466,7 +476,8 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     float* kineticModel0 = new float [this->numTimePoints];
     float* kineticModel1 = new float [this->numTimePoints];
     float* kineticModel2 = new float [this->numTimePoints];
-    svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
+    //svkKineticModelCostFunction::Pointer costFunction = svk2SiteExchangeCostFunction::New();
+    svkKineticModelCostFunction::Pointer costFunction = svk2SitePerfCostFunction::New();
 
     costFunction->GetKineticModel(  finalPosition, 
                                     kineticModel0, 

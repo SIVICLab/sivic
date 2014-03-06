@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkKineticModelCostFunction.h $
- *  $Rev: 1741 $
- *  $Author: jccrane $
- *  $Date: 2014-02-19 11:28:48 -0800 (Wed, 19 Feb 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -92,34 +92,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         /*!
          *  Cost function based on minimizing the residual of fitted and observed dynamics. 
          */
-        MeasureType  GetResidual( const ParametersType& parameters) const
-        {
-            cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
-
-            this->GetKineticModel( parameters, 
-                                    this->kineticModel0, 
-                                    this->kineticModel1, 
-                                    this->kineticModel2, 
-                                    this->signal0, 
-                                    this->signal1, 
-                                    this->signal2, 
-                                    this->numTimePoints );
-
-            double residual = 0;
-
-            int arrivalTime = 2;
-            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
-            //for ( int t = 0; t < this->numTimePoints; t++ ) { 
-                residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] );
-                //residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
-                //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
-            }
-            cout << "RESIDUAL: " << residual << endl;
-
-            MeasureType measure = residual ;
-
-            return measure;
-        }
+        virtual MeasureType  GetResidual( const ParametersType& parameters) const = 0; 
 
 
         /*!
@@ -200,7 +173,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-    private:
+    protected:
 
         float*      signal0;
         float*      signal1;
