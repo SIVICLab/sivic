@@ -93,9 +93,11 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
                 residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
             }
-            for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
-                residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
-            }
+
+            // for now ignore the urea residual 
+            //for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
+                //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
+            //}
 
             cout << "RESIDUAL: " << residual << endl;
 

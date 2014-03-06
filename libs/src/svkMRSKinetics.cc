@@ -73,7 +73,7 @@ svkMRSKinetics::svkMRSKinetics()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->newSeriesDescription = ""; 
+    this->newSeriesDescription = "model"; 
     //  3 required input ports: 
     this->SetNumberOfInputPorts(4); //3 input metabolites + roi mask
 
@@ -164,38 +164,45 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     //  GetImage initializes "GetOutput(N) with a template image. 
     int indexArray[1];
     indexArray[0] = 0;
+    string seriesDescription;
+    seriesDescription.assign( this->newSeriesDescription + "_pyr"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(0) ), 
         0, 
-        this->newSeriesDescription, 
+        seriesDescription, 
         indexArray, 
         0 
     ); 
+
+    seriesDescription.assign( this->newSeriesDescription + "_lac"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(1) ), 
         0, 
-        this->newSeriesDescription, 
+        seriesDescription, 
         indexArray, 
         0 
     ); 
+    seriesDescription.assign( this->newSeriesDescription + "_urea"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(2) ), 
         0, 
-        this->newSeriesDescription, 
+        seriesDescription, 
         indexArray, 
         0 
     ); 
+    seriesDescription.assign( this->newSeriesDescription + "_Kpl"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(3) ), 
         0, 
-        this->newSeriesDescription, 
+        seriesDescription, 
         indexArray, 
         0 
     ); 
+    seriesDescription.assign( this->newSeriesDescription + "_T1all"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(4) ), 
         0, 
-        this->newSeriesDescription, 
+        seriesDescription, 
         indexArray, 
         0 
     ); 
@@ -253,10 +260,24 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     this->GenerateKineticParamMap();
     //  ===============================================
 
-    svkDcmHeader* hdr = this->GetOutput(1)->GetDcmHeader();
-    hdr->InsertUniqueUID("SeriesInstanceUID");
-    hdr->InsertUniqueUID("SOPInstanceUID");
-    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
+    for ( int i = 0 ; i < 5; i++ ) { 
+        svkDcmHeader* hdr = this->GetOutput(i)->GetDcmHeader();
+        hdr->InsertUniqueUID("SeriesInstanceUID");
+        hdr->InsertUniqueUID("SOPInstanceUID");
+    }
+
+    svkDcmHeader* hdr;
+    hdr = this->GetOutput(0)->GetDcmHeader();
+    seriesDescription.assign( this->newSeriesDescription + "_pyr"); 
+    hdr->SetValue("SeriesDescription", seriesDescription);
+
+    hdr = this->GetOutput(1)->GetDcmHeader();
+    seriesDescription.assign( this->newSeriesDescription + "_lac"); 
+    hdr->SetValue("SeriesDescription", seriesDescription);
+
+    hdr = this->GetOutput(2)->GetDcmHeader();
+    seriesDescription.assign( this->newSeriesDescription + "_urea"); 
+    hdr->SetValue("SeriesDescription", seriesDescription);
 
     return 1; 
 };
@@ -270,7 +291,6 @@ void svkMRSKinetics::GenerateKineticParamMap()
 {
 
     svkMriImageData* data = svkMriImageData::SafeDownCast(this->GetImageDataInput(0) );
-
 
     this->ZeroData();
 
