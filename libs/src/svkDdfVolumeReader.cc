@@ -297,6 +297,8 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
             }
         }
 
+        svkFastCellData::SafeDownCast(data->GetCellData())->FinishFastAdd();
+
         cmplxDataIn->close(); 
         delete cmplxDataIn;
         delete [] specData; 
@@ -357,7 +359,7 @@ void svkDdfVolumeReader::SetCellSpectrum(vtkImageData* data, int x, int y, int z
 
     //  Add the spectrum's dataArray to the CellData:
     //  vtkCellData is a subclass of vtkFieldData
-    data->GetCellData()->AddArray(dataArray);
+    svkFastCellData::SafeDownCast(data->GetCellData())->FastAddArray(dataArray); 
 
     dataArray->Delete();
 

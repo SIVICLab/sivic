@@ -169,6 +169,8 @@ void svkDcmMrsVolumeReader::LoadData( svkImageData* data )
         }
     }
 
+    svkFastCellData::SafeDownCast(data->GetCellData())->FinishFastAdd();
+
     delete [] specData; 
 
     //this->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
@@ -221,7 +223,9 @@ void svkDcmMrsVolumeReader::SetCellSpectrum(svkImageData* data, int x, int y, in
 
     //  Add the spectrum's dataArray to the CellData:
     //  vtkCellData is a subclass of vtkFieldData
-    data->GetCellData()->AddArray(dataArray);
+    svkFastCellData::SafeDownCast(data->GetCellData())->FastAddArray(dataArray); 
+
+    
 
     //  Should these be a member var, deleted in destructor?
     dataArray->Delete();
