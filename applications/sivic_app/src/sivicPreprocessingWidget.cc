@@ -356,22 +356,22 @@ void sivicPreprocessingWidget::CreateWidget()
 
 
     this->Script("grid %s -row 1 -column %d -sticky nwse", apodizationTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodFreqEntry->GetWidgetName(), 1);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSpec->GetWidgetName(),   2);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorCols->GetWidgetName(),   3);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorRows->GetWidgetName(),   4);
-    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 1", this->apodizationSelectorSlices->GetWidgetName(), 5);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 0", this->apodFreqEntry->GetWidgetName(), 1);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 0", this->apodizationSelectorSpec->GetWidgetName(),   2);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 0", this->apodizationSelectorCols->GetWidgetName(),   3);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 0", this->apodizationSelectorRows->GetWidgetName(),   4);
+    this->Script("grid %s -row 1 -column %d -sticky nwse -padx 2 -pady 0", this->apodizationSelectorSlices->GetWidgetName(), 5);
 
     this->Script("grid %s -row 2 -column %d -sticky nwse", zeroFillTitle->GetWidgetName(),   0);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSpec->GetWidgetName(),   2);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorCols->GetWidgetName(),   3);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorRows->GetWidgetName(),   4);
-    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 1", this->zeroFillSelectorSlices->GetWidgetName(), 5);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 0", this->zeroFillSelectorSpec->GetWidgetName(),   2);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 0", this->zeroFillSelectorCols->GetWidgetName(),   3);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 0", this->zeroFillSelectorRows->GetWidgetName(),   4);
+    this->Script("grid %s -row 2 -column %d -sticky nwse -padx 2 -pady 0", this->zeroFillSelectorSlices->GetWidgetName(), 5);
 
 
-    this->Script("grid %s -row %d -column 1 -sticky nwse -padx 2 -pady 1", customTitle->GetWidgetName(), 3);
-    this->Script("grid %s -row %d -column 2 -sticky nwse -padx 2 -pady 1", this->customValueEntry->GetWidgetName(), 3);
-    this->Script("grid %s -row %d -column 5 -sticky nwse -padx 2 -pady 1", this->applyButton->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 1 -sticky nwse -padx 2 -pady 0", customTitle->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 2 -sticky nwse -padx 2 -pady 0", this->customValueEntry->GetWidgetName(), 3);
+    this->Script("grid %s -row %d -column 5 -sticky nwse -padx 2 -pady 0", this->applyButton->GetWidgetName(), 3);
 
     this->Script("grid rowconfigure %s 0 -weight 0", this->GetWidgetName() );
     this->Script("grid rowconfigure %s 1 -weight 0", this->GetWidgetName() );

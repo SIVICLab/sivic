@@ -195,7 +195,10 @@ void sivicQuantificationWidget::ProcessCallbackCommandEvents( vtkObject *caller,
 #endif
         openQuantFileCmd.append(this->mrsQuant->GetXMLFileName());
         system(openQuantFileCmd.c_str());
+#else
+        ShellExecute(0, 0, this->mrsQuant->GetXMLFileName().c_str() , 0, 0 , SW_SHOW );
 #endif
+
     } 
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 
