@@ -700,8 +700,8 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openOverlayButton->SetLabelPositionToRight();
     openOverlayButton->SetBalloonHelpString( "Open an image to overlay or a metabolite file." );
     vtkKWMenu* openOverlayMenu = openOverlayButton->GetWidget()->GetMenu();
-    openOverlayMenu->AddRadioButton("Open Overlay", this->sivicController, "OpenFile overlay NULL 0 0");
-    openOverlayMenu->AddRadioButton("Open Single Overlay File", this->sivicController, "OpenFile overlay NULL 0 1");
+    openOverlayMenu->AddRadioButton("Load Data", this->sivicController, "OpenFile overlay NULL 0 0");
+    openOverlayMenu->AddRadioButton("Load Data Single File", this->sivicController, "OpenFile overlay NULL 0 1");
     toolbar->AddWidget( openOverlayButton );
 
 
