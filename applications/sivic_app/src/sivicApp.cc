@@ -656,11 +656,11 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openImageButton->SetLabelPositionToRight();
     openImageButton->SetBalloonHelpString( "Open an image dataset.");
     vtkKWMenu* openImageMenu = openImageButton->GetWidget()->GetMenu();
-    openImageMenu->AddRadioButton("Open Image", this->sivicController, "OpenFile image NULL 0 0");
-    openImageMenu->AddRadioButton("Open Single Image File", this->sivicController, "OpenFile image NULL 0 1");
-    openImageMenu->AddRadioButton("Open Image As Traces", this->sivicController, "OpenFile image_dynamic NULL 0 0");
-    openImageMenu->AddRadioButton("Add Image As Traces", this->sivicController, "OpenFile add_image_dynamic NULL 0 0");
-    openImageMenu->AddRadioButton("Load Image(s) As Traces", this->sivicController, "OpenFile load_images_dynamic NULL 0 0");
+    openImageMenu->AddRadioButton("Load Data", this->sivicController, "OpenFile image NULL 0 0");
+    openImageMenu->AddRadioButton("Load Single File", this->sivicController, "OpenFile image NULL 0 1");
+    //openImageMenu->AddRadioButton("Open Image As Traces", this->sivicController, "OpenFile image_dynamic NULL 0 0");
+    //openImageMenu->AddRadioButton("Add Image As Traces", this->sivicController, "OpenFile add_image_dynamic NULL 0 0");
+    openImageMenu->AddRadioButton("Load Data As Traces", this->sivicController, "OpenFile load_images_dynamic NULL 0 0");
     toolbar->AddWidget( openImageButton );
 
     // Create Open Spectra Selector Menu
@@ -679,10 +679,10 @@ void sivicApp::PopulateMainToolbar(vtkKWToolbar* toolbar)
     openSpectraButton->SetLabelPositionToRight();
     openSpectraButton->SetBalloonHelpString( "Open a spectroscopic dataset.");
     vtkKWMenu* openSpectraMenu = openSpectraButton->GetWidget()->GetMenu();
-    openSpectraMenu->AddRadioButton("Open Spectra", this->sivicController, "OpenFile spectra NULL 0 0");
-    openSpectraMenu->AddRadioButton("Open Spectra Single Channel", this->sivicController, "OpenFile spectra NULL 0 1");
-    openSpectraMenu->AddRadioButton("Add Spectra", this->sivicController, "OpenFile add_spectra NULL 0 0");
-    openSpectraMenu->AddRadioButton("Add Spectra Single Channel", this->sivicController, "OpenFile add_spectra NULL 0 1");
+    openSpectraMenu->AddRadioButton("Load Data", this->sivicController, "OpenFile spectra NULL 0 0");
+    openSpectraMenu->AddRadioButton("Load Single File", this->sivicController, "OpenFile spectra NULL 0 1");
+    //openSpectraMenu->AddRadioButton("Add Spectra", this->sivicController, "OpenFile add_spectra NULL 0 0");
+    //openSpectraMenu->AddRadioButton("Add Spectra Single Channel", this->sivicController, "OpenFile add_spectra NULL 0 1");
     toolbar->AddWidget( openSpectraButton );
 
     // Create Open metabolite/overlay Button

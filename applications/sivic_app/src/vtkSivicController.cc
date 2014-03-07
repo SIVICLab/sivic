@@ -1714,7 +1714,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     
 
         // Invoke the dialog
-        if( openTypeString.compare( "load_images_dynamic" ) == 0 ) {
+        if( openTypeString.compare( "load_images_dynamic" ) == 0 || openTypeString.compare( "spectra" ) == 0) {
             dlg->MultipleSelectionOn();
         }
         dlg->Invoke();
@@ -1765,7 +1765,11 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             } else if( openTypeString.compare( "overlay" ) == 0 ) {
                 this->OpenOverlay( fileName.c_str(), onlyReadOneInputFile );
             } else if( openTypeString.compare( "spectra" ) == 0 ) {
-                this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
+                if( this->GetActive4DImageData() == NULL ) {
+                    this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
+                } else {
+                    this->Add4DImageData( fileName.c_str(), onlyReadOneInputFile );
+                }
             } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
                 this->Add4DImageData( fileName.c_str(), onlyReadOneInputFile );
             }
@@ -3926,19 +3930,20 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
     invocationString = "OpenImageFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
+	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
+		if( this->GetActive4DImageData() != NULL ) {
+            invocationString = "Add4DImageDataFromModel ";
+		} else {
+            invocationString = "Open4DImageFromModel ";
+		}
+		invocationString.append( objectNameString );
+		rightClickMenu->AddRadioButton("Set As Dynamic Traces", this, invocationString.c_str());
+	}
     invocationString = "SaveImageFromModel ";
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     invocationString.append( " 0");
     rightClickMenu->AddRadioButton("Save Image", this, invocationString.c_str());
 
-	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
-		invocationString = "Open4DImageFromModel ";
-		invocationString.append( objectNameString );
-		rightClickMenu->AddRadioButton("Set As Dynamic Traces", this, invocationString.c_str());
-		invocationString = "Add4DImageDataFromModel ";
-		invocationString.append(objectNameString);
-		rightClickMenu->AddRadioButton("Add As Dynamic Traces", this, invocationString.c_str());
-	}
     rightClickMenu->PopUp(x,y);
 
 }
