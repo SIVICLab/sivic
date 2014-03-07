@@ -1669,6 +1669,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
 
     //  If it's not a command line load, then init the GUI dialog, otherwise just load the
     //  specified file: 
+    vtkStringArray* fileNames = NULL;
     if ( openTypeString.find("command_line") == string::npos ) {
 
         dlg->SetApplication(this->app);
@@ -1684,7 +1685,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             size_t found;
             found = lastPathString.find_last_of("/");
 
-            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
+            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
@@ -1702,7 +1703,7 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         }
     
         // Check to see which extention to filter for.
-        if( strcmp( openType,"image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0 ) {
+        if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
 			char defaultSpectraExtension[100] = "";
@@ -1719,6 +1720,9 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     
 
         // Invoke the dialog
+        if( openTypeString.compare( "load_images_dynamic" ) == 0 ) {
+            dlg->MultipleSelectionOn();
+        }
         dlg->Invoke();
 
         if ( dlg->GetStatus() == vtkKWDialog::StatusOK ) {
@@ -1728,46 +1732,56 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
             this->imageViewWidget->loadingLabel->SetText("Loading...");
             app->ProcessPendingEvents(); 
             this->imageViewWidget->Focus();
-            string fileName("");
-            fileName += dlg->GetFileName(); 
-            pos = fileName.find("."); 
-            if (pos == string::npos) {
-                pos = 0; 
-            }    
-    
-    
-            if( DEBUG ) {
-                cout<< "Extention: " << fileName.substr(pos) <<endl;   
-                cout<< "Filename: " << dlg->GetFileName() << endl;
-            }
         }
     } else {
-        pos = openTypeString.find("command_line");  
-        openTypeString.assign( openTypeString.substr( pos + 13) ); 
+        pos = openTypeString.find("command_line");
+        openTypeString.assign( openTypeString.substr( pos + 13) );
         cout << "OPEN TYPE STRING: " << openTypeString << endl;
         dlg->SetFileName( startPath );
     }
+    fileNames = dlg->GetFileNames();
+    int numFiles = fileNames->GetNumberOfValues();
+    for( int i = 0; i < numFiles; i++ ) {
+            string fileName("");
+            fileName.append(fileNames->GetValue(i));
+            if( DEBUG ) {
+            	pos = fileName.find("."); 
+            	if (pos == string::npos) {
+                	pos = 0; 
+            	}    
+                cout<< "Extention: " << fileName.substr(pos) <<endl;   
+                cout<< "Filename: " << fileName << endl;
+            }
 
 
-    if (dlg->GetFileName() != NULL) {    
-        // See if it is being loaded as a metabolite
-        if( openTypeString.compare( "image" ) == 0 ) {
-            this->OpenImage( dlg->GetFileName(), onlyReadOneInputFile );
-        } else if( openTypeString.compare( "image_dynamic" ) == 0 ) {
-            this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
-        } else if( openTypeString.compare( "add_image_dynamic" ) == 0 ) {
-            this->Add4DImageData( dlg->GetFileName(), onlyReadOneInputFile );
-        } else if( openTypeString.compare( "overlay" ) == 0 ) {
-            this->OpenOverlay( dlg->GetFileName(), onlyReadOneInputFile );
-        } else if( openTypeString.compare( "spectra" ) == 0 ) {
-            this->Open4DImage( dlg->GetFileName(), onlyReadOneInputFile );
-        } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
-            this->Add4DImageData( dlg->GetFileName(), onlyReadOneInputFile );
-        } 
+        if (!fileName.empty()) {
+            // See if it is being loaded as a metabolite
+            if( openTypeString.compare( "image" ) == 0 ) {
+                this->OpenImage( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "image_dynamic" ) == 0 ) {
+                this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "add_image_dynamic" ) == 0 ) {
+                this->Add4DImageData( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "load_images_dynamic" ) == 0 ) {
+                if( this->GetActive4DImageData() == NULL ) {
+                    this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
+                } else {
+                    this->Add4DImageData( fileName.c_str(), onlyReadOneInputFile );
+                }
+            } else if( openTypeString.compare( "overlay" ) == 0 ) {
+                this->OpenOverlay( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "spectra" ) == 0 ) {
+                this->Open4DImage( fileName.c_str(), onlyReadOneInputFile );
+            } else if( openTypeString.compare( "add_spectra" ) == 0 ) {
+                this->Add4DImageData( fileName.c_str(), onlyReadOneInputFile );
+            }
+        }
+
     }
+    
 
     // If the image was loaded and a spec data set is also loaded, then activate the toggle buttons:
-    this->EnableWidgets(); 
+    this->EnableWidgets();
     int dlgStatus = dlg->GetStatus();
     this->imageViewWidget->loadingLabel->SetText("Done!");
     if ( dlg != NULL) {
@@ -1778,10 +1792,6 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Enable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Enable();
     this->imageViewWidget->loadingLabel->SetText("");
-    ////this->viewRenderingWidget->viewerWidget->AddBindings();
-    ////this->viewRenderingWidget->specViewerWidget->AddBindings();
-    //this->GetApplication()->GetNthWindow(0)->SetStatusText("Done"  );
-    //this->GetApplication()->GetNthWindow(0)->GetProgressGauge()->SetValue( 0.0 );
     return dlgStatus;
 }
 
