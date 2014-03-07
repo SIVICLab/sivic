@@ -66,7 +66,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
         virtual MeasureType  GetResidual( const ParametersType& parameters) const
         {
-            cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
+            //cout << "GUESS: " << parameters[0] << " " << parameters[1] << endl;;
 
             this->GetKineticModel( parameters,
                                     this->kineticModel0, 
@@ -99,7 +99,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                 //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
             //}
 
-            cout << "RESIDUAL: " << residual << endl;
+            //cout << "RESIDUAL: " << residual << endl;
 
             MeasureType measure = residual ;
 

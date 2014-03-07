@@ -228,7 +228,6 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
     vtkFloatArray* templateArray = vtkFloatArray::SafeDownCast(
             svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0)
     );
-    cout << " TEMPLATEARRAY: " << *templateArray << endl;
     for ( int time = 0; time < this->numTimePoints; time++ ) {
         templateArray->SetTuple1(time, 0); 
     }
@@ -311,14 +310,13 @@ void svkMRSKinetics::GenerateKineticParamMap()
 
     //  set up mask:  
     svkMriImageData* maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkMRSKinetics::MASK) );
-    cout << "MASKIM" << *maskImage << endl;
     unsigned short* mask = static_cast<vtkUnsignedShortArray*>( 
         maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
 
     for (int i = 0; i < totalVoxels; i++ ) {
 
         cout << "VOXEL NUMBER: " << i << endl;
-        cout << "MASK VALUE: " << mask[i] << endl;
+        //cout << "MASK VALUE: " << mask[i] << endl;
 
         if ( mask[i] != 0  ) {
 
@@ -326,7 +324,6 @@ void svkMRSKinetics::GenerateKineticParamMap()
                 svkMriImageData::SafeDownCast(
                     this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(i)
             );
-            cout << *kineticTrace0 << endl; 
             vtkFloatArray* kineticTrace1 = vtkFloatArray::SafeDownCast(
                 svkMriImageData::SafeDownCast(
                     this->GetImageDataInput(1))->GetCellDataRepresentation()->GetArray(i)
@@ -461,19 +458,19 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     // Exercise various member functions.
     cout << endl;
 
-    itkOptimizer->Print( cout );
+    //itkOptimizer->Print( cout );
 
     if( !pass ) {
         cout << "Test failed." << endl;
         return;
     }
 
-    cout << "Test passed." << endl;
+    //cout << "Test passed." << endl;
 
     //  ===================================================
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
-    double T1all  = 1/finalPosition[0];
+    double T1all  = finalPosition[0];
     double Kpl    = finalPosition[1];
     //cout << "T1all: " << T1all << endl;
     //cout << "Kpl:   " << Kpl   << endl;
@@ -519,7 +516,7 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
         svkMriImageData::SafeDownCast(this->GetOutput(2))->GetCellDataRepresentation()->GetArray(voxelIndex)
     );
     for ( int t = 0; t < this->numTimePoints; t++ ) {
-        cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
+        //cout << "Fitted Pyruvate(" << t << "): " <<  kineticModel0[t] << " " << signal0[t] << endl; 
         outputDynamics0->SetTuple1(t, kineticModel0[t]);
         outputDynamics1->SetTuple1(t, kineticModel1[t]);
         outputDynamics2->SetTuple1(t, kineticModel2[t]);

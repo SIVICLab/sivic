@@ -126,7 +126,7 @@ class svkKineticModelCostFunction : public itk::SingleValuedCostFunction
             cost = GetResidual( parameters );
 
             MeasureType measure = cost;
-            cout << "                          cost: " << measure << endl;
+            //cout << "                          cost: " << measure << endl;
             return measure;
         }
 

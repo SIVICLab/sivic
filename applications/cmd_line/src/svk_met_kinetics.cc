@@ -156,6 +156,10 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
+//  temp kludge: 
+if ( inputFileName3.length() == 0 ) {
+    inputFileName3 = inputFileName2; 
+}
 
     if (
         argc != 0 ||  inputFileName1.length() == 0
