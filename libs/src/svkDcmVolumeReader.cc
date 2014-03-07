@@ -188,11 +188,12 @@ void svkDcmVolumeReader::ExecuteInformation()
 void svkDcmVolumeReader::InitSliceOrder()
 {
     this->numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames");
-    if (this->numFrames > 1) {
+    int numSlices = this->GetOutput()->GetDcmHeader()->GetNumberOfSlices();
+    if (numSlices > 1) {
         double origin0[3];
         this->GetOutput()->GetDcmHeader()->GetOrigin(origin0, 0);
         double origin1[3];
-        this->GetOutput()->GetDcmHeader()->GetOrigin(origin1, this->numFrames-1); // zero indexed!
+        this->GetOutput()->GetDcmHeader()->GetOrigin(origin1, numSlices-1); // zero indexed!
 
         //  Determine whether the data is ordered with or against the slice normal direction.
         double normal[3];
