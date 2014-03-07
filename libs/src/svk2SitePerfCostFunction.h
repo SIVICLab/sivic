@@ -128,7 +128,7 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             //  solved met(t) = met(0)*invlaplace(phi(t)), where phi(t) = sI - x. x is the matrix of parameters.
 
             //  Find time to peak pyrvaute/urea
-            int arrivalTime = 2;
+            int   arrivalTime = 2;
             float maxValue0 = signal0[0];
             float meanValue2 = 0;
             float tmp = 0;
@@ -141,19 +141,19 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
             }
              
             meanValue2 = meanValue2/numTimePoints;
-             
+
             //set up Arterial Input function
             float* convolutionMat  = new float [numTimePoints];
             float  Ao    = 5000;
             float  alpha = .2;
             float  beta  = 4.0;
             int    TR    = 5; //sec
-
+    
             float* inputFunction   = new float [numTimePoints];
             for(int t = 0;  t < numTimePoints; t++ ) {
                 inputFunction [t] = Ao * powf((t-1),alpha) * exp(-(t-1)/beta);
             }
-
+             
             
             //cout << "GUESSES: " << T1all << " " << Kpl  << endl;
   
@@ -168,7 +168,9 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                     kineticModel0[t] = signal0[t]; 
                     kineticModel1[t] = signal1[t]; 
                 }
+
                 if (t >= arrivalTime ) {      
+
                     // PYRUVATE 
                     kineticModel0[t] = signal0[arrivalTime] 
                         * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) );
@@ -179,9 +181,10 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                         - signal0[ arrivalTime ] 
                             * exp( -( t - arrivalTime )/T1all)
                             * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
-                       
 
                 }
+
+
 
                 // UREA
                 //determine convolution with arterial input function

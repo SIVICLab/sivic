@@ -80,8 +80,8 @@ svkMRSKinetics::svkMRSKinetics()
     //  Outputports:  0 for fitted pyruvate kinetics
     //  Outputports:  1 for fitted lactate kinetics
     //  Outputports:  2 for fitted urea kinetics
-    //  Outputports:  3 for Kpl map 
-    //  Outputports:  4 for T1all map 
+    //  Outputports:  3 for T1all map 
+    //  Outputports:  4 for Kpl map 
     this->SetNumberOfOutputPorts(5); 
 }
 
@@ -190,7 +190,7 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
         indexArray, 
         0 
     ); 
-    seriesDescription.assign( this->newSeriesDescription + "_Kpl"); 
+    seriesDescription.assign( this->newSeriesDescription + "_T1all"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(3) ), 
         0, 
@@ -198,7 +198,7 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
         indexArray, 
         0 
     ); 
-    seriesDescription.assign( this->newSeriesDescription + "_T1all"); 
+    seriesDescription.assign( this->newSeriesDescription + "_Kpl"); 
     svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
         svkMriImageData::SafeDownCast( this->GetOutput(4) ), 
         0, 
@@ -294,14 +294,14 @@ void svkMRSKinetics::GenerateKineticParamMap()
     this->ZeroData();
 
     //  Get the parameter map data arrays to initialize.  
-    this->mapArrayKpl   = this->GetOutput(3)->GetPointData()->GetArray(0);
-    this->mapArrayT1all = this->GetOutput(4)->GetPointData()->GetArray(0);
+    this->mapArrayT1all = this->GetOutput(3)->GetPointData()->GetArray(0);
+    this->mapArrayKpl   = this->GetOutput(4)->GetPointData()->GetArray(0);
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameStringKpl("Kpl");
     vtkstd::string arrayNameStringT1all("T1all");
-    this->mapArrayKpl->SetName( arrayNameStringKpl.c_str() );
+    vtkstd::string arrayNameStringKpl("Kpl");
     this->mapArrayT1all->SetName( arrayNameStringT1all.c_str() );
+    this->mapArrayKpl->SetName( arrayNameStringKpl.c_str() );
 
     double voxelValue;
     int numVoxels[3];
@@ -372,20 +372,21 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     typedef svkKineticModelCostFunction::ParametersType ParametersType;
     ParametersType  initialPosition( paramSpaceDimensionality );
 
-    int TR = 5;
-    initialPosition[0] =  40/TR;
-    initialPosition[1] =  0.05/TR;
-    initialPosition[2] =  1;
-    initialPosition[3] =  1;
+    float TR = 5.;
+    //  Scale by temporal resolution.  At end apply inverse scaling when writing out maps
+    initialPosition[0] =  35./TR;    // T1all  (s)
+    initialPosition[1] =  0.05 * TR;     // Kpl    (1/s)  
+    initialPosition[2] =  1;        // ktrans 
+    initialPosition[3] =  1;        // k2
 
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     // first order range of values: 
-    float upperBound0 = 50;  
-    float lowerBound0 = 1;
-    float upperBound1 = 1;  
-    float lowerBound1 = 0;
+    float upperBound0 = 50./TR;      //  T1all
+    float lowerBound0 = 10./TR;      //  T1all
+    float upperBound1 = 1 * TR;          //  Kpl
+    float lowerBound1 = 0 * TR;          //  Kpl
     float upperBound2 = 100;  
     float lowerBound2 = -100;
     float upperBound3 = 100;  
@@ -398,16 +399,16 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
 
     itk::ParticleSwarmOptimizer::ParametersType initialParameters( paramSpaceDimensionality), finalParameters;
            
-    unsigned int numberOfParticles = 10;
+    unsigned int numberOfParticles = 100;
     itkOptimizer->SetNumberOfParticles( numberOfParticles );
 
     unsigned int maxIterations = 500;
     itkOptimizer->SetMaximalNumberOfIterations( maxIterations );
 
-    double xTolerance = 0.01;
+    double xTolerance = 0.0001;
     itkOptimizer->SetParametersConvergenceTolerance( xTolerance, costFunction->GetNumberOfParameters() );
                                                   
-    double fTolerance = 0.01;
+    double fTolerance = 0.0001;
     itkOptimizer->SetFunctionConvergenceTolerance( fTolerance );
 
     itkOptimizer->SetInitializeNormalDistribution( false ); // use uniform distribution
@@ -470,12 +471,13 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     //  ===================================================
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
-    double T1all  = finalPosition[0];
-    double Kpl    = finalPosition[1];
+    float TR = 5.; 
+    double T1all  = finalPosition[0] * TR;
+    double Kpl    = finalPosition[1] / TR;
     //cout << "T1all: " << T1all << endl;
     //cout << "Kpl:   " << Kpl   << endl;
-    mapArrayKpl->SetTuple1(voxelIndex, Kpl);
     mapArrayT1all->SetTuple1(voxelIndex, T1all);
+    mapArrayKpl->SetTuple1(voxelIndex, Kpl);
 
     // print out fitted results: 
     vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
