@@ -204,24 +204,18 @@ void vtkSivicController::SetActive4DImageData( int index )
             svkImageData* newData = svkPlotGridView::SafeDownCast(plotController->GetView())->GetActivePlot();
             if( newData->IsA("svkMrsImageData")) {
                 this->model->ChangeDataObject("SpectroscopicData", newData );
+                this->phaseWidget->InitializePhaser();
+                //  assume that only one dimensin is > 1 to determine number of volumes for slider range:
+                int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
+                int timePts = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
+                this->spectraViewWidget->channelSlider->SetRange( 1, channels);
+                this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
+                int timePoints = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
+                this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
+                this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
             } else {
                 this->model->ChangeDataObject("4DImageData", newData );
             }
-            this->phaseWidget->InitializePhaser();
-            //  assume that only one dimensin is > 1 to determine number of volumes for slider range: 
-            int numVolumes; 
-            int channels = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfCoils();
-            int timePts = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
-            if ( channels == 1 ) {
-                numVolumes = timePts; 
-            } else {                    
-                numVolumes = channels; 
-            }
-            this->spectraViewWidget->channelSlider->SetRange( 1, channels);
-            this->spectraViewWidget->channelSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::CHANNEL) + 1 );
-            int timePoints = svkMrsImageData::SafeDownCast( newData )->GetDcmHeader()->GetNumberOfTimePoints();
-            this->spectraViewWidget->timePointSlider->SetRange( 1, timePoints);
-            this->spectraViewWidget->timePointSlider->SetValue( svkPlotGridView::SafeDownCast( this->plotController->GetView() )->GetVolumeIndex(svkMrsImageData::TIMEPOINT) + 1 );
             this->EnableWidgets();
             if( this->model->DataExists("AnatomicalData") ) {
                 this->overlayController->SetInput( newData, svkOverlayView::MR4D );
