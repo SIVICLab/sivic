@@ -40,7 +40,9 @@ build "Deployment" release from xcode
 3.  pre packaging dependencies:
 create_modified_libs_for_plugin.sh
 
-4.  create package:
+4. run make_standalone.csh (to bundle command line tools)
+
+5.  create package:
 start packagemaker, load pmdoc and "build"    
     - change the title to reflect new version number. 
 
@@ -49,11 +51,12 @@ sudo installer -pkg 'SIVIC MRSI OSIRIX PLUGIN 0.4.pkg' -target /
 
 
 ICON:  use ing2icns:  drag a png file into app and export as icns
-click o SIVIC.app and "get info", then drag the newly created .icns file onto the icon
+click on SIVIC.app and "get info", then drag the newly created .icns file onto the icon
 
 #################################
 make the standalone version:
 #################################
+Build a release version, and the .app file is under build/Release folder
 run make_standalone.csh
 
 build project in packagemaker which includes SIVIC.app
