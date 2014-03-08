@@ -560,6 +560,7 @@ SET(APPS
     svk_phase_spec 
     svk_fft
     svk_scale_image
+    svk_met_kinetics
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
