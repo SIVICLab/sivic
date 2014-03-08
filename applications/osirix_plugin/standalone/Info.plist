@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>SIVIC</string>
+	<string>SIVIC.sh</string>
 	<key>CFBundleIconFile</key>
 	<string>prism.icns</string>
 	<key>CFBundleIdentifier</key>
