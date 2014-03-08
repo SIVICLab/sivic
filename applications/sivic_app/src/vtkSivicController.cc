@@ -3931,7 +3931,8 @@ void vtkSivicController::DisplayImageDataInfo(int row, int column, int x, int y)
     invocationString.append( this->imageDataWidget->imageList->GetWidget()->GetCellText(row,4));
     rightClickMenu->AddRadioButton("Set As Reference Image", this, invocationString.c_str());
 	if( selectedData->GetPointData()->GetNumberOfArrays() > 1 ) {
-		if( this->GetActive4DImageData() != NULL ) {
+	    // If the loaded data is Dynamic Imaging add to existing traces, otherwise replace the loaded data
+		if( this->GetActive4DImageData() != NULL && svkMrsImageData::SafeDownCast(this->GetActive4DImageData()) == NULL ) {
             invocationString = "Add4DImageDataFromModel ";
 		} else {
             invocationString = "Open4DImageFromModel ";
