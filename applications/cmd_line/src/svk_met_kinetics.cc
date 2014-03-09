@@ -247,8 +247,8 @@ if ( inputFileName3.length() == 0 ) {
     svkImageWriter* pyrWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     svkImageWriter* lacWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     svkImageWriter* ureaWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* kplWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     svkImageWriter* t1allWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* kplWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
     if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL || kplWriter == NULL || t1allWriter == NULL ) {
@@ -259,33 +259,34 @@ if ( inputFileName3.length() == 0 ) {
     string pyrFile = outputFileName;  
     string lacFile = outputFileName;  
     string ureaFile = outputFileName;  
-    string kplFile = outputFileName;  
     string t1allFile = outputFileName;  
+    string kplFile = outputFileName;  
 
     pyrFile.append("_pyr_fit");  
     lacFile.append("_lac_fit");  
     ureaFile.append("_urea_fit");  
-    kplFile.append("_Kpl");  
     t1allFile.append("_T1all");  
+    kplFile.append("_Kpl");  
 
     pyrWriter->SetFileName( pyrFile.c_str() );
     lacWriter->SetFileName( lacFile.c_str() );
     ureaWriter->SetFileName( ureaFile.c_str() );
-    kplWriter->SetFileName( kplFile.c_str() );
     t1allWriter->SetFileName( t1allFile.c_str() );
+    kplWriter->SetFileName( kplFile.c_str() );
 
     pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
     lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
     ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
-    kplWriter->SetInput( dynamics->GetOutput(3) );     // port 2 is urea fitted values
-    t1allWriter->SetInput( dynamics->GetOutput(4) );     // port 2 is urea fitted values
-cout << "D0 : " << *dynamics->GetOutput(0) << endl;
-dynamics->GetOutput(0)->GetDcmHeader()->PrintDcmHeader() ;
+    t1allWriter->SetInput( dynamics->GetOutput(3) );    // port 3 is T1all map 
+    kplWriter->SetInput( dynamics->GetOutput(4) );      // port 4 is Kpl map 
+
     pyrWriter->Write();
     lacWriter->Write();
+if ( inputFileName3.length() != 0 ) {
     ureaWriter->Write();
-    kplWriter->Write();
+}
     t1allWriter->Write();
+    kplWriter->Write();
 
     // ===============================================  
 
