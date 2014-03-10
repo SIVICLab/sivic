@@ -71,6 +71,7 @@ vtkSivicController::vtkSivicController()
     this->preferencesWindow = NULL;
     this->thresholdType = "Quantity";
     this->mainWindow = NULL;
+    this->voxelTaggingWindow = NULL;
     this->secondaryCaptureFormatter = svkSecondaryCaptureFormatter::New();
     this->secondaryCaptureFormatter->SetPlotController( this->plotController );
     this->secondaryCaptureFormatter->SetOverlayController( this->overlayController );
