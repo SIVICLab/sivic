@@ -256,6 +256,7 @@ void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
             range[1] += 0.05 * rangeWidth;
         }
         this->ySpecRange->SetRange( range[0], range[1] );
+        this->ySpecRange->SetWholeRange( range[0], range[1] );
         this->ySpecRange->SetResolution( (range[1] - range[0])*SLIDER_RELATIVE_RESOLUTION );
     }
 }
