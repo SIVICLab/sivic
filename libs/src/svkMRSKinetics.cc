@@ -385,7 +385,7 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
     // first order range of values: 
     float upperBound0 = 50./TR;      //  T1all
     float lowerBound0 = 10./TR;      //  T1all
-    float upperBound1 = 1 * TR;          //  Kpl
+    float upperBound1 = .3 * TR;          //  Kpl
     float lowerBound1 = 0 * TR;          //  Kpl
     float upperBound2 = 100;  
     float lowerBound2 = -100;
