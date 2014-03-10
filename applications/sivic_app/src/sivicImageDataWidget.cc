@@ -96,7 +96,15 @@ void sivicImageDataWidget::CreateWidget()
 
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
+    this->CreateListWidget();
+}
 
+void sivicImageDataWidget::CreateListWidget()
+{
+    if( this->imageList != NULL ) {
+        this->Script("pack forget %s", this->imageList->GetWidgetName());
+        this->imageList->Delete();
+    }
     this->imageList = vtkKWMultiColumnListWithScrollbars::New();
     this->imageList->SetParent(this);
     this->imageList->Create();
@@ -148,6 +156,7 @@ void sivicImageDataWidget::UpdateReferenceImageList( )
     map<string, svkImageData*> allDataObjects = this->model->GetAllDataObjects();
     map<string,svkImageData*>::iterator it = allDataObjects.begin();
     int counter = 0;
+    this->CreateListWidget();
     this->imageList->GetWidget()->DeleteAllRows();
     for( map<string, svkImageData*>::iterator iter = allDataObjects.begin();
         iter != allDataObjects.end(); ++iter) {

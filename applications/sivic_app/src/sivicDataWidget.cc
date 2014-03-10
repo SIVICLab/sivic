@@ -85,7 +85,16 @@ void sivicDataWidget::CreateWidget()
 
     // Call the superclass to create the composite widget container
     this->Superclass::CreateWidget();
+    this->CreateListWidget();
+}
 
+void sivicDataWidget::CreateListWidget() 
+{
+    if( this->referenceSpectra != NULL ) {
+        this->RemoveCallbackCommandObserver( this->referenceSpectra->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
+        this->Script("pack forget %s", this->referenceSpectra->GetWidgetName());
+        this->referenceSpectra->Delete();
+    }
     this->referenceSpectra = vtkKWMultiColumnListWithScrollbars::New();
     this->referenceSpectra->SetParent(this);
     this->referenceSpectra->Create();
@@ -105,7 +114,7 @@ void sivicDataWidget::CreateWidget()
     this->referenceSpectra->GetWidget()->SetColumnFormatCommandToEmptyOutput(col_index);
     col_index = this->referenceSpectra->GetWidget()->AddColumn("Filename");
 
-    this->Script("pack %s -expand y -fill both", this->referenceSpectra->GetWidgetName(),   0);
+    this->Script("pack %s -expand y -fill both", this->referenceSpectra->GetWidgetName());
 
     //  Callbacks
     this->AddCallbackCommandObserver( this->referenceSpectra->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
@@ -132,7 +141,7 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
 {
     svkPlotGridView* plotGridView = svkPlotGridView::SafeDownCast( this->plotController->GetView() );
     int numPlots = plotGridView->GetNumberOfReferencePlots() + 1;
-
+    this->CreateListWidget();
     // We start at one since the first plot index is the active spectra above...
     for( int i = 0; i < numPlots; i ++ ) {
         svkImageData* plotData = NULL;
@@ -148,6 +157,7 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
             plotData = this->plotController->GetView()->GetInput( i + 1 );
         }
         if( plotData != NULL ) {
+
             this->referenceSpectra->GetWidget()->InsertCellText(i, 0, plotData->GetDcmHeader()->GetStringValue("SeriesDescription").c_str());
             this->referenceSpectra->GetWidget()->InsertCellTextAsInt(i, 1, plotGridView->GetPlotVisibility(i));
             this->referenceSpectra->GetWidget()->SetCellWindowCommandToCheckButton(i, 1);

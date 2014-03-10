@@ -71,6 +71,7 @@ class sivicDataWidget : public sivicKWCompositeWidget
         // Description:
         // Create the widget.
         virtual void    CreateWidget();
+        virtual void    CreateListWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
 
     private:
