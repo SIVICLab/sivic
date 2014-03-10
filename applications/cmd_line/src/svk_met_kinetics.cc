@@ -157,8 +157,10 @@ int main (int argc, char** argv)
     argv += optind;
 
 //  temp kludge: 
+bool writeUrea = true; 
 if ( inputFileName3.length() == 0 ) {
     inputFileName3 = inputFileName2; 
+    writeUrea = false; 
 }
 
     if (
@@ -282,7 +284,7 @@ if ( inputFileName3.length() == 0 ) {
 
     pyrWriter->Write();
     lacWriter->Write();
-if ( inputFileName3.length() != 0 ) {
+if ( writeUrea ) {
     ureaWriter->Write();
 }
     t1allWriter->Write();
