@@ -116,7 +116,12 @@ vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
     vtkstd::string volumeFileName(fname);
     size_t position;
     position = volumeFileName.find_last_of( "." );
-    vtkstd::string fileRoot( volumeFileName.substr(0, position) );
+    size_t lastPath = volumeFileName.find_last_of("/");
+    vtkstd::string fileRoot( fname );
+    // If there is an extension remove it
+    if( position > lastPath ) {
+        fileRoot = volumeFileName.substr(0, position);
+    } 
     return fileRoot;
 }
 
