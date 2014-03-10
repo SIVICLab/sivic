@@ -242,7 +242,7 @@ void sivicSpectraRangeWidget::ResetAmplitudeRange( bool useFullRange )
         }
         double range[2];
 
-        if ( useFullRange || domain == "TIME" ) {
+        if ( useFullRange ) {
             data->GetDataRange( range, this->plotController->GetComponent());
         } else {
             int lowInt = static_cast<int>(lowestPoint);
