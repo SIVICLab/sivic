@@ -100,9 +100,13 @@ void sivicImageDataWidget::CreateWidget()
     this->imageList = vtkKWMultiColumnListWithScrollbars::New();
     this->imageList->SetParent(this);
     this->imageList->Create();
-    //this->imageList->GetWidget()->MovableColumnsOn();
     this->imageList->GetWidget()->SetWidth(0);
     this->imageList->GetWidget()->SetHeight(3);
+    this->imageList->VerticalScrollbarVisibilityOff();
+    this->imageList->HorizontalScrollbarVisibilityOff();
+
+    //this->imageList->GetWidget()->MovableColumnsOn();
+
     int col_index;
     col_index = this->imageList->GetWidget()->AddColumn("Name");
     col_index = this->imageList->GetWidget()->AddColumn("Description");
@@ -111,7 +115,7 @@ void sivicImageDataWidget::CreateWidget()
     col_index = this->imageList->GetWidget()->AddColumn("Model Name");
     //col_index = this->imageList->GetWidget()->AddColumn("Filename");
 
-    this->Script("pack %s -expand y -fill both", this->imageList->GetWidgetName(),   0);
+    this->Script("pack %s -expand y -fill both", this->imageList->GetWidgetName());
 
     //  Callbacks
     //this->AddCallbackCommandObserver( this->imageList->GetWidget(), vtkKWMultiColumnList::CellUpdatedEvent );
@@ -181,6 +185,11 @@ void sivicImageDataWidget::UpdateReferenceImageList( )
         }
     }
 	this->imageList->GetWidget()->SortByColumnDecreasingOrder(2);
+    if (imageList->GetWidget()->GetNumberOfRows() > 0 ) {
+        this->imageList->VerticalScrollbarVisibilityOn();
+        this->imageList->HorizontalScrollbarVisibilityOn();
+    }
+
 }
 
 

@@ -92,6 +92,8 @@ void sivicDataWidget::CreateWidget()
     //this->referenceSpectra->GetWidget()->MovableColumnsOn();
     this->referenceSpectra->GetWidget()->SetWidth(0);
     this->referenceSpectra->GetWidget()->SetHeight(3);
+    this->referenceSpectra->VerticalScrollbarVisibilityOff();
+    this->referenceSpectra->HorizontalScrollbarVisibilityOff();
     int col_index;
     col_index = this->referenceSpectra->GetWidget()->AddColumn("Description");
     col_index = this->referenceSpectra->GetWidget()->AddColumn("Visible");
@@ -162,6 +164,10 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
             this->referenceSpectra->GetWidget()->DeleteAllRows();
         }
 
+    }
+    if ( this->sivicController->GetActive4DImageData() != NULL ) {
+        this->referenceSpectra->VerticalScrollbarVisibilityOn();
+        this->referenceSpectra->HorizontalScrollbarVisibilityOn();
     }
 
 
