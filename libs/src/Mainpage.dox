@@ -75,6 +75,9 @@ SIVIC is an open-source standards-based software framework and application suite
     <li>
         <a href="apps/svk_create_dcmraw.html"/>svk_create_dcmraw</a>
     </li>
+    <li>
+        <a href="apps/svk_met_kinetics.html"/>svk_met_kinetics</a>
+    </li>
 
 
 </ul>

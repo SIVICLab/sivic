@@ -117,9 +117,9 @@ INCLUDE_DIRECTORIES(
 	${PLATFORM_INCLUDE}
 )
 
-if ( BUILD_CMINPACK )
-    INCLUDE_DIRECTORIES ( ${CMINPACK_DIR}/include )
-endif( BUILD_CMINPACK )
+if ( BUILD_ITK )
+    INCLUDE_DIRECTORIES ( ${ITK_DIR}/include )
+endif( BUILD_ITK )
 
 if ( BUILD_CLAPACK )
     INCLUDE_DIRECTORIES ( ${CLAPACK_DIR}/INCLUDE)
@@ -291,7 +291,7 @@ ADD_LIBRARY(
     svkDcmtkException.cc
 )
 
-IF ( BUILD_CMINPACK )
+IF ( BUILD_ITK )
 
     ADD_DEFINITIONS(-DITK_BUILD)
     ###################################
@@ -312,7 +312,7 @@ IF ( BUILD_CMINPACK )
         svkMRSFirstPointPhase.cc
         svkMRSKinetics.cc 
     )
-ENDIF ( BUILD_CMINPACK )
+ENDIF ( BUILD_ITK )
 
 IF ( BUILD_CLAPACK )
     ADD_LIBRARY(

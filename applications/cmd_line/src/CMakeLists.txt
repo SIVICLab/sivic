@@ -148,7 +148,7 @@ LINK_DIRECTORIES(
 )
 
 
-if ( BUILD_CMINPACK )
+if ( BUILD_ITK )
 
     ###################################
     #   ITK 
@@ -161,9 +161,9 @@ if ( BUILD_CMINPACK )
         MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
     ENDIF(ITK_FOUND)
 
-    LINK_DIRECTORIES( ${CMINPACK_DIR}/lib )
+    LINK_DIRECTORIES( ${ITK_DIR}/lib )
 
-endif( BUILD_CMINPACK )
+endif( BUILD_ITK )
 
 
 if ( BUILD_CLAPACK )
@@ -184,9 +184,9 @@ INCLUDE_DIRECTORIES(
     ${DCMTK_DIR}/include
     ${PLATFORM_INCLUDE}
 )
-if ( BUILD_CMINPACK )
-    INCLUDE_DIRECTORIES( ${CMINPACK_DIR}/include )
-endif( BUILD_CMINPACK )
+if ( BUILD_ITK )
+    INCLUDE_DIRECTORIES( ${ITK_DIR}/include )
+endif( BUILD_ITK )
 
 if ( BUILD_CLAPACK )
     INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
@@ -197,18 +197,18 @@ IF(WIN32)
 	                  netapi32)
 ENDIF(WIN32)
 
-if ( BUILD_CMINPACK )
-    SET( CMINPACK_LIBS 
+if ( BUILD_ITK )
+    SET( ITK_LIBS 
         svkNumerical 
         #cminpack 
         ITKDICOMParser
     )
-    SET( CMINPACK_LIBS_PRE
+    SET( ITK_LIBS_PRE
         ITKOptimizers
         ITKCommon
         ITKDICOMParser
     ) 
-endif( BUILD_CMINPACK )
+endif( BUILD_ITK )
 
 if ( BUILD_CLAPACK )
     INCLUDE_DIRECTORIES( ${CLAPACK_DIR}/INCLUDE)
@@ -232,7 +232,7 @@ if ( BUILD_CLAPACK )
 endif( BUILD_CLAPACK )
 
 SET(SVK_LIBS
-    ${CMINPACK_LIBS}
+    ${ITK_LIBS}
     ${CLAPACK_LIBS}
     svk 
     svkadapt 
@@ -244,7 +244,7 @@ SET(SVK_LIBS
     ${DCMTK_OFLOG}
     ofstd 
     ${PLATFORM_LIBS}
-    ${CMINPACK_LIBS_PRE}
+    ${ITK_LIBS_PRE}
 )
 
 SET(SVK_VIZ_LIBS
@@ -471,7 +471,7 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
-if ( BUILD_CMINPACK )
+if ( BUILD_ITK )
 
     ADD_EXECUTABLE(
         svk_met_kinetics
@@ -491,7 +491,7 @@ if ( BUILD_CMINPACK )
         ${SVK_LIBS}
     )
  
-endif ( BUILD_CMINPACK )
+endif ( BUILD_ITK )
 
 if ( BUILD_CLAPACK )
     ADD_EXECUTABLE(
@@ -565,10 +565,10 @@ SET(APPS
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
 endif ( BUILD_CLAPACK )
-if ( BUILD_CMINPACK )
+if ( BUILD_ITK )
     LIST(APPEND APPS svk_auto_phase)
     LIST(APPEND APPS svk_met_kinetics)
-endif ( BUILD_CMINPACK )
+endif ( BUILD_ITK )
 
 IF (NOT WIN32)	
     FOREACH(APP ${APPS})    

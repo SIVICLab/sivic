@@ -172,7 +172,7 @@ LINK_DIRECTORIES(
     ${DCMTK_DIR}/lib
 )
 
-if ( BUILD_CMINPACK )
+if ( BUILD_ITK )
 
     ###################################
     #   ITK 
@@ -185,7 +185,7 @@ if ( BUILD_CMINPACK )
         MESSAGE(FATAL_ERROR "Cannot build without ITK.  Please set ITK_DIR.")
     ENDIF(ITK_FOUND)
 
-endif( BUILD_CMINPACK )
+endif( BUILD_ITK )
 
 
 if ( BUILD_CLAPACK )
@@ -208,17 +208,17 @@ INCLUDE_DIRECTORIES(
     ${PLATFORM_INCLUDE}
 )
 
-if ( BUILD_CMINPACK )
-    SET( CMINPACK_LIBS 
+if ( BUILD_ITK )
+    SET( ITK_LIBS 
         svkNumerical 
         ITKDICOMParser
     )
-    SET( CMINPACK_LIBS_PRE
+    SET( ITK_LIBS_PRE
         ITKOptimizers
         ITKCommon
         ITKDICOMParser
     )
-endif( BUILD_CMINPACK )
+endif( BUILD_ITK )
 
 
 if ( BUILD_CLAPACK )
@@ -287,7 +287,7 @@ TARGET_LINK_LIBRARIES(
     sivic
 
     sivicGUI
-    ${CMINPACK_LIBS}
+    ${ITK_LIBS}
     ${CLAPACK_LIBS}
     svkviz
     svk 
@@ -308,7 +308,7 @@ TARGET_LINK_LIBRARIES(
 	${ZLIB}
     ${NETAPI}
     ${PLATFORM_LIBS}
-    ${CMINPACK_LIBS_PRE}
+    ${ITK_LIBS_PRE}
 
 )
 

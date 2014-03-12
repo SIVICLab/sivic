@@ -9,7 +9,7 @@ ccmake ./
 
  BUILD_APPS                       ON
  BUILD_CLAPACK                    ON
- BUILD_CMINPACK                   OFF
+ BUILD_ITK                        OFF
  BUILD_EXAMPLES                   OFF
  BUILD_LIBRARY                    ON
  BUILD_OSIRIX                     ON
