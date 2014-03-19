@@ -42,6 +42,7 @@
 
 
 #include <svkImageWriter.h>
+#include <svkImageReader2.h>
 
 
 using namespace svk;
@@ -81,6 +82,18 @@ svkImageWriter::~svkImageWriter()
 void svkImageWriter::Update()
 {
     vtkDebugMacro(<< "svkImageWriter::Update");
+
+}
+
+
+/*
+ *  Ensures that file extension is stripped.  It will get
+ *  added by the specific writer type
+ */
+void svkImageWriter::SetFileName (const char* fileName) 
+{
+    string outputFileName = svkImageReader2::GetFileRoot( fileName );
+    this->Superclass::SetFileName( outputFileName.c_str() );
 
 }
 

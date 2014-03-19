@@ -80,9 +80,10 @@ class svkImageWriter : public vtkImageWriter
         //  overloaded vtkImageWriter::SetInput(vtkImageData* imageData); 
         using   vtkImageWriter::SetInput;
 
-        void    SetSeriesNumber(int number);
-        void    SetSeriesDescription(string description);
-        void    SetInstanceNumber(int number);
+        void            SetSeriesNumber(int number);
+        void            SetSeriesDescription(string description);
+        void            SetInstanceNumber(int number);
+        virtual void    SetFileName (const char *); 
 
 
     protected:
