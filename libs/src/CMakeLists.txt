@@ -150,6 +150,7 @@ ADD_LIBRARY(
     svkIdfVolumeWriter.cc
     svkDdfVolumeWriter.cc
     svkDICOMSCWriter.cc
+    svkDICOMWriter.cc
     svkDICOMImageWriter.cc
     svkDICOMMRSWriter.cc
     svkDICOMEnhancedMRIWriter.cc
