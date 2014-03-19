@@ -232,13 +232,13 @@ void svkDcmVolumeReader::InitSliceOrder(vtkstd::string fileStart, vtkstd::string
 
         double origin0[3];
         svkImageData* tmpImage0 = svkMriImageData::New();
-        tmpImage0->GetDcmHeader()->ReadDcmFile( fileEnd ); 
+        tmpImage0->GetDcmHeader()->ReadDcmFileHeaderOnly( fileEnd );
         tmpImage0->GetDcmHeader()->GetOrigin(origin0); // zero indexed!
         tmpImage0->Delete();
 
         double origin1[3];
         svkImageData* tmpImage1 = svkMriImageData::New();
-        tmpImage1->GetDcmHeader()->ReadDcmFile( fileEnd ); 
+        tmpImage1->GetDcmHeader()->ReadDcmFileHeaderOnly( fileEnd );
         tmpImage1->GetDcmHeader()->GetOrigin(origin1); // zero indexed!
         tmpImage1->Delete();
 
@@ -336,7 +336,7 @@ void svkDcmVolumeReader::InitFileNames()
     //  Get the reference file's SeriesInstanceUID, ImageOrientationPatient and slice normal.
     //  These are used for parsing the glob'd files.  
     svkImageData* tmp = svkMriImageData::New(); 
-    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileName() );
+    tmp->GetDcmHeader()->ReadDcmFileHeaderOnly(  this->GetFileName() );
     vtkstd::string imageOrientationPatient( tmp->GetDcmHeader()->GetStringValue("ImageOrientationPatient"));
     vtkstd::string seriesInstanceUID( tmp->GetDcmHeader()->GetStringValue("SeriesInstanceUID"));
     double referenceNormal[3]; 
@@ -392,7 +392,7 @@ void svkDcmVolumeReader::InitFileNames()
                 tmp = NULL;
             }
             tmp = svkMriImageData::New(); 
-            tmp->GetDcmHeader()->ReadDcmFile( fileNames->GetValue(i) );
+            tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fileNames->GetValue(i) );
             dcmFileAttributes.push_back( fileNames->GetValue(i) ); 
 
             if( tmp->GetDcmHeader()->ElementExists( "SeriesInstanceUID", "top" ) ) {
@@ -831,7 +831,7 @@ void svkDcmVolumeReader::SortFilesByInstanceNumber(
  */
 void svkDcmVolumeReader::InitDcmHeader()
 {
-    this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->FileName, 100000000 ); 
+    this->GetOutput()->GetDcmHeader()->ReadDcmFile( this->FileName );
 }
 
 

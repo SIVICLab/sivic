@@ -42,6 +42,7 @@
 
 #ifndef SVK_DCMTK_ADAPTER_H
 #define SVK_DCMTK_ADAPTER_H
+#define HEADER_MAX_READ_LENGTH 256
 
 
 #include <vtkObjectFactory.h>
@@ -273,6 +274,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         virtual void    WriteDcmFile(string fileName);
         virtual void    WriteDcmFileCompressed(string fileName);
         virtual int     ReadDcmFile(string fileName, int maxLength );
+        virtual int     ReadDcmFileHeaderOnly(string fileName );
 
         virtual void    CopyDcmHeader(svkDcmHeader* headerCopy);
 

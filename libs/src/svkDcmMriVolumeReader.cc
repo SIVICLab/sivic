@@ -98,7 +98,7 @@ int svkDcmMriVolumeReader::CanReadFile(const char* fname)
 
         svkImageData* tmp = svkMriImageData::New(); 
 
-        tmp->GetDcmHeader()->ReadDcmFile( fname );
+        tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fname );
         vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
 
         //verify that this isn't a proprietary use of DICOM MR ImageStorage: 
@@ -244,7 +244,7 @@ void svkDcmMriVolumeReader::LoadData( svkImageData* data )
         	int floatWordSize = 4;
 			void* imageFloatData = (void* ) malloc( numPixelsInSlice * numSlices * floatWordSize );
             svkImageData* tmpImage = svkMriImageData::New(); 
-            tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( vol ) );
+            tmpImage->GetDcmHeader()->ReadDcmFileHeaderOnly( this->GetFileNames()->GetValue( vol ) );
 			double voiWindowCenter = tmpImage->GetDcmHeader()->GetDoubleValue("WindowCenter" );
 			double voiWindowWidth  = tmpImage->GetDcmHeader()->GetDoubleValue("WindowWidth" );
 			this->GetVOILUTScaledPixels((float*)imageFloatData,
@@ -313,7 +313,7 @@ void svkDcmMriVolumeReader::InitPixelMeasuresMacro()
 {
 
     svkImageData* tmp = svkMriImageData::New(); 
-    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileNames()->GetValue( 0 ) ); 
+    tmp->GetDcmHeader()->ReadDcmFileHeaderOnly(  this->GetFileNames()->GetValue( 0 ) );
 
     this->GetOutput()->GetDcmHeader()->InitPixelMeasuresMacro(
         tmp->GetDcmHeader()->GetStringValue( "PixelSpacing" ), 
@@ -337,7 +337,7 @@ void svkDcmMriVolumeReader::InitPlaneOrientationMacro()
     );
 
     svkImageData* tmp = svkMriImageData::New(); 
-    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileNames()->GetValue( 0 ) ); 
+    tmp->GetDcmHeader()->ReadDcmFileHeaderOnly(  this->GetFileNames()->GetValue( 0 ) );
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "PlaneOrientationSequence",
@@ -366,7 +366,7 @@ void svkDcmMriVolumeReader::InitMRReceiveCoilMacro()
     );
 
     svkImageData* tmp = svkMriImageData::New(); 
-    tmp->GetDcmHeader()->ReadDcmFile(  this->GetFileNames()->GetValue( 0 ) ); 
+    tmp->GetDcmHeader()->ReadDcmFileHeaderOnly(  this->GetFileNames()->GetValue( 0 ) );
 
     this->GetOutput()->GetDcmHeader()->AddSequenceItemElement(
         "MRReceiveCoilSequence",
@@ -390,7 +390,7 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
     int numSlices = this->numFrames / this->numVolumes;  
 
     svkImageData* tmpImage = svkMriImageData::New(); 
-    tmpImage->GetDcmHeader()->ReadDcmFile( this->GetFileNames()->GetValue( 0 ) ); 
+    tmpImage->GetDcmHeader()->ReadDcmFileHeaderOnly( this->GetFileNames()->GetValue( 0 ) );
 
     double toplc[3];
     for (int i = 0; i < 3; i++ ) {

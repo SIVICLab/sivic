@@ -623,6 +623,15 @@ class svkDcmHeader: public vtkObject
          */
         virtual int     ReadDcmFile(string fileName, int max_length = 0) = 0;
 
+        /*!
+         *  Read only the DICOM header of the specified file name, not the data
+         *
+         *  \param fileName  name of the output file root (no extension).
+         *
+         *  Returns 0 for success, 1 for failure.
+         */
+        virtual int     ReadDcmFileHeaderOnly(string fileName) = 0;
+
 
         /*! 
          *  Copies the current DICOM header to the headerCopy, generating new

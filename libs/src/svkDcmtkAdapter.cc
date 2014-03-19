@@ -2003,21 +2003,23 @@ int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
         return 1; 
     }
 
-    //  get the input transfer syntax.. if RLELossless, then 
-    //  decode. 
-    E_TransferSyntax opt_oxfer = EXS_LittleEndianExplicit;
-    DcmXfer opt_oxferSyn(opt_oxfer); 
-    DcmXfer original_xfer(this->dcmFile->getDataset()->getOriginalXfer());
-    if ( this->dcmFile->getDataset()->getOriginalXfer() == EXS_RLELossless ) {
-        // register RLE compression codec
-        DcmRLEDecoderRegistration::registerCodecs();
+    if( maxLength > HEADER_MAX_READ_LENGTH ) {
+        //  get the input transfer syntax.. if RLELossless, then
+        //  decode.
+        E_TransferSyntax opt_oxfer = EXS_LittleEndianExplicit;
+        DcmXfer opt_oxferSyn(opt_oxfer);
+        DcmXfer original_xfer(this->dcmFile->getDataset()->getOriginalXfer());
+        if ( this->dcmFile->getDataset()->getOriginalXfer() == EXS_RLELossless ) {
+            // register RLE compression codec
+            DcmRLEDecoderRegistration::registerCodecs();
 
-        status = this->dcmFile->chooseRepresentation(EXS_LittleEndianExplicit, NULL);
-        if (status.bad()) {
-            cerr << "Error: cannot decode RLE Representation (" << status.text() << ")" << endl;
-            return 1; 
+            status = this->dcmFile->chooseRepresentation(EXS_LittleEndianExplicit, NULL);
+            if (status.bad()) {
+                cerr << "Error: cannot decode RLE Representation (" << status.text() << ")" << endl;
+                return 1;
+            }
+            DcmRLEDecoderRegistration::cleanup();
         }
-        DcmRLEDecoderRegistration::cleanup();
     }
 
 
@@ -2026,6 +2028,15 @@ int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
 }
 
 
+/*!
+ *   Read the DICOM header only to the specified file name
+ *
+ *   \param fileName  name of the output file root (no extension).
+ */
+int svkDcmtkAdapter::ReadDcmFileHeaderOnly(string fileName)
+{
+    return this->ReadDcmFile( fileName, HEADER_MAX_READ_LENGTH);
+}
 
 /*!
  *  Copies the current DICOM header to the headerCopy, generating new

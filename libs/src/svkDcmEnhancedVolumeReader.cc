@@ -110,7 +110,7 @@ int svkDcmEnhancedVolumeReader::CanReadFile(const char* fname)
     if ( svkDcmHeader::IsFileDICOM( fname ) ) {
  
         svkImageData* tmp = svkMriImageData::New(); 
-        tmp->GetDcmHeader()->ReadDcmFile( fname ); 
+        tmp->GetDcmHeader()->ReadDcmFileHeaderOnly( fname );
         vtkstd::string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ; 
         tmp->Delete(); 
 
