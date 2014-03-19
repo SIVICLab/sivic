@@ -114,14 +114,25 @@ void svkImageReader2::OnlyReadOneInputFile()
 vtkstd::string svkImageReader2::GetFileRoot(const char* fname)
 {
     vtkstd::string volumeFileName(fname);
-    size_t position;
-    position = volumeFileName.find_last_of( "." );
+
+    size_t dotPosition;
+    dotPosition = volumeFileName.find_last_of( "." );
+    if ( dotPosition == string::npos) {
+        dotPosition = 0; 
+    }
+
     size_t lastPath = volumeFileName.find_last_of("/");
+    if ( lastPath == string::npos) {
+        lastPath = 0; 
+    }
+
     vtkstd::string fileRoot( fname );
+
     // If there is an extension remove it
-    if( position > lastPath ) {
-        fileRoot = volumeFileName.substr(0, position);
+    if( dotPosition > lastPath ) {
+        fileRoot = volumeFileName.substr(0, dotPosition);
     } 
+
     return fileRoot;
 }
 
