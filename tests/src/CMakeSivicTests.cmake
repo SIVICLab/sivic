@@ -1,5 +1,5 @@
 # 
-#   Copyright © 2009-2011 The Regents of the University of California.
+#   Copyright © 2009-2014 The Regents of the University of California.
 #   All Rights Reserved.
 # 
 #   Redistribution and use in source and binary forms, with or without
@@ -1064,7 +1064,7 @@ SET( TEST_NAME TEST_HSVD_DIFF)
 ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/output )
 SET_TESTS_PROPERTIES(TEST_HSVD_DIFF PROPERTIES DEPENDS TEST_HSVD)
 
-if ( BUILD_CMINPACK )
+if ( BUILD_ITK )
     ########################
     #   First Point Phase Test: 
     ########################
@@ -1077,7 +1077,7 @@ if ( BUILD_CMINPACK )
     SET( TEST_NAME TEST_FP_PHASE_DIFF)
     ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_fp )
     SET_TESTS_PROPERTIES(TEST_FP_PHASE_DIFF PROPERTIES DEPENDS TEST_FP_PHASE)
-endif ( BUILD_CMINPACK )
+endif ( BUILD_ITK )
 
 ########################
 #   Bruker DICOM MRS Reader 
