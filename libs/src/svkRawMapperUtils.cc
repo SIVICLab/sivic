@@ -60,8 +60,6 @@ void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOrigi
 
     svkDcmHeader* hdr = data->GetDcmHeader();     
 
-    int numTimePts = hdr->GetNumberOfTimePoints();
-
     //  This is the original origin based on the reduced dimensionality in the EPSI direction
     double origin[3];
     hdr->GetOrigin( origin, 0 );
@@ -72,22 +70,24 @@ void svkRawMapperUtils::RedimensionData( svkImageData* data, int* numVoxelsOrigi
     double dcos[3][3];
     hdr->GetDataDcos( dcos );
 
+    //double center[3]; 
+    //svkUtils::GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
     double center[3]; 
-    svkGEPFileMapper::GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
+    svkUtils::GetCenterFromOrigin( hdr, center ); 
 
     //  Now calcuate the new origin based on the reordered dimensionality: 
     int numVoxelsReordered[3]; 
     svk4DImageData::GetSpatialDimensions(reorderedDimensionVector, numVoxelsReordered); 
 
-    double newOrigin[3]; 
-    svkGEPFileMapper::GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
+    double newToplcOrigin[3]; 
+    svkUtils::GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newToplcOrigin ); 
 
     hdr->SetValue( "Columns", numVoxelsReordered[0]);
     hdr->SetValue( "Rows", numVoxelsReordered[1]);
     hdr->SetValue( "DataPointColumns", numFreqPts );
 
     hdr->InitPerFrameFunctionalGroupSequence(
-        newOrigin,
+        newToplcOrigin,
         voxelSpacing,
         dcos,
         reorderedDimensionVector
