@@ -177,63 +177,6 @@ int main (int argc, char** argv)
     avSpec->Update();
 
 
-/*    
-
-    
-
-    int numVoxels[3]; 
-    svk4DImageData::GetSpatialDimensions( &dimensionVector, numVoxels); 
-
-    svk4DImageData::SetDimensionVectorIndex(&singleVolumeDimVec, svkDcmHeader::SLICE_INDEX, numVoxels[2]); 
-
-    
-    int totalNumCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-
-    string representation   = refData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
-    int numComponents = 1;
-    if (representation.compare("COMPLEX") == 0) {
-        numComponents = 2;
-    }
-
-    //  diff each coil separately
-    for ( int channel = 0; channel < numChannels; channel++ ) {
-        cout << "diff channel " << channel << endl;
-
-        for( int cellID = 0; cellID < numVoxelsPerChannel; cellID++ ) {
-
-            //  Get the dimensions for the single channel.  reset the channel index and get the 
-            //  actual cellID for this channel 
-            svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
-            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, channel);
-            int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
-
-            vtkFloatArray* refSpectrum; 
-            vtkFloatArray* testSpectrum; 
-            float* refPtr; 
-            float* testPtr; 
-
-            refSpectrum = static_cast< vtkFloatArray* >( refData->GetSpectrum( absoluteCellID) );
-            testSpectrum = static_cast< vtkFloatArray* >( testData->GetSpectrum( absoluteCellID) );
-            refPtr = refSpectrum->GetPointer(0);
-            testPtr = testSpectrum->GetPointer(0);
-            
-            bool cellDiff = false; 
-            for (int i = 0; i < numSpecPts * numComponents; i++) {
-                testPtr[i] = testPtr[i] - refPtr[i]; 
-                if ( isVerbose ) {
-                    if (testPtr[i] != 0 ) { 
-                        cout << "diff: " <<  i  << " " << testPtr[i] << " - " << refPtr[i] << " = " << testPtr[i] << endl;
-                        cellDiff = true; 
-                    }
-                }
-            }
-            if ( isVerbose && cellDiff ) {
-                cout << "Cell contains diffs: " << absoluteCellID << endl;
-            }
-        }
-    }
-*/
-
     // ===============================================  
     //  Write the data out to the specified file type.  
     //  Use an svkImageWriterFactory to obtain the
