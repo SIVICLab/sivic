@@ -64,10 +64,12 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_scale_image -i input_file_name -o output_file_name -s scale factor       \n"; 
+    usemsg += "svk_scale_image -i input_file_name -o output_file_root -s scale factor       \n"; 
+    usemsg += "                [ --mask mask_file_name ]                                    \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i            input_file_name     Name of file to scale                   \n"; 
-    usemsg += "   -o            output_file_name    Name of scaled output image             \n";  
+    usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
+    usemsg += "   --mask        mask_file_name      Name of mask file                       \n";
     usemsg += "   -s            scale factor        float scaling factor                    \n";  
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
@@ -77,6 +79,7 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string outputFileName; 
+    string maskFileName; 
     float  scalingFactor = 1;  
     bool   verbose = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
@@ -84,10 +87,12 @@ int main (int argc, char** argv)
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
     enum FLAG_NAME {
+        FLAG_MASK = 0
     };
 
     static struct option long_options[] =
     {
+        {"mask",    required_argument, NULL,  FLAG_MASK},
         {0, 0, 0, 0}
     };
 
@@ -107,6 +112,9 @@ int main (int argc, char** argv)
             case 's':
                 scalingFactor = atof(optarg);
                 break;
+            case FLAG_MASK:
+                maskFileName.assign( optarg );
+                break;
             case 'v':
                 verbose = true;
                 break;
@@ -122,12 +130,6 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    /*
-     * In addition to svkImageWriters this converter also supports an xml writer for the vtk
-     * vti format. Because this writer is not a vtkImageWriter svkImagerWriterFactory cannot
-     * return it so we must instantiate it outside of the factory. To account for this extra
-     * type we will support a dataTypeOut equal to svkImageWriterFactory::LAST_TYPE + 1.
-     */
     if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ) { 
         cout << usemsg << endl;
         exit(1); 
@@ -138,10 +140,15 @@ int main (int argc, char** argv)
         cout << "INPUT:   " << inputFileName << endl;
         cout << "OUTPUT:  " << outputFileName << endl;
         cout << "SCALING: " << scalingFactor << endl;
+        cout << "MASK:    " << maskFileName  << endl;
     }
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+    svkImageReader2* readerMask = NULL;
+    if ( maskFileName.size() > 0 ) {
+        readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
+    }
 
     //  Get input reader type: 
     if ( reader->IsA("svkDcmMriVolumeReader") ) {
@@ -162,20 +169,27 @@ int main (int argc, char** argv)
     }
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
+    if ( readerMask!= NULL ) {
+        readerMask->SetFileName( maskFileName.c_str() );
+        readerMask->Update();
+    }
 
     svkImageData* currentImage =  reader->GetOutput();
 
     //  Set the input command line into the data set provenance:
-    currentImage->GetProvenance()->SetApplicationCommand( cmdLine );
+    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
     //  Scale image by constant factor: 
     svkImageMathematics* mathScaling = svkImageMathematics::New();
-    mathScaling->SetInput1( currentImage );
+    mathScaling->SetInput1( reader->GetOutput() );
     //  for some reason the binary operations do not work unless a
     //  second input is defined.     
-    mathScaling->SetInput2( currentImage ); 
+    mathScaling->SetInput2( reader->GetOutput() ); 
     mathScaling->SetConstantK( scalingFactor );
     mathScaling->SetOperationToMultiplyByK();   
+    if ( readerMask!= NULL ) {
+        mathScaling->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
+    }
     mathScaling->Update();
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
