@@ -350,7 +350,7 @@ void svkVarianCSFidMapper::InitPerFrameFunctionalGroupMacros()
     int numEchoes = this->GetHeaderValueAsInt("ne");
 
     svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices - 1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices - 1);
 
     this->dcmHeader->InitPerFrameFunctionalGroupSequence(
         volumeTlcUserFrame, 

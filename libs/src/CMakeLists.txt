@@ -169,7 +169,6 @@ ADD_LIBRARY(
     svkGEPFileMapperUCSFfidcsiDev0.cc
     svkGEPFileMapperUCSFfidcsiDev07t.cc
     svkGEPFileMapperMPCSIOBL.cc
-    svkRawMapperUtils.cc
     svkIdfVolumeReader.cc
     svkDdfVolumeReader.cc
     svkSdbmVolumeReader.cc
@@ -228,6 +227,7 @@ ADD_LIBRARY(
     svkMRSIOD.cc
     svkMRSNoise.cc
     svkMRSPeakPick.cc
+    svkMRSAverageSpectra.cc
     svkMRIIOD.cc
     svkEnhancedMRIIOD.cc
     svkRawIOD.cc

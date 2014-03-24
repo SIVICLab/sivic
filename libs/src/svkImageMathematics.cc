@@ -48,13 +48,11 @@
 #include <svkMriImageData.h>
 
 
-
 using namespace svk;
 
 
 vtkCxxRevisionMacro(svkImageMathematics, "$Rev$");
 vtkStandardNewMacro(svkImageMathematics);
-
 
 
 /*!
@@ -81,9 +79,9 @@ svkImageMathematics::~svkImageMathematics()
 }
 
 
-
 /*!
- *
+ *  This method loops over all volumes and calls the VTK super class update method on each to 
+ *  perform the specified calculation.  If necessary the output will be masked by an input mask.
  */
 void svkImageMathematics::Update()
 {
@@ -112,10 +110,35 @@ void svkImageMathematics::Update()
         
         this->Superclass::Update(); 
 
-        //  Push results into corect array in tmp data
+
+        //  Mask the data if a mask was provided.  Preferably the masking would be applied by 
+        //  limiting the extent fo the vtkImagetMathematics operation, but I'll just zero out the 
+        //  results here for now. 
+        if (this->GetInput( svkImageMathematics::MASK )) {
+            
+            vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetScalars();    // returns a vtkDataArray
+
+            svkMriImageData* maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkImageMathematics::MASK) );
+            unsigned short* mask = static_cast<vtkUnsignedShortArray*>( 
+                        maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+
+            int numVoxels[3];
+            svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
+            int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+
+            for ( int i = 0; i < totalVoxels; i++ ) {
+                if ( mask[i] == 0 ) { 
+                    outArray->SetTuple1( i, 0 );    // set value to 0 outside mask: 
+                }
+            }
+        }
+
+
+        //  Push results into correct array in tmp data
         tmp->GetPointData()->GetArray(vol)->DeepCopy( this->GetOutput()->GetPointData()->GetScalars() ); 
     }
 
+    //  Now copy the multi-volume output results back into the  algorithm's output object. 
     svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( tmp ); 
     tmp->Delete();
         
@@ -136,10 +159,23 @@ int svkImageMathematics::FillOutputPortInformation( int vtkNotUsed(port), vtkInf
 /*!
  *  Default input type is svkImageData base class. Override with a specific concrete type in 
  *  sub class if necessary. 
+ *  Port 0 -> input 1 image to operate on 
+ *       1 -> input 2 image to operate on (optional)
+ *       2 -> mask (optional)
  */
-int svkImageMathematics::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkImageMathematics::FillInputPortInformation( int port, vtkInformation* info )
 {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+    if ( port == 0 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+    } 
+    if ( port == 1 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+    } 
+    if ( port == 2 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 2);
+    } 
     return 1;
 }
 

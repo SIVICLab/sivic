@@ -721,11 +721,11 @@ void svkVarianUCSFEPSI2DMapper::RedimensionData( svkImageData* data, int* numVox
     data->GetDcmHeader()->GetDataDcos( dcos );
 
     double center[3]; 
-    this->GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
+    svkDcmHeader::GetCenterFromOrigin( origin, numVoxelsOriginal, voxelSpacing, dcos, center); 
 
     //  Now calcuate the new origin based on the reordered dimensionality: 
     double newOrigin[3]; 
-    this->GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
+    svkDcmHeader::GetOriginFromCenter( center, numVoxelsReordered, voxelSpacing, dcos, newOrigin ); 
 
     svkDcmHeader* hdr = data->GetDcmHeader();     
     hdr->SetValue( "Columns", numVoxelsReordered[0]);
@@ -744,35 +744,6 @@ void svkVarianUCSFEPSI2DMapper::RedimensionData( svkImageData* data, int* numVox
     data->SyncVTKImageDataToDcmHeader(); 
 }
 
-
-/*
- *  Calculates the LPS center from the origin(toplc).
- */
-void svkVarianUCSFEPSI2DMapper::GetCenterFromOrigin( double origin[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double center[3] )
-{
-    for( int i = 0; i < 3; i++ ) {
-        center[i] = origin[i];
-        for( int j = 0; j < 3; j++ ) {
-            center[i] += dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
-        }
-    }
-}
-
-
-/*
- *  Calculates the LPS origin (toplc) from the center.
- *  TODO:  refactor this, duplication of this and previous method with copy in svkGEPFileMapper  
- *      static reader methiod?
- */
-void svkVarianUCSFEPSI2DMapper::GetOriginFromCenter( double center[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double origin[3] )
-{
-    for( int i = 0; i < 3; i++ ) {
-        origin[i] = center[i];
-        for( int j = 0; j < 3; j++ ) {
-            origin[i] -= dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
-        }
-    }
-}
 
 
 /*

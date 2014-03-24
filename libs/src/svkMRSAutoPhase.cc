@@ -134,7 +134,7 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     int numSpatialVoxels = 1; 
     for ( int dim = 0; dim < 3; dim++) {
-        int dimSize = svkDcmHeader::GetDimensionValue ( &dimensionVector, dim ) + 1; 
+        int dimSize = svkDcmHeader::GetDimensionVectorValue ( &dimensionVector, dim ) + 1; 
         numSpatialVoxels *= dimSize;  
     }
 
@@ -319,7 +319,7 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
         svkDcmHeader::DimensionVector spatialIndexVector = dimensionVector; 
         svkDcmHeader::GetDimensionVectorIndexFromCellID(&dimensionVector, &spatialIndexVector, cellID);
         for ( int dim = 3; dim < dimensionVector.size(); dim++) {
-            svkDcmHeader::SetDimensionValue(&spatialIndexVector, dim, 0); 
+            svkDcmHeader::SetDimensionVectorValue(&spatialIndexVector, dim, 0); 
         }
         int spatialCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&dimensionVector, &spatialIndexVector); 
 

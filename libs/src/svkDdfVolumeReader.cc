@@ -929,7 +929,7 @@ void svkDdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     pixelSize[2] = this->GetHeaderValueAsFloat(ddfMap, "pixelSpacing3"); 
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
     this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
             &dimensionVector, svkDcmHeader::TIME_INDEX, this->numTimePts - 1 );

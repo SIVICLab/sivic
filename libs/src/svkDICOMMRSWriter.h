@@ -50,7 +50,7 @@
 #include <vtkInformation.h>
 #include <vtkExecutive.h>
 
-#include <svkImageWriter.h>
+#include <svkDICOMWriter.h>
 #include <svkImageData.h>
 
 
@@ -63,19 +63,15 @@ using namespace std;
 /*! 
  *  Concrete writer instance for DICOM MR Spectroscopy SOP class.  
  */
-class svkDICOMMRSWriter : public svkImageWriter
+class svkDICOMMRSWriter : public svkDICOMWriter
 {
 
     public:
 
         static svkDICOMMRSWriter* New();
-        vtkTypeRevisionMacro( svkDICOMMRSWriter, svkImageWriter);
+        vtkTypeRevisionMacro( svkDICOMMRSWriter, svkDICOMWriter);
 
         //  Methods:
-        void            SetInput( vtkDataObject* input );
-        void            SetInput(int index, vtkDataObject* input);
-        vtkDataObject*  GetInput(int port);
-        svkImageData*   GetImageDataInput(int port);
         virtual void    Write();
 
 
@@ -85,6 +81,7 @@ class svkDICOMMRSWriter : public svkImageWriter
         ~svkDICOMMRSWriter();
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+
 
     private:
         void            InitSpectroscopyData();

@@ -107,13 +107,13 @@ void svkDICOMMRSWriter::Write()
 
     // determine the name
     if (this->FileName) {
-        sprintf(this->InternalFileName,"%s",this->FileName);
+        sprintf(this->InternalFileName,"%s.%s",this->FileName, this->FilePrefix);
     } else {
         if (this->FilePrefix) {
             sprintf(this->InternalFileName, this->FilePattern,
                     this->FilePrefix, this->FileNumber);
         } else {
-            sprintf(this->InternalFileName, this->FilePattern,this->FileNumber);
+            sprintf(this->InternalFileName, this->FilePattern, this->FileNumber);
         }
     }
 
@@ -211,44 +211,4 @@ int svkDICOMMRSWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInform
     return 1;
 }
 
-
-/*!
- *
- */
-void svkDICOMMRSWriter::SetInput( vtkDataObject* input )
-{
-    this->SetInput(0, input);
-}
-
-
-/*!
- *
- */
-void svkDICOMMRSWriter::SetInput(int index, vtkDataObject* input)
-{
-    if(input) {
-        this->SetInputConnection(index, input->GetProducerPort());
-    } else {
-        // Setting a NULL input removes the connection.
-        this->SetInputConnection(index, 0);
-    }
-}
-
-
-/*!
- *
- */
-vtkDataObject* svkDICOMMRSWriter::GetInput(int port)
-{
-    return this->GetExecutive()->GetInputData(port, 0);
-}
-
-
-/*!
- *
- */
-svkImageData* svkDICOMMRSWriter::GetImageDataInput(int port)
-{
-    return svkImageData::SafeDownCast( this->GetInput(port) );
-}
 

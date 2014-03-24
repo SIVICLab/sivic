@@ -422,7 +422,7 @@ void svkDcmMriVolumeReader::InitPerFrameFunctionalGroupMacros()
     tmpImage->GetDcmHeader()->GetDataDcos( dcos ); 
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices-1);
     this->GetOutput()->GetDcmHeader()->AddDimensionIndex(
             &dimensionVector, svkDcmHeader::TIME_INDEX, this->numVolumes-1);
 

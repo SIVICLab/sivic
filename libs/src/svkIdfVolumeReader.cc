@@ -601,7 +601,7 @@ void svkIdfVolumeReader::InitPerFrameFunctionalGroupMacros()
     }
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
     if ( this->multiVolumeType == svkIdfVolumeReader::MULTI_CHANNEL_DATA ) { 
         this->GetOutput()->GetDcmHeader()->AddDimensionIndex(

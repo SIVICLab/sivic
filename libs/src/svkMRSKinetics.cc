@@ -308,17 +308,24 @@ void svkMRSKinetics::GenerateKineticParamMap()
     this->GetOutput(1)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
 
-    //  set up mask:  
-    svkMriImageData* maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkMRSKinetics::MASK) );
-    unsigned short* mask = static_cast<vtkUnsignedShortArray*>( 
-        maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+    //  set up mask.  If no input mask was provided, then set the mask to   
+    svkMriImageData* maskImage;
+    unsigned short* mask;
+    bool  hasMask = false;       
+    if (this->GetInput( svkMRSKinetics::MASK )) {
+        maskImage = svkMriImageData::SafeDownCast(this->GetImageDataInput(svkMRSKinetics::MASK) );
+        mask      = static_cast<vtkUnsignedShortArray*>( 
+                        maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+    } 
+
 
     for (int i = 0; i < totalVoxels; i++ ) {
 
         cout << "VOXEL NUMBER: " << i << endl;
         //cout << "MASK VALUE: " << mask[i] << endl;
 
-        if ( mask[i] != 0  ) {
+        //  If there is a mask check it.  If no mask provided, the compute all voxels. 
+        if ( (hasMask == true) && (mask[i] != 0 ) || ( hasMask == false )  ) {
 
             vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
                 svkMriImageData::SafeDownCast(

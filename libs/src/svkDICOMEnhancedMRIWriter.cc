@@ -66,7 +66,7 @@ svkDICOMEnhancedMRIWriter::svkDICOMEnhancedMRIWriter()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
-
+    this->SetFilePrefix("DCM");
 
 }
 

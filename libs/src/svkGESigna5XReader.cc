@@ -2960,7 +2960,7 @@ void svkGESigna5XReader::InitPerFrameFunctionalGroupMacros()
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
     int numSlices = this->GetFileNames()->GetNumberOfValues(); 
-    svkDcmHeader::SetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
+    svkDcmHeader::SetDimensionVectorValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
                 toplc,        

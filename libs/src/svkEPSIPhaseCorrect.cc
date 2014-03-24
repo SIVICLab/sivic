@@ -190,11 +190,11 @@ int svkEPSIPhaseCorrect::RequestData( vtkInformation* request, vtkInformationVec
 
         //  Index along epsiAxis used to get appropriate kPhaseArray values along epsiAxis 
         if ( this->epsiAxis == 2 ) {
-            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::SLICE_INDEX);  
+            epsiIndex = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::SLICE_INDEX);  
         } else if ( this->epsiAxis == 1 ) {
-            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::ROW_INDEX);  
+            epsiIndex = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::ROW_INDEX);  
         } else if ( this->epsiAxis == 0 ) {
-            epsiIndex = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::COL_INDEX);  
+            epsiIndex = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::COL_INDEX);  
         }
        
         //cout << "cellID " << cellID << endl;

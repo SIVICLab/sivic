@@ -609,3 +609,4 @@ void svkUtils::GetRealpath( const char * path, int size, char* resultRealpath )
 #endif
 
 }
+

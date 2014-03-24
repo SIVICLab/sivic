@@ -91,14 +91,6 @@ class svk4DImageData: public svkImageData
         static vtkstd::string GetArrayName( 
                             svkDcmHeader::DimensionVector* dimensionVector
                        ); 
-        static void    SetDimensionVectorIndex(
-                            svkDcmHeader::DimensionVector* dimensionVector, 
-                            svkDcmHeader::DimensionIndexLabel indexDimension, 
-                            int index
-                       );
-        static void    SetDimensionVectorIndex(svkDcmHeader::DimensionVector* dimensionVector, int index, int indexValue); 
-
-        static void    GetSpatialDimensions(svkDcmHeader::DimensionVector* dimensionVector, int* numVoxels);
         static bool    IsIndexInExtent( int* extent, svkDcmHeader::DimensionVector* indexVector );  
 
         virtual int    GetLastSlice( svkDcmHeader::Orientation sliceOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );

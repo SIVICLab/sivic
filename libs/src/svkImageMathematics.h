@@ -65,6 +65,13 @@ class svkImageMathematics : public vtkImageMathematics
 
     public:
         static svkImageMathematics* New();
+
+        typedef enum {
+            INPUT_IMAGE_1 = 0,
+            INPUT_IMAGE_2,
+            MASK
+        } MATH_INPUT;
+
         vtkTypeRevisionMacro( svkImageMathematics, vtkImageMathematics);
         virtual void    Update(); 
 

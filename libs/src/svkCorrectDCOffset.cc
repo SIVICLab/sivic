@@ -110,14 +110,14 @@ void svkCorrectDCOffset::CorrectDCOffset()
 
     svkDcmHeader::DimensionVector channelDimensionVector = fullDimensionVector;  
     //  analyze one channel at a time: 
-    svkDcmHeader::SetDimensionValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+    svkDcmHeader::SetDimensionVectorValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
     //cout << "SUBSET FULL" << endl;
     //svkDcmHeader::PrintDimensionIndexVector(&channelDimensionVector);
     svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
 
     int numVoxelsPerChannel = svkDcmHeader::GetNumberOfCells( &channelDimensionVector ); 
     int numSpecPts          = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    int numCoils            = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+    int numCoils            = svkDcmHeader::GetDimensionVectorValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
     string representation = mrsData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
@@ -146,7 +146,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
             //  Get the dimensions for the single channel.  reset the channel index and get the 
             //  actual cellID for this channel 
             svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
-            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
             int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID) );
             //svkDcmHeader::PrintDimensionIndexVector(&indexVector);
@@ -172,7 +172,7 @@ void svkCorrectDCOffset::CorrectDCOffset()
             //  Get the dimensions for the single channel.  reset the channel index and get the 
             //  actual cellID for this channel 
             svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
-            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, coil);
             int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
 
             spectrum = static_cast< vtkFloatArray* >( mrsData->GetSpectrum( absoluteCellID ) );

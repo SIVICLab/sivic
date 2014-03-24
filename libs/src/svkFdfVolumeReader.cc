@@ -513,7 +513,7 @@ void svkFdfVolumeReader::InitPerFrameFunctionalGroupMacros()
 
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector(); 
     this->numSlices = this->GetHeaderValueAsInt("matrix[]", 2);
-    svkDcmHeader::SetDimensionValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
+    svkDcmHeader::SetDimensionVectorValue(&dimensionVector, svkDcmHeader::SLICE_INDEX, this->numSlices-1);
 
     this->GetOutput()->GetDcmHeader()->InitPerFrameFunctionalGroupSequence(
                 toplc,        

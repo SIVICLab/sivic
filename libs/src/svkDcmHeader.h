@@ -725,12 +725,17 @@ class svkDcmHeader: public vtkObject
         static DimensionIndexLabel StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString );
         static vtkstd::string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
         static DimensionIndexLabel GetDimensionLabelFromIndex( svkDcmHeader::DimensionVector* dimensionVector, int index ); 
-        static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, 
+        static int      GetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, 
                                             svkDcmHeader::DimensionIndexLabel dimensionLabel); 
-        static int      GetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index);
-        static void     SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, int index, int value);
-        static void     SetDimensionValue(svkDcmHeader::DimensionVector* dimensionVector, 
-                            svkDcmHeader::DimensionIndexLabel indexType, int value); 
+        static int      GetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, int index);
+        static void     SetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, 
+                                          int index, 
+                                          int value
+                        );
+        static void     SetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, 
+                                          svkDcmHeader::DimensionIndexLabel indexType, 
+                                          int value
+                        ); 
         static bool     IsDimensionDefined(svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionIndexLabel indexType); 
         static void     GetDimensionVectorIndexFromFrame( svkDcmHeader::DimensionVector* dimensionVector, 
@@ -842,6 +847,26 @@ class svkDcmHeader: public vtkObject
         static svkDcmHeader::DcmPixelDataFormat  GetVtkDataTypeFromSvkDataType( vtkIdType vtkType); 
         void            Redimension(svkDcmHeader::DimensionVector* dimensionVector);
 
+        
+        static void     GetCenterFromOrigin( 
+                                    double origin[3], 
+                                    int numVoxels[3], 
+                                    double voxelSpacing[3], 
+                                    double dcos[3][3], 
+                                    double center[3] 
+                        );
+        static void     GetCenterFromOrigin( svkDcmHeader* hdr, double center[3] ); 
+        static void     GetOriginFromCenter( 
+                                    double center[3], 
+                                    int numVoxels[3], 
+                                    double voxelSpacing[3], 
+                                    double dcos[3][3], 
+                                    double origin[3] 
+                        );
+        static void    GetSpatialDimensions(
+                            svkDcmHeader::DimensionVector* dimensionVector, 
+                            int* numVoxels
+                       );
         
 
     protected:

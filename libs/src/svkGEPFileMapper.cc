@@ -466,7 +466,7 @@ void svkGEPFileMapper::InitPerFrameFunctionalGroupMacros()
     int numTimePts = this->GetNumTimePoints();
 
     svkDcmHeader::DimensionVector dimensionVector = this->dcmHeader->GetDimensionIndexVector(); 
-    svkDcmHeader::SetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
+    svkDcmHeader::SetDimensionVectorValue( &dimensionVector, svkDcmHeader::SLICE_INDEX, numSlices - 1 );
     this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::TIME_INDEX, numTimePts - 1 );
     this->dcmHeader->AddDimensionIndex( &dimensionVector, svkDcmHeader::CHANNEL_INDEX, numCoils - 1 );
 
@@ -2657,7 +2657,7 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
         svkDcmHeader::DimensionVector dimensionVectorIn = hdr->GetDimensionIndexVector();
 
         //  Also, currently doesn't support dynamic data, so if more than one time point, exit: 
-        int numTimePts = svkDcmHeader::GetDimensionValue(&dimensionVectorIn, svkDcmHeader::TIME_INDEX); 
+        int numTimePts = svkDcmHeader::GetDimensionVectorValue(&dimensionVectorIn, svkDcmHeader::TIME_INDEX); 
         if (numTimePts > 1 ) {
             cout << "ERROR:  svkGEPFileMapper does not currently support dynamic EPSI reordering " << endl;
             exit(1);
@@ -2674,7 +2674,7 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
 
         svkDcmHeader::DimensionVector dimensionVectorTmp = dataTmp->GetDcmHeader()->GetDimensionIndexVector(); 
         dataTmp->GetDcmHeader()->AddDimensionIndex( &dimensionVectorTmp, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
-        svk4DImageData::SetDimensionVectorIndex( &dimensionVectorTmp, svkDcmHeader::TIME_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &dimensionVectorTmp, svkDcmHeader::TIME_INDEX, 0);
 
         //  Allocate arrays for target data set: 
         svkFastCellData* cellDataTmp = static_cast<svkFastCellData*>(dataTmp->GetCellData()); 
@@ -2712,13 +2712,13 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
             //  Get the dimensionVector index for the non-dynamic image: 
             svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVectorIn, &indexVector, cellID );
 
-            int timePt = svkDcmHeader::GetDimensionValue(&indexVector, svkDcmHeader::TIME_INDEX); 
+            int timePt = svkDcmHeader::GetDimensionVectorValue(&indexVector, svkDcmHeader::TIME_INDEX); 
 
             //  relabel the 2nd time point as the 2nd EPSI Acq point
             if ( timePt == 1 ) {
 
-                svk4DImageData::SetDimensionVectorIndex( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX, timePt); 
-                svk4DImageData::SetDimensionVectorIndex( &indexVector, svkDcmHeader::TIME_INDEX, 0);
+                svkDcmHeader::SetDimensionVectorValue( &indexVector, svkDcmHeader::EPSI_ACQ_INDEX, timePt); 
+                svkDcmHeader::SetDimensionVectorValue( &indexVector, svkDcmHeader::TIME_INDEX, 0);
             }
 
             //  Get array from target dynamic image: 
@@ -2867,34 +2867,6 @@ int svkGEPFileMapper::GetNumberSuppressedAcquisitions( )
     float user4 = this->GetHeaderValueAsFloat( "rhi.user4" ) ; 
     int numSuppressed = static_cast< int > ( user4 / nex ); 
     return numSuppressed; 
-}
-
-
-/*
- *  Calculates the LPS center from the origin(toplc).
- */
-void svkGEPFileMapper::GetCenterFromOrigin( double origin[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double center[3] )
-{
-    for( int i = 0; i < 3; i++ ) {
-        center[i] = origin[i];
-        for( int j = 0; j < 3; j++ ) {
-            center[i] += dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
-        }
-    }
-}
-
-
-/*
- *  Calculates the LPS origin (toplc) from the center.
- */
-void svkGEPFileMapper::GetOriginFromCenter( double center[3], int numVoxels[3], double voxelSpacing[3], double dcos[3][3], double origin[3] )
-{
-    for( int i = 0; i < 3; i++ ) {
-        origin[i] = center[i];
-        for( int j = 0; j < 3; j++ ) {
-            origin[i] -= dcos[j][i] * voxelSpacing[j] * ( numVoxels[j] / 2.0 - 0.5 );
-        }
-    }
 }
 
 

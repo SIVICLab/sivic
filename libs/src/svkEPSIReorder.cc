@@ -43,7 +43,6 @@
 
 #include <svkEPSIReorder.h>
 #include <svkMrsLinearPhase.h> 
-#include <svkRawMapperUtils.h> 
 #include <svkUtils.h> 
 
 
@@ -328,12 +327,12 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //svkDcmHeader::PrintDimensionIndexVector(&inputDimensionVector); 
 
     int numVoxels[3]; 
-    numVoxels[0] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::COL_INDEX) + 1;
-    numVoxels[1] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::ROW_INDEX) + 1;
-    numVoxels[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
+    numVoxels[0] = svkDcmHeader::GetDimensionVectorValue( &inputDimensionVector, svkDcmHeader::COL_INDEX) + 1;
+    numVoxels[1] = svkDcmHeader::GetDimensionVectorValue( &inputDimensionVector, svkDcmHeader::ROW_INDEX) + 1;
+    numVoxels[2] = svkDcmHeader::GetDimensionVectorValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     numVoxels[ epsiDir ] = this->GetNumSamplesPerLobe();
 
-    int numChannels = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+    int numChannels = svkDcmHeader::GetDimensionVectorValue( &inputDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
     //cout << "NUM CHANNELS 1" << numChannels << endl; exit(1); 
 
     //  Set the number of reordered voxels (target dimensionality of this method)
@@ -365,11 +364,11 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     //  Add an index to the data set to represent the EPSI acq, for example sym EPSI contains data 
     //  from pos and neg gradient.  Interleaved also contains 2 data sets. 
     svkDcmHeader::DimensionVector outDimensionVector = reorderedImageData->GetDcmHeader()->GetDimensionIndexVector(); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::COL_INDEX, reorderedVoxels[0] - 1); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::ROW_INDEX, reorderedVoxels[1] - 1); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::SLICE_INDEX, reorderedVoxels[2] - 1); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints - 1); 
-    svk4DImageData::SetDimensionVectorIndex(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels - 1); 
+    svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::COL_INDEX, reorderedVoxels[0] - 1); 
+    svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::ROW_INDEX, reorderedVoxels[1] - 1); 
+    svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::SLICE_INDEX, reorderedVoxels[2] - 1); 
+    svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::TIME_INDEX, numTimePoints - 1); 
+    svkDcmHeader::SetDimensionVectorValue(&outDimensionVector, svkDcmHeader::CHANNEL_INDEX, numChannels - 1); 
     reorderedImageData->GetDcmHeader()->AddDimensionIndex( &outDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, numEPSIAcquisitions - 1 ); 
     svkDcmHeader::DimensionVector outLoopVector = outDimensionVector; 
 
@@ -429,10 +428,10 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
 //cout << "CHECK in reorder: " << *epsiSpectrumAN->GetTuple(0) << endl; 
     
         //  define range of spatial dimension to expand (i.e. epsiAxis):  
-        int xEPSI   = svkDcmHeader::GetDimensionValue( &inputLoopVector, svkDcmHeader::COL_INDEX); 
-        int yEPSI   = svkDcmHeader::GetDimensionValue( &inputLoopVector, svkDcmHeader::ROW_INDEX); 
-        int zEPSI   = svkDcmHeader::GetDimensionValue( &inputLoopVector, svkDcmHeader::SLICE_INDEX); 
-        int channel = svkDcmHeader::GetDimensionValue( &inputLoopVector, svkDcmHeader::CHANNEL_INDEX); 
+        int xEPSI   = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::COL_INDEX); 
+        int yEPSI   = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::ROW_INDEX); 
+        int zEPSI   = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::SLICE_INDEX); 
+        int channel = svkDcmHeader::GetDimensionVectorValue( &inputLoopVector, svkDcmHeader::CHANNEL_INDEX); 
 
         int rangeMin[4]; 
         rangeMin[0] = xEPSI; 
@@ -463,11 +462,11 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         //  init outLoopVector to 0, then reset values that increment: 
         int numDims = outLoopVector.size(); 
         for (int dim = 0; dim < numDims; dim++) {
-            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, dim, 0); 
+            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, dim, 0); 
         }
 
         int currentAcq; 
-        currentAcq = svkDcmHeader::GetDimensionValue(&inputLoopVector, svkDcmHeader::EPSI_ACQ_INDEX); //testing
+        currentAcq = svkDcmHeader::GetDimensionVectorValue(&inputLoopVector, svkDcmHeader::EPSI_ACQ_INDEX); //testing
 
 
         int currentEPSIPt = this->firstSample;   
@@ -497,11 +496,11 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
                         for (int x = rangeMin[0]; x < rangeMax[0] + 1; x++ ) { 
 
                             //  Initialize the dimensionVector with the current cell array indices: 
-                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::COL_INDEX, x); 
-                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::ROW_INDEX, y); 
-                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::SLICE_INDEX, z); 
-                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
-                            svk4DImageData::SetDimensionVectorIndex(&outLoopVector, svkDcmHeader::EPSI_ACQ_INDEX, currentAcq); 
+                            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, svkDcmHeader::COL_INDEX, x); 
+                            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, svkDcmHeader::ROW_INDEX, y); 
+                            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, svkDcmHeader::SLICE_INDEX, z); 
+                            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, svkDcmHeader::CHANNEL_INDEX, channel); 
+                            svkDcmHeader::SetDimensionVectorValue(&outLoopVector, svkDcmHeader::EPSI_ACQ_INDEX, currentAcq); 
 
                             //  Now get the cell ID for this set of indices: 
                             int cellIDInner = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &outDimensionVector, &outLoopVector ); 
@@ -548,15 +547,13 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
     data->DeepCopy( reorderedImageData ); 
     //data->DeepCopy( reorderedImageData ); 
 
-    int numVoxelsOriginal[3];  
-    numVoxelsOriginal[0] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::COL_INDEX) + 1;
-    numVoxelsOriginal[1] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::ROW_INDEX) + 1;
-    numVoxelsOriginal[2] = svkDcmHeader::GetDimensionValue( &inputDimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
-    svkRawMapperUtils::RedimensionData( data, numVoxelsOriginal, &outDimensionVector, numFreqPts); 
+    // new version: 
+    data->GetDcmHeader()->Redimension( &outDimensionVector );
+    data->GetDcmHeader()->SetValue( "DataPointColumns", numFreqPts );
+    data->SyncVTKImageDataToDcmHeader();
 
     //cout << "FINAL" << endl;
     //svkDcmHeader::PrintDimensionIndexVector(&outDimensionVector);
-
 
     //  if interleaved EPSI, then interleave here. 
     if ( this->epsiType == svkEPSIReorder::INTERLEAVED ) {
@@ -595,7 +592,7 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
         svkDcmHeader::DimensionVector epsiDimensionVector = data->GetDcmHeader()->GetDimensionIndexVector(); 
         svkDcmHeader::DimensionVector loopVector0 = epsiDimensionVector;    // interleave 0
         svkDcmHeader::DimensionVector loopVector1;                          // interleave 1
-        svk4DImageData::SetDimensionVectorIndex(&epsiDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
+        svkDcmHeader::SetDimensionVectorValue(&epsiDimensionVector, svkDcmHeader::EPSI_ACQ_INDEX, 0); 
         int numCells = svkDcmHeader::GetNumberOfCells( &epsiDimensionVector ); 
 
         int percentTmp; 
@@ -611,14 +608,14 @@ void svkEPSIReorder::ReorderEPSIData( svkImageData* data )
             //  Get the dimensionVector index for current cell for both EPSI interleaves: 
             svkDcmHeader::GetDimensionVectorIndexFromCellID( &epsiDimensionVector, &loopVector0, cellID ); 
             loopVector1 = loopVector0; 
-            svkDcmHeader::SetDimensionValue(&loopVector1, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
+            svkDcmHeader::SetDimensionVectorValue(&loopVector1, svkDcmHeader::EPSI_ACQ_INDEX, 1); 
 
             //for all indices except EPSI, map to outputDimensions 
             for ( int i = 0; i < loopVector0.size(); i++ ) {
                 svkDcmHeader::DimensionIndexLabel dimLabel = svkDcmHeader::GetDimensionLabelFromIndex( &loopVector0, i );   
                 if ( dimLabel != svkDcmHeader::EPSI_ACQ_INDEX ) {
-                    int dimValue = svkDcmHeader::GetDimensionValue(&loopVector0, i); 
-                    svkDcmHeader::SetDimensionValue(&outputLoopVector, dimLabel, dimValue);         
+                    int dimValue = svkDcmHeader::GetDimensionVectorValue(&loopVector0, i); 
+                    svkDcmHeader::SetDimensionVectorValue(&outputLoopVector, dimLabel, dimValue);         
                 }
             }
 

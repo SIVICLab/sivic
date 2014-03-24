@@ -101,20 +101,6 @@ class svkVarianUCSFEPSI2DMapper : public svkVarianFidMapper
                             int numFreqPts 
                         );
 
-        void            GetCenterFromOrigin( 
-                            double origin[3], 
-                            int numVoxels[3], 
-                            double voxelSpacing[3], 
-                            double dcos[3][3], 
-                            double center[3] 
-                        ); 
-        void            GetOriginFromCenter( 
-                            double center[3], 
-                            int numVoxels[3], 
-                            double voxelSpacing[3], 
-                            double dcos[3][3], 
-                            double origin[3] 
-                        ); 
 
         virtual void    SetCellSpectrum(vtkImageData* data, int x, int y, int z, int timePt, int coilNum); 
 

@@ -116,6 +116,7 @@ class svkUtils : public vtkObject
         static int            GetNumberOfDigits( int value, bool isMinusDigit = false );
         static void           GetRealpath( const char * path, int size, char* realpath ); 
 
+
 	protected:
 
        svkUtils();

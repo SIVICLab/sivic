@@ -147,9 +147,9 @@ void svkDcmEnhancedVolumeReader::InitPrivateHeader()
 void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
 {
     svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-    int rows = svkDcmHeader::GetDimensionValue( &dimensionVector, svkDcmHeader::ROW_INDEX) + 1;
-    int columns = svkDcmHeader::GetDimensionValue( &dimensionVector, svkDcmHeader::COL_INDEX) + 1;
-    int numSlices = svkDcmHeader::GetDimensionValue( &dimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
+    int rows = svkDcmHeader::GetDimensionVectorValue( &dimensionVector, svkDcmHeader::ROW_INDEX) + 1;
+    int columns = svkDcmHeader::GetDimensionVectorValue( &dimensionVector, svkDcmHeader::COL_INDEX) + 1;
+    int numSlices = svkDcmHeader::GetDimensionVectorValue( &dimensionVector, svkDcmHeader::SLICE_INDEX) + 1;
     int numFrames = this->GetOutput()->GetDcmHeader()->GetIntValue( "NumberOfFrames" );
     this->numVolumes = numFrames / numSlices;
 

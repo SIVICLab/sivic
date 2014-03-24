@@ -48,7 +48,6 @@
 #include <vtkDoubleArray.h>
 
 
-
 using namespace svk;
 
 
@@ -68,6 +67,7 @@ svkDICOMImageWriter::svkDICOMImageWriter()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
 
     this->useLosslessCompression = false; 
+    this->SetFilePrefix("dcm"); 
 }
 
 
@@ -87,48 +87,6 @@ int svkDICOMImageWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInfo
     info->Set(svkDICOMImageWriter::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     return 1;
 }
-
-
-/*!
- *
- */
-void svkDICOMImageWriter::SetInput( vtkDataObject* input )
-{
-    this->SetInput(0, input);
-}
-
-
-/*!
- *
- */
-void svkDICOMImageWriter::SetInput(int index, vtkDataObject* input)
-{
-    if(input) {
-        this->SetInputConnection(index, input->GetProducerPort());
-    } else {
-        // Setting a NULL input removes the connection.
-        this->SetInputConnection(index, 0);
-    }
-}
-
-
-/*!
- *
- */
-vtkDataObject* svkDICOMImageWriter::GetInput(int port)
-{
-    return this->GetExecutive()->GetInputData(port, 0);
-}
-
-
-/*!
- *
- */
-svkImageData* svkDICOMImageWriter::GetImageDataInput(int port)
-{
-    return svkImageData::SafeDownCast( this->GetInput(port) );
-}
-
 
 
 /*!

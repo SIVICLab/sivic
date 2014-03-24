@@ -47,7 +47,7 @@
 
 #include <vtkInformation.h>
 
-#include <svkImageWriter.h>
+#include <svkDICOMWriter.h>
 #include <svkImageData.h>
 #include <svkUtils.h>
 
@@ -58,18 +58,14 @@ namespace svk {
 /*! 
  *  Base Class for DICOM MRI writers. 
  */
-class svkDICOMImageWriter : public svkImageWriter
+class svkDICOMImageWriter : public svkDICOMWriter
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkDICOMImageWriter, svkImageWriter);
+        vtkTypeRevisionMacro( svkDICOMImageWriter, svkDICOMWriter);
 
         //  Methods:
-        void            SetInput( vtkDataObject* input );
-        void            SetInput(int index, vtkDataObject* input);
-        vtkDataObject*  GetInput(int port);
-        svkImageData*   GetImageDataInput(int port);
         void            UseLosslessCompression(); 
 
     protected:

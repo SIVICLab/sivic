@@ -197,7 +197,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numVoxels = 1;
     for ( int dim = 0; dim < 3; dim++) {
-        int dimSize = svkDcmHeader::GetDimensionValue ( &dimensionVector, dim ) + 1;
+        int dimSize = svkDcmHeader::GetDimensionVectorValue ( &dimensionVector, dim ) + 1;
         numVoxels *= dimSize;
     }
     if ( numVoxels == 1 ) {
@@ -435,7 +435,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         //  Get the dimensionVector index for current cell -> indexVector: 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
 
-        int slice = svkDcmHeader::GetDimensionValue( &indexVector, svkDcmHeader::SLICE_INDEX);
+        int slice = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::SLICE_INDEX);
 
         ostringstream progressStream;
         progressStream <<"Executing FFT for cell " << cellID + 1 << "/" << numCells ;
