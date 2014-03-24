@@ -462,6 +462,17 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+
+ADD_EXECUTABLE(
+    svk_average_spec
+    svk_average_spec.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_average_spec
+	${SVK_LIBS}
+)
+
+
 ADD_EXECUTABLE(
     svk_channel2time
     svk_channel2time.cc
@@ -560,6 +571,8 @@ SET(APPS
     svk_phase_spec 
     svk_fft
     svk_scale_image
+    svk_average_spectra
+    svk_noise
     svk_met_kinetics
 )
 if ( BUILD_CLAPACK )
