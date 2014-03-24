@@ -251,7 +251,7 @@ int main (int argc, char** argv)
     }
 
 
-    //  Make sure the file name doesn't contain a root: 
+    //  Make sure the file name doesn't contain an extension: 
     outputFileName = svkImageReader2::GetFileRoot(outputFileName.c_str()); 
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
