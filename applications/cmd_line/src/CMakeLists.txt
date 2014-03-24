@@ -571,7 +571,7 @@ SET(APPS
     svk_phase_spec 
     svk_fft
     svk_scale_image
-    svk_average_spectra
+    svk_average_spec
     svk_noise
     svk_met_kinetics
 )

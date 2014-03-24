@@ -185,12 +185,12 @@ int main (int argc, char** argv)
     svkDcmHeader::DimensionVector fullDimensionVector = refData->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector channelDimensionVector = fullDimensionVector;  
     //  analyze one channel at a time: 
-    svkDcmHeader::SetDimensionValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
+    svkDcmHeader::SetDimensionVectorValue(&channelDimensionVector, svkDcmHeader::CHANNEL_INDEX, 0);
     svkDcmHeader::DimensionVector indexVector = fullDimensionVector; 
 
     int numVoxelsPerChannel = svkDcmHeader::GetNumberOfCells( &channelDimensionVector ); 
     int numSpecPts          = refData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
-    int numChannels         = svkDcmHeader::GetDimensionValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
+    int numChannels         = svkDcmHeader::GetDimensionVectorValue(&fullDimensionVector, svkDcmHeader::CHANNEL_INDEX) + 1; 
 
     string representation   = refData->GetDcmHeader()->GetStringValue( "DataRepresentation" );
     int numComponents = 1;
@@ -207,7 +207,7 @@ int main (int argc, char** argv)
             //  Get the dimensions for the single channel.  reset the channel index and get the 
             //  actual cellID for this channel 
             svkDcmHeader::GetDimensionVectorIndexFromCellID(&channelDimensionVector, &indexVector, cellID); 
-            svkDcmHeader::SetDimensionValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, channel);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::CHANNEL_INDEX, channel);
             int absoluteCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&fullDimensionVector, &indexVector); 
 
             vtkFloatArray* refSpectrum; 
