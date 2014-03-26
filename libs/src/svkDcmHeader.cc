@@ -2953,7 +2953,7 @@ void svkDcmHeader::AddDimensionIndex( svkDcmHeader::DimensionVector* dimensionVe
 {
 
     if ( maxIndex < 0 ) {
-        cerr << "ERROR(svkDcmHeader::AddDImensionIndex dim size must be >= 1 " << endl;
+        cerr << "ERROR(svkDcmHeader::AddDimensionIndex) dim size must be >= 1 " << endl;
         exit(1);
     }
 
@@ -3042,7 +3042,7 @@ void svkDcmHeader::SetDimensionIndexSize( svkDcmHeader::DimensionIndexLabel inde
 {
 
     if ( maxIndex < 0 ) {
-        cerr << "ERROR(svkDcmHeader::AddDImensionIndex dim size must be >= 1 (min index 0)" << endl;
+        cerr << "ERROR(svkDcmHeader::SetDimensionIndex) dim size must be >= 1 (min index 0)" << endl;
         exit(1);
     }
     svkDcmHeader::DimensionVector dimensionVector = this->GetDimensionIndexVector(); 
