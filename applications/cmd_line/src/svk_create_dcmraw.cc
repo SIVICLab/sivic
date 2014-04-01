@@ -214,7 +214,7 @@ int main (int argc, char** argv)
         cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
     
         svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
-        rawWriter->SetFileName( inputRawFileName.c_str() );
+        rawWriter->SetFileNameWithExtension( inputRawFileName.c_str() );
         rawWriter->SetSHA1Digest( digest ); 
 
         for (int i = 0; i < associatedFiles.size(); i++ ) {
