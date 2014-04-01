@@ -98,6 +98,17 @@ void svkImageWriter::SetFileName (const char* fileName)
 }
 
 
+/*
+ *  This will not strip the extension. Used in svkDICOMRawDataWriter
+ *  which is both a reader AND a writer and needs the extension no read
+ *  its input file.
+ */
+void svkImageWriter::SetFileNameWithExtension (const char* fileName)
+{
+    this->Superclass::SetFileName( fileName );
+}
+
+
 /*!
  *
  */

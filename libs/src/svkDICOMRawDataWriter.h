@@ -82,6 +82,7 @@ class svkDICOMRawDataWriter : public svkImageWriter
         void            AddAssociatedFile( string fileName, string sha1Digest ); 
         void            ReuseSeriesUID( bool reuseUID ); 
         void            ReuseInstanceUID( bool reuseUID ); 
+        virtual void    SetFileName (const char* fileName);
         void            SetSeriesUID( vtkstd::string UID ); 
         void            SetInstanceUID( vtkstd::string UID ); 
         virtual void    Write();

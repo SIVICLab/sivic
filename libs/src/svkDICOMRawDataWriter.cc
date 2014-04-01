@@ -115,6 +115,14 @@ void svkDICOMRawDataWriter::ReuseInstanceUID( bool reuseUID )
 }
 
 
+/*
+ *  DO NOT USE THIS METHOD. Call SetFileNameWithExtension instead.
+ */
+void svkDICOMRawDataWriter::SetFileName (const char* fileName)
+{
+    cerr << "ERROR: svkDICOMRawDataWriter::SetFileName-- This method should not be used. Use SetFileNameWithExtension instead."<< endl;
+}
+
 
 /*
  *  Use the specified seriesInstanceUID, rather than the uid from the raw file. 

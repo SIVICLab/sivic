@@ -84,6 +84,7 @@ class svkImageWriter : public vtkImageWriter
         void            SetSeriesDescription(string description);
         void            SetInstanceNumber(int number);
         virtual void    SetFileName (const char *); 
+        virtual void    SetFileNameWithExtension (const char *);
 
 
     protected:
