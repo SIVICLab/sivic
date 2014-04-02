@@ -190,8 +190,9 @@ ADD_LIBRARY(
     svkGESignaLX2Reader.cc
     svkPACSInterface.cc
     svkUCSFPACSInterface.cc
-	svkDataModel.cc
-	svkDataValidator.cc
+    svkGEConsolePACSInterface.cc
+    svkDataModel.cc
+    svkDataValidator.cc
     svkImageInPlaceFilter.cc    
     svkThreadedImageAlgorithm.cc
     svkPhaseSpec.cc
