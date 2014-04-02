@@ -297,6 +297,10 @@ int main (int argc, char** argv)
     
     }
 
+    if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+        cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl; 
+        exit(1); 
+    }
 
     //  if chop was specified, must be either On or Off
     if ( chopString.compare("") != 0 && (chopString.compare("on")!=0 || chopString.compare("off") != 0 ))  {

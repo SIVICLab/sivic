@@ -184,6 +184,11 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
+        cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
+        exit(1); 
+    }
+
     if ( useCompression && 
         (dataTypeOut != svkImageWriterFactory::DICOM_MRI 
             && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI ) ) {
