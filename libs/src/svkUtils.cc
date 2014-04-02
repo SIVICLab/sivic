@@ -92,6 +92,7 @@ string svkUtils::GetCurrentWorkingDirectory()
 	return string(cwd);
 }
 
+
 string svkUtils::GetUserName()
 {
     string userName = "";
@@ -172,7 +173,8 @@ int svkUtils::MoveFile( const char* input, const char* output )
 
 
 /*!
- *  Moves all image slices from one location to another. Either * in the imageBaseName will be replaced with the slice number
+ *  Moves all image slices from one location to another. Either * in the 
+ *  imageBaseName will be replaced with the slice number
  *  or a number will be inserted before the extention.
  */
 vector<string> svkUtils::GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice )
@@ -391,6 +393,7 @@ void svkUtils::StringToColorArray( double color[3], string colorString )
     }
 }
 
+
 string svkUtils::ColorArrayToString( double color[3] )
 {
     stringstream stream;
@@ -398,19 +401,17 @@ string svkUtils::ColorArrayToString( double color[3] )
     return stream.str();
 }
 
+
+/*!
+ *  Returns the string following final slash.  This could be a filename
+ *  or terminal directory.  
+ */
 string svkUtils::GetFilenameFromFullPath( string fullPath )
 {
-    /*
-    size_t posSlash = fullPath.find_last_of("/");
-    if (  posSlash != string::npos) {
-        return fullPath.substr(posSlash, string::npos );
-    } else {
-        return fullPath;
-    }
-    */
     vector<string> splitString = svkUtils::SplitString(fullPath, "/");
     return splitString[splitString.size()-1];
 }
+
 
 vector<string> svkUtils::SplitString( string str, string token )
 {
@@ -427,6 +428,7 @@ vector<string> svkUtils::SplitString( string str, string token )
     }
     return result;
 }
+
 
 /*
  *   Returns the nearest int.  For values at the mid-point,
@@ -560,6 +562,7 @@ bool svkUtils::AreValuesClose( double x, double y, double maxRatio )
 	}
 
 }
+
 
 /*!
  * Used to test for minor differences in values.
