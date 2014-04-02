@@ -102,6 +102,7 @@ endif (BUILD_SLICER)
 if( BUILD_GE_CONSOLE )
     ADD_DEFINITIONS(-DBUILD_GE_CONSOLE )
     SET( UCSF_INTERNAL OFF CACHE BOOL "ucsf internal off" FORCE )
+    add_subdirectory (applications/scanner/GE_console)
 endif( BUILD_GE_CONSOLE )
 
 

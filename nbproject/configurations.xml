@@ -18,6 +18,8 @@
               </df>
               <df name="svk_auto_phase.dir">
               </df>
+              <df name="svk_average_spec.dir">
+              </df>
               <df name="svk_channel2time.dir">
               </df>
               <df name="svk_create_dcmraw.dir">
@@ -221,6 +223,8 @@
           </df>
         </df>
       </df>
+      <df name="bak">
+      </df>
       <df name="Build">
         <df name="Debug">
         </df>
@@ -233,6 +237,14 @@
                 <df name="src">
                   <df name="CMakeFiles">
                     <df name="svk_app_template.dir">
+                    </df>
+                    <df name="svk_auto_phase.dir">
+                    </df>
+                    <df name="svk_average_spec.dir">
+                    </df>
+                    <df name="svk_channel2time.dir">
+                    </df>
+                    <df name="svk_create_dcmraw.dir">
                     </df>
                     <df name="svk_dcm_deid.dir">
                     </df>
@@ -251,6 +263,8 @@
                     <df name="svk_hsvd.dir">
                     </df>
                     <df name="svk_integrate_dynamic.dir">
+                    </df>
+                    <df name="svk_met_kinetics.dir">
                     </df>
                     <df name="svk_multi_view.dir">
                     </df>
@@ -279,6 +293,10 @@
                     <df name="svk_svrecon.dir">
                     </df>
                   </df>
+                  <df name="ITKIOFactoryRegistration">
+                    <in>itkImageIOFactoryRegisterManager.h</in>
+                    <in>itkTransformIOFactoryRegisterManager.h</in>
+                  </df>
                 </df>
               </df>
               <df name="sivic_app">
@@ -292,6 +310,10 @@
                     </df>
                     <df name="SivicKWCallbacksLib.dir">
                     </df>
+                  </df>
+                  <df name="ITKIOFactoryRegistration">
+                    <in>itkImageIOFactoryRegisterManager.h</in>
+                    <in>itkTransformIOFactoryRegisterManager.h</in>
                   </df>
                   <in>SivicKWCallbacksLibInit.cxx</in>
                   <in>vtkSivicControllerTcl.cxx</in>
@@ -321,10 +343,16 @@
                   </df>
                   <df name="svkadapt.dir">
                   </df>
+                  <df name="svkNumerical.dir">
+                  </df>
                   <df name="svkNumerical2.dir">
                   </df>
                   <df name="svkviz.dir">
                   </df>
+                </df>
+                <df name="ITKIOFactoryRegistration">
+                  <in>itkImageIOFactoryRegisterManager.h</in>
+                  <in>itkTransformIOFactoryRegisterManager.h</in>
                 </df>
               </df>
             </df>
@@ -343,8 +371,6 @@
         </df>
         <df name="CompilerIdCXX">
           <in>CMakeCXXCompilerId.cpp</in>
-        </df>
-        <df name="Progress">
         </df>
       </df>
       <df name="libs">
@@ -429,7 +455,14 @@
             <in>itkImageIOFactoryRegisterManager.h</in>
             <in>itkTransformIOFactoryRegisterManager.h</in>
           </df>
+          <df name="libsvk">
+            <df name="html">
+              <df name="apps">
+              </df>
+            </df>
+          </df>
           <in>svk2SiteExchangeCostFunction.h</in>
+          <in>svk2SitePerfCostFunction.h</in>
           <in>svk4DImageData.cc</in>
           <in>svk4DImageData.h</in>
           <in>svkAlgoTemplate.cc</in>
@@ -464,6 +497,8 @@
           <in>svkDICOMRawDataWriter.h</in>
           <in>svkDICOMSCWriter.cc</in>
           <in>svkDICOMSCWriter.h</in>
+          <in>svkDICOMWriter.cc</in>
+          <in>svkDICOMWriter.h</in>
           <in>svkDSCDeltaR2.cc</in>
           <in>svkDSCDeltaR2.h</in>
           <in>svkDSCMap.cc</in>
@@ -522,6 +557,8 @@
           <in>svkFdfVolumeReader.h</in>
           <in>svkFirstOrderPhaseCostFunction.h</in>
           <in>svkFirstPointPhaseCostFunction.h</in>
+          <in>svkGEConsolePACSInterface.cc</in>
+          <in>svkGEConsolePACSInterface.h</in>
           <in>svkGEImageHeader.h</in>
           <in>svkGEPFileMapper.cc</in>
           <in>svkGEPFileMapper.h</in>
@@ -682,8 +719,6 @@
           <in>svkQuantifyMetabolites.h</in>
           <in>svkRawIOD.cc</in>
           <in>svkRawIOD.h</in>
-          <in>svkRawMapperUtils.cc</in>
-          <in>svkRawMapperUtils.h</in>
           <in>svkSCIOD.cc</in>
           <in>svkSCIOD.h</in>
           <in>svkSatBandSet.cc</in>
@@ -732,6 +767,8 @@
         </df>
       </df>
       <df name="LocalMake">
+        <df name="Linux_x86_64">
+        </df>
       </df>
       <df name="test_data">
         <df name="bruker">
@@ -4421,8 +4458,6 @@
         </ccTool>
       </item>
       <item path="libs/src/svkRawIOD.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/svkRawMapperUtils.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkSCIOD.cc" ex="false" tool="1" flavor="0">
         <ccTool>
