@@ -364,6 +364,33 @@ void svkDICOMSCWriter::InitDcmHeader()
         this->dcmHeaderTemplate->GetStringValue("PatientName")  
     );
 
+    this->dcmHeader->SetValue(  
+        "PatientBirthDate", 
+        this->dcmHeaderTemplate->GetStringValue("PatientBirthDate")  
+    );
+
+    this->dcmHeader->SetValue(  
+        "PatientSex", 
+        this->dcmHeaderTemplate->GetStringValue("PatientSex")  
+    );
+
+    this->dcmHeader->SetValue(  
+        "ReferringPhysicianName", 
+        this->dcmHeaderTemplate->GetStringValue("ReferringPhysicianName")  
+    );
+
+    if( this->dcmHeader->ElementExists( "StationName" ) ) {
+        this->dcmHeader->SetValue(  
+            "StationName", 
+            this->dcmHeaderTemplate->GetStringValue("StationName")  
+        );
+    }
+
+    this->dcmHeader->SetValue(  
+        "SoftwareVersions", 
+        "SIVIC" + string(SVK_RELEASE_VERSION)
+    );
+
     this->dcmHeader->SetValue(
         "StudyInstanceUID",
         this->dcmHeaderTemplate->GetStringValue("StudyInstanceUID") 
