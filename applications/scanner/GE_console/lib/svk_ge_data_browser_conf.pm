@@ -41,7 +41,7 @@
 
 package svk_ge_data_browser_conf;
 use strict;
-use lib "$ENV{HOME}/svk/lib";
+use lib "$ENV{HOME}/svk/console/lib";
 use svk_ge_util;
 
 sub svk_ge_get_tail($); 
@@ -114,10 +114,10 @@ $svk_ge_data_browser_conf::remote_data_dir = "/data/lhst3/scanner_data/$dir_tail
 #	/root/host_name/script_name
 #
 if ( defined $ENV{SDCHOME} ) {
-    $svk_ge_data_browser_conf::scanner_work_dir = "$ENV{SDCHOME}/svk/data/$dir_tail";
+    $svk_ge_data_browser_conf::scanner_work_dir = "$ENV{SDCHOME}/svk/console/data/$dir_tail";
 } else {
     # VRE: 	
-    $svk_ge_data_browser_conf::scanner_work_dir = "/export/home/sdc/svk/data/$dir_tail";
+    $svk_ge_data_browser_conf::scanner_work_dir = "/export/home/sdc/svk/console/data/$dir_tail";
 }
 
 
@@ -125,7 +125,7 @@ if ( defined $ENV{SDCHOME} ) {
 #   The work dir on the scanner:
 #	/root/host_name/script_name
 #
-$svk_ge_data_browser_conf::vre_bin_dir = "/export/home/sdc/svk/bin";
+$svk_ge_data_browser_conf::vre_bin_dir = "/export/home/sdc/svk/console/bin";
 
 
 sub svk_ge_get_tail($)

@@ -59,7 +59,7 @@ our @EXPORT = qw(&svk_ge_browser_get_command
                 );
 
 
-$ENV{'DCMDICTPATH'} = "/export/home/sdc/svk/lib/dicom.dic";
+$ENV{'DCMDICTPATH'} = "/export/home/sdc/svk/console/lib/dicom.dic";
 #$ENV{'DCMDICTPATH'} = "$ENV{SDCHOME}/svk/lib/dicom.dic";
 
 my $useSocket = 1;	#only set to false if using quick job staging without GUI 
@@ -420,9 +420,9 @@ sub copy_files
     }
 
     #  set dicom dictionary so dcmdump prints usable information
-    $ENV{'DCMDICTPATH'} = "$ENV{SDCHOME}/svk/lib/dicom.dic";
+    $ENV{'DCMDICTPATH'} = "$ENV{SDCHOME}/svk/console/lib/dicom.dic";
     if ( !defined $ENV{DCMDICTPATH} ) {
-    	$ENV{'DCMDICTPATH'} = "/export/home/sdc/svk/lib/dicom.dic";
+    	$ENV{'DCMDICTPATH'} = "/export/home/sdc/svk/console/lib/dicom.dic";
     }	
 
     if($location eq 'local' || $location eq 'VRE') {

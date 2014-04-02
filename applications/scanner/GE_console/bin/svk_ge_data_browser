@@ -64,7 +64,7 @@ set output ""
 set command ""
 set show_output 1
 set scp_program "svk_ge_data_scp"
-set outputfilename "~sdc/svk/data/svk_ge_data_output.txt"
+set outputfilename "~sdc/svk/console/data/svk_ge_data_output.txt"
 set output_file_ptr ""
 # this is where we will look for the raw files
 
@@ -710,7 +710,7 @@ proc exit_gracefully {} {
         while {[set line [gets $ps_output]] >= 0} {
             set kill_ps  "-p $line $kill_ps"
         }  
-        set kill_ps "~sdc/svk/bin/svk_ge_kill_process $kill_ps"
+        set kill_ps "~sdc/svk/console/bin/svk_ge_kill_process $kill_ps"
         puts "$kill_ps"	
         eval exec $kill_ps
         close $ps_output
