@@ -3642,7 +3642,7 @@ void vtkSivicController::PushToPACS()
         this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
         outputImage->SetDcos( dcos );
 
-        // write the images to the local directary and bring up a preview window
+        // write the images to the local directory and bring up a preview window
         // TODO: If we had a secondary capture reader this could be done it two steps for clarity
         this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
                                     writer, 
@@ -3656,7 +3656,13 @@ void vtkSivicController::PushToPACS()
         // Reset the slice
         this->SetSlice(currentSlice);
         stringstream textString;
-        textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << endl; 
+
+        #if defined ( BUILD_GE_CONSOLE ) 
+            textString <<"Are you sure you want to import SecondaryCapture images to console database?\nImages will be sent to " << endl; 
+        #else
+            textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << endl; 
+        #endif
+
         if( pacsInterface->GetPACSTargetString().compare("") == 0 ) {
             textString << " default location." << endl; 
         } else { 

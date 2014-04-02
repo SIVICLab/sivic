@@ -549,7 +549,7 @@ int sivicApp::Build( int argc, char* argv[] )
     vtkKWMenu* ucsfMetaboliteMenu = vtkKWMenu::New();
     ucsfMetaboliteMenu->SetParent(ucsfMenu);
     ucsfMetaboliteMenu->Create();
-    ucsfMenu->InsertCommand( 0, "&Secondary Capture To Console DB", this->sivicController, "PushToPACS" );
+    ucsfMenu->InsertCommand( 0, "&Save Secondary Capture Report", this->sivicController, "PushToPACS" );
 #endif
 
 
