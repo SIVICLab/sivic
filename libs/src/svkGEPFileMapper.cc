@@ -212,7 +212,7 @@ void svkGEPFileMapper::GetSelBoxSize( double selBoxSize[3] )
     selBoxSize[0] = 0.0;
     double dcos[3][3]; 
     this->GetDcos(dcos); 
-    if ( this->pfileVersion > 9  ) {
+    if ( this->pfileVersion >= 9  ) {
 
         float lMax = 0; 
         float pMax = 0; 
@@ -569,7 +569,7 @@ void svkGEPFileMapper::GetVoxelSpacing( double voxelSpacing[3] )
 
     float user19 =  this->GetHeaderValueAsFloat( "rhi.user19" ); 
 
-    if ( user19 > 0  && this->pfileVersion > 9 ) {
+    if ( user19 > 0  && this->pfileVersion >= 9 ) {
 
         voxelSpacing[0] = user19; 
         voxelSpacing[1] = user19; 
@@ -602,7 +602,7 @@ void svkGEPFileMapper::GetFOV( float fov[3] )
 
     float dfov = this->GetHeaderValueAsFloat( "rhi.dfov" ); 
 
-    if ( this->pfileVersion > 9  ) {
+    if ( this->pfileVersion >= 9  ) {
 
         fov[0] = dfov; 
         fov[1] = dfov; 
@@ -624,7 +624,7 @@ void svkGEPFileMapper::GetFOV( float fov[3] )
     }
  
     //  Anisotropic voxels:   
-    if ( this->pfileVersion > 9  &&  numVoxels[0] != numVoxels[1] ) {
+    if ( this->pfileVersion >= 9  &&  numVoxels[0] != numVoxels[1] ) {
 
         //  CSI has already been reordered if needed - so fov 
         //  calculated with this CSI will not need reordering
@@ -1733,7 +1733,7 @@ vtkstd::string  svkGEPFileMapper::GetVolumeLocalizationTechnique()
 {
     vtkstd::string localizationType; 
 
-    if ( this->pfileVersion > 9 ) {
+    if ( this->pfileVersion >= 9 ) {
         localizationType.assign( "PRESS" ); 
     } else {
         float user0 = this->GetHeaderValueAsFloat( "rhr.rh_user0" );
@@ -1751,7 +1751,7 @@ vtkstd::string  svkGEPFileMapper::GetVolumeLocalizationTechnique()
  */
 float svkGEPFileMapper::GetFrequencyOffset() 
 {
-    if ( this->pfileVersion > 9  ) {
+    if ( this->pfileVersion >= 9  ) {
         return 0.;
     } else {
         return this->GetHeaderValueAsFloat( "rhr.rh_user13" );
@@ -1778,7 +1778,7 @@ float svkGEPFileMapper::GetPPMRef()
 
         float freqOffset;
 
-        if ( this->pfileVersion > 9 ) {
+        if ( this->pfileVersion >= 9 ) {
             freqOffset = 0.0; 
         } else {
             freqOffset = this->GetHeaderValueAsFloat( "rhr.rh_user13" ); 
@@ -1910,7 +1910,7 @@ void svkGEPFileMapper::InitMRSpectroscopyDataModule()
 void svkGEPFileMapper::InitK0Sampled( svkDcmHeader* hdr )
 {
     string kSpaceSymmetry;
-    if ( this->pfileVersion > 9 ) {
+    if ( this->pfileVersion >= 9 ) {
         kSpaceSymmetry = "EVEN";
     } else {
         kSpaceSymmetry = this->GetHeaderValueAsString( "rhr.rh_user15" );
@@ -2176,6 +2176,10 @@ int svkGEPFileMapper::GetNumDummyScans()
          passSize  - ( numCoils * numTimePoints * numSampledVoxels * numFreqPoints * numComponents * dataWordSize ); 
 
     numDummyScans = numDummyScans / ( numFreqPoints * numComponents * dataWordSize);
+
+    //cout << "NumCoils:      " << numCoils << endl;
+    //cout << "numTimePoints: " << numTimePoints << endl;
+    //cout << "numDummyScans: " << numDummyScans << endl;
 
     return numDummyScans; 
 
