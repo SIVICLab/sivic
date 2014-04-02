@@ -42,10 +42,18 @@ endif(COMMAND cmake_policy)
 
 PROJECT(GE_console)
 
+SET(CMAKE_VERBOSE_MAKEFILE TRUE)
+
+ADD_CUSTOM_TARGET(
+    Name ALL
+    COMMAND installer 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+)
 
 SET( COMPONENTS
-    bin
-    lib 
+    svk/bin
+    svk/lib 
+    svk/data
 )
 
 FOREACH( ITEM ${COMPONENTS} )     
