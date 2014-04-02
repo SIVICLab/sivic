@@ -63,8 +63,9 @@
 #include <vtkKWTextWithScrollbars.h>
 #include <vtkKWTextWithScrollbarsWithLabel.h>
 #include <vtkKWText.h>
-#include <svkUCSFPACSInterface.h>
 #include <svkPACSInterface.h>
+#include <svkUCSFPACSInterface.h>
+#include <svkGEConsolePACSInterface.h>
 
 #include <math.h>
 #ifndef WIN32

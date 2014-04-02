@@ -538,6 +538,20 @@ int sivicApp::Build( int argc, char* argv[] )
 
 #endif
 
+#if defined( BUILD_GE_CONSOLE )
+    vtkKWMenu* ucsfMenu = vtkKWMenu::New();
+
+    ucsfMenu->SetParent(this->sivicKWApp->GetNthWindow(0)->GetMenu());
+    ucsfMenu->Create();
+    this->sivicKWApp->GetNthWindow(0)->GetMenu()->AddCascade("GE Console", ucsfMenu);
+
+    //  Add menu of UCSF metabolite maps:
+    vtkKWMenu* ucsfMetaboliteMenu = vtkKWMenu::New();
+    ucsfMetaboliteMenu->SetParent(ucsfMenu);
+    ucsfMetaboliteMenu->Create();
+    ucsfMenu->InsertCommand( 0, "&Secondary Capture To Console DB", this->sivicController, "PushToPACS" );
+#endif
+
 
     this->sivicKWApp->GetNthWindow(0)->GetFileMenu()->InsertCommand(
             0, "&Save Active Spectroscopic Data", this->sivicController, "SaveData");

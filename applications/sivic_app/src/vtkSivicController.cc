@@ -3474,209 +3474,243 @@ void vtkSivicController::SetOverlayThreshold( double threshold )
  */
 void vtkSivicController::PushToPACS()
 {
-#if defined( UCSF_INTERNAL )
 
-    if(     this->GetActive4DImageData() == NULL
-         || this->model->GetDataObject( "AnatomicalData" ) == NULL ) {
+    #if defined( UCSF_INTERNAL )  || defined ( BUILD_GE_CONSOLE ) 
 
-        PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
-        return; 
-    }
+        if(     this->GetActive4DImageData() == NULL
+             || this->model->GetDataObject( "AnatomicalData" ) == NULL ) 
+        {
 
-    svkPACSInterface* pacsInterface = svkUCSFPACSInterface::New();
+            PopupMessage( "BOTH SPECTRA AND AN IMAGE MUST BE LOADED TO CREATE SECONDARY CAPTURES!" );
+            return; 
+        }
 
-    // For testing below
-    //pacsInterface->SetPACSTargetString("/data/lhst3/sivic/DICOM_REID/results");
 
-    /*********************************** CHECK FOR FILE WRITING PERMISSIONS ****************************************/
+        svkPACSInterface* pacsInterface;
+        #if defined ( BUILD_GE_CONSOLE ) 
+            pacsInterface = svkGEConsolePACSInterface::New();
+        #else
+            pacsInterface = svkUCSFPACSInterface::New();
+        #endif
 
-    // Lets locate a local directory to make a copy of the images being push to pacs. We'll use the spectra directory
-    string activeDataFileName;
-    if( this->GetActive4DImageData()->IsA("svkMrsImageData") ) {
-        activeDataFileName = this->model->GetDataFileName( "SpectroscopicData" );
-    } else {
-        activeDataFileName = this->model->GetDataFileName( "4DImageData" );
-    }
+        // For testing below
+        //pacsInterface->SetPACSTargetString("/data/lhst3/sivic/DICOM_REID/results");
 
-    // Parse for directory name
-    size_t found;
-    found = activeDataFileName.find_last_of("/");
+        //  =================================== 
+        //  CHECK FOR FILE WRITING PERMISSIONS 
+        //  =================================== 
 
-    string localDirectory = activeDataFileName.substr(0,found);
-    found = localDirectory.find_last_of("/");
+        //  Lets locate a local directory to make a copy of the images being push to pacs. 
+        //  We'll use the spectra directory
+        string activeDataFileName;
+        if( this->GetActive4DImageData()->IsA("svkMrsImageData") ) {
+            activeDataFileName = this->model->GetDataFileName( "SpectroscopicData" );
+        } else {
+            activeDataFileName = this->model->GetDataFileName( "4DImageData" );
+        }
 
-    // We want to put the SIVIC_DICOM_SC folder parallel to the spectra location
-    found = localDirectory.find_last_of("/");
-    localDirectory = localDirectory.substr(0,found); 
+        //  Parse for directory name
+        size_t found;
+        found = activeDataFileName.find_last_of("/");
 
-    // We will write the images to the local directory
-    localDirectory.append( "/SIVIC_DICOM_SC/" );
+        string localDirectory = activeDataFileName.substr(0,found);
+        found = localDirectory.find_last_of("/");
 
-    // Let's create the local directory 
-	if(!svkUtils::FilePathExists(localDirectory.c_str())) {
-		int result = vtkDirectory::MakeDirectory( localDirectory.c_str() );
-        if (result == 0) { //  Was the directory created?
-            string errorMessage("ERROR: Could not create to directory: ");
+        //  We want to put the SIVIC_DICOM_SC folder parallel to the spectra location
+        found = localDirectory.find_last_of("/");
+        localDirectory = localDirectory.substr(0,found); 
+
+        //  We will write the images to the local directory
+        localDirectory.append( "/SIVIC_DICOM_SC/" );
+
+        //  Let's create the local directory 
+        if(!svkUtils::FilePathExists(localDirectory.c_str())) {
+            int result = vtkDirectory::MakeDirectory( localDirectory.c_str() );
+            if (result == 0) { //  Was the directory created?
+                string errorMessage("ERROR: Could not create to directory: ");
+                errorMessage.append( localDirectory );
+                PopupMessage( errorMessage );
+                return; 
+            } 
+        }
+
+        //  Make sure we can write to the new directory
+        if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
+            string errorMessage("ERROR: Could not write to directory: ");
             errorMessage.append( localDirectory );
             PopupMessage( errorMessage );
             return; 
         } 
-    }
 
-    // Make sure we can write to the new directory
-	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
-        string errorMessage("ERROR: Could not write to directory: ");
-        errorMessage.append( localDirectory );
-        PopupMessage( errorMessage );
-        return; 
-	} 
+        string captureDirectory = svkUtils::GetDefaultSecondaryCaptureDirectory( 
+            svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData")), 
+            svk4DImageData::SafeDownCast( this->GetActive4DImageData()) 
+        );
 
-    string captureDirectory = svkUtils::GetDefaultSecondaryCaptureDirectory( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
-                                                                           , svk4DImageData::SafeDownCast( this->GetActive4DImageData()) );
+        //  We will need to copy the images to the capture directory
+        localDirectory.append( captureDirectory );
+        localDirectory.append( "/" );
 
-    // We will need to copy the images to the capture directory
-    localDirectory.append( captureDirectory );
-    localDirectory.append( "/" );
-
-    // Let's create the local directory 
-	if(svkUtils::FilePathExists(localDirectory.c_str())) {
-        string message = "Secondary capture directory ";
-        message.append(localDirectory);
-        message.append(" already exists. This directory will be removed. Do you want to continue? ");
-        if( this->PopupMessage(message, vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
-            int result = vtkDirectory::DeleteDirectory( localDirectory.c_str() );
-            if( result == 0 ) {
-                string errorMessage = string("ERROR: COULD NOT REMOVE DIRECTORY: ");
-                errorMessage.append(localDirectory);
-                this->PopupMessage(errorMessage);
+        //  Let's create the local directory 
+        if(svkUtils::FilePathExists(localDirectory.c_str())) {
+            string message = "Secondary capture directory ";
+            message.append(localDirectory);
+            message.append(" already exists. This directory will be removed. Do you want to continue? ");
+            if( this->PopupMessage(message, vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
+                int result = vtkDirectory::DeleteDirectory( localDirectory.c_str() );
+                if( result == 0 ) {
+                    string errorMessage = string("ERROR: COULD NOT REMOVE DIRECTORY: ");
+                    errorMessage.append(localDirectory);
+                    this->PopupMessage(errorMessage);
+                    return;
+                }
+            } else {
                 return;
             }
-        } else {
-            return;
         }
-    }
 
-    // Now lets make the subdirectory
-    vtkDirectory::MakeDirectory( localDirectory.c_str() );
+        //  Now lets make the subdirectory
+        vtkDirectory::MakeDirectory( localDirectory.c_str() );
 
-    // Make sure we can write to the new directory
-	if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
-        string errorMessage("ERROR: COULD NOT WRITE TO PATH: ");
-        errorMessage.append( localDirectory );
-        PopupMessage( errorMessage );
-        return; 
-	} 
-
-    string filePattern = svkUtils::GetDefaultSecondaryCaptureFilePattern( svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData"))
-                                                                        , svk4DImageData::SafeDownCast( this->GetActive4DImageData()) );
-    // Lets create a name for the images 
-    string fileNameString = localDirectory + filePattern;
-
-    /*********************************** CREATE SECONDARY CAPTURES ******************************************************/
-
-    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    vtkImageWriter* writer = NULL;
-
-    // If the cursor location was on, we want to turn it off for the capture
-    bool wasCursorLocationOn = 0;
-    if( this->overlayController != NULL ) {
-        if( this->viewRenderingWidget->viewerWidget->GetRenderWindow()
-                        ->HasRenderer(this->overlayController->GetView()->GetRenderer( svkOverlayView::MOUSE_LOCATION ))) {
-            wasCursorLocationOn = 1; 
-            this->overlayController->GetView()->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );    
-        }
-    }
-
-    // Lets create our writer
-    writer = writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_SC );
-    writerFactory->Delete();
-
-    // Lets get a new series number...
-    string notUsed;
-    int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern(
-        this->GetActive4DImageData(),
-        &notUsed
-    );
-    static_cast<svkImageWriter*>(writer)->SetSeriesNumber( seriesNumber );
-
-    // And set the series description
-    static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
-
-    // We will save the current slice so we can return to it after the capture is done
-    int currentSlice = this->plotController->GetSlice(); 
-     
-    bool print = 0; 
-    bool preview = 1; 
-
-    // We need to create an svkMriImageData object to hold the secondary capture data
-    svkImageData* outputImage = svkMriImageData::New();
-    
-    // We are going to set its header to be the header of the image. This will only be used to derive the header for the secondary capture image.
-    outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
-    this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
-
-    // We need to givie it a dcos so that svkImageViewer can render it for the preview
-    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
-    this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
-    outputImage->SetDcos( dcos );
-
-    // write the images to the local directary and bring up a preview window
-    // TODO: If we had a secondary capture reader this could be done it two steps for clarity
-    this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
-                               writer, fileNameString, svkSecondaryCaptureFormatter::ALL_SLICES, outputImage, print, preview );
-
-    // Reset the slice
-    this->SetSlice(currentSlice);
-    stringstream textString;
-    textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << endl; 
-    if( pacsInterface->GetPACSTargetString().compare("") == 0 ) {
-        textString << " default location." << endl; 
-    } else { 
-        textString << pacsInterface->GetPACSTargetString() << "." << endl; 
-    }   
-
-    bool confirmSend = false;
-    if( this->PopupMessage(textString.str(), vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
-        confirmSend = true;
-    }
-
-    /********************************** SEND IMAGES TO PACS *************************************/
-
-    // Now we copy the local images to PACS
-    if( confirmSend ) {
-        int firstSlice = outputImage->GetExtent()[4];
-        int lastSlice = outputImage->GetExtent()[5];
-
-        bool pacsSendSuccess = pacsInterface->SendImagesToPACS( localDirectory, static_cast<svkTypes::AnatomyType>(this->anatomyType) );
-        if (!pacsSendSuccess ) { 
-            string errorMessage("ERROR: Could not send to PACS: ");
-            errorMessage.append(pacsInterface->GetPACSTargetString());
+        //  Make sure we can write to the new directory
+        if (!svkUtils::CanWriteToPath(localDirectory.c_str())) { // Can the user get a file handle
+            string errorMessage("ERROR: COULD NOT WRITE TO PATH: ");
+            errorMessage.append( localDirectory );
             PopupMessage( errorMessage );
+            return; 
         } 
+
+        string filePattern = svkUtils::GetDefaultSecondaryCaptureFilePattern( 
+            svkMriImageData::SafeDownCast( this->model->GetDataObject("AnatomicalData")), 
+            svk4DImageData::SafeDownCast( this->GetActive4DImageData()) 
+        );
+
+        //  Lets create a name for the images 
+        string fileNameString = localDirectory + filePattern;
+
+        //  =================================== 
+        //  CREATE SECONDARY CAPTURES 
+        //  =================================== 
+
+        svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+        vtkImageWriter* writer = NULL;
+
+        // If the cursor location was on, we want to turn it off for the capture
+        bool wasCursorLocationOn = 0;
+        if( this->overlayController != NULL ) {
+            if( this->viewRenderingWidget->viewerWidget->GetRenderWindow()
+                            ->HasRenderer(this->overlayController->GetView()->GetRenderer( 
+                                svkOverlayView::MOUSE_LOCATION 
+                            ))) 
+            {
+                wasCursorLocationOn = 1; 
+                this->overlayController->GetView()->TurnRendererOff( svkOverlayView::MOUSE_LOCATION );    
+            }
+        }
+
+        //  Lets create our writer
+        writer = writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_SC );
+        writerFactory->Delete();
+
+        //  Lets get a new series number...
+        string notUsed;
+        int seriesNumber =  svkImageWriterFactory::GetNewSeriesFilePattern(
+            this->GetActive4DImageData(),
+            &notUsed
+        );
+        static_cast<svkImageWriter*>(writer)->SetSeriesNumber( seriesNumber );
+
+        // And set the series description
+        static_cast<svkImageWriter*>(writer)->SetSeriesDescription( "SIVIC secondary capture" );
+
+        // We will save the current slice so we can return to it after the capture is done
+        int currentSlice = this->plotController->GetSlice(); 
+         
+        bool print = 0; 
+        bool preview = 1; 
+
+        //  We need to create an svkMriImageData object to hold the secondary capture data
+        svkImageData* outputImage = svkMriImageData::New();
         
-    }
+        //  We are going to set its header to be the header of the image. This will only be used to 
+        //  derive the header for the secondary capture image.
+        outputImage->SetDcmHeader( this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader() );
+        this->model->GetDataObject( "AnatomicalData" )->GetDcmHeader()->Register(this);
 
-    // Free our output image
-    if (outputImage != NULL) {
-        outputImage->Delete();
-        outputImage = NULL; 
-    }
+        //  We need to givie it a dcos so that svkImageViewer can render it for the preview
+        double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}}; 
+        this->model->GetDataObject( "AnatomicalData" )->GetDcos(dcos);
+        outputImage->SetDcos( dcos );
 
-    // Turn mouse position renderer back on if it was on when we started
-    if( wasCursorLocationOn && this->overlayController != NULL ) {
-        this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
-    }
+        // write the images to the local directary and bring up a preview window
+        // TODO: If we had a secondary capture reader this could be done it two steps for clarity
+        this->secondaryCaptureFormatter->WriteCombinedWithSummaryCapture( 
+                                    writer, 
+                                    fileNameString, 
+                                    svkSecondaryCaptureFormatter::ALL_SLICES, 
+                                    outputImage, 
+                                    print, 
+                                    preview 
+        );
 
-    // Free writer
-    writer->Delete();
+        // Reset the slice
+        this->SetSlice(currentSlice);
+        stringstream textString;
+        textString <<"Are you sure you want to push to PACS?\nImages will be sent to " << endl; 
+        if( pacsInterface->GetPACSTargetString().compare("") == 0 ) {
+            textString << " default location." << endl; 
+        } else { 
+            textString << pacsInterface->GetPACSTargetString() << "." << endl; 
+        }   
 
-    // Refresh the views
-    this->overlayController->GetView()->Refresh();    
-    this->plotController->GetView()->Refresh();    
-    this->viewRenderingWidget->infoWidget->Render();    
+        bool confirmSend = false;
+        if( this->PopupMessage(textString.str(), vtkKWMessageDialog::StyleOkCancel ) == vtkKWDialog::StatusOK ) {
+            confirmSend = true;
+        }
 
-#endif
+        //  =================================== 
+        //  SEND IMAGES TO PACS 
+        //  =================================== 
+
+        // Now we copy the local images to PACS
+        if( confirmSend ) {
+            int firstSlice = outputImage->GetExtent()[4];
+            int lastSlice = outputImage->GetExtent()[5];
+
+            bool pacsSendSuccess = pacsInterface->SendImagesToPACS( 
+                    localDirectory, 
+                    static_cast<svkTypes::AnatomyType>(this->anatomyType) 
+            );
+            if (!pacsSendSuccess ) { 
+                string errorMessage("ERROR: Could not send to PACS: ");
+                errorMessage.append(pacsInterface->GetPACSTargetString());
+                PopupMessage( errorMessage );
+            } 
+            
+        }
+
+        // Free our output image
+        if (outputImage != NULL) {
+            outputImage->Delete();
+            outputImage = NULL; 
+        }
+
+        // Turn mouse position renderer back on if it was on when we started
+        if( wasCursorLocationOn && this->overlayController != NULL ) {
+            this->overlayController->GetView()->TurnRendererOn( svkOverlayView::MOUSE_LOCATION );    
+        }
+
+        // Free writer
+        writer->Delete();
+
+        // Refresh the views
+        this->overlayController->GetView()->Refresh();    
+        this->plotController->GetView()->Refresh();    
+        this->viewRenderingWidget->infoWidget->Render();    
+
+    #endif 
 }
+
 
 /*!
  *  Runs tests for the application.
@@ -3686,6 +3720,7 @@ void vtkSivicController::RunTestingSuite()
     sivicTestSuite* suite = new sivicTestSuite( this );
     suite->RunTests();
 }
+
 
 void vtkSivicController::UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData)
 {
