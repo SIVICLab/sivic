@@ -127,13 +127,13 @@ class svkDdfVolumeReader : public svkImageReader2
         void            SetCellSpectrum( vtkImageData* data, int x, int y, int z, int timePt = 0, int coilNum = 0 );
         void            ParseDdf();
         void            PrintKeyValuePairs(); 
-        int             GetHeaderValueAsInt(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
-                            vtkstd::string keyString, int valueIndex = 0); 
-        float           GetHeaderValueAsFloat(vtkstd::map <vtkstd::string, vtkstd::string> hdrMap, 
-                            vtkstd::string keyString, int valueIndex = 0); 
+        int             GetHeaderValueAsInt(map <string, string> hdrMap, 
+                            string keyString, int valueIndex = 0); 
+        float           GetHeaderValueAsFloat(map <string, string> hdrMap, 
+                            string keyString, int valueIndex = 0); 
         int             GetNumPixelsInVol(); 
         bool            IsMultiCoil(); 
-        vtkstd::string  GetDimensionDomain( vtkstd::string ddfDomainString ); 
+        string  GetDimensionDomain( string ddfDomainString ); 
 
 
         //  Members:
@@ -142,11 +142,11 @@ class svkDdfVolumeReader : public svkImageReader2
         int                                     numSlices;
         int                                     numCoils;
         int                                     numTimePts;
-        static const vtkstd::string             MFG_STRING;
+        static const string                     MFG_STRING;
         double                                  dcos[3][3];
         svkDcmHeader::DcmDataOrderingDirection  dataSliceOrder;
         ifstream*                               ddfHdr;
-        vtkstd::map <vtkstd::string, vtkstd::string>                    
+        map <string, string>                    
                                                 ddfMap; 
         vtkStringArray*                         tmpFileNames;
         svkMRSIOD*                              iod; 
