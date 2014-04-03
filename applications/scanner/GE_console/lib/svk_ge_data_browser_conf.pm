@@ -126,6 +126,7 @@ if ( defined $ENV{SDCHOME} ) {
 #	/root/host_name/script_name
 #
 $svk_ge_data_browser_conf::vre_bin_dir = "/export/home/sdc/svk/console/bin";
+$svk_ge_data_browser_conf::vre_svk_bin_dir = "/export/home/sdc/svk/local/bin";
 
 
 sub svk_ge_get_tail($)

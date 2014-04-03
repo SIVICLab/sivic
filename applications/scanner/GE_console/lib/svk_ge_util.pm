@@ -502,7 +502,7 @@ sub clean_work_dir()
 sub svk_ge_finalize() 
 {
     $remoteprocess_thread->join();
-    print $browser_socket "RRC_DATA_BROWSER_QUIT\n";
+    print $browser_socket "SIVIC_GE_DATA_BROWSER_QUIT\n";
     $browser_thread->join();
     clean_work_dir();
     return;

@@ -641,7 +641,7 @@ proc read_one_line {} {
     global sockChan show_output output output_file_ptr
 	
     set tmp [gets $sockChan]
-    if {$tmp == "RRC_DATA_BROWSER_QUIT"} {
+    if {$tmp == "SIVIC_GE_DATA_BROWSER_QUIT"} {
         close $sockChan
         .infotext insert end Quit 
         .directionslabel configure -text "Click Quit to exit"
