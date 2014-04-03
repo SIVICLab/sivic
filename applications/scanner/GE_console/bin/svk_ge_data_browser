@@ -101,7 +101,7 @@ global chosen_options program option_list
 
 set bg_color {#BAC1DB}
 set label_color {#6875A2}
-wm title . "UCSF Radiology Research Data Processing: $title"
+wm title . "SIVIC Research Data Processing: $title"
 wm geometry . +425+0
 wm resizable . 0 0
 . configure -background $bg_color
