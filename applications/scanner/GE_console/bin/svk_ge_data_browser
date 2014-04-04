@@ -512,7 +512,7 @@ proc show_raw_chooser {} {
     }
 
     foreach i [lsort $pfiles] {
-        set output [open "|$::env(HOME)/svk/bin/sivic/local/bin/svk_gepfile_reader --print_short_header -i $i" r]
+        set output [open "|$::env(HOME)/svk/local/bin/svk_gepfile_reader --print_short_header -i $i" r]
         set dump_output ""
         set pname ""
         set mrn ""
