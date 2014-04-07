@@ -45,6 +45,10 @@
 
 
 $ROOT_DIR   = "svk"; 
+system( "mkdir $ROOT_DIR" ) ; 
+system( "cp -r bin  $ROOT_DIR" ); 
+system( "cp -r lib  $ROOT_DIR" ); 
+system( "cp -r data $ROOT_DIR" ); 
 
 #   include other system commands: 
 system ("cp /netopt/dicom/bin/dcmdump       ./svk/bin "); 
