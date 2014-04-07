@@ -382,9 +382,10 @@ sub copy_files
 
     foreach my $obj ( split(/\s+/, $files_from_browser) ) {
         if ($obj =~ m/\/(e\d{1,})/) {
-            $exam_dir = $1;
-            print      ("$mkdirprog $data_dir/$exam_dir\n");
-            echocommand("$mkdirprog $data_dir/$exam_dir");
+            my $exam_dir = $1;
+            my $mcmd = "$mkdirprog $data_dir/$exam_dir";
+            print "$mcmd\n"; 		
+            echocommand("$mcmd"); 
         } else {
             print      ("$mkdirprog $data_dir\n");
             echocommand("$mkdirprog $data_dir");
@@ -394,12 +395,13 @@ sub copy_files
     foreach my $obj ( split(/\s+/, $files_from_browser) ) {
 
         #
-        # cp exam data (but not P file data) to remote exam_dir:
+        # cp exam series data (but not P file data) to remote exam_dir:
         #		
         if ($obj =~ m/\/(e\d{1,})/) {
-            $exam_dir = $1;
-            print      ("$cpprog -r $obj ${cphost}$data_dir/$exam_dir\n");
-            echocommand("$cpprog -r $obj ${cphost}$data_dir/$exam_dir");
+            my $exam_dir = $1;
+            my $ecmd = "$cpprog -r $obj ${cphost}$data_dir/$exam_dir";
+            print "$ecmd\n"; 		
+            echocommand("$ecmd"); 
             next;
         }
 

@@ -162,12 +162,13 @@ sub get_series_number($) {
     my ($series_number, $dcmdump);
     my ($series_dir) = @_;
 
-    $dcmdump = "$ENV{HOME}/svk/bin/dcmdump";
-    my $dictpath = "$ENV{HOME}/svk/lib/dicom.dic";
+    $dcmdump = "$ENV{HOME}/svk/console/bin/dcmdump";
+    my $dictpath = "$ENV{HOME}/svk/console/lib/dicom.dic";
 
-    $series_number = `export DCMDICTPATH=$dictpath; $dcmdump +P 0020,0011 ${series_dir}\/*.1 `;
+    my $series_cmd    = "export DCMDICTPATH=$dictpath; $dcmdump +P 0020,0011 ${series_dir}\/*.1 ";
+    print "$series_cmd\n"; 
+    $series_number = `$series_cmd `; 
     $series_number =~ s/.*\[(\d+)\].*/$1/;
-
     chomp $series_number;
 
     return $series_number;

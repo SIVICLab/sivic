@@ -66,7 +66,7 @@ sub svk_ge_get_tail($);
 #
 #   The remote host acting as the submit host:  should be accessible from scanner:
 #
-my $remote_host_QB3 = "borealis";
+my $remote_host_QB3 = "scannersub-mb";
 my $remote_host_CB = "avalanche.radiology.ucsf.edu";
 my $remote_host_PARNASSUS = "avalanche.radiology.ucsf.edu";
 
