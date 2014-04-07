@@ -3527,7 +3527,7 @@ void vtkSivicController::PushToPACS()
         if(!svkUtils::FilePathExists(localDirectory.c_str())) {
             int result = vtkDirectory::MakeDirectory( localDirectory.c_str() );
             if (result == 0) { //  Was the directory created?
-                string errorMessage("ERROR: Could not create to directory: ");
+                string errorMessage("ERROR: Could not create directory: ");
                 errorMessage.append( localDirectory );
                 PopupMessage( errorMessage );
                 return; 
