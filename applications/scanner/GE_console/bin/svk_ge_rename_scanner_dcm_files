@@ -162,10 +162,15 @@ sub get_series_number($) {
     my ($series_number, $dcmdump);
     my ($series_dir) = @_;
 
+
+    #   determine which path to dcmdump to use.  If on console, then use full path
+    my $series_cmd    = "dcmdump +P 0020,0011 ${series_dir}\/*.1 ";
     $dcmdump = "$ENV{HOME}/svk/console/bin/dcmdump";
     my $dictpath = "$ENV{HOME}/svk/console/lib/dicom.dic";
-
-    my $series_cmd    = "export DCMDICTPATH=$dictpath; $dcmdump +P 0020,0011 ${series_dir}\/*.1 ";
+    if ( -f $dcmdump && -f $dictpath ) {
+        $series_cmd    = "export DCMDICTPATH=$dictpath; $dcmdump +P 0020,0011 ${series_dir}\/*.1 ";
+        print "On Scanner, using $dcmdump \n";  
+    }
     print "$series_cmd\n"; 
     $series_number = `$series_cmd `; 
     $series_number =~ s/.*\[(\d+)\].*/$1/;

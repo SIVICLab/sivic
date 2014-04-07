@@ -428,13 +428,13 @@ sub copy_files
     }	
 
     if($location eq 'local' || $location eq 'VRE') {
-	my $rename_cmd = "svk_ge_rename_scanner_dcm_files -d $data_dir"; 
-	#my $rename_cmd = "setenv DCMDICTPATH $ENV{DCMDICTPATH}; svk_ge_rename_scanner_dcm_files -d $data_dir"; 
+        my $rename_cmd = "svk_ge_rename_scanner_dcm_files -d $data_dir"; 
         print      ("$rename_cmd\n"); 
         echocommand("$rename_cmd"); 
     } elsif($location eq 'remote') {
-        print      ("ssh $remote_host svk_ge_rename_scanner_dcm_files -d $data_dir\n"); 
-        echocommand("ssh $remote_host svk_ge_rename_scanner_dcm_files -d $data_dir"); 
+        my $rename_cmd = "ssh $remote_host svk_ge_rename_scanner_dcm_files -d $data_dir"; 
+        print      ("$rename_cmd\n"); 
+        echocommand("$rename_cmd"); 
     }
 
 }
