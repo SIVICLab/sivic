@@ -19,7 +19,7 @@
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
  *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
  *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
- *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ *  NOT LIMITED TO, PRUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
  *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
@@ -40,73 +40,49 @@
  */
 
 
-#ifndef SVK_MRS_AVERAGE_SPECTRA_H
-#define SVK_MRS_AVERAGE_SPECTRA_H
-
+#ifndef SVK_GE__CONSOLE_PACS_INTERFACE_H
+#define SVK_GE__CONSOLE_PACS_INTERFACE_H
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkImageFourierFilter.h>
-
-#include <svkImageInPlaceFilter.h>
-
+#include <svkPACSInterface.h>
+#include <svkUtils.h>
+#include <svkUCSFUtils.h>
+#include <svkTypes.h>
 
 namespace svk {
 
 
 using namespace std;
 
-
-
-/*! 
- *  Class to average spectra in a data set within a specified spatial ROI.  If multiple channels or 
- *  non-spatial dimensions these will be averaged separately. 
+/*!
+ *   This is for GE  console only. This method will do the following...
+ *   
+ *   1. Create a temporary directary in the pacsDirectory below. \n
+ *   2. Verify that it can write to this path. \n
+ *   3. Copy all images to the PACS temporary directory. \n
+ *   4. Reidentify these images in the temporary directory. \n
+ *   5. Move the images to the PACS directory. \n
+ *   6. Delete the temporary PACS directory. \n
  */
-class svkMRSAverageSpectra : public svkImageInPlaceFilter
+class svkGEConsolePACSInterface : public svkPACSInterface 
 {
 
     public:
 
-        static svkMRSAverageSpectra* New();
-        vtkTypeRevisionMacro( svkMRSAverageSpectra, svkImageInPlaceFilter);
+        vtkTypeRevisionMacro( svkGEConsolePACSInterface, svkPACSInterface);
+    
+        static svkGEConsolePACSInterface* New();
 
-        virtual void    PrintSelf( ostream &os, vtkIndent indent );
-
+  
+        bool Connect();
+        bool SendImagesToPACS( string sourceDirectory, svkTypes::AnatomyType anatomyType );
+        bool Disconnect();
 
     protected:
 
-        svkMRSAverageSpectra();
-        ~svkMRSAverageSpectra();
-
-        virtual int     FillInputPortInformation(int port, vtkInformation* info);
-
-
-        //  Methods:
-        virtual int     RequestInformation(
-                            vtkInformation* request, 
-                            vtkInformationVector** inputVector,
-                            vtkInformationVector* outputVector
-                        );
-        virtual int     RequestData(
-                            vtkInformation* request, 
-                            vtkInformationVector** inputVector,
-                            vtkInformationVector* outputVector
-                        );
-
-
-    private:
-        
-        void            SetAverageDataDimensions(); 
-        void            InitAverageSpectrum(); 
-        void            AverageSpectraInROI(); 
-
-
-        //  Members:
-        int 			    useMask;
-        short*              maskROI;
-        svkMrsImageData*    averageData; 
+        svkGEConsolePACSInterface();
+        ~svkGEConsolePACSInterface();
 
 };
 
@@ -114,5 +90,5 @@ class svkMRSAverageSpectra : public svkImageInPlaceFilter
 }   //svk
 
 
-#endif //SVK_MRS_AVERAGE_SPECTRA_H
+#endif //SVK_GE__CONSOLE_PACS_INTERFACE_H
 
