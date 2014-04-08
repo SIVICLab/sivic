@@ -968,6 +968,7 @@ int sivicApp::Start( int argc, char* argv[] )
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+        readerFactory->QuickParse();
         svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[i].c_str() );
         readerFactory->Delete();
         if (reader == NULL ) {
@@ -975,6 +976,7 @@ int sivicApp::Start( int argc, char* argv[] )
             return 0; 
         } 
         reader->SetFileName( this->inputFiles[i].c_str() );
+        reader->OnlyReadOneInputFile();
         reader->Update();
         svkImageData* tmp =  reader->GetOutput();
 
@@ -992,7 +994,7 @@ int sivicApp::Start( int argc, char* argv[] )
                 refImageIndex = i; 
             } 
 
-            if ( rows < overlayRows && columns < overlayColumns) {
+            if ( rows < refRows && columns < refColumns) {
                 overlayRows = rows; 
                 overlayColumns = columns; 
                 overlayImageIndex = i; 
@@ -1001,6 +1003,7 @@ int sivicApp::Start( int argc, char* argv[] )
         reader->Delete();
     }
 
+    //  Overlay is always the last to load: 
     vtkstd::vector< int >   loadOrder; 
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
         if ( i != overlayImageIndex ) {
@@ -1018,28 +1021,26 @@ int sivicApp::Start( int argc, char* argv[] )
     for (int i = 0 ; i < this->inputFiles.size(); i++) {
 
         //cout << " load order: " << i << " " << loadOrder[i] <<  argv[ loadOrder[i-1] ] << endl;
+        //cout << "INPUT FILES loadOrder: " << this->inputFiles[ loadOrder[i] ] << endl;
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[i].c_str() );
+        readerFactory->QuickParse();
+        svkImageReader2* reader = readerFactory->CreateImageReader2( this->inputFiles[ loadOrder[i] ].c_str() );
         readerFactory->Delete();
         if (reader == NULL ) {
             cout << "ERROR: Can not read specified input file (not DICOM): " << this->inputFiles[i] << endl;
             return 0; 
         } 
-        reader->SetFileName( this->inputFiles[i].c_str() );
+
+        reader->SetFileName( this->inputFiles[ loadOrder[i] ].c_str() );
+        reader->OnlyReadOneInputFile();
         reader->Update();
+
         svkImageData* tmp =  reader->GetOutput();
-
         string SOPClassUID = tmp->GetDcmHeader()->GetStringValue( "SOPClassUID" ) ;
-        reader->Delete(); 
-
-        readerFactory = svkImageReaderFactory::New();
-        reader = readerFactory->CreateImageReader2( this->inputFiles[ loadOrder[i] ].c_str());
         if ( reader->IsA("svkGEPostageStampReader") ) {
             SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
-        readerFactory->Delete();
         reader->Delete();
-
 
         //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
