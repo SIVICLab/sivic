@@ -124,7 +124,8 @@ frame .summaryframe -background $label_color -height 20
 frame .chooserframe  -background $label_color
 frame .optionframe -background $bg_color
 frame .commandframe -background $bg_color
-frame .headerframe -background $label_color
+frame .rawheaderframe -background $label_color
+frame .imageheaderframe -background $label_color
 
 label .examlabel -bg $label_color -text [format "%-10s " "Exam"]
 label .pfilelabel -bg $label_color -text [format "  %-24s " "P file"]
@@ -132,6 +133,11 @@ label .namelabel -bg $label_color -text [format "  %-44s " "Name"]
 label .mrnlabel -bg $label_color -text [format "  %-26s " "MRN"]
 label .datelabel -bg $label_color -text [format "  %-22s " "Date"]
 label .timelabel -bg $label_color -text [format "  %-10s " "Time"]
+label .examlabel_im -bg $label_color -text [format "%-10s " "Exam"]
+label .namelabel_im -bg $label_color -text [format "  %-44s " "Name"]
+label .datelabel_im -bg $label_color -text [format "  %-22s " "Date"]
+label .seriesnumlabel_im -bg $label_color -text [format "  %-7s " "Series"]
+label .seriesdesclabel_im -bg $label_color -text [format "  %-44s " "Description"]
 
 
 label .summarylabel -bg $label_color -text "Files to Choose" -font titlefont
@@ -164,7 +170,8 @@ pack .summarylabel -in .summaryframe -fill x
 pack .chooserscrolly -side right -fill y -in .chooserframe
 pack .commandlabel .advancedcheck -in .commandframe -fill x -pady 5
 
-pack .examlabel .pfilelabel .namelabel .mrnlabel .datelabel .timelabel -in .headerframe -side left 
+pack .examlabel .pfilelabel .namelabel .mrnlabel .datelabel .timelabel -in .rawheaderframe -side left 
+pack .examlabel_im .namelabel_im .datelabel_im .seriesnumlabel_im .seriesdesclabel_im -in .imageheaderframe -side left 
 
 # but we don't pack a chooser or text area for the chooserframe now - 
 # we'll do it later when we know which is appropriate, in show_next
@@ -336,7 +343,7 @@ proc show_next {} {
             # clear the raw chooser list
             .rawchooserlist delete 0 end
             # we need to remove the listbox now
-            pack forget .headerframe
+            pack forget .rawheaderframe
             pack forget .rawchooserlist
         }
         # now append the chosen file to the chosen file list
@@ -495,7 +502,7 @@ proc hide_output {} {
 proc show_raw_chooser {} {
     global raw_file_location
 
-    pack .headerframe -in .chooserframe -anchor w -side top
+    pack .rawheaderframe -in .chooserframe -anchor w -side top
     pack .rawchooserlist -in .chooserframe
     # initialize the scrollbars
     .chooserscrolly configure -command ".rawchooserlist yview" 
@@ -559,6 +566,7 @@ proc show_image_chooser {} {
     .infotext delete 1.0 end
     pack forget .infotext
     .tryagainbutton configure -state disabled
+    pack .imageheaderframe -in .chooserframe -anchor w -side top
     pack .infotext -in .chooserframe
     .chooserscrolly configure -command ".infotext yview"
 
@@ -578,7 +586,6 @@ proc show_image_info {} {
 
     set dcmdump_output ""
     set dcmdump_fp [open "|dcmdump $path" r]
-
     while {[gets $dcmdump_fp line] >= 0} {
         #puts $line
         set dcmdump_output "$dcmdump_output\n$line" 
@@ -589,17 +596,21 @@ proc show_image_info {} {
   
     #puts $dcmdump_output
     set name ""
+    set study_id ""
     set series_num ""
     set series_description ""
     set date ""
 
+    regexp {\(0020,0010\)[\t ]SH[\t ]\[([0-9]+)\]} $dcmdump_output trash study_id 
     regexp {\(0020,0011\)[\t ]IS[\t ]\[([0-9]+)\]} $dcmdump_output trash series_num
-    regexp {\(0010,0010\)[\t ]PN[\t ]\[([a-zA-Z 0-9]+)\]} $dcmdump_output trash name
-    regexp {\(0008,103e\) LO \[([a-zA-Z0-9,\. ])+\]} $dcmdump_output trash series_description
+    regexp {\(0010,0010\)[\t ]PN[\t ]\[([a-zA-Z 0-9^]+)\]} $dcmdump_output trash name
+    regexp {\(0008,103e\) LO \[([a-zA-Z 0-9,\. ]+)\]} $dcmdump_output trash series_description
     regexp {\(0008,0020\) DA \[([0-9\/]+)\]} $dcmdump_output trash date
 
-    .infotext insert end "You picked \nName: $name\nSeries: $series_num $series_description\nDate: $date\n"
-    .directionslabel configure -text "Is this Correct?"
+    set line [format "%-8s | %-27s | %-15s | %-5s | %-22s " $study_id $name $date $series_num $series_description ]
+
+    .infotext insert end "You selected:\n\n$line \n"
+    .directionslabel configure -text "Is this correct?"
 
     set file_selection $path
    
