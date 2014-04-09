@@ -42,5 +42,7 @@
 
 TCL_LIBRARY='/usr/lib/tcl8.3'
 TK_LIBRARY='/usr/lib/tk8.3'
+DCMDICTPATH=/export/home/sdc/svk/console/lib/dicom.dic
+export DCMDICTPATH
 
 ~sdc/svk/console/bin/svk_ge_data_browser $1 $2

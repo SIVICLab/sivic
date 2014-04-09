@@ -330,6 +330,7 @@ proc show_next {} {
             set display_filename "$examname/$seriesname"
             set file_selection [head $file_selection]
             pack forget .infotext
+            pack forget .imageheaderframe
         } elseif {$prev_type == "file exam"} {
             set display_filename "$examname"
             set file_selection [head [head $file_selection]]
@@ -405,6 +406,7 @@ proc show_confirmation {} {
     global title 
     .summarylabel configure -text "Files Chosen"
     .directionslabel configure -text "Run $title?"
+    pack forget .imageheaderframe
     pack forget .infotext .optionframe
     pack .commandframe -in .chooserframe -fill x
     .okbutton configure -text "Run" -command runcommand
@@ -431,6 +433,7 @@ proc show_flag_chooser {} {
 
     global program files_chosen command 
     pack forget .commandframe
+    pack forget .imageheaderframe
     pack .optionframe -side top -in .chooserframe -fill x 
     pack .commandframe -in .chooserframe -fill x
 
@@ -585,7 +588,7 @@ proc show_image_info {} {
     regexp {^([^ *]+)} $firstline trash path
 
     set dcmdump_output ""
-    set dcmdump_fp [open "|dcmdump $path" r]
+    set dcmdump_fp [open "|~sdc/svk/console/bin/dcmdump $path" r]
     while {[gets $dcmdump_fp line] >= 0} {
         #puts $line
         set dcmdump_output "$dcmdump_output\n$line" 
@@ -594,7 +597,6 @@ proc show_image_info {} {
     close $fp
     close $dcmdump_fp
   
-    #puts $dcmdump_output
     set name ""
     set study_id ""
     set series_num ""
