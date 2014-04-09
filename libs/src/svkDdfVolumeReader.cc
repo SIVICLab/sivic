@@ -1803,7 +1803,7 @@ svkDcmHeader::DcmPixelDataFormat svkDdfVolumeReader::GetFileType()
  */
 string svkDdfVolumeReader::GetDimensionDomain( string ddfDomainString )
 {
-cout << "domain: " << ddfDomainString << endl;
+    //cout << "domain: " << ddfDomainString << endl;
     string domain;  
     if ( ddfDomainString.compare("time") == 0 )  { 
         domain.assign("TIME"); 
