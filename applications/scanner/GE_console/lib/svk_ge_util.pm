@@ -79,7 +79,7 @@ my $command_string;
 my $files_from_browser;
 
 my $config_file;
-my $svk_ge_data_browser = "svk_ge_data_browser.sh";
+my $svk_ge_data_browser = "/export/home/sdc/svk/console/bin/svk_ge_data_browser.sh";
 
 sub svk_ge_browser_get_command($);
 sub svk_ge_run_program($$);
