@@ -242,6 +242,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 if( point%16==0 ) {
                     progress = (point+1)/((double)numberOfPoints);
                     this->UpdateProgress( progress );
+                    cout << "." ;
                 }
                 data->GetImage( pointImage, point, timePt, channel );
 
@@ -444,6 +445,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
 
         progress = (((slice-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
         this->UpdateProgress( progress );
+        cout << "."  ;
 
         if ( ! svk4DImageData::IsIndexInExtent( this->updateExtent, &indexVector) ) {
             continue; 

@@ -138,6 +138,30 @@
           <in>SIVIC_MRSIFilter.h</in>
           <in>SIVIC_MRSIFilter.mm</in>
         </df>
+        <df name="scanner">
+          <df name="GE_console">
+            <df name="bin">
+            </df>
+            <df name="CMakeFiles">
+              <df name="ALL.dir">
+              </df>
+              <df name="Name.dir">
+              </df>
+            </df>
+            <df name="data">
+            </df>
+            <df name="lib">
+            </df>
+            <df name="svk">
+              <df name="bin">
+              </df>
+              <df name="data">
+              </df>
+              <df name="lib">
+              </df>
+            </df>
+          </df>
+        </df>
         <df name="sivic_app">
           <df name="Linux_i686">
           </df>
@@ -1193,180 +1217,6 @@
               <df name="out">
               </df>
             </df>
-          </df>
-        </df>
-        <df name="results_tmp">
-          <df name="COLOR_MAP_RENDER_MCHK">
-          </df>
-          <df name="COR_IMAGE_SPEC_RENDER_MCHK">
-          </df>
-          <df name="COR_SPEC_RENDER_MCHK">
-          </df>
-          <df name="MRI_4D_IMAGE_MCHK">
-          </df>
-          <df name="ORIENTATION_RENDER_MCHK">
-          </df>
-          <df name="ORIENTATION_SPEC_MET_MCHK">
-          </df>
-          <df name="OVERLAY_LOAD_ORDER_RENDER_MCHK">
-          </df>
-          <df name="OVERLAY_MEMORY_RENDER_MCHK">
-          </df>
-          <df name="OVERLAY_MET_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_IMAGE_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_IMAGE_SAT_BANDS_MCHK">
-          </df>
-          <df name="PHANTOM_SPECTRA_RENDER_MCHK">
-          </df>
-          <df name="PHANTOM_SPECTRA_SAT_BANDS_MCHK">
-          </df>
-          <df name="PHNTM_IMG_SPEC_RENDER_MCHK">
-          </df>
-          <df name="PLOT_GRID_MET_RENDER_MCHK">
-          </df>
-          <df name="PLOT_GRID_MET_SHIFT_RENDER_MCHK">
-          </df>
-          <df name="SAG_IMAGE_SPEC_RENDER_MCHK">
-          </df>
-          <df name="SAG_SPEC_RENDER_MCHK">
-          </df>
-          <df name="TEST_BRUKER_2_DCM">
-          </df>
-          <df name="TEST_FP_PHASE">
-          </df>
-          <df name="TEST_HSVD">
-          </df>
-          <df name="TEST_MCHK_11XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_12XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_14XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_15XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_20XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_23XPF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_9XPF_SWAP_DDF">
-          </df>
-          <df name="TEST_MCHK_COMBINE">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_DCMMRI">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_DCMMRI_ANON">
-          </df>
-          <df name="TEST_MCHK_DCMMRI_2_IDF">
-          </df>
-          <df name="TEST_MCHK_DCMMRS_2_DCMMRS">
-          </df>
-          <df name="TEST_MCHK_DDF_2_DDF">
-          </df>
-          <df name="TEST_MCHK_DICOM_RAW_WRITER">
-          </df>
-          <df name="TEST_MCHK_DICOM_RAW_WRITER_2">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_CENTER">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_LINEAR_PHASE">
-          </df>
-          <df name="TEST_MCHK_EVEN_IMAGE_PAD">
-          </df>
-          <df name="TEST_MCHK_EVEN_MRI_FFT">
-          </df>
-          <df name="TEST_MCHK_EVEN_SINC_INTERPOLATE">
-          </df>
-          <df name="TEST_MCHK_FDF_2_IDF">
-          </df>
-          <df name="TEST_MCHK_FLOAT_DCMENH_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_GE_POSTAGE_TO_DDF">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_1">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_2">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_2_DDF_LAC">
-          </df>
-          <df name="TEST_MCHK_GEPFILE_ANON">
-          </df>
-          <df name="TEST_MCHK_IDF_2_IDF_INT2">
-          </df>
-          <df name="TEST_MCHK_IDF_2_IDF_REAL">
-          </df>
-          <df name="TEST_MCHK_INTEGRATE_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_LINE_WIDTH_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_INTEGRATE_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_LINE_WIDTH_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MAG_PEAK_HT_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_MRS_APODIZATION">
-          </df>
-          <df name="TEST_MCHK_MRS_FFT">
-          </df>
-          <df name="TEST_MCHK_MRS_VOXEL_SHIFT">
-          </df>
-          <df name="TEST_MCHK_MRS_ZERO_FILL">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_DCM_2_IDF">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_DCMENH_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCM">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_DCMENH">
-          </df>
-          <df name="TEST_MCHK_MULTI_VOL_IDF_2_IDF">
-          </df>
-          <df name="TEST_MCHK_OBLIQUE_RESLICE">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_CENTER">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_LINEAR_PHASE">
-          </df>
-          <df name="TEST_MCHK_ODD_IMAGE_PAD">
-          </df>
-          <df name="TEST_MCHK_ODD_MRI_FFT">
-          </df>
-          <df name="TEST_MCHK_ODD_SINC_INTERPOLATE">
-          </df>
-          <df name="TEST_MCHK_PEAK_HT_MET_MAP">
-          </df>
-          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC">
-          </df>
-          <df name="TEST_MCHK_PHASE_ZERO_LINEAR_SPEC_2">
-          </df>
-          <df name="TEST_MCHK_RDA_2_DDF">
-          </df>
-          <df name="TEST_MCHK_READ_GE_SHF">
-          </df>
-          <df name="TEST_MCHK_READ_SYM_EPSI">
-          </df>
-          <df name="TEST_MCHK_READ_SYM_EPSI_DYNAMIC">
-          </df>
-          <df name="TEST_MCHK_REORDER_FLYBACK">
-          </df>
-          <df name="TEST_MCHK_REORDER_INTERLEAVED_EPSI">
-          </df>
-          <df name="TEST_MCHK_SIG5XV2_2_IDF">
-          </df>
-          <df name="TEST_MCHK_SIGLX2_2_IDF">
-          </df>
-          <df name="TEST_MCHK_SIGNA5X_2_IDF">
-          </df>
-          <df name="TEST_MCHK_VARIANFID_2_DDF">
-          </df>
-          <df name="TEST_MRS_FFT_VOXEL_SHIFT">
-          </df>
-          <df name="TEST_PHASE_SPEC">
-          </df>
-          <df name="VTK_RENDER_MCHK">
           </df>
         </df>
         <df name="sample_epsi">
