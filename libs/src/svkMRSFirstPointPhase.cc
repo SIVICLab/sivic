@@ -263,7 +263,7 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
     // Exercise various member functions.
     cout << endl;
 
-    itkOptimizer->Print( cout );
+    //itkOptimizer->Print( cout );
 
     if( !pass ) {
         cout << "Test failed." << endl;
