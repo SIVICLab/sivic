@@ -210,7 +210,7 @@ int main (int argc, char** argv)
     } else {    
 
         unsigned char* sha1Digest = new unsigned char[SHA_DIGEST_LENGTH];
-        string digest = GetHash( inputRawFileName, sha1Digest ); 
+        string digest = GetHash( inputRawFileName, sha1Digest );
         cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
     
         svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
@@ -218,7 +218,7 @@ int main (int argc, char** argv)
         rawWriter->SetSHA1Digest( digest ); 
 
         for (int i = 0; i < associatedFiles.size(); i++ ) {
-            string digest = GetHash( associatedFiles[i], sha1Digest ); 
+            string digest = GetHash( associatedFiles[i], sha1Digest );
             cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
             rawWriter->AddAssociatedFile( associatedFiles[i], digest );     
         }
@@ -286,7 +286,7 @@ bool VerifyExtractedFileDigests( string outputDir, string inputRawFileName  )
         if ( outputDir.size() > 0 ) {
             fileName = outputDir + "/" + fileName;  
         }
-        string digestExtracted = GetHash( fileName, sha1DigestExtracted ); 
+        string digestExtracted = GetHash( fileName, sha1DigestExtracted );
         if ( digestExtracted.compare(sha1Digest) != 0 ) {
             cout << "ERROR DIGEST( " << fileName << "): " <<  digestExtracted << " != " << sha1Digest << endl;
             cout << endl;
@@ -302,13 +302,11 @@ bool VerifyExtractedFileDigests( string outputDir, string inputRawFileName  )
 
 
 /*
- *  Gets the sha1Digest of the specified file.  
+ *  Gets the sha1Digest of the specified file.
  */
-string GetHash( string rawFileName, unsigned char* sha1Digest ) 
+string GetHash( string rawFileName, unsigned char* sha1Digest )
 {
-
-    string sha1DigestString; 
-
+    string sha1DigestString;
     ifstream* inputStream = new ifstream();
     inputStream->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
 
@@ -316,31 +314,57 @@ string GetHash( string rawFileName, unsigned char* sha1Digest )
 
         inputStream->open( rawFileName.c_str(), ios::binary);
 
+        // Seek to the end to get the file size
         inputStream->seekg(0, ios::end);
 
         // get-ptr position is now same as file size
-        streampos fileSize = inputStream->tellg();  
-        cout << "FILE SIZE = " << fileSize << endl;
+        long int fileSize = inputStream->tellg();
 
-        void* fileBuffer = new char[ fileSize ];
-        inputStream->seekg(0, ios::beg);
-        inputStream->read( static_cast<char*>(fileBuffer), fileSize);
- 
-        SHA1( static_cast<unsigned char*>(fileBuffer), fileSize,  sha1Digest);
+        long int bufferSize = 1000000000;
 
-        char buf[3]; 
+        // This buffer will hold the data as its loaded in chunks
+        void* buffer = new char[ bufferSize ];
+
+        SHA_CTX ctx;
+
+        // Initialize the SHA1 digest
+        SHA1_Init(&ctx);
+
+        for ( long int position = 0; position < fileSize; position += bufferSize ) {
+
+            //  First determine how many bytes are in this section (item).
+            long int numBytesInSection = bufferSize;
+
+            if( fileSize - position < bufferSize ) {
+                numBytesInSection = fileSize - position;
+            }
+
+            // Seek to the position
+            inputStream->seekg(position, ios::beg);
+
+            // read the bytes
+            inputStream->read( static_cast<char*>(buffer), numBytesInSection);
+
+            // update the digest
+            SHA1_Update(&ctx, buffer, numBytesInSection);
+        }
+
+        // Finalize the digest
+        SHA1_Final(sha1Digest, &ctx);
+
+        char buf[3];
         for(int i = 0; i < SHA_DIGEST_LENGTH; i++) {
             sprintf( buf, "%02x", sha1Digest[i] );
-            sha1DigestString.append(buf); 
+            sha1DigestString.append(buf);
         }
         printf(" \n");
-        delete [] static_cast<char*>(fileBuffer); 
+        delete [] static_cast<char*>(buffer);
 
    } catch (ifstream::failure e) {
         cout << "ERROR: Exception opening/reading file " << rawFileName << " => " << e.what() << endl;
         exit(1);
     }
-
     inputStream->close();
-    return sha1DigestString; 
-} 
+    delete inputStream;
+    return sha1DigestString;
+}
