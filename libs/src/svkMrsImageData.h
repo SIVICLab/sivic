@@ -88,15 +88,8 @@ class svkMrsImageData: public svk4DImageData
                             int timePoint,
                             int channel,
                             int component,
-                            vtkstd::string seriesDescription
-                       );
-
-        void           GetImage(
-                            svkMriImageData* image,
-                            int point,
-                            int timePoint = 0,
-                            int channel = 0,
-                            int component = 2
+                            vtkstd::string seriesDescription, 
+                            int vtkDataType = VTK_VOID
                        );
 
         void           SetImage( vtkImageData* image, int point, int timePoint = 0, int channel = 0 );

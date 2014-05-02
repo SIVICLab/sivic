@@ -139,27 +139,11 @@ vtkDataArray* svkMrsImageData::GetSpectrum( int i, int j, int k, int timePoint, 
  * @param seriesDescription
  */
 void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel,
-int component, vtkstd::string seriesDescription )
+int component, vtkstd::string seriesDescription, int vtkDataType)
 {
     int indexArray[2] = { -1, -1 };
     this->GetIndexArray( timePoint, channel, indexArray );
-    this->Superclass::GetImage( image, point, seriesDescription, indexArray, component );
-}
-
-
-/*!
- * Gets the point volume image for the given index.
- * @param image
- * @param point
- * @param timePoint
- * @param channel
- * @param component
- */
-void  svkMrsImageData::GetImage( svkMriImageData* image, int point, int timePoint, int channel, int component )
-{
-    int indexArray[2] = { -1, -1 };
-    this->GetIndexArray( timePoint, channel, indexArray );
-    this->Superclass::GetImage( image, point, indexArray, component );
+    this->Superclass::GetImage( image, point, seriesDescription, indexArray, component, vtkDataType );
 }
 
 
