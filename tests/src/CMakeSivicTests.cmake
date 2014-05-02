@@ -1066,13 +1066,13 @@ SET_TESTS_PROPERTIES(TEST_HSVD_DIFF PROPERTIES DEPENDS TEST_HSVD)
 
 if ( BUILD_ITK )
     ########################
-    #   First Point Phase Test: 
+    #   First Point Phase Test (-a1): 
     ########################
     SET( TEST_NAME TEST_FP_PHASE )
     SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
     file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
     SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/phase )
-    ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_auto_phase -i ${TEST_CASE_ROOT}/input_fp/infp.ddf -o${TEST_RESULTS_PATH}/outfp -t 2 )
+    ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_auto_phase -a1 -i ${TEST_CASE_ROOT}/input_fp/infp.ddf -o${TEST_RESULTS_PATH}/outfp -t 2 )
 
     SET( TEST_NAME TEST_FP_PHASE_DIFF)
     ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out_fp )

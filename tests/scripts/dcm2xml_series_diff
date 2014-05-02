@@ -52,6 +52,7 @@ GetOptions(
     "bin_dir=s"   => \my $bin_dir,
     "diff=s"      => \my $diff,
     "v"           => \my $verbose,
+    "retain"      => \my $retainTempResults,
     "help"        => \my $help,
 ) or pod2usage(-verbose=>2, -exitval=>2);
 
@@ -157,7 +158,9 @@ exit_gracefully(1);
 
 sub exit_gracefully( $ ) {
     my ($exit_status) = @_;
-    rmtree($temp_dir);
+    if ( ! $retainTempResults ) {
+        rmtree($temp_dir);
+    }
     exit( $exit_status );
 }
 
