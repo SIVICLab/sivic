@@ -217,7 +217,7 @@ int main (int argc, char** argv)
         integrator->Update(); 
 
         //  append metabolite map to existing dynamic data:
-        svkMrsImageData::SafeDownCast( integrator->GetOutput() )->GetImage( tmpImage, 0, 0, 0);   
+        svkMrsImageData::SafeDownCast( integrator->GetOutput() )->GetImage( tmpImage, 0, 0, 0, 2, "");   
         tmpImage->Modified();
 
 
