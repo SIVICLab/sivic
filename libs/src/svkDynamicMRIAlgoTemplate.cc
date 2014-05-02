@@ -173,7 +173,8 @@ int svkDynamicMRIAlgoTemplate::RequestData( vtkInformation* request, vtkInformat
         0, 
         this->newSeriesDescription, 
         indexArray, 
-        0 
+        0,
+        VTK_DOUBLE
     ); 
 
     this->GenerateKineticParamMap();

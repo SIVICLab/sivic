@@ -143,7 +143,8 @@ void svkMrsImageFourierCenter::ApplySpatialShift()
         for( int coil = 0; coil < numCoils; coil++ ) {
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
-                mrsData->GetImage( singleFreqImage, freq, timePt, coil);
+                //  ImageFourierCenter requires VTK_DOUBLE
+                mrsData->GetImage( singleFreqImage, freq, timePt, coil, 2, "", VTK_DOUBLE);
                 singleFreqImage->Modified();
 
                 tmpData = singleFreqImage;
