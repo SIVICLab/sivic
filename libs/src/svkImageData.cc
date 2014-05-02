@@ -1701,7 +1701,6 @@ void svkImageData::SyncVTKImageDataToDcmHeader()
     numVoxels[0] = this->dcmHeader->GetIntValue("Columns");
     numVoxels[1] = this->dcmHeader->GetIntValue("Rows");
     numVoxels[2] = this->dcmHeader->GetNumberOfSlices(); 
-
     if ( this->IsA("svk4DImageData") ) {
         this->SetExtent(
             0,
