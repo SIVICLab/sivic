@@ -127,6 +127,9 @@ class svkPhaseSpec : public svkImageInPlaceFilter
         int 			linearPhasePivot;
         int 			linearPhasePivotTarget;
 
+        int             ApplyPhaseMap();
+        int             ApplyGlobalPhase();
+
 };
 
 

@@ -69,6 +69,8 @@ svkMRSFirstPointPhase::svkMRSFirstPointPhase()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    this->seriesDescription = "FirstPointPhaseMap"; 
+    
 }
 
 /*!
@@ -281,6 +283,23 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
     cout << "           PHI0 FINAL("<<cellID <<"): " << phi0Final * 180. / vtkMath::Pi() << endl;
     svkPhaseSpec::ZeroOrderPhase( phi0Final, spectrum); 
 
+
+    //  ===================================================
+    //  Write the fitted phase values to a parameter map: 
+    //  ===================================================
+    this->mapArrayZeroOrderPhase = this->GetOutput(0)->GetPointData()->GetArray(0);
+    this->mapArrayZeroOrderPhase->SetName( "ZeroOrderPhase" ); 
+    float phi0FinalDegrees = phi0Final * 180. / vtkMath::Pi(); 
+    this->mapArrayZeroOrderPhase->SetTuple1(cellID, phi0FinalDegrees);
+
     return;
 }
 
+
+/*!
+ * 
+ */
+void svkMRSFirstPointPhase::SetMapSeriesDescription( )  
+{
+    this->GetOutput(0)->GetDcmHeader()->SetValue("SeriesDescription", "FirstPointPhaseMap"); 
+}

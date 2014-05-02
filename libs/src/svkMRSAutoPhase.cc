@@ -78,8 +78,9 @@ svkMRSAutoPhase::svkMRSAutoPhase()
 
     //  1 required input ports: 
     this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1); 
     this->SetNumberOfThreads(16);
-    this->SetNumberOfThreads(1);
+    //this->SetNumberOfThreads(1);
     svkMRSAutoPhase::progress = NULL;
     //this->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
     this->onlyUseSelectionBox = false; 
@@ -114,6 +115,42 @@ svkMRSAutoPhase::~svkMRSAutoPhase()
  */
 int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    int inWholeExt[6];
+    inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inWholeExt);
+    double inSpacing[3]; 
+    this->GetImageDataInput(0)->GetSpacing( inSpacing );
+    
+
+    //  MRI image data output map has the same extent as the input MRI 
+    //  image data (points):
+    int outUpExt[6];
+    int outWholeExt[6];
+    double outSpacing[3]; 
+    for (int i = 0; i < 3; i++) {
+        outUpExt[2*i]      = inWholeExt[2*i];
+        outUpExt[2*i+1]    = inWholeExt[2*i+1];
+        outWholeExt[2*i]   = inWholeExt[2*i];
+        outWholeExt[2*i+1] = inWholeExt[2*i+1];
+
+        outSpacing[i] = inSpacing[i];
+    }
+
+
+    //  MRS Input data has origin at first point (voxel corner).  Whereas output MRI image has origin at
+    //  center of a point (point data).  In both cases this is the DICOM origin, but needs to be represented
+    //  differently in VTK and DCM: 
+    double outOrigin[3];
+    this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin( outOrigin ); 
+
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outWholeExt, 6);
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), outUpExt, 6);
+    outInfo->Set(vtkDataObject::SPACING(), outSpacing, 3);
+    outInfo->Set(vtkDataObject::ORIGIN(), outOrigin, 3);
+
     return 1; 
 }
 
@@ -125,6 +162,24 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+
+    //  Initialize the output object (1) that will contain the image map of phases
+    int indexArray[1];
+    indexArray[0] = 0;
+
+    //  Initialize the output metabolite map using a single frequency image from the 
+    //  input MRS object. 
+
+    data->GetZeroImage( svkMriImageData::SafeDownCast(this->GetOutput(0)) ); 
+
+    svkMriImageData* mriData = svkMriImageData::SafeDownCast(this->GetOutput(0));
+    mriData->GetDcmHeader()->PrintDcmHeader();
+    cout << "ZERO DATA: " << *mriData << endl;
+
+    svkDcmHeader* hdr = this->GetOutput(0)->GetDcmHeader();
+    hdr->InsertUniqueUID("SeriesInstanceUID");
+    hdr->InsertUniqueUID("SOPInstanceUID");
+    this->SetMapSeriesDescription(); 
 
     this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
@@ -160,7 +215,7 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     this->UpdateProgress(.0);
 
     //  This will call AutoPhaseCellSpectrum foreach cell within the 
-    //  sub-extent within each thread.
+    //  sub-extent within each thread, via ThreadedRequestData. 
     this->Superclass::RequestData(
         request,
         inputVector,
@@ -174,15 +229,72 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
 
     this->PostPhaseCleanup();
 
+    this->UpdateProvenance();
+
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
 
-    delete [] this->selectionBoxMask; 
 
+    //this->SyncPointsFromCells(); 
+
+    delete [] this->selectionBoxMask; 
 
     return 1;
 };
+
+
+/*! 
+ *  Sync Point Data from Cell Data
+ */
+void svkMRSAutoPhase::SyncPointsFromCells()
+{
+    int numVoxels[3];
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
+    int numCells = numVoxels[0] * numVoxels[1] * numVoxels[2];
+
+    svkImageData* imageData0 = this->GetOutput(0); 
+    float cellValueAtTime0[1]; 
+    //cout << *imageData0 << endl; 
+
+    for ( int timePoint = 0; timePoint < 1; timePoint++ ) { 
+
+        imageData0->GetPointData()->SetActiveScalars( 
+            imageData0->GetPointData()->GetArray( timePoint )->GetName() 
+        );
+
+        //  Loop over cells at this time point: 
+        for (int cellID = 0; cellID < numCells; cellID++ ) {
+
+            //  Get the value for the cell and time
+            vtkFloatArray* outputCellData0 = vtkFloatArray::SafeDownCast(
+                svkMriImageData::SafeDownCast(imageData0)->GetCellData()->GetArray( cellID )
+            );
+            outputCellData0->GetTupleValue(timePoint, cellValueAtTime0);
+
+            //  insert it into the correct point data array: 
+            imageData0->GetPointData()->GetScalars()->SetTuple1(cellID, cellValueAtTime0[0]);
+        }
+    }
+}
+
+
+/*! 
+ *  Zero output phase image map 
+ */
+void svkMRSAutoPhase::ZeroData()
+{
+
+    int numVoxels[3];
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
+    int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+
+    double zeroValue = 0.;
+
+    for (int i = 0; i < totalVoxels; i++ ) {
+        this->GetOutput(0)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
+    }
+}
 
 
 /*
@@ -199,6 +311,7 @@ int svkMRSAutoPhase::GetPivot()
     int pivot = peak; 
     return pivot; 
 }
+
 
 /*! 
  *  Initialize the array of linear phase correction factors for performance 
@@ -269,10 +382,11 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
 
     int numThreads = this->GetNumberOfThreads();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+    //cout << *this->GetOutput(0)  << endl;
     for (int cellID = 0; cellID < numCells; cellID++) {
 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
-        bool isCellInSubExtent = svk4DImageData::IsIndexInExtent( ext, &loopVector ); 
+        bool isCellInSubExtent = svkMrsImageData::IsIndexInExtent( ext, &loopVector ); 
    
         //  each thread operates on a sub-extent.  Check to see if the cell is in the 
         //  current cell's sub-extent.  If so, fit it.
@@ -364,13 +478,26 @@ int svkMRSAutoPhase::GetZeroOrderPhasePeak( )
 void svkMRSAutoPhase::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
+    this->GetOutput(0)->GetProvenance()->AddAlgorithm( this->GetClassName() );
+    svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetProvenance()->AddAlgorithm( this->GetClassName() );
+
 }
 
 
 /*!
- *  input ports 0 - 2 are required. All input ports are for dynamic MRI data. 
+ *  
  */
-int svkMRSAutoPhase::FillInputPortInformation( int port, vtkInformation* info )
+svkImageData* svkMRSAutoPhase::GetOutput(int port)
+{
+    return svkImageData::SafeDownCast( this->GetOutputDataObject(port) ); 
+}
+
+
+
+/*!
+ *  input port 0 is required. . 
+ */
+int svkMRSAutoPhase::FillInputPortInformation( int vtkNotUsed( port ), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
     return 1;
@@ -379,11 +506,15 @@ int svkMRSAutoPhase::FillInputPortInformation( int port, vtkInformation* info )
 
 
 /*!
- *  Output from this algo is an svkMriImageData object. 
+ *  Output from this algo is 
+ *      1:  image of applied phases
+ *      The phased MRS data is in place applied to the input object. 
  */
-int svkMRSAutoPhase::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMRSAutoPhase::FillOutputPortInformation( int port, vtkInformation* info )
 {
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMrsImageData"); 
+    if ( port == 0 ) {
+        info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+    } 
     return 1;
 }
 

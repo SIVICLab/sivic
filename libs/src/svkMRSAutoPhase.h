@@ -87,7 +87,7 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         //  _0 are zero order models
         //  _1 are first order models
         typedef enum {
-            UNDEFINED = -1, 
+            UNDEFINED_PHASE_MODEL = 0, 
             FIRST_POINT_0, 
             MAX_GLOBAL_PEAK_HT_0, 
             MAX_PEAK_HTS_0, 
@@ -97,11 +97,14 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
             LAST_ZERO_ORDER_MODEL, 
             MAX_PEAK_HTS_1, 
             MIN_DIFF_FROM_MAG_1, 
-            MAX_PEAK_HTS_01        
-        } phasingModel;
+            MAX_PEAK_HTS_01,       
+            LAST_MODEL 
+        } PhasingModel;
 
-        //void            SetPhasingModel(svkMRSAutoPhase::phasingModel model); 
-        void            OnlyUseSelectionBox(); 
+        //void   SetPhasingModel(svkMRSAutoPhase::phasingModel model); 
+        void                    OnlyUseSelectionBox(); 
+        
+        virtual svkImageData*   GetOutput(int port); 
 
 
 
@@ -136,6 +139,9 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int     FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
 
+        void            ZeroData(); 
+
+
         virtual void    UpdateProvenance();
 
         static int*     progress;
@@ -149,6 +155,10 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         int             GetPivot(); 
         virtual void    PrePhaseSetup() = 0;
         virtual void    PostPhaseCleanup() = 0; 
+        void            SyncPointsFromCells(); 
+        virtual void    SetMapSeriesDescription( ) = 0; 
+
+
 
 
 #ifdef SWARM
@@ -158,13 +168,16 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
 #endif
 
         int                             numTimePoints;
-        svkMRSAutoPhase::phasingModel   phaseModelType; 
+        svkMRSAutoPhase::PhasingModel   phaseModelType; 
         svkMRSPeakPick*                 peakPicker; 
         bool                            onlyUseSelectionBox; 
         short*                          selectionBoxMask;
         vtkImageComplex**               linearPhaseArrays; 
         int                             numFirstOrderPhaseValues;
         bool                            isSpectralFFTRequired; 
+        string                          seriesDescription; 
+        vtkDataArray*                   mapArrayZeroOrderPhase; 
+        vtkDataArray*                   mapArrayFirstOrderPhase; 
 
 };
 

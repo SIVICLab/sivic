@@ -77,6 +77,9 @@ svkPhaseSpec::svkPhaseSpec()
     this->linearPhasePivotTarget = 0;
 
     this->channelToPhase = -1; 
+
+    this->SetNumberOfInputPorts(2); //1 mandatory, 1 optional 
+
 }
 
 
@@ -126,11 +129,73 @@ int svkPhaseSpec::RequestInformation( vtkInformation* request, vtkInformationVec
 
 
 /*! 
- *
+ *  Phase data, either using a phaseMap, or by applying a global phase
  */
 int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    if ( this->phase0Target == this->phase0 && this->linearPhaseTarget == this->linearPhase && this->linearPhasePivotTarget == this->linearPhasePivot ) {
+
+    int retVal; 
+
+    if ( this->GetImageDataInput(1) ) {
+        retVal = this->ApplyPhaseMap(); 
+    } else {
+        retVal = this->ApplyGlobalPhase(); 
+    }
+
+    svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetProvenance()->AddAlgorithm( this->GetClassName() );
+
+    return retVal; 
+
+}
+
+
+/*! 
+ *  If a phase map was provided, apply values 
+ *  to each voxel.  
+ */
+int svkPhaseSpec::ApplyPhaseMap( )
+{
+
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
+    svkMriImageData* mriData = svkMriImageData::SafeDownCast( this->GetImageDataInput(1) ); 
+
+    svkDcmHeader::DimensionVector mrsDimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    int numMRSCells = svkDcmHeader::GetNumberOfCells( &mrsDimensionVector );
+
+    svkDcmHeader::DimensionVector mriDimensionVector = mriData->GetDcmHeader()->GetDimensionIndexVector();
+    int numMRICells = svkDcmHeader::GetNumberOfCells( &mriDimensionVector );
+
+    if ( numMRICells != numMRSCells ) {
+        cout << "ERROR: Number of cells in MRS object does not match number in phase map image. " << endl;
+        exit(1); 
+    }
+
+    vtkDataArray* phaseValues = mriData->GetPointData()->GetArray(0); 
+    
+    for (int cellID = 0; cellID < numMRSCells; cellID++) {
+
+        float phi0 = phaseValues->GetTuple1(cellID); 
+        float phi0Radians = phi0 * vtkMath::Pi()/180.; 
+        //cout << "PHI1: " << cellID << " = " << phi0 << endl;
+        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast( mrsData->GetSpectrum( cellID ) ); 
+        this->ZeroOrderPhase(phi0Radians, spectrum); 
+
+    }
+
+    return 1;
+
+}
+
+
+/*! 
+ *  Apply global phase values
+ */
+int svkPhaseSpec::ApplyGlobalPhase( )
+{
+    if ( this->phase0Target == this->phase0 &&
+         this->linearPhaseTarget == this->linearPhase && 
+         this->linearPhasePivotTarget == this->linearPhasePivot 
+    ) {
         return 1; 
     } 
 
@@ -141,11 +206,13 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     float sinPhase = static_cast<float>( sin( deltaPhase0 ) );
 
 
-    //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
-
+    //  =================================================    
+    //  Iterate through spectral data from all cells.  
+    //  Eventually for performance I should do this by visible
+    //  =================================================    
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
-    //  Extent initially, and catch up with invisible extents after rerendering (modified update).    
+    //  TODO: Set Initial Extent, and catch up with invisible extents after rerendering (modified update).    
     int spatialDims[3]; 
     data->GetDimensions( spatialDims );
     spatialDims[0] -= 1;
@@ -169,20 +236,45 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
         lastChannel = this->channelToPhase + 1; 
     }
 
-    // Let's create the phase array for the linear phase
+    //  =================================================    
+    //  Let's create the phase array for the linear phase
+    //  =================================================    
     vtkImageComplex* linearPhaseArray = new vtkImageComplex[ numFrequencyPoints ];
     vtkImageComplex* reversePhaseArray = NULL;
 
-	// If the pivot point has changed we'll need reverse the current phase, then apply the new phase
+    //  =================================================    
+	//  If the pivot point has changed we'll need reverse 
+    //  the current phase, then apply the new phase
+    //  =================================================    
     if ( this->linearPhasePivotTarget == this->linearPhasePivot ) {
-        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, deltaLinearPhase, this->linearPhasePivot);
+
+        svkSpecUtils::CreateLinearPhaseShiftArray(
+                numFrequencyPoints, 
+                linearPhaseArray, 
+                deltaLinearPhase, 
+                this->linearPhasePivot);
+
     } else {
+
         reversePhaseArray = new vtkImageComplex[ numFrequencyPoints ];
-        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, reversePhaseArray, -1*this->linearPhase, this->linearPhasePivot);
-        svkSpecUtils::CreateLinearPhaseShiftArray(numFrequencyPoints, linearPhaseArray, this->linearPhaseTarget, this->linearPhasePivotTarget);
+
+        svkSpecUtils::CreateLinearPhaseShiftArray(
+                numFrequencyPoints, 
+                reversePhaseArray, 
+                -1 * this->linearPhase, 
+                this->linearPhasePivot);
+
+        svkSpecUtils::CreateLinearPhaseShiftArray(
+                numFrequencyPoints, 
+                linearPhaseArray, 
+                this->linearPhaseTarget, 
+                this->linearPhasePivotTarget);
+
         cosPhase = static_cast<float>( cos( this->phase0Target ) );
         sinPhase = static_cast<float>( sin( this->phase0Target ) );
+
     }
+
     float reverseCosPhase = static_cast<float>( cos( -1*this->phase0 ) );
     float reverseSinPhase = static_cast<float>( sin( -1*this->phase0 ) );
 
@@ -194,10 +286,14 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
                         vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
                         specPtr = spectrum->GetPointer(0); 
 
-                        //cout << "CHECKING: " << x << " " << y << " " << z << " " << channel << endl;
                         for (int i = 0; i < numFrequencyPoints; i++) {
-                            // If the pivot point has changed we'll need reverse the current phase, then apply the new phase
-                            // TODO: If possible make this algorithm not in place so that we do not have to reverse this.
+
+                            //  =================================================    
+                            //  If the pivot point has changed we'll need reverse 
+                            //  the current phase, then apply the new phase
+                            //  TODO: If possible make this algorithm not in place 
+                            //  so that we do not have to reverse this.
+                            //  =================================================    
                         	if( reversePhaseArray != NULL ) {
 								re = specPtr[2*i] * reverseCosPhase - specPtr[2*i+1] * reverseSinPhase;
                                 im = specPtr[2*i] * reverseSinPhase + specPtr[2*i+1] * reverseCosPhase;
@@ -232,7 +328,6 @@ int svkPhaseSpec::RequestData( vtkInformation* request, vtkInformationVector** i
     this->GetInput()->Modified();
     this->GetInput()->Update();
 
-    return 1; 
 } 
 
 
@@ -475,11 +570,19 @@ void svkPhaseSpec::PhaseAllChannels()
 
 
 /*!
- *
+ *  Port 0 is the required input port for the MRS data to be phased. 
+ *  Port 1 is the optional input port for a phase map of values to apply 
  */
-int svkPhaseSpec::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkPhaseSpec::FillInputPortInformation( int port, vtkInformation* info )
 {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
+    if ( port == 0 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
+    }
+    if ( port == 1 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+    }
+
     return 1;
 }
 
