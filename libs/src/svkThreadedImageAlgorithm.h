@@ -55,6 +55,7 @@
 
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
+#include <svk4DImageData.h>
 
 
 namespace svk {
@@ -64,7 +65,8 @@ using namespace std;
 
 
 /*! 
- *  Base class for svkThreadedImageAlgorithm. 
+ *  Base class for svkThreadedImageAlgorithm. Implicitly in place with 
+ *  output port wired to input port 0.  
  */
 class svkThreadedImageAlgorithm : public vtkThreadedImageAlgorithm
 {
@@ -72,9 +74,9 @@ class svkThreadedImageAlgorithm : public vtkThreadedImageAlgorithm
     public:
 
         vtkTypeRevisionMacro( svkThreadedImageAlgorithm, vtkThreadedImageAlgorithm);
-        svkImageData*       GetOutput(); 
-        svkImageData*       GetOutput(int port); 
-        svkImageData*       GetImageDataInput(int port);
+        svkImageData*               GetOutput(); 
+        virtual svkImageData*       GetOutput(int port); 
+        svkImageData*               GetImageDataInput(int port);
 
 
     protected:

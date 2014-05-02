@@ -67,8 +67,13 @@ svkThreadedImageAlgorithm::svkThreadedImageAlgorithm()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
     vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
+    vtkInstantiator::RegisterInstantiator("svk4DImageData",  svk4DImageData::NewObject);
 
     vtkMultiThreader::SetGlobalDefaultNumberOfThreads(0);
+
+    // override in sub-class if necessary, but also reimplent virtual GetOutput methods.
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1); 
 
 }
 
@@ -155,8 +160,6 @@ int svkThreadedImageAlgorithm::SplitExtent(int splitExt[6],int startExt[6],int n
 
     return maxThreadIdUsed + 1;
 }
-
-
 
 
 /*!
