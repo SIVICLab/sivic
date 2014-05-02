@@ -68,29 +68,31 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
-    usemsg += "svk_auto_phase -i input_filename -o output_filename [ -t output_data_type ] [ -h ] \n";
-    usemsg += "                                                    [ --single ] \n";
-    usemsg += "                                                         \n";
-    usemsg += "   -i            name   Name of input MRS file.          \n";
-    usemsg += "   -o            name   Name of output file.             \n";
-    usemsg += "   -t            type   Target data type:            \n";
-    usemsg += "                                 2 = UCSF DDF            \n";
-    usemsg += "                                 4 = DICOM_MRS (default) \n";
-    usemsg += "   --single             Only phase specified file if multiple in series \n";
-    usemsg += "   -a            type   Type of phasing.  Options: eries \n";
-    usemsg += "                                 1 = FIRST POINT PHASING \n";
-    usemsg += "   -h                   Print this help mesage.      \n";
-    usemsg += "                                                         \n";
-    usemsg += "Auto phase spectra (zero and first order phaseing).      \n";
-    usemsg += "                                                         \n";
+    usemsg += "svk_auto_phase -i input_filename -o output_filename -a type [ -t output_data_type ]  \n";
+    usemsg += "               [ --single ] [ -h ]                                                   \n";
+    usemsg += "                                                                                     \n";
+    usemsg += "   -i            name   Name of input MRS file.                                      \n";
+    usemsg += "   -o            root   Root of output file.                                         \n";
+    usemsg += "   -t            type   Target data type:                                            \n";
+    usemsg += "                                 2 = UCSF DDF and IDF phase map                      \n";
+    usemsg += "                                 4 = DICOM_MRS and DCM phase map (default)           \n";
+    usemsg += "   -a            type   Type of phasing.  Options: eries                             \n";
+    usemsg += "                                 1 = FIRST POINT PHASING                             \n";
+    usemsg += "   --single             Only phase specified file if multiple in series              \n";
+    usemsg += "   -h                   Print this help mesage.                                      \n";
+    usemsg += "                                                                                     \n";
+    usemsg += "Auto phase spectra (zero and first order phaseing).                                  \n";
+    usemsg += "                                                                                     \n";
 
 
     string inputFileName;
     string outputFileName;
-    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
-    bool onlyPhaseSingle = true;
-    svkMRSAutoPhase::phasingModel phaseModelType = svkMRSAutoPhase::FIRST_POINT_0;
+    svkImageWriterFactory::WriterType mrsDataTypeOut = svkImageWriterFactory::DICOM_MRS;
+    svkImageWriterFactory::WriterType mriDataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
+    svkMRSAutoPhase::PhasingModel phasingType = svkMRSAutoPhase::UNDEFINED_PHASE_MODEL; 
 
+    bool onlyPhaseSingle = true;
+    svkMRSAutoPhase::PhasingModel phaseModelType = svkMRSAutoPhase::FIRST_POINT_0;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -111,16 +113,21 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:a:h", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                //  Make sure the file name doesn't contain an extension: 
+                outputFileName = svkImageReader2::GetFileRoot(outputFileName.c_str()); 
                 break;
             case 't':
-                dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                mrsDataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case 'a':
+                phasingType = static_cast<svkMRSAutoPhase::PhasingModel>( atoi(optarg) );
                 break;
             case FLAG_SINGLE:
                 onlyPhaseSingle = true;
@@ -141,14 +148,30 @@ int main (int argc, char** argv)
     if (
         argc != 0 ||  inputFileName.length() == 0
             || outputFileName.length() == 0
-            || ( dataTypeOut != svkImageWriterFactory::DICOM_MRS && dataTypeOut != svkImageWriterFactory::DDF )
+            || ( mrsDataTypeOut != svkImageWriterFactory::DICOM_MRS && mrsDataTypeOut != svkImageWriterFactory::DDF )
+            || outputFileName.length() == 0
+            || phasingType == svkMRSAutoPhase::UNDEFINED_PHASE_MODEL 
     ) {
             cout << usemsg << endl;
             exit(1); 
     }
 
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
+    if ( phasingType <= svkMRSAutoPhase::UNDEFINED_PHASE_MODEL || phasingType >= svkMRSAutoPhase::LAST_MODEL ) {
+        cout << "Specified phasing type is not recognized." << endl;
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
+    // ===============================================
+    //  Output phase image type is implied by output MRS data type:  
+    // ===============================================
+    if ( mrsDataTypeOut == svkImageWriterFactory::DDF ) {
+        mriDataTypeOut = svkImageWriterFactory::IDF;
+    }
+
+    cout << "Input File:  " << inputFileName << endl;
+    cout << "Output File: " << outputFileName << endl;
+    cout << "Phase Type:  " << phasingType << endl;
 
 
     // ===============================================
@@ -170,31 +193,24 @@ int main (int argc, char** argv)
         reader->OnlyReadOneInputFile();
     }
     reader->Update();
+    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
     
-    //reader->GetOutput()->GetDcmHeader()->PrintDcmHeader(); 
 
     // ===============================================  
-    //  Pass data through your algorithm:
+    //  Pass data through phasing algo.  Should use a factory to get
+    //  correcty phasing algo:
     // ===============================================  
-    svkMRSAutoPhase* phaser = svkMRSFirstPointPhase::New();
-    //svkMRSAutoPhase* phaser = svkMRSAutoPhase::New();
+    svkMRSAutoPhase* phaser;
+    if ( phasingType == svkMRSAutoPhase::FIRST_POINT_0 ) {  
+        phaser = svkMRSFirstPointPhase::New();
+    } else {
+        cout << "Specified phasing type is not recognized." << endl;
+        exit(1); 
+    }
     phaser->SetInputConnection(0, reader->GetOutputPort(0) ); 
     phaser->OnlyUseSelectionBox();
-
-    //svkMRSAutoPhase::phasingModel model;
-    //model =  svkMRSAutoPhase::MAX_PEAK_HTS_0;
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_0); 
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_1); 
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0); 
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
-        //phaser->SetPhasingModel(svkMRSAutoPhase::MAX_PEAK_HTS_01); 
-    //model = svkMRSAutoPhase::MAX_PEAK_HTS_01; 
-    //model =  svkMRSAutoPhase::MAX_PEAK_HTS_1;
-    //model =  svkMRSAutoPhase::FIRST_POINT_0;
-
-    //phaser->SetPhasingModel( model ); 
     phaser->Update();
+    phaser->GetOutput(0)->GetProvenance()->SetApplicationCommand( cmdLine );
 
 
     // ===============================================  
@@ -202,30 +218,31 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* mrsWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( mrsDataTypeOut ) ); 
+    svkImageWriter* mriWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( mriDataTypeOut ) ); 
     writerFactory->Delete();
     
-    if ( writer == NULL ) {
+    if ( mrsWriter == NULL || mriWriter == NULL ) {
         cerr << "Can not create writer " << endl;
         exit(1);
     }
 
-//stringstream modelString(stringstream::in | stringstream::out);
-//modelString << model;
-//outputFileName.append(modelString.str());    
-    writer->SetFileName( outputFileName.c_str() );
+    mrsWriter->SetFileName( outputFileName.c_str() );
+    string phaseMapName = outputFileName + "_FirstPointPhaseMap"; 
+    mriWriter->SetFileName( phaseMapName.c_str() );
 
     // ===============================================  
     //  Write output of algorithm to file:    
     // ===============================================  
-    //writer->SetInput( phaser->GetOutput()); 
-    writer->SetInput( phaser->GetImageDataInput(0) );
-    writer->Write();
-
+    mrsWriter->SetInput( phaser->GetImageDataInput(0) );
+    mrsWriter->Write();
+    mriWriter->SetInput( phaser->GetOutput(0) );
+    mriWriter->Write();
 
     //  clean up:
     phaser->Delete(); 
-    writer->Delete();
+    mrsWriter->Delete();
+    mriWriter->Delete();
     reader->Delete();
 
     return 0; 
