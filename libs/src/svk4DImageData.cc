@@ -289,7 +289,8 @@ void  svk4DImageData::GetImage(  svkImageData* image,
                                  int point,
                                  vtkstd::string seriesDescription,
                                  int* indexArray,
-                                 int component )
+                                 int component,
+                                 int vtkDataType  )
 {
     if( image != NULL ) {
 
@@ -298,14 +299,19 @@ void  svk4DImageData::GetImage(  svkImageData* image,
         iod->InitDcmHeader();
         iod->Delete();
 
-        this->GetDcmHeader()->ConvertMrsToMriHeader( 
+    	if ( vtkDataType == VTK_VOID ) {
+            vtkDataType = this->GetCellData()->GetArray(0)->GetDataType();
+        }
+
+        this->GetDcmHeader()->InitDerivedMRIHeader( 
             image->GetDcmHeader(), 
-            VTK_DOUBLE, 
+            vtkDataType, 
             seriesDescription
         );
     	image->SyncVTKImageDataToDcmHeader();
 
-        this->GetImage( image, point, indexArray, component );
+        this->GetImage( image, point, indexArray, component, vtkDataType );
+        image->GetDcmHeader()->PrintDcmHeader();
     }
 }
 
@@ -325,7 +331,8 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 void  svk4DImageData::GetImage(  svkImageData* image,
                                  int point,
                                  int* indexArray,
-                                 int component )
+                                 int component,
+                                 int vtkDataType )
 {
     if( image != NULL ) {
     	vtkCellData* cellData = this->GetCellData();
@@ -334,14 +341,16 @@ void  svk4DImageData::GetImage(  svkImageData* image,
     	// We have to have at least one array to get an image from it
     	if( firstArray != NULL ) {
 			int numComponents = firstArray->GetNumberOfComponents();
-			//int dataType    = firstArray->GetDataType();
+			//int vtkDataType    = firstArray->GetDataType();
 			// Ideally this should copy the input type, but some algorithms (svkImageFourierCenter) require double input
 			// TODO: Update svkImageFourierCenter to support arbitrary input
-			int dataType    = VTK_DOUBLE;
+    	    if ( vtkDataType == VTK_VOID ) {
+                vtkDataType = this->GetCellData()->GetArray(0)->GetDataType();
+            }
 
 			// Setup image dimensions
 			image->SetExtent( Extent[0], Extent[1]-1, Extent[2], Extent[3]-1, Extent[4], Extent[5]-1);
-			image->SetScalarType( dataType );
+			image->SetScalarType( vtkDataType );
 	        if( component > 1) {
 				image->SetNumberOfScalarComponents( numComponents );
 	        } else {
@@ -352,7 +361,7 @@ void  svk4DImageData::GetImage(  svkImageData* image,
 			//image->GetIncrements();
 
 			// Create a new array to hold the pixel data
-			vtkDataArray* pixelData = vtkDataArray::CreateDataArray( dataType );
+			vtkDataArray* pixelData = vtkDataArray::CreateDataArray( vtkDataType );
 
 			// If the expected component in no 0 or 1 then copy all components
 			if( component > 1) {

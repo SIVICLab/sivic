@@ -72,7 +72,7 @@ class svk4DImageData: public svkImageData
     public:
 
         vtkTypeRevisionMacro( svk4DImageData, svkImageData);
-        static svk4DImageData* New();
+        static svk4DImageData*  New();
         static vtkObject*       NewObject();
 
         enum ActorType {PLOT_GRID, VOL_SELECTION, SAT_BANDS};
@@ -103,16 +103,18 @@ class svk4DImageData: public svkImageData
                        );
 
 		void  		   GetZeroImage(  svkImageData* image );
-        void           GetImage( svkImageData* image,
+        virtual void   GetImage( svkImageData* image,
                                  int point,
                                  int* indexArray = NULL,
-                                 int component = 2 );
+                                 int component = 2, 
+                                 int vtkDataType = VTK_VOID );
 
-        void           GetImage( svkImageData* image,
+        virtual void   GetImage( svkImageData* image,
                                  int point,
                                  vtkstd::string seriesDescription,
                                  int* indexArray = NULL,
-                                 int component = 2 );
+                                 int component = 2,
+                                 int vtkDataType = VTK_VOID );
 
         void           SetImage( vtkImageData* image, int point,  int* indexArray = NULL );
         virtual void   UpdateRange(int component );
