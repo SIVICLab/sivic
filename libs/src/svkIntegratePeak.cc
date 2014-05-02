@@ -150,7 +150,7 @@ int svkIntegratePeak::RequestData( vtkInformation* request, vtkInformationVector
 
             for (int i = startPoint; i <= endPoint; i++) {
 
-                data->GetImage( ptImage, i, timePt, channel );
+                data->GetImage( ptImage, i, timePt, channel, 2, "" );
                 //cout << " freq: " << i << " " << ( ptImage->GetPointData()->GetScalars()->GetComponent(0,0) ) << endl;;
                 //cout << " freq: " << i << " " << ( ptImage->GetPointData()->GetScalars()->GetComponent(0,1) ) << endl;;
                 ptImage->Modified();
