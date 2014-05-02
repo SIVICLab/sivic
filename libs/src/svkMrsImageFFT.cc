@@ -244,7 +244,8 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                     this->UpdateProgress( progress );
                     cout << "." ;
                 }
-                data->GetImage( pointImage, point, timePt, channel );
+                //  ImageFourierCenter required data type VTK_DOUBLE
+                data->GetImage( pointImage, point, timePt, channel, 2, "", VTK_DOUBLE );
 
                 currentData = pointImage;
 
@@ -308,6 +309,7 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
             }
         }
     }
+    cout << endl;
     if( preIfc != NULL ) {
         preIfc->Delete(); 
         preIfc = NULL; 

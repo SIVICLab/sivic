@@ -151,7 +151,8 @@ int svkDSCMap::RequestData( vtkInformation* request, vtkInformationVector** inpu
         0, 
         this->newSeriesDescription, 
         indexArray, 
-        0 
+        0,
+        VTK_DOUBLE
     ); 
 
     this->GenerateMap(); 

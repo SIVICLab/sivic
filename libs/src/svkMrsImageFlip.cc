@@ -135,8 +135,7 @@ int svkMrsImageFlip::RequestData( vtkInformation* request, vtkInformationVector*
         for( int coil = lowerChannel; coil < upperChannel; coil++ ) {
             for( int freq = 0; freq < numSpecPts; freq++ ) {
 
-
-                mrsData->GetImage( singleFreqImage, freq, timePt, coil);
+                mrsData->GetImage( singleFreqImage, freq, timePt, coil, 2, "");
 
                 singleFreqImage->Modified();
 
