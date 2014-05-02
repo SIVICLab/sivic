@@ -830,7 +830,7 @@ class svkDcmHeader: public vtkObject
                                 void* rawFile
                             );
 
-        int             ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
+        int             InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription); 
         int             ConvertEnhancedMriToMriHeader( svkDcmHeader* mri, vtkIdType dataType ); 
         virtual string  GetDcmNameFromTag( string groupElementString ) = 0; 
 

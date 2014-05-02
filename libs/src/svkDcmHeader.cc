@@ -2336,6 +2336,7 @@ svkDcmHeader::DcmPixelDataFormat svkDcmHeader::GetVtkDataTypeFromSvkDataType( vt
     }
 }
 
+
 /*!
  *  Initializes an MR Image Storage header from an Enhanced  MRI Storage header. 
  */
@@ -2442,7 +2443,7 @@ int svkDcmHeader::ConvertEnhancedMriToMriHeader(svkDcmHeader* mri, vtkIdType dat
  *  This is a utility for extracting metabolite maps from MRS data, for example. 
  *  Takes an initialized svkDcmHeader from an svkMriImageData object. 
  */
-int svkDcmHeader::ConvertMrsToMriHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription)
+int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vtkstd::string seriesDescription)
 {
 
     //"verify that "this" is an svkMRSpectroscopy Object"
