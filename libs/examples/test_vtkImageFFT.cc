@@ -106,7 +106,7 @@ int main (int argc, char** argv)
 
     // Lets look at the data...
     svkMriImageData* pointImage =  svkMriImageData::New();
-    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187 );
+    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187, 0, 0, 2, "" );
     //pointImage->GetPointData()->SetScalars( sineWaveImage->GetPointData()->GetScalars() );
     //pointImage->GetPointData()->Modified();
     //pointImage->Update();

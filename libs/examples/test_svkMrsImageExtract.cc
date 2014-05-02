@@ -85,7 +85,7 @@ int main (int argc, char** argv)
 
     for( int i = 0; i < 512; i++ ) {
         svkMriImageData* pointImage =  svkMriImageData::New();
-        svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, i );
+        svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, i, 0, 0, 2, "" );
     }
     time_after = time (NULL);
 
@@ -93,7 +93,7 @@ int main (int argc, char** argv)
 
     time_before = time (NULL);
     svkMriImageData* pointImage =  svkMriImageData::New();
-    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187 );
+    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage, 187, 0, 0, 2, "" );
     for( int i = 0; i < 512; i++ ) {
         svkMrsImageData::SafeDownCast( data )->SetImage( pointImage, i );
     }
@@ -121,7 +121,7 @@ int main (int argc, char** argv)
     viewer->SetInput( imageFFT->GetOutput() );
 
     svkMriImageData* pointImage2 =  svkMriImageData::New();
-    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage2, 90 );
+    svkMrsImageData::SafeDownCast( data )->GetImage( pointImage2, 90, 0, 0, 2, "" );
     svkMrsImageData::SafeDownCast(data)->SetImage( pointImage, 90 );
     plotGridInput->GetView()->Refresh();
     gridWindow->GetInteractor()->Start();
