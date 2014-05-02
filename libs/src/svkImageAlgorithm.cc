@@ -63,6 +63,7 @@ svkImageAlgorithm::svkImageAlgorithm()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
     vtkInstantiator::RegisterInstantiator("svkMrsImageData", svkMrsImageData::NewObject);
+    vtkInstantiator::RegisterInstantiator("svk4DImageData",  svk4DImageData::NewObject);
 }
 
 

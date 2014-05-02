@@ -55,6 +55,7 @@
 
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
+#include <svk4DImageData.h>
 
 
 namespace svk {
