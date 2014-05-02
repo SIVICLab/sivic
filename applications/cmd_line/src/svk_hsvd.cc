@@ -73,7 +73,7 @@ int main (int argc, char** argv)
     usemsg += "         [ -fb ] [ -m order ] [ --single ] [ -h ]                                \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "   -i                name   Name of file to convert.                             \n"; 
-    usemsg += "   -o                name   Root name of outputfile.                             \n";
+    usemsg += "   -o                root   Root name of outputfile.                             \n";
     usemsg += "   -t                type   Target data type:                                    \n";
     usemsg += "                                 2 = UCSF DDF                                    \n";
     usemsg += "                                 4 = DICOM_MRS (default)                         \n";
@@ -131,6 +131,8 @@ int main (int argc, char** argv)
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                //  Make sure the file name doesn't contain an extension: 
+                outputFileName = svkImageReader2::GetFileRoot(outputFileName.c_str()); 
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
@@ -256,8 +258,6 @@ int main (int argc, char** argv)
     }
 
 
-    //  Make sure the file name doesn't contain an extension: 
-    outputFileName = svkImageReader2::GetFileRoot(outputFileName.c_str()); 
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( reader->GetOutput() ) );
 
