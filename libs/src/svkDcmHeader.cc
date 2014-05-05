@@ -753,7 +753,11 @@ void svkDcmHeader::UpdatePixelSize()
                 0
             );
         } else {
-            sizeString = this->GetStringValue( "PixelSpacing", i ); 
+            if( this->ElementExists( "PixelSpacing" ) ) {
+                sizeString = this->GetStringValue( "PixelSpacing", i ); 
+            } else {
+                sizeString = "0"; 
+            }
         }
         iss->str(sizeString);
         *iss >> pixelSize[i];
