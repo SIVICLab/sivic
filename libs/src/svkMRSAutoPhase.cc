@@ -377,15 +377,24 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
     this->GetImageDataInput(0)->GetContinuousIncrements(ext, in1Inc0, in1Inc1, in1Inc2);
 
     // Loop through spectra in the given extent 
-    svkDcmHeader::DimensionVector dimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
-    svkDcmHeader::DimensionVector loopVector = dimensionVector;
+    svkDcmHeader::DimensionVector mrsDimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = mrsDimensionVector;
+
+    svkDcmHeader::DimensionVector mriDimensionVector = this->GetOutput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    int numMRICells = svkDcmHeader::GetNumberOfCells( &mriDimensionVector );
 
     int numThreads = this->GetNumberOfThreads();
-    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-    //cout << *this->GetOutput(0)  << endl;
-    for (int cellID = 0; cellID < numCells; cellID++) {
+    int numMRSCells = svkDcmHeader::GetNumberOfCells( &mrsDimensionVector );
 
-        svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+    if ( numMRICells != numMRSCells ) {
+        cout << "ERROR: Number of MRI and MRS Cells do not match" << endl;
+        exit(1);
+    }    
+
+    //cout << *this->GetOutput(0)  << endl;
+    for (int cellID = 0; cellID < numMRSCells; cellID++) {
+
+        svkDcmHeader::GetDimensionVectorIndexFromCellID( &mrsDimensionVector, &loopVector, cellID );
         bool isCellInSubExtent = svkMrsImageData::IsIndexInExtent( ext, &loopVector ); 
    
         //  each thread operates on a sub-extent.  Check to see if the cell is in the 
@@ -402,7 +411,7 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
             for ( int t = 0; t < numThreads; t++ ) {
                    cellCount = cellCount + svkMRSAutoPhase::progress[t];
             }
-            int percent = static_cast<int>(100 * (double)cellCount/(double)numCells);
+            int percent = static_cast<int>(100 * (double)cellCount/(double)numMRSCells);
             if ( id == 0 && percent % 1 == 0 ) {
                 this->UpdateProgress(percent/100.);
             }
