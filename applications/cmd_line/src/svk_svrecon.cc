@@ -57,7 +57,7 @@
 #include <svkGEPFileMapper.h>
 #include <svkImageAlgorithm.h>
 #include <svkMultiCoilPhase.h>
-#include <svkMRSCombine.h.h>
+#include <svkMRSCombine.h>
 #include <svkMrsImageFFT.h>
 #ifdef WIN32
 extern "C" {
