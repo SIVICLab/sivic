@@ -45,7 +45,7 @@
 #include <svkDataModel.h>
 #include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 #include <svkMultiCoilPhase.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
@@ -82,8 +82,8 @@ class sivicCombineWidget : public sivicKWCompositeWidget
         virtual void    CreateWidget();
         virtual void    ProcessCallbackCommandEvents( vtkObject*, unsigned long, void* );
         void            ResetRange();
-        svkCoilCombine::CombinationMethod method;
-        void            ExecuteCombine(svkCoilCombine::CombinationMethod method, svkCoilCombine::CombinationDimension dimension );
+        svkMRSCombine::CombinationMethod method;
+        void            ExecuteCombine(svkMRSCombine::CombinationMethod method, svkMRSCombine::CombinationDimension dimension );
 
 
 

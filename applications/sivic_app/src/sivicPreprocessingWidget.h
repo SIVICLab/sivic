@@ -46,7 +46,7 @@
 #include <svkDataModel.h>
 #include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 #include <svkMultiCoilPhase.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>

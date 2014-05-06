@@ -104,9 +104,9 @@ void sivicCombineWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsign
 {
     // Respond to a selection change in the overlay view
     if( caller == this->magnitudeCombinationButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine(svkCoilCombine::SUM_OF_SQUARES,svkCoilCombine::COIL);
+        this->ExecuteCombine(svkMRSCombine::SUM_OF_SQUARES,svkMRSCombine::COIL);
     } else if( caller == this->additionCombinationButton && event == vtkKWPushButton::InvokedEvent ) {
-        this->ExecuteCombine(svkCoilCombine::ADDITION,svkCoilCombine::COIL);
+        this->ExecuteCombine(svkMRSCombine::ADDITION,svkMRSCombine::COIL);
     }
     this->Superclass::ProcessCallbackCommandEvents(caller, event, calldata);
 }
@@ -115,7 +115,7 @@ void sivicCombineWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsign
 /*!
  *  Executes the combining of the channels.
  */
-void sivicCombineWidget::ExecuteCombine(svkCoilCombine::CombinationMethod method, svkCoilCombine::CombinationDimension dimension )
+void sivicCombineWidget::ExecuteCombine(svkMRSCombine::CombinationMethod method, svkMRSCombine::CombinationDimension dimension )
 {
 
     svkImageData* data = this->model->GetDataObject("SpectroscopicData");
@@ -125,7 +125,7 @@ void sivicCombineWidget::ExecuteCombine(svkCoilCombine::CombinationMethod method
         // We'll turn the renderer off to avoid rendering intermediate steps
         this->plotController->GetView()->TurnRendererOff(svkPlotGridView::PRIMARY);
 
-        svkCoilCombine* coilCombine = svkCoilCombine::New();
+        svkMRSCombine* coilCombine = svkMRSCombine::New();
         coilCombine->SetInput( data );
 
         coilCombine->SetCombinationDimension( dimension );  //for combining time points
