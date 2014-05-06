@@ -57,7 +57,7 @@
 #include <svkGEPFileMapper.h>
 #include <svkImageAlgorithm.h>
 #include <svkMultiCoilPhase.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 #include <svkMrsImageFFT.h>
 #ifdef WIN32
 extern "C" {
@@ -252,7 +252,7 @@ int main (int argc, char** argv)
     // ===============================================  
     //  combine, 
     // ===============================================  
-    svkCoilCombine* coilCombine = svkCoilCombine::New();
+    svkMRSCombine* coilCombine = svkMRSCombine::New();
     coilCombine->SetInput( currentImage );
     coilCombine->Update();
     currentImage->Modified();
