@@ -41,17 +41,17 @@
 
 
 
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkCoilCombine, "$Rev$");
-vtkStandardNewMacro(svkCoilCombine);
+vtkCxxRevisionMacro(svkMRSCombine, "$Rev$");
+vtkStandardNewMacro(svkMRSCombine);
 
 
-svkCoilCombine::svkCoilCombine()
+svkMRSCombine::svkMRSCombine()
 {
 
 #if VTK_DEBUG_ON
@@ -60,12 +60,12 @@ svkCoilCombine::svkCoilCombine()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->combinationMethod = svkCoilCombine::ADDITION; 
-    this->combinationDimension = svkCoilCombine::COIL; 
+    this->combinationMethod = svkMRSCombine::ADDITION; 
+    this->combinationDimension = svkMRSCombine::COIL; 
 }
 
 
-svkCoilCombine::~svkCoilCombine()
+svkMRSCombine::~svkMRSCombine()
 {
 }
 
@@ -73,7 +73,7 @@ svkCoilCombine::~svkCoilCombine()
 /*
  *
  */
-void svkCoilCombine::SetCombinationMethod( CombinationMethod method)
+void svkMRSCombine::SetCombinationMethod( CombinationMethod method)
 {
     this->combinationMethod = method; 
 }
@@ -82,7 +82,7 @@ void svkCoilCombine::SetCombinationMethod( CombinationMethod method)
 /*
  *
  */
-void svkCoilCombine::SetCombinationDimension( CombinationDimension dimension )
+void svkMRSCombine::SetCombinationDimension( CombinationDimension dimension )
 {
     this->combinationDimension = dimension; 
 }
@@ -90,7 +90,7 @@ void svkCoilCombine::SetCombinationDimension( CombinationDimension dimension )
 /*! 
  *
  */
-int svkCoilCombine::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMRSCombine::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     return 1;
 }
@@ -99,12 +99,16 @@ int svkCoilCombine::RequestInformation( vtkInformation* request, vtkInformationV
 /*! 
  *
  */
-int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( this->combinationMethod == ADDITION ) {
-        this->RequestAdditionData(); 
-    } else if (this->combinationMethod == SUM_OF_SQUARES ) {
+    if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
+        int weight = 1; 
+        this->RequestLinearCombinationData( weight ); 
+    } else if (this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
+        int weight = -1; 
+        this->RequestLinearCombinationData( weight ); 
+    } else if (this->combinationMethod == svkMRSCombine::SUM_OF_SQUARES ) {
         this->RequestSumOfSquaresData(); 
     }
 
@@ -114,8 +118,10 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
     //this->GetImageDataInput(0)->GetDcmHeader()->PrintDcmHeader();
 
     //  Trigger observer update via modified event:
+    this->GetOutput()->GetProvenance()->AddAlgorithm( this->GetClassName() );
     this->GetInput()->Modified();
     this->GetInput()->Update();
+    
     return 1; 
 
 }
@@ -124,9 +130,8 @@ int svkCoilCombine::RequestData( vtkInformation* request, vtkInformationVector**
 /*!
  *  Combine data by adding complex values.  No weighting is applied.
  */
-void svkCoilCombine::RequestAdditionData()
+void svkMRSCombine::RequestLinearCombinationData( int weight )
 {
-
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
     svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
     svkDcmHeader* hdr  = data->GetDcmHeader();
@@ -160,8 +165,8 @@ void svkCoilCombine::RequestAdditionData()
                             spectrum0->GetTupleValue(i, cmplxPt0);
                             spectrumN->GetTupleValue(i, cmplxPtN);
     
-                            cmplxPt0[0] += cmplxPtN[0]; 
-                            cmplxPt0[1] += cmplxPtN[1]; 
+                            cmplxPt0[0] += ( weight * cmplxPtN[0] ); 
+                            cmplxPt0[1] += ( weight * cmplxPtN[1] ); 
     
                             spectrum0->SetTuple( i, cmplxPt0);
                         }
@@ -179,7 +184,7 @@ void svkCoilCombine::RequestAdditionData()
 /*!
  *  Combine data by sum of squares.  Input data is complex, output data is magnitude (one component). 
  */
-void svkCoilCombine::RequestSumOfSquaresData()
+void svkMRSCombine::RequestSumOfSquaresData()
 {
 
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
@@ -297,7 +302,7 @@ void svkCoilCombine::RequestSumOfSquaresData()
 /*!
  *  Remove coil dimension from data set:
  */
-void svkCoilCombine::RedimensionData()
+void svkMRSCombine::RedimensionData()
 { 
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) );
@@ -366,7 +371,7 @@ void svkCoilCombine::RedimensionData()
 /*!
  *
  */
-int svkCoilCombine::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMRSCombine::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
     return 1;

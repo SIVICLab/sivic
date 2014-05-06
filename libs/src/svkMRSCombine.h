@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_COIL_COMBINE_H
-#define SVK_COIL_COMBINE_H
+#ifndef SVK_MRS_COMBINE_H
+#define SVK_MRS_COMBINE_H
 
 
 #include <vtkObject.h>
@@ -80,17 +80,19 @@ using namespace std;
  *           http://www.ismrm.org/09/Session14.htm
  *
  */
-class svkCoilCombine : public svkImageInPlaceFilter
+class svkMRSCombine : public svkImageInPlaceFilter
 {
 
     public:
 
-        static svkCoilCombine* New();
-        vtkTypeRevisionMacro( svkCoilCombine, svkImageInPlaceFilter);
+        static svkMRSCombine* New();
+        vtkTypeRevisionMacro( svkMRSCombine, svkImageInPlaceFilter);
 
 
         typedef enum {
-            ADDITION = 0,
+            UNDEFINED_COMBINATION = 0,
+            ADDITION,
+            SUBTRACTION,
             SUM_OF_SQUARES
         } CombinationMethod;
 
@@ -105,8 +107,8 @@ class svkCoilCombine : public svkImageInPlaceFilter
 
     protected:
 
-        svkCoilCombine();
-        ~svkCoilCombine();
+        svkMRSCombine();
+        ~svkMRSCombine();
 
         virtual int     FillInputPortInformation(int port, vtkInformation* info);
 
@@ -127,7 +129,7 @@ class svkCoilCombine : public svkImageInPlaceFilter
     private:
 
         void                    RedimensionData(); 
-        void                    RequestAdditionData(); 
+        void                    RequestLinearCombinationData( int weight ); 
         void                    RequestSumOfSquaresData(); 
 
         CombinationMethod       combinationMethod; 
@@ -140,5 +142,5 @@ class svkCoilCombine : public svkImageInPlaceFilter
 }   //svk
 
 
-#endif //SVK_COIL_COMBINE_H
+#endif //SVK_MRS_COMBINE_H
 

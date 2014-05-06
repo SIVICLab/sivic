@@ -235,7 +235,7 @@ ADD_LIBRARY(
     svkLookupTable.cc
     svkByteSwap.cc
     svkMultiCoilPhase.cc
-    svkCoilCombine.cc
+    svkMRSCombine.cc
     svkCorrectDCOffset.cc
     svkSpecUtils.cc
     svkUCSFUtils.cc
