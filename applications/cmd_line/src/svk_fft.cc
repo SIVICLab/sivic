@@ -56,8 +56,6 @@
 #include <svkGEPFileReader.h>
 #include <svkGEPFileMapper.h>
 #include <svkImageAlgorithm.h>
-#include <svkMultiCoilPhase.h>
-#include <svkCoilCombine.h>
 #include <svkMrsImageFFT.h>
 #ifdef WIN32
 extern "C" {
