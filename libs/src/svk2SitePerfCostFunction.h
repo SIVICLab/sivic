@@ -88,16 +88,17 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                     arrivalTime = t;
                 }
             }
-             
-            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) { 
+			arrivalTime = 0;
+            for ( int t = arrivalTime; t < this->numTimePoints; t++ ) {
+			//for ( int t = 0; t < this->numTimePoints; t++ ) { 
                 residual += ( this->signal0[t] - this->kineticModel0[t] )  * ( this->signal0[t] - this->kineticModel0[t] ); 
                 residual += ( this->signal1[t] - this->kineticModel1[t] )  * ( this->signal1[t] - this->kineticModel1[t] );
             }
 
             // for now ignore the urea residual 
-            //for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
-                //residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
-            //}
+			// for ( int t = 0; t < this->numTimePoints-arrivalTime; t++ ) { 
+			//     residual += ( this->signal2[t] - this->kineticModel2[t] )  * ( this->signal2[t] - this->kineticModel2[t] );
+			// }
 
             //cout << "RESIDUAL: " << residual << endl;
 
@@ -139,22 +140,22 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
                 }
                 meanValue2 = signal2[t] + meanValue2;
             }
-             
+            arrivalTime = 0;
             meanValue2 = meanValue2/numTimePoints;
 
             //set up Arterial Input function
             float* convolutionMat  = new float [numTimePoints];
-            float  Ao    = 5000;
-            float  alpha = .2;
-            float  beta  = 4.0;
+            float  Ao    = 1e10;
+            float  alpha = .3;
+            float  beta  = 2.0;
             int    TR    = 5; //sec
     
             float* inputFunction   = new float [numTimePoints];
             for(int t = 0;  t < numTimePoints; t++ ) {
-                inputFunction [t] = Ao * powf((t-1),alpha) * exp(-(t-1)/beta);
+                inputFunction [t] = Ao * powf((t),alpha) * exp(-(t)/beta);
             }
              
-            
+            convolutionMat[0] = 0;
             //cout << "GUESSES: " << T1all << " " << Kpl  << endl;
   
             //  use fitted model params and initial concentration/intensity to calculate the lactacte intensity at 
@@ -163,23 +164,26 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
             // DEFINE COST FUNCTION 
             for ( int t = 0; t < numTimePoints; t++ ) {
-
-                if (t < arrivalTime ) {
+			  
+                if (t < arrivalTime ){
                     kineticModel0[t] = signal0[t]; 
                     kineticModel1[t] = signal1[t]; 
-                }
+					 }
 
-                if (t >= arrivalTime ) {      
+				  if (t >= arrivalTime ) {      
 
-                    // PYRUVATE 
+                    // PYRUVATE
+
+					//	convolutionMat[t] = inputFunction[t]+convolutionMat[t];
+					
                     kineticModel0[t] = signal0[arrivalTime] 
-                        * exp( -((1/T1all) + Kpl) * ( t - arrivalTime) );
+					  * exp( -((T1all) + Kpl) * ( t - arrivalTime) ) +  (1-exp(-Ktrans*t))*inputFunction[t];
 
                     // LACTATE 
                     kineticModel1[t] = signal1[arrivalTime] 
-                        * exp( -( t - arrivalTime )/T1all) 
+                        * exp( -( t - arrivalTime )*T1all) 
                         - signal0[ arrivalTime ] 
-                            * exp( -( t - arrivalTime )/T1all)
+                            * exp( -( t - arrivalTime )*T1all)
                             * ( exp( -Kpl * ( t - arrivalTime )) - 1 );
 
                 }
@@ -188,14 +192,20 @@ class svk2SitePerfCostFunction : public svkKineticModelCostFunction
 
                 // UREA
                 //determine convolution with arterial input function
-                convolutionMat[0] = 0;
-                for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
-                    convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 
-                }
+				//   convolutionMat[0] = 0;
+				//for (int tau = -(numTimePoints); tau < (numTimePoints); tau ++){      
+				//     convolutionMat[t] = inputFunction[tau] * exp(-Ktrans * (t-tau)/K2) + convolutionMat[t-1]; 
+				// }
+				// kineticModel2[t] =  Ktrans * TR * convolutionMat[t]; 
 
-                kineticModel2[t] = Ktrans * TR * convolutionMat[t];
-                  
-                //cout << "Estimated Pyruvate(" << t << "): " <<  kineticModel0[t] << endl; 
+				 //convolutionMat[t] = inputFuntion[t]*(1-exp(Ktrans*t));
+										   
+				  //kineticModel2[t] = 0;
+													   
+				  //for (int tau = 0; tau < t; tau ++){						
+				  kineticModel2[t] =   inputFunction[t]; //convolutionMat[t]* kineticModel2[t];
+				  // }
+				//cout << "Estimated AIF(" << t << "): " <<  kineticModel2[t] << endl;
     
             }
 

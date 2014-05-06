@@ -82,7 +82,8 @@ svkMRSKinetics::svkMRSKinetics()
     //  Outputports:  2 for fitted urea kinetics
     //  Outputports:  3 for T1all map 
     //  Outputports:  4 for Kpl map 
-    this->SetNumberOfOutputPorts(5); 
+    //  Outputports:  5 for Ktrans map 
+    this->SetNumberOfOutputPorts(6); 
 }
 
 
@@ -206,6 +207,14 @@ int svkMRSKinetics::RequestData( vtkInformation* request, vtkInformationVector**
         indexArray, 
         0 
     ); 
+    seriesDescription.assign( this->newSeriesDescription + "_Ktrans"); 
+    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
+        svkMriImageData::SafeDownCast( this->GetOutput(5) ), 
+        0, 
+        seriesDescription, 
+        indexArray, 
+        0 
+    ); 
 
 
     //  ===============================================
@@ -294,14 +303,17 @@ void svkMRSKinetics::GenerateKineticParamMap()
     this->ZeroData();
 
     //  Get the parameter map data arrays to initialize.  
-    this->mapArrayT1all = this->GetOutput(3)->GetPointData()->GetArray(0);
-    this->mapArrayKpl   = this->GetOutput(4)->GetPointData()->GetArray(0);
+    this->mapArrayT1all  = this->GetOutput(3)->GetPointData()->GetArray(0);
+    this->mapArrayKpl    = this->GetOutput(4)->GetPointData()->GetArray(0);
+    this->mapArrayKtrans = this->GetOutput(5)->GetPointData()->GetArray(0);
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameStringT1all("T1all");
-    vtkstd::string arrayNameStringKpl("Kpl");
+    string arrayNameStringT1all("T1all");
+    string arrayNameStringKpl("Kpl");
+    string arrayNameStringKtrans("Ktrans");
     this->mapArrayT1all->SetName( arrayNameStringT1all.c_str() );
     this->mapArrayKpl->SetName( arrayNameStringKpl.c_str() );
+    this->mapArrayKtrans->SetName( arrayNameStringKtrans.c_str() );
 
     double voxelValue;
     int numVoxels[3];
@@ -381,23 +393,23 @@ void svkMRSKinetics::InitOptimizer( float* metKinetics0, float* metKinetics1, fl
 
     float TR = 5.;
     //  Scale by temporal resolution.  At end apply inverse scaling when writing out maps
-    initialPosition[0] =  35./TR;    // T1all  (s)
-    initialPosition[1] =  0.05 * TR;     // Kpl    (1/s)  
-    initialPosition[2] =  1;        // ktrans 
-    initialPosition[3] =  1;        // k2
+    initialPosition[0] =  TR*1./35;     // T1all  (s)
+    initialPosition[1] =  0.01 * TR;    // Kpl    (1/s)  
+    initialPosition[2] =  1 * TR;       // ktrans (1/s)
+    initialPosition[3] =  TR*1./40;     // k2     (1/s)
 
     //  Set bounds
     itk::ParticleSwarmOptimizer::ParameterBoundsType bounds;
 
     // first order range of values: 
-    float upperBound0 = 50./TR;      //  T1all
-    float lowerBound0 = 10./TR;      //  T1all
-    float upperBound1 = .3 * TR;          //  Kpl
-    float lowerBound1 = 0 * TR;          //  Kpl
-    float upperBound2 = 100;  
-    float lowerBound2 = -100;
-    float upperBound3 = 100;  
-    float lowerBound3 = -100;
+    float upperBound0 = TR*1./20;    //  T1all
+    float lowerBound0 = TR*1./40;    //  T1all
+    float upperBound1 = .5 * TR;     //  Kpl
+    float lowerBound1 = 0 * TR;      //  Kpl
+    float upperBound2 = 100;         // ktrans 
+    float lowerBound2 = 0;           // ktrans 
+    float upperBound3 = 1;           // k2 
+    float lowerBound3 = 0;           // k2
     bounds.push_back( std::make_pair( lowerBound0, upperBound0 ) );    // bounds param 0
     bounds.push_back( std::make_pair( lowerBound1, upperBound1 ) );    // bounds param 0
     bounds.push_back( std::make_pair( lowerBound2, upperBound2 ) );    // bounds param 0
@@ -479,12 +491,14 @@ void svkMRSKinetics::FitVoxelKinetics(float* metKinetics0, float* metKinetics1, 
     //  Save fitted kinetics into algorithm output object cell data
     //  ===================================================
     float TR = 5.; 
-    double T1all  = finalPosition[0] * TR;
+    double T1all  = TR / finalPosition[0];
     double Kpl    = finalPosition[1] / TR;
+    double Ktrans = finalPosition[2] / TR;
     //cout << "T1all: " << T1all << endl;
     //cout << "Kpl:   " << Kpl   << endl;
     mapArrayT1all->SetTuple1(voxelIndex, T1all);
     mapArrayKpl->SetTuple1(voxelIndex, Kpl);
+    mapArrayKtrans->SetTuple1(voxelIndex, Ktrans);
 
     // print out fitted results: 
     vtkFloatArray* kineticTrace0 = vtkFloatArray::SafeDownCast(
@@ -566,6 +580,7 @@ void svkMRSKinetics::ZeroData()
         }
         this->GetOutput(3)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
         this->GetOutput(4)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
+        this->GetOutput(5)->GetPointData()->GetArray(0)->SetTuple1(i, zeroValue);
     }
 }
 

@@ -117,7 +117,7 @@ class svkMRSKinetics: public svkImageAlgorithm
         void                    SyncPointsFromCells(); 
 
         virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
+        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );         
 
 
         virtual void            UpdateProvenance();
@@ -155,6 +155,8 @@ class svkMRSKinetics: public svkImageAlgorithm
         int                     numTimePoints; 
         vtkDataArray*           mapArrayKpl; 
         vtkDataArray*           mapArrayT1all; 
+        vtkDataArray*           mapArrayKtrans; 
+
 
 };
 
