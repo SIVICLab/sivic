@@ -103,7 +103,7 @@ int main (int argc, char** argv)
     string outputFileName;
     bool transformSpecDomain = true; 
     bool transformSpatialDomain = true; 
-    bool onlyTransformSingle = true; 
+    bool onlyTransformSingle = false; 
     double voxelShift[3]; 
     voxelShift[0] = 0.; 
     voxelShift[1] = 0.; 
