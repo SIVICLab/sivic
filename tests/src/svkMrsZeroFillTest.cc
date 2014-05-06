@@ -47,7 +47,7 @@
 #include <svkDdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDICOMMRSWriter.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 
 
 using namespace svk;

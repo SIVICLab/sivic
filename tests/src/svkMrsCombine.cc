@@ -42,7 +42,7 @@
 
 #include <svkDataModel.h>
 #include <svkImageData.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 #include <svkDdfVolumeWriter.h>
 
 using namespace svk;
@@ -66,10 +66,10 @@ int main (int argc, char** argv)
     }
 
     //  Combine coils using straight addition 
-    svkCoilCombine* combine = svkCoilCombine::New();
+    svkMRSCombine* combine = svkMRSCombine::New();
     combine->SetInput( data );
-    combine->SetCombinationMethod( svkCoilCombine::ADDITION ); 
-    combine->SetCombinationDimension( svkCoilCombine::COIL );
+    combine->SetCombinationMethod( svkMRSCombine::ADDITION ); 
+    combine->SetCombinationDimension( svkMRSCombine::COIL );
     combine->Update();
 
     svkDdfVolumeWriter* writer = svkDdfVolumeWriter::New();

@@ -43,7 +43,7 @@
 #include <svkAlgoTemplate.h>
 #include <svkBurnResearchPixels.h>
 #include <svkByteSwap.h>
-#include <svkCoilCombine.h>
+#include <svkMRSCombine.h.h>
 #include <svkCorrectDCOffset.h>
 #include <svkDataModel.h>
 #include <svkDataValidator.h>
@@ -145,7 +145,7 @@ int main ( int argc, char** argv )
     obj->Delete();
     obj = svkByteSwap::New();
     obj->Delete();
-    obj = svkCoilCombine::New();
+    obj = svkMRSCombine::New();
     obj->Delete();
     obj = svkCorrectDCOffset::New();
     obj->Delete();
