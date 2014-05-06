@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2014 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@
 #include <svkAlgoTemplate.h>
 #include <svkBurnResearchPixels.h>
 #include <svkByteSwap.h>
-#include <svkMRSCombine.h.h>
+#include <svkMRSCombine.h>
 #include <svkCorrectDCOffset.h>
 #include <svkDataModel.h>
 #include <svkDataValidator.h>

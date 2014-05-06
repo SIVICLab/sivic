@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2014 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@
 #include <svkDdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDICOMMRSWriter.h>
-#include <svkMRSCombine.h.h>
+#include <svkMRSCombine.h>
 
 
 using namespace svk;
