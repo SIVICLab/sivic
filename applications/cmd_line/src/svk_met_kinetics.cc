@@ -203,7 +203,7 @@ if ( inputFileName3.length() == 0 ) {
     if (reader1 == NULL || reader2 == NULL || reader3 == NULL) {
         cerr << "Can not determine appropriate reader for: " << inputFileName1 << ", " 
              << inputFileName2 << " or " << inputFileName3 <<  endl;
-        exit(1);
+            exit(1);
     }
 
     //  Read the data to initialize an svkImageData object
@@ -246,49 +246,55 @@ if ( inputFileName3.length() == 0 ) {
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    svkImageWriter* pyrWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* lacWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* ureaWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* t1allWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* kplWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* pyrWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* lacWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* ureaWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* t1allWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* kplWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* ktransWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
-    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL || kplWriter == NULL || t1allWriter == NULL ) {
+    if ( pyrWriter == NULL || lacWriter == NULL || ureaWriter == NULL || kplWriter == NULL || t1allWriter == NULL || ktransWriter == NULL ) {
         cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
         exit(1);
     }
   
-    string pyrFile = outputFileName;  
-    string lacFile = outputFileName;  
-    string ureaFile = outputFileName;  
-    string t1allFile = outputFileName;  
-    string kplFile = outputFileName;  
+    string pyrFile    = outputFileName;  
+    string lacFile    = outputFileName;  
+    string ureaFile   = outputFileName;  
+    string t1allFile  = outputFileName;  
+    string kplFile    = outputFileName;  
+    string ktransFile = outputFileName;  
 
     pyrFile.append("_pyr_fit");  
     lacFile.append("_lac_fit");  
     ureaFile.append("_urea_fit");  
     t1allFile.append("_T1all");  
     kplFile.append("_Kpl");  
+    ktransFile.append("_Ktrans");  
 
     pyrWriter->SetFileName( pyrFile.c_str() );
     lacWriter->SetFileName( lacFile.c_str() );
     ureaWriter->SetFileName( ureaFile.c_str() );
     t1allWriter->SetFileName( t1allFile.c_str() );
     kplWriter->SetFileName( kplFile.c_str() );
+    ktransWriter->SetFileName( ktransFile.c_str() );
 
     pyrWriter->SetInput( dynamics->GetOutput(0) );      // port 0 is pyr  fitted values
     lacWriter->SetInput( dynamics->GetOutput(1) );      // port 1 is lac  fitted values
     ureaWriter->SetInput( dynamics->GetOutput(2) );     // port 2 is urea fitted values
     t1allWriter->SetInput( dynamics->GetOutput(3) );    // port 3 is T1all map 
     kplWriter->SetInput( dynamics->GetOutput(4) );      // port 4 is Kpl map 
+    ktransWriter->SetInput( dynamics->GetOutput(5) );   // port 5 is Ktrans map 
 
     pyrWriter->Write();
     lacWriter->Write();
-if ( writeUrea ) {
-    ureaWriter->Write();
-}
+    if ( writeUrea ) {
+        ureaWriter->Write();
+    }
     t1allWriter->Write();
     kplWriter->Write();
+    ktransWriter->Write();
 
     // ===============================================  
 
@@ -298,8 +304,9 @@ if ( writeUrea ) {
     pyrWriter->Delete();
     lacWriter->Delete();
     ureaWriter->Delete();
-    kplWriter->Delete();
     t1allWriter->Delete();
+    kplWriter->Delete();
+    ktransWriter->Delete();
 
     reader1->Delete();
     reader2->Delete();
