@@ -474,6 +474,16 @@ TARGET_LINK_LIBRARIES(
 
 
 ADD_EXECUTABLE(
+    svk_mrs_combine
+    svk_mrs_combine.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_mrs_combine
+	${SVK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
     svk_channel2time
     svk_channel2time.cc
 )
@@ -583,6 +593,7 @@ SET(APPS
     svk_average_spec
     svk_noise
     svk_met_kinetics
+    svk_mrs_combine
     svk_image_stats 
 )
 if ( BUILD_CLAPACK )
