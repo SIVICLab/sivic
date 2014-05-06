@@ -85,6 +85,7 @@ class svkDICOMRawDataWriter : public svkImageWriter
         virtual void    SetFileName (const char* fileName);
         void            SetSeriesUID( vtkstd::string UID ); 
         void            SetInstanceUID( vtkstd::string UID ); 
+        void            SetSkipFileSizeCheck( bool skipFileSizeCheck );
         virtual void    Write();
 
 
@@ -118,6 +119,7 @@ class svkDICOMRawDataWriter : public svkImageWriter
         bool                            reuseInstanceUID; 
         vtkstd::string                  seriesInstanceUID; 
         vtkstd::string                  sopInstanceUID; 
+        bool                            skipFileSizeCheck;
 };
 
 

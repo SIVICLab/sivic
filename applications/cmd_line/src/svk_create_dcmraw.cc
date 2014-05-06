@@ -80,6 +80,7 @@ int main (int argc, char** argv)
     usemsg += "                             to use value from pfile).                       \n"; 
     usemsg += "   -s    UID                 Use the specified SeriesInstanceUID             \n"; 
     usemsg += "   -i    UID                 Use the specified SOPInstanceUID                \n"; 
+    usemsg += "   -z                        Skip raw pass file size check                   \n";
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Encapsulates the specified file GEPFile in a DICOM Raw Data SOP instance     \n"; 
@@ -90,6 +91,7 @@ int main (int argc, char** argv)
     vector < string >  associatedFiles; 
     bool   extractRaw = false; 
     bool   useNewUID  = false; 
+    bool   skipFileSizeCheck = false;
     string seriesInstanceUID; 
     string sopInstanceUID; 
 
@@ -111,7 +113,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:a:xuS:I:o:h", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:a:xuS:I:o:zh", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputRawFileName.assign( optarg );
@@ -133,6 +135,9 @@ int main (int argc, char** argv)
                 break;
             case 'I':
                 sopInstanceUID.assign( optarg );
+                break;
+            case 'z':
+                skipFileSizeCheck = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -214,6 +219,9 @@ int main (int argc, char** argv)
         cout << "DIGEST STRING(" << inputRawFileName << "): " << digest << endl;
     
         svkDICOMRawDataWriter* rawWriter = svkDICOMRawDataWriter::New();
+        if( skipFileSizeCheck ) {
+            rawWriter->SetSkipFileSizeCheck( true );
+        }
         rawWriter->SetFileNameWithExtension( inputRawFileName.c_str() );
         rawWriter->SetSHA1Digest( digest ); 
 

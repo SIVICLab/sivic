@@ -613,3 +613,19 @@ void svkUtils::GetRealpath( const char * path, int size, char* resultRealpath )
 
 }
 
+
+/*!
+ *  This method takes as input a parent xml data element in which to nest a new xml data element.
+ *  It also takes a name, and value as input.
+ */
+vtkXMLDataElement* svkUtils::CreateNestedXMLDataElement( vtkXMLDataElement* parent, string name, string value )
+{
+    vtkXMLDataElement* child = NULL;
+    if( parent != NULL ) {
+        child = vtkXMLDataElement::New();
+        child->SetName(name.c_str());
+        child->SetCharacterData(value.c_str(), value.size());
+        parent->AddNestedElement(child);
+    }
+    return child;
+}

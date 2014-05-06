@@ -75,6 +75,7 @@ svkDICOMRawDataWriter::svkDICOMRawDataWriter()
     this->reuseInstanceUID = true;
     this->seriesInstanceUID = "";
     this->sopInstanceUID = "";
+    this->skipFileSizeCheck = false;
 
 }
 
@@ -166,6 +167,13 @@ void svkDICOMRawDataWriter::AddAssociatedFile( string fileName, string sha1Diges
 }
 
 
+void svkDICOMRawDataWriter::SetSkipFileSizeCheck(bool skipFileSizeCheck )
+{
+    this->skipFileSizeCheck = skipFileSizeCheck;
+    if( this->skipFileSizeCheck ) {
+        cout << "WARNING: GE PFile raw pass size check is being bypassed!" << endl;
+    }
+}
 
 /*!
  *  The main method which triggers the writer to create DICOM Raw Data file.
@@ -570,8 +578,8 @@ void svkDICOMRawDataWriter::InitRawDataModule()
             cout << "PFILE SIZE = " << pfileSize << endl;
 
             //  for the pfile, make sure the file size is as expceted: 
-            if ( this->associatedFiles[fileNum][2].compare("GE PFile") == 0 ) { 
-                if ( pfileSize != this->computedPFileSize ) { 
+            if ( this->associatedFiles[fileNum][2].compare("GE PFile") == 0 && !this->skipFileSizeCheck ) {
+                if ( pfileSize != this->computedPFileSize ) {
                     cout << "GEPFile Size on disk doesn't match expectation based on header info: " << endl; 
                     this->SetErrorCode( vtkErrorCode::PrematureEndOfFileError); 
                     continue; 

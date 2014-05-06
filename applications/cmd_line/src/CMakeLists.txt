@@ -482,6 +482,15 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_image_stats
+    svk_image_stats.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_image_stats
+	${SVK_LIBS}
+)
+
 if ( BUILD_ITK )
 
     ADD_EXECUTABLE(
@@ -574,6 +583,7 @@ SET(APPS
     svk_average_spec
     svk_noise
     svk_met_kinetics
+    svk_image_stats 
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
