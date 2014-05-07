@@ -61,6 +61,7 @@ class sivicDataWidget : public sivicKWCompositeWidget
         vtkTypeRevisionMacro(sivicDataWidget,sivicKWCompositeWidget);
         void UpdateReferenceSpectraList();
         void SetFilename( int row, string filename );
+        void Reset( );
 
     protected:
 
@@ -78,7 +79,7 @@ class sivicDataWidget : public sivicKWCompositeWidget
 
         vtkCallbackCommand*                 progressCallback;
         vtkKWMultiColumnListWithScrollbars* referenceSpectra;
-        int                                 activeIndex;
+        vector<string>                      filenames;
 
         static void                 UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 

@@ -434,7 +434,7 @@ void vtkSivicController::ResetApplication( )
     this->overlayController->Reset();
     this->plotController->Reset();
     this->viewRenderingWidget->ResetInfoText();
-    this->dataWidget->UpdateReferenceSpectraList();
+    this->dataWidget->Reset();
     this->DisableWidgets();
 	if( toggleDraw ) {
 		this->DrawOn();
@@ -694,7 +694,7 @@ void vtkSivicController::Open4DImage( svkImageData* newData,  string stringFilen
         int* extent = newData->GetExtent();
 
         this->plotController->SetInput( newData ); 
-        this->dataWidget->UpdateReferenceSpectraList();
+        this->dataWidget->Reset();
         this->dataWidget->SetFilename( 0, stringFilename);
 
         /*

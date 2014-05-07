@@ -51,7 +51,6 @@ sivicDataWidget::sivicDataWidget()
     this->progressCallback->SetCallback( UpdateProgress );
     this->progressCallback->SetClientData( (void*)this );
     this->referenceSpectra = NULL;
-    this->activeIndex = 0;
 }
 
 
@@ -129,7 +128,11 @@ void sivicDataWidget::CreateListWidget()
  */
 void sivicDataWidget::SetFilename( int row, string filename )
 {
-    this->referenceSpectra->GetWidget()->InsertCellText(row, 4, svkUtils::GetFilenameFromFullPath(filename).c_str());
+    while( row + 1 > filenames.size()) {
+        filenames.push_back("");
+    }
+    this->filenames[row] = svkUtils::GetFilenameFromFullPath(filename);
+    this->referenceSpectra->GetWidget()->InsertCellText(row, 4, filenames[row].c_str());
 }
 
 
@@ -142,6 +145,7 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
     svkPlotGridView* plotGridView = svkPlotGridView::SafeDownCast( this->plotController->GetView() );
     int numPlots = plotGridView->GetNumberOfReferencePlots() + 1;
     this->CreateListWidget();
+
     // We start at one since the first plot index is the active spectra above...
     for( int i = 0; i < numPlots; i ++ ) {
         svkImageData* plotData = NULL;
@@ -168,9 +172,13 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
             } else {
                 this->referenceSpectra->GetWidget()->InsertCellTextAsInt(i, 3, 0);
             }
+            if( filenames.size() > i ) {
+                this->referenceSpectra->GetWidget()->InsertCellText(i, 4, filenames[i].c_str());
+            }
             this->referenceSpectra->GetWidget()->SetCellWindowCommandToCheckButton(i, 3);
         } else if( i== 0 ) {
         	// No input so reset
+            this->filenames.clear();
             this->referenceSpectra->GetWidget()->DeleteAllRows();
         }
 
@@ -180,9 +188,17 @@ void sivicDataWidget::UpdateReferenceSpectraList( )
         this->referenceSpectra->HorizontalScrollbarVisibilityOn();
     }
 
-
-
 }
+
+/*!
+ *  Reset the state of the widget.
+ */
+void sivicDataWidget::Reset( )
+{
+    this->filenames.clear();
+    this->UpdateReferenceSpectraList();
+}
+
 
 /*! 
  *  Method responds to callbacks setup in CreateWidget
