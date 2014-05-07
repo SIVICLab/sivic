@@ -129,7 +129,7 @@ class svkMRSCombine : public svkImageInPlaceFilter
     private:
 
         void                    RedimensionData(); 
-        void                    RequestLinearCombinationData( int weight ); 
+        void                    RequestLinearCombinationData(); 
         void                    RequestSumOfSquaresData(); 
 
         CombinationMethod       combinationMethod; 

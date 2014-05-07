@@ -102,12 +102,8 @@ int svkMRSCombine::RequestInformation( vtkInformation* request, vtkInformationVe
 int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
-        int weight = 1; 
-        this->RequestLinearCombinationData( weight ); 
-    } else if (this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
-        int weight = -1; 
-        this->RequestLinearCombinationData( weight ); 
+    if ( this->combinationMethod == svkMRSCombine::ADDITION || this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
+        this->RequestLinearCombinationData(); 
     } else if (this->combinationMethod == svkMRSCombine::SUM_OF_SQUARES ) {
         this->RequestSumOfSquaresData(); 
     }
@@ -128,9 +124,9 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
 
 
 /*!
- *  Combine data by adding complex values.  No weighting is applied.
+ *  Combine data by adding complex values.  
  */
-void svkMRSCombine::RequestLinearCombinationData( int weight )
+void svkMRSCombine::RequestLinearCombinationData( )
 {
     //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
     svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
@@ -165,8 +161,13 @@ void svkMRSCombine::RequestLinearCombinationData( int weight )
                             spectrum0->GetTupleValue(i, cmplxPt0);
                             spectrumN->GetTupleValue(i, cmplxPtN);
     
-                            cmplxPt0[0] += ( weight * cmplxPtN[0] ); 
-                            cmplxPt0[1] += ( weight * cmplxPtN[1] ); 
+                            if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
+                                cmplxPt0[0] += ( cmplxPtN[0] ); 
+                                cmplxPt0[1] += ( cmplxPtN[1] ); 
+                            } else if ( this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
+                                cmplxPt0[0] -= ( cmplxPtN[0] ); 
+                                cmplxPt0[1] -= ( cmplxPtN[1] ); 
+                            }
     
                             spectrum0->SetTuple( i, cmplxPt0);
                         }
