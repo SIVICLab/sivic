@@ -75,25 +75,25 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_fft -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
-    usemsg += "                   --spec [ --vsx ] [ -vsy ] [ --vsz ] --single [ -h ] \n";
+    usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]           \n"; 
+    usemsg += "                   --spec --spatial [ --vsx ] [ -vsy ] [ --vsz ] --single [ -h ] \n";
     usemsg += "\n";  
-    usemsg += "   -i            name        Name of file to convert. \n"; 
-    usemsg += "   -o            name        Name of outputfile. \n";
-    usemsg += "   -t            type        Target data type: \n";
-    usemsg += "                                 2 = UCSF DDF      \n";
-    usemsg += "                                 4 = DICOM_MRS (default)    \n";
-    usemsg += "   --spec                    transform spectral domain only\n"; 
-    usemsg += "   --spatial                 transform spatial domain only\n"; 
-    usemsg += "   --vsx         shiftX      Fractional voxel shift in X  \n"; 
-    usemsg += "   --vsy         shiftY      Fractional voxel shift in Y  \n"; 
-    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z  \n"; 
-    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z  \n"; 
+    usemsg += "   -i            name        Name of file to convert.                            \n"; 
+    usemsg += "   -o            root        Root name of outputfile.                            \n";
+    usemsg += "   -t            type        Target data type:                                   \n";
+    usemsg += "                                 2 = UCSF DDF                                    \n";
+    usemsg += "                                 4 = DICOM_MRS (default)                         \n";
+    usemsg += "   --spec                    transform spectral domain only                      \n"; 
+    usemsg += "   --spatial                 transform spatial domain only                       \n"; 
+    usemsg += "   --vsx         shiftX      Fractional voxel shift in X                         \n"; 
+    usemsg += "   --vsy         shiftY      Fractional voxel shift in Y                         \n"; 
+    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
+    usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
     usemsg += "   --single                  Only transform specified file if multiple in series \n"; 
-    usemsg += "   -h                        Print this help mesage. \n";  
+    usemsg += "   -h                        Print this help mesage.                             \n";  
     usemsg += "\n";  
-    usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified, \n"; 
-    usemsg += "will transform only the specified domain.\n";  
+    usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified,            \n"; 
+    usemsg += "will transform only the specified domain.                                        \n";  
     usemsg += "\n";  
 
 
