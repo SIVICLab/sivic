@@ -311,7 +311,6 @@ void  svk4DImageData::GetImage(  svkImageData* image,
     	image->SyncVTKImageDataToDcmHeader();
 
         this->GetImage( image, point, indexArray, component, vtkDataType );
-        image->GetDcmHeader()->PrintDcmHeader();
     }
 }
 
