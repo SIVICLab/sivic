@@ -64,6 +64,7 @@ svkPlotGridView::svkPlotGridView()
     this->plotGrids.push_back(svkPlotLineGrid::New());
     this->orientation = svkDcmHeader::AXIAL;
     this->windowLevel = svkImageMapToColors::New();
+    this->overlayTextDigits = 0;
 
     // Setting layers is key for solaris rendering
 
@@ -965,12 +966,6 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         metMapper->SetInput( metTextClipper->GetOutput() );
         metMapper->SetLabelModeToLabelScalars();
         metMapper->SetLabeledComponent(0);
-        double *range = dataVector[MET]->GetScalarRange();
-        if( range[1] < 1000 ) {
-            metMapper->SetLabelFormat("%1.4f");
-        } else {
-            metMapper->SetLabelFormat("%0.1e");
-        }
         metMapper->GetLabelTextProperty()->ShadowOff();
         metMapper->GetLabelTextProperty()->ItalicOff();
         metMapper->GetLabelTextProperty()->BoldOff();
@@ -988,6 +983,7 @@ void svkPlotGridView::CreateMetaboliteOverlay( svkImageData* data )
         }
         vtkActor2D::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_TEXT ))->SetMapper( metMapper );  
         metMapper->Delete();
+        this->SetOverlayTextDigits( this->overlayTextDigits );
 
         // If it has not been added, add it
         if( !this->GetRenderer( svkPlotGridView::PRIMARY )->HasViewProp( this->GetProp( svkPlotGridView::OVERLAY_TEXT )) ) {
@@ -1735,4 +1731,59 @@ void svkPlotGridView::AlignCamera( )
 svk4DImageData* svkPlotGridView::GetActiveInput()
 {
     return this->plotGrids[ this->activePlot ]->GetInput();
+}
+
+
+/*!
+ * Sets the minimum number of digits after the decimal point for the overlay text.
+ */
+void svkPlotGridView::SetOverlayTextDigits( int digits )
+{
+    this->overlayTextDigits = digits;
+    vtkActor2D* textActor = vtkActor2D::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_TEXT ));
+    if( textActor != NULL ) {
+        svkLabeledDataMapper* metMapper = svkLabeledDataMapper::SafeDownCast( textActor->GetMapper( ));
+        if( metMapper != NULL ) {
+            double *range = dataVector[MET]->GetScalarRange();
+            if( range[1] < 1000 ) {
+                metMapper->SetLabelFormat(this->GetDecimalFormat( this->overlayTextDigits ).c_str());
+            } else {
+                metMapper->SetLabelFormat(this->GetScientificFormat( this->overlayTextDigits ).c_str());
+            }
+        }
+    }
+}
+
+
+/*!
+ *  Creates a printf style string for formatting
+ *  the overlay text. Takes the number of significant
+ *  digits as input.
+ */
+string svkPlotGridView::GetScientificFormat( int digits )
+{
+    if( digits <= 0 ){
+        digits = 1;
+    }
+    string format = "%0.";
+    format.append(svkUtils::IntToString( digits ));
+    format.append("e");
+    return format;
+}
+
+
+/*!
+ *  Creates a printf style string for formatting
+ *  the overlay text. Takes the number of digits
+ *  after the decimal as input.
+ */
+string svkPlotGridView::GetDecimalFormat( int digits )
+{
+    if( digits <= 0 ){
+        digits = 2;
+    }
+    string format = "%1.";
+    format.append(svkUtils::IntToString( digits ));
+    format.append("f");
+    return format;
 }

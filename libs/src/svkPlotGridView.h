@@ -138,6 +138,9 @@ class svkPlotGridView : public svkDataView
         virtual void                SetOrientation( svkDcmHeader::Orientation orientation );
         virtual void                AlignCamera();
         svk4DImageData*             GetActiveInput();
+        void                        SetOverlayTextDigits( int digits );
+        string                      GetScientificFormat( int digits );
+        string                      GetDecimalFormat( int digits );
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -206,6 +209,7 @@ class svkPlotGridView : public svkDataView
         svkSpecPoint::UnitType   plotUnitType;
         svkImageMapToColors*     windowLevel;
         vtkstd::vector<int>      volumeIndexVector;
+        int                      overlayTextDigits;
 
         static const double CLIP_TOLERANCE;
 

@@ -65,6 +65,7 @@ sivicPreferencesWidget::sivicPreferencesWidget()
     this->settings.push_back( "trace_plot_grid/green/Sets the green component for the trace grid. (0-1)");
     this->settings.push_back( "trace_background/blue/Sets the blue component for the background of the traces. (0-1)");
     this->settings.push_back( "trace_background/green/Sets the green component for the background of the traces. (0-1)");
+    this->settings.push_back( "trace_overlay_text/digits/Sets the number of digits after the decimal for text overlays. (integer greater than 0)");
     this->settings.push_back( "sat_bands/red/Sets the red component for the saturation bands. (0-1)");
     this->settings.push_back( "sat_bands/blue/Sets the blue component for the saturation bands. (0-1)");
     this->settings.push_back( "sat_bands/green/Sets the green component for the saturation bands. (0-1)");

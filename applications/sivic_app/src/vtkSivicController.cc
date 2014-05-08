@@ -1544,6 +1544,14 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 		this->plotController->GetView()->GetRenderer( svkPlotGridView::PRIMARY)->Modified();
 	}
 
+    char overlayTextDigits[50]="";
+    this->app->GetRegistryValue( 0, "trace_overlay_text", "digits", overlayTextDigits );
+    if( string(overlayTextDigits) != "" ) {
+        int digits = atoi( overlayTextDigits );
+        svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayTextDigits( digits );
+
+    }
+
 	if( toggleDraw ) {
 		this->DrawOn();
 	}
