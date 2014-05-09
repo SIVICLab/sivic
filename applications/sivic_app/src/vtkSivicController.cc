@@ -1636,8 +1636,9 @@ void vtkSivicController::OpenExam( )
 			if( toggleDraw ) {
 				this->DrawOff();
 			}
+            this->imageViewWidget->lutBox->GetWidget()->SetValue( "Fixed CNI LUT" );
             this->OpenOverlay( this->model->GetDataObject("CNI-ht"), this->model->GetDataFileName("CNI-ht"));
-            this->EnableWidgets(); 
+            this->EnableWidgets();
             this->imageViewWidget->thresholdType->GetWidget()->SetValue( "Quantity" );
             this->imageViewWidget->overlayThresholdSlider->SetValue( 2.0 );
             this->SetOverlayThreshold( 2.0 );
