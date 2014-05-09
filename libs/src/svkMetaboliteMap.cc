@@ -241,7 +241,14 @@ void svkMetaboliteMap::GenerateMap()
             } else {
                 //  allocate a new array, copy volume0 into it and add it to the 
                 //  vtkImageData point data:
-                metMapArray = vtkDoubleArray::New();     
+
+                //  allocate correct array type 
+                int vtkDataType = this->GetOutput()->GetPointData()->GetArray(0)->GetDataType(); 
+                if ( vtkDataType == VTK_VOID ) {
+                    metMapArray = vtkDoubleArray::New();     
+                } else if ( vtkDataType == VTK_FLOAT ) {
+                    metMapArray = vtkFloatArray::New();     
+                }
                 metMapArray->DeepCopy( this->GetOutput()->GetPointData()->GetArray(0) ); 
                 this->GetOutput()->GetPointData()->AddArray( metMapArray );
             }

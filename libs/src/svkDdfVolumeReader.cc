@@ -246,6 +246,8 @@ void svkDdfVolumeReader::ReadComplexFile(vtkImageData* data)
         if (this->GetDebug()) { 
             cout << "read data from file " << fileIndex << " / " << this->GetFileNames()->GetNumberOfValues() << endl;
         }
+        //cout << "read data from file " << fileIndex << " / " << this->GetFileNames()->GetNumberOfValues() << endl;
+        //cout << "FN: " << this->GetFileNames()->GetValue( fileIndex ) << endl;
 
         int coilNum = 0; 
         if ( this->numCoils > 1 ) {
