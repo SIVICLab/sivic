@@ -72,16 +72,17 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_quantify -i input_file_name -o output_file_name -t output_data_type      \n";
-    usemsg += "             (--peak_center ppm --peak_width ppm --peak_name name | --xml file ) \n";
-    usemsg += "             [ --algo type ]                                                 \n"; 
-    usemsg += "             [--verbose ] [ -h ]                                             \n"; 
+    usemsg += "svk_quantify -i input_file_name -o output_root_name -t output_data_type              \n";
+    usemsg += "             (--peak_center ppm --peak_width ppm --peak_name name | --xml file )     \n";
+    usemsg += "             [ --algo type ] [ -b ]                                                  \n"; 
+    usemsg += "             [--verbose ] [ -h ]                                                     \n"; 
     usemsg += "\n";  
     usemsg += "   -i input_file_name        name of file to convert.            \n"; 
-    usemsg += "   -o output_file_name       name of outputfile.                 \n";  
+    usemsg += "   -o output_root_name       root name of outputfile.            \n";  
     usemsg += "   -t output_data_type       target data type:                   \n";  
     usemsg += "                                 3 = UCSF IDF                    \n";  
     usemsg += "                                 6 = DICOM_MRI                   \n";  
+    usemsg += "   -b                        Only fit inside volume selection    \n"; 
     usemsg += "   --xml               file  XML quantification config file      \n"; 
     usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center     \n";
     usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration  \n";
@@ -108,16 +109,17 @@ int main (int argc, char** argv)
     usemsg += "    svk_quantify -i mrs.dcm -o test -t3 --xml mrs.xml \n";
     usemsg += "\n";  
 
-    string inputFileName; 
-    string outputFileName; 
-    string xmlFileName; 
+    string  inputFileName; 
+    string  outputFileName; 
+    string  xmlFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
-    float  peakCenterPPM;
-    float  peakWidthPPM;
-    string qtyName;
-    bool   isVerbose = false;   
+    float   peakCenterPPM;
+    float   peakWidthPPM;
+    string  qtyName;
+    bool    isVerbose = false;   
     svkMetaboliteMap::algorithm algo = svkMetaboliteMap::PEAK_HT; 
-    int algoInt; 
+    int     algoInt; 
+    bool    onlyQuantifySelectedVolume = false;   
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -150,7 +152,7 @@ int main (int argc, char** argv)
     // ===============================================
     int i;
     int option_index = 0;
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -160,6 +162,9 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
+                break;
+            case 'b':
+                onlyQuantifySelectedVolume = true;   
                 break;
            case FLAG_PEAK_CENTER:
                 peakCenterPPM = atof( optarg);
@@ -261,12 +266,16 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
 
+
     //  if using XML config, then quantify all mets here, else only quantify the specified peak: 
     if ( xmlFileName.length() != 0 ) {
         svkQuantifyMetabolites* quantMets = svkQuantifyMetabolites::New();
         quantMets->SetXMLFileName( xmlFileName );
         if ( isVerbose ) { 
             quantMets->SetVerbose( isVerbose ); 
+        }    
+        if ( onlyQuantifySelectedVolume ) { 
+            quantMets->LimitToSelectedVolume();
         }    
         quantMets->SetInput( reader->GetOutput() ); 
         quantMets->LimitToSelectedVolume();    
@@ -299,9 +308,15 @@ int main (int argc, char** argv)
 
         svkMetaboliteMap* quant = svkMetaboliteMap::New();
         quant->SetInput( reader->GetOutput() ); 
+
         if ( isVerbose ) { 
             quant->SetVerbose( isVerbose ); 
         }    
+
+        if ( onlyQuantifySelectedVolume ) { 
+            quant->LimitToSelectedVolume();
+        }    
+
         quant->SetPeakPosPPM( peakCenterPPM );
         quant->SetPeakWidthPPM( peakWidthPPM );
     
