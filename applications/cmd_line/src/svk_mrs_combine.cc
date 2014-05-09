@@ -67,27 +67,32 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_mrs_combine -i input_file_name -o output_root -t output_data_type       \n"; 
-    usemsg += "                 -a type [-h]                                                \n";
-    usemsg += "                                                                             \n";  
-    usemsg += "   -i            input_file_name     Name of file to convert.                \n"; 
-    usemsg += "   -o            output_root         Root name of outputfile.                \n";  
-    usemsg += "   -t            output_data_type    Target data type:                       \n";  
-    usemsg += "                                         2 = UCSF DDF                        \n";  
-    usemsg += "                                         4 = DICOM_MRS                       \n";  
-    usemsg += "   -a            type                Type of combination.  Options:          \n";
-    usemsg += "                                         1 = unweighted sum                  \n";
-    usemsg += "                                         2 = subtract channels (edited data) \n";
-    usemsg += "                                         3 = sum of squares (Magnitude result)  \n";
-    usemsg += "   -v                                Verbose output.                         \n";
-    usemsg += "   -h                                Print help mesage.                      \n";  
-    usemsg += "                                                                             \n";  
-    usemsg += "Combines coils from input MRS data.                                          \n";  
-    usemsg += "                                                                             \n";  
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
+    usemsg += "svk_mrs_combine -i input_file_name -o output_root -t output_data_type            \n"; 
+    usemsg += "                 -a type [-h]                                                    \n";
+    usemsg += "                                                                                 \n";  
+    usemsg += "   -i    input_file_name     Name of file to convert.                            \n"; 
+    usemsg += "   -o    output_root         Root name of outputfile.                            \n";  
+    usemsg += "   -t    output_data_type    Target data type:                                   \n";  
+    usemsg += "                                 2 = UCSF DDF                                    \n";  
+    usemsg += "                                 4 = DICOM_MRS                                   \n";  
+    usemsg += "   -a    algo type           Type of combination.  Options:                      \n";
+    usemsg += "                                 1 = unweighted sum                              \n";
+    usemsg += "                                 2 = subtract channels (edited data)             \n";
+    usemsg += "                                 3 = sum of squares (Magnitude result)           \n";
+    usemsg += "                                 4 = weighted sum (requires --wts volume)        \n";
+    usemsg += "   --wts Weight_volume_name  Name of file containing weights to use for algo 4.  \n";
+    usemsg += "   -v    Verbose output.                                                         \n";
+    usemsg += "   -h    Print help mesage.                                                      \n";  
+    usemsg += "                                                                                 \n";  
+    usemsg += "Combines MRS data sets using specified algorithm.  Typically used to combine     \n"; 
+    usemsg += "multiple channels of data from a multi-coil acquisition.  Also used for adding   \n";  
+    usemsg += "subtracting data sets.                                                           \n";  
+    usemsg += "                                                                                 \n";  
 
     string inputFileName; 
     string outputFileName; 
+    string weightsFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
     bool   verbose = false;
     svkMRSCombine::CombinationMethod combinationType = svkMRSCombine::UNDEFINED_COMBINATION;
@@ -95,11 +100,13 @@ int main (int argc, char** argv)
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
+        FLAG_WEIGHTS = 0 
     };
 
 
     static struct option long_options[] =
     {
+        {"wts",    required_argument, NULL,  FLAG_WEIGHTS},
         {0, 0, 0, 0}
     };
 
@@ -117,6 +124,9 @@ int main (int argc, char** argv)
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case FLAG_WEIGHTS:
+                weightsFileName.assign( optarg );
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
@@ -139,11 +149,9 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
+
     /*
-     * In addition to svkImageWriters this converter also supports an xml writer for the vtk
-     * vti format. Because this writer is not a vtkImageWriter svkImagerWriterFactory cannot
-     * return it so we must instantiate it outside of the factory. To account for this extra
-     * type we will support a dataTypeOut equal to svkImageWriterFactory::LAST_TYPE + 1.
+     *  Validate input. 
      */
     if ( 
         argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 ||
@@ -154,21 +162,39 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    /*  
+     *  If using algo 4 (weighted addition), then a weight file must be provided. 
+     */
+    if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION ) {
+        if ( 
+            weightsFileName.length() == 0 ||  
+            ! svkUtils::FilePathExists( weightsFileName.c_str() ) 
+        ) {
+            cerr << "Weight file was not specified, or does not exist " << weightsFileName << endl;
+            exit(1); 
+        }
+    }
+
     if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
         cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
         exit(1); 
     }
 
     if( verbose ) {
-        cout << "Input File:  " << inputFileName << endl;
-        cout << "Output File: " << outputFileName << endl;
-        cout << "DataType:    " << dataTypeOut << endl;
-        cout << "CombineType: " << combinationType << endl;
+        cout << "Input File:   " << inputFileName << endl;
+        cout << "Output File:  " << outputFileName << endl;
+        cout << "DataType:     " << dataTypeOut << endl;
+        cout << "CombineType:  " << combinationType << endl;
+        cout << "Weights File: " << weightsFileName << endl;
     }
 
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
     svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
+    svkImageReader2* wtsReader = NULL; 
+    if ( weightsFileName.size() > 0 ) {
+        wtsReader = readerFactory->CreateImageReader2( weightsFileName.c_str() );
+    }
     readerFactory->Delete(); 
 
     if (reader == NULL) {
@@ -177,6 +203,9 @@ int main (int argc, char** argv)
     }
     reader->SetFileName( inputFileName.c_str() );
     reader->Update(); 
+    if ( wtsReader != NULL ) { 
+        wtsReader->SetFileName( weightsFileName.c_str() );
+    }
 
     //  ===============================================
     //  Set the input command line into the data set provenance:
@@ -190,6 +219,9 @@ int main (int argc, char** argv)
     coilCombine->SetInput( reader->GetOutput() );
     coilCombine->SetCombinationDimension( svkMRSCombine::COIL );   
     coilCombine->SetCombinationMethod( combinationType );          
+    if ( combinationType == svkMRSCombine::WEIGHTED_ADDITION ) {
+        coilCombine->SetInputConnection( 1, wtsReader->GetOutputPort() ); // input 1 is the weights volume 
+    }
     coilCombine->Update();
 
     //  ===============================================
@@ -211,6 +243,7 @@ int main (int argc, char** argv)
 
     coilCombine->Delete();
     reader->Delete();
+    wtsReader->Delete();
 
 
     return 0; 
