@@ -482,6 +482,14 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_apodize
+    svk_apodize.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_apodize
+	${SVK_LIBS}
+)
 
 ADD_EXECUTABLE(
     svk_channel2time
@@ -594,6 +602,7 @@ SET(APPS
     svk_noise
     svk_met_kinetics
     svk_mrs_combine
+    svk_apodize
     svk_image_stats 
 )
 if ( BUILD_CLAPACK )
