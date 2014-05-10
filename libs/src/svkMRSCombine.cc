@@ -62,6 +62,8 @@ svkMRSCombine::svkMRSCombine()
 
     this->combinationMethod = svkMRSCombine::ADDITION; 
     this->combinationDimension = svkMRSCombine::COIL; 
+    this->SetNumberOfInputPorts(2); 
+
 }
 
 
@@ -102,7 +104,9 @@ int svkMRSCombine::RequestInformation( vtkInformation* request, vtkInformationVe
 int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    if ( this->combinationMethod == svkMRSCombine::ADDITION || this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
+    if ( this->combinationMethod == svkMRSCombine::ADDITION || 
+         this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ||
+         this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
         this->RequestLinearCombinationData(); 
     } else if (this->combinationMethod == svkMRSCombine::SUM_OF_SQUARES ) {
         this->RequestSumOfSquaresData(); 
@@ -123,12 +127,30 @@ int svkMRSCombine::RequestData( vtkInformation* request, vtkInformationVector** 
 }
 
 
+/*
+ *  Returns the sum of squares of the weight values for the specified voxel. 
+ */
+float svkMRSCombine::GetTotalWeight( svkMriImageData* weightImage, int voxelID) 
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
+    svkDcmHeader* hdr     = data->GetDcmHeader();
+    int numChannels       = hdr->GetNumberOfCoils();
+    float weightSumOfSquares = 0; 
+    for( int channel = 0; channel < numChannels; channel++ ) { 
+        float* weights = static_cast<vtkFloatArray*>( 
+                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0); 
+        weightSumOfSquares += ( weights[voxelID] * weights[voxelID] ); 
+    }
+    return weightSumOfSquares; 
+}
+
+
 /*!
- *  Combine data by adding complex values.  
+ *  Combine data from each channel on a voxel by voxel basis. 
  */
 void svkMRSCombine::RequestLinearCombinationData( )
 {
-    //  Iterate through spectral data from all cells.  Eventually for performance I should do this by visible
+    //  Iterate through spectral data from all cells.  
     svkMrsImageData* data = svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) ); 
     svkDcmHeader* hdr  = data->GetDcmHeader();
 
@@ -143,41 +165,84 @@ void svkMRSCombine::RequestLinearCombinationData( )
     // For each voxel, add data from individual voxels:  
     float cmplxPt0[2];
     float cmplxPtN[2];
-    //data->GetDcmHeader()->PrintDcmHeader();
+
+    //  If this is a weighted sum, then load in the weight values here: 
+    svkMriImageData* weightImage;
+    if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+        weightImage = svkMriImageData::SafeDownCast(this->GetImageDataInput( svkMRSCombine::WEIGHTS ) );
+    } 
+
     for (int timePt = 0; timePt < numTimePts; timePt++) {
         for (int z = 0; z < numVoxels[2]; z++) {
             for (int y = 0; y < numVoxels[1]; y++) {
                 for (int x = 0; x < numVoxels[0]; x++) {
 
-                    vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, 0) );
+                    // Get the voxelID for this spatial location
+                    int voxelID = data->GetIDFromIndex(x, y, z); 
 
-                    for( int channel = 1; channel < numChannels; channel++ ) { 
+                    //  for each voxel, get the total weight: 
+                    float weightTotal;
+                    if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+                        weightTotal = this->GetTotalWeight( weightImage, voxelID); 
+                        weightTotal = pow( weightTotal, 0.5); 
+                    }
 
-                        vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>(
-                                            svkMrsImageData::SafeDownCast(data)->GetSpectrum( x, y, z, timePt, channel ) );
-    
-                        for (int i = 0; i < numFrequencyPoints; i++) {
-    
-                            spectrum0->GetTupleValue(i, cmplxPt0);
-                            spectrumN->GetTupleValue(i, cmplxPtN);
-    
-                            if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
-                                cmplxPt0[0] += ( cmplxPtN[0] ); 
-                                cmplxPt0[1] += ( cmplxPtN[1] ); 
-                            } else if ( this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
-                                cmplxPt0[0] -= ( cmplxPtN[0] ); 
-                                cmplxPt0[1] -= ( cmplxPtN[1] ); 
+                    //  for each frequency point, combine channels using specified combination method.
+                    for (int freq = 0; freq < numFrequencyPoints; freq++) {
+
+                        //  for this frequency point initialize the value to 0    
+                        cmplxPt0[0] = 0.; 
+                        cmplxPt0[1] = 0.; 
+
+                        for( int channel = 0; channel < numChannels; channel++ ) { 
+
+                            vtkFloatArray* spectrumN = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, channel) );
+                            spectrumN->GetTupleValue(freq, cmplxPtN);
+
+                            // if WEIGHTED_ADDITION, get weights for this channel
+                            float* weights;
+                            if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+                                weights = static_cast<vtkFloatArray*>( 
+                                        weightImage->GetPointData()->GetArray(channel) )->GetPointer(0) ; 
                             }
     
-                            spectrum0->SetTuple( i, cmplxPt0);
-                        }
+                            if ( this->combinationMethod == svkMRSCombine::ADDITION ) {
 
+                                cmplxPt0[0] += ( cmplxPtN[0] ); 
+                                cmplxPt0[1] += ( cmplxPtN[1] ); 
+
+                            } else if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
+                                
+                                cmplxPt0[0] += weights[voxelID] * ( cmplxPtN[0] ) / weightTotal; 
+                                cmplxPt0[1] += weights[voxelID] * ( cmplxPtN[1] ) / weightTotal; 
+
+                            } else if ( this->combinationMethod == svkMRSCombine::SUBTRACTION ) {
+
+                                float subtractionWeight; 
+                                if ( channel == 0 ) {
+                                    subtractionWeight = 1; 
+                                } else if ( channel == 1 ) {
+                                    subtractionWeight = -1; 
+                                } else {
+                                    cerr << "ERROR, can not run subtraction algorithm on more than 2 channels." << endl;
+                                    exit(1); 
+                                }
+                                cmplxPt0[0] += subtractionWeight * ( cmplxPtN[0] ); 
+                                cmplxPt0[1] += subtractionWeight * ( cmplxPtN[1] ); 
+
+                            }
+    
+                        }
+                        //  write output into the first channel. 
+                        int channelOut = 0; 
+                        vtkFloatArray* spectrum0 = static_cast<vtkFloatArray*>( data->GetSpectrum( x, y, z, timePt, channelOut) );
+                        spectrum0->SetTuple( freq, cmplxPt0);
                     }
+
                 }
             }
         }
     }
-
 
 } 
 
@@ -292,11 +357,6 @@ void svkMRSCombine::RequestSumOfSquaresData()
         }
     }
 
-    //this->GetOutput()->GetDcmHeader()->SetValue(
-       //"DataRepresentation",
-       //"MAGNITUDE" 
-    //);
-
 }
 
 
@@ -369,12 +429,22 @@ void svkMRSCombine::RedimensionData()
 }
 
 
+
+
 /*!
- *
+ *  Inputs: 
+ *      - requires an MRS object to combine
+ *      - optional MRI object containing weights for each point being combined. 
  */
-int svkMRSCombine::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkMRSCombine::FillInputPortInformation( int port, vtkInformation* info )
 {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
+    if ( port == 0 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
+    }
+    if ( port == 1 ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+    }
     return 1;
 }
 

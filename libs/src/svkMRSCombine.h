@@ -93,13 +93,22 @@ class svkMRSCombine : public svkImageInPlaceFilter
             UNDEFINED_COMBINATION = 0,
             ADDITION,
             SUBTRACTION,
-            SUM_OF_SQUARES
+            SUM_OF_SQUARES,
+            WEIGHTED_ADDITION
         } CombinationMethod;
 
         typedef enum {
             COIL = 0,
             TIME  
         } CombinationDimension;
+
+
+        typedef enum {
+            SPECTRA = 0,
+            WEIGHTS = 1
+        } PortName;
+
+
 
         void    SetCombinationMethod( CombinationMethod method);
         void    SetCombinationDimension( CombinationDimension dimension);
@@ -131,6 +140,8 @@ class svkMRSCombine : public svkImageInPlaceFilter
         void                    RedimensionData(); 
         void                    RequestLinearCombinationData(); 
         void                    RequestSumOfSquaresData(); 
+        float                   GetTotalWeight( svkMriImageData* weightImage, int voxelID); 
+
 
         CombinationMethod       combinationMethod; 
         CombinationDimension    combinationDimension; 
