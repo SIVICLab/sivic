@@ -52,6 +52,7 @@
 #include <svkDcmHeader.h>
 #include <svkPhaseSpec.h>
 
+
 #ifdef WIN32
 extern "C" {
 #include <getopt.h>
@@ -257,6 +258,8 @@ int main (int argc, char** argv)
 
     if ( usePhaseMap0 ) {
 
+        // to break the pipeline and avoid vtk issues with conflicting extents in the output port, 
+        // a copy of the mri data object:     
         phaser->SetInputConnection( 1, map0Reader->GetOutputPort() ); 
         phaser->Update();
 
