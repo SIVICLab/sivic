@@ -92,6 +92,8 @@ int main (int argc, char** argv)
     usemsg += "                                         1 = limited (default)               \n";
     usemsg += "                                         2 = deidentified                    \n";
     usemsg += "   --deid_id     id                  Replace PHI with this identifier        \n"; 
+    usemsg += "   --single                          Only transform specified file if        \n"; 
+    usemsg += "                                     multiple in series.                     \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
 #endif
@@ -109,12 +111,14 @@ int main (int argc, char** argv)
     bool   burnResearchHeader = false;  
     bool   useCompression = false;  
     bool   verbose = false;
+    bool    onlyLoadSingleFile = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
         FLAG_DEID_TYPE, 
-        FLAG_DEID_STUDY_ID
+        FLAG_DEID_STUDY_ID, 
+        FLAG_SINGLE
     };
 
 
@@ -122,6 +126,7 @@ int main (int argc, char** argv)
     {
         {"deid_type",   required_argument, NULL,  FLAG_DEID_TYPE}, 
         {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
+        {"single",    no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -148,6 +153,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_DEID_STUDY_ID:
                 deidStudyId.assign( optarg );
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
 #if defined( UCSF_INTERNAL )
             case 'b':
@@ -238,7 +246,9 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
-
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
     reader->Update(); 
 
     // ===============================================
