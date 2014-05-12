@@ -243,7 +243,9 @@ int main (int argc, char** argv)
 
     coilCombine->Delete();
     reader->Delete();
-    wtsReader->Delete();
+    if ( wtsReader != NULL ) { 
+        wtsReader->Delete();
+    }
 
 
     return 0; 
