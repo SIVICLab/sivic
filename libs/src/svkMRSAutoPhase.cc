@@ -173,8 +173,7 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     data->GetZeroImage( svkMriImageData::SafeDownCast(this->GetOutput(0)) ); 
 
     svkMriImageData* mriData = svkMriImageData::SafeDownCast(this->GetOutput(0));
-    mriData->GetDcmHeader()->PrintDcmHeader();
-    cout << "ZERO DATA: " << *mriData << endl;
+    //cout << "ZERO DATA: " << *mriData << endl;
 
     svkDcmHeader* hdr = this->GetOutput(0)->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
@@ -357,7 +356,9 @@ void svkMRSAutoPhase::ThreadedRequestData(
   int outExt[6], int id)
 {
 
-    cout << "THREADED EXECUTE " << id << endl ;
+    if ( this->GetDebug() ) {
+        cout << "THREADED EXECUTE " << id << endl ;
+    }
     this->AutoPhaseExecute(outExt, id);
 
 }
