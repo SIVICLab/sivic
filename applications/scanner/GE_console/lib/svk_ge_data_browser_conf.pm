@@ -51,14 +51,7 @@ sub svk_ge_get_tail($);
 #   $HOST and registered hostnames on svk_ge network.
 #
 %svk_ge_data_browser_conf::network_hostnames = (
-    'qb3-3t'                    =>  'qb3-mr3t',
     'qb3-7t'                    =>  'qb3-mr7t',
-    'mrc1-ow'                   =>  'mrc1_oc0',
-    'CB-3TMR'                   =>  'cb-mr3t',
-    'scalar.radiology.ucsf.edu' =>  'scalar',
-    'mrc2'                      =>  'mrc2',
-    'UCSF-MRN2'                 =>  'ucsf-mrn2', 
-    'UCSF-MRN1'                 =>  'ucsf-mrn1', 
     'icn1'                      =>  'icn1'
 );
 
@@ -66,33 +59,19 @@ sub svk_ge_get_tail($);
 #
 #   The remote host acting as the submit host:  should be accessible from scanner:
 #
-my $remote_host_QB3 = "scannersub-mb";
-my $remote_host_CB = "avalanche.radiology.ucsf.edu";
-my $remote_host_PARNASSUS = "avalanche.radiology.ucsf.edu";
+my $remote_host_site = "";
 
 %svk_ge_data_browser_conf::remote_host = (
-    'qb3-3t'                    =>  "$remote_host_QB3",
-    'qb3-7t'                    =>  "$remote_host_QB3",
-    'scalar.radiology.ucsf.edu' =>  "$remote_host_QB3",
-    'CB-3TMR'                   =>  "$remote_host_CB",
-    'mrc1-ow'                   =>  "$remote_host_PARNASSUS", 
-    'mrc2'                      =>  "$remote_host_PARNASSUS", 
-    'UCSF-MRN2'                 =>  "$remote_host_PARNASSUS", 
-    'UCSF-MRN1'                 =>  "$remote_host_PARNASSUS"
+    $ENV{HOST}                    =>  "$remote_host_site"
 );
 
 
 #
 #   VRE (volume recon engine) compute node (aka ICN - image compute node).  
 #
-my $VRE_host = "icn2";
+my $VRE_host = "icn1";
 %svk_ge_data_browser_conf::VRE_host = (
-    'qb3-3t'                    =>  "$VRE_host",
-    'qb3-7t'                    =>  "icn1",
-    'CB-3TMR'                   =>  "$VRE_host", 
-    'mrc2'                      =>  "$VRE_host", 
-    'UCSF-MRN2'                 =>  "$VRE_host", 
-    'UCSF-MRN1'                 =>  "$VRE_host" 
+    $ENV{HOST}                    =>  "icn1",
 );
 
 
