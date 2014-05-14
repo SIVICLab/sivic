@@ -212,6 +212,8 @@ ADD_LIBRARY(
     svkImageFourierCenter.cc
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
+    svkImageThreshold.cc
+    svkImageAlgorithmWithParameterMapping.cc
     svkDSCDeltaR2.cc
     svkImageCopy.cc
     svkQuantifyMetabolites.cc
