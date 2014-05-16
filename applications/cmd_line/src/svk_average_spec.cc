@@ -68,18 +68,21 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_average_spec -i input_file_name -o output_file_root                      \n"; 
-    usemsg += "                  --mask mask_file_name                                      \n"; 
-    usemsg += "                   [ -v ]                                                    \n";
-    usemsg += "                   [ -h ]                                                    \n";
+    usemsg += "                   --mask mask_file_name | -b                                \n"; 
+    usemsg += "                   [ -mvh ]                                                  \n";
     usemsg += "                                                                             \n";  
     usemsg += "   -i            input_file_name     Name of file to scale                   \n";
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";
     usemsg += "   --mask        mask_file_name      Name of mask file                       \n";
+    usemsg += "   -b                                Average spectral within selection box.  \n"; 
+    usemsg += "   -m                                Average of magnitude spectra in ROI.    \n"; 
     usemsg += "   -v                                Verbose output                          \n"; 
     usemsg += "   -h                                Print this help mesage.                 \n";  
     usemsg += "\n";  
-    usemsg += "Application that averages spectral voxles in the specified ROI.  Exports a   \n"; 
-    usemsg += "single voxel data set with average spectrum and voxel size = FOV.            \n"; 
+    usemsg += "Application that averages spectral voxles in the specified ROI or selection  \n";
+    usemsg += "box.  Exports a single voxel data set with average spectrum and voxel size   \n";
+    usemsg += "= FOV. By default this returns a complex spectrum, but can average the       \n"; 
+    usemsg += "magnitude spectra within the ROI as well (-m flag).                          \n"; 
     usemsg += "\n";  
 
     string inputFileName; 
@@ -87,6 +90,9 @@ int main (int argc, char** argv)
     string maskFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     bool isVerbose = false; 
+    bool limitToSelectionBox = false; 
+    bool useMagnitudeSpectra = false; 
+
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
@@ -106,7 +112,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:hv", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:bmhv", long_options, &option_index) ) != EOF) {
         switch (i) {
            case 'i':
                 inputFileName.assign( optarg );
@@ -116,6 +122,12 @@ int main (int argc, char** argv)
                 break;
             case FLAG_MASK:
                 maskFileName.assign( optarg );
+                break;
+            case 'b':
+                limitToSelectionBox = true; 
+                break;
+            case 'm':
+                useMagnitudeSpectra = true; 
                 break;
             case 'v':
                 isVerbose = true; 
@@ -135,8 +147,12 @@ int main (int argc, char** argv)
     // ===============================================  
     //  validate input: 
     // ===============================================  
-    if ( argc != 0 || inputFileName.length() == 0 || outputFileName.length() == 0 
-        || maskFileName.length() == 0 ) {
+    if ( argc != 0 || 
+        inputFileName.length() == 0 || 
+        outputFileName.length() == 0 ||
+        ( maskFileName.length() == 0  && limitToSelectionBox == false )  || 
+        ( maskFileName.length() > 0  && limitToSelectionBox == true )  
+    )  {
         cout << usemsg << endl;
         exit(1);
     }
@@ -144,7 +160,6 @@ int main (int argc, char** argv)
     if( isVerbose ) {
         cout << "INPUT:   " << inputFileName << endl;
         cout << "OUTPUT:  " << outputFileName << endl;
-        cout << "MASK:    " << maskFileName  << endl;
     }
 
     // ===============================================  
@@ -158,22 +173,31 @@ int main (int argc, char** argv)
         cerr << "Can not determine appropriate reader for input: " << inputFileName << endl;
         exit(1);
     }
-
-    svkImageReader2* maskReader = readerFactory->CreateImageReader2( maskFileName.c_str() );
-    if ( maskReader == NULL ) {
-        cerr << "Can not determine appropriate reader for mask: " << maskFileName << endl;
-        exit(1);
-    }
-
     mrsReader->SetFileName( inputFileName.c_str() );
     //mrsReader->Update(); 
 
-    maskReader->SetFileName( maskFileName.c_str() );
-    //maskReader->Update(); 
+    svkImageReader2* maskReader = NULL;
+    if ( maskFileName.length() > 0 ) {
+        maskReader = readerFactory->CreateImageReader2( maskFileName.c_str() );
+        if ( maskReader == NULL ) {
+            cerr << "Can not determine appropriate reader for mask: " << maskFileName << endl;
+            exit(1);
+        }
+        maskReader->SetFileName( maskFileName.c_str() );
+        //maskReader->Update(); 
+    }
 
     svkMRSAverageSpectra* avSpec = svkMRSAverageSpectra::New(); 
     avSpec->SetInputConnection(0, mrsReader->GetOutputPort() ); 
-    avSpec->SetInputConnection(1, maskReader->GetOutputPort() ); 
+    if ( maskReader != NULL ) {
+        avSpec->SetInputConnection(1, maskReader->GetOutputPort() ); 
+    } else if ( limitToSelectionBox == true ) {
+        avSpec->LimitToSelectionBox(); 
+    }
+
+    if ( useMagnitudeSpectra == true ) {
+        avSpec->AverageMagnitudeSpectra();
+    }
     avSpec->Update();
 
 
@@ -219,7 +243,9 @@ int main (int argc, char** argv)
     // ===============================================  
     writer->Delete();
     mrsReader->Delete();
-    maskReader->Delete();
+    if ( maskReader != NULL ) {
+        maskReader->Delete();
+    }
 
     return 0; 
 }
