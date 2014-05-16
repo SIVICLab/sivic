@@ -28,10 +28,10 @@
  */
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkImageStatistics.cc $
- *  $Rev: 1910 $
- *  $Author: beckn8tor $
- *  $Date: 2014-05-06 12:51:08 -0700 (Tue, 06 May 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkDouble, "$Rev: 1910 $");
+vtkCxxRevisionMacro(svkDouble, "$Rev$");
 vtkStandardNewMacro(svkDouble);
 
 //! Constructor

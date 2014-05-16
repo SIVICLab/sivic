@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkImageStatisticsCollector.h $
- *  $Rev: 1910 $
- *  $Author: beckn8tor $
- *  $Date: 2014-05-06 12:51:08 -0700 (Tue, 06 May 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
