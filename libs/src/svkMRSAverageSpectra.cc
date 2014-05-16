@@ -60,7 +60,9 @@ svkMRSAverageSpectra::svkMRSAverageSpectra()
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->useMask = false;
+    this->useMaskFile = true;
+    this->useSelectionBoxMask = false;
+    this->useMagnitudeSpectra = false;
     this->SetNumberOfInputPorts(2); // the 2nd is optional
 
 }
@@ -89,6 +91,8 @@ int svkMRSAverageSpectra::RequestData( vtkInformation* request, vtkInformationVe
     this->SetAverageDataDimensions(); 
 
     this->InitAverageSpectrum(); 
+
+    this->InitMask();
 
     this->AverageSpectraInROI();
 
@@ -199,27 +203,44 @@ void svkMRSAverageSpectra::InitAverageSpectrum()
 
 
 /*
+ *  Get the mask ROI from file or teh selection box.
+ */
+void svkMRSAverageSpectra::InitMask()
+{
+    if ( this->useMaskFile == true ) {
+
+        svkMriImageData* maskImage = svkMriImageData::SafeDownCast( this->GetImageDataInput(1) );
+        this->maskROI = static_cast<vtkShortArray*>( 
+            maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
+
+    } else if ( this->useSelectionBoxMask ) {
+
+        svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+        svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+        int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+
+        float tolerance = .5;     
+        this->maskROI = new short[numCells];
+        data->GetSelectionBoxMask( this->maskROI, tolerance); 
+    }
+
+}
+
+
+/*
  *  Averages spectra over input ROI. 
  */
 void svkMRSAverageSpectra::AverageSpectraInROI()
 {
 
-
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
-    svkMriImageData* maskImage = svkMriImageData::SafeDownCast( this->GetImageDataInput(1) );
     svkDcmHeader* hdr = data->GetDcmHeader(); 
     svkDcmHeader* avHdr = this->averageData->GetDcmHeader(); 
-    svkDcmHeader* maskHdr = maskImage->GetDcmHeader(); 
-
-    unsigned short* mask = static_cast<vtkUnsignedShortArray*>( 
-                        maskImage->GetPointData()->GetArray(0) )->GetPointer(0) ; 
 
     svkDcmHeader::DimensionVector dimVec      = hdr->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector loopVec     = dimVec; 
     svkDcmHeader::DimensionVector avDimVec    = avHdr->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector avLoopVec   = avDimVec; 
-    svkDcmHeader::DimensionVector maskDimVec  = maskHdr->GetDimensionIndexVector(); 
-    svkDcmHeader::DimensionVector maskLoopVec = maskDimVec; 
 
     int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
     int numInputCells = svkDcmHeader::GetNumberOfCells( &dimVec ); 
@@ -236,15 +257,10 @@ void svkMRSAverageSpectra::AverageSpectraInROI()
         //  Get the corresponding mask cell (only look at spatial dims). 
         //  Then check to see if this cell is within the mask. 
         //  ==========================================================
-        for ( int dim = 0; dim < 3; dim++ ) {
-            svkDcmHeader::DimensionIndexLabel indexLabel=  svkDcmHeader::GetDimensionLabelFromIndex( &loopVec, dim ); 
-            int indexValue = svkDcmHeader::GetDimensionVectorValue( &loopVec, indexLabel ); 
-            svkDcmHeader::SetDimensionVectorValue( &maskLoopVec, indexLabel, indexValue); 
-        }
+        int maskCellID = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimVec, &loopVec ); 
+        //cout << "MASK CELL ID: " << maskCellID << endl;
 
-        int maskCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &maskDimVec, &maskLoopVec ); 
-
-        if ( mask[maskCellID] != 0 ) {
+        if ( maskROI[maskCellID] != 0 ) {
 
             // Get loop values, and set first 3 dimensions to 1 to create correct output 
             //  loop
@@ -266,8 +282,16 @@ void svkMRSAverageSpectra::AverageSpectraInROI()
             for (int i = 0; i < numTimePoints; i++ ) {
                 spectrumIn->GetTuple(i, tupleIn);     
                 spectrumAv->GetTuple(i, tupleAv); 
-                tupleAv[0] += tupleIn[0]; 
-                tupleAv[1] += tupleIn[1]; 
+
+                if ( this->useMagnitudeSpectra == true ) {
+                    double rms = ( tupleIn[0] * tupleIn[0] + tupleIn[1] * tupleIn[1] ); 
+                    rms = pow(rms, 0.5); 
+                    tupleAv[0] += rms; 
+                    tupleAv[1] += rms; 
+                } else {
+                    tupleAv[0] += tupleIn[0]; 
+                    tupleAv[1] += tupleIn[1]; 
+                }
                 spectrumAv->SetTuple(i, tupleAv); 
             }
             numCellsInMask++; 
@@ -301,9 +325,30 @@ int svkMRSAverageSpectra::FillInputPortInformation( int port, vtkInformation* in
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
     }
     if ( port == 1 ) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData"); 
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
+        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+
     }
     return 1;
+}
+
+
+/*!
+ *  Use selection box mask rather than mask from file  
+ */
+void svkMRSAverageSpectra::LimitToSelectionBox()
+{
+    this->useMaskFile = false;
+    this->useSelectionBoxMask = true;
+}
+
+
+/*!
+ *  Average the magnitude spectra within the ROI. 
+ */
+void svkMRSAverageSpectra::AverageMagnitudeSpectra()
+{
+    this->useMagnitudeSpectra = true;
 }
 
 
@@ -314,7 +359,7 @@ int svkMRSAverageSpectra::FillInputPortInformation( int port, vtkInformation* in
 void svkMRSAverageSpectra::PrintSelf( ostream &os, vtkIndent indent )
 {
     Superclass::PrintSelf( os, indent );
-    os << "only use selection box:" << this->useMask << endl;
+    os << "only use selection box:" << this->useMaskFile << endl;
 }
 
 
