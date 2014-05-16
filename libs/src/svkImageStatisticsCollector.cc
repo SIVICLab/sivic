@@ -80,26 +80,40 @@ void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
 {
     results->RemoveAllNestedElements();
     results->RemoveAllAttributes();
-    results->SetName("svk_image_statistics_results");
+    results->SetName("svk_image_stats_results");
+
+    results->SetAttribute("version", string(SVK_RELEASE_VERSION).c_str());
+    time_t rawtime;
+    struct tm * timeinfo;
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    string timeString = asctime(timeinfo);
+    // Chop off the return character from asctime:
+    timeString = timeString.substr(0, timeString.size()-1);
+    results->SetAttribute("date", timeString.c_str());
+
     this->LoadMapsAndROIS( );
 
     map<string,svkMriImageData*>::iterator mapIter;
     map<string,svkMriImageData*>::iterator roiIter;
     for (mapIter = this->maps.begin(); mapIter != this->maps.end(); ++mapIter) {
         for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
-            cout << "ROI: " << roiIter->first << " address: " << roiIter->second << endl;
-            cout << "MAP: " << mapIter->first << " address: " << mapIter->second << endl;
-            svkImageStatistics* stats = svkImageStatistics::New();
-            stats->AddInput( mapIter->second );
-            stats->AddROI( roiIter->second );
-            stats->Update();
-            vtkXMLDataElement* currentResult = vtkXMLDataElement::New();
-            stats->GetXMLResults(currentResult);
-            results->AddNestedElement( currentResult );
-            currentResult->SetAttribute("ROI", roiIter->first.c_str() );
-            currentResult->SetAttribute("MAP", mapIter->first.c_str() );
-            currentResult->Delete();
-            stats->Delete();
+            svkImageStatistics* statsCalculator = svkImageStatistics::New();
+            statsCalculator->SetConfig(this->config->FindNestedElementWithName("measures"));
+            statsCalculator->SetInput( mapIter->second );
+            statsCalculator->SetROI( roiIter->second );
+            statsCalculator->Update();
+            vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
+            nextResult->SetName("results");
+            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
+            svkUtils::CreateNestedXMLDataElement( nextResult, "MAP",mapIter->first.c_str() );
+            vtkXMLDataElement* statistics = vtkXMLDataElement::New();
+            statsCalculator->GetXMLResults(statistics);
+            nextResult->AddNestedElement( statistics );
+            results->AddNestedElement( nextResult );
+            nextResult->Delete();
+            statistics->Delete();
+            statsCalculator->Delete();
         }
     }
 
@@ -168,14 +182,12 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
             vtkXMLDataElement* filterParameters = filters->GetNestedElement(i);
             if( string(filterParameters->GetName()) ==  "threshold") {
                 vtkIndent indent;
-                filterParameters->PrintXML(cout, indent);
                 svkImageThreshold* threshold = svkImageThreshold::New();
 
                 threshold->SetParametersFromXML( filterParameters );
                 threshold->SetInput( svkImageThreshold::INPUT_IMAGE, inputImage);
 
                 // RUN THE ALGORITHM
-                cout << endl << "THRESHOLD ALGORITHM:" << endl << *threshold << endl;
                 threshold->Update();
                 // TODO: How to get rid of pointers... CHECK MEMORY IS BEING FREED!
                 //inputImage->Delete();

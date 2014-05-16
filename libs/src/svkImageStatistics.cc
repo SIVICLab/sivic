@@ -81,26 +81,28 @@ svkImageStatistics::~svkImageStatistics()
 /*!
  * Sets the input data to calculate the statistics upon.
  */
-void svkImageStatistics::AddInput( svkMriImageData* image )
+void svkImageStatistics::SetInput( svkMriImageData* image )
 {
-    this->images.push_back(image);
-    this->Register(image);
+    this->image = image;
+    this->image->Register(this);
 }
 
 
 /*!
  * Sets the roi within which to calculate the statistics.
  */
-void svkImageStatistics::AddROI( svkMriImageData* roi )
+void svkImageStatistics::SetROI( svkMriImageData* roi )
 {
-    this->rois.push_back(roi);
-    this->Register(roi);
+    this->roi = roi;
+    this->roi->Register(this);
 }
+
 
 void svkImageStatistics::SetConfig( vtkXMLDataElement* config )
 {
     this->config = config;
 }
+
 
 /*!
  *  This method does the computation for this class.
@@ -115,41 +117,8 @@ void svkImageStatistics::Update( )
         this->results->Delete();
     }
     this->results = vtkXMLDataElement::New();
-    this->results->SetName("svk_image_stats");
-    this->results->SetAttribute("version", string(SVK_RELEASE_VERSION).c_str());
-    time_t rawtime;
-    struct tm * timeinfo;
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-    string timeString = asctime(timeinfo);
-    // Chop off the return character from asctime:
-    timeString = timeString.substr(0, timeString.size()-1);
-    this->results->SetAttribute("date", timeString.c_str());
-
-    for( int i = 0; i < this->images.size(); i++) {
-        for( int j = 0; j <= this->rois.size(); j++) {
-            svkMriImageData* roi = NULL;
-            if( j < this->rois.size() ) {
-                roi = this->rois[j];
-            }
-            vtkXMLDataElement* imageElement = vtkXMLDataElement::New();
-            vtkXMLDataElement* roiImageStats = vtkXMLDataElement::New();
-            imageElement->SetName("image");
-            svkUtils::CreateNestedXMLDataElement( imageElement, "description",this->images[i]->GetDcmHeader()->GetStringValue("SeriesDescription"));
-            roiImageStats->AddNestedElement( imageElement );
-            imageElement->Delete();
-            if( roi != NULL ) {
-                vtkXMLDataElement* roiElement = vtkXMLDataElement::New();
-                roiElement->SetName("roi");
-                svkUtils::CreateNestedXMLDataElement( roiElement, "description",this->rois[i]->GetDcmHeader()->GetStringValue("SeriesDescription"));
-                roiImageStats->AddNestedElement( roiElement );
-                roiElement->Delete();
-            }
-            this->GetImageAccumulateStats( this->images[i], roi, roiImageStats);
-            this->results->AddNestedElement( roiImageStats  );
-            roiImageStats->Delete();
-        }
-    }
+    this->results->SetName("measures");
+    this->GetImageAccumulateStats( this->image, this->roi, this->results );
 
 }
 
@@ -159,8 +128,6 @@ void svkImageStatistics::GetImageAccumulateStats( svkMriImageData* data, svkMriI
     if( data != NULL ) {
         double* spacing = data->GetSpacing();
         double pixelVolume = spacing[0] * spacing[1] * spacing[2];
-        double thresholdMin = 0.5;
-        double thresholdMax = 1.5;
         if( this->accumulator != NULL ) {
             this->accumulator->Delete();
         }
@@ -169,110 +136,92 @@ void svkImageStatistics::GetImageAccumulateStats( svkMriImageData* data, svkMriI
         if( roi != NULL ) {
             vtkImageToImageStencil* stencil = vtkImageToImageStencil::New();
             stencil->SetInput( roi );
-            stencil->ThresholdBetween( thresholdMin, thresholdMax );
             stencil->Update();
             accumulator->SetStencil( stencil->GetOutput() );
             stencil->Delete();
         }
         accumulator->Update( );
-        accumulator->SetIgnoreZero( false );
-        accumulator->SetComponentExtent(0,4,0,0,0,0 );
-        accumulator->Update();
-        stats->SetName("roi_image_stats");
-        stats->SetAttribute("algorithm", "vtkImageAccumulate");
-
-        // Add parameters
-        vtkXMLDataElement* parameter = vtkXMLDataElement::New();
-        parameter->SetName("param");
-        parameter->SetAttribute("name", "ignoreZero");
-        parameter->SetCharacterData(svkUtils::IntToString(accumulator->GetIgnoreZero()).c_str(), svkUtils::IntToString(accumulator->GetIgnoreZero()).size());
-        stats->AddNestedElement( parameter );
-        parameter->Delete();
-
-        if( roi != NULL ) {
-            parameter = vtkXMLDataElement::New();
-            parameter->SetName("param");
-            parameter->SetAttribute("name", "ROIthresholdMin");
-            parameter->SetCharacterData(svkUtils::DoubleToString(thresholdMin).c_str(), svkUtils::DoubleToString(thresholdMin).size());
-            stats->AddNestedElement( parameter );
-            parameter->Delete();
-
-            parameter = vtkXMLDataElement::New();
-            parameter->SetName("param");
-            parameter->SetAttribute("name", "ROIthresholdMax");
-            parameter->SetCharacterData(svkUtils::DoubleToString(thresholdMax).c_str(), svkUtils::DoubleToString(thresholdMax).size());
-            stats->AddNestedElement( parameter );
-            parameter->Delete();
+        accumulator->SetIgnoreZero( true );
+        int numberOfBins = 5;
+        if( this->config->FindNestedElementWithName("histogram") != NULL ) {
+            vtkXMLDataElement* binsElement = this->config->FindNestedElementWithName("histogram")->FindNestedElementWithName("bins");
+            if( binsElement != NULL ) {
+                numberOfBins = svkUtils::StringToInt(binsElement->GetCharacterData());
+            }
         }
-
-        vtkXMLDataElement* measurements = vtkXMLDataElement::New();
-        measurements->SetName("statistics");
-        stats->AddNestedElement( measurements );
-        vtkXMLDataElement* element = vtkXMLDataElement::New();
-        element->SetName("value");
-        element->SetAttribute("name", "volume");
-        element->SetAttribute("units", "mm^3");
-        string volumeString = svkUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
-        element->SetCharacterData( volumeString.c_str(), volumeString.size());
-        measurements->AddNestedElement( element );
-        element->Delete();
-
-        element = vtkXMLDataElement::New();
-        element->SetName("value");
-        element->SetAttribute("name", "max");
-        string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
-        element->SetCharacterData( maxString.c_str(), maxString.size());
-        measurements->AddNestedElement( element );
-        element->Delete();
-
-
-        element = vtkXMLDataElement::New();
-        element->SetName("value");
-        element->SetAttribute("name", "min");
-        string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
-        element->SetCharacterData( minString.c_str(), minString.size());
-        measurements->AddNestedElement( element );
-        element->Delete();
-
-        element = vtkXMLDataElement::New();
-        element->SetName("value");
-        element->SetAttribute("name", "mean");
-        string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
-        element->SetCharacterData( meanString.c_str(), meanString.size());
-        measurements->AddNestedElement( element );
-        element->Delete();
-
-        element = vtkXMLDataElement::New();
-        element->SetName("value");
-        element->SetAttribute("name", "stdev");
-        string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
-        element->SetCharacterData( stdevString.c_str(), stdevString.size());
-        measurements->AddNestedElement( element );
-        element->Delete();
-
-        vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
-        double max = *accumulator->GetMax();
-        double min = *accumulator->GetMin();
-        int numBins =  histData->GetNumberOfTuples();
-        double binSize = (max-min)/numBins;
-        vtkXMLDataElement* histogram = vtkXMLDataElement::New();
-        histogram->SetName("histogram");
-        histogram->SetAttribute("bins", svkUtils::IntToString(numBins).c_str());
-        for( int i = 0; i < numBins; i++ ) {
+        accumulator->SetComponentExtent(0,numberOfBins-1,0,0,0,0 );
+        accumulator->Update();
+        vtkXMLDataElement* element = NULL;
+        if( this->config->FindNestedElementWithName("volume") != NULL ) {
             element = vtkXMLDataElement::New();
-            element->SetName("bin");
-            element->SetAttribute("index", svkUtils::IntToString(i).c_str());
-            element->SetAttribute("min", svkUtils::DoubleToString(i*binSize).c_str());
-            element->SetAttribute("max", svkUtils::DoubleToString((i+1)*binSize).c_str());
-            string valueString = svkUtils::DoubleToString(histData->GetTuple1(i));
-            element->SetCharacterData(valueString.c_str(), valueString.size());
-            histogram->AddNestedElement(element);
+            element->SetName("volume");
+            element->SetAttribute("units", "mm^3");
+            string volumeString = svkUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
+            element->SetCharacterData( volumeString.c_str(), volumeString.size());
+            stats->AddNestedElement( element );
             element->Delete();
         }
-        measurements->AddNestedElement(histogram);
-        measurements->Delete();
-        histogram->Delete();
 
+        if( this->config->FindNestedElementWithName("max") != NULL ) {
+            element = vtkXMLDataElement::New();
+            element->SetName("max");
+            string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
+            element->SetCharacterData( maxString.c_str(), maxString.size());
+            stats->AddNestedElement( element );
+            element->Delete();
+        }
+
+
+        if( this->config->FindNestedElementWithName("min") != NULL ) {
+            element = vtkXMLDataElement::New();
+            element->SetName("min");
+            string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
+            element->SetCharacterData( minString.c_str(), minString.size());
+            stats->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->config->FindNestedElementWithName("mean") != NULL ) {
+            element = vtkXMLDataElement::New();
+            element->SetName("mean");
+            string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
+            element->SetCharacterData( meanString.c_str(), meanString.size());
+            stats->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->config->FindNestedElementWithName("stdev") != NULL ) {
+            element = vtkXMLDataElement::New();
+            element->SetName("stdev");
+            string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
+            element->SetCharacterData( stdevString.c_str(), stdevString.size());
+            stats->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->config->FindNestedElementWithName("histogram") != NULL ) {
+            vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
+            double max = *accumulator->GetMax();
+            double min = *accumulator->GetMin();
+            int numBins =  histData->GetNumberOfTuples();
+            double binSize = (max-min)/numBins;
+            vtkXMLDataElement* histogram = vtkXMLDataElement::New();
+            histogram->SetName("histogram");
+            histogram->SetAttribute("bins", svkUtils::IntToString(numBins).c_str());
+            for( int i = 0; i < numBins; i++ ) {
+                element = vtkXMLDataElement::New();
+                element->SetName("bin");
+                element->SetAttribute("index", svkUtils::IntToString(i).c_str());
+                element->SetAttribute("min", svkUtils::DoubleToString(i*binSize).c_str());
+                element->SetAttribute("max", svkUtils::DoubleToString((i+1)*binSize).c_str());
+                string valueString = svkUtils::DoubleToString(histData->GetTuple1(i));
+                element->SetCharacterData(valueString.c_str(), valueString.size());
+                histogram->AddNestedElement(element);
+                element->Delete();
+            }
+            stats->AddNestedElement(histogram);
+            histogram->Delete();
+        }
     }
 
 }

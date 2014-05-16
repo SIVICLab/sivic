@@ -74,11 +74,9 @@ class svkImageStatistics : public vtkObject
         static svkImageStatistics* New();  
         static void GenerateDefaultConfig( vtkXMLDataElement* config );
 
-        void AddInput( svkMriImageData* image );
-        void AddROI( svkMriImageData* roi );
+        void SetInput( svkMriImageData* image );
+        void SetROI( svkMriImageData* roi );
         void SetConfig( vtkXMLDataElement* config );
-        void SetROIUpperThreshold( double roiUpperThreshold ){};
-        void SetROILowerThreshold( double roiLowerThreshold ){};
         void Update( );
         void GetImageAccumulateStats( svkMriImageData* data, svkMriImageData* roi, vtkXMLDataElement* stats );
         void GetXMLResults( vtkXMLDataElement* results );
@@ -91,11 +89,11 @@ class svkImageStatistics : public vtkObject
         svkImageStatistics();
        ~svkImageStatistics();
 
-        string configFlineName;
-        vtkXMLDataElement* config;
-        vtkXMLDataElement* results;
-        vector<svkMriImageData*> images;
-        vector<svkMriImageData*> rois;
+        string              configFlineName;
+        vtkXMLDataElement*  config;
+        vtkXMLDataElement*  results;
+        svkMriImageData*    image;
+        svkMriImageData*    roi;
         vtkImageAccumulate* accumulator;
         
 

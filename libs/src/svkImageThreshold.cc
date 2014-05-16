@@ -165,11 +165,11 @@ int svkImageThreshold::RequestData( vtkInformation* request,
     int value = this->GetMaskOutputValue();
     string description = this->GetMaskSeriesDescription();
 
-    cout << "REQUEST DATA USING PARAMETERS:" << endl;
-    cout << "max   = " << max << endl;
-    cout << "min   = " << min <<  endl;
-    cout << "desc  = " << description << endl;
-    cout << "value = " << value << endl;
+    //cout << "REQUEST DATA USING PARAMETERS:" << endl;
+    //cout << "max   = " << max << endl;
+    //cout << "min   = " << min <<  endl;
+    //cout << "desc  = " << description << endl;
+    //cout << "value = " << value << endl;
 
     vtkImageThreshold* threshold = vtkImageThreshold::New();
     threshold->ThresholdBetween(min, max);
