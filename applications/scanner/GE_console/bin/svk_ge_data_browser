@@ -132,7 +132,9 @@ label .pfilelabel -bg $label_color -text [format "  %-24s " "P file"]
 label .namelabel -bg $label_color -text [format "  %-44s " "Name"]
 label .mrnlabel -bg $label_color -text [format "  %-26s " "MRN"]
 label .datelabel -bg $label_color -text [format "  %-22s " "Date"]
-label .timelabel -bg $label_color -text [format "  %-10s " "Time"]
+label .timelabel -bg $label_color -text [format "  %-30s " "Time"]
+label .seriesdesclabel -bg $label_color -text [format "  %-85s " "Description"]
+label .pfilesizelabel -bg $label_color -text [format "  %-10s " "Size"]
 label .examlabel_im -bg $label_color -text [format "%-10s " "Exam"]
 label .namelabel_im -bg $label_color -text [format "  %-44s " "Name"]
 label .datelabel_im -bg $label_color -text [format "  %-22s " "Date"]
@@ -145,13 +147,15 @@ label .bufferlabel -text " " -background $bg_color
 
 checkbutton .advancedcheck -text "Show advanced flag chooser" -variable advanced -command show_advanced -anchor w -bg $bg_color
 
-label .commandlabel -background $bg_color -anchor w -width 125
+set width 135
+set rawchooser_width 135
+label .commandlabel -background $bg_color -anchor w -width $width 
 
 
-listbox .rawchooserlist -yscrollcommand ".chooserscrolly set" -width 105 -height 10  -font {courier 12}
+listbox .rawchooserlist -yscrollcommand ".chooserscrolly set" -width $rawchooser_width -height 10  -font {courier 12}
 #.rawchooserlist -selectmode extended 
 
-text .infotext -yscrollcommand ".chooserscrolly set" -width 125 -height 14
+text .infotext -yscrollcommand ".chooserscrolly set" -width $width -height 14
 
 #scrollbar .summaryscrolly -command ".summarylistframe yview" -background $bg_color 
 scrollbar .chooserscrolly -background $bg_color 
@@ -170,7 +174,7 @@ pack .summarylabel -in .summaryframe -fill x
 pack .chooserscrolly -side right -fill y -in .chooserframe
 pack .commandlabel .advancedcheck -in .commandframe -fill x -pady 5
 
-pack .examlabel .pfilelabel .namelabel .mrnlabel .datelabel .timelabel -in .rawheaderframe -side left 
+pack .examlabel .pfilelabel .namelabel .mrnlabel .datelabel .timelabel .seriesdesclabel .pfilesizelabel -in .rawheaderframe -side left 
 pack .examlabel_im .namelabel_im .datelabel_im .seriesnumlabel_im .seriesdesclabel_im -in .imageheaderframe -side left 
 
 # but we don't pack a chooser or text area for the chooserframe now - 
@@ -517,12 +521,26 @@ proc show_raw_chooser {} {
         puts $err
         destroy .tryagainbutton
         destroy .okbutton
-	tk_messageBox -message "NO P-FILES FOUND\nPlease Cancel and acquire a raw file!" -type ok
-	return
+        tk_messageBox -message "NO P-FILES FOUND\nPlease Cancel and acquire a raw file!" -type ok
+        return
     }
 
+
+    #   get the mtime of each pfile and put it into the pfile hash: pfilehash{filename} = mtime
+    array set pfileHash {}
     foreach i [lsort $pfiles] {
-        set output [open "|$::env(HOME)/svk/local/bin/svk_gepfile_reader --print_short_header -i $i" r]
+        set pfileHash("$i") [file mtime $i] 
+    }
+
+    #   Create a list of lists that can be sorted on the mtime value: 
+    set pfileMtimeList [list]
+    foreach {file mtime} [array get pfileHash]  {
+        lappend pfileMtimeList [list $file $mtime]
+    } 
+    
+    foreach i [lsort -decreasing -integer -index 1 $pfileMtimeList] {
+        set sorted_fn [lindex $i 0]
+        set output [open "|$::env(HOME)/svk/local/bin/svk_gepfile_reader --print_short_header -i $sorted_fn" r]
         set dump_output ""
         set pname ""
         set mrn ""
@@ -530,11 +548,12 @@ proc show_raw_chooser {} {
         set time ""
         set exam_number ""
         set se_desc ""
-	
+
         while {[gets $output line] >= 0} {
             #puts "line: $line"
             set dump_output "${dump_output}NXT${line}"
         }
+        set dump_output "${dump_output}NXT"
         close $output
 
         regexp {rhe\.patname               = (.*?)NXT} $dump_output trash pname
@@ -546,14 +565,16 @@ proc show_raw_chooser {} {
         regexp {rhr\.rh_scan_time          = (.*?)NXT} $dump_output trash time 
         regexp {rhe\.ex_no                 = (.*?)NXT} $dump_output trash exam_number
         regexp {rhs\.se_desc               = (.*?)NXT} $dump_output trash se_desc
-        set pfile [file tail $i]
-        set line [format "%-5s | %-9s | %-18s | %-11s | %-9s |  %-10s  | %-20s" $exam_number $pfile $pname $mrn $date $time $se_desc]
+        set pfile [file tail $sorted_fn]
+        set pfile_unquoted [string map {"\"" ""} $sorted_fn]
+        set pfile_size [file size $pfile_unquoted] 
+        set line [format "%-5s | %-9s | %-18s | %-11s | %-9s |  %-10s  | %-35s | %-9s" $exam_number $pfile $pname $mrn $date $time $se_desc $pfile_size]
 
         lappend raw_list $line
     } 
     
     #  write raw files to browser in order of exam number
-    foreach i [lsort $raw_list] {
+    foreach i $raw_list {
         .rawchooserlist insert end $i
     }
 
