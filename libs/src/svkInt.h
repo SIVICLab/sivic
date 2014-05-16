@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkDouble.h $
+ *  $Rev: 1910 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-05-06 12:51:08 -0700 (Tue, 06 May 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,70 +40,48 @@
  */
 
 
-#ifndef SVK_IMAGE_STATISTICS_H
-#define SVK_IMAGE_STATISTICS_H
+#ifndef SVK_INT_H
+#define SVK_INT_H
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
 #include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkImageAccumulate.h>
-#include <svkMriImageData.h>
-#include <svkUtils.h>
-#include <vtkImageToImageStencil.h>
-#include <time.h>
+#include <vtkDataObject.h>
 
 namespace svk {
 
 
 using namespace std;
 
-class svkImageStatistics : public vtkObject
+/*!
+ *  This class is a container for a primitive integer. It is a subclass of vtkDataObject so it can
+ *  be used in input ports of algorithms.
+ */
+class svkInt : public vtkDataObject
 {
 
     public:
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatistics, vtkObject );
+        vtkTypeRevisionMacro( svkInt, vtkDataObject );
   
         // vtk initialization 
-        static svkImageStatistics* New();  
-        static void GenerateDefaultConfig( vtkXMLDataElement* config );
-
-        void AddInput( svkMriImageData* image );
-        void AddROI( svkMriImageData* roi );
-        void SetConfig( vtkXMLDataElement* config );
-        void SetROIUpperThreshold( double roiUpperThreshold ){};
-        void SetROILowerThreshold( double roiLowerThreshold ){};
-        void Update( );
-        void GetImageAccumulateStats( svkMriImageData* data, svkMriImageData* roi, vtkXMLDataElement* stats );
-        void GetXMLResults( vtkXMLDataElement* results );
-        void PrintStatistics( );
-
-
+        static svkInt* New();  
+        int    GetValue( );
+        void   SetValue( int value);
 
 	protected:
 
-        svkImageStatistics();
-       ~svkImageStatistics();
+        svkInt();
+       ~svkInt();
 
-        string configFlineName;
-        vtkXMLDataElement* config;
-        vtkXMLDataElement* results;
-        vector<svkMriImageData*> images;
-        vector<svkMriImageData*> rois;
-        vtkImageAccumulate* accumulator;
-        
+        int value;
 
 };
+
 
 
 }   //svk
 
 
 
-#endif //SVK_IMAGE_STATISTICS
+#endif //SVK_INT_H

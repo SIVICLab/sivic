@@ -15,6 +15,7 @@
  *      software without specific prior written permission.
  *  
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
  *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
@@ -26,13 +27,11 @@
  *  OF SUCH DAMAGE.
  */
 
-
-
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkImageStatistics.cc $
+ *  $Rev: 1910 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-05-06 12:51:08 -0700 (Tue, 06 May 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,70 +39,34 @@
  */
 
 
-#ifndef SVK_IMAGE_STATISTICS_H
-#define SVK_IMAGE_STATISTICS_H
+#include <svkInt.h>
+
+using namespace svk;
+
+vtkCxxRevisionMacro(svkInt, "$Rev: 1910 $");
+vtkStandardNewMacro(svkInt);
+
+//! Constructor
+svkInt::svkInt()
+{
+    this->value = 0;
+}
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <stdio.h>
-#include <sstream>
-#include <vtkObjectFactory.h>
-#include <vtkObject.h>
-#include <vtkImageAccumulate.h>
-#include <svkMriImageData.h>
-#include <svkUtils.h>
-#include <vtkImageToImageStencil.h>
-#include <time.h>
-
-namespace svk {
-
-
-using namespace std;
-
-class svkImageStatistics : public vtkObject
+//! Destructor
+svkInt::~svkInt()
 {
 
-    public:
-
-        // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatistics, vtkObject );
-  
-        // vtk initialization 
-        static svkImageStatistics* New();  
-        static void GenerateDefaultConfig( vtkXMLDataElement* config );
-
-        void AddInput( svkMriImageData* image );
-        void AddROI( svkMriImageData* roi );
-        void SetConfig( vtkXMLDataElement* config );
-        void SetROIUpperThreshold( double roiUpperThreshold ){};
-        void SetROILowerThreshold( double roiLowerThreshold ){};
-        void Update( );
-        void GetImageAccumulateStats( svkMriImageData* data, svkMriImageData* roi, vtkXMLDataElement* stats );
-        void GetXMLResults( vtkXMLDataElement* results );
-        void PrintStatistics( );
+}
 
 
-
-	protected:
-
-        svkImageStatistics();
-       ~svkImageStatistics();
-
-        string configFlineName;
-        vtkXMLDataElement* config;
-        vtkXMLDataElement* results;
-        vector<svkMriImageData*> images;
-        vector<svkMriImageData*> rois;
-        vtkImageAccumulate* accumulator;
-        
-
-};
+int svkInt::GetValue( )
+{
+    return this->value;
+}
 
 
-}   //svk
-
-
-
-#endif //SVK_IMAGE_STATISTICS
+void svkInt::SetValue( int value )
+{ 
+    this->value = value;
+}

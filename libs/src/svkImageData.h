@@ -260,6 +260,9 @@ class svkImageData: public vtkImageData
 
         static  void                  RemoveArrays( svkImageData* data ); 
 
+        vtkSetStringMacro(SourceFileName);
+        vtkGetStringMacro(SourceFileName);
+
         
     protected:
 
@@ -269,7 +272,7 @@ class svkImageData: public vtkImageData
         //  Members:
         svkDcmHeader*                   dcmHeader;
         svkProvenance*                  provenance;
-
+        char*                           SourceFileName;
         svkImageData*                   source;
 
         //! Range needs to be able to accomodate real, imaginary, and magnitude components

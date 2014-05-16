@@ -278,6 +278,14 @@ void svkImageStatistics::GetImageAccumulateStats( svkMriImageData* data, svkMriI
 }
 
 
+void svkImageStatistics::GetXMLResults( vtkXMLDataElement* results )
+{
+    if( results != NULL ) {
+        results->DeepCopy( this->results );
+    }
+}
+
+
 void svkImageStatistics::PrintStatistics( )
 {
     cout << "###########################################################" << endl << endl;

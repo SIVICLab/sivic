@@ -251,6 +251,10 @@ ADD_LIBRARY(
     svkExtractVOI.cc
     svkDICOMParser.cc
     svkImageStatistics.cc
+    svkImageStatisticsCollector.cc
+    svkDouble.cc
+    svkInt.cc
+    svkString.cc
 )
 
 SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)

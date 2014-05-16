@@ -92,6 +92,7 @@ svkImageData::svkImageData()
     this->CellData = svkFastCellData::New();
     this->lastUpdateTime = this->GetMTime();
     this->source = NULL;
+    this->SourceFileName = NULL;
 
 }
 

@@ -62,7 +62,12 @@ svkImageThreshold::svkImageThreshold()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     // We have to call this in the constructor. Internally this will call SetupParameterPorts
-    this->SetNumberOfInputAndParameterPorts(1,4);
+    this->SetNumberOfInputPorts(5);
+    this->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", SVK_MR_IMAGE_DATA);
+    this->InitializeInputPort( MASK_SERIES_DESCRIPTION, "MASK_SERIES_DESCRIPTION", VTK_STRING);
+    this->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", VTK_INT);
+    this->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", VTK_DOUBLE);
+    this->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", VTK_DOUBLE);
 }
 
 
@@ -72,18 +77,6 @@ svkImageThreshold::svkImageThreshold()
 svkImageThreshold::~svkImageThreshold()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~svkImageThreshold()");
-}
-
-
-/*!
- * This method set is required by the parent class and sets up all the input port parameters.
- */
-void svkImageThreshold::SetupParameterPorts()
-{
-    this->InitializeParameterPort( MASK_SERIES_DESCRIPTION, "MASK_SERIES_DESCRIPTION", VTK_CHAR);
-    this->InitializeParameterPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", VTK_INT);
-    this->InitializeParameterPort( THRESHOLD_MIN, "THRESHOLD_MIN", VTK_DOUBLE);
-    this->InitializeParameterPort( THRESHOLD_MAX, "THRESHOLD_MAX", VTK_DOUBLE);
 }
 
 

@@ -252,6 +252,9 @@ void svkImageReader2::SetupOutputInformation()
 {
 
     svkDcmHeader* dcmHdr = this->GetOutput()->GetDcmHeader();
+    if( this->GetFileNames() != NULL && this->GetFileNames()->GetValue(0) != NULL ) {
+        this->GetOutput()->SetSourceFileName( this->GetFileNames()->GetValue(0) );
+    }
 
     //  ============================
     //  Set Dimensionality

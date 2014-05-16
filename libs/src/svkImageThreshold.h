@@ -73,8 +73,11 @@ class svkImageThreshold : public svkImageAlgorithmWithParameterMapping
 {
 
     public:
+
+        vtkGetVector3Macro(Test,double);
         typedef enum {
-            THRESHOLD_MAX = 1,
+            INPUT_IMAGE = 0,
+            THRESHOLD_MAX,
             THRESHOLD_MIN ,
             MASK_SERIES_DESCRIPTION,
             MASK_OUTPUT_VALUE
@@ -107,6 +110,8 @@ class svkImageThreshold : public svkImageAlgorithmWithParameterMapping
                         vtkInformation* request, 
                         vtkInformationVector** inputVector, 
                         vtkInformationVector* outputVector );
+
+        double Test[3];
 
 
     private:

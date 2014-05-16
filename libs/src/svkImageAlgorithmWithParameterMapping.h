@@ -55,9 +55,15 @@
 #include <svkDcmHeader.h>
 #include <vtkImageThreshold.h>
 #include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
 #include <svkUtils.h>
+#include <svkDouble.h>
+#include <svkString.h>
+#include <svkInt.h>
+#include <svkImageReaderFactory.h>
+#include <svkImageReader2.h>
 
+#define SVK_MR_IMAGE_DATA  1000
+#define SVK_4D_IMAGE_DATA  1001
 
 namespace svk {
 
@@ -66,8 +72,15 @@ using namespace std;
 
 
 /*! 
- *  Class to manage copying svkImageData as part of a pipeline, 
- *  updating the header and provenance.   
+ * This class defines a generic interface for using both vtkDataObjects and primitive types stored
+ * as subclasses of vtkDataObject as inputs to algorithms. Additionally it has a method
+ * (svkImageAlgorithmWithParameterMapping::SetParametersFromXML) to parse an XML tag and extract any
+ * elements in it that correspond to known input ports initialized by the method,
+ * svkImageAlgorithmWithParameterMapping::InitializeInputPort which must be
+ * called in the subclass's constructor. Input images are assumed to be stored as filename strings
+ * in the XML and will be read in by this class to svkImageData objects.
+ *
+ * vtkDataObject wrapped primitive types: svkDouble, svkInt, svkString
  */
 class svkImageAlgorithmWithParameterMapping : public svkImageAlgorithm
 {
@@ -75,23 +88,10 @@ class svkImageAlgorithmWithParameterMapping : public svkImageAlgorithm
     public:
 
 
-        // Initializes the vtkDataObjects and vtkDataArrays to hold the input port parameters.
-        virtual void           SetupParameterPorts( ) = 0;
-
-        /*
-         * Sets the number of input ports, the first input port parameter, and the number of
-         * parameters and then it calls SetupParameterPorts.
-         */
-        virtual void           SetNumberOfInputAndParameterPorts(int numberOfInputPorts, int numberOfParameters );
-
-        // Parses XML and convert it into input port parameters
+        //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
         virtual void           SetParametersFromXML( vtkXMLDataElement* element );
 
-        // Returns string names used in XML for input port parameters
-        virtual string         GetParameterName( int port );
-
-
-
+        //! Prints all input parameters set.
         void                   PrintSelf( ostream &os, vtkIndent indent );
 
     protected:
@@ -99,30 +99,42 @@ class svkImageAlgorithmWithParameterMapping : public svkImageAlgorithm
         svkImageAlgorithmWithParameterMapping();
         ~svkImageAlgorithmWithParameterMapping();
 
-        virtual int            FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+        //! Returns string class name for a given type.
+        static string            GetClassTypeFromDataType( int type );
 
-        // Returns the port number for a given parameter string
-        virtual int            GetParameterPort( string parameterName );
+        //! Returns string names used in XML configuration files for input port parameters.
+        virtual string           GetInputPortName( int port );
 
-        virtual void           InitializeParameterPort( int port, string name, int type );
-        virtual int            GetParameterPortType( int port );
+        //! All ports must be initialized with InitializeInputPort BEFORE this method is called.
+        virtual int              FillInputPortInformation( int port, vtkInformation* info );
 
-        virtual void           SetDoubleParameter( int port, double value );
-        virtual double         GetDoubleParameter( int port );
+        //! Returns the port number for a given parameter string.
+        virtual int              GetInputPortNumber( string name );
 
-        virtual void           SetIntParameter( int port, int value );
-        virtual int            GetIntParameter( int port );
+        //! This method sets up the inputs for FillInputPortInformation. MUST BE CALLED IN CONSTRUCTOR
+        virtual void             InitializeInputPort( int port, string name, int type );
+        virtual int              GetInputPortType( int port );
 
-        virtual void           SetStringParameter( int port, string value );
-        virtual string         GetStringParameter( int port);
+        virtual void             SetDoubleParameter( int port, double value );
+        virtual double           GetDoubleParameter( int port );
 
-        int            firstParameterPort;
-        int            numberOfParameters;
+        virtual void             SetIntParameter( int port, int value );
+        virtual int              GetIntParameter( int port );
+
+        virtual void             SetStringParameter( int port, string value );
+        virtual string           GetStringParameter( int port);
+
+        //! Setter that converts a filename into an svkImageData object
+        virtual void             SetMRImageParameter( int port, string filename );
+        virtual svkMriImageData* GetMRImageParameter( int port);
+
+        //! Stores the names for each parameter. Used to search the XML and print the state.
         vector<string> parameterNames;
 
+        //! Stores the types for each parameter.
+        vector<int>    parameterTypes;
+
     private:
-
-
 
 };
 
