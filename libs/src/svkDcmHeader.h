@@ -744,6 +744,8 @@ class svkDcmHeader: public vtkObject
                             svkDcmHeader::DimensionVector* loopIndex, int cellID); 
         static int      GetCellIDFromDimensionVectorIndex( svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionVector* loopIndex); 
+        static int      GetSpatialCellIDFromDimensionVectorIndex( svkDcmHeader::DimensionVector* dimensionVector, 
+                            svkDcmHeader::DimensionVector* loopIndex); 
 
         int             GetNumberOfFramesInDimension( int dimensionIndex ); 
         static int      GetNumberOfCells(svkDcmHeader::DimensionVector* dimensionVector);

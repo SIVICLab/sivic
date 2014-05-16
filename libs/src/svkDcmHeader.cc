@@ -3253,3 +3253,27 @@ void svkDcmHeader::GetSpatialDimensions(svkDcmHeader::DimensionVector* dimension
 }
 
 
+/*
+ *  Given a loop vector (DimensionIndexVector with values for current index, 
+ *  return the "spatial" index assuming the data is only 3D: 
+ */
+int svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* loopIndex) 
+{
+    int cellIndex = 0; 
+
+    for ( int dimension = 0; dimension < 3;  dimension++ ) {
+
+        //  get sum of inner loops relative to current dimension: 
+        int innerSize = 1; // default for innermost loop
+        for ( int innerDimension = 0; innerDimension < dimension; innerDimension++ ) {
+            innerSize *= ( svkDcmHeader::GetDimensionVectorValue(dimensionVector, innerDimension) + 1); 
+        }
+
+        cellIndex += innerSize * svkDcmHeader::GetDimensionVectorValue(loopIndex, dimension); 
+
+    }
+
+    return cellIndex; 
+
+
+}
