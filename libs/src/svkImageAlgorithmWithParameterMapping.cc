@@ -71,14 +71,14 @@ svkImageAlgorithmWithParameterMapping::~svkImageAlgorithmWithParameterMapping()
 
 
 /*!
- * Fills the input port information for all the input parameter ports.
+ * Fills the input port information for all the input ports.
  */
 int svkImageAlgorithmWithParameterMapping::FillInputPortInformation( int port, vtkInformation* info )
 {
     this->Superclass::FillInputPortInformation( port, info );
     if( port < this->GetNumberOfInputPorts() ) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
-                svkImageAlgorithmWithParameterMapping::GetClassTypeFromDataType(this->parameterTypes[port]).c_str());
+                svkImageAlgorithmWithParameterMapping::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
     }
 
     return 1;
@@ -88,7 +88,7 @@ int svkImageAlgorithmWithParameterMapping::FillInputPortInformation( int port, v
 /*!
  * Extracts input port parameters from an XML element and sets them.
  */
-void svkImageAlgorithmWithParameterMapping::SetParametersFromXML( vtkXMLDataElement* element )
+void svkImageAlgorithmWithParameterMapping::SetInputPortsFromXML( vtkXMLDataElement* element )
 {
     vtkIndent indent;
     if( element != NULL ) {
@@ -138,7 +138,7 @@ string svkImageAlgorithmWithParameterMapping::GetInputPortName( int port )
 {
     string parameterName;
     if( port >= 0 && port < this->GetNumberOfInputPorts() ) {
-        parameterName = this->parameterNames[port];
+        parameterName = this->inputPortNames[port];
     } else {
         cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
     }
@@ -153,7 +153,7 @@ int svkImageAlgorithmWithParameterMapping::GetInputPortNumber( string name )
 {
     int port = -1;
     for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
-        if( name == this->parameterNames[i]) {
+        if( name == this->inputPortNames[i]) {
             port = i;
         }
     }
@@ -173,14 +173,14 @@ void svkImageAlgorithmWithParameterMapping::InitializeInputPort( int port, strin
     // Only initialize a given input port parameter once.
     if( this->GetInput( port ) == NULL ) {
         // Make sure the parameter name array is large enough to hold the new name
-        if( this->parameterTypes.size() != this->GetNumberOfInputPorts()) {
-            this->parameterTypes.resize( this->GetNumberOfInputPorts() );
+        if( this->inputPortTypes.size() != this->GetNumberOfInputPorts()) {
+            this->inputPortTypes.resize( this->GetNumberOfInputPorts() );
         }
-        if( this->parameterNames.size() != this->GetNumberOfInputPorts()) {
-            this->parameterNames.resize( this->GetNumberOfInputPorts() );
+        if( this->inputPortNames.size() != this->GetNumberOfInputPorts()) {
+            this->inputPortNames.resize( this->GetNumberOfInputPorts() );
         }
-        this->parameterTypes[port] = type;
-        this->parameterNames[port] = name;
+        this->inputPortTypes[port] = type;
+        this->inputPortNames[port] = name;
     }
 }
 
@@ -190,8 +190,8 @@ void svkImageAlgorithmWithParameterMapping::InitializeInputPort( int port, strin
  */
 int svkImageAlgorithmWithParameterMapping::GetInputPortType( int port )
 {
-    if( port < this->parameterTypes.size()) {
-        return this->parameterTypes[port];
+    if( port < this->inputPortTypes.size()) {
+        return this->inputPortTypes[port];
     } else {
         return -1;
     }

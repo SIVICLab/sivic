@@ -50,11 +50,8 @@
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
-#include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
 #include <svkUtils.h>
 #include <svkDouble.h>
 #include <svkString.h>
@@ -62,6 +59,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 
+//! vtk types are defined this way, so we'll keep with the tradition to add our types
 #define SVK_MR_IMAGE_DATA  1000
 #define SVK_4D_IMAGE_DATA  1001
 
@@ -89,7 +87,7 @@ class svkImageAlgorithmWithParameterMapping : public svkImageAlgorithm
 
 
         //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
-        virtual void           SetParametersFromXML( vtkXMLDataElement* element );
+        virtual void           SetInputPortsFromXML( vtkXMLDataElement* element );
 
         //! Prints all input parameters set.
         void                   PrintSelf( ostream &os, vtkIndent indent );
@@ -129,10 +127,10 @@ class svkImageAlgorithmWithParameterMapping : public svkImageAlgorithm
         virtual svkMriImageData* GetMRImageParameter( int port);
 
         //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string> parameterNames;
+        vector<string> inputPortNames;
 
-        //! Stores the types for each parameter.
-        vector<int>    parameterTypes;
+        //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
+        vector<int>    inputPortTypes;
 
     private:
 

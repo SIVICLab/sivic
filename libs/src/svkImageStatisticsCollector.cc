@@ -212,7 +212,7 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
             // Get the next filter
             svkImageAlgorithmWithParameterMapping* filter = GetAlgorithmForFilterName(filterParameters->GetName());
             if( filter != NULL) {
-                filter->SetParametersFromXML( filterParameters );
+                filter->SetInputPortsFromXML( filterParameters );
                 filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
 
                 // RUN THE ALGORITHM
