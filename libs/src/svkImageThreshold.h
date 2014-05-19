@@ -58,6 +58,7 @@
 #include <vtkCharArray.h>
 #include <svkUtils.h>
 #include <svkImageAlgorithmWithParameterMapping.h>
+#include <svkIdfVolumeWriter.h>
 
 
 namespace svk {

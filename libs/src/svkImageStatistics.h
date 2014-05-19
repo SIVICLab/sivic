@@ -72,14 +72,23 @@ class svkImageStatistics : public vtkObject
   
         // vtk initialization 
         static svkImageStatistics* New();  
-        static void GenerateDefaultConfig( vtkXMLDataElement* config );
 
+        //! The input is the image upon which to calculate the statistics
         void SetInput( svkMriImageData* image );
+
+        //! The roi is the region within which to calculate the statistics. Any value >= 1 is considered in the roi.
         void SetROI( svkMriImageData* roi );
+
+        //! Sets the XML configuration that determines which statistics are to be computed and any parameters necessary.
         void SetConfig( vtkXMLDataElement* config );
+
+        //! Updates the algrothim, computes the statistics.
         void Update( );
-        void GetImageAccumulateStats( svkMriImageData* data, svkMriImageData* roi, vtkXMLDataElement* stats );
+
+        //! Gets the results as xml. This method executes a DeepCopy on the provided input.
         void GetXMLResults( vtkXMLDataElement* results );
+
+        //! Prints the statistics in XML format.
         void PrintStatistics( );
 
 
@@ -89,12 +98,14 @@ class svkImageStatistics : public vtkObject
         svkImageStatistics();
        ~svkImageStatistics();
 
-        string              configFlineName;
+        void Execute( );
+
         vtkXMLDataElement*  config;
         vtkXMLDataElement*  results;
         svkMriImageData*    image;
         svkMriImageData*    roi;
         vtkImageAccumulate* accumulator;
+
         
 
 };

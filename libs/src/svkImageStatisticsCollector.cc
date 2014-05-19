@@ -57,6 +57,21 @@ svkImageStatisticsCollector::svkImageStatisticsCollector()
 //! Destructor
 svkImageStatisticsCollector::~svkImageStatisticsCollector()
 {
+    if( this->lastFilter != NULL ) {
+        this->lastFilter->Delete();
+        this->lastFilter = NULL;
+    }
+    if( this->reader != NULL ) {
+        this->reader->Delete();
+        this->reader = NULL;
+    }
+    map<string,svkMriImageData*>::iterator imageHashIter;
+    for (imageHashIter = this->maps.begin(); imageHashIter != this->maps.end(); ++imageHashIter) {
+        imageHashIter->second->Delete();
+    }
+    for (imageHashIter = this->rois.begin(); imageHashIter != this->rois.end(); ++imageHashIter) {
+        imageHashIter->second->Delete();
+    }
 }
 
 
@@ -74,7 +89,7 @@ void svkImageStatisticsCollector::SetXMLConfiguration( vtkXMLDataElement* config
 
 
 /*!
- * Method gets the results.
+ * Method computes and returns the results in xml.
  */
 void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
 {
@@ -120,6 +135,10 @@ void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
 }
 
 
+/*!
+ * Method combines the basename with the 'suffix' and 'directory' tags found in the given
+ * vtkXMLDataElement to read an svkImageData object which is then returned.
+ */
 svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* imageElement )
 {
     svkImageData* image = NULL;
@@ -152,6 +171,11 @@ svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* 
 }
 
 
+/*!
+ * This method loads the Maps and ROIs from the input configuration, applies the necessary filters
+ * using svkImageStatisticsCollector::ApplyFiltersFromXML, and stores them in a hash using the label
+ * found in the ROI/MAP tag.
+ */
 svkImageData* svkImageStatisticsCollector::LoadMapsAndROIS( )
 {
     int numberOfConfigElements = this->config->GetNumberOfNestedElements();
@@ -172,34 +196,49 @@ svkImageData* svkImageStatisticsCollector::LoadMapsAndROIS( )
 }
 
 
+/*!
+ *  This method takes an svkImageData object and a vtkXMLDataElement containing the filter tags
+ *  to be applied to the data. It then returns the result of the pipeline.
+ */
 svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement )
 {
     vtkXMLDataElement* filters = imageElement->FindNestedElementWithName("filters");
-    bool filterFound = false;
+    svkImageData* filteredImage = inputImage;
     if( filters != NULL ) {
         int numberOfFilters = filters->GetNumberOfNestedElements();
         for( int i = 0; i < numberOfFilters; i++ ) {
             vtkXMLDataElement* filterParameters = filters->GetNestedElement(i);
-            if( string(filterParameters->GetName()) ==  "threshold") {
-                vtkIndent indent;
-                svkImageThreshold* threshold = svkImageThreshold::New();
 
-                threshold->SetParametersFromXML( filterParameters );
-                threshold->SetInput( svkImageThreshold::INPUT_IMAGE, inputImage);
+            // Get the next filter
+            svkImageAlgorithmWithParameterMapping* filter = GetAlgorithmForFilterName(filterParameters->GetName());
+            if( filter != NULL) {
+                filter->SetParametersFromXML( filterParameters );
+                filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
 
                 // RUN THE ALGORITHM
-                threshold->Update();
-                // TODO: How to get rid of pointers... CHECK MEMORY IS BEING FREED!
-                //inputImage->Delete();
-                inputImage = threshold->GetOutput();
-                inputImage->Register(this);
-                threshold->Delete();
-                filterFound = true;
+                filter->Update();
+                filteredImage = filter->GetOutput();
+
+                // Let's hold onto a pointer of the last filter so the filteredImage does not get freed early
+                if( this->lastFilter != NULL ) {
+                    this->lastFilter->Delete();
+                }
+                this->lastFilter = filter;
             }
         }
     }
-    if( !filterFound ) {
-        inputImage->Register(this);
+    return filteredImage;
+}
+
+
+/*!
+ * Factory method for getting the algorithms to be used in the statistics collection.
+ */
+svkImageAlgorithmWithParameterMapping* svkImageStatisticsCollector::GetAlgorithmForFilterName( string filterName )
+{
+    svkImageAlgorithmWithParameterMapping* algorithm;
+    if( filterName == "threshold") {
+        algorithm = svkImageThreshold::New();
     }
-    return inputImage;
+    return algorithm;
 }
