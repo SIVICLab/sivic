@@ -54,7 +54,7 @@
 #include <svkMriImageData.h>
 #include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
-#include <svkImageAlgorithmWithParameterMapping.h>
+#include <svkXMLImageAlgorithm.h>
 #include <svkIdfVolumeWriter.h>
 
 namespace svk {
@@ -93,26 +93,26 @@ class svkImageStatisticsCollector : public vtkObject
         svkImageStatisticsCollector();
        ~svkImageStatisticsCollector();
 
+       //! This method loads all Images and rois applying any necessary filters using  svkImageStatisticsCollector::ApplyFiltersFromXML
+       svkImageData* LoadImagesAndROIS( );
+
        //! This method reads in an image from the input XML
        svkImageData* ReadImageFromXML( vtkXMLDataElement* imageElement );
-
-       //! This method loads all Maps and rois applying any necessary filters using  svkImageStatisticsCollector::ApplyFiltersFromXML
-       svkImageData* LoadMapsAndROIS( );
 
        //! Reads the filters for an ROI or a map, instantiates and runs the algroithm, then returns the output.
        svkImageData* ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement );
 
        //! Takes a filter name and instantiates an svkImageAlgorithm
-       svkImageAlgorithmWithParameterMapping* GetAlgorithmForFilterName( string filterName );
+       svkXMLImageAlgorithm* GetAlgorithmForFilterName( string filterName );
 
        vtkXMLDataElement*                     config;
        char*                                  RootName;
        svkImageReader2*                       reader;
        map<string, svkMriImageData*>          rois;
-       map<string, svkMriImageData*>          maps;
+       map<string, svkMriImageData*>          images;
 
        // This just hold temporary pointers to help manage memory release.
-       svkImageAlgorithmWithParameterMapping* lastFilter;
+       svkXMLImageAlgorithm* lastFilter;
 
 };
 

@@ -66,7 +66,7 @@ svkImageStatisticsCollector::~svkImageStatisticsCollector()
         this->reader = NULL;
     }
     map<string,svkMriImageData*>::iterator imageHashIter;
-    for (imageHashIter = this->maps.begin(); imageHashIter != this->maps.end(); ++imageHashIter) {
+    for (imageHashIter = this->images.begin(); imageHashIter != this->images.end(); ++imageHashIter) {
         imageHashIter->second->Delete();
     }
     for (imageHashIter = this->rois.begin(); imageHashIter != this->rois.end(); ++imageHashIter) {
@@ -107,16 +107,18 @@ void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
     timeString = timeString.substr(0, timeString.size()-1);
     results->SetAttribute("date", timeString.c_str());
 
-    this->LoadMapsAndROIS( );
+    this->LoadImagesAndROIS( );
 
     map<string,svkMriImageData*>::iterator mapIter;
     map<string,svkMriImageData*>::iterator roiIter;
-    for (mapIter = this->maps.begin(); mapIter != this->maps.end(); ++mapIter) {
+    for (mapIter = this->images.begin(); mapIter != this->images.end(); ++mapIter) {
         for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
             svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            statsCalculator->SetConfig(this->config->FindNestedElementWithName("measures"));
-            statsCalculator->SetInput( mapIter->second );
-            statsCalculator->SetROI( roiIter->second );
+            cout << "SETTING INPUTS..." << endl;
+            statsCalculator->SetInputPortsFromXML(this->config->FindNestedElementWithName("measures")->FindNestedElementWithName("svkImageStatistics"));
+            statsCalculator->SetInput(svkImageStatistics::INPUT_IMAGE, mapIter->second );
+            statsCalculator->SetInput(svkImageStatistics::INPUT_ROI, roiIter->second );
+            cout << "SETTING UPDATING..." << endl;
             statsCalculator->Update();
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
@@ -172,11 +174,11 @@ svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* 
 
 
 /*!
- * This method loads the Maps and ROIs from the input configuration, applies the necessary filters
+ * This method loads the images and ROIs from the input configuration, applies the necessary filters
  * using svkImageStatisticsCollector::ApplyFiltersFromXML, and stores them in a hash using the label
  * found in the ROI/MAP tag.
  */
-svkImageData* svkImageStatisticsCollector::LoadMapsAndROIS( )
+svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
 {
     int numberOfConfigElements = this->config->GetNumberOfNestedElements();
     for( int i = 0; i < numberOfConfigElements; i++ ) {
@@ -186,11 +188,13 @@ svkImageData* svkImageStatisticsCollector::LoadMapsAndROIS( )
             string label = element->GetAttribute("label");
             svkImageData* filteredData = this->ApplyFiltersFromXML( roi, element );
             this->rois[label] = svkMriImageData::SafeDownCast(filteredData);
+            this->rois[label]->Register(this);
         } else if( string(element->GetName()) ==  "MAP") {
             svkImageData* map = this->ReadImageFromXML( element );
             string label = element->GetAttribute("label");
             svkImageData* filteredData = this->ApplyFiltersFromXML( map, element );
-            this->maps[label] = svkMriImageData::SafeDownCast(filteredData);
+            this->images[label] = svkMriImageData::SafeDownCast(filteredData);
+            this->images[label]->Register(this);
         }
     }
 }
@@ -210,7 +214,7 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
             vtkXMLDataElement* filterParameters = filters->GetNestedElement(i);
 
             // Get the next filter
-            svkImageAlgorithmWithParameterMapping* filter = GetAlgorithmForFilterName(filterParameters->GetName());
+            svkXMLImageAlgorithm* filter = GetAlgorithmForFilterName(filterParameters->GetName());
             if( filter != NULL) {
                 filter->SetInputPortsFromXML( filterParameters );
                 filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
@@ -224,6 +228,7 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
                     this->lastFilter->Delete();
                 }
                 this->lastFilter = filter;
+                cout << "Running Algorithm:" << *filter << endl;
             }
         }
     }
@@ -234,10 +239,11 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
 /*!
  * Factory method for getting the algorithms to be used in the statistics collection.
  */
-svkImageAlgorithmWithParameterMapping* svkImageStatisticsCollector::GetAlgorithmForFilterName( string filterName )
+svkXMLImageAlgorithm* svkImageStatisticsCollector::GetAlgorithmForFilterName( string filterName )
 {
-    svkImageAlgorithmWithParameterMapping* algorithm;
-    if( filterName == "threshold") {
+    svkXMLImageAlgorithm* algorithm;
+    // TODO: Replace this with an algorithm factory method...
+    if( filterName == "svkImageThreshold") {
         algorithm = svkImageThreshold::New();
     }
     return algorithm;

@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkXMLInputInterpreter.cc $
+ *  $Rev: 1950 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-05-19 15:31:12 -0700 (Mon, 19 May 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -41,16 +41,18 @@
 
 
 
-#include <svkImageAlgorithmWithParameterMapping.h>
+#include <svkXMLInputInterpreter.h>
 
 
 using namespace svk;
 
+vtkCxxRevisionMacro(svkXMLInputInterpreter, "$Rev: 1949 $");
+vtkStandardNewMacro(svkXMLInputInterpreter);
 
 /*!
  *
  */
-svkImageAlgorithmWithParameterMapping::svkImageAlgorithmWithParameterMapping()
+svkXMLInputInterpreter::svkXMLInputInterpreter()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -64,103 +66,18 @@ svkImageAlgorithmWithParameterMapping::svkImageAlgorithmWithParameterMapping()
 /*!
  *
  */
-svkImageAlgorithmWithParameterMapping::~svkImageAlgorithmWithParameterMapping()
+svkXMLInputInterpreter::~svkXMLInputInterpreter()
 {
-    vtkDebugMacro(<<this->GetClassName()<<"::~svkImageAlgorithmWithParameterMapping()");
+    vtkDebugMacro(<<this->GetClassName()<<"::~svkXMLInputInterpreter()");
 }
 
 
 /*!
- * Fills the input port information for all the input ports.
+ * Sets the algorithm that the inputs will be passed on to.
  */
-int svkImageAlgorithmWithParameterMapping::FillInputPortInformation( int port, vtkInformation* info )
+void svkXMLInputInterpreter::SetAlgorithm( vtkAlgorithm* algo )
 {
-    this->Superclass::FillInputPortInformation( port, info );
-    if( port < this->GetNumberOfInputPorts() ) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
-                svkImageAlgorithmWithParameterMapping::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
-    }
-
-    return 1;
-}
-
-
-/*!
- * Extracts input port parameters from an XML element and sets them.
- */
-void svkImageAlgorithmWithParameterMapping::SetInputPortsFromXML( vtkXMLDataElement* element )
-{
-    vtkIndent indent;
-    if( element != NULL ) {
-        for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
-            vtkXMLDataElement* parameterElement =  element->FindNestedElementWithName(this->GetInputPortName(i).c_str());
-            if( parameterElement != NULL ) {
-                string parameterStringValue = string(parameterElement->GetCharacterData());
-                int dataType = this->GetInputPortType( i );
-                if( dataType == VTK_DOUBLE ) {
-                    this->SetDoubleParameter(i, svkUtils::StringToDouble( parameterStringValue ));
-                } else if ( dataType == VTK_INT ) {
-                    this->SetIntParameter(i, svkUtils::StringToInt( parameterStringValue ));
-                } else if ( dataType == VTK_STRING ) {
-                    this->SetStringParameter(i, parameterStringValue );
-                } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-                    this->SetMRImageParameter( i, parameterStringValue );
-                }
-            }
-        }
-    }
-}
-
-
-/*!
- *  This method returns the classname associated with a given data type.
- */
-string svkImageAlgorithmWithParameterMapping::GetClassTypeFromDataType( int type )
-{
-    string classType;
-    if( type == VTK_DOUBLE ) {
-        classType = "svkDouble";
-    } else if ( type == VTK_INT ) {
-        classType = "svkInt";
-    } else if ( type == VTK_STRING ) {
-        classType = "svkString";
-    } else if ( type == SVK_MR_IMAGE_DATA ) {
-        classType = "svkMriImageData";
-    }
-    return classType;
-}
-
-
-/*!
- * Returns the name of the given parameter port.
- */
-string svkImageAlgorithmWithParameterMapping::GetInputPortName( int port )
-{
-    string parameterName;
-    if( port >= 0 && port < this->GetNumberOfInputPorts() ) {
-        parameterName = this->inputPortNames[port];
-    } else {
-        cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
-    }
-    return parameterName;
-}
-
-
-/*!
- * Returns the port number for the given parameter name. Returns -1 if the port does not exist.
- */
-int svkImageAlgorithmWithParameterMapping::GetInputPortNumber( string name )
-{
-    int port = -1;
-    for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
-        if( name == this->inputPortNames[i]) {
-            port = i;
-        }
-    }
-    if( port == -1 ) {
-        cout << "ERROR: No input parameter port named " << name << " found!" << endl;
-    }
-    return port;
+    this->algo = algo;
 }
 
 
@@ -168,7 +85,7 @@ int svkImageAlgorithmWithParameterMapping::GetInputPortNumber( string name )
  *  This method initializes a given input port parameter. This MUST be called in the constructor
  *  of the subclass, and only there before setting any of the inputs.
  */
-void svkImageAlgorithmWithParameterMapping::InitializeInputPort( int port, string name, int type )
+void svkXMLInputInterpreter::InitializeInputPort( int port, string name, int type )
 {
     // Only initialize a given input port parameter once.
     if( this->GetInput( port ) == NULL ) {
@@ -181,29 +98,66 @@ void svkImageAlgorithmWithParameterMapping::InitializeInputPort( int port, strin
         }
         this->inputPortTypes[port] = type;
         this->inputPortNames[port] = name;
+        if( type == SVK_BOOL) {
+            svkBool* inputBool = svkBool::New();
+            inputBool->SetValue(false);
+            this->SetInput(port, inputBool);
+            inputBool->Delete();
+        }
     }
 }
 
 
 /*!
- * Returns the type of a given input port parameter.
+ * Extracts input port parameters from an XML element and sets them.
  */
-int svkImageAlgorithmWithParameterMapping::GetInputPortType( int port )
+void svkXMLInputInterpreter::SetInputPortsFromXML( vtkXMLDataElement* element )
 {
-    if( port < this->inputPortTypes.size()) {
-        return this->inputPortTypes[port];
-    } else {
-        return -1;
+    vtkIndent indent;
+    if( element != NULL ) {
+        for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
+            vtkXMLDataElement* parameterElement =  element->FindNestedElementWithName(this->GetInputPortName(i).c_str());
+            if( parameterElement != NULL ) {
+                string parameterStringValue = string(parameterElement->GetCharacterData());
+                int dataType = this->GetInputPortType( i );
+                if( dataType == SVK_DOUBLE ) {
+                    this->SetDoubleInputPortValue(i, svkUtils::StringToDouble( parameterStringValue ));
+                } else if ( dataType == SVK_INT ) {
+                    this->SetIntInputPortValue(i, svkUtils::StringToInt( parameterStringValue ));
+                } else if ( dataType == SVK_STRING ) {
+                    this->SetStringInputPortValue(i, parameterStringValue );
+                } else if ( dataType == SVK_BOOL ) {
+                    //TODO: How should bools be handled in the XML???
+                    this->SetBoolInputPortValue(i, true );
+                } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+                    this->SetMRImageInputPortValue( i, parameterStringValue );
+                }
+            }
+        }
     }
+}
+
+
+/*!
+ * Fills the input port information for all the input ports.
+ */
+int svkXMLInputInterpreter::FillInputPortInformation( int port, vtkInformation* info )
+{
+    if( port < this->GetNumberOfInputPorts() ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
+                svkXMLInputInterpreter::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
+    }
+
+    return 1;
 }
 
 
 /*!
  * Parameter port setter.
  */
-void svkImageAlgorithmWithParameterMapping::SetDoubleParameter( int port, double value )
+void svkXMLInputInterpreter::SetDoubleInputPortValue( int port, double value )
 {
-    if( this->GetInputPortType(port) == VTK_DOUBLE ) {
+    if( this->GetInputPortType(port) == SVK_DOUBLE ) {
         vtkDataObject* parameter =  this->GetInput( port );
         if( parameter == NULL ) {
             parameter = svkDouble::New();
@@ -221,9 +175,9 @@ void svkImageAlgorithmWithParameterMapping::SetDoubleParameter( int port, double
 /*!
  * Parameter port getter.
  */
-double svkImageAlgorithmWithParameterMapping::GetDoubleParameter( int port )
+double svkXMLInputInterpreter::GetDoubleInputPortValue( int port )
 {
-    if( this->GetInputPortType(port) == VTK_DOUBLE ) {
+    if( this->GetInputPortType(port) == SVK_DOUBLE ) {
         vtkDataObject* parameter =  this->GetInput( port );
         return svkDouble::SafeDownCast( parameter )->GetValue();
     } else {
@@ -235,10 +189,10 @@ double svkImageAlgorithmWithParameterMapping::GetDoubleParameter( int port )
 /*!
  * Parameter port setter.
  */
-void svkImageAlgorithmWithParameterMapping::SetIntParameter( int port, int value )
+void svkXMLInputInterpreter::SetIntInputPortValue( int port, int value )
 {
     // CHECK THAT THIS IS THE CORRECT TYPE FIRS
-    if( this->GetInputPortType(port) == VTK_INT ) {
+    if( this->GetInputPortType(port) == SVK_INT ) {
         vtkDataObject* parameter =  this->GetInput( port );
         if( parameter == NULL ) {
             parameter = svkInt::New();
@@ -256,9 +210,9 @@ void svkImageAlgorithmWithParameterMapping::SetIntParameter( int port, int value
 /*!
  * Parameter port getter.
  */
-int svkImageAlgorithmWithParameterMapping::GetIntParameter( int port )
+int svkXMLInputInterpreter::GetIntInputPortValue( int port )
 {
-    if( this->GetInputPortType(port) == VTK_INT ) {
+    if( this->GetInputPortType(port) == SVK_INT ) {
         vtkDataObject* parameter =  this->GetInput( port );
         return svkInt::SafeDownCast( parameter )->GetValue();
     } else {
@@ -270,9 +224,9 @@ int svkImageAlgorithmWithParameterMapping::GetIntParameter( int port )
 /*!
  * Parameter port setter.
  */
-void svkImageAlgorithmWithParameterMapping::SetStringParameter( int port, string value )
+void svkXMLInputInterpreter::SetStringInputPortValue( int port, string value )
 {
-    if( this->GetInputPortType(port) == VTK_STRING ) {
+    if( this->GetInputPortType(port) == SVK_STRING ) {
         vtkDataObject* parameter =  this->GetInput( port );
         if( parameter == NULL ) {
             parameter = svkString::New();
@@ -290,9 +244,9 @@ void svkImageAlgorithmWithParameterMapping::SetStringParameter( int port, string
 /*!
  * Parameter port getter.
  */
-string svkImageAlgorithmWithParameterMapping::GetStringParameter( int port )
+string svkXMLInputInterpreter::GetStringInputPortValue( int port )
 {
-    if( this->GetInputPortType(port) == VTK_STRING ) {
+    if( this->GetInputPortType(port) == SVK_STRING ) {
         vtkDataObject* parameter =  this->GetInput( port );
         return svkString::SafeDownCast( parameter )->GetValue();
     } else {
@@ -301,7 +255,44 @@ string svkImageAlgorithmWithParameterMapping::GetStringParameter( int port )
 }
 
 
-void svkImageAlgorithmWithParameterMapping::SetMRImageParameter( int port, string filename )
+/*!
+ * Parameter port setter.
+ */
+void svkXMLInputInterpreter::SetBoolInputPortValue( int port, bool value )
+{
+    if( this->GetInputPortType(port) == SVK_BOOL ) {
+        vtkDataObject* parameter =  this->GetInput( port );
+        if( parameter == NULL ) {
+            parameter = svkBool::New();
+            this->SetInput(port, parameter);
+            parameter->Delete();
+            parameter =  this->GetInput( port );
+        }
+        svkBool::SafeDownCast( parameter )->SetValue(value);
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
+    }
+}
+
+
+/*!
+ * Parameter port getter.
+ */
+bool svkXMLInputInterpreter::GetBoolInputPortValue( int port )
+{
+    if( this->GetInputPortType(port) == SVK_BOOL ) {
+        vtkDataObject* parameter =  this->GetInput( port );
+        return svkBool::SafeDownCast( parameter )->GetValue();
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
+    }
+}
+
+
+/*!
+ * Sets an MRI image port. Input is a filename and a reader will be instantiated to read the file.
+ */
+void svkXMLInputInterpreter::SetMRImageInputPortValue( int port, string filename )
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
         // READ THE IMAGE
@@ -320,7 +311,10 @@ void svkImageAlgorithmWithParameterMapping::SetMRImageParameter( int port, strin
 }
 
 
-svkMriImageData* svkImageAlgorithmWithParameterMapping::GetMRImageParameter( int port )
+/*!
+ * Simple input port getter.
+ */
+svkMriImageData* svkXMLInputInterpreter::GetMRImageInputPortValue( int port )
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
         return svkMriImageData::SafeDownCast( this->GetInput(port) );
@@ -328,14 +322,114 @@ svkMriImageData* svkImageAlgorithmWithParameterMapping::GetMRImageParameter( int
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMriImageData. " << endl;
         return NULL;
     }
+}
+
+
+/*!
+ *  This method returns the classname associated with a given data type.
+ */
+string svkXMLInputInterpreter::GetClassTypeFromDataType( int type )
+{
+    string classType;
+    if( type == SVK_DOUBLE ) {
+        classType = "svkDouble";
+    } else if ( type == SVK_INT ) {
+        classType = "svkInt";
+    } else if ( type == SVK_STRING ) {
+        classType = "svkString";
+    } else if ( type == SVK_BOOL ) {
+        classType = "svkBool";
+    } else if ( type == SVK_MR_IMAGE_DATA ) {
+        classType = "svkMriImageData";
+    }
+    return classType;
+}
+
+
+/*!
+ * Returns the name of the given parameter port.
+ */
+string svkXMLInputInterpreter::GetInputPortName( int port )
+{
+    string parameterName;
+    if( port >= 0 && port < this->GetNumberOfInputPorts() ) {
+        parameterName = this->inputPortNames[port];
+    } else {
+        cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
+    }
+    return parameterName;
+}
+
+
+/*!
+ * Returns the port number for the given parameter name. Returns -1 if the port does not exist.
+ */
+int svkXMLInputInterpreter::GetInputPortNumber( string name )
+{
+    int port = -1;
+    for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
+        if( name == this->inputPortNames[i]) {
+            port = i;
+        }
+    }
+    if( port == -1 ) {
+        cout << "ERROR: No input parameter port named " << name << " found!" << endl;
+    }
+    return port;
+}
+
+
+/*!
+ * Returns the type of a given input port parameter.
+ */
+int svkXMLInputInterpreter::GetInputPortType( int port )
+{
+    if( port < this->inputPortTypes.size()) {
+        return this->inputPortTypes[port];
+    } else {
+        return -1;
+    }
+}
+
+
+/*!
+ * Gets the number of input ports from the algorithm.
+ */
+int svkXMLInputInterpreter::GetNumberOfInputPorts()
+{
+    return this->algo->GetNumberOfInputPorts();
+}
+
+
+/*!
+ * Utility method.
+ */
+vtkDataObject* svkXMLInputInterpreter::GetInput( int port )
+{
+    return this->algo->GetExecutive()->GetInputData(port, 0);
+}
+
+
+/*!
+ * Utility method.
+ */
+vtkDataObject* svkXMLInputInterpreter::SetInput( int port, vtkDataObject* input )
+{
+    if(input) {
+      this->algo->SetInputConnection(port, input->GetProducerPort());
+    } else {
+      // Setting a NULL input removes the connection.
+      this->algo->SetInputConnection(port, 0);
+    }
 
 }
+
 
 /*!
  *  PrintSelf method calls parent class PrintSelf, then prints all parameters.
  *
  */
-void svkImageAlgorithmWithParameterMapping::PrintSelf( ostream &os, vtkIndent indent )
+void svkXMLInputInterpreter::PrintSelf( ostream &os, vtkIndent indent )
 {
     Superclass::PrintSelf( os, indent );
     os << indent << "Svk Parameters:" << endl;

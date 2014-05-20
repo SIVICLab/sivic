@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkBool.h $
+ *  $Rev: 1944 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-05-16 15:17:27 -0700 (Fri, 16 May 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,87 +40,49 @@
  */
 
 
-#ifndef SVK_IMAGE_THRESHOLD_H
-#define SVK_IMAGE_THRESHOLD_H
+#ifndef SVK_BOOL_H
+#define SVK_BOOL_H
 
 
-#include <vtkObject.h>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-
-#include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
-#include <svkUtils.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkIdfVolumeWriter.h>
-
+#include <vtkDataObject.h>
 
 namespace svk {
 
 
 using namespace std;
 
-
-/*! 
- *  This class handles thresholding images.
+/*!
+ *  This class is a container for a primitive bool. It is a subclass of vtkDataObject so it can
+ *  be used in input ports of algorithms.
  */
-class svkImageThreshold : public svkXMLImageAlgorithm
+class svkBool : public vtkDataObject
 {
 
     public:
 
-        typedef enum {
-            INPUT_IMAGE = 0,
-            THRESHOLD_MAX,
-            THRESHOLD_MIN ,
-            MASK_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
-        } svkImageThresholdParameters;
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkBool, vtkDataObject );
+  
+        // vtk initialization 
+        static svkBool* New();  
 
-        static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkXMLImageAlgorithm);
+        bool GetValue( );
+        void   SetValue( bool value);
 
-        // Required by parent class.
-        void   SetupParameterPorts();
+	protected:
 
-        void   SetThresholdMax( double max );
-        double GetThresholdMax( );
+        svkBool();
+       ~svkBool();
 
-        void   SetThresholdMin( double min );
-        double GetThresholdMin( );
-
-        void   SetMaskSeriesDescription( string description );
-        string GetMaskSeriesDescription( );
-
-        void   SetMaskOutputValue( int value );
-        int    GetMaskOutputValue( );
-
-    protected:
-
-        svkImageThreshold();
-        ~svkImageThreshold();
-
-        virtual int RequestData( 
-                        vtkInformation* request, 
-                        vtkInformationVector** inputVector, 
-                        vtkInformationVector* outputVector );
-
-
-
-    private:
-
+        bool value;
 
 };
+
 
 
 }   //svk
 
 
-#endif //SVK_IMAGE_THRESHOLD_H
 
+#endif //SVK_BOOL_H

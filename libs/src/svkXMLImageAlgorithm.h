@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_THRESHOLD_H
-#define SVK_IMAGE_THRESHOLD_H
+#ifndef SVK_XML_IMAGE_ALGORITHM_H
+#define SVK_XML_IMAGE_ALGORITHM_H
 
 
 #include <vtkObject.h>
@@ -50,16 +50,15 @@
 
 #include <svkImageData.h>
 #include <svkMriImageData.h>
-#include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
 #include <svkUtils.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkIdfVolumeWriter.h>
-
+#include <svkDouble.h>
+#include <svkString.h>
+#include <svkInt.h>
+#include <svkImageReaderFactory.h>
+#include <svkImageReader2.h>
+#include <svkXMLInputInterpreter.h>
 
 namespace svk {
 
@@ -68,53 +67,47 @@ using namespace std;
 
 
 /*! 
- *  This class handles thresholding images.
+ * This baseclass is used to support the use of the svkXMLInputInterpreter class. All parameters
+ * that control the execution of this algorithm are stored in input ports that can be set using
+ * the XML input to the svkXMLInputInterpreter class.
  */
-class svkImageThreshold : public svkXMLImageAlgorithm
+class svkXMLImageAlgorithm : public svkImageAlgorithm
 {
 
     public:
 
-        typedef enum {
-            INPUT_IMAGE = 0,
-            THRESHOLD_MAX,
-            THRESHOLD_MIN ,
-            MASK_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
-        } svkImageThresholdParameters;
+        static svkXMLImageAlgorithm* New();
+        vtkTypeRevisionMacro( svkXMLImageAlgorithm, svkImageAlgorithm);
 
-        static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkXMLImageAlgorithm);
 
-        // Required by parent class.
-        void   SetupParameterPorts();
+        //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
+        virtual void                    SetInputPortsFromXML( vtkXMLDataElement* element );
 
-        void   SetThresholdMax( double max );
-        double GetThresholdMax( );
+        //! Get the internal XML interpreter
+        virtual svkXMLInputInterpreter* GetXMLInterpreter();
 
-        void   SetThresholdMin( double min );
-        double GetThresholdMin( );
+        //! Prints all input parameters set.
+        void                            PrintSelf( ostream &os, vtkIndent indent );
 
-        void   SetMaskSeriesDescription( string description );
-        string GetMaskSeriesDescription( );
-
-        void   SetMaskOutputValue( int value );
-        int    GetMaskOutputValue( );
 
     protected:
 
-        svkImageThreshold();
-        ~svkImageThreshold();
+        svkXMLImageAlgorithm();
+        ~svkXMLImageAlgorithm();
 
-        virtual int RequestData( 
-                        vtkInformation* request, 
-                        vtkInformationVector** inputVector, 
-                        vtkInformationVector* outputVector );
+        //! All ports must be initialized through the svkXMLInputInterpreter BEFORE this method is called.
+        virtual int                     FillInputPortInformation( int port, vtkInformation* info );
 
+        //! Stores the names for each parameter. Used to search the XML and print the state.
+        vector<string> inputPortNames;
 
+        //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
+        vector<int>    inputPortTypes;
+
+        //! The interpreter used to set the input port parameters.
+        svkXMLInputInterpreter* xmlInterpreter;
 
     private:
-
 
 };
 
@@ -122,5 +115,5 @@ class svkImageThreshold : public svkXMLImageAlgorithm
 }   //svk
 
 
-#endif //SVK_IMAGE_THRESHOLD_H
+#endif //SVK_XML_IMAGE_ALGORITHM_H
 

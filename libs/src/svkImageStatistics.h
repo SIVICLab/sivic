@@ -55,6 +55,7 @@
 #include <svkMriImageData.h>
 #include <svkUtils.h>
 #include <vtkImageToImageStencil.h>
+#include <svkGenericXMLAlgorithm.h>
 #include <time.h>
 
 namespace svk {
@@ -62,28 +63,33 @@ namespace svk {
 
 using namespace std;
 
-class svkImageStatistics : public vtkObject
+class svkImageStatistics : public svkGenericXMLAlgorithm
 {
 
     public:
 
+        typedef enum {
+            INPUT_IMAGE = 0,
+            INPUT_ROI,
+            NUM_BINS ,
+            BIN_SIZE,
+            START_BIN,
+            COMPUTE_HISTOGRAM,
+            COMPUTE_MEAN,
+            COMPUTE_MAX,
+            COMPUTE_MIN,
+            COMPUTE_STDEV,
+            COMPUTE_VOLUME
+        } svkImageStatisticsParameters;
+
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatistics, vtkObject );
+        vtkTypeRevisionMacro( svkImageStatistics, svkGenericXMLAlgorithm );
   
         // vtk initialization 
         static svkImageStatistics* New();  
 
-        //! The input is the image upon which to calculate the statistics
-        void SetInput( svkMriImageData* image );
-
-        //! The roi is the region within which to calculate the statistics. Any value >= 1 is considered in the roi.
-        void SetROI( svkMriImageData* roi );
-
-        //! Sets the XML configuration that determines which statistics are to be computed and any parameters necessary.
-        void SetConfig( vtkXMLDataElement* config );
-
-        //! Updates the algrothim, computes the statistics.
-        void Update( );
+        //! Updates the algorithm, computes the statistics.
+        void UpdateJunky( );
 
         //! Gets the results as xml. This method executes a DeepCopy on the provided input.
         void GetXMLResults( vtkXMLDataElement* results );
@@ -98,13 +104,15 @@ class svkImageStatistics : public vtkObject
         svkImageStatistics();
        ~svkImageStatistics();
 
-        void Execute( );
+       virtual int RequestData(
+                       vtkInformation* request,
+                       vtkInformationVector** inputVector,
+                       vtkInformationVector* outputVector );
 
-        vtkXMLDataElement*  config;
+
         vtkXMLDataElement*  results;
-        svkMriImageData*    image;
-        svkMriImageData*    roi;
         vtkImageAccumulate* accumulator;
+
 
         
 

@@ -15,6 +15,7 @@
  *      software without specific prior written permission.
  *  
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
  *  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
@@ -26,13 +27,11 @@
  *  OF SUCH DAMAGE.
  */
 
-
-
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkBool.cc $
+ *  $Rev: 1944 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-05-16 15:17:27 -0700 (Fri, 16 May 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,87 +39,34 @@
  */
 
 
-#ifndef SVK_IMAGE_THRESHOLD_H
-#define SVK_IMAGE_THRESHOLD_H
+#include <svkBool.h>
+
+using namespace svk;
+
+vtkCxxRevisionMacro(svkBool, "$Rev: 1944 $");
+vtkStandardNewMacro(svkBool);
+
+//! Constructor
+svkBool::svkBool()
+{
+    this->value = 0;
+}
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-
-#include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
-#include <svkUtils.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkIdfVolumeWriter.h>
-
-
-namespace svk {
-
-
-using namespace std;
-
-
-/*! 
- *  This class handles thresholding images.
- */
-class svkImageThreshold : public svkXMLImageAlgorithm
+//! Destructor
+svkBool::~svkBool()
 {
 
-    public:
-
-        typedef enum {
-            INPUT_IMAGE = 0,
-            THRESHOLD_MAX,
-            THRESHOLD_MIN ,
-            MASK_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
-        } svkImageThresholdParameters;
-
-        static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkXMLImageAlgorithm);
-
-        // Required by parent class.
-        void   SetupParameterPorts();
-
-        void   SetThresholdMax( double max );
-        double GetThresholdMax( );
-
-        void   SetThresholdMin( double min );
-        double GetThresholdMin( );
-
-        void   SetMaskSeriesDescription( string description );
-        string GetMaskSeriesDescription( );
-
-        void   SetMaskOutputValue( int value );
-        int    GetMaskOutputValue( );
-
-    protected:
-
-        svkImageThreshold();
-        ~svkImageThreshold();
-
-        virtual int RequestData( 
-                        vtkInformation* request, 
-                        vtkInformationVector** inputVector, 
-                        vtkInformationVector* outputVector );
+}
 
 
-
-    private:
-
-
-};
-
-
-}   //svk
+bool svkBool::GetValue( )
+{
+    return this->value;
+}
 
 
-#endif //SVK_IMAGE_THRESHOLD_H
-
+void svkBool::SetValue( bool value )
+{ 
+    this->value = value;
+}

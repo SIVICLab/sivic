@@ -213,7 +213,9 @@ ADD_LIBRARY(
     svkImageAlgorithm.cc
     svkImageAlgorithmExecuter.cc
     svkImageThreshold.cc
-    svkImageAlgorithmWithParameterMapping.cc
+    svkXMLInputInterpreter.cc
+    svkXMLImageAlgorithm.cc
+    svkGenericXMLAlgorithm.cc
     svkDSCDeltaR2.cc
     svkImageCopy.cc
     svkQuantifyMetabolites.cc
@@ -253,6 +255,7 @@ ADD_LIBRARY(
     svkImageStatistics.cc
     svkImageStatisticsCollector.cc
     svkDouble.cc
+    svkBool.cc
     svkInt.cc
     svkString.cc
 )

@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkGenericXMLAlgorithm.cc $
+ *  $Rev: -1 $
+ *  $Author: $
+ *  $Date: $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -40,87 +40,79 @@
  */
 
 
-#ifndef SVK_IMAGE_THRESHOLD_H
-#define SVK_IMAGE_THRESHOLD_H
+
+#include <svkGenericXMLAlgorithm.h>
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+using namespace svk;
 
-#include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
-#include <svkUtils.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkIdfVolumeWriter.h>
+vtkCxxRevisionMacro(svkGenericXMLAlgorithm, "$Rev: 1949 $");
+vtkStandardNewMacro(svkGenericXMLAlgorithm);
 
-
-namespace svk {
-
-
-using namespace std;
-
-
-/*! 
- *  This class handles thresholding images.
+/*!
+ *
  */
-class svkImageThreshold : public svkXMLImageAlgorithm
+svkGenericXMLAlgorithm::svkGenericXMLAlgorithm()
 {
+#if VTK_DEBUG_ON
+    this->DebugOn();
+#endif
+    this->xmlInterpreter = svkXMLInputInterpreter::New();
+    this->xmlInterpreter->SetAlgorithm( this );
 
-    public:
+    vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-        typedef enum {
-            INPUT_IMAGE = 0,
-            THRESHOLD_MAX,
-            THRESHOLD_MIN ,
-            MASK_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
-        } svkImageThresholdParameters;
-
-        static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkXMLImageAlgorithm);
-
-        // Required by parent class.
-        void   SetupParameterPorts();
-
-        void   SetThresholdMax( double max );
-        double GetThresholdMax( );
-
-        void   SetThresholdMin( double min );
-        double GetThresholdMin( );
-
-        void   SetMaskSeriesDescription( string description );
-        string GetMaskSeriesDescription( );
-
-        void   SetMaskOutputValue( int value );
-        int    GetMaskOutputValue( );
-
-    protected:
-
-        svkImageThreshold();
-        ~svkImageThreshold();
-
-        virtual int RequestData( 
-                        vtkInformation* request, 
-                        vtkInformationVector** inputVector, 
-                        vtkInformationVector* outputVector );
+}
 
 
+/*!
+ *
+ */
+svkGenericXMLAlgorithm::~svkGenericXMLAlgorithm()
+{
+    vtkDebugMacro(<<this->GetClassName()<<"::~svkGenericXMLAlgorithm()");
+    if( this->xmlInterpreter != NULL ) {
+        this->xmlInterpreter->Delete();
+    }
+}
 
-    private:
+
+/*!
+ * Pass through method to the internal svkXMLInputInterpreter
+ */
+void svkGenericXMLAlgorithm::SetInputPortsFromXML( vtkXMLDataElement* element )
+{
+    this->xmlInterpreter->SetInputPortsFromXML(element);
+}
 
 
-};
+/*!
+ * Returns the interpreter.
+ */
+svkXMLInputInterpreter* svkGenericXMLAlgorithm::GetXMLInterpreter()
+{
+    return this->xmlInterpreter;
+}
 
 
-}   //svk
+/*!
+ *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the interpreter.
+ *
+ */
+void svkGenericXMLAlgorithm::PrintSelf( ostream &os, vtkIndent indent )
+{
+    Superclass::PrintSelf( os, indent );
+    this->xmlInterpreter->PrintSelf( os, indent );
+}
 
 
-#endif //SVK_IMAGE_THRESHOLD_H
+/*!
+ * Pass through method to the internal svkXMLInputInterpreter
+ */
+int svkGenericXMLAlgorithm::FillInputPortInformation( int port, vtkInformation* info )
+{
+    this->Superclass::FillInputPortInformation( port, info );
+    this->xmlInterpreter->FillInputPortInformation(port, info );
 
+    return 1;
+}
