@@ -88,9 +88,6 @@ class svkImageStatistics : public svkGenericXMLAlgorithm
         // vtk initialization 
         static svkImageStatistics* New();  
 
-        //! Updates the algorithm, computes the statistics.
-        void UpdateJunky( );
-
         //! Gets the results as xml. This method executes a DeepCopy on the provided input.
         void GetXMLResults( vtkXMLDataElement* results );
 

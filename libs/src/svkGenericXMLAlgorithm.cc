@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkGenericXMLAlgorithm.cc $
- *  $Rev: -1 $
- *  $Author: $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkGenericXMLAlgorithm, "$Rev: 1949 $");
+vtkCxxRevisionMacro(svkGenericXMLAlgorithm, "$Rev$");
 vtkStandardNewMacro(svkGenericXMLAlgorithm);
 
 /*!

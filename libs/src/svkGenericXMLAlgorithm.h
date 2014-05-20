@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkGenericXMLAlgorithm.h $
- *  $Rev: -1 $
- *  $Author: $
- *  $Date: $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkXMLInputInterpreter.cc $
- *  $Rev: 1950 $
- *  $Author: beckn8tor $
- *  $Date: 2014-05-19 15:31:12 -0700 (Mon, 19 May 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -46,7 +46,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkXMLInputInterpreter, "$Rev: 1949 $");
+vtkCxxRevisionMacro(svkXMLInputInterpreter, "$Rev$");
 vtkStandardNewMacro(svkXMLInputInterpreter);
 
 /*!

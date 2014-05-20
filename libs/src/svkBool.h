@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkBool.h $
- *  $Rev: 1944 $
- *  $Author: beckn8tor $
- *  $Date: 2014-05-16 15:17:27 -0700 (Fri, 16 May 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
