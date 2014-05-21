@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_STATISTICS_COLLECTOR_H
-#define SVK_IMAGE_STATISTICS_COLLECTOR_H
+#ifndef SVK_XML_IMAGE_PIPELINE_H
+#define SVK_XML_IMAGE_PIPELINE_H
 
 
 #include <stdio.h>
@@ -114,4 +114,4 @@ class svkXMLImagePipeline : public svkXMLImageAlgorithm
 
 }   //svk
 
-#endif //SVK_IMAGE_STATISTICS_COLLECTOR
+#endif //SVK_XML_IMAGE_PIPELINE_H

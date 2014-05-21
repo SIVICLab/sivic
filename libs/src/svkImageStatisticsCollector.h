@@ -55,6 +55,7 @@
 #include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
 #include <svkXMLImageAlgorithm.h>
+#include <svkXMLImagePipeline.h>
 #include <svkIdfVolumeWriter.h>
 
 namespace svk {
@@ -102,9 +103,6 @@ class svkImageStatisticsCollector : public vtkObject
        //! Reads the filters for an ROI or a map, instantiates and runs the algroithm, then returns the output.
        svkImageData* ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement );
 
-       //! Takes a filter name and instantiates an svkImageAlgorithm
-       svkXMLImageAlgorithm* GetAlgorithmForFilterName( string filterName );
-
        vtkXMLDataElement*                     config;
        char*                                  RootName;
        svkImageReader2*                       reader;
@@ -112,7 +110,7 @@ class svkImageStatisticsCollector : public vtkObject
        map<string, svkMriImageData*>          images;
 
        // This just hold temporary pointers to help manage memory release.
-       svkXMLImageAlgorithm* lastFilter;
+       svkXMLImagePipeline*                   pipelineFilter;
 
 };
 

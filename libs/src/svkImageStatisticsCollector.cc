@@ -51,15 +51,17 @@ svkImageStatisticsCollector::svkImageStatisticsCollector()
 {
     cout << "Constructing svkImageStatisticsCollector." << endl;
     this->RootName = NULL;
+    this->reader = NULL;
+    this->pipelineFilter = NULL;
 }
 
 
 //! Destructor
 svkImageStatisticsCollector::~svkImageStatisticsCollector()
 {
-    if( this->lastFilter != NULL ) {
-        this->lastFilter->Delete();
-        this->lastFilter = NULL;
+    if( this->pipelineFilter != NULL ) {
+        this->pipelineFilter->Delete();
+        this->pipelineFilter = NULL;
     }
     if( this->reader != NULL ) {
         this->reader->Delete();
@@ -204,45 +206,23 @@ svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
  */
 svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement )
 {
-    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName("filters");
-    svkImageData* filteredImage = inputImage;
+    svkImageData* filteredData = NULL;
+    if( this->pipelineFilter = NULL ) {
+        this->pipelineFilter->Delete();
+    }
+    this->pipelineFilter = svkXMLImagePipeline::New();
+    vtkIndent indent;
+    cout << "IMAGE ELEMENT XML:" << endl;
+    imageElement->PrintXML(cout, indent);
+    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName("svkXMLImagePipeline");
     if( filters != NULL ) {
-        int numberOfFilters = filters->GetNumberOfNestedElements();
-        for( int i = 0; i < numberOfFilters; i++ ) {
-            vtkXMLDataElement* filterParameters = filters->GetNestedElement(i);
-
-            // Get the next filter
-            svkXMLImageAlgorithm* filter = GetAlgorithmForFilterName(filterParameters->GetName());
-            if( filter != NULL) {
-                filter->SetInputPortsFromXML( filterParameters );
-                filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
-
-                // RUN THE ALGORITHM
-                filter->Update();
-                filteredImage = filter->GetOutput();
-
-                // Let's hold onto a pointer of the last filter so the filteredImage does not get freed early
-                if( this->lastFilter != NULL ) {
-                    this->lastFilter->Delete();
-                }
-                this->lastFilter = filter;
-                cout << "Running Algorithm:" << *filter << endl;
-            }
-        }
+        this->pipelineFilter->SetInput(svkXMLImagePipeline::INPUT_IMAGE, inputImage);
+        this->pipelineFilter->SetXMLPipeline( filters );
+        this->pipelineFilter->Update();
+        filteredData = this->pipelineFilter->GetOutput();
+    } else {
+        filteredData = inputImage;
     }
-    return filteredImage;
-}
+    return filteredData;
 
-
-/*!
- * Factory method for getting the algorithms to be used in the statistics collection.
- */
-svkXMLImageAlgorithm* svkImageStatisticsCollector::GetAlgorithmForFilterName( string filterName )
-{
-    svkXMLImageAlgorithm* algorithm;
-    // TODO: Replace this with an algorithm factory method...
-    if( filterName == "svkImageThreshold") {
-        algorithm = svkImageThreshold::New();
-    }
-    return algorithm;
 }
