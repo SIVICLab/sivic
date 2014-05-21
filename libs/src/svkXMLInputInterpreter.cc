@@ -85,7 +85,7 @@ void svkXMLInputInterpreter::SetAlgorithm( vtkAlgorithm* algo )
  *  This method initializes a given input port parameter. This MUST be called in the constructor
  *  of the subclass, and only there before setting any of the inputs.
  */
-void svkXMLInputInterpreter::InitializeInputPort( int port, string name, int type )
+void svkXMLInputInterpreter::InitializeInputPort( int port, string name, int type, bool required )
 {
     // Only initialize a given input port parameter once.
     if( this->GetInput( port ) == NULL ) {
@@ -96,8 +96,13 @@ void svkXMLInputInterpreter::InitializeInputPort( int port, string name, int typ
         if( this->inputPortNames.size() != this->GetNumberOfInputPorts()) {
             this->inputPortNames.resize( this->GetNumberOfInputPorts() );
         }
-        this->inputPortTypes[port] = type;
-        this->inputPortNames[port] = name;
+        if( this->inputPortRequired.size() != this->GetNumberOfInputPorts()) {
+            this->inputPortRequired.resize( this->GetNumberOfInputPorts() );
+        }
+        this->inputPortTypes[port]    = type;
+        this->inputPortNames[port]    = name;
+        this->inputPortRequired[port] = required;
+        // TODO: Remove this logic once optional ports have been setup
         if( type == SVK_BOOL) {
             svkBool* inputBool = svkBool::New();
             inputBool->SetValue(false);
@@ -146,6 +151,9 @@ int svkXMLInputInterpreter::FillInputPortInformation( int port, vtkInformation* 
     if( port < this->GetNumberOfInputPorts() ) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
                 svkXMLInputInterpreter::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
+        if( !this->inputPortRequired[port] ) {
+            info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(),1);
+        }
     }
 
     return 1;
@@ -175,11 +183,11 @@ void svkXMLInputInterpreter::SetDoubleInputPortValue( int port, double value )
 /*!
  * Parameter port getter.
  */
-double svkXMLInputInterpreter::GetDoubleInputPortValue( int port )
+svkDouble* svkXMLInputInterpreter::GetDoubleInputPortValue( int port )
 {
     if( this->GetInputPortType(port) == SVK_DOUBLE ) {
         vtkDataObject* parameter =  this->GetInput( port );
-        return svkDouble::SafeDownCast( parameter )->GetValue();
+        return svkDouble::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type double. " << endl;
     }
@@ -210,11 +218,11 @@ void svkXMLInputInterpreter::SetIntInputPortValue( int port, int value )
 /*!
  * Parameter port getter.
  */
-int svkXMLInputInterpreter::GetIntInputPortValue( int port )
+svkInt* svkXMLInputInterpreter::GetIntInputPortValue( int port )
 {
     if( this->GetInputPortType(port) == SVK_INT ) {
         vtkDataObject* parameter =  this->GetInput( port );
-        return svkInt::SafeDownCast( parameter )->GetValue();
+        return svkInt::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type int. " << endl;
     }
@@ -244,11 +252,11 @@ void svkXMLInputInterpreter::SetStringInputPortValue( int port, string value )
 /*!
  * Parameter port getter.
  */
-string svkXMLInputInterpreter::GetStringInputPortValue( int port )
+svkString* svkXMLInputInterpreter::GetStringInputPortValue( int port )
 {
     if( this->GetInputPortType(port) == SVK_STRING ) {
         vtkDataObject* parameter =  this->GetInput( port );
-        return svkString::SafeDownCast( parameter )->GetValue();
+        return svkString::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type string. " << endl;
     }
@@ -278,11 +286,11 @@ void svkXMLInputInterpreter::SetBoolInputPortValue( int port, bool value )
 /*!
  * Parameter port getter.
  */
-bool svkXMLInputInterpreter::GetBoolInputPortValue( int port )
+svkBool* svkXMLInputInterpreter::GetBoolInputPortValue( int port )
 {
     if( this->GetInputPortType(port) == SVK_BOOL ) {
         vtkDataObject* parameter =  this->GetInput( port );
-        return svkBool::SafeDownCast( parameter )->GetValue();
+        return svkBool::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
     }
@@ -432,22 +440,26 @@ vtkDataObject* svkXMLInputInterpreter::SetInput( int port, vtkDataObject* input 
 void svkXMLInputInterpreter::PrintSelf( ostream &os, vtkIndent indent )
 {
     Superclass::PrintSelf( os, indent );
-    os << indent << "Svk Parameters:" << endl;
+    os << indent << "Svk Parameters TEST:" << endl;
     indent = indent.GetNextIndent();
     for( int i = 0; i < this->GetNumberOfInputPorts(); i++ ) {
         vtkDataObject* parameterObject =  this->GetInput( i );
-        if( parameterObject->IsA("svkString") ) {
+        if( svkString::SafeDownCast(parameterObject) != NULL ) {
             os << indent << this->GetInputPortName(i) << ": " << svkString::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( parameterObject->IsA("svkDouble") ) {
+        } else if ( svkDouble::SafeDownCast(parameterObject) != NULL ) {
             os << indent << this->GetInputPortName(i) << ": " << svkDouble::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( parameterObject->IsA("svkInt") ) {
+        } else if ( svkInt::SafeDownCast(parameterObject) != NULL ) {
             os << indent << this->GetInputPortName(i) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( parameterObject->IsA("svkImageData") ) {
+        } else if ( svkBool::SafeDownCast(parameterObject) != NULL ) {
+            os << indent << this->GetInputPortName(i) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
+        } else if ( svkImageData::SafeDownCast(parameterObject) != NULL ) {
             string filename = "FILENAME UNKNOWN";
             if( svkImageData::SafeDownCast(parameterObject)->GetSourceFileName() != NULL ){
                 filename = svkImageData::SafeDownCast(parameterObject)->GetSourceFileName();
             }
             os << indent << this->GetInputPortName(i) << ": " << filename << endl;
+        } else {
+            os << indent << this->GetInputPortName(i) << ": NOT SET" << endl;
         }
     }
 }

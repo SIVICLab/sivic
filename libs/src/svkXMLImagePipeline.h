@@ -40,87 +40,78 @@
  */
 
 
-#ifndef SVK_IMAGE_THRESHOLD_H
-#define SVK_IMAGE_THRESHOLD_H
+#ifndef SVK_IMAGE_STATISTICS_COLLECTOR_H
+#define SVK_IMAGE_STATISTICS_COLLECTOR_H
 
 
-#include <vtkObject.h>
+#include <stdio.h>
+#include <map>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-
-#include <svkImageData.h>
+#include <vtkObject.h>
+#include <vtkXMLDataElement.h>
+#include <svkImageReaderFactory.h>
+#include <svkImageReader2.h>
 #include <svkMriImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <vtkImageThreshold.h>
-#include <svkImageAlgorithmExecuter.h>
-#include <vtkCharArray.h>
-#include <svkUtils.h>
+#include <svkImageStatistics.h>
+#include <svkImageThreshold.h>
 #include <svkXMLImageAlgorithm.h>
 #include <svkIdfVolumeWriter.h>
-
 
 namespace svk {
 
 
 using namespace std;
 
-
-/*! 
- *  This class handles thresholding images.
+/*!
+ *  The purpose of this class is to take in an XML element that defines a set of ROI's, a set
+ *  of images/maps, filters to apply to the ROI's/images/maps, and a set of statistics to be
+ *  computed. Then statistics for every combination will be computed using svkImageStatistics
+ *  and an XML data element will be output containing the results of the computation.
  */
-class svkImageThreshold : public svkXMLImageAlgorithm
+class svkXMLImagePipeline : public svkXMLImageAlgorithm
 {
 
     public:
 
         typedef enum {
-            INPUT_IMAGE = 0,
-            THRESHOLD_MAX,
-            THRESHOLD_MIN ,
-            OUTPUT_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
-        } svkImageThresholdParameters;
+            INPUT_IMAGE = 0
+        } svkXMLImageAlgorithmParameters;
 
-        static svkImageThreshold* New();
-        vtkTypeRevisionMacro( svkImageThreshold, svkXMLImageAlgorithm);
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkXMLImagePipeline, svkXMLImageAlgorithm );
+  
+        // vtk initialization 
+        static svkXMLImagePipeline* New();
 
-        // Required by parent class.
-        void       SetupParameterPorts();
+        void SetXMLPipeline( vtkXMLDataElement* pipeline );
 
-        void       SetThresholdMax( double max );
-        svkDouble* GetThresholdMax( );
+	protected:
 
-        void       SetThresholdMin( double min );
-        svkDouble* GetThresholdMin( );
+        svkXMLImagePipeline();
+       ~svkXMLImagePipeline();
 
-        void       SetMaskSeriesDescription( string description );
-        svkString* GetMaskSeriesDescription( );
+       virtual int RequestData(
+                       vtkInformation* request,
+                       vtkInformationVector** inputVector,
+                       vtkInformationVector* outputVector );
 
-        void       SetMaskOutputValue( int value );
-        svkInt*    GetMaskOutputValue( );
+       svkXMLImageAlgorithm* GetAlgorithmForFilterName( string filterName );
 
-    protected:
-
-        svkImageThreshold();
-        ~svkImageThreshold();
-
-        virtual int RequestData( 
-                        vtkInformation* request, 
-                        vtkInformationVector** inputVector, 
-                        vtkInformationVector* outputVector );
+	private:
 
 
+       //! Temporary pointer to help manage memory release.
+       svkImageReader2*      reader;
 
-    private:
+       //! Temporary pointer to help manage memory release.
+       vtkXMLDataElement*    pipeline;
 
+       //! Temporary pointer to help manage memory release.
+       svkXMLImageAlgorithm* lastFilter;
 
 };
 
 
 }   //svk
 
-
-#endif //SVK_IMAGE_THRESHOLD_H
-
+#endif //SVK_IMAGE_STATISTICS_COLLECTOR

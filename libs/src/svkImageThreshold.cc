@@ -64,8 +64,8 @@ svkImageThreshold::svkImageThreshold()
     // We have to call this in the constructor. Internally this will call SetupParameterPorts
     this->SetNumberOfInputPorts(5);
     this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkXMLInputInterpreter::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( MASK_SERIES_DESCRIPTION, "MASK_SERIES_DESCRIPTION", svkXMLInputInterpreter::SVK_STRING);
-    this->xmlInterpreter->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkXMLInputInterpreter::SVK_INT);
+    this->xmlInterpreter->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkXMLInputInterpreter::SVK_STRING);
+    this->xmlInterpreter->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkXMLInputInterpreter::SVK_INT, false);
     this->xmlInterpreter->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", svkXMLInputInterpreter::SVK_DOUBLE);
     this->xmlInterpreter->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", svkXMLInputInterpreter::SVK_DOUBLE);
 }
@@ -92,7 +92,7 @@ void svkImageThreshold::SetThresholdMax( double max )
 /*!
  * Utility getter for input port parameter.
  */
-double svkImageThreshold::GetThresholdMax( )
+svkDouble* svkImageThreshold::GetThresholdMax( )
 {
     return this->xmlInterpreter->GetDoubleInputPortValue( THRESHOLD_MAX );
 }
@@ -110,7 +110,7 @@ void svkImageThreshold::SetThresholdMin( double min )
 /*!
  * Utility getter for input port parameter.
  */
-double svkImageThreshold::GetThresholdMin( )
+svkDouble* svkImageThreshold::GetThresholdMin( )
 {
     return this->xmlInterpreter->GetDoubleInputPortValue( THRESHOLD_MIN );
 }
@@ -128,7 +128,7 @@ void svkImageThreshold::SetMaskOutputValue( int value )
 /*!
  * Utility getter for input port parameter.
  */
-int svkImageThreshold::GetMaskOutputValue( )
+svkInt* svkImageThreshold::GetMaskOutputValue( )
 {
     return this->xmlInterpreter->GetIntInputPortValue( MASK_OUTPUT_VALUE );
 }
@@ -139,16 +139,16 @@ int svkImageThreshold::GetMaskOutputValue( )
  */
 void svkImageThreshold::SetMaskSeriesDescription( string description )
 {
-    this->xmlInterpreter->SetStringInputPortValue( MASK_SERIES_DESCRIPTION, description);
+    this->xmlInterpreter->SetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION, description);
 }
 
 
 /*!
  * Utility getter for input port parameter.
  */
-string svkImageThreshold::GetMaskSeriesDescription( )
+svkString* svkImageThreshold::GetMaskSeriesDescription( )
 {
-    return this->xmlInterpreter->GetStringInputPortValue( MASK_SERIES_DESCRIPTION );
+    return this->xmlInterpreter->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION );
 }
 
 
@@ -160,10 +160,10 @@ int svkImageThreshold::RequestData( vtkInformation* request,
                                     vtkInformationVector** inputVector,
                                     vtkInformationVector* outputVector )
 {
-    double max = this->GetThresholdMax();
-    double min = this->GetThresholdMin();
-    int value = this->GetMaskOutputValue();
-    string description = this->GetMaskSeriesDescription();
+
+    double max = this->GetThresholdMax()->GetValue();
+    double min = this->GetThresholdMin()->GetValue();
+    string description = this->GetMaskSeriesDescription()->GetValue();
 
     //cout << "REQUEST DATA USING PARAMETERS:" << endl;
     cout << "max   = " << max << endl;
@@ -173,7 +173,9 @@ int svkImageThreshold::RequestData( vtkInformation* request,
 
     vtkImageThreshold* threshold = vtkImageThreshold::New();
     threshold->SetOutValue(0);
-    threshold->SetInValue(value);
+    if(this->GetMaskOutputValue() != NULL ) {
+        threshold->SetInValue(this->GetMaskOutputValue()->GetValue());
+    }
     threshold->ThresholdBetween( min, max );
 
     svkImageAlgorithmExecuter* executer = svkImageAlgorithmExecuter::New();

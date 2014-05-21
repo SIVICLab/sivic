@@ -115,7 +115,7 @@ class svkXMLInputInterpreter : public vtkObject
         virtual void             SetAlgorithm( vtkAlgorithm* algo );
 
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
-        virtual void             InitializeInputPort( int port, string name, int type );
+        virtual void             InitializeInputPort( int port, string name, int type, bool required = true );
 
         //! Parses an XML element and uses it to set the input ports of the algorithm. Converts image filename strings to svkImageData objects.
         virtual void             SetInputPortsFromXML( vtkXMLDataElement* element );
@@ -124,16 +124,16 @@ class svkXMLInputInterpreter : public vtkObject
         virtual int              FillInputPortInformation( int port, vtkInformation* info );
 
         virtual void             SetDoubleInputPortValue( int port, double value );
-        virtual double           GetDoubleInputPortValue( int port );
+        virtual svkDouble*       GetDoubleInputPortValue( int port );
 
         virtual void             SetIntInputPortValue( int port, int value );
-        virtual int              GetIntInputPortValue( int port );
+        virtual svkInt*          GetIntInputPortValue( int port );
 
         virtual void             SetStringInputPortValue( int port, string value );
-        virtual string           GetStringInputPortValue( int port);
+        virtual svkString*       GetStringInputPortValue( int port);
 
         virtual void             SetBoolInputPortValue( int port, bool value );
-        virtual bool             GetBoolInputPortValue( int port);
+        virtual svkBool*         GetBoolInputPortValue( int port);
 
         //! Setter that converts a filename into an svkImageData object
         virtual void             SetMRImageInputPortValue( int port, string filename );
@@ -169,6 +169,8 @@ class svkXMLInputInterpreter : public vtkObject
 
         //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
         vector<int>    inputPortTypes;
+
+        vector<bool>   inputPortRequired;
 
     private:
         vtkAlgorithm* algo;

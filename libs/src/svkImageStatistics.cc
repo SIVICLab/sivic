@@ -111,9 +111,9 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         }
         accumulator->Update( );
         accumulator->SetIgnoreZero( false );
-        int numberOfBins = this->xmlInterpreter->GetIntInputPortValue( NUM_BINS );
-        double startBin  = this->xmlInterpreter->GetDoubleInputPortValue( START_BIN );
-        double binSize   = this->xmlInterpreter->GetDoubleInputPortValue( BIN_SIZE );
+        int numberOfBins = this->xmlInterpreter->GetIntInputPortValue( NUM_BINS )->GetValue();
+        double startBin  = this->xmlInterpreter->GetDoubleInputPortValue( START_BIN )->GetValue();
+        double binSize   = this->xmlInterpreter->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
         accumulator->SetComponentExtent(0,numberOfBins-1,0,0,0,0 );
         accumulator->SetComponentOrigin(startBin, 0,0 );
         accumulator->SetComponentSpacing(binSize, 0,0);

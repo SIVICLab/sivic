@@ -215,6 +215,7 @@ ADD_LIBRARY(
     svkImageThreshold.cc
     svkXMLInputInterpreter.cc
     svkXMLImageAlgorithm.cc
+    svkXMLImagePipeline.cc
     svkGenericXMLAlgorithm.cc
     svkDSCDeltaR2.cc
     svkImageCopy.cc

@@ -109,21 +109,19 @@ void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
 
     this->LoadImagesAndROIS( );
 
-    map<string,svkMriImageData*>::iterator mapIter;
+    map<string,svkMriImageData*>::iterator imageIter;
     map<string,svkMriImageData*>::iterator roiIter;
-    for (mapIter = this->images.begin(); mapIter != this->images.end(); ++mapIter) {
+    for (imageIter = this->images.begin(); imageIter != this->images.end(); ++imageIter) {
         for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
             svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            cout << "SETTING INPUTS..." << endl;
             statsCalculator->SetInputPortsFromXML(this->config->FindNestedElementWithName("measures")->FindNestedElementWithName("svkImageStatistics"));
-            statsCalculator->SetInput(svkImageStatistics::INPUT_IMAGE, mapIter->second );
+            statsCalculator->SetInput(svkImageStatistics::INPUT_IMAGE, imageIter->second );
             statsCalculator->SetInput(svkImageStatistics::INPUT_ROI, roiIter->second );
-            cout << "SETTING UPDATING..." << endl;
             statsCalculator->Update();
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
-            svkUtils::CreateNestedXMLDataElement( nextResult, "MAP",mapIter->first.c_str() );
+            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE",imageIter->first.c_str() );
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
             statsCalculator->GetXMLResults(statistics);
             nextResult->AddNestedElement( statistics );
@@ -176,7 +174,7 @@ svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* 
 /*!
  * This method loads the images and ROIs from the input configuration, applies the necessary filters
  * using svkImageStatisticsCollector::ApplyFiltersFromXML, and stores them in a hash using the label
- * found in the ROI/MAP tag.
+ * found in the ROI/IMAGE tag.
  */
 svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
 {
@@ -189,10 +187,10 @@ svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
             svkImageData* filteredData = this->ApplyFiltersFromXML( roi, element );
             this->rois[label] = svkMriImageData::SafeDownCast(filteredData);
             this->rois[label]->Register(this);
-        } else if( string(element->GetName()) ==  "MAP") {
-            svkImageData* map = this->ReadImageFromXML( element );
+        } else if( string(element->GetName()) ==  "IMAGE") {
+            svkImageData* image = this->ReadImageFromXML( element );
             string label = element->GetAttribute("label");
-            svkImageData* filteredData = this->ApplyFiltersFromXML( map, element );
+            svkImageData* filteredData = this->ApplyFiltersFromXML( image, element );
             this->images[label] = svkMriImageData::SafeDownCast(filteredData);
             this->images[label]->Register(this);
         }

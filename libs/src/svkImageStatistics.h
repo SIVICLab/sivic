@@ -95,8 +95,7 @@ class svkImageStatistics : public svkGenericXMLAlgorithm
         void PrintStatistics( );
 
 
-
-	protected:
+    protected:
 
         svkImageStatistics();
        ~svkImageStatistics();
