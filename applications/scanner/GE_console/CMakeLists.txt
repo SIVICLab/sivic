@@ -27,10 +27,10 @@
 #
 
 #
-#   $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/applications/cmd_line/src/CMakeLists.txt $
-#   $Rev: 1845 $
-#   $Author: jccrane $
-#   $Date: 2014-03-24 16:46:45 -0700 (Mon, 24 Mar 2014) $
+#   $URL$
+#   $Rev$
+#   $Author$
+#   $Date$
 #
 
 cmake_minimum_required(VERSION 2.4)
