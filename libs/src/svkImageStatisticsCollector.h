@@ -54,8 +54,8 @@
 #include <svkMriImageData.h>
 #include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkXMLImagePipeline.h>
+#include <svkImageAlgorithmWithPortMapper.h>
+#include <svkImageAlgorithmPipeline.h>
 #include <svkIdfVolumeWriter.h>
 
 namespace svk {
@@ -110,7 +110,7 @@ class svkImageStatisticsCollector : public vtkObject
        map<string, svkMriImageData*>          images;
 
        // This just hold temporary pointers to help manage memory release.
-       svkXMLImagePipeline*                   pipelineFilter;
+       svkImageAlgorithmPipeline*             pipelineFilter;
 
 };
 

@@ -40,80 +40,74 @@
  */
 
 
-#ifndef SVK_GENERIC_XML_ALGORITHM_H
-#define SVK_GENERIC_XML_ALGORITHM_H
+#ifndef SVK_IMAGE_ALGORITHM_PIPELINE_H
+#define SVK_IMAGE_ALGORITHM_PIPELINE_H
 
 
-#include <vtkObject.h>
+#include <stdio.h>
+#include <map>
 #include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-
-#include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <svkUtils.h>
-#include <svkDouble.h>
-#include <svkString.h>
-#include <svkInt.h>
+#include <vtkObject.h>
+#include <vtkXMLDataElement.h>
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
-#include <svkXMLInputInterpreter.h>
+#include <svkMriImageData.h>
+#include <svkImageStatistics.h>
+#include <svkImageThreshold.h>
+#include <svkImageAlgorithmWithPortMapper.h>
+#include <svkIdfVolumeWriter.h>
 
 namespace svk {
 
 
 using namespace std;
 
-
-/*! 
- * This baseclass is used to support the use of the svkXMLInputInterpreter class. All parameters
- * that control the execution of this algorithm are stored in input ports that can be set using
- * the XML input to the svkXMLInputInterpreter class.
+/*!
+ *  The purpose of this class is to take in an XML element that defines a set of ROI's, a set
+ *  of images/maps, filters to apply to the ROI's/images/maps, and a set of statistics to be
+ *  computed. Then statistics for every combination will be computed using svkImageStatistics
+ *  and an XML data element will be output containing the results of the computation.
  */
-class svkGenericXMLAlgorithm : public svkImageAlgorithm
+class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
 {
 
     public:
 
-        static svkGenericXMLAlgorithm* New();
-        vtkTypeRevisionMacro( svkGenericXMLAlgorithm, svkImageAlgorithm);
+        typedef enum {
+            INPUT_IMAGE = 0,
+            PIPELINE
+        } svkXMLImageAlgorithmParameters;
+
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkImageAlgorithmPipeline, svkImageAlgorithmWithPortMapper );
+  
+        // vtk initialization 
+        static svkImageAlgorithmPipeline* New();
+
+	protected:
+
+        svkImageAlgorithmPipeline();
+       ~svkImageAlgorithmPipeline();
+
+       virtual int RequestData(
+                       vtkInformation* request,
+                       vtkInformationVector** inputVector,
+                       vtkInformationVector* outputVector );
+
+       svkImageAlgorithmWithPortMapper* GetAlgorithmForFilterName( string filterName );
+
+	private:
 
 
-        //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
-        virtual void                    SetInputPortsFromXML( vtkXMLDataElement* element );
+       //! Temporary pointer to help manage memory release.
+       svkImageReader2*      reader;
 
-        //! Get the internal XML interpreter
-        virtual svkXMLInputInterpreter* GetXMLInterpreter();
-
-        //! Prints all input parameters set.
-        void                            PrintSelf( ostream &os, vtkIndent indent );
-
-
-    protected:
-
-        svkGenericXMLAlgorithm();
-        ~svkGenericXMLAlgorithm();
-
-        //! All ports must be initialized through the svkXMLInputInterpreter BEFORE this method is called.
-        virtual int                     FillInputPortInformation( int port, vtkInformation* info );
-
-        //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string> inputPortNames;
-
-        //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
-        vector<int>    inputPortTypes;
-
-        //! The interpreter used to set the input port parameters.
-        svkXMLInputInterpreter* xmlInterpreter;
-
-    private:
+       //! Temporary pointer to help manage memory release.
+       svkImageAlgorithmWithPortMapper* lastFilter;
 
 };
 
 
 }   //svk
 
-
-#endif //SVK_GENERIC_XML_ALGORITHM_H
-
+#endif //SVK_IMAGE_ALGORITHM_PIPELINE_H

@@ -55,7 +55,7 @@
 #include <svkMriImageData.h>
 #include <svkUtils.h>
 #include <vtkImageToImageStencil.h>
-#include <svkGenericXMLAlgorithm.h>
+#include <svkGenericAlgorithmWithPortMapper.h>
 #include <time.h>
 
 namespace svk {
@@ -63,7 +63,7 @@ namespace svk {
 
 using namespace std;
 
-class svkImageStatistics : public svkGenericXMLAlgorithm
+class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 {
 
     public:
@@ -83,7 +83,7 @@ class svkImageStatistics : public svkGenericXMLAlgorithm
         } svkImageStatisticsParameters;
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatistics, svkGenericXMLAlgorithm );
+        vtkTypeRevisionMacro( svkImageStatistics, svkGenericAlgorithmWithPortMapper );
   
         // vtk initialization 
         static svkImageStatistics* New();  

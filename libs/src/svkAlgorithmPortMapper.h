@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_XML_INPUT_INTERPRETER_H
-#define SVK_XML_INPUT_INTERPRETER_H
+#ifndef SVK_ALGORITHM_PORT_MAPPER_H
+#define SVK_ALGORITHM_PORT_MAPPER_H
 
 
 #include <vtkObject.h>
@@ -95,7 +95,7 @@ using namespace std;
  * This class uses vtkDataObject-wrapped primitive types (svkDouble, svkInt, svkString, svkBool) to
  * fill input ports of these types.
  */
-class svkXMLInputInterpreter : public vtkObject
+class svkAlgorithmPortMapper : public vtkObject
 {
 
     public:
@@ -110,8 +110,8 @@ class svkXMLInputInterpreter : public vtkObject
             SVK_XML
         } svkXMLDataType;
 
-        static svkXMLInputInterpreter* New();
-        vtkTypeRevisionMacro( svkXMLInputInterpreter, vtkObject);
+        static svkAlgorithmPortMapper* New();
+        vtkTypeRevisionMacro( svkAlgorithmPortMapper, vtkObject);
 
         //! Set the internal algorithm whos input ports are to be set.
         virtual void             SetAlgorithm( vtkAlgorithm* algo );
@@ -144,19 +144,19 @@ class svkXMLInputInterpreter : public vtkObject
         virtual void             SetMRImageInputPortValue( int port, string filename );
         virtual svkMriImageData* GetMRImageInputPortValue( int port);
 
+        //! Returns string names used in XML configuration files for input port parameters.
+        virtual string           GetInputPortName( int port );
+
         //! Prints all input parameters set.
         void                     PrintSelf( ostream &os, vtkIndent indent );
 
     protected:
 
-        svkXMLInputInterpreter();
-        ~svkXMLInputInterpreter();
+        svkAlgorithmPortMapper();
+        ~svkAlgorithmPortMapper();
 
         //! Returns string class name for a given type.
         static string            GetClassTypeFromDataType( int type );
-
-        //! Returns string names used in XML configuration files for input port parameters.
-        virtual string           GetInputPortName( int port );
 
         //! Returns the port number for a given parameter string.
         virtual int              GetInputPortNumber( string name );
@@ -186,5 +186,5 @@ class svkXMLInputInterpreter : public vtkObject
 }   //svk
 
 
-#endif //SVK_XML_INPUT_INTERPRETER_H
+#endif //SVK_ALGORITHM_PORT_MAPPER_H
 

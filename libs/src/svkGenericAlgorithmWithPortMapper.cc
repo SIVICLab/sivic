@@ -41,23 +41,23 @@
 
 
 
-#include <svkXMLImageAlgorithm.h>
+#include <svkGenericAlgorithmWithPortMapper.h>
 
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkXMLImageAlgorithm, "$Rev$");
-vtkStandardNewMacro(svkXMLImageAlgorithm);
+vtkCxxRevisionMacro(svkGenericAlgorithmWithPortMapper, "$Rev$");
+vtkStandardNewMacro(svkGenericAlgorithmWithPortMapper);
 
 /*!
  *
  */
-svkXMLImageAlgorithm::svkXMLImageAlgorithm()
+svkGenericAlgorithmWithPortMapper::svkGenericAlgorithmWithPortMapper()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
-    this->xmlInterpreter = svkXMLInputInterpreter::New();
+    this->xmlInterpreter = svkAlgorithmPortMapper::New();
     this->xmlInterpreter->SetAlgorithm( this );
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
@@ -68,9 +68,9 @@ svkXMLImageAlgorithm::svkXMLImageAlgorithm()
 /*!
  *
  */
-svkXMLImageAlgorithm::~svkXMLImageAlgorithm()
+svkGenericAlgorithmWithPortMapper::~svkGenericAlgorithmWithPortMapper()
 {
-    vtkDebugMacro(<<this->GetClassName()<<"::~svkXMLImageAlgorithm()");
+    vtkDebugMacro(<<this->GetClassName()<<"::~svkGenericAlgorithmWithPortMapper()");
     if( this->xmlInterpreter != NULL ) {
         this->xmlInterpreter->Delete();
     }
@@ -78,9 +78,9 @@ svkXMLImageAlgorithm::~svkXMLImageAlgorithm()
 
 
 /*!
- * Pass through method to the internal svkXMLInputInterpreter
+ * Pass through method to the internal svkAlgorithmPortMapper
  */
-void svkXMLImageAlgorithm::SetInputPortsFromXML( vtkXMLDataElement* element )
+void svkGenericAlgorithmWithPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
 {
     this->xmlInterpreter->SetInputPortsFromXML(element);
 }
@@ -89,7 +89,7 @@ void svkXMLImageAlgorithm::SetInputPortsFromXML( vtkXMLDataElement* element )
 /*!
  * Returns the interpreter.
  */
-svkXMLInputInterpreter* svkXMLImageAlgorithm::GetXMLInterpreter()
+svkAlgorithmPortMapper* svkGenericAlgorithmWithPortMapper::GetXMLInterpreter()
 {
     return this->xmlInterpreter;
 }
@@ -99,7 +99,7 @@ svkXMLInputInterpreter* svkXMLImageAlgorithm::GetXMLInterpreter()
  *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the interpreter.
  *
  */
-void svkXMLImageAlgorithm::PrintSelf( ostream &os, vtkIndent indent )
+void svkGenericAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent )
 {
     Superclass::PrintSelf( os, indent );
     this->xmlInterpreter->PrintSelf( os, indent );
@@ -107,9 +107,9 @@ void svkXMLImageAlgorithm::PrintSelf( ostream &os, vtkIndent indent )
 
 
 /*!
- * Pass through method to the internal svkXMLInputInterpreter
+ * Pass through method to the internal svkAlgorithmPortMapper
  */
-int svkXMLImageAlgorithm::FillInputPortInformation( int port, vtkInformation* info )
+int svkGenericAlgorithmWithPortMapper::FillInputPortInformation( int port, vtkInformation* info )
 {
     this->Superclass::FillInputPortInformation( port, info );
     this->xmlInterpreter->FillInputPortInformation(port, info );

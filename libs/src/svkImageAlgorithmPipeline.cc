@@ -39,27 +39,27 @@
  */
 
 
-#include <svkXMLImagePipeline.h>
+#include <svkImageAlgorithmPipeline.h>
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkXMLImagePipeline, "$Rev$");
-vtkStandardNewMacro(svkXMLImagePipeline);
+vtkCxxRevisionMacro(svkImageAlgorithmPipeline, "$Rev$");
+vtkStandardNewMacro(svkImageAlgorithmPipeline);
 
 //! Constructor
-svkXMLImagePipeline::svkXMLImagePipeline()
+svkImageAlgorithmPipeline::svkImageAlgorithmPipeline()
 {
     this->SetNumberOfInputPorts(2);
-    this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkXMLInputInterpreter::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( PIPELINE, "PIPELINE", svkXMLInputInterpreter::SVK_XML);
-    cout << "Constructing svkXMLImagePipeline." << endl;
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( PIPELINE, "PIPELINE", svkAlgorithmPortMapper::SVK_XML);
+    cout << "Constructing svkImageAlgorithmPipeline." << endl;
     this->lastFilter = NULL;
     this->reader = NULL;
 }
 
 
 //! Destructor
-svkXMLImagePipeline::~svkXMLImagePipeline()
+svkImageAlgorithmPipeline::~svkImageAlgorithmPipeline()
 {
     if( this->lastFilter != NULL ) {
         this->lastFilter->Delete();
@@ -76,19 +76,19 @@ svkXMLImagePipeline::~svkXMLImagePipeline()
  *  RequestData pass the input through the algorithm, and copies the dcos and header
  *  to the output.
  */
-int svkXMLImagePipeline::RequestData( vtkInformation* request,
+int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
                                     vtkInformationVector** inputVector,
                                     vtkInformationVector* outputVector )
 {
-    svkImageData* filteredImage = this->xmlInterpreter->GetMRImageInputPortValue(INPUT_IMAGE);
-    vtkXMLDataElement* pipeline = this->xmlInterpreter->GetXMLInputPortValue(PIPELINE)->GetValue();
+    svkImageData* filteredImage = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE);
+    vtkXMLDataElement* pipeline = this->GetPortMapper()->GetXMLInputPortValue(PIPELINE)->GetValue();
     if( pipeline != NULL ) {
         int numberOfFilters = pipeline->GetNumberOfNestedElements();
         for( int i = 0; i < numberOfFilters; i++ ) {
             vtkXMLDataElement* filterParameters = pipeline->GetNestedElement(i);
 
             // Get the next filter
-            svkXMLImageAlgorithm* filter = GetAlgorithmForFilterName(filterParameters->GetName());
+            svkImageAlgorithmWithPortMapper* filter = GetAlgorithmForFilterName(filterParameters->GetName());
             if( filter != NULL) {
                 vtkIndent indent;
                 filterParameters->PrintXML(cout, indent);
@@ -118,9 +118,9 @@ int svkXMLImagePipeline::RequestData( vtkInformation* request,
 /*!
  * Factory method for getting the algorithms to be used in the statistics collection.
  */
-svkXMLImageAlgorithm* svkXMLImagePipeline::GetAlgorithmForFilterName( string filterName )
+svkImageAlgorithmWithPortMapper* svkImageAlgorithmPipeline::GetAlgorithmForFilterName( string filterName )
 {
-    svkXMLImageAlgorithm* algorithm;
+    svkImageAlgorithmWithPortMapper* algorithm;
     // TODO: Replace this with an algorithm factory method...
     if( filterName == "svkImageThreshold") {
         algorithm = svkImageThreshold::New();

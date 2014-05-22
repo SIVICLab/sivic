@@ -51,17 +51,17 @@ vtkStandardNewMacro(svkImageStatistics);
 svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(11);
-    this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkXMLInputInterpreter::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkXMLInputInterpreter::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( NUM_BINS, "NUM_BINS", svkXMLInputInterpreter::SVK_INT);
-    this->xmlInterpreter->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkXMLInputInterpreter::SVK_DOUBLE);
-    this->xmlInterpreter->InitializeInputPort( START_BIN, "START_BIN", svkXMLInputInterpreter::SVK_DOUBLE);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkXMLInputInterpreter::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkXMLInputInterpreter::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkXMLInputInterpreter::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkXMLInputInterpreter::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkXMLInputInterpreter::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkXMLInputInterpreter::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->xmlInterpreter->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->xmlInterpreter->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
+    this->xmlInterpreter->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->xmlInterpreter->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
+    this->xmlInterpreter->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
     this->results = NULL;
     this->accumulator = NULL;
 
