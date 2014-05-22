@@ -74,6 +74,10 @@ int main (int argc, char** argv)
     usemsg += "   -i            input_file_name     Name of file to scale                   \n";
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";
     usemsg += "   --mask        mask_file_name      Name of mask file                       \n";
+    usemsg += "   --all                             Average over all non-spatial dims.  By  \n";
+    usemsg += "                                     default returns the average spectrum in \n";
+    usemsg += "                                     the spatial ROI separately for each     \n";
+    usemsg += "                                     channel, etc.                           \n";
     usemsg += "   -b                                Average spectral within selection box.  \n"; 
     usemsg += "   -m                                Average of magnitude spectra in ROI.    \n"; 
     usemsg += "   -v                                Verbose output                          \n"; 
@@ -92,17 +96,20 @@ int main (int argc, char** argv)
     bool isVerbose = false; 
     bool limitToSelectionBox = false; 
     bool useMagnitudeSpectra = false; 
+    bool averageOverNonSpatialDims = false; 
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
-        FLAG_MASK = 0
+        FLAG_MASK = 0, 
+        FLAG_AVERAGE_NON_SPATIAL
     };
 
     static struct option long_options[] =
     {
         {"mask",    required_argument, NULL,  FLAG_MASK},
+        {"all",     no_argument,       NULL,  FLAG_AVERAGE_NON_SPATIAL},
         {0, 0, 0, 0}
     };
 
@@ -122,6 +129,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_MASK:
                 maskFileName.assign( optarg );
+                break;
+            case FLAG_AVERAGE_NON_SPATIAL:
+                averageOverNonSpatialDims = true; 
                 break;
             case 'b':
                 limitToSelectionBox = true; 
@@ -197,6 +207,10 @@ int main (int argc, char** argv)
 
     if ( useMagnitudeSpectra == true ) {
         avSpec->AverageMagnitudeSpectra();
+    }
+
+    if ( averageOverNonSpatialDims == true ) { 
+        avSpec->AverageOverNonSpatialDims();
     }
     avSpec->Update();
 
