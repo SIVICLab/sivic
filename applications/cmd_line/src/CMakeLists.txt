@@ -510,11 +510,11 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svk_xml_image_pipeline
-    svk_xml_image_pipeline.cc
+    svk_image_pipeline
+    svk_image_pipeline.cc
 )
 TARGET_LINK_LIBRARIES(
-    svk_xml_image_pipeline
+    svk_image_pipeline
 	${SVK_LIBS}
 )
 
@@ -613,7 +613,7 @@ SET(APPS
     svk_mrs_combine
     svk_apodize
     svk_image_stats 
-    svk_xml_image_pipeline 
+    svk_image_pipeline 
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)

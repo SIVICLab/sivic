@@ -49,6 +49,7 @@ using namespace svk;
 vtkCxxRevisionMacro(svkGenericAlgorithmWithPortMapper, "$Rev$");
 vtkStandardNewMacro(svkGenericAlgorithmWithPortMapper);
 
+
 /*!
  *
  */
@@ -57,8 +58,7 @@ svkGenericAlgorithmWithPortMapper::svkGenericAlgorithmWithPortMapper()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
-    this->xmlInterpreter = svkAlgorithmPortMapper::New();
-    this->xmlInterpreter->SetAlgorithm( this );
+    this->portMapper = NULL;
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
@@ -71,8 +71,8 @@ svkGenericAlgorithmWithPortMapper::svkGenericAlgorithmWithPortMapper()
 svkGenericAlgorithmWithPortMapper::~svkGenericAlgorithmWithPortMapper()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~svkGenericAlgorithmWithPortMapper()");
-    if( this->xmlInterpreter != NULL ) {
-        this->xmlInterpreter->Delete();
+    if( this->portMapper != NULL ) {
+        this->portMapper->Delete();
     }
 }
 
@@ -82,27 +82,31 @@ svkGenericAlgorithmWithPortMapper::~svkGenericAlgorithmWithPortMapper()
  */
 void svkGenericAlgorithmWithPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
 {
-    this->xmlInterpreter->SetInputPortsFromXML(element);
+    this->GetPortMapper()->SetInputPortsFromXML(element);
 }
 
 
 /*!
- * Returns the interpreter.
+ * Returns the port mapper. Performs lazy initialization.
  */
-svkAlgorithmPortMapper* svkGenericAlgorithmWithPortMapper::GetXMLInterpreter()
+svkAlgorithmPortMapper* svkGenericAlgorithmWithPortMapper::GetPortMapper()
 {
-    return this->xmlInterpreter;
+    if( this->portMapper == NULL ) {
+        this->portMapper = svkAlgorithmPortMapper::New();
+        this->portMapper->SetAlgorithm( this );
+    }
+    return this->portMapper;
 }
 
 
 /*!
- *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the interpreter.
+ *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the port mapper.
  *
  */
 void svkGenericAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent )
 {
     Superclass::PrintSelf( os, indent );
-    this->xmlInterpreter->PrintSelf( os, indent );
+    this->GetPortMapper()->PrintSelf( os, indent );
 }
 
 
@@ -112,7 +116,7 @@ void svkGenericAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent
 int svkGenericAlgorithmWithPortMapper::FillInputPortInformation( int port, vtkInformation* info )
 {
     this->Superclass::FillInputPortInformation( port, info );
-    this->xmlInterpreter->FillInputPortInformation(port, info );
+    this->GetPortMapper()->FillInputPortInformation(port, info );
 
     return 1;
 }

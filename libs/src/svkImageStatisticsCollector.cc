@@ -212,7 +212,6 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
     }
     this->pipelineFilter = svkImageAlgorithmPipeline::New();
     vtkIndent indent;
-    cout << "IMAGE ELEMENT XML:" << endl;
     imageElement->PrintXML(cout, indent);
     vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetClassName());
     if( filters != NULL ) {

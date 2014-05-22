@@ -52,7 +52,6 @@ svkImageAlgorithmPipeline::svkImageAlgorithmPipeline()
     this->SetNumberOfInputPorts(2);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( PIPELINE, "PIPELINE", svkAlgorithmPortMapper::SVK_XML);
-    cout << "Constructing svkImageAlgorithmPipeline." << endl;
     this->lastFilter = NULL;
     this->reader = NULL;
 }
@@ -73,8 +72,7 @@ svkImageAlgorithmPipeline::~svkImageAlgorithmPipeline()
 
 
 /*!
- *  RequestData pass the input through the algorithm, and copies the dcos and header
- *  to the output.
+ *  Creates the algorithm pipeline and executes it.
  */
 int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
                                     vtkInformationVector** inputVector,
@@ -90,8 +88,6 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
             // Get the next filter
             svkImageAlgorithmWithPortMapper* filter = GetAlgorithmForFilterName(filterParameters->GetName());
             if( filter != NULL) {
-                vtkIndent indent;
-                filterParameters->PrintXML(cout, indent);
                 filter->SetInputPortsFromXML( filterParameters );
                 filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
 
@@ -103,25 +99,25 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
                 if( this->lastFilter != NULL ) {
                     this->lastFilter->Delete();
                 }
+
                 this->lastFilter = filter;
-                cout << "Running Algorithm:" << *filter << endl;
             } else {
-                cout << "COULD NOT DETERMINE FILTER!!" << endl;
+                cout << "ERROR: Did not recognize algorithm:"<< filterParameters->GetName() << "!" << endl;
             }
         }
     }
-    this->GetOutputDataObject(0)->DeepCopy( filteredImage );
+    this->GetOutputDataObject(0)->ShallowCopy( filteredImage );
     return 1;
 }
 
 
 /*!
- * Factory method for getting the algorithms to be used in the statistics collection.
+ * Factory method for getting the algorithms by class name.
  */
 svkImageAlgorithmWithPortMapper* svkImageAlgorithmPipeline::GetAlgorithmForFilterName( string filterName )
 {
+    //TODO: Create algorithm factory class like svkImageReaderFactory
     svkImageAlgorithmWithPortMapper* algorithm;
-    // TODO: Replace this with an algorithm factory method...
     if( filterName == "svkImageThreshold") {
         algorithm = svkImageThreshold::New();
     }

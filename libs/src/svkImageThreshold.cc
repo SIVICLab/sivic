@@ -61,7 +61,7 @@ svkImageThreshold::svkImageThreshold()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    // We have to call this in the constructor. Internally this will call SetupParameterPorts
+    // We have to call this in the constructor.
     this->SetNumberOfInputPorts(5);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING);
@@ -81,7 +81,7 @@ svkImageThreshold::~svkImageThreshold()
 
 
 /*!
- * Utility setter for input port parameter.
+ * Utility setter for input port .
  */
 void svkImageThreshold::SetThresholdMax( double max )
 {
@@ -90,7 +90,7 @@ void svkImageThreshold::SetThresholdMax( double max )
 
 
 /*!
- * Utility getter for input port parameter.
+ * Utility getter for input port .
  */
 svkDouble* svkImageThreshold::GetThresholdMax( )
 {
@@ -99,7 +99,7 @@ svkDouble* svkImageThreshold::GetThresholdMax( )
 
 
 /*!
- * Utility setter for input port parameter.
+ * Utility setter for input port .
  */
 void svkImageThreshold::SetThresholdMin( double min )
 {
@@ -108,7 +108,7 @@ void svkImageThreshold::SetThresholdMin( double min )
 
 
 /*!
- * Utility getter for input port parameter.
+ * Utility getter for input port .
  */
 svkDouble* svkImageThreshold::GetThresholdMin( )
 {
@@ -117,7 +117,7 @@ svkDouble* svkImageThreshold::GetThresholdMin( )
 
 
 /*!
- * Utility setter for input port parameter.
+ * Utility setter for input port .
  */
 void svkImageThreshold::SetMaskOutputValue( int value )
 {
@@ -126,7 +126,7 @@ void svkImageThreshold::SetMaskOutputValue( int value )
 
 
 /*!
- * Utility getter for input port parameter.
+ * Utility getter for input port .
  */
 svkInt* svkImageThreshold::GetMaskOutputValue( )
 {
@@ -135,7 +135,7 @@ svkInt* svkImageThreshold::GetMaskOutputValue( )
 
 
 /*!
- * Utility setter for input port parameter.
+ * Utility setter for input port .
  */
 void svkImageThreshold::SetMaskSeriesDescription( string description )
 {
@@ -144,7 +144,7 @@ void svkImageThreshold::SetMaskSeriesDescription( string description )
 
 
 /*!
- * Utility getter for input port parameter.
+ * Utility getter for input port .
  */
 svkString* svkImageThreshold::GetMaskSeriesDescription( )
 {
@@ -165,14 +165,9 @@ int svkImageThreshold::RequestData( vtkInformation* request,
     double min = this->GetThresholdMin()->GetValue();
     string description = this->GetMaskSeriesDescription()->GetValue();
 
-    //cout << "REQUEST DATA USING PARAMETERS:" << endl;
-    cout << "max   = " << max << endl;
-    cout << "min   = " << min <<  endl;
-    //cout << "desc  = " << description << endl;
-    //cout << "value = " << value << endl;
-
     vtkImageThreshold* threshold = vtkImageThreshold::New();
     threshold->SetOutValue(0);
+    // The MASK_OUTPUT_VALUE is optional so check to see if its set
     if(this->GetMaskOutputValue() != NULL ) {
         threshold->SetInValue(this->GetMaskOutputValue()->GetValue());
     }

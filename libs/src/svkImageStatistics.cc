@@ -51,17 +51,17 @@ vtkStandardNewMacro(svkImageStatistics);
 svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(11);
-    this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-    this->xmlInterpreter->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
-    this->xmlInterpreter->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
-    this->xmlInterpreter->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
-    this->xmlInterpreter->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
+    this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
     this->results = NULL;
     this->accumulator = NULL;
 
@@ -93,17 +93,17 @@ int svkImageStatistics::RequestData( vtkInformation* request,
     }
     this->results = vtkXMLDataElement::New();
     this->results->SetName("measures");
-    if( this->xmlInterpreter->GetMRImageInputPortValue( INPUT_IMAGE ) != NULL ) {
-        double* spacing = this->xmlInterpreter->GetMRImageInputPortValue( INPUT_IMAGE )->GetSpacing();
+    if( this->GetPortMapper()->GetMRImageInputPortValue( INPUT_IMAGE ) != NULL ) {
+        double* spacing = this->GetPortMapper()->GetMRImageInputPortValue( INPUT_IMAGE )->GetSpacing();
         double pixelVolume = spacing[0] * spacing[1] * spacing[2];
         if( this->accumulator != NULL ) {
             this->accumulator->Delete();
         }
         this->accumulator = vtkImageAccumulate::New();
-        accumulator->SetInput( this->xmlInterpreter->GetMRImageInputPortValue( INPUT_IMAGE)  );
-        if( this->xmlInterpreter->GetMRImageInputPortValue(INPUT_ROI) != NULL ) {
+        accumulator->SetInput( this->GetPortMapper()->GetMRImageInputPortValue( INPUT_IMAGE)  );
+        if( this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI) != NULL ) {
             vtkImageToImageStencil* stencil = vtkImageToImageStencil::New();
-            stencil->SetInput( this->xmlInterpreter->GetMRImageInputPortValue(INPUT_ROI) );
+            stencil->SetInput( this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI) );
             stencil->ThresholdByUpper(1);
             stencil->Update();
             accumulator->SetStencil( stencil->GetOutput() );
@@ -111,15 +111,15 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         }
         accumulator->Update( );
         accumulator->SetIgnoreZero( false );
-        int numberOfBins = this->xmlInterpreter->GetIntInputPortValue( NUM_BINS )->GetValue();
-        double startBin  = this->xmlInterpreter->GetDoubleInputPortValue( START_BIN )->GetValue();
-        double binSize   = this->xmlInterpreter->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
+        int numberOfBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
+        double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
         accumulator->SetComponentExtent(0,numberOfBins-1,0,0,0,0 );
         accumulator->SetComponentOrigin(startBin, 0,0 );
         accumulator->SetComponentSpacing(binSize, 0,0);
         accumulator->Update();
         vtkXMLDataElement* element = NULL;
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_VOLUME)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VOLUME)) {
             element = vtkXMLDataElement::New();
             element->SetName("volume");
             element->SetAttribute("units", "mm^3");
@@ -129,7 +129,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->Delete();
         }
 
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_MAX)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MAX)) {
             element = vtkXMLDataElement::New();
             element->SetName("max");
             string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
@@ -139,7 +139,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         }
 
 
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_MIN)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MIN)) {
             element = vtkXMLDataElement::New();
             element->SetName("min");
             string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
@@ -148,7 +148,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->Delete();
         }
 
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_MEAN)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEAN)) {
             element = vtkXMLDataElement::New();
             element->SetName("mean");
             string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
@@ -157,7 +157,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->Delete();
         }
 
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_STDEV)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_STDEV)) {
             element = vtkXMLDataElement::New();
             element->SetName("stdev");
             string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
@@ -166,7 +166,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->Delete();
         }
 
-        if( this->xmlInterpreter->GetBoolInputPortValue(COMPUTE_HISTOGRAM)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM)) {
             vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
             double max = *accumulator->GetMax();
             double min = *accumulator->GetMin();
@@ -194,6 +194,9 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 }
 
 
+/*!
+ * Deep copies the resutls into the given xml input element.
+ */
 void svkImageStatistics::GetXMLResults( vtkXMLDataElement* results )
 {
     if( results != NULL ) {
@@ -202,6 +205,9 @@ void svkImageStatistics::GetXMLResults( vtkXMLDataElement* results )
 }
 
 
+/*!
+ *  Prints the result statistics.
+ */
 void svkImageStatistics::PrintStatistics( )
 {
     cout << "###########################################################" << endl << endl;

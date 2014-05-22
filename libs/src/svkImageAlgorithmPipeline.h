@@ -89,18 +89,20 @@ class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
         svkImageAlgorithmPipeline();
        ~svkImageAlgorithmPipeline();
 
+       //! VTK RequestData method. Pipeline is executed here
        virtual int RequestData(
                        vtkInformation* request,
                        vtkInformationVector** inputVector,
                        vtkInformationVector* outputVector );
 
+       //! This is a factory method for getting an algorithm.
        svkImageAlgorithmWithPortMapper* GetAlgorithmForFilterName( string filterName );
 
 	private:
 
 
        //! Temporary pointer to help manage memory release.
-       svkImageReader2*      reader;
+       svkImageReader2*                 reader;
 
        //! Temporary pointer to help manage memory release.
        svkImageAlgorithmWithPortMapper* lastFilter;

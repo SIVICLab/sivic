@@ -83,7 +83,7 @@ class svkImageAlgorithmWithPortMapper : public svkImageAlgorithm
         //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
         virtual void                    SetInputPortsFromXML( vtkXMLDataElement* element );
 
-        //! Get the internal XML interpreter
+        //! Get the internal port mapper
         virtual svkAlgorithmPortMapper* GetPortMapper();
 
         //! Prints all input parameters set.
@@ -98,16 +98,9 @@ class svkImageAlgorithmWithPortMapper : public svkImageAlgorithm
         //! All ports must be initialized through the svkAlgorithmPortMapper BEFORE this method is called.
         virtual int                     FillInputPortInformation( int port, vtkInformation* info );
 
-        //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string> inputPortNames;
-
-        //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
-        vector<int>    inputPortTypes;
-
-
     private:
 
-        //! The interpreter used to set the input port parameters.
+        //! The port mapper used to set the input ports.
         svkAlgorithmPortMapper* portMapper;
 
 };

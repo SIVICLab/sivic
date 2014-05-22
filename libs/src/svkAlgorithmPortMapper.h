@@ -69,13 +69,13 @@ using namespace std;
 
 /*! 
  * This class is a helper class that can be used with any vtkAlgorithm. It provides an interface
- * for using the input ports for the vtkAlgorithm to store all the parameters necessary to execute the
+ * for using the input ports for a vtkAlgorithm to store all the parameters necessary to execute the
  * algorithm. Additionally an XML file can be supplied with the names given to each input port as
  * tags that surround the data to be given to that port. This way an algorithm can be configured
- * and run using a simple XML. If the data type given is an image, a filename will be assumed and
+ * and run using a simple XML file. If the data type given is an image, a filename will be assumed
  * and the output of the appropriate reader will be set into the given port. For example if you had
- * five inputs to an algorithm called like svkMyAlgorithm called and the input ports were named
- * INPUT_IMAGE, PARAMETER_ONE, PARAMETER_TWO, and PARAMETER_THREE, then your XML would appear
+ * four inputs to an algorithm called svkMyAlgorithm  and the input ports were named INPUT_IMAGE,
+ * PARAMETER_ONE, PARAMETER_TWO, and PARAMETER_THREE, then your XML would appear
  * something like this:
  *
  * <svkMyAlgorithm>
@@ -88,12 +88,12 @@ using namespace std;
  *
  *   <PARAMETER_THREE>Data Mask</PARAMETER_THREE>
  *
- * </MyAlgorithm>
+ * </svkMyAlgorithm>
  *
  *
  *
- * This class uses vtkDataObject-wrapped primitive types (svkDouble, svkInt, svkString, svkBool) to
- * fill input ports of these types.
+ * This class uses vtkDataObject-wrapped types (svkDouble, svkInt, svkString, svkBool, svkXML) to
+ * fill input ports that are not of type vtkDataObject.
  */
 class svkAlgorithmPortMapper : public vtkObject
 {
@@ -114,41 +114,51 @@ class svkAlgorithmPortMapper : public vtkObject
         vtkTypeRevisionMacro( svkAlgorithmPortMapper, vtkObject);
 
         //! Set the internal algorithm whos input ports are to be set.
-        virtual void             SetAlgorithm( vtkAlgorithm* algo );
+        void             SetAlgorithm( vtkAlgorithm* algo );
 
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
-        virtual void             InitializeInputPort( int port, string name, int type, bool required = true );
+        void             InitializeInputPort( int port, string name, int type, bool required = true );
 
         //! Parses an XML element and uses it to set the input ports of the algorithm. Converts image filename strings to svkImageData objects.
-        virtual void             SetInputPortsFromXML( vtkXMLDataElement* element );
+        void             SetInputPortsFromXML( vtkXMLDataElement* element );
 
         //! All ports must be initialized with InitializeInputPort BEFORE this method is called.
-        virtual int              FillInputPortInformation( int port, vtkInformation* info );
+        int              FillInputPortInformation( int port, vtkInformation* info );
 
-        virtual void             SetDoubleInputPortValue( int port, double value );
-        virtual svkDouble*       GetDoubleInputPortValue( int port );
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void             SetDoubleInputPortValue( int port, double value );
+        svkDouble*       GetDoubleInputPortValue( int port );
 
-        virtual void             SetIntInputPortValue( int port, int value );
-        virtual svkInt*          GetIntInputPortValue( int port );
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void             SetIntInputPortValue( int port, int value );
+        //! Basic getter.
+        svkInt*          GetIntInputPortValue( int port );
 
-        virtual void             SetStringInputPortValue( int port, string value );
-        virtual svkString*       GetStringInputPortValue( int port);
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void             SetStringInputPortValue( int port, string value );
+        //! Basic getter.
+        svkString*       GetStringInputPortValue( int port);
 
-        virtual void             SetBoolInputPortValue( int port, bool value );
-        virtual svkBool*         GetBoolInputPortValue( int port);
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void             SetBoolInputPortValue( int port, bool value );
+        //! Basic getter.
+        svkBool*         GetBoolInputPortValue( int port);
 
-        virtual void             SetXMLInputPortValue( int port, vtkXMLDataElement* value );
-        virtual svkXML*          GetXMLInputPortValue( int port);
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void             SetXMLInputPortValue( int port, vtkXMLDataElement* value );
+        //! Basic getter.
+        svkXML*          GetXMLInputPortValue( int port);
 
         //! Setter that converts a filename into an svkImageData object
-        virtual void             SetMRImageInputPortValue( int port, string filename );
-        virtual svkMriImageData* GetMRImageInputPortValue( int port);
+        void             SetMRImageInputPortValue( int port, string filename );
+        //! Basic getter.
+        svkMriImageData* GetMRImageInputPortValue( int port);
 
-        //! Returns string names used in XML configuration files for input port parameters.
-        virtual string           GetInputPortName( int port );
+        //! Returns string names used in XML configuration files for input port.
+        string           GetInputPortName( int port );
 
         //! Prints all input parameters set.
-        void                     PrintSelf( ostream &os, vtkIndent indent );
+        void             PrintSelf( ostream &os, vtkIndent indent );
 
     protected:
 
@@ -156,28 +166,32 @@ class svkAlgorithmPortMapper : public vtkObject
         ~svkAlgorithmPortMapper();
 
         //! Returns string class name for a given type.
-        static string            GetClassTypeFromDataType( int type );
+        static string    GetClassTypeFromDataType( int type );
 
         //! Returns the port number for a given parameter string.
-        virtual int              GetInputPortNumber( string name );
+        int              GetInputPortNumber( string name );
 
-        virtual int              GetInputPortType( int port );
-
-        virtual int              GetNumberOfInputPorts();
-
-        virtual vtkDataObject*   GetInput( int port );
-
-        virtual vtkDataObject*   SetInput( int port, vtkDataObject* input );
+        //! Gets the type for a given input port
+        int              GetInputPortType( int port );
 
         //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string> inputPortNames;
+        vector<string>   inputPortNames;
 
         //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
-        vector<int>    inputPortTypes;
+        vector<int>      inputPortTypes;
 
-        vector<bool>   inputPortRequired;
+        //! Stores whether or not a port is required. Used by FillInputPortInformation to determine types.
+        vector<bool>     inputPortRequired;
 
     private:
+
+        //! Handles getting data object input appropriately.
+        virtual vtkDataObject*   GetAlgorithmInputPort( int port );
+
+        //! Handles setting data object input appropriately.
+        virtual vtkDataObject*   SetAlgorithmInputPort( int port, vtkDataObject* input );
+
+        //! Internal algorithm
         vtkAlgorithm* algo;
 
 };

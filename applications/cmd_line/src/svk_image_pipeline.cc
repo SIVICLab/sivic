@@ -55,7 +55,7 @@ extern "C" {
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
 #include <vtkXMLUtilities.h>
-#include <svkXMLImagePipeline.h>
+#include <svkImageAlgorithmPipeline.h>
 
 
 using namespace svk;
@@ -138,9 +138,11 @@ int main (int argc, char** argv)
     // Lets start by reading the configuration file
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
 
-    svkXMLImagePipeline* pipeline = svkXMLImagePipeline::New();
+    svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
+    svkUtils::CreateNestedXMLDataElement( configXML, pipeline->GetPortMapper()->GetInputPortName(svkImageAlgorithmPipeline::INPUT_IMAGE), inputFileName);
     pipeline->SetInputPortsFromXML(configXML);
-    pipeline->GetXMLInterpreter()->SetMRImageInputPortValue(svkXMLImagePipeline::INPUT_IMAGE, inputFileName);
+    vtkIndent indent;
+    configXML->PrintXML(cout, indent);
     pipeline->Update();
 
     svkIdfVolumeWriter* idfWriter = svkIdfVolumeWriter::New();

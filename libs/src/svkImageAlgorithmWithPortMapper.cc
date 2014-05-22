@@ -57,9 +57,8 @@ svkImageAlgorithmWithPortMapper::svkImageAlgorithmWithPortMapper()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
-    this->portMapper = svkAlgorithmPortMapper::New();
-    this->portMapper->SetAlgorithm( this );
 
+    this->portMapper = NULL;
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
 }
@@ -87,16 +86,20 @@ void svkImageAlgorithmWithPortMapper::SetInputPortsFromXML( vtkXMLDataElement* e
 
 
 /*!
- * Returns the interpreter.
+ * Returns the port mapper.
  */
 svkAlgorithmPortMapper* svkImageAlgorithmWithPortMapper::GetPortMapper()
 {
+    if( this->portMapper == NULL ) {
+        this->portMapper = svkAlgorithmPortMapper::New();
+        this->portMapper->SetAlgorithm( this );
+    }
     return this->portMapper;
 }
 
 
 /*!
- *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the interpreter.
+ *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the port mapper.
  *
  */
 void svkImageAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent )

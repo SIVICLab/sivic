@@ -65,9 +65,11 @@ using namespace std;
 
 /*!
  *  The purpose of this class is to take in an XML element that defines a set of ROI's, a set
- *  of images/maps, filters to apply to the ROI's/images/maps, and a set of statistics to be
+ *  of images, filters to apply to the ROI's/images, and a set of statistics to be
  *  computed. Then statistics for every combination will be computed using svkImageStatistics
  *  and an XML data element will be output containing the results of the computation.
+ *
+ *  TODO: Should this be converted into an svkImageAlgorithmWithPortMapper?
  */
 class svkImageStatisticsCollector : public vtkObject
 {

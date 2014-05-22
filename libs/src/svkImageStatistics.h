@@ -100,17 +100,18 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         svkImageStatistics();
        ~svkImageStatistics();
 
-       virtual int RequestData(
+        virtual int RequestData(
                        vtkInformation* request,
                        vtkInformationVector** inputVector,
                        vtkInformationVector* outputVector );
 
 
+    private:
+        //! Holds the results.
         vtkXMLDataElement*  results;
+
+        //! Used to compute some statistics.
         vtkImageAccumulate* accumulator;
-
-
-        
 
 };
 

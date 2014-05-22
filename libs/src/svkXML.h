@@ -54,7 +54,7 @@ namespace svk {
 using namespace std;
 
 /*!
- *  This class is a container for a string. It is a subclass of vtkDataObject so it can
+ *  This class is a container for XML. It is a subclass of vtkDataObject so it can
  *  be used in input ports of algorithms.
  */
 class svkXML : public vtkDataObject
