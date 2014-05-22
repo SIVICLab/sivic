@@ -364,6 +364,19 @@ void svkMRSAutoPhase::ThreadedRequestData(
 }
 
 
+void svkMRSAutoPhase::ValidateInput()
+{
+    svkDcmHeader::DimensionVector mrsDimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    int numMRSCells = svkDcmHeader::GetNumberOfCells( &mrsDimensionVector );
+
+    svkDcmHeader::DimensionVector mriDimensionVector = this->GetOutput(0)->GetDcmHeader()->GetDimensionIndexVector();
+    int numMRICells = svkDcmHeader::GetNumberOfCells( &mriDimensionVector );
+    if ( numMRICells != numMRSCells ) {
+        cout << "ERROR: Number of MRI and MRS Cells do not match" << endl;
+        exit(1);
+    }    
+}
+
 
 /*!
  *  Loop through spectra within the specified sub-extent and apply auto phase
@@ -381,16 +394,12 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
     svkDcmHeader::DimensionVector mrsDimensionVector = this->GetImageDataInput(0)->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector loopVector = mrsDimensionVector;
 
-    svkDcmHeader::DimensionVector mriDimensionVector = this->GetOutput(0)->GetDcmHeader()->GetDimensionIndexVector();
-    int numMRICells = svkDcmHeader::GetNumberOfCells( &mriDimensionVector );
-
     int numThreads = this->GetNumberOfThreads();
     int numMRSCells = svkDcmHeader::GetNumberOfCells( &mrsDimensionVector );
 
-    if ( numMRICells != numMRSCells ) {
-        cout << "ERROR: Number of MRI and MRS Cells do not match" << endl;
-        exit(1);
-    }    
+    this->ValidateInput(); 
+
+
 
     //cout << *this->GetOutput(0)  << endl;
     for (int cellID = 0; cellID < numMRSCells; cellID++) {

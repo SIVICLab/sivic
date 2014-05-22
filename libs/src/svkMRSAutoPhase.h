@@ -135,6 +135,8 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
                             int threadId
                         );
 
+        virtual void    ValidateInput(); 
+
 
         virtual int     FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int     FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 

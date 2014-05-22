@@ -74,6 +74,8 @@ class svkMRSFirstPointPhase : public svkMRSAutoPhase
         ~svkMRSFirstPointPhase();
 
         virtual void    SetMapSeriesDescription( ); 
+        virtual void    ValidateInput(); 
+
 
         virtual void    FitPhase( int cellID ); 
         virtual void    PrePhaseSetup();

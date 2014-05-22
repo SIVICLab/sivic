@@ -303,3 +303,9 @@ void svkMRSFirstPointPhase::SetMapSeriesDescription( )
 {
     this->GetOutput(0)->GetDcmHeader()->SetValue("SeriesDescription", "FirstPointPhaseMap"); 
 }
+
+
+void svkMRSFirstPointPhase::ValidateInput()
+{
+}
+
