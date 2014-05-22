@@ -64,6 +64,7 @@ svkMRSAverageSpectra::svkMRSAverageSpectra()
     this->useSelectionBoxMask = false;
     this->useMagnitudeSpectra = false;
     this->SetNumberOfInputPorts(2); // the 2nd is optional
+    this->averageOverNonSpatialDims = false;
 
 }
 
@@ -129,6 +130,16 @@ void svkMRSAverageSpectra::SetAverageDataDimensions()
     averageHdr->SetDimensionIndexSize( svkDcmHeader::COL_INDEX, 0 );
     averageHdr->SetDimensionIndexSize( svkDcmHeader::ROW_INDEX, 0);
     averageHdr->SetDimensionIndexSize( svkDcmHeader::SLICE_INDEX, 0);
+
+    /*
+     *  If averaging over time/channels, etc then set remaining dims to 0 as well: 
+     */
+    if ( this->averageOverNonSpatialDims == true ) {
+        for ( int dim = 3; dim < dimVec.size(); dim++ ) {
+            averageHdr->SetDimensionIndexSize( averageHdr->GetDimensionLabelFromIndex(&dimVec, dim), 0); 
+        }
+    }
+
     this->averageData->SyncVTKImageDataToDcmHeader(); 
 
     //  =======================================================
@@ -271,13 +282,16 @@ void svkMRSAverageSpectra::AverageSpectraInROI()
             //  Get the corresponding average spectrum to write into
             //  Set the non spatial dimensions to match those in the input data: 
             //  ==========================================================
-            for ( int dim = 4; dim < avDimVec.size(); dim++ ) {
-                svkDcmHeader::DimensionIndexLabel indexLabel=  svkDcmHeader::GetDimensionLabelFromIndex( &loopVec, dim ); 
-                int indexValue = svkDcmHeader::GetDimensionVectorValue( &loopVec, indexLabel ); 
-                svkDcmHeader::SetDimensionVectorValue( &avLoopVec, indexLabel, indexValue); 
+            if ( this->averageOverNonSpatialDims == false ) { 
+                for ( int dim = 3; dim < avDimVec.size(); dim++ ) {
+                    svkDcmHeader::DimensionIndexLabel indexLabel=  svkDcmHeader::GetDimensionLabelFromIndex( &loopVec, dim ); 
+                    int indexValue = svkDcmHeader::GetDimensionVectorValue( &loopVec, indexLabel ); 
+                    svkDcmHeader::SetDimensionVectorValue( &avLoopVec, indexLabel, indexValue); 
+                }
             }
             int avCellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &avDimVec, &avLoopVec ); 
             vtkFloatArray* spectrumAv = static_cast<vtkFloatArray*>( this->averageData->GetSpectrum( avCellID ) );
+            //cout << "Input cell, av cell: " << cellID << " " << avCellID << endl;
 
             for (int i = 0; i < numTimePoints; i++ ) {
                 spectrumIn->GetTuple(i, tupleIn);     
@@ -352,6 +366,18 @@ void svkMRSAverageSpectra::AverageMagnitudeSpectra()
 }
 
 
+/*
+ * Sets algorithm to average over spatial ROI in all non-Spatial DIMS.  For example if 
+ * this is a multi-coil data set will result in the average spectrum within the 
+ * specified spatial ROI and over all channels.  By default the average spatial average
+ * spectrum for each volume (time, channel, etc) are returned separately.  
+ */
+void svkMRSAverageSpectra::AverageOverNonSpatialDims()
+{
+    this->averageOverNonSpatialDims = true; 
+}
+
+
 /*!
  *  PrintSelf method calls parent class PrintSelf, then prints the dcos.
  *
@@ -361,6 +387,3 @@ void svkMRSAverageSpectra::PrintSelf( ostream &os, vtkIndent indent )
     Superclass::PrintSelf( os, indent );
     os << "only use selection box:" << this->useMaskFile << endl;
 }
-
-
-
