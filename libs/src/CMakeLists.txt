@@ -259,6 +259,7 @@ ADD_LIBRARY(
     svkBool.cc
     svkInt.cc
     svkString.cc
+    svkXML.cc
 )
 
 SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)

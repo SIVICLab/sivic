@@ -49,7 +49,9 @@ vtkStandardNewMacro(svkXMLImagePipeline);
 //! Constructor
 svkXMLImagePipeline::svkXMLImagePipeline()
 {
+    this->SetNumberOfInputPorts(2);
     this->xmlInterpreter->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkXMLInputInterpreter::SVK_MR_IMAGE_DATA);
+    this->xmlInterpreter->InitializeInputPort( PIPELINE, "PIPELINE", svkXMLInputInterpreter::SVK_XML);
     cout << "Constructing svkXMLImagePipeline." << endl;
     this->lastFilter = NULL;
     this->reader = NULL;
@@ -71,19 +73,6 @@ svkXMLImagePipeline::~svkXMLImagePipeline()
 
 
 /*!
- * Method sets the XML configuration file.
- */
-void svkXMLImagePipeline::SetXMLPipeline( vtkXMLDataElement* pipeline )
-{
-    this->pipeline = pipeline;
-    this->reader = NULL;
-    vtkIndent indent;
-    cout << "COFIGURATION SET BY XML:" << endl;
-    this->pipeline->PrintXML(cout, indent);
-}
-
-
-/*!
  *  RequestData pass the input through the algorithm, and copies the dcos and header
  *  to the output.
  */
@@ -92,6 +81,7 @@ int svkXMLImagePipeline::RequestData( vtkInformation* request,
                                     vtkInformationVector* outputVector )
 {
     svkImageData* filteredImage = this->xmlInterpreter->GetMRImageInputPortValue(INPUT_IMAGE);
+    vtkXMLDataElement* pipeline = this->xmlInterpreter->GetXMLInputPortValue(PIPELINE)->GetValue();
     if( pipeline != NULL ) {
         int numberOfFilters = pipeline->GetNumberOfNestedElements();
         for( int i = 0; i < numberOfFilters; i++ ) {

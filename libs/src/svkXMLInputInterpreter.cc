@@ -136,6 +136,8 @@ void svkXMLInputInterpreter::SetInputPortsFromXML( vtkXMLDataElement* element )
                     this->SetBoolInputPortValue(i, true );
                 } else if ( dataType == SVK_MR_IMAGE_DATA ) {
                     this->SetMRImageInputPortValue( i, parameterStringValue );
+                } else if ( dataType == SVK_XML ) {
+                    this->SetXMLInputPortValue( i, parameterElement );
                 }
             }
         }
@@ -298,6 +300,40 @@ svkBool* svkXMLInputInterpreter::GetBoolInputPortValue( int port )
 
 
 /*!
+ * Parameter port setter.
+ */
+void svkXMLInputInterpreter::SetXMLInputPortValue( int port, vtkXMLDataElement* value )
+{
+    if( this->GetInputPortType(port) == SVK_XML ) {
+        vtkDataObject* parameter =  this->GetInput( port );
+        if( parameter == NULL ) {
+            parameter = svkXML::New();
+            this->SetInput(port, parameter);
+            parameter->Delete();
+            parameter = this->GetInput( port );
+        }
+        svkXML::SafeDownCast( parameter )->SetValue(value);
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type XML." << endl;
+    }
+}
+
+
+/*!
+ * Parameter port getter.
+ */
+svkXML* svkXMLInputInterpreter::GetXMLInputPortValue( int port )
+{
+    if( this->GetInputPortType(port) == SVK_XML ) {
+        vtkDataObject* parameter =  this->GetInput( port );
+        return svkXML::SafeDownCast( parameter );
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type XML. " << endl;
+    }
+}
+
+
+/*!
  * Sets an MRI image port. Input is a filename and a reader will be instantiated to read the file.
  */
 void svkXMLInputInterpreter::SetMRImageInputPortValue( int port, string filename )
@@ -349,6 +385,8 @@ string svkXMLInputInterpreter::GetClassTypeFromDataType( int type )
         classType = "svkBool";
     } else if ( type == SVK_MR_IMAGE_DATA ) {
         classType = "svkMriImageData";
+    } else if ( type == SVK_XML ) {
+        classType = "svkXML";
     }
     return classType;
 }

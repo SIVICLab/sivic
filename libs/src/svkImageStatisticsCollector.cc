@@ -214,10 +214,10 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
     vtkIndent indent;
     cout << "IMAGE ELEMENT XML:" << endl;
     imageElement->PrintXML(cout, indent);
-    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName("svkXMLImagePipeline");
+    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetClassName());
     if( filters != NULL ) {
         this->pipelineFilter->SetInput(svkXMLImagePipeline::INPUT_IMAGE, inputImage);
-        this->pipelineFilter->SetXMLPipeline( filters );
+        this->pipelineFilter->SetInputPortsFromXML( filters );
         this->pipelineFilter->Update();
         filteredData = this->pipelineFilter->GetOutput();
     } else {

@@ -59,6 +59,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkBool.h>
+#include <svkXML.h>
 
 namespace svk {
 
@@ -105,7 +106,8 @@ class svkXMLInputInterpreter : public vtkObject
             SVK_DOUBLE ,
             SVK_STRING,
             SVK_MR_IMAGE_DATA,
-            SVK_4D_IMAGE_DATA
+            SVK_4D_IMAGE_DATA,
+            SVK_XML
         } svkXMLDataType;
 
         static svkXMLInputInterpreter* New();
@@ -134,6 +136,9 @@ class svkXMLInputInterpreter : public vtkObject
 
         virtual void             SetBoolInputPortValue( int port, bool value );
         virtual svkBool*         GetBoolInputPortValue( int port);
+
+        virtual void             SetXMLInputPortValue( int port, vtkXMLDataElement* value );
+        virtual svkXML*          GetXMLInputPortValue( int port);
 
         //! Setter that converts a filename into an svkImageData object
         virtual void             SetMRImageInputPortValue( int port, string filename );

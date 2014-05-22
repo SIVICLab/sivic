@@ -40,22 +40,13 @@
  */
 
 
-#ifndef SVK_XML_IMAGE_PIPELINE_H
-#define SVK_XML_IMAGE_PIPELINE_H
+#ifndef SVK_XML_H
+#define SVK_XML_H
 
 
-#include <stdio.h>
-#include <map>
 #include <vtkObjectFactory.h>
-#include <vtkObject.h>
+#include <vtkDataObject.h>
 #include <vtkXMLDataElement.h>
-#include <svkImageReaderFactory.h>
-#include <svkImageReader2.h>
-#include <svkMriImageData.h>
-#include <svkImageStatistics.h>
-#include <svkImageThreshold.h>
-#include <svkXMLImageAlgorithm.h>
-#include <svkIdfVolumeWriter.h>
 
 namespace svk {
 
@@ -63,51 +54,34 @@ namespace svk {
 using namespace std;
 
 /*!
- *  The purpose of this class is to take in an XML element that defines a set of ROI's, a set
- *  of images/maps, filters to apply to the ROI's/images/maps, and a set of statistics to be
- *  computed. Then statistics for every combination will be computed using svkImageStatistics
- *  and an XML data element will be output containing the results of the computation.
+ *  This class is a container for a string. It is a subclass of vtkDataObject so it can
+ *  be used in input ports of algorithms.
  */
-class svkXMLImagePipeline : public svkXMLImageAlgorithm
+class svkXML : public vtkDataObject
 {
 
     public:
 
-        typedef enum {
-            INPUT_IMAGE = 0,
-            PIPELINE
-        } svkXMLImageAlgorithmParameters;
-
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkXMLImagePipeline, svkXMLImageAlgorithm );
+        vtkTypeRevisionMacro( svkXML, vtkDataObject );
   
         // vtk initialization 
-        static svkXMLImagePipeline* New();
+        static svkXML* New();
+        vtkXMLDataElement* GetValue( );
+        void   SetValue( vtkXMLDataElement* value );
 
 	protected:
 
-        svkXMLImagePipeline();
-       ~svkXMLImagePipeline();
+        svkXML();
+       ~svkXML();
 
-       virtual int RequestData(
-                       vtkInformation* request,
-                       vtkInformationVector** inputVector,
-                       vtkInformationVector* outputVector );
-
-       svkXMLImageAlgorithm* GetAlgorithmForFilterName( string filterName );
-
-	private:
-
-
-       //! Temporary pointer to help manage memory release.
-       svkImageReader2*      reader;
-
-       //! Temporary pointer to help manage memory release.
-       svkXMLImageAlgorithm* lastFilter;
+        vtkXMLDataElement* value;
 
 };
 
 
 }   //svk
 
-#endif //SVK_XML_IMAGE_PIPELINE_H
+
+
+#endif //SVK_XML_H

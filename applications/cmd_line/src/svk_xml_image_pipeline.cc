@@ -66,16 +66,16 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_threshold -i image_file_name -o output_file_name -c config_file_name \n";
-    usemsg += "                [-v] [-h]                                                      \n";
-    usemsg += "                                                                               \n";
-    usemsg += "   -i            image_file_name     The image to be thresholded               \n";
-    usemsg += "   -o            output_file_name    The name of the output image              \n";
-    usemsg += "   -c            config_file_name    Name of the config file.                  \n";
-    usemsg += "   -v                                Verbose output.                           \n";
-    usemsg += "   -h                                Print help message.                       \n";
-    usemsg += "                                                                               \n";
-    usemsg += "                                                                               \n";
+    usemsg += "svk_xml_image_pipeline -i image_file_name -o output_file_name -c config_file_name \n";
+    usemsg += "                       [-v] [-h]                                                  \n";
+    usemsg += "                                                                                  \n";
+    usemsg += "   -i            image_file_name     The image to be processed                    \n";
+    usemsg += "   -o            output_file_name    The name of the output image                 \n";
+    usemsg += "   -c            config_file_name    Name of the config file.                     \n";
+    usemsg += "   -v                                Verbose output.                              \n";
+    usemsg += "   -h                                Print help message.                          \n";
+    usemsg += "                                                                                  \n";
+    usemsg += "                                                                                  \n";
 
     string configFileName;
     string inputFileName;
@@ -126,7 +126,6 @@ int main (int argc, char** argv)
      * Check for extra arguments or an empty input file name.
      */
     if ( argc != 0 || configFileName.length() == 0 || inputFileName.length() == 0 ||  outputFileName.length() == 0 ) {
-        cout << "HERE" << endl;
         cout << usemsg << endl;
         exit(1); 
     }
@@ -137,34 +136,18 @@ int main (int argc, char** argv)
     }
 
     // Lets start by reading the configuration file
-    vtkIndent indent;
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
-    vtkXMLDataElement* xmlPipelineInputPorts = vtkXMLDataElement::New();
-    xmlPipelineInputPorts->SetName("svkXMLImagePipeline");
-    svkUtils::CreateNestedXMLDataElement( xmlPipelineInputPorts, "INPUT_IMAGE", inputFileName);
 
     svkXMLImagePipeline* pipeline = svkXMLImagePipeline::New();
-    pipeline->SetInputPortsFromXML(xmlPipelineInputPorts);
-    pipeline->SetXMLPipeline(configXML);
+    pipeline->SetInputPortsFromXML(configXML);
+    pipeline->GetXMLInterpreter()->SetMRImageInputPortValue(svkXMLImagePipeline::INPUT_IMAGE, inputFileName);
     pipeline->Update();
 
-    /*
-    svkXMLImageAlgorithm* thresholder = svkImageThreshold::New();
-    cout << "Setting input to thresholder..." << endl;
-    thresholder->SetInputPortsFromXML( configXML );
-    cout << "Thresholder: " << *thresholder << endl;
-    thresholder->Update();
-    */
     svkIdfVolumeWriter* idfWriter = svkIdfVolumeWriter::New();
-    cout << "Setting filename for idfWriter" << endl;
     idfWriter->SetFileName( outputFileName.c_str());
-    cout << "Setting input for idfWriter" << endl;
     idfWriter->SetInput( pipeline->GetOutput() );
-    cout << "Writting..." << endl;
     idfWriter->Write();
-    cout << "Cleanup..." << endl;
     idfWriter->Delete();
-    //thresholder->Delete();
     pipeline->Delete();
 
     return 0; 
