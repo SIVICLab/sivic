@@ -165,7 +165,8 @@ int svkMetaboliteMap::RequestData( vtkInformation* request, vtkInformationVector
         0, 
         0, 
         0, 
-        this->newSeriesDescription 
+        this->newSeriesDescription, 
+        VTK_DOUBLE
     );
 
     //  Determines binary mask (quantificationMask) indicating whether a given voxel 
