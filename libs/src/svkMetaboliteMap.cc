@@ -245,7 +245,7 @@ void svkMetaboliteMap::GenerateMap()
 
                 //  allocate correct array type 
                 int vtkDataType = this->GetOutput()->GetPointData()->GetArray(0)->GetDataType(); 
-                if ( vtkDataType == VTK_VOID ) {
+                if ( vtkDataType == VTK_VOID || vtkDataType == VTK_DOUBLE ) {
                     metMapArray = vtkDoubleArray::New();     
                 } else if ( vtkDataType == VTK_FLOAT ) {
                     metMapArray = vtkFloatArray::New();     
