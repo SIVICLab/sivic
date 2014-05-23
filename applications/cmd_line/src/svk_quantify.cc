@@ -76,41 +76,42 @@ int main (int argc, char** argv)
     usemsg += "             (--peak_center ppm --peak_width ppm --peak_name name | --xml file )     \n";
     usemsg += "             [ --algo type ] [ -b ]                                                  \n"; 
     usemsg += "             [--verbose ] [ -h ]                                                     \n"; 
-    usemsg += "\n";  
-    usemsg += "   -i input_file_name        name of file to convert.            \n"; 
-    usemsg += "   -o output_root_name       root name of outputfile.            \n";  
-    usemsg += "   -t output_data_type       target data type:                   \n";  
-    usemsg += "                                 3 = UCSF IDF                    \n";  
-    usemsg += "                                 6 = DICOM_MRI                   \n";  
-    usemsg += "   -b                        Only fit inside volume selection    \n"; 
-    usemsg += "   --xml               file  XML quantification config file      \n"; 
-    usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center     \n";
-    usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration  \n";
-    usemsg += "   --peak_name         name  String label name for peak or ratio \n"; 
-    usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout. \n"; 
-    usemsg += "   --algo              type  Quantification algorithm :          \n"; 
-    usemsg += "                                 1 = Peak Ht (default)           \n";  
-    usemsg += "                                 2 = Integration                 \n";  
-    usemsg += "                                 3 = Line Width                  \n";
-    usemsg += "                                 4 = Magnitude Peak Ht           \n";
-    usemsg += "                                 5 = Magnitude Integration       \n";
-    usemsg += "                                 6 = Magnitude Line Width        \n";
-    usemsg += "   -h                        print help mesage.                  \n";  
-    usemsg += " \n";  
-    usemsg += "Generates metabolite map volume by direct integration of input spectra over \n"; 
-    usemsg += "the specified chemical shift range, or by peak ht determination. \n";
-    usemsg += "Alternatively, may compute a set of maps based on an input xml configuration file\n";
-    usemsg += "Example:  \n";
-    usemsg += "\n";  
-    usemsg += "    Calculate NAA peak ht map\n";
-    usemsg += "    svk_quantify -i mrs.dcm -o naa_pk.dcm -t6 --peak_center 2 --peak_width .4 \n";
-    usemsg += "                 --peak_2_width .2 --algo 2 --zscore --peak_name NAA_PK_HT\n";
-    usemsg += "    Calculate all quantities specified in xml file\n";
-    usemsg += "    svk_quantify -i mrs.dcm -o test -t3 --xml mrs.xml \n";
+    usemsg += "                                                                                     \n";  
+    usemsg += "   -i input_file_name        name of file to convert.                                \n"; 
+    usemsg += "   -o output_root_name       root name of outputfile. This is a directory if using   \n";  
+    usemsg += "                             --xml.  All files will get written to the dir.          \n";  
+    usemsg += "   -t output_data_type       target data type:                                       \n";  
+    usemsg += "                                 3 = UCSF IDF                                        \n";  
+    usemsg += "                                 6 = DICOM_MRI                                       \n";  
+    usemsg += "   -b                        Only fit inside volume selection                        \n"; 
+    usemsg += "   --xml               file  XML quantification config file                          \n"; 
+    usemsg += "   --peak_center       ppm   Chemical shift of peak 1 center                         \n";
+    usemsg += "   --peak_width        ppm   Width in ppm of peak 1 integration                      \n";
+    usemsg += "   --peak_name         name  String label name for peak or ratio                     \n"; 
+    usemsg += "   --verbose                 Prints pk ht and integrals for each voxel to stdout.    \n"; 
+    usemsg += "   --algo              type  Quantification algorithm :                              \n"; 
+    usemsg += "                                 1 = Peak Ht (default)                               \n";  
+    usemsg += "                                 2 = Integration                                     \n";  
+    usemsg += "                                 3 = Line Width                                      \n";
+    usemsg += "                                 4 = Magnitude Peak Ht                               \n";
+    usemsg += "                                 5 = Magnitude Integration                           \n";
+    usemsg += "                                 6 = Magnitude Line Width                            \n";
+    usemsg += "   -h                        print help mesage.                                      \n";  
+    usemsg += "                                                                                     \n";  
+    usemsg += "Generates metabolite map volume by direct integration of input spectra over          \n"; 
+    usemsg += "the specified chemical shift range, or by peak ht determination.                     \n";
+    usemsg += "Alternatively, may compute a set of maps based on an input xml configuration file    \n";
+    usemsg += "Example:                                                                             \n";
+    usemsg += "                                                                                     \n";  
+    usemsg += "    Calculate NAA peak ht map                                                        \n";
+    usemsg += "    svk_quantify -i mrs.dcm -o naa_pk.dcm -t6 --peak_center 2 --peak_width .4        \n";
+    usemsg += "                 --peak_2_width .2 --algo 2 --zscore --peak_name NAA_PK_HT           \n";
+    usemsg += "    Calculate all quantities specified in xml file                                   \n";
+    usemsg += "    svk_quantify -i mrs.dcm -o test -t3 --xml mrs.xml                                \n";
     usemsg += "\n";  
 
     string  inputFileName; 
-    string  outputFileName; 
+    string  outputFileRoot; 
     string  xmlFileName; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED; 
     float   peakCenterPPM;
@@ -158,7 +159,7 @@ int main (int argc, char** argv)
                 inputFileName.assign( optarg );
                 break;
             case 'o':
-                outputFileName.assign(optarg);
+                outputFileRoot.assign(optarg);
                 break;
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
@@ -220,7 +221,7 @@ int main (int argc, char** argv)
     }
   
     
-    if ( xmlFileName.length() == 0  && ( inputFileName.length() == 0 || outputFileName.length() == 0 ) ) {
+    if ( xmlFileName.length() == 0  && ( inputFileName.length() == 0 || outputFileRoot.length() == 0 ) ) {
         cout << usemsg << endl;
         exit(1); 
     }
@@ -239,7 +240,7 @@ int main (int argc, char** argv)
     }
 
     //cout << inputFileName << endl;
-    //cout << outputFileName << endl;
+    //cout << outputFileRoot << endl;
     //cout << dataTypeOut << endl;
     //cout << peakCenterPPM << endl;
     //cout << peakWidthPPM << endl;
@@ -292,7 +293,10 @@ int main (int argc, char** argv)
         for (int mapId = 0; mapId < metMapVector->size(); mapId++) {
             cout << "mapId: " << mapId << endl; 
             cout << "SD: " << (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") << endl;
-            writer->SetFileName( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription").c_str() );
+            string outputMap = outputFileRoot; 
+            outputMap.append("/");    
+            outputMap.append( (*metMapVector)[mapId]->GetDcmHeader()->GetStringValue("SeriesDescription") );    
+            writer->SetFileName( outputMap.c_str() ); 
             writer->SetInput( (*metMapVector)[mapId] );
             if ( writer->IsA( "svkIdfVolumeWriter" ) ) {
                 svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true ); 
@@ -374,7 +378,7 @@ int main (int argc, char** argv)
                 exit(1);
             }
     
-            writer->SetFileName( outputFileName.c_str() );
+            writer->SetFileName( outputFileRoot.c_str() );
             writer->SetInput( quant->GetOutput() );
     
             //  Set the input command line into the data set provenance:
