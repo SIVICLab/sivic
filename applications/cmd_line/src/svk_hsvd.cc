@@ -92,14 +92,14 @@ int main (int argc, char** argv)
     usemsg += "\n";  
 
 
-    string inputFileName; 
-    string outputFileName;
-    bool writeFilter = false; 
-    int modelOrder = 25; 
-    bool limitToSelectionBox = false; 
-    bool filterWater = false; 
-    bool filterLipid = false; 
-    bool onlyFilterSingleFile = false;
+    string  inputFileName; 
+    string  outputFileName;
+    bool    writeFilter = false; 
+    int     modelOrder = 25; 
+    bool    limitToSelectionBox = false; 
+    bool    filterWater = false; 
+    bool    filterLipid = false; 
+    bool    onlyFilterSingleFile = false;
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
