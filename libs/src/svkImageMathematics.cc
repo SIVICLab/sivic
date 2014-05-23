@@ -68,6 +68,8 @@ svkImageMathematics::svkImageMathematics()
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
+
+    this->SetNumberOfInputPorts(3); 
 }
 
 
