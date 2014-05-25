@@ -3253,6 +3253,19 @@ void svkDcmHeader::GetSpatialDimensions(svkDcmHeader::DimensionVector* dimension
 }
 
 
+/*!
+ *  Get the spatial dimensions from the DimensionVector.  This is 1 more than the max value in each index: 
+ *  If this is a 2x2x1 data set, the max indices would be 1,1,0, but the spatial dimension would return
+ *  2,2,1.        
+ */
+int svkDcmHeader::GetNumSpatialVoxels(svkDcmHeader::DimensionVector* dimensionVector)
+{
+    int numVoxels[3]; 
+    svkDcmHeader::GetSpatialDimensions(dimensionVector,  numVoxels); 
+    return numVoxels[0] * numVoxels[1] * numVoxels[2]; 
+}
+
+
 /*
  *  Given a loop vector (DimensionIndexVector with values for current index, 
  *  return the "spatial" index assuming the data is only 3D: 

@@ -77,11 +77,17 @@ svkMrsImageFFT::svkMrsImageFFT()
     this->voxelShift[0] = 0;
     this->voxelShift[1] = 0;
     this->voxelShift[2] = 0;
+    this->onlyUseSelectionBox = false;
+    this->selectionBoxMask = NULL;
 }
 
 
 svkMrsImageFFT::~svkMrsImageFFT()
 {
+    if ( this->selectionBoxMask != NULL ) { 
+        delete [] this->selectionBoxMask;
+        this->selectionBoxMask = NULL;
+    }
 }
 
 
@@ -145,6 +151,10 @@ int svkMrsImageFFT::RequestData( vtkInformation* request, vtkInformationVector**
 {
     int returnValue;
     vtkImageFourierFilter* fourierFilter = NULL;
+
+    //  Validate request: 
+    this->ValidateRequest(); 
+
     if( this->mode == REVERSE ) {
         fourierFilter = vtkImageRFFT::New();
     } else {
@@ -438,13 +448,18 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         //  Get the dimensionVector index for current cell -> indexVector: 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &indexVector, cellID ); 
 
-        int slice = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::SLICE_INDEX);
+        if ( this->onlyUseSelectionBox == true ) {
+            //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:   
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &indexVector); 
+            if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
+                return 1; 
+            }
+        }
 
         ostringstream progressStream;
         progressStream <<"Executing FFT for cell " << cellID + 1 << "/" << numCells ;
-                          
         this->SetProgressText( progressStream.str().c_str() );
-
+        int slice = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::SLICE_INDEX);
         progress = (((slice-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
         this->UpdateProgress( progress );
         cout << "."  ;
@@ -490,6 +505,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         for (int i = 0; i < numFrequencyPoints; i++) {
             spectrum->SetTuple2( i, imageOut[i].Real, imageOut[i].Imag ); 
         }
+
         delete[] imageComplexTime;
         delete[] imageComplexFrequency;
 
@@ -507,6 +523,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
     //  Trigger observer update via modified event:
     this->GetInput()->Modified();
     this->GetInput()->Update();
+
     return 1; 
 } 
 
@@ -676,6 +693,51 @@ void svkMrsImageFFT::SetUpdateExtent(int* start, int* end)
      */
     this->Modified();
 }
+
+
+/*
+ *  For spectral only transforms, limit to selection box.  This will be ignored if 
+ *  the data is in KSPACE, or if a spatial transform was requested.
+ */
+void svkMrsImageFFT::OnlyUseSelectionBox()
+{
+    this->onlyUseSelectionBox = true;
+}
+
+
+/*
+ *  For spectral only transforms, limit to selection box.  This will be ignored if 
+ *  the data requires a spatial transform.
+ */
+void svkMrsImageFFT::ValidateRequest()
+{
+    //  If the data is in k-space or the transform is spatial then ignore use selection box setting:  
+    if ( this->onlyUseSelectionBox == true ) {
+        svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+        string domainCol = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+        string domainRow = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain");
+        string domainSlice = data->GetDcmHeader()->GetStringValue( "SVK_ColumnsDomain"); 
+        if ( !domainCol.compare("KSPACE") || !domainRow.compare("KSPACE") || !domainSlice.compare("KSPACE") ) {
+            cout << "Ignore request to only transform selection box for kspace data" << endl;
+            this->onlyUseSelectionBox = false;
+            return; 
+        }
+        if ( this->domain == SPATIAL ) {
+            cout << "Ignore request to only transform selection box for spatial transform" << endl;
+            this->onlyUseSelectionBox = false;
+            return; 
+        }
+
+        //  If validated, then initialize the mask: 
+        svkDcmHeader::DimensionVector dimVec = data->GetDcmHeader()->GetDimensionIndexVector();
+        int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVec); 
+
+        float tolerance = .5;
+        this->selectionBoxMask = new short[numSpatialVoxels];
+        data->GetSelectionBoxMask(this->selectionBoxMask, tolerance);
+    }
+}
+
 
 
 /*!

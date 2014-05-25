@@ -65,7 +65,8 @@ using namespace std;
 
 
 /*! 
- *  Class to apply an FFT to all voxels 
+ *  Class to apply spectral or spatial FFT. If both spectral and spatial transforms are required, 
+ *  then should be called multiple timw with SetFFTDomain set appropriately.  
  *  
  *  Based on reconstruction methods developed by Sarah J. Nelson, Ph.D (UCSF).  
  *  1. Nelson S.J, "Analysis of volume MRI and MR spectroscopic imaging data for the evaluation 
@@ -100,6 +101,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void             SetVoxelShift( double voxelShift[3] );
         static void      FFTShift( vtkImageComplex* dataIn, int numPoints ); 
         static void      IFFTShift( vtkImageComplex* dataIn, int numPoints ); 
+        void             OnlyUseSelectionBox();
 
 
     protected:
@@ -142,6 +144,9 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
 
         bool            preCorrectCenter;
         bool            postCorrectCenter;
+        bool            onlyUseSelectionBox;
+        short*          selectionBoxMask;
+
         double          voxelShift[3];
         int             updateExtent[6]; 
         FFTDomain       domain; 
@@ -150,6 +155,7 @@ class svkMrsImageFFT : public svkImageInPlaceFilter
         void            UpdateOrigin(); 
         void            PrintSpectrum( vtkImageComplex* data, int numPoints, vtkstd::string msg ); 
         void            NormalizePhaseShift( double shift[3] );
+        void            ValidateRequest(); 
 
 
 };

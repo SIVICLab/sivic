@@ -301,6 +301,10 @@ void svkHSVD::CheckInputSpectralDomain()
         //  frequency to time: 
         fft->SetFFTMode( svkMrsImageFFT::REVERSE ); 
 
+        if ( this->onlyFitInVolumeLocalization == true ) { 
+            fft->OnlyUseSelectionBox();
+        } 
+
         fft->Update();
         fft->Delete();
 
@@ -329,6 +333,9 @@ void svkHSVD::CheckOutputSpectralDomain()
 
         //  time to frequency: 
         fft->SetFFTMode( svkMrsImageFFT::FORWARD ); 
+        if ( this->onlyFitInVolumeLocalization == true ) { 
+            fft->OnlyUseSelectionBox();
+        } 
 
         fft->Update();
         fft->Delete();
@@ -342,6 +349,9 @@ void svkHSVD::CheckOutputSpectralDomain()
 
             //  time to frequency: 
             fft->SetFFTMode( svkMrsImageFFT::FORWARD ); 
+            if ( this->onlyFitInVolumeLocalization == true ) { 
+                fft->OnlyUseSelectionBox();
+            } 
 
             fft->Update();
             fft->Delete();

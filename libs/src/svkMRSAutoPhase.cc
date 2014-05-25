@@ -186,11 +186,8 @@ int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector*
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
 
-    int numSpatialVoxels = 1; 
-    for ( int dim = 0; dim < 3; dim++) {
-        int dimSize = svkDcmHeader::GetDimensionVectorValue ( &dimensionVector, dim ) + 1; 
-        numSpatialVoxels *= dimSize;  
-    }
+    svkDcmHeader::DimensionVector dimVec = data->GetDcmHeader()->GetDimensionIndexVector();
+    int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVec); 
 
     float tolerance = .5;     
     this->selectionBoxMask = new short[numSpatialVoxels];
@@ -449,12 +446,11 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
         //  selection box:     
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
         svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
-        svkDcmHeader::DimensionVector spatialIndexVector = dimensionVector; 
-        svkDcmHeader::GetDimensionVectorIndexFromCellID(&dimensionVector, &spatialIndexVector, cellID);
-        for ( int dim = 3; dim < dimensionVector.size(); dim++) {
-            svkDcmHeader::SetDimensionVectorValue(&spatialIndexVector, dim, 0); 
-        }
-        int spatialCellIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&dimensionVector, &spatialIndexVector); 
+        svkDcmHeader::DimensionVector indexVector = dimensionVector; 
+        svkDcmHeader::GetDimensionVectorIndexFromCellID(&dimensionVector, &indexVector, cellID);
+
+        //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:   
+        int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &indexVector);
 
         if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
             return; 

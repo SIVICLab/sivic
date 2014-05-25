@@ -869,6 +869,8 @@ class svkDcmHeader: public vtkObject
                             svkDcmHeader::DimensionVector* dimensionVector, 
                             int* numVoxels
                        );
+        static int     GetNumSpatialVoxels(svkDcmHeader::DimensionVector* dimensionVector); 
+
         
 
     protected:
