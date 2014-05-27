@@ -75,9 +75,10 @@ svkHSVD::svkHSVD()
     this->exportFilterImage = false; 
     this->onlyFitInVolumeLocalization = false; 
     this->modelOrder = 25; 
-    this->SetNumberOfThreads(16);
+    //this->SetNumberOfThreads(8);
     //this->SetNumberOfThreads(1);
     svkHSVD::progress = NULL; 
+
 
 }
 
@@ -232,14 +233,6 @@ void svkHSVD::HSVDFitCellSpectrum( int cellID )
     //cout << "HSVD Cell: " << cellID << endl;
     vector< vector< double > >  hsvdModel;    
 
-    //  If only fitting within selection box, then skip over
-    //  voxels outside. 
-    if ( this->onlyFitInVolumeLocalization == true ) { 
-        if ( this->selectionBoxMask[cellID] == 0 ) {
-               return; 
-           }
-    }
-
     this->HSVD(cellID, &hsvdModel); 
    
     if ( this->GetDebug() ) {
@@ -368,6 +361,7 @@ void svkHSVD::CheckOutputSpectralDomain()
 void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel) 
 {
 
+    //cout << "FIT HSVD Cell: " << cellID << endl;
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
 
@@ -1264,6 +1258,16 @@ void svkHSVD::svkHSVDExecute(int ext[6], int id)
     for (int cellID = 0; cellID < numCells; cellID++) {
 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+
+        //  if restricting fit to selection box, then check to see if current cell is in box, otherwise continue:     
+        if ( this->onlyFitInVolumeLocalization == true ) { 
+            //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:   
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector); 
+            if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
+                continue; 
+            }
+        }
+
         bool isCellInSubExtent = svk4DImageData::IsIndexInExtent( ext, &loopVector ); 
         if ( isCellInSubExtent ) { 
             //cout << "CELL TO FIT: " << cellID << endl;

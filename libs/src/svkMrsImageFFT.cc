@@ -452,7 +452,7 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
             //  Get the 3D spatial index for comparing if a given cell is in the spatial selectin box maks:   
             int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &indexVector); 
             if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
-                return 1; 
+                continue; 
             }
         }
 
