@@ -56,7 +56,7 @@ option( UCSF_INTERNAL "For UCSF Internal builds only." FALSE )
 option( SVK_USE_GL2PS "For exporting vector graphics formats, VTK must be built with VTK_USE_GL2PS." FALSE )
 option( BUILD_ITK "For building classes that rely on ITK fitting routines."  TRUE )
 option( BUILD_CLAPACK "For building classes that rely on clapack fitting routines."  FALSE )
-option( BUILD_PROFILER "Build stand-alone application." FALSE)
+option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
 
