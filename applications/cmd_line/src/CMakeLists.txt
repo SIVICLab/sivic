@@ -79,7 +79,6 @@ ELSE (CMAKE_SYSTEM_NAME MATCHES Linux)
         SET(EXECUTABLE_OUTPUT_PATH ../${PLATFORM})
         SET(LIBRARY_OUTPUT_PATH ../${PLATFORM})
         SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "-xO3 -DNDEBUG")
-
         SET(CMAKE_CXX_LINK_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS_RELEASE "-xO3 -DNDEBUG")
         SET(CMAKE_CXX_FLAGS "-xO3 -DNDEBUG")
@@ -124,6 +123,12 @@ ENDIF(VTK_FOUND)
 #   KWWidgets
 ###################################
 INCLUDE(${KWWidgets_USE_FILE})
+
+
+if( BUILD_PROFILER)
+    ADD_DEFINITIONS( -pg )
+    SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pg ")
+endif( BUILD_PROFILER )
 
 
 ###################################
