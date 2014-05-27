@@ -90,6 +90,8 @@ int main (int argc, char** argv)
     usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
     usemsg += "   --vsz         shiftZ      Fractional voxel shift in Z                         \n"; 
     usemsg += "   --single                  Only transform specified file if multiple in series \n"; 
+    usemsg += "   -b                        Only transform data in selection box, only valid for\n"; 
+    usemsg += "                             --spec transforms. Ignored otherwise                \n"; 
     usemsg += "   -h                        Print this help mesage.                             \n";  
     usemsg += "\n";  
     usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified,            \n"; 
@@ -102,6 +104,7 @@ int main (int argc, char** argv)
     bool transformSpecDomain = true; 
     bool transformSpatialDomain = true; 
     bool onlyTransformSingle = false; 
+    bool onlyTransformSelectionBox = false; 
     double voxelShift[3]; 
     voxelShift[0] = 0.; 
     voxelShift[1] = 0.; 
@@ -140,7 +143,7 @@ int main (int argc, char** argv)
     // ===============================================  
     int i;
     int option_index = 0; 
-    while ( ( i = getopt_long(argc, argv, "i:o:t:h", long_options, &option_index) ) != EOF) {
+    while ( ( i = getopt_long(argc, argv, "i:o:t:bh", long_options, &option_index) ) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
@@ -151,6 +154,9 @@ int main (int argc, char** argv)
             case 't':
                 dataTypeOut = static_cast<svkImageWriterFactory::WriterType>( atoi(optarg) );
                 break;
+            case 'b':
+                onlyTransformSelectionBox = true; 
+                break;    
             case FLAG_TRANSFORM_SPEC_DOMAIN:
                 transformSpecDomain = true;
                 transformSpatialDomain = false; 
@@ -237,6 +243,10 @@ int main (int argc, char** argv)
         } else {
             //  frequency to time: 
             imageFFT->SetFFTMode( svkMrsImageFFT::REVERSE ); 
+        }
+        
+        if ( onlyTransformSelectionBox == true) { 
+            imageFFT->OnlyUseSelectionBox();
         }
 
         imageFFT->Update();
