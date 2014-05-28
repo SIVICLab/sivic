@@ -190,7 +190,7 @@ class vtkSivicController : public vtkObject
         void                       SaveImageFromModel(const char* modelObjectName);
         void                       SaveImageFromModel(const char* modelObjectName, bool appendModelName);
         void                       SaveMetMapData( svkImageData* image, char* fileName, 
-                                        int writetType = 5); //svkImageWriterFactory::DICOM_MRI 
+                                        int writetType = 6); //svkImageWriterFactory::DICOM_ENHANCED MRI 
         void                       SaveSecondaryCapture( char* captureType, int outputOption = 0 );
         string                     GetOsiriXInDir(); 
         void                       SaveSecondaryCaptureOsiriX();    
