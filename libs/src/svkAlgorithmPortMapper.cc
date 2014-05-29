@@ -60,6 +60,9 @@ svkAlgorithmPortMapper::svkAlgorithmPortMapper()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    // We use the prefix argument so that xml users don't have to be aware of what a port is
+    this->inputPortPrefix = "svkArgument";
+    this->algorithmPrefix = "svkAlgorithm";
 
 }
 
@@ -122,7 +125,7 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
     vtkIndent indent;
     if( element != NULL ) {
         for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
-            vtkXMLDataElement* parameterElement =  element->FindNestedElementWithName(this->GetInputPortName(i).c_str());
+            vtkXMLDataElement* parameterElement =  element->FindNestedElementWithName(this->GetXMLTagForInputPort(i).c_str());
             if( parameterElement != NULL ) {
                 string parameterStringValue = string(parameterElement->GetCharacterData());
                 int dataType = this->GetInputPortType( i );
@@ -140,6 +143,8 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
                 } else if ( dataType == SVK_XML ) {
                     this->SetXMLInputPortValue( i, parameterElement );
                 }
+            } else {
+                cout << "WARNING: Input Port " << this->GetInputPortName(i) << " Not Found!" <<   endl;
             }
         }
     }
@@ -408,6 +413,79 @@ string svkAlgorithmPortMapper::GetInputPortName( int port )
 
 
 /*!
+ * Gets the XML tag with the appropriate prefix.
+ */
+string svkAlgorithmPortMapper::GetXMLTagForInputPort( int port )
+{
+    string nameWithPrefix = this->GetXMLInputPortPrefix();
+    nameWithPrefix.append( ":" );
+    nameWithPrefix.append( this->GetInputPortName(port));
+    return nameWithPrefix;
+}
+
+/*!
+ * Gets the XML tag with the appropriate prefix.
+ */
+string svkAlgorithmPortMapper::GetXMLTagForAlgorithm( )
+{
+    string nameWithPrefix = this->GetXMLAlgorithmPrefix();
+    nameWithPrefix.append( ":" );
+    nameWithPrefix.append( this->algo->GetClassName());
+    return nameWithPrefix;
+}
+
+
+bool svkAlgorithmPortMapper::GetInputPortRequired( int port )
+{
+    bool required = false;
+    if( port >= 0 && port < this->algo->GetNumberOfInputPorts() ) {
+        required = this->inputPortRequired[port];
+    } else {
+        cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
+    }
+    return required;
+}
+
+
+/*!
+ *
+ * Get the prefix used for the port definitions in xml
+ */
+string svkAlgorithmPortMapper::GetXMLInputPortPrefix( )
+{
+    return this->inputPortPrefix;
+}
+
+
+/*!
+ * Set the prefix used for the port definitions in xml
+ */
+void svkAlgorithmPortMapper::SetXMLInputPortPrefix( string prefix )
+{
+    this->inputPortPrefix = prefix;
+}
+
+
+/*!
+ *
+ * Get the prefix used for the port definitions in xml
+ */
+string svkAlgorithmPortMapper::GetXMLAlgorithmPrefix( )
+{
+    return this->algorithmPrefix;
+}
+
+
+/*!
+ * Set the prefix used for the port definitions in xml
+ */
+void svkAlgorithmPortMapper::SetXMLAlgorithmPrefix( string prefix )
+{
+    this->algorithmPrefix = prefix;
+}
+
+
+/*!
  *  PrintSelf method calls parent class PrintSelf, then prints all parameters.
  *
  */
@@ -432,6 +510,9 @@ void svkAlgorithmPortMapper::PrintSelf( ostream &os, vtkIndent indent )
                 filename = svkImageData::SafeDownCast(parameterObject)->GetSourceFileName();
             }
             os << indent << this->GetInputPortName(i) << ": " << filename << endl;
+        } else if ( svkXML::SafeDownCast(parameterObject) != NULL ) {
+            os << indent << this->GetInputPortName(i) << ": " << endl;
+            svkXML::SafeDownCast(parameterObject)->GetValue()->PrintXML( os, indent.GetNextIndent());
         } else {
             os << indent << this->GetInputPortName(i) << ": NOT SET" << endl;
         }
@@ -439,6 +520,40 @@ void svkAlgorithmPortMapper::PrintSelf( ostream &os, vtkIndent indent )
 }
 
 
+string svkAlgorithmPortMapper::GetXSD( )
+{
+    ostringstream oss;
+
+    oss <<"<xs:complexType name=\"" << this->algo->GetClassName() <<"Arguments\">" << endl;
+    oss <<"    <xs:all>" << endl;
+    for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
+        oss<< "        <xs:element name=\"" << this->GetInputPortName(i) << "\" type=";
+        int dataType = this->GetInputPortType( i );
+        if( dataType == SVK_DOUBLE ) {
+            oss << "\"xs:decimal\"";
+        } else if ( dataType == SVK_INT ) {
+            oss << "\"xs:integer\"";
+        } else if ( dataType == SVK_STRING ) {
+            oss << "\"xs:string\"";
+        } else if ( dataType == SVK_BOOL ) {
+            oss << "\"xs:bool\"";
+        } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+            oss << "\"xs:string\"";
+        } else if ( dataType == SVK_XML ) {
+            oss << "\"xs:string\"";
+        }
+        oss << " minOccurs=";
+        if( this->GetInputPortRequired(i) ) {
+            oss << "1";
+        } else {
+            oss << "0";
+        }
+        oss << "/>" << endl;
+    }
+    oss <<"    </xs:all>" << endl;
+    oss <<"</xs:complexType>" << endl;
+    return oss.str();
+}
 /*!
  * Returns the port number for the given parameter name. Returns -1 if the port does not exist.
  */

@@ -116,7 +116,7 @@ void svkImageStatisticsCollector::GetXMLResults( vtkXMLDataElement* results )
     for (imageIter = this->images.begin(); imageIter != this->images.end(); ++imageIter) {
         for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
             svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            statsCalculator->SetInputPortsFromXML(this->config->FindNestedElementWithName("measures")->FindNestedElementWithName("svkImageStatistics"));
+            statsCalculator->SetInputPortsFromXML(this->config->FindNestedElementWithName("measures")->FindNestedElementWithName(statsCalculator->GetPortMapper()->GetXMLTagForAlgorithm().c_str()));
             statsCalculator->SetInput(svkImageStatistics::INPUT_IMAGE, imageIter->second );
             statsCalculator->SetInput(svkImageStatistics::INPUT_ROI, roiIter->second );
             statsCalculator->Update();
@@ -207,13 +207,13 @@ svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
 svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement )
 {
     svkImageData* filteredData = NULL;
-    if( this->pipelineFilter = NULL ) {
+    if( this->pipelineFilter != NULL ) {
         this->pipelineFilter->Delete();
     }
     this->pipelineFilter = svkImageAlgorithmPipeline::New();
     vtkIndent indent;
     imageElement->PrintXML(cout, indent);
-    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetClassName());
+    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetPortMapper()->GetXMLTagForAlgorithm().c_str());
     if( filters != NULL ) {
         this->pipelineFilter->SetInput(svkImageAlgorithmPipeline::INPUT_IMAGE, inputImage);
         this->pipelineFilter->SetInputPortsFromXML( filters );

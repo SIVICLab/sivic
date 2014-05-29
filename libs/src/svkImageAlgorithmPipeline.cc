@@ -51,7 +51,8 @@ svkImageAlgorithmPipeline::svkImageAlgorithmPipeline()
 {
     this->SetNumberOfInputPorts(2);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-    this->GetPortMapper()->InitializeInputPort( PIPELINE, "PIPELINE", svkAlgorithmPortMapper::SVK_XML);
+    this->GetPortMapper()->InitializeInputPort( PIPELINE, "pipeline", svkAlgorithmPortMapper::SVK_XML);
+    this->GetPortMapper()->SetXMLInputPortPrefix("svk");
     this->lastFilter = NULL;
     this->reader = NULL;
 }
@@ -87,6 +88,10 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
 
             // Get the next filter
             svkImageAlgorithmWithPortMapper* filter = GetAlgorithmForFilterName(filterParameters->GetName());
+            string xsd = filter->GetPortMapper()->GetXSD();
+            cout << "############################   XSD   ##########################" << endl << endl;
+            cout << xsd << endl;
+            cout << "############################   XSD   ##########################" << endl << endl;
             if( filter != NULL) {
                 filter->SetInputPortsFromXML( filterParameters );
                 filter->SetInput( svkImageThreshold::INPUT_IMAGE, filteredImage);
@@ -117,8 +122,9 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
 svkImageAlgorithmWithPortMapper* svkImageAlgorithmPipeline::GetAlgorithmForFilterName( string filterName )
 {
     //TODO: Create algorithm factory class like svkImageReaderFactory
-    svkImageAlgorithmWithPortMapper* algorithm;
-    if( filterName == "svkImageThreshold") {
+    cout << "Filter name:" << filterName << endl;
+    svkImageAlgorithmWithPortMapper* algorithm = NULL;
+    if( filterName == "svkAlgorithm:svkImageThreshold") {
         algorithm = svkImageThreshold::New();
     }
     return algorithm;

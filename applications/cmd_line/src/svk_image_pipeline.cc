@@ -139,10 +139,11 @@ int main (int argc, char** argv)
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
 
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
-    svkUtils::CreateNestedXMLDataElement( configXML, pipeline->GetPortMapper()->GetInputPortName(svkImageAlgorithmPipeline::INPUT_IMAGE), inputFileName);
+    svkUtils::CreateNestedXMLDataElement( configXML, pipeline->GetPortMapper()->GetXMLTagForInputPort(svkImageAlgorithmPipeline::INPUT_IMAGE), inputFileName);
     pipeline->SetInputPortsFromXML(configXML);
     vtkIndent indent;
     configXML->PrintXML(cout, indent);
+    cout << "Pipeline:" << *pipeline << endl;
     pipeline->Update();
 
     svkIdfVolumeWriter* idfWriter = svkIdfVolumeWriter::New();

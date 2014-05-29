@@ -151,14 +151,39 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Setter that converts a filename into an svkImageData object
         void             SetMRImageInputPortValue( int port, string filename );
+
         //! Basic getter.
         svkMriImageData* GetMRImageInputPortValue( int port);
 
-        //! Returns string names used in XML configuration files for input port.
+        //! Returns string names used to identify the input port.
         string           GetInputPortName( int port );
+
+        //! Returns string names used in XML configuration files for input port.
+        string           GetXMLTagForInputPort( int port );
+
+        //! Returns string names used in XML configuration files for input port.
+        string           GetXMLTagForAlgorithm( );
+
+        //! Returns string names used in XML configuration files for input port.
+        bool             GetInputPortRequired( int port );
+
+        //! Get the prefix used for the port definitions in xml
+        string           GetXMLInputPortPrefix( );
+
+        //! Set the prefix used for the port definitions in xml
+        void             SetXMLInputPortPrefix( string prefix );
+
+        //! Get the prefix used for the port definitions in xml
+        string           GetXMLAlgorithmPrefix( );
+
+        //! Set the prefix used for the port definitions in xml
+        void             SetXMLAlgorithmPrefix( string prefix );
 
         //! Prints all input parameters set.
         void             PrintSelf( ostream &os, vtkIndent indent );
+
+        //! Write the XSD for this port mappper's current initialization
+        string           GetXSD( );
 
     protected:
 
@@ -182,6 +207,12 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Stores whether or not a port is required. Used by FillInputPortInformation to determine types.
         vector<bool>     inputPortRequired;
+
+        //! The XML prefix used for the arguments
+        string           inputPortPrefix;
+
+        //! The XML prefix used for the algorithm
+        string           algorithmPrefix;
 
     private:
 
