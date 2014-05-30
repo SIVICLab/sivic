@@ -81,6 +81,7 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
         typedef enum {
             INPUT_IMAGE = 0,
             INPUT_ROI,
+            ROOT_NAME,
             MEASURES
         } svkImageStatisticsCollectorParameters;
 
@@ -90,39 +91,32 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
         // vtk initialization 
         static svkImageStatisticsCollector* New();  
 
-        //! Use this method to set the XML configuration.
-        void SetXMLConfiguration( vtkXMLDataElement* config );
-
-        //! Use this method to compute the results and get them in the form of an XML element.
-        vtkXMLDataElement* GetXMLResults(  );
-
-        vtkSetStringMacro( RootName );
-        vtkGetStringMacro( RootName );
+        //! This will grab the output object as the correct data type to avoid casting
+        vtkXMLDataElement* GetOutput( );
 
 	protected:
 
         svkImageStatisticsCollector();
        ~svkImageStatisticsCollector();
 
+       //! Sets the output type to XML
        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
+       //! Does the computation of the statistics.
        virtual int RequestData(
                       vtkInformation* request,
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
 
-       //! This method loads all Images and rois applying any necessary filters using  svkImageStatisticsCollector::ApplyFiltersFromXML
+       //! This method loads all Images and rois, applying any necessary filters using svkImageStatisticsCollector::ApplyFiltersFromXML
        svkImageData* LoadImagesAndROIS( );
 
        //! This method reads in an image from the input XML
-       svkImageData* ReadImageFromXML( vtkXMLDataElement* imageElement );
+       svkImageData* ReadImageFromXML( vtkXMLDataElement* imageElement, string rootname );
 
-       //! Reads the filters for an ROI or a map, instantiates and runs the algroithm, then returns the output.
+       //! Reads the filters for an ROI or a map, instantiates and runs the algorithm, then returns the output.
        svkImageData* ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement );
 
-       vtkXMLDataElement*                     config;
-       vtkXMLDataElement*                     results;
-       char*                                  RootName;
        svkImageReader2*                       reader;
        map<string, svkMriImageData*>          rois;
        map<string, svkMriImageData*>          images;

@@ -49,18 +49,17 @@ vtkStandardNewMacro(svkImageStatisticsCollector);
 //! Constructor
 svkImageStatisticsCollector::svkImageStatisticsCollector()
 {
-    this->SetNumberOfInputPorts(3);
+    this->SetNumberOfInputPorts(4);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "IMAGE", svkAlgorithmPortMapper::SVK_XML, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "ROI", svkAlgorithmPortMapper::SVK_XML, required, repeatable );
+    this->GetPortMapper()->InitializeInputPort( ROOT_NAME, "ROOT_NAME", svkAlgorithmPortMapper::SVK_STRING, required );
     this->GetPortMapper()->InitializeInputPort( MEASURES, "measures", svkAlgorithmPortMapper::SVK_XML, required );
     cout << "Constructing svkImageStatisticsCollector." << endl;
-    this->RootName = NULL;
     this->reader = NULL;
     this->pipelineFilter = NULL;
-    this->results = vtkXMLDataElement::New();
     vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 }
 
@@ -87,75 +86,21 @@ svkImageStatisticsCollector::~svkImageStatisticsCollector()
     for (imageHashIter = this->rois.begin(); imageHashIter != this->rois.end(); ++imageHashIter) {
         imageHashIter->second->Delete();
     }
+
 }
 
 
 /*!
- * Method sets the XML configuration file.
- */
-void svkImageStatisticsCollector::SetXMLConfiguration( vtkXMLDataElement* config )
+*  Get's the output as a vtkXMLDataElement.
+*/
+vtkXMLDataElement* svkImageStatisticsCollector::GetOutput()
 {
-    this->config = config;
-    this->reader = NULL;
-    vtkIndent indent;
-    cout << "COFIGURATION SET BY XML:" << endl;
-    this->config->PrintXML(cout, indent);
-}
-
-
-/*!
- * Method computes and returns the results in xml.
- */
-vtkXMLDataElement* svkImageStatisticsCollector::GetXMLResults( )
-{
-    this->results->RemoveAllNestedElements();
-    this->results->RemoveAllAttributes();
-    this->results->SetName("svk_image_stats_results");
-
-    this->results->SetAttribute("version", string(SVK_RELEASE_VERSION).c_str());
-    time_t rawtime;
-    struct tm * timeinfo;
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-    string timeString = asctime(timeinfo);
-    // Chop off the return character from asctime:
-    timeString = timeString.substr(0, timeString.size()-1);
-    this->results->SetAttribute("date", timeString.c_str());
-
-    this->LoadImagesAndROIS( );
-
-    map<string,svkMriImageData*>::iterator imageIter;
-    map<string,svkMriImageData*>::iterator roiIter;
-    for (imageIter = this->images.begin(); imageIter != this->images.end(); ++imageIter) {
-        for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
-            cout << "Calculating statistics..." << endl;
-            svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            statsCalculator->SetInputPortsFromXML(this->config->FindNestedElementWithName("svkArgument:measures")->FindNestedElementWithName(statsCalculator->GetPortMapper()->GetXMLTagForAlgorithm().c_str()));
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_IMAGE, imageIter->second );
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_ROI, roiIter->second );
-            statsCalculator->Update();
-            vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
-            nextResult->SetName("results");
-            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
-            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE",imageIter->first.c_str() );
-            vtkXMLDataElement* statistics = statsCalculator->GetOutput();
-            vtkIndent indent;
-            if( statistics == NULL ) {
-                cout << "STATISTICS ARE NULL!" << endl;
-            } else {
-                cout<< "Printing statistics..." << endl;
-                statistics->PrintXML(cout, indent);
-
-            }
-            nextResult->AddNestedElement( statistics );
-            this->results->AddNestedElement( nextResult );
-            cout<< "Printing result..." << endl;
-            nextResult->PrintXML(cout, indent);
-            nextResult->Delete();
-            statsCalculator->Delete();
-        }
-    }
-    return this->results;
+   vtkXMLDataElement* output = NULL;
+   svkXML* outputDataObject = svkXML::SafeDownCast(this->GetOutputDataObject(0));
+   if( outputDataObject != NULL ) {
+       output = outputDataObject->GetValue();
+   }
+   return output;
 }
 
 
@@ -163,7 +108,7 @@ vtkXMLDataElement* svkImageStatisticsCollector::GetXMLResults( )
  * Method combines the basename with the 'suffix' and 'directory' tags found in the given
  * vtkXMLDataElement to read an svkImageData object which is then returned.
  */
-svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* imageElement )
+svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* imageElement, string rootname )
 {
     svkImageData* image = NULL;
     if( imageElement != NULL ) {
@@ -171,7 +116,7 @@ svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* 
         string directory = string(imageElement->FindNestedElementWithName("directory")->GetCharacterData());
         string filename = directory;
         filename.append("/");
-        filename.append(this->RootName);
+        filename.append(rootname);
         filename.append("_");
         filename.append(suffix);
         // READ THE IMAGE
@@ -214,8 +159,55 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
                                               vtkInformationVector* outputVector )
 {
     cout << "MADE IT TO REQUEST DATA!" << endl;
-    svkXML::SafeDownCast(this->GetOutputDataObject(0))->SetValue( this->results );
-    cout << "OutputData object:" << *this->GetOutputDataObject(0) << endl;
+    vtkXMLDataElement* results = this->GetOutput();
+
+    results->RemoveAllNestedElements();
+    results->RemoveAllAttributes();
+    results->SetName("svk_image_stats_results");
+
+    results->SetAttribute("version", string(SVK_RELEASE_VERSION).c_str());
+    time_t rawtime;
+    struct tm * timeinfo;
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    string timeString = asctime(timeinfo);
+    // Chop off the return character from asctime:
+    timeString = timeString.substr(0, timeString.size()-1);
+    results->SetAttribute("date", timeString.c_str());
+
+    this->LoadImagesAndROIS( );
+
+    map<string,svkMriImageData*>::iterator imageIter;
+    map<string,svkMriImageData*>::iterator roiIter;
+    for (imageIter = this->images.begin(); imageIter != this->images.end(); ++imageIter) {
+        for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
+            cout << "Calculating statistics..." << endl;
+            svkImageStatistics* statsCalculator = svkImageStatistics::New();
+            statsCalculator->SetInputPortsFromXML(this->GetPortMapper()->GetXMLInputPortValue(MEASURES)->GetValue()->FindNestedElementWithName(statsCalculator->GetPortMapper()->GetXMLTagForAlgorithm().c_str()));
+            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_IMAGE, imageIter->second );
+            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_ROI, roiIter->second );
+            statsCalculator->Update();
+            vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
+            nextResult->SetName("results");
+            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
+            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE",imageIter->first.c_str() );
+            vtkXMLDataElement* statistics = statsCalculator->GetOutput();
+            vtkIndent indent;
+            if( statistics == NULL ) {
+                cout << "STATISTICS ARE NULL!" << endl;
+            } else {
+                cout<< "Printing statistics..." << endl;
+                statistics->PrintXML(cout, indent);
+
+            }
+            nextResult->AddNestedElement( statistics );
+            results->AddNestedElement( nextResult );
+            cout<< "Printing result..." << endl;
+            nextResult->PrintXML(cout, indent);
+            nextResult->Delete();
+            statsCalculator->Delete();
+        }
+    }
 }
 
 
@@ -226,10 +218,11 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
  */
 svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
 {
+    string rootname = this->GetPortMapper()->GetStringInputPortValue( ROOT_NAME )->GetValue();
     for( int i = 0; i< this->GetNumberOfInputConnections( INPUT_IMAGE ); i++ ) {
         svkXML* imageXML = svkXML::SafeDownCast(this->GetPortMapper()->GetAlgorithmInputPort( INPUT_IMAGE, i ));
         if( imageXML != NULL ) {
-            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue() );
+            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue(), rootname );
             string label = imageXML->GetValue()->GetAttribute("label");
             svkImageData* filteredData = this->ApplyFiltersFromXML( image, imageXML->GetValue() );
             this->images[label] = svkMriImageData::SafeDownCast(filteredData);
@@ -239,7 +232,7 @@ svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
     for( int i = 0; i< this->GetNumberOfInputConnections( INPUT_ROI ); i++ ) {
         svkXML* imageXML = svkXML::SafeDownCast(this->GetPortMapper()->GetAlgorithmInputPort( INPUT_ROI, i ));
         if( imageXML != NULL ) {
-            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue() );
+            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue(), rootname );
             string label = imageXML->GetValue()->GetAttribute("label");
             svkImageData* filteredData = this->ApplyFiltersFromXML( image, imageXML->GetValue() );
             this->rois[label] = svkMriImageData::SafeDownCast(filteredData);

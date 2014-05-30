@@ -140,11 +140,10 @@ int main (int argc, char** argv)
     // Lets start by reading the configuration file
     vtkIndent indent;
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
-    collector->SetXMLConfiguration( configXML );
-    collector->SetRootName(fileRootName.c_str());
+    svkUtils::CreateNestedXMLDataElement(configXML,collector->GetPortMapper()->GetXMLTagForInputPort(svkImageStatisticsCollector::ROOT_NAME), fileRootName);
     collector->SetInputPortsFromXML( configXML );
     collector->Update();
-    vtkXMLDataElement* resultsXML = collector->GetXMLResults( );
+    vtkXMLDataElement* resultsXML = collector->GetOutput( );
     vtkXMLUtilities::WriteElementToFile( resultsXML, "stats_results.xml", &indent);
     resultsXML->PrintXML(cout, indent);
     configXML->PrintXML(cout, indent);
