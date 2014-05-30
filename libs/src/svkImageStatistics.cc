@@ -51,6 +51,7 @@ vtkStandardNewMacro(svkImageStatistics);
 svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(11);
+    this->SetNumberOfOutputPorts(1);
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
@@ -88,6 +89,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                                     vtkInformationVector** inputVector,
                                     vtkInformationVector* outputVector )
 {
+    cout << "REQUEST DATA IN SVK IMAGE STATISTICS" << endl;
     if( this->results != NULL ) {
         this->results->Delete();
     }
@@ -200,8 +202,22 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 void svkImageStatistics::GetXMLResults( vtkXMLDataElement* results )
 {
     if( results != NULL ) {
+        vtkIndent indent;
+        cout << "Printing results from inside if image statistics" << endl;
+        results->PrintXML(cout,indent);
         results->DeepCopy( this->results );
     }
+}
+
+
+/*!
+ *  Default output type is same concrete sub class type as the input data.  Override with
+ *  specific concrete type in sub-class if necessary.
+ */
+int svkImageStatistics::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+{
+    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkXML" );
+    return 1;
 }
 
 

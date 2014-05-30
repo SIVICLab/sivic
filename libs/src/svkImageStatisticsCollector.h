@@ -57,6 +57,8 @@
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageAlgorithmPipeline.h>
 #include <svkIdfVolumeWriter.h>
+#include <svkGenericAlgorithmWithPortMapper.h>
+#include <svkXML.h>
 
 namespace svk {
 
@@ -71,13 +73,19 @@ using namespace std;
  *
  *  TODO: Should this be converted into an svkImageAlgorithmWithPortMapper?
  */
-class svkImageStatisticsCollector : public vtkObject
+class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
 {
 
     public:
 
+        typedef enum {
+            INPUT_IMAGE = 0,
+            INPUT_ROI,
+            MEASURES
+        } svkImageStatisticsCollectorParameters;
+
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatisticsCollector, vtkObject );
+        vtkTypeRevisionMacro( svkImageStatisticsCollector, svkGenericAlgorithmWithPortMapper );
   
         // vtk initialization 
         static svkImageStatisticsCollector* New();  
@@ -86,7 +94,7 @@ class svkImageStatisticsCollector : public vtkObject
         void SetXMLConfiguration( vtkXMLDataElement* config );
 
         //! Use this method to compute the results and get them in the form of an XML element.
-        void GetXMLResults( vtkXMLDataElement* results );
+        vtkXMLDataElement* GetXMLResults(  );
 
         vtkSetStringMacro( RootName );
         vtkGetStringMacro( RootName );
@@ -95,6 +103,13 @@ class svkImageStatisticsCollector : public vtkObject
 
         svkImageStatisticsCollector();
        ~svkImageStatisticsCollector();
+
+       virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+
+       virtual int RequestData(
+                      vtkInformation* request,
+                      vtkInformationVector** inputVector,
+                      vtkInformationVector* outputVector );
 
        //! This method loads all Images and rois applying any necessary filters using  svkImageStatisticsCollector::ApplyFiltersFromXML
        svkImageData* LoadImagesAndROIS( );
@@ -106,6 +121,7 @@ class svkImageStatisticsCollector : public vtkObject
        svkImageData* ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement );
 
        vtkXMLDataElement*                     config;
+       vtkXMLDataElement*                     results;
        char*                                  RootName;
        svkImageReader2*                       reader;
        map<string, svkMriImageData*>          rois;

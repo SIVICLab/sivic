@@ -67,6 +67,7 @@ class svkXML : public vtkDataObject
   
         // vtk initialization 
         static svkXML* New();
+        static vtkObject*  NewObject();
         vtkXMLDataElement* GetValue( );
         void   SetValue( vtkXMLDataElement* value );
 

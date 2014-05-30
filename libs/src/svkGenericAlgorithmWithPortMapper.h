@@ -71,13 +71,12 @@ using namespace std;
  * that control the execution of this algorithm are stored in input ports that can be set using
  * the XML input to the svkAlgorithmPortMapper class.
  */
-class svkGenericAlgorithmWithPortMapper : public svkImageAlgorithm
+class svkGenericAlgorithmWithPortMapper : public vtkAlgorithm
 {
 
     public:
 
-        static svkGenericAlgorithmWithPortMapper* New();
-        vtkTypeRevisionMacro( svkGenericAlgorithmWithPortMapper, svkImageAlgorithm);
+        vtkTypeRevisionMacro( svkGenericAlgorithmWithPortMapper, vtkAlgorithm);
 
         //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
         void                    SetInputPortsFromXML( vtkXMLDataElement* element );
@@ -95,6 +94,15 @@ class svkGenericAlgorithmWithPortMapper : public svkImageAlgorithm
 
         //! All ports must be initialized using the svkAlgorithmPortMapper BEFORE this method is called.
         virtual int             FillInputPortInformation( int port, vtkInformation* info );
+        //----------------------------------------------------------------------------
+        virtual int ProcessRequest(vtkInformation* request,
+                                              vtkInformationVector** inputVector,
+                                              vtkInformationVector* outputVector);
+        virtual int RequestData(
+                       vtkInformation* request,
+                       vtkInformationVector** inputVector,
+                       vtkInformationVector* outputVector ) = 0;
+
 
         //! The port mapper used to set the input port parameters.
         svkAlgorithmPortMapper* portMapper;

@@ -117,7 +117,7 @@ class svkAlgorithmPortMapper : public vtkObject
         void             SetAlgorithm( vtkAlgorithm* algo );
 
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
-        void             InitializeInputPort( int port, string name, int type, bool required = true );
+        void             InitializeInputPort( int port, string name, int type, bool required = true, bool repeatable = false );
 
         //! Parses an XML element and uses it to set the input ports of the algorithm. Converts image filename strings to svkImageData objects.
         void             SetInputPortsFromXML( vtkXMLDataElement* element );
@@ -164,8 +164,11 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Returns string names used in XML configuration files for input port.
         string           GetXMLTagForAlgorithm( );
 
-        //! Returns string names used in XML configuration files for input port.
+        //! Returns true if the port is required.
         bool             GetInputPortRequired( int port );
+
+        //! Returns true if the port is repeatable.
+        bool             GetInputPortRepeatable( int port );
 
         //! Get the prefix used for the port definitions in xml
         string           GetXMLInputPortPrefix( );
@@ -184,6 +187,12 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Write the XSD for this port mappper's current initialization
         string           GetXSD( );
+
+        //! Handles getting data object input appropriately.
+        virtual vtkDataObject*   GetAlgorithmInputPort( int port, int index = 0 );
+
+        //! Handles setting data object input appropriately.
+        virtual vtkDataObject*   SetAlgorithmInputPort( int port, vtkDataObject* input );
 
     protected:
 
@@ -208,19 +217,19 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Stores whether or not a port is required. Used by FillInputPortInformation to determine types.
         vector<bool>     inputPortRequired;
 
+        //! Stores whether or not a port is repeatable. Used by FillInputPortInformation to determine types.
+        vector<bool>     inputPortRepeatable;
+
         //! The XML prefix used for the arguments
         string           inputPortPrefix;
 
         //! The XML prefix used for the algorithm
         string           algorithmPrefix;
 
+
     private:
 
-        //! Handles getting data object input appropriately.
-        virtual vtkDataObject*   GetAlgorithmInputPort( int port );
 
-        //! Handles setting data object input appropriately.
-        virtual vtkDataObject*   SetAlgorithmInputPort( int port, vtkDataObject* input );
 
         //! Internal algorithm
         vtkAlgorithm* algo;

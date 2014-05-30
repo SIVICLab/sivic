@@ -47,7 +47,6 @@
 using namespace svk;
 
 vtkCxxRevisionMacro(svkGenericAlgorithmWithPortMapper, "$Rev$");
-vtkStandardNewMacro(svkGenericAlgorithmWithPortMapper);
 
 
 /*!
@@ -109,13 +108,27 @@ void svkGenericAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent
     this->GetPortMapper()->PrintSelf( os, indent );
 }
 
+//----------------------------------------------------------------------------
+int svkGenericAlgorithmWithPortMapper::ProcessRequest(vtkInformation* request,
+                                      vtkInformationVector** inputVector,
+                                      vtkInformationVector* outputVector)
+{
+  // generate the data
+  if(request->Has(vtkDemandDrivenPipeline::REQUEST_DATA()))
+    {
+    return this->RequestData(request, inputVector, outputVector);
+    }
+
+  return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+}
+
+
 
 /*!
  * Pass through method to the internal svkAlgorithmPortMapper
  */
 int svkGenericAlgorithmWithPortMapper::FillInputPortInformation( int port, vtkInformation* info )
 {
-    this->Superclass::FillInputPortInformation( port, info );
     this->GetPortMapper()->FillInputPortInformation(port, info );
 
     return 1;

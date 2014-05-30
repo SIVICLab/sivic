@@ -142,10 +142,12 @@ int main (int argc, char** argv)
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
     collector->SetXMLConfiguration( configXML );
     collector->SetRootName(fileRootName.c_str());
-    vtkXMLDataElement* resultsXML = vtkXMLDataElement::New();
-    collector->GetXMLResults( resultsXML );
+    collector->SetInputPortsFromXML( configXML );
+    collector->Update();
+    vtkXMLDataElement* resultsXML = collector->GetXMLResults( );
+    vtkXMLUtilities::WriteElementToFile( resultsXML, "stats_results.xml", &indent);
     resultsXML->PrintXML(cout, indent);
-    resultsXML->Delete();
+    configXML->PrintXML(cout, indent);
     collector->Delete();
 
     return 0; 

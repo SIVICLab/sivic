@@ -89,7 +89,7 @@ void svkAlgorithmPortMapper::SetAlgorithm( vtkAlgorithm* algo )
  *  This method initializes a given input port. This MUST be called in the constructor
  *  of the subclass, and only there before setting any of the inputs.
  */
-void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int type, bool required )
+void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int type, bool required, bool repeatable )
 {
     // Only initialize a given input port parameter once.
     if( this->GetAlgorithmInputPort( port ) == NULL ) {
@@ -103,9 +103,13 @@ void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int typ
         if( this->inputPortRequired.size() != this->algo->GetNumberOfInputPorts()) {
             this->inputPortRequired.resize( this->algo->GetNumberOfInputPorts() );
         }
-        this->inputPortTypes[port]    = type;
-        this->inputPortNames[port]    = name;
-        this->inputPortRequired[port] = required;
+        if( this->inputPortRepeatable.size() != this->algo->GetNumberOfInputPorts()) {
+            this->inputPortRepeatable.resize( this->algo->GetNumberOfInputPorts() );
+        }
+        this->inputPortTypes[port]      = type;
+        this->inputPortNames[port]      = name;
+        this->inputPortRequired[port]   = required;
+        this->inputPortRepeatable[port] = repeatable;
         // TODO: Remove this logic once optional ports have been setup
         if( type == SVK_BOOL) {
             svkBool* inputBool = svkBool::New();
@@ -124,27 +128,32 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
 {
     vtkIndent indent;
     if( element != NULL ) {
-        for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
-            vtkXMLDataElement* parameterElement =  element->FindNestedElementWithName(this->GetXMLTagForInputPort(i).c_str());
-            if( parameterElement != NULL ) {
-                string parameterStringValue = string(parameterElement->GetCharacterData());
-                int dataType = this->GetInputPortType( i );
-                if( dataType == SVK_DOUBLE ) {
-                    this->SetDoubleInputPortValue(i, svkUtils::StringToDouble( parameterStringValue ));
-                } else if ( dataType == SVK_INT ) {
-                    this->SetIntInputPortValue(i, svkUtils::StringToInt( parameterStringValue ));
-                } else if ( dataType == SVK_STRING ) {
-                    this->SetStringInputPortValue(i, parameterStringValue );
-                } else if ( dataType == SVK_BOOL ) {
-                    //TODO: How should bools be handled in the XML???
-                    this->SetBoolInputPortValue(i, true );
-                } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-                    this->SetMRImageInputPortValue( i, parameterStringValue );
-                } else if ( dataType == SVK_XML ) {
-                    this->SetXMLInputPortValue( i, parameterElement );
+        int numberOfNestedElements = element->GetNumberOfNestedElements();
+        for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
+            cout << "SEARCHING FOR:" << this->GetXMLTagForInputPort(port).c_str() << endl;
+            int numConnections = 0;
+            for( int i = 0; i < element->GetNumberOfNestedElements(); i++ ) {
+                vtkXMLDataElement* parameterElement =  element->GetNestedElement(i);
+                string elementName = parameterElement->GetName();
+                if( elementName == this->GetXMLTagForInputPort(port) ) {
+                    numConnections++;
+                    string parameterStringValue = string(parameterElement->GetCharacterData());
+                    int dataType = this->GetInputPortType( port );
+                    if( dataType == SVK_DOUBLE ) {
+                        this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
+                    } else if ( dataType == SVK_INT ) {
+                        this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
+                    } else if ( dataType == SVK_STRING ) {
+                        this->SetStringInputPortValue(port, parameterStringValue );
+                    } else if ( dataType == SVK_BOOL ) {
+                        //TODO: How should bools be handled in the XML???
+                        this->SetBoolInputPortValue(port, true );
+                    } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+                        this->SetMRImageInputPortValue( port, parameterStringValue );
+                    } else if ( dataType == SVK_XML ) {
+                        this->SetXMLInputPortValue( port, parameterElement );
+                    }
                 }
-            } else {
-                cout << "WARNING: Input Port " << this->GetInputPortName(i) << " Not Found!" <<   endl;
             }
         }
     }
@@ -161,6 +170,9 @@ int svkAlgorithmPortMapper::FillInputPortInformation( int port, vtkInformation* 
                 svkAlgorithmPortMapper::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
         if( !this->inputPortRequired[port] ) {
             info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(),1);
+        }
+        if( this->inputPortRepeatable[port] ) {
+            info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
         }
     }
     return 1;
@@ -310,14 +322,10 @@ svkBool* svkAlgorithmPortMapper::GetBoolInputPortValue( int port )
 void svkAlgorithmPortMapper::SetXMLInputPortValue( int port, vtkXMLDataElement* value )
 {
     if( this->GetInputPortType(port) == SVK_XML ) {
-        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
-        if( parameter == NULL ) {
-            parameter = svkXML::New();
-            this->SetAlgorithmInputPort(port, parameter);
-            parameter->Delete();
-            parameter = this->GetAlgorithmInputPort( port );
-        }
+        vtkDataObject* parameter = svkXML::New();
         svkXML::SafeDownCast( parameter )->SetValue(value);
+        this->SetAlgorithmInputPort(port, parameter);
+        parameter->Delete();
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type XML." << endl;
     }
@@ -446,6 +454,17 @@ bool svkAlgorithmPortMapper::GetInputPortRequired( int port )
     return required;
 }
 
+bool svkAlgorithmPortMapper::GetInputPortRepeatable( int port )
+{
+    bool repeatable = false;
+    if( port >= 0 && port < this->algo->GetNumberOfInputPorts() ) {
+        repeatable = this->inputPortRepeatable[port];
+    } else {
+        cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
+    }
+    return repeatable;
+}
+
 
 /*!
  *
@@ -494,27 +513,31 @@ void svkAlgorithmPortMapper::PrintSelf( ostream &os, vtkIndent indent )
     Superclass::PrintSelf( os, indent );
     os << indent << "Svk Parameters:" << endl;
     indent = indent.GetNextIndent();
-    for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
-        vtkDataObject* parameterObject =  this->GetAlgorithmInputPort( i );
-        if( svkString::SafeDownCast(parameterObject) != NULL ) {
-            os << indent << this->GetInputPortName(i) << ": " << svkString::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( svkDouble::SafeDownCast(parameterObject) != NULL ) {
-            os << indent << this->GetInputPortName(i) << ": " << svkDouble::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( svkInt::SafeDownCast(parameterObject) != NULL ) {
-            os << indent << this->GetInputPortName(i) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( svkBool::SafeDownCast(parameterObject) != NULL ) {
-            os << indent << this->GetInputPortName(i) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
-        } else if ( svkImageData::SafeDownCast(parameterObject) != NULL ) {
-            string filename = "FILENAME UNKNOWN";
-            if( svkImageData::SafeDownCast(parameterObject)->GetSourceFileName() != NULL ){
-                filename = svkImageData::SafeDownCast(parameterObject)->GetSourceFileName();
+    for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
+        int numConnections = this->algo->GetNumberOfInputConnections(port);
+        cout << "port: " << port << " has " << numConnections << " connections" << endl;
+        for( int i = 0; i < numConnections; i++ ) {
+            vtkDataObject* parameterObject =  this->GetAlgorithmInputPort( port, i );
+            if( svkString::SafeDownCast(parameterObject) != NULL ) {
+                os << indent << this->GetInputPortName(port) << ": " << svkString::SafeDownCast(parameterObject)->GetValue() << endl;
+            } else if ( svkDouble::SafeDownCast(parameterObject) != NULL ) {
+                os << indent << this->GetInputPortName(port) << ": " << svkDouble::SafeDownCast(parameterObject)->GetValue() << endl;
+            } else if ( svkInt::SafeDownCast(parameterObject) != NULL ) {
+                os << indent << this->GetInputPortName(port) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
+            } else if ( svkBool::SafeDownCast(parameterObject) != NULL ) {
+                os << indent << this->GetInputPortName(port) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
+            } else if ( svkImageData::SafeDownCast(parameterObject) != NULL ) {
+                string filename = "FILENAME UNKNOWN";
+                if( svkImageData::SafeDownCast(parameterObject)->GetSourceFileName() != NULL ){
+                    filename = svkImageData::SafeDownCast(parameterObject)->GetSourceFileName();
+                }
+                os << indent << this->GetInputPortName(port) << ": " << filename << endl;
+            } else if ( svkXML::SafeDownCast(parameterObject) != NULL ) {
+                os << indent << this->GetInputPortName(port) << ": " << endl;
+                svkXML::SafeDownCast(parameterObject)->GetValue()->PrintXML( os, indent.GetNextIndent());
+            } else {
+                os << indent << this->GetInputPortName(port) << ": NOT SET" << endl;
             }
-            os << indent << this->GetInputPortName(i) << ": " << filename << endl;
-        } else if ( svkXML::SafeDownCast(parameterObject) != NULL ) {
-            os << indent << this->GetInputPortName(i) << ": " << endl;
-            svkXML::SafeDownCast(parameterObject)->GetValue()->PrintXML( os, indent.GetNextIndent());
-        } else {
-            os << indent << this->GetInputPortName(i) << ": NOT SET" << endl;
         }
     }
 }
@@ -587,9 +610,9 @@ int svkAlgorithmPortMapper::GetInputPortType( int port )
 /*!
  * Gets a data object from the input port.
  */
-vtkDataObject* svkAlgorithmPortMapper::GetAlgorithmInputPort( int port )
+vtkDataObject* svkAlgorithmPortMapper::GetAlgorithmInputPort( int port, int index )
 {
-    return this->algo->GetInputDataObject(port, 0);
+    return this->algo->GetInputDataObject(port, index);
 
 }
 
@@ -599,11 +622,16 @@ vtkDataObject* svkAlgorithmPortMapper::GetAlgorithmInputPort( int port )
  */
 vtkDataObject* svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataObject* input )
 {
+    cout << "Setting input to port: " << port << endl;
     if(input) {
-      this->algo->SetInputConnection(port, input->GetProducerPort());
+        if( this->algo->GetNumberOfInputConnections( port ) == 0 ) {
+            this->algo->SetInputConnection(port, input->GetProducerPort());
+        } else {
+            this->algo->AddInputConnection(port, input->GetProducerPort());
+        }
     } else {
-      // Setting a NULL input removes the connection.
-      this->algo->SetInputConnection(port, 0);
+        // Setting a NULL input removes the connection.
+        this->algo->SetInputConnection(port, NULL);
     }
 
 }

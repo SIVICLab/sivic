@@ -49,6 +49,7 @@ vtkStandardNewMacro(svkXML);
 //! Constructor
 svkXML::svkXML()
 {
+    this->value = NULL;
 }
 
 
@@ -59,6 +60,14 @@ svkXML::~svkXML()
         this->value->Delete();
     }
 
+}
+
+/*!
+ * Allows object to be created by a factory.
+ */
+vtkObject* svkXML::NewObject()
+{
+    return vtkObject::SafeDownCast( svkXML::New() );
 }
 
 

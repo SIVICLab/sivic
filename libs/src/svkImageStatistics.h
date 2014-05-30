@@ -100,6 +100,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         svkImageStatistics();
        ~svkImageStatistics();
 
+
+        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int RequestData(
                        vtkInformation* request,
                        vtkInformationVector** inputVector,

@@ -108,7 +108,11 @@ svkImageData* svkImageAlgorithm::GetImageDataInput(int port)
  */
 int svkImageAlgorithm::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), this->GetImageDataInput(0)->GetClassName() );
+    if( this->GetImageDataInput(0) != NULL ) {
+        info->Set( vtkDataObject::DATA_TYPE_NAME(), this->GetImageDataInput(0)->GetClassName() );
+    } else {
+        cout << "ERROR: Input was not set to algorithm so output port information is undefined!" << endl;
+    }
     return 1;
 }
 
