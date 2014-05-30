@@ -138,9 +138,8 @@ vtkXMLDataElement* svkImageStatisticsCollector::GetXMLResults( )
             nextResult->SetName("results");
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE",imageIter->first.c_str() );
-            vtkXMLDataElement* statistics = vtkXMLDataElement::New();
+            vtkXMLDataElement* statistics = statsCalculator->GetOutput();
             vtkIndent indent;
-            statsCalculator->GetXMLResults(statistics);
             if( statistics == NULL ) {
                 cout << "STATISTICS ARE NULL!" << endl;
             } else {
@@ -153,7 +152,6 @@ vtkXMLDataElement* svkImageStatisticsCollector::GetXMLResults( )
             cout<< "Printing result..." << endl;
             nextResult->PrintXML(cout, indent);
             nextResult->Delete();
-            statistics->Delete();
             statsCalculator->Delete();
         }
     }

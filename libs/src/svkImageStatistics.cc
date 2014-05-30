@@ -47,7 +47,7 @@ vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
 vtkStandardNewMacro(svkImageStatistics);
 
 
-//! Constructor
+//! Constructor. Initializes Input Ports
 svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(11);
@@ -63,7 +63,6 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
-    this->results = NULL;
     this->accumulator = NULL;
 
 }
@@ -72,29 +71,52 @@ svkImageStatistics::svkImageStatistics()
 //! Destructor
 svkImageStatistics::~svkImageStatistics()
 {
-    // TODO: FRee images, rois vectors
-
-    if( this->results != NULL ) {
-        this->results->Delete();
-        this->results = NULL;
+    if( this->accumulator != NULL ) {
+        this->accumulator->Delete();
+        this->accumulator = NULL;
     }
 }
 
 
 /*!
- *  RequestData pass the input through the algorithm, and copies the dcos and header
- *  to the output.
+ *  Get's the output as a vtkXMLDataElement.
+ */
+vtkXMLDataElement* svkImageStatistics::GetOutput()
+{
+    vtkXMLDataElement* output = NULL;
+    svkXML* outputDataObject = svkXML::SafeDownCast(this->GetOutputDataObject(0));
+    if( outputDataObject != NULL ) {
+        output = outputDataObject->GetValue();
+    }
+    return output;
+}
+
+
+/*!
+ *  Prints the result statistics.
+ */
+void svkImageStatistics::PrintStatistics( )
+{
+    cout << "###########################################################" << endl << endl;
+    if( this->GetOutput() != NULL ) {
+        vtkIndent indent;
+        vtkXMLDataElement* results = this->GetOutput();
+        results->PrintXML(cout, indent);
+    }
+    cout << endl << "###########################################################" << endl << endl;
+}
+
+
+/*!
+ *  RequestData pass the input through the algorithm. Combines the image and roi if present then
+ *  calculates the statistics and puts them in the output svkXML data object.
  */
 int svkImageStatistics::RequestData( vtkInformation* request,
                                     vtkInformationVector** inputVector,
                                     vtkInformationVector* outputVector )
 {
-    cout << "REQUEST DATA IN SVK IMAGE STATISTICS" << endl;
-    if( this->results != NULL ) {
-        this->results->Delete();
-    }
-    this->results = vtkXMLDataElement::New();
-    this->results->SetName("measures");
+    vtkXMLDataElement* results = this->GetOutput();
+    results->SetName("measures");
     if( this->GetPortMapper()->GetMRImageInputPortValue( INPUT_IMAGE ) != NULL ) {
         double* spacing = this->GetPortMapper()->GetMRImageInputPortValue( INPUT_IMAGE )->GetSpacing();
         double pixelVolume = spacing[0] * spacing[1] * spacing[2];
@@ -127,7 +149,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->SetAttribute("units", "mm^3");
             string volumeString = svkUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
             element->SetCharacterData( volumeString.c_str(), volumeString.size());
-            this->results->AddNestedElement( element );
+            results->AddNestedElement( element );
             element->Delete();
         }
 
@@ -136,7 +158,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->SetName("max");
             string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
             element->SetCharacterData( maxString.c_str(), maxString.size());
-            this->results->AddNestedElement( element );
+            results->AddNestedElement( element );
             element->Delete();
         }
 
@@ -146,7 +168,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->SetName("min");
             string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
             element->SetCharacterData( minString.c_str(), minString.size());
-            this->results->AddNestedElement( element );
+            results->AddNestedElement( element );
             element->Delete();
         }
 
@@ -155,7 +177,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->SetName("mean");
             string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
             element->SetCharacterData( meanString.c_str(), meanString.size());
-            this->results->AddNestedElement( element );
+            results->AddNestedElement( element );
             element->Delete();
         }
 
@@ -164,7 +186,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             element->SetName("stdev");
             string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
             element->SetCharacterData( stdevString.c_str(), stdevString.size());
-            this->results->AddNestedElement( element );
+            results->AddNestedElement( element );
             element->Delete();
         }
 
@@ -188,25 +210,11 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                 histogram->AddNestedElement(element);
                 element->Delete();
             }
-            this->results->AddNestedElement(histogram);
+            results->AddNestedElement(histogram);
             histogram->Delete();
         }
     }
     return 1;
-}
-
-
-/*!
- * Deep copies the resutls into the given xml input element.
- */
-void svkImageStatistics::GetXMLResults( vtkXMLDataElement* results )
-{
-    if( results != NULL ) {
-        vtkIndent indent;
-        cout << "Printing results from inside if image statistics" << endl;
-        results->PrintXML(cout,indent);
-        results->DeepCopy( this->results );
-    }
 }
 
 
@@ -221,13 +229,3 @@ int svkImageStatistics::FillOutputPortInformation( int vtkNotUsed(port), vtkInfo
 }
 
 
-/*!
- *  Prints the result statistics.
- */
-void svkImageStatistics::PrintStatistics( )
-{
-    cout << "###########################################################" << endl << endl;
-    vtkIndent indent;
-    this->results->PrintXML(cout, indent);
-    cout << endl << "###########################################################" << endl << endl;
-}

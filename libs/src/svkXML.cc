@@ -73,11 +73,20 @@ vtkObject* svkXML::NewObject()
 
 vtkXMLDataElement* svkXML::GetValue( )
 {
+    if( this->value == NULL ) {
+        this->value = vtkXMLDataElement::New();
+    }
     return this->value;
 }
 
 
 void svkXML::SetValue( vtkXMLDataElement* value )
-{ 
-    this->value = value;
+{
+    // If we are set to null, let's create a new object
+    if( value == NULL ) {
+        this->value->Delete();
+        this->value = vtkXMLDataElement::New();
+    } else {
+        this->GetValue()->DeepCopy(value);
+    }
 }

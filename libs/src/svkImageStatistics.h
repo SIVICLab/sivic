@@ -88,8 +88,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         // vtk initialization 
         static svkImageStatistics* New();  
 
-        //! Gets the results as xml. This method executes a DeepCopy on the provided input.
-        void GetXMLResults( vtkXMLDataElement* results );
+        //! This will grab the output object as the correct data type to avoid casting
+        vtkXMLDataElement* GetOutput( );
 
         //! Prints the statistics in XML format.
         void PrintStatistics( );
@@ -98,19 +98,19 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
     protected:
 
         svkImageStatistics();
-       ~svkImageStatistics();
+        ~svkImageStatistics();
 
+       //! Sets the output type to svkXML
+       virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
-        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        virtual int RequestData(
+       //! Actually does the calculations
+       virtual int RequestData(
                        vtkInformation* request,
                        vtkInformationVector** inputVector,
                        vtkInformationVector* outputVector );
 
 
     private:
-        //! Holds the results.
-        vtkXMLDataElement*  results;
 
         //! Used to compute some statistics.
         vtkImageAccumulate* accumulator;
