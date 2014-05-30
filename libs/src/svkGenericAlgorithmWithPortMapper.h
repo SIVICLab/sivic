@@ -78,7 +78,7 @@ class svkGenericAlgorithmWithPortMapper : public vtkAlgorithm
 
         vtkTypeRevisionMacro( svkGenericAlgorithmWithPortMapper, vtkAlgorithm);
 
-        //! Parses an XML element and converts it into input port parameters. Converts image filename strings to svkImageData objects.
+        //! Uses port mapper to parse an XML element and convert it into input port data objects.
         void                    SetInputPortsFromXML( vtkXMLDataElement* element );
 
         //! Get the internal XML interpreter
@@ -94,10 +94,13 @@ class svkGenericAlgorithmWithPortMapper : public vtkAlgorithm
 
         //! All ports must be initialized using the svkAlgorithmPortMapper BEFORE this method is called.
         virtual int             FillInputPortInformation( int port, vtkInformation* info );
-        //----------------------------------------------------------------------------
+
+        //! Calls RequestData when the correct request comes through
         virtual int ProcessRequest(vtkInformation* request,
                                               vtkInformationVector** inputVector,
                                               vtkInformationVector* outputVector);
+
+        //! Must be implemented in sub-class
         virtual int RequestData(
                        vtkInformation* request,
                        vtkInformationVector** inputVector,

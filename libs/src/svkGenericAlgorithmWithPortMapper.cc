@@ -72,6 +72,7 @@ svkGenericAlgorithmWithPortMapper::~svkGenericAlgorithmWithPortMapper()
     vtkDebugMacro(<<this->GetClassName()<<"::~svkGenericAlgorithmWithPortMapper()");
     if( this->portMapper != NULL ) {
         this->portMapper->Delete();
+        this->portMapper = NULL;
     }
 }
 
@@ -108,20 +109,20 @@ void svkGenericAlgorithmWithPortMapper::PrintSelf( ostream &os, vtkIndent indent
     this->GetPortMapper()->PrintSelf( os, indent );
 }
 
-//----------------------------------------------------------------------------
+
+/*!
+ *  This method forwards data request to the RequestData method.
+ */
 int svkGenericAlgorithmWithPortMapper::ProcessRequest(vtkInformation* request,
                                       vtkInformationVector** inputVector,
                                       vtkInformationVector* outputVector)
 {
-  // generate the data
-  if(request->Has(vtkDemandDrivenPipeline::REQUEST_DATA()))
-    {
-    return this->RequestData(request, inputVector, outputVector);
+    // generate the data
+    if(request->Has(vtkDemandDrivenPipeline::REQUEST_DATA())) {
+        return this->RequestData(request, inputVector, outputVector);
     }
-
-  return this->Superclass::ProcessRequest(request, inputVector, outputVector);
+    return this->Superclass::ProcessRequest(request, inputVector, outputVector);
 }
-
 
 
 /*!
