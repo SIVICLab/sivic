@@ -91,7 +91,7 @@ int main (int argc, char** argv)
     svkImageWriterFactory::WriterType mriDataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
     svkMRSAutoPhase::PhasingModel phasingType = svkMRSAutoPhase::UNDEFINED_PHASE_MODEL; 
 
-    bool onlyPhaseSingle = true;
+    bool onlyPhaseSingle = false;
     svkMRSAutoPhase::PhasingModel phaseModelType = svkMRSAutoPhase::FIRST_POINT_0;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
@@ -192,7 +192,7 @@ int main (int argc, char** argv)
     if ( onlyPhaseSingle == true ) {
         reader->OnlyReadOneInputFile();
     }
-    reader->Update();
+    //reader->Update();
     reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
     
 
