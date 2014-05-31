@@ -267,7 +267,7 @@ void  svk4DImageData::GetZeroImage( svkImageData* image )
     		volumeIndex[i] = 0;
     	}
     	this->GetImage( image, 0, "ZeroImage", volumeIndex, 0);
-    	image->GetPointData()->GetScalars()->FillComponent(0,0);
+    	image->GetPointData()->GetScalars()->FillComponent(0, 0);
 
     }
 }
@@ -336,6 +336,8 @@ void  svk4DImageData::GetImage(  svkImageData* image,
     if( image != NULL ) {
     	vtkCellData* cellData = this->GetCellData();
 
+        //  Get the cell data from the template 4D object and use that to initialize the 
+        //  the point data (scalars) in the target image
     	vtkDataArray* firstArray = cellData->GetArray(0);
     	// We have to have at least one array to get an image from it
     	if( firstArray != NULL ) {
