@@ -79,8 +79,7 @@ svkMRSAutoPhase::svkMRSAutoPhase()
     //  1 required input ports: 
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1); 
-    this->SetNumberOfThreads(16);
-    //this->SetNumberOfThreads(1);
+    this->SetNumberOfThreads(1);
     svkMRSAutoPhase::progress = NULL;
     //this->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
     this->onlyUseSelectionBox = false; 
@@ -161,37 +160,64 @@ int svkMRSAutoPhase::RequestInformation( vtkInformation* request, vtkInformation
 int svkMRSAutoPhase::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
-    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
     //  Initialize the output object (1) that will contain the image map of phases
     int indexArray[1];
     indexArray[0] = 0;
 
     //  Initialize the output metabolite map using a single frequency image from the 
-    //  input MRS object. 
-
-    data->GetZeroImage( svkMriImageData::SafeDownCast(this->GetOutput(0)) ); 
-
+    //  input MRS object. Extract an image from the input and set it as the outputimage: 
+    mrsData->GetZeroImage( svkMriImageData::SafeDownCast(this->GetOutput(0)) ); 
     svkMriImageData* mriData = svkMriImageData::SafeDownCast(this->GetOutput(0));
-    //cout << "ZERO DATA: " << *mriData << endl;
+
+    //  if there are multiple input volumes, then copy those to additional zeroed point data arrays: 
+    svkDcmHeader::DimensionVector dimensionVector = mrsData->GetDcmHeader()->GetDimensionIndexVector();
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+    int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimensionVector); 
+
+    int numVolumes = numCells / numSpatialVoxels;
+    if ( numVolumes > 1 ) { 
+        mriData->GetPointData()->GetArray(0)->SetName("pixels0"); 
+    }
+    for ( int vol = 1; vol < numVolumes; vol++ ) {
+
+        //  Get the point data from the initialized output image: 
+        int vtkDataType = mrsData->GetCellData()->GetArray(0)->GetDataType();
+        vtkDataArray* newVolumeArray;
+
+        if ( vtkDataType == VTK_FLOAT ) {
+            newVolumeArray =  vtkFloatArray::New();
+        } else if ( vtkDataType == VTK_DOUBLE ) {
+            newVolumeArray =  vtkDoubleArray::New();
+        }
+        newVolumeArray->DeepCopy( mriData->GetPointData()->GetScalars() );
+        string arrayName("pixels"); 
+        ostringstream volString; 
+        volString << vol; 
+        arrayName.append(volString.str()); 
+        newVolumeArray->SetName( arrayName.c_str() );
+
+        mriData->GetPointData()->AddArray( newVolumeArray );
+    }
+
+    //  ensure that the ZeroImage has the same dimensions as the MRS object template  
+    //  (Coy dimensionVector and redimension)
+    svkDcmHeader::DimensionVector mriDimensionVector = dimensionVector; 
+    mriData->GetDcmHeader()->Redimension( &mriDimensionVector ); 
+
 
     svkDcmHeader* hdr = this->GetOutput(0)->GetDcmHeader();
     hdr->InsertUniqueUID("SeriesInstanceUID");
     hdr->InsertUniqueUID("SOPInstanceUID");
     this->SetMapSeriesDescription(); 
 
-    this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    this->numTimePoints = mrsData->GetDcmHeader()->GetIntValue( "DataPointColumns" );
 
-    //   for each cell /spectrum: 
-    svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
-    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-
-    svkDcmHeader::DimensionVector dimVec = data->GetDcmHeader()->GetDimensionIndexVector();
-    int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVec); 
 
     float tolerance = .5;     
     this->selectionBoxMask = new short[numSpatialVoxels];
-    data->GetSelectionBoxMask(this->selectionBoxMask, tolerance);
+    mrsData->GetSelectionBoxMask(this->selectionBoxMask, tolerance);
 
     //  Setup:  if firstorder, then transform to time domain
     //  Initialize first order phase arrays (e.g. -1 to 1 in nuTimePoint intervals): 
@@ -397,8 +423,6 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
     this->ValidateInput(); 
 
 
-
-    //cout << *this->GetOutput(0)  << endl;
     for (int cellID = 0; cellID < numMRSCells; cellID++) {
 
         svkDcmHeader::GetDimensionVectorIndexFromCellID( &mrsDimensionVector, &loopVector, cellID );
@@ -408,7 +432,7 @@ void svkMRSAutoPhase::AutoPhaseExecute(int* ext, int id)
         //  current cell's sub-extent.  If so, fit it.
         if ( isCellInSubExtent ) { 
 
-            //cout << "CELL TO FIT: " << cellID << endl;
+            cout << "CELL TO FIT: " << cellID << endl;
             this->AutoPhaseSpectrum( cellID );
 
             //  Update progress: 
@@ -457,15 +481,7 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
         }
     }
 
-    //  if first order fitting, fit in two passes
-    //if ( this->phaseModelType > svkMRSAutoPhase::LAST_ZERO_ORDER_MODEL)  {
-        //this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HT_0_ONE_PEAK); 
-        ////this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_0_ONE_PEAK); 
-        //this->FitPhase( cellID, svkMRSAutoPhase::MAX_PEAK_HTS_1); 
-        ////this->FitPhase( cellID, svkMRSAutoPhase::MIN_DIFF_FROM_MAG_1); 
-    //} else {
     this->FitPhase( cellID ); 
-    //}
 
 }
 

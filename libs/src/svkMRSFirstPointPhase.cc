@@ -287,7 +287,13 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
     //  ===================================================
     //  Write the fitted phase values to a parameter map: 
     //  ===================================================
-    this->mapArrayZeroOrderPhase = this->GetOutput(0)->GetPointData()->GetArray(0);
+    svkMriImageData* mriData = svkMriImageData::SafeDownCast(this->GetOutput(0));
+
+    //  map the mrsCellID to the correct output map volume:     
+    svkDcmHeader::DimensionVector mriDimensionVector = mriData->GetDcmHeader()->GetDimensionIndexVector();
+    int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&mriDimensionVector);
+    int volumeNumber = static_cast<int>(cellID/numSpatialVoxels); 
+    this->mapArrayZeroOrderPhase = mriData->GetPointData()->GetArray(volumeNumber);
     this->mapArrayZeroOrderPhase->SetName( "ZeroOrderPhase" ); 
     float phi0FinalDegrees = phi0Final * 180. / vtkMath::Pi(); 
     this->mapArrayZeroOrderPhase->SetTuple1(cellID, phi0FinalDegrees);
