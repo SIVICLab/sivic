@@ -75,7 +75,6 @@ svkHSVD::svkHSVD()
     this->exportFilterImage = false; 
     this->onlyFitInVolumeLocalization = false; 
     this->modelOrder = 25; 
-    //this->SetNumberOfThreads(8);
     //this->SetNumberOfThreads(1);
     svkHSVD::progress = NULL; 
 

@@ -79,7 +79,7 @@ svkMRSAutoPhase::svkMRSAutoPhase()
     //  1 required input ports: 
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1); 
-    this->SetNumberOfThreads(1);
+    //this->SetNumberOfThreads(1);
     svkMRSAutoPhase::progress = NULL;
     //this->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
     this->onlyUseSelectionBox = false; 
