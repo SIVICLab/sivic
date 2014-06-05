@@ -176,6 +176,7 @@ ADD_LIBRARY(
     svkDcmMrsVolumeReader.cc
     svkDcmMriVolumeReader.cc
     svkDcmEnhancedVolumeReader.cc
+    svkDcmSegmentationVolumeReader.cc
     svkDcmRawDataReader.cc
     svkGEPostageStampReader.cc
     svkBrukerDCMMRSReader.cc
@@ -322,8 +323,9 @@ IF ( BUILD_ITK )
         svkNumerical
 
         svkMRSAutoPhase.cc
-        #svkDynamicMRIAlgoTemplate.cc 
         svkMRSFirstPointPhase.cc
+        svkMRSZeroOrderPhase.cc
+        #svkMRSFirstOrderPhase.cc
         svkMRSKinetics.cc 
     )
 ENDIF ( BUILD_ITK )
