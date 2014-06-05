@@ -50,6 +50,7 @@
 #include <svkImageWriter.h>
 #include <svkMRSAutoPhase.h>
 #include <svkMRSFirstPointPhase.h>
+#include <svkMRSZeroOrderPhase.h>
 
 #ifdef WIN32
 extern "C" {
@@ -78,10 +79,14 @@ int main (int argc, char** argv)
     usemsg += "                                 4 = DICOM_MRS and DCM phase map (default)           \n";
     usemsg += "   -a            type   Type of phasing.  Options: eries                             \n";
     usemsg += "                                 1 = FIRST POINT PHASING                             \n";
+    usemsg += "                                 2 = ZERO ORDER PHASING (Max Peak Hts)               \n";
+    usemsg += "                                 3 = ZERO ORDER PHASING (Max Peak Ht)                \n";
     usemsg += "   --single             Only phase specified file if multiple in series              \n";
     usemsg += "   -h                   Print this help mesage.                                      \n";
     usemsg += "                                                                                     \n";
     usemsg += "Auto phase spectra (zero and first order phaseing).                                  \n";
+    usemsg += "     2:  max peak ht of autodetected peaks                                           \n";
+    usemsg += "     3:  max peak ht of specified peak                                               \n";
     usemsg += "                                                                                     \n";
 
 
@@ -92,7 +97,6 @@ int main (int argc, char** argv)
     svkMRSAutoPhase::PhasingModel phasingType = svkMRSAutoPhase::UNDEFINED_PHASE_MODEL; 
 
     bool onlyPhaseSingle = false;
-    svkMRSAutoPhase::PhasingModel phaseModelType = svkMRSAutoPhase::FIRST_POINT_0;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
@@ -203,6 +207,8 @@ int main (int argc, char** argv)
     svkMRSAutoPhase* phaser;
     if ( phasingType == svkMRSAutoPhase::FIRST_POINT_0 ) {  
         phaser = svkMRSFirstPointPhase::New();
+    } else if ( phasingType == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {  
+        phaser = svkMRSZeroOrderPhase::New();
     } else {
         cout << "Specified phasing type is not recognized." << endl;
         exit(1); 
@@ -228,7 +234,12 @@ int main (int argc, char** argv)
     }
 
     mrsWriter->SetFileName( outputFileName.c_str() );
-    string phaseMapName = outputFileName + "_FirstPointPhaseMap"; 
+    string phaseMapName = outputFileName;
+    if ( phasingType == svkMRSAutoPhase::FIRST_POINT_0 ) {  
+        phaseMapName.append("_FirstPointPhaseMap"); 
+    } else if ( phasingType == svkMRSAutoPhase::MAX_PEAK_HTS_0 ) {  
+        phaseMapName.append("_ZeroOrderPhaseMap"); 
+    }
     mriWriter->SetFileName( phaseMapName.c_str() );
 
     // ===============================================  
