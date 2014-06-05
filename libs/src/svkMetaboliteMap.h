@@ -102,6 +102,12 @@ class svkMetaboliteMap: public svkImageAlgorithm
         short*                  GetSelectedVolumeMask();
 
 
+        static double           GetIntegral( float* specPtr, int startPt, int endPt);
+        static double           GetMagIntegral( float* specPtr, int startPt, int endPt);
+        static double           GetPeakHt( float* specPtr, int startPt, int endPt );
+        static double           GetMagPeakHt( float* specPtr, int startPt, int endPt );
+
+
     protected:
 
         svkMetaboliteMap();
@@ -130,14 +136,10 @@ class svkMetaboliteMap: public svkImageAlgorithm
         void                    RedimensionData(); 
         void                    GetIntegrationPtRange(int& startPt, int& endPt); 
         void                    GenerateMap(); 
-        double                  GetMapVoxelValue( float* specPtr, int startPt, int endPt); 
-        double                  GetIntegral( float* specPtr, int startPt, int endPt);
-        double                  GetMagIntegral( float* specPtr, int startPt, int endPt);
-        double                  GetPeakHt( float* specPtr, int startPt, int endPt );
-        double                  GetMagPeakHt( float* specPtr, int startPt, int endPt );
-        double                  GetLineWidth( float* specPtr, int startPt, int endPt );
-        double                  GetMagLineWidth( float* specPtr, int startPt, int endPt );
         float                   GetWidthInHz( int startPt, int endPt); 
+        double                  GetMagLineWidth( float* specPtr, int startPt, int endPt );
+        double                  GetLineWidth( float* specPtr, int startPt, int endPt );
+        double                  GetMapVoxelValue( float* specPtr, int startPt, int endPt); 
 
 
         //  Members:
