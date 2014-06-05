@@ -63,6 +63,8 @@ extern "C" {
 
 using namespace svk;
 
+void initCustomFilterVector( vector< vector<float> >* customFilter, float ppmValue ); 
+
 
 int main (int argc, char** argv)
 {
@@ -70,7 +72,8 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]          \n"; 
-    usemsg += "         [ -fb ] [ -m order ] [ --single ] [ -h ]                                \n"; 
+    usemsg += "         [ -fb ] [ -m order ] [ -wl ] [ --single ]                               \n"; 
+    usemsg += "         [ --ppm1 downfield_ppm  --ppm2 upfield_ppm ] [ -h ]                     \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "   -i                name   Name of file to convert.                             \n"; 
     usemsg += "   -o                root   Root name of outputfile.                             \n";
@@ -84,6 +87,8 @@ int main (int argc, char** argv)
     usemsg += "   -w                       remove water (downfield of 4.2PPM )                  \n"; 
     usemsg += "   -l                       remove lipid (upfield of 1.8PPM )                    \n"; 
     usemsg += "   --single                 Only transform specified file if multiple in series  \n";
+    usemsg += "   --ppm1            ppm1   Downfield ppm limit for custom filter range          \n";
+    usemsg += "   --ppm2            ppm2   Upfield ppm limit for custom filter range            \n";
     usemsg += "   -h                       Print this help mesage.                              \n";  
     usemsg += "                                                                                 \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
@@ -100,13 +105,17 @@ int main (int argc, char** argv)
     bool    filterWater = false; 
     bool    filterLipid = false; 
     bool    onlyFilterSingleFile = false;
+    vector< vector <float> > customFilter; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
-        FLAG_SINGLE
+        FLAG_SINGLE, 
+        FLAG_PPM1,
+        FLAG_PPM2
+
     }; 
 
 
@@ -114,6 +123,8 @@ int main (int argc, char** argv)
     {
         /* This option sets a flag. */
         {"single",    no_argument,       NULL,  FLAG_SINGLE},
+        {"ppm1",      required_argument, NULL,  FLAG_PPM1},
+        {"ppm2",      required_argument, NULL,  FLAG_PPM2},
         {0, 0, 0, 0}
     };
 
@@ -155,6 +166,12 @@ int main (int argc, char** argv)
             case FLAG_SINGLE:
                 onlyFilterSingleFile = true;
                 break;
+            case FLAG_PPM1:
+                initCustomFilterVector( &customFilter, atof( optarg ) ); 
+                break;
+            case FLAG_PPM2:
+                initCustomFilterVector( &customFilter, atof( optarg ) ); 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -186,6 +203,16 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    //  Validate filters: 
+    for ( int k = 0; k < customFilter.size(); k++ ) {
+        if ( customFilter[k].size() != 2 ) {
+            cout << "Error, custom filter must be specfied with ppm1,ppm2 pairs " << endl;
+            cout << usemsg << endl;
+            exit(1); 
+        }
+        cout << "Custom filter: " << customFilter[k][0] << " - " << customFilter[k][1] << endl;
+    }
+
     if( ! svkUtils::FilePathExists( inputFileName.c_str() ) ) {
         cerr << "Input file can not be loaded (may not exist) " << inputFileName << endl;
         exit(1); 
@@ -194,7 +221,7 @@ int main (int argc, char** argv)
     cout << "file name: " << inputFileName << endl;
 
     //  if no filters specified, then just filter water:
-    if ( !filterWater && !filterLipid ) {
+    if ( !filterWater && !filterLipid && (customFilter.size() == 0) ) {
         filterWater = true; 
     }
 
@@ -241,6 +268,9 @@ int main (int argc, char** argv)
     if ( filterLipid ) {
         cout << "Filter Lipid " << endl;
         hsvd->RemoveLipidOn();
+    }
+    for ( int k = 0; k < customFilter.size(); k++ ) {
+        hsvd->AddPPMFrequencyFilterRule( customFilter[k][0], customFilter[k][1] ); 
     }
     hsvd->Update();
 
@@ -310,3 +340,26 @@ int main (int argc, char** argv)
     return 0; 
 }
 
+
+void initCustomFilterVector( vector< vector<float> >* customFilter, float ppmValue ) 
+{
+    int currentFilterIndex = customFilter->size() - 1; 
+    bool isFilterComplete = true; 
+    if ( currentFilterIndex >= 0 ) {
+        int numRanges = (*customFilter)[currentFilterIndex].size();  
+        if ( numRanges == 1 ) {
+            isFilterComplete = false; 
+        }
+    }
+
+    if ( isFilterComplete == true ) {
+        //   if the filter doesn't exist, then add a new one. 
+        vector< float >  tmpVector; 
+        tmpVector.push_back( ppmValue ); 
+        customFilter->push_back( tmpVector );  
+    } else if ( isFilterComplete == false ) {
+        //   if a filter exists but isn't complete, then complete it with the 2nd value: 
+        (*customFilter)[currentFilterIndex].push_back(ppmValue); 
+    } 
+        
+}
