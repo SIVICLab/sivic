@@ -167,11 +167,12 @@ int main (int argc, char** argv)
     if ( limitToSelectionBox ) {
         peaks->OnlyUseSelectionBox(); 
     }
+    peaks->SetSNLimit( signalToNoise );
     peaks->Update();
 
 
 ////////////////////////////////////////////////////
-// temporary test: put data in cell0
+// temporary test: put average mag data in cell0
 svkMRSNoise* noise = svkMRSNoise::New();
 noise->SetInput( reader->GetOutput() );
 if ( limitToSelectionBox ) {
