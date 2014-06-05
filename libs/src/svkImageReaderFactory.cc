@@ -61,21 +61,22 @@ svkImageReaderFactory::svkImageReaderFactory()
     this->DebugOn();
 #endif
 
-    this->dcmMriVolReader       = svkDcmMriVolumeReader::New();
-    this->dcmMrsVolReader       = svkDcmMrsVolumeReader::New();
-    this->dcmEnhancedVolReader  = svkDcmEnhancedVolumeReader::New();
-    this->idfVolReader          = svkIdfVolumeReader::New();
-    this->ddfVolReader          = svkDdfVolumeReader::New();
-    this->fdfVolReader          = svkFdfVolumeReader::New();
-    this->fidVolReader          = svkVarianFidReader::New();
-    this->sdbmVolReader         = svkSdbmVolumeReader::New();
-    this->rdaVolReader          = svkSiemensRdaReader::New();
-    this->gePFileReader         = svkGEPFileReader::New();
-    this->geSigna5XReader       = svkGESigna5XReader::New();
-    this->geSignaLX2Reader      = svkGESignaLX2Reader::New();
-    this->gePostageStampReader  = svkGEPostageStampReader::New();
-    this->brukerDCMMRSReader    = svkBrukerDCMMRSReader::New();
-    this->dcmRawDataReader      = svkDcmRawDataReader::New();
+    this->dcmMriVolReader           = svkDcmMriVolumeReader::New();
+    this->dcmMrsVolReader           = svkDcmMrsVolumeReader::New();
+    this->dcmEnhancedVolReader      = svkDcmEnhancedVolumeReader::New();
+    this->idfVolReader              = svkIdfVolumeReader::New();
+    this->ddfVolReader              = svkDdfVolumeReader::New();
+    this->fdfVolReader              = svkFdfVolumeReader::New();
+    this->fidVolReader              = svkVarianFidReader::New();
+    this->sdbmVolReader             = svkSdbmVolumeReader::New();
+    this->rdaVolReader              = svkSiemensRdaReader::New();
+    this->gePFileReader             = svkGEPFileReader::New();
+    this->geSigna5XReader           = svkGESigna5XReader::New();
+    this->geSignaLX2Reader          = svkGESignaLX2Reader::New();
+    this->gePostageStampReader      = svkGEPostageStampReader::New();
+    this->brukerDCMMRSReader        = svkBrukerDCMMRSReader::New();
+    this->dcmRawDataReader          = svkDcmRawDataReader::New();
+    this->dcmSegmentationVolReader  = svkDcmSegmentationVolumeReader::New();
 
     vtkImageReader2Factory::RegisterReader( this->dcmMriVolReader );
     vtkImageReader2Factory::RegisterReader( this->dcmMrsVolReader );
@@ -92,6 +93,7 @@ svkImageReaderFactory::svkImageReaderFactory()
     vtkImageReader2Factory::RegisterReader( this->gePostageStampReader );
     vtkImageReader2Factory::RegisterReader( this->brukerDCMMRSReader );
     vtkImageReader2Factory::RegisterReader( this->dcmRawDataReader);
+    vtkImageReader2Factory::RegisterReader( this->dcmSegmentationVolReader );
 
     //  this can be used if only need to check file type for example.
     this->quickParse = false; 
@@ -179,6 +181,12 @@ svkImageReaderFactory::~svkImageReaderFactory()
     if (this->dcmRawDataReader != NULL) {
         this->dcmRawDataReader->Delete();
         this->dcmRawDataReader = NULL;
+    }
+
+
+    if (this->dcmSegmentationVolReader != NULL) {
+        this->dcmSegmentationVolReader->Delete();
+        this->dcmSegmentationVolReader = NULL;
     }
 
 }

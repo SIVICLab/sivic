@@ -62,6 +62,7 @@
 #include <svkGEPostageStampReader.h>
 #include <svkBrukerDCMMRSReader.h>
 #include <svkDcmRawDataReader.h>
+#include <svkDcmSegmentationVolumeReader.h>
 
 
 namespace svk {
@@ -96,21 +97,22 @@ class svkImageReaderFactory : public vtkImageReader2Factory
     private:
 
         //  Members:
-        svkDcmMriVolumeReader*      dcmMriVolReader;
-        svkDcmMrsVolumeReader*      dcmMrsVolReader;
-        svkDcmEnhancedVolumeReader* dcmEnhancedVolReader;
-        svkIdfVolumeReader*         idfVolReader;
-        svkDdfVolumeReader*         ddfVolReader;
-        svkFdfVolumeReader*         fdfVolReader;
-        svkVarianFidReader*         fidVolReader;
-        svkSdbmVolumeReader*        sdbmVolReader;
-        svkSiemensRdaReader*        rdaVolReader;
-        svkGEPFileReader*           gePFileReader;
-        svkGESigna5XReader*         geSigna5XReader;
-        svkGESignaLX2Reader*        geSignaLX2Reader;
-        svkGEPostageStampReader*    gePostageStampReader;
-        svkBrukerDCMMRSReader*      brukerDCMMRSReader;
-        svkDcmRawDataReader*        dcmRawDataReader;
+        svkDcmMriVolumeReader*          dcmMriVolReader;
+        svkDcmMrsVolumeReader*          dcmMrsVolReader;
+        svkDcmEnhancedVolumeReader*     dcmEnhancedVolReader;
+        svkIdfVolumeReader*             idfVolReader;
+        svkDdfVolumeReader*             ddfVolReader;
+        svkFdfVolumeReader*             fdfVolReader;
+        svkVarianFidReader*             fidVolReader;
+        svkSdbmVolumeReader*            sdbmVolReader;
+        svkSiemensRdaReader*            rdaVolReader;
+        svkGEPFileReader*               gePFileReader;
+        svkGESigna5XReader*             geSigna5XReader;
+        svkGESignaLX2Reader*            geSignaLX2Reader;
+        svkGEPostageStampReader*        gePostageStampReader;
+        svkBrukerDCMMRSReader*          brukerDCMMRSReader;
+        svkDcmRawDataReader*            dcmRawDataReader;
+        svkDcmSegmentationVolumeReader* dcmSegmentationVolReader; 
 
         bool                        quickParse; 
 
