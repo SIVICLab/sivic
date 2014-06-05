@@ -56,7 +56,6 @@
 #include <svkMrsImageData.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <svkThreadedImageAlgorithm.h>
-#include <svkMRSPeakPick.h>
 
 #include <complex>
 #include <svkDcmHeader.h>
@@ -85,19 +84,21 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         
 
         //  _0 are zero order models
+        //      MAX_PEAK_HTS_0 maximizes the peak height of a specified peak
         //  _1 are first order models
         typedef enum {
-            UNDEFINED_PHASE_MODEL = 0, 
-            FIRST_POINT_0, 
-            MAX_GLOBAL_PEAK_HT_0, 
-            MAX_PEAK_HTS_0, 
-            MIN_DIFF_FROM_MAG_0, 
-            MAX_PEAK_HT_0_ONE_PEAK, 
-            MIN_DIFF_FROM_MAG_0_ONE_PEAK, 
-            LAST_ZERO_ORDER_MODEL, 
-            MAX_PEAK_HTS_1, 
-            MIN_DIFF_FROM_MAG_1, 
-            MAX_PEAK_HTS_01,       
+            UNDEFINED_PHASE_MODEL   = 0, 
+            FIRST_POINT_0           = 1, 
+            MAX_PEAK_HTS_0          = 2, 
+            MAX_PEAK_HT_ONE_PEAK_0  = 3, 
+            //MAX_GLOBAL_PEAK_HT_0, 
+            //MIN_DIFF_FROM_MAG_0, 
+            //MAX_PEAK_HT_0_ONE_PEAK, 
+            //MIN_DIFF_FROM_MAG_0_ONE_PEAK, 
+            //LAST_ZERO_ORDER_MODEL, 
+            //MAX_PEAK_HTS_1, 
+            //MIN_DIFF_FROM_MAG_1, 
+            //MAX_PEAK_HTS_01,       
             LAST_MODEL 
         } PhasingModel;
 
@@ -142,25 +143,18 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
         virtual int     FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
 
         void            ZeroData(); 
-
-
         virtual void    UpdateProvenance();
 
-        static int*     progress;
-
-
-        void            InitLinearPhaseArrays(); 
         void            AutoPhaseExecute(int* outExt, int id); 
         virtual void    AutoPhaseSpectrum( int cellID );
         virtual void    FitPhase( int cellID ) = 0; 
-        int             GetZeroOrderPhasePeak( ); 
-        int             GetPivot(); 
         virtual void    PrePhaseSetup() = 0;
         virtual void    PostPhaseCleanup() = 0; 
         void            SyncPointsFromCells(); 
-        virtual void    SetMapSeriesDescription( ) = 0; 
+        virtual void    SetMapSeriesDescription( ); 
 
 
+        static int*     progress;
 
 
 #ifdef SWARM
@@ -171,15 +165,11 @@ class svkMRSAutoPhase : public svkThreadedImageAlgorithm
 
         int                             numTimePoints;
         svkMRSAutoPhase::PhasingModel   phaseModelType; 
-        svkMRSPeakPick*                 peakPicker; 
         bool                            onlyUseSelectionBox; 
         short*                          selectionBoxMask;
-        vtkImageComplex**               linearPhaseArrays; 
-        int                             numFirstOrderPhaseValues;
         bool                            isSpectralFFTRequired; 
         string                          seriesDescription; 
         vtkDataArray*                   mapArrayZeroOrderPhase; 
-        vtkDataArray*                   mapArrayFirstOrderPhase; 
 
 };
 

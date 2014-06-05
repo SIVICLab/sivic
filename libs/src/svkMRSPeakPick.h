@@ -76,7 +76,7 @@ class svkMRSPeakPick : public svkImageInPlaceFilter
 
         void            SetNoiseSD(float noise); 
         void            SetBaselineValue(float baseline); 
-        float           SetSNLimit(float sn); 
+        void            SetSNLimit(float sn); 
         void            SetResolutionHeightFraction(float resolveHeightFraction); 
         void            OnlyUseSelectionBox();
         void            PrintPeaks(); 

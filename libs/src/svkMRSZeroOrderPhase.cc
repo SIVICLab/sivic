@@ -46,7 +46,7 @@
 #include <vtkImageFourierFilter.h> // for vtkImageComplex struct
 #include <vtkMath.h>
 
-#include <svkZeroOrderPhaseCostFunction.h>
+#include <svkMRSZeroOrderPhaseCostFunction.h>
 #include <svkMRSZeroOrderPhase.h>
 #include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
@@ -70,8 +70,8 @@ svkMRSZeroOrderPhase::svkMRSZeroOrderPhase()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
     this->seriesDescription = "ZeroOrderPhaseMap"; 
-    
 }
+
 
 /*!
  *
@@ -80,16 +80,23 @@ svkMRSZeroOrderPhase::~svkMRSZeroOrderPhase()
 {
 }
 
+/*!
+ *  Copy the Dcm Header and Provenance from the input to the output. 
+ */
+int svkMRSZeroOrderPhase::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+{
+    this->InitPeakPicker ( ); 
+    this->Superclass::RequestData(request, inputVector, outputVector); 
+        
+}
 
 /*!
- *  Make sure data is in time domain initiall for first point phasing
+ *  Make sure data is in frequency domain for zero order phasing
  */
 void svkMRSZeroOrderPhase::PrePhaseSetup()
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
-
-    //  First point phase is in time domain: 
 
     //  Get the domain of the input spectra:  time/frequency
     string spectralDomain = data->GetDcmHeader()->GetStringValue( "SignalDomainColumns");
@@ -102,7 +109,7 @@ void svkMRSZeroOrderPhase::PrePhaseSetup()
     }
 
     //  if necessary, transform data to time domain: 
-    if ( this->isSpectralFFTRequired == false ) {
+    if ( this->isSpectralFFTRequired == true ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
         fft->SetInput( data );
@@ -114,22 +121,20 @@ void svkMRSZeroOrderPhase::PrePhaseSetup()
 
         fft->Update();
         fft->Delete();
-
+    
     }
 
 }
 
 
 /*!
- *
+ *  If a pre FFT was performed to get data in frequency domain, undo that here: 
  */
 void svkMRSZeroOrderPhase::PostPhaseCleanup()
 {
 
-    //  First order phase is in time domain: 
-
     //  if necessary, transform data to time domain: 
-    if ( this->isSpectralFFTRequired == false ) {
+    if ( this->isSpectralFFTRequired == true) {
 
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
@@ -169,14 +174,12 @@ void svkMRSZeroOrderPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poin
     //========================================================
     //  ITK Optimization 
     //========================================================
-    svkPhaseCostFunction::Pointer costFunction = svkZeroOrderPhaseCostFunction::New();
+    svkMRSZeroOrderPhaseCostFunction::Pointer costFunction = svkMRSZeroOrderPhaseCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
     costFunction->SetSpectrum( spectrum ); 
     costFunction->SetNumFreqPoints(this->numTimePoints ); 
     costFunction->SetPeakPicker( this->peakPicker ); 
-    costFunction->SetLinearPhaseArrays( this->linearPhaseArrays ); 
-    costFunction->SetNumFirstOrderPhaseValues( this->numFirstOrderPhaseValues ); 
 
     //  set dimensionality of parameter space: 
     const unsigned int spaceDimension = costFunction->GetNumberOfParameters();
@@ -243,7 +246,7 @@ void svkMRSZeroOrderPhase::FitPhase( int cellID )
 #endif
 
     try { 
-        //cout << "CELL ID Optimize: " << cellID << endl;
+        cout << "CELL ID Optimize: " << cellID << endl;
         itkOptimizer->StartOptimization();
     } catch( itk::ExceptionObject & e ) {
         cout << "Exception thrown ! " << endl;
@@ -294,20 +297,16 @@ void svkMRSZeroOrderPhase::FitPhase( int cellID )
     int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&mriDimensionVector);
     int volumeNumber = static_cast<int>(cellID/numSpatialVoxels); 
     this->mapArrayZeroOrderPhase = mriData->GetPointData()->GetArray(volumeNumber);
-    this->mapArrayZeroOrderPhase->SetName( "ZeroOrderPhase" ); 
+    //this->mapArrayZeroOrderPhase->SetName( "ZeroOrderPhase" ); 
     float phi0FinalDegrees = phi0Final * 180. / vtkMath::Pi(); 
-    this->mapArrayZeroOrderPhase->SetTuple1(cellID, phi0FinalDegrees);
+
+    //  put this in the correct spatial location: 
+    svkDcmHeader::DimensionVector loopVector = mriDimensionVector; 
+    svkDcmHeader::GetDimensionVectorIndexFromCellID( &mriDimensionVector, &loopVector, cellID); 
+    int spatialCellID = mriData->GetDcmHeader()->GetSpatialCellIDFromDimensionVectorIndex( &mriDimensionVector, &loopVector); 
+    this->mapArrayZeroOrderPhase->SetTuple1(spatialCellID, phi0FinalDegrees);
 
     return;
-}
-
-
-/*!
- * 
- */
-void svkMRSZeroOrderPhase::SetMapSeriesDescription( )  
-{
-    this->GetOutput(0)->GetDcmHeader()->SetValue("SeriesDescription", "ZeroOrderPhaseMap"); 
 }
 
 
@@ -315,3 +314,36 @@ void svkMRSZeroOrderPhase::ValidateInput()
 {
 }
 
+
+/*!
+ *  Return the peak with the largest amplitude
+ *  Used if only phasing on 1 peak
+ */
+int svkMRSZeroOrderPhase::GetLargestZeroOrderPhasePeak( )
+{
+    int peakNum; 
+    // Pick the peak for zero order phasing: 
+    float height = 0; 
+    for ( int i = 1; i < this->peakPicker->GetNumPeaks() - 1 ; i++ ) {
+        float tmpHt = this->peakPicker->GetAvRMSPeakHeight(i); 
+        if ( tmpHt > height ) { 
+            peakNum = i; 
+        }
+    }
+    return peakNum; 
+}
+
+/*!
+ * 
+ */
+void svkMRSZeroOrderPhase::InitPeakPicker ( ) 
+{
+    svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
+    this->peakPicker = svkMRSPeakPick::New();
+    this->peakPicker->SetInput( data );
+    if ( this->onlyUseSelectionBox == true ) {
+        this->peakPicker->OnlyUseSelectionBox();
+    }
+    this->peakPicker->Update();  
+
+}

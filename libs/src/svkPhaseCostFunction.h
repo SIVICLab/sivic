@@ -43,7 +43,6 @@
 #define SVK_PHASE_COST_FUNCTION_H
 
 
-int POWELL_CALLS_TO_GET_VALUE = 0;
 
 
 #include <vtkMath.h>
@@ -56,6 +55,8 @@ int POWELL_CALLS_TO_GET_VALUE = 0;
 
 using namespace svk;
 
+//int POWELL_CALLS_TO_GET_VALUE = 0;
+
 
 /*
  *  Cost function for ITK optimizer: 
@@ -64,6 +65,7 @@ class svkPhaseCostFunction : public itk::SingleValuedCostFunction
 {
 
     public:
+
 
         typedef svkPhaseCostFunction            Self;
         typedef itk::SingleValuedCostFunction   Superclass;
@@ -79,7 +81,6 @@ class svkPhaseCostFunction : public itk::SingleValuedCostFunction
         svkPhaseCostFunction() 
         {
             this->copySpectrum = vtkFloatArray::New();
-            this->zeroOrderPhasePeak = 0;  
         }
 
 
@@ -118,59 +119,11 @@ class svkPhaseCostFunction : public itk::SingleValuedCostFunction
         }
 
 
-        /*
-         *
-         */  
-        void SetPeakPicker( svkMRSPeakPick* peaks )  
-        {
-            this->peaks = peaks;
-        }
-
-        /*
-         *
-         */  
-        void SetLinearPhaseArrays( vtkImageComplex** linearPhaseArrays)  
-        {
-            this->linearPhaseArrays = linearPhaseArrays;
-        }
-
-
-        /*
-         *
-         */  
-        void SetNumFirstOrderPhaseValues( int numPhaseValues )  
-        {
-            this->numFirstOrderPhaseValues = numPhaseValues;
-        }
-
-
-        /*
-         *
-         */  
-        void SetZeroOrderPhasePeak( int peakNum)  
-        {
-            this->zeroOrderPhasePeak = peakNum;
-        }
-
-
-        /*
-         *
-         */  
-        int GetZeroOrderPhasePeak( )  
-        {
-            return this->zeroOrderPhasePeak;
-        }
-
-
     protected:
 
             vtkFloatArray*                  spectrum;
             vtkFloatArray*                  copySpectrum;
             int                             numFreqPoints; 
-            svkMRSPeakPick*                 peaks;
-            int                             zeroOrderPhasePeak;  
-            vtkImageComplex**               linearPhaseArrays;
-            int                             numFirstOrderPhaseValues; 
 
 
 };

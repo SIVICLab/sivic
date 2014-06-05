@@ -39,13 +39,16 @@
  *      Beck Olson,
  */
 
-#ifndef SVK_MRS_ZERO_ORDER_PHASE_COST_FUNCTION_H
-#define SVK_MRS_ZERO_ORDER_PHASE_COST_FUNCTION_H
+#ifndef SVK_MRS_FIRST_ORDER_PHASE_COST_FUNCTION_H
+#define SVK_MRS_FIRST_ORDER_PHASE_COST_FUNCTION_H
 
 
-#include <svkPhaseCostFunction.h>
-#include <svkMRSPeakPick.h>
-#include <svkMetaboliteMap.h>
+#include <vtkMath.h>
+
+#include <svkMRSAutoPhase.h>
+#include <svkPhaseSpec.h>
+
+#include <math.h>
 
 
 using namespace svk;
@@ -54,63 +57,44 @@ using namespace svk;
 /*
  *  Cost function for ITK optimizer: 
  */
-class svkMRSZeroOrderPhaseCostFunction : public svkPhaseCostFunction
+class svkMRSFirstOrderPhaseCostFunction : public itk::SingleValuedCostFunction 
 {
 
     public:
 
-        typedef svkMRSZeroOrderPhaseCostFunction            Self;
-        typedef svkPhaseCostFunction                        Superclass;
-        typedef itk::SmartPointer<Self>                     Pointer;
-        typedef itk::SmartPointer<const Self>               ConstPointer;
-
-
-        itkTypeMacro( svkMRSZeroOrderPhaseCostFunction, svkPhaseCostFunction);
+        typedef svkMRSFirstOrderPhaseCostFunction   Self;
+        itkTypeMacro( svkMRSFirstOrderPhaseCostFunction, SingleValuedCostFunction );
 
         itkNewMacro( Self );
 
 
-        svkMRSZeroOrderPhaseCostFunction() {
-            this->zeroOrderPhasePeak = 0;  
+        svkMRSFirstOrderPhaseCostFunction() 
+        {
         }
 
 
-        /*!
-         *  Cost function based on maximizing the sum of peak intensities 
-         *      cost function for svkMRSAutoPhase::PhasingModel =  MAX_PEAK_HTS_0 = 2
+       /*!
+         *  Cost function based on maximizing the intensity of the first FID point. 
          */
-        MeasureType  GetZeroOrderPhaseCost_2( const ParametersType& parameters) const
+        MeasureType  GetFirstOrderPhaseValue0( const ParametersType& parameters) const
         {
 
-            double phi0 = parameters[0];
+            //++POWELL_CALLS_TO_GET_VALUE;
         
-            double intensity = 0; 
+            double phi0 = parameters[0];
+            double phi1 = parameters[1];
+        
+            double intensity = FLT_MIN; 
             float cmplxPt[2];
             double tmp; 
 
-            //  Get the sum of the peak hits for picked peaks: 
+            // apply first order phase to data:  
+            this->copySpectrum->GetTupleValue(0, cmplxPt);
+            //svk::svkPhaseSpec::ZeroOrderPhase(phi0, cmplxPt);
+
             //  maximize positive peak height (minimize negative peak ht) 
-            for ( int peakNum = 0; peakNum < this->peaks->GetNumPeaks(); peakNum++ ) {
-
-                int startPt;     
-                int endPt;     
-                int peakPt;     
-                this->peaks->GetPeakDefinition( peakNum, &startPt, &peakPt, &endPt ); 
-
-                // apply zero order phase to data in window, then get peak ht:  
-                for ( int freq = startPt; freq <= endPt; freq++) {
-                    this->copySpectrum->GetTupleValue(freq, cmplxPt);
-                    svk::svkPhaseSpec::ZeroOrderPhase(phi0, cmplxPt);
-                    this->copySpectrum->SetTuple(freq, cmplxPt); 
-                }
-                float peakHt = svkMetaboliteMap::GetPeakHt( 
-                        static_cast<float*>(this->copySpectrum->GetVoidPointer(4)), 
-                        startPt, 
-                        endPt 
-                ); 
-                cout << "PEAK HT: " << peakHt << " @ " << phi0 * 180. / vtkMath::Pi() << endl;
-                intensity += (-1 * peakHt); 
-            } 
+            tmp = -1*cmplxPt[0];
+                intensity= tmp; 
 
             MeasureType measure = intensity; 
             return measure;
@@ -129,7 +113,7 @@ class svkMRSZeroOrderPhaseCostFunction : public svkPhaseCostFunction
             // make a member variable (copy)
             //cout << "copy spectrum" << endl;
             this->copySpectrum->DeepCopy(this->spectrum); 
-            cost = GetZeroOrderPhaseCost_2( parameters ); 
+            cost = GetFirstOrderPhaseValue( parameters ); 
 
             MeasureType measure = cost; 
             //cout << "                          cost: " << measure << endl; 
@@ -137,48 +121,42 @@ class svkMRSZeroOrderPhaseCostFunction : public svkPhaseCostFunction
         }
 
 
-        /*
-         *
+       /*!
+         *  Zero, First, Pivot
          */  
         virtual unsigned int GetNumberOfParameters(void) const
         {
-            return 1; 
+            return 3; 
         }
         
 
-        void SetPeakPicker( svkMRSPeakPick* peaks )  
+        /*
+         *
+         */  
+        void SetLinearPhaseArrays( vtkImageComplex** linearPhaseArrays)  
         {
-            this->peaks = peaks;
+            this->linearPhaseArrays = linearPhaseArrays;
         }
 
 
         /*
          *
-         */
-        void SetZeroOrderPhasePeak( int peakNum)
+         */  
+        void SetNumFirstOrderPhaseValues( int numPhaseValues )  
         {
-            this->zeroOrderPhasePeak = peakNum;
+            this->numFirstOrderPhaseValues = numPhaseValues;
         }
 
-        
-        /*
-         *
-         */
-        int GetZeroOrderPhasePeak( )
-        {
-            return this->zeroOrderPhasePeak;
-        }
-
-        
-        
 
 
-    private: 
-        svkMRSPeakPick*                 peaks;
-        int                             zeroOrderPhasePeak;
+    protected:
+
+            vtkImageComplex**               linearPhaseArrays;
+            int                             numFirstOrderPhaseValues; 
+
 
 };
 
 
 
-#endif// SVK_MRS_ZERO_ORDER_PHASE_COST_FUNCTION_H
+#endif// SVK_MRS_FIRST_ORDER_PHASE_COST_FUNCTION_H

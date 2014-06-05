@@ -127,6 +127,7 @@ void svkMRSNoise::CalculateNoiseSD()
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;
 
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
@@ -141,6 +142,8 @@ void svkMRSNoise::CalculateNoiseSD()
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         if (this->onlyUseSelectionBox == true ) {
+            svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector);
             if ( this->selectionBoxMask[cellID] == 0 ) {
                 continue; 
             } 
@@ -226,14 +229,15 @@ void svkMRSNoise::FindNoiseWindow()
     for ( int i = startPoint; i < numTimePoints - noiseWindow; i++ ) {
 
         double noiseTmp = 0; 
-        mean = 0; 
+        double meanTmp = 0; 
 
         //cout << "calc noise in window:  " << i << " " << i + noiseWindow << endl;
-        mean = this->CalcWindowMean( this->averageSpectrum, i, i + noiseWindow ); 
-        noiseTmp = this->CalcWindowSD( this->averageSpectrum, mean, i, i + noiseWindow ); 
+        meanTmp = this->CalcWindowMean( this->averageSpectrum, i, i + noiseWindow ); 
+        noiseTmp = this->CalcWindowSD( this->averageSpectrum, meanTmp, i, i + noiseWindow ); 
 
         if ( noiseTmp < noise ) {
             noise = noiseTmp; 
+            mean  = meanTmp; 
             this->noiseWindowStartPt = i; 
             this->noiseWindowEndPt = i + noiseWindow; 
             //cout << "current: " <<  this->noiseWindowStartPt <<  " " << noise << endl;
@@ -278,6 +282,7 @@ void svkMRSNoise::InitAverageSpectrum()
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = dimensionVector;
 
     int numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
@@ -299,7 +304,11 @@ void svkMRSNoise::InitAverageSpectrum()
     for ( int cellID = 0; cellID < numCells; cellID++ ) {
 
         if (this->onlyUseSelectionBox == true ) {
-            if ( this->selectionBoxMask[cellID] == 0 ) {
+               
+            svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+            int spatialCellIndex = svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( &dimensionVector, &loopVector);
+
+            if ( this->selectionBoxMask[spatialCellIndex] == 0 ) {
                 continue; 
             } 
         }

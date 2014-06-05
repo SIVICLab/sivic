@@ -73,7 +73,6 @@ class svkMRSFirstPointPhase : public svkMRSAutoPhase
         svkMRSFirstPointPhase();
         ~svkMRSFirstPointPhase();
 
-        virtual void    SetMapSeriesDescription( ); 
         virtual void    ValidateInput(); 
 
 

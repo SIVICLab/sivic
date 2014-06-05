@@ -39,7 +39,6 @@
  *      Beck Olson,
  */
 
-//int POWELL_CALLS_TO_GET_VALUE = 0;
 
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -83,14 +82,12 @@ svkMRSAutoPhase::svkMRSAutoPhase()
     svkMRSAutoPhase::progress = NULL;
     //this->SetPhasingModel(svkMRSAutoPhase::MAX_GLOBAL_PEAK_HT_0); 
     this->onlyUseSelectionBox = false; 
-    this->linearPhaseArrays = NULL; 
-
 }
 
 
 
 /*! 
- *  Sets the linear phase to apply to spectra.
+ *  Only fit phase inside selection box
  */
 void svkMRSAutoPhase::OnlyUseSelectionBox()
 {
@@ -319,52 +316,6 @@ void svkMRSAutoPhase::ZeroData()
 }
 
 
-/*
- * 
- */
-int svkMRSAutoPhase::GetPivot()
-{
-    //int pivot = this->numTimePoints/2; 
-    int start; 
-    int peak; 
-    int end; 
-    int zeroOrderPhasePeak = this->GetZeroOrderPhasePeak( ); 
-    this->peakPicker->GetPeakDefinition( zeroOrderPhasePeak, &start, &peak, &end ); 
-    int pivot = peak; 
-    return pivot; 
-}
-
-
-/*! 
- *  Initialize the array of linear phase correction factors for performance 
- */
-void svkMRSAutoPhase::InitLinearPhaseArrays() 
-{
-    this->numFirstOrderPhaseValues = this->numTimePoints*4;  
-
-    this->linearPhaseArrays = new vtkImageComplex*[ this->numFirstOrderPhaseValues ]; 
-
-    int pivot = this->GetPivot(); 
-
-    for (int i = 0; i < this->numFirstOrderPhaseValues; i++) {
-
-        float phi1 = i - this->numFirstOrderPhaseValues/2;  
-        phi1 = phi1/360.; 
-
-        // Each phase value defines an array of linear phase correction factors for the spectra: 
-        vtkImageComplex* linearPhaseArrayTmp = new vtkImageComplex[ this->numTimePoints ];
-        svkSpecUtils::CreateLinearPhaseShiftArray( 
-                this->numTimePoints, 
-                linearPhaseArrayTmp, 
-                phi1, 
-                pivot);
-
-        this->linearPhaseArrays[i] = linearPhaseArrayTmp; 
-        //cout << "LPA Init: " << i << " = " << this->linearPhaseArrays[i][0].Real<< endl;
-    }
-}
-
-
 /*! 
  *  This method is passed an input and output Data, and executes the filter
  *  algorithm to fill the output from the inputs.
@@ -485,22 +436,6 @@ void svkMRSAutoPhase::AutoPhaseSpectrum( int cellID )
 
 }
 
-/*
-*/
-int svkMRSAutoPhase::GetZeroOrderPhasePeak( )
-{
-    int peakNum; 
-    // Pick the peak for zero order phasing: 
-    float height = 0; 
-    for ( int i = 1; i < this->peakPicker->GetNumPeaks() - 1 ; i++ ) {
-        float tmpHt = this->peakPicker->GetAvRMSPeakHeight(i); 
-        if ( tmpHt > height ) { 
-            peakNum = i; 
-        }
-    }
-    return peakNum; 
-}
-
 
 
 /*!
@@ -534,6 +469,14 @@ int svkMRSAutoPhase::FillInputPortInformation( int vtkNotUsed( port ), vtkInform
     return 1;
 }
 
+
+/*!
+ * 
+ */
+void svkMRSAutoPhase::SetMapSeriesDescription( )  
+{
+    this->GetOutput(0)->GetDcmHeader()->SetValue("SeriesDescription", this->seriesDescription); 
+}
 
 
 /*!

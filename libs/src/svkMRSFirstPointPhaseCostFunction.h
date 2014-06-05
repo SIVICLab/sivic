@@ -39,28 +39,33 @@
  *      Beck Olson,
  */
 
-#ifndef SVK_FIRST_POINT_PHASE_COST_FUNCTION_H
-#define SVK_FIRST_POINT_PHASE_COST_FUNCTION_H
+#ifndef SVK_MRS_FIRST_POINT_PHASE_COST_FUNCTION_H
+#define SVK_MRS_FIRST_POINT_PHASE_COST_FUNCTION_H
 
 #include <svkPhaseCostFunction.h>
 
 
 using namespace svk;
 
-
 /*
  *  Cost function for ITK optimizer: 
  */
-class svkFirstPointPhaseCostFunction : public svkPhaseCostFunction
+class svkMRSFirstPointPhaseCostFunction : public svkPhaseCostFunction
 {
 
     public:
 
-        typedef svkFirstPointPhaseCostFunction            Self;
+        typedef svkMRSFirstPointPhaseCostFunction   Self;
+        typedef svkPhaseCostFunction                Superclass;
+        typedef itk::SmartPointer<Self>             Pointer;
+        typedef itk::SmartPointer<const Self>       ConstPointer;
 
         itkNewMacro( Self );
+        itkTypeMacro( svkMRSFirstPointPhaseCostFunction, svkPhaseCostFunction);
+        //itkTypeRevisionMacro( svkMRSFirstPointPhaseCostFunction, svkPhaseCostFunction);
 
-        svkFirstPointPhaseCostFunction() {
+
+        svkMRSFirstPointPhaseCostFunction() {
         }
 
 
@@ -70,7 +75,7 @@ class svkFirstPointPhaseCostFunction : public svkPhaseCostFunction
         MeasureType  GetFirstPointPhaseValue0( const ParametersType& parameters) const
         {
 
-            ++POWELL_CALLS_TO_GET_VALUE;
+            //++POWELL_CALLS_TO_GET_VALUE;
         
             double phi0 = parameters[0];
         
@@ -127,4 +132,4 @@ class svkFirstPointPhaseCostFunction : public svkPhaseCostFunction
 
 
 
-#endif// SVK_FIRST_POINT_PHASE_COST_FUNCTION_H
+#endif// SVK_MRS_FIRST_POINT_PHASE_COST_FUNCTION_H

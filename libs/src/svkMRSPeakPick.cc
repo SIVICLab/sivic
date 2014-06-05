@@ -64,7 +64,7 @@ svkMRSPeakPick::svkMRSPeakPick()
 
     this->noiseSD = 0.0;
     this->baselineValue = FLT_MAX;
-    this->snLimit = 40;
+    this->snLimit = 20;
     this->onlyUseSelectionBox = false;
     this->resolveHeightFraction = 0.7; 
     this->resolveHeightFraction = 0.5; 
@@ -101,7 +101,7 @@ int svkMRSPeakPick::RequestData( vtkInformation* request, vtkInformationVector**
     }
     noise->Update();
     this->SetNoiseSD( noise->GetMagnitudeNoiseSD() );
-    this->SetBaselineValue( noise->GetMagnitudeNoiseSD() );
+    this->SetBaselineValue( noise->GetMagnitudeMeanBaseline() );
 
     this->averageSpectrum = noise->GetAverageMagnitudeSpectrum(); 
 
@@ -222,10 +222,15 @@ void svkMRSPeakPick::PickPeaks()
     //  First calculate the value for a voxel, then the SD for that same voxel
     float tuple[2];
     float previousPt = FLT_MIN;   
-    int   peakPt; 
+    int   peakPt = -1; 
     float localMax = FLT_MIN; 
     float resolveHeight = FLT_MIN; 
-    float thresholdSignal = this->snLimit * this->noiseSD; 
+    cout << "NOISE: " << this->noiseSD << endl;
+    cout << "BL: " << this->baselineValue << endl;
+    float thresholdSignal = (this->snLimit * this->noiseSD) + this->baselineValue; 
+    //float derivativeLimit = 0; 
+    float derivativeLimit = this->noiseSD * 2; //   ignore derivatives less than the 2*noise
+    bool foundPossiblePeak = false; 
 
     //  Loop over points in average magnitude spectrum to locate peaks:  
     //  A peak is defined by a local maximum.  Reset once intensity drops
@@ -241,11 +246,14 @@ void svkMRSPeakPick::PickPeaks()
         //      2. > previous value of localMax
         //      3. that the signal derivative is positive (this avoids situation where
         //          localMax gets reset on the falling side of a very large peak
-        if ( signal > thresholdSignal && signal > localMax && derivative > 0 ) { 
+        //cout << "CHECK PICK: " << i << " " << signal << "(" << tuple[0]<< ") vs " << thresholdSignal ;
+        //cout << " and " << localMax << " D " << derivative << " vs " << derivativeLimit << endl;
+        if ( signal > thresholdSignal && signal > localMax && derivative > derivativeLimit ) { 
             localMax = signal;  
             peakPt = i; 
             resolveHeight = localMax * this->resolveHeightFraction;
-            //cout << "   new peak: " << i << " = " << tuple[0] << " " << signal << " hh: " << resolveHeight << endl;
+            //cout << "FOUND POTENTIAL PEAK: " << localMax  << " rh " << resolveHeight << endl;
+            foundPossiblePeak = true; 
         }
 
         //  Once signal drops 
@@ -254,9 +262,10 @@ void svkMRSPeakPick::PickPeaks()
         //      3. and the derivative is negative, 
         //  grab the local max value and reset
         //  variables to search for next peak:     
-        if ( signal <= resolveHeight ) {
+        //  only after a possible peak has been found 
+        if ( (signal <= resolveHeight) && (foundPossiblePeak == true) ) {
 
-            while ( derivative < 0  && signal > thresholdSignal ) {
+            while ( derivative < -1 * derivativeLimit  && signal > thresholdSignal ) {
                 i = i + 1;  
                 this->averageSpectrum->GetTupleValue(i, tuple);
                 signal = tuple[0] - this->baselineValue;
@@ -275,11 +284,13 @@ void svkMRSPeakPick::PickPeaks()
                 startPt = this->peakVector[ numPeaks-1][2];  
             }
             int endPt = i; 
+            //cout<< endl << "FOUND A PEAK: " << peakPt << endl << endl;
             this->InitPeakVector( &peak, startPt, peakPt, endPt); 
             this->peakVector.push_back(peak); 
             this->peakHeightVector.push_back(localMax); 
             localMax = FLT_MIN; 
             resolveHeight = FLT_MIN; 
+            foundPossiblePeak = false; 
         }
 
         previousPt = signal; 
@@ -477,6 +488,14 @@ void svkMRSPeakPick::OnlyUseSelectionBox()
 {
     this->onlyUseSelectionBox = true;
 }
+
+
+
+void svkMRSPeakPick::SetSNLimit(float sn)
+{
+    this->snLimit = sn; 
+}
+
 
 
 /*!

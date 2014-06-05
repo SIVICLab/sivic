@@ -40,13 +40,12 @@
  */
 
 
-#ifndef SVK_MRS_ZERO_ORDER_PHASE_H
-#define SVK_MRS_ZERO_ORDER_PHASE_H
+#ifndef SVK_MRS_FIRST_ORDER_PHASE_H
+#define SVK_MRS_FIRST_ORDER_PHASE_H
 
 #include <itkParticleSwarmOptimizer.h>
-
 #include <svkMRSAutoPhase.h>
-
+#include <svkMRSPeakPick.h>
 
 
 namespace svk {
@@ -73,13 +72,17 @@ class svkMRSZeroOrderPhase : public svkMRSAutoPhase
         svkMRSZeroOrderPhase();
         ~svkMRSZeroOrderPhase();
 
-        virtual void    SetMapSeriesDescription( ); 
         virtual void    ValidateInput(); 
-
 
         virtual void    FitPhase( int cellID ); 
         virtual void    PrePhaseSetup();
         virtual void    PostPhaseCleanup(); 
+        int             GetLargestZeroOrderPhasePeak( ); 
+        int             RequestData( 
+                                    vtkInformation* request, 
+                                    vtkInformationVector** inputVector, 
+                                    vtkInformationVector* outputVector ); 
+
 
 
     private:
@@ -90,6 +93,10 @@ class svkMRSZeroOrderPhase : public svkMRSAutoPhase
         virtual void    InitOptimizer( int cellID, itk::PowellOptimizer::Pointer itkOptimizer ); 
 #endif
 
+        svkMRSPeakPick* peakPicker;
+        void            InitPeakPicker( ); 
+
+        
 
 };
 
@@ -97,5 +104,5 @@ class svkMRSZeroOrderPhase : public svkMRSAutoPhase
 }   //svk
 
 
-#endif //SVK_MRS_ZERO_ORDER_PHASE_H
+#endif //SVK_MRS_FIRST_ORDER_PHASE_H
 

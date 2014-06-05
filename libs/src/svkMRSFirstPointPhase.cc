@@ -46,8 +46,8 @@
 #include <vtkImageFourierFilter.h> // for vtkImageComplex struct
 #include <vtkMath.h>
 
-#include <svkFirstPointPhaseCostFunction.h>
 #include <svkMRSFirstPointPhase.h>
+#include <svkMRSFirstPointPhaseCostFunction.h>
 #include <svkPhaseSpec.h>
 #include <svkMrsImageFFT.h>
 
@@ -94,15 +94,15 @@ void svkMRSFirstPointPhase::PrePhaseSetup()
     //  Get the domain of the input spectra:  time/frequency
     string spectralDomain = data->GetDcmHeader()->GetStringValue( "SignalDomainColumns");
     if ( spectralDomain.compare("TIME") == 0 ) {
-        this->isSpectralFFTRequired = true;
+        this->isSpectralFFTRequired = false; 
         cout << "TIME DOMAIN INPUT" << endl;
     } else {
-        this->isSpectralFFTRequired = false;
+        this->isSpectralFFTRequired = true;
         cout << "FREQ DOMAIN INPUT" << endl;
     }
 
     //  if necessary, transform data to time domain: 
-    if ( this->isSpectralFFTRequired == false ) {
+    if ( this->isSpectralFFTRequired == true ) {
 
         svkMrsImageFFT* fft = svkMrsImageFFT::New();
         fft->SetInput( data );
@@ -129,7 +129,7 @@ void svkMRSFirstPointPhase::PostPhaseCleanup()
     //  First order phase is in time domain: 
 
     //  if necessary, transform data to time domain: 
-    if ( this->isSpectralFFTRequired == false ) {
+    if ( this->isSpectralFFTRequired == true ) {
 
         svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0));
 
@@ -169,14 +169,14 @@ void svkMRSFirstPointPhase::InitOptimizer( int cellID, itk::PowellOptimizer::Poi
     //========================================================
     //  ITK Optimization 
     //========================================================
-    svkPhaseCostFunction::Pointer costFunction = svkFirstPointPhaseCostFunction::New();
+    svkMRSFirstPointPhaseCostFunction::Pointer costFunction = svkMRSFirstPointPhaseCostFunction::New();
     itkOptimizer->SetCostFunction( costFunction.GetPointer() );
 
     costFunction->SetSpectrum( spectrum ); 
     costFunction->SetNumFreqPoints(this->numTimePoints ); 
-    costFunction->SetPeakPicker( this->peakPicker ); 
-    costFunction->SetLinearPhaseArrays( this->linearPhaseArrays ); 
-    costFunction->SetNumFirstOrderPhaseValues( this->numFirstOrderPhaseValues ); 
+    //costFunction->SetPeakPicker( this->peakPicker ); 
+    //costFunction->SetLinearPhaseArrays( this->linearPhaseArrays ); 
+    //costFunction->SetNumFirstOrderPhaseValues( this->numFirstOrderPhaseValues ); 
 
     //  set dimensionality of parameter space: 
     const unsigned int spaceDimension = costFunction->GetNumberOfParameters();
@@ -294,20 +294,15 @@ void svkMRSFirstPointPhase::FitPhase( int cellID )
     int numSpatialVoxels = svkDcmHeader::GetNumSpatialVoxels(&mriDimensionVector);
     int volumeNumber = static_cast<int>(cellID/numSpatialVoxels); 
     this->mapArrayZeroOrderPhase = mriData->GetPointData()->GetArray(volumeNumber);
-    this->mapArrayZeroOrderPhase->SetName( "ZeroOrderPhase" ); 
     float phi0FinalDegrees = phi0Final * 180. / vtkMath::Pi(); 
-    this->mapArrayZeroOrderPhase->SetTuple1(cellID, phi0FinalDegrees);
+
+    //  put this in the correct spatial location: 
+    svkDcmHeader::DimensionVector loopVector = mriDimensionVector; 
+    svkDcmHeader::GetDimensionVectorIndexFromCellID( &mriDimensionVector, &loopVector, cellID); 
+    int spatialCellID = mriData->GetDcmHeader()->GetSpatialCellIDFromDimensionVectorIndex( &mriDimensionVector, &loopVector); 
+    this->mapArrayZeroOrderPhase->SetTuple1(spatialCellID, phi0FinalDegrees);
 
     return;
-}
-
-
-/*!
- * 
- */
-void svkMRSFirstPointPhase::SetMapSeriesDescription( )  
-{
-    this->GetOutput(0)->GetDcmHeader()->SetValue("SeriesDescription", "FirstPointPhaseMap"); 
 }
 
 
