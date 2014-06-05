@@ -212,7 +212,6 @@ void svkDcmSegmentationVolumeReader::ExecuteInformation()
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     hdr->SetSOPClassUID( svkDcmHeader::ENHANCED_MR_IMAGE );   
     hdr->SetValue( "PatientPosition", "UNKNOWN" );
-    //hdr->PrintDcmHeader();
     
 }
 
