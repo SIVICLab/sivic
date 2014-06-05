@@ -278,7 +278,7 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
         *it = (char)tolower(*it);
     }
 
-    if ( seqfil.compare("c13_csi2d") == 0) {
+    if ( seqfil.compare("c13_csi2d") == 0 || seqfil.compare("c13_csi2d_nlr") == 0 ) {
 
         // UCSF 2DCSI :
         aMapper = svkVarianUCSF2DcsiMapper::New();
