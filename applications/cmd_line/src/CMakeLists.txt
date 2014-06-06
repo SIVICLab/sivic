@@ -469,6 +469,16 @@ TARGET_LINK_LIBRARIES(
 
 
 ADD_EXECUTABLE(
+    svk_volume_diff
+    svk_volume_diff.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_volume_diff
+	${SVK_LIBS}
+)
+
+
+ADD_EXECUTABLE(
     svk_average_spec
     svk_average_spec.cc
 )
@@ -619,6 +629,8 @@ SET(APPS
     svk_apodize
     svk_image_stats 
     svk_image_pipeline 
+    svk_peak_pick
+    svk_volume_diff
 )
 if ( BUILD_CLAPACK )
     LIST(APPEND APPS svk_hsvd)
