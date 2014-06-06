@@ -54,6 +54,8 @@ extern "C" {
 #include <svkImageWriter.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageMathematics.h>
+#include <vtkImageThreshold.h>
+#include <vtkImageAccumulate.h>
 
 
 using namespace svk;
@@ -69,6 +71,7 @@ int main (int argc, char** argv)
     usemsg += "                                                                             \n";  
     usemsg += "   --i1          input_file_name     Name of file1                           \n"; 
     usemsg += "   --i2          input_file_name     Name of file2                           \n"; 
+    usemsg += "   --dice                            Compute the Dice similarity coefficient.\n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
     usemsg += "   -v                                Verbose output.                         \n";
     usemsg += "   -h                                Print help mesage.                      \n";  
@@ -80,19 +83,22 @@ int main (int argc, char** argv)
     string input2FileName; 
     string outputFileName; 
     bool   verbose = false;
+    bool   computeDice = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
     enum FLAG_NAME {
        FLAG_VOL1 = 0, 
-       FLAG_VOL2 
+       FLAG_VOL2,  
+       FLAG_DICE 
     };
 
     static struct option long_options[] =
     {
         {"i1",    required_argument, NULL,  FLAG_VOL1},
         {"i2",    required_argument, NULL,  FLAG_VOL2},
+        {"dice",  no_argument,       NULL,  FLAG_DICE},
         {0, 0, 0, 0}
     };
 
@@ -112,6 +118,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_VOL2:
                 input2FileName.assign( optarg );
+                break;
+            case FLAG_DICE:
+                computeDice = true; 
                 break;
             case 'v':
                 verbose = true;
@@ -177,6 +186,48 @@ int main (int argc, char** argv)
     math->SetInput2( reader2->GetOutput() ); 
     math->SetOperationToSubtract();   
     math->Update();
+
+    //  Statistical Validation of Image Segmentation Quality Based on a Spatial Overlap Index
+    //  Kelly H. Zou, PhD, Simon K. Warfield, PhD, Aditya Bharatha, MD, Clare M.C. Tempany, 
+    //  MD, Michael R. Kaus, PhD, Steven J. Haker, PhD, William M. Wells, III, PhD, 
+    //  Ferenc A. Jolesz, MD, and Ron Kikinis, MD
+    if ( computeDice == true ) { 
+
+        //  find the intersection of the 2 volumes 
+        svkImageMathematics* intersect = svkImageMathematics::New();
+        intersect->SetInput1( reader1->GetOutput() );
+        intersect->SetInput2( reader2->GetOutput() ); 
+        intersect->SetOperationToMultiply();   
+        intersect->Update();
+
+        vtkImageAccumulate* intersectHist = vtkImageAccumulate::New();
+        intersectHist->SetInput( intersect->GetOutput() ); 
+        intersectHist->IgnoreZeroOn();
+        intersectHist->Update();
+        int numVoxelsIntersect = intersectHist->GetVoxelCount();
+       
+        //  Find the num voxels in each of the 2 volumes: 
+        vtkImageAccumulate* vol1Hist = vtkImageAccumulate::New();
+        vol1Hist->SetInput( reader1->GetOutput() ); 
+        vol1Hist->IgnoreZeroOn();
+        vol1Hist->Update();
+        int numVoxels1 = vol1Hist->GetVoxelCount();
+
+        vtkImageAccumulate* vol2Hist = vtkImageAccumulate::New();
+        vol2Hist->SetInput( reader2->GetOutput() ); 
+        vol2Hist->IgnoreZeroOn();
+        vol2Hist->Update();
+        int numVoxels2 = vol2Hist->GetVoxelCount();
+
+        float dice = (2. * numVoxelsIntersect ) / (numVoxels1 + numVoxels2) ; 
+        cout << "====================================" << endl;
+        cout << "Dice Coefficient: " << dice << endl;
+        cout << "   numVoxels Intersection: " << numVoxelsIntersect << endl;
+        cout << "   numVoxels vol1:         " << numVoxels1 << endl;
+        cout << "   numVoxels vol2:         " << numVoxels2 << endl;
+        cout << "====================================" << endl;
+
+    }
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
