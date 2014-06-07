@@ -56,10 +56,10 @@
 #include <svkDouble.h>
 #include <svkString.h>
 #include <svkInt.h>
-#include <svkImageReaderFactory.h>
-#include <svkImageReader2.h>
 #include <svkBool.h>
 #include <svkXML.h>
+#include <vtkAlgorithmOutput.h>
+#include <svkImageReaderFactory.h>
 
 namespace svk {
 
@@ -116,8 +116,18 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Set the internal algorithm whos input ports are to be set.
         void             SetAlgorithm( vtkAlgorithm* algo );
 
+        void             InitializeOutputPort( int port, string name );
+
+        vtkAlgorithmOutput* GetOutputPort( string name );
+        vtkAlgorithmOutput* GetOutputPort( int port );
+        void SetInputConnection( int port, vtkAlgorithmOutput* output );
+        string GetXMLTagForOutputPort( int port );
+
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
         void             InitializeInputPort( int port, string name, int type, bool required = true, bool repeatable = false );
+        int              GetNumberOfOutputPorts( );
+        int              GetNumberOfInputPorts( );
+
 
         //! Parses an XML element and uses it to set the input ports of the algorithm. Converts image filename strings to svkImageData objects.
         void             SetInputPortsFromXML( vtkXMLDataElement* element );
@@ -225,6 +235,9 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! The XML prefix used for the algorithm
         string           algorithmPrefix;
+
+        //! Stores the names for each parameter. Used to search the XML and print the state.
+        vector<string>   outputPortNames;
 
 
     private:

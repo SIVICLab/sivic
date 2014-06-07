@@ -257,7 +257,7 @@ svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* in
     imageElement->PrintXML(cout, indent);
     vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetPortMapper()->GetXMLTagForAlgorithm().c_str());
     if( filters != NULL ) {
-        this->pipelineFilter->SetInput(svkImageAlgorithmPipeline::INPUT_IMAGE, inputImage);
+        //this->pipelineFilter->SetInput(svkImageAlgorithmPipeline::INPUT_IMAGE, inputImage);
         this->pipelineFilter->SetInputPortsFromXML( filters );
         this->pipelineFilter->Update();
         filteredData = this->pipelineFilter->GetOutput();

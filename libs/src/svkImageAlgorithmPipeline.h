@@ -55,7 +55,7 @@
 #include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
 #include <svkImageAlgorithmWithPortMapper.h>
-#include <svkIdfVolumeWriter.h>
+#include <vtkAlgorithmOutput.h>
 
 namespace svk {
 
@@ -74,8 +74,7 @@ class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
     public:
 
         typedef enum {
-            INPUT_IMAGE = 0,
-            PIPELINE
+            PIPELINE = 0
         } svkXMLImageAlgorithmParameters;
 
         // vtk type revision macro
@@ -96,16 +95,15 @@ class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
                        vtkInformationVector* outputVector );
 
        //! This is a factory method for getting an algorithm.
-       svkImageAlgorithmWithPortMapper* GetAlgorithmForFilterName( string filterName );
+       void InitializeAlgorithmForTag( vtkXMLDataElement* tag );
 
 	private:
 
+       void SetInputConnections( vtkXMLDataElement* pipeline );
+       void ExecutePipeline( vtkXMLDataElement* pipeline );
 
-       //! Temporary pointer to help manage memory release.
-       svkImageReader2*                 reader;
-
-       //! Temporary pointer to help manage memory release.
-       svkImageAlgorithmWithPortMapper* lastFilter;
+       map<string, vtkAlgorithmOutput*> idToPortMap;
+       map<vtkXMLDataElement*, vtkAlgorithm*> xmlToAlgoMap;
 
 };
 

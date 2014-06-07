@@ -121,6 +121,69 @@ void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int typ
 }
 
 
+void svkAlgorithmPortMapper::InitializeOutputPort( int port, string name )
+{
+    //TODO: Probably need to do more here....
+    if( this->outputPortNames.size() != this->algo->GetNumberOfOutputPorts()) {
+        this->outputPortNames.resize( this->algo->GetNumberOfOutputPorts() );
+    }
+    this->outputPortNames[port] = name;
+}
+
+
+vtkAlgorithmOutput* svkAlgorithmPortMapper::GetOutputPort( string name )
+{
+    for( int i = 0; i < this->outputPortNames.size(); i++ ) {
+        if( name == this->outputPortNames[i] ) {
+            return this->algo->GetOutputPort(i);
+        }
+    }
+    return NULL;
+}
+
+void svkAlgorithmPortMapper::SetInputConnection( int port, vtkAlgorithmOutput* output )
+{
+    if( this->algo != NULL ) {
+        this->algo->SetInputConnection(port, output);
+    }
+}
+
+
+int svkAlgorithmPortMapper::GetNumberOfOutputPorts( )
+{
+    if( this->algo !=NULL ) {
+        return this->algo->GetNumberOfOutputPorts();
+    } else {
+        return -1;
+    }
+}
+int svkAlgorithmPortMapper::GetNumberOfInputPorts( )
+{
+    if( this->algo !=NULL ) {
+        return this->algo->GetNumberOfInputPorts();
+    } else {
+        return -1;
+    }
+}
+
+vtkAlgorithmOutput* svkAlgorithmPortMapper::GetOutputPort( int port )
+{
+    if( this->algo != NULL ) {
+        return this->algo->GetOutputPort( port );
+    } else {
+        return NULL;
+    }
+}
+
+
+string svkAlgorithmPortMapper::GetXMLTagForOutputPort( int port )
+{
+    string tag = this->GetXMLInputPortPrefix();
+    tag.append( ":" );
+    tag.append( this->outputPortNames[port]);
+    return tag;
+}
+
 /*!
  * Extracts input port parameters from an XML element and maps them to the internal algorithm.
  */

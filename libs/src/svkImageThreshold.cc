@@ -68,6 +68,7 @@ svkImageThreshold::svkImageThreshold()
     this->GetPortMapper()->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkAlgorithmPortMapper::SVK_INT, false);
     this->GetPortMapper()->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", svkAlgorithmPortMapper::SVK_DOUBLE);
     this->GetPortMapper()->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeOutputPort( 0, "THRESHOLDED_OUTPUT");
 }
 
 

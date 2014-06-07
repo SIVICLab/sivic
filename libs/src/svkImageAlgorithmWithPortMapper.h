@@ -65,7 +65,6 @@ namespace svk {
 
 using namespace std;
 
-
 /*! 
  * This baseclass is used to support the use of the svkAlgorithmPortMapper class. All parameters
  * that control the execution of this algorithm are stored in input ports that can be set using
