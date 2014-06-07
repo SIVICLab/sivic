@@ -78,8 +78,7 @@ int main (int argc, char** argv)
     usemsg += "                                                                                  \n";
 
     string configFileName;
-    string inputFileName;
-    string outputFileName;
+    vector<string> setStrings;
     bool   verbose = false;
     static struct option long_options[] =
     {
@@ -91,16 +90,13 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:c:o:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "s:c:hv", long_options, &option_index)) != EOF) {
         switch (i) {
-            case 'i':
-                inputFileName.assign(optarg);
+            case 's':
+                setStrings.push_back(optarg);
                 break;
             case 'c':
                 configFileName.assign(optarg);
-                break;
-            case 'o':
-                outputFileName.assign(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -117,40 +113,55 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    cout << configFileName << endl;
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
+    cout << "config: <" << configFileName <<  ">" << endl;
     cout << argc << endl;
 
     /*
      * Check for extra arguments or an empty input file name.
      */
-    if ( argc != 0 || configFileName.length() == 0 || inputFileName.length() == 0 ||  outputFileName.length() == 0 ) {
+    if ( argc != 0 || configFileName.length() == 0 ) {
         cout << usemsg << endl;
-        exit(1); 
+        exit(1);
     }
 
     if( !svkUtils::FilePathExists( configFileName.c_str() ) ) {
-        cerr << "Config file can not be loaded (may not exist) " << configFileName << endl;
-        exit(1); 
+        cerr << "Config file can not be loaded (may not exist) <" << configFileName << ">" << endl;
+        exit(1);
+    }
+
+    // Replace any variables in the configuration file here..
+    string line;
+    string xmlFileString;
+    ifstream xmlFile (configFileName.c_str());
+
+    // Replace variables in XML
+    if (xmlFile.is_open()) {
+        while ( getline (xmlFile,line) ) {
+            for( int i = 0; i< setStrings.size(); i++ ) {
+                std::size_t pos = setStrings[i].find("=");
+                string variable = "$";
+                variable.append( setStrings[i].substr(0,pos) );
+                string value = setStrings[i].substr(pos+1);
+                pos = line.find(variable);
+                if( pos != string::npos ) {
+                    line.replace(pos, variable.size(), value);
+                }
+            }
+
+            xmlFileString.append( line.c_str() );
+        }
+        xmlFile.close();
     }
 
     // Lets start by reading the configuration file
-    vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
+    vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromString( xmlFileString.c_str()  );
 
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
-    svkUtils::CreateNestedXMLDataElement( configXML, pipeline->GetPortMapper()->GetXMLTagForInputPort(svkImageAlgorithmPipeline::INPUT_IMAGE), inputFileName);
     pipeline->SetInputPortsFromXML(configXML);
     vtkIndent indent;
     configXML->PrintXML(cout, indent);
     cout << "Pipeline:" << *pipeline << endl;
     pipeline->Update();
-
-    svkIdfVolumeWriter* idfWriter = svkIdfVolumeWriter::New();
-    idfWriter->SetFileName( outputFileName.c_str());
-    idfWriter->SetInput( pipeline->GetOutput() );
-    idfWriter->Write();
-    idfWriter->Delete();
     pipeline->Delete();
 
     return 0; 
