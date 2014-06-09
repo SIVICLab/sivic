@@ -166,13 +166,6 @@ void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int typ
         this->inputPorts[port].name = name;
         this->inputPorts[port].required = required;
         this->inputPorts[port].repeatable = repeatable;
-        // TODO: Remove this logic once optional ports have been setup
-        if( type == SVK_BOOL) {
-            svkBool* inputBool = svkBool::New();
-            inputBool->SetValue(false);
-            this->SetAlgorithmInputPort(port, inputBool);
-            inputBool->Delete();
-        }
     }
 }
 
@@ -238,19 +231,18 @@ void svkAlgorithmPortMapper::SetInputPortFromXML( int port, vtkXMLDataElement* p
     string parameterStringValue = string(parameterElement->GetCharacterData());
     int dataType = this->GetInputPortType( port );
     if( dataType == SVK_DOUBLE ) {
-    this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
-        } else if ( dataType == SVK_INT ) {
-            this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
-        } else if ( dataType == SVK_STRING ) {
-            this->SetStringInputPortValue(port, parameterStringValue );
-        } else if ( dataType == SVK_BOOL ) {
-            //TODO: How should bools be handled in the XML???
-            this->SetBoolInputPortValue(port, true );
-        } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-            this->SetMRImageInputPortValue( port, parameterStringValue );
-        } else if ( dataType == SVK_XML ) {
-            this->SetXMLInputPortValue( port, parameterElement );
-        }
+        this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
+    } else if ( dataType == SVK_INT ) {
+        this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
+    } else if ( dataType == SVK_STRING ) {
+        this->SetStringInputPortValue(port, parameterStringValue );
+    } else if ( dataType == SVK_BOOL ) {
+        this->SetBoolInputPortValue(port, parameterStringValue );
+    } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+        this->SetMRImageInputPortValue( port, parameterStringValue );
+    } else if ( dataType == SVK_XML ) {
+        this->SetXMLInputPortValue( port, parameterElement );
+    }
 
 }
 
@@ -380,7 +372,7 @@ svkString* svkAlgorithmPortMapper::GetStringInputPortValue( int port )
 /*!
  * Parameter port setter.
  */
-void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, bool value )
+void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, string value )
 {
     if( this->GetInputPortType(port) == SVK_BOOL ) {
         vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
@@ -390,7 +382,11 @@ void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, bool value )
             parameter->Delete();
             parameter =  this->GetAlgorithmInputPort( port );
         }
-        svkBool::SafeDownCast( parameter )->SetValue(value);
+        if( value == "true" ) {
+            svkBool::SafeDownCast( parameter )->SetValue(true);
+        } else {
+            svkBool::SafeDownCast( parameter )->SetValue(false);
+        }
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
     }
@@ -644,11 +640,8 @@ string svkAlgorithmPortMapper::GetXSD( )
         } else {
             oss<< "        ";
         }
-        oss<< "<xs:element name=\"" << this->GetInputPortName(port) << "\"";
+        oss<< "<xs:element name=\"" << this->GetInputPortName(port) << "\" type=";
         int dataType = this->GetInputPortType( port );
-        if( dataType != SVK_BOOL ) {
-            oss<< " type=";
-        }
         if( dataType == SVK_DOUBLE ) {
             oss << "\"xs:decimal\"";
         } else if ( dataType == SVK_INT ) {
@@ -657,7 +650,7 @@ string svkAlgorithmPortMapper::GetXSD( )
             oss << "\"xs:string\"";
         } else if ( dataType == SVK_BOOL ) {
             // for now bools have no type, either they are present or they are not
-            //oss << "\"xs:bool\"";
+            oss << "\"xs:boolean\"";
         } else if ( dataType == SVK_MR_IMAGE_DATA ) {
             oss << "\"svkTypes:input_image_port\"";
         } else if ( dataType == SVK_XML ) {

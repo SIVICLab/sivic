@@ -179,7 +179,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
         accumulator->SetComponentSpacing(binSize, 0,0);
         accumulator->Update();
         vtkXMLDataElement* element = NULL;
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VOLUME)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VOLUME) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VOLUME)->GetValue()) {
             element = vtkXMLDataElement::New();
             element->SetName("volume");
             element->SetAttribute("units", "mm^3");
@@ -189,7 +189,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             element->Delete();
         }
 
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MAX)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MAX) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MAX)->GetValue()) {
             element = vtkXMLDataElement::New();
             element->SetName("max");
             string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
@@ -199,7 +199,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
         }
 
 
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MIN)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MIN) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MIN)->GetValue()) {
             element = vtkXMLDataElement::New();
             element->SetName("min");
             string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
@@ -208,7 +208,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             element->Delete();
         }
 
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEAN)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEAN) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEAN)->GetValue()) {
             element = vtkXMLDataElement::New();
             element->SetName("mean");
             string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
@@ -217,7 +217,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             element->Delete();
         }
 
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_STDEV)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_STDEV) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_STDEV)->GetValue()) {
             element = vtkXMLDataElement::New();
             element->SetName("stdev");
             string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
@@ -226,7 +226,7 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             element->Delete();
         }
 
-        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM)) {
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM) &&  this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM)->GetValue()) {
             vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
             double max = *accumulator->GetMax();
             double min = *accumulator->GetMin();

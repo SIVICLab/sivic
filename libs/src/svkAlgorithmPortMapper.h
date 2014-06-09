@@ -173,7 +173,7 @@ class svkAlgorithmPortMapper : public vtkObject
         svkString*               GetStringInputPortValue( int port);
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void                     SetBoolInputPortValue( int port, bool value );
+        void                     SetBoolInputPortValue( int port, string value );
         //! Basic getter.
         svkBool*                 GetBoolInputPortValue( int port);
 
