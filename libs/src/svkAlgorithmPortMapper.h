@@ -114,98 +114,110 @@ class svkAlgorithmPortMapper : public vtkObject
         vtkTypeRevisionMacro( svkAlgorithmPortMapper, vtkObject);
 
         //! Set the internal algorithm whos input ports are to be set.
-        void             SetAlgorithm( vtkAlgorithm* algo );
+        void                     SetAlgorithm( vtkAlgorithm* algo );
 
-        void             InitializeOutputPort( int port, string name );
+        //! Initialize any output ports
+        void                     InitializeOutputPort( int port, string name );
 
-        vtkAlgorithmOutput* GetOutputPort( string name );
-        vtkAlgorithmOutput* GetOutputPort( int port );
-        void SetInputConnection( int port, vtkAlgorithmOutput* output );
-        string GetXMLTagForOutputPort( int port );
+        //! Get the output port by name
+        vtkAlgorithmOutput*      GetOutputPort( string name );
+
+        //! Get the output port by port number
+        vtkAlgorithmOutput*      GetOutputPort( int port );
+
+        //! Returns the number of output ports.
+        int                      GetNumberOfOutputPorts( );
+
+        //! Get the xml tag name for the given output port number
+        string                   GetXMLTagForOutputPort( int port );
 
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
-        void             InitializeInputPort( int port, string name, int type, bool required = true, bool repeatable = false );
-        int              GetNumberOfOutputPorts( );
-        int              GetNumberOfInputPorts( );
+        void                     InitializeInputPort( int port, string name, int type, bool required = true, bool repeatable = false );
 
+        //! Set the input connection to the internal algorithm
+        void                     SetInputConnection( int port, vtkAlgorithmOutput* output );
+
+        //! Returns the number of input ports
+        int                      GetNumberOfInputPorts( );
 
         //! Parses an XML element and uses it to set the input ports of the algorithm. Converts image filename strings to svkImageData objects.
-        void             SetInputPortsFromXML( vtkXMLDataElement* element );
+        void                     SetInputPortsFromXML( vtkXMLDataElement* element );
 
         //! All ports must be initialized with InitializeInputPort BEFORE this method is called.
-        int              FillInputPortInformation( int port, vtkInformation* info );
+        int                      FillInputPortInformation( int port, vtkInformation* info );
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void             SetDoubleInputPortValue( int port, double value );
-        svkDouble*       GetDoubleInputPortValue( int port );
-
-        //! Basic setter. Wraps value in vtkDataObject subclass
-        void             SetIntInputPortValue( int port, int value );
+        void                     SetDoubleInputPortValue( int port, double value );
         //! Basic getter.
-        svkInt*          GetIntInputPortValue( int port );
+        svkDouble*               GetDoubleInputPortValue( int port );
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void             SetStringInputPortValue( int port, string value );
+        void                     SetIntInputPortValue( int port, int value );
         //! Basic getter.
-        svkString*       GetStringInputPortValue( int port);
+        svkInt*                  GetIntInputPortValue( int port );
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void             SetBoolInputPortValue( int port, bool value );
+        void                     SetStringInputPortValue( int port, string value );
         //! Basic getter.
-        svkBool*         GetBoolInputPortValue( int port);
+        svkString*               GetStringInputPortValue( int port);
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void             SetXMLInputPortValue( int port, vtkXMLDataElement* value );
+        void                     SetBoolInputPortValue( int port, bool value );
         //! Basic getter.
-        svkXML*          GetXMLInputPortValue( int port);
+        svkBool*                 GetBoolInputPortValue( int port);
+
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void                     SetXMLInputPortValue( int port, vtkXMLDataElement* value );
+        //! Basic getter.
+        svkXML*                  GetXMLInputPortValue( int port);
 
         //! Setter that converts a filename into an svkImageData object
-        void             SetMRImageInputPortValue( int port, string filename );
+        void                     SetMRImageInputPortValue( int port, string filename );
 
         //! Basic getter.
-        svkMriImageData* GetMRImageInputPortValue( int port, int connection = 0);
+        svkMriImageData*         GetMRImageInputPortValue( int port, int connection = 0);
 
         //! Returns string names used to identify the input port.
-        string           GetInputPortName( int port );
+        string                   GetInputPortName( int port );
 
         //! Returns string names used to identify the output port.
-        string           GetOutputPortName( int port );
+        string                   GetOutputPortName( int port );
 
         //! Returns string names used in XML configuration files for input port.
-        string           GetXMLTagForInputPort( int port );
+        string                   GetXMLTagForInputPort( int port );
 
         //! Returns string names used in XML configuration files for input port.
-        string           GetXMLTagForAlgorithm( );
+        string                   GetXMLTagForAlgorithm( );
 
         //! Returns true if the port is required.
-        bool             GetInputPortRequired( int port );
+        bool                     GetInputPortRequired( int port );
 
         //! Returns true if the port is repeatable.
-        bool             GetInputPortRepeatable( int port );
+        bool                     GetInputPortRepeatable( int port );
 
         //! Get the prefix used for the port definitions in xml
-        string           GetXMLInputPortPrefix( );
+        string                   GetXMLInputPortPrefix( );
 
         //! Set the prefix used for the port definitions in xml
-        void             SetXMLInputPortPrefix( string prefix );
+        void                     SetXMLInputPortPrefix( string prefix );
 
         //! Get the prefix used for the port definitions in xml
-        string           GetXMLAlgorithmPrefix( );
+        string                   GetXMLAlgorithmPrefix( );
 
         //! Set the prefix used for the port definitions in xml
-        void             SetXMLAlgorithmPrefix( string prefix );
-
-        //! Prints all input parameters set.
-        void             PrintSelf( ostream &os, vtkIndent indent );
+        void                     SetXMLAlgorithmPrefix( string prefix );
 
         //! Write the XSD for this port mappper's current initialization
-        string           GetXSD( );
+        string                   GetXSD( );
 
         //! Handles getting data object input appropriately.
         virtual vtkDataObject*   GetAlgorithmInputPort( int port, int index = 0 );
 
         //! Handles setting data object input appropriately.
         virtual vtkDataObject*   SetAlgorithmInputPort( int port, vtkDataObject* input );
+
+        //! Prints all input parameters set.
+        void                     PrintSelf( ostream &os, vtkIndent indent );
 
     protected:
 
@@ -249,8 +261,8 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Sets a single input port
         void             SetInputPortFromXML( int port, vtkXMLDataElement* parameterElement );
 
-        //! Internal algorithm
-        vtkAlgorithm* algo;
+        //! Internal algorithm object
+        vtkAlgorithm*    algo;
 
 };
 
