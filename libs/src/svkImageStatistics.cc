@@ -57,13 +57,13 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
     this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
     this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
-    this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
     //vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 }
 
@@ -105,7 +105,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                                               vtkInformationVector** inputVector,
                                               vtkInformationVector* outputVector )
 {
-    cout << "MADE IT TO REQUEST DATA!" << endl;
     //vtkXMLDataElement* results = this->GetOutput();
     vtkXMLDataElement* results = vtkXMLDataElement::New();
 
@@ -125,15 +124,12 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 
     for (int imageIndex = 0; imageIndex < this->GetNumberOfInputConnections(INPUT_IMAGE); imageIndex++) {
         for (int roiIndex = 0; roiIndex < this->GetNumberOfInputConnections(INPUT_ROI); roiIndex++) {
-            cout << "Calculating statistics for image:" << imageIndex << " and roi " << roiIndex << endl;
             svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
             svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndex);
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
-            cout << "Image: " << imageLabel << endl;
-            cout << "ROI: " << roiLabel << endl;
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   imageLabel);
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
@@ -141,13 +137,8 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             vtkIndent indent;
             if( statistics != NULL ) {
                 nextResult->AddNestedElement( statistics );
-            } else {
-                cout << "STATISTICS ARE NULL!" << endl;
-
             }
             results->AddNestedElement( nextResult );
-            cout<< "Printing result..." << endl;
-            nextResult->PrintXML(cout, indent);
             nextResult->Delete();
         }
     }

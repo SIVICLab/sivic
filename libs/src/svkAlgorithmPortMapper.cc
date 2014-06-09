@@ -193,7 +193,6 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
     if( element != NULL ) {
         int numberOfNestedElements = element->GetNumberOfNestedElements();
         for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
-            cout << "SEARCHING FOR:" << this->GetXMLTagForInputPort(port).c_str() << endl;
             for( int i = 0; i < element->GetNumberOfNestedElements(); i++ ) {
                 vtkXMLDataElement* parameterElement =  element->GetNestedElement(i);
                 string elementName = parameterElement->GetName();
@@ -202,7 +201,6 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
                 portXMLTagList.append("_LIST");
 
                 if( this->GetInputPortRepeatable(port) && elementName == portXMLTagList ) {
-                    cout << "Setting repeatable..." << endl;
                     for( int conn = 0; conn < parameterElement->GetNumberOfNestedElements(); conn++) {
                         this->SetInputPortFromXML(port, parameterElement->GetNestedElement(conn));
                     }
@@ -500,6 +498,21 @@ string svkAlgorithmPortMapper::GetInputPortName( int port )
 
 
 /*!
+ * Returns the name of the given parameter port.
+ */
+string svkAlgorithmPortMapper::GetOutputPortName( int port )
+{
+    string parameterName;
+    if( port >= 0 && port < this->algo->GetNumberOfOutputPorts() ) {
+        parameterName = this->outputPortNames[port];
+    } else {
+        cout << "ERROR: port " << port << " is not an output parameter port!" << endl;
+    }
+    return parameterName;
+}
+
+
+/*!
  * Gets the XML tag with the appropriate prefix.
  */
 string svkAlgorithmPortMapper::GetXMLTagForInputPort( int port )
@@ -594,7 +607,6 @@ void svkAlgorithmPortMapper::PrintSelf( ostream &os, vtkIndent indent )
     indent = indent.GetNextIndent();
     for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
         int numConnections = this->algo->GetNumberOfInputConnections(port);
-        cout << "port: " << port << " has " << numConnections << " connections" << endl;
         for( int i = 0; i < numConnections; i++ ) {
             vtkDataObject* parameterObject =  this->GetAlgorithmInputPort( port, i );
             if( svkString::SafeDownCast(parameterObject) != NULL ) {
@@ -628,9 +640,21 @@ string svkAlgorithmPortMapper::GetXSD( )
 
     oss <<"<xs:complexType name=\"" << this->algo->GetClassName() <<"Arguments\">" << endl;
     oss <<"    <xs:all>" << endl;
-    for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
-        oss<< "        <xs:element name=\"" << this->GetInputPortName(i) << "\" type=";
-        int dataType = this->GetInputPortType( i );
+    for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
+        int repeatable = this->GetInputPortRepeatable( port );
+        if( repeatable ) {
+            oss<< "        <xs:element name=\"" << this->GetInputPortName(port) << "_LIST\">" << endl;
+            oss<< "            <xs:complexType>" << endl;
+            oss<< "                <xs:sequence>" << endl;
+            oss<< "                    ";
+        } else {
+            oss<< "        ";
+        }
+        oss<< "<xs:element name=\"" << this->GetInputPortName(port) << "\"";
+        int dataType = this->GetInputPortType( port );
+        if( dataType != SVK_BOOL ) {
+            oss<< " type=";
+        }
         if( dataType == SVK_DOUBLE ) {
             oss << "\"xs:decimal\"";
         } else if ( dataType == SVK_INT ) {
@@ -638,19 +662,32 @@ string svkAlgorithmPortMapper::GetXSD( )
         } else if ( dataType == SVK_STRING ) {
             oss << "\"xs:string\"";
         } else if ( dataType == SVK_BOOL ) {
-            oss << "\"xs:bool\"";
+            // for now bools have no type, either they are present or they are not
+            //oss << "\"xs:bool\"";
         } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-            oss << "\"xs:string\"";
+            oss << "\"svkTypes:input_image_port\"";
         } else if ( dataType == SVK_XML ) {
             oss << "\"xs:string\"";
         }
         oss << " minOccurs=";
-        if( this->GetInputPortRequired(i) ) {
-            oss << "1";
+        if( this->GetInputPortRequired(port) ) {
+            oss << "\"1\"";
         } else {
-            oss << "0";
+            oss << "\"0\"";
         }
-        oss << "/>" << endl;
+        if( repeatable ) {
+            oss<< " maxOccurs=\"unbounded\" />" << endl;
+            oss<< "                </xs:sequence>" << endl;
+            oss<< "            </xs:complexType>" << endl;
+            oss<< "        </xs:element>" << endl;
+        } else {
+            oss << "/>" << endl;
+        }
+    }
+    for( int port = 0; port < this->algo->GetNumberOfOutputPorts(); port++ ) {
+            oss<< "        ";
+            oss<< "<xs:element name=\"" << this->GetOutputPortName(port) << "\" type=\"svkTypes:output_image_port\"/>" << endl;
+
     }
     oss <<"    </xs:all>" << endl;
     oss <<"</xs:complexType>" << endl;
@@ -701,7 +738,6 @@ vtkDataObject* svkAlgorithmPortMapper::GetAlgorithmInputPort( int port, int inde
  */
 vtkDataObject* svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataObject* input )
 {
-    cout << "Setting input to port: " << port << endl;
     if(input) {
         if( this->algo->GetNumberOfInputConnections( port ) == 0 ) {
             this->algo->SetInputConnection(port, input->GetProducerPort());

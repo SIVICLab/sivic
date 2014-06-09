@@ -168,6 +168,9 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Returns string names used to identify the input port.
         string           GetInputPortName( int port );
 
+        //! Returns string names used to identify the output port.
+        string           GetOutputPortName( int port );
+
         //! Returns string names used in XML configuration files for input port.
         string           GetXMLTagForInputPort( int port );
 
