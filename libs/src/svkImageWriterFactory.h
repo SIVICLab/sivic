@@ -90,8 +90,9 @@ class svkImageWriterFactory : public vtkObject
         //  To generate vtkWriters as well
         virtual vtkImageWriter* CreateImageWriter( WriterType writerType ); 
 
-        static int  GetNewSeriesFilePattern(svkImageData* imageData, string* newSeriesFilePattern );
-        static int  GetNewSeriesNumberOffset();
+        static WriterType  GetDefaultWriterForFilePattern(string newSeriesFilePattern );
+        static int         GetNewSeriesFilePattern(svkImageData* imageData, string* newSeriesFilePattern );
+        static int         GetNewSeriesNumberOffset();
 
 
     protected:

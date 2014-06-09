@@ -55,6 +55,8 @@
 #include <svkImageThreshold.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageStatistics.h>
+#include <svkImageWriterFactory.h>
+#include <svkImageWriter.h>
 #include <vtkAlgorithmOutput.h>
 
 namespace svk {

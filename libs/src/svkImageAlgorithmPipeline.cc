@@ -172,7 +172,7 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
 {
     //TODO: Create algorithm factory class like svkImageReaderFactory
     svkAlgorithmPortMapper* portMapper = NULL;
-    if(string(tag->GetName()) == "svkAlgorithm:svkImageReader2") {
+    if(string(tag->GetName()) == "svkAlgorithm:svkImageReader") {
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
         string filename = filenameElement->GetCharacterData();
@@ -189,10 +189,12 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
     } else if (string(tag->GetName()) == "svkAlgorithm:svkImageWriter") {
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
         string filename = filenameElement->GetCharacterData();
-        svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
+        svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+        vtkImageWriter* writer = writerFactory->CreateImageWriter(svkImageWriterFactory::GetDefaultWriterForFilePattern(filename));
         writer->SetFileName(filename.c_str());
         this->xmlToAlgoMap[tag] = writer;
         writer->Register(this);
+        writerFactory->Delete();
     } else {
         vtkAlgorithm* algorithm = NULL;
         svkAlgorithmPortMapper* portMapper = NULL;

@@ -111,6 +111,35 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
 
 
 /*!
+ * Get the file default writer type for the given filename.
+ */
+svkImageWriterFactory::WriterType  svkImageWriterFactory::GetDefaultWriterForFilePattern(string newSeriesFilePattern )
+{
+    WriterType writerType = svkImageWriterFactory::UNDEFINED;
+    size_t pos = newSeriesFilePattern.rfind('.');
+    if( pos != string::npos ) {
+        string extension = newSeriesFilePattern.substr(pos);
+        if( extension == ".jpg" || extension == ".jpeg") {
+            writerType = svkImageWriterFactory::JPEG;
+        } else if( extension == ".tif" || extension == ".tiff") {
+            writerType = svkImageWriterFactory::TIFF;
+        } else if( extension == ".ps" ) {
+            writerType = svkImageWriterFactory::PS;
+        } else if( extension == ".dcm") {
+            writerType = svkImageWriterFactory::DICOM_ENHANCED_MRI;
+        } else if( extension == ".DCM") {
+            writerType = svkImageWriterFactory::DICOM_ENHANCED_MRI;
+        } else if( extension == ".idf") {
+            writerType = svkImageWriterFactory::IDF;
+        } else if( extension == ".ddf") {
+            writerType = svkImageWriterFactory::DDF;
+        }
+    }
+    return writerType;
+}
+
+
+/*!
  *  Generates a default file pattern for a new series and returns the new series number: 
  *  EStudyIdSSeriesNumberI
  */

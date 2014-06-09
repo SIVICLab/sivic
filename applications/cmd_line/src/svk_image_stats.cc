@@ -157,11 +157,12 @@ int main (int argc, char** argv)
     // Lets start by reading the configuration file
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromString(xmlFileString.c_str() );
 
-    vtkIndent indent;
-    configXML->PrintXML(cout, indent);
+    if( verbose ) {
+        vtkIndent indent;
+        configXML->PrintXML(cout, indent);
+    }
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
     pipeline->SetInputPortsFromXML(configXML);
-    cout << "Pipeline:" << *pipeline << endl;
     pipeline->Update();
     pipeline->Delete();
 
