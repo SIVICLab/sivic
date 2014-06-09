@@ -51,7 +51,6 @@ extern "C" {
 #endif
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
-#include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
 #include <vtkXMLUtilities.h>

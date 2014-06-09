@@ -52,12 +52,12 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkMriImageData.h>
-#include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageAlgorithmPipeline.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkGenericAlgorithmWithPortMapper.h>
+#include <vtkImageToImageStencil.h>
 #include <svkXML.h>
 
 namespace svk {
@@ -81,7 +81,15 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
         typedef enum {
             INPUT_IMAGE = 0,
             INPUT_ROI,
-            MEASURES
+            NUM_BINS,
+            BIN_SIZE,
+            START_BIN,
+            COMPUTE_HISTOGRAM,
+            COMPUTE_MEAN,
+            COMPUTE_MAX,
+            COMPUTE_MIN,
+            COMPUTE_STDEV,
+            COMPUTE_VOLUME
         } svkImageStatisticsCollectorParameters;
 
         // vtk type revision macro
@@ -106,6 +114,11 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
                       vtkInformation* request,
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
+
+       virtual void ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+
+	private:
+
 
 };
 

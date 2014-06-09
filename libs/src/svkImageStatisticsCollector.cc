@@ -49,14 +49,21 @@ vtkStandardNewMacro(svkImageStatisticsCollector);
 //! Constructor
 svkImageStatisticsCollector::svkImageStatisticsCollector()
 {
-    this->SetNumberOfInputPorts(3);
+    this->SetNumberOfInputPorts(11);
     ///this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
-    this->GetPortMapper()->InitializeInputPort( MEASURES, "measures", svkAlgorithmPortMapper::SVK_XML, required );
-    cout << "Constructing svkImageStatisticsCollector." << endl;
+    this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
+    this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MAX, "COMPUTE_MAX", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
     vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 }
 
@@ -121,13 +128,8 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
     for (int imageIndex = 0; imageIndex < this->GetNumberOfInputConnections(INPUT_IMAGE); imageIndex++) {
         for (int roiIndex = 0; roiIndex < this->GetNumberOfInputConnections(INPUT_ROI); roiIndex++) {
             cout << "Calculating statistics for image:" << imageIndex << " and roi " << roiIndex << endl;
-            svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            statsCalculator->SetInputPortsFromXML(this->GetPortMapper()->GetXMLInputPortValue(MEASURES)->GetValue());
             svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
             svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndex);
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_IMAGE, image );
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_ROI, roi);
-            statsCalculator->Update();
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
@@ -136,7 +138,8 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
             cout << "ROI: " << roiLabel << endl;
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   imageLabel);
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", roiLabel);
-            vtkXMLDataElement* statistics = statsCalculator->GetOutput();
+            vtkXMLDataElement* statistics = vtkXMLDataElement::New();
+            this->ComputeStatistics(image,roi, statistics);
             vtkIndent indent;
             if( statistics != NULL ) {
                 nextResult->AddNestedElement( statistics );
@@ -148,10 +151,110 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
             cout<< "Printing result..." << endl;
             nextResult->PrintXML(cout, indent);
             nextResult->Delete();
-            statsCalculator->Delete();
         }
     }
 
     vtkIndent indent;
     results->PrintXML(cout , indent);
+}
+
+
+void svkImageStatisticsCollector::ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+{
+    results->SetName("measures");
+    if( image != NULL ) {
+        double* spacing = image->GetSpacing();
+        double pixelVolume = spacing[0] * spacing[1] * spacing[2];
+        vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
+        accumulator->SetInput( image );
+        if( roi != NULL ) {
+            vtkImageToImageStencil* stencil = vtkImageToImageStencil::New();
+            stencil->SetInput( roi );
+            stencil->ThresholdByUpper(1);
+            stencil->Update();
+            accumulator->SetStencil( stencil->GetOutput() );
+            stencil->Delete();
+        }
+        accumulator->Update( );
+        accumulator->SetIgnoreZero( false );
+        int numberOfBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
+        double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
+        accumulator->SetComponentExtent(0,numberOfBins-1,0,0,0,0 );
+        accumulator->SetComponentOrigin(startBin, 0,0 );
+        accumulator->SetComponentSpacing(binSize, 0,0);
+        accumulator->Update();
+        vtkXMLDataElement* element = NULL;
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VOLUME)) {
+            element = vtkXMLDataElement::New();
+            element->SetName("volume");
+            element->SetAttribute("units", "mm^3");
+            string volumeString = svkUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
+            element->SetCharacterData( volumeString.c_str(), volumeString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MAX)) {
+            element = vtkXMLDataElement::New();
+            element->SetName("max");
+            string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
+            element->SetCharacterData( maxString.c_str(), maxString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MIN)) {
+            element = vtkXMLDataElement::New();
+            element->SetName("min");
+            string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
+            element->SetCharacterData( minString.c_str(), minString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEAN)) {
+            element = vtkXMLDataElement::New();
+            element->SetName("mean");
+            string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
+            element->SetCharacterData( meanString.c_str(), meanString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_STDEV)) {
+            element = vtkXMLDataElement::New();
+            element->SetName("stdev");
+            string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
+            element->SetCharacterData( stdevString.c_str(), stdevString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM)) {
+            vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
+            double max = *accumulator->GetMax();
+            double min = *accumulator->GetMin();
+            int numBins =  histData->GetNumberOfTuples();
+            accumulator->Update();
+            vtkXMLDataElement* histogram = vtkXMLDataElement::New();
+            histogram->SetName("histogram");
+            histogram->SetAttribute("bins", svkUtils::IntToString(numBins).c_str());
+            for( int i = 0; i < numBins; i++ ) {
+                element = vtkXMLDataElement::New();
+                element->SetName("bin");
+                element->SetAttribute("index", svkUtils::IntToString(i).c_str());
+                element->SetAttribute("min", svkUtils::DoubleToString(startBin + i*binSize).c_str());
+                element->SetAttribute("max", svkUtils::DoubleToString(startBin + (i+1)*binSize).c_str());
+                string valueString = svkUtils::DoubleToString(histData->GetTuple1(i));
+                element->SetCharacterData(valueString.c_str(), valueString.size());
+                histogram->AddNestedElement(element);
+                element->Delete();
+            }
+            results->AddNestedElement(histogram);
+            histogram->Delete();
+        }
+        accumulator->Delete();
+    }
 }

@@ -52,7 +52,6 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkMriImageData.h>
-#include <svkImageStatistics.h>
 #include <svkImageThreshold.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageStatisticsCollector.h>

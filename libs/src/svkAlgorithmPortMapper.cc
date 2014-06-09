@@ -604,7 +604,7 @@ void svkAlgorithmPortMapper::PrintSelf( ostream &os, vtkIndent indent )
             } else if ( svkInt::SafeDownCast(parameterObject) != NULL ) {
                 os << indent << this->GetInputPortName(port) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
             } else if ( svkBool::SafeDownCast(parameterObject) != NULL ) {
-                os << indent << this->GetInputPortName(port) << ": " << svkInt::SafeDownCast(parameterObject)->GetValue() << endl;
+                os << indent << this->GetInputPortName(port) << ": " << svkBool::SafeDownCast(parameterObject)->GetValue() << endl;
             } else if ( svkImageData::SafeDownCast(parameterObject) != NULL ) {
                 string filename = "FILENAME UNKNOWN";
                 if( svkImageData::SafeDownCast(parameterObject)->GetSourceFileName() != NULL ){
