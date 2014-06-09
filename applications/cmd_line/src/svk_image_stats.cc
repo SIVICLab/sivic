@@ -54,7 +54,7 @@ extern "C" {
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
 #include <vtkXMLUtilities.h>
-#include <svkImageStatisticsCollector.h>
+#include <svkImageStatistics.h>
 #include <svkDouble.h>
 #include <svkInt.h>
 #include <svkString.h>
