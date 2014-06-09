@@ -163,7 +163,7 @@ class svkAlgorithmPortMapper : public vtkObject
         void             SetMRImageInputPortValue( int port, string filename );
 
         //! Basic getter.
-        svkMriImageData* GetMRImageInputPortValue( int port);
+        svkMriImageData* GetMRImageInputPortValue( int port, int connection = 0);
 
         //! Returns string names used to identify the input port.
         string           GetInputPortName( int port );
@@ -209,6 +209,7 @@ class svkAlgorithmPortMapper : public vtkObject
         svkAlgorithmPortMapper();
         ~svkAlgorithmPortMapper();
 
+
         //! Returns string class name for a given type.
         static string    GetClassTypeFromDataType( int type );
 
@@ -242,7 +243,8 @@ class svkAlgorithmPortMapper : public vtkObject
 
     private:
 
-
+        //! Sets a single input port
+        void             SetInputPortFromXML( int port, vtkXMLDataElement* parameterElement );
 
         //! Internal algorithm
         vtkAlgorithm* algo;

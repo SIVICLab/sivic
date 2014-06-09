@@ -49,17 +49,14 @@ vtkStandardNewMacro(svkImageStatisticsCollector);
 //! Constructor
 svkImageStatisticsCollector::svkImageStatisticsCollector()
 {
-    this->SetNumberOfInputPorts(4);
-    this->SetNumberOfOutputPorts(1);
+    this->SetNumberOfInputPorts(3);
+    ///this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
-    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "IMAGE", svkAlgorithmPortMapper::SVK_XML, required, repeatable );
-    this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "ROI", svkAlgorithmPortMapper::SVK_XML, required, repeatable );
-    this->GetPortMapper()->InitializeInputPort( ROOT_NAME, "ROOT_NAME", svkAlgorithmPortMapper::SVK_STRING, required );
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
+    this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( MEASURES, "measures", svkAlgorithmPortMapper::SVK_XML, required );
     cout << "Constructing svkImageStatisticsCollector." << endl;
-    this->reader = NULL;
-    this->pipelineFilter = NULL;
     vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 }
 
@@ -67,26 +64,6 @@ svkImageStatisticsCollector::svkImageStatisticsCollector()
 //! Destructor
 svkImageStatisticsCollector::~svkImageStatisticsCollector()
 {
-    cout << "Delete pipeline..." << endl;
-    if( this->pipelineFilter != NULL ) {
-        this->pipelineFilter->Delete();
-        this->pipelineFilter = NULL;
-    }
-    cout << "Delete reader..." << endl;
-    if( this->reader != NULL ) {
-        this->reader->Delete();
-        this->reader = NULL;
-    }
-    cout << "Delete images..." << endl;
-    map<string,svkMriImageData*>::iterator imageHashIter;
-    for (imageHashIter = this->images.begin(); imageHashIter != this->images.end(); ++imageHashIter) {
-        imageHashIter->second->Delete();
-    }
-    cout << "Delete rois..." << endl;
-    for (imageHashIter = this->rois.begin(); imageHashIter != this->rois.end(); ++imageHashIter) {
-        imageHashIter->second->Delete();
-    }
-
 }
 
 
@@ -103,41 +80,6 @@ vtkXMLDataElement* svkImageStatisticsCollector::GetOutput()
    return output;
 }
 
-
-/*!
- * Method combines the basename with the 'suffix' and 'directory' tags found in the given
- * vtkXMLDataElement to read an svkImageData object which is then returned.
- */
-svkImageData* svkImageStatisticsCollector::ReadImageFromXML( vtkXMLDataElement* imageElement, string rootname )
-{
-    svkImageData* image = NULL;
-    if( imageElement != NULL ) {
-        string suffix = string(imageElement->FindNestedElementWithName("suffix")->GetCharacterData());
-        string directory = string(imageElement->FindNestedElementWithName("directory")->GetCharacterData());
-        string filename = directory;
-        filename.append("/");
-        filename.append(rootname);
-        filename.append("_");
-        filename.append(suffix);
-        // READ THE IMAGE
-        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        if( this->reader != NULL ) {
-            this->reader->Delete();
-        }
-        this->reader = readerFactory->CreateImageReader2(filename.c_str());
-        readerFactory->Delete();
-        if (this->reader != NULL) {
-            this->reader->SetFileName( filename.c_str() );
-            this->reader->Update();
-            image = this->reader->GetOutput();
-        } else {
-            cout << "ERROR: Could not read file: " << filename << endl;
-        }
-    } else {
-        cout << "Image element is NULL!" << endl;
-    }
-    return image;
-}
 
 /*!
  *  Default output type is same concrete sub class type as the input data.  Override with
@@ -159,7 +101,8 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
                                               vtkInformationVector* outputVector )
 {
     cout << "MADE IT TO REQUEST DATA!" << endl;
-    vtkXMLDataElement* results = this->GetOutput();
+    //vtkXMLDataElement* results = this->GetOutput();
+    vtkXMLDataElement* results = vtkXMLDataElement::New();
 
     results->RemoveAllNestedElements();
     results->RemoveAllAttributes();
@@ -175,32 +118,32 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
     timeString = timeString.substr(0, timeString.size()-1);
     results->SetAttribute("date", timeString.c_str());
 
-    this->LoadImagesAndROIS( );
-
-    map<string,svkMriImageData*>::iterator imageIter;
-    map<string,svkMriImageData*>::iterator roiIter;
-    for (imageIter = this->images.begin(); imageIter != this->images.end(); ++imageIter) {
-        for (roiIter = this->rois.begin(); roiIter != this->rois.end(); ++roiIter) {
-            cout << "Calculating statistics..." << endl;
+    for (int imageIndex = 0; imageIndex < this->GetNumberOfInputConnections(INPUT_IMAGE); imageIndex++) {
+        for (int roiIndex = 0; roiIndex < this->GetNumberOfInputConnections(INPUT_ROI); roiIndex++) {
+            cout << "Calculating statistics for image:" << imageIndex << " and roi " << roiIndex << endl;
             svkImageStatistics* statsCalculator = svkImageStatistics::New();
-            statsCalculator->SetInputPortsFromXML(this->GetPortMapper()->GetXMLInputPortValue(MEASURES)->GetValue()->FindNestedElementWithName(statsCalculator->GetPortMapper()->GetXMLTagForAlgorithm().c_str()));
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_IMAGE, imageIter->second );
-            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_ROI, roiIter->second );
+            statsCalculator->SetInputPortsFromXML(this->GetPortMapper()->GetXMLInputPortValue(MEASURES)->GetValue());
+            svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
+            svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndex);
+            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_IMAGE, image );
+            statsCalculator->GetPortMapper()->SetAlgorithmInputPort(svkImageStatistics::INPUT_ROI, roi);
             statsCalculator->Update();
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
-            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",roiIter->first.c_str() );
-            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE",imageIter->first.c_str() );
+            string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
+            string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
+            cout << "Image: " << imageLabel << endl;
+            cout << "ROI: " << roiLabel << endl;
+            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   imageLabel);
+            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", roiLabel);
             vtkXMLDataElement* statistics = statsCalculator->GetOutput();
             vtkIndent indent;
-            if( statistics == NULL ) {
-                cout << "STATISTICS ARE NULL!" << endl;
+            if( statistics != NULL ) {
+                nextResult->AddNestedElement( statistics );
             } else {
-                cout<< "Printing statistics..." << endl;
-                statistics->PrintXML(cout, indent);
+                cout << "STATISTICS ARE NULL!" << endl;
 
             }
-            nextResult->AddNestedElement( statistics );
             results->AddNestedElement( nextResult );
             cout<< "Printing result..." << endl;
             nextResult->PrintXML(cout, indent);
@@ -208,62 +151,7 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
             statsCalculator->Delete();
         }
     }
-}
 
-
-/*!
- * This method loads the images and ROIs from the input configuration, applies the necessary filters
- * using svkImageStatisticsCollector::ApplyFiltersFromXML, and stores them in a hash using the label
- * found in the ROI/IMAGE tag.
- */
-svkImageData* svkImageStatisticsCollector::LoadImagesAndROIS( )
-{
-    string rootname = this->GetPortMapper()->GetStringInputPortValue( ROOT_NAME )->GetValue();
-    for( int i = 0; i< this->GetNumberOfInputConnections( INPUT_IMAGE ); i++ ) {
-        svkXML* imageXML = svkXML::SafeDownCast(this->GetPortMapper()->GetAlgorithmInputPort( INPUT_IMAGE, i ));
-        if( imageXML != NULL ) {
-            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue(), rootname );
-            string label = imageXML->GetValue()->GetAttribute("label");
-            svkImageData* filteredData = this->ApplyFiltersFromXML( image, imageXML->GetValue() );
-            this->images[label] = svkMriImageData::SafeDownCast(filteredData);
-            this->images[label]->Register(this);
-        }
-    }
-    for( int i = 0; i< this->GetNumberOfInputConnections( INPUT_ROI ); i++ ) {
-        svkXML* imageXML = svkXML::SafeDownCast(this->GetPortMapper()->GetAlgorithmInputPort( INPUT_ROI, i ));
-        if( imageXML != NULL ) {
-            svkImageData* image = this->ReadImageFromXML( imageXML->GetValue(), rootname );
-            string label = imageXML->GetValue()->GetAttribute("label");
-            svkImageData* filteredData = this->ApplyFiltersFromXML( image, imageXML->GetValue() );
-            this->rois[label] = svkMriImageData::SafeDownCast(filteredData);
-            this->rois[label]->Register(this);
-        }
-    }
-}
-
-
-/*!
- *  This method takes an svkImageData object and a vtkXMLDataElement containing the filter tags
- *  to be applied to the data. It then returns the result of the pipeline.
- */
-svkImageData* svkImageStatisticsCollector::ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement )
-{
-    svkImageData* filteredData = NULL;
-    if( this->pipelineFilter != NULL ) {
-        this->pipelineFilter->Delete();
-    }
-    this->pipelineFilter = svkImageAlgorithmPipeline::New();
     vtkIndent indent;
-    imageElement->PrintXML(cout, indent);
-    vtkXMLDataElement* filters = imageElement->FindNestedElementWithName(this->pipelineFilter->GetPortMapper()->GetXMLTagForAlgorithm().c_str());
-    if( filters != NULL ) {
-        //this->pipelineFilter->SetInput(svkImageAlgorithmPipeline::INPUT_IMAGE, inputImage);
-        this->pipelineFilter->SetInputPortsFromXML( filters );
-        this->pipelineFilter->Update();
-        filteredData = this->pipelineFilter->GetOutput();
-    } else {
-        filteredData = inputImage;
-    }
-    return filteredData;
-
+    results->PrintXML(cout , indent);
 }

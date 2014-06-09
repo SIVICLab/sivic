@@ -135,19 +135,40 @@ int main (int argc, char** argv)
         cout << "Config   : "  << configFileName << endl;
     }
 
-    svkImageStatisticsCollector* collector = svkImageStatisticsCollector::New();
+
+    /*
+    // Replace $ROOTNAME in the config file..
+    string line;
+    string xmlFileString;
+    ifstream xmlFile (configFileName.c_str());
+
+    // Replace variables in XML
+    if (xmlFile.is_open()) {
+        while ( getline (xmlFile,line) ) {
+            std::size_t pos = setStrings[i].find("=");
+            string variable = "$ROOTNAME";
+            string value = fileRootName;
+            pos = line.find(variable);
+            if( pos != string::npos ) {
+                line.replace(pos, variable.size(), value);
+            }
+
+            xmlFileString.append( line.c_str() );
+        }
+        xmlFile.close();
+    }
+    */
 
     // Lets start by reading the configuration file
-    vtkIndent indent;
     vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromFile( configFileName.c_str() );
-    svkUtils::CreateNestedXMLDataElement(configXML,collector->GetPortMapper()->GetXMLTagForInputPort(svkImageStatisticsCollector::ROOT_NAME), fileRootName);
-    collector->SetInputPortsFromXML( configXML );
-    collector->Update();
-    vtkXMLDataElement* resultsXML = collector->GetOutput( );
-    vtkXMLUtilities::WriteElementToFile( resultsXML, "stats_results.xml", &indent);
-    resultsXML->PrintXML(cout, indent);
+
+    vtkIndent indent;
     configXML->PrintXML(cout, indent);
-    collector->Delete();
+    svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
+    pipeline->SetInputPortsFromXML(configXML);
+    cout << "Pipeline:" << *pipeline << endl;
+    pipeline->Update();
+    pipeline->Delete();
 
     return 0; 
 }

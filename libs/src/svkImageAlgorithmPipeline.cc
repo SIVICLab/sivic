@@ -74,6 +74,7 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
     if( pipeline != NULL ) {
         int numberOfFilters = pipeline->GetNumberOfNestedElements();
         // Let's initialize the algorithms...
+        cout << "#################################### INITIALIZING ALGORITHMS...#################################### " << endl;
         for( int i = 0; i < numberOfFilters; i++ ) {
             // Get the first algorithm
             vtkXMLDataElement* algorithm = pipeline->GetNestedElement(i);
@@ -81,7 +82,9 @@ int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
                 this->InitializeAlgorithmForTag( algorithm );
             }
         }
+        cout << "#################################### Setting input connections...#################################### " << endl;
         this->SetInputConnections( pipeline );
+        cout << "#################################### execute pipeline...#################################### " << endl;
         this->ExecutePipeline( pipeline );
     }
     return 1;
@@ -108,18 +111,50 @@ void svkImageAlgorithmPipeline::SetInputConnections( vtkXMLDataElement* pipeline
                 cout << "Number of input ports for algorithm: " << algorithm->GetNumberOfInputPorts() << endl;
                 for( int port = 0; port < algorithm->GetNumberOfInputPorts(); port++ ) {
                     string xmlTag;
+                    bool isRepeatable = false;
                     if( algorithm->IsA("svkImageReader2")) {
                         xmlTag = "svkArgument:FILENAME";
                     } else if( algorithm->IsA("svkImageAlgorithmWithPortMapper")) {
                         xmlTag = svkImageAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetXMLTagForInputPort(port);
+                        isRepeatable = svkImageAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetInputPortRepeatable(port);
+                        if( isRepeatable ) {
+                            xmlTag.append("_LIST");
+                        }
+                    } else if( algorithm->IsA("svkGenericAlgorithmWithPortMapper")) {
+                        xmlTag = svkGenericAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetXMLTagForInputPort(port);
+                        isRepeatable = svkGenericAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetInputPortRepeatable(port);
+                        if( isRepeatable ) {
+                            xmlTag.append("_LIST");
+                        }
                     } else if( algorithm->IsA("svkImageWriter")) {
                         xmlTag = "svkArgument:INPUT_IMAGE";
                     }
+                    cout << "Searching for tag: " << xmlTag << " for port: " << port << " for algorithm: " << algorithm->GetClassName() << endl;
                     vtkXMLDataElement* inputElement = algorithmXML->FindNestedElementWithName(xmlTag.c_str());
+                    cout << "-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!" << endl;
                     if( inputElement!= NULL && inputElement->GetAttribute("input_image_id") != NULL ) {
                         cout << "Setting input connection for: " << algorithm << endl;
                         algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetAttribute("input_image_id")]);
+                    } else if(inputElement!= NULL &&  isRepeatable ) {
+                        inputElement->PrintXML(cout, indent);
+                        cout << "FOUND REPEATABLE ELEMENT!" << endl;
+                        int numConnections = inputElement->GetNumberOfNestedElements();
+                        cout << "NUM CONNECTIONS TO SET: " << numConnections << endl;
+                        for( int connection = 0; connection < numConnections; connection++) {
+                            cout << "Checking connection tag: " << endl;
+                            inputElement->GetNestedElement(connection)->PrintXML(cout, indent);
+                            if( inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")) {
+                                if( connection == 0 ) {
+                                    cout << "Setting first connection..." << endl;
+                                    algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")]);
+                                } else {
+                                    cout << "Adding connection..." << endl;
+                                    algorithm->AddInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")]);
+                                }
+                            }
+                        }
                     }
+                    cout << "-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!" << endl;
                 }
             }
         }
@@ -181,18 +216,22 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         cout << "Mapper xml " << tag << " to writer " << writer << endl;
         writer->Register(this);
     } else {
-        svkImageAlgorithmWithPortMapper* algorithm = NULL;
+        vtkAlgorithm* algorithm = NULL;
+        svkAlgorithmPortMapper* portMapper = NULL;
         if( string(tag->GetName()) == "svkAlgorithm:svkImageThreshold") {
             algorithm = svkImageThreshold::New();
+            portMapper = svkImageThreshold::SafeDownCast( algorithm )->GetPortMapper();
+        } else if( string(tag->GetName()) == "svkAlgorithm:svkImageStatisticsCollector") {
+            algorithm = svkImageStatisticsCollector::New();
+            portMapper = svkImageStatisticsCollector::SafeDownCast( algorithm )->GetPortMapper();
         } else {
             cout << "ERROR! Filter: " << tag->GetName() << " is not yet supported!" << endl;
         }
         if( algorithm != NULL ) {
-            algorithm->SetInputPortsFromXML( tag );
+            portMapper->SetInputPortsFromXML( tag );
             // Let's save a pointer to the algorithm initialized for this xml element
             this->xmlToAlgoMap[tag] = algorithm;
             algorithm->Register(this);
-            portMapper = algorithm->GetPortMapper();
             for( int port = 0; port < portMapper->GetNumberOfOutputPorts(); port++ ) {
                 string xmlTag = portMapper->GetXMLTagForOutputPort(port);
                 vtkXMLDataElement* outputElement = tag->FindNestedElementWithName(xmlTag.c_str());

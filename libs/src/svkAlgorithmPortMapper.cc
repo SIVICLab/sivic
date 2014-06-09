@@ -194,32 +194,46 @@ void svkAlgorithmPortMapper::SetInputPortsFromXML( vtkXMLDataElement* element )
         int numberOfNestedElements = element->GetNumberOfNestedElements();
         for( int port = 0; port < this->algo->GetNumberOfInputPorts(); port++ ) {
             cout << "SEARCHING FOR:" << this->GetXMLTagForInputPort(port).c_str() << endl;
-            int numConnections = 0;
             for( int i = 0; i < element->GetNumberOfNestedElements(); i++ ) {
                 vtkXMLDataElement* parameterElement =  element->GetNestedElement(i);
                 string elementName = parameterElement->GetName();
-                if( elementName == this->GetXMLTagForInputPort(port) ) {
-                    numConnections++;
-                    string parameterStringValue = string(parameterElement->GetCharacterData());
-                    int dataType = this->GetInputPortType( port );
-                    if( dataType == SVK_DOUBLE ) {
-                        this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
-                    } else if ( dataType == SVK_INT ) {
-                        this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
-                    } else if ( dataType == SVK_STRING ) {
-                        this->SetStringInputPortValue(port, parameterStringValue );
-                    } else if ( dataType == SVK_BOOL ) {
-                        //TODO: How should bools be handled in the XML???
-                        this->SetBoolInputPortValue(port, true );
-                    } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-                        this->SetMRImageInputPortValue( port, parameterStringValue );
-                    } else if ( dataType == SVK_XML ) {
-                        this->SetXMLInputPortValue( port, parameterElement );
+                string portXMLTag = this->GetXMLTagForInputPort(port);
+                string portXMLTagList = portXMLTag;
+                portXMLTagList.append("_LIST");
+
+                if( this->GetInputPortRepeatable(port) && elementName == portXMLTagList ) {
+                    cout << "Setting repeatable..." << endl;
+                    for( int conn = 0; conn < parameterElement->GetNumberOfNestedElements(); conn++) {
+                        this->SetInputPortFromXML(port, parameterElement->GetNestedElement(conn));
                     }
+                } else if( elementName == portXMLTag ) {
+                    this->SetInputPortFromXML( port, parameterElement );
                 }
             }
         }
     }
+}
+
+
+void svkAlgorithmPortMapper::SetInputPortFromXML( int port, vtkXMLDataElement* parameterElement )
+{
+    string parameterStringValue = string(parameterElement->GetCharacterData());
+    int dataType = this->GetInputPortType( port );
+    if( dataType == SVK_DOUBLE ) {
+    this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
+        } else if ( dataType == SVK_INT ) {
+            this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
+        } else if ( dataType == SVK_STRING ) {
+            this->SetStringInputPortValue(port, parameterStringValue );
+        } else if ( dataType == SVK_BOOL ) {
+            //TODO: How should bools be handled in the XML???
+            this->SetBoolInputPortValue(port, true );
+        } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+            this->SetMRImageInputPortValue( port, parameterStringValue );
+        } else if ( dataType == SVK_XML ) {
+            this->SetXMLInputPortValue( port, parameterElement );
+        }
+
 }
 
 
@@ -416,14 +430,16 @@ void svkAlgorithmPortMapper::SetMRImageInputPortValue( int port, string filename
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
         // READ THE IMAGE
-        svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-        svkImageReader2* reader = readerFactory->CreateImageReader2(filename.c_str());
-        readerFactory->Delete();
-        if (reader != NULL) {
-            reader->SetFileName( filename.c_str() );
-            reader->Update();
-            this->SetAlgorithmInputPort(port, reader->GetOutput() );
-            reader->Delete();
+        if( !filename.empty()) {
+            svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+            svkImageReader2* reader = readerFactory->CreateImageReader2(filename.c_str());
+            readerFactory->Delete();
+            if (reader != NULL) {
+                reader->SetFileName( filename.c_str() );
+                reader->Update();
+                this->SetAlgorithmInputPort(port, reader->GetOutput() );
+                reader->Delete();
+            }
         }
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMriImageData. " << endl;
@@ -434,10 +450,10 @@ void svkAlgorithmPortMapper::SetMRImageInputPortValue( int port, string filename
 /*!
  * Simple input port getter.
  */
-svkMriImageData* svkAlgorithmPortMapper::GetMRImageInputPortValue( int port )
+svkMriImageData* svkAlgorithmPortMapper::GetMRImageInputPortValue( int port, int connection )
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
-        return svkMriImageData::SafeDownCast( this->GetAlgorithmInputPort(port) );
+        return svkMriImageData::SafeDownCast( this->GetAlgorithmInputPort(port, connection) );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMriImageData. " << endl;
         return NULL;

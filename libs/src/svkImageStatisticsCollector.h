@@ -81,7 +81,6 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
         typedef enum {
             INPUT_IMAGE = 0,
             INPUT_ROI,
-            ROOT_NAME,
             MEASURES
         } svkImageStatisticsCollectorParameters;
 
@@ -107,22 +106,6 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
                       vtkInformation* request,
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
-
-       //! This method loads all Images and rois, applying any necessary filters using svkImageStatisticsCollector::ApplyFiltersFromXML
-       svkImageData* LoadImagesAndROIS( );
-
-       //! This method reads in an image from the input XML
-       svkImageData* ReadImageFromXML( vtkXMLDataElement* imageElement, string rootname );
-
-       //! Reads the filters for an ROI or a map, instantiates and runs the algorithm, then returns the output.
-       svkImageData* ApplyFiltersFromXML( svkImageData* inputImage, vtkXMLDataElement* imageElement );
-
-       svkImageReader2*                       reader;
-       map<string, svkMriImageData*>          rois;
-       map<string, svkMriImageData*>          images;
-
-       // This just hold temporary pointers to help manage memory release.
-       svkImageAlgorithmPipeline*             pipelineFilter;
 
 };
 
