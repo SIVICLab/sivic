@@ -91,10 +91,10 @@ void svkAlgorithmPortMapper::SetAlgorithm( vtkAlgorithm* algo )
 void svkAlgorithmPortMapper::InitializeOutputPort( int port, string name )
 {
     //TODO: Probably need to do more here....
-    if( this->outputPortNames.size() != this->algo->GetNumberOfOutputPorts()) {
-        this->outputPortNames.resize( this->algo->GetNumberOfOutputPorts() );
+    if( this->outputPorts.size() != this->algo->GetNumberOfOutputPorts()) {
+        this->outputPorts.resize( this->algo->GetNumberOfOutputPorts() );
     }
-    this->outputPortNames[port] = name;
+    this->outputPorts[port].name = name;
 }
 
 
@@ -103,8 +103,8 @@ void svkAlgorithmPortMapper::InitializeOutputPort( int port, string name )
  */
 vtkAlgorithmOutput* svkAlgorithmPortMapper::GetOutputPort( string name )
 {
-    for( int i = 0; i < this->outputPortNames.size(); i++ ) {
-        if( name == this->outputPortNames[i] ) {
+    for( int i = 0; i < this->outputPorts.size(); i++ ) {
+        if( name == this->outputPorts[i].name ) {
             return this->algo->GetOutputPort(i);
         }
     }
@@ -145,7 +145,7 @@ string svkAlgorithmPortMapper::GetXMLTagForOutputPort( int port )
 {
     string tag = this->GetXMLInputPortPrefix();
     tag.append( ":" );
-    tag.append( this->outputPortNames[port]);
+    tag.append( this->outputPorts[port].name);
     return tag;
 }
 
@@ -159,22 +159,13 @@ void svkAlgorithmPortMapper::InitializeInputPort( int port, string name, int typ
     // Only initialize a given input port parameter once.
     if( this->GetAlgorithmInputPort( port ) == NULL ) {
         // Make sure the parameter name array is large enough to hold the new name
-        if( this->inputPortTypes.size() != this->algo->GetNumberOfInputPorts()) {
-            this->inputPortTypes.resize( this->algo->GetNumberOfInputPorts() );
+        if( this->inputPorts.size() != this->algo->GetNumberOfInputPorts()) {
+            this->inputPorts.resize( this->algo->GetNumberOfInputPorts() );
         }
-        if( this->inputPortNames.size() != this->algo->GetNumberOfInputPorts()) {
-            this->inputPortNames.resize( this->algo->GetNumberOfInputPorts() );
-        }
-        if( this->inputPortRequired.size() != this->algo->GetNumberOfInputPorts()) {
-            this->inputPortRequired.resize( this->algo->GetNumberOfInputPorts() );
-        }
-        if( this->inputPortRepeatable.size() != this->algo->GetNumberOfInputPorts()) {
-            this->inputPortRepeatable.resize( this->algo->GetNumberOfInputPorts() );
-        }
-        this->inputPortTypes[port]      = type;
-        this->inputPortNames[port]      = name;
-        this->inputPortRequired[port]   = required;
-        this->inputPortRepeatable[port] = repeatable;
+        this->inputPorts[port].type = type;
+        this->inputPorts[port].name = name;
+        this->inputPorts[port].required = required;
+        this->inputPorts[port].repeatable = repeatable;
         // TODO: Remove this logic once optional ports have been setup
         if( type == SVK_BOOL) {
             svkBool* inputBool = svkBool::New();
@@ -271,11 +262,11 @@ int svkAlgorithmPortMapper::FillInputPortInformation( int port, vtkInformation* 
 {
     if( port < this->algo->GetNumberOfInputPorts() ) {
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
-                svkAlgorithmPortMapper::GetClassTypeFromDataType(this->inputPortTypes[port]).c_str());
-        if( !this->inputPortRequired[port] ) {
+                svkAlgorithmPortMapper::GetClassTypeFromDataType(this->inputPorts[port].type).c_str());
+        if( !this->inputPorts[port].required ) {
             info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(),1);
         }
-        if( this->inputPortRepeatable[port] ) {
+        if( this->inputPorts[port].repeatable ) {
             info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
         }
     }
@@ -518,7 +509,7 @@ string svkAlgorithmPortMapper::GetInputPortName( int port )
 {
     string parameterName;
     if( port >= 0 && port < this->algo->GetNumberOfInputPorts() ) {
-        parameterName = this->inputPortNames[port];
+        parameterName = this->inputPorts[port].name;
     } else {
         cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
     }
@@ -533,7 +524,7 @@ string svkAlgorithmPortMapper::GetOutputPortName( int port )
 {
     string parameterName;
     if( port >= 0 && port < this->algo->GetNumberOfOutputPorts() ) {
-        parameterName = this->outputPortNames[port];
+        parameterName = this->outputPorts[port].name;
     } else {
         cout << "ERROR: port " << port << " is not an output parameter port!" << endl;
     }
@@ -572,7 +563,7 @@ bool svkAlgorithmPortMapper::GetInputPortRequired( int port )
 {
     bool required = false;
     if( port >= 0 && port < this->algo->GetNumberOfInputPorts() ) {
-        required = this->inputPortRequired[port];
+        required = this->inputPorts[port].required;
     } else {
         cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
     }
@@ -587,7 +578,7 @@ bool svkAlgorithmPortMapper::GetInputPortRepeatable( int port )
 {
     bool repeatable = false;
     if( port >= 0 && port < this->algo->GetNumberOfInputPorts() ) {
-        repeatable = this->inputPortRepeatable[port];
+        repeatable = this->inputPorts[port].repeatable;
     } else {
         cout << "ERROR: port " << port << " is not an input parameter port!" << endl;
     }
@@ -705,7 +696,7 @@ int svkAlgorithmPortMapper::GetInputPortNumber( string name )
 {
     int port = -1;
     for( int i = 0; i < this->algo->GetNumberOfInputPorts(); i++ ) {
-        if( name == this->inputPortNames[i]) {
+        if( name == this->inputPorts[i].name) {
             port = i;
         }
     }
@@ -721,8 +712,8 @@ int svkAlgorithmPortMapper::GetInputPortNumber( string name )
  */
 int svkAlgorithmPortMapper::GetInputPortType( int port )
 {
-    if( port < this->inputPortTypes.size()) {
-        return this->inputPortTypes[port];
+    if( port < this->inputPorts.size()) {
+        return this->inputPorts[port].type;
     } else {
         return -1;
     }

@@ -110,6 +110,17 @@ class svkAlgorithmPortMapper : public vtkObject
             SVK_XML
         } svkXMLDataType;
 
+        struct svkInputPortInfo {
+            string name;
+            int    type;
+            bool   required;
+            bool   repeatable;
+        };
+
+        struct svkOutputPortInfo {
+            string name;
+        };
+
         static svkAlgorithmPortMapper* New();
         vtkTypeRevisionMacro( svkAlgorithmPortMapper, vtkObject);
 
@@ -234,18 +245,6 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Gets the type for a given input port
         int              GetInputPortType( int port );
 
-        //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string>   inputPortNames;
-
-        //! Stores the types for each parameter. Used by FillInputPortInformation to determine types.
-        vector<int>      inputPortTypes;
-
-        //! Stores whether or not a port is required. Used by FillInputPortInformation to determine types.
-        vector<bool>     inputPortRequired;
-
-        //! Stores whether or not a port is repeatable. Used by FillInputPortInformation to determine types.
-        vector<bool>     inputPortRepeatable;
-
         //! The XML prefix used for the arguments
         string           inputPortPrefix;
 
@@ -253,7 +252,11 @@ class svkAlgorithmPortMapper : public vtkObject
         string           algorithmPrefix;
 
         //! Stores the names for each parameter. Used to search the XML and print the state.
-        vector<string>   outputPortNames;
+        vector<svkInputPortInfo>   inputPorts;
+
+        //! Stores the names for each parameter. Used to search the XML and print the state.
+        vector<svkOutputPortInfo>   outputPorts;
+
 
 
     private:
