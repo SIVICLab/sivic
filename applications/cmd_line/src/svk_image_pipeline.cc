@@ -144,7 +144,8 @@ int main (int argc, char** argv)
                 string value = setStrings[i].substr(pos+1);
                 pos = line.find(variable);
                 if( pos != string::npos ) {
-                    line.replace(pos, variable.size(), value);
+                    line.erase(pos, variable.size() );
+                    line.insert(pos, value);
                 }
             }
 
