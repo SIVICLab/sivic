@@ -221,9 +221,9 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         if( string(tag->GetName()) == "svkAlgorithm:svkImageThreshold") {
             algorithm = svkImageThreshold::New();
             portMapper = svkImageThreshold::SafeDownCast( algorithm )->GetPortMapper();
-        } else if( string(tag->GetName()) == "svkAlgorithm:svkImageStatisticsCollector") {
-            algorithm = svkImageStatisticsCollector::New();
-            portMapper = svkImageStatisticsCollector::SafeDownCast( algorithm )->GetPortMapper();
+        } else if( string(tag->GetName()) == "svkAlgorithm:svkImageStatistics") {
+            algorithm = svkImageStatistics::New();
+            portMapper = svkImageStatistics::SafeDownCast( algorithm )->GetPortMapper();
         } else {
             cout << "ERROR! Filter: " << tag->GetName() << " is not yet supported!" << endl;
         }

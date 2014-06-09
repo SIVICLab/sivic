@@ -254,7 +254,7 @@ ADD_LIBRARY(
     svkMrsApodizationFilter.cc
     svkExtractVOI.cc
     svkDICOMParser.cc
-    svkImageStatisticsCollector.cc
+    svkImageStatistics.cc
     svkDouble.cc
     svkBool.cc
     svkInt.cc

@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_IMAGE_STATISTICS_COLLECTOR_H
-#define SVK_IMAGE_STATISTICS_COLLECTOR_H
+#ifndef SVK_IMAGE_STATISTICS_H
+#define SVK_IMAGE_STATISTICS_H
 
 
 #include <stdio.h>
@@ -73,7 +73,7 @@ using namespace std;
  *
  *  TODO: Should this be converted into an svkImageAlgorithmWithPortMapper?
  */
-class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
+class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 {
 
     public:
@@ -90,21 +90,21 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MIN,
             COMPUTE_STDEV,
             COMPUTE_VOLUME
-        } svkImageStatisticsCollectorParameters;
+        } svkImageStatisticsParameters;
 
         // vtk type revision macro
-        vtkTypeRevisionMacro( svkImageStatisticsCollector, svkGenericAlgorithmWithPortMapper );
+        vtkTypeRevisionMacro( svkImageStatistics, svkGenericAlgorithmWithPortMapper );
   
         // vtk initialization 
-        static svkImageStatisticsCollector* New();  
+        static svkImageStatistics* New();
 
         //! This will grab the output object as the correct data type to avoid casting
         vtkXMLDataElement* GetOutput( );
 
 	protected:
 
-        svkImageStatisticsCollector();
-       ~svkImageStatisticsCollector();
+        svkImageStatistics();
+       ~svkImageStatistics();
 
        //! Sets the output type to XML
        virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
@@ -125,4 +125,4 @@ class svkImageStatisticsCollector : public svkGenericAlgorithmWithPortMapper
 
 }   //svk
 
-#endif //SVK_IMAGE_STATISTICS_COLLECTOR
+#endif //SVK_IMAGE_STATISTICS_H

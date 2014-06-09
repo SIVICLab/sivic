@@ -54,7 +54,7 @@
 #include <svkMriImageData.h>
 #include <svkImageThreshold.h>
 #include <svkImageAlgorithmWithPortMapper.h>
-#include <svkImageStatisticsCollector.h>
+#include <svkImageStatistics.h>
 #include <vtkAlgorithmOutput.h>
 
 namespace svk {

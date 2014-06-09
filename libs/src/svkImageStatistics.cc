@@ -39,15 +39,15 @@
  */
 
 
-#include <svkImageStatisticsCollector.h>
+#include <svkImageStatistics.h>
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkImageStatisticsCollector, "$Rev$");
-vtkStandardNewMacro(svkImageStatisticsCollector);
+vtkCxxRevisionMacro(svkImageStatistics, "$Rev$");
+vtkStandardNewMacro(svkImageStatistics);
 
 //! Constructor
-svkImageStatisticsCollector::svkImageStatisticsCollector()
+svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(11);
     ///this->SetNumberOfOutputPorts(1);
@@ -69,7 +69,7 @@ svkImageStatisticsCollector::svkImageStatisticsCollector()
 
 
 //! Destructor
-svkImageStatisticsCollector::~svkImageStatisticsCollector()
+svkImageStatistics::~svkImageStatistics()
 {
 }
 
@@ -77,7 +77,7 @@ svkImageStatisticsCollector::~svkImageStatisticsCollector()
 /*!
 *  Get's the output as a vtkXMLDataElement.
 */
-vtkXMLDataElement* svkImageStatisticsCollector::GetOutput()
+vtkXMLDataElement* svkImageStatistics::GetOutput()
 {
    vtkXMLDataElement* output = NULL;
    svkXML* outputDataObject = svkXML::SafeDownCast(this->GetOutputDataObject(0));
@@ -92,7 +92,7 @@ vtkXMLDataElement* svkImageStatisticsCollector::GetOutput()
  *  Default output type is same concrete sub class type as the input data.  Override with
  *  specific concrete type in sub-class if necessary.
  */
-int svkImageStatisticsCollector::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkImageStatistics::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkXML");
     return 1;
@@ -103,7 +103,7 @@ int svkImageStatisticsCollector::FillOutputPortInformation( int vtkNotUsed(port)
  *  RequestData pass the input through the algorithm, and copies the dcos and header
  *  to the output.
  */
-int svkImageStatisticsCollector::RequestData( vtkInformation* request,
+int svkImageStatistics::RequestData( vtkInformation* request,
                                               vtkInformationVector** inputVector,
                                               vtkInformationVector* outputVector )
 {
@@ -159,7 +159,7 @@ int svkImageStatisticsCollector::RequestData( vtkInformation* request,
 }
 
 
-void svkImageStatisticsCollector::ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
 {
     results->SetName("measures");
     if( image != NULL ) {
