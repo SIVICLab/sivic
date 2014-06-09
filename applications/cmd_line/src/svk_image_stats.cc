@@ -135,27 +135,14 @@ int main (int argc, char** argv)
     }
 
 
-    // Replace $ROOTNAME in the config file..
-    string line;
-    string xmlFileString;
-    ifstream xmlFile (configFileName.c_str());
-
-    // Replace $ROOTNAME in XML
-    if (xmlFile.is_open()) {
-        while ( getline (xmlFile,line) ) {
-            string rootnameVariable = "$ROOTNAME";
-            std::size_t pos = line.find(rootnameVariable);
-            if( pos != string::npos ) {
-                line.erase(pos, rootnameVariable.size() );
-                line.insert(pos, fileRootName);
-            }
-            xmlFileString.append( line.c_str() );
-        }
-        xmlFile.close();
-    }
+    string rootNameVariable = "ROOTNAME=";
+    rootNameVariable.append(fileRootName);
+    vector<string> xmlVariables;
+    xmlVariables.push_back( rootNameVariable );
 
     // Lets start by reading the configuration file
-    vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromString(xmlFileString.c_str() );
+    vtkXMLDataElement* configXML = svkUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
+
 
     if( verbose ) {
         vtkIndent indent;

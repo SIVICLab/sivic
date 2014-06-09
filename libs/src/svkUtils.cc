@@ -629,3 +629,41 @@ vtkXMLDataElement* svkUtils::CreateNestedXMLDataElement( vtkXMLDataElement* pare
     }
     return child;
 }
+
+
+/*!
+ * This method reads an xml file and then substitutes varibales from variables vectors. Each element
+ * in the variables vector is expected to have the format: VARIBALE_NAME=value. For this case any
+ * string the xml matching $VARIABLE_NAME will be replaced with 'value'.
+ */
+vtkXMLDataElement* svkUtils::ReadXMLAndSubstituteVariables(string xmlFileName, vector<string> xmlVariables )
+{
+    vtkXMLDataElement* xml = NULL;
+    // Replace any variables in the configuration file here..
+    string line;
+    string xmlFileString;
+    ifstream xmlFile (xmlFileName.c_str());
+
+    // Replace variables in XML
+    if (xmlFile.is_open()) {
+        while ( getline (xmlFile,line) ) {
+            for( int i = 0; i< xmlVariables.size(); i++ ) {
+                std::size_t pos = xmlVariables[i].find("=");
+                string variable = "$";
+                variable.append( xmlVariables[i].substr(0,pos) );
+                string value = xmlVariables[i].substr(pos+1);
+                pos = line.find(variable);
+                if( pos != string::npos ) {
+                    line.erase(pos, variable.size() );
+                    line.insert(pos, value);
+                }
+            }
+
+            xmlFileString.append( line.c_str() );
+        }
+        xmlFile.close();
+    }
+    // Lets start by reading the configuration file
+    xml = vtkXMLUtilities::ReadElementFromString( xmlFileString.c_str()  );
+    return xml;
+}

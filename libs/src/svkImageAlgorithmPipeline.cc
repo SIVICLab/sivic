@@ -52,7 +52,7 @@ svkImageAlgorithmPipeline::svkImageAlgorithmPipeline()
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(0);
     this->GetPortMapper()->InitializeInputPort( PIPELINE, "pipeline", svkAlgorithmPortMapper::SVK_XML);
-    this->GetPortMapper()->SetXMLInputPortPrefix("svk");
+    this->GetPortMapper()->SetXMLPortPrefix("svk");
 }
 
 

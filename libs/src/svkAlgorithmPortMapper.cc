@@ -61,7 +61,7 @@ svkAlgorithmPortMapper::svkAlgorithmPortMapper()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
     // We use the prefix argument so that xml users don't have to be aware of what a port is
-    this->inputPortPrefix = "svkArgument";
+    this->portPrefix = "svkArgument";
     this->algorithmPrefix = "svkAlgorithm";
 
 }
@@ -592,16 +592,16 @@ bool svkAlgorithmPortMapper::GetInputPortRepeatable( int port )
  */
 string svkAlgorithmPortMapper::GetXMLInputPortPrefix( )
 {
-    return this->inputPortPrefix;
+    return this->portPrefix;
 }
 
 
 /*!
- * Set the prefix used for the port definitions in xml
+ * Set the XML tag prefix for the input/output ports.
  */
-void svkAlgorithmPortMapper::SetXMLInputPortPrefix( string prefix )
+void svkAlgorithmPortMapper::SetXMLPortPrefix( string prefix )
 {
-    this->inputPortPrefix = prefix;
+    this->portPrefix = prefix;
 }
 
 

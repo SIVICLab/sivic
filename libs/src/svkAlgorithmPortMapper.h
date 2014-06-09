@@ -210,7 +210,7 @@ class svkAlgorithmPortMapper : public vtkObject
         string                   GetXMLInputPortPrefix( );
 
         //! Set the prefix used for the port definitions in xml
-        void                     SetXMLInputPortPrefix( string prefix );
+        void                     SetXMLPortPrefix( string prefix );
 
         //! Get the prefix used for the port definitions in xml
         string                   GetXMLAlgorithmPrefix( );
@@ -246,7 +246,7 @@ class svkAlgorithmPortMapper : public vtkObject
         int              GetInputPortType( int port );
 
         //! The XML prefix used for the arguments
-        string           inputPortPrefix;
+        string           portPrefix;
 
         //! The XML prefix used for the algorithm
         string           algorithmPrefix;

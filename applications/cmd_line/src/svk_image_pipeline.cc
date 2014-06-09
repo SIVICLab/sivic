@@ -77,7 +77,7 @@ int main (int argc, char** argv)
     usemsg += "                                                                                  \n";
 
     string configFileName;
-    vector<string> setStrings;
+    vector<string> xmlVariables;
     bool   verbose = false;
     static struct option long_options[] =
     {
@@ -92,7 +92,7 @@ int main (int argc, char** argv)
     while ((i = getopt_long(argc, argv, "s:c:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 's':
-                setStrings.push_back(optarg);
+                xmlVariables.push_back(optarg);
                 break;
             case 'c':
                 configFileName.assign(optarg);
@@ -128,38 +128,15 @@ int main (int argc, char** argv)
         exit(1);
     }
 
-    // Replace any variables in the configuration file here..
-    string line;
-    string xmlFileString;
-    ifstream xmlFile (configFileName.c_str());
+    vtkXMLDataElement* configXML = svkUtils::ReadXMLAndSubstituteVariables( configFileName, xmlVariables);
 
-    // Replace variables in XML
-    if (xmlFile.is_open()) {
-        while ( getline (xmlFile,line) ) {
-            for( int i = 0; i< setStrings.size(); i++ ) {
-                std::size_t pos = setStrings[i].find("=");
-                string variable = "$";
-                variable.append( setStrings[i].substr(0,pos) );
-                string value = setStrings[i].substr(pos+1);
-                pos = line.find(variable);
-                if( pos != string::npos ) {
-                    line.erase(pos, variable.size() );
-                    line.insert(pos, value);
-                }
-            }
-
-            xmlFileString.append( line.c_str() );
-        }
-        xmlFile.close();
-    }
-    // Lets start by reading the configuration file
-    vtkXMLDataElement* configXML = vtkXMLUtilities::ReadElementFromString( xmlFileString.c_str()  );
-
-    vtkIndent indent;
-    configXML->PrintXML(cout, indent);
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
     pipeline->SetInputPortsFromXML(configXML);
-    cout << "Pipeline:" << *pipeline << endl;
+    if( verbose && configXML != NULL ) {
+        vtkIndent indent;
+        configXML->PrintXML(cout, indent);
+        cout << "Pipeline:" << *pipeline << endl;
+    }
     pipeline->Update();
     pipeline->Delete();
 
