@@ -58,6 +58,7 @@
 #include <svkIdfVolumeWriter.h>
 #include <svkGenericAlgorithmWithPortMapper.h>
 #include <vtkImageToImageStencil.h>
+#include <vtkXMLUtilities.h>
 #include <svkXML.h>
 
 namespace svk {
@@ -89,7 +90,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MAX,
             COMPUTE_MIN,
             COMPUTE_STDEV,
-            COMPUTE_VOLUME
+            COMPUTE_VOLUME,
+            OUTPUT_FILE_NAME
         } svkImageStatisticsParameters;
 
         // vtk type revision macro
@@ -99,7 +101,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         static svkImageStatistics* New();
 
         //! This will grab the output object as the correct data type to avoid casting
-        vtkXMLDataElement* GetOutput( );
+        //vtkXMLDataElement* GetOutput( );
 
 	protected:
 
@@ -107,7 +109,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
        ~svkImageStatistics();
 
        //! Sets the output type to XML
-       virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+       //virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
        //! Does the computation of the statistics.
        virtual int RequestData(

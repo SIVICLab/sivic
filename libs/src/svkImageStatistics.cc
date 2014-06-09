@@ -49,8 +49,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(11);
-    ///this->SetNumberOfOutputPorts(1);
+    this->SetNumberOfInputPorts(12);
     bool required = true;
     bool repeatable = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
@@ -64,7 +63,8 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL);
-    vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING);
+    //vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 }
 
 
@@ -73,10 +73,7 @@ svkImageStatistics::~svkImageStatistics()
 {
 }
 
-
-/*!
-*  Get's the output as a vtkXMLDataElement.
-*/
+/*
 vtkXMLDataElement* svkImageStatistics::GetOutput()
 {
    vtkXMLDataElement* output = NULL;
@@ -86,17 +83,18 @@ vtkXMLDataElement* svkImageStatistics::GetOutput()
    }
    return output;
 }
+*/
 
 
 /*!
  *  Default output type is same concrete sub class type as the input data.  Override with
  *  specific concrete type in sub-class if necessary.
- */
 int svkImageStatistics::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkXML");
     return 1;
 }
+ */
 
 
 /*!
@@ -155,7 +153,12 @@ int svkImageStatistics::RequestData( vtkInformation* request,
     }
 
     vtkIndent indent;
-    results->PrintXML(cout , indent);
+    svkString* outputFileName = this->GetPortMapper()->GetStringInputPortValue(OUTPUT_FILE_NAME);
+    if( outputFileName != NULL && outputFileName->GetValue() != "") {
+        vtkXMLUtilities::WriteElementToFile( results, outputFileName->GetValue().c_str());
+    }
+    results->Delete();
+    return 1;
 }
 
 

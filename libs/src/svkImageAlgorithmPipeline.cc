@@ -235,9 +235,11 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
             for( int port = 0; port < portMapper->GetNumberOfOutputPorts(); port++ ) {
                 string xmlTag = portMapper->GetXMLTagForOutputPort(port);
                 vtkXMLDataElement* outputElement = tag->FindNestedElementWithName(xmlTag.c_str());
-                // Let's save the output into the idToPortMap hash
-                this->idToPortMap[outputElement->GetAttribute("output_image_id")] = portMapper->GetOutputPort(port);
-                this->idToPortMap[outputElement->GetAttribute("output_image_id")]->Register(this);
+                if( outputElement != NULL && outputElement->GetAttribute("output_image_id")!= NULL ) {
+                    // Let's save the output into the idToPortMap hash
+                    this->idToPortMap[outputElement->GetAttribute("output_image_id")] = portMapper->GetOutputPort(port);
+                    this->idToPortMap[outputElement->GetAttribute("output_image_id")]->Register(this);
+                }
             }
         }
     }
