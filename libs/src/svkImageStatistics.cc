@@ -50,6 +50,7 @@ vtkStandardNewMacro(svkImageStatistics);
 svkImageStatistics::svkImageStatistics()
 {
     this->SetNumberOfInputPorts(12);
+    this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
@@ -64,7 +65,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
-    //vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
+    this->GetPortMapper()->InitializeOutputPort( 0, "XML_RESULTS", svkAlgorithmPortMapper::SVK_XML);
 }
 
 
@@ -73,7 +74,9 @@ svkImageStatistics::~svkImageStatistics()
 {
 }
 
+
 /*
+*/
 vtkXMLDataElement* svkImageStatistics::GetOutput()
 {
    vtkXMLDataElement* output = NULL;
@@ -83,18 +86,6 @@ vtkXMLDataElement* svkImageStatistics::GetOutput()
    }
    return output;
 }
-*/
-
-
-/*!
- *  Default output type is same concrete sub class type as the input data.  Override with
- *  specific concrete type in sub-class if necessary.
-int svkImageStatistics::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkXML");
-    return 1;
-}
- */
 
 
 /*!
@@ -105,8 +96,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                                               vtkInformationVector** inputVector,
                                               vtkInformationVector* outputVector )
 {
-    //vtkXMLDataElement* results = this->GetOutput();
-    vtkXMLDataElement* results = vtkXMLDataElement::New();
+    vtkXMLDataElement* results = this->GetOutput();
 
     results->RemoveAllNestedElements();
     results->RemoveAllAttributes();
@@ -148,7 +138,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
     if( outputFileName != NULL && outputFileName->GetValue() != "") {
         vtkXMLUtilities::WriteElementToFile( results, outputFileName->GetValue().c_str());
     }
-    results->Delete();
     return 1;
 }
 

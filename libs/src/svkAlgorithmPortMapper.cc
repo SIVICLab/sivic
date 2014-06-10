@@ -88,13 +88,14 @@ void svkAlgorithmPortMapper::SetAlgorithm( vtkAlgorithm* algo )
 /*!
  * Initializes an output port with a given string name.
  */
-void svkAlgorithmPortMapper::InitializeOutputPort( int port, string name )
+void svkAlgorithmPortMapper::InitializeOutputPort( int port, string name, int type )
 {
     //TODO: Probably need to do more here....
     if( this->outputPorts.size() != this->algo->GetNumberOfOutputPorts()) {
         this->outputPorts.resize( this->algo->GetNumberOfOutputPorts() );
     }
     this->outputPorts[port].name = name;
+    this->outputPorts[port].type = type;
 }
 
 
@@ -147,6 +148,16 @@ string svkAlgorithmPortMapper::GetXMLTagForOutputPort( int port )
     tag.append( ":" );
     tag.append( this->outputPorts[port].name);
     return tag;
+}
+
+
+/*!
+ * Fill the output port information.
+ */
+int svkAlgorithmPortMapper::FillOutputPortInformation( int port, vtkInformation* info )
+{
+    info->Set( vtkDataObject::DATA_TYPE_NAME(),svkAlgorithmPortMapper::GetClassTypeFromDataType(this->outputPorts[port].type).c_str());
+    return 1;
 }
 
 
@@ -652,7 +663,7 @@ string svkAlgorithmPortMapper::GetXSD( )
             // for now bools have no type, either they are present or they are not
             oss << "\"xs:boolean\"";
         } else if ( dataType == SVK_MR_IMAGE_DATA ) {
-            oss << "\"svkTypes:input_image_port\"";
+            oss << "\"svkTypes:input_port\"";
         } else if ( dataType == SVK_XML ) {
             oss << "\"xs:string\"";
         }
@@ -673,7 +684,7 @@ string svkAlgorithmPortMapper::GetXSD( )
     }
     for( int port = 0; port < this->algo->GetNumberOfOutputPorts(); port++ ) {
             oss<< "        ";
-            oss<< "<xs:element name=\"" << this->GetOutputPortName(port) << "\" type=\"svkTypes:output_image_port\"/>" << endl;
+            oss<< "<xs:element name=\"" << this->GetOutputPortName(port) << "\" type=\"svkTypes:output_port\"/>" << endl;
 
     }
     oss <<"    </xs:all>" << endl;

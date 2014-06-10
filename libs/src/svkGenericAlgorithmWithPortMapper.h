@@ -95,6 +95,9 @@ class svkGenericAlgorithmWithPortMapper : public vtkAlgorithm
         //! All ports must be initialized using the svkAlgorithmPortMapper BEFORE this method is called.
         virtual int             FillInputPortInformation( int port, vtkInformation* info );
 
+        //! All ports must be initialized using the svkAlgorithmPortMapper BEFORE this method is called.
+        virtual int             FillOutputPortInformation( int port, vtkInformation* info );
+
         //! Calls RequestData when the correct request comes through
         virtual int ProcessRequest(vtkInformation* request,
                                               vtkInformationVector** inputVector,

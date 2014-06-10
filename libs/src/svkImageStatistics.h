@@ -101,15 +101,12 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         static svkImageStatistics* New();
 
         //! This will grab the output object as the correct data type to avoid casting
-        //vtkXMLDataElement* GetOutput( );
+        vtkXMLDataElement* GetOutput( );
 
 	protected:
 
         svkImageStatistics();
        ~svkImageStatistics();
-
-       //! Sets the output type to XML
-       //virtual int FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
 
        //! Does the computation of the statistics.
        virtual int RequestData(

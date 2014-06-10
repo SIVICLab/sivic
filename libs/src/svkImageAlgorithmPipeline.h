@@ -85,6 +85,8 @@ class svkImageAlgorithmPipeline : public svkImageAlgorithmWithPortMapper
         // vtk initialization 
         static svkImageAlgorithmPipeline* New();
 
+        vtkAlgorithmOutput*  GetOutputByUniquePortID(string uniquePortID);
+
 	protected:
 
         svkImageAlgorithmPipeline();

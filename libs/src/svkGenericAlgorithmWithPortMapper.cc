@@ -60,6 +60,7 @@ svkGenericAlgorithmWithPortMapper::svkGenericAlgorithmWithPortMapper()
     this->portMapper = NULL;
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    vtkInstantiator::RegisterInstantiator("svkXML",  svkXML::NewObject);
 
 }
 
@@ -131,6 +132,17 @@ int svkGenericAlgorithmWithPortMapper::ProcessRequest(vtkInformation* request,
 int svkGenericAlgorithmWithPortMapper::FillInputPortInformation( int port, vtkInformation* info )
 {
     this->GetPortMapper()->FillInputPortInformation(port, info );
+
+    return 1;
+}
+
+
+/*!
+ * Pass through method to the internal svkAlgorithmPortMapper
+ */
+int svkGenericAlgorithmWithPortMapper::FillOutputPortInformation( int port, vtkInformation* info )
+{
+    this->GetPortMapper()->FillOutputPortInformation(port, info );
 
     return 1;
 }

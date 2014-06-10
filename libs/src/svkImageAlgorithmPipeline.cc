@@ -63,6 +63,15 @@ svkImageAlgorithmPipeline::~svkImageAlgorithmPipeline()
 
 
 /*!
+ * Returns the output for a given unique port id.
+ */
+vtkAlgorithmOutput*  svkImageAlgorithmPipeline::GetOutputByUniquePortID(string uniquePortID)
+{
+    return this->idToPortMap[uniquePortID];
+}
+
+
+/*!
  *  Creates the algorithm pipeline and executes it.
  */
 int svkImageAlgorithmPipeline::RequestData( vtkInformation* request,
@@ -123,16 +132,16 @@ void svkImageAlgorithmPipeline::SetInputConnections( vtkXMLDataElement* pipeline
                         xmlTag = "svkArgument:INPUT_IMAGE";
                     }
                     vtkXMLDataElement* inputElement = algorithmXML->FindNestedElementWithName(xmlTag.c_str());
-                    if( inputElement!= NULL && inputElement->GetAttribute("input_image_id") != NULL ) {
-                        algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetAttribute("input_image_id")]);
+                    if( inputElement!= NULL && inputElement->GetAttribute("input_id") != NULL ) {
+                        algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetAttribute("input_id")]);
                     } else if(inputElement!= NULL &&  isRepeatable ) {
                         int numConnections = inputElement->GetNumberOfNestedElements();
                         for( int connection = 0; connection < numConnections; connection++) {
-                            if( inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")) {
+                            if( inputElement->GetNestedElement(connection)->GetAttribute("input_id")) {
                                 if( connection == 0 ) {
-                                    algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")]);
+                                    algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_id")]);
                                 } else {
-                                    algorithm->AddInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_image_id")]);
+                                    algorithm->AddInputConnection( port, this->idToPortMap[inputElement->GetNestedElement(connection)->GetAttribute("input_id")]);
                                 }
                             }
                         }
@@ -183,8 +192,8 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
             reader->Register(this);
             vtkXMLDataElement* outputElement = tag->FindNestedElementWithName("svkArgument:OUTPUT");
             // Let's save the output into the idToPortMap hash
-            this->idToPortMap[outputElement->GetAttribute("output_image_id")] = reader->GetOutputPort(0);
-            this->idToPortMap[outputElement->GetAttribute("output_image_id")]->Register(this);
+            this->idToPortMap[outputElement->GetAttribute("output_id")] = reader->GetOutputPort(0);
+            this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
         }
     } else if (string(tag->GetName()) == "svkAlgorithm:svkImageWriter") {
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
@@ -216,10 +225,10 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
             for( int port = 0; port < portMapper->GetNumberOfOutputPorts(); port++ ) {
                 string xmlTag = portMapper->GetXMLTagForOutputPort(port);
                 vtkXMLDataElement* outputElement = tag->FindNestedElementWithName(xmlTag.c_str());
-                if( outputElement != NULL && outputElement->GetAttribute("output_image_id")!= NULL ) {
+                if( outputElement != NULL && outputElement->GetAttribute("output_id")!= NULL ) {
                     // Let's save the output into the idToPortMap hash
-                    this->idToPortMap[outputElement->GetAttribute("output_image_id")] = portMapper->GetOutputPort(port);
-                    this->idToPortMap[outputElement->GetAttribute("output_image_id")]->Register(this);
+                    this->idToPortMap[outputElement->GetAttribute("output_id")] = portMapper->GetOutputPort(port);
+                    this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
                 }
             }
         }

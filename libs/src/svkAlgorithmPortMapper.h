@@ -119,6 +119,7 @@ class svkAlgorithmPortMapper : public vtkObject
 
         struct svkOutputPortInfo {
             string name;
+            int type;
         };
 
         static svkAlgorithmPortMapper* New();
@@ -128,7 +129,7 @@ class svkAlgorithmPortMapper : public vtkObject
         void                     SetAlgorithm( vtkAlgorithm* algo );
 
         //! Initialize any output ports
-        void                     InitializeOutputPort( int port, string name );
+        void                     InitializeOutputPort( int port, string name, int type );
 
         //! Get the output port by name
         vtkAlgorithmOutput*      GetOutputPort( string name );
@@ -141,6 +142,9 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Get the xml tag name for the given output port number
         string                   GetXMLTagForOutputPort( int port );
+
+        //! All ports must be initialized with InitializeOutputPort BEFORE this method is called.
+        int                      FillOutputPortInformation( int port, vtkInformation* info );
 
         //! This method sets up the inputs for FillInputPortInformation. Must be called before FillInputPortInformation
         void                     InitializeInputPort( int port, string name, int type, bool required = true, bool repeatable = false );

@@ -58,6 +58,7 @@ extern "C" {
 #include <svkDouble.h>
 #include <svkInt.h>
 #include <svkString.h>
+#include <vtkAlgorithmOutput.h>
 
 
 using namespace svk;
@@ -68,18 +69,20 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_stats -r file_root_name -c config_file_name                        \n";
+    usemsg += "svk_image_stats -r file_root_name -c config_file_name -o output_file_name    \n";
     usemsg += "                [-v] [-h]                                                    \n";
     usemsg += "                                                                             \n";  
     usemsg += "   -r            file_root_name      The rootname of the input files.        \n";
     usemsg += "   -c            config_file_name    Name of the config file.                \n";
+    usemsg += "   -o            output_file_name    Name of the output XML file.            \n";
     usemsg += "   -v                                Verbose output.                         \n";
-    usemsg += "   -h                                Print help mesage.                      \n";  
+    usemsg += "   -h                                Print help message.                     \n";
     usemsg += "                                                                             \n";  
     usemsg += "                                                                             \n";  
 
     string configFileName;
     string fileRootName;
+    string outputFileName;
     bool   verbose = false;
     static struct option long_options[] =
     {
@@ -91,10 +94,13 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "r:c:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "o:r:c:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'r':
                 fileRootName.assign(optarg);
+                break;
+            case 'o':
+                outputFileName.assign(optarg);
                 break;
             case 'c':
                 configFileName.assign(optarg);
@@ -118,8 +124,7 @@ int main (int argc, char** argv)
     /*
      * Check for extra arguments or an empty input file name.
      */
-    if ( argc != 0 || configFileName.length() == 0 || fileRootName.length() == 0 ) {
-        cout << "Here:" << endl;
+    if ( argc != 0 || configFileName.length() == 0 || fileRootName.length() == 0 || outputFileName.length() == 0) {
         cout << usemsg << endl;
         exit(1); 
     }
@@ -132,6 +137,7 @@ int main (int argc, char** argv)
     if( verbose ) {
         cout << "Root name:  " << fileRootName << endl;
         cout << "Config   : "  << configFileName << endl;
+        cout << "Output   : "  << outputFileName << endl;
     }
 
 
@@ -151,6 +157,9 @@ int main (int argc, char** argv)
     svkImageAlgorithmPipeline* pipeline = svkImageAlgorithmPipeline::New();
     pipeline->SetInputPortsFromXML(configXML);
     pipeline->Update();
+    vtkAlgorithmOutput* xmlResultOutput = pipeline->GetOutputByUniquePortID("xml_results");
+    vtkXMLDataElement* results = svkImageStatistics::SafeDownCast(xmlResultOutput->GetProducer())->GetOutput();
+    vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str());
     pipeline->Delete();
 
     return 0; 
