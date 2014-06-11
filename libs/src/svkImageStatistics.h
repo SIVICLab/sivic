@@ -110,7 +110,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_POPULATION_KURTOSIS,
             COMPUTE_POPULATION_SKEWNESS,
             OUTPUT_FILE_NAME
-        } svkImageStatisticsParameters;
+        } svkImageStatisticsParameter;
 
         // vtk type revision macro
         vtkTypeRevisionMacro( svkImageStatistics, svkGenericAlgorithmWithPortMapper );
@@ -138,6 +138,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 
 
 	private:
+
+       bool GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter);
 
 
 };
