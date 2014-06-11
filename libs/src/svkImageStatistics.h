@@ -97,6 +97,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MIN,
             COMPUTE_STDEV,
             COMPUTE_VOLUME,
+            COMPUTE_MODE,
             COMPUTE_MEDIAN,
             COMPUTE_QUARTILES,
             OUTPUT_FILE_NAME

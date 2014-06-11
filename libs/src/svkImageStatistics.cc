@@ -49,7 +49,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(14);
+    this->SetNumberOfInputPorts(15);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -64,6 +64,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MODE, "COMPUTE_MODE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_QUARTILES, "COMPUTE_QUARTILES", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MEDIAN, "COMPUTE_MEDIAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
@@ -230,6 +231,30 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             element->SetCharacterData( stdevString.c_str(), stdevString.size());
             results->AddNestedElement( element );
             element->Delete();
+        }
+
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MODE) &&  this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MODE)->GetValue()) {
+            vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
+            double max = *accumulator->GetMax();
+            double min = *accumulator->GetMin();
+            int numBins =  histData->GetNumberOfTuples();
+            accumulator->Update();
+            if( numBins > 0 && histData != NULL ) {
+                double mode = 0;
+                int binMax = 0;
+                for( int i = 0; i < numBins; i++ ) {
+                    if( histData->GetTuple1(i) > binMax ) {
+                        binMax = histData->GetTuple1(i);
+                        mode = startBin + (i+0.5)*binSize;
+                    }
+                }
+                element = vtkXMLDataElement::New();
+                element->SetName("mode");
+                string valueString = svkUtils::DoubleToString(mode);
+                element->SetCharacterData(valueString.c_str(), valueString.size());
+                results->AddNestedElement(element);
+                element->Delete();
+            }
         }
 
         if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM) &&  this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_HISTOGRAM)->GetValue()) {
