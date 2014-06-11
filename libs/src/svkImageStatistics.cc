@@ -49,7 +49,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(15);
+    this->SetNumberOfInputPorts(24);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -67,6 +67,15 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MODE, "COMPUTE_MODE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_QUARTILES, "COMPUTE_QUARTILES", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MEDIAN, "COMPUTE_MEDIAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_SUM, "COMPUTE_SUM", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_2, "COMPUTE_MOMENT_2", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_3, "COMPUTE_MOMENT_3", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_4, "COMPUTE_MOMENT_4", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_VARIANCE, "COMPUTE_VARIANCE", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_SAMPLE_KURTOSIS, "COMPUTE_SAMPLE_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_SAMPLE_SKEWNESS, "COMPUTE_SAMPLE_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_KURTOSIS, "COMPUTE_POPULATION_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_SKEWNESS, "COMPUTE_POPULATION_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
     this->GetPortMapper()->InitializeOutputPort( 0, "XML_RESULTS", svkAlgorithmPortMapper::SVK_XML);
 }
@@ -139,6 +148,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             if( geometriesMatch ) {
                 this->ComputeOrderStatistics(image,roi, statistics);
                 this->ComputeStatistics(image,roi, statistics);
+                this->ComputeDescriptiveStatistics(image,roi, statistics);
             }
             vtkIndent indent;
             if( statistics != NULL ) {
@@ -355,5 +365,118 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
 
         table->Delete();
         pixelsInROI->Delete();
+    }
+}
+
+
+/*!
+ * Computes statistics using the vtkDescriptiveStatistics class.
+ */
+void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+{
+    if( image != NULL ) {
+        vtkDataArray* pixels = image->GetPointData()->GetScalars();
+        vtkDataArray* mask   = NULL;
+        if( roi != NULL ) {
+            mask  = roi->GetPointData()->GetScalars();
+        }
+        vtkDataArray* pixelsInROI = vtkDataArray::CreateDataArray( pixels->GetDataType());
+        pixelsInROI->SetName("PixelsInROI");
+        pixelsInROI->SetNumberOfComponents(1);
+
+        for( int i = 0; i < pixels->GetNumberOfTuples(); i++ ) {
+            if( mask == NULL || mask->GetTuple1(i) > 0 ) {
+                pixelsInROI->InsertNextTuple1( pixels->GetTuple1(i));
+            }
+        }
+        vtkTable* table = vtkTable::New();
+        table->AddColumn( pixelsInROI );
+        vtkDescriptiveStatistics* descriptiveStats = vtkDescriptiveStatistics::New();
+        descriptiveStats->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        descriptiveStats->AddColumn(pixelsInROI->GetName());
+        descriptiveStats->SetLearnOption(true);
+        descriptiveStats->SetAssessOption(false);
+        descriptiveStats->Update();
+        vtkTable* statResults = descriptiveStats->GetOutput(1);
+         // This is usefull for debuging. It prints all the results of the algroithm out.
+        cout << "statResults: " << *statResults << endl;
+        for( int i = 0; i < statResults->GetNumberOfRows(); i++) {
+            for( int j = 0; j < statResults->GetNumberOfColumns(); j++) {
+                cout << statResults->GetColumnName(j) << ": " << statResults->GetValue(i,j) << endl;
+            }
+        }
+        vtkXMLDataElement* element = NULL;
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SUM) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SUM)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("sum");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_2) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_2)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("moment2");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_3) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_3)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("moment3");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_4) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MOMENT_4)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("moment4");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VARIANCE) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_VARIANCE)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("variance");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SAMPLE_KURTOSIS) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SAMPLE_KURTOSIS)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("samplekurtosis");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SAMPLE_SKEWNESS) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_SAMPLE_SKEWNESS)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("sampleskewness");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_POPULATION_KURTOSIS) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_POPULATION_KURTOSIS)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("populationkurtosis");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_POPULATION_SKEWNESS) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_POPULATION_SKEWNESS)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("populationskewness");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
     }
 }

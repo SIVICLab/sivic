@@ -100,6 +100,15 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MODE,
             COMPUTE_MEDIAN,
             COMPUTE_QUARTILES,
+            COMPUTE_SUM,
+            COMPUTE_MOMENT_2,
+            COMPUTE_MOMENT_3,
+            COMPUTE_MOMENT_4,
+            COMPUTE_VARIANCE,
+            COMPUTE_SAMPLE_KURTOSIS,
+            COMPUTE_SAMPLE_SKEWNESS,
+            COMPUTE_POPULATION_KURTOSIS,
+            COMPUTE_POPULATION_SKEWNESS,
             OUTPUT_FILE_NAME
         } svkImageStatisticsParameters;
 
@@ -123,8 +132,10 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
 
-       virtual void ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
-       virtual void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       void ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+
 
 	private:
 
