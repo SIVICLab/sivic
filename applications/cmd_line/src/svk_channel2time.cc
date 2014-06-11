@@ -181,9 +181,7 @@ int main (int argc, char** argv)
 
     svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
     svkDcmHeader::DimensionVector dimVec = hdr->GetDimensionIndexVector(); 
-    svkDcmHeader::PrintDimensionIndexVector( &dimVec ); 
     svkDcmHeader::SwapDimensionIndexLabels( &dimVec, svkDcmHeader::CHANNEL_INDEX, svkDcmHeader::TIME_INDEX); 
-    svkDcmHeader::PrintDimensionIndexVector( &dimVec ); 
     hdr->Redimension( &dimVec ); 
 
     // ===============================================  
