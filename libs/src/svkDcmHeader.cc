@@ -3290,3 +3290,49 @@ int svkDcmHeader::GetSpatialCellIDFromDimensionVectorIndex( svkDcmHeader::Dimens
 
 
 }
+
+
+/*!
+ *  Swaps the specified dimension index labels
+ */
+void svkDcmHeader::SwapDimensionIndexLabels(svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionIndexLabel label1, svkDcmHeader::DimensionIndexLabel label2)
+{
+    int index1 = -100; 
+    int index2 = -100; 
+    int dimSize1; 
+    int dimSize2; 
+
+    for ( int i = 0; i < dimensionVector->size(); i++ ) {
+
+        svkDcmHeader::DimensionIndexLabel dimLabel = (*(*dimensionVector)[i].begin()).first;
+
+        if ( dimLabel == label1 ) {
+            index1 = i; 
+            dimSize1 = svkDcmHeader::GetDimensionVectorValue( dimensionVector, i); 
+        }
+
+        if ( dimLabel == label2 ) {
+            index2 = i; 
+            dimSize2 = svkDcmHeader::GetDimensionVectorValue( dimensionVector, i); 
+        }
+
+    }
+
+    if ( index1 == -100 || index2 == -100 ) {
+        cout << "ERROR, can't find dimension labels" << endl;
+        exit(1); 
+    }
+
+    vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> targetRow1; 
+    vtkstd::map < svkDcmHeader::DimensionIndexLabel, int> targetRow2; 
+    targetRow1.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label1, dimSize2 ) );
+    targetRow2.insert( pair<svkDcmHeader::DimensionIndexLabel, int>( label2, dimSize1 ) );
+
+    (*dimensionVector)[index1].swap( targetRow2 ); 
+    (*dimensionVector)[index2].swap( targetRow1 ); 
+    
+}
+                           
+
+
+

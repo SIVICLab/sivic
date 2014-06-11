@@ -721,10 +721,17 @@ class svkDcmHeader: public vtkObject
         
         static void     PrintDimensionIndexVector( svkDcmHeader::DimensionVector* dimensionVector );
         DimensionVector GetDimensionIndexVector(); 
+        static void     SwapDimensionIndexLabels( 
+                            svkDcmHeader::DimensionVector* dimensionVector,  
+                            svkDcmHeader::DimensionIndexLabel label1,  
+                            svkDcmHeader::DimensionIndexLabel label2 
+                        ); 
 
         static DimensionIndexLabel StringToDimensionIndexLabel( vtkstd::string dimensionIndexLabelString );
         static vtkstd::string      DimensionIndexLabelToString( svkDcmHeader::DimensionIndexLabel label); 
-        static DimensionIndexLabel GetDimensionLabelFromIndex( svkDcmHeader::DimensionVector* dimensionVector, int index ); 
+        static DimensionIndexLabel GetDimensionLabelFromIndex( 
+                                        svkDcmHeader::DimensionVector* dimensionVector, 
+                                        int index ); 
         static int      GetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, 
                                             svkDcmHeader::DimensionIndexLabel dimensionLabel); 
         static int      GetDimensionVectorValue(svkDcmHeader::DimensionVector* dimensionVector, int index);
