@@ -74,11 +74,12 @@ int main (int argc, char** argv)
     usemsg += "   -i    input       Name of input volume (IDF multi-channel).   \n";
     usemsg += "   -o    output_root Root name of outputfile.                    \n";
     usemsg += "   -t    type        Target data type:                           \n";
+    usemsg += "                                 4 = DICOM_MRS                   \n";
     usemsg += "                                 5 = DICOM_MRI                   \n";
     usemsg += "                                 6 = DICOM_Enhanced MRI(default) \n";
     usemsg += "   -h                Print this help mesage.                     \n";
     usemsg += "\n";
-    usemsg += "Convert muiti volume IDF data set to an explicit DICOM time series   \n"; 
+    usemsg += "Convert muiti volume IDF or DDF data set to an explicit DICOM time series   \n"; 
     usemsg += "\n";
 
 
@@ -132,9 +133,10 @@ int main (int argc, char** argv)
             cout << usemsg << endl;
             exit(1); 
     }
-    if ( dataTypeOut != svkImageWriterFactory::DICOM_MRI
-            && dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI ) {
-        cout << "Data type must be 5 or 6. " << endl; 
+    if ( dataTypeOut != svkImageWriterFactory::DICOM_MRI &&
+         dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI && 
+         dataTypeOut != svkImageWriterFactory::DICOM_MRS ) {
+        cout << "Data type must be 4, 5 or 6. " << endl; 
         cout << usemsg << endl;
         exit(1);
 
@@ -161,14 +163,28 @@ int main (int argc, char** argv)
     //  Read the data to initialize an svkImageData object
     //  If volume files are being read, interpret them as a time series
     if ( reader->IsA("svkIdfVolumeReader") == true ) {
-        svkIdfVolumeReader::SafeDownCast( reader )->SetMultiVolumeType(svkIdfVolumeReader::TIME_SERIES_DATA);
-    } else {
-        cerr << "Input data must be IDF format. " << endl;
-        exit(1);
+        if ( dataTypeOut != svkImageWriterFactory::DICOM_MRI &&  
+             dataTypeOut != svkImageWriterFactory::DICOM_ENHANCED_MRI ) 
+        {
+            cerr << "Error IDF data must be written out to an image MRI image format" << endl;
+            exit(1);
+        }
     }
-
+    if ( reader->IsA("svkDdfVolumeReader") == true ) {
+        if ( dataTypeOut != svkImageWriterFactory::DICOM_MRS ) {
+            cerr << "Error DDF data must be written out to an MRS image format" << endl;
+            exit(1);
+        }
+    }
     reader->SetFileName( inputFileName.c_str() );
     reader->Update();
+
+    svkDcmHeader* hdr = reader->GetOutput()->GetDcmHeader(); 
+    svkDcmHeader::DimensionVector dimVec = hdr->GetDimensionIndexVector(); 
+    svkDcmHeader::PrintDimensionIndexVector( &dimVec ); 
+    svkDcmHeader::SwapDimensionIndexLabels( &dimVec, svkDcmHeader::CHANNEL_INDEX, svkDcmHeader::TIME_INDEX); 
+    svkDcmHeader::PrintDimensionIndexVector( &dimVec ); 
+    hdr->Redimension( &dimVec ); 
 
     // ===============================================  
     //  Use writer factory to create writer for specified
@@ -183,6 +199,7 @@ int main (int argc, char** argv)
     }
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( reader->GetOutput() );
+
     writer->Write();
 
     //  clean up:
