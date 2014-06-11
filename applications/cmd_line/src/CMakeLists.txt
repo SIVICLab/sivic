@@ -245,6 +245,7 @@ SET(SVK_LIBS
     vtkIO
     vtkFiltering
     vtkCommon
+    vtkInfovis
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 

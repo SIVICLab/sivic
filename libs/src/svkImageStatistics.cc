@@ -49,7 +49,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(12);
+    this->SetNumberOfInputPorts(14);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -64,6 +64,8 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MIN, "COMPUTE_MIN", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_QUARTILES, "COMPUTE_QUARTILES", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_MEDIAN, "COMPUTE_MEDIAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
     this->GetPortMapper()->InitializeOutputPort( 0, "XML_RESULTS", svkAlgorithmPortMapper::SVK_XML);
 }
@@ -120,10 +122,23 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
-            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   imageLabel);
-            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", roiLabel);
+            svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
+            svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
-            this->ComputeStatistics(image,roi, statistics);
+            bool geometriesMatch = true;
+            if( roi != NULL ) {
+                svkDataValidator* validator = svkDataValidator::New();
+                if( !validator->AreDataGeometriesSame( image, roi ) ) {
+                    cout << "ERROR: Data geometries do not match between image and ROI. Cannot compute order statistics:" << validator->resultInfo << endl;
+                    geometriesMatch = false;
+                }
+                validator->Delete();
+            }
+            statistics->SetName("measures");
+            if( geometriesMatch ) {
+                this->ComputeOrderStatistics(image,roi, statistics);
+                this->ComputeStatistics(image,roi, statistics);
+            }
             vtkIndent indent;
             if( statistics != NULL ) {
                 nextResult->AddNestedElement( statistics );
@@ -142,9 +157,11 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 }
 
 
+/*!
+ * Computes basic statistics using vtkImageAccumulate.
+ */
 void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
 {
-    results->SetName("measures");
     if( image != NULL ) {
         double* spacing = image->GetSpacing();
         double pixelVolume = spacing[0] * spacing[1] * spacing[2];
@@ -239,5 +256,79 @@ void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageDa
             histogram->Delete();
         }
         accumulator->Delete();
+    }
+}
+
+
+/*!
+ * Computes statistics using the vtkOrderStatistics class.
+ */
+void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+{
+    if( image != NULL ) {
+        vtkDataArray* pixels = image->GetPointData()->GetScalars();
+        vtkDataArray* mask   = NULL;
+        if( roi != NULL ) {
+            mask  = roi->GetPointData()->GetScalars();
+        }
+        vtkDataArray* pixelsInROI = vtkDataArray::CreateDataArray( pixels->GetDataType());
+        pixelsInROI->SetName("PixelsInROI");
+        pixelsInROI->SetNumberOfComponents(1);
+
+        for( int i = 0; i < pixels->GetNumberOfTuples(); i++ ) {
+            if( mask == NULL || mask->GetTuple1(i) > 0 ) {
+                pixelsInROI->InsertNextTuple1( pixels->GetTuple1(i));
+            }
+        }
+        vtkTable* table = vtkTable::New();
+        table->AddColumn( pixelsInROI );
+        vtkOrderStatistics* orderStats = vtkOrderStatistics::New();
+        orderStats->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        orderStats->AddColumn(pixelsInROI->GetName());
+        orderStats->SetLearnOption(true);
+        orderStats->SetAssessOption(false);
+        orderStats->Update();
+        vtkTable* statResults = orderStats->GetOutput(1);
+        /*
+         // This is usefull for debuging. It prints all the results of the algroithm out.
+        cout << "statResults: " << *statResults << endl;
+        for( int i = 0; i < statResults->GetNumberOfRows(); i++) {
+            for( int j = 0; j < statResults->GetNumberOfColumns(); j++) {
+                cout << statResults->GetColumnName(j) << ": " << statResults->GetValue(i,j) << endl;
+            }
+        }
+        */
+
+        vtkXMLDataElement* element = NULL;
+        if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_QUARTILES) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_QUARTILES)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("firstquartile");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"First Quartile").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+            element = vtkXMLDataElement::New();
+            element->SetName("median");
+            elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Median").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+            element = vtkXMLDataElement::New();
+            element->SetName("thirdquartile");
+            elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Third Quartile").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        } else if( this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEDIAN) && this->GetPortMapper()->GetBoolInputPortValue(COMPUTE_MEDIAN)->GetValue()) {
+            element = vtkXMLDataElement::New();
+            element->SetName("median");
+            string elementString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Median").ToDouble() );
+            element->SetCharacterData( elementString.c_str(), elementString.size());
+            results->AddNestedElement( element );
+            element->Delete();
+        }
+
+        table->Delete();
+        pixelsInROI->Delete();
     }
 }

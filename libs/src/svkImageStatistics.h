@@ -60,6 +60,12 @@
 #include <vtkImageToImageStencil.h>
 #include <vtkXMLUtilities.h>
 #include <svkXML.h>
+#include <vtkOrderStatistics.h>
+#include <vtkArrayToTable.h>
+#include <vtkTable.h>
+#include <vtkDescriptiveStatistics.h>
+#include <svkDataValidator.h>
+#include <vtkVariant.h>
 
 namespace svk {
 
@@ -91,6 +97,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_MIN,
             COMPUTE_STDEV,
             COMPUTE_VOLUME,
+            COMPUTE_MEDIAN,
+            COMPUTE_QUARTILES,
             OUTPUT_FILE_NAME
         } svkImageStatisticsParameters;
 
@@ -115,6 +123,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector* outputVector );
 
        virtual void ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       virtual void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
 
 	private:
 

@@ -159,7 +159,8 @@ int main (int argc, char** argv)
     pipeline->Update();
     vtkAlgorithmOutput* xmlResultOutput = pipeline->GetOutputByUniquePortID("xml_results");
     vtkXMLDataElement* results = svkImageStatistics::SafeDownCast(xmlResultOutput->GetProducer())->GetOutput();
-    vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str());
+    vtkIndent indent;
+    vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str(), &indent);
     pipeline->Delete();
 
     return 0; 
