@@ -99,7 +99,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             COMPUTE_VOLUME,
             COMPUTE_MODE,
             COMPUTE_MEDIAN,
-            COMPUTE_QUARTILES,
+            COMPUTE_QUANTILES,
             COMPUTE_SUM,
             COMPUTE_MOMENT_2,
             COMPUTE_MOMENT_3,
@@ -132,7 +132,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
 
-       void ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
        void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
        void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
 

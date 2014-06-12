@@ -65,7 +65,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_STDEV, "COMPUTE_STDEV", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_VOLUME, "COMPUTE_VOLUME", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MODE, "COMPUTE_MODE", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( COMPUTE_QUARTILES, "COMPUTE_QUARTILES", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( COMPUTE_QUANTILES, "COMPUTE_QUANTILES", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MEDIAN, "COMPUTE_MEDIAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_SUM, "COMPUTE_SUM", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MOMENT_2, "COMPUTE_MOMENT_2", svkAlgorithmPortMapper::SVK_BOOL, !required);
@@ -147,7 +147,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             statistics->SetName("measures");
             if( geometriesMatch ) {
                 this->ComputeOrderStatistics(image,roi, statistics);
-                this->ComputeStatistics(image,roi, statistics);
+                this->ComputeAccumulateStatistics(image,roi, statistics);
                 this->ComputeDescriptiveStatistics(image,roi, statistics);
             }
             vtkIndent indent;
@@ -171,7 +171,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 /*!
  * Computes basic statistics using vtkImageAccumulate.
  */
-void svkImageStatistics::ComputeStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
 {
     if( image != NULL ) {
         double* spacing = image->GetSpacing();
@@ -291,35 +291,63 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
         }
         vtkTable* table = vtkTable::New();
         table->AddColumn( pixelsInROI );
-        vtkOrderStatistics* orderStats = vtkOrderStatistics::New();
-        orderStats->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
-        orderStats->AddColumn(pixelsInROI->GetName());
-        orderStats->SetLearnOption(true);
-        orderStats->SetAssessOption(false);
-        orderStats->Update();
-        vtkTable* statResults = orderStats->GetOutput(1);
+
+
+        // Compute Quartiles
+        vtkOrderStatistics* quartileStatsCalculator = vtkOrderStatistics::New();
+        quartileStatsCalculator->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        quartileStatsCalculator->AddColumn(pixelsInROI->GetName());
+        quartileStatsCalculator->SetLearnOption(true);
+        quartileStatsCalculator->SetAssessOption(false);
+        quartileStatsCalculator->Update();
+        vtkTable* quartileResults = quartileStatsCalculator->GetOutput(1);
+
         /*
          // This is usefull for debuging. It prints all the results of the algroithm out.
-        cout << "statResults: " << *statResults << endl;
-        for( int i = 0; i < statResults->GetNumberOfRows(); i++) {
-            for( int j = 0; j < statResults->GetNumberOfColumns(); j++) {
-                cout << statResults->GetColumnName(j) << ": " << statResults->GetValue(i,j) << endl;
+        for( int i = 0; i < quartileResults->GetNumberOfRows(); i++) {
+            for( int j = 0; j < quartileResults->GetNumberOfColumns(); j++) {
+                cout << quartileResults->GetColumnName(j) << ": " << quartileResults->GetValue(i,j) << endl;
             }
         }
         */
 
-        if( this->GetShouldCompute(COMPUTE_QUARTILES)) {
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"First Quartile").ToDouble() );
+        // Compute deciles
+        vtkOrderStatistics* decilestatsCalculator = vtkOrderStatistics::New();
+        decilestatsCalculator->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, table );
+        decilestatsCalculator->AddColumn(pixelsInROI->GetName());
+        decilestatsCalculator->SetLearnOption(true);
+        decilestatsCalculator->SetAssessOption(false);
+        decilestatsCalculator->SetNumberOfIntervals(10);
+        decilestatsCalculator->Update();
+        vtkTable* decileResults = decilestatsCalculator->GetOutput(1);
+
+        /*
+         // This is usefull for debuging. It prints all the results of the algroithm out.
+        for( int i = 0; i < decileResults->GetNumberOfRows(); i++) {
+            for( int j = 0; j < decileResults->GetNumberOfColumns(); j++) {
+                cout << decileResults->GetColumnName(j) << ": " << decileResults->GetValue(i,j) << endl;
+            }
+        }
+        */
+
+        if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
+            string valueString = svkUtils::DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
+            svkUtils::CreateNestedXMLDataElement( results, "tenthPercentile", valueString);
+            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "firstquartile", valueString);
-            valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Median").ToDouble() );
+            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-            valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Third Quartile").ToDouble() );
+            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "thirdquartile", valueString);
+            valueString = svkUtils::DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
+            svkUtils::CreateNestedXMLDataElement( results, "ninetiethPercentile", valueString);
         } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Median").ToDouble() );
+            string valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
         }
 
+        decilestatsCalculator->Delete();
+        quartileStatsCalculator->Delete();
         table->Delete();
         pixelsInROI->Delete();
     }
@@ -355,6 +383,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         descriptiveStats->SetAssessOption(false);
         descriptiveStats->Update();
         vtkTable* statResults = descriptiveStats->GetOutput(1);
+        /*
          // This is usefull for debuging. It prints all the results of the algroithm out.
         cout << "statResults: " << *statResults << endl;
         for( int i = 0; i < statResults->GetNumberOfRows(); i++) {
@@ -362,8 +391,9 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
                 cout << statResults->GetColumnName(j) << ": " << statResults->GetValue(i,j) << endl;
             }
         }
+        */
         if( this->GetShouldCompute(COMPUTE_SUM)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"SUM").ToDouble() );
+            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_2)){
