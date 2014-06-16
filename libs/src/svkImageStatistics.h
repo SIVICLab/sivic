@@ -122,7 +122,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 
         static vtkDataArray* GetMaskedPixels( svkMriImageData* image, svkMriImageData* roi, double minIncluded = 1, double maxIncluded = VTK_DOUBLE_MAX);
         static vtkFloatArray* GetHistogram( vtkDataArray* data, double binSize, double startBin, int numBins,  int smoothBins = 0);
-        static int GetBinForValue( double value, double binSize, double startBin);
+        static inline int GetBinForValue( double value, double binSize, double startBin);
 
         //! This will grab the output object as the correct data type to avoid casting
         vtkXMLDataElement* GetOutput( );

@@ -185,7 +185,6 @@ int main (int argc, char** argv)
 
 
         for( int i = 0; i < results->GetNestedElement(0)->GetNumberOfNestedElements(); i++) {
-            cout << string(results->GetNestedElement(0)->GetNestedElement(i)->GetName()) << endl;
             if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetName()) == "measures"){
                 for( int j = 0; j < results->GetNestedElement(0)->GetNestedElement(i)->GetNumberOfNestedElements(); j++) {
                     if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName()) != "histogram") {

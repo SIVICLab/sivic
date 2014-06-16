@@ -65,11 +65,9 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_xml_image_pipeline -i image_file_name -o output_file_name -c config_file_name \n";
+    usemsg += "svk_xml_image_pipeline -c config_file_name [-s xml_var1=value1 -s xml_var2=val2...]\n";
     usemsg += "                       [-v] [-h]                                                  \n";
     usemsg += "                                                                                  \n";
-    usemsg += "   -i            image_file_name     The image to be processed                    \n";
-    usemsg += "   -o            output_file_name    The name of the output image                 \n";
     usemsg += "   -c            config_file_name    Name of the config file.                     \n";
     usemsg += "   -v                                Verbose output.                              \n";
     usemsg += "   -h                                Print help message.                          \n";
@@ -113,7 +111,6 @@ int main (int argc, char** argv)
     argv += optind;
 
     cout << "config: <" << configFileName <<  ">" << endl;
-    cout << argc << endl;
 
     /*
      * Check for extra arguments or an empty input file name.
@@ -135,7 +132,6 @@ int main (int argc, char** argv)
     if( verbose && configXML != NULL ) {
         vtkIndent indent;
         configXML->PrintXML(cout, indent);
-        cout << "Pipeline:" << *pipeline << endl;
     }
     pipeline->Update();
     pipeline->Delete();

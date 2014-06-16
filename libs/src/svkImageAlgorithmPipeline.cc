@@ -188,6 +188,10 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
         string filename = filenameElement->GetCharacterData();
+        bool filePathExists = svkUtils::FilePathExists(filename.c_str());
+        if(!filePathExists) {
+            cout << "ERROR: File " << filename.c_str() << " does not exist!" << endl;
+        }
         svkImageReader2* reader = svkImageReader2::SafeDownCast(readerFactory->CreateImageReader2(filename.c_str()));
         if( reader != NULL ) {
             reader->SetFileName( filename.c_str() );

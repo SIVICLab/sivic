@@ -119,3 +119,13 @@ int svkImageAlgorithmWithPortMapper::FillInputPortInformation( int port, vtkInfo
 
     return 1;
 }
+
+/*!
+ * Pass through method to the internal svkAlgorithmPortMapper
+ */
+int svkImageAlgorithmWithPortMapper::FillOutputPortInformation( int port, vtkInformation* info )
+{
+    this->portMapper->FillOutputPortInformation(port, info );
+
+    return 1;
+}

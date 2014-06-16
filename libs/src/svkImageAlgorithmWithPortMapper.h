@@ -96,6 +96,7 @@ class svkImageAlgorithmWithPortMapper : public svkImageAlgorithm
 
         //! All ports must be initialized through the svkAlgorithmPortMapper BEFORE this method is called.
         virtual int                     FillInputPortInformation( int port, vtkInformation* info );
+        virtual int                     FillOutputPortInformation( int port, vtkInformation* info );
 
     private:
 
