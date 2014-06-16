@@ -141,7 +141,7 @@ vtkFloatArray* svkImageStatistics::GetHistogram( vtkDataArray* data, double binS
         histogram->FillComponent(0,0);
         for( int i = 0; i < data->GetNumberOfTuples(); i++ ) {
             int bin = svkImageStatistics::GetBinForValue(data->GetTuple1(i), binSize, startBin);
-            if( bin > 0 && bin < histogram->GetNumberOfTuples()) {
+            if( bin >= 0 && bin < histogram->GetNumberOfTuples()) {
                 //Increment this bin
                 histogram->SetTuple1(bin, histogram->GetTuple1(bin) + 1 );
             } else {
@@ -280,11 +280,15 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             }
             statistics->SetName("measures");
             if( geometriesMatch ) {
+                this->ComputeSmoothStatistics(image,roi, statistics);
+                /*
+                // Using smooth computation instead of order statistics
                 if( this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) != NULL ){;
                     this->ComputeSmoothStatistics(image,roi, statistics);
                 } else {
                     this->ComputeOrderStatistics(image,roi, statistics);
                 }
+                */
                 this->ComputeAccumulateStatistics(image,roi, statistics);
                 this->ComputeDescriptiveStatistics(image,roi, statistics);
             }
@@ -358,7 +362,8 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
             svkUtils::CreateNestedXMLDataElement( results, "stdev", stdevString);
         }
-
+        /*
+        // This produces a different result from legacy code due to nint vs floor in finding bins
         if( this->GetShouldCompute(COMPUTE_MODE) && this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) == NULL ) {
             vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
             double max = *accumulator->GetMax();
@@ -384,6 +389,9 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             vtkDataArray* histData = accumulator->GetOutput()->GetPointData()->GetScalars();
             this->AddHistogramTag( histData, binSize, startBin, numBins, 0, results);
         }
+        */
+
+
         accumulator->Delete();
     }
 }
@@ -658,7 +666,9 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 }
             }
             if( this->GetShouldCompute(COMPUTE_HISTOGRAM)) {
-                this->AddHistogramTag( histogram, binSize, startBin, numBins, 0, results);
+                vtkDataArray* unSmoothedHist = svkImageStatistics::GetHistogram( pixelsInROI, binSize, startBin, numBins );
+                this->AddHistogramTag( unSmoothedHist, binSize, startBin, numBins, 0, results);
+                unSmoothedHist->Delete();
             }
             /*
              *  This computes 10th percentile exactly.
