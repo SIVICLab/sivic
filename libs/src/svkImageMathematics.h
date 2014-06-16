@@ -45,6 +45,7 @@
 
 
 #include <vtkImageMathematics.h>
+#include <svkAlgorithmPortMapper.h>
 
 
 namespace svk {
@@ -69,12 +70,24 @@ class svkImageMathematics : public vtkImageMathematics
         typedef enum {
             INPUT_IMAGE_1 = 0,
             INPUT_IMAGE_2,
-            MASK
-        } MATH_INPUT;
+            MASK,
+            ADD
+        } svkImageMathematicsParameters;
+
+
+
+        //! Uses port mapper to parse an XML element and convert it into input port data objects.
+        void                    SetInputPortsFromXML( vtkXMLDataElement* element );
+
+        //! Get the internal XML interpreter
+        svkAlgorithmPortMapper* GetPortMapper();
+
 
         vtkTypeRevisionMacro( svkImageMathematics, vtkImageMathematics);
         virtual void    Update(); 
 
+        //! Prints all input parameters set.
+        void                    PrintSelf( ostream &os, vtkIndent indent );
 
     protected:
 
@@ -83,6 +96,9 @@ class svkImageMathematics : public vtkImageMathematics
 
         virtual int         FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
         virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
+
+        //! The port mapper used to set the input port parameters.
+        svkAlgorithmPortMapper* portMapper;
 
 };
 

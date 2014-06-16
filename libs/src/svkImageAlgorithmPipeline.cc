@@ -114,23 +114,26 @@ void svkImageAlgorithmPipeline::SetInputConnections( vtkXMLDataElement* pipeline
                 for( int port = 0; port < algorithm->GetNumberOfInputPorts(); port++ ) {
                     string xmlTag;
                     bool isRepeatable = false;
+                    svkAlgorithmPortMapper* portMapper = NULL;
                     if( algorithm->IsA("svkImageReader2")) {
                         xmlTag = "svkArgument:FILENAME";
+                    } else if( algorithm->IsA("svkImageMathematics")) {
+                        portMapper = svkImageMathematics::SafeDownCast(algorithm)->GetPortMapper();
                     } else if( algorithm->IsA("svkImageAlgorithmWithPortMapper")) {
-                        xmlTag = svkImageAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetXMLTagForInputPort(port);
-                        isRepeatable = svkImageAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetInputPortRepeatable(port);
-                        if( isRepeatable ) {
-                            xmlTag.append("_LIST");
-                        }
+                        portMapper = svkImageAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper();
                     } else if( algorithm->IsA("svkGenericAlgorithmWithPortMapper")) {
-                        xmlTag = svkGenericAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetXMLTagForInputPort(port);
-                        isRepeatable = svkGenericAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper()->GetInputPortRepeatable(port);
-                        if( isRepeatable ) {
-                            xmlTag.append("_LIST");
-                        }
+                        portMapper = svkGenericAlgorithmWithPortMapper::SafeDownCast(algorithm)->GetPortMapper();
                     } else if( algorithm->IsA("svkImageWriter")) {
                         xmlTag = "svkArgument:INPUT_IMAGE";
                     }
+                    if( portMapper != NULL ) {
+                        xmlTag = portMapper->GetXMLTagForInputPort(port);
+                        isRepeatable = portMapper->GetInputPortRepeatable(port);
+                        if( isRepeatable ) {
+                            xmlTag.append("_LIST");
+                        }
+                    }
+
                     vtkXMLDataElement* inputElement = algorithmXML->FindNestedElementWithName(xmlTag.c_str());
                     if( inputElement!= NULL && inputElement->GetAttribute("input_id") != NULL ) {
                         algorithm->SetInputConnection( port, this->idToPortMap[inputElement->GetAttribute("input_id")]);
@@ -192,8 +195,11 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
             reader->Register(this);
             vtkXMLDataElement* outputElement = tag->FindNestedElementWithName("svkArgument:OUTPUT");
             // Let's save the output into the idToPortMap hash
+            reader->Update();
+            reader->GetOutput()->GetDcmHeader()->SetValue("SeriesDescription",outputElement->GetAttribute("output_id"));
             this->idToPortMap[outputElement->GetAttribute("output_id")] = reader->GetOutputPort(0);
             this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
+            this->idToPortMap[outputElement->GetAttribute("output_id")];
         }
     } else if (string(tag->GetName()) == "svkAlgorithm:svkImageWriter") {
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
@@ -213,12 +219,15 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         } else if( string(tag->GetName()) == "svkAlgorithm:svkImageStatistics") {
             algorithm = svkImageStatistics::New();
             portMapper = svkImageStatistics::SafeDownCast( algorithm )->GetPortMapper();
+        } else if( string(tag->GetName()) == "svkAlgorithm:svkImageMathematics") {
+            algorithm = svkImageMathematics::New();
+            portMapper = svkImageMathematics::SafeDownCast( algorithm )->GetPortMapper();
         } else {
             cout << "ERROR! Filter: " << tag->GetName() << " is not yet supported!" << endl;
         }
         if( algorithm != NULL ) {
             portMapper->SetInputPortsFromXML( tag );
-            cout << portMapper->GetXSD() <<endl;
+            //cout << portMapper->GetXSD() <<endl;
             // Let's save a pointer to the algorithm initialized for this xml element
             this->xmlToAlgoMap[tag] = algorithm;
             algorithm->Register(this);
@@ -229,6 +238,12 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
                     // Let's save the output into the idToPortMap hash
                     this->idToPortMap[outputElement->GetAttribute("output_id")] = portMapper->GetOutputPort(port);
                     this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
+                    if( portMapper->GetInputPortType(port) == svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA ) {
+                        svkMriImageData* imageData = svkMriImageData::SafeDownCast(algorithm->GetOutputDataObject(port));
+                        if( imageData != NULL ) {
+                            svkMriImageData::SafeDownCast(algorithm->GetOutputDataObject(port))->GetDcmHeader()->SetValue("SeriesDescription",outputElement->GetAttribute("output_id"));
+                        }
+                    }
                 }
             }
         }

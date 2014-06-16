@@ -69,20 +69,22 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_image_stats -r file_root_name -c config_file_name -o output_file_name    \n";
-    usemsg += "                [-v] [-h]                                                    \n";
-    usemsg += "                                                                             \n";  
-    usemsg += "   -r            file_root_name      The rootname of the input files.        \n";
-    usemsg += "   -c            config_file_name    Name of the config file.                \n";
-    usemsg += "   -o            output_file_name    Name of the output XML file.            \n";
-    usemsg += "   -v                                Verbose output.                         \n";
-    usemsg += "   -h                                Print help message.                     \n";
-    usemsg += "                                                                             \n";  
-    usemsg += "                                                                             \n";  
+    usemsg += "svk_image_stats -r file_root_name -c config_file_name -o output_file_name         \n";
+    usemsg += "                [-v] [-h]                                                         \n";
+    usemsg += "                                                                                  \n";
+    usemsg += "   -r            file_root_name      The rootname of the input files.             \n";
+    usemsg += "   -c            config_file_name    Name of the config file.                     \n";
+    usemsg += "   -o            output_file_name    Name of the output file.                     \n";
+    usemsg += "   -x            output_xml          Output results in XML instead of default CSV.\n";
+    usemsg += "   -v                                Verbose output.                              \n";
+    usemsg += "   -h                                Print help message.                          \n";
+    usemsg += "                                                                                  \n";
+    usemsg += "                                                                                  \n";
 
     string configFileName;
     string fileRootName;
     string outputFileName;
+    bool outputXML = false;
     bool   verbose = false;
     static struct option long_options[] =
     {
@@ -94,13 +96,16 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "o:r:c:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "xo:r:c:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'r':
                 fileRootName.assign(optarg);
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case 'x':
+                outputXML = true;
                 break;
             case 'c':
                 configFileName.assign(optarg);
@@ -160,9 +165,67 @@ int main (int argc, char** argv)
     vtkAlgorithmOutput* xmlResultOutput = pipeline->GetOutputByUniquePortID("xml_results");
     vtkXMLDataElement* results = svkImageStatistics::SafeDownCast(xmlResultOutput->GetProducer())->GetOutput();
     vtkIndent indent;
-    vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str(), &indent);
-    pipeline->Delete();
+    if( outputXML ) {
+        outputFileName.append(".xml");
+        vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str(), &indent);
+    } else {
 
+        // Open file to write the measures into
+        string outputCSV = outputFileName;
+        outputCSV.append(".csv");
+        ofstream resultsCSV;
+        resultsCSV.open(outputCSV.c_str());
+
+        // Open file to write the histograms into
+        string histogramFilename = outputFileName;
+        histogramFilename.append("_hist");
+        histogramFilename.append(".csv");
+        ofstream histogramCSV;
+        histogramCSV.open(histogramFilename.c_str());
+
+
+        for( int i = 0; i < results->GetNestedElement(0)->GetNumberOfNestedElements(); i++) {
+            cout << string(results->GetNestedElement(0)->GetNestedElement(i)->GetName()) << endl;
+            if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetName()) == "measures"){
+                for( int j = 0; j < results->GetNestedElement(0)->GetNestedElement(i)->GetNumberOfNestedElements(); j++) {
+                    if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName()) != "histogram") {
+                        resultsCSV << results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName() << ",";
+                    }
+                }
+            } else {
+                resultsCSV << results->GetNestedElement(0)->GetNestedElement(i)->GetName() << ",";
+            }
+        }
+        resultsCSV << endl;
+        histogramCSV << "IMAGE,ROI,MIN,MAX,CENTER,COUNT" << endl;
+        for( int i = 0; i < results->GetNumberOfNestedElements(); i++) {
+            string image = results->GetNestedElement(i)->FindNestedElementWithName("IMAGE")->GetCharacterData();
+            string roi = results->GetNestedElement(i)->FindNestedElementWithName("ROI")->GetCharacterData();
+            resultsCSV << image << ",";
+            resultsCSV << roi << ",";
+            for( int j = 0; j < results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNumberOfNestedElements(); j++) {
+                if( string(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetName()) != "histogram" ) {
+                    resultsCSV << results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetCharacterData() << ",";
+                } else {
+                    for( int k = 0; k < results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNumberOfNestedElements(); k++) {
+                        histogramCSV << image << ",";
+                        histogramCSV << roi << ",";
+                        double min = svkUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("min"));
+                        double max = svkUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("max"));
+                        double center = min + (max-min)/2.0;
+                        histogramCSV << min << "," << max << "," << center << ",";
+                        histogramCSV << results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetCharacterData() << endl;
+                    }
+                }
+            }
+            resultsCSV << endl;
+            histogramCSV << endl;
+        }
+        resultsCSV.close();
+        histogramCSV.close();
+    }
+
+    pipeline->Delete();
     return 0; 
 }
 

@@ -234,12 +234,6 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Prints all input parameters set.
         void                     PrintSelf( ostream &os, vtkIndent indent );
 
-    protected:
-
-        svkAlgorithmPortMapper();
-        ~svkAlgorithmPortMapper();
-
-
         //! Returns string class name for a given type.
         static string    GetClassTypeFromDataType( int type );
 
@@ -248,6 +242,11 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Gets the type for a given input port
         int              GetInputPortType( int port );
+
+    protected:
+
+        svkAlgorithmPortMapper();
+        ~svkAlgorithmPortMapper();
 
         //! The XML prefix used for the arguments
         string           portPrefix;

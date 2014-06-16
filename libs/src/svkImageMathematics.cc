@@ -57,6 +57,11 @@ vtkStandardNewMacro(svkImageMathematics);
 
 /*!
  *
+ *  Default input type is svkImageData base class. Override with a specific concrete type in
+ *  sub class if necessary.
+ *  Port 0 -> input 1 image to operate on
+ *       1 -> input 2 image to operate on (optional)
+ *       2 -> mask (optional)
  */
 svkImageMathematics::svkImageMathematics()
 {
@@ -64,12 +69,21 @@ svkImageMathematics::svkImageMathematics()
 #if VTK_DEBUG_ON
     this->DebugOn();
 #endif
+    this->portMapper = NULL;
 
     vtkDebugMacro(<<this->GetClassName() << "::" << this->GetClassName() << "()");
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
-    this->SetNumberOfInputPorts(3); 
+    this->SetNumberOfInputPorts(4);
+    bool required = true;
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_1, "INPUT_IMAGE_1", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( MASK, "MASK", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
+    this->GetPortMapper()->InitializeInputPort( ADD, "ADD", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->SetNumberOfOutputPorts(1);
+    this->GetPortMapper()->InitializeOutputPort( 0, "MATH_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+
 }
 
 
@@ -78,6 +92,46 @@ svkImageMathematics::svkImageMathematics()
  */
 svkImageMathematics::~svkImageMathematics()
 {
+    if( this->portMapper != NULL ) {
+        this->portMapper->Delete();
+        this->portMapper = NULL;
+    }
+}
+
+
+/*!
+ * Pass through method to the internal svkAlgorithmPortMapper
+ */
+void svkImageMathematics::SetInputPortsFromXML( vtkXMLDataElement* element )
+{
+    this->GetPortMapper()->SetInputPortsFromXML(element);
+    if(this->GetPortMapper()->GetBoolInputPortValue(ADD) && this->GetPortMapper()->GetBoolInputPortValue(ADD)->GetValue()){
+        this->SetOperationToAdd();
+    }
+}
+
+
+/*!
+ * Returns the port mapper. Performs lazy initialization.
+ */
+svkAlgorithmPortMapper* svkImageMathematics::GetPortMapper()
+{
+    if( this->portMapper == NULL ) {
+        this->portMapper = svkAlgorithmPortMapper::New();
+        this->portMapper->SetAlgorithm( this );
+    }
+    return this->portMapper;
+}
+
+
+/*!
+ *  PrintSelf method calls parent class PrintSelf, then prints all parameters using the port mapper.
+ *
+ */
+void svkImageMathematics::PrintSelf( ostream &os, vtkIndent indent )
+{
+    Superclass::PrintSelf( os, indent );
+    this->GetPortMapper()->PrintSelf( os, indent );
 }
 
 
@@ -148,36 +202,23 @@ void svkImageMathematics::Update()
 
 
 /*!
- *  Default output type is same concrete sub class type as the input data.  Override with 
- *  specific concrete type in sub-class if necessary.  
+ * Pass through method to the internal svkAlgorithmPortMapper
  */
-int svkImageMathematics::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkImageMathematics::FillOutputPortInformation( int port, vtkInformation* info )
 {
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), this->GetImageDataInput(0)->GetClassName() );
+    this->GetPortMapper()->FillOutputPortInformation(port, info );
+
     return 1;
 }
 
 
 /*!
- *  Default input type is svkImageData base class. Override with a specific concrete type in 
- *  sub class if necessary. 
- *  Port 0 -> input 1 image to operate on 
- *       1 -> input 2 image to operate on (optional)
- *       2 -> mask (optional)
+ * Pass through method to the internal svkAlgorithmPortMapper
  */
 int svkImageMathematics::FillInputPortInformation( int port, vtkInformation* info )
 {
-    if ( port == 0 ) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-    } 
-    if ( port == 1 ) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
-    } 
-    if ( port == 2 ) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-        info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 2);
-    } 
+    this->GetPortMapper()->FillInputPortInformation(port, info );
+
     return 1;
 }
 

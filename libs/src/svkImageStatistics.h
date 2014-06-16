@@ -65,6 +65,7 @@
 #include <vtkTable.h>
 #include <vtkDescriptiveStatistics.h>
 #include <svkDataValidator.h>
+#include <vtkSortDataArray.h>
 #include <vtkVariant.h>
 
 namespace svk {
@@ -91,6 +92,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             NUM_BINS,
             BIN_SIZE,
             START_BIN,
+            SMOOTH_BINS,
             COMPUTE_HISTOGRAM,
             COMPUTE_MEAN,
             COMPUTE_MAX,
@@ -118,6 +120,10 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         // vtk initialization 
         static svkImageStatistics* New();
 
+        static vtkDataArray* GetMaskedPixels( svkMriImageData* image, svkMriImageData* roi, double minIncluded = 1, double maxIncluded = VTK_DOUBLE_MAX);
+        static vtkFloatArray* GetHistogram( vtkDataArray* data, double binSize, double startBin, int numBins,  int smoothBins = 0);
+        static int GetBinForValue( double value, double binSize, double startBin);
+
         //! This will grab the output object as the correct data type to avoid casting
         vtkXMLDataElement* GetOutput( );
 
@@ -135,7 +141,8 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
        void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
        void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
        void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
-
+       void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
+       void AddHistogramTag( vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins, vtkXMLDataElement* results);
 
 	private:
 
