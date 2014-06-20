@@ -59,20 +59,22 @@ extern "C" {
 
 using namespace svk;
 
+void CreateBlankConfigFile( string filename );
 
 int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_xml_image_pipeline -c config_file_name [-s xml_var1=value1 -s xml_var2=val2...]\n";
-    usemsg += "                       [-v] [-h]                                                  \n";
-    usemsg += "                                                                                  \n";
-    usemsg += "   -c            config_file_name    Name of the config file.                     \n";
-    usemsg += "   -v                                Verbose output.                              \n";
-    usemsg += "   -h                                Print help message.                          \n";
-    usemsg += "                                                                                  \n";
-    usemsg += "                                                                                  \n";
+    usemsg += "svk_xml_image_pipeline -c config_file_name [-s xml_var1=value1 -s xml_var2=val2...]                    \n";
+    usemsg += "                       [-b] [-v] [-h]                                                                 \n";
+    usemsg += "                                                                                                      \n";
+    usemsg += "   -c            config_file_name    Name of the config file.                                         \n";
+    usemsg += "   -b            blank_file_name     Just generate a blank config file with given filename and exit.  \n";
+    usemsg += "   -v                                Verbose output.                                                  \n";
+    usemsg += "   -h                                Print help message.                                              \n";
+    usemsg += "                                                                                                      \n";
+    usemsg += "                                                                                                      \n";
 
     string configFileName;
     vector<string> xmlVariables;
@@ -87,8 +89,12 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "s:c:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "s:c:b:hv", long_options, &option_index)) != EOF) {
         switch (i) {
+            case 'b':
+                CreateBlankConfigFile(optarg);
+                exit(0);
+                break;
             case 's':
                 xmlVariables.push_back(optarg);
                 break;
@@ -139,3 +145,24 @@ int main (int argc, char** argv)
     return 0; 
 }
 
+
+/*!
+ * Creates a blank configuration file.
+ */
+void CreateBlankConfigFile( string filename )
+{
+    string outputXML = filename;
+    outputXML.append(".xml");
+    ofstream blankConfig;
+    blankConfig.open(outputXML.c_str());
+    blankConfig << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+    blankConfig << "<svk:configuration xmlns:svk=\"svkImagePipelineConfiguration\" " << endl;
+    blankConfig << "                   xmlns:svkAlgorithm=\"svkAlgorithm\"" << endl;
+    blankConfig << "                   xmlns:svkArgument=\"svkArgument\"" << endl;
+    blankConfig << "                   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" << endl;
+    blankConfig << "                   xsi:schemaLocation=\"svkImagePipelineConfiguration /data/brain_work/bolson/svk_image_pipeline/svkImagePipelineConfiguration.xsd\">" << endl;
+    blankConfig << "    <svk:pipeline>" << endl;
+    blankConfig << "    </svk:pipeline>" << endl;
+    blankConfig << "</svk:configuration>" << endl;
+    blankConfig.close();
+}
