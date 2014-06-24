@@ -368,10 +368,7 @@ void svkPhaseSpec::ZeroOrderPhase(float phi0, vtkFloatArray* spectrum)
     for ( int i = 0; i < numPoints; i++ ) {
 
         spectrum->GetTupleValue(i, cmplxPt);
-        float re = ( cmplxPt[0] * cosPhase ) - ( cmplxPt[1] * sinPhase );
-        float im = ( cmplxPt[0] * sinPhase ) + ( cmplxPt[1] * cosPhase );
-        cmplxPt[0] = re; 
-        cmplxPt[1] = im; 
+        svkPhaseSpec::ZeroOrderPhase( phi0, cmplxPt ); 
         spectrum->SetTuple(i, cmplxPt); 
 
     }
