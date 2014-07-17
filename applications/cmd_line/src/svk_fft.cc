@@ -76,8 +76,9 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_fft -i input_file_name -o output_root_name [ -t output_data_type ]           \n"; 
-    usemsg += "                   --spec --spatial [ --vsx ] [ -vsy ] [ --vsz ] --single [ -h ] \n";
-    usemsg += "\n";  
+    usemsg += "                   [ --spec ] [ --spatial ] [ --single ]                         \n";
+    usemsg += "                   [ --vsx sihftX ] [ --vsy shiftY ] [ --vsz shiftZ ] [ -h ]     \n";
+    usemsg += "                                                                                 \n";  
     usemsg += "   -i            name        Name of file to convert.                            \n"; 
     usemsg += "   -o            root        Root name of outputfile.                            \n";
     usemsg += "   -t            type        Target data type:                                   \n";
@@ -93,7 +94,7 @@ int main (int argc, char** argv)
     usemsg += "   -b                        Only transform data in selection box, only valid for\n"; 
     usemsg += "                             --spec transforms. Ignored otherwise                \n"; 
     usemsg += "   -h                        Print this help mesage.                             \n";  
-    usemsg += "\n";  
+    usemsg += "                                                                                 \n";  
     usemsg += "Performs spatial/spectral FFTs.  If --spec or --spatial is specified,            \n"; 
     usemsg += "will transform only the specified domain.                                        \n";  
     usemsg += "\n";  
