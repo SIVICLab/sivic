@@ -75,7 +75,7 @@ int main (int argc, char** argv)
     usemsg += "   -r            file_root_name      The rootname of the input files.             \n";
     usemsg += "   -c            config_file_name    Name of the config file.                     \n";
     usemsg += "   -o            output_file_name    Name of the output file.                     \n";
-    usemsg += "   -x            output_xml          Output results in XML instead of default CSV.\n";
+    usemsg += "   -x                                Output results in XML instead of default CSV.\n";
     usemsg += "   -v                                Verbose output.                              \n";
     usemsg += "   -h                                Print help message.                          \n";
     usemsg += "                                                                                  \n";

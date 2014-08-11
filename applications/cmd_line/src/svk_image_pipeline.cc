@@ -66,11 +66,12 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_xml_image_pipeline -c config_file_name [-s xml_var1=value1 -s xml_var2=val2...]                    \n";
+    usemsg += "svk_xml_image_pipeline -c config_file_name [-s var1=value1 -s var2=value2...]                         \n";
     usemsg += "                       [-b] [-v] [-h]                                                                 \n";
     usemsg += "                                                                                                      \n";
     usemsg += "   -c            config_file_name    Name of the config file.                                         \n";
     usemsg += "   -b            blank_file_name     Just generate a blank config file with given filename and exit.  \n";
+    usemsg += "   -s            var=value           Substitute variable.                                             \n";
     usemsg += "   -v                                Verbose output.                                                  \n";
     usemsg += "   -h                                Print help message.                                              \n";
     usemsg += "                                                                                                      \n";
