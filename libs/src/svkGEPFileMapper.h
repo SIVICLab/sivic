@@ -205,7 +205,7 @@ class svkGEPFileMapper : public vtkObject
 
         virtual void                            ReorderEPSI( svkMrsImageData* data );
         string                                  GetNucleus(); 
-
+        void                                    ModifyForPatientEntry( double dcos[3][3] ); 
 
 
 };

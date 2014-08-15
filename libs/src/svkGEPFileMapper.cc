@@ -46,6 +46,7 @@
 #include <vtkDebugLeaks.h>
 #include <svkSpecUtils.h>
 #include <vtkByteSwap.h>
+#include <vtkMatrix3x3.h>
 
 #include "svkEPSIReorder.h"
 
@@ -738,6 +739,61 @@ void svkGEPFileMapper::GetDcos( double dcos[3][3] )
         }
     }
 
+    this->ModifyForPatientEntry( dcos ); 
+
+}
+
+
+/*!
+ *  Modifies the dcos to reflect the patient entry. 
+ */
+void svkGEPFileMapper::ModifyForPatientEntry( double dcos[3][3] )
+{
+
+    //  Create the vtkMatrix3x3 version of dcos: 
+    vtkMatrix3x3* dcosMatrix = vtkMatrix3x3::New();
+    dcosMatrix->Identity();
+
+    for (int i = 0; i < 3; i++ ) {
+        for (int j = 0; j < 3; j++ ) {
+            dcosMatrix->SetElement(i, j, dcos[i][j] ); 
+            //cout << dcosMatrix->GetElement(i, j) << " " ;
+        }
+        cout << endl ;
+    }
+
+    //  Apply the necessary transformations based on patient entry: 
+    vtkMatrix3x3* rotations = vtkMatrix3x3::New(); 
+    rotations->Identity();
+
+    int patientPosition( this->GetHeaderValueAsInt( "rhs.position" ) ); 
+    //  PRONE: patientPosition == 2
+    //  rotate RL(x) and AP(y) axis by 180 degrees, i.e. rotate frame about SI (z) axis: 
+    if ( patientPosition == 2 ) {
+        rotations->SetElement(0, 0, -1.0);
+        rotations->SetElement(1, 1, -1.0);
+    }
+
+    vtkMatrix3x3* transformedDcos = vtkMatrix3x3::New(); 
+    vtkMatrix3x3::Multiply3x3(rotations, dcosMatrix, transformedDcos); 
+
+    for (int i = 0; i < 3; i++ ) {
+        for (int j = 0; j < 3; j++ ) {
+            //cout << transformedDcos->GetElement(i, j) << " " ;
+        }
+        cout << endl ;
+    }
+    
+
+    //  Do I need to fix the ImagePositionPatient values?
+ 
+    //  Write the transformed DCOS matrix to the input arg: 
+    for (int i = 0; i < 3; i++ ) {
+        for (int j = 0; j < 3; j++ ) {
+            dcos[i][j] = transformedDcos->GetElement(i, j);
+        }
+    }
+    
 }
 
 

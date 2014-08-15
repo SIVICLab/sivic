@@ -652,7 +652,7 @@ svkGEPFileMapper* svkGEPFileReader::GetPFileMapper()
 
     } else if ( psd.find("UCSF_MNS_7T") != string::npos ) {
 
-        //  fidcsi ucsf sequence 
+        //  multi-nuclear spec ucsf sequence 
         aMapper = svkGEPFileMapperUCSFfidcsiDev07t::New();
 
     } else if ( psd.find("fidcsi") != string::npos ) {
