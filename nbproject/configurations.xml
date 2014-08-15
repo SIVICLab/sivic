@@ -14,6 +14,8 @@
             <df name="CMakeFiles">
               <df name="CMakeRelink.dir">
               </df>
+              <df name="svk_apodize.dir">
+              </df>
               <df name="svk_app_template.dir">
               </df>
               <df name="svk_auto_phase.dir">
@@ -21,6 +23,8 @@
               <df name="svk_average_spec.dir">
               </df>
               <df name="svk_channel2time.dir">
+              </df>
+              <df name="svk_combine_coils.dir">
               </df>
               <df name="svk_create_dcmraw.dir">
               </df>
@@ -40,9 +44,15 @@
               </df>
               <df name="svk_hsvd.dir">
               </df>
+              <df name="svk_image_pipeline.dir">
+              </df>
+              <df name="svk_image_stats.dir">
+              </df>
               <df name="svk_integrate_dynamic.dir">
               </df>
               <df name="svk_met_kinetics.dir">
+              </df>
+              <df name="svk_mrs_combine.dir">
               </df>
               <df name="svk_multi_view.dir">
               </df>
@@ -70,11 +80,14 @@
               </df>
               <df name="svk_svrecon.dir">
               </df>
+              <df name="svk_volume_diff.dir">
+              </df>
             </df>
             <df name="ITKIOFactoryRegistration">
               <in>itkImageIOFactoryRegisterManager.h</in>
               <in>itkTransformIOFactoryRegisterManager.h</in>
             </df>
+            <in>svk_apodize.cc</in>
             <in>svk_app_template.cc</in>
             <in>svk_auto_phase.cc</in>
             <in>svk_average_spec.cc</in>
@@ -88,8 +101,11 @@
             <in>svk_gepfile_reader.cc</in>
             <in>svk_get_filetype.cc</in>
             <in>svk_hsvd.cc</in>
+            <in>svk_image_pipeline.cc</in>
+            <in>svk_image_stats.cc</in>
             <in>svk_integrate_dynamic.cc</in>
             <in>svk_met_kinetics.cc</in>
+            <in>svk_mrs_combine.cc</in>
             <in>svk_multi_view.cc</in>
             <in>svk_noise.cc</in>
             <in>svk_peak_pick.cc</in>
@@ -103,6 +119,7 @@
             <in>svk_spec_diff.cc</in>
             <in>svk_surface_area.cc</in>
             <in>svk_svrecon.cc</in>
+            <in>svk_volume_diff.cc</in>
           </df>
         </df>
         <df name="osirix_plugin">
@@ -154,6 +171,8 @@
             </df>
             <df name="svk">
               <df name="bin">
+                <df name="testing">
+                </df>
               </df>
               <df name="data">
               </df>
@@ -260,6 +279,8 @@
                 </df>
                 <df name="src">
                   <df name="CMakeFiles">
+                    <df name="svk_apodize.dir">
+                    </df>
                     <df name="svk_app_template.dir">
                     </df>
                     <df name="svk_auto_phase.dir">
@@ -286,9 +307,15 @@
                     </df>
                     <df name="svk_hsvd.dir">
                     </df>
+                    <df name="svk_image_pipeline.dir">
+                    </df>
+                    <df name="svk_image_stats.dir">
+                    </df>
                     <df name="svk_integrate_dynamic.dir">
                     </df>
                     <df name="svk_met_kinetics.dir">
+                    </df>
+                    <df name="svk_mrs_combine.dir">
                     </df>
                     <df name="svk_multi_view.dir">
                     </df>
@@ -315,6 +342,8 @@
                     <df name="svk_surface_area.dir">
                     </df>
                     <df name="svk_svrecon.dir">
+                    </df>
+                    <df name="svk_volume_diff.dir">
                     </df>
                   </df>
                   <df name="ITKIOFactoryRegistration">
@@ -491,10 +520,14 @@
           <in>svk4DImageData.h</in>
           <in>svkAlgoTemplate.cc</in>
           <in>svkAlgoTemplate.h</in>
+          <in>svkAlgorithmPortMapper.cc</in>
+          <in>svkAlgorithmPortMapper.h</in>
           <in>svkApodizationWindow.cc</in>
           <in>svkApodizationWindow.h</in>
           <in>svkAreaPicker.cc</in>
           <in>svkAreaPicker.h</in>
+          <in>svkBool.cc</in>
+          <in>svkBool.h</in>
           <in>svkBoxPlot.cc</in>
           <in>svkBoxPlot.h</in>
           <in>svkBrukerDCMMRSReader.cc</in>
@@ -503,8 +536,6 @@
           <in>svkBurnResearchPixels.h</in>
           <in>svkByteSwap.cc</in>
           <in>svkByteSwap.h</in>
-          <in>svkCoilCombine.cc</in>
-          <in>svkCoilCombine.h</in>
           <in>svkCorrectDCOffset.cc</in>
           <in>svkCorrectDCOffset.h</in>
           <in>svkDICOMEnhancedMRIWriter.cc</in>
@@ -549,6 +580,8 @@
           <in>svkDcmMrsVolumeReader.h</in>
           <in>svkDcmRawDataReader.cc</in>
           <in>svkDcmRawDataReader.h</in>
+          <in>svkDcmSegmentationVolumeReader.cc</in>
+          <in>svkDcmSegmentationVolumeReader.h</in>
           <in>svkDcmVolumeReader.cc</in>
           <in>svkDcmVolumeReader.h</in>
           <in>svkDcmtkAdapter.cc</in>
@@ -565,6 +598,8 @@
           <in>svkDdfVolumeWriter.h</in>
           <in>svkDetailedPlotDirector.cc</in>
           <in>svkDetailedPlotDirector.h</in>
+          <in>svkDouble.cc</in>
+          <in>svkDouble.h</in>
           <in>svkDynamicMRIAlgoTemplate.cc</in>
           <in>svkDynamicMRIAlgoTemplate.h</in>
           <in>svkEPSIPhaseCorrect.cc</in>
@@ -579,8 +614,6 @@
           <in>svkFastCellData.h</in>
           <in>svkFdfVolumeReader.cc</in>
           <in>svkFdfVolumeReader.h</in>
-          <in>svkFirstOrderPhaseCostFunction.h</in>
-          <in>svkFirstPointPhaseCostFunction.h</in>
           <in>svkGEConsolePACSInterface.cc</in>
           <in>svkGEConsolePACSInterface.h</in>
           <in>svkGEImageHeader.h</in>
@@ -606,6 +639,8 @@
           <in>svkGESigna5XReader.h</in>
           <in>svkGESignaLX2Reader.cc</in>
           <in>svkGESignaLX2Reader.h</in>
+          <in>svkGenericAlgorithmWithPortMapper.cc</in>
+          <in>svkGenericAlgorithmWithPortMapper.h</in>
           <in>svkHSVD.cc</in>
           <in>svkHSVD.h</in>
           <in>svkIOD.cc</in>
@@ -620,6 +655,10 @@
           <in>svkImageAlgorithm.h</in>
           <in>svkImageAlgorithmExecuter.cc</in>
           <in>svkImageAlgorithmExecuter.h</in>
+          <in>svkImageAlgorithmPipeline.cc</in>
+          <in>svkImageAlgorithmPipeline.h</in>
+          <in>svkImageAlgorithmWithPortMapper.cc</in>
+          <in>svkImageAlgorithmWithPortMapper.h</in>
           <in>svkImageClip.cc</in>
           <in>svkImageClip.h</in>
           <in>svkImageCopy.cc</in>
@@ -644,6 +683,10 @@
           <in>svkImageReader2.h</in>
           <in>svkImageReaderFactory.cc</in>
           <in>svkImageReaderFactory.h</in>
+          <in>svkImageStatistics.cc</in>
+          <in>svkImageStatistics.h</in>
+          <in>svkImageThreshold.cc</in>
+          <in>svkImageThreshold.h</in>
           <in>svkImageTopologyGenerator.cc</in>
           <in>svkImageTopologyGenerator.h</in>
           <in>svkImageView2D.cc</in>
@@ -656,6 +699,8 @@
           <in>svkImageWriter.h</in>
           <in>svkImageWriterFactory.cc</in>
           <in>svkImageWriterFactory.h</in>
+          <in>svkInt.cc</in>
+          <in>svkInt.h</in>
           <in>svkIntegratePeak.cc</in>
           <in>svkIntegratePeak.h</in>
           <in>svkKineticModelCostFunction.h</in>
@@ -669,8 +714,14 @@
           <in>svkMRSAutoPhase.h</in>
           <in>svkMRSAverageSpectra.cc</in>
           <in>svkMRSAverageSpectra.h</in>
+          <in>svkMRSCombine.cc</in>
+          <in>svkMRSCombine.h</in>
+          <in>svkMRSFirstOrderPhase.cc</in>
+          <in>svkMRSFirstOrderPhase.h</in>
+          <in>svkMRSFirstOrderPhaseCostFunction.h</in>
           <in>svkMRSFirstPointPhase.cc</in>
           <in>svkMRSFirstPointPhase.h</in>
+          <in>svkMRSFirstPointPhaseCostFunction.h</in>
           <in>svkMRSIOD.cc</in>
           <in>svkMRSIOD.h</in>
           <in>svkMRSKinetics.cc</in>
@@ -679,6 +730,9 @@
           <in>svkMRSNoise.h</in>
           <in>svkMRSPeakPick.cc</in>
           <in>svkMRSPeakPick.h</in>
+          <in>svkMRSZeroOrderPhase.cc</in>
+          <in>svkMRSZeroOrderPhase.h</in>
+          <in>svkMRSZeroOrderPhaseCostFunction.h</in>
           <in>svkMetaboliteMap.cc</in>
           <in>svkMetaboliteMap.h</in>
           <in>svkMetaboliteRatioZScores.cc</in>
@@ -763,6 +817,8 @@
           <in>svkSpectraReferenceView.h</in>
           <in>svkSpectraReferenceViewController.cc</in>
           <in>svkSpectraReferenceViewController.h</in>
+          <in>svkString.cc</in>
+          <in>svkString.h</in>
           <in>svkThreadedImageAlgorithm.cc</in>
           <in>svkThreadedImageAlgorithm.h</in>
           <in>svkTypes.h</in>
@@ -786,6 +842,8 @@
           <in>svkVarianUCSFEPSI2DMapper.h</in>
           <in>svkVoxelTaggingUtils.cc</in>
           <in>svkVoxelTaggingUtils.h</in>
+          <in>svkXML.cc</in>
+          <in>svkXML.h</in>
           <in>svkXYPlotActor.cc</in>
           <in>svkXYPlotActor.h</in>
         </df>
@@ -909,7 +967,7 @@
           <df name="24x">
             <df name="input">
             </df>
-            <df name="Linux_x86_64">
+            <df name="out">
             </df>
           </df>
           <df name="9x">
@@ -1269,6 +1327,40 @@
           <df name="out_odd">
           </df>
         </df>
+        <df name="svk_apodize">
+          <df name="input">
+          </df>
+          <df name="out">
+          </df>
+        </df>
+        <df name="svk_average_spec">
+          <df name="input">
+          </df>
+          <df name="out">
+          </df>
+        </df>
+        <df name="svk_mrs_combine">
+          <df name="input1">
+          </df>
+          <df name="input2">
+          </df>
+          <df name="out1">
+          </df>
+          <df name="out2">
+          </df>
+        </df>
+        <df name="svk_phase_spec">
+          <df name="input1">
+          </df>
+          <df name="out1">
+          </df>
+        </df>
+        <df name="svk_quantify">
+          <df name="input1">
+          </df>
+          <df name="out1">
+          </df>
+        </df>
         <df name="sym_epsi">
           <df name="input">
           </df>
@@ -1380,12 +1472,6 @@
             <df name="TEST_RAW_RMLINK.dir">
             </df>
             <df name="vtkBaselineTest.dir">
-            </df>
-          </df>
-          <df name="dcm_series_diff_temp32733">
-            <df name="xml_one">
-            </df>
-            <df name="xml_two">
             </df>
           </df>
           <df name="ITKIOFactoryRegistration">
@@ -2421,8 +2507,69 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_auto_phase.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/netopt/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
+            <Elem>UCSF_INTERNAL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_average_spec.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_channel2time.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_create_dcmraw.cc"
@@ -2431,8 +2578,36 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_dcm_deid.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_dcmdump.cc"
@@ -2441,8 +2616,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_fft.cc"
@@ -2451,8 +2635,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_file_convert.cc"
@@ -2461,8 +2654,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_gepfile_anon.cc"
@@ -2471,8 +2673,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_gepfile_reader.cc"
@@ -2481,8 +2692,17 @@
             flavor="0">
         <ccTool>
           <incDir>
-            <pElem>libs/src</pElem>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_get_filetype.cc"
@@ -2491,8 +2711,36 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_hsvd.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_integrate_dynamic.cc"
@@ -2501,8 +2749,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_met_kinetics.cc"
@@ -2511,8 +2768,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_multi_view.cc"
@@ -2521,8 +2787,74 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_noise.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_peak_pick.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_phase_spec.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_point_selector.cc"
@@ -2531,8 +2863,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_quantify.cc"
@@ -2541,8 +2882,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_quick_view.cc"
@@ -2551,8 +2901,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_reorder_epsi.cc"
@@ -2561,8 +2920,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_reslice.cc"
@@ -2571,8 +2939,36 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="applications/cmd_line/src/svk_scale_image.cc"
+            ex="false"
+            tool="1"
+            flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>applications/../libs/src</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_spec_diff.cc"
@@ -2581,8 +2977,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_surface_area.cc"
@@ -2591,8 +2996,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/cmd_line/src/svk_svrecon.cc"
@@ -2601,8 +3015,17 @@
             flavor="0">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>applications/cmd_line/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="applications/osirix_plugin/OsiriX Headers/DCMPix.h"
@@ -2769,8 +3192,7 @@
             <Elem>HAVE_CONFIG_H</Elem>
             <Elem>SVK_MAJOR_VERSION=0</Elem>
             <Elem>SVK_MINOR_VERSION=9</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.9.4"</Elem>
-            <Elem>UCSF_INTERNAL</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -2778,17 +3200,22 @@
         <ccTool>
           <incDir>
             <pElem>applications/cmd_line/src</pElem>
-            <pElem>/netopt/include</pElem>
           </incDir>
         </ccTool>
       </folder>
       <folder path="trunk/applications/sivic_app">
         <ccTool>
           <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>applications/sivic_app/src/ITKIOFactoryRegistration</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
             <pElem>applications/sivic_app/src</pElem>
             <pElem>applications/../libs/src</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
             <Elem>SVK_USE_GL2PS</Elem>
           </preprocessorList>
         </ccTool>
@@ -3288,15 +3715,6 @@
       </item>
       <item path="libs/src/svkByteSwap.h" ex="true" tool="3" flavor="0">
       </item>
-      <item path="libs/src/svkCoilCombine.cc" ex="false" tool="1" flavor="0">
-        <ccTool>
-          <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
-            <Elem>VTK_DEBUG_ON</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
       <item path="libs/src/svkCorrectDCOffset.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
@@ -3317,8 +3735,6 @@
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
-      </item>
-      <item path="libs/src/svkDICOMEnhancedMRIWriter.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkDICOMImageWriter.cc" ex="false" tool="1" flavor="0">
         <ccTool>
@@ -3430,18 +3846,36 @@
       </item>
       <item path="libs/src/svkDataView.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkDataViewController.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3550,9 +3984,18 @@
       </item>
       <item path="libs/src/svkDetailedPlotDirector.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3584,8 +4027,6 @@
         </ccTool>
       </item>
       <item path="libs/src/svkEPSIPhaseCorrect.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="libs/src/svkEPSIReorder.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkEnhancedMRIIOD.cc" ex="false" tool="1" flavor="0">
         <ccTool>
@@ -3787,8 +4228,6 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="libs/src/svkImageCopy.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="libs/src/svkImageData.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
@@ -3839,9 +4278,18 @@
       </item>
       <item path="libs/src/svkImageMapToColors.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3851,9 +4299,18 @@
             tool="1"
             flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3895,9 +4352,18 @@
             tool="1"
             flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3929,9 +4395,18 @@
       </item>
       <item path="libs/src/svkImageViewer2.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -3965,6 +4440,24 @@
       </item>
       <item path="libs/src/svkIntegratePeak.h" ex="true" tool="3" flavor="0">
       </item>
+      <item path="libs/src/svkLabeledDataMapper.cc" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <item path="libs/src/svkLookupTable.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
@@ -3985,6 +4478,15 @@
       </item>
       <item path="libs/src/svkMRIIOD.h" ex="true" tool="3" flavor="0">
       </item>
+      <item path="libs/src/svkMRSCombine.cc" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <preprocessorList>
+            <Elem>SVK_MINOR_VERSION=8</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>VTK_DEBUG_ON</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <item path="libs/src/svkMRSIOD.cc" ex="false" tool="1" flavor="0">
         <ccTool>
           <preprocessorList>
@@ -4002,8 +4504,6 @@
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
-      </item>
-      <item path="libs/src/svkMetaboliteMap.h" ex="true" tool="3" flavor="0">
       </item>
       <item path="libs/src/svkMetaboliteRatioZScores.cc"
             ex="false"
@@ -4109,9 +4609,18 @@
       </item>
       <item path="libs/src/svkMrsTopoGenerator.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4165,9 +4674,18 @@
             tool="1"
             flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4186,18 +4704,36 @@
       </item>
       <item path="libs/src/svkOverlaySelector.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkOverlayView.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4207,9 +4743,18 @@
             tool="1"
             flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4234,9 +4779,18 @@
       </item>
       <item path="libs/src/svkPlotGridView.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4246,27 +4800,54 @@
             tool="1"
             flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkPlotLine.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="libs/src/svkPlotLineGrid.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4322,9 +4903,18 @@
       </item>
       <item path="libs/src/svkSatBandSet.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4361,9 +4951,18 @@
       </item>
       <item path="libs/src/svkSpecGridSelector.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -4500,9 +5099,18 @@
       </item>
       <item path="libs/src/svkXYPlotActor.cc" ex="false" tool="1" flavor="0">
         <ccTool>
+          <incDir>
+            <pElem>/opt/src/freeware/clapack/clapack-3.2.1-CMAKE/INCLUDE</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/lib/cmake/ITK-4.4/include</pElem>
+            <pElem>/netopt/InsightToolkit/InsightToolkit-4.4.1/include/ITK-4.4</pElem>
+            <pElem>libs/src/ITKIOFactoryRegistration</pElem>
+          </incDir>
           <preprocessorList>
-            <Elem>SVK_MINOR_VERSION=8</Elem>
-            <Elem>SVK_RELEASE_VERSION="0.8.1"</Elem>
+            <Elem>BUILD_GE_CONSOLE</Elem>
+            <Elem>ITK_BUILD</Elem>
+            <Elem>ITK_IO_FACTORY_REGISTER_MANAGER</Elem>
+            <Elem>SVK_MINOR_VERSION=9</Elem>
+            <Elem>SVK_RELEASE_VERSION="0.9.11"</Elem>
             <Elem>VTK_DEBUG_ON</Elem>
           </preprocessorList>
         </ccTool>
@@ -5805,6 +6413,20 @@
           </incDir>
         </ccTool>
       </item>
+    </conf>
+    <conf name="Debug_svk_auto_phae" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>GNU|GNU</compilerSet>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} svk_auto_phase -j4</buildCommand>
+          <cleanCommand>${MAKE} clean</cleanCommand>
+          <executablePath>applications/cmd_line/Linux_x86_64_debug/svk_auto_phase</executablePath>
+        </makeTool>
+      </makefileType>
     </conf>
   </confs>
 </configurationDescriptor>
