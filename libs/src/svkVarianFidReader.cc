@@ -278,9 +278,11 @@ svkVarianFidMapper* svkVarianFidReader::GetFidMapper()
         *it = (char)tolower(*it);
     }
 
-    if ( seqfil.compare("c13_csi2d") == 0 || seqfil.compare("c13_csi2d_nlr") == 0 ) {
+    if ( ( seqfil.compare("csi2d") == 0 ) || ( seqfil.compare("c13_csi2d") == 0 ) || ( seqfil.compare("c13_csi2d_nlr") == 0 ) ) {
 
-        // UCSF 2DCSI :
+        // UCSF 2DCSI :  
+        //  TODO:  this may be generalizable for product csi2d.  It was tested against the 
+        //  product sequence csi2d from an agilent scanner and appears to be correct. 
         aMapper = svkVarianUCSF2DcsiMapper::New();
 
     } else if ( seqfil.compare("epsi2d") == 0) {

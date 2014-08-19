@@ -143,3 +143,46 @@ void svkSpecUtils::CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArra
 	int origin = N/2;
 	svkSpecUtils::CreateLinearPhaseShiftArray(N, phaseArray, shift, origin);
 }
+
+
+/*!
+ *  Determines the nucleus based on the computed value of gamma determined from the input
+ *  parameters:  
+ *      transmitter frequency (MHz)
+ *      field strength (Gauss)       
+ *  
+ *  R C Weast, M J Astle, ed. (1982). 
+ *  Handbook of Chemistry and Physics. 
+ *  Boca Raton: CRC Press. p. E66. ISBN 0-8493-0463-6.
+ */
+string svkSpecUtils::GetNucleus( float transmitFreq, float fieldStrength )
+{
+
+    float transmitFreqMhz = transmitFreq; 
+    float fieldStrengthTesla = fieldStrength / 10000. ; 
+    float gamma =  transmitFreqMhz / fieldStrengthTesla;  
+
+    //  Values of GAMMA in MHz / T
+    float GAMMA_1H  = 42.576; 
+    float GAMMA_13C = 10.705;  
+    float GAMMA_31P = 17.235;  
+    float GAMMA_19F = 40.053;  
+    float GAMMA_15N = -4.316;  
+
+    string nucleus;
+    if ( fabs( gamma - GAMMA_1H ) < 0.1 ) {
+        nucleus.assign("1H");
+    } else if ( fabs( gamma - GAMMA_13C ) < 0.1 ) {
+        nucleus.assign("13C");
+    } else if ( fabs( gamma - GAMMA_31P ) < 0.1 ) {
+        nucleus.assign("31P");
+    } else if ( fabs( gamma - GAMMA_19F ) < 0.1 ) {
+        nucleus.assign("19F");
+    } else if ( fabs( gamma - GAMMA_15N ) < 0.1 ) {
+        nucleus.assign("15N");
+    }
+
+    return nucleus;  
+
+}
+

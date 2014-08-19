@@ -768,9 +768,19 @@ void svkVarianFidMapper::InitMRSpectroscopyModule()
         0
     );
 
+
+    string nucleus = this->GetHeaderValueAsString("tn"); 
+    string dicomNucleus = "1H"; 
+    if ( nucleus.compare("C13") == 0 ) {
+        dicomNucleus = "13C"; 
+    } else if ( nucleus.compare("N15") == 0 ) {
+        dicomNucleus = "15N"; 
+    }
+
+
     this->dcmHeader->SetValue(
         "ResonantNucleus",
-        "13C"
+        dicomNucleus 
     );
 
     this->dcmHeader->SetValue(

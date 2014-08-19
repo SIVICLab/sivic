@@ -52,6 +52,7 @@
 
 namespace svk {
 
+using namespace std;
 
 
 /*! 
@@ -71,6 +72,7 @@ class svkSpecUtils : public vtkObject
         static float    GetPPMRef(float transmitFreq, float freqOffset = 0, float temp = svkSpecUtils::BODY_TEMPERATURE ); 
         static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift);
         static void     CreateLinearPhaseShiftArray(int N, vtkImageComplex* phaseArray, double shift, int origin);
+        static string   GetNucleus( float transmitFreq, float fieldStrength ); 
 
         static const float ZERO_KELVIN;
         static const float H2O_Y_INTERCEPT; 
