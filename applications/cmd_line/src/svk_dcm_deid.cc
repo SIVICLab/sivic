@@ -61,13 +61,15 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
-    usemsg += "svk_dcm_deid -i input_file_name -r replacementID                             \n"; 
-    usemsg += "                                             -h                              \n"; 
+    usemsg += "svk_dcm_deid -i input_file_name [ -r replacementID ]                         \n"; 
+    usemsg += "             [ --stu UID ] [ --seu UID ] -h                                  \n"; 
+    usemsg += "             | -guid                                                         \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of dcm file to deidentify                  \n"; 
     usemsg += "   -r    deid id             replacement id                                  \n"; 
     usemsg += "   --stu UID                 use the specified StudyInstanceUID              \n";
     usemsg += "   --seu UID                 use the specified SeriesInstanceUID             \n";
+    usemsg += "   --guid                    generate a new unique UID                       \n";
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Deidentify a DICOM file.                                                     \n"; 
@@ -77,12 +79,14 @@ int main (int argc, char** argv)
     string deidID = ""; 
     string studyUID = ""; 
     string seriesUID = ""; 
+    bool   generateUID = false;  
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
         FLAG_STUDY_UID = 0,
-        FLAG_SERIES_UID
+        FLAG_SERIES_UID, 
+        FLAG_GENERATE_UID
     };
 
 
@@ -91,6 +95,7 @@ int main (int argc, char** argv)
         /* This option sets a flag. */
         {"stu",             required_argument, NULL,  FLAG_STUDY_UID},
         {"seu",             required_argument, NULL,  FLAG_SERIES_UID},
+        {"guid",            no_argument,       NULL,  FLAG_GENERATE_UID},
         {0, 0, 0, 0}
     };
 
@@ -114,6 +119,9 @@ int main (int argc, char** argv)
             case FLAG_SERIES_UID:
                 seriesUID.assign( optarg ); 
                 break;
+            case FLAG_GENERATE_UID:
+                generateUID = true; 
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -126,9 +134,24 @@ int main (int argc, char** argv)
     argc -= optind;
     argv += optind;
 
-    if ( argc != 0 || inputFileName.length() == 0 ) {
+    if ( 
+        ( ( inputFileName.length() == 0 ) && ( generateUID == false ) ) ||  
+        ( ( inputFileName.length() != 0 ) && ( generateUID == true  ) )  )
+    {  
+        cout << "ERROR:  Specify either an input file or the guid flag" << endl;
         cout << usemsg << endl;
         exit(1); 
+    }
+    if ( argc != 0 ) {
+        cout << usemsg << endl;
+        exit(1); 
+    }
+
+    if ( generateUID == true ) {
+        svkImageData* image = svkMriImageData::New();
+        string newUID = image->GetDcmHeader()->GenerateUniqueUID(); 
+        cout << "NEW UID: " << newUID << endl;
+        return 0; 
     }
 
     svkImageData* image = svkMriImageData::New(); 
