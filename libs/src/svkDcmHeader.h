@@ -167,7 +167,7 @@ class svkDcmHeader: public vtkObject
         /*! 
          *  Utility method to generate a new unique DICOM UID. 
          */
-        virtual vtkstd::string GenerateUniqueUID() = 0;
+        virtual         string GenerateUniqueUID() = 0;
 
         /*! 
          *  Method to set a DICOM tag by specifying it's name and value. The name should be 

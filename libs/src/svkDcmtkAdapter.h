@@ -85,7 +85,7 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    InsertEmptyElement(const char* name);
         virtual void    InsertUniqueUID(const char* name);
-        vtkstd::string  GenerateUniqueUID();
+        string          GenerateUniqueUID();
 
         virtual void    SetValue(const char* name, int value);
         virtual void    SetValue(const char* name, float value);

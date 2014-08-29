@@ -589,7 +589,7 @@ void svkDcmtkAdapter::InsertUniqueUID(const char* name)
 /*! 
  *  Static utility method to generate a new unique DICOM UID. 
  */
-vtkstd::string svkDcmtkAdapter::GenerateUniqueUID()
+string svkDcmtkAdapter::GenerateUniqueUID()
 {
     char uid[100];
     string newUID( dcmGenerateUniqueIdentifier(uid, SITE_INSTANCE_UID_ROOT) ); 
