@@ -229,7 +229,7 @@ class svkAlgorithmPortMapper : public vtkObject
         virtual vtkDataObject*   GetAlgorithmInputPort( int port, int index = 0 );
 
         //! Handles setting data object input appropriately.
-        virtual vtkDataObject*   SetAlgorithmInputPort( int port, vtkDataObject* input );
+        virtual void             SetAlgorithmInputPort( int port, vtkDataObject* input );
 
         //! Prints all input parameters set.
         void                     PrintSelf( ostream &os, vtkIndent indent );

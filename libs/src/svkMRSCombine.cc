@@ -184,7 +184,7 @@ void svkMRSCombine::RequestLinearCombinationData( )
                     float weightTotal;
                     if ( this->combinationMethod == svkMRSCombine::WEIGHTED_ADDITION ) {
                         weightTotal = this->GetTotalWeight( weightImage, voxelID); 
-                        weightTotal = pow( weightTotal, 0.5); 
+                        weightTotal = pow( (float)weightTotal, (float)0.5); 
                     }
 
                     //  for each frequency point, combine channels using specified combination method.

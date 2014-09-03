@@ -737,7 +737,7 @@ vtkDataObject* svkAlgorithmPortMapper::GetAlgorithmInputPort( int port, int inde
 /*!
  * Gets a data object into the input port.
  */
-vtkDataObject* svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataObject* input )
+void svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataObject* input )
 {
     if(input) {
         if( this->algo->GetNumberOfInputConnections( port ) == 0 ) {
@@ -749,7 +749,6 @@ vtkDataObject* svkAlgorithmPortMapper::SetAlgorithmInputPort( int port, vtkDataO
         // Setting a NULL input removes the connection.
         this->algo->SetInputConnection(port, NULL);
     }
-
 }
 
 

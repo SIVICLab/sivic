@@ -809,7 +809,7 @@ int svkQuantifyMetabolites::FillOutputPortInformation( int vtkNotUsed(port), vtk
  */
 string svkQuantifyMetabolites::GetDefaultXMLFileName()
 {
-    string fileName = getenv("HOME"); 
+    string fileName = svkUtils::GetHomeDirectory(); 
     fileName.append("/.SIVICQuantrc.xml" );
     return fileName;
 }

@@ -86,8 +86,8 @@ svkMRSZeroOrderPhase::~svkMRSZeroOrderPhase()
 int svkMRSZeroOrderPhase::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     this->InitPeakPicker ( ); 
-    this->Superclass::RequestData(request, inputVector, outputVector); 
-        
+    return this->Superclass::RequestData(request, inputVector, outputVector); 
+    
 }
 
 /*!

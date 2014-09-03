@@ -92,6 +92,18 @@ string svkUtils::GetCurrentWorkingDirectory()
 	return string(cwd);
 }
 
+/*!
+ * Returns the users home diretory.
+ */
+string svkUtils::GetHomeDirectory()
+{
+#ifdef WIN32
+    return getenv("HOMEPATH");
+#else
+    return getenv("HOME"); 
+#endif
+}
+
 
 string svkUtils::GetUserName()
 {

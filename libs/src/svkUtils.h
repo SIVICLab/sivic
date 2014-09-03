@@ -88,6 +88,7 @@ class svkUtils : public vtkObject
         //! Does the file or path exist:
 		static bool               FilePathExists( const char* path );
 		static string             GetCurrentWorkingDirectory();
+        static string             GetHomeDirectory();
 		static string             GetUserName();
 		static bool               CanWriteToPath( const char* path );
 		static int                CopyFile( const char* input, const char* output );
