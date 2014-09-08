@@ -63,7 +63,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <svkDataModel.h>
-#include <svkTestUtils.h>
+#include <svkVizUtils.h>
 
 using namespace svk;
     
@@ -298,7 +298,7 @@ void RenderingTest()
 
         plotController->SetSlice( i );
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
 
     plotController->Delete();
@@ -406,7 +406,7 @@ void OrientationTest( )
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_AXIAL" << i << ".tiff" ;
         plotController->SetSlice(i);
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::CORONAL);
     lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::CORONAL);
@@ -417,7 +417,7 @@ void OrientationTest( )
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_CORONAL" << i << ".tiff" ;
         plotController->SetSlice(i);
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     firstSlice = firstSpectra->GetFirstSlice(svkDcmHeader::SAGITTAL);
     lastSlice = firstSpectra->GetLastSlice(svkDcmHeader::SAGITTAL);
@@ -428,7 +428,7 @@ void OrientationTest( )
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_SAGITTAL" << i << ".tiff" ;
         plotController->SetSlice(i);
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
 
     plotController->Delete();

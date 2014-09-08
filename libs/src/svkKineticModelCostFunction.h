@@ -42,7 +42,7 @@
 #ifndef SVK_KINETIC_MODEL_COST_FUNCTION_H
 #define SVK_KINETIC_MODEL_COST_FUNCTION_H
 
-
+#include <itkParticleSwarmOptimizer.h>
 using namespace svk;
 
 

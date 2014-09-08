@@ -305,6 +305,51 @@ SET( TEST_NAME PHANTOM_SPECTRA_SAT_BANDS_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/${TEST_NAME}/${PLATFORM} )
 SET_TESTS_PROPERTIES(PHANTOM_SPECTRA_SAT_BANDS_DIFF PROPERTIES DEPENDS PHANTOM_SPECTRA_SAT_BANDS_MCHK)
 
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_1_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 5 -e 50 -l -5.5e+05 -u 1.5e+06 -c 5 -p 1 -t 1 -w 600
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_1_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out1 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_1_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_1_MCHK)
+
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_2_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 100 -e 150 -w 600
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_2_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out2 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_2_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_2_MCHK)
+
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_3_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -w 500
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_3_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out3 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_3_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_3_MCHK)
+
 
 #############################################################
 # Check to see if you can render an image from a phantom with sat bands

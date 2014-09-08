@@ -48,7 +48,7 @@
 #include <vtkTextActor.h>
 #include <vtkRenderer.h>
 #include <vtkTIFFWriter.h>
-#include <svkTestUtils.h>
+#include <svkVizUtils.h>
 
 using namespace svk;
 
@@ -93,7 +93,7 @@ int main ( int argc, char** argv )
         renWin->Render();
     
     }
-    svkTestUtils::SaveWindow( renWin, argv[1] );
+    svkVizUtils::SaveWindow( renWin, argv[1] );
 
   
     cone->Delete();

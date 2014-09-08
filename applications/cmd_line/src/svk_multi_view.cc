@@ -52,6 +52,8 @@
 #include <svkPlotGridViewController.h>
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
+#include <svkUtils.h>
+#include <svkVizUtils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef WIN32
@@ -73,17 +75,19 @@ void Usage( );
 void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int xPos, int yPos );
 void DisplaySpectra( );
 void LoadOverlay( string overlayFileName );
-void LoadSpectra( string spectraFileName );
+void LoadSpectra( vector<string> spectraFileName );
+
 vtkCornerAnnotation* GetNewAnnotation( );
 static void KeypressCallback( vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
 static void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, void *calldata);
+void CaptureWindows();
 
 // We are going to use this struct to hold our global vars. This makes it clearer which args are global.
 struct globalVariables {
     vtkCornerAnnotation** annotations;
     vtkCornerAnnotation* spectraAnnotation;
     svkImageData* overlay; 
-    svkImageData* spectra; 
+    vector<svkImageData*> spectra;
     svkPlotGridViewController* spectraController; 
     svkDataViewController** viewers; 
     svkDataModel* model;
@@ -95,10 +99,20 @@ struct globalVariables {
     int winSize; 
     int imageWindowOffset; // This id is used to offset the image window when the spectra is present.
     svkDcmHeader::Orientation orientation;
+    bool setXRange;
+    bool setYRange;
+    float upperLimit;
+    float lowerLimit;
+    int beginPoint;
+    int endPoint;
+    int timePoint;
+    int channel;
+    int component;
+    string justCapture;
 } globalVars;
 
 // For getopt
-static const char *optString = "s:o:w:hd";
+static const char *optString = "s:o:w:hdu:l:b:e:t:c:p:j:";
 
 
 /*!
@@ -111,9 +125,21 @@ void Usage( void )
     cout << "    svk_multi_view" << endl << endl;
     cout << "SYNOPSIS" << endl;
     cout << "    svk_multi_view [-s spectra ] [-o overlay ] [-d] imageOne imageTwo imageThree ..." << endl << endl;
+    cout << "                   [-l lowerBound ] [-u upperBound ] [-b beginPoint] [-e endPoint]" << endl;
+    cout << "                   [-c channel ] [-t timepoint ] [-p component]" << endl << endl;
+    cout << "                   -d debug       Turn on debug messages." << endl;
+    cout << "                   -s spectra     A spectra file to load. This can be used multiple times on compatible data to overlay traces." << endl;
+    cout << "                   -o overlay     An overlay image to load." << endl;
+    cout << "                   -l lowerBound  Minimum for Y axis of traces." << endl;
+    cout << "                   -u upperBound  Maximum for Y axis of traces." << endl;
+    cout << "                   -b beginPoint  First point (index) of traces to display." << endl;
+    cout << "                   -e endPoint    Final point (index) of traces to display." << endl;
+    cout << "                   -c channel     Channel of traces to display." << endl;
+    cout << "                   -t timepoint   Timepoint of traces to display." << endl;
+    cout << "                   -p component   Component of traces to display. 0=real (default), 1=imag, 2=mag" << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
-    cout << "    Pressing either +/- or the arrow keys will change the slice." << endl << endl;
+    cout << "    Pressing either +/- or the arrow keys will change the slice. Pressing the p key will save a screen capture." << endl << endl;
     cout << "VERSION" << endl;
     cout << "     " << SVK_RELEASE_VERSION << endl; 
     cout << endl << "############  USAGE  ############ " << endl << endl;
@@ -124,12 +150,22 @@ void Usage( void )
 
 int main ( int argc, char** argv )
 {
+    globalVars.setXRange = false;
+    globalVars.setYRange = false;
+    globalVars.upperLimit = 0;
+    globalVars.lowerLimit = 0;
+    globalVars.beginPoint = 0;
+    globalVars.endPoint = 0;
+    globalVars.timePoint = 0;
+    globalVars.channel = 0;
+    globalVars.component = 0;
+    globalVars.justCapture = "";
     globalVars.spectraWindow = NULL;
     globalVars.winSize = 350; 
     globalVars.debug = false;
     globalVars.slice = 0;
     globalVars.model = svkDataModel::New();
-    string spectraFileName;
+    vector<string> spectraFileName;
     string overlayFileName;
     /* This varibale will change to a value of 1 if there is a spectra loaded */
     globalVars.imageWindowOffset = 0;
@@ -146,11 +182,39 @@ int main ( int argc, char** argv )
             case 'w':
                 globalVars.winSize =  atoi(optarg);
                 break;
+            case 'u':
+                globalVars.upperLimit =  svkUtils::StringToFloat(optarg);
+                globalVars.setYRange = true;
+                break;
+            case 'l':
+                globalVars.lowerLimit =  svkUtils::StringToFloat(optarg);
+                globalVars.setYRange = true;
+                break;
+            case 'b':
+                globalVars.beginPoint =  atoi(optarg);
+                globalVars.setXRange = true;
+                break;
+            case 'e':
+                globalVars.endPoint =  atoi(optarg);
+                globalVars.setXRange = true;
+                break;
+            case 't':
+                globalVars.timePoint =  atoi(optarg);
+                break;
+            case 'c':
+                globalVars.channel =  atoi(optarg);
+                break;
+            case 'p':
+                globalVars.component =  atoi(optarg);
+                break;
+            case 'j':
+                globalVars.justCapture = optarg;
+                break;
             case 'h':
                 Usage();
                 break;
             case 's':
-                spectraFileName.assign( optarg );
+                spectraFileName.push_back( optarg );
                 break;
             case 'o':
                 overlayFileName.assign( optarg );
@@ -163,6 +227,11 @@ int main ( int argc, char** argv )
                 break;
         }
         opt = getopt( argc, argv, optString );
+    }
+    if( globalVars.debug ) {
+        for( int i = 0; i < spectraFileName.size(); i++ ) {
+            cout << "SpectraFileName: " << spectraFileName[i] << endl;
+        }
     }
 
     globalVars.numberOfImages = argc - optind;
@@ -209,10 +278,14 @@ int main ( int argc, char** argv )
     }
 
     // Start the interactor.
-    if( globalVars.spectraWindow != NULL ) {
-        globalVars.spectraWindow->GetInteractor()->Start();
-    } else if ( globalVars.numberOfImages > 0 ) {
-        renderWindows[0]->GetInteractor()->Start();
+    if( globalVars.justCapture.size() > 0 ) {
+        CaptureWindows();
+    } else {
+        if( globalVars.spectraWindow != NULL ) {
+            globalVars.spectraWindow->GetInteractor()->Start();
+        } else if ( globalVars.numberOfImages > 0 ) {
+            renderWindows[0]->GetInteractor()->Start();
+        }
     }
 
     for( int i= optind; i < argc; i++ ) {
@@ -277,11 +350,11 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
 
     // Lets add a text actor with some info in it.
     dataViewer->SetInput( data, 0  );
-    if( globalVars.spectra != NULL ) {
-        dataViewer->SetInput( globalVars.spectra, 1  );
-    }
     if( globalVars.overlay != NULL ) {
         dataViewer->SetInput( globalVars.overlay, 2  );
+    }
+    if( globalVars.spectra.size() > 0 ) {
+        dataViewer->SetInput( globalVars.spectra[0], 1  );
     }
     if( globalVars.orientation == svkDcmHeader::UNKNOWN_ORIENTATION ) { 
         globalVars.orientation = data->GetDcmHeader()->GetOrientationType();
@@ -336,6 +409,11 @@ void DisplaySpectra( )
     globalVars.spectraController = svkPlotGridViewController::New();
     
     vtkRenderWindowInteractor* rwi = globalVars.spectraWindow->MakeRenderWindowInteractor();
+    vtkCallbackCommand* keypressCallbackCommand = vtkCallbackCommand::New();
+    keypressCallbackCommand->SetCallback( KeypressCallback );
+    keypressCallbackCommand->SetClientData( (void*)globalVars.viewers );
+    rwi->AddObserver(vtkCommand::KeyPressEvent, keypressCallbackCommand );
+    keypressCallbackCommand->Delete();
 
     globalVars.spectraController->SetRWInteractor( rwi );
 
@@ -344,18 +422,33 @@ void DisplaySpectra( )
     globalVars.spectraWindow->SetPosition(0,0);
 
     // Lets add a text actor with some info in it.
-    globalVars.spectraController->SetInput( globalVars.spectra, 0  );
+    for( int i = 0; i < globalVars.spectra.size(); i++ ) {
+        if( i == 0 ) {
+            globalVars.spectraController->SetInput( globalVars.spectra[i], 0  );
+        } else {
+            svkPlotGridView::SafeDownCast(globalVars.spectraController->GetView())->AddReferenceInput( globalVars.spectra[i] );
+        }
+    }
     if( globalVars.overlay != NULL ) {
         globalVars.spectraController->SetInput( globalVars.overlay, 1  );
     }
 
-    globalVars.spectraController->GetView()->SetOrientation( globalVars.spectra->GetDcmHeader()->GetOrientationType() );
+    globalVars.spectraController->GetView()->SetOrientation( globalVars.spectra[0]->GetDcmHeader()->GetOrientationType() );
+    if( globalVars.setXRange ) {
+        globalVars.spectraController->SetWindowLevelRange( globalVars.beginPoint , globalVars.endPoint , svkPlotGridView::FREQUENCY);
+    }
+    if( globalVars.setYRange ) {
+        globalVars.spectraController->SetWindowLevelRange( globalVars.lowerLimit , globalVars.upperLimit , svkPlotGridView::AMPLITUDE);
+    }
+    globalVars.spectraController->SetComponent( (svkPlotLine::PlotComponent)globalVars.component );
+    globalVars.spectraController->SetVolumeIndex( globalVars.channel, svkMrsImageData::CHANNEL );
+    globalVars.spectraController->SetVolumeIndex( globalVars.timePoint, svkMrsImageData::TIMEPOINT );
 
     vtkCallbackCommand* selectionCallbackCommand = vtkCallbackCommand::New();
     selectionCallbackCommand->SetCallback( SelectionCallback );
     selectionCallbackCommand->SetClientData( (void*)globalVars.spectraController );
     rwi->AddObserver(vtkCommand::SelectionChangedEvent, selectionCallbackCommand );
-    int* extent = globalVars.spectra->GetExtent();
+    int* extent = globalVars.spectra[0]->GetExtent();
     globalVars.slice = (extent[5]-extent[4])/2;
     globalVars.spectraController->SetSlice( globalVars.slice );
 
@@ -364,7 +457,7 @@ void DisplaySpectra( )
     text<< "USE + AND - TO CHANGE SLICE";
     globalVars.spectraAnnotation->SetText(0, text.str().c_str() );
     text.str("");
-    text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.spectra->GetNumberOfSlices();
+    text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.spectra[0]->GetNumberOfSlices();
     globalVars.spectraAnnotation->SetText(1, text.str().c_str() );
     globalVars.spectraWindow->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.spectraAnnotation );
 
@@ -394,26 +487,32 @@ void KeypressCallback(vtkObject* subject, unsigned long eid, void* thisObject, v
     if( rwi->GetKeySym() != NULL ) {
     	keySymbol = rwi->GetKeySym();
     }
-
-    if( keySymbol.compare("Right") == 0 || keySymbol.compare("Up") == 0 || keyPressed == '+'  ) {
-        newSlice = globalVars.slice+1;
-    } else if( keySymbol.compare("Left") == 0 || keySymbol.compare("Down") == 0 || keyPressed == '-' ) {
-        newSlice = globalVars.slice-1;
-    }
-
-    if( newSlice >= 0 && newSlice < globalVars.numberOfSlices ) {
-        globalVars.slice = newSlice;
-        text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.numberOfSlices;
-        for( int i= 0; i < globalVars.numberOfImages; i++ ) {
-            globalVars.annotations[i]->SetText(1, text.str().c_str() ); 
-           ((static_cast<svkOverlayViewController**>(thisObject))[i])->SetSlice(globalVars.slice, svkDcmHeader::AXIAL);
-           ((static_cast<svkDataViewController**>(thisObject))[i])->GetView()->Refresh();
+    if( keySymbol.compare("p") == 0  ) {
+        CaptureWindows();
+    } else {
+        if( keySymbol.compare("Right") == 0 || keySymbol.compare("Up") == 0 || keyPressed == '+'  ) {
+            newSlice = globalVars.slice+1;
+        } else if( keySymbol.compare("Left") == 0 || keySymbol.compare("Down") == 0 || keyPressed == '-' ) {
+            newSlice = globalVars.slice-1;
         }
-        if( globalVars.spectraController!=NULL) {
-            globalVars.spectraController->SetSlice(  dvController->GetSlice() );
-            specText<< "SLICE: " << dvController->GetSlice() + 1 << "/" << globalVars.spectra->GetNumberOfSlices();
-            globalVars.spectraAnnotation->SetText(1, specText.str().c_str() ); 
-            globalVars.spectraController->GetView()->Refresh();
+        if( newSlice >= 0 && newSlice < globalVars.numberOfSlices ) {
+            globalVars.slice = newSlice;
+            text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.numberOfSlices;
+            for( int i= 0; i < globalVars.numberOfImages; i++ ) {
+                globalVars.annotations[i]->SetText(1, text.str().c_str() );
+               ((static_cast<svkOverlayViewController**>(thisObject))[i])->SetSlice(globalVars.slice, svkDcmHeader::AXIAL);
+               ((static_cast<svkDataViewController**>(thisObject))[i])->GetView()->Refresh();
+            }
+            if( globalVars.spectraController!=NULL) {
+                if( dvController == NULL ) {
+                    globalVars.spectraController->SetSlice(  newSlice );
+                } else {
+                    globalVars.spectraController->SetSlice(  dvController->GetSlice() );
+                }
+                specText<< "SLICE: " << globalVars.spectraController->GetSlice() + 1 << "/" << globalVars.spectra[0]->GetNumberOfSlices();
+                globalVars.spectraAnnotation->SetText(1, specText.str().c_str() );
+                globalVars.spectraController->GetView()->Refresh();
+            }
         }
     }
 }
@@ -439,6 +538,29 @@ void SelectionCallback(vtkObject* subject, unsigned long eid, void* thisObject, 
     }
     if( globalVars.spectraController != NULL ) {
         globalVars.spectraController->SetTlcBrc( tlcBrc );
+    }
+}
+
+
+/*!
+ *  Takes a screencapture of each window.
+ */
+void CaptureWindows()
+{
+
+    if(globalVars.spectraWindow != NULL ) {
+        stringstream filename;
+        filename << globalVars.justCapture << "/traces.tiff" ;
+        globalVars.spectraController->GetView()->Refresh();
+        globalVars.spectraWindow->Render();
+        svkVizUtils::SaveWindow( globalVars.spectraWindow, filename.str());
+    }
+    for( int i= 0; i < globalVars.numberOfImages; i++ ) {
+        globalVars.viewers[i]->GetView()->Refresh();
+        globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow()->Render();
+        stringstream filename;
+        filename << globalVars.justCapture << "/image_" << i << ".tiff" ;
+        svkVizUtils::SaveWindow(globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow(), filename.str());
     }
 }
 
@@ -474,30 +596,42 @@ void LoadOverlay( string overlayFileName ) {
 /*!
  * Loads the spectra data set.
  */
-void LoadSpectra( string spectraFileName ) {
-    if( !spectraFileName.empty() ) {
-        globalVars.spectra = globalVars.model->LoadFile( spectraFileName );
-        if( globalVars.spectra == NULL ) {
-            cerr << "ERROR: Could not read input file: " << spectraFileName << endl;
+void LoadSpectra( vector<string> spectraFileName ) {
+    bool loadedSpectra = false;
+    for( int i = 0; i < spectraFileName.size(); i++ ) {
+        globalVars.spectra.push_back (globalVars.model->LoadFile( spectraFileName[i] ));
+        if( globalVars.spectra[i] == NULL ) {
+            cerr << "ERROR: Could not read input file: " << spectraFileName[i] << endl;
             exit(1);
         }
-        if( globalVars.spectra == NULL || !globalVars.spectra->IsA("svkMrsImageData")) {
+        if( globalVars.spectra[i] == NULL || !globalVars.spectra[i]->IsA("svkMrsImageData")) {
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
             cout << "Error: -s flag must be followed by a spectra file!" << endl;
             cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
         }
-        globalVars.spectra->Register(NULL);
-        globalVars.spectra->Update();
+        globalVars.spectra[i]->Register(NULL);
+        globalVars.spectra[i]->Update();
         // If there is a spectra loaded the the first window will be the spectra 
         globalVars.imageWindowOffset = 1;
         if( globalVars.debug ) {
-            cout << "Spectra: " << *globalVars.spectra << endl;
+            cout << "Spectra: " << *globalVars.spectra[i] << endl;
         }
-        globalVars.orientation=globalVars.spectra->GetDcmHeader()->GetOrientationType();
+        if( i == 0 ) {
+            globalVars.orientation=globalVars.spectra[i]->GetDcmHeader()->GetOrientationType();
+            globalVars.numberOfSlices = globalVars.spectra[i]->GetNumberOfSlices();
+        } else {
+            svkDataValidator* validator = svkDataValidator::New();
+            if( !validator->AreDataGeometriesSame( globalVars.spectra[0], globalVars.spectra[i]) ) {
+                cout << "ERROR! Data geometries do not match, all spectra must have the same geometry!" << endl;
+                validator->Delete();
+                exit(1);
+            }
+        }
+        loadedSpectra = true;
+    }
+    if( loadedSpectra ) {
         DisplaySpectra();
-        globalVars.spectraAnnotation->SetText(2, spectraFileName.c_str() );
-
-
+        globalVars.spectraAnnotation->SetText(2, spectraFileName[0].c_str() );
     }
 }
 

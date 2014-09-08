@@ -58,7 +58,7 @@ extern "C" {
 #include <string.h>
 #include <svkDataModel.h>
 #include <vtkDataObjectTypes.h>
-#include <svkTestUtils.h>
+#include <svkVizUtils.h>
 
 using namespace svk;
 
@@ -359,7 +359,7 @@ void OrientationTest()
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "AXIAL.tiff" ;
         overlayController->SetSlice( i );
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
 
     overlayController->GetView()->SetOrientation( svkDcmHeader::CORONAL);
@@ -371,7 +371,7 @@ void OrientationTest()
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "CORONAL.tiff" ;
         overlayController->SetSlice( i );
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     overlayController->GetView()->SetOrientation( svkDcmHeader::SAGITTAL);
     svkOverlayView::SafeDownCast(overlayController->GetView())->AlignCamera();
@@ -381,7 +381,7 @@ void OrientationTest()
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << "SAGITTAL.tiff" ;
         overlayController->SetSlice( i );
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     if( spectra != NULL ) {
         spectra->Delete();
@@ -478,38 +478,38 @@ void ColorMapTest()
     window->Render();
     stringstream filename;
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "COLOR.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     overlayController->SetLUT( svkLookupTable::GREY_SCALE );
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "GREY_SCALE.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     overlayController->SetLUT( svkLookupTable::HURD );
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "HURD.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     overlayController->SetLUT( svkLookupTable::CYAN_HOT );
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "CYAN_HOT.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     overlayController->SetLUT( svkLookupTable::FIRE );
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "FIRE.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     overlayController->SetOverlayThreshold( 100 );
     overlayController->SetLUT( svkLookupTable::REVERSE_COLOR );
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "REVERSE_COLOR.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
 
     if( cniOverlay != NULL ) {
         overlayController->SetInput( cniOverlay, 2 );
@@ -520,7 +520,7 @@ void ColorMapTest()
     window->Render();
     filename.str("");
     filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << "CNI_FIXED.tiff" ;
-    svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+    svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     
     if( spectra != NULL ) {
         spectra->Delete();
@@ -608,7 +608,7 @@ void RenderingTest()
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << ".tiff" ;
         overlayController->SetSlice( i, image->GetDcmHeader()->GetOrientationType() );
         window->Render();
-        svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
     }
     if( spectra != NULL ) {
         spectra->Delete();
@@ -832,7 +832,7 @@ void LoadOrderTest()
             filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << counter << ".tiff" ;
             overlayController->SetSlice( k );
             window->Render();
-            svkTestUtils::SaveWindow( window, (filename.str()).c_str() );
+            svkVizUtils::SaveWindow( window, (filename.str()).c_str() );
             counter++;
         }
     }

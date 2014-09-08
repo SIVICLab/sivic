@@ -1,5 +1,5 @@
 /*
- *  Copyright © 2009-2011 The Regents of the University of California.
+ *  Copyright © 2009-2014 The Regents of the University of California.
  *  All Rights Reserved.
  *
  *  Redistribution and use in source and binary forms, with or without 
@@ -26,11 +26,13 @@
  *  OF SUCH DAMAGE.
  */
 
+
+
 /*
- *  $URL$
- *  $Rev$
- *  $Author$
- *  $Date$
+ *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkVizUtils.h $
+ *  $Rev: 2038 $
+ *  $Author: beckn8tor $
+ *  $Date: 2014-09-03 13:08:42 -0700 (Wed, 03 Sep 2014) $
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -38,64 +40,67 @@
  */
 
 
-#define DEBUG 0
+#ifndef SVK_VIZ_UTILS_H
+#define SVK_VIZ_UTILS_H
 
 
-#include <svkTestUtils.h>
+#include <string>
+#include <map>
+#include <vector>
+#include <stdio.h>
+#include <sstream>
+#include <vtkObjectFactory.h>
+#include <vtkObject.h>
+#include <vtkGlobFileNames.h>
+#include <vtkStringArray.h>
+#include <vtkDirectory.h>
+#include <svkMriImageData.h>
+#include <svkMrsImageData.h>
+#include <svkImageWriterFactory.h>
+#include <vtkWindow.h>
+#include <vtkImageWriter.h>
+#include <vtkTIFFWriter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkWindowToImageFilter.h>
+
+#ifdef WIN32
+#include <windows.h>
+#define MAXPATHLEN 260
+#else
+#include <sys/param.h>
+#include <pwd.h>
+#endif
+namespace svk {
 
 
-using namespace svk;
-
-vtkCxxRevisionMacro(svkTestUtils, "$Rev$");
-vtkStandardNewMacro(svkTestUtils);
-
-//! Constructor
-svkTestUtils::svkTestUtils()
-{
-}
-
-
-//! Destructor
-svkTestUtils::~svkTestUtils()
-{
-}
-
-
-/*
- * Saves the input window to a tiff image.
- *
- * \param window the window you want to save
- * \param filename the name you want to save it as
- *
+using namespace std;
+/*! 
+ *  UCSF specific utilities.
  */
-void svkTestUtils::SaveWindow( vtkWindow* window, string fileName ) 
+class svkVizUtils : public vtkObject
 {
 
-    size_t pos = fileName.find_last_of(".");
-
-    svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
-    vtkImageWriter* writer = NULL;
-
-    if( strcmp( fileName.substr(pos).c_str(), ".ps" ) == 0 ) {
-        writer = writerFactory->CreateImageWriter( svkImageWriterFactory::PS );
-    } else if( strcmp( fileName.substr(pos).c_str(), ".tiff" ) == 0 ) {
-        writer = writerFactory->CreateImageWriter( svkImageWriterFactory::TIFF );
-        vtkTIFFWriter* tmp = vtkTIFFWriter::SafeDownCast( writer );
-        tmp->SetCompression(0);
-    } else if( strcmp( fileName.substr(pos).c_str(), ".jpeg" ) == 0 ) {
-        writer = writerFactory->CreateImageWriter( svkImageWriterFactory::JPEG );
-        vtkJPEGWriter* tmp = vtkJPEGWriter::SafeDownCast( writer );
-        tmp->SetQuality(100);
-    }
-    writerFactory->Delete();
-    vtkWindowToImageFilter* w2i = vtkWindowToImageFilter::New();
-    w2i->SetInput(window);
-
-    writer->SetInput(w2i->GetOutput());
-    writer->SetFileName( fileName.c_str() );
-    writer->Write();
-    writer->Delete();
-    w2i->Delete();
+    public:
 
 
-}
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkVizUtils, vtkObject );
+  
+        // vtk initialization 
+        static svkVizUtils* New();
+
+        static void               SaveWindow( vtkWindow* window, string filename );
+
+	protected:
+
+       svkVizUtils();
+       ~svkVizUtils();
+        
+};
+
+
+}   //svk
+
+
+
+#endif //SVK_VIZ_UTILS

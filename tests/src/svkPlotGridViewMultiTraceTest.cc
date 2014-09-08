@@ -62,7 +62,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <svkDataModel.h>
-#include <svkTestUtils.h>
+#include <svkUtils.h>
 
 using namespace svk;
     

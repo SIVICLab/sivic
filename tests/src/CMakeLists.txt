@@ -163,11 +163,6 @@ IF(WIN32)
 	                  netapi32)
 ENDIF(WIN32)
 
-ADD_LIBRARY( 
-    svkTest
-    svkTestUtils.cc
-)
-
 
 if ( BUILD_ITK )
     SET( ITK_LIBS 
@@ -184,7 +179,6 @@ endif( BUILD_ITK )
 
 SET(SVK_LIBS
     ${ITK_LIBS}
-    svkTest
     svk 
     svkadapt 
     vtkIO

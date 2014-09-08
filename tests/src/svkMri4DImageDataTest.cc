@@ -43,12 +43,12 @@
 
 #include <svkDataModel.h>
 #include <svkImageData.h>
-#include <svkTestUtils.h>
+#include <svkUtils.h>
 #include <svkMriZeroFill.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <svkPlotGridViewController.h>
-#include <svkUtils.h>
+#include <svkVizUtils.h>
 using namespace svk;
 
 int main (int argc, char** argv)
@@ -85,7 +85,7 @@ int main (int argc, char** argv)
         plotController->SetSlice( i );
         plotController->GetView()->Refresh();
         window->Render();
-        svkTestUtils::SaveWindow( window, (outputName.str()).c_str() );
+        svkVizUtils::SaveWindow( window, (outputName.str()).c_str() );
     }
 
     plotController->Delete();

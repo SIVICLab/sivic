@@ -291,6 +291,7 @@ IF( BUILD_VIZ_LIBRARY )
         svkImageMapToWindowLevelColors.cc
         svkImageMapToColors.cc
         svkLabeledDataMapper.cc
+        svkVizUtils.cc
         ${SVK_ORIENTED_IMAGE_ACTOR_SRC}
     )
 ENDIF( BUILD_VIZ_LIBRARY )
