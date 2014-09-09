@@ -27,10 +27,10 @@
  */
 
 /*
- *  $URL: svn+ssh://beckn8tor@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkVizUtils.cc $
- *  $Rev: 2038 $
- *  $Author: beckn8tor $
- *  $Date: 2014-09-03 13:08:42 -0700 (Wed, 03 Sep 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -43,7 +43,7 @@
 
 using namespace svk;
 
-vtkCxxRevisionMacro(svkVizUtils, "$Rev: 2038 $");
+vtkCxxRevisionMacro(svkVizUtils, "$Rev$");
 vtkStandardNewMacro(svkVizUtils);
 
 //! Constructor

@@ -275,6 +275,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_image_threshold
+    svk_image_threshold.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_image_threshold 
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_dcmdump
     svk_dcmdump.cc
 )
@@ -610,6 +620,7 @@ ENDIF ( BUILD_CREATE_RAW )
 
 SET(APPS 
     svk_file_convert 
+    svk_image_threshold 
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 

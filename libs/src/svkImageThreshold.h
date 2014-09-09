@@ -80,23 +80,27 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
             THRESHOLD_MAX,
             THRESHOLD_MIN ,
             OUTPUT_SERIES_DESCRIPTION,
-            MASK_OUTPUT_VALUE
+            MASK_OUTPUT_VALUE,
+            OUTPUT_SCALAR_TYPE
         } svkImageThresholdParameters;
 
         static svkImageThreshold* New();
         vtkTypeRevisionMacro( svkImageThreshold, svkImageAlgorithmWithPortMapper);
 
-        void       SetThresholdMax( double max );
-        svkDouble* GetThresholdMax( );
+        void        SetThresholdMax( double max );
+        svkDouble*  GetThresholdMax( );
 
-        void       SetThresholdMin( double min );
-        svkDouble* GetThresholdMin( );
+        void        SetThresholdMin( double min );
+        svkDouble*  GetThresholdMin( );
 
-        void       SetMaskSeriesDescription( string description );
-        svkString* GetMaskSeriesDescription( );
+        void        SetMaskSeriesDescription( string description );
+        svkString*  GetMaskSeriesDescription( );
 
-        void       SetMaskOutputValue( int value );
-        svkInt*    GetMaskOutputValue( );
+        void        SetMaskOutputValue( int value );
+        svkInt*     GetMaskOutputValue( );
+
+        void        SetOutputScalarType( int outputScalarType );
+        svkInt*     GetOutputScalarType( );
 
     protected:
 
@@ -108,8 +112,8 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
                         vtkInformationVector** inputVector, 
                         vtkInformationVector* outputVector );
 
-    private:
 
+    private:
 
 };
 
