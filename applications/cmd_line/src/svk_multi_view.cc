@@ -385,7 +385,10 @@ void DisplayImage( vtkRenderWindow* window, const char* filename, int id,  int x
     text.str("");
     text<< "SLICE: " << globalVars.slice + 1 << "/" << globalVars.numberOfSlices;
     globalVars.annotations[id]->SetText(1, text.str().c_str() ); 
-    globalVars.annotations[id]->SetText(2, filename ); 
+
+    if( globalVars.justCapture == "") {
+        globalVars.annotations[id]->SetText(2, filename ); 
+    }
 
     window->GetRenderers()->GetFirstRenderer()->AddViewProp( globalVars.annotations[id] );
 
@@ -631,7 +634,9 @@ void LoadSpectra( vector<string> spectraFileName ) {
     }
     if( loadedSpectra ) {
         DisplaySpectra();
-        globalVars.spectraAnnotation->SetText(2, spectraFileName[0].c_str() );
+        if( globalVars.justCapture == "") {
+            globalVars.spectraAnnotation->SetText(2, spectraFileName[0].c_str() );
+        }
     }
 }
 
