@@ -636,7 +636,6 @@ SET(APPS
     svk_scale_image
     svk_average_spec
     svk_noise
-    svk_met_kinetics
     svk_mrs_combine
     svk_apodize
     svk_image_stats 
