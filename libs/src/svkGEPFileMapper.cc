@@ -2588,53 +2588,16 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
         //  no need to modiy anything:
         return; 
 
-    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED ) {
+    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_RAW_SUPPRESSED ) {
 
-        cout << "LOAD_AVG_SUPPRESSED" << endl;
+        cout << "LOAD_RAW_SUPPRESSED" << endl;
 
-        float cmplxPt[2];
-        float cmplxPtAv[2];
+    } else if ( 
+                ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED   ) || 
+                ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ) )
+    {
 
-        int numFreqPts = this->dcmHeader->GetIntValue( "DataPointColumns" );
-        for ( int freq = 0; freq < numFreqPts; freq++ ) { 
-
-            int numCoils = this->GetNumCoils(); 
-            for ( int coil = 0; coil < numCoils; coil++ ) { 
-
-                cmplxPtAv[0] = 0; 
-                cmplxPtAv[1] = 0; 
-
-                //  start averaging after unsuppressed acquisitions:   
-                for ( int acq = numUnsuppressed; acq < numTimePts; acq++ ) { 
-                    //  Average the suppressed time points
-                    vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
-                        mrsData->GetSpectrum( 0, 0, 0, acq, coil)
-                    ); 
-                    spectrum->GetTupleValue(freq, cmplxPt);
-                    cmplxPtAv[0] += cmplxPt[0]; 
-                    cmplxPtAv[1] += cmplxPt[1]; 
-    
-                }
-
-                cmplxPtAv[0] /= numSuppressed; 
-                cmplxPtAv[1] /= numSuppressed; 
-            
-                //  Output only has numCoil spectra
-                vtkFloatArray* spectrumOut = static_cast<vtkFloatArray*>(
-                    mrsData->GetSpectrum( coil )
-                ); 
-
-                spectrumOut->SetTuple( freq, cmplxPtAv );
-            }
-        }
-
-        //  delete the unnecessary data arrays  and
-        //  reset header to indicate only 1 time point of data in output
-        this->RedimensionModifiedSVData( data ); 
-
-    } else if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ) {
-
-        cout << "LOAD_AVG_UNSUPPRESSED" << endl;
+        cout << "LOAD_AVG OF ACQUISITIONS" << endl;
 
         float cmplxPt[2];
         float cmplxPtAv[2];
@@ -2648,27 +2611,46 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
                 cmplxPtAv[0] = 0; 
                 cmplxPtAv[1] = 0; 
 
-                //  averaging up to the start of the suppresed acquisitions:   
-                for ( int acq = 0; acq <  numUnsuppressed;  acq++ ) { 
-                    //  Average the unsuppressed time points
+                int startAcq; 
+                int endAcq; 
+                int numAcqsAveraged; 
+                if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_SUPPRESSED   ) {
+                    //  start averaging after unsuppressed acquisitions:   
+                    startAcq = numUnsuppressed;  
+                    endAcq   = numTimePts; 
+                    numAcqsAveraged = numSuppressed; 
+                } else if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ) {
+                    startAcq = 0; 
+                    endAcq   = numUnsuppressed; 
+                    numAcqsAveraged = numUnsuppressed; 
+                } 
+
+                for ( int acq = startAcq; acq < endAcq; acq++ ) { 
+                    //  Average the time points
                     vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
                         mrsData->GetSpectrum( 0, 0, 0, acq, coil)
                     ); 
                     spectrum->GetTupleValue(freq, cmplxPt);
                     cmplxPtAv[0] += cmplxPt[0]; 
                     cmplxPtAv[1] += cmplxPt[1]; 
+                    if ( freq == 0) {
+                        cout << "Coil (inputdata)" << coil << " time " << acq << " => " << cmplxPt[0] << " " << cmplxPt[1] << endl;
+                    }
     
                 }
 
-                cmplxPtAv[0] /= numUnsuppressed; 
-                cmplxPtAv[1] /= numUnsuppressed; 
+                cmplxPtAv[0] /= numAcqsAveraged; 
+                cmplxPtAv[1] /= numAcqsAveraged; 
             
                 //  Output only has numCoil spectra
                 vtkFloatArray* spectrumOut = static_cast<vtkFloatArray*>(
-                    mrsData->GetSpectrum( coil )
+                    mrsData->GetSpectrum( 0, 0, 0, 0, coil )
                 ); 
 
                 spectrumOut->SetTuple( freq, cmplxPtAv );
+                if ( freq == 0) {
+                    cout << "AV Coil " << coil << " => " << cmplxPtAv[0] << endl;
+                }
             }
         }
 
@@ -2676,9 +2658,11 @@ void svkGEPFileMapper::ModifyBehavior( svkImageData* data )
         //  reset header to indicate only 1 time point of data in output
         this->RedimensionModifiedSVData( data ); 
 
-        //  Since it's only unsuppressed data in the file now, set the 
-        //  SpectrallySelectedSuppression accordingly:
-        this->dcmHeader->SetValue( "SpectrallySelectedSuppression", "NONE" ); 
+        if ( behaviorFlag == svkGEPFileMapper::LOAD_AVG_UNSUPPRESSED ) {
+            //  Since it's only unsuppressed data in the file now, set the 
+            //  SpectrallySelectedSuppression accordingly:
+            this->dcmHeader->SetValue( "SpectrallySelectedSuppression", "NONE" );
+        }
 
     } else if ( behaviorFlag == svkGEPFileMapper::LOAD_EPSI ) {
 
@@ -2851,7 +2835,8 @@ void svkGEPFileMapper::ReorderEPSI( svkMrsImageData* data )
 
 
 /*!
- *  Remove extra arrays and redimension the DICOM frames. 
+ *  Remove extra arrays and redimension the DICOM frames to reflect that the 
+ *  single voxel acquisitions have been averaged. 
  */
 void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
 {
@@ -2866,6 +2851,18 @@ void svkGEPFileMapper::RedimensionModifiedSVData( svkImageData* data )
 
     numTimePts = 1;  
     int numArraysOut      = numVoxels[0] * numVoxels[1] * numVoxels[2] * numTimePts * numCoils; 
+
+   
+    //  get the array from each coil and set it into the 1st numCoil arrays of the data set:    
+    for (int coilNum = 0; coilNum < numCoils; coilNum++) {
+        svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( data );
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>(
+            mrsData->GetSpectrum( 0, 0, 0, 0, coilNum )
+        );
+
+        vtkDataArray* dataArray = data->GetCellData()->GetArray(coilNum); 
+        dataArray->DeepCopy( spectrum ); 
+    }
 
     //  Modified data is set in first N arrays.  Remove all other arrays with higher index: 
     for (int i = numArraysOriginal - 1; i >= numArraysOut; i--) {
