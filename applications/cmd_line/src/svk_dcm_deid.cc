@@ -61,15 +61,18 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
-    usemsg += "svk_dcm_deid -i input_file_name [ -r replacementID ]                         \n"; 
+    usemsg += "svk_dcm_deid -i input_file_name                                              \n"; 
+    usemsg += "             [ -r deid_id | -p pat_deid_id -s study_deid_id ]                \n"; 
     usemsg += "             [ --stu UID ] [ --seu UID ] -h                                  \n"; 
     usemsg += "             | -guid                                                         \n"; 
     usemsg += "                                                                             \n";  
     usemsg += "   -i    input_file_name     Name of dcm file to deidentify                  \n"; 
-    usemsg += "   -r    deid id             replacement id                                  \n"; 
+    usemsg += "   -r    deid_id             replacement id (patient and study level)        \n"; 
+    usemsg += "   -p    pat_deid_id         replacement patient id                          \n"; 
+    usemsg += "   -s    study_deid_id       replacement study id                            \n"; 
     usemsg += "   --stu UID                 use the specified StudyInstanceUID              \n";
     usemsg += "   --seu UID                 use the specified SeriesInstanceUID             \n";
-    usemsg += "   --guid                    generate a new unique UID                       \n";
+    usemsg += "   --guid                    generate a new unique UID, do nothing else.     \n";
     usemsg += "   -h                        Print help mesage.                              \n";  
     usemsg += "                                                                             \n";  
     usemsg += "Deidentify a DICOM file.                                                     \n"; 
@@ -77,6 +80,8 @@ int main (int argc, char** argv)
 
     string inputFileName; 
     string deidID = ""; 
+    string patDeidID = ""; 
+    string studyDeidID = ""; 
     string studyUID = ""; 
     string seriesUID = ""; 
     bool   generateUID = false;  
@@ -105,13 +110,19 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:r:h", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:r:p:s:h", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'i':
                 inputFileName.assign( optarg );
                 break;
             case 'r':
                 deidID.assign( optarg );
+                break;
+            case 'p':
+                patDeidID.assign( optarg );
+                break;
+            case 's':
+                studyDeidID.assign( optarg );
                 break;
             case FLAG_STUDY_UID:
                 studyUID.assign(optarg); 
@@ -142,6 +153,17 @@ int main (int argc, char** argv)
         cout << usemsg << endl;
         exit(1); 
     }
+
+    if ( ( ( patDeidID.length() != 0 ) || ( studyDeidID.length() != 0 ) ) && (patDeidID.length() * studyDeidID.length() == 0 ) ) {
+        cout << "ERROR:  must specify both pat_deid_id and study_deid_id" << endl;
+        cout << usemsg << endl;
+        exit(1); 
+    }
+    if ( deidID.length() != 0 &&  patDeidID.length() != 0 ) {
+        cout << "ERROR:  specify either deid_id, or pat_deid_id and study_deid_id" << endl;
+        cout << usemsg << endl;
+        exit(1); 
+    }
     if ( argc != 0 ) {
         cout << usemsg << endl;
         exit(1); 
@@ -155,8 +177,12 @@ int main (int argc, char** argv)
     }
 
     svkImageData* image = svkMriImageData::New(); 
-    image->GetDcmHeader()->ReadDcmFile( inputFileName, VTK_LONG_MAX );
-    image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, deidID); 
+    image->GetDcmHeader()->ReadDcmFile( inputFileName, VTK_UNSIGNED_INT_MAX );
+    if ( deidID.length() != 0 ) {
+        image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, deidID); 
+    } else if ( patDeidID.length() !=0 ) {
+        image->GetDcmHeader()->Deidentify(svkDcmHeader::PHI_DEIDENTIFIED, patDeidID, studyDeidID); 
+    } 
     if ( studyUID.size() == 0 ) {
         image->GetDcmHeader()->InsertUniqueUID("StudyInstanceUID");
     } else {
@@ -168,7 +194,11 @@ int main (int argc, char** argv)
         image->GetDcmHeader()->SetValue("SeriesInstanceUID", seriesUID );
     }
     image->GetDcmHeader()->InsertUniqueUID("SOPInstanceUID");
-    image->GetDcmHeader()->WriteDcmFile(inputFileName); 
+    if ( image->GetDcmHeader()->GetOriginalXFerSyntax() == 22 ) {
+        image->GetDcmHeader()->WriteDcmFileCompressed(inputFileName); 
+    } else {
+        image->GetDcmHeader()->WriteDcmFile(inputFileName); 
+    }
     image->Delete(); 
         
 
