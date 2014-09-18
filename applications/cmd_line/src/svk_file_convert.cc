@@ -111,7 +111,7 @@ int main (int argc, char** argv)
     bool   burnResearchHeader = false;  
     bool   useCompression = false;  
     bool   verbose = false;
-    bool    onlyLoadSingleFile = false;
+    bool   onlyLoadSingleFile = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
