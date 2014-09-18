@@ -273,8 +273,10 @@ class svkDcmtkAdapter: public svkDcmHeader
 
         virtual void    WriteDcmFile(string fileName);
         virtual void    WriteDcmFileCompressed(string fileName);
-        virtual int     ReadDcmFile(string fileName, int maxLength );
+        virtual int     ReadDcmFile(string fileName, unsigned int maxLength );
         virtual int     ReadDcmFileHeaderOnly(string fileName );
+        virtual int     GetOriginalXFerSyntax();
+
 
         virtual void    CopyDcmHeader(svkDcmHeader* headerCopy);
 
@@ -296,6 +298,7 @@ class svkDcmtkAdapter: public svkDcmHeader
         DcmSequenceOfItems* GetDcmSequence(const char* seqName); 
         void                SetPrivateDictionaryElements(); 
         void                SetGEPrivateDictionaryElements();
+        E_TransferSyntax    originalXferSyntax; 
 
 
 

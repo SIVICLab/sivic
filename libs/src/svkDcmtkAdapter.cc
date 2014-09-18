@@ -1984,7 +1984,7 @@ void  svkDcmtkAdapter::WriteDcmFileCompressed(string fileName)
  *
  *   \param fileName  name of the output file root (no extension).
  */
-int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength) 
+int svkDcmtkAdapter::ReadDcmFile(string fileName, unsigned int maxLength) 
 {
 
     if (maxLength == 0) { 
@@ -2003,6 +2003,7 @@ int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
         return 1; 
     }
 
+    this->originalXferSyntax =  this->dcmFile->getDataset()->getOriginalXfer(); 
     if( maxLength > HEADER_MAX_READ_LENGTH ) {
         //  get the input transfer syntax.. if RLELossless, then
         //  decode.
@@ -2022,7 +2023,6 @@ int svkDcmtkAdapter::ReadDcmFile(string fileName, int maxLength)
         }
     }
 
-
     this->Modified();
     return 0; 
 }
@@ -2037,6 +2037,17 @@ int svkDcmtkAdapter::ReadDcmFileHeaderOnly(string fileName)
 {
     return this->ReadDcmFile( fileName, HEADER_MAX_READ_LENGTH);
 }
+
+
+
+/*!
+ *   Return the original transfer syntax of the data set. 
+ */
+int svkDcmtkAdapter::GetOriginalXFerSyntax()
+{
+    return this->originalXferSyntax; 
+}
+
 
 /*!
  *  Copies the current DICOM header to the headerCopy, generating new
