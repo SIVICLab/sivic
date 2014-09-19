@@ -260,6 +260,7 @@ ADD_LIBRARY(
     svkInt.cc
     svkString.cc
     svkXML.cc
+    svkSatBandsXML.cc
 )
 
 SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)
