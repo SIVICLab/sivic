@@ -234,3 +234,76 @@ void svkSatBandsXML::GetCurrentXMLVersion(string* v1, string* v2, string* v3)
         *v3 = "0";
     }
 }
+
+
+/*!
+ * 
+ */
+int svkSatBandsXML::GetNumberOfPressBoxSats() 
+{
+    int numberOfSats = this->pressBoxElement->GetNumberOfNestedElements(); 
+    return numberOfSats; 
+}
+
+
+/*!
+ * 
+ */
+int svkSatBandsXML::GetNumberOfAutoSats() 
+{
+    int numberOfSats = this->autoSatsElement->GetNumberOfNestedElements(); 
+    return numberOfSats; 
+
+}
+
+
+/*! 
+ * External C interface: 
+ */
+void* svkSatBandsXML_New(char* xmlFileName){
+    svkSatBandsXML* xml = svkSatBandsXML::New();     
+    xml->SetXMLFileName(xmlFileName); 
+    return ((void*)xml); 
+}; 
+
+
+/*!
+ * 
+ */
+int svkSatBandsXML_GetNumberOfPressBoxSats( void* xml ) 
+{
+    return ((svkSatBandsXML*)xml)->GetNumberOfPressBoxSats(); 
+}
+
+
+/*!
+ * 
+ */
+int svkSatBandsXML_GetNumberOfAutoSats( void* xml ) 
+{
+    return ((svkSatBandsXML*)xml)->GetNumberOfAutoSats(); 
+}
+
+
+
+/*!
+ * 
+ */
+void  svkSatBandsXML_GetPressBoxSat(void* xml, int satNumber, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance ) 
+{
+    string label; 
+    ((svkSatBandsXML*)xml)->GetPressBoxSat( satNumber, &label, normalX, normalY, normalZ, thickness, distance);
+
+}
+
+
+/*!
+ * 
+ */
+void  svkSatBandsXML_GetAutoSat(void* xml, int satNumber, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance ) 
+{
+
+    string label; 
+    ((svkSatBandsXML*)xml)->GetAutoSat( satNumber, &label, normalX, normalY, normalZ, thickness, distance);
+
+}

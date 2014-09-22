@@ -44,16 +44,18 @@
 #define SVK_SAT_BANDS_XML_H
 
 
-#include <vtkObject.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
+#ifdef __cplusplus
 
-#include <svkImageData.h>
-#include <svkMriImageData.h>
-#include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
-#include <svkDcmHeader.h>
-#include <svkEnhancedMRIIOD.h>
+#include <vtkObject.h>
+//#include <vtkObjectFactory.h>
+//#include <vtkInformation.h>
+
+//#include <svkImageData.h>
+//#include <svkMriImageData.h>
+//#include <svkMrsImageData.h>
+//#include <svkImageAlgorithm.h>
+//#include <svkDcmHeader.h>
+//#include <svkEnhancedMRIIOD.h>
 
 #include "svkTypes.h"
 
@@ -131,15 +133,45 @@ class svkSatBandsXML: public vtkObject
         vtkXMLDataElement*          autoSatsElement;
 
         //  map of regions: region name, peak (ppm) and peak width (ppm)
-        vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
-
-
+        //vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
 
 };
 
 
 }   //svk
-
+#endif
 
 #endif //SVK_SAT_BANDS_XML_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+void* svkSatBandsXML_New(char* xmlFileName); 
+int   svkSatBandsXML_GetNumberOfPressBoxSats( void* xml ); 
+int   svkSatBandsXML_GetNumberOfAutoSats( void* xml ); 
+void  svkSatBandsXML_GetPressBoxSat(
+                                    void*   xml, 
+                                    int     satNumber, 
+                                    float*  normalX, 
+                                    float*  normalY, 
+                                    float*  normalZ, 
+                                    float*  thickness,  
+                                    float*  distance  
+        ); 
+
+void  svkSatBandsXML_GetAutoSat(
+                                    void*   xml, 
+                                    int     satNumber, 
+                                    float*  normalX, 
+                                    float*  normalY, 
+                                    float*  normalZ, 
+                                    float*  thickness,  
+                                    float*  distance  
+        ); 
+
+
+#ifdef __cplusplus
+}
+#endif
