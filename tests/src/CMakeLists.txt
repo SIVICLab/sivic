@@ -400,32 +400,50 @@ TARGET_LINK_LIBRARIES(
     ${SVK_LIBS}
 )
 ADD_EXECUTABLE(
-     svkMrsApodizationFilterTest
-     svkMrsApodizationFilterTest.cc
- )
+    svkMrsApodizationFilterTest
+    svkMrsApodizationFilterTest.cc
+)
  
- TARGET_LINK_LIBRARIES(
-     svkMrsApodizationFilterTest
-       ${SVK_LIBS}
- )
+TARGET_LINK_LIBRARIES(
+    svkMrsApodizationFilterTest
+    ${SVK_LIBS}
+)
 
 ADD_EXECUTABLE(
     svkZeroLinearPhaseTest
     svkZeroLinearPhaseTest.cc
 )
-
 TARGET_LINK_LIBRARIES(
     svkZeroLinearPhaseTest
 	${SVK_LIBS}
 )
+
 ADD_EXECUTABLE(
      svkMri4DImageDataTest
      svkMri4DImageDataTest.cc
- )
+)
 TARGET_LINK_LIBRARIES(
     svkMri4DImageDataTest
     ${SVK_VIZ_LIBS}
     ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkSatBandsXML
+    svkSatBandsXML.cc
+)
+TARGET_LINK_LIBRARIES(
+    svkSatBandsXML
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svkSatBandsXML_c
+    svkSatBandsXML.c
+)
+TARGET_LINK_LIBRARIES(
+    svkSatBandsXML_c
+	${SVK_LIBS}
 )
 
 include(CMakeSivicTests.cmake)
