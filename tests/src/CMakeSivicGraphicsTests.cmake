@@ -313,7 +313,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 5 -e 50 -l -5.5e+05 -u 1.5e+06 -c 5 -p 1 -t 1 -w 600
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 6 -e 51 -l -5.5e+05 -u 1.5e+06 -c 6 -p 1 -t 2 -w 600
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_1_DIFF)
@@ -328,7 +328,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 100 -e 150 -w 600
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 101 -e 151 -w 600
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_2_DIFF)
@@ -350,6 +350,50 @@ SET( TEST_NAME SVK_MULTI_VIEW_TEST_3_DIFF)
 ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out3 )
 SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_3_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_3_MCHK)
 
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_4_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -i 27 -w 500
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_4_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out4 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_4_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_4_MCHK)
+
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_5_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} -b 425 -e 650 -l -8.0e+07 -u 4.0e+08 -i 6 -w 500
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_5_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out5 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_5_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_5_MCHK)
+
+#############################################################
+# Test for the svk_multi_view command line tool 
+#############################################################
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_6_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 5 -e 50 -l -1.5e+06 -u 3.75e+06 -c 8 -p 1 -t 1 -c 3 -p 2 -t 2 -w 600
+ )
+
+SET( TEST_NAME SVK_MULTI_VIEW_TEST_6_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out6 )
+SET_TESTS_PROPERTIES(SVK_MULTI_VIEW_TEST_6_DIFF PROPERTIES DEPENDS SVK_MULTI_VIEW_TEST_6_MCHK)
 
 #############################################################
 # Check to see if you can render an image from a phantom with sat bands
