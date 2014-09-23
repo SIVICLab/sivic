@@ -35,7 +35,7 @@
 
 #include <sivicVoxelTaggingWidget.h>
 #include <vtkSivicController.h>
-
+#include <svkTypeUtils.h>
 vtkStandardNewMacro( sivicVoxelTaggingWidget );
 vtkCxxRevisionMacro( sivicVoxelTaggingWidget, "$Revision$");
 
@@ -96,16 +96,16 @@ void sivicVoxelTaggingWidget::ReadDefaultTagsFromRegistry()
 			// Get the tag Name
 			char tagName[100] = "";
 			string tagNameKey = "tag_name_";
-			tagNameKey.append( svkUtils::IntToString( i+1 ) );
+			tagNameKey.append( svkTypeUtils::IntToString( i+1 ) );
 			this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagNameKey.c_str() , tagName );
 
 			char tagValue[100] = "";
 			string tagValueKey = "tag_value_";
-			tagValueKey.append( svkUtils::IntToString( i+1 ) );
+			tagValueKey.append( svkTypeUtils::IntToString( i+1 ) );
 			this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagValueKey.c_str() , tagValue );
 
 			this->tagNames.push_back( tagName );
-			this->tagValues.push_back( svkUtils::StringToInt(tagValue) );
+			this->tagValues.push_back( svkTypeUtils::StringToInt(tagValue) );
 		}
     }
 
@@ -122,23 +122,23 @@ void sivicVoxelTaggingWidget::UpdateTagsInRegistry()
 	int numTagsInRegistry = this->GetNumberOfTagsInRegistry();
 	for( int i = 0; i < numTagsInRegistry; i++ ) {
 		string tagNameKey = "tag_name_";
-		tagNameKey.append( svkUtils::IntToString( i + 1 ) );
+		tagNameKey.append( svkTypeUtils::IntToString( i + 1 ) );
 		this->GetApplication()->DeleteRegistryValue(0, "voxel_tagging", tagNameKey.c_str());
 
 		string tagValueKey = "tag_value_";
-		tagValueKey.append( svkUtils::IntToString( i + 1 ) );
+		tagValueKey.append( svkTypeUtils::IntToString( i + 1 ) );
 		this->GetApplication()->DeleteRegistryValue(0, "voxel_tagging", tagValueKey.c_str());
 	}
 
 	// Then add back in our current tags
 	for( int i = 0; i < this->tagNames.size(); i++ ) {
 		string tagNameKey = "tag_name_";
-		tagNameKey.append( svkUtils::IntToString( i + 1 ) );
+		tagNameKey.append( svkTypeUtils::IntToString( i + 1 ) );
 		this->GetApplication()->SetRegistryValue(0, "voxel_tagging", tagNameKey.c_str(), this->tagNames[i].c_str() );
 
 		string tagValueKey = "tag_value_";
-		tagValueKey.append( svkUtils::IntToString( i + 1 ) );
-		this->GetApplication()->SetRegistryValue(0, "voxel_tagging", tagValueKey.c_str(), svkUtils::IntToString(this->tagValues[i]).c_str() );
+		tagValueKey.append( svkTypeUtils::IntToString( i + 1 ) );
+		this->GetApplication()->SetRegistryValue(0, "voxel_tagging", tagValueKey.c_str(), svkTypeUtils::IntToString(this->tagValues[i]).c_str() );
 	}
 }
 
@@ -155,12 +155,12 @@ int sivicVoxelTaggingWidget::GetNumberOfTagsInRegistry()
     	// Get the tag Name
 		char tagName[100] = "";
 		string tagNameKey = "tag_name_";
-		tagNameKey.append( svkUtils::IntToString( numTags + 1 ) );
+		tagNameKey.append( svkTypeUtils::IntToString( numTags + 1 ) );
 		this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagNameKey.c_str() , tagName );
 
 		char tagValue[100] = "";
 		string tagValueKey = "tag_value_";
-		tagValueKey.append( svkUtils::IntToString( numTags + 1 ) );
+		tagValueKey.append( svkTypeUtils::IntToString( numTags + 1 ) );
 		this->GetApplication()->GetRegistryValue( 0, "voxel_tagging", tagValueKey.c_str() , tagValue );
 		if( strcmp(tagName, "") == 0 || strcmp(tagValue, "") == 0  ) {
 			lastTagFound = true;
@@ -367,9 +367,9 @@ void sivicVoxelTaggingWidget::UpdateTagsList( )
 	this->tagsTable->GetWidget()->DeleteAllRows();
 
     for( int i = 0; i < this->tagNames.size(); i ++ ) {
-		this->tagsTable->GetWidget()->InsertCellText(i, 0, svkUtils::IntToString(i+1).c_str());
+		this->tagsTable->GetWidget()->InsertCellText(i, 0, svkTypeUtils::IntToString(i+1).c_str());
 		this->tagsTable->GetWidget()->InsertCellText(i, 1, this->tagNames[i].c_str());
-		this->tagsTable->GetWidget()->InsertCellText(i, 2, svkUtils::IntToString(this->tagValues[i]).c_str());
+		this->tagsTable->GetWidget()->InsertCellText(i, 2, svkTypeUtils::IntToString(this->tagValues[i]).c_str());
     }
 
 }

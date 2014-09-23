@@ -291,6 +291,7 @@ TARGET_LINK_LIBRARIES(
     ${CLAPACK_LIBS}
     svkviz
     svk 
+    svkTypeUtils
     svkadapt
     vtkRendering
     vtkGraphics
