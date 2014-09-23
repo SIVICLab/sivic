@@ -240,6 +240,7 @@ SET(SVK_LIBS
     ${ITK_LIBS}
     ${CLAPACK_LIBS}
     svk 
+    svkTypeUtils
     svkadapt 
     vtkImaging
     vtkIO
