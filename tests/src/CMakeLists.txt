@@ -445,7 +445,9 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     svkSatBandsXML_c
-	${SVK_LIBS}
+    svkPSD
+    svkTypeUtils
+    vtkIO
 )
 
 include(CMakeSivicTests.cmake)
