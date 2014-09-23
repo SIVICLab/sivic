@@ -53,6 +53,7 @@ extern "C" {
 #include <svkImageReader2.h>
 #include <svkImageThreshold.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <vtkXMLUtilities.h>
 #include <svkImageStatistics.h>
 #include <svkDouble.h>
@@ -209,8 +210,8 @@ int main (int argc, char** argv)
                     for( int k = 0; k < results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNumberOfNestedElements(); k++) {
                         histogramCSV << image << ",";
                         histogramCSV << roi << ",";
-                        double min = svkUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("min"));
-                        double max = svkUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("max"));
+                        double min = svkTypeUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("min"));
+                        double max = svkTypeUtils::StringToDouble(results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetAttribute("max"));
                         double center = min + (max-min)/2.0;
                         histogramCSV << min << "," << max << "," << center << ",";
                         histogramCSV << results->GetNestedElement(i)->FindNestedElementWithName("measures")->GetNestedElement(j)->GetNestedElement(k)->GetCharacterData() << endl;

@@ -53,6 +53,7 @@
 #include <svkImageReader2.h>
 #include <svkImageReaderFactory.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <svkVizUtils.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -183,11 +184,11 @@ int main ( int argc, char** argv )
                 globalVars.winSize =  atoi(optarg);
                 break;
             case 'u':
-                globalVars.upperLimit =  svkUtils::StringToFloat(optarg);
+                globalVars.upperLimit =  svkTypeUtils::StringToFloat(optarg);
                 globalVars.setYRange = true;
                 break;
             case 'l':
-                globalVars.lowerLimit =  svkUtils::StringToFloat(optarg);
+                globalVars.lowerLimit =  svkTypeUtils::StringToFloat(optarg);
                 globalVars.setYRange = true;
                 break;
             case 'b':

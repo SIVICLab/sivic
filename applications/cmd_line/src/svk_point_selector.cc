@@ -71,6 +71,8 @@ extern "C" {
 #include <svkLookupTable.h>
 #include <svkDataValidator.h>
 #include <svkObliqueReslice.h>
+#include <svkTypeUtils.h>
+
 #define WINDOW_SIZE 768
 
 using namespace svk;
@@ -168,15 +170,15 @@ int main ( int argc, char** argv )
                 globalVars.alternateImageFilename.assign( optarg );
                 break;
             case 'L':
-            	startingLPS[0] = svkUtils::StringToDouble(optarg);
+            	startingLPS[0] = svkTypeUtils::StringToDouble(optarg);
             	startingL = startingLPS;
                 break;
             case 'P':
-            	startingLPS[1] = svkUtils::StringToDouble(optarg);
+            	startingLPS[1] = svkTypeUtils::StringToDouble(optarg);
             	startingP = startingLPS + 1;
                 break;
             case 'S':
-            	startingLPS[2] = svkUtils::StringToDouble(optarg);
+            	startingLPS[2] = svkTypeUtils::StringToDouble(optarg);
             	startingS = startingLPS + 2;
                 break;
             default:

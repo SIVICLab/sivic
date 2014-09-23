@@ -61,9 +61,10 @@ extern "C" {
 #include <svkIdfVolumeWriter.h>
 #include <svkDcmHeader.h>
 #include <svkBurnResearchPixels.h>
+#include <svkImageThreshold.h>
+#include <svkTypeUtils.h>
 #include <vtkIndent.h>
 #include <vtkXMLImageDataWriter.h>
-#include <svkImageThreshold.h>
 
 
 using namespace svk;
@@ -129,13 +130,13 @@ int main (int argc, char** argv)
                 convertToByteMask = true;
                 break;
             case 'l':
-                lowerValue = svkUtils::StringToDouble(optarg);
+                lowerValue = svkTypeUtils::StringToDouble(optarg);
                 break;
             case 'u':
-                upperValue = svkUtils::StringToDouble(optarg);
+                upperValue = svkTypeUtils::StringToDouble(optarg);
                 break;
             case 'v':
-                outputValue = svkUtils::StringToInt(optarg);
+                outputValue = svkTypeUtils::StringToInt(optarg);
                 break;
             case 'V':
                 verbose = true;
