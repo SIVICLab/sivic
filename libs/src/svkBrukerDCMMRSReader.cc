@@ -49,6 +49,7 @@
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 
 #include <cmath>
 
@@ -247,7 +248,7 @@ void svkBrukerDCMMRSReader::InitPerFrameFunctionalGroupMacros()
     //  frame locations:         
     double toplc[3];         
     for (int i = 0; i < 3; i++) {        
-        toplc[i] = svkUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
+        toplc[i] = svkTypeUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
     } 
 
     hdr->InitPerFrameFunctionalGroupSequence(
@@ -270,16 +271,16 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
     delim0 = loc0.find_first_of('\\'); 
     string first0 = loc0.substr(0, delim0 );
     loc0.assign( loc0.substr( delim0 + 1 )); 
-    float first0Float = svkUtils::StringToFloat(first0); 
+    float first0Float = svkTypeUtils::StringToFloat(first0); 
 
     delim0 = loc0.find_first_of('\\'); 
     string second0 = loc0.substr( 0, delim0 );
     loc0.assign( loc0.substr( delim0 +1 )); 
-    float second0Float = svkUtils::StringToFloat(second0); 
+    float second0Float = svkTypeUtils::StringToFloat(second0); 
 
     delim0 = loc0.find_first_of('\\'); 
     string third0 = loc0.substr( 0, delim0 );
-    float third0Float = svkUtils::StringToFloat(third0); 
+    float third0Float = svkTypeUtils::StringToFloat(third0); 
     float tol = .000001; 
 
     set < string > uniqueSlicesNew;
@@ -306,7 +307,7 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
         float thirdFloat = third0Float; 
         bool rewrite = false; 
         if ( first0.compare(first) != 0 ) {
-            firstFloat = svkUtils::StringToFloat(first); 
+            firstFloat = svkTypeUtils::StringToFloat(first); 
             //check tolerance and fix
             if ( abs(firstFloat - first0Float) < tol ) { 
                 firstFloat = first0Float; 
@@ -314,7 +315,7 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
         }
         if ( second0.compare(second) != 0 ) {
             //check tolerance and fix
-            secondFloat = svkUtils::StringToFloat(second); 
+            secondFloat = svkTypeUtils::StringToFloat(second); 
             if ( abs(secondFloat - second0Float) < tol ) { 
                 secondFloat = second0Float; 
             }
@@ -322,7 +323,7 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
         }
         if ( third0.compare(third) != 0 ) {
             //check tolerance and fix
-            thirdFloat = svkUtils::StringToFloat(third); 
+            thirdFloat = svkTypeUtils::StringToFloat(third); 
             if ( abs(thirdFloat - third0Float) < tol ) { 
                 thirdFloat = third0Float; 
             }
@@ -330,11 +331,11 @@ void svkBrukerDCMMRSReader::CleanAttributes(set < string >* uniqueSlices )
         }
 
         //concat the first, second, third
-        string fixedLoc = svkUtils::DoubleToString(firstFloat);     
+        string fixedLoc = svkTypeUtils::DoubleToString(firstFloat);     
         fixedLoc.append("\\"); 
-        fixedLoc.append( svkUtils::DoubleToString(secondFloat) ); 
+        fixedLoc.append( svkTypeUtils::DoubleToString(secondFloat) ); 
         fixedLoc.append("\\"); 
-        fixedLoc.append( svkUtils::DoubleToString(thirdFloat) ); 
+        fixedLoc.append( svkTypeUtils::DoubleToString(thirdFloat) ); 
         uniqueSlicesNew.insert( fixedLoc ); 
     }
 
@@ -643,7 +644,7 @@ float svkBrukerDCMMRSReader::GetFieldStrength( )
 
     float fieldStrength = transmitterFreq / gamma; 
     return fieldStrength;     
-    //return svkUtils::DoubleToString( fieldStrength ); 
+    //return svkTypeUtils::DoubleToString( fieldStrength ); 
         
     
 }
@@ -758,10 +759,10 @@ void svkBrukerDCMMRSReader::InitMRSpatialSaturationMacro()
             int index = i - 25; 
 
             float satRAS[3];
-            satRAS[0] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index ) );
-            satRAS[1] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 1 ) );
-            satRAS[2] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 2 ) );
-            float translation = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 3 ) );
+            satRAS[0] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index ) );
+            satRAS[1] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 1 ) );
+            satRAS[2] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 2 ) );
+            float translation = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 3 ) );
         
             if ( satRAS[0] != 0 || satRAS[1] != 0 || satRAS[2] != 0 || translation != 0) {
                 this->InitSatBand(satRAS, translation, satBandNumber);
@@ -1060,7 +1061,7 @@ void svkBrukerDCMMRSReader::GetColsAndRows(int* numCols, int* numRows)
     *numCols = 0; 
     *numRows = 0; 
     for (int i = 0; i < 4; i++ ) {    
-        int val = svkUtils::StringToInt( this->GetOutput()->GetDcmHeader()->GetStringValue( "AcquisitionMatrix", i ) );
+        int val = svkTypeUtils::StringToInt( this->GetOutput()->GetDcmHeader()->GetStringValue( "AcquisitionMatrix", i ) );
         if ( val != 0 ) {
             if ( *numCols == 0 ) {  
                 *numCols = val; 

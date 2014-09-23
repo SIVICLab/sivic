@@ -40,12 +40,11 @@
  */
 
 
-#include <vtkXMLDataElement.h>
-#include <vtkXMLUtilities.h>
 
 #include <svkSatBandsXML.h>
-
-#include "svkUtils.h"
+#include <svkUtils.h>
+#include <svkTypeUtils.h>
+#include <vtkXMLUtilities.h>
 
 
 using namespace svk;
@@ -148,7 +147,7 @@ void svkSatBandsXML::GetPressBoxSat(int satNumber, string* label, float *normalX
     vtkXMLDataElement* satBandElement; 
     satBandElement = this->pressBoxElement->FindNestedElementWithNameAndId(
                 "sat_band", 
-                svkUtils::IntToString(satNumber).c_str() 
+                svkTypeUtils::IntToString(satNumber).c_str() 
             ); 
 
     this->InitSatBandInfo( satBandElement, label, normalX, normalY, normalZ, thickness, distance); 
@@ -164,7 +163,7 @@ void svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, fl
     vtkXMLDataElement* satBandElement; 
     satBandElement = this->autoSatsElement->FindNestedElementWithNameAndId(
                 "sat_band", 
-                svkUtils::IntToString(satNumber).c_str() 
+                svkTypeUtils::IntToString(satNumber).c_str() 
             ); 
 
     this->InitSatBandInfo( satBandElement, label, normalX, normalY, normalZ, thickness, distance); 
@@ -199,7 +198,7 @@ void svkSatBandsXML::InitSatBandInfo( vtkXMLDataElement* satBandElement, string*
 
 float svkSatBandsXML::GetFloatElementData( vtkXMLDataElement* element )
 {
-    return svkUtils::StringToFloat(
+    return svkTypeUtils::StringToFloat(
             string( element->GetCharacterData() )
             ); 
 }

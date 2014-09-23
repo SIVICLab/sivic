@@ -260,8 +260,22 @@ ADD_LIBRARY(
     svkInt.cc
     svkString.cc
     svkXML.cc
+)
+
+
+ADD_LIBRARY(
+    svkTypeUtils
+
+    svkTypeUtils.cc
+)
+
+
+ADD_LIBRARY(
+    svkPSD 
+
     svkSatBandsXML.cc
 )
+
 
 SET(SVK_ORIENTED_IMAGE_ACTOR_SRC svkImageActor.cc)
 
@@ -272,6 +286,7 @@ ENDIF (VTK_MAJOR_VERSION EQUAL 5 AND VTK_MINOR_VERSION LESS 10)
 IF( BUILD_VIZ_LIBRARY )
     ADD_LIBRARY(
         svkviz
+
         svkDataView.cc
         svkDataViewController.cc
         svkPlotGridView.cc

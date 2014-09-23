@@ -40,6 +40,7 @@
 
 
 #include <svkImageStatistics.h>
+#include <svkTypeUtils.h>
 
 using namespace svk;
 
@@ -338,28 +339,28 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         accumulator->SetComponentSpacing(binSize, 0,0);
         accumulator->Update();
         if( this->GetShouldCompute(COMPUTE_VOLUME)) {
-            string volumeString = svkUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
+            string volumeString = svkTypeUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
             svkUtils::CreateNestedXMLDataElement( results, "volume", volumeString);
         }
 
         if( this->GetShouldCompute(COMPUTE_MAX)) {
-            string maxString = svkUtils::DoubleToString( *accumulator->GetMax() );
+            string maxString = svkTypeUtils::DoubleToString( *accumulator->GetMax() );
             svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
         }
 
 
         if( this->GetShouldCompute(COMPUTE_MIN)) {
-            string minString = svkUtils::DoubleToString( *accumulator->GetMin() );
+            string minString = svkTypeUtils::DoubleToString( *accumulator->GetMin() );
             svkUtils::CreateNestedXMLDataElement( results, "min", minString);
         }
 
         if( this->GetShouldCompute(COMPUTE_MEAN)) {
-            string meanString = svkUtils::DoubleToString( *accumulator->GetMean() );
+            string meanString = svkTypeUtils::DoubleToString( *accumulator->GetMean() );
             svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
         }
 
         if( this->GetShouldCompute(COMPUTE_STDEV)) {
-            string stdevString = svkUtils::DoubleToString( *accumulator->GetStandardDeviation() );
+            string stdevString = svkTypeUtils::DoubleToString( *accumulator->GetStandardDeviation() );
             svkUtils::CreateNestedXMLDataElement( results, "stdev", stdevString);
         }
         /*
@@ -379,7 +380,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                         mode = binSize*i + startBin;
                     }
                 }
-                string valueString = svkUtils::DoubleToString(mode);
+                string valueString = svkTypeUtils::DoubleToString(mode);
                 svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
             }
         }
@@ -446,18 +447,18 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
         */
 
         if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
-            string valueString = svkUtils::DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "tenthPercentile", valueString);
-            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
+            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "firstQuartile", valueString);
-            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
+            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-            valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
+            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "thirdQuartile", valueString);
-            valueString = svkUtils::DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
+            valueString = svkTypeUtils::DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "ninetiethPercentile", valueString);
         } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
-            string valueString = svkUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
         }
 
@@ -509,39 +510,39 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         }
         */
         if( this->GetShouldCompute(COMPUTE_SUM)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_2)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_3)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_4)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_VARIANCE)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "variance", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_KURTOSIS)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "samplekurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_SKEWNESS)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "sampleskewness", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_KURTOSIS)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "populationkurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_SKEWNESS)){
-            string valueString = svkUtils::DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
+            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "populationskewness", valueString);
         }
     }
@@ -577,7 +578,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                         modeBin = i;
                     }
                 }
-                string valueString = svkUtils::DoubleToString( binSize*modeBin + startBin );
+                string valueString = svkTypeUtils::DoubleToString( binSize*modeBin + startBin );
                 svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
             }
 
@@ -638,28 +639,28 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 double percentile = binSize*((intervalUpperBin[i] + intervalLowerBin[i])/2.0) + startBin;
                 if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
                     if( ((double)i)/numIntervals == 0.1 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "tenthPercentile", valueString);
                     }
                     if( ((double)i)/numIntervals == 0.25 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "firstQuartile", valueString);
                     }
                     if( ((double)i)/numIntervals == 0.5 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
                     }
                     if( ((double)i)/numIntervals == 0.75 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "thirdQuartile", valueString);
                     }
                     if( ((double)i)/numIntervals == 0.90 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "nintiethPercentile", valueString);
                     }
                 } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
                     if( ((double)i)/numIntervals == 0.5 ) {
-                        string valueString = svkUtils::DoubleToString( percentile );
+                        string valueString = svkTypeUtils::DoubleToString( percentile );
                         svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
                     }
 
@@ -697,17 +698,17 @@ void svkImageStatistics::AddHistogramTag( vtkDataArray* histogram, double binSiz
         int numBins =  histogram->GetNumberOfTuples();
         vtkXMLDataElement* histTag = vtkXMLDataElement::New();
         histTag->SetName("histogram");
-        histTag->SetAttribute("bins", svkUtils::IntToString(numBins).c_str());
+        histTag->SetAttribute("bins", svkTypeUtils::IntToString(numBins).c_str());
         if( smoothBins != NULL ) {
-            histTag->SetAttribute("smoothBins", svkUtils::IntToString(smoothBins).c_str());
+            histTag->SetAttribute("smoothBins", svkTypeUtils::IntToString(smoothBins).c_str());
         }
         for( int i = 0; i < numBins; i++ ) {
             vtkXMLDataElement* element = vtkXMLDataElement::New();
             element->SetName("bin");
-            element->SetAttribute("index", svkUtils::IntToString(i).c_str());
-            element->SetAttribute("min", svkUtils::DoubleToString(startBin + i*binSize).c_str());
-            element->SetAttribute("max", svkUtils::DoubleToString(startBin + (i+1)*binSize).c_str());
-            string valueString = svkUtils::DoubleToString(histogram->GetTuple1(i));
+            element->SetAttribute("index", svkTypeUtils::IntToString(i).c_str());
+            element->SetAttribute("min", svkTypeUtils::DoubleToString(startBin + i*binSize).c_str());
+            element->SetAttribute("max", svkTypeUtils::DoubleToString(startBin + (i+1)*binSize).c_str());
+            string valueString = svkTypeUtils::DoubleToString(histogram->GetTuple1(i));
             element->SetCharacterData(valueString.c_str(), valueString.size());
             histTag->AddNestedElement(element);
             element->Delete();

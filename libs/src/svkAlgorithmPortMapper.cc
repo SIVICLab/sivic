@@ -42,6 +42,7 @@
 
 
 #include <svkAlgorithmPortMapper.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -242,9 +243,9 @@ void svkAlgorithmPortMapper::SetInputPortFromXML( int port, vtkXMLDataElement* p
     string parameterStringValue = string(parameterElement->GetCharacterData());
     int dataType = this->GetInputPortType( port );
     if( dataType == SVK_DOUBLE ) {
-        this->SetDoubleInputPortValue(port, svkUtils::StringToDouble( parameterStringValue ));
+        this->SetDoubleInputPortValue(port, svkTypeUtils::StringToDouble( parameterStringValue ));
     } else if ( dataType == SVK_INT ) {
-        this->SetIntInputPortValue(port, svkUtils::StringToInt( parameterStringValue ));
+        this->SetIntInputPortValue(port, svkTypeUtils::StringToInt( parameterStringValue ));
     } else if ( dataType == SVK_STRING ) {
         this->SetStringInputPortValue(port, parameterStringValue );
     } else if ( dataType == SVK_BOOL ) {

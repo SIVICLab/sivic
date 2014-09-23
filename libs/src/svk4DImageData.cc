@@ -43,6 +43,7 @@
 #include <svk4DImageData.h>
 #include <svkEnhancedMRIIOD.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <svkDcmHeader.h>
 
 
@@ -583,7 +584,7 @@ vtkstd::string svk4DImageData::GetArrayName( svkDcmHeader::DimensionVector* dime
 
         //  Get the value for this index    
         int dimValue = svkDcmHeader::GetDimensionVectorValue(dimensionVector, dimIndex); 
-        arrayName.append( svkUtils::IntToString(dimValue) );
+        arrayName.append( svkTypeUtils::IntToString(dimValue) );
         if ( dimIndex < numDims - 1) {
             arrayName.append(" "); 
         }    

@@ -42,6 +42,7 @@
 
 #include <vtkImageAccumulate.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <svkBurnResearchPixels.h>
 
 
@@ -4225,7 +4226,7 @@ char* svkBurnResearchPixels::GetPixelHeader()
 
         cout << "ResearchHeader: Unsupported image size: " << imageSize << endl;
         // throw error 
-        throw runtime_error("ResearchHeader:  Unsupported image size: " + svkUtils::IntToString(imageSize) );
+        throw runtime_error("ResearchHeader:  Unsupported image size: " + svkTypeUtils::IntToString(imageSize) );
     }
 
     return headerPixels; 

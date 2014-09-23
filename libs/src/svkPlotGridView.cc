@@ -41,6 +41,7 @@
 
 
 #include <svkPlotGridView.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -1766,7 +1767,7 @@ string svkPlotGridView::GetScientificFormat( int digits )
         digits = 1;
     }
     string format = "%0.";
-    format.append(svkUtils::IntToString( digits ));
+    format.append(svkTypeUtils::IntToString( digits ));
     format.append("e");
     return format;
 }
@@ -1783,7 +1784,7 @@ string svkPlotGridView::GetDecimalFormat( int digits )
         digits = 2;
     }
     string format = "%1.";
-    format.append(svkUtils::IntToString( digits ));
+    format.append(svkTypeUtils::IntToString( digits ));
     format.append("f");
     return format;
 }

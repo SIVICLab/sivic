@@ -40,11 +40,12 @@
  */
 
 #include <svkDcmEnhancedVolumeReader.h>
+#include <svkMriImageData.h>
+#include <svkTypeUtils.h>
 #include <vtkObjectFactory.h>
 #include <vtkDebugLeaks.h>
 #include <vtkInformation.h>
 
-#include <svkMriImageData.h>
 
 
 using namespace svk;
@@ -259,8 +260,8 @@ void svkDcmEnhancedVolumeReader::GetPixelTransform(double& intercept, double& sl
 {
     string interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "SharedFunctionalGroupsSequence" );
     string slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "SharedFunctionalGroupsSequence" );
-	intercept = svkUtils::StringToDouble( interceptString );
-	slope = svkUtils::StringToDouble( slopeString );
+	intercept = svkTypeUtils::StringToDouble( interceptString );
+	slope = svkTypeUtils::StringToDouble( slopeString );
 }
 
 

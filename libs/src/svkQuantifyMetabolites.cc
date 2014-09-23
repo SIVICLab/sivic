@@ -51,11 +51,12 @@
 #include <svkMetaboliteMap.h>
 #include <svkImageCopy.h>
 #include <svkMetaboliteRatioZScores.h>
+#include <svkUtils.h>
+#include <svkTypeUtils.h>
 
 #include <time.h>
 #include <sys/stat.h>
 
-#include "svkUtils.h"
 
 
 using namespace svk;
@@ -1298,9 +1299,9 @@ bool svkQuantifyMetabolites::ShouldUpgradeXML()
     int upgradeV1 = 0; 
     int upgradeV2 = 9; 
     int upgradeV3 = 10; 
-    if ( svkUtils::StringToInt( v1 )  <= upgradeV1 
-            && svkUtils::StringToInt( v2 )  <= upgradeV2 
-            && svkUtils::StringToInt( v3 )  < upgradeV3 ) { 
+    if ( svkTypeUtils::StringToInt( v1 )  <= upgradeV1 
+            && svkTypeUtils::StringToInt( v2 )  <= upgradeV2 
+            && svkTypeUtils::StringToInt( v3 )  < upgradeV3 ) { 
         shouldUpdate = true; 
     }
 

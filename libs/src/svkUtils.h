@@ -94,17 +94,21 @@ class svkUtils : public vtkObject
 		static int                CopyFile( const char* input, const char* output );
 		static int                MoveFile( const char* input, const char* output );
 		static bool               PrintFile( const char* fileName, const char* printerName );
-		static vector<string>     GetFileNamesFromPattern( string imageBaseName, int startSlice, int endSlice );
-        static string             GetDefaultSecondaryCaptureDirectory( svkMriImageData* image, svk4DImageData* spectra);
-        static string             GetDefaultSecondaryCaptureFilePattern( svkMriImageData* image, svk4DImageData* spectra);
+		static vector<string>     GetFileNamesFromPattern( 
+                                    string imageBaseName, 
+                                    int startSlice, 
+                                    int endSlice 
+                                  );
+        static string             GetDefaultSecondaryCaptureDirectory( 
+                                    svkMriImageData* image, 
+                                    svk4DImageData* spectra
+                                  );
+        static string             GetDefaultSecondaryCaptureFilePattern( 
+                                    svkMriImageData* image, 
+                                    svk4DImageData* spectra
+                                  );
         static int                GetNextPower2( int x );
-        static double             StringToDouble( string doubleString );
-        static float              StringToFloat(  string floatString );
-        static int                StringToInt(  string intString );
-        static long int           StringToLInt(  string longIntString );
         static void               StringToColorArray( double color[3], string colorString );
-        static string             IntToString( int intVal );
-        static string             DoubleToString( double doubleVal );
         static string             Double3x3ToString( double doubleMatrix[][3] );
         static string             ColorArrayToString( double color[3] );
         static vector<string>     SplitString( string str, string token );
@@ -113,13 +117,20 @@ class svkUtils : public vtkObject
         static bool               UncompressFiles( vtkStringArray *filenames );
         static bool               UncompressFile( vtkstd::string filename );
         static bool               IsFileCompressed( vtkstd::string filename );
-        static string             SpacesTo_( vtkstd::string inputString );
+        static string             SpacesTo_( string inputString );
         static bool               AreValuesClose(double x, double y, double maxRatio = 0.01 );
         static bool               AreValuesClose(double x[3], double y[3], double maxRatio = 0.01 );
         static int                GetNumberOfDigits( int value, bool isMinusDigit = false );
         static void               GetRealpath( const char * path, int size, char* realpath );
-        static vtkXMLDataElement* CreateNestedXMLDataElement( vtkXMLDataElement* parent, string name, string value );
-        static vtkXMLDataElement* ReadXMLAndSubstituteVariables(string xmlFileName, vector<string> xmlVariables );
+        static vtkXMLDataElement* CreateNestedXMLDataElement( 
+                                    vtkXMLDataElement* parent, 
+                                    string name, 
+                                    string value 
+                                  );
+        static vtkXMLDataElement* ReadXMLAndSubstituteVariables(
+                                    string xmlFileName, 
+                                    vector<string> xmlVariables 
+                                  );
 
 
 	protected:

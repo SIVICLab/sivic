@@ -39,6 +39,7 @@
 
 
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <vtkGlobFileNames.h>
 
 using namespace svk;
@@ -294,94 +295,6 @@ int svkUtils::GetNextPower2( int x )
 
 
 /*!
- *  Converts a string to a double.
- *
- * @param doubleString
- * @return
- */
-double svkUtils::StringToDouble( string doubleString )
-{
-    istringstream* iss = new istringstream();
-    double value = 0.0;
-    iss->str( doubleString );
-    *iss >> value;
-    delete iss;
-    return value;
-}
-
-
-/*!
- *
- * @param doubleString
- * @return
- */
-float svkUtils::StringToFloat( string doubleString )
-{
-    istringstream* iss = new istringstream();
-    float value = 0.0;
-    iss->str( doubleString );
-    *iss >> value;
-    delete iss;
-    return value;
-}
-
-
-/*!
- *
- * @param intString
- * @return
- */
-int svkUtils::StringToInt( string intString )
-{
-    istringstream* iss = new istringstream();
-    int value;
-    iss->str( intString );
-    *iss >> value;
-    delete iss;
-    return value;
-}
-
-
-/*!
- *
- * @param intString
- * @return
- */
-long int svkUtils::StringToLInt( string longIntString )
-{
-    istringstream* iss = new istringstream();
-    long int value;
-    iss->str( longIntString );
-    *iss >> value;
-    delete iss;
-    return value;
-}
-
-
-/*!
- *  @param intVal
- *  @return string equivalent
- */
-string svkUtils::IntToString( int intVal )
-{
-    ostringstream intStream;
-    intStream << intVal;
-    return intStream.str();
-}
-
-
-/*!
- *  @param doubleVal
- *  @return string equivalent
- */
-string svkUtils::DoubleToString( double doubleVal )
-{
-    ostringstream intStream;
-    intStream << doubleVal;
-    return intStream.str();
-}
-
-/*!
  *  @param doubleVal
  *  @return string equivalent
  */
@@ -399,9 +312,9 @@ void svkUtils::StringToColorArray( double color[3], string colorString )
 {
     vector<string> colors = svkUtils::SplitString( colorString, " ");
     if( colors.size() == 3) {
-        color[0] = svkUtils::StringToDouble( colors[0]);
-        color[1] = svkUtils::StringToDouble( colors[1]);
-        color[2] = svkUtils::StringToDouble( colors[2]);
+        color[0] = svkTypeUtils::StringToDouble( colors[0]);
+        color[1] = svkTypeUtils::StringToDouble( colors[1]);
+        color[2] = svkTypeUtils::StringToDouble( colors[2]);
     }
 }
 

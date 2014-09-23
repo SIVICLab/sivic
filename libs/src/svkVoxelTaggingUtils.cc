@@ -39,6 +39,7 @@
 
 
 #include <svkVoxelTaggingUtils.h>
+#include <svkTypeUtils.h>
 
 using namespace svk;
 
@@ -229,7 +230,7 @@ void svkVoxelTaggingUtils::AddTagToVoxelData( svkImageData* voxelTagData, string
 		newVolumeArray->SetNumberOfTuples(numTuples);
 		newVolumeArray->FillComponent(0,0);
 		string arrayName = "pixels";
-		arrayName.append( svkUtils::IntToString(newIndex) );
+		arrayName.append( svkTypeUtils::IntToString(newIndex) );
 		newVolumeArray->SetName(arrayName.c_str());
 		voxelTagData->GetPointData()->AddArray( newVolumeArray );
 		newVolumeArray->Delete();
@@ -278,7 +279,7 @@ void svkVoxelTaggingUtils::RemoveTagFromVoxelData( svkImageData* voxelTagData, i
 			// And rename the other arrays....
 			for( int i = 0; i < voxelTagData->GetPointData()->GetNumberOfArrays(); i++ ) {
 				string arrayName = "pixels";
-				arrayName.append( svkUtils::IntToString(i) );
+				arrayName.append( svkTypeUtils::IntToString(i) );
 				voxelTagData->GetPointData()->GetArray(i)->SetName(arrayName.c_str());
 				if( i == scalarIndex ) {
 					voxelTagData->GetPointData()->SetActiveScalars( arrayName.c_str());

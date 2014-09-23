@@ -42,7 +42,8 @@
 
 #include <svkDcmtkAdapter.h>
 
-#include "svkUtils.h"
+#include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include "dcmtk/dcmdata/dcrleerg.h" 
 #include "dcmtk/dcmdata/dcrledrg.h" 
 
@@ -1499,7 +1500,7 @@ long int svkDcmtkAdapter::GetLongIntSequenceItemElement(const char* seqName, int
         GetDcmTagKey(elementName), 
         pos
     );
-    return svkUtils::StringToLInt(longString); 
+    return svkTypeUtils::StringToLInt(longString); 
     //return svkDcmtkUtils::getLongIntValue(
      //   this->GetDcmItem(dataset, seqName, seqItemPosition),
       //  GetDcmTagKey(elementName), 

@@ -44,6 +44,7 @@
 #include <svkIdfVolumeWriter.h>
 #include <svkImageReader2.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <vtkExecutive.h>
 #include <vtkImageAccumulate.h>
 #include <vtkErrorCode.h>
@@ -214,7 +215,7 @@ void svkIdfVolumeWriter::WriteData()
 
         vtkstd::string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
-            volName += "_" + svkUtils::IntToString(vol + 1);
+            volName += "_" + svkTypeUtils::IntToString(vol + 1);
         }
         volName += extension;
 
@@ -271,7 +272,7 @@ void svkIdfVolumeWriter::WriteHeader()
         //write the idf file
         vtkstd::string volName = this->InternalFileName;
         if (numVolumes > 1 ) {
-            volName += "_" +  svkUtils::IntToString(vol + 1);
+            volName += "_" +  svkTypeUtils::IntToString(vol + 1);
         }
         volName += vtkstd::string(".idf"); 
 
@@ -369,7 +370,7 @@ void svkIdfVolumeWriter::WriteHeader()
         //  if there are multiple volumes append _volNum to rootname     
         if ( numVolumes > 1 ) {
             out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) 
-            << "_" << svkUtils::IntToString(vol+1) << endl;
+            << "_" << svkTypeUtils::IntToString(vol+1) << endl;
         } else {
             out << "rootname: " << vtkstd::string(FileName).substr( vtkstd::string(FileName).rfind("/") + 1 ) << endl;
         }

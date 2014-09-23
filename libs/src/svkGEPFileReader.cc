@@ -44,6 +44,7 @@
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
 #include <vtkStringArray.h> 
@@ -3162,7 +3163,7 @@ svkGEPFileReader::GetPFMap()
  */
 int svkGEPFileReader::GetNumElementsInField( string key )
 {
-    int numElements =svkUtils::StringToInt( this->pfMap[key][1] ); 
+    int numElements =svkTypeUtils::StringToInt( this->pfMap[key][1] ); 
     return numElements; 
 }
 
@@ -3324,7 +3325,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
     }
 
     numBytes    = this->GetNumBytesInField( key ); 
-    offset      = svkUtils::StringToInt( this->pfMap[key][2] ); 
+    offset      = svkTypeUtils::StringToInt( this->pfMap[key][2] ); 
 
     //  Replace numBytes at offset position with the deidString
     //  set the put pointer to the correct offset
@@ -3344,7 +3345,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
             //  =======================================
             //  Float 4
             //  =======================================
-            float value = svkUtils::StringToFloat(deidString);
+            float value = svkTypeUtils::StringToFloat(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, sizeof(float));
             }
@@ -3357,7 +3358,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
             //  =======================================
             //  Int 2
             //  =======================================
-            int value = svkUtils::StringToInt(deidString);
+            int value = svkTypeUtils::StringToInt(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes); 
             }
@@ -3370,7 +3371,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
             //  =======================================
             //  Int 4
             //  =======================================
-            int value = svkUtils::StringToInt(deidString);
+            int value = svkTypeUtils::StringToInt(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, sizeof(int));
             }
@@ -3383,7 +3384,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
             //  =======================================
             //  Long Int 4
             //  =======================================
-            int value = svkUtils::StringToInt(deidString);
+            int value = svkTypeUtils::StringToInt(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes); 
             }
@@ -3396,7 +3397,7 @@ void svkGEPFileReader::DeidentifyField( fstream* fs, string key, string deidStri
             //  =======================================
             //  Long Int 8
             //  =======================================
-            long int value = svkUtils::StringToLInt(deidString);
+            long int value = svkTypeUtils::StringToLInt(deidString);
             if( this->GetSwapBytes() ) {
 				vtkByteSwap::SwapVoidRange((void *)&value, 1, numBytes);
             }
@@ -3562,7 +3563,7 @@ void svkGEPFileReader::Deidentify()
 
             //  These fields are not removed from PHI_LIMITED data sets
             if (this->phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
-                string deidDate = svkUtils::IntToString(VTK_INT_MIN);
+                string deidDate = svkTypeUtils::IntToString(VTK_INT_MIN);
                 this->DeidentifyField( fs, "rhr.rh_scan_time",  "");
                 this->DeidentifyField( fs, "rhe.dateofbirth",   "");
                 this->DeidentifyField( fs, "rhr.rh_scan_date",  "");

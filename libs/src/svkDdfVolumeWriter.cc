@@ -49,8 +49,8 @@
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkByteSwap.h>
-
-#include "svkUtils.h"
+#include <svkUtils.h>
+#include "svkTypeUtils.h"
 
 
 using namespace svk;
@@ -1120,7 +1120,7 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
                 numDimsToRepresent++; 
                 if ( numDimsToRepresent == 1) {
                     implicitDimensionIndex = svkDcmHeader::GetDimensionVectorValue(&loopVector, i) + 1; 
-                    dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
+                    dimLabel.assign( svkTypeUtils::IntToString( implicitDimensionIndex ) ); 
                 }
 
                 if ( numDimsToRepresent > 1 ) {
@@ -1129,7 +1129,7 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
                     //cout << "TYPE: " << type << endl;
                     extraDimLabel.append(type); 
                     int dimValue = svkDcmHeader::GetDimensionVectorValue(&loopVector, i) + 1; 
-                    extraDimLabel.append( svkUtils::IntToString(dimValue) ); 
+                    extraDimLabel.append( svkTypeUtils::IntToString(dimValue) ); 
                 }
             }
         }
@@ -1150,7 +1150,7 @@ vtkstd::string svkDdfVolumeWriter::GetFileRootName(vtkstd::string fileRoot, svkD
                 numDimsToRepresent++; 
                 if ( numDimsToRepresent == 1) {
                     implicitDimensionIndex = svkDcmHeader::GetDimensionVectorValue(&loopVector, i) + 1; 
-                    dimLabel.assign( svkUtils::IntToString( implicitDimensionIndex ) ); 
+                    dimLabel.assign( svkTypeUtils::IntToString( implicitDimensionIndex ) ); 
                 }
             }
         }

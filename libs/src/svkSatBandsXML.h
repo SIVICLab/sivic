@@ -47,15 +47,7 @@
 #ifdef __cplusplus
 
 #include <vtkObject.h>
-//#include <vtkObjectFactory.h>
-//#include <vtkInformation.h>
-
-//#include <svkImageData.h>
-//#include <svkMriImageData.h>
-//#include <svkMrsImageData.h>
-//#include <svkImageAlgorithm.h>
-//#include <svkDcmHeader.h>
-//#include <svkEnhancedMRIIOD.h>
+#include <vtkXMLDataElement.h>
 
 #include "svkTypes.h"
 

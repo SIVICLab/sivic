@@ -49,6 +49,7 @@
 #include <svkIOD.h>
 #include <svkMRSIOD.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -247,7 +248,7 @@ void svkGEPostageStampReader::InitPerFrameFunctionalGroupMacros()
     //  frame locations:         
     double toplc[3];         
     for (int i = 0; i < 3; i++) {        
-        toplc[i] = svkUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
+        toplc[i] = svkTypeUtils::StringToDouble( hdr->GetStringValue( "ImagePositionPatient", i ) );         
     } 
 
     hdr->InitPerFrameFunctionalGroupSequence(
@@ -662,10 +663,10 @@ void svkGEPostageStampReader::InitMRSpatialSaturationMacro()
             int index = i - 25; 
 
             float satRAS[3];
-            satRAS[0] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index ) );
-            satRAS[1] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 1 ) );
-            satRAS[2] = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 2 ) );
-            float translation = svkUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 3 ) );
+            satRAS[0] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index ) );
+            satRAS[1] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 1 ) );
+            satRAS[2] = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 2 ) );
+            float translation = svkTypeUtils::StringToFloat( hdr->GetStringValue( "GE_PS_SAT_BANDS", index + 3 ) );
         
             if ( satRAS[0] != 0 || satRAS[1] != 0 || satRAS[2] != 0 || translation != 0) {
                 this->InitSatBand(satRAS, translation, satBandNumber);
@@ -962,7 +963,7 @@ void svkGEPostageStampReader::GetColsAndRows(int* numCols, int* numRows)
     *numCols = 0; 
     *numRows = 0; 
     for (int i = 0; i < 4; i++ ) {    
-        int val = svkUtils::StringToInt( this->GetOutput()->GetDcmHeader()->GetStringValue( "AcquisitionMatrix", i ) );
+        int val = svkTypeUtils::StringToInt( this->GetOutput()->GetDcmHeader()->GetStringValue( "AcquisitionMatrix", i ) );
         if ( val != 0 ) {
             if ( *numCols == 0 ) {  
                 *numCols = val; 

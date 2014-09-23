@@ -44,6 +44,7 @@
 #include <svkEPSIReorder.h>
 #include <svkMrsLinearPhase.h> 
 #include <svkUtils.h> 
+#include <svkTypeUtils.h> 
 
 
 #define UNDEFINED_NUM_SAMPLES -1
@@ -726,9 +727,9 @@ void svkEPSIReorder::UpdateReorderedParams( svkImageData* data, int numVoxels[3]
     double toplc[3];
     data->GetDcmHeader()->GetOrigin(toplc, 0);
     string toplcString = 
-        svkUtils::DoubleToString(toplc[0]) + '\\' +
-        svkUtils::DoubleToString(toplc[1]) + '\\' +
-        svkUtils::DoubleToString(toplc[2]); 
+        svkTypeUtils::DoubleToString(toplc[0]) + '\\' +
+        svkTypeUtils::DoubleToString(toplc[1]) + '\\' +
+        svkTypeUtils::DoubleToString(toplc[2]); 
 
     data->GetDcmHeader()->AddSequenceItemElement(
         "MRSpectroscopyFOVGeometrySequence",
