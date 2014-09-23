@@ -180,6 +180,8 @@ endif( BUILD_ITK )
 SET(SVK_LIBS
     ${ITK_LIBS}
     svk 
+    svkPSD
+    svkTypeUtils
     svkadapt 
     vtkIO
     vtkImaging

@@ -44,6 +44,7 @@
 #include <svkDataModel.h>
 #include <svkImageData.h>
 #include <svkUtils.h>
+#include <svkTypeUtils.h>
 #include <svkMriZeroFill.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -55,9 +56,9 @@ int main (int argc, char** argv)
 {
     string filename(argv[1]);
     string outputPath(argv[2]);
-    int tlcID = svkUtils::StringToInt( string(argv[3]));
-    int brcID = svkUtils::StringToInt( string(argv[4]));
-    int numSlices = svkUtils::StringToInt( string(argv[5]));
+    int tlcID = svkTypeUtils::StringToInt( string(argv[3]));
+    int brcID = svkTypeUtils::StringToInt( string(argv[4]));
+    int numSlices = svkTypeUtils::StringToInt( string(argv[5]));
 
     svkDataModel* model = svkDataModel::New();
 
