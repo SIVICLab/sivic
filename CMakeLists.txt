@@ -33,10 +33,6 @@ file( MAKE_DIRECTORY Build/Release )
 file( MAKE_DIRECTORY Build/Debug)
 
 INCLUDE(CheckCCompilerFlag)
-IF(UNIX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-ENDIF(UNIX)
 
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0005 OLD)
@@ -59,10 +55,22 @@ option( BUILD_CLAPACK "For building classes that rely on clapack fitting routine
 option( BUILD_PROFILER "Build for profiling with gprof." FALSE)
 option( BUILD_TESTS "Build test applications." FALSE)
 option( BUILD_CREATE_RAW "Build svk_create_raw. Requires open ssl" FALSE)
+option( BUILD_EPIC "Build for EPIC PSD linking." FALSE)
 
 ADD_DEFINITIONS(-DSVK_RELEASE_VERSION="\\"${SVK_RELEASE_VERSION}\\"" )
 ADD_DEFINITIONS( -DSVK_MAJOR_VERSION="${SVK_MAJOR_VERSION}" )
 ADD_DEFINITIONS( -DSVK_MINOR_VERSION="${SVK_MINOR_VERSION}" )
+
+IF(UNIX)
+    IF( NOT BUILD_EPIC )
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+    ENDIF( NOT BUILD_EPIC )
+    IF( BUILD_EPIC )
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+    ENDIF( BUILD_EPIC )
+ENDIF(UNIX)
 
 ###################################
 #   VTK
