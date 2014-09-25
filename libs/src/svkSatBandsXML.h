@@ -99,8 +99,6 @@ class svkSatBandsXML: public vtkObject
         svkSatBandsXML();
         ~svkSatBandsXML();
 
-        void                        GetCurrentXMLVersion(string* v1, string* v2, string* v3); 
-
 
     private:
 
