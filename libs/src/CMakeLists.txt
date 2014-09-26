@@ -207,6 +207,7 @@ ADD_LIBRARY(
     svkMrsZeroFill.cc
     svkMrsLinearPhase.cc
     svkSincInterpolationFilter.cc
+    svkMrsSingleVoxelSincExtraction.cc
     svkMrsImageFlip.cc
     svkMrsImageFourierCenter.cc
     svkImageLinearPhase.cc
