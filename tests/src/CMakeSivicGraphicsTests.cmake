@@ -313,7 +313,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 6 -e 51 -l -5.5e+05 -u 1.5e+06 -c 6 -p 1 -t 2 -w 600
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH}/out -b 6 -e 51 -l -5.5e+05 -u 1.5e+06 -c 6 -p 1 -t 2 -w 600
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_1_DIFF)
@@ -328,7 +328,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 101 -e 151 -w 600
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH}/out -b 101 -e 151 -w 600
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_2_DIFF)
@@ -343,7 +343,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -w 500
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -w 500
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_3_DIFF)
@@ -358,7 +358,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -i 27 -w 500
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH}/out ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/refImage.idf -o ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/met.idf -i 27 -w 500
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_4_DIFF)
@@ -373,7 +373,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH} -b 425 -e 650 -l -8.0e+07 -u 4.0e+08 -i 6 -w 500
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets/input/spec.ddf -j ${TEST_RESULTS_PATH}/out -b 425 -e 650 -l -8.0e+07 -u 4.0e+08 -i 6 -w 500
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_5_DIFF)
@@ -388,7 +388,7 @@ SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
 FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
 FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
 SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_multi_view)
-ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH} -b 5 -e 50 -l -1.5e+06 -u 3.75e+06 -c 8 -p 1 -t 1 -c 3 -p 2 -t 2 -w 600
+ADD_TEST(${TEST_NAME}  ${GRAPHICS_WRAPPER}  ${TEST_BIN_PATH_CMD_LINE}/svk_multi_view -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -s ${SVK_TEST_ROOT}/ge_pfiles/24x/input/24x -j ${TEST_RESULTS_PATH}/out -b 5 -e 50 -l -1.5e+06 -u 3.75e+06 -c 8 -p 1 -t 1 -c 3 -p 2 -t 2 -w 600
  )
 
 SET( TEST_NAME SVK_MULTI_VIEW_TEST_6_DIFF)
