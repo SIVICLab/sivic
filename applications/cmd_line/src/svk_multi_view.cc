@@ -129,7 +129,7 @@ void Usage( void )
     cout << "SYNOPSIS" << endl;
     cout << "    svk_multi_view [-s spectra ] [-o overlay ] [-d] imageOne imageTwo imageThree ..." << endl << endl;
     cout << "                   [-l lowerBound ] [-u upperBound ] [-b beginPoint] [-e endPoint]" << endl;
-    cout << "                   [-c channel ] [-t timepoint ] [-p component]" << endl << endl;
+    cout << "                   [-c channel ] [-t timepoint ] [-p component] [-j captureRoot]" << endl << endl;
     cout << "                   -d debug       Turn on debug messages." << endl;
     cout << "                   -s spectra     A spectra file to load. This can be used multiple times to overlay traces." << endl;
     cout << "                   -o overlay     An overlay image to load." << endl;
@@ -141,6 +141,7 @@ void Usage( void )
     cout << "                   -t timepoint   Timepoint (index starting at 1) of traces to display." << endl;
     cout << "                   -p component   Component of traces to display. 0=real (default), 1=imag, 2=mag" << endl;
     cout << "                   -i slice       Slice (index starting at 1) to display. Refers to image slice if present." << endl;
+    cout << "                   -j captureRoot Just load the data and take screen captures. Results saved with root captureRoot." << endl;
     cout << "DESCRIPTION" << endl;
     cout << "    svk_multi_view is a quick way of seeing an arbitrary number of images synced by slice number." << endl;
     cout << "    Pressing either +/- or the arrow keys will change the slice. Pressing the p key will save a screen capture." << endl << endl;
@@ -309,14 +310,14 @@ int main ( int argc, char** argv )
             renderWindows[0]->GetInteractor()->Start();
         }
     }
-
+    globalVars.spectraController->Delete();
+    globalVars.spectraWindow->Delete();
     for( int i= optind; i < argc; i++ ) {
         index = i-optind;
         globalVars.annotations[index]->Delete();
         globalVars.viewers[index]->Delete();
         renderWindows[index]->Delete();
     }
-
     if( globalVars.model != NULL ) {
         globalVars.model->Delete();
     }
@@ -587,7 +588,8 @@ void CaptureWindows()
 
     if(globalVars.spectraWindow != NULL ) {
         stringstream filename;
-        filename << globalVars.justCapture << "/traces.tiff" ;
+        filename << globalVars.justCapture;
+        filename << "_traces.tiff" ;
         globalVars.spectraController->GetView()->Refresh();
         globalVars.spectraWindow->Render();
         svkVizUtils::SaveWindow( globalVars.spectraWindow, filename.str());
@@ -596,7 +598,8 @@ void CaptureWindows()
         globalVars.viewers[i]->GetView()->Refresh();
         globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow()->Render();
         stringstream filename;
-        filename << globalVars.justCapture << "/image_" << i << ".tiff" ;
+        filename << globalVars.justCapture;
+        filename << "_image_" << i << ".tiff" ;
         svkVizUtils::SaveWindow(globalVars.viewers[i]->GetRWInteractor()->GetRenderWindow(), filename.str());
     }
 }
