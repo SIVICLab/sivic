@@ -50,10 +50,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <svkKineticModelCostFunction.h>
-#include <svk2SiteExchangeCostFunction.h>
-#include <svk2SitePerfCostFunction.h>
-
 
 using namespace svk;
 
