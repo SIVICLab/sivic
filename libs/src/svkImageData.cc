@@ -1280,6 +1280,35 @@ void svkImageData::GetIndexFromID(int voxelID, int* indexX, int* indexY, int* in
  */
 void svkImageData::GetIndexFromPosition(double posLPS[3], int* index)
 {
+    double doubleIndex[3];
+    this->GetIndexFromPosition( posLPS, doubleIndex);
+    index[0] = (int)floor(doubleIndex[0]);
+    index[1] = (int)floor(doubleIndex[1]);
+    index[2] = (int)floor(doubleIndex[2]);
+    for (int i = 0; i < 3; i++) {
+        if( index[i] >= this->GetDimensions()[i] ) {
+            index[i] = this->GetDimensions()[i]-1;
+        } else if ( index[i] < 0 ) {
+            index[i] = 0;
+        }
+    }
+}
+
+
+/*!
+ *  Compute the row, column, slice index for a given LPS coordinate
+ *
+ *  \param L
+ *  \param P
+ *  \param S
+ *
+ *  \return the x,y,z index of the voxel at that LPS position. For this
+ *          version of the function a double index is returned. It is counted from
+ *          the EDGE not the CENTER of the voxel. For example a return value of 0.5,
+ *          0.5, 0.5 would mean half way through the first voxel, aka the origin.
+ */
+void svkImageData::GetIndexFromPosition(double posLPS[3], double* index)
+{
 
     double origin[3];
     this->GetDcmHeader()->GetOrigin(origin);
@@ -1302,18 +1331,10 @@ void svkImageData::GetIndexFromPosition(double posLPS[3], int* index)
     double sliceNormal[3];
     this->GetDataBasis(sliceNormal, svkImageData::SLICE );
 
-    index[0] = (int)floor((vtkMath::Dot(posLPS, rowNormal)  - vtkMath::Dot(origin, rowNormal))/pixelSpacing[0]);
-    index[1] = (int)floor((vtkMath::Dot(posLPS, columnNormal) - vtkMath::Dot(origin, columnNormal))/pixelSpacing[1]);
-    index[2] = (int)floor((vtkMath::Dot(posLPS, sliceNormal) - vtkMath::Dot(origin, sliceNormal) )/pixelSpacing[2]);
-    for (int i = 0; i < 3; i++) { 
-        if( index[i] >= this->GetDimensions()[i] ) {
-            index[i] = this->GetDimensions()[i]-1;
-        } else if ( index[i] < 0 ) {
-            index[i] = 0;
-        }
-    }
+    index[0] = ((vtkMath::Dot(posLPS, rowNormal)  - vtkMath::Dot(origin, rowNormal))/pixelSpacing[0]);
+    index[1] = ((vtkMath::Dot(posLPS, columnNormal) - vtkMath::Dot(origin, columnNormal))/pixelSpacing[1]);
+    index[2] = ((vtkMath::Dot(posLPS, sliceNormal) - vtkMath::Dot(origin, sliceNormal) )/pixelSpacing[2]);
 }
-
 
 //! Getter of the data range variable
 void svkImageData::GetDataRange( double range[2], int component )

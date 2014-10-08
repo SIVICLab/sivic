@@ -37,7 +37,6 @@
  *  Authors:
  *      Jason C. Crane, Ph.D.
  *      Beck Olson,
- *      Nonlinear LS fit added by: Christine Leon (Jul 28, 2012)
  */
 
 
@@ -69,7 +68,13 @@ svkMrsSingleVoxelSincExtraction::svkMrsSingleVoxelSincExtraction()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
-    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfInputPorts(5);
+    bool required = true;
+    this->GetPortMapper()->InitializeInputPort( INPUT_SPECTRA,   "INPUT_SPECTRA", svkAlgorithmPortMapper::SVK_MRS_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( L_COORDINATE, "L_COORDINATE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( P_COORDINATE, "P_COORDINATE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( S_COORDINATE, "S_COORDINATE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( RETAIN_INPUT_EXTENT, "RETAIN_INPUT_EXTENT", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->SetNumberOfOutputPorts(1);
 }
 
@@ -84,10 +89,39 @@ svkMrsSingleVoxelSincExtraction::~svkMrsSingleVoxelSincExtraction()
 
 
 /*!
+ * Utility setter;
+ */
+void svkMrsSingleVoxelSincExtraction::SetVoxelCenter(double l_coordinate, double p_coordinate, double s_coordinate)
+{
+    this->GetPortMapper()->SetDoubleInputPortValue( L_COORDINATE, l_coordinate);
+    this->GetPortMapper()->SetDoubleInputPortValue( P_COORDINATE, p_coordinate);
+    this->GetPortMapper()->SetDoubleInputPortValue( S_COORDINATE, s_coordinate);
+}
+
+
+/*!
+ *  Sets to true and the output will have the same extent as the input, but the same data in every
+ *  voxel equal to the requpested lps voxel center.
+ */
+void svkMrsSingleVoxelSincExtraction::SetRetainInputExtent(bool retainInputExtent)
+{
+    this->GetPortMapper()->SetBoolInputPortValue( RETAIN_INPUT_EXTENT, retainInputExtent);
+}
+
+
+/*!
  *  Always produces single voxel output
  */
 int svkMrsSingleVoxelSincExtraction::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
+    svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);
+    bool retainInputExtent = false;
+
+    if( this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT) == NULL ) {
+        this->SetRetainInputExtent( retainInputExtent);
+    } else {
+        retainInputExtent = retainInputExtentBool->GetValue();
+    }
 
     int extent[6] = {0,1,0,1,0,1};
     double inSpacing[3]; 
@@ -98,8 +132,14 @@ int svkMrsSingleVoxelSincExtraction::RequestInformation( vtkInformation* request
         outSpacing[i] = inSpacing[i];
     }
 
-    double outOrigin[3];
-    this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin( outOrigin ); 
+    svkDouble* l_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( L_COORDINATE );
+    svkDouble* p_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( P_COORDINATE );
+    svkDouble* s_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( S_COORDINATE );
+    double outOrigin[3] = {l_coordinate->GetValue(), p_coordinate->GetValue(), s_coordinate->GetValue()};
+    if( retainInputExtent ) {
+        this->GetImageDataInput(0)->GetExtent( extent );
+        this->GetImageDataInput(0)->GetDcmHeader()->GetOrigin( outOrigin );
+    }
 
     vtkInformation *outInfo = outputVector->GetInformationObject(0);
     outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent, 6);
@@ -116,12 +156,17 @@ int svkMrsSingleVoxelSincExtraction::RequestInformation( vtkInformation* request
  */
 int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
+    svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);
+    if( retainInputExtentBool != NULL && retainInputExtentBool->GetValue() == false) {
+        cout << "ERROR: Unimplemented feature-- currently svkMrsSingleVoxelSincExtraction only supports retaining the input extent!" << endl;
+        return 0;
+    }
     /*
      * 1. Find the row/column/slice that the given point is within.
      * 2. Iterate through all dimensions summing the since contribution from each frequency point
      */
     this->GetOutput(0)->DeepCopy( this->GetImageDataInput(0));
+
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0) );
     vtkCellData* cellData = data->GetCellData();
     int numFrequencyPoints = cellData->GetNumberOfTuples();
@@ -131,8 +176,20 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
     int numComponents = 2;
     int* extent = data->GetExtent();
     float pi =vtkMath::Pi();
+    svkDouble* l_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( L_COORDINATE );
+    svkDouble* p_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( P_COORDINATE );
+    svkDouble* s_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( S_COORDINATE );
     //TODO: Base the relative index on an input LPS coordinate, and find what its "index" would be.
-    float voxelIndex[] = {5.5, 5.5, 5.5};
+    double voxelCenter[3] = { l_coordinate->GetValue(), p_coordinate->GetValue(), s_coordinate->GetValue() } ;
+
+    double voxelIndex[3];
+    // This method computes from the edge of voxel, we want to count the index from the centers.
+    data->GetIndexFromPosition(voxelCenter, voxelIndex);
+    voxelIndex[0] -= 0.5;
+    voxelIndex[1] -= 0.5;
+    voxelIndex[2] -= 0.5;
+    cout << "Index: " << voxelIndex[0] << " " << voxelIndex[1] << " " << voxelIndex[2] << endl;
+
     float* specPtr = NULL;
     vtkFloatArray* array = vtkFloatArray::New();
     array->SetNumberOfComponents(2);
@@ -145,12 +202,12 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
                     for (int x = extent[0]; x < extent[1]; x++) {
                         vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
                         specPtr = spectrum->GetPointer(0);
-                        float piDeltaX = vtkMath::Pi()*(voxelIndex[0] - x);
-                        float piDeltaY = vtkMath::Pi()*(voxelIndex[1] - y);
-                        float piDeltaZ = vtkMath::Pi()*(voxelIndex[2] - z);
+                        float piDeltaX = pi*(voxelIndex[0] - x);
+                        float piDeltaY = pi*(voxelIndex[1] - y);
+                        float piDeltaZ = pi*(voxelIndex[2] - z);
                         for(int fc = 0; fc < numComponents*numFrequencyPoints; fc++ ) {
                             float value = specPtr[fc];
-                            //Add to this frequencey the spatial since for the current voxel  the current intensity.
+                            //Add to this frequency the spatial since for the current voxel  the current intensity.
                             if( piDeltaX != 0 ) {
                                 value *= sin(piDeltaX)/piDeltaX;
                             }

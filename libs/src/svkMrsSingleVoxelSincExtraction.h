@@ -49,7 +49,7 @@
 
 #include <svkImageData.h>
 #include <svkMrsImageData.h>
-#include <svkImageAlgorithm.h>
+#include <svkImageAlgorithmWithPortMapper.h>
 #include <svkDcmHeader.h>
 
 #include <math.h>
@@ -62,13 +62,23 @@ namespace svk {
 using namespace std;
 
 
-class svkMrsSingleVoxelSincExtraction: public svkImageAlgorithm
+class svkMrsSingleVoxelSincExtraction: public svkImageAlgorithmWithPortMapper
 {
 
     public:
+        typedef enum {
+            INPUT_SPECTRA = 0,
+            L_COORDINATE,
+            P_COORDINATE,
+            S_COORDINATE,
+            RETAIN_INPUT_EXTENT
+        } svkMrsSingleVoxelExtractionInput;
 
-        vtkTypeRevisionMacro( svkMrsSingleVoxelSincExtraction, svkImageAlgorithm);
+        vtkTypeRevisionMacro( svkMrsSingleVoxelSincExtraction, svkImageAlgorithmWithPortMapper);
         static                  svkMrsSingleVoxelSincExtraction* New();
+
+        void    SetVoxelCenter(double l_coordinate, double p_coordinate, double s_coordinate);
+        void    SetRetainInputExtent(bool retainInputExtent);
 
     protected:
 

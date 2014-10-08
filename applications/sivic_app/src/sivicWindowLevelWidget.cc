@@ -392,9 +392,9 @@ void sivicWindowLevelWidget::CreateWidget()
     interpMenu->AddRadioButton("Window/Level");
     interpMenu->AddRadioButton("Min/Max");
     interpMenu->AddRadioButton("All");
-    this->sliderType->GetWidget()->SetValue( "Window/Level" );
-    this->imageSliders->GetWidget()->HideWidget(2);
-    this->imageSliders->GetWidget()->HideWidget(3);
+    this->sliderType->GetWidget()->SetValue( "Min/Max" );
+    this->imageSliders->GetWidget()->HideWidget(0);
+    this->imageSliders->GetWidget()->HideWidget(1);
 
     //  =======================================================
     //  Now we pack the application together

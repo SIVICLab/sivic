@@ -106,6 +106,7 @@ class svkAlgorithmPortMapper : public vtkObject
             SVK_DOUBLE ,
             SVK_STRING,
             SVK_MR_IMAGE_DATA,
+            SVK_MRS_IMAGE_DATA,
             SVK_4D_IMAGE_DATA,
             SVK_XML
         } svkXMLDataType;
@@ -177,7 +178,9 @@ class svkAlgorithmPortMapper : public vtkObject
         svkString*               GetStringInputPortValue( int port);
 
         //! Basic setter. Wraps value in vtkDataObject subclass
-        void                     SetBoolInputPortValue( int port, string value );
+        void                     SetBoolInputPortValueUsingString( int port, string value );
+        //! Basic setter. Wraps value in vtkDataObject subclass
+        void                     SetBoolInputPortValue( int port, bool value );
         //! Basic getter.
         svkBool*                 GetBoolInputPortValue( int port);
 
@@ -188,6 +191,12 @@ class svkAlgorithmPortMapper : public vtkObject
 
         //! Setter that converts a filename into an svkImageData object
         void                     SetMRImageInputPortValue( int port, string filename );
+
+        //! Basic getter.
+        svkMrsImageData*         GetMRSImageInputPortValue( int port, int connection = 0);
+
+        //! Setter that converts a filename into an svkImageData object
+        void                     SetMRSImageInputPortValue( int port, string filename );
 
         //! Basic getter.
         svkMriImageData*         GetMRImageInputPortValue( int port, int connection = 0);

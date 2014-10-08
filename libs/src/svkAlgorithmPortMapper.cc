@@ -249,9 +249,11 @@ void svkAlgorithmPortMapper::SetInputPortFromXML( int port, vtkXMLDataElement* p
     } else if ( dataType == SVK_STRING ) {
         this->SetStringInputPortValue(port, parameterStringValue );
     } else if ( dataType == SVK_BOOL ) {
-        this->SetBoolInputPortValue(port, parameterStringValue );
+        this->SetBoolInputPortValueUsingString(port, parameterStringValue );
     } else if ( dataType == SVK_MR_IMAGE_DATA ) {
         this->SetMRImageInputPortValue( port, parameterStringValue );
+    } else if ( dataType == SVK_MRS_IMAGE_DATA ) {
+        this->SetMRSImageInputPortValue( port, parameterStringValue );
     } else if ( dataType == SVK_XML ) {
         this->SetXMLInputPortValue( port, parameterElement );
     }
@@ -384,7 +386,7 @@ svkString* svkAlgorithmPortMapper::GetStringInputPortValue( int port )
 /*!
  * Parameter port setter.
  */
-void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, string value )
+void svkAlgorithmPortMapper::SetBoolInputPortValueUsingString( int port, string value )
 {
     if( this->GetInputPortType(port) == SVK_BOOL ) {
         vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
@@ -398,6 +400,23 @@ void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, string value )
             svkBool::SafeDownCast( parameter )->SetValue(true);
         } else {
             svkBool::SafeDownCast( parameter )->SetValue(false);
+        }
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
+    }
+}
+
+
+/*!
+ * Parameter port setter.
+ */
+void svkAlgorithmPortMapper::SetBoolInputPortValue( int port, bool value )
+{
+    if( this->GetInputPortType(port) == SVK_BOOL ) {
+        if( value == true ) {
+            this->SetBoolInputPortValueUsingString(port, "true");
+        } else {
+            this->SetBoolInputPortValueUsingString(port, "false");
         }
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type Bool. " << endl;
@@ -474,6 +493,30 @@ void svkAlgorithmPortMapper::SetMRImageInputPortValue( int port, string filename
 
 
 /*!
+ * Sets an MRS image port. If the input is a filename and a reader will be instantiated to read the file.
+ */
+void svkAlgorithmPortMapper::SetMRSImageInputPortValue( int port, string filename )
+{
+    if( this->GetInputPortType(port) == SVK_MRS_IMAGE_DATA ) {
+        // READ THE IMAGE
+        if( !filename.empty()) {
+            svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+            svkImageReader2* reader = readerFactory->CreateImageReader2(filename.c_str());
+            readerFactory->Delete();
+            if (reader != NULL) {
+                reader->SetFileName( filename.c_str() );
+                reader->Update();
+                this->SetAlgorithmInputPort(port, reader->GetOutput() );
+                reader->Delete();
+            }
+        }
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMrsImageData. " << endl;
+    }
+}
+
+
+/*!
  * Simple input port getter.
  */
 svkMriImageData* svkAlgorithmPortMapper::GetMRImageInputPortValue( int port, int connection )
@@ -482,6 +525,20 @@ svkMriImageData* svkAlgorithmPortMapper::GetMRImageInputPortValue( int port, int
         return svkMriImageData::SafeDownCast( this->GetAlgorithmInputPort(port, connection) );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMriImageData. " << endl;
+        return NULL;
+    }
+}
+
+
+/*!
+ * Simple input port getter.
+ */
+svkMrsImageData* svkAlgorithmPortMapper::GetMRSImageInputPortValue( int port, int connection )
+{
+    if( this->GetInputPortType(port) == SVK_MRS_IMAGE_DATA ) {
+        return svkMrsImageData::SafeDownCast( this->GetAlgorithmInputPort(port, connection) );
+    } else {
+        cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMrsImageData. " << endl;
         return NULL;
     }
 }
@@ -503,6 +560,8 @@ string svkAlgorithmPortMapper::GetClassTypeFromDataType( int type )
         classType = "svkBool";
     } else if ( type == SVK_MR_IMAGE_DATA ) {
         classType = "svkMriImageData";
+    } else if ( type == SVK_MR_IMAGE_DATA ) {
+        classType = "svkMrsImageData";
     } else if ( type == SVK_XML ) {
         classType = "svkXML";
     }
@@ -664,6 +723,8 @@ string svkAlgorithmPortMapper::GetXSD( )
             // for now bools have no type, either they are present or they are not
             oss << "\"xs:boolean\"";
         } else if ( dataType == SVK_MR_IMAGE_DATA ) {
+            oss << "\"svkTypes:input_port\"";
+        } else if ( dataType == SVK_MRS_IMAGE_DATA ) {
             oss << "\"svkTypes:input_port\"";
         } else if ( dataType == SVK_XML ) {
             oss << "\"xs:string\"";

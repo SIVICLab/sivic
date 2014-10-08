@@ -316,6 +316,10 @@ int main ( int argc, char** argv )
         index = i-optind;
         globalVars.annotations[index]->Delete();
         globalVars.viewers[index]->Delete();
+        // We have to remove all the renderes to avoid on open gl error.
+        for( int j = 0; j < renderWindows[index]->GetRenderers()->GetNumberOfItems(); j++) {
+            vtkRenderer::SafeDownCast(renderWindows[index]->GetRenderers()->GetItemAsObject(j))->RemoveAllViewProps();
+        }
         renderWindows[index]->Delete();
     }
     if( globalVars.model != NULL ) {

@@ -222,6 +222,7 @@ class svkImageData: public vtkImageData
         void               GetIndexFromID(int voxelID, int* indexX, int* indexY, int* indexZ);
         void               GetIndexFromID(int voxelID, int* index);
         void               GetIndexFromPosition(double posLPS[3], int* index);
+        void               GetIndexFromPosition(double posLPS[3], double* index);
         virtual void       GetPositionFromIndex(int* index, double* posLPS);
         virtual void       GetSliceOrigin(
                                 int slice, 

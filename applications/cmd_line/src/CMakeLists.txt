@@ -286,6 +286,16 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_interpolate_spectra
+    svk_interpolate_spectra.cc
+)
+
+TARGET_LINK_LIBRARIES(
+    svk_interpolate_spectra 
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_dcmdump
     svk_dcmdump.cc
 )
@@ -622,6 +632,7 @@ ENDIF ( BUILD_CREATE_RAW )
 SET(APPS 
     svk_file_convert 
     svk_image_threshold 
+    svk_interpolate_spectra
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
