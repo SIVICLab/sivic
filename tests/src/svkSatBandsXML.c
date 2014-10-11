@@ -45,7 +45,7 @@
  
 int main(const int argc, const char **argv)
 {
-    void *xml = svkSatBandsXML_New( argv[1] );
+    void* xml = svkSatBandsXML_New( argv[1] );
 
     int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( xml ); 
     printf("Number of PressBox Sats = %d\n", numberPressBoxSats); 
@@ -61,7 +61,7 @@ int main(const int argc, const char **argv)
     float   thickness;
     float   distance;
 
-    for ( satNumber = 1; satNumber <= numberAutoSats; satNumber++ ) {
+    for ( satNumber = 1; satNumber <= numberPressBoxSats; satNumber++ ) {
 
         svkSatBandsXML_GetPressBoxSat( xml, satNumber, &normalX, &normalY, &normalZ, &thickness, &distance ); 
 
@@ -86,6 +86,32 @@ int main(const int argc, const char **argv)
         printf("distance:  %f\n", distance ); 
         printf("\n\n"); 
     }
+
+
+    float boxCenter[3];
+    float boxThickness[3];
+    float boxAngles[3];
+    svkSatBandsXML_GetPRESSBoxParameters(xml, boxCenter, boxThickness, boxAngles);
+
+    printf("\n\n");
+    printf("PRESS: origin:   %f %f %f\n", boxCenter[0], boxCenter[1], boxCenter[2]);
+    printf("PRESS: size:     %f %f %f\n", boxThickness[0], boxThickness[1], boxThickness[2]);
+    printf("PRESS: angles:   %f %f %f\n", boxAngles[0], boxAngles[1], boxAngles[2]);
+
+
+    printf("\n\n");
+    for ( satNumber = 1; satNumber <= numberAutoSats; satNumber++ ) {
+
+        float angles[3];
+        float xmlthickness;
+        float xmldistance;
+        svkSatBandsXML_GetAutoSatParameters(xml, satNumber, angles, &xmlthickness, &xmldistance);
+        printf("SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
+                angles[2], angles[1], xmldistance, xmlthickness, 0);
+    }
+
+
+
 
     return (0);
 }
