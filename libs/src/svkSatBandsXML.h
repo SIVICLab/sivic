@@ -60,6 +60,20 @@ using namespace std;
 
 /*! 
  *  Class to manage IO to/from XML representation of sat bands. 
+ * 
+ *  The sat band file contains 2 elements, 1 for PRESS, one for auto-sats. Each of these
+ *  is comprised of a sat band definition: 
+ * 
+ *  normal_x
+ *  normal_y
+ *  normal_z
+ *  thickness
+ *  distance_from_origin
+ * 
+ *  - the normal is defined as the normal from the origin to the center of the band 
+ *  - the thickness is the thicness of the band 
+ *  - the distance from the origin defined how far along the normal vector the center of the
+ *    band is. 
  */
 class svkSatBandsXML: public vtkObject
 {
@@ -93,6 +107,19 @@ class svkSatBandsXML: public vtkObject
                                         float*  thickness,  
                                         float*  distance  
                                     ); 
+        void                        GetPRESSBoxParameters( 
+                                        float pressOrigin[3], 
+                                        float pressThickness[3], 
+                                        float pressAngles[3] 
+                                    ); 
+
+        
+        void                        GetAutoSatParameters( 
+                                        int    satNumber, 
+                                        float  normal[3], 
+                                        float* thickness, 
+                                        float* distance
+                                    ); 
 
     protected:
 
@@ -112,6 +139,12 @@ class svkSatBandsXML: public vtkObject
                                         float*              thickness, 
                                         float*              distance
                                     ); 
+        bool                        IsNormalUnique( float normal[3], float normals[3][3] );
+        void                        InitPressBoxNormals( float normals[3][3] ); 
+        void                        InitPressDistances(float normals[3][3], float distances[3][2]); 
+        void                        RotationMatrixToEulerAngles( float normals[3][3], float eulerAngles[3] ); 
+        void                        LPSToRAS( float normals[3][3] ); 
+
 
         
         //  Members:
@@ -150,6 +183,12 @@ void  svkSatBandsXML_GetPressBoxSat(
                                     float*  thickness,  
                                     float*  distance  
         ); 
+void  svkSatBandsXML_GetPRESSBoxParameters(
+                                    void*   xml, 
+                                    float*  pressOrigin,  
+                                    float*  pressThickness,  
+                                    float*  pressAngles  
+        ); 
 
 void  svkSatBandsXML_GetAutoSat(
                                     void*   xml, 
@@ -161,6 +200,13 @@ void  svkSatBandsXML_GetAutoSat(
                                     float*  distance  
         ); 
 
+void svkSatBandsXML_GetAutoSatParameters(
+                                    void* xml, 
+                                    int satNumber, 
+                                    float* normal, 
+                                    float* thickness, 
+                                    float* distance
+        ); 
 
 #ifdef __cplusplus
 }

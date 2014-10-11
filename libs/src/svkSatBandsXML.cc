@@ -45,7 +45,8 @@
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
 #include <vtkXMLUtilities.h>
-
+#include <vtkXMLDataParser.h>
+#include <vtkMath.h>
 
 using namespace svk;
 
@@ -88,7 +89,7 @@ svkSatBandsXML::~svkSatBandsXML()
 void svkSatBandsXML::SetXMLFileName( string xmlFileName )
 {
     this->xmlFileName = xmlFileName;  
-    // Now we have remove the old xml file
+    // Now we have to remove the old xml file
     this->ClearXMLFile();
     this->satBandsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
 
@@ -221,14 +222,401 @@ int svkSatBandsXML::GetNumberOfAutoSats()
 {
     int numberOfSats = this->autoSatsElement->GetNumberOfNestedElements(); 
     return numberOfSats; 
+}
 
+
+/*
+ *  Which 2 angles take the Z vector (+S) to the specified normal vector? 
+ *      1.  first rotate about the x axis (rotation in the sagital yz plane)
+ *          This angle is denoted as Beta and is written 2nd in the .dat file.  
+ *      2.  next rotate about the z axis
+ *          This angle is denoted as gamma and is written fist in the .dat file.  
+ */
+void svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float* thickness, float* distance) 
+{
+    string label; 
+    float normal[3]; 
+    this->GetAutoSat(satNumber, &label, &normal[0], &normal[1], &normal[2], thickness, distance); 
+
+    //cout << "NORMAL: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
+    //normal[0] = -1 * normal[0]; 
+    //normal[1] = -1 * normal[1]; 
+    //normal[2] = -1 * normal[2]; 
+
+    //  Which 2 angles take the Z vector (+S) to the specified normal vector? 
+
+    //  First determine the angle listed in .dat file for use by PSD to 
+    //  rotation 100 vector about the x axis (this rotates the Z/S vector 100 
+    //  toward the p (+y) vector and is given by the atan(y/z)
+    float beta; 
+    beta = atan ( normal[1]/normal[2]) ; 
+    angles[1] = beta;  
+
+    //  Next determine the angle listed in .dat file for use by PSD to 
+    //  rotation the vector about the z axis, this is written fist in the dat file 
+    //  just to be confusing.
+    float gamma; 
+    if ( normal[1] == 0 ) { 
+        gamma = 0; 
+    } else {
+        gamma = atan ( normal[0]/normal[1]) ; 
+    }
+    gamma = vtkMath::Pi()/2 + gamma; 
+    angles[2] = gamma;  
+
+    angles[0] = 0; 
+    angles[1] = -1 * acos( normal[2]);
+
+    angles[2] = -1 * atan( 1*normal[1] / normal[0] ); 
+    angles[2] = -1 * atan2( normal[1] , -1 *  normal[0] ); 
+
+    cout << "ANGLES: " << angles[2] << " " << angles[1] << endl;
+}
+
+/*!
+ *  Given the xml press box definition, extract the 
+ *  location, thickness and orientation  of the box for use by the PSD.  
+ */
+void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThickness[3], float pressAngles[3] ) 
+{
+
+    float normals[3][3]; 
+    this->InitPressBoxNormals(normals); 
+
+    float distances[3][2]; 
+    this->InitPressDistances(normals, distances); 
+
+
+    //  ===========================================================
+    //  Now, use the normals and distances to get the location of the  
+    //  center of the box.  
+    //      Find the center of each of the normals and add up the 3 three vectors
+    //      to find the center of the box. 
+    //  ===========================================================
+    //  first get the corresponding lengths: 
+    for ( int i = 0; i < 3; i++ ) {
+        pressOrigin[i] = 0.; 
+    }
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j = 0; j < 3; j++ ) {
+            float tmp = normals[i][j] * (distances[i][0] - distances[i][1]); 
+            tmp /= 2;  
+            pressOrigin[j] += tmp;  
+        }
+    }
+    cout << "PRESS ORIGIN: " << pressOrigin[0] << " " << pressOrigin[1] << " " << pressOrigin[2] << endl;        
+
+
+    //  ===========================================================
+    //  Now, use the normals and distances to get the thickness. 
+    //  Get the distance between the 2 vectors (pythagorean distance)
+    //  ===========================================================
+
+    //  3 components of vector representing the difference between the 2 antiparallel 
+    //  normals: 
+    float differenceVector[3]; 
+    float differenceVectorLength; 
+    for ( int i = 0; i < 3; i++ ) {
+        differenceVectorLength = 0.; 
+        for ( int j = 0; j < 3; j++ ) {
+            differenceVector[j] = normals[i][j] * (distances[i][0] + distances[i][1]); 
+            differenceVectorLength += differenceVector[j] * differenceVector[j]; 
+        }
+        pressThickness[i] = pow(differenceVectorLength, .5);  
+    }
+    cout << "PRESS Thickness: " << pressThickness[0] << " " 
+            << pressThickness[1] << " " << pressThickness[2] << endl;        
+
+
+    //  ===========================================================
+    //  Finally, get the 3 Euler angles from the normals array (DCM). 
+    //  http://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Rotation_matrix_.E2.86.94_Euler_angles
+    //      Note here that the rotation matrix, DCM = AzAyAx, so 
+    //          Ax-> Psi is rotation about L 
+    //          Ay-> Theta is rotation about P 
+    //          Az-> Phi is rotation about S
+    //  ===========================================================
+    for ( int i = 0; i < 3; i++ ) {
+        cout << "NORMALS ANGLES: " << normals[i][0] << " " 
+            << normals[i][1] << " " << normals[i][2] << endl;        
+    }
+
+    this->LPSToRAS(normals); 
+    this->RotationMatrixToEulerAngles( normals, pressAngles ); 
+    
+    cout << "PRESS EULERS: " << pressAngles[0] << " " << pressAngles[1] << " " << pressAngles[2] << endl;        
+
+    return; 
+}
+
+
+/*
+ *  Compute the Euler angles from the rotation matrix (i.e. dcos, or matrix of normals)
+ *  Based on the formulas in the following article that assumes Psi is rotation around X, 
+ *  theta about y and phi about z:
+ *      Computing Euler angles from a rotation matrix
+ *      Gregory G. Slabaugh
+ *      Retrieved from Google Scholar Citations on August 6, 2000
+ *  Return angle0 -> psi   = rotation about X
+ *  Return angle1 -> theta = rotation about Y
+ *  Return angle2 -> phi   = rotation about Z 
+ */
+void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eulerAngles[3]  ) 
+{
+
+    float psi;
+    float theta; 
+    float phi; 
+
+    if ( fabs( normals[2][0] ) != 1 ) {
+
+        float psi1; 
+        float theta1; 
+        float phi1; 
+        float psi2; 
+        float theta2; 
+        float phi2; 
+        theta1 = -1 * asin( normals[2][0] ); 
+        theta2 = vtkMath::Pi() - theta1; 
+        float cosTheta1 = cos( theta1 ); 
+        float cosTheta2 = cos( theta2 ); 
+        psi1   = atan( ( normals[2][1]/cosTheta1 ) / ( normals[2][2]/cosTheta1 ) ); 
+        psi2   = atan( ( normals[2][1]/cosTheta2 ) / ( normals[2][2]/cosTheta2 ) ); 
+        phi1   = atan( ( normals[1][0]/cosTheta1 ) / ( normals[0][0]/cosTheta1 ) ); 
+        phi2   = atan( ( normals[1][0]/cosTheta2 ) / ( normals[0][0]/cosTheta2 ) ); 
+
+        //  Here I'm deriving the second set of Euler angles from the above citation
+        //psi = psi1; 
+        //theta = theta1; 
+        //phi = phi1; 
+        psi = psi2; 
+        theta = theta2; 
+        phi = phi2; 
+
+    } else {
+
+        cout << "EULER two" << endl;
+        phi = vtkMath::Pi(); 
+        if ( normals[2][0] == -1 ) {
+            theta = vtkMath::Pi()/2; 
+            psi = phi + atan( normals[0][1] / normals[0][2] ); 
+        } else {
+            theta = -1 * vtkMath::Pi()/2; 
+            psi = -1 * phi + atan( (-1 * normals[0][1] ) / (-1 * normals[0][2]) ); 
+        }
+
+    }
+
+    eulerAngles[0] = psi; 
+    eulerAngles[1] = theta; 
+    eulerAngles[2] = phi; 
+
+}
+
+/*
+ *  Initialized a set of normal vectors from the press box description in the XML file. 
+ *  The returned array consists of 3 normal vectors, 1 in each row, and ordered from 
+ *  Rmajor, Amajor, Smajor. 
+ *      normals[0][0-2]  -> normal vector primarily along +/-L vector
+ *      normals[1][0-2]  -> normal vector primarily along +/-P vector
+ *      normals[2][0-2]  -> normal vector primarily along +/-S vector
+ */
+void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] ) 
+{
+    //  ===========================================================
+    //  First, the press box sides need to be sorted into pairs 
+    //  with parallel/antiparallel normals: 
+    //      - get a set of 3 unique normal vectors: 
+    //  ===========================================================
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j = 0; j < 3; j++ ) {
+            normals[i][j] = 0;        
+        }
+    }
+
+    int numNormalsInitialized = 0; 
+    for ( int satNumber = 1; satNumber <= 6; satNumber++ ) {
+
+        string label;     
+        float normal[3]; 
+        float thickness; 
+        float distance; 
+        this->GetPressBoxSat(
+                    satNumber, 
+                    &label, 
+                    &normal[0], 
+                    &normal[1], 
+                    &normal[2], 
+                    &thickness, 
+                    &distance
+                ); 
+
+        if ( this->IsNormalUnique( normal, normals) )  {
+            normals[numNormalsInitialized][0] = normal[0]; 
+            normals[numNormalsInitialized][1] = normal[1]; 
+            normals[numNormalsInitialized][2] = normal[2]; 
+            numNormalsInitialized++; 
+        }
+
+    }
+
+    if ( numNormalsInitialized != 3 ) {
+        cerr << "PRESS BOX NORMALS NOT INITIALIZED" << endl;
+        exit(1); 
+    } 
+
+    //  finally, sort the normals into order: 
+    //      0, - predominantly RL direction
+    //      1, - predominantly AP direction
+    //      2, - predominantly SI direction
+    //  dot product along each axis(LPS), 100, 010, 001
+    float normalsTmp[3][3]; 
+    //  dotLPS: 
+    //      indicates which axis the normal vector (row) 
+    //      is along,  L(0), P(1), or S(2). 
+    int dotLPS[3];  
+    float lpsNormals[3][3]; 
+    lpsNormals[0][0] = 1; 
+    lpsNormals[0][1] = 0;  
+    lpsNormals[0][2] = 0;  
+    lpsNormals[1][0] = 0;  
+    lpsNormals[1][1] = 1;  
+    lpsNormals[1][2] = 0;  
+    lpsNormals[2][0] = 0;  
+    lpsNormals[2][1] = 0;  
+    lpsNormals[2][2] = 1;  
+    for ( int i = 0; i < 3; i++ ) { // loop over L, P, S vector
+        dotLPS[i] = 0;     
+        float maxDot = 0.; 
+        for ( int j = 0; j < 3; j++ ) { // loop over 3 normal vectors
+            float tmp = fabs( vtkMath::Dot( lpsNormals[i], normals[j] ) ) ;
+            if ( tmp >= maxDot ) {
+                maxDot = tmp;
+                dotLPS[i] = j; 
+            }
+        }
+    }
+    //  Now sort the normals row into the correct order, Lmajor, Pmajor, Smajor: 
+    for ( int i = 0; i < 3; i++ ) {
+        normalsTmp[i][0] = normals[ dotLPS[i] ][0]; 
+        normalsTmp[i][1] = normals[ dotLPS[i] ][1]; 
+        normalsTmp[i][2] = normals[ dotLPS[i] ][2]; 
+    }
+    for ( int i = 0; i < 3; i++ ) {
+        normals[i][0] = normalsTmp[i][0]; 
+        normals[i][1] = normalsTmp[i][1]; 
+        normals[i][2] = normalsTmp[i][2]; 
+    }
+
+    if( this->GetDebug() ) {
+        for ( int i = 0; i < 3; i++ ) {
+            cout << "NORMALS LPS: " << normals[i][0] << " " 
+                        << normals[i][1] << " " << normals[i][2] << endl;        
+        }
+    }
+
+}
+
+
+/*
+ *  Converts an LPS rotation matrix into an RAS
+ *  frame: 
+ */
+void svkSatBandsXML::LPSToRAS(float normals[3][3])
+{
+    //  convert from LPS to RAS
+    //
+    //                      L       P       S
+    //                  --------------------------
+    //      row_norm     |
+    //      col_nor      |
+    //      slice_norm   |
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j = 0; j < 2; j++ ) {
+            if ( normals[i][j] != 0 ) {
+                normals[i][j] = -1 * normals[i][j]; 
+            }
+        }
+    }
+}
+
+/*
+ *  Init an array of distances from the press box xml file: 
+ *  Each row is the distance from the origin along the corresponding
+ *  normal vector, and antiparallel to the normal vector: 
+ *      distances[0][0,1]  -> distance from origin parrallel to Lmajor normal vector, antiparallel to
+ *      distances[0][0,1]  -> distance from origin parrallel to Pmajor normal vector, antiparallel to
+ *      distances[0][0,1]  -> distance from origin parrallel to Smajor normal vector, antiparallel to
+ *      
+ */
+void svkSatBandsXML::InitPressDistances(float normals[3][3], float distances[3][2]) 
+{
+    //  Now match up the corresponding distances to the appropriate row of the normals array. 
+    //  Distances are grouped in pairs for each normal vector.  The
+    //  first distance in each tuple is the distance along the normal, the 2nd is the 
+    //  corresponding antiparallel distance: 
+    int numDistancesInitialized = 0; 
+    for ( int normalIndex = 0; normalIndex < 3; normalIndex++ ) {
+        for ( int satNumber = 1; satNumber <= 6; satNumber++ ) {
+
+            string label;     
+            float normal[3]; 
+            float thickness; 
+            float distance; 
+            this->GetPressBoxSat(
+                        satNumber, 
+                        &label, 
+                        &normal[0], 
+                        &normal[1], 
+                        &normal[2], 
+                        &thickness, 
+                        &distance
+                    ); 
+
+            float dot = vtkMath::Dot( normal, normals[normalIndex] );
+            //  some tolerance, but close to 1: 
+            //  if parallel, then assign to first of tuple
+            if ( dot  >= .99 ) {
+                distances[normalIndex][0] = distance; 
+                numDistancesInitialized++;     
+            } else if ( dot  <= -.99 ) {
+                distances[normalIndex][1] = distance; 
+                numDistancesInitialized++;     
+            }
+        }
+    }
+
+    if ( numDistancesInitialized != 6 ) {
+        cerr << "PRESS BOX DISTANCES NOT INITIALIZED" << numDistancesInitialized << endl;
+        exit(1); 
+    } 
+}
+
+
+/*!
+ *  Compares the dot product of the current normal to the existing normals. 
+ *  if it's parallel to an existing normal, then it's not unique and the normal
+ *  already exists in the normals array.
+ */
+bool svkSatBandsXML::IsNormalUnique( float normal[3], float normals[3][3]) 
+{        
+    bool isUnique = true; 
+    for ( int i = 0; i < 3; i++ ) {
+        float dot = fabs( vtkMath::Dot( normal, normals[i] ) ) ;
+        //  some tolerance, but close to 1: 
+        if ( fabs( dot ) >= .99 ) {
+            isUnique = false; 
+        }
+    }
+    return isUnique; 
 }
 
 
 /*! 
  * External C interface: 
  */
-void* svkSatBandsXML_New(char* xmlFileName){
+void* svkSatBandsXML_New(char* xmlFileName)
+{
     svkSatBandsXML* xml = svkSatBandsXML::New();     
     xml->SetXMLFileName(xmlFileName); 
     return ((void*)xml); 
@@ -260,7 +648,15 @@ int svkSatBandsXML_GetNumberOfAutoSats( void* xml )
 void  svkSatBandsXML_GetPressBoxSat(void* xml, int satNumber, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance ) 
 {
     string label; 
-    ((svkSatBandsXML*)xml)->GetPressBoxSat( satNumber, &label, normalX, normalY, normalZ, thickness, distance);
+    ((svkSatBandsXML*)xml)->GetPressBoxSat( 
+            satNumber, 
+            &label, 
+            normalX, 
+            normalY, 
+            normalZ, 
+            thickness, 
+            distance
+        );
 
 }
 
@@ -272,6 +668,33 @@ void  svkSatBandsXML_GetAutoSat(void* xml, int satNumber, float* normalX, float*
 {
 
     string label; 
-    ((svkSatBandsXML*)xml)->GetAutoSat( satNumber, &label, normalX, normalY, normalZ, thickness, distance);
+    ((svkSatBandsXML*)xml)->GetAutoSat( 
+            satNumber, 
+            &label, 
+            normalX, 
+            normalY, 
+            normalZ, 
+            thickness, 
+            distance
+    );
 
+}
+
+
+/*!
+ * 
+ */
+void svkSatBandsXML_GetPRESSBoxParameters(void* xml, float* pressOrigin, float* pressThickness, float* pressAngles )    
+{
+    ((svkSatBandsXML*)xml)->GetPRESSBoxParameters( pressOrigin, pressThickness, pressAngles ); 
+}
+
+
+
+/*!
+ * 
+ */
+void svkSatBandsXML_GetAutoSatParameters(void* xml, int satNumber, float* normal, float* thickness, float* distance)    
+{
+    ((svkSatBandsXML*)xml)->GetAutoSatParameters( satNumber, normal, thickness, distance); 
 }
