@@ -73,6 +73,11 @@ int main (int argc, char** argv)
     cout << "thickness: " << thickness << endl;
     cout << "distance:  " << distance << endl;
 
+    float pressOrigin[3]; 
+    float pressThickness[3]; 
+    float pressAngles[3]; 
+    xml->GetPRESSBoxParameters(pressOrigin, pressThickness, pressAngles); 
+
     xml->Delete();
 
     return 0; 

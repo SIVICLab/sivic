@@ -41,11 +41,13 @@
 
 
 #include <svkSatBandsXML.h>
+#include <stdio.h>
 
  
 int main(const int argc, const char **argv)
 {
     void* xml = svkSatBandsXML_New( argv[1] );
+    char* outputfile = argv[2]; 
 
     int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( xml ); 
     printf("Number of PressBox Sats = %d\n", numberPressBoxSats); 
@@ -87,6 +89,12 @@ int main(const int argc, const char **argv)
         printf("\n\n"); 
     }
 
+    FILE* f = fopen( outputfile, "w" ); 
+    if (f == NULL) {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
 
     float boxCenter[3];
     float boxThickness[3];
@@ -97,6 +105,9 @@ int main(const int argc, const char **argv)
     printf("PRESS: origin:   %f %f %f\n", boxCenter[0], boxCenter[1], boxCenter[2]);
     printf("PRESS: size:     %f %f %f\n", boxThickness[0], boxThickness[1], boxThickness[2]);
     printf("PRESS: angles:   %f %f %f\n", boxAngles[0], boxAngles[1], boxAngles[2]);
+    fprintf(f, "PRESS: origin:   %f %f %f\n", boxCenter[0], boxCenter[1], boxCenter[2]);
+    fprintf(f, "PRESS: size:     %f %f %f\n", boxThickness[0], boxThickness[1], boxThickness[2]);
+    fprintf(f, "PRESS: angles:   %f %f %f\n", boxAngles[0], boxAngles[1], boxAngles[2]);
 
 
     printf("\n\n");
@@ -108,10 +119,11 @@ int main(const int argc, const char **argv)
         svkSatBandsXML_GetAutoSatParameters(xml, satNumber, angles, &xmlthickness, &xmldistance);
         printf("SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
                 angles[2], angles[1], xmldistance, xmlthickness, 0);
+        fprintf(f, "SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
+                angles[2], angles[1], xmldistance, xmlthickness, 0);
     }
-
-
-
+    
+    flcose(f);
 
     return (0);
 }
