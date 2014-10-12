@@ -123,7 +123,7 @@ int main(const int argc, const char **argv)
                 angles[2], angles[1], xmldistance, xmlthickness, 0);
     }
     
-    flcose(f);
+    fclose(f);
 
     return (0);
 }
