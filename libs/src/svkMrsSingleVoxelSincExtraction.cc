@@ -188,14 +188,26 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
     voxelIndex[1] -= 0.5;
     voxelIndex[2] -= 0.5;
 
-    // TODO: Get to work with input array types
-    vtkDataArray* array = vtkDataArray::CreateDataArray(dataType);
-    array->SetNumberOfComponents( numComponents );
-    array->SetNumberOfTuples( numFrequencyPoints );
+    // Create a vector to hold the interpolated results
+    svkDcmHeader::DimensionVector resultDimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::SetDimensionVectorValue( &resultDimVector, svkDcmHeader::COL_INDEX, 0);
+    svkDcmHeader::SetDimensionVectorValue( &resultDimVector, svkDcmHeader::ROW_INDEX, 0);
+    svkDcmHeader::SetDimensionVectorValue( &resultDimVector, svkDcmHeader::SLICE_INDEX, 0);
+    int numResultsArrays = svkDcmHeader::GetNumberOfCells( &resultDimVector );
+    vector<vtkDataArray*> resultArrays;
+    for( int i = 0; i < numResultsArrays; i++ ) {
+        vtkDataArray* array = vtkDataArray::CreateDataArray(dataType);
+        array->SetNumberOfComponents( numComponents );
+        array->SetNumberOfTuples( numFrequencyPoints );
+        for( int j = 0; j < numComponents; j++ ) {
+            array->FillComponent(j, 0);
+        }
+        resultArrays.push_back(array);
+    }
 
     svkDcmHeader::DimensionVector inDimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
     svkDcmHeader::DimensionVector loopVector = inDimVector;
-
+    svkDcmHeader::DimensionVector loopResultDimVector;
     int numInputCells = svkDcmHeader::GetNumberOfCells( &inDimVector );
     for (int cellID = 0; cellID < numInputCells; cellID++) {
         svkDcmHeader::GetDimensionVectorIndexFromCellID(&inDimVector, &loopVector, cellID);
@@ -203,6 +215,11 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
         int y = svkDcmHeader::GetDimensionVectorValue( &loopVector, svkDcmHeader::ROW_INDEX );
         int z = svkDcmHeader::GetDimensionVectorValue( &loopVector, svkDcmHeader::SLICE_INDEX );
         vtkDataArray* spectrum = data->GetSpectrum( cellID );
+        loopResultDimVector = loopVector;
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::COL_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::ROW_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::SLICE_INDEX, 0);
+        int interpIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&resultDimVector, &loopResultDimVector);
         float piDeltaX = pi*(voxelIndex[0] - x);
         float piDeltaY = pi*(voxelIndex[1] - y);
         float piDeltaZ = pi*(voxelIndex[2] - z);
@@ -220,9 +237,9 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
                 if( piDeltaZ != 0 ) {
                     value[comp] *= sin(piDeltaZ)/piDeltaZ;
                 }
-                value[comp] += array->GetTuple(freq)[comp];
+                value[comp] += resultArrays[interpIndex]->GetTuple(freq)[comp];
             }
-            array->SetTuple( freq, value );
+            resultArrays[interpIndex]->SetTuple( freq, value );
             delete value;
         }
     }
@@ -239,7 +256,16 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
     int numOutputCells = svkDcmHeader::GetNumberOfCells( &outDimVector );
     for (int cellID = 0; cellID < numOutputCells; cellID++) {
         svkDcmHeader::GetDimensionVectorIndexFromCellID(&outDimVector, &loopVector, cellID);
-        svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( cellID )->DeepCopy(array);
+        loopResultDimVector = loopVector;
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::COL_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::ROW_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &loopResultDimVector, svkDcmHeader::SLICE_INDEX, 0);
+        int interpIndex = svkDcmHeader::GetCellIDFromDimensionVectorIndex(&resultDimVector, &loopResultDimVector);
+        svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( cellID )->DeepCopy(resultArrays[interpIndex]);
+    }
+
+    for( int i = 0; i < resultArrays.size(); i++ ) {
+        resultArrays[i]->Delete();
     }
 
     return 1; 

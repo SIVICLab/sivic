@@ -883,7 +883,6 @@ void svkMrsImageData::Redimension( svkDcmHeader::DimensionVector* dimensionVecto
                            ,static_cast<float>(centerD[2]) };
 
         this->GetDcmHeader()->InitVolumeLocalizationSeq(size, center, dcos);
-        this->GetDcmHeader()->PrintDcmHeader();
     }
 }
 

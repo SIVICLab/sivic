@@ -1269,6 +1269,20 @@ ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TES
 
 
 ##############################
+#   svk_interpolate_spectra to single voxel
+##############################
+SET( TEST_NAME TEST_MCHK_SVK_INTERPOLATE_SPECTRA_4)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+file( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_interpolate_spectra)
+ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_interpolate_spectra -r -i ${SVK_TEST_ROOT}/combining/input/phantom_8ch.dcm -o${TEST_RESULTS_PATH}/out -t 2 -l 29.78739 -p -48.457 -s -6.22
+ )
+
+SET( TEST_NAME TEST_SVK_INTERPOLATE_SPECTRA_4)
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/out4 )
+
+
+##############################
 #   Read xml for auto sats 
 ##############################
 SET( TEST_NAME TEST_MCHK_SVK_SAT_BANDS_XML)
