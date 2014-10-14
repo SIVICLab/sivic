@@ -156,11 +156,6 @@ int svkMrsSingleVoxelSincExtraction::RequestInformation( vtkInformation* request
  */
 int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-    svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);
-    if( retainInputExtentBool != NULL && retainInputExtentBool->GetValue() == false) {
-        cout << "ERROR: Unimplemented feature-- currently svkMrsSingleVoxelSincExtraction only supports retaining the input extent!" << endl;
-        return 0;
-    }
     /*
      * 1. Find the row/column/slice that the given point is within.
      * 2. Iterate through all dimensions summing the since contribution from each frequency point
@@ -192,9 +187,11 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
 
     float* specPtr = NULL;
     vtkFloatArray* array = vtkFloatArray::New();
-    array->SetNumberOfComponents(2);
+    array->SetNumberOfComponents( numComponents );
     array->SetNumberOfTuples( numFrequencyPoints );
+
     float* arrayPtr = array->GetPointer(0);
+    // TODO: Refactor loop to use dimension index vector.
     for( int channel = 0; channel < numChannels; channel++ ) {
         for( int timePt = 0; timePt < numTimePts; timePt++ ) {
             for (int z = extent[4]; z < extent[5]; z++) {
@@ -224,12 +221,26 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
             }
         }
     }
+    int* outExtent = extent;
+    svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);
+    if( retainInputExtentBool != NULL && retainInputExtentBool->GetValue() == false) {
+        // TODO: Refactor to direct manipulation of DimensionVector, not using SetDimensionIndexSize methods
+        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::COL_INDEX, 0 );
+        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::ROW_INDEX, 0);
+        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::SLICE_INDEX, 0);
+        svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+        svkMrsImageData::SafeDownCast(this->GetOutput())->Redimension( &dimensionVector, voxelCenter, data->GetSpacing(), true );
+        outExtent = this->GetOutput()->GetExtent();
+    } else {
+        outExtent = extent;
+    }
+    // TODO: Refactor loop to use dimension index vector.
     for( int channel = 0; channel < numChannels; channel++ ) {
         for( int timePt = 0; timePt < numTimePts; timePt++ ) {
-            for (int z = extent[4]; z < extent[5]; z++) {
-                for (int y = extent[2]; y < extent[3]; y++) {
-                    for (int x = extent[0]; x < extent[1]; x++) {
-                        svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( x, y, z, timePt, channel )->DeepCopy(array);
+            for (int z = outExtent[4]; z < outExtent[5]; z++) {
+                for (int y = outExtent[2]; y < outExtent[3]; y++) {
+                    for (int x = outExtent[0]; x < outExtent[1]; x++) {
+                    svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( x, y, z, timePt, channel )->DeepCopy(array);
                     }
                 }
             }

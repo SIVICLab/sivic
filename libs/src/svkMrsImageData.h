@@ -129,6 +129,8 @@ class svkMrsImageData: public svk4DImageData
                             int tlcBrc[2],
                             double tolerance = DEFAULT_SELECTION_TOLERANCE
                        );
+        void           Redimension( svkDcmHeader::DimensionVector* dimensionVector, double* newOrigin, double* newSpacing, bool resizeSelectionBoxToFOV = false );
+        void           InitializeDataArrays( );
 
     protected:
 

@@ -849,3 +849,76 @@ void svkMrsImageData::GetSelectionBoxMask( short* mask, double tolerance )
 
     }
 }
+
+
+/*!
+ * Redimensions the image data object.
+ *
+ * WARNING: This will re-initialize all the arrays in the result to zero for all components!
+ *
+ */
+void svkMrsImageData::Redimension( svkDcmHeader::DimensionVector* dimensionVector, double* newOrigin, double* newSpacing, bool resizeSelectionBoxToFOV )
+{
+    this->GetDcmHeader()->Redimension( dimensionVector, newOrigin, newSpacing );
+    this->SyncVTKImageDataToDcmHeader();
+    this->InitializeDataArrays( );
+    if( resizeSelectionBoxToFOV ) {
+        double dcosD[3][3];
+        this->GetDcmHeader()->GetDataDcos(dcosD);
+        float dcos[3][3];
+        for (int i=0; i<3; i++) {
+            for (int j=0; j<3; j++) {
+                dcos[i][j] = static_cast<float>(dcosD[i][j]);
+            }
+        }
+        double centerD[3] = {0};
+        this->GetCenter(centerD);
+        int* dims = this->GetDimensions();
+        float size[3] = { static_cast<float>(newSpacing[0] * (dims[0]-1))
+                         ,static_cast<float>(newSpacing[1] * (dims[1]-1))
+                         ,static_cast<float>(newSpacing[2] * (dims[2]-1))};
+
+        float center[3] = { static_cast<float>(centerD[0])
+                           ,static_cast<float>(centerD[1])
+                           ,static_cast<float>(centerD[2]) };
+
+        this->GetDcmHeader()->InitVolumeLocalizationSeq(size, center, dcos);
+        this->GetDcmHeader()->PrintDcmHeader();
+    }
+}
+
+
+/*!
+ *
+ */
+void svkMrsImageData::InitializeDataArrays( )
+{
+    // Remove All Existing Arrays
+    int numArrays = this->GetCellData()->GetNumberOfArrays();
+    int dataType = VTK_FLOAT;
+    int numComponents = 2;
+    for( int i = 0; i < numArrays; i++ ) {
+        if( i == 0 ) {
+            dataType = this->GetCellData()->GetArray(0)->GetDataType();
+            numComponents = this->GetCellData()->GetArray(0)->GetNumberOfComponents();
+        }
+        this->GetCellData()->RemoveArray(this->GetCellData()->GetArray(0)->GetName());
+    }
+    // Read dimension index vector, and initialize arrays with appropriate names...
+    svkDcmHeader::DimensionVector dimVec  = this->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVec = dimVec;
+
+    int numPts = this->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    int numInputCells = svkDcmHeader::GetNumberOfCells( &dimVec );
+    for (int cellID = 0; cellID < numInputCells; cellID++) {
+        svkDcmHeader::GetDimensionVectorIndexFromCellID(&dimVec, &loopVec, cellID);
+        vtkDataArray* dataArray = vtkDataArray::CreateDataArray(dataType);
+        dataArray->SetNumberOfComponents(numComponents);
+        dataArray->SetNumberOfTuples(numPts);
+        dataArray->SetName( this->GetArrayName(&loopVec).c_str());
+        for( int i = 0; i < numComponents; i++ ) {
+            dataArray->FillComponent(i,0);
+        }
+        this->GetCellData()->AddArray(dataArray);
+    }
+}

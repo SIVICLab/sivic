@@ -3039,6 +3039,17 @@ void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* newDimensionVector
 }
 
 
+/*!
+ * Calls the Redimension method and then sets the origin and pixel spacing.
+ */
+void svkDcmHeader::Redimension(svkDcmHeader::DimensionVector* dimensionVector, double* newToplcOrigin, double* newPixelSpacing )
+{
+    double dcos[3][3] = {{0}};
+    this->GetDataDcos(dcos);
+    this->Redimension(dimensionVector);
+    this->InitPerFrameFunctionalGroupSequence(newToplcOrigin, newPixelSpacing, dcos, dimensionVector) ;
+}
+
 
 /*!
  *  resets a dimension size for existing dimension

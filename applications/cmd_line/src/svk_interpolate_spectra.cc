@@ -202,7 +202,7 @@ int main (int argc, char** argv)
         svkMrsSingleVoxelSincExtraction* interpolator = svkMrsSingleVoxelSincExtraction::New();
         interpolator->SetInput(currentImage);
         interpolator->SetVoxelCenter(newVoxelCenter[0], newVoxelCenter[1], newVoxelCenter[2]);
-        interpolator->SetRetainInputExtent(true);
+        interpolator->SetRetainInputExtent(retainInputExtent);
         interpolator->Update();
         writer->SetInput( interpolator->GetOutput() );
         writer->Write();
