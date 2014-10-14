@@ -46,7 +46,8 @@
  
 int main(const int argc, const char **argv)
 {
-    void* xml = svkSatBandsXML_New( argv[1] );
+    int   status; 
+    void* xml = svkSatBandsXML_New( argv[1], &status );
     char* outputfile = argv[2]; 
 
     int numberPressBoxSats = svkSatBandsXML_GetNumberOfPressBoxSats( xml ); 
