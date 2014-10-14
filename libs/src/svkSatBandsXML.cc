@@ -86,12 +86,16 @@ svkSatBandsXML::~svkSatBandsXML()
 /*!
  *  set the path/name to xml file.   
  */
-void svkSatBandsXML::SetXMLFileName( string xmlFileName )
+int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 {
     this->xmlFileName = xmlFileName;  
     // Now we have to remove the old xml file
     this->ClearXMLFile();
     this->satBandsXML = vtkXMLUtilities::ReadElementFromFile( this->xmlFileName.c_str() );
+    if (this->satBandsXML == NULL ) { 
+        cout << "ERROR, could not parse element from " << this->xmlFileName << endl;
+        return 1; 
+    }
 
     // parse the 3 top level elements: 
     this->versionElement = this->satBandsXML->FindNestedElementWithName("version");
@@ -104,6 +108,8 @@ void svkSatBandsXML::SetXMLFileName( string xmlFileName )
         //this->pressBoxElement->PrintXML(cout, vtkIndent());
         //this->autoSatsElement->PrintXML(cout, vtkIndent());
     }
+
+    return 0; 
 
 }
 
@@ -615,10 +621,14 @@ bool svkSatBandsXML::IsNormalUnique( float normal[3], float normals[3][3])
 /*! 
  * External C interface: 
  */
-void* svkSatBandsXML_New(char* xmlFileName)
+void* svkSatBandsXML_New(char* xmlFileName, int *status)
 {
     svkSatBandsXML* xml = svkSatBandsXML::New();     
-    xml->SetXMLFileName(xmlFileName); 
+    *status = xml->SetXMLFileName(xmlFileName); 
+    if (*status == 1 ) {
+        xml->Delete(); 
+        xml = NULL; 
+    }
     return ((void*)xml); 
 }; 
 

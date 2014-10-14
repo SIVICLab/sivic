@@ -83,7 +83,7 @@ class svkSatBandsXML: public vtkObject
         static svkSatBandsXML* New();
         vtkTypeRevisionMacro( svkSatBandsXML, vtkObject);
 
-        void                        SetXMLFileName( vtkstd::string xmlFileName );     
+        int                         SetXMLFileName( vtkstd::string xmlFileName );     
         vtkstd::string              GetXMLFileName( );
         void                        ClearXMLFile( );
         void                        SetVerbose( bool isVerbose );     
@@ -171,7 +171,7 @@ extern "C" {
 #endif
 
 
-void* svkSatBandsXML_New(char* xmlFileName); 
+void* svkSatBandsXML_New(char* xmlFileName, int* status); 
 int   svkSatBandsXML_GetNumberOfPressBoxSats( void* xml ); 
 int   svkSatBandsXML_GetNumberOfAutoSats( void* xml ); 
 void  svkSatBandsXML_GetPressBoxSat(
