@@ -169,12 +169,16 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
     int numTimePts = data->GetDcmHeader()->GetNumberOfTimePoints();
     // Should this be hard-coded?
     int numComponents = 2;
+    int dataType = VTK_FLOAT;
+    if( this->GetImageDataInput(0) != NULL &&  this->GetImageDataInput(0)->GetCellData()->GetArray(0) != NULL ) {
+        numComponents = this->GetImageDataInput(0)->GetCellData()->GetArray(0)->GetNumberOfComponents();
+        dataType = this->GetImageDataInput(0)->GetCellData()->GetArray(0)->GetDataType();
+    }
     int* extent = data->GetExtent();
     float pi =vtkMath::Pi();
     svkDouble* l_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( L_COORDINATE );
     svkDouble* p_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( P_COORDINATE );
     svkDouble* s_coordinate =  this->GetPortMapper()->GetDoubleInputPortValue( S_COORDINATE );
-    //TODO: Base the relative index on an input LPS coordinate, and find what its "index" would be.
     double voxelCenter[3] = { l_coordinate->GetValue(), p_coordinate->GetValue(), s_coordinate->GetValue() } ;
 
     double voxelIndex[3];
@@ -183,68 +187,59 @@ int svkMrsSingleVoxelSincExtraction::RequestData( vtkInformation* request, vtkIn
     voxelIndex[0] -= 0.5;
     voxelIndex[1] -= 0.5;
     voxelIndex[2] -= 0.5;
-    cout << "Index: " << voxelIndex[0] << " " << voxelIndex[1] << " " << voxelIndex[2] << endl;
 
-    float* specPtr = NULL;
-    vtkFloatArray* array = vtkFloatArray::New();
+    // TODO: Get to work with input array types
+    vtkDataArray* array = vtkDataArray::CreateDataArray(dataType);
     array->SetNumberOfComponents( numComponents );
     array->SetNumberOfTuples( numFrequencyPoints );
 
-    float* arrayPtr = array->GetPointer(0);
-    // TODO: Refactor loop to use dimension index vector.
-    for( int channel = 0; channel < numChannels; channel++ ) {
-        for( int timePt = 0; timePt < numTimePts; timePt++ ) {
-            for (int z = extent[4]; z < extent[5]; z++) {
-                for (int y = extent[2]; y < extent[3]; y++) {
-                    for (int x = extent[0]; x < extent[1]; x++) {
-                        vtkFloatArray* spectrum = vtkFloatArray::SafeDownCast(data->GetSpectrum( x, y, z, timePt, channel ));
-                        specPtr = spectrum->GetPointer(0);
-                        float piDeltaX = pi*(voxelIndex[0] - x);
-                        float piDeltaY = pi*(voxelIndex[1] - y);
-                        float piDeltaZ = pi*(voxelIndex[2] - z);
-                        for(int fc = 0; fc < numComponents*numFrequencyPoints; fc++ ) {
-                            float value = specPtr[fc];
-                            //Add to this frequency the spatial since for the current voxel  the current intensity.
-                            if( piDeltaX != 0 ) {
-                                value *= sin(piDeltaX)/piDeltaX;
-                            }
-                            if( piDeltaY != 0 ) {
-                                value *= sin(piDeltaY)/piDeltaY;
-                            }
-                            if( piDeltaZ != 0 ) {
-                                value *= sin(piDeltaZ)/piDeltaZ;
-                            }
-                            arrayPtr[fc] += value;
-                        }
-                    }
+    svkDcmHeader::DimensionVector inDimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    svkDcmHeader::DimensionVector loopVector = inDimVector;
+
+    int numInputCells = svkDcmHeader::GetNumberOfCells( &inDimVector );
+    for (int cellID = 0; cellID < numInputCells; cellID++) {
+        svkDcmHeader::GetDimensionVectorIndexFromCellID(&inDimVector, &loopVector, cellID);
+        int x = svkDcmHeader::GetDimensionVectorValue( &loopVector, svkDcmHeader::COL_INDEX );
+        int y = svkDcmHeader::GetDimensionVectorValue( &loopVector, svkDcmHeader::ROW_INDEX );
+        int z = svkDcmHeader::GetDimensionVectorValue( &loopVector, svkDcmHeader::SLICE_INDEX );
+        vtkDataArray* spectrum = data->GetSpectrum( cellID );
+        float piDeltaX = pi*(voxelIndex[0] - x);
+        float piDeltaY = pi*(voxelIndex[1] - y);
+        float piDeltaZ = pi*(voxelIndex[2] - z);
+        for(int freq = 0; freq < numFrequencyPoints; freq++ ) {
+            float* value = new float[numComponents];
+            for(int comp = 0; comp < numComponents; comp++ ) {
+                value[comp]= spectrum->GetTuple(freq)[comp];
+                //Add to this frequency the spatial since for the current voxel  the current intensity.
+                if( piDeltaX != 0 ) {
+                    value[comp] *= sin(piDeltaX)/piDeltaX;
                 }
+                if( piDeltaY != 0 ) {
+                    value[comp] *= sin(piDeltaY)/piDeltaY;
+                }
+                if( piDeltaZ != 0 ) {
+                    value[comp] *= sin(piDeltaZ)/piDeltaZ;
+                }
+                value[comp] += array->GetTuple(freq)[comp];
             }
+            array->SetTuple( freq, value );
+            delete value;
         }
     }
-    int* outExtent = extent;
     svkBool* retainInputExtentBool = this->GetPortMapper()->GetBoolInputPortValue(RETAIN_INPUT_EXTENT);
+    svkDcmHeader::DimensionVector outDimVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
     if( retainInputExtentBool != NULL && retainInputExtentBool->GetValue() == false) {
-        // TODO: Refactor to direct manipulation of DimensionVector, not using SetDimensionIndexSize methods
-        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::COL_INDEX, 0 );
-        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::ROW_INDEX, 0);
-        this->GetOutput()->GetDcmHeader()->SetDimensionIndexSize( svkDcmHeader::SLICE_INDEX, 0);
-        svkDcmHeader::DimensionVector dimensionVector = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-        svkMrsImageData::SafeDownCast(this->GetOutput())->Redimension( &dimensionVector, voxelCenter, data->GetSpacing(), true );
-        outExtent = this->GetOutput()->GetExtent();
-    } else {
-        outExtent = extent;
+        svkDcmHeader::SetDimensionVectorValue( &outDimVector, svkDcmHeader::COL_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &outDimVector, svkDcmHeader::ROW_INDEX, 0);
+        svkDcmHeader::SetDimensionVectorValue( &outDimVector, svkDcmHeader::SLICE_INDEX, 0);
+        svkMrsImageData::SafeDownCast(this->GetOutput())->Redimension( &outDimVector, voxelCenter, data->GetSpacing(), true );
     }
-    // TODO: Refactor loop to use dimension index vector.
-    for( int channel = 0; channel < numChannels; channel++ ) {
-        for( int timePt = 0; timePt < numTimePts; timePt++ ) {
-            for (int z = outExtent[4]; z < outExtent[5]; z++) {
-                for (int y = outExtent[2]; y < outExtent[3]; y++) {
-                    for (int x = outExtent[0]; x < outExtent[1]; x++) {
-                    svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( x, y, z, timePt, channel )->DeepCopy(array);
-                    }
-                }
-            }
-        }
+
+    loopVector = outDimVector;
+    int numOutputCells = svkDcmHeader::GetNumberOfCells( &outDimVector );
+    for (int cellID = 0; cellID < numOutputCells; cellID++) {
+        svkDcmHeader::GetDimensionVectorIndexFromCellID(&outDimVector, &loopVector, cellID);
+        svkMrsImageData::SafeDownCast(this->GetOutput())->GetSpectrum( cellID )->DeepCopy(array);
     }
 
     return 1; 
