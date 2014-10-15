@@ -1340,6 +1340,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1521,6 +1522,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1702,6 +1704,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1884,6 +1887,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2066,6 +2070,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2248,6 +2253,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2431,6 +2437,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2610,6 +2617,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2789,6 +2797,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2968,6 +2977,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_rdbm_rev                    , FLOAT_4, 1   , 0,\
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
+            rhr.rh_npasses                     , INT_2  , 1   , 64,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
