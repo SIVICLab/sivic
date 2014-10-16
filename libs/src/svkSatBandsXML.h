@@ -98,7 +98,7 @@ class svkSatBandsXML: public vtkObject
                                         float*  thickness,  
                                         float*  distance  
                                     ); 
-        void                        GetAutoSat(
+        int                         GetAutoSat(
                                         int     satNumber, 
                                         string* label, 
                                         float*  normalX, 
@@ -114,7 +114,7 @@ class svkSatBandsXML: public vtkObject
                                     ); 
 
         
-        void                        GetAutoSatParameters( 
+        int                         GetAutoSatParameters( 
                                         int    satNumber, 
                                         float  normal[3], 
                                         float* thickness, 
@@ -190,7 +190,7 @@ void  svkSatBandsXML_GetPRESSBoxParameters(
                                     float*  pressAngles  
         ); 
 
-void  svkSatBandsXML_GetAutoSat(
+int   svkSatBandsXML_GetAutoSat(
                                     void*   xml, 
                                     int     satNumber, 
                                     float*  normalX, 
@@ -200,7 +200,7 @@ void  svkSatBandsXML_GetAutoSat(
                                     float*  distance  
         ); 
 
-void svkSatBandsXML_GetAutoSatParameters(
+int  svkSatBandsXML_GetAutoSatParameters(
                                     void* xml, 
                                     int satNumber, 
                                     float* normal, 

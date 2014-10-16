@@ -165,8 +165,13 @@ void svkSatBandsXML::GetPressBoxSat(int satNumber, string* label, float *normalX
 /*!
  *  Get the specified sat band definition: 
  */
-void svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, float *normalY, float* normalZ, float* thickness, float* distance)
+int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, float *normalY, float* normalZ, float* thickness, float* distance)
 {
+    int numSats = this->GetNumberOfAutoSats(); 
+    if ( satNumber > numSats || satNumber < 0 ) {
+        cerr << "ERROR, satNumber is out of range" << endl;
+        return 1; 
+    }
     vtkXMLDataElement* satBandElement; 
     satBandElement = this->autoSatsElement->FindNestedElementWithNameAndId(
                 "sat_band", 
@@ -174,6 +179,7 @@ void svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, fl
             ); 
 
     this->InitSatBandInfo( satBandElement, label, normalX, normalY, normalZ, thickness, distance); 
+    return 0; 
 
 }
 
@@ -203,6 +209,9 @@ void svkSatBandsXML::InitSatBandInfo( vtkXMLDataElement* satBandElement, string*
 }
 
 
+/*!
+ * 
+ */
 float svkSatBandsXML::GetFloatElementData( vtkXMLDataElement* element )
 {
     return svkTypeUtils::StringToFloat(
@@ -238,11 +247,14 @@ int svkSatBandsXML::GetNumberOfAutoSats()
  *      2.  next rotate about the z axis
  *          This angle is denoted as gamma and is written fist in the .dat file.  
  */
-void svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float* thickness, float* distance) 
+int svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float* thickness, float* distance) 
 {
     string label; 
     float normal[3]; 
-    this->GetAutoSat(satNumber, &label, &normal[0], &normal[1], &normal[2], thickness, distance); 
+    int status = this->GetAutoSat(satNumber, &label, &normal[0], &normal[1], &normal[2], thickness, distance); 
+    if (status) {
+        return status; 
+    }
 
     //cout << "NORMAL: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
     //normal[0] = -1 * normal[0]; 
@@ -276,7 +288,8 @@ void svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float
     angles[2] = -1 * atan( 1*normal[1] / normal[0] ); 
     angles[2] = -1 * atan2( normal[1] , -1 *  normal[0] ); 
 
-    cout << "ANGLES: " << angles[2] << " " << angles[1] << endl;
+    //cout << "ANGLES: " << angles[2] << " " << angles[1] << endl;
+    return status; 
 }
 
 /*!
@@ -674,11 +687,11 @@ void  svkSatBandsXML_GetPressBoxSat(void* xml, int satNumber, float* normalX, fl
 /*!
  * 
  */
-void  svkSatBandsXML_GetAutoSat(void* xml, int satNumber, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance ) 
+int svkSatBandsXML_GetAutoSat(void* xml, int satNumber, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance ) 
 {
 
     string label; 
-    ((svkSatBandsXML*)xml)->GetAutoSat( 
+    int status = ((svkSatBandsXML*)xml)->GetAutoSat( 
             satNumber, 
             &label, 
             normalX, 
@@ -687,6 +700,7 @@ void  svkSatBandsXML_GetAutoSat(void* xml, int satNumber, float* normalX, float*
             thickness, 
             distance
     );
+    return status; 
 
 }
 
@@ -704,7 +718,8 @@ void svkSatBandsXML_GetPRESSBoxParameters(void* xml, float* pressOrigin, float* 
 /*!
  * 
  */
-void svkSatBandsXML_GetAutoSatParameters(void* xml, int satNumber, float* normal, float* thickness, float* distance)    
+int svkSatBandsXML_GetAutoSatParameters(void* xml, int satNumber, float* normal, float* thickness, float* distance)    
 {
-    ((svkSatBandsXML*)xml)->GetAutoSatParameters( satNumber, normal, thickness, distance); 
+    int status = ((svkSatBandsXML*)xml)->GetAutoSatParameters( satNumber, normal, thickness, distance); 
+    return status; 
 }
