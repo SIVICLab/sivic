@@ -1104,6 +1104,15 @@ void svkSecondaryCaptureFormatter::PrintImages( string fileNameString, int start
  */
 void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
 {
+    svkImageData* orthogonalCopy = svkMriImageData::New();
+    /*
+     * We are going to make a shallow copy of the data and set the dcos to unity for the preview.
+     * This way we can see the way the data is ordered without the influence of the dcos, which
+     * is irrelevant to the rendering of the secondary capture.
+     */
+    orthogonalCopy->ShallowCopy(image);
+    double dcos[3][3] = {{1,0,0}, {0,1,0}, {0,0,1}};
+    orthogonalCopy->SetDcos(dcos);
     vtkRenderer* ren = vtkRenderer::New();
     ren->SetBackground(0.1,0.2,0.4);
     vtkRenderWindow* window = vtkRenderWindow::New();
@@ -1113,13 +1122,13 @@ void svkSecondaryCaptureFormatter::PreviewImage( svkImageData* image )
     viewer->SetRenderer( ren );
     window->AddRenderer( ren);  
     window->SetSize(600,600); 
-    viewer->SetInput( image );
+    viewer->SetInput( orthogonalCopy );
     viewer->SetupInteractor( rwi );
-    viewer->SetOrientation(image->GetDcmHeader()->GetOrientationType());
+    viewer->SetOrientation(orthogonalCopy->GetDcmHeader()->GetOrientationType());
     viewer->GetImageActor()->InterpolateOff();
     viewer->GetRenderer()->ResetCamera();
     viewer->ResetCamera();
-    int* extent = image->GetExtent();
+    int* extent = orthogonalCopy->GetExtent();
     vtkTextActor* textActor = vtkTextActor::New();
     textActor->SetTextScaleModeToViewport();
     textActor->GetTextProperty()->SetFontSize(15);
