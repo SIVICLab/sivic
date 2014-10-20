@@ -126,6 +126,8 @@ int main(const int argc, const char **argv)
     
     fclose(f);
 
+    svkSatBandsXML_Delete( xml ); 
+
     return (0);
 }
 
