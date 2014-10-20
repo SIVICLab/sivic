@@ -172,6 +172,7 @@ extern "C" {
 
 
 void* svkSatBandsXML_New(char* xmlFileName, int* status); 
+void* svkSatBandsXML_Delete( void* xml ); 
 int   svkSatBandsXML_GetNumberOfPressBoxSats( void* xml ); 
 int   svkSatBandsXML_GetNumberOfAutoSats( void* xml ); 
 void  svkSatBandsXML_GetPressBoxSat(

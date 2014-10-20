@@ -266,26 +266,12 @@ int svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float*
     //  First determine the angle listed in .dat file for use by PSD to 
     //  rotation 100 vector about the x axis (this rotates the Z/S vector 100 
     //  toward the p (+y) vector and is given by the atan(y/z)
-    float beta; 
-    beta = atan ( normal[1]/normal[2]) ; 
-    angles[1] = beta;  
 
     //  Next determine the angle listed in .dat file for use by PSD to 
     //  rotation the vector about the z axis, this is written fist in the dat file 
     //  just to be confusing.
-    float gamma; 
-    if ( normal[1] == 0 ) { 
-        gamma = 0; 
-    } else {
-        gamma = atan ( normal[0]/normal[1]) ; 
-    }
-    gamma = vtkMath::Pi()/2 + gamma; 
-    angles[2] = gamma;  
-
     angles[0] = 0; 
     angles[1] = -1 * acos( normal[2]);
-
-    angles[2] = -1 * atan( 1*normal[1] / normal[0] ); 
     angles[2] = -1 * atan2( normal[1] , -1 *  normal[0] ); 
 
     //cout << "ANGLES: " << angles[2] << " " << angles[1] << endl;
@@ -389,6 +375,8 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
 
     if ( fabs( normals[2][0] ) != 1 ) {
 
+
+        cout << "EULER one " << endl;
         float psi1; 
         float theta1; 
         float phi1; 
@@ -399,18 +387,22 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
         theta2 = vtkMath::Pi() - theta1; 
         float cosTheta1 = cos( theta1 ); 
         float cosTheta2 = cos( theta2 ); 
-        psi1   = atan( ( normals[2][1]/cosTheta1 ) / ( normals[2][2]/cosTheta1 ) ); 
-        psi2   = atan( ( normals[2][1]/cosTheta2 ) / ( normals[2][2]/cosTheta2 ) ); 
-        phi1   = atan( ( normals[1][0]/cosTheta1 ) / ( normals[0][0]/cosTheta1 ) ); 
-        phi2   = atan( ( normals[1][0]/cosTheta2 ) / ( normals[0][0]/cosTheta2 ) ); 
+        //cout << "n21 / n22 " << normals[2][1] / cosTheta1 << " " <<  normals[2][2]/cosTheta1 << endl;
+        //cout << "n21 / n22 " << normals[2][1] / cosTheta2 << " " <<  normals[2][2]/cosTheta2 << endl;
+        psi1   = atan2( ( normals[2][1]/cosTheta1 ) , ( normals[2][2]/cosTheta1 ) ); 
+        psi2   = atan2( ( normals[2][1]/cosTheta2 ) , ( normals[2][2]/cosTheta2 ) ); 
+        phi1   = atan2( ( normals[1][0]/cosTheta1 ) , ( normals[0][0]/cosTheta1 ) ); 
+        phi2   = atan2( ( normals[1][0]/cosTheta2 ) , ( normals[0][0]/cosTheta2 ) ); 
 
-        //  Here I'm deriving the second set of Euler angles from the above citation
-        //psi = psi1; 
-        //theta = theta1; 
-        //phi = phi1; 
-        psi = psi2; 
-        theta = theta2; 
-        phi = phi2; 
+        //  Here use the first set of Euler angles from the above citation
+        psi = psi1; 
+        theta = theta1; 
+        phi = phi1; 
+        //psi = psi2; 
+        //theta = theta2; 
+        //phi = phi2; 
+
+        //cout << "psi1 " << psi1 << " psi2 " << psi2 << endl;
 
     } else {
 
@@ -418,10 +410,10 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
         phi = vtkMath::Pi(); 
         if ( normals[2][0] == -1 ) {
             theta = vtkMath::Pi()/2; 
-            psi = phi + atan( normals[0][1] / normals[0][2] ); 
+            psi = phi + atan2( normals[0][1] , normals[0][2] ); 
         } else {
             theta = -1 * vtkMath::Pi()/2; 
-            psi = -1 * phi + atan( (-1 * normals[0][1] ) / (-1 * normals[0][2]) ); 
+            psi = -1 * phi + atan2( (-1 * normals[0][1] ) , (-1 * normals[0][2]) ); 
         }
 
     }
@@ -644,6 +636,12 @@ void* svkSatBandsXML_New(char* xmlFileName, int *status)
     }
     return ((void*)xml); 
 }; 
+
+
+void* svkSatBandsXML_Delete( void* xml )                   
+{
+    ((svkSatBandsXML*)xml)->Delete(); 
+}
 
 
 /*!
