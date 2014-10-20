@@ -119,9 +119,9 @@ int main(const int argc, const char **argv)
         float xmldistance;
         svkSatBandsXML_GetAutoSatParameters(xml, satNumber, angles, &xmlthickness, &xmldistance);
         printf("SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
-                angles[2], angles[1], xmldistance, xmlthickness, 0);
+                angles[2], angles[1], xmldistance, xmlthickness, 0.0);
         fprintf(f, "SVK(SATBANDS): a = %f, b = %f, d = %f t = %f w = %f\n", 
-                angles[2], angles[1], xmldistance, xmlthickness, 0);
+                angles[2], angles[1], xmldistance, xmlthickness, 0.0);
     }
     
     fclose(f);
