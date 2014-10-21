@@ -519,6 +519,7 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
         normals[i][2] = normalsTmp[i][2]; 
     }
 
+
     if( this->GetDebug() ) {
         for ( int i = 0; i < 3; i++ ) {
             cout << "NORMALS LPS: " << normals[i][0] << " " 
@@ -526,6 +527,70 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
         }
     }
 
+}
+
+
+/*
+ *  Make the PRESS box normals orthogonal.  Use the convention that 
+ *      - the Z normal remains as defined.   
+ *      - the X is defined as the cross product of Z and Y. 
+ *      - the Y is defined as the cross product of Z and X. 
+ *      * note that there are 6 normals, one for each face.  The convention is: 
+ *          1 => most Anterior
+ *          2 => most Posterior 
+ *          3 => most Superior  
+ *          4 => most Inferior  
+ *          5 => most Right 
+ *          6 => most Left  
+ */
+void svkSatBandsXML::MakePRESSOrthonormal( float normals[3][3] ) 
+{
+    float orthoNormals[3][3]; 
+    //  Z normal is the reference: 
+    orthoNormals[2][0] = normals[2][0]; 
+    orthoNormals[2][1] = normals[2][1]; 
+    orthoNormals[2][2] = normals[2][2]; 
+
+    //  X normal is -1 * Z x Y
+    vtkMath::Cross( orthoNormals[2], normals[1], orthoNormals[0] ); 
+    for (int i = 0; i < 3; i++ ) {
+        orthoNormals[0][i] = -1 * orthoNormals[0][i]; 
+    }
+
+    //  X normal is -1 * Z x X
+    vtkMath::Cross( orthoNormals[2], normals[0], orthoNormals[1] ); 
+
+
+    for (int i = 0; i < 3; i++ ) {
+        for (int j = 0; j < 3; j++ ) {
+            normals[i][j] = orthoNormals[i][j]; 
+        }
+    }
+    
+    //% boxPlane_patient(3).normal will be keep as it is
+    //normalZ = boxPlane_patient(3).normal; 
+    //normalX = -cross(normalZ, boxPlane_patient(2).normal);
+    //normalY = cross(normalZ, normalX);
+
+    //boxPlane_patient(2).normal = normalY;
+    //if boxPlane_patient(1).normal(2)*boxPlane_patient(2).normal(2) < 0
+        //boxPlane_patient(1).normal = -normalY;
+    //else
+        //boxPlane_patient(1).normal = normalY;
+    //end
+//
+    //if boxPlane_patient(3).normal(3)*boxPlane_patient(4).normal(3) < 0
+        //boxPlane_patient(4).normal = -normalZ;
+    //else
+        //boxPlane_patient(4).normal = normalZ;
+    //end
+//
+    //boxPlane_patient(5).normal = normalX;
+    //if boxPlane_patient(5).normal(1)*boxPlane_patient(6).normal(1) < 0
+        //boxPlane_patient(6).normal = -normalX;
+    //else
+        //boxPlane_patient(6).normal = normalX;
+    //end 
 }
 
 
