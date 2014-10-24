@@ -304,7 +304,7 @@ void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThi
     }
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
-            float tmp = normals[i][j] * (distances[i][0] - distances[i][1]); 
+            float tmp = normals[i][j] * (distances[i][0] + distances[i][1]); 
             tmp /= 2;  
             pressOrigin[j] += tmp;  
         }
@@ -324,7 +324,7 @@ void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThi
     for ( int i = 0; i < 3; i++ ) {
         differenceVectorLength = 0.; 
         for ( int j = 0; j < 3; j++ ) {
-            differenceVector[j] = normals[i][j] * (distances[i][0] + distances[i][1]); 
+            differenceVector[j] = normals[i][j] * (distances[i][0] - distances[i][1]); 
             differenceVectorLength += differenceVector[j] * differenceVector[j]; 
         }
         pressThickness[i] = pow(differenceVectorLength, .5);  
@@ -403,6 +403,8 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
         //phi = phi2; 
 
         //cout << "psi1 " << psi1 << " psi2 " << psi2 << endl;
+        //cout << "phi1 " << phi1 << " phi2 " << phi2 << endl;
+        //cout << "theta1 " << theta1 << " theta2 " << theta2 << endl;
 
     } else {
 
@@ -627,6 +629,13 @@ void svkSatBandsXML::LPSToRAS(float normals[3][3])
  */
 void svkSatBandsXML::InitPressDistances(float normals[3][3], float distances[3][2]) 
 {
+
+    for ( int i = 0; i < 3; i ++ ) {
+        for ( int j = 0; j < 2; j++ ) {
+            distances[i][j] = VTK_FLOAT_MAX; 
+        }
+    }
+
     //  Now match up the corresponding distances to the appropriate row of the normals array. 
     //  Distances are grouped in pairs for each normal vector.  The
     //  first distance in each tuple is the distance along the normal, the 2nd is the 
@@ -648,24 +657,38 @@ void svkSatBandsXML::InitPressDistances(float normals[3][3], float distances[3][
                         &thickness, 
                         &distance
                     ); 
-
+            cout << "CHECK: " << normalIndex << " " << satNumber << " " << distance << endl;
             float dot = vtkMath::Dot( normal, normals[normalIndex] );
             //  some tolerance, but close to 1: 
             //  if parallel, then assign to first of tuple
-            if ( dot  >= .99 ) {
-                distances[normalIndex][0] = distance; 
-                numDistancesInitialized++;     
-            } else if ( dot  <= -.99 ) {
-                distances[normalIndex][1] = distance; 
-                numDistancesInitialized++;     
+            if ( dot  >= .99 || dot <= -.99 ) {
+
+                int distanceIndex = 0; 
+                if ( distances[normalIndex][0] != VTK_FLOAT_MAX ) {    
+                    distanceIndex = 1; 
+                }
+                
+                if ( dot  >= -.99 ) {
+                    distances[normalIndex][distanceIndex] = distance; 
+                    numDistancesInitialized++;     
+                } else if ( dot  <= -.99 ) {
+                    distances[normalIndex][distanceIndex] = -1 * distance; 
+                    numDistancesInitialized++;     
+                }
+
             }
+
         }
     }
 
     if ( numDistancesInitialized != 6 ) {
         cerr << "PRESS BOX DISTANCES NOT INITIALIZED" << numDistancesInitialized << endl;
         exit(1); 
-    } 
+    } else {
+        for ( int normalIndex = 0; normalIndex < 3; normalIndex++ ) {
+            cout << "Distance " << distances[normalIndex][0] << " -> " << distances[normalIndex][1] << endl;
+        }
+    }
 }
 
 
