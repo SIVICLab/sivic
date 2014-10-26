@@ -341,13 +341,13 @@ void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThi
     //          Ay-> Theta is rotation about P 
     //          Az-> Phi is rotation about S
     //  ===========================================================
-    for ( int i = 0; i < 3; i++ ) {
-        cout << "NORMALS ANGLES: " << normals[i][0] << " " 
-            << normals[i][1] << " " << normals[i][2] << endl;        
-    }
 
-    this->LPSToRAS(normals); 
     this->RotationMatrixToEulerAngles( normals, pressAngles ); 
+
+    //  ADD PI to the 3rd angle.. this is a bit of a black box operation, but required for the PSD
+    //  to get the correct prescription
+    pressAngles[2] += vtkMath::Pi();
+    
     
     cout << "PRESS EULERS: " << pressAngles[0] << " " << pressAngles[1] << " " << pressAngles[2] << endl;        
 
@@ -373,8 +373,15 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
     float theta; 
     float phi; 
 
-    if ( fabs( normals[2][0] ) != 1 ) {
+    //  these equations are defined for the inverse transformation, so transpose the normals matrix when 
+    //  solvinig for 3 angles: 
+    this->TransposeNormals( normals );
+    for ( int i = 0; i < 3; i++ ) {
+        cout << "NORMALS: " << normals[i][0] << " " 
+            << normals[i][1] << " " << normals[i][2] << endl;        
+    }
 
+    if ( fabs( normals[2][0] ) != 1 ) {
 
         cout << "EULER one " << endl;
         float psi1; 
@@ -426,6 +433,22 @@ void svkSatBandsXML::RotationMatrixToEulerAngles( float normals[3][3], float eul
 
 }
 
+
+/*
+ *
+ */
+void svkSatBandsXML::TransposeNormals( float normals[3][3] ) {
+    //  Transpose rotation matrix: 
+    float transposed[3][3]; 
+    vtkMath::Transpose3x3( normals, transposed); 
+    for ( int i=0; i < 3; i++) {
+        for ( int j=0; j < 3; j++) {
+            normals[i][j] = transposed[i][j]; 
+        }
+    }
+    //  Transpose rotation matrix END 
+}
+
 /*
  *  Initialized a set of normal vectors from the press box description in the XML file. 
  *  The returned array consists of 3 normal vectors, 1 in each row, and ordered from 
@@ -464,7 +487,7 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
                     &distance
                 ); 
 
-        if ( this->IsNormalUnique( normal, normals) )  {
+        if ( this->IsNormalUnique( normal, normals) && this->IsConventionalNormal( normal ) )  {
             normals[numNormalsInitialized][0] = normal[0]; 
             normals[numNormalsInitialized][1] = normal[1]; 
             normals[numNormalsInitialized][2] = normal[2]; 
@@ -521,7 +544,6 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
         normals[i][2] = normalsTmp[i][2]; 
     }
 
-
     if( this->GetDebug() ) {
         for ( int i = 0; i < 3; i++ ) {
             cout << "NORMALS LPS: " << normals[i][0] << " " 
@@ -529,6 +551,48 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
         }
     }
 
+}
+
+
+/*
+ *  By current convention (terrible!!!) in sat band xml, 
+ *      xNormal is defined by 5th element
+ *      yNormal is defined by 2nd element
+ *      zNormal is defined by 3nd element
+ */
+bool svkSatBandsXML::IsConventionalNormal( float normalIn[3]  ) 
+{
+
+    bool isConventionalElement = false; 
+
+    string label;     
+    float normal[3]; 
+    float thick; 
+    float dist; 
+
+    float dot; 
+
+    this->GetPressBoxSat( 2, &label, &normal[0], &normal[1], &normal[2], &thick, &dist); 
+    dot = vtkMath::Dot( normalIn, normal );
+    float dotThreshold = .99; 
+    if (dot > dotThreshold ) { 
+         isConventionalElement = true; 
+    }
+        
+    this->GetPressBoxSat( 3, &label, &normal[0], &normal[1], &normal[2], &thick, &dist); 
+    dot = vtkMath::Dot( normalIn, normal );
+    if (dot > dotThreshold ) { 
+         isConventionalElement = true; 
+    }
+
+    this->GetPressBoxSat( 5, &label, &normal[0], &normal[1], &normal[2], &thick, &dist); 
+    dot = vtkMath::Dot( normalIn, normal );
+    if (dot > dotThreshold ) { 
+         isConventionalElement = true; 
+    }
+
+    return isConventionalElement; 
+    
 }
 
 

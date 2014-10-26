@@ -140,12 +140,13 @@ class svkSatBandsXML: public vtkObject
                                         float*              distance
                                     ); 
         bool                        IsNormalUnique( float normal[3], float normals[3][3] );
+        bool                        IsConventionalNormal( float normalIn[3] ); 
         void                        InitPressBoxNormals( float normals[3][3] ); 
         void                        MakePRESSOrthonormal( float normals[3][3] ); 
         void                        InitPressDistances(float normals[3][3], float distances[3][2]); 
         void                        RotationMatrixToEulerAngles( float normals[3][3], float eulerAngles[3] ); 
         void                        LPSToRAS( float normals[3][3] ); 
-
+        void                        TransposeNormals( float normals[3][3] );
 
         
         //  Members:
