@@ -207,8 +207,7 @@ class svkHSVD : public svkThreadedImageAlgorithm
         void    SubtractFilter();
         void    CheckInputSpectralDomain();
         void    CheckOutputSpectralDomain();
-
-
+        bool    CanFitSignal( const doublecomplex* signal, int numPts ); 
 
         void    MatMat(
                     const doublecomplex* matrix1,

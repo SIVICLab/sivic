@@ -75,6 +75,7 @@ svkHSVD::svkHSVD()
     this->exportFilterImage = false; 
     this->onlyFitInVolumeLocalization = false; 
     this->modelOrder = 25; 
+    this->numTimePoints = -1;     
     //this->SetNumberOfThreads(1);
     svkHSVD::progress = NULL; 
 
@@ -137,7 +138,6 @@ svkMrsImageData* svkHSVD::GetFilterImage()
  */
 int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
     return 1;
 }
 
@@ -145,10 +145,8 @@ int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector**
 /*! 
  *
  */
-
 int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
 
@@ -404,6 +402,8 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         //signal[t].i = static_cast<doublereal>(std::imag(tupleIn[1]));
         signal[t].r = static_cast<doublereal>(tupleIn[0]); 
         signal[t].i = static_cast<doublereal>(tupleIn[1]);
+
+
         //cout << "SPECTRUM: " << t << " = " << static_cast<doublereal>(tupleIn[0]) << " " << static_cast<doublereal>(tupleIn[1]) << endl;
 /*
         //simulate simple spectrum: 
@@ -422,6 +422,31 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         signal[t].i = (amp * sin( 0 ) * damping);
 */
     }
+
+    //  if signal is entirely zero, then do not fit this voxel
+    if ( ! this->CanFitSignal( signal,  numTimePointsLong ) ) {
+
+        vector < double > poleParams; 
+        double zero_val = 0.;
+
+        //  amplitude
+        poleParams.push_back(zero_val);
+
+        //  phase
+        poleParams.push_back(zero_val);
+
+        //  frequency    
+        poleParams.push_back(zero_val);
+                  
+        //  damping
+        poleParams.push_back(zero_val);         
+
+        hsvdModel->push_back(poleParams); 
+
+        return; 
+    }
+
+
 
     //////////////////////////////////////////////////////////////////////
     // start the processing of the individual spectra
@@ -742,6 +767,24 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
 }
 
 
+/*
+ *  If the signal is identically zero everywhere, it can't be fit. 
+ */
+bool svkHSVD::CanFitSignal( const doublecomplex* signal, int numPts ) 
+{
+        
+    bool canFit = false; 
+    for( int t = 0; t < numPts; t++ ){
+        if ( signal[t].r != 0 ||  signal[t].i != 0 ) {
+            canFit = true; 
+            break;  
+        } 
+    }
+    return canFit; 
+}
+
+
+
 /*!
  *  Use components from the fitted HSVD model to construct a filter for the specified 
  *  frequency range, amplitude, damping, etc.   The filter Spectrum should be the same dimension
@@ -908,6 +951,9 @@ void svkHSVD::SubtractFilter()
  */
 void svkHSVD::AddFrequencyAndDampingFilterRule( float frequencyLimit1PPM, float frequencyLimit2PPM, float dampingThreshold )
 {
+    if ( this->GetImageDataInput(0)== NULL ) { 
+        cerr << " svkHSVD: Must set input data before specifying filters" << endl;
+    }
 
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
@@ -932,22 +978,25 @@ void svkHSVD::AddFrequencyAndDampingFilterRule( float frequencyLimit1PPM, float 
 
 }
 
+
 /*!
  *  Remove H20 from proton spectra (all frequencies downfield of 4.2PPM, i.e. higher PPM). 
  */
 void svkHSVD::RemoveH20On()
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    if ( data == NULL ) { 
+        cerr << " svkHSVD: Must set input data before specifying filters" << endl;
+    }
     svkDcmHeader* hdr = data->GetDcmHeader(); 
-
+       
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( hdr );
-
+       
     float downfieldPPMLimit = point->ConvertPosUnits( 0, svkSpecPoint::PTS, svkSpecPoint::PPM);
     this->AddPPMFrequencyFilterRule( downfieldPPMLimit, 4.2 );
-
+       
     point->Delete();
-
 }
 
 
@@ -957,13 +1006,20 @@ void svkHSVD::RemoveH20On()
 void svkHSVD::RemoveLipidOn()
 {
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
+    if ( data == NULL ) { 
+        cerr << " svkHSVD: Must set input data before specifying filters" << endl;
+    }
     svkDcmHeader* hdr = data->GetDcmHeader(); 
 
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( hdr );
 
+    if ( this->numTimePoints < 0 ) {  
+        this->numTimePoints = data->GetDcmHeader()->GetIntValue( "DataPointColumns" );
+    }
     int maxPoint = this->numTimePoints; 
     float upfieldPPMLimit = point->ConvertPosUnits( maxPoint-1, svkSpecPoint::PTS, svkSpecPoint::PPM);
+    //cout << "MAX UPFIELD: " << maxPoint-1 << " " << upfieldPPMLimit << endl;
     this->AddPPMFrequencyFilterRule( 1.8, upfieldPPMLimit );
 
     point->Delete();
@@ -977,6 +1033,10 @@ void svkHSVD::RemoveLipidOn()
  */
 void svkHSVD::AddPPMFrequencyFilterRule( float frequencyLimit1PPM, float frequencyLimit2PPM )
 {
+
+    if ( this->GetImageDataInput(0)== NULL ) { 
+        cerr << " svkHSVD: Must set input data before specifying filters" << endl;
+    }
 
     svkSpecPoint* point = svkSpecPoint::New();
     point->SetDcmHeader( this->GetImageDataInput(0)->GetDcmHeader() );
@@ -995,7 +1055,7 @@ void svkHSVD::AddPPMFrequencyFilterRule( float frequencyLimit1PPM, float frequen
     filter.push_back( lowFrequencyLimitHz ); 
     filter.push_back( highFrequencyLimitHz ); 
     filter.push_back( dampingThreshold ); 
-    //cout << "SET FILTER: " << frequencyLimit1PPM << " to " << frequencyLimit2PPM << endl;
+    cout << "AddPPMFrequencyFilterRule: " << frequencyLimit1PPM << " to " << frequencyLimit2PPM << endl;
     //cout << "SET FILTER: " << lowFrequencyLimitHz  << " to " << highFrequencyLimitHz << endl;
     this->filterRules.push_back( filter );
 
@@ -1010,6 +1070,9 @@ void svkHSVD::AddPPMFrequencyFilterRule( float frequencyLimit1PPM, float frequen
 void svkHSVD::AddDampingFilterRule( float dampingThreshold )
 {
 
+    if ( this->GetImageDataInput(0)== NULL ) { 
+        cerr << " svkHSVD: Must set input data before specifying filters" << endl;
+    }
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
     svkDcmHeader* hdr = data->GetDcmHeader(); 
     int numTimePoints = this->numTimePoints; 
