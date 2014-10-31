@@ -252,7 +252,6 @@ int svkMrsImageFFT::RequestDataSpatial( vtkInformation* request, vtkInformationV
                 if( point%16==0 ) {
                     progress = (point+1)/((double)numberOfPoints);
                     this->UpdateProgress( progress );
-                    cout << "." ;
                 }
                 //  ImageFourierCenter required data type VTK_DOUBLE
                 data->GetImage( pointImage, point, timePt, channel, 2, "", VTK_DOUBLE );
@@ -462,7 +461,6 @@ int svkMrsImageFFT::RequestDataSpectral( vtkInformation* request, vtkInformation
         int slice = svkDcmHeader::GetDimensionVectorValue( &indexVector, svkDcmHeader::SLICE_INDEX);
         progress = (((slice-this->updateExtent[4]) * (ranges[0]) * (ranges[1]) ) )/((double)denominator);
         this->UpdateProgress( progress );
-        cout << "."  ;
 
         if ( ! svk4DImageData::IsIndexInExtent( this->updateExtent, &indexVector) ) {
             continue; 
