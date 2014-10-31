@@ -251,6 +251,11 @@ void svkGEPFileReader::ExecuteInformation()
             vtkErrorMacro("Unable to open file " << this->FileName );
             return;
         }
+        if ( fs.st_size == 0 ) {
+            vtkErrorMacro("PFIle has size 0. " << this->FileName );
+            exit(1);
+        }
+
 
         this->InitDcmHeader(); 
 
