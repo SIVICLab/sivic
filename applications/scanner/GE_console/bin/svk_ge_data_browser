@@ -554,7 +554,11 @@ proc show_raw_chooser {} {
             set dump_output "${dump_output}NXT${line}"
         }
         set dump_output "${dump_output}NXT"
-        close $output
+
+        #   check for errors in svk_gepfile_reader
+        if {[catch {close $output} err]} {
+            continue
+        }
 
         regexp {rhe\.patname               = (.*?)NXT} $dump_output trash pname
         regexp {rhe\.patid                 = (.*?)NXT} $dump_output trash mrn
