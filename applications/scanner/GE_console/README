@@ -1,0 +1,34 @@
+Brute force upgrading for now. Need a streamlined protocol for doing this automatically
+
+
+1.  unpackage the new distribution in ~sdc/
+
+        gunzip sivic_GE_console_0.9.14_Linux_x86_64.tar.gz
+        tar -xf sivic_GE_console_0.9.14_Linux_x86_64.tar
+
+
+2.  figure out what configurations need to be migrated from the old to the new distribution: 
+
+    For examples, conf files, and migration of application packages: 
+        cd to current distribution console/lib
+        diff svk_ge_data_browser_conf.pm /export/home/sdc/sivic_GE_console_0.9.14_Linux_x86_64/console/lib/svk_ge_data_browser_conf.pm
+        cp svk_ge_data_browser_conf.pm /export/home/sdc/sivic_GE_console_0.9.14_Linux_x86_64/console/lib/svk_ge_data_browser_conf.pm
+
+        cd console/bin/
+        ls
+        cp -r svk_Atlas_Based_Auto_MRSI_Prescription /export/home/sdc/sivic_GE_console_0.9.14_Linux_x86_64/console/bin/
+        cp -r svk_gaba_edit_recon/ /export/home/sdc/sivic_GE_console_0.9.14_Linux_x86_64/console/bin/
+        cp -r svk_mrsi_recon/ /export/home/sdc/sivic_GE_console_0.9.14_Linux_x86_64/console/bin/
+
+
+3.  Set the svk link to point to the new distribution
+
+        cd ~sdc/
+        rm svk
+            /bin/rm: remove symbolic link `svk'? y
+        ln -s sivic_GE_console_0.9.14_Linux_x86_64 svk
+
+4. Cleanup: 
+    rm sivic_GE_console_0.9.14_Linux_x86_64.tar
+
+    After testing apps in new distribution, then remove the old directory. 
