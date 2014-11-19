@@ -1620,6 +1620,51 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
     svkDcmHeader::DimensionVector loopIndex = *dimensionVector; 
 
     int numFrames = this->GetNumberOfFrames(dimensionVector);
+    
+    int colsT = 4; 
+    int rowsT = 3; 
+    float transformIndicesToLPS[4][3]; 
+
+    //  column 0
+    transformIndicesToLPS[0][0] = dcos[0][0] * voxelSpacing[0]; 
+    transformIndicesToLPS[0][1] = dcos[0][1] * voxelSpacing[0]; 
+    transformIndicesToLPS[0][2] = dcos[0][2] * voxelSpacing[0]; 
+
+    //  column 1
+    transformIndicesToLPS[1][0] = dcos[1][0] * voxelSpacing[1]; 
+    transformIndicesToLPS[1][1] = dcos[1][1] * voxelSpacing[1]; 
+    transformIndicesToLPS[1][2] = dcos[1][2] * voxelSpacing[1]; 
+
+    //  column 2
+    transformIndicesToLPS[2][0] = dcos[2][0] * voxelSpacing[2]; 
+    transformIndicesToLPS[2][1] = dcos[2][1] * voxelSpacing[2]; 
+    transformIndicesToLPS[2][2] = dcos[2][2] * voxelSpacing[2]; 
+
+    //  column 3
+    transformIndicesToLPS[3][0] = toplc[0]; 
+    transformIndicesToLPS[3][1] = toplc[1]; 
+    transformIndicesToLPS[3][2] = toplc[2]; 
+
+    if (this->GetDebug()) {
+        cout << endl;
+        cout << "DCOS:    " << dcos[0][0]  << " " << dcos[0][1]  << " " << dcos[0][2]  << endl; 
+        cout << "DCOS:    " << dcos[1][0]  << " " << dcos[1][1]  << " " << dcos[1][2]  << endl; 
+        cout << "DCOS:    " << dcos[2][0]  << " " << dcos[2][1]  << " " << dcos[2][2]  << endl; 
+        cout << "SPACING: " << voxelSpacing[0] << " " <<  voxelSpacing[1] << " " << voxelSpacing[2] << endl;
+        cout << "TOPLC:   " << toplc[0] << " " << toplc[1] << " " << toplc[2] << endl;
+        cout << endl;
+        cout << "T: " << transformIndicesToLPS[0][0]  << " " << transformIndicesToLPS[1][0]  << " " << transformIndicesToLPS[2][0]  << endl; 
+        cout << "T: " << transformIndicesToLPS[0][1]  << " " << transformIndicesToLPS[1][1]  << " " << transformIndicesToLPS[2][1]  << endl; 
+        cout << "T: " << transformIndicesToLPS[0][2]  << " " << transformIndicesToLPS[1][2]  << " " << transformIndicesToLPS[2][2]  << endl; 
+        cout << endl;
+    }
+
+    int rowsIJK = 4; 
+    int ijk[4]; 
+
+    int rowsLPS = 3; 
+    float lps[3]; 
+
 
     for ( int frame = 0; frame < numFrames; frame++) {
 
@@ -1636,15 +1681,27 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
             sliceNumber,
             "PlanePositionSequence"
         );
-       
-        //add displacement along normal vector:
-        for (int j = 0; j < 3; j++) {
-            displacement[j] = dcos[2][j] * voxelSpacing[2] * sliceNumber;
+        cout << "FRAME: " << frame << " -> " ; 
+        //  Add displacement along normal vector:
+        //  for indices i=0,j=0, k = sliceNumber, i.e. displacement along a vector
+        //  throught the TLC points of each slice:
+        //      0,0,0 -> 0,0,1 -> 0,0,2 -> etc.
+        ijk[0] = 0; 
+        ijk[1] = 0; 
+        ijk[2] = sliceNumber; 
+        ijk[3] = 1; 
+        for ( int row = 0; row < 3; row++ ) {
+            lps[row] = 0; 
+            for (int  col = 0; col < 4; col++ ) {
+                //cout << "lps +=  " << transformIndicesToLPS[col][row] << " * " <<  ijk[col] << endl;
+                lps[row] += transformIndicesToLPS[col][row] * ijk[col]; 
+            }
         }
 
         for(int j = 0; j < 3; j++) { //L, P, S
-            frameLPSPosition[j] = toplc[j] +  displacement[j] ;
+            frameLPSPosition[j] = lps[j]; 
         }
+        //cout << "lps: " << lps[0] << " " << lps[1] << " " << lps[2] << endl;
 
         string imagePositionPatient;
         for (int j = 0; j < 3; j++) {
