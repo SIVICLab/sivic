@@ -117,7 +117,7 @@
 // for plotting spectra.
 #define NEG_RANGE_SCALE .17
 #define POS_RANGE_SCALE .70
-#define PPM_1H_DEFAULT_MIN 3.844 
+#define PPM_1H_DEFAULT_MIN 4.000
 #define PPM_1H_DEFAULT_MAX 0.602 
 #define PPM_13C_DEFAULT_MIN 250 
 #define PPM_13C_DEFAULT_MAX -50 
