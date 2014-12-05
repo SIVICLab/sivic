@@ -131,6 +131,7 @@ class svkUtils : public vtkObject
                                     string xmlFileName, 
                                     vector<string> xmlVariables 
                                   );
+        static void               ReadLine(ifstream* fs, istringstream* iss);   
 
 
 	protected:

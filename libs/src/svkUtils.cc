@@ -592,3 +592,15 @@ vtkXMLDataElement* svkUtils::ReadXMLAndSubstituteVariables(string xmlFileName, v
     xml = vtkXMLUtilities::ReadElementFromString( xmlFileString.c_str()  );
     return xml;
 }
+
+
+/*! 
+ *  Utility function to read a single line from a file stream.
+ */
+void svkUtils::ReadLine(ifstream* fs, istringstream* iss)    
+{
+    char line[2000];
+    iss->clear();    
+    fs->getline(line, 2000);
+    iss->str(string(line));
+}
