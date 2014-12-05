@@ -199,7 +199,7 @@ vtkstd::string svkImageReader2::GetFileNameWithoutPath(const char* fname)
 
 
 /*!
- *  Return the fdf file size.
+ *  Return the file size.
  */
 long svkImageReader2::GetFileSize(ifstream* fs)
 {

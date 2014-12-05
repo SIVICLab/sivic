@@ -76,6 +76,7 @@ class svkImageReader2 : public vtkImageReader2
         static vtkstd::string  GetFilePath(const char* fname);
         void                   OnlyReadOneInputFile();
         void                   GlobFileNames(); 
+        static long            GetFileSize(ifstream* fs); 
 
 
     protected:
@@ -90,7 +91,6 @@ class svkImageReader2 : public vtkImageReader2
         void                                     SetupOutputExtent(); 
         void                                     SetupOutputScalarData(); 
         vtkstd::string                           GetFileNameWithoutPath(const char* fname); 
-        long                                     GetFileSize(ifstream* fs); 
 
         virtual void                             ReadLine(ifstream* hdr, istringstream* iss);
         void                                     ReadLineIgnore(
