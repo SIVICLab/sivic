@@ -93,7 +93,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 
-INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+#INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
 
 SET(DCMTK_OFLOG "")
 if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
@@ -179,6 +179,7 @@ endif( BUILD_ITK )
 
 SET(SVK_LIBS
     ${ITK_LIBS}
+    svkPSD
     svk 
     svkPSD
     svkTypeUtils
@@ -445,8 +446,7 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     svkSatBandsXML_c
-    svkPSD
-    svkTypeUtils
+    ${SVK_LIBS}
     vtkIO
 )
 
