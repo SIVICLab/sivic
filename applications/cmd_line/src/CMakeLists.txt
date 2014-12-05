@@ -101,8 +101,6 @@ IF (UCSF_INTERNAL)
 ENDIF(UCSF_INTERNAL)
 
 
-INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
-
 # if dcmtk 3.6, need to add liboflog:
 SET(DCMTK_OFLOG "")
 if ( EXISTS "${DCMTK_DIR}/lib/liboflog.a" OR EXISTS "${DCMTK_DIR}/lib/oflog.lib")
@@ -240,13 +238,13 @@ SET(SVK_LIBS
     ${ITK_LIBS}
     ${CLAPACK_LIBS}
     svk 
+    svkPSD
     svkTypeUtils
     svkadapt 
     vtkImaging
     vtkIO
     vtkFiltering
     vtkCommon
-    vtkInfovis
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
@@ -260,6 +258,7 @@ SET(SVK_VIZ_LIBS
     vtkVolumeRendering
     vtkGraphics
     vtkHybrid
+    vtkInfovis
 )
 
 
@@ -544,6 +543,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_stats
 	${SVK_LIBS}
+    vtkInfovis
 )
 
 ADD_EXECUTABLE(
@@ -553,6 +553,7 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_image_pipeline
 	${SVK_LIBS}
+    vtkInfovis
 )
 
 if ( BUILD_ITK )
