@@ -92,7 +92,7 @@ int main (int argc, char** argv)
     usemsg += "                                         1 = limited (default)               \n";
     usemsg += "                                         2 = deidentified                    \n";
     usemsg += "   --deid_id     id                  Replace PHI with this identifier        \n"; 
-    usemsg += "   --single                          Only transform specified file if        \n"; 
+    usemsg += "   --single                          Only converts specified file if         \n"; 
     usemsg += "                                     multiple in series.                     \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
@@ -126,7 +126,7 @@ int main (int argc, char** argv)
     {
         {"deid_type",   required_argument, NULL,  FLAG_DEID_TYPE}, 
         {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
-        {"single",    no_argument,       NULL,  FLAG_SINGLE},
+        {"single",      no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
