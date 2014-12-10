@@ -1681,7 +1681,7 @@ void svkDcmHeader::InitPlanePositionMacro(double toplc[3], double voxelSpacing[3
             sliceNumber,
             "PlanePositionSequence"
         );
-        cout << "FRAME: " << frame << " -> " ; 
+        //cout << "FRAME: " << frame << " -> " ; 
         //  Add displacement along normal vector:
         //  for indices i=0,j=0, k = sliceNumber, i.e. displacement along a vector
         //  throught the TLC points of each slice:
