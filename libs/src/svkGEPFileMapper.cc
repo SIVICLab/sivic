@@ -112,6 +112,7 @@ void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::
     this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
     this->InitMRSpectroscopyDataModule();
+    header->PrintDcmHeader(); 
 
     this->iod->Delete();
 }
@@ -1465,7 +1466,9 @@ void svkGEPFileMapper::InitMRAveragesMacro()
 
 
 /*!
- *  sat band information  image.user25-48 
+ *  Initialize sat band information:
+ *      1.  from pfile Header:   image.user25-48 
+ *      2.  additional sat bands encoded in xml (.dat) file
  */
 void svkGEPFileMapper::InitMRSpatialSaturationMacro()
 {
@@ -1476,12 +1479,11 @@ void svkGEPFileMapper::InitMRSpatialSaturationMacro()
         "MRSpatialSaturationSequence"
     );
 
-
+    //  First init the sat bands in the header: 
     //  if this field is 3, then sat bands are defined in user CVs.    
     if ( this->GetHeaderValueAsInt( "rhr.rh_user_usage_tag" ) == 3 ) { 
 
         //  Sat band info (up to 6) is contained in 4 sequential user CVs:
-        int satBandNumber = 0; 
         for ( int i = 25; i < 49; i += 4 ) {
 
             ostringstream index;
@@ -1510,22 +1512,35 @@ void svkGEPFileMapper::InitMRSpatialSaturationMacro()
             float translation = this->GetHeaderValueAsFloat( t ); 
     
             if ( satRAS[0] != 0 || satRAS[1] != 0 || satRAS[2] != 0 || translation != 0) {
-                this->InitSatBand(satRAS, translation, satBandNumber);
-                satBandNumber++; 
+                this->InitSatBand(satRAS, translation);
             }
 
         }
     }
+
+
+    //  Now init any sat bands stored in .dat/xml file:        
+    this->InitSatBandsFromXML();
+}
+
+
+/*!
+ * 
+ */
+void svkGEPFileMapper::InitSatBandsFromXML()
+{
+    return; 
 }
 
 
 /*!  
  *  Add a sat band to the SpatialSaturationSequence: 
- *  RAS:          vector of the normal to the sat band with lenght 
+ *  RAS:          vector of the normal to the sat band with length 
  *                equal to the band thickness in RAS coordinates. 
- *  translation : translation along that vector to sat band location (slab middle)
+ *  translation : translation along that vector from origin to sat band location (slab farthest from
+ *                origin)
  */
-void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation, int satBandNumber )
+void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation)
 {
 
     float satThickness = sqrt( 
@@ -1552,17 +1567,25 @@ void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation, int satB
         position[i] = orientation[i] * ( translation - 0.5 * satThickness );
     }
 
+    string sequenceName       = "MRSpatialSaturationSequence"; 
+    string parentSequenceName = "SharedFunctionalGroupsSequence"; 
 
+    int satBandNumber = this->dcmHeader->GetNumberOfItemsInSequence(
+        sequenceName.c_str(), 
+        parentSequenceName.c_str(), 
+        0
+    );
+ 
     this->dcmHeader->AddSequenceItemElement(
-        "MRSpatialSaturationSequence",
+        sequenceName.c_str(), 
         satBandNumber,                        
         "SlabThickness",       
         satThickness, 
-        "SharedFunctionalGroupsSequence",    
+        parentSequenceName.c_str(), 
         0
     );
         
-    vtkstd::string slabOrientation;
+    string slabOrientation;
     for (int j = 0; j < 3; j++) {
         ostringstream ossOrientation;
         ossOrientation << orientation[j];
@@ -1573,15 +1596,15 @@ void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation, int satB
     }
 
     this->dcmHeader->AddSequenceItemElement(
-        "MRSpatialSaturationSequence",
+        sequenceName.c_str(), 
         satBandNumber,                        
         "SlabOrientation",       
         slabOrientation,
-        "SharedFunctionalGroupsSequence",    
+        parentSequenceName.c_str(), 
         0                      
     );
 
-    vtkstd::string slabPosition;
+    string slabPosition;
     for (int j = 0; j < 3; j++) {
         ostringstream ossPosition;
         ossPosition << position[j];
@@ -1591,11 +1614,11 @@ void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation, int satB
         }
     }
     this->dcmHeader->AddSequenceItemElement(
-        "MRSpatialSaturationSequence",
+        sequenceName.c_str(), 
         satBandNumber,                        
         "MidSlabPosition",       
         slabPosition,
-        "SharedFunctionalGroupsSequence",    
+        parentSequenceName.c_str(), 
         0                      
     );
 
@@ -3013,4 +3036,11 @@ vtkstd::string svkGEPFileMapper::GetProgressText( )
 void svkGEPFileMapper::UpdateProgress(double amount)
 {
     this->InvokeEvent(vtkCommand::ProgressEvent,static_cast<void *>(&amount));
+}
+
+
+void svkGEPFileMapper::SetPfileName( string pfileName )
+{
+    this->pfileName = pfileName; 
+    cout << "PFILE NAME: " << this->pfileName << endl;
 }

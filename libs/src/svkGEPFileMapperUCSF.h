@@ -68,6 +68,13 @@ class svkGEPFileMapperUCSF : public svkGEPFileMapper
   
         virtual int     GetNumKSpacePoints(); 
         virtual bool    WasIndexSampled(int xIndex, int yIndex, int zIndex);
+        virtual void    InitSatBandsFromXML(); 
+
+
+    private: 
+        void            GetCVS(int* readSats, int* octSats);
+        void            ReadLine(ifstream* fs, istringstream* iss); 
+
 
 };
 

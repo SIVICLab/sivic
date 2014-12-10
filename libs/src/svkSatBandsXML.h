@@ -99,6 +99,13 @@ class svkSatBandsXML: public vtkObject
                                         float*  distance  
                                     ); 
         int                         GetAutoSat(
+                                        int satNumber, 
+                                        string* label, 
+                                        float normal[3], 
+                                        float* thickness, 
+                                        float* distance
+                                    ); 
+        int                         GetAutoSat(
                                         int     satNumber, 
                                         string* label, 
                                         float*  normalX, 
@@ -120,6 +127,14 @@ class svkSatBandsXML: public vtkObject
                                         float* thickness, 
                                         float* distance
                                     ); 
+
+        int                         ConvertDatToXML( string rootName ); 
+
+        vtkXMLDataElement*          GetXMLDataElement(); 
+
+        void                        WriteXMLFile( string xmlFileName);
+
+
 
     protected:
 
@@ -147,6 +162,11 @@ class svkSatBandsXML: public vtkObject
         void                        RotationMatrixToEulerAngles( float normals[3][3], float eulerAngles[3] ); 
         void                        LPSToRAS( float normals[3][3] ); 
         void                        TransposeNormals( float normals[3][3] );
+        void                        PSDAutSatAnglesToNormal( float angle1, float angle2, float normal[3] ); 
+        int                         InitPressBoxFromDat( string rootName ); 
+        int                         InitSatsFromDat( string rootName ); 
+        void                        SortNormalArrayRLAPSI( float  normals[3][3] ); 
+
 
         
         //  Members:
@@ -157,8 +177,6 @@ class svkSatBandsXML: public vtkObject
         vtkXMLDataElement*          pressBoxElement;
         vtkXMLDataElement*          autoSatsElement;
 
-        //  map of regions: region name, peak (ppm) and peak width (ppm)
-        //vtkstd::vector < vtkstd::vector< vtkstd::string > >  regionVector;
 
 };
 

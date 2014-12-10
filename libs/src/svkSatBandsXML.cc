@@ -44,6 +44,7 @@
 #include <svkSatBandsXML.h>
 #include <svkUtils.h>
 #include <svkTypeUtils.h>
+#include <svkImageReader2.h>
 #include <vtkXMLUtilities.h>
 #include <vtkXMLDataParser.h>
 #include <vtkMath.h>
@@ -95,7 +96,7 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
     if (this->satBandsXML == NULL ) { 
         cout << "ERROR, could not parse element from " << this->xmlFileName << endl;
         return 1; 
-    }
+    } 
 
     // parse the 3 top level elements: 
     this->versionElement = this->satBandsXML->FindNestedElementWithName("version");
@@ -103,10 +104,10 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
     this->autoSatsElement = this->satBandsXML->FindNestedElementWithName("auto_sats");
 
     if( this->GetDebug() ) {
-        //this->satBandsXML->PrintXML(cout, vtkIndent());
-        //this->versionElement->PrintXML(cout, vtkIndent());
-        //this->pressBoxElement->PrintXML(cout, vtkIndent());
-        //this->autoSatsElement->PrintXML(cout, vtkIndent());
+        this->satBandsXML->PrintXML(cout, vtkIndent());
+        this->versionElement->PrintXML(cout, vtkIndent());
+        this->pressBoxElement->PrintXML(cout, vtkIndent());
+        this->autoSatsElement->PrintXML(cout, vtkIndent());
     }
 
     return 0; 
@@ -114,10 +115,541 @@ int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 }
 
 
+/*
+ *  For backwards compatibility, if no xml version of 
+ *  prescription, then check for legacy .dat version of 
+ *  press_box and sat_bands and 
+ *  convert to the new XML format: 
+ *      returns 0 if successful, or if no .dat files found. 
+ *      Not every acquisition has a dat file, so this may be OK
+ */
+int svkSatBandsXML::ConvertDatToXML( string rootName )
+{
+    int status = 0; 
+
+    //  If the dat files were parsed, then Create an XML structure in 
+    //  memory only: 
+    this->satBandsXML     = vtkXMLDataElement::New(); 
+    this->satBandsXML->SetName("svk_sat_bands"); 
+
+    vtkXMLDataElement* version = vtkXMLDataElement::New();
+    version->SetName("version"); 
+    version->SetCharacterData("1.0", 3); 
+    this->satBandsXML->AddNestedElement( version ); 
+
+    this->pressBoxElement = vtkXMLDataElement::New();
+    this->pressBoxElement->SetName("press_box"); 
+
+    this->autoSatsElement = vtkXMLDataElement::New();
+    this->autoSatsElement->SetName("auto_sats"); 
+
+
+    status = this->InitPressBoxFromDat( rootName ); 
+    if ( status != 0 ) {
+        return status; 
+    }
+
+    status = this->InitSatsFromDat( rootName ); 
+    if ( status != 0 ) {
+        return status; 
+    }
+
+    this->satBandsXML->AddNestedElement( this->pressBoxElement ); 
+    this->satBandsXML->AddNestedElement( this->autoSatsElement ); 
+
+    return status; 
+}
+
+
+/*
+ *  Attempt to open and parse legacy press_box.dat file and initialize the 
+ *  intermal XML data structure from the info in the file. 
+ */
+int svkSatBandsXML::InitPressBoxFromDat( string rootName ) 
+{
+
+    int status = 0; 
+   
+    string suffix = "_press_box.dat";  
+    string datFileName = rootName; 
+    datFileName.append(suffix); 
+    if ( ! svkUtils::FilePathExists( datFileName.c_str() ) ) {
+        //  No legacy .dat file, so just return 0; 
+        cout << "No legacy sat_bands.dat file:  " <<  datFileName << endl;
+        return status; 
+    } else {
+        cout << "Found legacy " << suffix << " file: " <<  datFileName << endl;
+    }
+
+    try { 
+
+        ifstream* datFile = new ifstream();
+        datFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        datFile->open( datFileName.c_str(), ifstream::in );
+        if ( ! datFile->is_open() ) {
+            throw runtime_error( "Could not open PFile .dat file: " + datFileName);
+        } 
+
+        long datFileSize = svkImageReader2::GetFileSize( datFile );
+
+        istringstream* iss = new istringstream();
+        string keyString;
+
+        try {
+
+            size_t  position; 
+            string  tmp; 
+            float   normals[3][3]; 
+            float   boxCenter[3]; 
+            float   boxSize[3]; 
+
+            if ( datFile->tellg() < datFileSize - 1 ) {
+
+                // parse 3 lines of press_box.dat: 
+
+                for ( int i = 0; i < 3; i++ ) {
+
+                    svkUtils::ReadLine( datFile, iss); 
+                    cout << "iss: " << iss->str() << endl;
+                    tmp.assign( iss->str() ); 
+
+                    // parse 3 values from each line
+                    string values[3]; 
+                    for ( int j = 0; j < 3; j++ ) {
+                        //cout << "TMP: " << tmp << endl;
+                        position = tmp.find_first_of(' ');
+                        if (position != string::npos) {
+                            values[j].assign( tmp.substr(0, position) );
+                        } else {   
+                            values[j].assign( tmp );
+                        }
+                        tmp.assign( tmp.substr(position + 1) ); 
+                    } 
+                    if ( this->GetDebug() )  {
+                        cout << "PARSE PB DAT: " << values[0] << " " << values[1] << " " << values[2] << endl;        
+                    }
+
+                    //  center of box
+                    if ( i == 0 ) {
+                        boxCenter[0] = svkTypeUtils::StringToFloat( values[0] ); 
+                        boxCenter[1] = svkTypeUtils::StringToFloat( values[1] ); 
+                        boxCenter[2] = svkTypeUtils::StringToFloat( values[2] ); 
+                    }
+
+                    //  size of box
+                    if ( i == 1 ) {
+                        boxSize[0] = svkTypeUtils::StringToFloat( values[0] ); 
+                        boxSize[1] = svkTypeUtils::StringToFloat( values[1] ); 
+                        boxSize[2] = svkTypeUtils::StringToFloat( values[2] ); 
+                    }
+
+                    //  orientation of box
+                    if ( i == 2 ) {
+
+                        //  Convention from Slaubaugh and  svkSatBandsXML::RotationMatrixToEulerAngles    
+                        //  inverse of RotationMatrixToEulerAngles
+                        //  angle1 = psi 
+                        //  angle2 = theta 
+                        //  angle3 = phi 
+
+                        float psi   = svkTypeUtils::StringToFloat( values[0] ); 
+                        float theta = svkTypeUtils::StringToFloat( values[1] ); 
+                        float phi   = svkTypeUtils::StringToFloat( values[2] ); 
+                        // I hate this mystery factor
+                        phi += vtkMath::Pi(); 
+   
+                        //  row 0:  
+                        normals[0][0] = cos(theta) * cos(phi); 
+                        normals[1][0] = sin(psi) * sin(theta) * cos(phi) - cos(psi) * sin(phi); 
+                        normals[2][0] = cos(psi) * sin(theta) * cos(phi) + sin(psi) * sin(phi);
+
+                        //  row 1:  
+                        normals[0][1] = cos(theta) * sin(phi); 
+                        normals[1][1] = sin(psi) * sin(theta) * sin(phi) + cos(psi) * cos(phi); 
+                        normals[2][1] = cos(psi) * sin(theta) * sin(phi) - sin(psi) * cos(phi); 
+
+                        //  row 2:  
+                        normals[0][2] = -1 * sin(theta); 
+                        normals[1][2] = sin(psi) * cos(theta);
+                        normals[2][2] = cos(psi) * cos(theta); 
+
+                    }
+                } 
+
+                if ( this->GetDebug() ) {
+                    //  Print normals from euler angles
+                    cout << normals[0][0] << " " << normals[1][0] << " " << normals[2][0] << endl;    
+                    cout << normals[0][1] << " " << normals[1][1] << " " << normals[2][1] << endl;    
+                    cout << normals[0][2] << " " << normals[1][2] << " " << normals[2][2] << endl;    
+                }
+
+                // Put array rows in RL, AP, SI order
+                this->SortNormalArrayRLAPSI(normals); 
+
+                float satNormal[3]; 
+                float lpsVector[3]; 
+                float size; 
+                float distance; 
+                int sign;  
+                string thicknessString = "0"; 
+                string distanceString; 
+                
+                string normalString; 
+                string labelString;
+                for ( int i = 0; i < 6; i++ ) {
+
+                    //  Now convert this representation (boxCenter, boxSize, boxDcos) into a 
+                    //  normal, center and distance from origin for each of the 6 faces.   
+                    //  for each of the 6 faces derive the location, thickness (0) and normal
+                    //  0- anterior  (AP)  
+                    //  1- posterior (AP)
+                    //  2- superior  (SI)
+                    //  3- inferior  (SI)
+                    //  4- left      (LR)
+                    //  5- right     (LR)
+                    if ( i == 0 || i == 1 ) {
+                        size = boxSize[0]/2;  
+
+                        for ( int j = 0; j < 3; j++ ) {
+                            satNormal[j] = normals[1][j];   //AP
+                        }
+
+                        //  id = 0 is more Anterior
+                        //  id = 1 is more Posterior 
+                        //  in LPS coords:      
+                        lpsVector[0] = 0; 
+                        lpsVector[1] = 1; 
+                        lpsVector[2] = 0; 
+                        if ( vtkMath::Dot(satNormal, lpsVector) > 0) {
+                            //satNormal points to P
+                            if ( i == 0 ) {
+                                sign = -1; 
+                            } else {
+                                sign = 1; 
+                            }
+                        } else {
+                            if ( i == 0 ) {
+                                sign = 1; 
+                            } else {
+                                sign = -1; 
+                            }
+                        }
+                        if ( i == 0) { 
+                            labelString = "Anterior"; 
+                        } else {
+                            labelString = "Posterior"; 
+                        }
+                    }
+
+                    if ( i == 2 || i == 3 ) {
+                        size = boxSize[1]/2;  
+
+                        for ( int j = 0; j < 3; j++ ) {
+                            satNormal[j] = normals[2][j];   //SI
+                        }
+                        //  id = 2 is more Superior
+                        //  id = 3 is more Inferior  
+                        //  in LPS coords:      
+                        lpsVector[0] = 0; 
+                        lpsVector[1] = 0; 
+                        lpsVector[2] = 1; 
+                        if ( vtkMath::Dot(satNormal, lpsVector) > 0) {
+                            //satNormal points to S
+                            if ( i == 2 ) {
+                                sign = 1; 
+                            } else {
+                                sign = -1; 
+                            }
+                        } else {
+                            if ( i == 2 ) {
+                                sign = -1; 
+                            } else {
+                                sign = 1; 
+                            }
+                        }
+                        if ( i == 2) { 
+                            labelString = "Superior"; 
+                        } else {
+                            labelString = "Inferior"; 
+                        }
+                    }
+
+                    if ( i == 4 || i == 5 ) {
+                        size = boxSize[2]/2;  
+
+                        for ( int j = 0; j < 3; j++ ) {
+                            satNormal[j] = normals[0][j];   //LR
+                        }
+                        //  id = 4 is more Left 
+                        //  id = 5 is more Right     
+                        //  in LPS coords:      
+                        lpsVector[0] = 1; 
+                        lpsVector[1] = 0; 
+                        lpsVector[2] = 0; 
+                        if ( vtkMath::Dot(satNormal, lpsVector) > 0) {
+                            //satNormal points to S
+                            if ( i == 4 ) {
+                                sign = 1; 
+                            } else {
+                                sign = -1; 
+                            }
+                        } else {
+                            if ( i == 4 ) {
+                                sign = -1; 
+                            } else {
+                                sign = 1; 
+                            }
+                        }
+                        if ( i == 4) { 
+                            labelString = "Left"; 
+                        } else {
+                            labelString = "Right"; 
+                        }
+                    }
+
+                    //  Compute distance of plane from origin: 
+                    //  1.  compute points on planes a distance, size, +/- from the box
+                    //      origin along the normal
+                    //  2.  The vector from the origin to this point (s) is projected
+                    //      along the normal vector.  The magnitude of this projection is 
+                    //      the desired distance
+                    //  each point is defined by 3 coordinates: 
+                    float point[3];  
+                    for (int k = 0; k < 3; k++ ) {
+                        point[k] = boxCenter[k] + sign * satNormal[k] * size; 
+                    }
+                    distance = vtkMath::Dot(satNormal, point); 
+
+                    //  Use this info to initialize a sat band element in an XML file: 
+                    vtkXMLDataElement* satBandElement = vtkXMLDataElement::New(); 
+                    satBandElement->SetName("sat_band"); 
+                    satBandElement->SetAttribute( "id", svkTypeUtils::IntToString( i+1 ).c_str() );
+                    satBandElement->SetId( svkTypeUtils::IntToString( i+1 ).c_str() );
+                    satBandElement->SetAttribute("label", labelString.c_str() );
+                    this->pressBoxElement->AddNestedElement( satBandElement ); 
+
+                    vtkXMLDataElement* normalXElement = vtkXMLDataElement::New();
+                    normalXElement->SetName("normal_x"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[0]); 
+                    normalXElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalXElement ); 
+
+                    vtkXMLDataElement* normalYElement = vtkXMLDataElement::New();
+                    normalYElement->SetName("normal_y"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[1]); 
+                    normalYElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalYElement ); 
+
+                    vtkXMLDataElement* normalZElement = vtkXMLDataElement::New();
+                    normalZElement->SetName("normal_z"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[2]); 
+                    normalZElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalZElement ); 
+
+                    vtkXMLDataElement* thicknessElement = vtkXMLDataElement::New();
+                    thicknessElement->SetCharacterData(thicknessString.c_str(), thicknessString.length()); 
+                    thicknessElement->SetName("thickness"); 
+                    satBandElement->AddNestedElement( thicknessElement ); 
+
+                    vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
+                    distanceString = svkTypeUtils::DoubleToString( distance ); 
+                    distanceElement->SetName("distance_from_origin"); 
+                    distanceElement->SetCharacterData(distanceString.c_str(), distanceString.length()); 
+                    satBandElement->AddNestedElement( distanceElement ); 
+
+                    if ( this->GetDebug() )  {
+                        cout << "PB RAW INFO: " << satNormal[0] << " " << satNormal[1] << " " << satNormal[2] << " " << thicknessString << " " << distance << endl;        
+                    }
+                }
+            
+            } else {                     
+                datFile->seekg(0, ios::end);     
+            }
+
+        } catch (const exception& e) {
+            if (this->GetDebug()) {
+                cout <<  "ERROR reading line: " << e.what() << endl;
+            }
+            status = -1;  
+        }
+
+        datFile->close();
+
+        if (this->GetDebug()) {
+            cout << " PRESS BOX XML " << endl;
+            this->pressBoxElement->PrintXML( cout, vtkIndent() );
+            cout << " done: PRESS BOX XML " << endl;
+        }
+
+    } catch (const exception& e) {
+        cerr << "ERROR opening or reading PFile .dat file: " << e.what() << endl;
+    }
+    return status; 
+}
+
+
+/*
+ *  Attempt to open and parse legacy sat_bands.dat file and initialize the 
+ *  intermal XML data structure from the info in the file. 
+ */
+int svkSatBandsXML::InitSatsFromDat( string rootName ) 
+{
+    
+    int status = 0; 
+    string datFileName = rootName; 
+    datFileName.append("_sat_bands.dat"); 
+    if ( ! svkUtils::FilePathExists( datFileName.c_str() ) ) {
+        //  No legacy .dat file, so just return 0; 
+        cout << "No legacy sat_bands.dat file:  " <<  datFileName << endl;
+        return status; 
+    } 
+    
+    cout << "Found legacy sat_bands.dat file: " <<  datFileName << endl;
+
+    try { 
+
+        ifstream* datFile = new ifstream();
+        datFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        datFile->open( datFileName.c_str(), ifstream::in );
+        if ( ! datFile->is_open() ) {
+            throw runtime_error( "Could not open PFile .dat file: " + datFileName);
+        } 
+
+        long datFileSize = svkImageReader2::GetFileSize( datFile );
+
+        istringstream* iss = new istringstream();
+        string keyString;
+
+        try {
+
+            //  Read the first line to get the number of sat bands in the file: 
+            svkUtils::ReadLine( datFile, iss); 
+
+            size_t  position; 
+            string  tmp; 
+
+            if ( datFile->tellg() < datFileSize - 1 ) {
+
+                    
+                //  find first white space position after "num sats" string: 
+                int numSats = svkTypeUtils::StringToInt( iss->str()); 
+
+                for ( int i = 0; i < numSats; i++ ) { 
+
+                    vtkXMLDataElement* satBandElement = vtkXMLDataElement::New(); 
+                    satBandElement->SetName("sat_band"); 
+                    satBandElement->SetAttribute( "id", svkTypeUtils::IntToString( i+1 ).c_str() );
+                    satBandElement->SetId( svkTypeUtils::IntToString( i+1 ).c_str() );
+                    string labelString = "label_"; 
+                    labelString.append( svkTypeUtils::IntToString(i+1)); 
+                    satBandElement->SetAttribute("label", labelString.c_str() );
+                    this->autoSatsElement->AddNestedElement( satBandElement ); 
+
+                    svkUtils::ReadLine( datFile, iss); 
+
+                    position = iss->str().find_first_of(' ');
+                    string angle1; 
+                    if (position != string::npos) {
+                        angle1.assign( iss->str().substr(0, position) );
+                    }    
+                    
+                    tmp.assign( iss->str().substr(position + 1) ); 
+
+                    position = tmp.find_first_of(' ');
+                    string angle2; 
+                    if (position != string::npos) {
+                        angle2.assign( tmp.substr(0, position) );
+                    } 
+                    tmp.assign( tmp.substr(position + 1) ); 
+
+                    position = tmp.find_first_of(' ');
+                    string distance; 
+                    if (position != string::npos) {
+                        distance.assign( tmp.substr(0, position) );
+                    }
+                    tmp.assign( tmp.substr(position + 1) ); 
+
+                    position = tmp.find_first_of(' ');
+                    string thickness; 
+                    if (position != string::npos) {
+                      thickness.assign( tmp.substr(0, position) );
+                    }
+                    
+                    cout << "a1: " << angle1 << " a2: " << angle2 << " dist: " << distance << " thck: " << thickness << endl;
+                    //  Convert these into a normal, distance and thickness
+                    float satNormal[3]; 
+                    this->PSDAutSatAnglesToNormal( 
+                                svkTypeUtils::StringToFloat(angle1),  
+                                svkTypeUtils::StringToFloat(angle2), 
+                                satNormal 
+                            ) ; 
+
+                    string normalString; 
+
+                    //  Use this info to initialize a sat band element in an XML file: 
+                    vtkXMLDataElement* normalXElement = vtkXMLDataElement::New();
+                    normalXElement->SetName("normal_x"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[0]); 
+                    normalXElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalXElement ); 
+
+                    vtkXMLDataElement* normalYElement = vtkXMLDataElement::New();
+                    normalYElement->SetName("normal_y"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[1]); 
+                    normalYElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    normalYElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalYElement ); 
+
+                    vtkXMLDataElement* normalZElement = vtkXMLDataElement::New();
+                    normalZElement->SetName("normal_z"); 
+                    normalString = svkTypeUtils::DoubleToString(satNormal[2]); 
+                    normalZElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    normalZElement->SetCharacterData(normalString.c_str(), normalString.length() ); 
+                    satBandElement->AddNestedElement( normalZElement ); 
+
+                    vtkXMLDataElement* thicknessElement = vtkXMLDataElement::New();
+                    thicknessElement->SetCharacterData(thickness.c_str(), thickness.length()); 
+                    thicknessElement->SetName("thickness"); 
+                    satBandElement->AddNestedElement( thicknessElement ); 
+
+                    vtkXMLDataElement* distanceElement = vtkXMLDataElement::New();
+                    distanceElement->SetName("distance_from_origin"); 
+                    distanceElement->SetCharacterData(distance.c_str(), distance.length()); 
+                    satBandElement->AddNestedElement( distanceElement ); 
+                
+                }
+
+            } else {                     
+                datFile->seekg(0, ios::end);     
+            }
+
+        } catch (const exception& e) {
+            if (this->GetDebug()) {
+                cout <<  "ERROR reading line: " << e.what() << endl;
+            }
+            status = -1;  
+        }
+
+        datFile->close();
+
+        if (this->GetDebug()) {
+            cout << " SAT BAND XML " << endl;
+            this->autoSatsElement->PrintXML( cout, vtkIndent() );
+            cout << " done: SAT BAND XML " << endl;
+        }
+
+
+    } catch (const exception& e) {
+        cerr << "ERROR opening or reading PFile .dat file: " << e.what() << endl;
+    }
+    return status; 
+}
+
+
 /*! Sets the current XML data to NULL
  *  so the file will be re-read.
  */
-void  svkSatBandsXML::ClearXMLFile( )
+void svkSatBandsXML::ClearXMLFile( )
 {
     if( this->satBandsXML != NULL ) {
         this->satBandsXML->Delete();
@@ -137,12 +669,21 @@ string svkSatBandsXML::GetXMLFileName( )
 
 
 /*!
- *  Write the integrals for each voxel to stdout. Default is false.  
+ *  
  */
 void svkSatBandsXML::SetVerbose( bool isVerbose )
 {
     this->isVerbose = isVerbose; 
 }
+
+
+/*!
+ */
+void svkSatBandsXML::WriteXMLFile( string xmlFileName )
+{
+    vtkXMLUtilities::WriteElementToFile( this->satBandsXML, xmlFileName.c_str(), &vtkIndent() );
+}
+
 
 
 /*!
@@ -165,7 +706,28 @@ void svkSatBandsXML::GetPressBoxSat(int satNumber, string* label, float *normalX
 /*!
  *  Get the specified sat band definition: 
  */
-int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, float *normalY, float* normalZ, float* thickness, float* distance)
+int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float normal[3], float* thickness, float* distance)
+{
+    this->GetAutoSat(
+                satNumber, 
+                label, 
+                &normal[0], 
+                &normal[1], 
+                &normal[2], 
+                thickness, 
+                distance
+            ); 
+}
+
+
+/*!
+ *  Get the specified sat band definition: 
+ *      Normal 
+ *      thickness of band 
+ *      distance along normal from origin to center of plane 
+ *  SatNumber starts at 1 (element ID)
+ */
+int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float* normalX, float* normalY, float* normalZ, float* thickness, float* distance)
 {
     int numSats = this->GetNumberOfAutoSats(); 
     if ( satNumber > numSats || satNumber < 0 ) {
@@ -173,12 +735,17 @@ int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, flo
         return 1; 
     }
     vtkXMLDataElement* satBandElement; 
+
     satBandElement = this->autoSatsElement->FindNestedElementWithNameAndId(
                 "sat_band", 
                 svkTypeUtils::IntToString(satNumber).c_str() 
             ); 
+    this->autoSatsElement->PrintXML( cout, vtkIndent() );
+    satBandElement->PrintXML( cout, vtkIndent() );
+    //cout << "ID NUMBER: " << satBandElement->GetId() << endl;
 
     this->InitSatBandInfo( satBandElement, label, normalX, normalY, normalZ, thickness, distance); 
+
     return 0; 
 
 }
@@ -188,6 +755,7 @@ int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float *normalX, flo
  */
 void svkSatBandsXML::InitSatBandInfo( vtkXMLDataElement* satBandElement, string* label, float *normalX, float *normalY, float* normalZ, float* thickness, float* distance) 
 {
+
 
     *label = string( satBandElement->GetAttribute("label") ); 
 
@@ -241,7 +809,10 @@ int svkSatBandsXML::GetNumberOfAutoSats()
 
 
 /*
- *  Which 2 angles take the Z vector (+S) to the specified normal vector? 
+ *  Determine the auto sat parameters as used by the prose PSD code.  This is a different
+ *  representation of the same information as encoded into the XML file 
+ * 
+ *  Determines the 2 angles that take the Z vector (+S) to the specified normal vector? 
  *      1.  first rotate about the x axis (rotation in the sagital yz plane)
  *          This angle is denoted as Beta and is written 2nd in the .dat file.  
  *      2.  next rotate about the z axis
@@ -256,27 +827,43 @@ int svkSatBandsXML::GetAutoSatParameters( int satNumber, float angles[3], float*
         return status; 
     }
 
-    //cout << "NORMAL: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
-    //normal[0] = -1 * normal[0]; 
-    //normal[1] = -1 * normal[1]; 
-    //normal[2] = -1 * normal[2]; 
-
     //  Which 2 angles take the Z vector (+S) to the specified normal vector? 
 
     //  First determine the angle listed in .dat file for use by PSD to 
     //  rotation 100 vector about the x axis (this rotates the Z/S vector 100 
     //  toward the p (+y) vector and is given by the atan(y/z)
 
-    //  Next determine the angle listed in .dat file for use by PSD to 
+    //  Next determine the angle listed in legacy .dat file for use by PSD to 
     //  rotation the vector about the z axis, this is written fist in the dat file 
     //  just to be confusing.
     angles[0] = 0; 
     angles[1] = -1 * acos( normal[2]);
-    angles[2] = -1 * atan2( normal[1] , -1 *  normal[0] ); 
+    //  ====================================================
+    //  note: 
+    //      (1) -1 * atan (x) = atan (-x)  
+    //          therefore -1*atan(n1/-1*n0) = atan(n1/n0);
+    //  and the following 2 representations of angles[2] are equivalent: 
+    //      angles[2] =  atan2( normal[1] , normal[0] );  
+    //      OR:    
+    //  ====================================================
+    angles[2] = -1 * atan2( normal[1] , -1 *  normal[0] );  
 
     //cout << "ANGLES: " << angles[2] << " " << angles[1] << endl;
     return status; 
 }
+
+
+/*!
+ *  Performs the inverse of GetAutoSatParameters
+ *  Output is the normal (LPS) derived from the 2 input angles    
+ */
+void svkSatBandsXML::PSDAutSatAnglesToNormal( float angle1, float angle2, float normal[3] ) 
+{
+    normal[0] = cos(angle1) * sin (angle2); 
+    normal[1] = sin(angle1) * sin (angle2); 
+    normal[2] = cos (angle2); 
+}
+
 
 /*!
  *  Given the xml press box definition, extract the 
@@ -449,6 +1036,7 @@ void svkSatBandsXML::TransposeNormals( float normals[3][3] ) {
     //  Transpose rotation matrix END 
 }
 
+
 /*
  *  Initialized a set of normal vectors from the press box description in the XML file. 
  *  The returned array consists of 3 normal vectors, 1 in each row, and ordered from 
@@ -501,6 +1089,16 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
         exit(1); 
     } 
 
+    this->SortNormalArrayRLAPSI(normals); 
+
+}
+
+
+/*!
+ *  Sorts 3x3 normal array into conventional order RL, AP, SI rows.  
+ */
+void svkSatBandsXML::SortNormalArrayRLAPSI( float normals[3][3] ) 
+{
     //  finally, sort the normals into order: 
     //      0, - predominantly RL direction
     //      1, - predominantly AP direction
@@ -550,15 +1148,13 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
                         << normals[i][1] << " " << normals[i][2] << endl;        
         }
     }
-
 }
 
-
 /*
- *  By current convention (terrible!!!) in sat band xml, 
- *      xNormal is defined by 5th element
- *      yNormal is defined by 2nd element
- *      zNormal is defined by 3nd element
+ *  By current convention (terrible!!!) in sat band xml (LPS positivie), 
+ *      xNormal is defined by 5th element  (points to Left)
+ *      yNormal is defined by 2nd element  (points to Posterior)
+ *      zNormal is defined by 3nd element  (points to Superior)
  */
 bool svkSatBandsXML::IsConventionalNormal( float normalIn[3]  ) 
 {
@@ -633,30 +1229,6 @@ void svkSatBandsXML::MakePRESSOrthonormal( float normals[3][3] )
         }
     }
     
-    //% boxPlane_patient(3).normal will be keep as it is
-    //normalZ = boxPlane_patient(3).normal; 
-    //normalX = -cross(normalZ, boxPlane_patient(2).normal);
-    //normalY = cross(normalZ, normalX);
-
-    //boxPlane_patient(2).normal = normalY;
-    //if boxPlane_patient(1).normal(2)*boxPlane_patient(2).normal(2) < 0
-        //boxPlane_patient(1).normal = -normalY;
-    //else
-        //boxPlane_patient(1).normal = normalY;
-    //end
-//
-    //if boxPlane_patient(3).normal(3)*boxPlane_patient(4).normal(3) < 0
-        //boxPlane_patient(4).normal = -normalZ;
-    //else
-        //boxPlane_patient(4).normal = normalZ;
-    //end
-//
-    //boxPlane_patient(5).normal = normalX;
-    //if boxPlane_patient(5).normal(1)*boxPlane_patient(6).normal(1) < 0
-        //boxPlane_patient(6).normal = -normalX;
-    //else
-        //boxPlane_patient(6).normal = normalX;
-    //end 
 }
 
 
@@ -775,6 +1347,12 @@ bool svkSatBandsXML::IsNormalUnique( float normal[3], float normals[3][3])
 }
 
 
+vtkXMLDataElement* svkSatBandsXML::GetXMLDataElement()
+{
+    return this->satBandsXML; 
+}
+
+
 /*! 
  * External C interface: 
  */
@@ -873,3 +1451,4 @@ int svkSatBandsXML_GetAutoSatParameters(void* xml, int satNumber, float* normal,
     int status = ((svkSatBandsXML*)xml)->GetAutoSatParameters( satNumber, normal, thickness, distance); 
     return status; 
 }
+

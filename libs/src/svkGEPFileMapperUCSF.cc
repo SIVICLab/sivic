@@ -43,6 +43,10 @@
 #include <svkGEPFileMapperUCSF.h>
 #include <vtkDebugLeaks.h>
 
+#include <svkSatBandsXML.h>
+
+#include "svkTypeUtils.h"
+
 
 using namespace svk;
 
@@ -230,4 +234,153 @@ bool svkGEPFileMapperUCSF::WasIndexSampled(int indexX, int indexY, int indexZ)
 
     return wasSampled; 
 }
+
+
+/*!
+ *  Add additional sat bands from XML dat file: 
+ *      if read_sats == 1, init the bands from *_box_satbands_atlasbased.dat
+ *      if oct_sats == 1, then init the oct sats
+ */
+void svkGEPFileMapperUCSF::InitSatBandsFromXML()
+{
+
+    int readSats; 
+    int octSats; 
+    this->GetCVS(&readSats, &octSats); 
+
+    if ( readSats == 1 ) {
+
+        string xmlFileName = this->pfileName; 
+        xmlFileName.append("_box_satbands_atlasbased.dat"); 
+
+        svkSatBandsXML* xml = svkSatBandsXML::New();
+        int status = xml->SetXMLFileName( xmlFileName.c_str() );
+        if ( status == 1 ) {
+            //  double check for legacy version of .dat file: 
+            status = xml->ConvertDatToXML(this->pfileName); 
+        }
+        if ( status != 0 ) {
+            return; 
+        }
+
+        int numAutoSats = xml->GetNumberOfAutoSats();      
+        string label; 
+        float normalLPS[3]; 
+        float normalRAS[3]; 
+        float thickness; 
+        float distance; 
+
+        for (int satNumber = 1; satNumber <= numAutoSats; satNumber++ ) {
+
+            xml->GetAutoSat(satNumber, &label, normalLPS, &thickness, &distance); 
+
+            //  ===================================================
+            //  Now for a few modifications to get it to conform 
+            //  to definition of sats in PFile and 
+            //  expected by InitSatBand: 
+            //      1.  normal with length equal to sat band thickness
+            //      2.  normal in RAS rather than LPS
+            //      3.  Distance is to far edge of sat, so distance + 1/2 thickness
+            //  ===================================================
+            for ( int i = 0; i < 3; i++ ) {
+                normalLPS[i] *= thickness; 
+            }
+            normalRAS[0] = -1. * normalLPS[0]; 
+            normalRAS[1] = -1. * normalLPS[1]; 
+            normalRAS[2] = normalLPS[2]; 
+            distance += (thickness/2.);
+            this->InitSatBand(normalRAS, distance);
+        }
+        xml->Delete();
+    }
+
+    return; 
+}
+
+
+/*!
+ *  Parse PFile .dat file to get value of read_sats and oct_sats. 
+ */
+void svkGEPFileMapperUCSF::GetCVS(int* readSats, int* octSats)
+{
+
+    string datFileName = this->pfileName; 
+    datFileName.append(".dat"); 
+    
+    try { 
+
+        ifstream* datFile = new ifstream();
+        datFile->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+        datFile->open( datFileName.c_str(), ifstream::in );
+        if ( ! datFile->is_open() ) {
+            throw runtime_error( "Could not open PFile .dat file: " + datFileName);
+        } 
+
+        long datFileSize = svkImageReader2::GetFileSize( datFile );
+        while (! datFile->eof() ) {
+
+            int status = 0; 
+
+            istringstream* iss = new istringstream();
+            string keyString;
+
+            try {
+
+                svkUtils::ReadLine( datFile, iss); 
+
+                size_t  position; 
+                string  tmp; 
+
+                if ( datFile->tellg() < datFileSize - 1 ) {
+
+                    //  find first white space position after "key" string: 
+                    position = iss->str().find_first_of(' ');
+                    if (position != string::npos) {
+                        keyString.assign( iss->str().substr(0, position) );
+                    } 
+                    if ( (keyString.compare("oct_sats") == 0) || (keyString.compare("read_sats") == 0) ) {
+
+                        //  Find '='
+                        string valueString = iss->str().substr(position+1); 
+                        position = valueString.find_first_of('=');
+                        if (position != string::npos) {
+                            valueString.assign( valueString.substr(position + 1) );
+                        } 
+
+                        //  Find value 
+                        position = valueString.find_first_not_of(' ');
+                        if (position != string::npos) {
+                            valueString.assign( valueString.substr(position) );
+                        } 
+                        if ( keyString.compare("oct_sats") == 0 ) {
+                            *octSats = svkTypeUtils::StringToInt(valueString); 
+                        } else if ( keyString.compare("read_sats") == 0) {
+                            *readSats = svkTypeUtils::StringToInt(valueString); 
+                        }
+                    }
+
+                } else { 
+                    datFile->seekg(0, ios::end);     
+                }
+
+            } catch (const exception& e) {
+                if (this->GetDebug()) {
+                    cout <<  "ERROR reading line: " << e.what() << endl;
+                }
+                status = -1;  
+            }
+
+            if ( status != 0 ) {
+                break;
+            }
+        }
+
+        datFile->close();
+
+    } catch (const exception& e) {
+        cerr << "ERROR opening or reading PFile .dat file: " << e.what() << endl;
+    }
+
+}
+
 

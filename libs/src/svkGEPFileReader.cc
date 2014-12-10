@@ -430,6 +430,9 @@ void svkGEPFileReader::InitDcmHeader()
         this->mapper = this->GetPFileMapper(); 
     
         cout << "SWAP BYTES: " << this->GetSwapBytes() << endl;
+        cout << "MAPER FN: " << this->GetFileNames()->GetValue(0) << endl;
+
+        this->mapper->SetPfileName( this->GetFileNames()->GetValue(0) ); 
 
         //  all the IE initialization modules would be contained within the 
         this->mapper->InitializeDcmHeader( 

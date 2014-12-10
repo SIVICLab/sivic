@@ -102,6 +102,7 @@ class svkGEPFileMapper : public vtkObject
         void                    SetProgressText( vtkstd::string progressText );
         static vtkstd::string   ConvertGEDateToDICOM( vtkstd::string geDate ); 
 
+        void                    SetPfileName( string pfileName );      
 
     protected:
 
@@ -131,13 +132,14 @@ class svkGEPFileMapper : public vtkObject
         virtual void            InitMRTransmitCoilMacro();
         virtual void            InitMRAveragesMacro();
         virtual void            InitMRSpatialSaturationMacro();
-        virtual void            InitSatBand( float satRAS[3], float translation, int satBandNumber ); 
+        virtual void            InitSatBand( float satRAS[3], float translation); 
         virtual void            InitMRSpectroscopyModule();
         virtual vtkstd::string  GetVolumeLocalizationTechnique();
         virtual void            InitVolumeLocalizationSeq();
         virtual void            InitMRSpectroscopyDataModule();
         virtual void            InitK0Sampled( svkDcmHeader* hdr );
-
+        virtual void            InitSatBandsFromXML(); 
+        
         virtual void            GetCenterFromRawFile( double* center );
         virtual float           GetFrequencyOffset(); 
         int                     GetNumVoxelsInVol();
@@ -207,6 +209,7 @@ class svkGEPFileMapper : public vtkObject
         string                                  GetNucleus(); 
         void                                    ModifyForPatientEntry( double dcos[3][3] ); 
 
+        string                                  pfileName;      
 
 };
 
