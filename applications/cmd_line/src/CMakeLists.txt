@@ -237,6 +237,7 @@ endif( BUILD_CLAPACK )
 SET(SVK_LIBS
     ${ITK_LIBS}
     ${CLAPACK_LIBS}
+    svkPSD
     svk 
     svkPSD
     svkTypeUtils
@@ -534,6 +535,15 @@ ADD_EXECUTABLE(
 TARGET_LINK_LIBRARIES(
     svk_channel2time
 	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
+    svk_psd_prescription_convert
+    svk_psd_prescription_convert.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_psd_prescription_convert
+    ${SVK_LIBS}
 )
 
 ADD_EXECUTABLE(
