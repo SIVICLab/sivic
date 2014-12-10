@@ -76,78 +76,81 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name [ -t output_data_type ] \n"; 
-    usemsg += "                   [ -u | -s ] [ -anh ] \n";
-    usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ] \n";
-    usemsg += "                   [ --chop on/off ] \n";
-    usemsg += "                   -------------------------------------------------------------- \n"; 
-    usemsg += "                   [                                                              \n";
-    usemsg += "                     --epsi_type     type                                         \n";
-    usemsg += "                     --epsi_axis     axis                                         \n";
-    usemsg += "                     --epsi_lobes    num                                          \n";
-    usemsg += "                     --epsi_skip     num                                          \n";
-    usemsg += "                     --epsi_first    num                                          \n";
-    usemsg += "                   ]                                                              \n";
-    usemsg += "                   -------------------------------------------------------------- \n"; 
-    usemsg += "                   [ --print_header ]                                             \n";
-    usemsg += "                                                                                  \n";  
-    usemsg += "                                                                                  \n";  
-    usemsg += "   -i                name    Name of file to convert.                             \n"; 
-    usemsg += "   -o                name    Name of outputfile.                                  \n";
-    usemsg += "   -t                type    Target data type:                                    \n";
-    usemsg += "                                 2 = UCSF DDF                                     \n";
-    usemsg += "                                 4 = DICOM_MRS (default)                          \n";
-    usemsg += "   -u                        If single voxel, write only unsuppressed data (individual acqs. preserved) \n"; 
-    usemsg += "   -s                        If single voxel, write only suppressed data (individual acqs. preserved) \n"; 
-    usemsg += "   -a                        If single voxel, write average of the specified data  \n"; 
-    usemsg += "                             (e.g. all, suppressesd, unsuppressed) \n"; 
-    usemsg += "   --one_time_pt             If there are multiple time points, separate each into its own file.  \n";
-    usemsg += "                             (supported only for ddf output) \n";
-    usemsg += "   --temp             temp   Set the temp (celcius) of the acquisition.  Default is body temperature. Used to \n"; 
-    usemsg += "                             set the chemical shift of water. \n"; 
-    usemsg += "   --chop             on/off Set chop value manually \n"; 
-    usemsg += "   --no_dc_correction        Turns DC Offset correction off. \n"; 
-    usemsg += "---------------------------------------------------------------------------------    \n"; 
-    usemsg += "   --epsi_type    type       Specify 1 (flyback), 2(symmetric), 3(interleaved).      \n";
-    usemsg += "   --epsi_axis    axis       EPSI axis 1, 2, 3                                       \n";
-    usemsg += "   --epsi_lobes   num        Num lobes in EPSI waveform                              \n";
-    usemsg += "                             Not all samples will be represented in output data      \n";
-    usemsg += "                             (see skip and first                                     \n";
-    usemsg += "   --epsi_skip    num        Num samples to skip between in each cycle of waveform   \n";
-    usemsg += "   --epsi_first   num        First input sample to write out, represents an initial  \n";
-    usemsg += "                             offset of skipped samples (samples start at 1). By      \n";
-    usemsg += "                             default first is set to 1, so no initial offset.        \n";
-    usemsg += "---------------------------------------------------------------------------------    \n"; 
-    usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data \n";
-    usemsg += "   --print_short_header      Only prints limited PFile header key-value pairs.       \n";
+    usemsg += "svk_gepfile_reader -i input_file_name -o output_file_name [ -t output_data_type ]    \n"; 
+    usemsg += "                   [ -u | -s ] [ -anh ]                                              \n";
+    usemsg += "                   [ --one_time_pt ] [ --temp tmp ] [ --no_dc_correction ]           \n";
+    usemsg += "                   [ --chop on/off ] [ --single ]                                    \n";
+    usemsg += "                   --------------------------------------------------------------    \n"; 
+    usemsg += "                   [                                                                 \n";
+    usemsg += "                     --epsi_type     type                                            \n";
+    usemsg += "                     --epsi_axis     axis                                            \n";
+    usemsg += "                     --epsi_lobes    num                                             \n";
+    usemsg += "                     --epsi_skip     num                                             \n";
+    usemsg += "                     --epsi_first    num                                             \n";
+    usemsg += "                   ]                                                                 \n";
+    usemsg += "                   --------------------------------------------------------------    \n"; 
+    usemsg += "                   [ --print_header ]                                                \n";
+    usemsg += "                                                                                     \n";  
+    usemsg += "                                                                                     \n";  
+    usemsg += "   -i                name    Name of file to convert.                                \n"; 
+    usemsg += "   -o                name    Name of outputfile.                                     \n";
+    usemsg += "   -t                type    Target data type:                                       \n";
+    usemsg += "                                 2 = UCSF DDF                                        \n";
+    usemsg += "                                 4 = DICOM_MRS (default)                             \n";
+    usemsg += "   -u                        If single voxel, write only unsuppressed data (individual acqs. preserved)          \n"; 
+    usemsg += "   -s                        If single voxel, write only suppressed data (individual acqs. preserved)            \n"; 
+    usemsg += "   -a                        If single voxel, write average of the specified data                                \n"; 
+    usemsg += "                             (e.g. all, suppressesd, unsuppressed)                                               \n"; 
+    usemsg += "   --one_time_pt             If there are multiple time points, separate each into its own file.                 \n";
+    usemsg += "                             (supported only for ddf output)                                                     \n";
+    usemsg += "   --temp             temp   Set the temp (celcius) of the acquisition.  Default is body temperature. Used to    \n"; 
+    usemsg += "                             set the chemical shift of water.                                        \n"; 
+    usemsg += "   --chop             on/off Set chop value manually                                                 \n"; 
+    usemsg += "   --no_dc_correction        Turns DC Offset correction off.                                         \n"; 
+    usemsg += "   --single                  Only converts specified file if                                         \n";
+    usemsg += "---------------------------------------------------------------------------------                    \n"; 
+    usemsg += "   --epsi_type    type       Specify 1 (flyback), 2(symmetric), 3(interleaved).                      \n";
+    usemsg += "   --epsi_axis    axis       EPSI axis 1, 2, 3                                                       \n";
+    usemsg += "   --epsi_lobes   num        Num lobes in EPSI waveform                                              \n";
+    usemsg += "                             Not all samples will be represented in output data                      \n";
+    usemsg += "                             (see skip and first                                                     \n";
+    usemsg += "   --epsi_skip    num        Num samples to skip between in each cycle of waveform                   \n";
+    usemsg += "   --epsi_first   num        First input sample to write out, represents an initial                  \n";
+    usemsg += "                             offset of skipped samples (samples start at 1). By                      \n";
+    usemsg += "                             default first is set to 1, so no initial offset.                        \n";
+    usemsg += "---------------------------------------------------------------------------------                    \n"; 
+    usemsg += "   --print_header            Only prints the PFile header key-value pairs, does not load data                    \n";
+    usemsg += "   --print_short_header      Only prints limited PFile header key-value pairs.                                   \n";
 #ifdef UCSF_INTERNAL
-    usemsg += "   --ucsf_MNS_7T             Use reading logic specific to 7T MNS                    \n";
+    usemsg += "   --ucsf_MNS_7T             Use reading logic specific to 7T MNS                                                \n";
 #endif
-    usemsg += "   -h                        Print this help mesage. \n";  
+    usemsg += "   -h                        Print this help mesage.                                                             \n";  
     usemsg += "\n";  
-    usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.\n";  
+    usemsg += "Converts a GE PFile to a DICOM MRS object. The default behavior is to load the entire raw data set.              \n";  
     usemsg += "\n";  
 
 
-    string inputFileName; 
-    string outputFileName;
-    bool unsuppressed    = false; 
-    bool suppressed      = false; 
-    bool average         = false; 
+    string  inputFileName; 
+    string  outputFileName;
+    bool    unsuppressed      = false; 
+    bool    suppressed        = false; 
+    bool    average           = false; 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
-    int oneTimePtPerFile = false; 
-    float temp           = UNDEFINED_TEMP; 
-    vtkstd::string chopString = ""; 
-    bool chop; 
-    bool dcCorrection     = true; 
-    bool printHeader      = false; 
-    bool printShortHeader = false; 
+    int     oneTimePtPerFile  = false; 
+    float   temp              = UNDEFINED_TEMP; 
+    string chopString         = ""; 
+    bool    chop; 
+    bool    dcCorrection      = true; 
+    bool    printHeader       = false; 
+    bool    printShortHeader  = false; 
     svkEPSIReorder::EPSIType epsiType = svkEPSIReorder::UNDEFINED_EPSI_TYPE;
-    int  epsiAxis         = UNDEFINED;
-    int  epsiNumLobes     = UNDEFINED;
-    int  epsiSkip         = UNDEFINED;
-    int  epsiFirst        = 0;
-    bool isUCSFMNS7T      = false;  
+    int     epsiAxis          = UNDEFINED;
+    int     epsiNumLobes      = UNDEFINED;
+    int     epsiSkip          = UNDEFINED;
+    int     epsiFirst         = 0;
+    bool    isUCSFMNS7T       = false;  
+    bool   onlyLoadSingleFile = false;
+
 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
@@ -164,7 +167,8 @@ int main (int argc, char** argv)
         FLAG_EPSI_NUM_LOBES,
         FLAG_EPSI_SKIP,
         FLAG_EPSI_FIRST, 
-        FLAG_UCSF_MNS_7T
+        FLAG_UCSF_MNS_7T, 
+        FLAG_SINGLE
     }; 
 
 
@@ -183,6 +187,7 @@ int main (int argc, char** argv)
         {"epsi_skip",           required_argument, NULL,  FLAG_EPSI_SKIP},
         {"epsi_first",          required_argument, NULL,  FLAG_EPSI_FIRST},
         {"ucsf_MNS_7T",         no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
+        {"single",              no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
 
@@ -247,6 +252,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_UCSF_MNS_7T:
                 isUCSFMNS7T = true; 
+                break;
+            case FLAG_SINGLE:
+                onlyLoadSingleFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -336,6 +344,10 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
+    if ( onlyLoadSingleFile == true ) {
+        reader->OnlyReadOneInputFile();
+    }
+
 
     //  If printing header just print and return
     if ( printHeader || printShortHeader ) {
