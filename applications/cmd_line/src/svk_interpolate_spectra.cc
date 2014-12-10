@@ -76,6 +76,9 @@ int main (int argc, char** argv)
     usemsg += "   -l            coord         Left coordinate                           \n";
     usemsg += "   -p            coord         Posterior coordinate                      \n";
     usemsg += "   -s            coord         Superior coordinate                       \n";
+    usemsg += "   -t            output_data_type    Target data type:                   \n";  
+    usemsg += "                                         2 = UCSF DDF                    \n";  
+    usemsg += "                                         4 = DICOM_MRS                   \n";  
     usemsg += "   -r                          Retain input extent                       \n";
     usemsg += "   -v                          Verbose output.                           \n";
     usemsg += "   -h                          Print help mesage.                        \n";
