@@ -247,14 +247,88 @@ void svkGEPFileMapperUCSF::InitSatBandsFromXML()
     int readSats; 
     int octSats; 
     this->GetCVS(&readSats, &octSats); 
+    if ( this->GetDebug() ) {
+        cout << "AUTO SATS: " << readSats << " OCT SATS: " << octSats << endl;
+    }
 
+
+    if ( octSats == 1 ) {
+
+        //  Unlik the auto sats, the oct sats don't require any 
+        //  XML files, just the definition of the PRESS box  
+        //      procedure:
+        //      1.  get selection box center, size, and  orientation (x, y, z normals)  
+        //      2.  use these to generate 5 bands with cosine modulated with (cmw) of 40mm
+        //      3.  for each of the bands in step 2 with cmw != 0, also generate a second band displaced
+        //          in opposite direction 
+        float selBoxSize[3];
+        float selBoxCenter[3]; 
+        float selBoxOrientation[3][3];
+        if( this->dcmHeader->ElementExists( "VolumeLocalizationSequence" ) ) {
+
+            for (int i = 0; i < 3; i++) {
+
+                selBoxSize[i] = this->dcmHeader->GetFloatSequenceItemElement(
+                    "VolumeLocalizationSequence",
+                    i,
+                    "SlabThickness"
+                );
+
+                selBoxCenter[i] = this->dcmHeader->GetFloatSequenceItemElement(
+                    "VolumeLocalizationSequence",
+                    0,
+                    "MidSlabPosition",
+                    NULL,
+                    0,
+                    i
+                );
+    
+            }
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    selBoxOrientation[i][j] = this->dcmHeader->GetFloatSequenceItemElement(
+                        "VolumeLocalizationSequence",
+                        i,
+                        "SlabOrientation",
+                        NULL,
+                        0,   
+                        j
+                    );
+                }
+            }
+        }
+
+        //  Generate 2 additional oct vectors for diagonals: 
+        float octDiagVec1[3]; 
+        float octDiagVec2[3]; 
+        for (int i = 0; i < 3; i++) {
+            octDiagVec1[i] = selBoxOrientation[1][i] * selBoxSize[0] + selBoxOrientation[0][i] * selBoxSize[1];
+            octDiagVec2[i] = selBoxOrientation[1][i] * selBoxSize[0] - selBoxOrientation[0][i] * selBoxSize[1];
+        }
+
+        float thickness = 40.; 
+        //  axial bands
+        //  front-back
+        //  left-right
+        this->InitOctBand( selBoxOrientation[2], selBoxCenter, thickness, selBoxSize[2] + thickness ); 
+        this->InitOctBand( selBoxOrientation[1], selBoxCenter, thickness, selBoxSize[1] + thickness ); 
+        this->InitOctBand( selBoxOrientation[0], selBoxCenter, thickness, selBoxSize[0] + thickness ); 
+
+        //  diagonals
+        //  for direction order of dimensions is swapped because we are talking about a normal
+        this->InitOctBand( octDiagVec1, selBoxCenter, thickness, ((selBoxSize[0] + selBoxSize[1])/2) + thickness ); 
+        this->InitOctBand( octDiagVec2, selBoxCenter, thickness, ((selBoxSize[0] + selBoxSize[1])/2) + thickness ); 
+         
+    }
     if ( readSats == 1 ) {
+        // Init auto-sats from XML file: 
 
         string xmlFileName = this->pfileName; 
         xmlFileName.append("_box_satbands_atlasbased.dat"); 
 
         svkSatBandsXML* xml = svkSatBandsXML::New();
         int status = xml->SetXMLFileName( xmlFileName.c_str() );
+        //  If no xml file, then check for legacy .dat format 
         if ( status == 1 ) {
             //  double check for legacy version of .dat file: 
             status = xml->ConvertDatToXML(this->pfileName); 
@@ -294,7 +368,42 @@ void svkGEPFileMapperUCSF::InitSatBandsFromXML()
         xml->Delete();
     }
 
+
     return; 
+}
+
+
+/*!
+ *  Insert the oct bands into the header  
+ *      if cmw != 0, then insert a second band as well. 
+ */
+void svkGEPFileMapperUCSF::InitOctBand( float normalLPS[3], float selBoxCenter[3], float thickness, float width) 
+{
+    cout << "OCT BAND" << endl;
+
+    //  compute distance from origin to center of band along the normal to the band
+    float distance = 0; 
+    for ( int i = 0; i < 3; i++ ) {
+        distance += normalLPS[i] * selBoxCenter[i]; 
+    }
+
+    //  normalize, then scale to proper thickness: 
+    vtkMath::Normalize( normalLPS ); 
+    for ( int i = 0; i < 3; i++ ) {
+        normalLPS[i] *= thickness; 
+    }
+    float normalRAS[3]; 
+    normalRAS[0] = -1. * normalLPS[0]; 
+    normalRAS[1] = -1. * normalLPS[1]; 
+    normalRAS[2] = normalLPS[2]; 
+    distance += (thickness/2.);
+    this->InitSatBand(normalRAS, distance);
+
+    if( width != 0 ) {
+        //@position = ($orientation[0]*($d-$w/2),$orientation[1]*($d-$w/2),$orientation[2]*($d-$w/2));
+        this->InitSatBand(normalRAS, distance);
+    }
+
 }
 
 
