@@ -72,8 +72,10 @@ class svkGEPFileMapperUCSF : public svkGEPFileMapper
 
 
     private: 
+
         void            GetCVS(int* readSats, int* octSats);
         void            ReadLine(ifstream* fs, istringstream* iss); 
+        void            InitOctBand( float normalLPS[3], float selBoxCenter[3], float thickness, float width); 
 
 
 };
