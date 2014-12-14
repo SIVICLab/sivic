@@ -107,9 +107,9 @@ void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::
     this->InitFrameOfReferenceModule();
     this->InitGeneralEquipmentModule();
     this->InitEnhancedGeneralEquipmentModule();
+    this->InitMRSpectroscopyModule();
     this->InitMultiFrameFunctionalGroupsModule();
     this->InitAcquisitionContextModule();
-    this->InitMRSpectroscopyModule();
     this->InitMRSpectroscopyPulseSequenceModule();
     this->InitMRSpectroscopyDataModule();
     header->PrintDcmHeader(); 
@@ -1517,7 +1517,6 @@ void svkGEPFileMapper::InitMRSpatialSaturationMacro()
 
         }
     }
-
 
     //  Now init any sat bands stored in .dat/xml file:        
     this->InitSatBandsFromXML();
