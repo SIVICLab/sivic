@@ -308,7 +308,8 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
                     //  4- left      (LR)
                     //  5- right     (LR)
                     if ( i == 0 || i == 1 ) {
-                        size = boxSize[0]/2;  
+                        //  size in AP direction: 
+                        size = boxSize[1]/2;  
 
                         for ( int j = 0; j < 3; j++ ) {
                             satNormal[j] = normals[1][j];   //AP
@@ -342,7 +343,8 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
                     }
 
                     if ( i == 2 || i == 3 ) {
-                        size = boxSize[1]/2;  
+                        //  SI size: 
+                        size = boxSize[2]/2;  
 
                         for ( int j = 0; j < 3; j++ ) {
                             satNormal[j] = normals[2][j];   //SI
@@ -375,7 +377,8 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
                     }
 
                     if ( i == 4 || i == 5 ) {
-                        size = boxSize[2]/2;  
+                        //  LR size: 
+                        size = boxSize[0]/2;  
 
                         for ( int j = 0; j < 3; j++ ) {
                             satNormal[j] = normals[0][j];   //LR
