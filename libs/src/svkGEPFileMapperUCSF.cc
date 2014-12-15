@@ -379,29 +379,39 @@ void svkGEPFileMapperUCSF::InitSatBandsFromXML()
  */
 void svkGEPFileMapperUCSF::InitOctBand( float normalLPS[3], float selBoxCenter[3], float thickness, float width) 
 {
-    cout << "OCT BAND" << endl;
-
-    //  compute distance from origin to center of band along the normal to the band
-    float distance = 0; 
-    for ( int i = 0; i < 3; i++ ) {
-        distance += normalLPS[i] * selBoxCenter[i]; 
-    }
+    //cout << "OCT BAND: " <<  thickness << " " << width << endl;
 
     //  normalize, then scale to proper thickness: 
     vtkMath::Normalize( normalLPS ); 
-    for ( int i = 0; i < 3; i++ ) {
-        normalLPS[i] *= thickness; 
+
+    //  compute distance from origin to center of the selBox along the specified normalLPS vector: : 
+    float distance = vtkMath::Dot(normalLPS, selBoxCenter); 
+    //cout << "DISTANCE: " << distance << " " << thickness << " " << width << endl;
+
+    //  ===============
+    float point[3];
+    for (int k = 0; k < 3; k++ ) {
+        point[k] = normalLPS[k] * ( distance + (width/2.) + (thickness/2.) );
     }
+    float projection = vtkMath::Dot(normalLPS, point); 
+    //cout << "PROJECTION: " << projection << endl;
+    //  ===============
+
     float normalRAS[3]; 
     normalRAS[0] = -1. * normalLPS[0]; 
     normalRAS[1] = -1. * normalLPS[1]; 
     normalRAS[2] = normalLPS[2]; 
-    distance += (thickness/2.);
-    this->InitSatBand(normalRAS, distance);
+    for ( int i = 0; i < 3; i++ ) {
+        normalRAS[i] *= thickness;
+    }
+    this->InitSatBand(normalRAS, projection);
 
     if( width != 0 ) {
-        //@position = ($orientation[0]*($d-$w/2),$orientation[1]*($d-$w/2),$orientation[2]*($d-$w/2));
-        this->InitSatBand(normalRAS, distance);
+        for (int k = 0; k < 3; k++ ) {
+            point[k] = normalLPS[k] * (distance - (width/2.) + (thickness/2.) );
+        }
+        projection = vtkMath::Dot(normalLPS, point); 
+        this->InitSatBand(normalRAS, projection);
     }
 
 }
