@@ -674,6 +674,10 @@ if ( BUILD_ITK )
     LIST(APPEND APPS svk_met_kinetics)
 endif ( BUILD_ITK )
 
+IF (UCSF_INTERNAL)
+    LIST(APPEND APPS svk_psd_prescription_convert)
+ENDIF(UCSF_INTERNAL)
+
 IF (NOT WIN32)	
     FOREACH(APP ${APPS})    
         configure_file( svk_cmd_start ./${APP} [COPYONLY])
