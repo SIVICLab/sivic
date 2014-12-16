@@ -50,7 +50,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(25);
+    this->SetNumberOfInputPorts(27);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -78,6 +78,8 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( COMPUTE_SAMPLE_SKEWNESS, "COMPUTE_SAMPLE_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_KURTOSIS, "COMPUTE_POPULATION_KURTOSIS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_POPULATION_SKEWNESS, "COMPUTE_POPULATION_SKEWNESS", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( NORMALIZATION_METHOD, "NORMALIZATION_METHOD", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( NORMALIZATION_ROI_INDEX, "NORMALIZATION_ROI_INDEX", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( OUTPUT_FILE_NAME, "OUTPUT_FILE_NAME", svkAlgorithmPortMapper::SVK_STRING, !required);
     this->GetPortMapper()->InitializeOutputPort( 0, "XML_RESULTS", svkAlgorithmPortMapper::SVK_XML);
 }
@@ -260,9 +262,27 @@ int svkImageStatistics::RequestData( vtkInformation* request,
     results->SetAttribute("date", timeString.c_str());
 
     for (int imageIndex = 0; imageIndex < this->GetNumberOfInputConnections(INPUT_IMAGE); imageIndex++) {
-        for (int roiIndex = 0; roiIndex < this->GetNumberOfInputConnections(INPUT_ROI); roiIndex++) {
+        double normalizationFactor = 0;
+        vector<int> roiIndicies;
+        int normalizationROIIndex = 0;
+        int normalizationType = NONE;
+        if( this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_ROI_INDEX) != NULL ) {
+            normalizationROIIndex = this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_ROI_INDEX)->GetValue();
+            if(this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_METHOD) != NULL ) {
+                normalizationType = this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_METHOD)->GetValue();
+            }
+        }
+        // Let's make sure the normalization values are computed before the other statistics.
+        roiIndicies.push_back( normalizationROIIndex );
+        for(int i = 0; i < this->GetNumberOfInputConnections(INPUT_ROI); i++ ) {
+            if( i != normalizationROIIndex ) {
+                roiIndicies.push_back(i);
+            }
+        }
+        // Look through the indicies, starting with the normalization index if present
+        for (int roiIndex = 0; roiIndex < roiIndicies.size(); roiIndex++) {
             svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
-            svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndex);
+            svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndicies[roiIndex]);
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
@@ -293,12 +313,33 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                 this->ComputeAccumulateStatistics(image,roi, statistics);
                 this->ComputeDescriptiveStatistics(image,roi, statistics);
             }
+            if( normalizationType != NONE ) {
+                if( roiIndex == 0 ) {
+                    //EXTRACT NORMALIZATION FACTOR FROM XML
+                    string normalizationElementName = "";
+                    if( normalizationType == MODE ) {
+                        normalizationElementName = "mode";
+                    } else if (normalizationType == MEAN ) {
+                        normalizationElementName = "mean";
+                    } else {
+                        cout << "ERROR: Normalization Type not recognized..." << endl;
+                        exit(1);
+                    }
+                    vtkXMLDataElement* normalizationElement = statistics->LookupElementWithName( normalizationElementName.c_str() );
+                    if( normalizationElement != NULL ) {
+                        normalizationFactor = svkTypeUtils::StringToDouble(normalizationElement->GetCharacterData());
+                    } else {
+                        cout << "ERROR: Normalization element not found! " << endl;
+                    }
+                }
+                this->ComputeSmoothStatistics(image,roi, statistics, normalizationFactor);
+                this->ComputeAccumulateStatistics(image,roi, statistics, normalizationFactor);
+            }
             vtkIndent indent;
             if( statistics != NULL ) {
                 nextResult->AddNestedElement( statistics );
             }
             results->AddNestedElement( nextResult );
-            nextResult->Delete();
         }
     }
 
@@ -314,7 +355,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 /*!
  * Computes basic statistics using vtkImageAccumulate.
  */
-void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results, double normalization )
 {
     if( image != NULL ) {
         double* spacing = image->GetSpacing();
@@ -330,7 +371,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             stencil->Delete();
         }
         accumulator->Update( );
-        accumulator->SetIgnoreZero( false );
+        accumulator->SetIgnoreZero( true );
         int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
         double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
         double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
@@ -344,24 +385,52 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         }
 
         if( this->GetShouldCompute(COMPUTE_MAX)) {
-            string maxString = svkTypeUtils::DoubleToString( *accumulator->GetMax() );
-            svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
+            double max =  *accumulator->GetMax();
+            if( normalization > 0 ) {
+                max /= normalization;
+            }
+            string maxString = svkTypeUtils::DoubleToString( max );
+            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
+            if( normalization > 0 ) {
+                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+            }
         }
 
 
         if( this->GetShouldCompute(COMPUTE_MIN)) {
-            string minString = svkTypeUtils::DoubleToString( *accumulator->GetMin() );
-            svkUtils::CreateNestedXMLDataElement( results, "min", minString);
+            double min = *accumulator->GetMin();
+            if( normalization > 0 ) {
+                min /= normalization;
+            }
+            string minString = svkTypeUtils::DoubleToString( min );
+            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "min", minString);
+            if( normalization > 0 ) {
+                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+            }
         }
 
         if( this->GetShouldCompute(COMPUTE_MEAN)) {
-            string meanString = svkTypeUtils::DoubleToString( *accumulator->GetMean() );
-            svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
+            double mean = *accumulator->GetMean();
+            if( normalization > 0 ) {
+                mean /= normalization;
+            }
+            string meanString = svkTypeUtils::DoubleToString( mean );
+            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
+            if( normalization > 0 ) {
+                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+            }
         }
 
         if( this->GetShouldCompute(COMPUTE_STDEV)) {
-            string stdevString = svkTypeUtils::DoubleToString( *accumulator->GetStandardDeviation() );
-            svkUtils::CreateNestedXMLDataElement( results, "stdev", stdevString);
+            double stdev = *accumulator->GetStandardDeviation();
+            if( normalization > 0 ) {
+                stdev /= normalization;
+            }
+            string stdevString = svkTypeUtils::DoubleToString( stdev );
+            vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "stdev", stdevString);
+            if( normalization > 0 ) {
+                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+            }
         }
         /*
         // This produces a different result from legacy code due to nint vs floor in finding bins
@@ -474,7 +543,7 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
 /*!
  * Computes statistics using the vtkDescriptiveStatistics class.
  */
-void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results )
 {
     if( image != NULL ) {
         vtkDataArray* pixels = image->GetPointData()->GetScalars();
@@ -552,7 +621,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
 /*!
  * Do smooth computation.
  */
-void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results)
+void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* results, double normalization)
 {
     double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
     double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
@@ -578,8 +647,15 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                         modeBin = i;
                     }
                 }
-                string valueString = svkTypeUtils::DoubleToString( binSize*modeBin + startBin );
-                svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
+                double value = binSize*modeBin + startBin;
+                if( normalization > 0 ) {
+                    value /= normalization;
+                }
+                string valueString = svkTypeUtils::DoubleToString( value );
+                vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
+                if( normalization > 0 ) {
+                    elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                }
             }
 
             // Now let's calculate the percentiles
@@ -634,36 +710,35 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                     }
                 }
             }
-
             for( int i = 0; i < numIntervals; i++ ) {
                 double percentile = binSize*((intervalUpperBin[i] + intervalLowerBin[i])/2.0) + startBin;
+                if( normalization > 0 ) {
+                    percentile /= normalization;
+                }
+                vtkXMLDataElement* elem = NULL;
                 if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
                     if( ((double)i)/numIntervals == 0.1 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "tenthPercentile", valueString);
-                    }
-                    if( ((double)i)/numIntervals == 0.25 ) {
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "tenthPercentile", valueString);
+                    } else if( ((double)i)/numIntervals == 0.25 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "firstQuartile", valueString);
-                    }
-                    if( ((double)i)/numIntervals == 0.5 ) {
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "firstQuartile", valueString);
+                    } else if( ((double)i)/numIntervals == 0.5 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-                    }
-                    if( ((double)i)/numIntervals == 0.75 ) {
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+                    } else if( ((double)i)/numIntervals == 0.75 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "thirdQuartile", valueString);
-                    }
-                    if( ((double)i)/numIntervals == 0.90 ) {
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "thirdQuartile", valueString);
+                    } else if( ((double)i)/numIntervals == 0.90 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "nintiethPercentile", valueString);
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "nintiethPercentile", valueString);
                     }
-                } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
-                    if( ((double)i)/numIntervals == 0.5 ) {
+                } else if( this->GetShouldCompute(COMPUTE_MEDIAN) && ((double)i)/numIntervals == 0.5 ) {
                         string valueString = svkTypeUtils::DoubleToString( percentile );
-                        svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-                    }
-
+                        elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+                }
+                if( elem != NULL && normalization > 0) {
+                    elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
                 }
             }
             if( this->GetShouldCompute(COMPUTE_HISTOGRAM)) {
