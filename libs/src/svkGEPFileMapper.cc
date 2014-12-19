@@ -1553,6 +1553,7 @@ void svkGEPFileMapper::InitSatBand( float satRAS[3], float translation)
     for(int i = 0; i < 3; i++) {
 
         //  orientation (normal vector): 
+        //  Back to LPS.  
         orientation[i] = ( i < 2 ) ? ( -satRAS[i] / satThickness ) : ( satRAS[i] / satThickness );
 
         //  translation given is towards the "farther" edge of the sat band. 
