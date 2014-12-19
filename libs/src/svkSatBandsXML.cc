@@ -210,7 +210,7 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
                 for ( int i = 0; i < 3; i++ ) {
 
                     svkUtils::ReadLine( datFile, iss); 
-                    cout << "iss: " << iss->str() << endl;
+                    //cout << "iss: " << iss->str() << endl;
                     tmp.assign( iss->str() ); 
 
                     // parse 3 values from each line
@@ -578,7 +578,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
                       thickness.assign( tmp.substr(0, position) );
                     }
                     
-                    cout << "a1: " << angle1 << " a2: " << angle2 << " dist: " << distance << " thck: " << thickness << endl;
+                    //cout << "a1: " << angle1 << " a2: " << angle2 << " dist: " << distance << " thck: " << thickness << endl;
                     //  Convert these into a normal, distance and thickness
                     float satNormal[3]; 
                     this->PSDAutSatAnglesToNormal( 
@@ -743,8 +743,8 @@ int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float* normalX, flo
                 "sat_band", 
                 svkTypeUtils::IntToString(satNumber).c_str() 
             ); 
-    this->autoSatsElement->PrintXML( cout, vtkIndent() );
-    satBandElement->PrintXML( cout, vtkIndent() );
+    //this->autoSatsElement->PrintXML( cout, vtkIndent() );
+    //satBandElement->PrintXML( cout, vtkIndent() );
     //cout << "ID NUMBER: " << satBandElement->GetId() << endl;
 
     this->InitSatBandInfo( satBandElement, label, normalX, normalY, normalZ, thickness, distance); 
