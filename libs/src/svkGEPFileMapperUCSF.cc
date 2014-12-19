@@ -244,15 +244,15 @@ bool svkGEPFileMapperUCSF::WasIndexSampled(int indexX, int indexY, int indexZ)
 void svkGEPFileMapperUCSF::InitSatBandsFromXML()
 {
 
-    int readSats; 
-    int octSats; 
+    int readSats = -1; 
+    int octSats = -1; 
     this->GetCVS(&readSats, &octSats); 
     if ( this->GetDebug() ) {
         cout << "AUTO SATS: " << readSats << " OCT SATS: " << octSats << endl;
     }
 
 
-    if ( octSats == 1 ) {
+    if ( octSats > 0 ) {
 
         //  Unlik the auto sats, the oct sats don't require any 
         //  XML files, just the definition of the PRESS box  
@@ -320,7 +320,8 @@ void svkGEPFileMapperUCSF::InitSatBandsFromXML()
         this->InitOctBand( octDiagVec2, selBoxCenter, thickness, ((selBoxSize[0] + selBoxSize[1])/2) + thickness ); 
          
     }
-    if ( readSats == 1 ) {
+
+    if ( readSats > 0 ) {
         // Init auto-sats from XML file: 
 
         string xmlFileName = this->pfileName; 
@@ -356,6 +357,7 @@ void svkGEPFileMapperUCSF::InitSatBandsFromXML()
             //      2.  normal in RAS rather than LPS
             //      3.  Distance is to far edge of sat, so distance + 1/2 thickness
             //  ===================================================
+            vtkMath::Normalize( normalLPS ); 
             for ( int i = 0; i < 3; i++ ) {
                 normalLPS[i] *= thickness; 
             }
