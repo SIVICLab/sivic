@@ -112,7 +112,6 @@ void svkGEPFileMapper::InitializeDcmHeader(vtkstd::map <vtkstd::string, vtkstd::
     this->InitAcquisitionContextModule();
     this->InitMRSpectroscopyPulseSequenceModule();
     this->InitMRSpectroscopyDataModule();
-    header->PrintDcmHeader(); 
 
     this->iod->Delete();
 }
