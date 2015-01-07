@@ -198,11 +198,12 @@ void svkDcmRawDataReader::ExtractFiles()
         }
 
 
-        //  For backward compatibility, check to see fi SVK_FILE_CONTENTS element
-        //  exists. If so, read data from there. Otherwise:
+        //  For backward compatibility, check to see if 
+        //  SVK_FILE_CONTENT_SEQUENCE element exists.
+        //  If not use legacy read. Otherwise:
         //  loop over each item in the SVK_FILE_CONTENT_SEQUENCE 
         //  First, determine number of items in this sequence.  
-        if ( hdr->ElementExists( "SVK_FILE_NUM_BYTES", "SVK_FILE_CONTENTS") ) {
+        if ( !hdr->ElementExists( "SVK_FILE_CONTENT_SEQUENCE") ) {
 
             this->LegacyParsing( fileName, fileNum, pfileSize);
 
