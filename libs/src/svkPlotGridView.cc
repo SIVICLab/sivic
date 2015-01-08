@@ -309,6 +309,7 @@ void svkPlotGridView::SetInput(svkImageData* data, int index)
             dataVector[MET] = data;
             data->Register( this );
             CreateMetaboliteOverlay( data );
+            this->SetTlcBrc(this->tlcBrc);
         } else if( index >= ADDITIONAL_MR4D ) {
             while( dataVector.size() <= index ) {
                 dataVector.push_back(NULL);
@@ -776,8 +777,11 @@ void svkPlotGridView::GetWindowLevelRange( double &lower, double &upper, int ind
 void svkPlotGridView::SetOverlayWLRange( double* range )
 {
     if( this->colorTransfer != NULL ) {
-        this->colorTransfer->SetRange(range); 
+        this->colorTransfer->SetRange(range);
         this->GetProp( svkPlotGridView::OVERLAY_IMAGE )->Modified();
+        if( this->tlcBrc[0] == this->tlcBrc[1] && this->tlcBrc[0] != -1 ) {
+            this->UpdateDetailedPlotOverlay( this->tlcBrc[0] );
+        }
         this->Refresh();
     }
 }
@@ -1229,10 +1233,34 @@ void svkPlotGridView::UpdateDetailedPlot( int* tlcBrc )
         int upper;
         this->plotGrids[0]->GetFrequencyWLRange(lower, upper);
         this->detailedPlotDirector->SetIndexRange(lower, upper);
+        this->UpdateDetailedPlotOverlay(tlcBrc[0]);
     }
 
 }
 
+
+/*!
+ * Updates the overlay color and text in the detailed plot director
+ */
+void svkPlotGridView::UpdateDetailedPlotOverlay( int tlcID )
+{
+    svkOrientedImageActor* overlayActor = svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ));
+    if( this->dataVector[MET] != NULL && overlayActor != NULL && this->windowLevel->GetInput() != NULL ) {
+        this->detailedPlotDirector->SetBackgroundOpacity( overlayActor->GetOpacity());
+        double value = this->dataVector[MET]->GetPointData()->GetScalars()->GetTuple1(tlcID);
+        unsigned char* voxelColor = this->colorTransfer->MapValue(value);
+        double color[3] = {voxelColor[0]/255.0, voxelColor[1]/255.0, voxelColor[2]/255.0};
+        this->detailedPlotDirector->SetBackgroundColor(color);
+        // Check to see if the voxel was thresholded
+        if( voxelColor[3] == 0 ) {
+            this->detailedPlotDirector->SetBackgroundOpacity(0);
+        } else {
+            this->detailedPlotDirector->SetBackgroundOpacity(overlayActor->GetOpacity());
+        }
+        this->detailedPlotDirector->SetAnnotationText(svkTypeUtils::DoubleToString(value));
+    }
+
+}
 
 /*!
  *  Sets the color schema. Currently we only support one light-on-dark 
@@ -1444,6 +1472,7 @@ void svkPlotGridView::SetOverlayOpacity( double opacity )
 {
     if( this->dataVector[MET] != NULL ) {
         svkOrientedImageActor::SafeDownCast(this->GetProp( svkPlotGridView::OVERLAY_IMAGE ))->SetOpacity( opacity );
+        this->detailedPlotDirector->SetBackgroundOpacity( opacity );
     }
 }
 
@@ -1457,6 +1486,9 @@ void svkPlotGridView::SetOverlayThreshold( double threshold )
 {
     if( this->GetProp( svkPlotGridView::OVERLAY_IMAGE ) != NULL ) {
         this->colorTransfer->SetAlphaThreshold(threshold);
+        if( this->tlcBrc[0] == this->tlcBrc[1] && this->tlcBrc[0] != -1) {
+            this->UpdateDetailedPlotOverlay(this->tlcBrc[0]);
+        }
     }
 }
 
@@ -1500,6 +1532,9 @@ void svkPlotGridView::SetActiveOverlayVolume( int volume )
     if( this->dataVector[MET] != NULL && volume < this->dataVector[MET]->GetPointData()->GetNumberOfArrays()) {
         this->dataVector[MET]->GetPointData()->SetActiveScalars( this->dataVector[MET]->GetPointData()->GetArray(volume)->GetName() );
         this->windowLevel->Modified();
+        if( this->tlcBrc[0] == this->tlcBrc[1] && this->tlcBrc[0] != -1 ) {
+            this->UpdateDetailedPlotOverlay(this->tlcBrc[0]);
+        }
         this->Refresh( );
     }
 
@@ -1787,4 +1822,32 @@ string svkPlotGridView::GetDecimalFormat( int digits )
     format.append(svkTypeUtils::IntToString( digits ));
     format.append("f");
     return format;
+}
+
+
+/*!
+ * Turns on the given prop, in both the view and in the detailed plot directory
+ */
+void svkPlotGridView::TurnPropOn(int propIndex)
+{
+    Superclass::TurnPropOn(propIndex);
+    if( propIndex == OVERLAY_IMAGE ) {
+        this->detailedPlotDirector->SetBackgroundVisibility(true);
+    } else if (propIndex == OVERLAY_TEXT ) {
+        this->detailedPlotDirector->SetAnnotationTextVisibility(true);
+    }
+}
+
+
+/*!
+ * Turns off the given prop, in both the view and in the detailed plot directory
+ */
+void svkPlotGridView::TurnPropOff(int propIndex)
+{
+    Superclass::TurnPropOff(propIndex);
+    if( propIndex == OVERLAY_IMAGE ) {
+        this->detailedPlotDirector->SetBackgroundVisibility(false);
+    } else if (propIndex == OVERLAY_TEXT ) {
+        this->detailedPlotDirector->SetAnnotationTextVisibility(false);
+    }
 }

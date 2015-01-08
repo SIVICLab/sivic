@@ -62,6 +62,11 @@ svkDetailedPlotDirector::svkDetailedPlotDirector()
     // We are not using the built-in X axis...
     this->xyPlotActor->SetPosition( 0.0, 0.0 );
     this->xyPlotActor->SetPosition2( 1.0, 1.0 );
+    // If we don't set the title as a non-empty string then the properties won't persist
+    this->xyPlotActor->SetTitle(" ");
+    this->xyPlotActor->GetTitleTextProperty()->SetColor(0,1,1);
+    this->xyPlotActor->AdjustTitlePositionOff();
+    this->xyPlotActor->SetTitlePosition(0.15, 0.9);
 #if VTK_MINOR_VERSION >= 6
     this->xyPlotActor->ChartBoxOn();
     this->xyPlotActor->ChartBorderOn();
@@ -279,11 +284,61 @@ void svkDetailedPlotDirector::SetBackgroundColor( double* rgb )
 
 
 /*!
+ * Sets the background opacity
+ */
+void svkDetailedPlotDirector::SetBackgroundOpacity( double opacity )
+{
+    #if VTK_MINOR_VERSION >= 6
+        this->xyPlotActor->GetChartBoxProperty()->SetOpacity(opacity);
+    #endif
+
+}
+
+
+/*!
+ *  Sets the visibilty of the background.
+ */
+void svkDetailedPlotDirector::SetBackgroundVisibility( bool visible )
+{
+#if VTK_MINOR_VERSION >= 6
+    if( visible ) {
+        this->xyPlotActor->ChartBoxOn();
+    } else {
+        this->xyPlotActor->ChartBoxOff();
+    }
+#endif
+}
+
+
+/*!
+ *  Sets the visibilty of the annotation text.
+ */
+void svkDetailedPlotDirector::SetAnnotationTextVisibility( bool visible )
+{
+    if( visible ) {
+        this->xyPlotActor->GetTitleTextProperty()->SetOpacity(1);
+    } else {
+        this->xyPlotActor->GetTitleTextProperty()->SetOpacity(0);
+    }
+
+}
+
+
+/*!
  *  Sets the line width.
  */
 void svkDetailedPlotDirector::SetLineWidth( float width )
 {
 	this->xyPlotActor->GetProperty()->SetLineWidth( width );
+}
+
+
+/*!
+ *  Sets an annotation. The title is used for this.
+ */
+void svkDetailedPlotDirector::SetAnnotationText( string text )
+{
+    this->xyPlotActor->SetTitle(text.c_str());
 }
 
 

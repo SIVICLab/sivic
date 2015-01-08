@@ -141,6 +141,8 @@ class svkPlotGridView : public svkDataView
         void                        SetOverlayTextDigits( int digits );
         string                      GetScientificFormat( int digits );
         string                      GetDecimalFormat( int digits );
+        void                        TurnPropOn(int propIndex);
+        void                        TurnPropOff(int propIndex);
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -191,6 +193,7 @@ class svkPlotGridView : public svkDataView
         void                   UpdateMetaboliteImage( int* tlcBrc );
         void                   UpdateMetaboliteTextDisplacement( );
         void                   UpdateDetailedPlot( int* tlcBrc );
+        void                   UpdateDetailedPlotOverlay( int tlc );
         void                   SetSelection( double* selectionArea, bool isWorldCords = 0 );
         int*                   HighlightSelectionVoxels();
         void                   SetColorSchema( int colorSchema );                

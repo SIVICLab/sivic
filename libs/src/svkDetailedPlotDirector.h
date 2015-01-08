@@ -99,7 +99,11 @@ class svkDetailedPlotDirector : public vtkObject
         virtual void                RemoveInput( vtkDataArray* array );
         virtual void                SetPlotColor( int plotIndex, double* rgb);
         virtual void                SetBackgroundColor( double* rgb );
+        virtual void                SetBackgroundOpacity( double opacity );
+        virtual void                SetBackgroundVisibility( bool visible );
+        virtual void                SetAnnotationTextVisibility( bool visible );
         virtual void                SetLineWidth( float width );
+        virtual void                SetAnnotationText( string text );
 
         virtual void                SetIndexRange( int lower, int upper );
         virtual void                GenerateAbscissa( double firstPointValue, double lastPointValue );
