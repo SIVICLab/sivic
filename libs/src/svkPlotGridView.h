@@ -143,6 +143,8 @@ class svkPlotGridView : public svkDataView
         string                      GetDecimalFormat( int digits );
         void                        TurnPropOn(int propIndex);
         void                        TurnPropOff(int propIndex);
+        void                        HideView();
+        void                        ShowView();
 
         //! Enum represents objects in the scene
         typedef enum {
@@ -179,6 +181,7 @@ class svkPlotGridView : public svkDataView
             AMPLITUDE
         } WindowLevelRanges;
         void                   SetActiveOverlayVolume( int volume );
+        void                   SetOverlayThreshold( double threshold );
 
     protected:
 
@@ -199,7 +202,6 @@ class svkPlotGridView : public svkDataView
         void                   SetColorSchema( int colorSchema );                
         string                 GetDataCompatibility( svkImageData* data, int targetIndex );
         void                   SetOverlayOpacity( double opacity );
-        void                   SetOverlayThreshold( double threshold );
         void                   SetLUT( svkLookupTable::svkLookupTableType type );
 
     private: 

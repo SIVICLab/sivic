@@ -1521,6 +1521,48 @@ void svkPlotGridView::SetLUT( svkLookupTable::svkLookupTableType type )
 }
 
 
+/*!
+ * Hides all the actors.
+ */
+void svkPlotGridView::HideView()
+{
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::PLOT_LINES) );
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::VOL_SELECTION) );
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::PLOT_GRID) );
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    this->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp( this->GetProp(svkPlotGridView::DETAILED_PLOT));
+
+}
+
+
+/*!
+ * Reveals all the appropriate actors.
+ */
+void svkPlotGridView::ShowView()
+{
+    string acquisitionType = "UNKNOWN";
+    svk4DImageData* activeData = this->GetActiveInput();
+    if( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
+        acquisitionType = activeData->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
+    }
+    // We don't want to turn on the press box if its single voxel
+    if( acquisitionType != "SINGLE VOXEL" ) {
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                       this->GetProp(svkPlotGridView::VOL_SELECTION));
+    }
+    if( this->tlcBrc[0] != this->tlcBrc[1] ) {
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor( this->GetProp(svkPlotGridView::PLOT_LINES));
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->GetProp(svkPlotGridView::PLOT_GRID));
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->GetProp(svkPlotGridView::OVERLAY_IMAGE));
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    }
+
+}
+
 
 /*!
  * Sets the active overlay volume.

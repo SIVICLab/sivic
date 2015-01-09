@@ -79,6 +79,8 @@ struct globalArgs_t {
     char *secondOverlayName;   /* -O option */
     char *outputPath;          /* -p option */
     bool showSatBands;          /* -p option */
+    int  tlc;                  /* -l option */
+    int  brc;                  /* -r option */
 } globalArgs;
 
 static const struct option longOpts[] = {
@@ -88,9 +90,11 @@ static const struct option longOpts[] = {
     { "overlay",        required_argument, NULL, 'o' },
     { "second_overlay", required_argument, NULL, 'O' },
     { "output_path",    required_argument, NULL, 'p' },
+    { "tlc",            required_argument, NULL, 'l' },
+    { "brc",            required_argument, NULL, 'r' },
     { NULL,             no_argument,       NULL,  0  }
 };
-static const char *optString = "t:s:S:o:O:p:";
+static const char *optString = "t:s:S:o:O:p:r:l:";
 
 
 int main ( int argc, char** argv )
@@ -104,6 +108,8 @@ int main ( int argc, char** argv )
     globalArgs.secondSpectraName = NULL;   /* -S option */
     globalArgs.firstOverlayName = NULL;     /* -o  option */
     globalArgs.secondOverlayName = NULL;    /* -O option */
+    globalArgs.tlc = -1;                   /* -l option */
+    globalArgs.brc = -1;                   /* -r option */
     testFunction = RenderingTest;
 
     opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
@@ -141,6 +147,12 @@ int main ( int argc, char** argv )
                     break;
                 case 'p': 
                     globalArgs.outputPath = optarg;
+                    break;
+                case 'l':
+                    globalArgs.tlc = atoi(optarg);
+                    break;
+                case 'r':
+                    globalArgs.brc = atoi(optarg);
                     break;
                 default:
                     cout<< endl <<" ERROR: Unrecognized option... " << endl << endl;
@@ -291,7 +303,17 @@ void RenderingTest()
     window->Render();
     plotController->HighlightSelectionVoxels();
     window->Render();
-
+    int tlcBrc[2] = { globalArgs.tlc, globalArgs.brc };
+    if(globalArgs.tlc != -1 && globalArgs.brc != -1 && firstOverlay != NULL) {
+        plotController->SetTlcBrc( tlcBrc );
+        plotController->TurnPropOn(svkPlotGridView::OVERLAY_IMAGE);
+        double window = 0;
+        double level = 0;
+        svkMriImageData::SafeDownCast(firstOverlay)->GetAutoWindowLevel( window, level );
+        double range[2] = {level - window/2.0, level + window/2.0};
+        svkPlotGridView::SafeDownCast(plotController->GetView())->SetOverlayWLRange(range);
+        svkPlotGridView::SafeDownCast(plotController->GetView())->SetOverlayThreshold(0);
+    }
     for( int i = 0; i < firstSpectra->GetNumberOfSlices(); i++ ) {
         stringstream filename;
         filename << globalArgs.outputPath << "/" << rootName.c_str() << "_" << i << ".tiff" ;

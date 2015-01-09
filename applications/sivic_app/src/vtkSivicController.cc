@@ -149,40 +149,13 @@ void vtkSivicController::SetSlice( int slice, bool centerImage )
 
 void vtkSivicController::TurnOffPlotView() 
 {
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::VOL_SELECTION));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->RemoveViewProp(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    svkPlotGridView::SafeDownCast(this->plotController->GetView())->HideView();
 }
 
 
 void vtkSivicController::TurnOnPlotView() 
 {
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_LINES));
-    string acquisitionType = "UNKNOWN";
-    svk4DImageData* activeData = this->GetActive4DImageData();
-    if( activeData != NULL && activeData->IsA("svkMrsImageData") ) {
-        acquisitionType = this->model->GetDataObject("SpectroscopicData")->GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-    }
-    // We don't want to turn on the press box if its single voxel
-    if( acquisitionType != "SINGLE VOXEL" ) {
-        this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::VOL_SELECTION));
-    }
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::PLOT_GRID));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_IMAGE));
-    this->plotController->GetView()->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
-                                       this->plotController->GetView()->GetProp(svkPlotGridView::OVERLAY_TEXT));
-
+    svkPlotGridView::SafeDownCast(this->plotController->GetView())->ShowView();
 }
 
 

@@ -231,6 +231,22 @@ SET_TESTS_PROPERTIES(ORIENTATION_SPEC_MET_DIFF PROPERTIES DEPENDS ORIENTATION_SP
 
 
 #############################################################
+# Check to see if you can render spectra and an overlay from
+# a phantom of an individual voxel with the detailed plot.
+#############################################################
+SET( TEST_NAME PLOT_GRID_DETAILED_VOXEL_MCHK)
+SET( TEST_RESULTS_PATH ${TEST_RESULTS_ROOT}/${TEST_NAME})
+FILE( REMOVE_RECURSE ${TEST_RESULTS_PATH} )
+FILE( MAKE_DIRECTORY ${TEST_RESULTS_PATH} )
+SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/overlay_validation/ddf_idf_mets)
+ADD_TEST(${TEST_NAME} ${GRAPHICS_WRAPPER}  ${DEDICATED_TEST_BIN_PATH}/svkPlotGridViewTest -l 44 -r 44 -t RenderingTest --spectra ${TEST_CASE_ROOT}/input/spec.ddf --overlay ${TEST_CASE_ROOT}/input/met.idf -p ${TEST_RESULTS_PATH} )
+
+SET( TEST_NAME PLOT_GRID_DETAILED_VOXEL_DIFF)
+ADD_TEST(${TEST_NAME}  diff ${DIFF_OPT} -r ${TEST_RESULTS_PATH} ${TEST_CASE_ROOT}/render_results/out_8/${PLATFORM} )
+SET_TESTS_PROPERTIES(PLOT_GRID_DETAILED_VOXEL_DIFF PROPERTIES DEPENDS PLOT_GRID_DETAILED_VOXEL_MCHK)
+
+
+#############################################################
 # Check to see if the we can render a sagittal phantom  image and spectra in multiple orientations. 
 #############################################################
 SET( TEST_NAME SAG_IMAGE_SPEC_RENDER_MCHK)
