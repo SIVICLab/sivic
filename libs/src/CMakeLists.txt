@@ -262,6 +262,7 @@ ADD_LIBRARY(
     svkInt.cc
     svkString.cc
     svkXML.cc
+    svkF2C.cc
 )
 
 
