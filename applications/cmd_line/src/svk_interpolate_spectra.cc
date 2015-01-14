@@ -98,6 +98,7 @@ int main (int argc, char** argv)
 
     static struct option long_options[] =
     {
+        {0, 0, 0, 0}
     };
 
 

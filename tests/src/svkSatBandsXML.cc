@@ -66,7 +66,7 @@ int main (int argc, char** argv)
     xml->GetPressBoxSat( satNumber, &label, &normalX, &normalY, &normalZ, &thickness, &distance);  
 
     cout << "number:    " << satNumber << endl;
-    cout << "label:     " << label << endl;
+    cout << "label:     " << label.c_str() << endl;
     cout << "normalX:   " << normalX << endl;
     cout << "normalY:   " << normalY << endl;
     cout << "normalZ:   " << normalZ << endl;

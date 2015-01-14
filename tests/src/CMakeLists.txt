@@ -439,16 +439,18 @@ TARGET_LINK_LIBRARIES(
     svkSatBandsXML
 	${SVK_LIBS}
 )
-
-ADD_EXECUTABLE(
-    svkSatBandsXML_c
-    svkSatBandsXML.c
-)
-TARGET_LINK_LIBRARIES(
-    svkSatBandsXML_c
-    ${SVK_LIBS}
-    vtkIO
-)
+    
+IF(NOT WIN32)
+    ADD_EXECUTABLE(
+        svkSatBandsXML_c
+        svkSatBandsXML.c
+    )
+    TARGET_LINK_LIBRARIES(
+        svkSatBandsXML_c
+        ${SVK_LIBS}
+        vtkIO
+    )
+ENDIF(NOT WIN32)
 
 include(CMakeSivicTests.cmake)
 

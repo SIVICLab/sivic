@@ -711,7 +711,7 @@ void svkSatBandsXML::GetPressBoxSat(int satNumber, string* label, float *normalX
  */
 int svkSatBandsXML::GetAutoSat(int satNumber, string* label, float normal[3], float* thickness, float* distance)
 {
-    this->GetAutoSat(
+    return this->GetAutoSat(
                 satNumber, 
                 label, 
                 &normal[0], 
@@ -917,7 +917,7 @@ void svkSatBandsXML::GetPRESSBoxParameters( float pressOrigin[3], float pressThi
             differenceVector[j] = normals[i][j] * (distances[i][0] - distances[i][1]); 
             differenceVectorLength += differenceVector[j] * differenceVector[j]; 
         }
-        pressThickness[i] = pow(differenceVectorLength, .5);  
+        pressThickness[i] = pow((float)differenceVectorLength, (float)0.5);  
     }
     cout << "PRESS Thickness: " << pressThickness[0] << " " 
             << pressThickness[1] << " " << pressThickness[2] << endl;        
@@ -1373,7 +1373,8 @@ void* svkSatBandsXML_New(char* xmlFileName, int *status)
 
 void* svkSatBandsXML_Delete( void* xml )                   
 {
-    ((svkSatBandsXML*)xml)->Delete(); 
+    ((svkSatBandsXML*)xml)->Delete();
+    return NULL;
 }
 
 
