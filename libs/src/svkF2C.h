@@ -48,6 +48,10 @@
 
 #include <vtkObject.h>
 #include <vtkObjectFactory.h>
+#include <svkImageReader2.h>
+#include <svkIdfVolumeWriter.h>
+#include <vtkGlobFileNames.h>
+#include <svkUtils.h>
 
 
 namespace svk {
@@ -67,7 +71,8 @@ class svkF2C: public vtkObject
         static svkF2C* New();
         vtkTypeRevisionMacro( svkF2C, vtkObject);
 
-        static int  GetIDFHeader( char* idfFileName ); 
+
+        static int  GetIDFHeader( char* fileRootName, char* headerString );
 
 
     protected:
@@ -93,7 +98,7 @@ extern "C" {
 #endif
 
 
-void  svkf2c_getidfheader_(char* idfFileName); 
+void  svkf2c_getidfheader_(char* idfFileName, char* headerString);
 
 
 #ifdef __cplusplus

@@ -49,6 +49,7 @@
 #include <svkImageData.h>
 
 #include <vtkstd/string>
+#include <iostream>
 
 namespace svk {
 
@@ -68,6 +69,7 @@ class svkIdfVolumeWriter : public svkImageWriter
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
+        string          GetHeaderString( int vol = 0 );
         virtual void    Write();
 
         void            SetCastDoubleToFloat( bool castDoubleToFloat );

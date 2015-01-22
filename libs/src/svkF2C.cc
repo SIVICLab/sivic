@@ -77,14 +77,48 @@ svkF2C::~svkF2C()
 /*!
  *  set the path/name to xml file.   
  */
-int svkF2C::GetIDFHeader(char* idfFileName)
+int svkF2C::GetIDFHeader(char* fileRootName, char* headerString)
 {
+    // We need to get rid of training spaces and add the null terminator character
+    int str_length = strcspn(fileRootName, " ");
+    strncpy(&fileRootName[str_length], "\0", 1);
+    string stringFileName = string(fileRootName);
     cout << "+++++++++++++++++ " << endl;
     cout << "F2C: GetIDFHeader " << endl;
     cout << "+++++++++++++++++ " << endl << endl;;
+
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+
+    // First check to see if its a file without an extension
+    svkImageReader2* reader = NULL;
+    if( svkUtils::FilePathExists(stringFileName.c_str())) {
+        reader = readerFactory->CreateImageReader2( stringFileName.c_str() );
+    } else {
+        // If the file does not exist check for files with an extension
+        vtkGlobFileNames* glob = vtkGlobFileNames::New();
+        stringFileName.append("*");
+        glob->AddFileNames(stringFileName.c_str());
+        for( int i = 0; i < glob->GetNumberOfFileNames(); i++ ) {
+            reader = readerFactory->CreateImageReader2( glob->GetNthFileName(i) );
+            if( reader != NULL ) {
+                // We have found the correct extension. Break out of loop.
+                stringFileName = glob->GetNthFileName(i);
+                break;
+            }
+        }
+        glob->Delete();
+    }
+    reader->SetFileName( stringFileName.c_str() );
+    reader->Update();
+    svkIdfVolumeWriter* writer = svkIdfVolumeWriter::New();
+    writer->SetInput(reader->GetOutput());
+    writer->SetFileName( stringFileName.c_str() );
+    string header = writer->GetHeaderString();
+    for( int i = 0; i < header.length(); i++ ) {
+        headerString[i] = header.c_str()[i];
+    }
     readerFactory->Delete();
-    cout << "created and delected factory" << endl;
+    writer->Delete();
 
     return 77; 
 
@@ -95,23 +129,11 @@ int svkF2C::GetIDFHeader(char* idfFileName)
  *  Parse the input file and return an array of charater 
  *  arrays representing an IDF header. 
  */
-void svkf2c_getidfheader_(char* idfFileName)
+void svkf2c_getidfheader_(char* fileRootName, char* headerString)
 {
-    printf("In fortran/c/c++ interface %s\n", idfFileName); 
+    printf("In fortran/c/c++ interface %s\n", fileRootName);
     
-    /*int status; 
-    void* xml = svkSatBandsXML_New( idfFileName, &status );
-    printf("In fortran/c/c++ interface : AFTER XML\n"); 
-    */
-
-    //svkF2C* f2c = svkF2C::New(); 
-    int outVal = svkF2C::GetIDFHeader( idfFileName ); 
-    printf("In fortran/c/c++ interface %d\n", outVal); 
-
-    /*
-    f2c->GetIDFHeader( idfFileName ); 
-    f2c->Delete(); 
-    */
+    int outVal = svkF2C::GetIDFHeader( fileRootName, headerString );
 }
 
 
