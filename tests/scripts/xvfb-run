@@ -42,6 +42,7 @@
 
 export DISPLAY_PORT=$((RANDOM+1))
 Xvfb :$DISPLAY_PORT -ac -screen 0 1024x768x24&
+export PID=$!
 sleep 1
 if [ -f /tmp/.X$DISPLAY_PORT-lock ]; then
     echo Server running....
@@ -59,10 +60,12 @@ if [ $execute_result = 0 ]; then
 else
     echo ERROR: Program failed!
 fi
-killall Xvfb
+kill -9 $PID
 export server_stop_result=$?
 if [ $server_stop_result = 0 ]; then
     echo Server stopped successfully....
 else
     echo ERROR: Server could not be stopped!
 fi
+
+exit $execute_result 
