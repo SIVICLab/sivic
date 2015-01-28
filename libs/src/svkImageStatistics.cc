@@ -380,7 +380,8 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         accumulator->SetComponentSpacing(binSize, 0,0);
         accumulator->Update();
         if( this->GetShouldCompute(COMPUTE_VOLUME)) {
-            string volumeString = svkTypeUtils::DoubleToString( accumulator->GetVoxelCount()*pixelVolume );
+            // Volume In Cubic Centimeters
+            string volumeString = svkTypeUtils::DoubleToString( (accumulator->GetVoxelCount()*pixelVolume)/1000.0 );
             svkUtils::CreateNestedXMLDataElement( results, "volume", volumeString);
         }
 

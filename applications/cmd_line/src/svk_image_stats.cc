@@ -60,8 +60,15 @@ extern "C" {
 #include <svkInt.h>
 #include <svkString.h>
 #include <vtkAlgorithmOutput.h>
+#include <vector>
+#include <map>
 
 
+//typedef map<string, string>::iterator measuresIter;
+using namespace std;
+typedef map<string, map<string, map< string, vector<string> > > >::iterator measuresIter;
+typedef map<string, map< string, vector<string> > >::iterator roisIter;
+typedef map< string, vector<string> >::iterator imagesIter;
 using namespace svk;
 
 
@@ -77,6 +84,7 @@ int main (int argc, char** argv)
     usemsg += "   -c            config_file_name    Name of the config file.                     \n";
     usemsg += "   -o            output_file_name    Name of the output file.                     \n";
     usemsg += "   -x                                Output results in XML instead of default CSV.\n";
+    usemsg += "   -t                                Output results as tab files.                 \n";
     usemsg += "   -v                                Verbose output.                              \n";
     usemsg += "   -h                                Print help message.                          \n";
     usemsg += "                                                                                  \n";
@@ -86,6 +94,7 @@ int main (int argc, char** argv)
     string fileRootName;
     string outputFileName;
     bool outputXML = false;
+    bool outputTab = false;
     bool   verbose = false;
     static struct option long_options[] =
     {
@@ -97,7 +106,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "xo:r:c:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "xto:r:c:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'r':
                 fileRootName.assign(optarg);
@@ -107,6 +116,9 @@ int main (int argc, char** argv)
                 break;
             case 'x':
                 outputXML = true;
+                break;
+            case 't':
+                outputTab = true;
                 break;
             case 'c':
                 configFileName.assign(optarg);
@@ -169,6 +181,156 @@ int main (int argc, char** argv)
     if( outputXML ) {
         outputFileName.append(".xml");
         vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str(), &indent);
+    } else if(outputTab) {
+
+        // Open file to write the measures into
+        string outputTabFile = outputFileName;
+        outputTabFile.append(".tab");
+        ofstream resultsTab;
+        resultsTab.open(outputTabFile.c_str());
+        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES:" << fileRootName << endl << endl << endl;
+        resultsTab << "Number of rois, biopsies and parameter maps:" << endl;
+        //map< map< string, map< string, string > > > tables;
+        // First let's get a list of all the statistics computed
+        int numberOfTables = 0;
+        int numberOfMeasures = 0;
+        map< string, map< string, map< string, vector<string> > > > tables;
+        map< string, string > volumes;
+
+        // Loops over all results
+        for( int i = 0; i < results->GetNumberOfNestedElements(); i++) {
+            // For the results loops through the tags in that result
+            string roi;
+            string image;
+            vtkXMLDataElement* measuresElem = NULL;
+            for( int j = 0; j < results->GetNestedElement(i)->GetNumberOfNestedElements(); j++) {
+                // If we have a measure
+                if( string(results->GetNestedElement(i)->GetNestedElement(j)->GetName()) == "measures"){
+                    measuresElem = results->GetNestedElement(i)->GetNestedElement(j);
+                } else { // else if its not a measures tag
+                    string elementName = results->GetNestedElement(i)->GetNestedElement(j)->GetName();
+                    if( elementName == "IMAGE" ) {
+                        image = results->GetNestedElement(i)->GetNestedElement(j)->GetCharacterData();
+                    } else if( elementName == "ROI" ) {
+                        roi = results->GetNestedElement(i)->GetNestedElement(j)->GetCharacterData();
+                    }
+                }
+            }
+            if( !roi.empty() && !image.empty() && measuresElem != NULL ) {
+                for (int j = 0; j < measuresElem->GetNumberOfNestedElements(); j++ ) {
+                    string measure = measuresElem->GetNestedElement(j)->GetName();
+                    if( measure == "volume") {
+                        volumes[roi] = measuresElem->GetNestedElement(j)->GetCharacterData();
+                    } else {
+                        if( tables[measure].empty() ) { // First time measures has been encounter
+
+                            // CREATE VECTOR
+                            vector<string> values;
+                            values.push_back("0"); // Non-normalized value
+                            values.push_back("0"); // Normalized value
+                            // CREATE VECTOR
+
+                            // CREATE IMAGE MAP
+                            map< string, vector<string> > imageMap;
+                            imageMap[image] = values;
+                            // CREATE IMAGE MAP
+
+                            // CREATE ROI MAP
+                            map< string, map< string, vector<string> > > roiMap;
+                            roiMap[roi] = imageMap;
+                            // CREATE ROI MAP
+
+                            // SET INTO TABLES
+                            tables[measure] = roiMap;
+                            // SET INTO TABLES
+                        } else if ( tables[measure][roi].empty() ) { // first time ROI has been encountered
+
+                            // CREATE VECTOR
+                            vector<string> values;
+                            values.push_back("0"); // Non-normalized value
+                            values.push_back("0"); // Normalized value
+                            // CREATE VECTOR
+
+                            // CREATE IMAGE MAP
+                            map< string, vector<string> > imageMap;
+                            imageMap[image] = values;
+                            // CREATE IMAGE MAP
+
+                            // SET INTO TABLES
+                            tables[measure][roi] = imageMap;
+                            // SET INTO TABLES
+                        } else if ( tables[measure][roi][image].empty() ) { // first time image has been encounter.
+
+                            // CREATE VECTOR
+                            vector<string> values;
+                            values.push_back("0"); // Non-normalized value
+                            values.push_back("0"); // Normalized value
+                            // CREATE VECTOR
+
+                            // SET INTO TABLES
+                            tables[measure][roi][image] = values;
+                            // SET INTO TABLES
+                        }
+                        if( measuresElem->GetNestedElement(j)->GetAttribute("normalization") == NULL ) {
+                            tables[measure][roi][image][0] = measuresElem->GetNestedElement(j)->GetCharacterData();
+                            //cout << measure << " within " << roi << " of " << image << " =" << measuresElem->GetNestedElement(j)->GetCharacterData() << endl;
+                        } else {
+                            tables[measure][roi][image][1] = measuresElem->GetNestedElement(j)->GetCharacterData();
+                            //cout << measure << " within " << roi << " of " << image << " normalized =" << measuresElem->GetNestedElement(j)->GetCharacterData() << endl;
+                        }
+                    }
+                }
+            }
+        }
+        //resultsTab << "Number of tables:   " << numberOfTables << endl;
+        //resultsTab << "Number of measures: " << numberOfMeasures << endl;
+        for(measuresIter measures = tables.begin(); measures != tables.end(); measures++) {
+            resultsTab << "TABLE of " << measures->first << " values" << endl << endl;
+            for(roisIter rois = measures->second.begin(); rois != measures->second.end(); rois++) {
+                // Print column headings
+                if( rois == measures->second.begin()) {
+                    resultsTab.width(9);
+                    resultsTab << left << "roi label";
+                        resultsTab.width(11);
+                        resultsTab << right << "vol(cc)";
+                    for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                        resultsTab.width(11);
+                        resultsTab << right << images->first;
+                    }
+                    for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                        resultsTab.width(11);
+                        resultsTab << right << images->first;
+                    }
+                    resultsTab << endl;
+                }
+                resultsTab.width(9);
+                resultsTab << left << rois->first;
+                // Print values, then normalized values
+                resultsTab.width(11);
+                resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[rois->first]);
+                for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                    resultsTab.width(11);
+                    double value = svkTypeUtils::StringToDouble(images->second[0]);
+                    resultsTab << right << setprecision(2);
+                    if( value >= 10000000 || value <= -1000000 ) {
+                        resultsTab << scientific;
+                    } else {
+                        resultsTab << fixed;
+                    }
+                    resultsTab << value;
+                    //resultsTab << " " << images->second[0];
+                }
+                for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                    resultsTab.width(11);
+                    resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(images->second[1]);
+                    //resultsTab << " " << images->second[1];
+                }
+                resultsTab << endl;
+            }
+            resultsTab << endl << endl;
+        }
+
+        resultsTab.close();
     } else {
 
         // Open file to write the measures into
@@ -189,7 +351,13 @@ int main (int argc, char** argv)
             if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetName()) == "measures"){
                 for( int j = 0; j < results->GetNestedElement(0)->GetNestedElement(i)->GetNumberOfNestedElements(); j++) {
                     if( string(results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName()) != "histogram") {
-                        resultsCSV << results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName() << ",";
+                        resultsCSV << results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetName();
+                        if( results->GetNestedElement(0)->GetNestedElement(i)->GetNestedElement(j)->GetAttribute("normalization") != NULL ) {
+                            resultsCSV << "Normalized";
+                        } else {
+                            cout << "Attribute is NULL!" << endl;
+                        }
+                        resultsCSV << ",";
                     }
                 }
             } else {
