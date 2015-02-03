@@ -311,6 +311,7 @@ TARGET_LINK_LIBRARIES(
     ${NETAPI}
     ${PLATFORM_LIBS}
     ${ITK_LIBS_PRE}
+    fontconfig
 
 )
 

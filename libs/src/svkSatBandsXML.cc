@@ -684,7 +684,8 @@ void svkSatBandsXML::SetVerbose( bool isVerbose )
  */
 void svkSatBandsXML::WriteXMLFile( string xmlFileName )
 {
-    vtkXMLUtilities::WriteElementToFile( this->satBandsXML, xmlFileName.c_str(), &vtkIndent() );
+    vtkIndent indent;
+    vtkXMLUtilities::WriteElementToFile( this->satBandsXML, xmlFileName.c_str(), &indent );
 }
 
 
