@@ -73,51 +73,59 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ; 
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_anon   -i input_file_name                                \n"; 
-    usemsg += "                   (--deid_type type                                 \n";
-    usemsg += "                                      [ --deid_id id ]               \n";
-    usemsg += "                                      [ --deid_studyUID uid]         \n";
-    usemsg += "                                      [ --deid_seriesUID uid]        \n";
-    usemsg += "                   )                                                 \n";
-    usemsg += "                   ||                                                \n";
-    usemsg += "                   (-i input_file_name -f field_name [-v value])     \n"; 
-    usemsg += "                                                                     \n";  
-    usemsg += "   -i            file_name   Name of GE Pfile to modify.             \n"; 
-    usemsg += "   --deid_type   type        Type of deidentification:               \n";  
-    usemsg += "                                 1 = limited                         \n";  
-    usemsg += "                                 2 = deidentified(default)           \n";  
-    usemsg += "   --deid_id     id          Use the specified study id in place of  \n"; 
-    usemsg += "                             PHI fields(default = DEIDENTIFIED).     \n"; 
-    usemsg += "                             UIDs are generated or specified separately. \n"; 
-    usemsg += "   --study_uid   uid         Use the specified Study UID to deidentify.  \n"; 
-    usemsg += "   --series_uid  uid         Use the specified Series UID to deidentify. \n"; 
-    usemsg += "   -f            field_name  Specific field to modify,                   \n"; 
-    usemsg += "                             e.g. rhs.series_desc                        \n";
-    usemsg += "   -v            value       Field value.  If not specified will         \n"; 
-    usemsg += "                             clear the field.                            \n"; 
-    usemsg += "   -h                        Print this help mesage.                     \n";  
-    usemsg += "                                                                         \n";  
-    usemsg += "Program to anonymize or modify a GE PFile.                               \n"; 
-    usemsg += "Progam will either deidentify the file, or modify an individual field.   \n"; 
-    usemsg += "With no options specified, the program will deid the specified           \n"; 
-    usemsg += "specified raw file                                                       \n"; 
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                   "\n";   
+    usemsg += "svk_gepfile_anon   -i input_file_name                                        \n"; 
+    usemsg += "                   (--deid_type type                                         \n";
+    usemsg += "                         [ --deid_id id ||                                   \n";
+    usemsg += "                           --pat_deid_id patID --study_deid_id studyID ]     \n";
+    usemsg += "                         [ --deid_studyUID uid]                              \n";
+    usemsg += "                         [ --deid_seriesUID uid]                             \n";
+    usemsg += "                   )                                                         \n";
+    usemsg += "                   ||                                                        \n";
+    usemsg += "                   (-i input_file_name -f field_name [-v value])             \n"; 
+    usemsg += "                                                                             \n";  
+    usemsg += "   -i                file_name   Name of GE Pfile to modify.                 \n"; 
+    usemsg += "   --deid_type       type        Type of deidentification:                   \n";  
+    usemsg += "                                     1 = limited                             \n";  
+    usemsg += "                                     2 = deidentified(default)               \n";  
+    usemsg += "   --deid_id         id          Use the specified study id in place of      \n"; 
+    usemsg += "                                 all PHI fields(default = DEIDENTIFIED).     \n"; 
+    usemsg += "                                 UIDs are generated or specified separately. \n"; 
+    usemsg += "   --pat_deid_id     patID       Use the specified patient id in place of    \n"; 
+    usemsg += "                                 patientID fields.                           \n"; 
+    usemsg += "   --study_deid_id   studyID     Use the specified study id in place of      \n"; 
+    usemsg += "                                 exam fields.                                \n"; 
+    usemsg += "   --study_uid       uid         Use the specified Study UID to deidentify.  \n"; 
+    usemsg += "   --series_uid      uid         Use the specified Series UID to deidentify. \n"; 
+    usemsg += "   -f                field_name  Specific field to modify,                   \n"; 
+    usemsg += "                                 e.g. rhs.series_desc                        \n";
+    usemsg += "   -v                value       Field value.  If not specified will         \n"; 
+    usemsg += "                                 clear the field.                            \n"; 
+    usemsg += "   -h                            Print this help mesage.                     \n";  
+    usemsg += "                                                                             \n";  
+    usemsg += "Program to anonymize or modify a GE PFile.                                   \n"; 
+    usemsg += "Progam will either deidentify the file, or modify an individual field.       \n"; 
+    usemsg += "With no options specified, the program will deid the specified               \n"; 
+    usemsg += "specified raw file                                                           \n"; 
     usemsg += "\n";  
-
 
     string inputFileName; 
     svkDcmHeader::PHIType deidType = svkDcmHeader::PHI_DEIDENTIFIED; 
-    string deidId = ""; 
-    string seriesUID = ""; 
-    string studyUID = ""; 
-    string field = ""; 
-    string value = ""; 
+    string deidId      = ""; 
+    string patDeidId   = ""; 
+    string studyDeidId = ""; 
+    string seriesUID   = ""; 
+    string studyUID    = ""; 
+    string field       = ""; 
+    string value       = ""; 
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
         FLAG_DEID_TYPE, 
         FLAG_DEID_ID, 
+        FLAG_PAT_DEID_ID, 
+        FLAG_STUDY_DEID_ID, 
         FLAG_STUDY_UID,
         FLAG_SERIES_UID
     }; 
@@ -128,8 +136,10 @@ int main (int argc, char** argv)
         // set long flags: 
         {"deid_type",        required_argument, NULL,  FLAG_DEID_TYPE},
         {"deid_id",          required_argument, NULL,  FLAG_DEID_ID},
-        {"study_uid",         required_argument, NULL,  FLAG_STUDY_UID}, 
-        {"series_uid",        required_argument, NULL,  FLAG_SERIES_UID}, 
+        {"pat_deid_id",      required_argument, NULL,  FLAG_PAT_DEID_ID},
+        {"study_deid_id",    required_argument, NULL,  FLAG_STUDY_DEID_ID},
+        {"study_uid",        required_argument, NULL,  FLAG_STUDY_UID}, 
+        {"series_uid",       required_argument, NULL,  FLAG_SERIES_UID}, 
         {0, 0, 0, 0}
     };
 
@@ -150,6 +160,12 @@ int main (int argc, char** argv)
                 break;
             case FLAG_DEID_ID:
                 deidId.assign( optarg ); 
+                break;
+            case FLAG_PAT_DEID_ID:
+                patDeidId.assign( optarg ); 
+                break;
+            case FLAG_STUDY_DEID_ID:
+                studyDeidId.assign( optarg ); 
                 break;
             case FLAG_STUDY_UID:
                 studyUID.assign( optarg ); 
@@ -235,6 +251,21 @@ int main (int argc, char** argv)
         cout << "Deidentify data: type = " << deidType << endl; 
     }
 
+    if ( deidId.length() > 0 ) {
+        if ( patDeidId.length() > 0 || studyDeidId.length() > 0 ) {
+            cout << "Error: specify a global deid param or pat and stud deid params, not both. "<<  endl;
+            cout << usemsg << endl;
+            exit(1); 
+        }
+    }
+    if ( deidId.length() ==  0 ) {
+        if ( patDeidId.length() == 0 || studyDeidId.length() == 0 ) {
+            cout << "Error: specify a global deid param or pat and stud deid params, not both. "<<  endl;
+            cout << usemsg << endl;
+            exit(1); 
+        }
+    }
+
 
     // ===============================================  
     //  Set up deidentification options: 
@@ -253,6 +284,8 @@ int main (int argc, char** argv)
     //  set type and id
     if ( deidId.compare("") != 0 ) {
         reader->SetDeidentify( deidType, deidId ); 
+    } else if ( patDeidId.length() > 0 && studyDeidId.length() > 0 ) {
+        reader->SetDeidentify( deidType, patDeidId, studyDeidId ); 
     } else {
         reader->SetDeidentify( deidType ); 
     }
