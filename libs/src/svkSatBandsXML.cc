@@ -1078,7 +1078,7 @@ void svkSatBandsXML::InitPressBoxNormals( float normals[3][3] )
                     &thickness, 
                     &distance
                 ); 
-
+cout << "satnum: " << satNumber << endl;
         if ( this->IsNormalUnique( normal, normals) && this->IsConventionalNormal( normal ) )  {
             normals[numNormalsInitialized][0] = normal[0]; 
             normals[numNormalsInitialized][1] = normal[1]; 
@@ -1174,7 +1174,7 @@ bool svkSatBandsXML::IsConventionalNormal( float normalIn[3]  )
 
     this->GetPressBoxSat( 2, &label, &normal[0], &normal[1], &normal[2], &thick, &dist); 
     dot = vtkMath::Dot( normalIn, normal );
-    float dotThreshold = .99; 
+    float dotThreshold = .98; 
     if (dot > dotThreshold ) { 
          isConventionalElement = true; 
     }
@@ -1301,17 +1301,18 @@ void svkSatBandsXML::InitPressDistances(float normals[3][3], float distances[3][
             float dot = vtkMath::Dot( normal, normals[normalIndex] );
             //  some tolerance, but close to 1: 
             //  if parallel, then assign to first of tuple
-            if ( dot  >= .99 || dot <= -.99 ) {
+            float dotThreshold = .98; 
+            if ( dot  >= dotThreshold || dot <= -1 * dotThreshold ) {
 
                 int distanceIndex = 0; 
                 if ( distances[normalIndex][0] != VTK_FLOAT_MAX ) {    
                     distanceIndex = 1; 
                 }
                 
-                if ( dot  >= -.99 ) {
+                if ( dot  >= -1 * dotThreshold ) {
                     distances[normalIndex][distanceIndex] = distance; 
                     numDistancesInitialized++;     
-                } else if ( dot  <= -.99 ) {
+                } else if ( dot  <= -1 * dotThreshold ) {
                     distances[normalIndex][distanceIndex] = -1 * distance; 
                     numDistancesInitialized++;     
                 }
@@ -1343,7 +1344,7 @@ bool svkSatBandsXML::IsNormalUnique( float normal[3], float normals[3][3])
     for ( int i = 0; i < 3; i++ ) {
         float dot = fabs( vtkMath::Dot( normal, normals[i] ) ) ;
         //  some tolerance, but close to 1: 
-        if ( fabs( dot ) >= .99 ) {
+        if ( fabs( dot ) >= .98 ) {
             isUnique = false; 
         }
     }
