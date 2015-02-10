@@ -201,6 +201,7 @@ class svkGEPFileReader : public svkImageReader2
         vtkStringArray*                 tmpFileNames;
 
         svkDcmHeader::PHIType           phiType; 
+        string                          deidPatientId; 
         string                          deidStudyId; 
         string                          deidStudyUID; 
         string                          deidSeriesUID; 

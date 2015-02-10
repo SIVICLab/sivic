@@ -85,6 +85,7 @@ svkGEPFileReader::svkGEPFileReader()
     this->onlyParseHeader = false; 
     this->checkSeriesUID  = true; 
 
+    this->deidPatientId   = UNASSIGNED_ID; 
     this->deidStudyId     = UNASSIGNED_ID; 
     this->phiType         = svkDcmHeader::PHI_IDENTIFIED; 
     this->deidStudyUID    = UNASSIGNED_UID; 
@@ -520,7 +521,8 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string deid
     this->inputArgs[ "phiType" ] = static_cast<void*>( phiTypeTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( idTmp );
     this->phiType = phiType; 
-    this->deidStudyId = deidentificationId; 
+    this->deidPatientId = deidentificationId; 
+    this->deidStudyId   = deidentificationId; 
 }
 
 
@@ -537,7 +539,8 @@ void svkGEPFileReader::SetDeidentify( svkDcmHeader::PHIType phiType, string pati
     this->inputArgs[ "patientDeidentificationId" ] = static_cast<void*>( patIdTmp );
     this->inputArgs[ "studyDeidentificationId" ] = static_cast<void*>( studyIdTmp);
     this->phiType = phiType; 
-    this->deidStudyId = studyId; 
+    this->deidPatientId = patientId; 
+    this->deidStudyId   = studyId; 
 }
 
 
@@ -1349,6 +1352,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , INT_2  , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1531,6 +1535,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , INT_2  , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1713,6 +1718,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , INT_2  , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -1896,6 +1902,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , INT_2  , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2079,6 +2086,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2262,6 +2270,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2446,6 +2455,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2626,6 +2636,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2806,6 +2817,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -2986,6 +2998,7 @@ string svkGEPFileReader::GetOffsetsString()
             rhr.rh_scan_date                   , CHAR   , 10  , 16,\
             rhr.rh_scan_time                   , CHAR   , 8   , 26,\
             rhr.rh_npasses                     , INT_2  , 1   , 64,\
+            rhr.rh_nslices                     , UINT_2 , 1   , 68,\
             rhr.csi_dims                       , INT_2  , 1   , 372,\
             rhr.rh_dab[0].start_rcv            , INT_2  , 1   , 200,\
             rhr.rh_dab[0].stop_rcv             , INT_2  , 1   , 202,\
@@ -3530,6 +3543,9 @@ void svkGEPFileReader::Deidentify()
     this->ReadGEPFile(); 
 
     //  If ID isn't specified, then use default here: 
+    if ( this->deidPatientId.compare(UNASSIGNED_ID) == 0 ) {
+        this->deidPatientId = "DEIDENTIFIED"; 
+    } 
     if ( this->deidStudyId.compare(UNASSIGNED_ID) == 0 ) {
         this->deidStudyId = "DEIDENTIFIED"; 
     } 
@@ -3570,10 +3586,10 @@ void svkGEPFileReader::Deidentify()
             this->DeidentifyField( fs, "rhe.reqnum",        this->deidStudyId);
             this->DeidentifyField( fs, "rhe.reqnumff",      this->deidStudyId);
             this->DeidentifyField( fs, "rhe.study_uid",     this->deidStudyUID);
-            this->DeidentifyField( fs, "rhe.patid",         this->deidStudyId);
-            this->DeidentifyField( fs, "rhe.patidff",       this->deidStudyId);
-            this->DeidentifyField( fs, "rhe.patname",       this->deidStudyId);
-            this->DeidentifyField( fs, "rhe.patnameff",     this->deidStudyId);
+            this->DeidentifyField( fs, "rhe.patid",         this->deidPatientId);
+            this->DeidentifyField( fs, "rhe.patidff",       this->deidPatientId);
+            this->DeidentifyField( fs, "rhe.patname",       this->deidPatientId);
+            this->DeidentifyField( fs, "rhe.patnameff",     this->deidPatientId);
             this->DeidentifyField( fs, "rhe.hospname",      this->deidStudyId);
             this->DeidentifyField( fs, "rhs.landmark_uid",  this->deidLandmarkUID);
             this->DeidentifyField( fs, "rhs.series_uid",    this->deidSeriesUID);
