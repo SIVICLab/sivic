@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkF2C.cc $
- *  $Rev: 2120 $
- *  $Author: jccrane $
- *  $Date: 2014-12-19 13:13:43 -0800 (Fri, 19 Dec 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -48,7 +48,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkF2C, "$Rev: 2120 $");
+vtkCxxRevisionMacro(svkF2C, "$Rev$");
 vtkStandardNewMacro(svkF2C);
 
 
