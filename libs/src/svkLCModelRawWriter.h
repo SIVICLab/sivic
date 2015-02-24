@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkLCModelRawWriter.h $
- *  $Rev: 1741 $
- *  $Author: jccrane $
- *  $Date: 2014-02-19 11:28:48 -0800 (Wed, 19 Feb 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.

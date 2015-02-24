@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkLCModelRawWriter.cc $
- *  $Rev: 2050 $
- *  $Author: jccrane $
- *  $Date: 2014-09-23 12:03:15 -0700 (Tue, 23 Sep 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -56,7 +56,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelRawWriter, "$Rev: 2050 $");
+vtkCxxRevisionMacro(svkLCModelRawWriter, "$Rev$");
 vtkStandardNewMacro(svkLCModelRawWriter);
 
 
