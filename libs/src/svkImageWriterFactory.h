@@ -81,6 +81,7 @@ class svkImageWriterFactory : public vtkObject
             DICOM_ENHANCED_MRI, 
             DICOM_SC, 
             PS, 
+            LCMODEL,
             LAST_TYPE = PS
         } WriterType;
 

@@ -157,6 +157,7 @@ ADD_LIBRARY(
     svkDICOMEnhancedMRIWriter.cc
     svkDICOMMRIWriter.cc
     svkDICOMRawDataWriter.cc
+    svkLCModelRawWriter.cc
     svkImageWriterFactory.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc

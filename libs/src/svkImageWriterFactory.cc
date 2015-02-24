@@ -50,6 +50,7 @@
 #include <svkDICOMMRIWriter.h>
 #include <svkIdfVolumeWriter.h>
 #include <svkDdfVolumeWriter.h>
+#include <svkLCModelRawWriter.h>
 
 
 using namespace svk;
@@ -102,10 +103,11 @@ vtkImageWriter* svkImageWriterFactory::CreateImageWriter( svkImageWriterFactory:
         return svkIdfVolumeWriter::New();
     } else if ( writerType == svkImageWriterFactory::DDF ) {
         return svkDdfVolumeWriter::New();
+    } else if ( writerType == svkImageWriterFactory::LCMODEL ) {
+        return svkLCModelRawWriter::New();
     } else {
         return NULL;  
     }
-
 
 } 
 
@@ -133,6 +135,8 @@ svkImageWriterFactory::WriterType  svkImageWriterFactory::GetDefaultWriterForFil
             writerType = svkImageWriterFactory::IDF;
         } else if( extension == ".ddf") {
             writerType = svkImageWriterFactory::DDF;
+        } else if( extension == ".raw" || extension == ".control" ) {
+            writerType = svkImageWriterFactory::LCMODEL;
         }
     }
     return writerType;

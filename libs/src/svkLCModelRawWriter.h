@@ -48,7 +48,6 @@
 #include <svkImageWriter.h>
 #include <svkImageData.h>
 
-#include <vtkstd/string>
 
 
 namespace svk {
@@ -70,10 +69,7 @@ class svkLCModelRawWriter : public svkImageWriter
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
-        void            SetOneTimePointsPerFile();
-        int             GetNumberTimePointsPerFile(); 
         virtual void    Write();
-        void            UseDescriptiveFileNames();
 
 
     protected:
@@ -88,19 +84,15 @@ class svkLCModelRawWriter : public svkImageWriter
     private:
         void             InitImageData();
         void             WriteFiles();
-        void             GetDDFCenter(float center[3], vtkstd::string centerType = "current" );
-        void             GetDDFOrientation(float orientation[6]);
-        string           GetDimensionDomain( vtkstd::string dimensionDomainString ); 
-        string           GetDDFPatientName(vtkstd::string PatientName);
-        string           GetFileRootName(vtkstd::string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
+        string           GetFileRootName(string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
         void             InitSpecData(
+                            ofstream* out, 
                             float* specData, 
                             svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionVector* indexVector
                          ); 
-        void             InitHeader(ofstream* out, vtkstd::string fileName);
+        void             InitRawHeader(ofstream* out, string fileName);
 
-        int              numTimePtsPerFile; 
 
 };
 
