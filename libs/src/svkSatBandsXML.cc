@@ -42,14 +42,15 @@
 
 
 #include <svkSatBandsXML.h>
-#include <svkUtils.h>
 #include <svkTypeUtils.h>
-#include <svkImageReader2.h>
+#include <svkFileUtils.h>
 #include <vtkXMLUtilities.h>
 #include <vtkXMLDataParser.h>
 #include <vtkMath.h>
+#include <stdexcept>
 
 using namespace svk;
+
 
 
 vtkCxxRevisionMacro(svkSatBandsXML, "$Rev$");
@@ -173,7 +174,7 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
     string suffix = "_press_box.dat";  
     string datFileName = rootName; 
     datFileName.append(suffix); 
-    if ( ! svkUtils::FilePathExists( datFileName.c_str() ) ) {
+    if ( ! svkFileUtils::FilePathExists( datFileName.c_str() ) ) {
         //  No legacy .dat file, so just return 0; 
         cout << "No legacy sat_bands.dat file:  " <<  datFileName << endl;
         return status; 
@@ -190,7 +191,7 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
             throw runtime_error( "Could not open PFile .dat file: " + datFileName);
         } 
 
-        long datFileSize = svkImageReader2::GetFileSize( datFile );
+        long datFileSize = svkFileUtils::GetFileSize( datFile );
 
         istringstream* iss = new istringstream();
         string keyString;
@@ -209,7 +210,7 @@ int svkSatBandsXML::InitPressBoxFromDat( string rootName )
 
                 for ( int i = 0; i < 3; i++ ) {
 
-                    svkUtils::ReadLine( datFile, iss); 
+                    svkFileUtils::ReadLine( datFile, iss); 
                     //cout << "iss: " << iss->str() << endl;
                     tmp.assign( iss->str() ); 
 
@@ -501,7 +502,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
     int status = 0; 
     string datFileName = rootName; 
     datFileName.append("_sat_bands.dat"); 
-    if ( ! svkUtils::FilePathExists( datFileName.c_str() ) ) {
+    if ( ! svkFileUtils::FilePathExists( datFileName.c_str() ) ) {
         //  No legacy .dat file, so just return 0; 
         cout << "No legacy sat_bands.dat file:  " <<  datFileName << endl;
         return status; 
@@ -518,7 +519,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
             throw runtime_error( "Could not open PFile .dat file: " + datFileName);
         } 
 
-        long datFileSize = svkImageReader2::GetFileSize( datFile );
+        long datFileSize = svkFileUtils::GetFileSize( datFile );
 
         istringstream* iss = new istringstream();
         string keyString;
@@ -526,7 +527,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
         try {
 
             //  Read the first line to get the number of sat bands in the file: 
-            svkUtils::ReadLine( datFile, iss); 
+            svkFileUtils::ReadLine( datFile, iss); 
 
             size_t  position; 
             string  tmp; 
@@ -548,7 +549,7 @@ int svkSatBandsXML::InitSatsFromDat( string rootName )
                     satBandElement->SetAttribute("label", labelString.c_str() );
                     this->autoSatsElement->AddNestedElement( satBandElement ); 
 
-                    svkUtils::ReadLine( datFile, iss); 
+                    svkFileUtils::ReadLine( datFile, iss); 
 
                     position = iss->str().find_first_of(' ');
                     string angle1; 
