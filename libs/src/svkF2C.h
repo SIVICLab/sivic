@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://jccrane@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkF2C.h $
- *  $Rev: 2108 $
- *  $Author: jccrane $
- *  $Date: 2014-12-10 14:33:37 -0800 (Wed, 10 Dec 2014) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
