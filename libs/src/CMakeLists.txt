@@ -276,6 +276,7 @@ ADD_LIBRARY(
 ADD_LIBRARY(
     svkPSD 
 
+    svkFileUtils.cc
     svkSatBandsXML.cc
 )
 
