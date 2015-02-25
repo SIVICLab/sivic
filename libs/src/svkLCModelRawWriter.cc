@@ -163,13 +163,6 @@ void svkLCModelRawWriter::WriteFiles()
         string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
-    int dataWordSize = 4; 
-    int cols       = hdr->GetIntValue( "Columns" );
-    int rows       = hdr->GetIntValue( "Rows" );
-    int slices     = hdr->GetNumberOfSlices();  
-    int numCoils   = hdr->GetNumberOfCoils();
-    int numTimePts = hdr->GetNumberOfTimePoints();  
-    int specPts    = hdr->GetIntValue( "DataPointColumns" );
     string representation = hdr->GetStringValue( "DataRepresentation" );
 
     int numComponents = 1;
@@ -177,22 +170,12 @@ void svkLCModelRawWriter::WriteFiles()
         numComponents = 2;
     }
 
-    vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
-
-    int numberTimePointsPerFile = 1; 
-    int dataLengthPerFile = cols * rows * slices * specPts * numComponents * numberTimePointsPerFile; 
-    int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
-    int timePtOffset = cols * rows * slices; 
-
     // write out one coil per ddf file
-    float* specData = new float [ dataLengthPerFile ];
-
     string fileName;
 
     svkDcmHeader::DimensionVector origDimensionVector = hdr->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector dimensionVector = origDimensionVector; 
     svkDcmHeader::DimensionVector loopVector = dimensionVector; 
-
 
     //  In this case we only want to loop over dimensions other than the time dimension, so set 
     //  time to a single value in this vector:
@@ -201,33 +184,25 @@ void svkLCModelRawWriter::WriteFiles()
     for (int frame = 0; frame < numFrames; frame++) {
 
         fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
-        //cout << "RAW FILE NAMEb: " << frame << " = " << fileName << endl;
 
-        ofstream cmplxOut( ( fileName + rawExtension ).c_str(), ios::binary);
+        ofstream controlOut( ( fileName + controlExtension ).c_str() );
         ofstream rawOut(   ( fileName + rawExtension ).c_str() );
-        if( !cmplxOut || !rawOut ) {
-            throw runtime_error("Cannot open .ddf or .cmplx file for writing");
+        if( !controlOut || !rawOut ) {
+            throw runtime_error("Cannot open .raw or .control file for writing");
         }
 
         //  Initialize meta data in .raw file 
         this->InitRawHeader( &rawOut, fileName);
 
-        //  Append spec data to .raw file 
+        //  spec data to .raw file 
         hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
-        this->InitSpecData(&rawOut, specData, &dimensionVector, &loopVector); 
+        //this->InitSpecData(&rawOut, &dimensionVector, &loopVector); 
 
+        this->InitControlHeader( &controlOut, fileName);
 
-        //  cmplx files are by definition big endian:
-        #ifndef VTK_WORDS_BIGENDIAN
-            vtkByteSwap::SwapVoidRange((void*)specData, dataLengthPerFile, sizeof(float));
-        #endif
-
-        //cmplxOut.write( reinterpret_cast<char *>(specData), dataLengthPerFile * dataWordSize);
-        //cmplxOut.close();
+        controlOut.close();
         rawOut.close(); 
     }
-
-    delete [] specData;
 
 }
 
@@ -239,7 +214,7 @@ void svkLCModelRawWriter::WriteFiles()
  *  WriteData().  The dimensionVector argument is the current set of indices to write, not necessarily
  *  the data dimensionality. 
  */
-void svkLCModelRawWriter::InitSpecData(ofstream* out, float* specData, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector) 
+void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector) 
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -257,7 +232,6 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, float* specData, svkDcmHea
     }
 
     int coilOffset = cols * rows * slices * numTimePts;     //number of spectra per coil
-    int timePtOffset = cols * rows * slices; 
 
     vtkFloatArray* fa;
     float* dataTuple = new float[numComponents];
@@ -283,7 +257,6 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, float* specData, svkDcmHea
 
                     *out << " " ;
                     for (int j = 0; j < numComponents; j++) {
-                        specData[ (offsetOut * specPts * numComponents) + (i * numComponents) + j ] = dataTuple[j];
                         *out << fixed << setw(18) << setprecision(3) <<  dataTuple[j];
                     }
                     *out << endl;
@@ -293,6 +266,97 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, float* specData, svkDcmHea
     }
 
     delete[] dataTuple; 
+
+}
+
+
+/*!
+ *
+ *  NVOXSK = 22
+ *  ICOLSK(1) = 4
+ *  IROWSK(1) = 18
+ *
+ *  ICOLSK(2) = 4
+ *  IROWSK(2) = 19
+ *  ICOLSK(3) = 5
+ *  IROWSK(3) = 18
+ *  ICOLSK(4) = 5
+ *  IROWSK(4) = 19
+ *  ICOLSK(5) = 6
+ *  IROWSK(5) = 18
+ *  ICOLSK(6) = 6
+ *  IROWSK(6) = 19
+ *  ....   
+ */
+void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileName)
+{
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+
+    //  ===========================================================
+    //  NDCOLS (integer) (“Number of data columns”) The number of columns in the
+    //  CSI data set.
+    //  Default: NDCOLS = 1
+    //  ===========================================================
+    int numCols = hdr->GetIntValue( "Columns" );
+    
+    //  ===========================================================
+    //  NDROWS (integer) (“Number of data rows”) The number of rows in the CSI data
+    //  set.
+    //  Default: NDROWS = 1
+    //  ===========================================================
+    int numRows = hdr->GetIntValue( "Rows" );
+    
+    //  ===========================================================
+    //  NDSLIC (integer) (“Number of data slices”) The number of slices in the CSI data
+    //  set.
+    //  Default: NDSLIC = 1
+    //  ===========================================================
+    int numSlices = hdr->GetNumberOfSlices();  
+ 
+    //  ===========================================================
+    //  You specify the range (rectangular subset) of voxels to be analyzed by LCModel with:
+    //  ICOLST & ICOLEN (integer). Voxels in columns ICOLST through ICOLEN will be
+    //  analyzed.
+    //  Default: ICOLST = ICOLEN = 1
+    //  ===========================================================
+    //  for now just set to be all voxels, but will reduce this later 
+    int colStart = 1; 
+    int colEnd = numCols; 
+    
+    //  ===========================================================
+    //  IROWST & IROWEN (integer). Voxels in rows IROWST through IROWEN will be analyzed.
+    //  Default: IROWST = IROWEN = 1
+    //  ===========================================================
+    int rowStart = 1; 
+    int rowEnd = numRows; 
+    
+    //  ===========================================================
+    //  ISLICE (integer). Voxels in slice ISLICE will be analyzed.
+    //  Default: ISLICE = 1
+    //  ===========================================================
+    
+    
+    //  ===========================================================
+    //  NVOXSK (integer) the number of voxels to be skipped. Default: NVOXSK = 0
+    //  ===========================================================
+    int  numVoxSkipped = 0;  
+    
+    //  ===========================================================
+    //  ICOLSK (integer(64)) ICOLSK(J) specifies the column of the J’th voxel to be skipped.
+    //  ===========================================================
+    
+    //  ===========================================================
+    //  IROWSK (integer(64)) IROWSK(J) specifies the row of the J’th voxel to be skipped.
+    //  ===========================================================
+    *out << " NDSLIC=" << setprecision(0) << numSlices     <<  endl;
+    *out << " NDROWS=" << setprecision(0) << numRows       <<  endl;
+    *out << " NDCOLS=" << setprecision(0) << numCols       <<  endl;
+    *out << " ICOLST=" << setprecision(0) << colStart      <<  endl;
+    *out << " ICOLEN=" << setprecision(0) << colEnd        <<  endl;
+    *out << " IROWST=" << setprecision(0) << rowStart      <<  endl;
+    *out << " IROWEN=" << setprecision(0) << rowEnd        <<  endl;
+    *out << " NVOXSK=" << setprecision(0) << numVoxSkipped <<  endl;
+    
 
 }
 

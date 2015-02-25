@@ -87,12 +87,11 @@ class svkLCModelRawWriter : public svkImageWriter
         string           GetFileRootName(string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
         void             InitSpecData(
                             ofstream* out, 
-                            float* specData, 
                             svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionVector* indexVector
                          ); 
         void             InitRawHeader(ofstream* out, string fileName);
-
+        void             InitControlHeader(ofstream* out, string fileName); 
 
 };
 
