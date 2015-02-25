@@ -345,6 +345,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_lcmodel
+    svk_lcmodel.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_lcmodel
+	${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_gepfile_anon
     svk_gepfile_anon.cc 
 )
@@ -647,6 +656,7 @@ SET(APPS
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
+    svk_lcmodel
     svk_spec_diff 
     svk_integrate_dynamic 
     svk_quantify 
