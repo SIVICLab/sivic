@@ -73,7 +73,7 @@ int main (int argc, char** argv)
     usemsg += "   -v                                        Verbose output.                             \n";
     usemsg += "   -h                                        Print help mesage.                          \n";  
     usemsg += "                                                                                         \n";  
-    usemsg += "Converts the input prescription file to the specified target file type                   \n";  
+    usemsg += "Converts the input prescription file to an XML prescription.                             \n";  
     usemsg += "                                                                                         \n";  
     usemsg += "EXAMPLE: svk_psd_prescription_convert -i P12345 -o P12345                                \n";  
     usemsg += "this would read in P12345_press_box.dat and P12345_sat_bands.dat and export              \n";  
