@@ -86,7 +86,9 @@ svkSatBandsXML::~svkSatBandsXML()
 
 
 /*!
- *  set the path/name to xml file.   
+ *  set the path/name to xml file.  Parses the thre elements: 
+ *      versionElement, pressBoxElement, autoSatsElement 
+ *      
  */
 int svkSatBandsXML::SetXMLFileName( string xmlFileName )
 {
@@ -144,7 +146,6 @@ int svkSatBandsXML::ConvertDatToXML( string rootName )
     this->autoSatsElement = vtkXMLDataElement::New();
     this->autoSatsElement->SetName("auto_sats"); 
 
-
     status = this->InitPressBoxFromDat( rootName ); 
     if ( status != 0 ) {
         return status; 
@@ -164,7 +165,14 @@ int svkSatBandsXML::ConvertDatToXML( string rootName )
 
 /*
  *  Attempt to open and parse legacy press_box.dat file and initialize the 
- *  intermal XML data structure from the info in the file. 
+ *  intermal XML data structure from the info in the file.  Sats are required by 
+ *  psd to be ordered according to the following convention: 
+ *      //  0- anterior  (AP)  
+ *      //  1- posterior (AP)
+ *      //  2- superior  (SI)
+ *      //  3- inferior  (SI)
+ *      //  4- left      (LR)
+ *      //  5- right     (LR)
  */
 int svkSatBandsXML::InitPressBoxFromDat( string rootName ) 
 {
@@ -1101,6 +1109,10 @@ cout << "satnum: " << satNumber << endl;
 
 /*!
  *  Sorts 3x3 normal array into conventional order RL, AP, SI rows.  
+ *   *      xNormal is defined by 5th element  (points to Left)
+ *   *      yNormal is defined by 2nd element  (points to Posterior)
+ *   *      zNormal is defined by 3nd element  (points to Superior)
+ *
  */
 void svkSatBandsXML::SortNormalArrayRLAPSI( float normals[3][3] ) 
 {
