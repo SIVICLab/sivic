@@ -1219,8 +1219,8 @@ bool svkSatBandsXML::IsConventionalNormal( float normalIn[3]  )
  *          2 => most Posterior 
  *          3 => most Superior  
  *          4 => most Inferior  
- *          5 => most Right 
- *          6 => most Left  
+ *          5 => most Left  
+ *          6 => most Right 
  */
 void svkSatBandsXML::MakePRESSOrthonormal( float normals[3][3] ) 
 {
