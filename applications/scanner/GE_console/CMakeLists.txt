@@ -54,6 +54,7 @@ SET( COMPONENTS
     svk/bin
     svk/lib 
     svk/data
+    svk/packages
 )
 
 FOREACH( ITEM ${COMPONENTS} )     
