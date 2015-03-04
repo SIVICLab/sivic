@@ -594,6 +594,26 @@ vtkXMLDataElement* svkUtils::ReadXMLAndSubstituteVariables(string xmlFileName, v
 }
 
 
+/*!
+ *  Finds a nested element at a depth greater than one. Searches from the root
+ *  node, and assumes a '/' separated list of nested elements. Returns null if
+ *  no element exists at the requested path.
+ */
+vtkXMLDataElement* svkUtils::FindNestedElementWithPath( vtkXMLDataElement* root, string xmlPath)
+{
+    vector<string> elements = svkUtils::SplitString( xmlPath, "/");
+    vtkXMLDataElement* elem = root;
+    for( int i = 0; i < elements.size(); i++ ) {
+        if( elem != NULL ) {
+            elem = elem->FindNestedElementWithName(elements[i].c_str());
+        } else {
+            break;
+        }
+    }
+    return elem;
+}
+
+
 /*! 
  *  Utility function to read a single line from a file stream.
  */

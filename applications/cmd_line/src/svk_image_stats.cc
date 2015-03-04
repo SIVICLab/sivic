@@ -225,8 +225,34 @@ int main (int argc, char** argv)
         outputTabFile.append(".tab");
         ofstream resultsTab;
         resultsTab.open(outputTabFile.c_str());
-        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES: " << outputFileName << endl << endl << endl;
-        resultsTab << "Number of rois, biopsies and parameter maps:" << endl;
+        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES: " << outputFileName << endl << endl;
+        resultsTab << "Number of rois, biopsies and parameter maps: ";
+        resultsTab << "     " << defaultROIs.size()-biopsies.size();
+        resultsTab << "     " << biopsies.size();
+        resultsTab << "     " << 2*defaultImages.size() << endl<< endl;
+        resultsTab << "Number of tables:   " << defaultMeasures.size();
+        string nbins = "?";
+        string smooth = "?";
+        // Get smooth value
+        // Get nbins value
+        string nbinsElemPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NUM_BINS";
+        vtkXMLDataElement* nbinsElem = svkUtils::FindNestedElementWithPath(configXML,nbinsElemPath);
+        if( nbinsElem != NULL ) {
+            nbins = nbinsElem->GetCharacterData();
+        } else {
+            cout << "ERROR:no svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NUM_BINS element in config file!" << endl;
+        }
+        string smoothElemPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:SMOOTH_BINS";
+        vtkXMLDataElement* smoothElem = svkUtils::FindNestedElementWithPath(configXML,smoothElemPath);
+        if( smoothElem != NULL ) {
+            smooth = smoothElem->GetCharacterData();
+        } else {
+            cout << "ERROR:no svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:SMOOTH_BINS element in config file!" << endl;
+        }
+        resultsTab << "  nbin:   " << nbins;
+        resultsTab << "  nsmooth:     " << smooth;
+        resultsTab << "  ptmin:     " << smooth;
+        resultsTab << endl << endl;
         //map< map< string, map< string, string > > > tables;
         // First let's get a list of all the statistics computed
         int numberOfTables = 0;
@@ -358,7 +384,6 @@ int main (int argc, char** argv)
                 // Print values, then normalized values
                 resultsTab.width(11);
                 resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[roi]);
-                //for(imagesIter images = tables[measure][roi].second.begin(); images != tables[measure][roi].second.end(); images++) {
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                     string image = defaultImages[imageIndex];
                     resultsTab.width(11);
@@ -420,6 +445,55 @@ int main (int argc, char** argv)
                 resultsTab << endl;
             }
             resultsTab << endl;
+        }
+        resultsTab << "TABLE of prescale, scale and normalization factors" << endl;
+        string normalMeasure = "";
+        string normalROI = "";
+        string normMethodPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NORMALIZATION_METHOD";
+        vtkXMLDataElement* normMethodElem = svkUtils::FindNestedElementWithPath(configXML, normMethodPath);
+        if( normMethodElem != NULL ) {
+            int normMethodEnum = svkTypeUtils::StringToInt(normMethodElem->GetCharacterData());
+            if( normMethodEnum == svkImageStatistics::MODE ) {
+                normalMeasure = "mode";
+            } else if ( normMethodEnum == svkImageStatistics::MEAN ) {
+                normalMeasure = "mean";
+            }
+            string normIndexPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:NORMALIZATION_ROI_INDEX";
+            vtkXMLDataElement* normIndexElem = svkUtils::FindNestedElementWithPath(configXML, normIndexPath);
+            if( normIndexElem != NULL ) {
+                int index = svkTypeUtils::StringToInt( normIndexElem->GetCharacterData() );
+                string roiListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_ROI_LIST";
+                vtkXMLDataElement* roiListElem = svkUtils::FindNestedElementWithPath(configXML, roiListPath);
+                if( roiListElem != NULL ) {
+                    vtkXMLDataElement* roiNormElem = roiListElem->GetNestedElement(index);
+                    if(roiNormElem != NULL ) {
+                        normalROI = roiNormElem->GetAttribute("input_id");
+                    } else {
+                        cout << "ERROR: No ROI found for index" << index << endl;
+                    }
+                } else {
+                    cout << "ERROR: No svkArgument:INPUT_ROI_LIST found" << endl;
+                }
+            } else {
+                cout << "ERROR: No svkArgument:NORMALIZATION_INDEX found" << endl;
+            }
+        } else if(verbose) {
+            cout << "Warning: No svkArgument:NORMALIZATION_METHOD element found" << endl;
+        }
+        if( !normalMeasure.empty() && !normalROI.empty()) {
+            for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
+                string image = defaultImages[imageIndex];
+                resultsTab << "  " << image;
+                resultsTab.width(11);
+                // There is no scaling yet so this is always 1.000
+                resultsTab << right << "1.000";
+                resultsTab.width(11);
+                resultsTab << right << "1.000";
+                resultsTab.width(11);
+                // This will depend on the config
+                resultsTab << right << svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]) << endl;
+
+            }
         }
 
         resultsTab.close();
