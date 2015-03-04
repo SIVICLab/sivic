@@ -93,6 +93,8 @@ int main (int argc, char** argv)
     string configFileName;
     string fileRootName;
     string outputFileName;
+    //BIOPSY_KLUDGE: This is a temporary fix for validating against existing ucsf programs.
+    vector<string> biopsies;
     bool outputXML = false;
     bool outputTab = false;
     bool   verbose = false;
@@ -106,7 +108,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "xto:r:c:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "xto:r:c:b:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'r':
                 fileRootName.assign(optarg);
@@ -122,6 +124,10 @@ int main (int argc, char** argv)
                 break;
             case 'c':
                 configFileName.assign(optarg);
+                break;
+            case 'b':
+                //BIOPSY_KLUDGE: This is a temporary fix for validating against existing ucsf programs.
+                biopsies.push_back(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -182,13 +188,44 @@ int main (int argc, char** argv)
         outputFileName.append(".xml");
         vtkXMLUtilities::WriteElementToFile( results, outputFileName.c_str(), &indent);
     } else if(outputTab) {
+        vector<string> defaultMeasures;
+        defaultMeasures.push_back("median");
+        defaultMeasures.push_back("percent25");
+        defaultMeasures.push_back("percent75");
+        defaultMeasures.push_back("mean");
+        defaultMeasures.push_back("sd");
+        defaultMeasures.push_back("min");
+        defaultMeasures.push_back("max");
+        defaultMeasures.push_back("percent10");
+        defaultMeasures.push_back("percent90");
+        defaultMeasures.push_back("mode");
+        defaultMeasures.push_back("skewness");
+        defaultMeasures.push_back("kurtosis");
+        defaultMeasures.push_back("sum");
+
+        vector<string> defaultROIs;
+        defaultROIs.push_back("brain");
+        defaultROIs.push_back("nawm");
+        defaultROIs.push_back("t2all");
+        defaultROIs.push_back("cel");
+        defaultROIs.push_back("nec");
+        defaultROIs.push_back("nel");
+        for( int i = 0; i< biopsies.size(); i++ ) {
+            defaultROIs.push_back(biopsies[i]);
+        }
+
+        vector<string> defaultImages;
+        defaultImages.push_back("fl");
+        defaultImages.push_back("t1c");
+        defaultImages.push_back("fse");
+
 
         // Open file to write the measures into
         string outputTabFile = outputFileName;
         outputTabFile.append(".tab");
         ofstream resultsTab;
         resultsTab.open(outputTabFile.c_str());
-        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES:" << fileRootName << endl << endl << endl;
+        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES: " << outputFileName << endl << endl << endl;
         resultsTab << "Number of rois, biopsies and parameter maps:" << endl;
         //map< map< string, map< string, string > > > tables;
         // First let's get a list of all the statistics computed
@@ -274,6 +311,10 @@ int main (int argc, char** argv)
                         if( measuresElem->GetNestedElement(j)->GetAttribute("normalization") == NULL ) {
                             tables[measure][roi][image][0] = measuresElem->GetNestedElement(j)->GetCharacterData();
                             //cout << measure << " within " << roi << " of " << image << " =" << measuresElem->GetNestedElement(j)->GetCharacterData() << endl;
+                            //TODO: COMPATIBILITY MODE?
+                            if( measure == "kurtosis" || measure == "skewness" ) {
+                                tables[measure][roi][image][1] = measuresElem->GetNestedElement(j)->GetCharacterData();
+                            }
                         } else {
                             tables[measure][roi][image][1] = measuresElem->GetNestedElement(j)->GetCharacterData();
                             //cout << measure << " within " << roi << " of " << image << " normalized =" << measuresElem->GetNestedElement(j)->GetCharacterData() << endl;
@@ -284,50 +325,101 @@ int main (int argc, char** argv)
         }
         //resultsTab << "Number of tables:   " << numberOfTables << endl;
         //resultsTab << "Number of measures: " << numberOfMeasures << endl;
-        for(measuresIter measures = tables.begin(); measures != tables.end(); measures++) {
-            resultsTab << "TABLE of " << measures->first << " values" << endl << endl;
-            for(roisIter rois = measures->second.begin(); rois != measures->second.end(); rois++) {
+        //for(measuresIter measures = tables.begin(); measures != tables.end(); measures++) {
+        for(int measureIndex = 0; measureIndex < defaultMeasures.size(); measureIndex++) {
+            string measure = defaultMeasures[measureIndex];
+            resultsTab << "TABLE of " << measure << " values" << endl << endl;
+            for(int roiIndex = 0; roiIndex < defaultROIs.size(); roiIndex++) {
+                string roi = defaultROIs[roiIndex];
                 // Print column headings
-                if( rois == measures->second.begin()) {
+                if( roiIndex == 0) {
                     resultsTab.width(9);
                     resultsTab << left << "roi label";
                         resultsTab.width(11);
                         resultsTab << right << "vol(cc)";
-                    for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                    // Once for unnormalized
+                    for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                         resultsTab.width(11);
-                        resultsTab << right << images->first;
+                        resultsTab << right << defaultImages[imageIndex];
+
                     }
-                    for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                    // Once for normalized
+                    for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                         resultsTab.width(11);
-                        resultsTab << right << images->first;
+                        string normalizedName = "n";
+                        normalizedName.append(defaultImages[imageIndex]);
+                        resultsTab << right << normalizedName;
+
                     }
                     resultsTab << endl;
                 }
                 resultsTab.width(9);
-                resultsTab << left << rois->first;
+                resultsTab << left << roi;
                 // Print values, then normalized values
                 resultsTab.width(11);
-                resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[rois->first]);
-                for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[roi]);
+                //for(imagesIter images = tables[measure][roi].second.begin(); images != tables[measure][roi].second.end(); images++) {
+                for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
+                    string image = defaultImages[imageIndex];
                     resultsTab.width(11);
-                    double value = svkTypeUtils::StringToDouble(images->second[0]);
+                    double value = 0.0;
+                    if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
+                        value = svkTypeUtils::StringToDouble(tables[measure][roi][image][0]);
+                    }
+                    bool addNegative = false;
                     resultsTab << right << setprecision(2);
+                    //TODO: Compatibility Mode
+                    if( value > 99999 ) {
+                        value =  99999;
+                    } else if( value < -99999 ) {
+                        value =  -99999;
+                    }
                     if( value >= 10000000 || value <= -1000000 ) {
                         resultsTab << scientific;
                     } else {
                         resultsTab << fixed;
+                        // Manually round. This is because cout and setprecision do not round
+                        bool wasNegative = false;
+                        if( value < 0 ){
+                            wasNegative = true;
+                        }
+                        value = (svkUtils::NearestInt(value*100.0))/100.0;
+                        if( value == 0 && wasNegative ){
+                            addNegative = true;
+                        }
+                    }
+                    if(addNegative) {
+                        resultsTab << "-";
                     }
                     resultsTab << value;
                     //resultsTab << " " << images->second[0];
                 }
-                for(imagesIter images = rois->second.begin(); images != rois->second.end(); images++) {
+                for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
+                    string image = defaultImages[imageIndex];
+                    double value = 0.0;
+                    if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
+                        value = svkTypeUtils::StringToDouble(tables[measure][roi][image][1]);
+                    }
+                    bool addNegative = false;
+                    bool wasNegative = false;
+                    if( value < 0 ){
+                        wasNegative = true;
+                    }
+                    value = (svkUtils::NearestInt(value*100.0))/100.0;
+                    if( value == 0 && wasNegative){
+                        addNegative = true;
+                    }
                     resultsTab.width(11);
-                    resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(images->second[1]);
+                    if(addNegative) {
+                        resultsTab << "      -" << setprecision(2) << fixed << value;
+                    } else {
+                        resultsTab << right << setprecision(2) << fixed << value;
+                    }
                     //resultsTab << " " << images->second[1];
                 }
                 resultsTab << endl;
             }
-            resultsTab << endl << endl;
+            resultsTab << endl;
         }
 
         resultsTab.close();

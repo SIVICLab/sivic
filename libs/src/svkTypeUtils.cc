@@ -139,9 +139,12 @@ string svkTypeUtils::IntToString( int intVal )
  *  @param doubleVal
  *  @return string equivalent
  */
-string svkTypeUtils::DoubleToString( double doubleVal )
+string svkTypeUtils::DoubleToString( double doubleVal, int precision )
 {
     ostringstream intStream;
+    if( precision > 0 ) {
+        intStream << setprecision(precision);
+    }
     intStream << doubleVal;
     return intStream.str();
 }

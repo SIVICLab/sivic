@@ -194,6 +194,7 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         }
         svkImageReader2* reader = svkImageReader2::SafeDownCast(readerFactory->CreateImageReader2(filename.c_str()));
         if( reader != NULL ) {
+            reader->OnlyReadOneInputFile();
             reader->SetFileName( filename.c_str() );
             this->xmlToAlgoMap[tag] = reader;
             reader->Register(this);

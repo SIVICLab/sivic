@@ -146,10 +146,10 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
 
-       void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result, double normalization = 0 );
-       void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result);
-       void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result );
-       void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkXMLDataElement* result, double normalization = 0 );
+       void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result, double normalization = 0 );
+       void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result);
+       void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result );
+       void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixel, vtkXMLDataElement* results, double normalization = 0 );
        void AddHistogramTag( vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins, vtkXMLDataElement* results);
 
 	private:
