@@ -91,6 +91,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             INPUT_ROI,
             NUM_BINS,
             BIN_SIZE,
+            AUTO_ADJUST_BIN_SIZE,
             START_BIN,
             SMOOTH_BINS,
             COMPUTE_HISTOGRAM,
@@ -146,15 +147,16 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
                       vtkInformationVector** inputVector,
                       vtkInformationVector* outputVector );
 
-       void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result, double normalization = 0 );
+       void ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixels, vtkXMLDataElement* result, double normalization = 0 );
        void ComputeOrderStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result);
        void ComputeDescriptiveStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* result );
-       void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixel, vtkXMLDataElement* results, double normalization = 0 );
+       void ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixel, vtkXMLDataElement* results, double normalization = 0 );
        void AddHistogramTag( vtkDataArray* histogram, double binSize, double startBin, int numBins, int smoothBins, vtkXMLDataElement* results);
 
 	private:
 
-       bool GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter);
+       bool   GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter);
+       double GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize );
 
 };
 

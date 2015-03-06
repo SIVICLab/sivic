@@ -50,7 +50,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(27);
+    this->SetNumberOfInputPorts(28);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -58,6 +58,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
     this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( AUTO_ADJUST_BIN_SIZE, "AUTO_ADJUST_BIN_SIZE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS, "SMOOTH_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL, !required);
@@ -220,8 +221,6 @@ vtkFloatArray* svkImageStatistics::GetHistogram( vtkDataArray* data, double binS
  */
 int svkImageStatistics::GetBinForValue( double value, double binSize, double startBin)
 {
-    // Legacy code uses the nearest integer...
-    //return (int)floor((value - startBin)/binSize);
     return svkUtils::NearestInt((value - startBin)/binSize);
 }
 
@@ -274,6 +273,11 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                 normalizationType = this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_METHOD)->GetValue();
             }
         }
+        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
+        svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
+        if( this->GetShouldCompute(AUTO_ADJUST_BIN_SIZE)) {
+            binSize = this->GetAutoAdjustedBinSize( image, binSize );
+        }
         // Let's make sure the normalization values are computed before the other statistics.
         roiIndicies.push_back( normalizationROIIndex );
         for(int i = 0; i < this->GetNumberOfInputConnections(INPUT_ROI); i++ ) {
@@ -283,7 +287,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         }
         // Look through the indicies, starting with the normalization index if present
         for (int roiIndex = 0; roiIndex < roiIndicies.size(); roiIndex++) {
-            svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
             svkMriImageData* roi   = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, roiIndicies[roiIndex]);
             vtkXMLDataElement* nextResult = vtkXMLDataElement::New();
             nextResult->SetName("results");
@@ -307,7 +310,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             statistics->SetName("measures");
             vtkDataArray* maskedPixels = svkImageStatistics::GetMaskedPixels(image,roi);
             if( geometriesMatch ) {
-                this->ComputeSmoothStatistics(image,roi, maskedPixels, statistics);
+                this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics);
                 /*
                 // Using smooth computation instead of order statistics
                 if( this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) != NULL ){;
@@ -316,7 +319,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                     this->ComputeOrderStatistics(image,roi, statistics);
                 }
                 */
-                this->ComputeAccumulateStatistics(image,roi, maskedPixels, statistics);
+                this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics);
                 this->ComputeDescriptiveStatistics(image,roi, maskedPixels, statistics);
             }
             if( normalizationType != NONE ) {
@@ -338,8 +341,8 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                         cout << "ERROR: Normalization element not found! " << endl;
                     }
                 }
-                this->ComputeSmoothStatistics(image,roi, maskedPixels, statistics, normalizationFactor);
-                this->ComputeAccumulateStatistics(image,roi, maskedPixels, statistics, normalizationFactor);
+                this->ComputeSmoothStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactor);
+                this->ComputeAccumulateStatistics(image,roi, binSize, maskedPixels, statistics, normalizationFactor);
             }
             maskedPixels->Delete();
             vtkIndent indent;
@@ -362,7 +365,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
 /*!
  * Computes basic statistics using vtkImageAccumulate.
  */
-void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* results, double normalization )
+void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixels, vtkXMLDataElement* results, double normalization )
 {
     if( image != NULL ) {
         double* spacing = image->GetSpacing();
@@ -381,7 +384,6 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         accumulator->SetIgnoreZero( true );
         int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
         double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
-        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
         accumulator->SetComponentExtent(0,numBins-1,0,0,0,0 );
         accumulator->SetComponentOrigin(startBin, 0,0 );
         accumulator->SetComponentSpacing(binSize, 0,0);
@@ -659,10 +661,9 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
 /*!
  * Do smooth computation.
  */
-void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, vtkDataArray* maskedPixels, vtkXMLDataElement* results, double normalization)
+void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixels, vtkXMLDataElement* results, double normalization)
 {
     double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
-    double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
     int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
     int smoothBins = 0;
     if( this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) != NULL ){;
@@ -838,4 +839,45 @@ void svkImageStatistics::AddHistogramTag( vtkDataArray* histogram, double binSiz
 bool svkImageStatistics::GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter)
 {
     return (this->GetPortMapper()->GetBoolInputPortValue(parameter) && this->GetPortMapper()->GetBoolInputPortValue(parameter)->GetValue());
+}
+
+
+/*!
+ * This method is to support a legacy feature to automatically adjust the binsize.
+ */
+double svkImageStatistics::GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize )
+{
+    double binSize = startBinSize;
+    vtkImageAccumulate* accumulator = vtkImageAccumulate::New();
+    accumulator->SetInput( image );
+    accumulator->Update( );
+    accumulator->SetIgnoreZero( true );
+    int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
+    double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+    accumulator->SetComponentExtent(0,numBins-1,0,0,0,0 );
+    accumulator->SetComponentOrigin(startBin, 0,0 );
+    accumulator->SetComponentSpacing(binSize, 0,0);
+    accumulator->Update();
+    double min  = *accumulator->GetMin();
+    double max  = *accumulator->GetMax();
+    double mean = *accumulator->GetMean();
+    vtkDataArray* hist = accumulator->GetOutput()->GetPointData()->GetScalars();
+
+    double htemp = (max-min)/((double)numBins);
+    double histmax = (double)numBins * startBinSize;
+    if(histmax < 10.0*mean) {
+        histmax = 10.0*mean;
+    }
+    if(max > histmax) {
+        htemp = (histmax-min)/((double)numBins);
+    }
+    if(max < histmax) {
+      histmax = max;
+    }
+    int itemp = svkUtils::NearestInt((htemp/binSize)+0.51);
+    if(itemp > 1) {
+        binSize= binSize * itemp;
+    }
+    return binSize;
+
 }
