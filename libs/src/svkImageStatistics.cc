@@ -289,6 +289,9 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
+            cout << "Working on Image:" << imageLabel << " ROI= " << roiLabel << endl;
+            cout << "Image: " << *image << endl;
+            cout << "ROI: " << *roi << endl;
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
@@ -605,17 +608,29 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
             svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         */
-        if( this->GetShouldCompute(COMPUTE_MOMENT_2)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
+        if( this->GetShouldCompute(COMPUTE_MOMENT_2) ) {
+            if( statResults->GetRowData()->GetArray("M2")->GetNumberOfTuples() > 0 ){
+                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
+                svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
+            } else {
+                cout << "WARNING: Could not calculate M2 " << endl;
+            }
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_3)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
+            if( statResults->GetRowData()->GetArray("M3")->GetNumberOfTuples() > 0 ){
+                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
+                svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
+            } else {
+                cout << "WARNING: Could not calculate M3 " << endl;
+            }
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_4)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
-            svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
+            if( statResults->GetRowData()->GetArray("M4")->GetNumberOfTuples() > 0 ){
+                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
+                svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
+            } else {
+                cout << "WARNING: Could not calculate M4 " << endl;
+            }
         }
         if( this->GetShouldCompute(COMPUTE_VARIANCE)){
             string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );

@@ -578,9 +578,10 @@ vtkXMLDataElement* svkUtils::ReadXMLAndSubstituteVariables(string xmlFileName, v
                 variable.append( xmlVariables[i].substr(0,pos) );
                 string value = xmlVariables[i].substr(pos+1);
                 pos = line.find(variable);
-                if( pos != string::npos ) {
+                while(pos != string::npos  ) {
                     line.erase(pos, variable.size() );
                     line.insert(pos, value);
+                    pos = line.find(variable, pos+1);
                 }
             }
 
