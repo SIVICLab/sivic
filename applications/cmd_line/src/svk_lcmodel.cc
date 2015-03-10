@@ -49,6 +49,7 @@
 #include <svkDcmVolumeReader.h>
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
+#include <svkLCModelRawWriter.h>
 #include <svkDICOMMRSWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkCorrectDCOffset.h>
@@ -76,13 +77,14 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_lcmodel -i input_file_name -o output_file_name                                   \n"; 
+    usemsg += "svk_lcmodel -i input_file_name -o output_file_name --basis basis_file_name                \n"; 
     usemsg += "                   [ --one_time_pt ]                                                 \n";
     usemsg += "                   [ --single ]                                                      \n";
     usemsg += "                   [ -bh ]                                                           \n";
     usemsg += "                                                                                     \n";  
     usemsg += "   -i                name    Name of file to convert.                                \n"; 
     usemsg += "   -o                name    Root name of outputfile.                                \n";
+    usemsg += "   --basis           name    Name of the basis file.                                 \n";
     usemsg += "   -b                        Set up for selection box analysis only.                 \n";
     usemsg += "   --single                  Only converts specified file                            \n";
     usemsg += "   -h                        Print this help mesage.                                 \n";  
@@ -90,22 +92,22 @@ int main (int argc, char** argv)
     usemsg += "Converts an MRS file into .raw and .control files for input to LCModel.              \n";  
     usemsg += "                                                                                     \n";  
 
-
     string  inputFileName; 
     string  outputFileName;
-    svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::LCMODEL;
+    string  basisFileName;
     bool   onlyLoadSingleFile = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
+        FLAG_BASIS_FILE = 0, 
         FLAG_SINGLE
     }; 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        //{"ucsf_MNS_7T",         no_argument,       NULL,  FLAG_UCSF_MNS_7T}, 
+        {"basis",               required_argument, NULL,  FLAG_BASIS_FILE}, 
         {"single",              no_argument,       NULL,  FLAG_SINGLE},
         {0, 0, 0, 0}
     };
@@ -122,6 +124,9 @@ int main (int argc, char** argv)
                 break;
             case 'o':
                 outputFileName.assign(optarg);
+                break;
+            case FLAG_BASIS_FILE:
+                basisFileName.assign(optarg);
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
@@ -141,6 +146,7 @@ int main (int argc, char** argv)
     if ( 
         argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
+        || basisFileName.length() == 0 
     ) {
         cout << usemsg << endl;
         exit(1); 
@@ -187,16 +193,17 @@ int main (int argc, char** argv)
     //  correct writer type. 
     // ===============================================  
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkLCModelRawWriter* writer = static_cast<svkLCModelRawWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::LCMODEL ) ); 
 
     if ( writer == NULL ) {
-        cerr << "Can not determine writer of type: " << dataTypeOut << endl;
+        cerr << "Can not determine writer of type: " << svkImageWriterFactory::LCMODEL << endl;
         exit(1);
     }
 
 
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetBasisFileName( basisFileName ); 
 
     // ===============================================  
     //  Set the input command line into the data set 
