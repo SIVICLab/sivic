@@ -529,6 +529,13 @@ proc show_raw_chooser {} {
     #   get the mtime of each pfile and put it into the pfile hash: pfilehash{filename} = mtime
     array set pfileHash {}
     foreach i [lsort $pfiles] {
+
+        #   If the file doesn't exist (e.g. a dead sym link), 
+        #   then carry on to the next one. 
+        if { ![file exists $i] } {
+            continue
+        }
+
         set pfileHash("$i") [file mtime $i] 
     }
 
