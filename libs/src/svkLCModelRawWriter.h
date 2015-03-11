@@ -69,6 +69,7 @@ class svkLCModelRawWriter : public svkImageWriter
         vtkDataObject*  GetInput(int port);
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
+        void            SetBasisFileName( string fileName );
         virtual void    Write();
 
 
@@ -85,13 +86,16 @@ class svkLCModelRawWriter : public svkImageWriter
         void             InitImageData();
         void             WriteFiles();
         string           GetFileRootName(string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
+        string           basisFileName; 
         void             InitSpecData(
                             ofstream* out, 
                             svkDcmHeader::DimensionVector* dimensionVector, 
-                            svkDcmHeader::DimensionVector* indexVector
+                            svkDcmHeader::DimensionVector* indexVector, 
+                            int frame    
                          ); 
         void             InitRawHeader(ofstream* out, string fileName);
-        void             InitControlHeader(ofstream* out, string fileName); 
+        void             InitControlHeader(ofstream* out, string fileRootName, string frameNumber); 
+
 
 };
 

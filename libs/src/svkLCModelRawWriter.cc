@@ -42,15 +42,13 @@
 
 
 #include <svkLCModelRawWriter.h>
-#include <svk4DImageData.h>
 #include <svkDcmHeader.h>
 #include <vtkErrorCode.h>
 #include <vtkCellData.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
-#include <vtkByteSwap.h>
-#include <svkUtils.h>
-#include "svkTypeUtils.h"
+#include <svkImageReader2.h>
+#include <svkTypeUtils.h>
 
 
 using namespace svk;
@@ -71,6 +69,7 @@ svkLCModelRawWriter::svkLCModelRawWriter()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+    this->basisFileName = ""; 
 }
 
 
@@ -80,6 +79,15 @@ svkLCModelRawWriter::svkLCModelRawWriter()
 svkLCModelRawWriter::~svkLCModelRawWriter()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
+}
+
+
+/*!
+ *  Set name of basis file
+ */
+void svkLCModelRawWriter::SetBasisFileName( string fileName )
+{
+    this->basisFileName = fileName; 
 }
 
 
@@ -159,8 +167,7 @@ void svkLCModelRawWriter::WriteFiles()
     string rawExtension     = ".raw"; 
     string controlExtension = ".control"; 
 
-    string fileRoot = 
-        string(this->InternalFileName).substr( 0, string(this->InternalFileName).rfind(".") );
+    string fileRoot = string(this->InternalFileName);  
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     string representation = hdr->GetStringValue( "DataRepresentation" );
@@ -182,23 +189,22 @@ void svkLCModelRawWriter::WriteFiles()
 
     int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
     for (int frame = 0; frame < numFrames; frame++) {
-
-        fileName = this->GetFileRootName(fileRoot, &dimensionVector, frame);
-
-        ofstream controlOut( ( fileName + controlExtension ).c_str() );
-        ofstream rawOut(   ( fileName + rawExtension ).c_str() );
+        string frameNumber = svkTypeUtils::IntToString(frame); 
+        string fileRootFrame = fileRoot + "_" + frameNumber; 
+        ofstream controlOut( ( fileRootFrame + controlExtension ).c_str() );
+        ofstream rawOut(   ( fileRootFrame + rawExtension ).c_str() );
         if( !controlOut || !rawOut ) {
             throw runtime_error("Cannot open .raw or .control file for writing");
         }
 
         //  Initialize meta data in .raw file 
-        this->InitRawHeader( &rawOut, fileName);
+        this->InitRawHeader( &rawOut, fileRootFrame );
 
         //  spec data to .raw file 
         hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
-        //this->InitSpecData(&rawOut, &dimensionVector, &loopVector); 
+        this->InitSpecData(&rawOut, &dimensionVector, &loopVector, frame); 
 
-        this->InitControlHeader( &controlOut, fileName);
+        this->InitControlHeader( &controlOut, fileRootFrame, frameNumber);
 
         controlOut.close();
         rawOut.close(); 
@@ -214,7 +220,7 @@ void svkLCModelRawWriter::WriteFiles()
  *  WriteData().  The dimensionVector argument is the current set of indices to write, not necessarily
  *  the data dimensionality. 
  */
-void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector) 
+void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector, int frame) 
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -238,7 +244,8 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    for (int z = 0; z < slices; z++) {
+    //for (int z = 0; z < slices; z++) {
+    int z = frame;  
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
 
@@ -255,15 +262,17 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
 
                     fa->GetTupleValue(i, dataTuple);
 
-                    *out << " " ;
+                    //*out << " " ;
                     for (int j = 0; j < numComponents; j++) {
-                        *out << fixed << setw(18) << setprecision(3) <<  dataTuple[j];
+                        //*out << fixed << setw(18) << setprecision(3) <<  dataTuple[j];
+                        *out << " " ;
+                        *out << fixed << setw(18) << setprecision(3) <<  dataTuple[j] << endl;
                     }
-                    *out << endl;
+                    //*out << endl;
                 }
             }
         }
-    }
+    //}
 
     delete[] dataTuple; 
 
@@ -288,7 +297,7 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
  *  IROWSK(6) = 19
  *  ....   
  */
-void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileName)
+void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, string frameNumber)
 {
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
@@ -348,14 +357,208 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileName)
     //  ===========================================================
     //  IROWSK (integer(64)) IROWSK(J) specifies the row of the J’th voxel to be skipped.
     //  ===========================================================
-    *out << " NDSLIC=" << setprecision(0) << numSlices     <<  endl;
-    *out << " NDROWS=" << setprecision(0) << numRows       <<  endl;
-    *out << " NDCOLS=" << setprecision(0) << numCols       <<  endl;
-    *out << " ICOLST=" << setprecision(0) << colStart      <<  endl;
-    *out << " ICOLEN=" << setprecision(0) << colEnd        <<  endl;
-    *out << " IROWST=" << setprecision(0) << rowStart      <<  endl;
-    *out << " IROWEN=" << setprecision(0) << rowEnd        <<  endl;
-    *out << " NVOXSK=" << setprecision(0) << numVoxSkipped <<  endl;
+ 
+    //  ===========================================================
+    //  NUNFIL (integer) (“N unfilled”) the number of complex pairs of data points in
+    //  one scan, without zero-filling. Default: NUNFIL = 2048 
+    //  ===========================================================
+    int numSpecPts = hdr->GetIntValue( "DataPointColumns" );
+
+    //  ===========================================================
+    //  DELTAT (real) (“δt”) the time (in s) between two consecutive real points (or two
+    //  consecutive imaginary points). This is just the sample time or “dwell time”
+    //  or the reciprocal of the “bandwidth.” Default: DELTAT = 0.0005
+    //  ===========================================================
+    float dwellTimeSecs = 1./hdr->GetFloatValue( "SpectralWidth" ); 
+
+    //  ===========================================================
+    //  HZPPPM (real) (“Hz per ppm”) the field strength, in terms of the proton resonance
+    //  frequency in MHz, i.e., HZPPPM = 42.58B0, with B0 in Tesla. You should
+    //  input it with an accuracy of at least four significant figures.
+    //  Default: HZPPPM = 84.47 (1.984 T; so, you will almost certainly have to
+    //  input your own value.)
+    //  ===========================================================
+    float transmitterFrequency = hdr->GetFloatValue( "TransmitterFrequency" );
+
+    //  ===========================================================
+    //  PPMEND (real) (“ppm end”) the lower limit of the ppm-range; i.e., the right edge of
+    //  the Analysis Window (with the usual convention of the ppm-axis decreasing
+    //  toward the right).
+    //  Defaults: See Sec 3.4.1.
+    //  ===========================================================
+    float ppmEnd = 1.8;    
+ 
+    //  ===========================================================
+    //  PPMST (real) (“ppm start”) the upper limit of the ppm-range; i.e., the left edge
+    //  of the Analysis Window.
+    //  Default: PPMST = 4.0
+    //  ===========================================================
+    float ppmStart = 4.1;  
+
+
+    //  ===========================================================
+    //  The .PS and .TABLE files contain the essential graphic and numeric information from
+    //  the analysis. The .CSV file contains the concentrations and can be imported to
+    //  spreadsheet programs. With LCMgui, you can select any of these to be output using
+    //  Fig 7.3.
+    //  5.3.7.1 .TABLE File
+    //  The .TABLE file contains all the information in the tables of the One-Page Output
+    //  as a self-documented text (ASCII) file. You can archive these files (particularly if
+    //  you have assigned them unique pathnames with FILTAB) into a database (e.g., for
+    //  computing means or other statistics over a group of spectra). For this, you must
+    //  input the following:
+    //  FILTAB (character*255) (“table file”) the pathname of the .TABLE file to be
+    //  output. (e.g., ’/home/user1/.lcmodel/saved/pat 777 77/table’).
+    //  LTABLE (integer)
+    //  LTABLE = 0 (the default) will suppress creation of this file;
+    //  LTABLE = 7 will make this file.
+    //  ===========================================================
+    int lTable = 7;  
+
+    //  ===========================================================
+    //  NEACH (integer) the number of metabolites for which individual plots are to be
+    //  made.
+    //  Default: NEACH = 0
+    //  ===========================================================
+    int nEach = 30;  
+    
+    //  ===========================================================
+    //  NUSE1 (integer) the number of Basis Spectra that are to be used in the Preliminary
+    //  Analysis.
+    //  Default: NUSE1 = 5.
+    //  ===========================================================
+    int nUse1 = 5;  
+
+    //  ===========================================================
+    //  CHUSE1 (character(300)*6) the first NUSE1 elements contain the Metabolite Names
+    //  of the spectra to be used. Default: CHUSE1 = ’NAA’, ’Cr’, ’GPC’, ’Glu’,
+    //  ’Ins’.
+    //  ===========================================================
+    string chuse1 = "'NAA','GPC','Cr','mI','Glu'";
+
+    //  ===========================================================
+    //  NSIMUL (integer) is the number of Basis Spectra that you will simulate.
+    //  Default: NSIMUL = 13.
+    //  ===========================================================
+    int nSimul = 13;  
+   
+    //  ===========================================================
+    //  Normally all Basis Spectra in the .BASIS file are used by LCModel. If some of these
+    //  are very unlikely to be detectable in your spectrum, then you should exclude these
+    //  from this analysis, as follows:
+    //  ===========================================================
+    
+    //  ===========================================================
+    //  NOMIT (integer) the number of metabolites to be excluded. You can exclude
+    //  Basis Spectra in the .BASIS file, as well as simulated spectra.
+    //  Default: NOMIT = 0.
+    //  ===========================================================
+    int noMit = 9;  
+    
+    //  ===========================================================
+    //  CHOMIT (character(100)*6) the first NOMIT elements contain the Metabolite
+    //  Names of the spectra to be excluded.
+    //  ===========================================================
+    vector < string > chomitArray;   
+    chomitArray.push_back( "'Lip13a'" ); 
+    chomitArray.push_back( "'Lip13b'" ); 
+    chomitArray.push_back( "'Lip13c'" ); 
+    chomitArray.push_back( "'Lip13d'" ); 
+    chomitArray.push_back( "'Lip09'" ); 
+    chomitArray.push_back( "'MM09'" ); 
+    chomitArray.push_back( "'MM12'" ); 
+    chomitArray.push_back( "'MM14'" ); 
+    chomitArray.push_back( "'MM17'" ); 
+    
+    //  ===========================================================
+    //  NKEEP (integer) the number of metabolites that are to be kept in the current
+    //  analysis, regardless of the ppm-range of the Analysis Window. You can
+    //  include Basis Spectra in the .BASIS file, as well as simulated spectra.
+    //  Default: NKEEP = 0.
+    //  ===========================================================
+    int nKeep = 2;  
+
+    vector < string > chKeepArray;   
+    chKeepArray.push_back( "'Lip20'" );  
+    chKeepArray.push_back( "'MM20'" );  
+
+    //  ===========================================================
+    //  ECHOT (real) The echo time (in ms). If ECHOT ≥ 100.0, then the default becomes
+    //  NUSE1 = 4, because of the weak Ins at long T E. However, you can override this
+    //  by simply inputting your own value for NUSE1.
+    //  ===========================================================
+    string fileRoot = svkImageReader2::GetFileNameWithoutPath( fileRootName.c_str() ); 
+
+    string title = "'" + fileRoot + "'";
+    
+    //  ===========================================================
+    //  FILRAW (character*255) the pathname of the .RAW file to be input.
+    //  ===========================================================
+    string fileRaw = "'" + fileRootName + ".raw'";  
+
+    //  ===========================================================
+    //  FILBAS (character*255) the pathname of the .BASIS file to be input.
+    //  Note: On most platforms, you cannot use symbols like ∼ or $HOME to
+    //  denote your home directory with any Control Parameters.
+    //  ===========================================================
+    string fileBas = "'" + this->basisFileName + "'"; 
+
+    //  ===========================================================
+    //  FILPS (character*255) the pathname of the .PS file that will contain the
+    //  PostScript One-Page Output.
+    //  ===========================================================
+    string filePS  = "'" + fileRootName + ".ps'";  
+    string fileCSV = "'" + fileRootName + ".csv'";  
+    string fileCOO = "'" + fileRootName + "_coord'";  
+    string fileTAB = "'" + fileRootName + ".table'";  
+
+    //  ===========================================================
+    //  ===========================================================
+    //   $LCMODL
+    //  ===========================================================
+    //  ===========================================================
+    *out << " $LCMODL" << endl;
+    *out << " PPMST     = " << fixed << setprecision(1) << ppmStart             << endl;
+    *out << " PPMEND    = " << fixed << setprecision(1) << ppmEnd               << endl;
+    *out << " HZPPPM    = " << fixed << setprecision(4) << transmitterFrequency << endl;
+    *out << " NUNFIL    = " << fixed << setprecision(0) << numSpecPts           << endl;
+    *out << " DELTAT    = " << fixed << setprecision(6) << dwellTimeSecs        << endl;
+    //  =====================================================
+    *out << " TITLE     = "   << title << endl;
+    *out << " LPS       = 8"  << endl;
+    *out << " LCSV      = 11" << endl;
+    *out << " LCOORD    = 9"  << endl;
+    *out << " FILBAS    = "   << fileBas << endl;
+    *out << " LTABLE    = "   << lTable  << endl;
+    *out << " FILTAB    = "   << fileTAB << endl;   
+    *out << " FILRAW    = "   << fileRaw << endl;
+    *out << " FILPS     = "   << filePS  << endl;
+    *out << " FILCSV    = "   << fileCSV << endl;
+    *out << " FILCOO    = "   << fileCOO << endl;
+    *out << " NEACH     = "   << nEach    << endl;
+    *out << " NUSE1     = "   << nUse1    << endl;
+    *out << " CHUSE1    = "   << chuse1   << endl;
+    *out << " NSIMUL    = "   << nSimul   << endl;
+    *out << " NOMIT     = "   << noMit    << endl;
+    for ( int i = 0; i < chomitArray.size(); i++ ) { 
+        *out << " CHOMIT(" << i + 1 << ") = " << chomitArray[i] << endl;
+    }
+    *out << " NKEEP     = "   << nKeep << endl;
+    for ( int i = 0; i < chKeepArray.size(); i++ ) { 
+        *out << " CHKEEP(" << i + 1 << ") = " << chKeepArray[i] << endl;
+    }
+    //  =====================================================
+    *out << " ISLICE    = "   << frameNumber << endl;
+    *out << " NDSLIC    = "   << setprecision(0) << 1   <<  endl;
+    //*out << " NDSLIC    = "   << setprecision(0) << numSlices     <<  endl;
+    *out << " NDROWS    = "   << setprecision(0) << numRows       <<  endl;
+    *out << " NDCOLS    = "   << setprecision(0) << numCols       <<  endl;
+    *out << " ICOLST    = "   << setprecision(0) << colStart      <<  endl;
+    *out << " ICOLEN    = "   << setprecision(0) << colEnd        <<  endl;
+    *out << " IROWST    = "   << setprecision(0) << rowStart      <<  endl;
+    *out << " IROWEN    = "   << setprecision(0) << rowEnd        <<  endl;
+    *out << " NVOXSK    = "   << setprecision(0) << numVoxSkipped <<  endl;
+    *out << " $END" << endl;
     
 
 }
@@ -366,7 +569,7 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileName)
  *
  *      $SEQPAR
  *      ECHOT=30
- *      HZPPM=298.064
+ *      HZPPPM=298.064
  *      SEQ=SE
  *      $END
  *      $NMID
@@ -420,7 +623,8 @@ void svkLCModelRawWriter::InitRawHeader(ofstream* out, string fileName)
     //  data, which must immediately follow Namelist NMID. (See also
     //  Sec 5.2.3 below.) This has no default; it must be input.
     //  ===========================================================
-    string fmtDat = "'(2f18.3)'"; 
+    string fmtDat = "'(f18.3)'"; 
+    //string fmtDat = "'(2f18.3)'"; 
     //string fmtDat = "'(f16.3)'"; 
 
     //  ===========================================================
@@ -442,12 +646,12 @@ void svkLCModelRawWriter::InitRawHeader(ofstream* out, string fileName)
 
     *out << " $SEQPAR"<<  endl;
     *out << " ECHOT=" << fixed << setprecision(0) << TE <<  endl;
-    *out << " HZPPM=" << setprecision(3) << transmitterFrequency <<  endl;
+    *out << " HZPPPM=" << setprecision(3) << transmitterFrequency <<  endl;
     *out << " SEQ=" << sequenceName <<  endl;
     *out << " $END" << endl;
 
     *out << " $NMID"<<  endl;
-    *out << " ID=" << id <<  endl;
+    *out << " ID='" << id <<  "'" << endl;
     *out << " FMTDAT=" << fmtDat << endl;
     *out << " VOLUME=" << fixed << setprecision(3) << voxelVolume <<  endl;
     *out << " TRAMP=" << setprecision(3) << tramp <<  endl;
@@ -473,8 +677,6 @@ string svkLCModelRawWriter::GetFileRootName(string fileRoot, svkDcmHeader::Dimen
     string extraDimLabel = ""; 
     int numDimsToRepresent = 0; 
     int implicitDimensionIndex = 1; 
-
-
 
     for ( int i = 3; i < dimensionVector->size(); i++) {
         int dimSize = svkDcmHeader::GetDimensionVectorValue(dimensionVector, i); 
