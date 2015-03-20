@@ -286,14 +286,10 @@ int svkAlgorithmPortMapper::FillInputPortInformation( int port, vtkInformation* 
 void svkAlgorithmPortMapper::SetDoubleInputPortValue( int port, double value )
 {
     if( this->GetInputPortType(port) == SVK_DOUBLE ) {
-        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
-        if( parameter == NULL ) {
-            parameter = svkDouble::New();
-            this->SetAlgorithmInputPort(port, parameter);
-            parameter->Delete();
-            parameter =  this->GetAlgorithmInputPort( port );
-        }
+        vtkDataObject* parameter = svkDouble::New();
+        this->SetAlgorithmInputPort(port, parameter);
         svkDouble::SafeDownCast( parameter )->SetValue(value);
+        parameter->Delete();
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type double. " << endl;
     }
@@ -303,10 +299,10 @@ void svkAlgorithmPortMapper::SetDoubleInputPortValue( int port, double value )
 /*!
  * Parameter port getter.
  */
-svkDouble* svkAlgorithmPortMapper::GetDoubleInputPortValue( int port )
+svkDouble* svkAlgorithmPortMapper::GetDoubleInputPortValue( int port, int connection )
 {
     if( this->GetInputPortType(port) == SVK_DOUBLE ) {
-        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port );
+        vtkDataObject* parameter =  this->GetAlgorithmInputPort( port, connection );
         return svkDouble::SafeDownCast( parameter );
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type double. " << endl;

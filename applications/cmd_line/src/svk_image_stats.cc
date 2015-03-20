@@ -85,6 +85,7 @@ int main (int argc, char** argv)
     usemsg += "   -o            output_file_name    Name of the output file.                     \n";
     usemsg += "   -x                                Output results in XML instead of default CSV.\n";
     usemsg += "   -t                                Output results as tab files.                 \n";
+    usemsg += "   -s            var=value           Substitute variable.                         \n";
     usemsg += "   -v                                Verbose output.                              \n";
     usemsg += "   -h                                Print help message.                          \n";
     usemsg += "                                                                                  \n";
@@ -95,6 +96,7 @@ int main (int argc, char** argv)
     string outputFileName;
     //BIOPSY_KLUDGE: This is a temporary fix for validating against existing ucsf programs.
     vector<string> biopsies;
+    vector<string> xmlVariables;
     bool outputXML = false;
     bool outputTab = false;
     bool   verbose = false;
@@ -108,7 +110,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "xto:r:c:b:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "xto:r:c:b:s:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case 'r':
                 fileRootName.assign(optarg);
@@ -121,6 +123,9 @@ int main (int argc, char** argv)
                 break;
             case 't':
                 outputTab = true;
+                break;
+            case 's':
+                xmlVariables.push_back(optarg);
                 break;
             case 'c':
                 configFileName.assign(optarg);
@@ -167,7 +172,6 @@ int main (int argc, char** argv)
 
     string rootNameVariable = "ROOTNAME=";
     rootNameVariable.append(fileRootName);
-    vector<string> xmlVariables;
     xmlVariables.push_back( rootNameVariable );
 
     // Lets start by reading the configuration file
@@ -215,9 +219,19 @@ int main (int argc, char** argv)
         }
 
         vector<string> defaultImages;
-        defaultImages.push_back("fl");
-        defaultImages.push_back("t1c");
-        defaultImages.push_back("fse");
+        if( configFileName.find("anat_config.xml") != std::string::npos ) {
+            defaultImages.push_back("fl");
+            defaultImages.push_back("t1c");
+            defaultImages.push_back("fse");
+        } else if( configFileName.find("adcfa_config.xml") != std::string::npos ) {
+            defaultImages.push_back("adc");
+            defaultImages.push_back("fa");
+        } else if( configFileName.find("ev1ev2ev3_config.xml") != std::string::npos ) {
+            defaultImages.push_back("ev1");
+            defaultImages.push_back("ev2");
+            defaultImages.push_back("ev3");
+            defaultImages.push_back("evrad");
+        }
 
 
         // Open file to write the measures into
@@ -387,9 +401,9 @@ int main (int argc, char** argv)
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                     string image = defaultImages[imageIndex];
                     resultsTab.width(11);
-                    double value = 0.0;
+                    float value = 0.0;
                     if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
-                        value = svkTypeUtils::StringToDouble(tables[measure][roi][image][0]);
+                        value = svkTypeUtils::StringToFloat(tables[measure][roi][image][0]);
                     }
                     bool addNegative = false;
                     resultsTab << right << setprecision(2);
@@ -403,44 +417,20 @@ int main (int argc, char** argv)
                         resultsTab << scientific;
                     } else {
                         resultsTab << fixed;
-                        // Manually round. This is because cout and setprecision do not round
-                        bool wasNegative = false;
-                        if( value < 0 ){
-                            wasNegative = true;
-                        }
-                        value = (svkUtils::NearestInt(value*100.0))/100.0;
-                        if( value == 0 && wasNegative ){
-                            addNegative = true;
-                        }
                     }
-                    if(addNegative) {
-                        resultsTab << "-";
-                    }
-                    resultsTab << value;
-                    //resultsTab << " " << images->second[0];
+                    char buffer [50];
+                    sprintf (buffer, "%10.2f",value);
+                    resultsTab << buffer;
                 }
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                     string image = defaultImages[imageIndex];
-                    double value = 0.0;
+                    float value = 0.0;
                     if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
-                        value = svkTypeUtils::StringToDouble(tables[measure][roi][image][1]);
+                        value = svkTypeUtils::StringToFloat(tables[measure][roi][image][1]);
                     }
-                    bool addNegative = false;
-                    bool wasNegative = false;
-                    if( value < 0 ){
-                        wasNegative = true;
-                    }
-                    value = (svkUtils::NearestInt(value*100.0))/100.0;
-                    if( value == 0 && wasNegative){
-                        addNegative = true;
-                    }
-                    resultsTab.width(11);
-                    if(addNegative) {
-                        resultsTab << "      -" << setprecision(2) << fixed << value;
-                    } else {
-                        resultsTab << right << setprecision(2) << fixed << value;
-                    }
-                    //resultsTab << " " << images->second[1];
+                    char buffer [50];
+                    sprintf (buffer, "%10.2f",value);
+                    resultsTab << buffer;
                 }
                 resultsTab << endl;
             }

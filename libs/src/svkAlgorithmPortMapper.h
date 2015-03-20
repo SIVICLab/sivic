@@ -165,7 +165,7 @@ class svkAlgorithmPortMapper : public vtkObject
         //! Basic setter. Wraps value in vtkDataObject subclass
         void                     SetDoubleInputPortValue( int port, double value );
         //! Basic getter.
-        svkDouble*               GetDoubleInputPortValue( int port );
+        svkDouble*               GetDoubleInputPortValue( int port, int connection = 0 );
 
         //! Basic setter. Wraps value in vtkDataObject subclass
         void                     SetIntInputPortValue( int port, int value );

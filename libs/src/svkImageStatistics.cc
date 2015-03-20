@@ -57,7 +57,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
-    this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE, required, repeatable);
     this->GetPortMapper()->InitializeInputPort( AUTO_ADJUST_BIN_SIZE, "AUTO_ADJUST_BIN_SIZE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS, "SMOOTH_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
@@ -273,7 +273,7 @@ int svkImageStatistics::RequestData( vtkInformation* request,
                 normalizationType = this->GetPortMapper()->GetIntInputPortValue(NORMALIZATION_METHOD)->GetValue();
             }
         }
-        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE )->GetValue();
+        double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE, imageIndex )->GetValue();
         svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
         if( this->GetShouldCompute(AUTO_ADJUST_BIN_SIZE)) {
             binSize = this->GetAutoAdjustedBinSize( image, binSize );
@@ -293,8 +293,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
             cout << "Working on Image:" << imageLabel << " ROI= " << roiLabel << endl;
-            cout << "Image: " << *image << endl;
-            cout << "ROI: " << *roi << endl;
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
@@ -390,32 +388,38 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         accumulator->Update();
         if( this->GetShouldCompute(COMPUTE_VOLUME)) {
             // Volume In Cubic Centimeters
-            string volumeString = svkTypeUtils::DoubleToString( (accumulator->GetVoxelCount()*pixelVolume)/1000.0 );
+            string volumeString = this->DoubleToString( (accumulator->GetVoxelCount()*pixelVolume)/1000.0 );
             svkUtils::CreateNestedXMLDataElement( results, "volume", volumeString);
         }
 
         if( this->GetShouldCompute(COMPUTE_MAX)) {
-            double max =  *accumulator->GetMax();
+            double max =  0;
+            if( accumulator->GetVoxelCount() > 0 ) {
+                max = *accumulator->GetMax();
+            }
             if( normalization > 0 ) {
                 max /= normalization;
             }
-            string maxString = svkTypeUtils::DoubleToString( max );
+            string maxString = this->DoubleToString( max );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
             if( normalization > 0 ) {
-                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
 
 
         if( this->GetShouldCompute(COMPUTE_MIN)) {
-            double min = *accumulator->GetMin();
+            double min = 0;
+            if( accumulator->GetVoxelCount() > 0 ) {
+                min = *accumulator->GetMin();
+            }
             if( normalization > 0 ) {
                 min /= normalization;
             }
-            string minString = svkTypeUtils::DoubleToString( min );
+            string minString = this->DoubleToString( min );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "min", minString);
             if( normalization > 0 ) {
-                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
 
@@ -424,24 +428,24 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             if( normalization > 0 ) {
                 mean /= normalization;
             }
-            string meanString = svkTypeUtils::DoubleToString( mean );
+            string meanString = this->DoubleToString( mean );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
             if( normalization > 0 ) {
-                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
         if( this->GetShouldCompute(COMPUTE_SUM)){
             // TODO: This is the method used it UCSF code. This should be changed to be a separate sum option.
-            float mean = *accumulator->GetMean();
-            float volume = (accumulator->GetVoxelCount()*pixelVolume)/1000.0f;
-            float sum = mean*volume;
+            double mean = *accumulator->GetMean();
+            double volume = (accumulator->GetVoxelCount()*pixelVolume)/1000.0;
+            double sum = mean*volume;
             if( normalization > 0 ) {
                 sum /= normalization;
             }
-            string sumString = svkTypeUtils::DoubleToString( sum, 8 );
+            string sumString = this->DoubleToString( sum );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sum", sumString);
             if( normalization > 0 ) {
-                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
 
@@ -450,10 +454,10 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             if( normalization > 0 ) {
                 stdev /= normalization;
             }
-            string stdevString = svkTypeUtils::DoubleToString( stdev );
+            string stdevString = this->DoubleToString( stdev );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sd", stdevString);
             if( normalization > 0 ) {
-                elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
         /*
@@ -473,7 +477,7 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
                         mode = binSize*i + startBin;
                     }
                 }
-                string valueString = svkTypeUtils::DoubleToString(mode);
+                string valueString = this->DoubleToString(mode);
                 svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
             }
         }
@@ -540,18 +544,18 @@ void svkImageStatistics::ComputeOrderStatistics(svkMriImageData* image, svkMriIm
         */
 
         if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
-            string valueString = svkTypeUtils::DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
+            string valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.1-quantile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
-            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
+            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"First Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
-            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
+            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-            valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
+            valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Third Quartile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
-            valueString = svkTypeUtils::DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
+            valueString = this->DoubleToString( decileResults->GetValueByName(0,"0.9-quantile").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
         } else if( this->GetShouldCompute(COMPUTE_MEDIAN)) {
-            string valueString = svkTypeUtils::DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
+            string valueString = this->DoubleToString( quartileResults->GetValueByName(0,"Median").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
         }
 
@@ -606,13 +610,13 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         */
         /*
         if( this->GetShouldCompute(COMPUTE_SUM)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"Sum").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         */
         if( this->GetShouldCompute(COMPUTE_MOMENT_2) ) {
             if( statResults->GetRowData()->GetArray("M2")->GetNumberOfTuples() > 0 ){
-                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
+                string valueString = this->DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
             } else {
                 cout << "WARNING: Could not calculate M2 " << endl;
@@ -620,7 +624,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_3)){
             if( statResults->GetRowData()->GetArray("M3")->GetNumberOfTuples() > 0 ){
-                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
+                string valueString = this->DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
             } else {
                 cout << "WARNING: Could not calculate M3 " << endl;
@@ -628,30 +632,30 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         }
         if( this->GetShouldCompute(COMPUTE_MOMENT_4)){
             if( statResults->GetRowData()->GetArray("M4")->GetNumberOfTuples() > 0 ){
-                string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
+                string valueString = this->DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
             } else {
                 cout << "WARNING: Could not calculate M4 " << endl;
             }
         }
         if( this->GetShouldCompute(COMPUTE_VARIANCE)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"Variance").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "variance", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_KURTOSIS)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "kurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_SKEWNESS)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"g1 Skewness").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "skewness", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_KURTOSIS)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"G2 Kurtosis").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "populationkurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_POPULATION_SKEWNESS)){
-            string valueString = svkTypeUtils::DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
+            string valueString = this->DoubleToString( statResults->GetValueByName(0,"G1 Skewness").ToDouble() );
             svkUtils::CreateNestedXMLDataElement( results, "populationskewness", valueString);
         }
     }
@@ -679,21 +683,26 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
             // Compute the mode if requested
             if( this->GetShouldCompute(COMPUTE_MODE)) {
                 int numBins = histogram->GetNumberOfTuples();
-                int modeBin = 0;
-                // Find the moax for the mode
-                for( int i = 0; i < numBins; i++ ) {
-                    if( histogram->GetTuple1(i) >= histogram->GetTuple1(modeBin)) {
+                int modeBin = smoothBins/2 - 1;
+                double modeBinHeight = histogram->GetTuple1(modeBin);
+                // Find the max for the mode
+                for( int i = modeBin + 1; i < numBins - (smoothBins/2 - 1); i++ ) {
+                    if( histogram->GetTuple1(i) >= modeBinHeight && histogram->GetTuple1(i) > 0) {
                         modeBin = i;
+                        modeBinHeight = histogram->GetTuple1(modeBin);
                     }
                 }
-                double value = binSize*modeBin + startBin;
+                double value = 0;
+                if( modeBinHeight > 0 ) {
+                    value = binSize*modeBin + startBin;
+                }
                 if( normalization > 0 ) {
                     value /= normalization;
                 }
-                string valueString = svkTypeUtils::DoubleToString( value );
+                string valueString = this->DoubleToString( value );
                 vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
                 if( normalization > 0 ) {
-                    elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                    elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
                 }
             }
 
@@ -757,27 +766,28 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 vtkXMLDataElement* elem = NULL;
                 if( this->GetShouldCompute(COMPUTE_QUANTILES)) {
                     if( ((double)i)/numIntervals == 0.1 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "percent10", valueString);
                     } else if( ((double)i)/numIntervals == 0.25 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "percent25", valueString);
                     } else if( ((double)i)/numIntervals == 0.5 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
+                        cout << "Median: " << setprecision(15) << percentile << " String rep: " << valueString << endl;
                     } else if( ((double)i)/numIntervals == 0.75 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "percent75", valueString);
                     } else if( ((double)i)/numIntervals == 0.90 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "percent90", valueString);
                     }
                 } else if( this->GetShouldCompute(COMPUTE_MEDIAN) && ((double)i)/numIntervals == 0.5 ) {
-                        string valueString = svkTypeUtils::DoubleToString( percentile );
+                        string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
                 }
                 if( elem != NULL && normalization > 0) {
-                    elem->SetAttribute( "normalization", svkTypeUtils::DoubleToString( normalization ).c_str());
+                    elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
                 }
             }
             if( this->GetShouldCompute(COMPUTE_HISTOGRAM)) {
@@ -820,9 +830,9 @@ void svkImageStatistics::AddHistogramTag( vtkDataArray* histogram, double binSiz
             vtkXMLDataElement* element = vtkXMLDataElement::New();
             element->SetName("bin");
             element->SetAttribute("index", svkTypeUtils::IntToString(i).c_str());
-            element->SetAttribute("min", svkTypeUtils::DoubleToString(startBin + i*binSize).c_str());
-            element->SetAttribute("max", svkTypeUtils::DoubleToString(startBin + (i+1)*binSize).c_str());
-            string valueString = svkTypeUtils::DoubleToString(histogram->GetTuple1(i));
+            element->SetAttribute("min", this->DoubleToString(startBin + i*binSize).c_str());
+            element->SetAttribute("max", this->DoubleToString(startBin + (i+1)*binSize).c_str());
+            string valueString = this->DoubleToString(histogram->GetTuple1(i));
             element->SetCharacterData(valueString.c_str(), valueString.size());
             histTag->AddNestedElement(element);
             element->Delete();
@@ -862,22 +872,30 @@ double svkImageStatistics::GetAutoAdjustedBinSize( svkMriImageData* image, doubl
     double max  = *accumulator->GetMax();
     double mean = *accumulator->GetMean();
     vtkDataArray* hist = accumulator->GetOutput()->GetPointData()->GetScalars();
-
-    double htemp = (max-min)/((double)numBins);
-    double histmax = (double)numBins * startBinSize;
-    if(histmax < 10.0*mean) {
-        histmax = 10.0*mean;
+    double idealBinSize = (max-min)/((double)numBins);
+    double histogramMaxBin = (double)numBins * startBinSize;
+    if(histogramMaxBin < 10.0*mean) {
+        histogramMaxBin = 10.0*mean;
     }
-    if(max > histmax) {
-        htemp = (histmax-min)/((double)numBins);
+    if(max > histogramMaxBin) {
+        idealBinSize = (histogramMaxBin-min)/((double)numBins);
     }
-    if(max < histmax) {
-      histmax = max;
+    if(max < histogramMaxBin) {
+      histogramMaxBin = max;
     }
-    int itemp = svkUtils::NearestInt((htemp/binSize)+0.51);
+    int itemp = svkUtils::NearestInt((idealBinSize/binSize)+0.51);
     if(itemp > 1) {
         binSize= binSize * itemp;
     }
+    string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
     return binSize;
+}
 
+
+/*!
+ *  We need a higher default precision here.
+ */
+string svkImageStatistics::DoubleToString( double value )
+{
+    return svkTypeUtils::DoubleToString(value,DOUBLE_TO_STRING_PRECISION);
 }

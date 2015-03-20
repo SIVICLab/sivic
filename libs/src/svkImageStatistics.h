@@ -42,6 +42,7 @@
 
 #ifndef SVK_IMAGE_STATISTICS_H
 #define SVK_IMAGE_STATISTICS_H
+#define DOUBLE_TO_STRING_PRECISION 14
 
 
 #include <stdio.h>
@@ -157,6 +158,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 
        bool   GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter);
        double GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize );
+       string DoubleToString( double value );
 
 };
 
