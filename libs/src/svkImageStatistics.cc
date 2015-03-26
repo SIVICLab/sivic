@@ -275,6 +275,12 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         }
         double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE, imageIndex )->GetValue();
         svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
+        // Replace < zero with 0
+        for( int i = 0; i < image->GetPointData()->GetScalars()->GetNumberOfTuples(); i++ ) {
+            if( image->GetPointData()->GetScalars()->GetTuple1(i) < 0 ) {
+                image->GetPointData()->GetScalars()->SetTuple1(i,0);
+            }
+        }
         if( this->GetShouldCompute(AUTO_ADJUST_BIN_SIZE)) {
             binSize = this->GetAutoAdjustedBinSize( image, binSize );
         }
@@ -674,9 +680,28 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
         smoothBins = this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS )->GetValue();
     }
     if( image != NULL ) {
+        bool useMeanForAll = false;
         vtkDataArray* pixelsInROI = svkImageStatistics::GetMaskedPixels(image,roi);
         vtkDataArray* histogram = svkImageStatistics::GetHistogram( pixelsInROI, binSize, startBin, numBins, smoothBins );
+        double mean = 0;
         if( pixelsInROI != NULL && histogram != NULL) {
+            int numPixels = 0;
+            for( int i= 0; i < pixelsInROI->GetNumberOfTuples(); i++) {
+                if(pixelsInROI->GetTuple1(i) > 0 ) {
+                    numPixels++;
+                }
+            }
+            if( numPixels <= smoothBins ) {
+                useMeanForAll = true;
+                int pixelsUsed = 0;
+                for( int i = 0; i < pixelsInROI->GetNumberOfTuples(); i++ ) {
+                    if( pixelsInROI->GetTuple1(i) > 0) {
+                        mean += pixelsInROI->GetTuple1(i);
+                        pixelsUsed++;
+                    }
+                }
+                mean /= pixelsUsed;
+            }
             // Sort the data
             vtkSortDataArray::Sort( pixelsInROI );
 
@@ -695,6 +720,9 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 double value = 0;
                 if( modeBinHeight > 0 ) {
                     value = binSize*modeBin + startBin;
+                }
+                if( useMeanForAll ) {
+                    value = mean;
                 }
                 if( normalization > 0 ) {
                     value /= normalization;
@@ -760,6 +788,9 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
             }
             for( int i = 0; i < numIntervals; i++ ) {
                 double percentile = binSize*((intervalUpperBin[i] + intervalLowerBin[i])/2.0) + startBin;
+                if( useMeanForAll ) {
+                    percentile = mean;
+                }
                 if( normalization > 0 ) {
                     percentile /= normalization;
                 }
@@ -888,6 +919,7 @@ double svkImageStatistics::GetAutoAdjustedBinSize( svkMriImageData* image, doubl
         binSize= binSize * itemp;
     }
     string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
+    accumulator->Delete();
     return binSize;
 }
 

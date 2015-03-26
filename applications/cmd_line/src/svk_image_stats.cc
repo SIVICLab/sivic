@@ -208,29 +208,46 @@ int main (int argc, char** argv)
         defaultMeasures.push_back("sum");
 
         vector<string> defaultROIs;
-        defaultROIs.push_back("brain");
-        defaultROIs.push_back("nawm");
-        defaultROIs.push_back("t2all");
-        defaultROIs.push_back("cel");
-        defaultROIs.push_back("nec");
-        defaultROIs.push_back("nel");
+        if( configFileName.find("nonpar_cbvr") != std::string::npos ) {
+            defaultROIs.push_back("brainr");
+            defaultROIs.push_back("nawmr");
+            defaultROIs.push_back("t2allr");
+            defaultROIs.push_back("celr");
+            defaultROIs.push_back("necr");
+            defaultROIs.push_back("nelr");
+        } else {
+            defaultROIs.push_back("brain");
+            defaultROIs.push_back("nawm");
+            defaultROIs.push_back("t2all");
+            defaultROIs.push_back("cel");
+            defaultROIs.push_back("nec");
+            defaultROIs.push_back("nel");
+        }
         for( int i = 0; i< biopsies.size(); i++ ) {
             defaultROIs.push_back(biopsies[i]);
         }
-
+        int numMaps = 0;
         vector<string> defaultImages;
         if( configFileName.find("anat_config.xml") != std::string::npos ) {
             defaultImages.push_back("fl");
             defaultImages.push_back("t1c");
             defaultImages.push_back("fse");
+            numMaps = 6; // Double for normalization
         } else if( configFileName.find("adcfa_config.xml") != std::string::npos ) {
             defaultImages.push_back("adc");
             defaultImages.push_back("fa");
+            numMaps = 4; // Double for normalization
         } else if( configFileName.find("ev1ev2ev3_config.xml") != std::string::npos ) {
             defaultImages.push_back("ev1");
             defaultImages.push_back("ev2");
             defaultImages.push_back("ev3");
             defaultImages.push_back("evrad");
+            numMaps = 8; // Double for normalization
+        } else if( configFileName.find("nonpar_cbv") != std::string::npos ) {
+            defaultImages.push_back("ph");
+            defaultImages.push_back("recov");
+            defaultImages.push_back("invrec");
+            numMaps = 4; // Only ph is normalized
         }
 
 
@@ -243,7 +260,7 @@ int main (int argc, char** argv)
         resultsTab << "Number of rois, biopsies and parameter maps: ";
         resultsTab << "     " << defaultROIs.size()-biopsies.size();
         resultsTab << "     " << biopsies.size();
-        resultsTab << "     " << 2*defaultImages.size() << endl<< endl;
+        resultsTab << "     " << numMaps << endl<< endl;
         resultsTab << "Number of tables:   " << defaultMeasures.size();
         string nbins = "?";
         string smooth = "?";
@@ -385,11 +402,12 @@ int main (int argc, char** argv)
                     }
                     // Once for normalized
                     for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
-                        resultsTab.width(11);
-                        string normalizedName = "n";
-                        normalizedName.append(defaultImages[imageIndex]);
-                        resultsTab << right << normalizedName;
-
+                        if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                            resultsTab.width(11);
+                            string normalizedName = "n";
+                            normalizedName.append(defaultImages[imageIndex]);
+                            resultsTab << right << normalizedName;
+                        }
                     }
                     resultsTab << endl;
                 }
@@ -423,14 +441,16 @@ int main (int argc, char** argv)
                     resultsTab << buffer;
                 }
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
-                    string image = defaultImages[imageIndex];
-                    float value = 0.0;
-                    if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
-                        value = svkTypeUtils::StringToFloat(tables[measure][roi][image][1]);
+                    if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                        string image = defaultImages[imageIndex];
+                        float value = 0.0;
+                        if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
+                            value = svkTypeUtils::StringToFloat(tables[measure][roi][image][1]);
+                        }
+                        char buffer [50];
+                        sprintf (buffer, "%10.2f",value);
+                        resultsTab << buffer;
                     }
-                    char buffer [50];
-                    sprintf (buffer, "%10.2f",value);
-                    resultsTab << buffer;
                 }
                 resultsTab << endl;
             }
@@ -481,7 +501,11 @@ int main (int argc, char** argv)
                 resultsTab << right << "1.000";
                 resultsTab.width(11);
                 // This will depend on the config
-                resultsTab << right << svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]) << endl;
+                if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                    resultsTab << right << svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]) << endl;
+                } else {
+                    resultsTab << right << "1.00" << endl;
+                }
 
             }
         }
