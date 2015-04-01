@@ -208,7 +208,7 @@ int main (int argc, char** argv)
         defaultMeasures.push_back("sum");
 
         vector<string> defaultROIs;
-        if( configFileName.find("nonpar_cbvr") != std::string::npos ) {
+        if( configFileName.find("cbvr") != std::string::npos ) {
             defaultROIs.push_back("brainr");
             defaultROIs.push_back("nawmr");
             defaultROIs.push_back("t2allr");
@@ -248,6 +248,12 @@ int main (int argc, char** argv)
             defaultImages.push_back("recov");
             defaultImages.push_back("invrec");
             numMaps = 4; // Only ph is normalized
+        } else if( configFileName.find("nonlin_cbv") != std::string::npos ) {
+            defaultImages.push_back("cbv");
+            defaultImages.push_back("ph");
+            defaultImages.push_back("recov");
+            defaultImages.push_back("rf");
+            numMaps = 6; // Only ph is normalized
         }
 
 
@@ -402,7 +408,7 @@ int main (int argc, char** argv)
                     }
                     // Once for normalized
                     for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
-                        if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                        if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" && defaultImages[imageIndex] != "rf"){
                             resultsTab.width(11);
                             string normalizedName = "n";
                             normalizedName.append(defaultImages[imageIndex]);
@@ -422,6 +428,10 @@ int main (int argc, char** argv)
                     float value = 0.0;
                     if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
                         value = svkTypeUtils::StringToFloat(tables[measure][roi][image][0]);
+                        if(defaultImages[imageIndex] == "rf" && measure != "kurtosis" && measure != "skewness" ){
+                            value*=100.0;
+                        }
+
                     }
                     bool addNegative = false;
                     resultsTab << right << setprecision(2);
@@ -441,7 +451,7 @@ int main (int argc, char** argv)
                     resultsTab << buffer;
                 }
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
-                    if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                    if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" && defaultImages[imageIndex] != "rf"){
                         string image = defaultImages[imageIndex];
                         float value = 0.0;
                         if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
@@ -498,10 +508,14 @@ int main (int argc, char** argv)
                 // There is no scaling yet so this is always 1.000
                 resultsTab << right << "1.000";
                 resultsTab.width(11);
-                resultsTab << right << "1.000";
+                if (defaultImages[imageIndex] == "rf"){
+                    resultsTab << right << "0.1000E-01";
+                } else {
+                    resultsTab << right << "1.000";
+                }
                 resultsTab.width(11);
                 // This will depend on the config
-                if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec"){
+                if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" &&  defaultImages[imageIndex] != "rf"){
                     resultsTab << right << svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]) << endl;
                 } else {
                     resultsTab << right << "1.00" << endl;

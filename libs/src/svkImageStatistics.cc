@@ -588,12 +588,12 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         vtkDataArray* pixelsInROI = vtkDataArray::CreateDataArray( pixels->GetDataType());
         pixelsInROI->SetName("PixelsInROI");
         pixelsInROI->SetNumberOfComponents(1);
-        int count = 0;
+        int numPixelsInROI = 0;
         //TODO: This should use the method for getting the pixels in the roi.
         for( int i = 0; i < pixels->GetNumberOfTuples(); i++ ) {
             // Get valuse in mask, if there is a mask. Ignore values of zero.
             if( (mask == NULL || mask->GetTuple1(i) > 0) &&  pixels->GetTuple1(i) != 0) {
-                count ++;
+                numPixelsInROI ++;
                 pixelsInROI->InsertNextTuple1( pixels->GetTuple1(i));
             }
         }
@@ -650,6 +650,14 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_KURTOSIS)){
             string valueString = this->DoubleToString( statResults->GetValueByName(0,"g2 Kurtosis").ToDouble() );
+            // TODO: Make this only happen in UCSF Compatibility mode.
+            if( numPixelsInROI == 1 ) {
+                valueString = "-3.0";
+            }
+            if( numPixelsInROI == 0 ) {
+                valueString = "0.0";
+            }
+
             svkUtils::CreateNestedXMLDataElement( results, "kurtosis", valueString);
         }
         if( this->GetShouldCompute(COMPUTE_SAMPLE_SKEWNESS)){
