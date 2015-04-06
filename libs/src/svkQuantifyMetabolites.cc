@@ -1031,7 +1031,7 @@ void svkQuantifyMetabolites::WriteDefaultXMLTemplate( string fileName, bool clob
         << "     </RATIO>" << endl
         << " " << endl
         << "     -- ratio of choline + creatine to cit peak ht" << endl
-        << "     <RATIO id=\"2\" name=\"CHO+CRE/CIT INTEGRATE\">" << endl
+        << "     <RATIO id=\"1\" name=\"CHO+CRE/CIT INTEGRATE\">" << endl
         << "         <NUMERATOR quant_id=\"4\">" << endl
         << "         </NUMERATOR>" << endl
         << "         <NUMERATOR quant_id=\"5\">" << endl
