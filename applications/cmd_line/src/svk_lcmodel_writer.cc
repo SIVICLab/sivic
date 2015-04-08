@@ -77,7 +77,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_lcmodel -i input_file_name -o output_file_name --basis basis_file_name                \n"; 
+    usemsg += "svk_lcmodel_writer -i input_file_name -o output_file_name --basis basis_file_name    \n"; 
     usemsg += "                   [ --one_time_pt ]                                                 \n";
     usemsg += "                   [ --single ]                                                      \n";
     usemsg += "                   [ -bh ]                                                           \n";

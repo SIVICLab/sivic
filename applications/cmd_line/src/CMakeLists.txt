@@ -246,6 +246,7 @@ SET(SVK_LIBS
     vtkIO
     vtkFiltering
     vtkCommon
+    vtkInfovis
     dcmdata
     ${DCMTK_OFLOG}
     ofstd 
@@ -350,6 +351,14 @@ ADD_EXECUTABLE(
 )
 TARGET_LINK_LIBRARIES(
     svk_lcmodel
+	${SVK_LIBS}
+)
+ADD_EXECUTABLE(
+    svk_lcmodel_reader
+    svk_lcmodel_reader.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_lcmodel_reader
 	${SVK_LIBS}
 )
 

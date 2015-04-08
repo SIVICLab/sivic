@@ -72,14 +72,16 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_lcmodel_reader -i input_file_name -o output_file_root --csf csv_file_name        \n"; 
+    usemsg += "svk_lcmodel_reader -i input_file_name -o output_file_root                            \n"; 
+    usemsg += "                   --csv csv_file_name --met met_name                                \n"; 
     usemsg += "                   [ -bh ]                                                           \n";
     usemsg += "                                                                                     \n";  
-    usemsg += "   -i                name    Name of template MRS file.                              \n"; 
-    usemsg += "   -o                name    Root name of outputfile.                                \n";
-    usemsg += "   --csv             name    Name of csv file to convert.                            \n";
-    usemsg += "   -b                        Set up for selection box analysis only.                 \n";
-    usemsg += "   -h                        Print this help mesage.                                 \n";  
+    usemsg += "   -i        name        Name of template MRS file.                                  \n"; 
+    usemsg += "   -o        name        Root name of outputfile.                                    \n";
+    usemsg += "   --csv     name        Name of csv file to convert.                                \n";
+    usemsg += "   --met     met_name    Name of met to convert.                                     \n";
+    usemsg += "   -b                    Set up for selection box analysis only.                     \n";
+    usemsg += "   -h                    Print this help mesage.                                     \n";  
     usemsg += "                                                                                     \n";  
     usemsg += "Reads LCModel output and converts to DICOM metabolite maps.                          \n";  
     usemsg += "                                                                                     \n";  
@@ -87,17 +89,20 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     string  csvFileName;
+    string  metName;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
-        FLAG_CSV_FILE
+        FLAG_CSV_FILE, 
+        FLAG_MET_NAME, 
     }; 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
         {"csv",         required_argument, NULL,  FLAG_CSV_FILE}, 
+        {"met",         required_argument, NULL,  FLAG_MET_NAME}, 
         {0, 0, 0, 0}
     };
 
@@ -117,6 +122,9 @@ int main (int argc, char** argv)
             case FLAG_CSV_FILE:
                 csvFileName.assign( optarg );
                 break;
+            case FLAG_MET_NAME:
+                metName.assign( optarg );
+                break;
             case 'h':
                 cout << usemsg << endl;
                 exit(1);  
@@ -133,6 +141,7 @@ int main (int argc, char** argv)
         argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
         || csvFileName.length() == 0 
+        || metName.length() == 0 
     ) {
         cout << usemsg << endl;
         exit(1); 
@@ -154,30 +163,12 @@ int main (int argc, char** argv)
     // ===============================================  
     // ===============================================  
     svkLCModelCSVReader* csvReader = svkLCModelCSVReader::New(); 
+    csvReader->SetMetName( metName ); 
     csvReader->SetFileName(csvFileName.c_str() ); 
-    //csvReader->SetMRSTemplate(inputFileName.c_str() ); 
+    csvReader->SetMRSFileName(inputFileName.c_str() ); 
     csvReader->Update(); 
-exit(0); 
 
-    // ===============================================  
-    //  Use a reader factory to get the correct reader  
-    //  type for the template MRS data. 
-    // ===============================================  
-    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* mrsReader = readerFactory->CreateImageReader2(inputFileName.c_str());
-    readerFactory->Delete();
-
-    if ( mrsReader == NULL ) {
-        cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
-        exit(1);
-    }
-
-    mrsReader->SetFileName( inputFileName.c_str() );
-    mrsReader->Update();
-
-
-
-    svkImageData* currentImage = svkMrsImageData::SafeDownCast( mrsReader->GetOutput() ); 
+    svkImageData* currentImage = svkMriImageData::SafeDownCast( csvReader->GetOutput() ); 
 
     // ===============================================  
     //  Write the data out to the specified file type.  
@@ -185,7 +176,8 @@ exit(0);
     //  correct writer type. 
     // ===============================================  
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-    svkImageWriter* writer = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI) ); 
+    svkImageWriter* writer = static_cast<svkImageWriter*>( 
+        writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI) ); 
 
     if ( writer == NULL ) {
         cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
@@ -193,24 +185,24 @@ exit(0);
     }
 
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
+    writer->SetInput(  currentImage  );
 
     // ===============================================  
     //  Set the input command line into the data set 
     //  provenance: 
     // ===============================================  
-    mrsReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    csvReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
     // ===============================================  
     //  Write data to file: 
     // ===============================================  
-    //writer->Write();
+    writer->Write();
 
     // ===============================================  
     //  Clean up: 
     // ===============================================  
     writer->Delete();
-    mrsReader->Delete();
+    csvReader->Delete();
 
     return 0; 
 }
