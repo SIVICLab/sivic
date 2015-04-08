@@ -83,18 +83,20 @@ class svkLCModelRawWriter : public svkImageWriter
 
 
     private:
-        void             InitImageData();
-        void             WriteFiles();
-        string           GetFileRootName(string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
-        string           basisFileName; 
-        void             InitSpecData(
+        void            InitImageData();
+        void            WriteFiles();
+        string          GetFileRootName(string fileRoot, svkDcmHeader::DimensionVector* dimensionVector, int frame); 
+        string          basisFileName; 
+        void            InitSpecData(
                             ofstream* out, 
                             svkDcmHeader::DimensionVector* dimensionVector, 
                             svkDcmHeader::DimensionVector* indexVector, 
                             int frame    
                          ); 
-        void             InitRawHeader(ofstream* out, string fileName);
-        void             InitControlHeader(ofstream* out, string fileRootName, string frameNumber); 
+        void            InitQuantificationMask(); 
+        void            InitRawHeader(ofstream* out, string fileName);
+        void            InitControlHeader(ofstream* out, string fileRootName, string frameNumber); 
+        short*          quantificationMask;
 
 
 };

@@ -160,8 +160,6 @@ void svkLCModelCSVReader::ExecuteData(vtkDataObject* output)
     
     this->ParseCSVFiles(); 
 
-
-   
 }
 
 
@@ -214,6 +212,22 @@ void svkLCModelCSVReader::ParseCSVFiles()
    
     this->GlobFileNames();
 
+    vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
+    cout << "MMA: " << metMapArray << endl;
+    cout << "MMA: " << *metMapArray << endl;
+    cout << "this OUTPUT" << *(this->GetOutput()) << endl;
+
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
+    int voxels[3];  
+    hdr->GetSpatialDimensions( &dimVector, voxels ); 
+    cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
+    int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
+    for (int i = 0; i < numVoxels; i++ ) {
+        metMapArray->SetTuple1(i, 0);
+    }
+
+
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         string csvFileName = this->GetFileNames()->GetValue( fileIndex );
@@ -251,16 +265,17 @@ void svkLCModelCSVReader::ParseCSVFiles()
 
         //cout << "NC: " << numCols  << endl; 
         //cout << "NR: " << numRows  << endl; 
-        for ( int i = 0; i < numCols; i++ ) {
-            cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
-        }
+        //for ( int i = 0; i < numCols; i++ ) {
+            ////cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
+        //}
 
         //  =============================
         //  initialize the row vals 
         //  =============================
         if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )) ) {
-            cout << "ERROR:  no column Row" <<  endl;
-            exit(1); 
+            cout << "Warning: no column Row" <<  endl;
+            //exit(1); 
+            continue; 
         } else {
             this->csvRowIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )); 
         }
@@ -269,8 +284,9 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  initialize the col vals
         //  =============================
         if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )) ) {
-            cout << "ERROR:  no column: Col" <<  endl;
-            exit(1); 
+            cout << "Warning:  no column: Col" <<  endl;
+            //exit(1); 
+            continue; 
         } else {
             this->csvColIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )); 
         }
@@ -281,8 +297,9 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  =============================
         string colName = this->metName; 
         if (!vtkDoubleArray::SafeDownCast(table->GetColumnByName(colName.c_str() )) ) {
-            cout << "ERROR:  no column " << colName << endl;
-            exit(1); 
+            cout << "Warning:  no column " << colName << endl;
+            //exit(1); 
+            continue; 
         } else {
             this->csvPixelValues = vtkDoubleArray::SafeDownCast( table->GetColumnByName(colName.c_str() )) ; 
         }
@@ -291,40 +308,29 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  initialize a slice index from 
         //  the csv file name: 
         //  =============================
-        int sliceIndex = 3;  
+        int sliceIndex = fileIndex;  
         cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
         for ( int i = 0; i < numRows; i++ ) {
             cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
         }
 
         //  =============================
-        svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-        svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
-        int voxels[3];  
-        hdr->GetSpatialDimensions( &dimVector, voxels ); 
-        cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
-        int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
 
         //  create an index dimVector and set the values of slice, row, and col from the values in teh csv
         //  once these are set, then determine the voxel index for those values and set the value of 
         //  the metMapArray for that index.  
-        vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
 
-        for (int i = 0; i < numVoxels; i++ ) {
-            metMapArray->SetTuple1(i, 0);
-        }
 
         svkDcmHeader::DimensionVector indexVector = dimVector; 
-
         for (int i = 0; i < numRows; i++ ) {
-            int rowIndex     = this->csvRowIndex->GetTuple1(i);
-            int colIndex     = this->csvColIndex->GetTuple1(i);
+            int rowIndex     = this->csvRowIndex->GetTuple1(i) - 1;
+            int colIndex     = this->csvColIndex->GetTuple1(i) - 1;
             float voxelValue =  this->csvPixelValues->GetTuple1(i) ;
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, colIndex);
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);
             int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
-            cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << voxelValue  << endl;
+            cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
             metMapArray->SetTuple1(cellID, voxelValue);
         }
 

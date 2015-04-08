@@ -70,6 +70,7 @@ svkLCModelRawWriter::svkLCModelRawWriter()
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
     this->basisFileName = ""; 
+    this->quantificationMask = NULL;
 }
 
 
@@ -187,9 +188,12 @@ void svkLCModelRawWriter::WriteFiles()
     //  In this case we only want to loop over dimensions other than the time dimension, so set 
     //  time to a single value in this vector:
 
+    this->InitQuantificationMask();
+
     int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
     for (int frame = 0; frame < numFrames; frame++) {
-        string frameNumber = svkTypeUtils::IntToString(frame); 
+
+        string frameNumber = svkTypeUtils::IntToString(frame + 1); 
         string fileRootFrame = fileRoot + "_" + frameNumber; 
         ofstream controlOut( ( fileRootFrame + controlExtension ).c_str() );
         ofstream rawOut(   ( fileRootFrame + rawExtension ).c_str() );
@@ -258,9 +262,19 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
                 int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex(dimensionVector, indexVector); 
                 fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID) );
 
+                if ( this->quantificationMask[cellID] == 1 ) {
+                    cout << "fit: " << x << " " << y << " " << z << endl;
+                }
+
                 for (int i = 0; i < specPts; i++) {
 
-                    fa->GetTupleValue(i, dataTuple);
+                    if ( this->quantificationMask[cellID] == 1 ) {
+                        fa->GetTupleValue(i, dataTuple);
+                        cout << "cellID(" << cellID << ") tup: " << i << " " << dataTuple[0] << endl;
+                    } else {
+                        dataTuple[0] = 0; 
+                        dataTuple[1] = 0; 
+                    }
 
                     //*out << " " ;
                     for (int j = 0; j < numComponents; j++) {
@@ -276,6 +290,30 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
 
     delete[] dataTuple; 
 
+}
+
+
+/*!
+ */
+void svkLCModelRawWriter::InitQuantificationMask()
+{
+    //  Determines binary mask (quantificationMask) indicating whether a given voxel 
+    //  should be quantified (1) or not (0). Usually this is based on whether a specified 
+    //  fraction of the voxel inside the selected volume. 
+    if ( this->quantificationMask == NULL ) {
+        int numVoxels[3];
+        this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
+        int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+        cout << " TOTAL VOXELS: " << totalVoxels << endl;
+        this->quantificationMask = new short[totalVoxels];
+
+        float selectedVolumeFraction = 0.5; 
+        svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetSelectionBoxMask(
+            this->quantificationMask,
+            selectedVolumeFraction
+        );
+
+    }
 }
 
 
@@ -318,9 +356,11 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  ===========================================================
     //  NDSLIC (integer) (“Number of data slices”) The number of slices in the CSI data
     //  set.
+    //  I believe this is the number of slices in the raw file, which for us will be 1.
     //  Default: NDSLIC = 1
     //  ===========================================================
     int numSlices = hdr->GetNumberOfSlices();  
+    numSlices = 1; 
  
     //  ===========================================================
     //  You specify the range (rectangular subset) of voxels to be analyzed by LCModel with:
@@ -548,8 +588,8 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
         *out << " CHKEEP(" << i + 1 << ") = " << chKeepArray[i] << endl;
     }
     //  =====================================================
-    *out << " ISLICE    = "   << frameNumber << endl;
-    *out << " NDSLIC    = "   << setprecision(0) << 1   <<  endl;
+    *out << " ISLICE    = "   << 1 << endl;
+    //*out << " ISLICE    = "   << frameNumber << endl;
     //*out << " NDSLIC    = "   << setprecision(0) << numSlices     <<  endl;
     *out << " NDROWS    = "   << setprecision(0) << numRows       <<  endl;
     *out << " NDCOLS    = "   << setprecision(0) << numCols       <<  endl;
