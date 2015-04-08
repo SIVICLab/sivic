@@ -346,11 +346,11 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
-    svk_lcmodel
-    svk_lcmodel.cc
+    svk_lcmodel_writer
+    svk_lcmodel_writer.cc
 )
 TARGET_LINK_LIBRARIES(
-    svk_lcmodel
+    svk_lcmodel_writer
 	${SVK_LIBS}
 )
 ADD_EXECUTABLE(
