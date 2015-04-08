@@ -41,11 +41,14 @@
 
 
 #include <svkLCModelCSVReader.h>
+#include <svkImageReaderFactory.h>
+#include <svkString.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
 #include <vtkSmartPointer.h>
 #include <vtkDelimitedTextReader.h>
 #include <vtkTable.h>
+#include <vtkStringToNumeric.h>
 
 #include <sys/stat.h>
 
@@ -69,6 +72,11 @@ svkLCModelCSVReader::svkLCModelCSVReader()
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
+
+    this->metName = ""; 
+
+    //  3 required input ports: 
+    this->SetNumberOfInputPorts(1);
 
 }
 
@@ -99,51 +107,21 @@ int svkLCModelCSVReader::CanReadFile(const char* fname)
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
         if ( 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".byt"  ||
-            fileToCheck.substr( fileToCheck.size() - 5 ) == ".int2" || 
-            fileToCheck.substr( fileToCheck.size() - 5 ) == ".real" || 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".idf" 
+            fileToCheck.substr( fileToCheck.size() - 4 ) == ".csv"  
         )  {
             FILE *fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
-                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's a UCSF Volume File: " << fileToCheck);
+                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's an LCModel CSV File: " << fileToCheck);
                 return 1;
             }
         } else {
-            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a UCSF Volume File: " << fileToCheck);
+            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a LCModel CSV File: " << fileToCheck);
             return 0;
         }
     } else {
         vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): s NOT a valid file: " << fileToCheck);
         return 0;
-    }
-}
-
-
-
-/*!
- *  Reads the IDf data file (.byt, .int2, .real)
- */
-void svkLCModelCSVReader::ReadVolumeFile()
-{
-
-    vtkDebugMacro( << this->GetClassName() << "::ReadVolumeFile()" );
-
-    svkImageData* data = this->GetOutput(); 
-
-    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
-
-        vtkstd::string volFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) );
-        int dataUnitSize; 
-        vtkDataArray* array;
-        array =  vtkFloatArray::New();
-        volFileName.append( ".real" );
-        dataUnitSize = 4;
-
-        // We can now get rid of of our local reference to the array
-        array->Delete();
-
     }
 }
 
@@ -156,49 +134,34 @@ void svkLCModelCSVReader::ReadVolumeFile()
 void svkLCModelCSVReader::ExecuteData(vtkDataObject* output)
 {
 
-    this->FileNames = vtkStringArray::New();
-    this->FileNames->DeepCopy(this->tmpFileNames);
-    this->tmpFileNames->Delete();
-    this->tmpFileNames = NULL;
-
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    if ( this->GetFileNames()->GetNumberOfValues() ) {
+    //  Create the template data object by  
+    //  extractng an svkMriImageData from the input svkMrsImageData object
+    //  Use an arbitrary point for initialization of scalars.  Actual data 
+    //  will be overwritten by algorithm. 
+    svkMriImageData::SafeDownCast( this->GetOutput() ); 
+    this->GetImageDataInput(0); 
+    
+    svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
+                svkMriImageData::SafeDownCast( this->GetOutput() ),
+                0,
+                0,
+                0,
+                0,
+                this->GetSeriesDescription(),
+                VTK_DOUBLE
+    );
 
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
-        struct stat fs;
-        if ( stat(this->GetFileNames()->GetValue(0), &fs) ) {
-            vtkErrorMacro("Unable to open file " << vtkstd::string(this->GetFileNames()->GetValue(0)) );
-            return;
-        }
+    //  Now map the csv info into the pixel data and done.
+    //this->GetOutput()->GetDcmHeader()->PrintDcmHeader();  
+    
+    this->ParseCSVFiles(); 
 
-        this->ReadVolumeFile();
 
-        this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::REAL );
-        double imaginaryRange[2] = {0,0}; 
-
-        // Imaginary values are zeroes-- since images only have real components
-        this->GetOutput()->SetDataRange( imaginaryRange, svkImageData::IMAGINARY );
-
-        // Magnitudes are the same as the reals since the imaginaries are zero
-        this->GetOutput()->SetDataRange( data->GetScalarRange(), svkImageData::MAGNITUDE );
-    }
-
-    /* 
-     * We need to make a shallow copy of the output, otherwise we would have it
-     * registered twice to the same reader which would cause the reader to never delete.
-     */
-    double dcos[3][3];
-    this->GetOutput()->GetDcmHeader()->GetDataDcos( dcos );
-    this->GetOutput()->SetDcos(dcos); 
-
-    //  SetNumberOfIncrements is supposed to call this, but only works if the data has already
-    //  been allocated. but that requires the number of components to be specified. 
-    this->GetOutput()->GetIncrements(); 
-    this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
-
+   
 }
 
 
@@ -215,71 +178,25 @@ void svkLCModelCSVReader::ExecuteInformation()
         return;
     }
 
-    if ( this->FileName ) {
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << FileName );
-
-        vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
-        cout << "FN: " << this->FileName << endl;
-        csvReader->SetFileName(this->FileName); 
-        csvReader->SetFieldDelimiterCharacters(", ");
-        //csvReader->SetStringDelimiter(' ');
-        csvReader->SetHaveHeaders(true);
-        csvReader->DetectNumericColumnsOn();
-        csvReader->Update();
-        vtkTable* table = csvReader->GetOutput();
-        //table->Dump();
-        int numCols = table->GetNumberOfColumns() ; 
-        int numRows = table->GetNumberOfRows() ; 
-        cout << "NC: " << numCols  << endl; 
-        cout << "NR: " << numRows  << endl; 
-        for ( int i = 0; i < numCols; i++ ) {
-            cout << "COL NAME: " << table->GetColumnName(i) << endl;
-        }
-
-        string colName = "NAA"; 
-        vtkFloatArray* array = static_cast<vtkFloatArray*>( table->GetColumnByName( colName.c_str() ) ); 
-        if ( array == NULL ) {
-            cout << "ERROR:  no column " << colName << endl;
-            exit(1); 
-        }
-        cout << "NUM TUPS: " << array->GetNumberOfTuples() << endl;; 
-        for ( int i = 0; i < numRows; i++ ) {
-            cout << "Row val: " << array->GetTuple1(i) << endl;
-        }
-
-        csvReader->Print(cout); 
-
-        struct stat fs;
-        if ( stat(this->FileName, &fs) ) {
-            vtkErrorMacro("Unable to open file " << this->FileName );
-            return;
-        }
-exit(0);
-        this->InitDcmHeader();
-        this->SetupOutputInformation();
-    }
-
-    //  This is a workaround required since the vtkImageAlgo executive
-    //  for the reder resets the Extent[5] value to the number of files
-    //  which is not correct for 3D multislice volume files. So store
-    //  the files in a temporary array until after ExecuteData has been
-    //  called, then reset the array.
-    this->tmpFileNames = vtkStringArray::New();
-    this->tmpFileNames->DeepCopy(this->FileNames);
-    this->FileNames->Delete();
-    this->FileNames = NULL;
-
 }
 
+
+/*!
+ *
+ */
+string svkLCModelCSVReader::GetSeriesDescription()
+{
+    string seriesDescription = "LCModel Out: "; 
+    seriesDescription.append( this->metName );  
+    return seriesDescription; 
+}
 
 /*!
  *  *  Returns the file root without extension
  *   */
 svkDcmHeader::DcmPixelDataFormat svkLCModelCSVReader::GetFileType()
 {
-
     return svkDcmHeader::SIGNED_FLOAT_4;
-
 }
 
 
@@ -292,22 +209,163 @@ void svkLCModelCSVReader::InitDcmHeader()
  *  Read IDF header fields into a string STL map for use during initialization 
  *  of DICOM header by Init*Module methods. 
  */
-void svkLCModelCSVReader::ParseCSV()
+void svkLCModelCSVReader::ParseCSVFiles()
 {
    
     this->GlobFileNames();
 
+    for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-    try { 
+        string csvFileName = this->GetFileNames()->GetValue( fileIndex );
+        cout << "CSV NAME: " << csvFileName << endl;
 
-        int fileIndex = 0;
-        //vtkstd::string currentIdfFileName = this->GetFileRoot( this->GetFileNames()->GetValue( fileIndex ) ) + ".idf";
+        vtkDebugMacro( << this->GetClassName() << " FileName: " << csvFileName );
+
+        struct stat fs;
+        if ( stat( csvFileName.c_str(), &fs) ) {
+            vtkErrorMacro("Unable to open file " << csvFileName );
+            return;
+        }
+
+        vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
+        csvReader->SetFieldDelimiterCharacters(", ");
+        csvReader->SetStringDelimiter(' ');
+        csvReader->SetMergeConsecutiveDelimiters(true); 
+        csvReader->SetHaveHeaders(true);
+        //csvReader->DetectNumericColumnsOn();
+        csvReader->SetFileName( csvFileName.c_str() ); 
+        csvReader->Update();
+
+        vtkStringToNumeric* numeric = vtkStringToNumeric::New();
+        numeric->SetInputConnection ( csvReader->GetOutputPort());
+        numeric->Update();
+        vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
+        //vtkTable* table = csvReader->GetOutput();
+        //cout << *table << endl;
+        
+        cout << "==========================================" << endl;
+        //table->Dump();
+        cout << "==========================================" << endl;
+        int numCols = table->GetNumberOfColumns() ; 
+        int numRows = table->GetNumberOfRows() ; 
+
+        //cout << "NC: " << numCols  << endl; 
+        //cout << "NR: " << numRows  << endl; 
+        for ( int i = 0; i < numCols; i++ ) {
+            cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
+        }
+
+        //  =============================
+        //  initialize the row vals 
+        //  =============================
+        if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )) ) {
+            cout << "ERROR:  no column Row" <<  endl;
+            exit(1); 
+        } else {
+            this->csvRowIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )); 
+        }
+
+        //  =============================
+        //  initialize the col vals
+        //  =============================
+        if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )) ) {
+            cout << "ERROR:  no column: Col" <<  endl;
+            exit(1); 
+        } else {
+            this->csvColIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )); 
+        }
 
 
-    } catch (const exception& e) {
-        cerr << "ERROR opening or reading volume file (" << this->GetFileName() << "): " << e.what() << endl;
+        //  =============================
+        //  initialize the pixel values
+        //  =============================
+        string colName = this->metName; 
+        if (!vtkDoubleArray::SafeDownCast(table->GetColumnByName(colName.c_str() )) ) {
+            cout << "ERROR:  no column " << colName << endl;
+            exit(1); 
+        } else {
+            this->csvPixelValues = vtkDoubleArray::SafeDownCast( table->GetColumnByName(colName.c_str() )) ; 
+        }
+
+        //  =============================
+        //  initialize a slice index from 
+        //  the csv file name: 
+        //  =============================
+        int sliceIndex = 3;  
+        cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
+        for ( int i = 0; i < numRows; i++ ) {
+            cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
+        }
+
+        //  =============================
+        svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+        svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
+        int voxels[3];  
+        hdr->GetSpatialDimensions( &dimVector, voxels ); 
+        cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
+        int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
+
+        //  create an index dimVector and set the values of slice, row, and col from the values in teh csv
+        //  once these are set, then determine the voxel index for those values and set the value of 
+        //  the metMapArray for that index.  
+        vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
+
+        for (int i = 0; i < numVoxels; i++ ) {
+            metMapArray->SetTuple1(i, 0);
+        }
+
+        svkDcmHeader::DimensionVector indexVector = dimVector; 
+
+        for (int i = 0; i < numRows; i++ ) {
+            int rowIndex     = this->csvRowIndex->GetTuple1(i);
+            int colIndex     = this->csvColIndex->GetTuple1(i);
+            float voxelValue =  this->csvPixelValues->GetTuple1(i) ;
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, colIndex);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);
+            int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
+            cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << voxelValue  << endl;
+            metMapArray->SetTuple1(cellID, voxelValue);
+        }
+
+    }
+}
+
+
+/*!
+ *
+ */
+void svkLCModelCSVReader::SetMRSFileName( string mrsFileName )
+{
+    this->mrsFileName = mrsFileName; 
+   
+    svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
+    svkImageReader2* mrsReader = readerFactory->CreateImageReader2( mrsFileName.c_str() );
+
+    if ( mrsReader == NULL ) {
+        cerr << "Can not determine appropriate reader for: " << mrsFileName << endl;
+        exit(1);
     }
 
+    mrsReader->SetFileName( mrsFileName.c_str() );
+    mrsReader->Update();
+    this->SetInputConnection( 0, mrsReader->GetOutputPort() );
+
+    readerFactory->Delete(); 
+    mrsReader->Delete(); 
+}
+
+
+/*!
+ *
+ */
+void svkLCModelCSVReader::SetMetName( string metName )
+{
+    this->metName = metName; 
+    //svkString* metNameString = svkString::New(); 
+    //metNameString->SetValue( this->metName ); 
+    //this->SetInputConnection( 2, metNameString );
+    //metNameString->Delete(); 
 }
 
 
@@ -321,4 +379,31 @@ int svkLCModelCSVReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInf
     return 1;
 }
 
+
+/*!
+ *  *  input ports 0 - 2 are required. All input ports are MRI data. 
+ *      0:  MRS template (required)
+ *      1:  CSV file name (required) 
+ *      2:  met name (required) 
+ */
+int svkLCModelCSVReader::FillInputPortInformation( int port, vtkInformation* info )
+{
+    //  MRS Object
+    if ( port == 0  ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData");
+    }
+
+    /*
+    //  CSV Root Name
+    if ( port == 1  ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkString");
+    }
+
+    //  Met Name
+    if ( port == 2  ) {
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkString");
+    }
+    */
+    return 1;
+}
 

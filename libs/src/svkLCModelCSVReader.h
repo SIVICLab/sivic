@@ -74,8 +74,9 @@ class svkLCModelCSVReader : public svkImageReader2
         }
 
         //  Methods:
-        virtual int             CanReadFile(const char* fname);
-        void                    OnlyReadHeader(bool onlyReadHeader);
+        virtual int             CanReadFile( const char* fname );
+        void                    SetMetName( string metName );
+        void                    SetMRSFileName( string mrsFileName );
 
     protected:
 
@@ -83,6 +84,7 @@ class svkLCModelCSVReader : public svkImageReader2
         ~svkLCModelCSVReader();
 
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
+        virtual int                              FillInputPortInformation( int port, vtkInformation* info ); 
         virtual void                             ExecuteInformation();
         virtual void                             ExecuteData(vtkDataObject *output);
         virtual svkDcmHeader::DcmPixelDataFormat GetFileType();
@@ -91,16 +93,19 @@ class svkLCModelCSVReader : public svkImageReader2
     private:
 
         //  Methods:
-        void            ReadVolumeFile();
-        void            ParseCSV();
+        void            ParseCSVFiles();
         virtual void    InitDcmHeader();
-
-
+        string          GetSeriesDescription();
 
 
         //  Members:
         void*                                   pixelData; 
         vtkStringArray*                         tmpFileNames;
+        vtkDoubleArray*                         csvPixelValues; 
+        vtkIntArray*                            csvColIndex; 
+        vtkIntArray*                            csvRowIndex; 
+        string                                  metName;
+        string                                  mrsFileName;
 
 };
 
