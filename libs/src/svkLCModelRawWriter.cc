@@ -263,14 +263,14 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
                 fa =  vtkFloatArray::SafeDownCast( cellData->GetArray( cellID) );
 
                 if ( this->quantificationMask[cellID] == 1 ) {
-                    cout << "fit: " << x << " " << y << " " << z << endl;
+                    //cout << "fit: " << x << " " << y << " " << z << endl;
                 }
 
                 for (int i = 0; i < specPts; i++) {
 
                     if ( this->quantificationMask[cellID] == 1 ) {
                         fa->GetTupleValue(i, dataTuple);
-                        cout << "cellID(" << cellID << ") tup: " << i << " " << dataTuple[0] << endl;
+                        //cout << "cellID(" << cellID << ") tup: " << i << " " << dataTuple[0] << endl;
                     } else {
                         dataTuple[0] = 0; 
                         dataTuple[1] = 0; 
@@ -304,7 +304,7 @@ void svkLCModelRawWriter::InitQuantificationMask()
         int numVoxels[3];
         this->GetImageDataInput(0)->GetNumberOfVoxels(numVoxels);
         int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-        cout << " TOTAL VOXELS: " << totalVoxels << endl;
+        //cout << " TOTAL VOXELS: " << totalVoxels << endl;
         this->quantificationMask = new short[totalVoxels];
 
         float selectedVolumeFraction = 0.5; 
