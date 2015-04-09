@@ -213,15 +213,15 @@ void svkLCModelCSVReader::ParseCSVFiles()
     this->GlobFileNames();
 
     vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
-    cout << "MMA: " << metMapArray << endl;
-    cout << "MMA: " << *metMapArray << endl;
-    cout << "this OUTPUT" << *(this->GetOutput()) << endl;
+    //cout << "MMA: " << metMapArray << endl;
+    //cout << "MMA: " << *metMapArray << endl;
+    //cout << "this OUTPUT" << *(this->GetOutput()) << endl;
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
     int voxels[3];  
     hdr->GetSpatialDimensions( &dimVector, voxels ); 
-    cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
+    //cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
     int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
     for (int i = 0; i < numVoxels; i++ ) {
         metMapArray->SetTuple1(i, 0);
@@ -257,9 +257,9 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //vtkTable* table = csvReader->GetOutput();
         //cout << *table << endl;
         
-        cout << "==========================================" << endl;
+        //cout << "==========================================" << endl;
         //table->Dump();
-        cout << "==========================================" << endl;
+        //cout << "==========================================" << endl;
         int numCols = table->GetNumberOfColumns() ; 
         int numRows = table->GetNumberOfRows() ; 
 
@@ -309,10 +309,10 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  the csv file name: 
         //  =============================
         int sliceIndex = fileIndex;  
-        cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
-        for ( int i = 0; i < numRows; i++ ) {
-            cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
-        }
+        //cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
+        //for ( int i = 0; i < numRows; i++ ) {
+            //cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
+        //}
 
         //  =============================
 
@@ -330,7 +330,7 @@ void svkLCModelCSVReader::ParseCSVFiles()
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
             svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);
             int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
-            cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
+            //cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
             metMapArray->SetTuple1(cellID, voxelValue);
         }
 
