@@ -195,6 +195,8 @@ void svkLCModelRawWriter::WriteFiles()
 
         string frameNumber = svkTypeUtils::IntToString(frame + 1); 
         string fileRootFrame = fileRoot + "_" + frameNumber; 
+        string controlFileName = fileRootFrame + controlExtension; 
+        cout << "lcmodel < " << controlFileName << endl; 
         ofstream controlOut( ( fileRootFrame + controlExtension ).c_str() );
         ofstream rawOut(   ( fileRootFrame + rawExtension ).c_str() );
         if( !controlOut || !rawOut ) {
