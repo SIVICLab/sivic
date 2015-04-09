@@ -70,6 +70,7 @@ class svkLCModelRawWriter : public svkImageWriter
         vtkDataObject*  GetInput() { return this->GetInput(0); };
         svkImageData*   GetImageDataInput(int port);
         void            SetBasisFileName( string fileName );
+        void            UseSingleRawFile(bool useSingleRawFile); 
         virtual void    Write();
 
 
@@ -95,8 +96,9 @@ class svkLCModelRawWriter : public svkImageWriter
                          ); 
         void            InitQuantificationMask(); 
         void            InitRawHeader(ofstream* out, string fileName);
-        void            InitControlHeader(ofstream* out, string fileRootName, string frameNumber); 
+        void            InitControlHeader(ofstream* out, string fileRootName, string rawRoot, int frameNumber); 
         short*          quantificationMask;
+        bool            singleRawFile;
 
 
 };

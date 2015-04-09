@@ -71,6 +71,7 @@ svkLCModelRawWriter::svkLCModelRawWriter()
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
     this->basisFileName = ""; 
     this->quantificationMask = NULL;
+    this->singleRawFile = true;
 }
 
 
@@ -165,10 +166,6 @@ void svkLCModelRawWriter::WriteFiles()
 {
     vtkDebugMacro( << this->GetClassName() << "::WriteData()" );
 
-    string rawExtension     = ".raw"; 
-    string controlExtension = ".control"; 
-
-    string fileRoot = string(this->InternalFileName);  
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
     string representation = hdr->GetStringValue( "DataRepresentation" );
@@ -191,30 +188,69 @@ void svkLCModelRawWriter::WriteFiles()
     this->InitQuantificationMask();
 
     int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
+
+    ofstream controlOut; 
+    ofstream rawOut; 
+    string rawExtension     = ".raw"; 
+    string controlExtension = ".control"; 
+    string fileRoot = string(this->InternalFileName);  
+
+    if ( this->singleRawFile == true ) {
+        rawOut.open(   ( fileRoot + rawExtension ).c_str() );
+        if( !rawOut ) {
+            throw runtime_error("Cannot open .raw file for writing");
+        }
+        this->InitRawHeader( &rawOut, fileRoot );
+    } 
+
+    //  Always have separate control files: 
     for (int frame = 0; frame < numFrames; frame++) {
 
-        string frameNumber = svkTypeUtils::IntToString(frame + 1); 
+        int frameNumberInt = frame + 1 ; 
+        string frameNumber = svkTypeUtils::IntToString( frameNumberInt ); 
         string fileRootFrame = fileRoot + "_" + frameNumber; 
         string controlFileName = fileRootFrame + controlExtension; 
         cout << "lcmodel < " << controlFileName << endl; 
-        ofstream controlOut( ( fileRootFrame + controlExtension ).c_str() );
-        ofstream rawOut(   ( fileRootFrame + rawExtension ).c_str() );
-        if( !controlOut || !rawOut ) {
-            throw runtime_error("Cannot open .raw or .control file for writing");
+
+        controlOut.open( ( fileRootFrame + controlExtension ).c_str() );
+        if( !controlOut ) {
+            throw runtime_error("Cannot open .control file for writing");
         }
 
-        //  Initialize meta data in .raw file 
-        this->InitRawHeader( &rawOut, fileRootFrame );
+        //  Unique raw file for each slice/frame
+        if ( this->singleRawFile == false ) {
+            rawOut.open(   ( fileRootFrame + rawExtension ).c_str() );
+            if( !rawOut ) {
+                throw runtime_error("Cannot open .raw file for writing");
+            }
+            this->InitRawHeader( &rawOut, fileRootFrame );
+        }
 
+        //  ========================================
+        //  Initialize meta data in .raw file 
+        //  ========================================
         //  spec data to .raw file 
         hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
         this->InitSpecData(&rawOut, &dimensionVector, &loopVector, frame); 
 
-        this->InitControlHeader( &controlOut, fileRootFrame, frameNumber);
+        //  ========================================
+        //  Initialize the .control file 
+        //  ========================================
+        if ( this->singleRawFile == false ) {
+            this->InitControlHeader( &controlOut, fileRootFrame, fileRootFrame, frameNumberInt);
+        } else {
+            this->InitControlHeader( &controlOut, fileRootFrame, fileRoot, frameNumberInt);
+        }
 
         controlOut.close();
-        rawOut.close(); 
+        if ( this->singleRawFile == false ) {
+            rawOut.close(); 
+        }
     }
+
+    if ( this->singleRawFile == true ) {
+        rawOut.close(); 
+    } 
 
 }
 
@@ -337,7 +373,7 @@ void svkLCModelRawWriter::InitQuantificationMask()
  *  IROWSK(6) = 19
  *  ....   
  */
-void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, string frameNumber)
+void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, string rawRootName, int frameNumber)
 {
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
 
@@ -361,8 +397,15 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  I believe this is the number of slices in the raw file, which for us will be 1.
     //  Default: NDSLIC = 1
     //  ===========================================================
-    int numSlices = hdr->GetNumberOfSlices();  
-    numSlices = 1; 
+    int numSlices;
+    int currentSlice; 
+    if ( this->singleRawFile == true) {
+        numSlices = hdr->GetNumberOfSlices();  
+        currentSlice = frameNumber; 
+    } else {
+        numSlices = 1; 
+        currentSlice = 1; 
+    }
  
     //  ===========================================================
     //  You specify the range (rectangular subset) of voxels to be analyzed by LCModel with:
@@ -536,7 +579,7 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  ===========================================================
     //  FILRAW (character*255) the pathname of the .RAW file to be input.
     //  ===========================================================
-    string fileRaw = "'" + fileRootName + ".raw'";  
+    string fileRaw = "'" + rawRootName + ".raw'";  
 
     //  ===========================================================
     //  FILBAS (character*255) the pathname of the .BASIS file to be input.
@@ -590,9 +633,8 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
         *out << " CHKEEP(" << i + 1 << ") = " << chKeepArray[i] << endl;
     }
     //  =====================================================
-    *out << " ISLICE    = "   << 1 << endl;
-    //*out << " ISLICE    = "   << frameNumber << endl;
-    //*out << " NDSLIC    = "   << setprecision(0) << numSlices     <<  endl;
+    *out << " ISLICE    = "   << currentSlice << endl;
+    *out << " NDSLIC    = "   << setprecision(0) << numSlices     <<  endl;
     *out << " NDROWS    = "   << setprecision(0) << numRows       <<  endl;
     *out << " NDCOLS    = "   << setprecision(0) << numCols       <<  endl;
     *out << " ICOLST    = "   << setprecision(0) << colStart      <<  endl;
@@ -773,6 +815,12 @@ int svkLCModelRawWriter::FillInputPortInformation( int vtkNotUsed(port), vtkInfo
 vtkDataObject* svkLCModelRawWriter::GetInput(int port)
 {
     return this->GetExecutive()->GetInputData(port, 0);
+}
+
+
+void svkLCModelRawWriter::UseSingleRawFile( bool useSingleRawFile ) 
+{
+    this->singleRawFile = useSingleRawFile;
 }
 
 
