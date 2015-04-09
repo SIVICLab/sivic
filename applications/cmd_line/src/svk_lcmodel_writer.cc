@@ -79,14 +79,14 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_lcmodel_writer -i input_file_name -o output_file_name --basis basis_file_name    \n"; 
     usemsg += "                   [ --one_time_pt ]                                                 \n";
-    usemsg += "                   [ --single ]                                                      \n";
+    usemsg += "                   [ --singleRawFile bool]                                           \n";
     usemsg += "                   [ -bh ]                                                           \n";
     usemsg += "                                                                                     \n";  
     usemsg += "   -i                name    Name of file to convert.                                \n"; 
     usemsg += "   -o                name    Root name of outputfile.                                \n";
     usemsg += "   --basis           name    Name of the basis file.                                 \n";
     usemsg += "   -b                        Set up for selection box analysis only.                 \n";
-    usemsg += "   --single                  Only converts specified file                            \n";
+    usemsg += "   --multiRaw                write out separate raw file for each slice. ice.        \n"; 
     usemsg += "   -h                        Print this help mesage.                                 \n";  
     usemsg += "                                                                                     \n";  
     usemsg += "Converts an MRS file into .raw and .control files for input to LCModel.              \n";  
@@ -95,22 +95,23 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     string  basisFileName;
-    bool   onlyLoadSingleFile = false;
+    bool    writeMultiRawFile = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
         FLAG_BASIS_FILE = 0, 
-        FLAG_SINGLE
+        FLAG_MULTI_RAW_FILE
     }; 
 
     static struct option long_options[] =
     {
         /* This option sets a flag. */
         {"basis",               required_argument, NULL,  FLAG_BASIS_FILE}, 
-        {"single",              no_argument,       NULL,  FLAG_SINGLE},
+        {"multiRawFile",        no_argument,       NULL,  FLAG_MULTI_RAW_FILE},
         {0, 0, 0, 0}
     };
+
 
     // ===============================================  
     //  Process flags and arguments
@@ -128,8 +129,8 @@ int main (int argc, char** argv)
             case FLAG_BASIS_FILE:
                 basisFileName.assign(optarg);
                 break;
-            case FLAG_SINGLE:
-                onlyLoadSingleFile = true;
+            case FLAG_MULTI_RAW_FILE:
+                writeMultiRawFile = true;
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -173,9 +174,6 @@ int main (int argc, char** argv)
     }
 
     reader->SetFileName( inputFileName.c_str() );
-    if ( onlyLoadSingleFile == true ) {
-        reader->OnlyReadOneInputFile();
-    }
     reader->Update();
 
 
@@ -204,6 +202,10 @@ int main (int argc, char** argv)
     writer->SetFileName( outputFileName.c_str() );
     writer->SetInput( svkMrsImageData::SafeDownCast( currentImage ) );
     writer->SetBasisFileName( basisFileName ); 
+    if ( writeMultiRawFile == true ) {
+        writer->UseSingleRawFile( false ); 
+    }
+
 
     // ===============================================  
     //  Set the input command line into the data set 

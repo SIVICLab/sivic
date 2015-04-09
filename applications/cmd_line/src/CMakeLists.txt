@@ -665,7 +665,8 @@ SET(APPS
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
-    svk_lcmodel
+    svk_lcmodel_reader
+    svk_lcmodel_writer
     svk_spec_diff 
     svk_integrate_dynamic 
     svk_quantify 
