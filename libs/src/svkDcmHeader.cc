@@ -2634,6 +2634,8 @@ int svkDcmHeader::InitDerivedMRIHeader(svkDcmHeader* mri, vtkIdType dataType, vt
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1040 PatientAddress 
+ *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
@@ -2667,6 +2669,8 @@ void svkDcmHeader::Deidentify( PHIType phiType )
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1040 PatientAddress 
+ *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
@@ -2700,6 +2704,8 @@ void svkDcmHeader::Deidentify( PHIType phiType, string id )
  *      0010,0010 PatientName
  *      0010,0020 PatientID
  *      0010,0030 PatientBirthDate
+ *      0010,1040 PatientAddress 
+ *      0010,2154 PatientTelephoneNumbers
  *      0020,000D StudyInstanceUID
  *      0020,000E SeriesInstanceUID
  *      0020,0010 StudyID
@@ -2715,7 +2721,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
 
     //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED || phiType == PHI_LIMITED ) {
-
+            string emptyString = "";
             this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
             this->ModifyValueRecursive( "AccessionNumber",               studyId); 
             this->ModifyValueRecursive( "InstitutionName",               studyId); 
@@ -2723,6 +2729,8 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
             this->ModifyValueRecursive( "PatientName",                   patientId); 
             this->ModifyValueRecursive( "PatientID",                     patientId); 
+            this->ModifyValueRecursive( "PatientAddress",                emptyString); 
+            this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
             this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
             this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
             this->ModifyValueRecursive( "StudyID",                       studyId); 
@@ -2741,7 +2749,7 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->ModifyValueRecursive( "SeriesDate",                    emptyString); 
             this->ModifyValueRecursive( "AcquisitionDate",               emptyString); 
             this->ModifyValueRecursive( "ContentDate",                   emptyString); 
-            this->SetValue( "PatientBirthDate",              emptyString); 
+            this->SetValue( "PatientBirthDate",                          emptyString); 
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
