@@ -2729,8 +2729,12 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
             this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
             this->ModifyValueRecursive( "PatientName",                   patientId); 
             this->ModifyValueRecursive( "PatientID",                     patientId); 
-            this->ModifyValueRecursive( "PatientAddress",                emptyString); 
-            this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
+            if( this->ElementExists( "PatientAddress" ) ) {
+                this->ModifyValueRecursive( "PatientAddress",                emptyString); 
+            }
+            if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
+                this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
+            }
             this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
             this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
             this->ModifyValueRecursive( "StudyID",                       studyId); 
