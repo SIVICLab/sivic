@@ -52,7 +52,7 @@
 #include <svkMriImageData.h>
 #include <svkImageAlgorithm.h>
 #include <svkDcmHeader.h>
-#include <svkDSCMap.h>
+#include <svkDynamicImageMap.h>
 
 
 namespace svk {
@@ -65,13 +65,13 @@ using namespace std;
  *  Class to derive peak height and normalized peak height map from a DSC image in delta R2* 
  *  representation.  
  */
-class svkDSCRecovery: public svkDSCMap
+class svkDSCRecovery: public svkDynamicImageMap
 {
 
     public:
 
         static svkDSCRecovery* New();
-        vtkTypeRevisionMacro( svkDSCRecovery, svkDSCMap);
+        vtkTypeRevisionMacro( svkDSCRecovery, svkDynamicImageMap);
 
 
     protected:
