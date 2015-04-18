@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_QUANTIFY_DSC_H
-#define SVK_QUANTIFY_DSC_H
+#ifndef SVK_DSC_QUANTIFY_H
+#define SVK_DSC_QUANTIFY_H
 
 
 #include <vtkObject.h>
@@ -67,13 +67,13 @@ using namespace std;
  *  This class uses other algorithms to perform the necessary quantification and outputs an array
  *  of dsc maps (svkMriImageData objects). 
  */
-class svkQuantifyDSC: public svkImageAlgorithm
+class svkDSCQuantify: public svkImageAlgorithm
 {
 
     public:
 
-        static svkQuantifyDSC* New();
-        vtkTypeRevisionMacro( svkQuantifyDSC, svkImageAlgorithm);
+        static svkDSCQuantify* New();
+        vtkTypeRevisionMacro( svkDSCQuantify, svkImageAlgorithm);
 
         vtkstd::vector< svkMriImageData* >*                 GetDSCMaps();
         vtkstd::vector< vtkstd::vector< vtkstd::string > >  GetRegionNameVector();
@@ -82,8 +82,8 @@ class svkQuantifyDSC: public svkImageAlgorithm
 
     protected:
 
-        svkQuantifyDSC();
-        ~svkQuantifyDSC();
+        svkDSCQuantify();
+        ~svkDSCQuantify();
 
         virtual int             RequestInformation(
                                     vtkInformation* request,
@@ -130,5 +130,5 @@ class svkQuantifyDSC: public svkImageAlgorithm
 }   //svk
 
 
-#endif //SVK_QUANTIFY_DSC_H
+#endif //SVK_DSC_QUANTIFY_H
 

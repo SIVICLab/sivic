@@ -225,9 +225,9 @@ ADD_LIBRARY(
     svkDSCDeltaR2.cc
     svkImageCopy.cc
     svkQuantifyMetabolites.cc
-    svkQuantifyDSC.cc
+    svkDSCQuantify.cc
     svkMetaboliteMap.cc
-    svkDSCMap.cc
+    svkDynamicImageMap.cc
     svkDSCPeakHeight.cc
     svkDSCRecovery.cc
     svkMetaboliteRatioZScores.cc

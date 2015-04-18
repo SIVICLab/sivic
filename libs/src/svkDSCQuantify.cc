@@ -45,7 +45,7 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <svkImageMathematics.h>
 
-#include <svkQuantifyDSC.h>
+#include <svkDSCQuantify.h>
 #include <svkDSCPeakHeight.h>
 #include <svkDSCRecovery.h>
 #include <svkImageCopy.h>
@@ -58,14 +58,14 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkQuantifyDSC, "$Rev$");
-vtkStandardNewMacro(svkQuantifyDSC);
+vtkCxxRevisionMacro(svkDSCQuantify, "$Rev$");
+vtkStandardNewMacro(svkDSCQuantify);
 
 
 /*!
  *
  */
-svkQuantifyDSC::svkQuantifyDSC()
+svkDSCQuantify::svkDSCQuantify()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -78,7 +78,7 @@ svkQuantifyDSC::svkQuantifyDSC()
 /*!
  *
  */
-svkQuantifyDSC::~svkQuantifyDSC()
+svkDSCQuantify::~svkDSCQuantify()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 }
@@ -87,7 +87,7 @@ svkQuantifyDSC::~svkQuantifyDSC()
 /* 
  *  Parses the XML quantification parameters and generate set of metabolite maps.  
  */
-void svkQuantifyDSC::Quantify()
+void svkDSCQuantify::Quantify()
 {
 
     this->GenerateDSCMaps();
@@ -99,7 +99,7 @@ void svkQuantifyDSC::Quantify()
 /*
  *  Retruns a pointer to the metabolite map vector
  */
-vtkstd::vector< svkMriImageData* >* svkQuantifyDSC::GetDSCMaps()
+vtkstd::vector< svkMriImageData* >* svkDSCQuantify::GetDSCMaps()
 {
     return &(this->dscMapVector);        
 }
@@ -108,7 +108,7 @@ vtkstd::vector< svkMriImageData* >* svkQuantifyDSC::GetDSCMaps()
 /*
  *
  */
-void svkQuantifyDSC::GenerateDSCMaps()
+void svkDSCQuantify::GenerateDSCMaps()
 {
 
     //  Calculate DSC Peak Ht map:
@@ -142,7 +142,7 @@ void svkQuantifyDSC::GenerateDSCMaps()
 /*
  *
  */
-int svkQuantifyDSC::GetIntFromString(vtkstd::string stringVal ) 
+int svkDSCQuantify::GetIntFromString(vtkstd::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -157,7 +157,7 @@ int svkQuantifyDSC::GetIntFromString(vtkstd::string stringVal )
 /*
  *
  */
-float svkQuantifyDSC::GetFloatFromString(vtkstd::string stringVal ) 
+float svkDSCQuantify::GetFloatFromString(vtkstd::string stringVal ) 
 {
  
     istringstream* iss = new istringstream();
@@ -174,7 +174,7 @@ float svkQuantifyDSC::GetFloatFromString(vtkstd::string stringVal )
  *  to the normal appearing white matter values from the 
  *  specific mask. 
  */
-void svkQuantifyDSC::GenerateNormalizedMaps()
+void svkDSCQuantify::GenerateNormalizedMaps()
 {
 
     //  Calculate DSC Peak Ht map:
@@ -197,7 +197,7 @@ void svkQuantifyDSC::GenerateNormalizedMaps()
  *  Resets the origin and extent for correct initialization of output svkMriImageData object from input 
  *  svkMrsImageData object. 
  */
-int svkQuantifyDSC::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDSCQuantify::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
     return 1;
 }
@@ -206,7 +206,7 @@ int svkQuantifyDSC::RequestInformation( vtkInformation* request, vtkInformationV
 /*!
  *  Copy the Dcm Header and Provenance from the input to the output. 
  */
-int svkQuantifyDSC::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDSCQuantify::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     this->dscMapVector.clear();
@@ -220,7 +220,7 @@ int svkQuantifyDSC::RequestData( vtkInformation* request, vtkInformationVector**
  *  Replace ('/') slash character and white space in name attributes with "_div_" 
  *  and "_" respectively so we end up with valid file names. 
  */
-string svkQuantifyDSC::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
+string svkDSCQuantify::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
 {
    
     vtkstd::string outString( inString ) ;
@@ -250,7 +250,7 @@ string svkQuantifyDSC::ReplaceSlashesAndWhiteSpace( vtkstd::string inString)
 /*!
  *
  */
-void svkQuantifyDSC::UpdateProvenance()
+void svkDSCQuantify::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
 }
@@ -259,7 +259,7 @@ void svkQuantifyDSC::UpdateProvenance()
 /*!
  *
  */
-int svkQuantifyDSC::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDSCQuantify::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     return 1;
@@ -269,7 +269,7 @@ int svkQuantifyDSC::FillInputPortInformation( int vtkNotUsed(port), vtkInformati
 /*!
  *  Output from this algo is an svkMriImageData object. 
  */
-int svkQuantifyDSC::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDSCQuantify::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
     return 1;
