@@ -274,7 +274,7 @@ void sivicDSCWidget::ExecuteQuantification()
 
     if( data != NULL ) {
 
-        this->dscQuant = svkQuantifyDSC::New();
+        this->dscQuant = svkDSCQuantify::New();
         this->dscQuant->SetInput( data );
         this->dscQuant->Update();
         vtkstd::vector< svkMriImageData* >* dscMaps = this->dscQuant->GetDSCMaps();

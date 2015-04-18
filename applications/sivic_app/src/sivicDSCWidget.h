@@ -44,7 +44,7 @@
 #include <svkHSVD.h>
 #include <svkDataModel.h>
 #include <svkDSCDeltaR2.h>
-#include <svkQuantifyDSC.h>
+#include <svkDSCQuantify.h>
 #include <svkPlotGridViewController.h>
 #include <svkOverlayViewController.h>
 #include <sivicKWCompositeWidget.h>
@@ -94,7 +94,7 @@ class sivicDSCWidget : public sivicKWCompositeWidget
         void                                ExecuteQuantification();
         static void                         UpdateProgress(vtkObject* subject, unsigned long, void* thisObject, void* callData);
 
-        svkQuantifyDSC*                     dscQuant;
+        svkDSCQuantify*                     dscQuant;
         vtkstd::vector < vtkstd::string >   dscNames;
 
 
