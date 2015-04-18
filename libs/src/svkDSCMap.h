@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_DSC_MAP_H
-#define SVK_DSC_MAP_H
+#ifndef SVK_DYNAMIC_IMAGE_MAP_H
+#define SVK_DYNAMIC_IMAGE_MAP_H
 
 
 #include <vtkObject.h>
@@ -61,15 +61,15 @@ using namespace std;
 
 
 /*! 
- *  Class to derive peak height and normalized peak height map from a DSC image in delta R2* 
- *  representation.  
+ *  Class to derive peak height and normalized peak height map and other maps from a dynamic image.  May be used 
+ *  for DSC, DCE or other similar dynamic imageing acquisitions. 
  */
-class svkDSCMap: public svkImageAlgorithm
+class svkDynamicImageMap: public svkImageAlgorithm
 {
 
     public:
 
-        vtkTypeRevisionMacro( svkDSCMap, svkImageAlgorithm);
+        vtkTypeRevisionMacro( svkDynamicImageMap, svkImageAlgorithm);
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
@@ -79,8 +79,8 @@ class svkDSCMap: public svkImageAlgorithm
 
     protected:
 
-        svkDSCMap();
-        ~svkDSCMap();
+        svkDynamicImageMap();
+        ~svkDynamicImageMap();
 
         virtual int             RequestInformation(
                                     vtkInformation* request,
@@ -100,7 +100,7 @@ class svkDSCMap: public svkImageAlgorithm
 
         virtual void            UpdateProvenance();
         virtual void            GenerateMap() = 0; 
-        double                  GetNoise( float* imgPtr ); 
+        virtual double          GetNoise( float* imgPtr ); 
         double                  GetNormalizationFactor();
         void                    GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept); 
 
@@ -116,5 +116,5 @@ class svkDSCMap: public svkImageAlgorithm
 }   //svk
 
 
-#endif //SVK_DSC_MAP_H
+#endif //SVK_DYNAMIC_IMAGE_MAP_H
 

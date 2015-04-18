@@ -44,19 +44,19 @@
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
-#include <svkDSCMap.h>
+#include <svkDynamicImageMap.h>
 
 
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDSCMap, "$Rev$");
+vtkCxxRevisionMacro(svkDynamicImageMap, "$Rev$");
 
 
 /*!
  *
  */
-svkDSCMap::svkDSCMap()
+svkDynamicImageMap::svkDynamicImageMap()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -73,7 +73,7 @@ svkDSCMap::svkDSCMap()
 /*!
  *
  */
-svkDSCMap::~svkDSCMap()
+svkDynamicImageMap::~svkDynamicImageMap()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 }
@@ -82,7 +82,7 @@ svkDSCMap::~svkDSCMap()
 /*!
  *  Set the series description for the DICOM header of the copy.  
  */
-void svkDSCMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
+void svkDynamicImageMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
 {
     this->newSeriesDescription = newSeriesDescription;
     this->Modified(); 
@@ -93,7 +93,7 @@ void svkDSCMap::SetSeriesDescription( vtkstd::string newSeriesDescription )
  *  Resets the origin and extent for correct initialization of output svkMriImageData object from input 
  *  svkMrsImageData object. 
  */
-int svkDSCMap::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDynamicImageMap::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
@@ -137,7 +137,7 @@ int svkDSCMap::RequestInformation( vtkInformation* request, vtkInformationVector
 /*!
  *  Copy the Dcm Header and Provenance from the input to the output. 
  */
-int svkDSCMap::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
+int svkDynamicImageMap::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     //  Create the template data object by  
@@ -170,7 +170,7 @@ int svkDSCMap::RequestData( vtkInformation* request, vtkInformationVector** inpu
 /*!  
  *  Gets quick noise estimate from points 1-15 (rms)
  */
-double svkDSCMap::GetNoise( float* imgPtr )
+double svkDynamicImageMap::GetNoise( float* imgPtr )
 {
 
     double noise = 0.;
@@ -186,7 +186,7 @@ double svkDSCMap::GetNoise( float* imgPtr )
 /*! 
  *  Zero data
  */
-void svkDSCMap::ZeroData()
+void svkDynamicImageMap::ZeroData()
 {
 
     int numVoxels[3]; 
@@ -203,7 +203,7 @@ void svkDSCMap::ZeroData()
 /*!
  *
  */
-void svkDSCMap::SetNormalize()
+void svkDynamicImageMap::SetNormalize()
 {
     this->normalize = true; 
 };
@@ -213,7 +213,7 @@ void svkDSCMap::SetNormalize()
  *  Normalize peak height values by NAWM peak ht determined from 
  *  mode of peak height map. 
  */
-double svkDSCMap::GetNormalizationFactor()
+double svkDynamicImageMap::GetNormalizationFactor()
 {
 
     //  Get min/max peak ht values for setting up histogram 
@@ -277,7 +277,7 @@ double svkDSCMap::GetNormalizationFactor()
 /*!
  *  Calculates ordinary linear regression )for specified point range
  */
-void svkDSCMap::GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept) 
+void svkDynamicImageMap::GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept) 
 {
 
     vtkFloatArray* perfusionDynamics = vtkFloatArray::SafeDownCast( 
@@ -316,7 +316,7 @@ void svkDSCMap::GetRegression(int voxelID, int startPt, int endPt, double& slope
 /*!
  *
  */
-void svkDSCMap::UpdateProvenance()
+void svkDynamicImageMap::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
 }
@@ -325,7 +325,7 @@ void svkDSCMap::UpdateProvenance()
 /*!
  *
  */
-int svkDSCMap::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDynamicImageMap::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
     return 1;
@@ -335,7 +335,7 @@ int svkDSCMap::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* i
 /*!
  *  Output from this algo is an svkMriImageData object. 
  */
-int svkDSCMap::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkDynamicImageMap::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
     return 1;
