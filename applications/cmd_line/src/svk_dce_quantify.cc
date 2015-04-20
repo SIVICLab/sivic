@@ -207,7 +207,7 @@ int main (int argc, char** argv)
     svkImageWriter* maxSlopeWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     writerFactory->Delete();
     
-    if ( peakHtWriter == NULL || || peakTimeWriter == NULL || maxSlopeWriter == NULL ) { 
+    if ( peakHtWriter == NULL || peakTimeWriter == NULL || maxSlopeWriter == NULL ) { 
         cerr << "Can not create writer of type: " << dataTypeOut << endl;
         exit(1);
     }

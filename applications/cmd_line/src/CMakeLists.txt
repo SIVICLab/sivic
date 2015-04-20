@@ -411,6 +411,15 @@ TARGET_LINK_LIBRARIES(
 )
 
 ADD_EXECUTABLE(
+    svk_dce_quantify
+    svk_dce_quantify.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_dce_quantify
+    ${SVK_LIBS}
+)
+
+ADD_EXECUTABLE(
     svk_reslice
     svk_reslice.cc
 )

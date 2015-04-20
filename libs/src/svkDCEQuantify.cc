@@ -47,7 +47,6 @@
 
 #include <svkDCEQuantify.h>
 #include <svkDCEPeakHeight.h>
-#include <svkDCERecovery.h>
 #include <svkImageCopy.h>
 
 #include <time.h>
@@ -71,6 +70,11 @@ svkDCEQuantify::svkDCEQuantify()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    //  Outputports:  0 for peak ht map
+    //  Outputports:  1 for peak time map 
+    //  Outputports:  2 for max slope map 
+    this->SetNumberOfOutputPorts(3);
+    
 }
 
 
@@ -90,18 +94,9 @@ void svkDCEQuantify::Quantify()
 {
 
     this->GenerateDCEMaps();
-//not sure if this is needed: 
+    //not sure if this is needed: 
     //this->GenerateNormalizedMaps(); 
 
-}
-
-
-/*!
- *  Retruns a pointer to the DCE map vector
- */
-vtkstd::vector< svkMriImageData* >* svkDCEQuantify::GetDCEMaps()
-{
-    return &(this->dceMapVector);        
 }
 
 
@@ -116,26 +111,10 @@ void svkDCEQuantify::GenerateDCEMaps()
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
     dcePkHt->SetSeriesDescription( "Peak Height" );
     dcePkHt->Update();
-    svkMriImageData* htImage = svkMriImageData::New();
-    htImage->DeepCopy( dcePkHt->GetOutput() );
-
-    this->dceMapVector.push_back( htImage );     
+    this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput() );
 
     dcePkHt->Delete();
 
-
-    //  Calculate DCE % recovery map:
-    svkDCERecovery* dceRecov = svkDCERecovery::New();
-    dceRecov->SetInput( this->GetImageDataInput(0) ); 
-    dceRecov->SetSeriesDescription( "Percent Recovery" );
-    dceRecov->Update();
-    svkMriImageData* recovImage = svkMriImageData::New();
-    recovImage->DeepCopy( dceRecov->GetOutput() );
-
-    this->dceMapVector.push_back( recovImage );     
-
-    dceRecov->Delete();
- 
 }
 
 
@@ -155,9 +134,6 @@ void svkDCEQuantify::GenerateNormalizedMaps()
     dcePkHt->Update();
     svkMriImageData* image = svkMriImageData::New();
     image->DeepCopy( dcePkHt->GetOutput() );
-
-    this->dceMapVector.push_back( image );     
-
     dcePkHt->Delete();
 
 }
@@ -178,10 +154,7 @@ int svkDCEQuantify::RequestInformation( vtkInformation* request, vtkInformationV
  */
 int svkDCEQuantify::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
-
-    this->dceMapVector.clear();
     this->Quantify();
-
     return 1; 
 };
 
