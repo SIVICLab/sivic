@@ -105,6 +105,7 @@
             <in>svk_average_spec.cc</in>
             <in>svk_channel2time.cc</in>
             <in>svk_create_dcmraw.cc</in>
+            <in>svk_dce_quantify.cc</in>
             <in>svk_dcm_deid.cc</in>
             <in>svk_dcmdump.cc</in>
             <in>svk_fft.cc</in>
@@ -562,6 +563,10 @@
         <df name="Linux_x86_64">
         </df>
         <df name="src">
+          <df name="bak">
+            <in>svkDynamicImageMap.cc</in>
+            <in>svkDynamicImageMap.h</in>
+          </df>
           <df name="CMakeFiles">
             <df name="svk.dir">
             </df>
@@ -631,6 +636,7 @@
             <in>svkF2C.h</in>
             <in>svkFastCellData.h</in>
             <in>svkFdfVolumeReader.h</in>
+            <in>svkFileUtils.h</in>
             <in>svkGEConsolePACSInterface.h</in>
             <in>svkGEImageHeader.h</in>
             <in>svkGEPFileMapper.h</in>
@@ -677,6 +683,7 @@
             <in>svkInt.h</in>
             <in>svkIntegratePeak.h</in>
             <in>svkKineticModelCostFunction.h</in>
+            <in>svkLCModelCSVReader.h</in>
             <in>svkLCModelRawWriter.h</in>
             <in>svkLabeledDataMapper.h</in>
             <in>svkLookupTable.h</in>
@@ -787,6 +794,10 @@
           <in>svkByteSwap.h</in>
           <in>svkCorrectDCOffset.cc</in>
           <in>svkCorrectDCOffset.h</in>
+          <in>svkDCEPeakHeight.cc</in>
+          <in>svkDCEPeakHeight.h</in>
+          <in>svkDCEQuantify.cc</in>
+          <in>svkDCEQuantify.h</in>
           <in>svkDICOMEnhancedMRIWriter.cc</in>
           <in>svkDICOMEnhancedMRIWriter.h</in>
           <in>svkDICOMImageWriter.cc</in>
@@ -809,6 +820,8 @@
           <in>svkDSCMap.h</in>
           <in>svkDSCPeakHeight.cc</in>
           <in>svkDSCPeakHeight.h</in>
+          <in>svkDSCQuantify.cc</in>
+          <in>svkDSCQuantify.h</in>
           <in>svkDSCRecovery.cc</in>
           <in>svkDSCRecovery.h</in>
           <in>svkDataModel.cc</in>
@@ -849,6 +862,8 @@
           <in>svkDetailedPlotDirector.h</in>
           <in>svkDouble.cc</in>
           <in>svkDouble.h</in>
+          <in>svkDynamicImageMap.cc</in>
+          <in>svkDynamicImageMap.h</in>
           <in>svkDynamicMRIAlgoTemplate.cc</in>
           <in>svkDynamicMRIAlgoTemplate.h</in>
           <in>svkEPSIPhaseCorrect.cc</in>
@@ -3464,6 +3479,8 @@
                   <df name="svk_channel2time.dir">
                   </df>
                   <df name="svk_create_dcmraw.dir">
+                  </df>
+                  <df name="svk_dce_quantify.dir">
                   </df>
                   <df name="svk_dcm_deid.dir">
                   </df>

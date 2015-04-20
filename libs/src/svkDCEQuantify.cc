@@ -70,6 +70,7 @@ svkDCEQuantify::svkDCEQuantify()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    this->SetNumberOfInputPorts(1);
     //  Outputports:  0 for peak ht map
     //  Outputports:  1 for peak time map 
     //  Outputports:  2 for max slope map 

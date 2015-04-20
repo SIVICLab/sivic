@@ -66,6 +66,8 @@ svkDynamicImageMap::svkDynamicImageMap()
 
     this->newSeriesDescription = ""; 
     this->normalize = false; 
+    this->SetNumberOfInputPorts(1); 
+    this->SetNumberOfOutputPorts(1); 
 }
 
 
@@ -146,14 +148,17 @@ int svkDynamicImageMap::RequestData( vtkInformation* request, vtkInformationVect
     //  will be overwritten by algorithm. 
     int indexArray[1];
     indexArray[0] = 0;
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
-        svkMriImageData::SafeDownCast( this->GetOutput() ), 
-        0, 
-        this->newSeriesDescription, 
-        indexArray, 
-        0,
-        VTK_DOUBLE
-    ); 
+//    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
+ //       svkMriImageData::SafeDownCast( this->GetOutput() ), 
+  //      0, 
+   //     this->newSeriesDescription, 
+    //    indexArray, 
+     //   0,
+      //  VTK_DOUBLE
+    //); 
+    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetZeroImage(
+        svkMriImageData::SafeDownCast( this->GetOutput() ) );  
+
 
     this->GenerateMap(); 
 
