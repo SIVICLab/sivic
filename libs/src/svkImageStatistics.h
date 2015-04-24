@@ -53,7 +53,7 @@
 #include <svkImageReaderFactory.h>
 #include <svkImageReader2.h>
 #include <svkMriImageData.h>
-#include <svkImageThreshold.h>
+#include <vtkOrderStatistics.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkImageAlgorithmPipeline.h>
 #include <svkIdfVolumeWriter.h>
@@ -61,7 +61,6 @@
 #include <vtkImageToImageStencil.h>
 #include <vtkXMLUtilities.h>
 #include <svkXML.h>
-#include <vtkOrderStatistics.h>
 #include <vtkArrayToTable.h>
 #include <vtkTable.h>
 #include <vtkDescriptiveStatistics.h>
@@ -130,10 +129,6 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
         // vtk initialization 
         static svkImageStatistics* New();
 
-        static vtkDataArray* GetMaskedPixels( svkMriImageData* image, svkMriImageData* roi, double minIncluded = 1, double maxIncluded = VTK_DOUBLE_MAX);
-        static vtkFloatArray* GetHistogram( vtkDataArray* data, double binSize, double startBin, int numBins,  int smoothBins = 0);
-        static inline int GetBinForValue( double value, double binSize, double startBin);
-
         //! This will grab the output object as the correct data type to avoid casting
         vtkXMLDataElement* GetOutput( );
 
@@ -157,7 +152,6 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
 	private:
 
        bool   GetShouldCompute( svkImageStatistics::svkImageStatisticsParameter parameter);
-       double GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize );
        string DoubleToString( double value );
 
 };

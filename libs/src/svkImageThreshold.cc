@@ -62,13 +62,22 @@ svkImageThreshold::svkImageThreshold()
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
 
     // We have to call this in the constructor.
-    this->SetNumberOfInputPorts(6);
+    this->SetNumberOfInputPorts(14);
+    bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-    this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, false);
-    this->GetPortMapper()->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkAlgorithmPortMapper::SVK_INT, false);
-    this->GetPortMapper()->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", svkAlgorithmPortMapper::SVK_DOUBLE);
-    this->GetPortMapper()->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", svkAlgorithmPortMapper::SVK_DOUBLE, false);
-    this->GetPortMapper()->InitializeInputPort( OUTPUT_SCALAR_TYPE, "OUTPUT_SCALAR_TYPE", svkAlgorithmPortMapper::SVK_INT, false);
+    this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
+    this->GetPortMapper()->InitializeInputPort( MASK_OUTPUT_VALUE, "MASK_OUTPUT_VALUE", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_MIN, "THRESHOLD_MIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_MAX, "THRESHOLD_MAX", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_IMAGE, "THRESHOLD_BY_MODE_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_FACTOR, "THRESHOLD_BY_MODE_FACTOR", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_START_BIN, "THRESHOLD_BY_MODE_START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_SMOOTH_BINS, "THRESHOLD_BY_MODE_SMOOTH_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_BIN_SIZE, "THRESHOLD_BY_MODE_BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( THRESHOLD_BY_MODE_NUM_BINS, "THRESHOLD_BY_MODE_NUM_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
+    this->GetPortMapper()->InitializeInputPort( EXCLUSIVE_INTEGER_MATCHING, "EXCLUSIVE_INTEGER_MATCHING", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_SCALAR_TYPE, "OUTPUT_SCALAR_TYPE", svkAlgorithmPortMapper::SVK_INT, !required);
     this->SetNumberOfOutputPorts(1);
     this->GetPortMapper()->InitializeOutputPort( 0, "THRESHOLDED_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
 }
@@ -182,10 +191,13 @@ int svkImageThreshold::RequestData( vtkInformation* request,
                                     vtkInformationVector* outputVector )
 {
 
-    double min = this->GetThresholdMin()->GetValue();
+    double min = VTK_DOUBLE_MIN;
     double max = VTK_DOUBLE_MAX;
     if( this->GetThresholdMax() != NULL  ) {
         max = this->GetThresholdMax()->GetValue();
+    }
+    if( this->GetThresholdMin() != NULL  ) {
+        min = this->GetThresholdMin()->GetValue();
     }
 
     string description = this->GetImageDataInput(0)->GetDcmHeader()->GetStringValue("SeriesDescription");
@@ -202,6 +214,61 @@ int svkImageThreshold::RequestData( vtkInformation* request,
     threshold->SetOutValue(0);
 
     // The MASK_OUTPUT_VALUE is optional so check to see if its set
+
+    svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, 0 );
+    if( this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_FACTOR ) != NULL ) {
+        double modeFactor = this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_FACTOR )->GetValue();
+        double smoothBins = 21;
+        double numBins = 1000;
+        double binSize = 10;
+        double startBin = 0;
+        svkMriImageData* roi = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, 0 );
+        if( this->GetPortMapper()->GetMRImageInputPortValue( THRESHOLD_BY_MODE_IMAGE ) != NULL ) {
+            image = this->GetPortMapper()->GetMRImageInputPortValue( THRESHOLD_BY_MODE_IMAGE );
+        }
+        if( this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_START_BIN ) != NULL ) {
+            startBin = this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_START_BIN )->GetValue();
+        }
+        if( this->GetPortMapper()->GetIntInputPortValue( THRESHOLD_BY_MODE_SMOOTH_BINS ) != NULL ) {
+            smoothBins = this->GetPortMapper()->GetIntInputPortValue( THRESHOLD_BY_MODE_SMOOTH_BINS )->GetValue();
+        }
+        if( this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_BIN_SIZE ) != NULL ) {
+            binSize = this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_BIN_SIZE )->GetValue();
+        }
+        if( this->GetPortMapper()->GetIntInputPortValue( THRESHOLD_BY_MODE_NUM_BINS ) != NULL ) {
+            numBins = this->GetPortMapper()->GetIntInputPortValue( THRESHOLD_BY_MODE_NUM_BINS )->GetValue();
+        }
+        binSize = svkStatistics::GetAutoAdjustedBinSize( image, binSize, startBin, numBins );
+        vtkDataArray* maskedPixels = svkStatistics::GetMaskedPixels(image,roi);
+        vtkDataArray* histogram = svkStatistics::GetHistogram( maskedPixels , binSize, startBin, numBins, smoothBins );
+        double mode = svkStatistics::ComputeModeFromHistogram( histogram, binSize, startBin, smoothBins );
+        if( modeFactor < 0 ) {
+            max = mode*fabs(modeFactor);
+        } else {
+            min = mode*modeFactor;
+        }
+        maskedPixels->Delete();
+        histogram->Delete();
+    }
+
+    // vtkImageThreshold does INCLUSIVE matching, but the UCSF convention is EXCLUSIVE
+    if( this->GetPortMapper()->GetBoolInputPortValue( EXCLUSIVE_INTEGER_MATCHING ) != NULL
+        && this->GetPortMapper()->GetBoolInputPortValue( EXCLUSIVE_INTEGER_MATCHING )->GetValue()
+        && image->GetPointData()->GetScalars()->GetDataType() != VTK_DOUBLE
+        && image->GetPointData()->GetScalars()->GetDataType() != VTK_FLOAT ) {
+        if( max == floor(max)) {
+            max--;
+        } else {
+            max = floor(max);
+        }
+        if( min == ceil(min)) {
+            min++;
+        } else {
+            min = ceil(min);
+        }
+    }
+
+
     if(this->GetMaskOutputValue() != NULL ) {
         threshold->SetInValue(this->GetMaskOutputValue()->GetValue());
     }

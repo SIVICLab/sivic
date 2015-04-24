@@ -261,6 +261,7 @@ ADD_LIBRARY(
     svkExtractVOI.cc
     svkDICOMParser.cc
     svkImageStatistics.cc
+    svkStatistics.cc
     svkDouble.cc
     svkBool.cc
     svkInt.cc

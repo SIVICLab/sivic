@@ -75,12 +75,16 @@ svkImageMathematics::svkImageMathematics()
 
     vtkInstantiator::RegisterInstantiator("svkMriImageData", svkMriImageData::NewObject);
 
-    this->SetNumberOfInputPorts(4);
+    this->SetNumberOfInputPorts(7);
     bool required = true;
     this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_1, "INPUT_IMAGE_1", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
-    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeInputPort( INPUT_IMAGE_2, "INPUT_IMAGE_2", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required );
     this->GetPortMapper()->InitializeInputPort( MASK, "MASK", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, !required);
     this->GetPortMapper()->InitializeInputPort( ADD, "ADD", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( MULTIPLY, "MULTIPLY", svkAlgorithmPortMapper::SVK_BOOL, !required);
+    this->GetPortMapper()->InitializeInputPort( MULTIPLY_BY_SCALAR , "MULTIPLY_BY_SCALAR", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
+    this->GetPortMapper()->InitializeInputPort( OUTPUT_SERIES_DESCRIPTION, "OUTPUT_SERIES_DESCRIPTION", svkAlgorithmPortMapper::SVK_STRING, !required);
+
     this->SetNumberOfOutputPorts(1);
     this->GetPortMapper()->InitializeOutputPort( 0, "MATH_OUTPUT", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
 
@@ -102,11 +106,18 @@ svkImageMathematics::~svkImageMathematics()
 /*!
  * Pass through method to the internal svkAlgorithmPortMapper
  */
-void svkImageMathematics::SetInputPortsFromXML( vtkXMLDataElement* element )
+void svkImageMathematics::SetInputPortsFromXML( )
 {
-    this->GetPortMapper()->SetInputPortsFromXML(element);
     if(this->GetPortMapper()->GetBoolInputPortValue(ADD) && this->GetPortMapper()->GetBoolInputPortValue(ADD)->GetValue()){
         this->SetOperationToAdd();
+    }
+    if( this->GetPortMapper()->GetDoubleInputPortValue( MULTIPLY_BY_SCALAR ) != NULL ) {
+        double k = this->GetPortMapper()->GetDoubleInputPortValue( MULTIPLY_BY_SCALAR )->GetValue();
+        this->SetConstantK(k);
+        this->SetOperationToMultiplyByK();
+    }
+    if(this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY) && this->GetPortMapper()->GetBoolInputPortValue(MULTIPLY)->GetValue()){
+        this->SetOperationToMultiply();
     }
 }
 
@@ -148,6 +159,7 @@ void svkImageMathematics::Update()
     //  Determine number of input ports for this particular operation (1 or 2).    
     svkImageData* tmp = svkMriImageData::New();
     tmp->DeepCopy( this->GetImageDataInput(0) ); 
+    this->SetInputPortsFromXML();
 
     for ( int vol = 0; vol < numVolumes; vol++ ) {
 
@@ -196,6 +208,10 @@ void svkImageMathematics::Update()
 
     //  Now copy the multi-volume output results back into the  algorithm's output object. 
     svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( tmp ); 
+    if( this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION ) != NULL ) {
+        string description = this->GetPortMapper()->GetStringInputPortValue( OUTPUT_SERIES_DESCRIPTION )->GetValue();
+        svkMriImageData::SafeDownCast(this->GetOutput())->GetDcmHeader()->SetValue("SeriesDescription", description );
+    }
     tmp->Delete();
         
 }

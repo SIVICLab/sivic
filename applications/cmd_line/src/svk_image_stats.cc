@@ -215,6 +215,13 @@ int main (int argc, char** argv)
             defaultROIs.push_back("celr");
             defaultROIs.push_back("necr");
             defaultROIs.push_back("nelr");
+            if ( configFileName.find("nonpar") != std::string::npos ) {
+                defaultROIs.push_back("cbv2");
+                defaultROIs.push_back("cbv3");
+            } else {
+                defaultROIs.push_back("cbvr2");
+                defaultROIs.push_back("cbvr3");
+            }
         } else {
             defaultROIs.push_back("brain");
             defaultROIs.push_back("nawm");
@@ -222,6 +229,23 @@ int main (int argc, char** argv)
             defaultROIs.push_back("cel");
             defaultROIs.push_back("nec");
             defaultROIs.push_back("nel");
+            if( configFileName.find("anat") != std::string::npos ) {
+                defaultROIs.push_back("t1c11");
+                defaultROIs.push_back("t1c12");
+            } else if ( configFileName.find("adcfa") != std::string::npos ) {
+                defaultROIs.push_back("adc15");
+                defaultROIs.push_back("adc125");
+                defaultROIs.push_back("adn15");
+                defaultROIs.push_back("adn125");
+            } else if ( configFileName.find("ev1ev2ev3") != std::string::npos ) {
+                defaultROIs.push_back("adc15");
+                defaultROIs.push_back("adc125");
+                defaultROIs.push_back("adc1200");
+                defaultROIs.push_back("adc1000");
+            } else if ( configFileName.find("non") != std::string::npos ) {
+                defaultROIs.push_back("cbv2");
+                defaultROIs.push_back("cbv3");
+            }
         }
         for( int i = 0; i< biopsies.size(); i++ ) {
             defaultROIs.push_back(biopsies[i]);
@@ -510,7 +534,9 @@ int main (int argc, char** argv)
                 resultsTab.width(11);
                 if (defaultImages[imageIndex] == "rf"){
                     resultsTab << right << "0.1000E-01";
-                } else {
+                } else if((defaultImages[imageIndex] == "cbv" || defaultImages[imageIndex] == "ph") &&  configFileName.find("nonlin_cbv") != std::string::npos  ){
+                    resultsTab << right << "10.00";
+                } else { 
                     resultsTab << right << "1.000";
                 }
                 resultsTab.width(11);

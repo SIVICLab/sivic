@@ -59,6 +59,7 @@
 #include <svkUtils.h>
 #include <svkImageAlgorithmWithPortMapper.h>
 #include <svkIdfVolumeWriter.h>
+#include <svkStatistics.h>
 
 
 namespace svk {
@@ -77,10 +78,18 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
 
         typedef enum {
             INPUT_IMAGE = 0,
+            INPUT_ROI,
+            EXCLUSIVE_INTEGER_MATCHING,
             THRESHOLD_MAX,
-            THRESHOLD_MIN ,
+            THRESHOLD_MIN,
             OUTPUT_SERIES_DESCRIPTION,
             MASK_OUTPUT_VALUE,
+            THRESHOLD_BY_MODE_IMAGE,
+            THRESHOLD_BY_MODE_FACTOR,
+            THRESHOLD_BY_MODE_START_BIN,
+            THRESHOLD_BY_MODE_SMOOTH_BINS,
+            THRESHOLD_BY_MODE_BIN_SIZE,
+            THRESHOLD_BY_MODE_NUM_BINS,
             OUTPUT_SCALAR_TYPE
         } svkImageThresholdParameters;
 

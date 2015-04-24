@@ -40,74 +40,59 @@
  */
 
 
-#ifndef SVK_IMAGE_MATHEMATICS_H
-#define SVK_IMAGE_MATHEMATICS_H
+#ifndef SVK_STATISTICS_H
+#define SVK_STATISTICS_H
 
 
-#include <vtkImageMathematics.h>
-#include <svkAlgorithmPortMapper.h>
-
+#include <stdio.h>
+#include <vtkObjectFactory.h>
+#include <vtkObject.h>
+#include <vtkDataArray.h>
+#include <vtkFloatArray.h>
+#include <svkUtils.h>
 
 namespace svk {
 
 
 using namespace std;
 
-
-/*! 
- *  Wrapper class around vtkImageMathematics that operates 
- *  on each vtkPointData array in the input vtkImageData objects.  
- *  This is a convenience for applying an operation to a multi-volume
- *  image object. 
+/*!
+ *  The purpose of this class is to take in an XML element that defines a set of ROI's, a set
+ *  of images, filters to apply to the ROI's/images, and a set of statistics to be
+ *  computed. Then statistics for every combination will be computed using svkImageStatistics
+ *  and an XML data element will be output containing the results of the computation.
+ *
+ *  TODO: Should this be converted into an svkImageAlgorithmWithPortMapper?
  */
-
-class svkImageMathematics : public vtkImageMathematics
+class svkStatistics : public vtkObject
 {
 
     public:
-        static svkImageMathematics* New();
 
-        typedef enum {
-            INPUT_IMAGE_1 = 0,
-            INPUT_IMAGE_2,
-            MASK,
-            ADD,
-            MULTIPLY,
-            MULTIPLY_BY_SCALAR,
-            OUTPUT_SERIES_DESCRIPTION
-        } svkImageMathematicsParameters;
+        // vtk type revision macro
+        vtkTypeRevisionMacro( svkStatistics, vtkObject );
+  
+        // vtk initialization 
+        static svkStatistics* New();
 
-
-
-        //! Uses port mapper to parse an XML element and convert it into input port data objects.
-        void                    SetInputPortsFromXML( );
-
-        //! Get the internal XML interpreter
-        svkAlgorithmPortMapper* GetPortMapper();
+        static vtkDataArray* GetMaskedPixels( svkMriImageData* image, svkMriImageData* roi, double minIncluded = 1, double maxIncluded = VTK_DOUBLE_MAX);
+        static vtkFloatArray* GetHistogram( vtkDataArray* data, double binSize, double startBin, int numBins,  int smoothBins = 0);
+        static double ComputeModeFromHistogram(vtkDataArray* histogram, double binSize, double startBin, int smoothBins);
+        static double GetAutoAdjustedBinSize( svkMriImageData* image, double startBinSize, double startBin, int numBins );
 
 
-        vtkTypeRevisionMacro( svkImageMathematics, vtkImageMathematics);
-        virtual void    Update(); 
 
-        //! Prints all input parameters set.
-        void                    PrintSelf( ostream &os, vtkIndent indent );
+	protected:
 
-    protected:
+        svkStatistics();
+       ~svkStatistics();
 
-        svkImageMathematics();
-        ~svkImageMathematics();
-
-        virtual int         FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        virtual int         FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-
-        //! The port mapper used to set the input port parameters.
-        svkAlgorithmPortMapper* portMapper;
+	private:
+        static inline int GetBinForValue( double value, double binSize, double startBin);
 
 };
 
 
 }   //svk
 
-
-#endif //SVK_IMAGE_MATHEMATICS_H
-
+#endif //SVK_STATISTICS_H
