@@ -89,13 +89,13 @@ void svkDCEPeakHeight::GenerateMap()
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //  Get the data array to initialize.  
-    vtkDataArray* dscMapArray;
-    dscMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
+    vtkDataArray* dceMapArray;
+    dceMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
 
     //  Add the output volume array to the correct array in the svkMriImageData object
     vtkstd::string arrayNameString("pixels");
 
-    dscMapArray->SetName( arrayNameString.c_str() );
+    dceMapArray->SetName( arrayNameString.c_str() );
 
     double voxelValue;
     for (int i = 0; i < totalVoxels; i++ ) {
@@ -107,16 +107,16 @@ void svkDCEPeakHeight::GenerateMap()
 
         voxelValue = this->GetMapVoxelValue( dynamicVoxelPtr ); 
 
-        dscMapArray->SetTuple1(i, voxelValue);
+        dceMapArray->SetTuple1(i, voxelValue);
     }
 
     if ( this->normalize ) {
 
         double nawmValue = this->GetNormalizationFactor(); 
         for (int i = 0; i < totalVoxels; i++ ) {
-            voxelValue = dscMapArray->GetTuple1( i );
+            voxelValue = dceMapArray->GetTuple1( i );
             voxelValue /= nawmValue; 
-            dscMapArray->SetTuple1(i, voxelValue);
+            dceMapArray->SetTuple1(i, voxelValue);
         }
 
     }
@@ -137,8 +137,12 @@ double svkDCEPeakHeight::GetMapVoxelValue( float* dynamicVoxelPtr )
 
 
 /*!  
- *  Gets max peak height of DCE curve.  If the S/N
- *  is < 5 returns 0.
+ *  Gets max peak height of DCE curve for the current voxel:  
+ *      PeakHt is relative to the baseline value (pre uptake) 
+ *      and multiplied by 1000 for scaling. 
+ *
+ *  Questions: auto-determine the baseine time window?  Possibly use find noise method from 
+ *  spec analysis      
  */
 double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr )
 {
@@ -151,6 +155,20 @@ double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr )
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
             peakHt = dynamicVoxelPtr[ pt ];
         }
+    }
+
+    double baselineHt = 0.; 
+    int baselineEndPt = 15; 
+    for ( int pt = startPt; pt < baselineEndPt; pt ++ ) {
+        baselineHt += dynamicVoxelPtr[ pt ];     
+    }
+    baselineHt /= baselineEndPt; 
+
+    if ( baselineHt != 0 ) {
+        peakHt = peakHt / baselineHt; 
+        peakHt = peakHt * 1000; 
+    } else {
+        peakHt = 0 ; 
     }
 
     /*

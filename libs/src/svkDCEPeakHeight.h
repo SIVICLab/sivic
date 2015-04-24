@@ -62,15 +62,14 @@ using namespace std;
 
 
 /*! 
- *  Class to derive peak height and normalized peak height map from a DCE image in delta R2* 
- *  representation.  
+ *  Class to derive peak height from a DCE image 
  */
 class svkDCEPeakHeight: public svkDynamicImageMap
 {
 
     public:
 
-        static svkDCEPeakHeight* New();
+        static svkDCEPeakHeight *New();
         vtkTypeRevisionMacro( svkDCEPeakHeight, svkDynamicImageMap);
 
 
