@@ -223,6 +223,9 @@ int main (int argc, char** argv)
                 defaultROIs.push_back("cbvr3");
             }
         } else {
+            if( configFileName.find("cbvr_config") == std::string::npos && configFileName.find("cbv_config") == std::string::npos ) {
+                defaultROIs.push_back("nbrain");
+            }
             defaultROIs.push_back("brain");
             defaultROIs.push_back("nawm");
             defaultROIs.push_back("t2all");
@@ -230,21 +233,25 @@ int main (int argc, char** argv)
             defaultROIs.push_back("nec");
             defaultROIs.push_back("nel");
             if( configFileName.find("anat") != std::string::npos ) {
-                defaultROIs.push_back("t1c11");
+                defaultROIs.push_back("t1c12c");
                 defaultROIs.push_back("t1c12");
+                defaultROIs.push_back("t1c08c");
+                defaultROIs.push_back("t1c08");
+                defaultROIs.push_back("t1dm1");
+                defaultROIs.push_back("t1dm2");
             } else if ( configFileName.find("adcfa") != std::string::npos ) {
                 defaultROIs.push_back("adc15");
                 defaultROIs.push_back("adc125");
                 defaultROIs.push_back("adn15");
                 defaultROIs.push_back("adn125");
-            } else if ( configFileName.find("ev1ev2ev3") != std::string::npos ) {
-                defaultROIs.push_back("adc15");
-                defaultROIs.push_back("adc125");
-                defaultROIs.push_back("adc1200");
-                defaultROIs.push_back("adc1000");
             } else if ( configFileName.find("non") != std::string::npos ) {
-                defaultROIs.push_back("cbv2");
-                defaultROIs.push_back("cbv3");
+                if ( configFileName.find("nonpar_cbvn") != std::string::npos ) {
+                    defaultROIs.push_back("ph2");
+                    defaultROIs.push_back("ph3");
+                } else {
+                    defaultROIs.push_back("cbv2");
+                    defaultROIs.push_back("cbv3");
+                }
             }
         }
         for( int i = 0; i< biopsies.size(); i++ ) {
@@ -253,10 +260,12 @@ int main (int argc, char** argv)
         int numMaps = 0;
         vector<string> defaultImages;
         if( configFileName.find("anat_config.xml") != std::string::npos ) {
-            defaultImages.push_back("fl");
-            defaultImages.push_back("t1c");
             defaultImages.push_back("fse");
-            numMaps = 6; // Double for normalization
+            defaultImages.push_back("fl");
+            defaultImages.push_back("t1v");
+            defaultImages.push_back("t1c");
+            defaultImages.push_back("t1d");
+            numMaps = 10; // Double for normalization
         } else if( configFileName.find("adcfa_config.xml") != std::string::npos ) {
             defaultImages.push_back("adc");
             defaultImages.push_back("fa");
@@ -453,7 +462,8 @@ int main (int argc, char** argv)
                     if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
                         value = svkTypeUtils::StringToFloat(tables[measure][roi][image][0]);
                         if(defaultImages[imageIndex] == "rf" && measure != "kurtosis" && measure != "skewness" ){
-                            value*=100.0;
+                            double tmp = 100.0*svkTypeUtils::StringToDouble(tables[measure][roi][image][0]);
+                            value = tmp;
                         }
 
                     }
