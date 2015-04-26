@@ -258,10 +258,20 @@ void svkDcmEnhancedVolumeReader::LoadData( svkImageData* data )
  */
 void svkDcmEnhancedVolumeReader::GetPixelTransform(double& intercept, double& slope, svkDcmHeader* header)
 {
-    string interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "SharedFunctionalGroupsSequence" );
-    string slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "SharedFunctionalGroupsSequence" );
-	intercept = svkTypeUtils::StringToDouble( interceptString );
-	slope = svkTypeUtils::StringToDouble( slopeString );
+    intercept = 0;
+    slope = 1;
+
+    string interceptString; 
+    if ( this->GetOutput()->GetDcmHeader()->ElementExists( "RescaleIntercept", "PixelValueTransformationSequence") == true ) {
+        interceptString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleIntercept", "SharedFunctionalGroupsSequence" );
+	    intercept = svkTypeUtils::StringToDouble( interceptString );
+    }
+
+    string slopeString;
+    if ( this->GetOutput()->GetDcmHeader()->ElementExists( "RescaleSlope", "PixelValueTransformationSequence") == true ) {
+        slopeString = this->GetOutput()->GetDcmHeader()->GetStringSequenceItemElement ( "PixelValueTransformationSequence", 0, "RescaleSlope", "SharedFunctionalGroupsSequence" );
+	    slope = svkTypeUtils::StringToDouble( slopeString );
+    }
 }
 
 
