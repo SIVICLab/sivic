@@ -207,88 +207,25 @@ int main (int argc, char** argv)
         defaultMeasures.push_back("kurtosis");
         defaultMeasures.push_back("sum");
 
+        string roiListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_ROI_LIST";
+        vtkXMLDataElement* roiListElem = svkUtils::FindNestedElementWithPath(configXML, roiListPath);
         vector<string> defaultROIs;
-        if( configFileName.find("cbvr") != std::string::npos ) {
-            defaultROIs.push_back("brainr");
-            defaultROIs.push_back("nawmr");
-            defaultROIs.push_back("t2allr");
-            defaultROIs.push_back("celr");
-            defaultROIs.push_back("necr");
-            defaultROIs.push_back("nelr");
-            if ( configFileName.find("nonpar") != std::string::npos ) {
-                defaultROIs.push_back("cbv2");
-                defaultROIs.push_back("cbv3");
-            } else {
-                defaultROIs.push_back("cbvr2");
-                defaultROIs.push_back("cbvr3");
-            }
-        } else {
-            if( configFileName.find("cbvr_config") == std::string::npos && configFileName.find("cbv_config") == std::string::npos ) {
-                defaultROIs.push_back("nbrain");
-            }
-            defaultROIs.push_back("brain");
-            defaultROIs.push_back("nawm");
-            defaultROIs.push_back("t2all");
-            defaultROIs.push_back("cel");
-            defaultROIs.push_back("nec");
-            defaultROIs.push_back("nel");
-            if( configFileName.find("anat") != std::string::npos ) {
-                defaultROIs.push_back("t1c12c");
-                defaultROIs.push_back("t1c12");
-                defaultROIs.push_back("t1c08c");
-                defaultROIs.push_back("t1c08");
-                defaultROIs.push_back("t1dm1");
-                defaultROIs.push_back("t1dm2");
-            } else if ( configFileName.find("adcfa") != std::string::npos ) {
-                defaultROIs.push_back("adc15");
-                defaultROIs.push_back("adc125");
-                defaultROIs.push_back("adn15");
-                defaultROIs.push_back("adn125");
-            } else if ( configFileName.find("non") != std::string::npos ) {
-                if ( configFileName.find("nonpar_cbvn") != std::string::npos ) {
-                    defaultROIs.push_back("ph2");
-                    defaultROIs.push_back("ph3");
-                } else {
-                    defaultROIs.push_back("cbv2");
-                    defaultROIs.push_back("cbv3");
-                }
-            }
-        }
-        for( int i = 0; i< biopsies.size(); i++ ) {
-            defaultROIs.push_back(biopsies[i]);
-        }
-        int numMaps = 0;
-        vector<string> defaultImages;
-        if( configFileName.find("anat_config.xml") != std::string::npos ) {
-            defaultImages.push_back("fse");
-            defaultImages.push_back("fl");
-            defaultImages.push_back("t1v");
-            defaultImages.push_back("t1c");
-            defaultImages.push_back("t1d");
-            numMaps = 10; // Double for normalization
-        } else if( configFileName.find("adcfa_config.xml") != std::string::npos ) {
-            defaultImages.push_back("adc");
-            defaultImages.push_back("fa");
-            numMaps = 4; // Double for normalization
-        } else if( configFileName.find("ev1ev2ev3_config.xml") != std::string::npos ) {
-            defaultImages.push_back("ev1");
-            defaultImages.push_back("ev2");
-            defaultImages.push_back("ev3");
-            defaultImages.push_back("evrad");
-            numMaps = 8; // Double for normalization
-        } else if( configFileName.find("nonpar_cbv") != std::string::npos ) {
-            defaultImages.push_back("ph");
-            defaultImages.push_back("recov");
-            defaultImages.push_back("invrec");
-            numMaps = 4; // Only ph is normalized
-        } else if( configFileName.find("nonlin_cbv") != std::string::npos ) {
-            defaultImages.push_back("cbv");
-            defaultImages.push_back("ph");
-            defaultImages.push_back("recov");
-            defaultImages.push_back("rf");
-            numMaps = 6; // Only ph is normalized
+        for( int i = 0; i < roiListElem->GetNumberOfNestedElements(); i++ ) {
+            defaultROIs.push_back(roiListElem->GetNestedElement(i)->GetAttribute("input_id"));
         }
 
+        int numMaps = 0;
+        string imageListPath = "svk:pipeline/svkAlgorithm:svkImageStatistics/svkArgument:INPUT_IMAGE_LIST";
+        vtkXMLDataElement* imageListElem = svkUtils::FindNestedElementWithPath(configXML, imageListPath);
+        vector<string> defaultImages;
+        for( int i = 0; i < imageListElem->GetNumberOfNestedElements(); i++ ) {
+            string inputImageName = imageListElem->GetNestedElement(i)->GetAttribute("input_id");
+            defaultImages.push_back(inputImageName);
+            numMaps++;
+            if( inputImageName != "recov" &&  inputImageName != "invrec" &&inputImageName != "rf" ) {
+                numMaps++; // For normalized version. recov and rf are not normalized
+            }
+        }
 
         // Open file to write the measures into
         string outputTabFile = outputFileName;
