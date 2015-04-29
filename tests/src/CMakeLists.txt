@@ -452,15 +452,6 @@ IF(NOT WIN32)
     )
 ENDIF(NOT WIN32)
 
-ADD_EXECUTABLE(
-    svkF2C_c
-    svkF2C.c
-)
-TARGET_LINK_LIBRARIES(
-    svkF2C_c
-    ${SVK_LIBS}
-    vtkIO
-)
 
 include(CMakeSivicTests.cmake)
 

@@ -39,13 +39,13 @@
  *      Beck Olson
  */
 
-
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkDCEPeakHeight.h>
 
+#include <math.h>
 
 using namespace svk;
 
@@ -129,12 +129,57 @@ void svkDCEPeakHeight::GenerateMap()
  */
 double svkDCEPeakHeight::GetMapVoxelValue( float* dynamicVoxelPtr )
 {
-
     double voxelValue; 
     voxelValue = this->GetPeakHt( dynamicVoxelPtr ); 
     return voxelValue;
 }
 
+double standardDeviation(float* signalArrayPtr, float mean, int timepoint)
+{
+    float stdev   = 0.0;
+    float var     = 0.0;
+    int   startPt = 0;
+    for ( int pt = startPt; pt < timepoint; pt++ ) {
+        stdev += (signalArrayPtr[pt] - mean) * (signalArrayPtr[pt] - mean);
+    }
+    var = stdev / timepoint;
+    if (timepoint != 0) {
+        return math::sqrt(var);
+    }
+    else {
+        return 0.0;
+    }
+}
+
+double svkDCEPeakHeight::GetBaselineArray()
+{
+
+}
+
+/*
+*  Calculates the injection point of the timeseries
+*/
+int svkDCEPeakHeight::GetInjectionPoint( float* baselineArray )
+{
+    int   startPt    = 0;
+    int   endPt      = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfVolumes();
+    float runningSum = 0.0;
+    float runningAvg = 0.0;
+    float nextBaseline, basefactor;
+    for ( int pt = startPt; pt < endPt; pt ++ ) {
+        runningSum += baselineArray[pt];
+        runningAvg  = runingSum/(pt + 1.0);
+        std_dev     = standardDeviation(baselineArray, runningAvg, pt);
+        if (pt > 2) {
+            nextBaseline = baselineArray[pt + 1];
+            basefactor   = runningAvg + 2.5 * std_dev;
+            if (nextBaseline > basefactor) {
+                return pt;
+            }
+        }
+    }
+    return 1;
+}
 
 /*!  
  *  Gets max peak height of DCE curve for the current voxel:  
@@ -144,19 +189,37 @@ double svkDCEPeakHeight::GetMapVoxelValue( float* dynamicVoxelPtr )
  *  Questions: auto-determine the baseine time window?  Possibly use find noise method from 
  *  spec analysis      
  */
-double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr )
+double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr, int injectionPoint=0, float imageRate=0.65106, int numberSlices=16)
 {
+    // get base value
+    float baseval = 0;
+    for ( int pt = 3; pt < injectionPoint; pt++) {
+        baseval += dynamicVoxelPtr[ pt ];
+    }
+    baseval = baseval / ( injectionPoint - 1 );
 
     //  get total point range to check:    
-    int startPt = 0; 
-    int endPt = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int startPt   = injectionPoint; 
+    int endPt     = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     double peakHt = dynamicVoxelPtr[ startPt ];
+    double peakTm = dynamicVoxelPtr[ startPt ];
     for ( int pt = startPt; pt < endPt; pt ++ ) {
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
             peakHt = dynamicVoxelPtr[ pt ];
-        }
+            peakTm = pt; 
+        }       
     }
 
+    peakTm = (peakTm - injectionPoint) * imageRate * numberSlices;
+    if (peakTm < 0) {
+        peakTm = 0;
+    }
+
+    peakHt = peakHt * 1000 / baselineHt;
+
+    return peakHt, peakTm;
+
+    /*
     double baselineHt = 0.; 
     int baselineEndPt = 15; 
     for ( int pt = startPt; pt < baselineEndPt; pt ++ ) {
@@ -170,6 +233,7 @@ double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr )
     } else {
         peakHt = 0 ; 
     }
+    */
 
     /*
     double noise = this->GetNoise( dynamicVoxelPtr );    
@@ -182,7 +246,4 @@ double svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr )
         peakHt = 0.;        
     }
     */
-
-    return peakHt; 
-    
 }
