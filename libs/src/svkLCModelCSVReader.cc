@@ -43,6 +43,7 @@
 #include <svkLCModelCSVReader.h>
 #include <svkImageReaderFactory.h>
 #include <svkString.h>
+#include <svkTypeUtils.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
 #include <vtkSmartPointer.h>
@@ -189,6 +190,7 @@ string svkLCModelCSVReader::GetSeriesDescription()
     return seriesDescription; 
 }
 
+
 /*!
  *  *  Returns the file root without extension
  *   */
@@ -233,8 +235,20 @@ void svkLCModelCSVReader::ParseCSVFiles()
         string csvFileName = this->GetFileNames()->GetValue( fileIndex );
         cout << "CSV NAME: " << csvFileName << endl;
 
+        // ==========================================
+        // Parse the col, row and slice from the file name: 
+        // *_cCol#_rRow#_sSlice#, e.g. 
+        // fileRoot_c10_r8_s4_... csv
+        //
+        // test_1377_c9_r11_s4.csv
+        // ==========================================
         vtkDebugMacro( << this->GetClassName() << " FileName: " << csvFileName );
 
+        int col; 
+        int row; 
+        int slice; 
+        this->GetVoxelIndexFromFileName(csvFileName, &col, &row, &slice); 
+ 
         struct stat fs;
         if ( stat( csvFileName.c_str(), &fs) ) {
             vtkErrorMacro("Unable to open file " << csvFileName );
@@ -308,7 +322,7 @@ void svkLCModelCSVReader::ParseCSVFiles()
         //  initialize a slice index from 
         //  the csv file name: 
         //  =============================
-        int sliceIndex = fileIndex;  
+        int sliceIndex = slice;  
         //cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
         //for ( int i = 0; i < numRows; i++ ) {
             //cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
@@ -335,6 +349,34 @@ void svkLCModelCSVReader::ParseCSVFiles()
         }
 
     }
+}
+
+
+/*!
+ *  Parse voxel col, row and slice coords out of LCMODEL csv output generated form SIVIC generated control files.  
+ *  test_1377_c9_r11_s4.csv
+ */
+void svkLCModelCSVReader::GetVoxelIndexFromFileName(string csvFileName, int* col, int* row, int* slice)
+{
+    string fileRoot = svkImageReader2::GetFileNameWithoutPath( csvFileName.c_str() );
+
+    size_t posCol   = fileRoot.find( "_c" );
+    size_t posRow   = fileRoot.find( "_r" );
+    size_t posSlice = fileRoot.find( "_s" );
+    size_t posDot   = fileRoot.find( ".csv" );
+    if ( posCol != string::npos && posRow != string::npos && posSlice != string::npos && posDot != string::npos ) {
+        string colStr   = fileRoot.substr(posCol   + 2, posRow   - posCol   - 2);
+        string rowStr   = fileRoot.substr(posRow   + 2, posSlice - posRow   - 2);
+        string sliceStr = fileRoot.substr(posSlice + 2, posDot   - posSlice - 2);
+        cout << "VOXEL COLUMN: " << colStr << " " << rowStr << " " << sliceStr << endl;
+        *col   = svkTypeUtils::StringToInt(colStr) - 1; 
+        *row   = svkTypeUtils::StringToInt(rowStr) - 1; 
+        *slice = svkTypeUtils::StringToInt(sliceStr) - 1; 
+    } else {
+        cout << "ERROR, could not parse voxel index from csv file name: " << csvFileName << endl;
+        exit(1); 
+    }
+
 }
 
 

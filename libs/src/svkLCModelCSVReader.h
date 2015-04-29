@@ -96,6 +96,8 @@ class svkLCModelCSVReader : public svkImageReader2
         void            ParseCSVFiles();
         virtual void    InitDcmHeader();
         string          GetSeriesDescription();
+        void            GetVoxelIndexFromFileName(string csvFileName, int* col, int* row, int* slice); 
+
 
 
         //  Members:

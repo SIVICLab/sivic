@@ -91,12 +91,12 @@ class svkLCModelRawWriter : public svkImageWriter
         void            InitSpecData(
                             ofstream* out, 
                             svkDcmHeader::DimensionVector* dimensionVector, 
-                            svkDcmHeader::DimensionVector* indexVector, 
-                            int frame    
-                         ); 
+                            svkDcmHeader::DimensionVector* indexVector 
+                        ); 
         void            InitQuantificationMask(); 
         void            InitRawHeader(ofstream* out, string fileName);
-        void            InitControlHeader(ofstream* out, string fileRootName, string rawRoot, int frameNumber); 
+        void            InitControlHeader(ofstream* out, string fileRootName, string rawRoot, int cellID); 
+
         short*          quantificationMask;
         bool            singleRawFile;
 

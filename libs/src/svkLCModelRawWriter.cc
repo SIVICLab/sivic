@@ -178,8 +178,7 @@ void svkLCModelRawWriter::WriteFiles()
     // write out one coil per ddf file
     string fileName;
 
-    svkDcmHeader::DimensionVector origDimensionVector = hdr->GetDimensionIndexVector(); 
-    svkDcmHeader::DimensionVector dimensionVector = origDimensionVector; 
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector(); 
     svkDcmHeader::DimensionVector loopVector = dimensionVector; 
 
     //  In this case we only want to loop over dimensions other than the time dimension, so set 
@@ -187,70 +186,53 @@ void svkLCModelRawWriter::WriteFiles()
 
     this->InitQuantificationMask();
 
-    int numFrames = hdr->GetNumberOfFrames(&dimensionVector); 
-
     ofstream controlOut; 
     ofstream rawOut; 
     string rawExtension     = ".raw"; 
     string controlExtension = ".control"; 
     string fileRoot = string(this->InternalFileName);  
 
-    if ( this->singleRawFile == true ) {
-        rawOut.open(   ( fileRoot + rawExtension ).c_str() );
-        if( !rawOut ) {
-            throw runtime_error("Cannot open .raw file for writing");
-        }
-        this->InitRawHeader( &rawOut, fileRoot );
-    } 
+    //  ====================================================
+    //  write out all data in 4D object to a single raw 
+    //  file.  Assumes ony 4 dim data.   
+    //  ====================================================
+    rawOut.open(   ( fileRoot + rawExtension ).c_str() );
+    if( !rawOut ) {
+        throw runtime_error("Cannot open .raw file for writing");
+    }
+    this->InitRawHeader( &rawOut, fileRoot );
+    this->InitSpecData(&rawOut, &dimensionVector, &loopVector); 
+    rawOut.close(); 
 
-    //  Always have separate control files: 
-    for (int frame = 0; frame < numFrames; frame++) {
 
-        int frameNumberInt = frame + 1 ; 
-        string frameNumber = svkTypeUtils::IntToString( frameNumberInt ); 
-        string fileRootFrame = fileRoot + "_" + frameNumber; 
-        string controlFileName = fileRootFrame + controlExtension; 
-        cout << "lcmodel < " << controlFileName << endl; 
+    //  ====================================================
+    //  Always have separate control files, 1 per voxel. 
+    //  Iterate over each cell: 
+    //  ====================================================
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
+    for ( int cellID = 0; cellID < numCells; cellID++ )  {
+        if ( this->quantificationMask[cellID] == 1 ) {
 
-        controlOut.open( ( fileRootFrame + controlExtension ).c_str() );
-        if( !controlOut ) {
-            throw runtime_error("Cannot open .control file for writing");
-        }
+            int cellIDInt = cellID + 1 ; 
+            string cellIDString = svkTypeUtils::IntToString( cellIDInt ); 
+            string fileRootCell = fileRoot + "_" + cellIDString; 
+            string controlFileName = fileRootCell + controlExtension; 
+            cout << "lcmodel < " << controlFileName << endl; 
 
-        //  Unique raw file for each slice/frame
-        if ( this->singleRawFile == false ) {
-            rawOut.open(   ( fileRootFrame + rawExtension ).c_str() );
-            if( !rawOut ) {
-                throw runtime_error("Cannot open .raw file for writing");
+            controlOut.open( ( fileRootCell + controlExtension ).c_str() );
+            if( !controlOut ) {
+                throw runtime_error("Cannot open .control file for writing");
             }
-            this->InitRawHeader( &rawOut, fileRootFrame );
-        }
 
-        //  ========================================
-        //  Initialize meta data in .raw file 
-        //  ========================================
-        //  spec data to .raw file 
-        hdr->GetDimensionVectorIndexFromFrame(&dimensionVector, &loopVector, frame);
-        this->InitSpecData(&rawOut, &dimensionVector, &loopVector, frame); 
+            //  ========================================
+            //  Initialize the .control file 
+            //  ========================================
+            this->InitControlHeader( &controlOut, fileRootCell, fileRoot, cellID);
 
-        //  ========================================
-        //  Initialize the .control file 
-        //  ========================================
-        if ( this->singleRawFile == false ) {
-            this->InitControlHeader( &controlOut, fileRootFrame, fileRootFrame, frameNumberInt);
-        } else {
-            this->InitControlHeader( &controlOut, fileRootFrame, fileRoot, frameNumberInt);
-        }
-
-        controlOut.close();
-        if ( this->singleRawFile == false ) {
-            rawOut.close(); 
-        }
+            controlOut.close();
+       }
     }
 
-    if ( this->singleRawFile == true ) {
-        rawOut.close(); 
-    } 
 
 }
 
@@ -262,7 +244,7 @@ void svkLCModelRawWriter::WriteFiles()
  *  WriteData().  The dimensionVector argument is the current set of indices to write, not necessarily
  *  the data dimensionality. 
  */
-void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector, int frame) 
+void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVector* dimensionVector, svkDcmHeader::DimensionVector* indexVector) 
 {
 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
@@ -286,8 +268,7 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
 
     vtkCellData* cellData = this->GetImageDataInput(0)->GetCellData();
 
-    //for (int z = 0; z < slices; z++) {
-    int z = frame;  
+    for (int z = 0; z < slices; z++) {
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
 
@@ -324,7 +305,7 @@ void svkLCModelRawWriter::InitSpecData(ofstream* out, svkDcmHeader::DimensionVec
                 }
             }
         }
-    //}
+    }
 
     delete[] dataTuple; 
 
@@ -372,10 +353,22 @@ void svkLCModelRawWriter::InitQuantificationMask()
  *  ICOLSK(6) = 6
  *  IROWSK(6) = 19
  *  ....   
+ *  
+ *      cellID is the zero indexed cellID for the current spectrum: 
  */
-void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, string rawRootName, int frameNumber)
+void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, string rawRootName, int cellID)
 {
+
+    // initialize the DimensionVector that represents the current cellID: 
     svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader(); 
+    svkDcmHeader::DimensionVector dimensionVector = hdr->GetDimensionIndexVector(); 
+    svkDcmHeader::DimensionVector loopVector = dimensionVector; 
+    svkDcmHeader::GetDimensionVectorIndexFromCellID( &dimensionVector, &loopVector, cellID );
+
+    //  this is a 1 indexed array
+    int voxelIndex[3];
+    svkDcmHeader::GetSpatialDimensions( &loopVector,  voxelIndex );
+
 
     //  ===========================================================
     //  NDCOLS (integer) (“Number of data columns”) The number of columns in the
@@ -398,14 +391,10 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  Default: NDSLIC = 1
     //  ===========================================================
     int numSlices;
+    numSlices = hdr->GetNumberOfSlices();  
+
     int currentSlice; 
-    if ( this->singleRawFile == true) {
-        numSlices = hdr->GetNumberOfSlices();  
-        currentSlice = frameNumber; 
-    } else {
-        numSlices = 1; 
-        currentSlice = 1; 
-    }
+    currentSlice = voxelIndex[2]; 
  
     //  ===========================================================
     //  You specify the range (rectangular subset) of voxels to be analyzed by LCModel with:
@@ -414,15 +403,20 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  Default: ICOLST = ICOLEN = 1
     //  ===========================================================
     //  for now just set to be all voxels, but will reduce this later 
-    int colStart = 1; 
-    int colEnd = numCols; 
+    int colStart = voxelIndex[0]; 
+    int colEnd = voxelIndex[0]; 
     
     //  ===========================================================
     //  IROWST & IROWEN (integer). Voxels in rows IROWST through IROWEN will be analyzed.
     //  Default: IROWST = IROWEN = 1
     //  ===========================================================
-    int rowStart = 1; 
-    int rowEnd = numRows; 
+    int rowStart = voxelIndex[1]; 
+    int rowEnd = voxelIndex[1]; 
+
+    string colString = svkTypeUtils::IntToString( voxelIndex[0]); 
+    string rowString = svkTypeUtils::IntToString( voxelIndex[1]); 
+    string sliceString = svkTypeUtils::IntToString( voxelIndex[2]); 
+    string indexSuffix = "_c" + colString + "_r" + rowString + "_s" + sliceString; 
     
     //  ===========================================================
     //  ISLICE (integer). Voxels in slice ISLICE will be analyzed.
@@ -592,10 +586,10 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  FILPS (character*255) the pathname of the .PS file that will contain the
     //  PostScript One-Page Output.
     //  ===========================================================
-    string filePS  = "'" + fileRootName + ".ps'";  
-    string fileCSV = "'" + fileRootName + ".csv'";  
-    string fileCOO = "'" + fileRootName + "_coord'";  
-    string fileTAB = "'" + fileRootName + ".table'";  
+    string filePS  = "'" + fileRootName + indexSuffix + ".ps'";  
+    string fileCSV = "'" + fileRootName + indexSuffix + ".csv'";  
+    string fileCOO = "'" + fileRootName + indexSuffix + "_coord'";  
+    string fileTAB = "'" + fileRootName + indexSuffix + ".table'";  
 
     //  ===========================================================
     //  ===========================================================
