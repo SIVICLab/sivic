@@ -83,7 +83,7 @@ class svkDSCPeakHeight: public svkDynamicImageMap
     private:
 
         //  Methods:
-        virtual void            GenerateMap(); 
+        virtual void            GenerateMaps(); 
         double                  GetMapVoxelValue( float* imgPtr ); 
         double                  GetPeakHt( float* imgPtr );
 

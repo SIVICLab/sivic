@@ -126,6 +126,7 @@ class svkMRSNoise : public svkImageInPlaceFilter
         vtkFloatArray*  averageSpectrum; 
         int             noiseWindowStartPt; 
         int             noiseWindowEndPt; 
+        float           noiseWindowPercent;
 
 
 

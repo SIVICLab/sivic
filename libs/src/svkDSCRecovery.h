@@ -85,7 +85,7 @@ class svkDSCRecovery: public svkDynamicImageMap
     private:
 
         //  Methods:
-        virtual void            GenerateMap(); 
+        virtual void            GenerateMaps(); 
 
 };
 

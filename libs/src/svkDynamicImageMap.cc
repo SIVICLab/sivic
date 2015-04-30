@@ -146,26 +146,21 @@ int svkDynamicImageMap::RequestData( vtkInformation* request, vtkInformationVect
     //  extractng an svkMriImageData from the input svkMrsImageData object
     //  Use an arbitrary point for initialization of scalars.  Actual data 
     //  will be overwritten by algorithm. 
-    int indexArray[1];
-    indexArray[0] = 0;
-//    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetImage(
- //       svkMriImageData::SafeDownCast( this->GetOutput() ), 
-  //      0, 
-   //     this->newSeriesDescription, 
-    //    indexArray, 
-     //   0,
-      //  VTK_DOUBLE
-    //); 
-    svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetZeroImage(
-        svkMriImageData::SafeDownCast( this->GetOutput() ) );  
+    int numOutputMaps = this->GetNumberOfOutputPorts(); 
 
+    for (int mapPort = 0; mapPort < numOutputMaps; mapPort++ ) { 
+        svkMriImageData::SafeDownCast( this->GetImageDataInput(0) )->GetCellDataRepresentation()->GetZeroImage(
+            svkMriImageData::SafeDownCast( this->GetOutput(mapPort) ) );  
+    }
 
-    this->GenerateMap(); 
+    this->GenerateMaps(); 
 
-    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
-    hdr->InsertUniqueUID("SeriesInstanceUID");
-    hdr->InsertUniqueUID("SOPInstanceUID");
-    hdr->SetValue("SeriesDescription", this->newSeriesDescription);
+    for (int mapPort = 0; mapPort < numOutputMaps; mapPort++ ) { 
+        svkDcmHeader* hdr = this->GetOutput( mapPort )->GetDcmHeader();
+        hdr->InsertUniqueUID("SeriesInstanceUID");
+        hdr->InsertUniqueUID("SOPInstanceUID");
+        hdr->SetValue("SeriesDescription", this->newSeriesDescription);
+    }
 
     return 1; 
 };

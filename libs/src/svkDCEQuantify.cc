@@ -112,7 +112,8 @@ void svkDCEQuantify::GenerateDCEMaps()
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
     dcePkHt->SetSeriesDescription( "Peak Height" );
     dcePkHt->Update();
-    this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput() );
+    this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput(0) );
+    this->GetOutput(1)->DeepCopy( dcePkHt->GetOutput(1) );
 
     dcePkHt->Delete();
 

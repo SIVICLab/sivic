@@ -99,7 +99,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
 
         virtual void            UpdateProvenance();
-        virtual void            GenerateMap() = 0; 
+        virtual void            GenerateMaps() = 0; 
         virtual double          GetNoise( float* imgPtr ); 
         double                  GetNormalizationFactor();
         void                    GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept); 

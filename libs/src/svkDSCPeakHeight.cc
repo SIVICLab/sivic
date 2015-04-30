@@ -82,7 +82,7 @@ svkDSCPeakHeight::~svkDSCPeakHeight()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDSCPeakHeight::GenerateMap()
+void svkDSCPeakHeight::GenerateMaps()
 {
 
     this->ZeroData(); 

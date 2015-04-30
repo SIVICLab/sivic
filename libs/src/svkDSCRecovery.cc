@@ -81,7 +81,7 @@ svkDSCRecovery::~svkDSCRecovery()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDSCRecovery::GenerateMap()
+void svkDSCRecovery::GenerateMaps()
 {
 
     this->ZeroData(); 
