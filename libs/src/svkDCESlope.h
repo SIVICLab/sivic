@@ -82,10 +82,18 @@ class svkDCESlope: public svkDynamicImageMap
     private:
 
         //  Methods:
-        virtual void            GenerateMap(); 
-        double                  GetMapVoxelValue( float* dynamicVoxelPtr ); 
-        double                  GetSlope( float* dynamicVoxelPtr, float injectionPoint );
+        virtual void            GenerateMaps(); 
+        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
+        double                  GetSlopeParams( float* dynamicVoxelPtr, double* voxelSlope ); 
+        void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
+        double                  GetTimePointMean(int timePoint ); 
+        double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
+        void                    InitializeInjectionPoint(); 
+
+        double                  baselineMean;
+        double                  baselineStdDeviation; 
+        int                     injectionPoint; 
 };
 
 

@@ -64,7 +64,10 @@ svkDCESlope::svkDCESlope()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    this->SetNumberOfOutputPorts(1); 
 
+    this->baselineMean         = 0.;
+    this->baselineStdDeviation = 0.;
 }
 
 
@@ -114,7 +117,7 @@ void svkDCESlope::GenerateMap()
 
         double nawmValue = this->GetNormalizationFactor(); 
         for (int i = 0; i < totalVoxels; i++ ) {
-            voxelValue = dceMapArray->GetTuple1( i );
+            voxelValue  = dceMapArray->GetTuple1( i );
             voxelValue /= nawmValue; 
             dceMapArray->SetTuple1(i, voxelValue);
         }
@@ -123,67 +126,141 @@ void svkDCESlope::GenerateMap()
 
 }
 
-
 /*!  
  *  For multi-volume data modifies header's per frame functional group sequence:
  */
-double svkDCESlope::GetMapVoxelValue( float* dynamicVoxelPtr )
+void svkDCESlope::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
 {
-    double voxelValue; 
-    voxelValue = this->GetBaseHt( dynamicVoxelPtr ); 
-    return voxelValue;
+
+    double voxelSlope;
+    this->GetSlopeParams( dynamicVoxelPtr, &voxelSlope); 
+
+    //  Get the data array to initialize.  
+    vtkDataArray* dceMapSlopeArray;
+    dceMapSlopeArray = this->GetOutput(0)->GetPointData()->GetArray(0); 
+
+    dceMapSlopeArray->SetTuple1(  voxelIndex, voxelSlope );
+
 }
 
-double standardDeviation(float* signalArrayPtr, float mean, int timepoint)
+
+/*!
+ *  Compute the mean baseline and std dev as the mean of the first 
+ *  time point over all spatial points in the volume 
+ */
+void svkDCESlope::InitializeBaseline()
 {
-    float stdev   = 0.0;
-    float var     = 0.0;
-    int   startPt = 0;
-    for ( int pt = startPt; pt < timepoint; pt++ ) {
-        stdev += (signalArrayPtr[pt] - mean) * (signalArrayPtr[pt] - mean);
-    }
-    var = stdev / timepoint;
-    if (timepoint != 0) {
-        return math::sqrt(var);
-    }
-    else {
-        return 0.0;
-    }
+
+    this->baselineMean = this->GetTimePointMean(0); 
+
+    vtkDataArray* timePoint0Pixels = this->GetOutput(0)->GetPointData()->GetArray( 0 ); 
+    int numSpatialPixels           = timePoint0Pixels->GetNumberOfTuples(); 
+    this->baselineStdDeviation     = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
 }
 
 /*
-*  Calculates the injection point of the timeseries
-*/
-int svkDCESlope::GetInjectionPoint( float* baselineArray )
+ * Compute the stdandard deviation of the array up to the specified endPt. 
+ */
+double svkDCESlope::GetStandardDeviation( vtkDataArray* array, float mean, int endPt) 
 {
-    int   startPt    = 0;
-    int   endPt      = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfVolumes();
-    float runningSum = 0.0;
-    float runningAvg = 0.0;
-    float nextBaseline, basefactor;
-    for ( int pt = startPt; pt < endPt; pt ++ ) {
-        runningSum += baselineArray[pt];
-        runningAvg  = runingSum/(pt + 1.0);
-        std_dev     = standardDeviation(baselineArray, runningAvg, pt);
-        if (pt > 2) {
-            nextBaseline = baselineArray[pt + 1];
-            basefactor   = runningAvg + 2.5 * std_dev;
-            if (nextBaseline > basefactor) {
-                return pt;
-            }
+    double sumOfSquareDiffs = 0.; 
+    for ( int i = 0; i < endPt; i++ ) {
+        double diff = ( array->GetTuple1(i) - mean ); 
+        sumOfSquareDiffs += diff * diff; 
+    }
+    
+    double variance = sumOfSquareDiffs / endPt;
+    return math::sqrt(variance);
+}
+
+
+/*!
+ *  Compute the mean value over all spatial locations for the specified time point. 
+ */
+double svkDCESlope::GetTimePointMean(int timePoint )
+{
+
+    vtkDataArray* timePointPixels = this->GetOutput(0)->GetPointData()->GetArray( timePoint ); 
+
+    double sum = 0.; 
+
+    int numSpatialPixels = timePointPixels->GetNumberOfTuples(); 
+    for ( int i = 0; i < numSpatialPixels; i++ ) {
+        sum += timePointPixels->GetTuple1(i); 
+    }
+    double mean = sum / numSpatialPixels; 
+
+    return mean;     
+}
+
+/*!
+ *  Compute the mean baseline and std dev as the mean of the first 
+ *  time point over all spatial points in the volume 
+ */
+void svkDCESlope::InitializeInjectionPoint()
+{
+
+    svkDcmHeader* hdr      = this->GetImageDataInput(0)->GetDcmHeader();
+    int numberOfTimePoints = hdr->GetNumberOfTimePoints();
+
+    //  Create a vtkDataArray to hold the average time kinetic 
+    //  trace over the entire volume: 
+    vtkFloatArray* time0Pixels = 
+            static_cast<vtkFloatArray*>(
+                svkMriImageData::SafeDownCast(this->GetImageDataInput(0))->GetCellDataRepresentation()->GetArray(0) 
+            ); 
+    vtkFloatArray* averageTrace = vtkFloatArray::New();
+    averageTrace->DeepCopy( time0Pixels );
+
+    //  For each time point compute the mean value over all spatial points  
+    //  Essentially 1 voxel that represents the DCE average DCE trace.
+    for ( int timePt = 0; timePt < numberOfTimePoints; timePt++ ) {
+        double timeSpatialMean = this->GetTimePointMean( timePt ); 
+        averageTrace->SetTuple1( timePt, timeSpatialMean ); 
+    }
+
+    //  Now determine the injection point. 
+    this->injectionPoint = 2;
+    float runningSum     = 0.0;
+    float runningAvg     = 0.0;
+    float nextBaseline; 
+    float basefactor;
+    double runningStdDev;
+    //  number of std devs above baseline for detection of the injection point. 
+    float  injectionPointSDThreshold = 2.5; 
+    for ( int timePt = 0; timePt < numberOfTimePoints; timePt++ ) {
+
+        runningSum   += averageTrace->GetTuple1( timePt );
+        runningAvg    = runningSum/( timePt + 1.0 );
+        runningStdDev = this->GetStandardDeviation( averageTrace, runningAvg, timePt ); 
+
+        nextBaseline = averageTrace->GetTuple1( timePt + 1 );
+        basefactor   = runningAvg + injectionPointSDThreshold * runningStdDev;
+        if (nextBaseline > basefactor) {
+            this->injectionPoint = timePt;
         }
     }
-    return 1;
+
 }
 
 /*!  
  *  Gets baseline height of DCE curve for the current voxel, before injection point.  
  */
-double svkDCESlope::GetSlope( float* dynamicVoxelPtr, int injectionPoint=0)
+double svkDCESlope::GetSlopeParams( float* dynamicVoxelPtr, double* voxelSlope)
 {
     // get base value
-    int startPt    = injectionPoint;
-    int endPt      = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    this->InitializeInjectionPoint();
+    int   injectionPoint = this->injectionPoint; 
+    float baselineVal    = 0;
+    float imageRate      = 0.65106;
+    for ( int pt = 3; pt < injectionPoint; pt++) {
+        baselineVal += dynamicVoxelPtr[ pt ];
+    }
+    baselineVal = baselineVal / ( injectionPoint - 1 );
+
+    //  get total point range to check:    
+    int   startPt  = injectionPoint; 
+    int   endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     float maxslope = 0.0;
     float slope    = 0.0;
     for ( int pt = startPt; pt < endPt; pt ++ ) {
@@ -192,6 +269,7 @@ double svkDCESlope::GetSlope( float* dynamicVoxelPtr, int injectionPoint=0)
             maxslope = slope;
         }
     }
-    return maxslope;
+
+    *voxelSlope = maxslope;
 
 }

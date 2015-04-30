@@ -235,9 +235,9 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
     }
 
     //  Now determine the injection point. 
-    this->injectionPoint = 1;
-    float runningSum = 0.0;
-    float runningAvg = 0.0;
+    this->injectionPoint = 2;
+    float runningSum     = 0.0;
+    float runningAvg     = 0.0;
     float nextBaseline; 
     float basefactor;
     double runningStdDev;
@@ -270,55 +270,42 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
 void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakHt, double* voxelPeakTime )
 {
     // get base value
-    
-    int injectionPoint = 16; 
-    float baselineVal = 0;
+    this->InitializeInjectionPoint();
+    int   injectionPoint = this->injectionPoint; 
+    float baselineVal    = 0;
+    float imageRate      = 0.65106;
     for ( int pt = 3; pt < injectionPoint; pt++) {
         baselineVal += dynamicVoxelPtr[ pt ];
     }
     baselineVal = baselineVal / ( injectionPoint - 1 );
-     
 
     //  get total point range to check:    
-    int startPt   = injectionPoint; 
-    int endPt     = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    double peakHt = dynamicVoxelPtr[ startPt ];
+    int startPt     = injectionPoint; 
+    int endPt       = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    double peakHt   = dynamicVoxelPtr[ startPt ];
     double peakTime = dynamicVoxelPtr[ startPt ];
     for ( int pt = startPt; pt < endPt; pt ++ ) {
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
-            peakHt = dynamicVoxelPtr[ pt ];
-            //peakTime = pt; 
+            peakHt   = dynamicVoxelPtr[ pt ];
+            peakTime = pt; 
         }       
     }
-
-
-/*
-    peakTime = (peakTime - injectionPoint) * imageRate * numberSlices;
+    
+    // calculate peak time
+    int numVoxels[3]; 
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
+    int numberOfSlices = numVoxels[2]; 
+    peakTime           = (peakTime - injectionPoint) * imageRate * numberOfSlices;
     if (peakTime < 0) {
         peakTime = 0;
     }
- */
 
+    // scale peak height
     peakHt = peakHt * 1000 / baselineVal;
 
-    *voxelPeakHt = peakHt; 
+    // set peak height and peak time values
+    *voxelPeakHt   = peakHt; 
     *voxelPeakTime = peakTime; 
-
-    /*
-    double baselineHt = 0.; 
-    int baselineEndPt = 15; 
-    for ( int pt = startPt; pt < baselineEndPt; pt ++ ) {
-        baselineHt += dynamicVoxelPtr[ pt ];     
-    }
-    baselineHt /= baselineEndPt; 
-
-    if ( baselineHt != 0 ) {
-        peakHt = peakHt / baselineHt; 
-        peakHt = peakHt * 1000; 
-    } else {
-        peakHt = 0 ; 
-    }
-    */
 
     /*
     double noise = this->GetNoise( dynamicVoxelPtr );    

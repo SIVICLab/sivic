@@ -82,11 +82,18 @@ class svkDCEBaseline: public svkDynamicImageMap
     private:
 
         //  Methods:
-        virtual void            GenerateMap(); 
-        double                  GetMapVoxelValue( float* dynamicVoxelPtr ); 
-        double                  GetBaselineArray(float* data);
-        double                  GetBaseHt( float* dynamicVoxelPtr, int injectionPoint );
+        virtual void            GenerateMaps(); 
+        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
+        double                  GetBaseParams( float* dynamicVoxelPtr, double* voxelBase ); 
+        void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
+        double                  GetTimePointMean(int timePoint ); 
+        double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
+        void                    InitializeInjectionPoint(); 
+
+        double                  baselineMean;
+        double                  baselineStdDeviation; 
+        int                     injectionPoint; 
 };
 
 

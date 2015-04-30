@@ -82,11 +82,18 @@ class svkDCEWashout: public svkDynamicImageMap
     private:
 
         //  Methods:
-        virtual void            GenerateMap(); 
-        double                  GetMapVoxelValue( float* dynamicVoxelPtr ); 
-        double                  GetWashout( float* dynamicVoxelPtr, int injectionPoint, float imageRate, int numberSlices );
-        double                  GetBaselineArray( float* data );
+        virtual void            GenerateMaps(); 
+        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
+        double                  GetWashoutParams( float* dynamicVoxelPtr, double* voxelWashout ); 
+        void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
+        double                  GetTimePointMean(int timePoint ); 
+        double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
+        void                    InitializeInjectionPoint(); 
+
+        double                  baselineMean;
+        double                  baselineStdDeviation; 
+        int                     injectionPoint; 
 };
 
 

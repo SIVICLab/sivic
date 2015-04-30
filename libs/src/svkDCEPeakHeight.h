@@ -84,8 +84,7 @@ class svkDCEPeakHeight: public svkDynamicImageMap
         //  Methods:
         virtual void            GenerateMaps(); 
         void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
-        double                  GetPeakHt( float* dynamicVoxelPtr ); 
-        void                    GetPeakParams( float* dynamicVoxelPtr, double* peakHt, double* peaktime ); 
+        void                    GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakHt, double* voxelPeakTime ); 
         void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
         double                  GetTimePointMean(int timePoint ); 
