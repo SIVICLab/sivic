@@ -224,12 +224,12 @@ int main (int argc, char** argv)
     peakTimeWriter->SetFileName( peakTimeFile.c_str() );
     maxSlopeWriter->SetFileName( maxSlopeFile.c_str() );
 
-    peakHtWriter->SetInput(   dceQuant->GetOutput(0) );      // port 0 is ph map 
-    //peakTimeWriter->SetInput( dceQuant->GetOutput(1) );      // port 1 is pt map 
+    peakHtWriter->SetInput(   dceQuant->GetOutput(0) );      // port 0 is peakHt map 
+    peakTimeWriter->SetInput( dceQuant->GetOutput(1) );      // port 1 is peakTimet map 
     //maxSlopeWriter->SetInput( dceQuant->GetOutput(2) );      // port 2 is max slope map  
 
     peakHtWriter->Write();
-    //peakTimeWriter->Write();
+    peakTimeWriter->Write();
     //maxSlopeWriter->Write();
 
     // ===============================================  
