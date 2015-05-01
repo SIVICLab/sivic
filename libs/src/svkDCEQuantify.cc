@@ -107,10 +107,10 @@ void svkDCEQuantify::Quantify()
 void svkDCEQuantify::GenerateDCEMaps()
 {
 
-    //  Calculate DCE Peak Ht map:
+    //  Calculate DCE Peak Height and Peak time maps:
     svkDCEPeakHeight* dcePkHt = svkDCEPeakHeight::New();
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
-    dcePkHt->SetSeriesDescription( "Peak Height" );
+    dcePkHt->SetSeriesDescription( "Peak Params" );
     dcePkHt->Update();
     this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput(0) );
     this->GetOutput(1)->DeepCopy( dcePkHt->GetOutput(1) );

@@ -46,7 +46,6 @@
 #include <svkDCEPeakHeight.h>
 #include <svkMRSNoise.h>
 
-#include <math.h>
 
 using namespace svk;
 
@@ -69,6 +68,7 @@ svkDCEPeakHeight::svkDCEPeakHeight()
     //  Output Port 1 = peak height time map
     this->SetNumberOfOutputPorts(2); 
 
+    this->normalize = false; 
     this->baselineMean = 0.;
     this->baselineStdDeviation = 0.; 
 }
@@ -91,7 +91,11 @@ svkDCEPeakHeight::~svkDCEPeakHeight()
 void svkDCEPeakHeight::GenerateMaps()
 {
 
+cout << "IIP" << endl;
+    this->InitializeInjectionPoint();
+cout << "IB" << endl;
     this->InitializeBaseline(); 
+cout << "IM" << endl;
 
     int numVoxels[3]; 
     this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
@@ -185,7 +189,7 @@ double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, 
     }
     
     double variance = sumOfSquareDiffs / endPt;
-    return math::sqrt(variance);
+    return sqrt(variance);
 }
 
 
@@ -195,7 +199,7 @@ double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, 
 double svkDCEPeakHeight::GetTimePointMean(int timePoint )
 {
 
-    vtkDataArray* timePointPixels = this->GetOutput(0)->GetPointData()->GetArray( timePoint ); 
+    vtkDataArray* timePointPixels = this->GetImageDataInput(0)->GetPointData()->GetArray( timePoint ); 
 
     double sum = 0.; 
 
@@ -264,20 +268,23 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
  *      PeakHt is relative to the baseline value (pre uptake) 
  *      and multiplied by 1000 for scaling. 
  *
+ *      PeakTime is returned in units of (??? milisecs ?? ) 
+ *
  *  Questions: auto-determine the baseine time window?  Possibly use find noise method from 
  *  spec analysis      
  */
 void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakHt, double* voxelPeakTime )
 {
     // get base value
-    this->InitializeInjectionPoint();
     int   injectionPoint = this->injectionPoint; 
     float baselineVal    = 0;
     float imageRate      = 0.65106;
     for ( int pt = 3; pt < injectionPoint; pt++) {
         baselineVal += dynamicVoxelPtr[ pt ];
     }
-    baselineVal = baselineVal / ( injectionPoint - 1 );
+    if ( injectionPoint > 1 ) {
+        baselineVal = baselineVal / ( injectionPoint - 1 );
+    }
 
     //  get total point range to check:    
     int startPt     = injectionPoint; 
@@ -301,10 +308,13 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     }
 
     // scale peak height
-    peakHt = peakHt * 1000 / baselineVal;
+    if ( baselineVal != 0 ) { 
+        peakHt = peakHt * 1000 / baselineVal;
+    }
 
     // set peak height and peak time values
     *voxelPeakHt   = peakHt; 
+    //cout << " PH " << injectionPoint << " " << peakHt << " " << *voxelPeakHt << endl;
     *voxelPeakTime = peakTime; 
 
     /*
