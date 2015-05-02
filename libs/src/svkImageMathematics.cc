@@ -43,6 +43,7 @@
 #include <vtkInstantiator.h>
 #include <vtkInformation.h>
 #include <vtkDataSetAttributes.h>
+#include <vtkImageCast.h>
 
 #include <svkImageMathematics.h>
 #include <svkMriImageData.h>
@@ -147,11 +148,49 @@ void svkImageMathematics::PrintSelf( ostream &os, vtkIndent indent )
 
 
 /*!
+ *  If 2 inputs, they must have the same data types.  IF the data types differ, upcast the smaller data type 
+ */
+void svkImageMathematics::CheckDataTypeMatch()
+{
+    if (this->GetInput(1)) {
+        int outType0 = this->GetImageDataInput(0)->GetScalarType();
+        int outType1 = this->GetImageDataInput(1)->GetScalarType();
+        cout<< "OT: " << outType0 << " " << outType1 << endl;
+        
+        if ( outType0 > outType1 ) {
+            cout << "Cast input 1 to type: " << outType0 << endl;
+            vtkImageCast* cast = vtkImageCast::New();
+            cast->SetOutputScalarType( outType0 );
+            cast->SetInput( this->GetImageDataInput(1) ); 
+            cast->ClampOverflowOn();
+            cast->Update(); 
+            this->GetImageDataInput(1)->DeepCopy( cast->GetOutput() ); 
+            cast->Delete(); 
+        }
+        if ( outType1 > outType0 ) {
+            cout << "Cast input 0 to type: " << outType1 << endl;
+            vtkImageCast* cast = vtkImageCast::New();
+            cast->SetOutputScalarType( outType1 );
+            cast->SetInput( this->GetImageDataInput(0) ); 
+            cast->ClampOverflowOn();
+            cast->Update(); 
+            this->GetImageDataInput(0)->DeepCopy( cast->GetOutput() ); 
+            cast->Delete(); 
+        }
+    }
+}
+
+/*!
  *  This method loops over all volumes and calls the VTK super class update method on each to 
  *  perform the specified calculation.  If necessary the output will be masked by an input mask.
  */
 void svkImageMathematics::Update()
 {
+
+    // if there are 2 inputs of different types, upcast to the larger: 
+    this->CheckDataTypeMatch();  
+
+
     //  Determine how many vtkPointData arrays are in the input data
     int numVolumes = this->GetImageDataInput(0)->GetPointData()->GetNumberOfArrays();
   
@@ -201,10 +240,23 @@ void svkImageMathematics::Update()
             }
         }
 
-
         //  Push results into correct array in tmp data
         tmp->GetPointData()->GetArray(vol)->DeepCopy( this->GetOutput()->GetPointData()->GetScalars() ); 
     }
+
+//  debug
+vtkDataArray* in1Array = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
+vtkDataArray* in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
+vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetScalars();    // returns a vtkDataArray
+cout << "ARRAY 1" << *in1Array << endl;
+cout << "ARRAY 2" << *in2Array << endl;
+cout << "ARRAY o" << *outArray << endl;
+int numVoxels[3];
+svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
+int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+for ( int i = 0; i < totalVoxels; i++ ) {
+    cout << "TUPLE: " << i << " " << in1Array->GetTuple1(i) << " - " << in2Array->GetTuple1(i) << " " << outArray->GetTuple1( i ) << endl; 
+}
 
     //  Now copy the multi-volume output results back into the  algorithm's output object. 
     svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( tmp ); 

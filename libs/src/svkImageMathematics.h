@@ -103,6 +103,10 @@ class svkImageMathematics : public vtkImageMathematics
         //! The port mapper used to set the input port parameters.
         svkAlgorithmPortMapper* portMapper;
 
+    private: 
+        void                CheckDataTypeMatch(); 
+
+
 };
 
 
