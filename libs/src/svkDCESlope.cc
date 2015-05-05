@@ -243,6 +243,73 @@ void svkDCESlope::InitializeInjectionPoint()
 
 }
 
+/*!
+ *  Computes median value of an array. 
+ */
+double svkDCESlope::GetMedian( double* signalWindow, int size ) 
+{
+    // Create sorted signal array
+    double sortedWindow[size];
+    for (int pt = 0; pt < size; ++pt) {
+        sortedWindow[pt] = signalWindow[pt];
+    }
+    for (int i = iSize - 1; i > 0; --i) {
+        for (int j = 0; j < i; ++j) {
+            if (sortedWindow[j] > sortedWindow[j+1]) {
+                double sortTemp   = sortedWindow[j];
+                sortedWindow[j]   = sortedWindow[j+1];
+                sortedWindow[j+1] = sortTemp;
+            }
+        }
+    }
+
+    // Middle or average of middle values in the sorted array
+    double median = 0.0;
+    if ((size % 2) == 0) {
+        median = (sortedWindow[size/2] + sortedWindow[(size/2) - 1])/2.0;
+    } else {
+        median = sortedWindow[size/2];
+    }
+
+    return median;
+}
+
+/*!
+ *  Median filters an array, using a neighborhood window of windowSize
+ */
+void svkDCESlope::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
+{
+    // Create zero-padded array from timeseries data
+    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int    edge     = windowSize % 2;
+    double window[windowSize];
+    double paddedArray[endPt + edge * 2];
+    for ( int pt = 0; pt < (endPt + edge * 2); pt++ ) {
+        if((pt < edge) || (pt >= endPt)) {
+            paddedArray[pt] = 0;
+        }
+        else{
+            paddedArray[pt] = dynamicVoxelPtr[pt];
+        }
+    }
+
+    // Starting from first non-padding point, create neighborhood window
+    // and pass to GetMedian() 
+    for ( int x = edge; x < (endPt - edge); x++ ) {
+        i = 0;
+        for (int fx = 0; fx < windowSize; fx++) {
+            window[i] = paddedArray[x + fx - edge];
+        }
+        i++;
+        paddedArray[x] = this->GetMedian(window, windowSize)
+    }
+
+    // Put median values back into timeseries data 
+    for ( int pt = edge; pt < endPt; pt++ ) {
+        dynamicVoxelPtr[pt] = paddedArray[pt];
+    }
+}
+
 /*!  
  *  Gets baseline height of DCE curve for the current voxel, before injection point.  
  */
