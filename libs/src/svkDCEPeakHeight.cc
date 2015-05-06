@@ -46,7 +46,7 @@
 #include <svkDCEPeakHeight.h>
 #include <svkMRSNoise.h>
 
-#include <math.h>
+#include <cmath>
 
 using namespace svk;
 
@@ -187,7 +187,7 @@ double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, 
     }
     
     double variance = sumOfSquareDiffs / endPt;
-    return math::sqrt(variance);
+    return std::sqrt(variance);
 }
 
 
