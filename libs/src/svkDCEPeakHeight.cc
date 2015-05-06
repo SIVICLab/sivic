@@ -47,6 +47,7 @@
 #include <svkMRSNoise.h>
 
 #include <cmath>
+#include <algorithm>
 
 using namespace svk;
 
@@ -69,6 +70,7 @@ svkDCEPeakHeight::svkDCEPeakHeight()
     //  Output Port 1 = peak height time map
     this->SetNumberOfOutputPorts(2); 
 
+    this->normalize = false; 
     this->baselineMean = 0.;
     this->baselineStdDeviation = 0.; 
 }
@@ -91,6 +93,7 @@ svkDCEPeakHeight::~svkDCEPeakHeight()
 void svkDCEPeakHeight::GenerateMaps()
 {
 
+    this->InitializeInjectionPoint();
     this->InitializeBaseline(); 
 
     int numVoxels[3]; 
@@ -105,7 +108,7 @@ void svkDCEPeakHeight::GenerateMaps()
     dceMapPeakTimeArray = this->GetOutput(1)->GetPointData()->GetArray(0); 
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameString("pixels");
+    string arrayNameString("pixels");
     dceMapPeakHtArray->SetName( arrayNameString.c_str() );
     dceMapPeakTimeArray->SetName( arrayNameString.c_str() );
 
@@ -144,7 +147,7 @@ void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int 
     double voxelPeakHt; 
     double voxelPeakTime;
     int    filterWindow = 5;
-    this->MedianFilter1D( dynamicVoxelPtr,  filterWindow);
+    //this->MedianFilter1D( dynamicVoxelPtr,  filterWindow);
     this->GetPeakParams( dynamicVoxelPtr, &voxelPeakHt, &voxelPeakTime); 
 
     //  Get the data array to initialize.  
@@ -175,6 +178,7 @@ void svkDCEPeakHeight::InitializeBaseline()
     this->baselineStdDeviation = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
 }
 
+
 /*
  * Compute the stdandard deviation of the array up to the specified endPt. 
  */
@@ -187,17 +191,17 @@ double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, 
     }
     
     double variance = sumOfSquareDiffs / endPt;
-    return std::sqrt(variance);
+    return sqrt(variance);
 }
 
 
 /*!
  *  Compute the mean value over all spatial locations for the specified time point. 
  */
-double svkDCEPeakHeight::GetTimePointMean(int timePoint )
+double svkDCEPeakHeight::GetTimePointMean( int timePoint )
 {
 
-    vtkDataArray* timePointPixels = this->GetOutput(0)->GetPointData()->GetArray( timePoint ); 
+    vtkDataArray* timePointPixels = this->GetImageDataInput(0)->GetPointData()->GetArray( timePoint ); 
 
     double sum = 0.; 
 
@@ -263,10 +267,10 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
 /*!
  *  Computes median value of an array. 
  */
-double svkDCEPeakHeight::GetMedian( std::vector<double> &signalWindow) 
+double svkDCEPeakHeight::GetMedian( vector<double> &signalWindow) 
 {
 
-    std::nth_element(signalWindow.begin(), signalWindow.begin() + signalWindow.size()/2, signalWindow.end());
+    nth_element(signalWindow.begin(), signalWindow.begin() + signalWindow.size()/2, signalWindow.end());
     return signalWindow[signalWindow.size()/2];
 
     // // Create sorted signal array
@@ -303,7 +307,7 @@ void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 
     // Create zero-padded array from timeseries data
     int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     int    edge     = windowSize % 2;
-    std::vector<double> window(windowSize);
+    vector<double> window(windowSize);
     // double window[windowSize];
     double paddedArray[endPt + edge * 2];
     for ( int pt = 0; pt < (endPt + edge * 2); pt++ ) {
@@ -341,18 +345,21 @@ void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 
  *
  *  Questions: auto-determine the baseine time window?  Possibly use find noise method from 
  *  spec analysis      
+ * 
+ *  PeakTime is returned in units of (??? milisecs ?? ) 
  */
 void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakHt, double* voxelPeakTime )
 {
     // get base value
-    this->InitializeInjectionPoint();
     int   injectionPoint = this->injectionPoint; 
     float baselineVal    = 0;
     float imageRate      = 0.65106;
     for ( int pt = 3; pt < injectionPoint; pt++) {
         baselineVal += dynamicVoxelPtr[ pt ];
     }
-    baselineVal = baselineVal / ( injectionPoint - 1 );
+    if ( injectionPoint > 1 ) {
+        baselineVal = baselineVal / ( injectionPoint - 1 );
+    }
 
     //  get total point range to check:    
     int startPt     = injectionPoint; 
@@ -373,7 +380,7 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     while ( height <= 0.9 * peakHt) {
         height   = dynamicVoxelPtr[ pt ];
         peakTime = pt;
-        startPt++;
+        pt++;
     }
     int numVoxels[3]; 
     this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
@@ -384,7 +391,9 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     }
 
     // scale peak height
-    peakHt = peakHt * 1000 / baselineVal;
+    if ( baselineVal != 0 ) {
+        peakHt = peakHt * 1000 / baselineVal;
+    }
 
     // set peak height and peak time values
     *voxelPeakHt   = peakHt; 
