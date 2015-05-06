@@ -147,7 +147,7 @@ void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int 
     double voxelPeakHt; 
     double voxelPeakTime;
     int    filterWindow = 5;
-    //this->MedianFilter1D( dynamicVoxelPtr,  filterWindow);
+    this->MedianFilter1D( dynamicVoxelPtr,  filterWindow);
     this->GetPeakParams( dynamicVoxelPtr, &voxelPeakHt, &voxelPeakTime); 
 
     //  Get the data array to initialize.  
@@ -337,6 +337,7 @@ void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 
         dynamicVoxelPtr[pt] = paddedArray[pt];
     }
 }
+
 
 /*!  
  *  Gets max peak height of DCE curve for the current voxel:  
