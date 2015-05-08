@@ -470,17 +470,21 @@ svkXML* svkAlgorithmPortMapper::GetXMLInputPortValue( int port )
 void svkAlgorithmPortMapper::SetMRImageInputPortValue( int port, string filename )
 {
     if( this->GetInputPortType(port) == SVK_MR_IMAGE_DATA ) {
-        // READ THE IMAGE
-        if( !filename.empty()) {
+        // READ THE IMAGE.
+        if( !filename.empty() && svkUtils::FilePathExists( filename.c_str())) {
             svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
             svkImageReader2* reader = readerFactory->CreateImageReader2(filename.c_str());
             readerFactory->Delete();
-            if (reader != NULL) {
+            if (reader != NULL ) {
                 reader->SetFileName( filename.c_str() );
                 reader->Update();
                 this->SetAlgorithmInputPort(port, reader->GetOutput() );
                 reader->Delete();
+            } else {
+                cerr << "ERROR: Could not find appropriate reader for file " << filename << endl;
             }
+        } else if (svkUtils::FilePathExists( filename.c_str())) {
+            cerr << "ERROR: File <" << filename << "> does not exist." <<  endl;
         }
     } else {
         cerr << "ERROR: Input parameter port type mismatch! Port " << port << " is not of type svkMriImageData. " << endl;

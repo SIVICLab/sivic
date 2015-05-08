@@ -191,20 +191,21 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         bool filePathExists = svkUtils::FilePathExists(filename.c_str());
         if(!filePathExists) {
             cout << "ERROR: File " << filename.c_str() << " does not exist!" << endl;
-        }
-        svkImageReader2* reader = svkImageReader2::SafeDownCast(readerFactory->CreateImageReader2(filename.c_str()));
-        if( reader != NULL ) {
-            reader->OnlyReadOneInputFile();
-            reader->SetFileName( filename.c_str() );
-            this->xmlToAlgoMap[tag] = reader;
-            reader->Register(this);
-            vtkXMLDataElement* outputElement = tag->FindNestedElementWithName("svkArgument:OUTPUT");
-            // Let's save the output into the idToPortMap hash
-            reader->Update();
-            reader->GetOutput()->GetDcmHeader()->SetValue("SeriesDescription",outputElement->GetAttribute("output_id"));
-            this->idToPortMap[outputElement->GetAttribute("output_id")] = reader->GetOutputPort(0);
-            this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
-            this->idToPortMap[outputElement->GetAttribute("output_id")];
+        } else {
+            svkImageReader2* reader = svkImageReader2::SafeDownCast(readerFactory->CreateImageReader2(filename.c_str()));
+            if( reader != NULL ) {
+                reader->OnlyReadOneInputFile();
+                reader->SetFileName( filename.c_str() );
+                this->xmlToAlgoMap[tag] = reader;
+                reader->Register(this);
+                vtkXMLDataElement* outputElement = tag->FindNestedElementWithName("svkArgument:OUTPUT");
+                // Let's save the output into the idToPortMap hash
+                reader->Update();
+                reader->GetOutput()->GetDcmHeader()->SetValue("SeriesDescription",outputElement->GetAttribute("output_id"));
+                this->idToPortMap[outputElement->GetAttribute("output_id")] = reader->GetOutputPort(0);
+                this->idToPortMap[outputElement->GetAttribute("output_id")]->Register(this);
+                this->idToPortMap[outputElement->GetAttribute("output_id")];
+            }
         }
     } else if (string(tag->GetName()) == "svkAlgorithm:svkImageWriter") {
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");

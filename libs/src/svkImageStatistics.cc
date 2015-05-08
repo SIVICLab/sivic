@@ -168,7 +168,6 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             nextResult->SetName("results");
             string imageLabel = image->GetDcmHeader()->GetStringValue("SeriesDescription");
             string roiLabel = roi->GetDcmHeader()->GetStringValue("SeriesDescription");
-            cout << "Working on Image:" << imageLabel << " ROI= " << roiLabel << endl;
             svkUtils::CreateNestedXMLDataElement( nextResult, "IMAGE", imageLabel);
             svkUtils::CreateNestedXMLDataElement( nextResult, "ROI",   roiLabel);
             vtkXMLDataElement* statistics = vtkXMLDataElement::New();
@@ -467,7 +466,6 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
                 pixelsInROI->InsertNextTuple1( pixels->GetTuple1(i));
             }
         }
-        //cout << "mask had " << count << " pixels" << endl;
         vtkTable* table = vtkTable::New();
         table->AddColumn( pixelsInROI );
         vtkDescriptiveStatistics* descriptiveStats = vtkDescriptiveStatistics::New();
@@ -490,7 +488,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
             svkUtils::CreateNestedXMLDataElement( results, "sum", valueString);
         }
         */
-        if( this->GetShouldCompute(COMPUTE_MOMENT_2) ) {
+        if( this->GetShouldCompute(COMPUTE_MOMENT_2) && numPixelsInROI > 0 ) {
             if( statResults->GetRowData()->GetArray("M2")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M2").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment2", valueString);
@@ -498,7 +496,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
                 cout << "WARNING: Could not calculate M2 " << endl;
             }
         }
-        if( this->GetShouldCompute(COMPUTE_MOMENT_3)){
+        if( this->GetShouldCompute(COMPUTE_MOMENT_3) && numPixelsInROI > 0 ){
             if( statResults->GetRowData()->GetArray("M3")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M3").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment3", valueString);
@@ -506,7 +504,7 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
                 cout << "WARNING: Could not calculate M3 " << endl;
             }
         }
-        if( this->GetShouldCompute(COMPUTE_MOMENT_4)){
+        if( this->GetShouldCompute(COMPUTE_MOMENT_4) && numPixelsInROI > 0 ){
             if( statResults->GetRowData()->GetArray("M4")->GetNumberOfTuples() > 0 ){
                 string valueString = this->DoubleToString( statResults->GetValueByName(0,"M4").ToDouble() );
                 svkUtils::CreateNestedXMLDataElement( results, "moment4", valueString);
@@ -670,7 +668,6 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                     } else if( ((double)i)/numIntervals == 0.5 ) {
                         string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
-                        cout << "Median: " << setprecision(15) << percentile << " String rep: " << valueString << endl;
                     } else if( ((double)i)/numIntervals == 0.75 ) {
                         string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "percent75", valueString);

@@ -155,10 +155,8 @@ void svkImageMathematics::CheckDataTypeMatch()
     if (this->GetInput(1)) {
         int outType0 = this->GetImageDataInput(0)->GetScalarType();
         int outType1 = this->GetImageDataInput(1)->GetScalarType();
-        cout<< "OT: " << outType0 << " " << outType1 << endl;
         
         if ( outType0 > outType1 ) {
-            cout << "Cast input 1 to type: " << outType0 << endl;
             vtkImageCast* cast = vtkImageCast::New();
             cast->SetOutputScalarType( outType0 );
             cast->SetInput( this->GetImageDataInput(1) ); 
@@ -168,7 +166,6 @@ void svkImageMathematics::CheckDataTypeMatch()
             cast->Delete(); 
         }
         if ( outType1 > outType0 ) {
-            cout << "Cast input 0 to type: " << outType1 << endl;
             vtkImageCast* cast = vtkImageCast::New();
             cast->SetOutputScalarType( outType1 );
             cast->SetInput( this->GetImageDataInput(0) ); 
