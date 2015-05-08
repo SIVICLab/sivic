@@ -245,18 +245,18 @@ void svkImageMathematics::Update()
     }
 
 //  debug
-vtkDataArray* in1Array = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
-vtkDataArray* in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
-vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetScalars();    // returns a vtkDataArray
-cout << "ARRAY 1" << *in1Array << endl;
-cout << "ARRAY 2" << *in2Array << endl;
-cout << "ARRAY o" << *outArray << endl;
-int numVoxels[3];
-svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
-int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
-for ( int i = 0; i < totalVoxels; i++ ) {
-    cout << "TUPLE: " << i << " " << in1Array->GetTuple1(i) << " - " << in2Array->GetTuple1(i) << " " << outArray->GetTuple1( i ) << endl; 
-}
+//vtkDataArray* in1Array = this->GetImageDataInput(0)->GetPointData()->GetScalars();    // returns a vtkDataArray
+//vtkDataArray* in2Array = this->GetImageDataInput(1)->GetPointData()->GetScalars();    // returns a vtkDataArray
+//vtkDataArray* outArray = this->GetOutput()->GetPointData()->GetScalars();    // returns a vtkDataArray
+//cout << "ARRAY 1" << *in1Array << endl;
+//cout << "ARRAY 2" << *in2Array << endl;
+//cout << "ARRAY o" << *outArray << endl;
+//int numVoxels[3];
+//svkMriImageData::SafeDownCast(this->GetOutput(0))->GetNumberOfVoxels(numVoxels);
+//int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2];
+//for ( int i = 0; i < totalVoxels; i++ ) {
+    //cout << "TUPLE: " << i << " " << in1Array->GetTuple1(i) << " - " << in2Array->GetTuple1(i) << " " << outArray->GetTuple1( i ) << endl; 
+//}
 
     //  Now copy the multi-volume output results back into the  algorithm's output object. 
     svkMriImageData::SafeDownCast(this->GetOutput())->DeepCopy( tmp ); 
