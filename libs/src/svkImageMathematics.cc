@@ -157,6 +157,7 @@ void svkImageMathematics::CheckDataTypeMatch()
         int outType1 = this->GetImageDataInput(1)->GetScalarType();
         
         if ( outType0 > outType1 ) {
+cout << "Cast image 1 to image 0 type: " << outType0 << endl;
             vtkImageCast* cast = vtkImageCast::New();
             cast->SetOutputScalarType( outType0 );
             cast->SetInput( this->GetImageDataInput(1) ); 
@@ -166,6 +167,7 @@ void svkImageMathematics::CheckDataTypeMatch()
             cast->Delete(); 
         }
         if ( outType1 > outType0 ) {
+cout << "Cast image 0 to image 1 type: " << outType1 << endl;
             vtkImageCast* cast = vtkImageCast::New();
             cast->SetOutputScalarType( outType1 );
             cast->SetInput( this->GetImageDataInput(0) ); 
