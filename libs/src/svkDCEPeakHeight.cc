@@ -267,11 +267,17 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
 /*!
  *  Computes median value of an array. 
  */
-double svkDCEPeakHeight::GetMedian( vector<double> &signalWindow) 
+double svkDCEPeakHeight::GetMedian( vector<double>* signalWindow) 
 {
 
-    nth_element(signalWindow.begin(), signalWindow.begin() + signalWindow.size()/2, signalWindow.end());
-    return signalWindow[signalWindow.size()/2];
+    nth_element(signalWindow->begin(), signalWindow->begin() + signalWindow->size()/2, signalWindow->end());
+    //cout << "The median is " << signalWindow[signalWindow.size()/2] << '\n';
+    //cout << "vector: ";
+    //for(int i=0;i<signalWindow.size();i++ ) {
+    //    cout << signalWindow[i] << " ";
+    //}
+    //cout << endl;
+    return (*signalWindow)[ signalWindow->size() / 2 ];
 
     // // Create sorted signal array
     // double sortedWindow[size];
@@ -305,36 +311,28 @@ double svkDCEPeakHeight::GetMedian( vector<double> &signalWindow)
 void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
 {
     // Create zero-padded array from timeseries data
-    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int    edge     = windowSize % 2;
+    int endPt     = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int edge      = (int)(windowSize / 2);
+    int padLength = padLength * 2;
     vector<double> window(windowSize);
-    // double window[windowSize];
-    double paddedArray[endPt + edge * 2];
-    for ( int pt = 0; pt < (endPt + edge * 2); pt++ ) {
-        if((pt < edge) || (pt >= endPt)) {
+    double paddedArray[endPt + padLength];
+    for ( int pt = 0; pt < (endPt + padLength); pt++ ) {
+        if(( pt < edge ) || (pt >= ( endPt + edge ))) {
             paddedArray[pt] = 0;
         }
-        else{
-            paddedArray[pt] = dynamicVoxelPtr[pt];
+        else {
+            paddedArray[pt] = dynamicVoxelPtr[ pt - edge ];
         }
     }
 
     // Starting from first non-padding point, create neighborhood window
     // and pass to GetMedian()
     int i;
-    for ( int x = edge; x < (endPt - edge); x++ ) {
-        i = 0;
-        for (int fx = 0; fx < windowSize; fx++) {
-            window[i] = paddedArray[x + fx - edge];
+    for ( int pt = edge; pt < ( endPt + edge ); pt++ ) {
+        for (int winPt = 0; winPt < windowSize; winPt++) {
+            window[winPt] = paddedArray[ pt - edge + winPt ];
         }
-        i++;
-        paddedArray[x] = this->GetMedian(window);
-        // paddedArray[x] = this->GetMedian(window, windowSize)
-    }
-
-    // Put median values back into timeseries data 
-    for ( int pt = edge; pt < endPt; pt++ ) {
-        dynamicVoxelPtr[pt] = paddedArray[pt];
+        dynamicVoxelPtr[pt] = this->GetMedian(&window);
     }
 }
 
@@ -354,27 +352,36 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     // get base value
     int   injectionPoint = this->injectionPoint; 
     float baselineVal    = 0;
-    float imageRate      = 0.65106;
-    for ( int pt = 3; pt < injectionPoint; pt++) {
+    for ( int pt = 1; pt < 5; pt++) {
+    //for ( int pt = 3; pt < injectionPoint; pt++) {
         baselineVal += dynamicVoxelPtr[ pt ];
     }
-    if ( injectionPoint > 1 ) {
-        baselineVal = baselineVal / ( injectionPoint - 1 );
-    }
+    baselineVal = baselineVal / 4;
+    //if ( injectionPoint > 1 ) {
+    //    baselineVal = baselineVal / ( injectionPoint - 1 );
+    //}
 
     //  get total point range to check:    
     int startPt     = injectionPoint; 
     int endPt       = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
 
-    // calculate peak height
+    // find peak height and peak diff
     double peakHt   = dynamicVoxelPtr[ startPt ];
+    double peakDiff = 0.0;
+    double diff     = 0.0;
     for ( int pt = startPt; pt < endPt; pt ++ ) {
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
-            peakHt   = dynamicVoxelPtr[ pt ];
-        }       
+            peakHt = dynamicVoxelPtr[ pt ];
+        }
+        if ( pt > 0 ) {
+            diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
+            if ( diff > peakDiff ) {
+                peakDiff = diff;
+            }
+        }
     }
 
-    // calculate peak time
+    // find peak time point
     double peakTime = dynamicVoxelPtr[ startPt ];
     double height   = dynamicVoxelPtr[ startPt ];
     int pt          = injectionPoint;
@@ -383,20 +390,56 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
         peakTime = pt;
         pt++;
     }
+    
+    //calculate peak time
     int numVoxels[3]; 
     this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
     int numberOfSlices = numVoxels[2]; 
-    peakTime           = (peakTime - injectionPoint) * imageRate * numberOfSlices;
-    if (peakTime < 0) {
-        peakTime = 0;
+    float imageRate;
+    switch ( numberOfSlices ) {
+        case 12:
+            imageRate = 6.56;
+        case 14:
+            imageRate = 7.36;
+        case 16:
+            imageRate = 8.16;
+        case 20:
+            imageRate = 10.42;
+        case 28:
+            imageRate = 12.96;
+        default:
+            imageRate = numberOfSlices * 0.052;
     }
 
+    //peakTime = (peakTime - injectionPoint) * imageRate * numberOfSlices;
+    double timeMin = 0.0;
+    double timeMax = 2500.0;
+    peakTime = (peakTime - injectionPoint) * imageRate * 10;
+    if (peakTime < timeMin) {
+        peakTime = timeMin;
+    }
+//    if (peakTime > timeMax) {
+//        peakTime = timeMax;
+//    }
+
     // scale peak height
-    if ( baselineVal != 0 ) {
-        peakHt = peakHt * 1000 / baselineVal;
+    double peakMin = 0.0;
+    double peakMax = 5000.0;
+    if ( baselineVal <= 0 || peakDiff <= 0 ) {
+        peakHt = 0.0;
+    }
+    else {
+        peakHt = 1000 * peakHt / baselineVal;
+    }
+    if ( peakHt < peakMin  ) {
+        peakHt = peakMax;
+    }
+    if ( peakHt > peakMax ) {
+        peakHt = peakMax;
     }
 
     // set peak height and peak time values
-    *voxelPeakHt   = peakHt; 
+    //*voxelPeakHt   = baselineVal; 
+    *voxelPeakHt   = peakHt;
     *voxelPeakTime = peakTime; 
 }
