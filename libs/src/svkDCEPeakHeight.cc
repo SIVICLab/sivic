@@ -310,30 +310,32 @@ double svkDCEPeakHeight::GetMedian( vector<double>* signalWindow)
  */
 void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
 {
+
     // Create zero-padded array from timeseries data
-    int endPt     = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int edge      = (int)(windowSize / 2);
-    int padLength = padLength * 2;
+    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int    padLength     = (int)(windowSize / 2);
     vector<double> window(windowSize);
-    double paddedArray[endPt + padLength];
-    for ( int pt = 0; pt < (endPt + padLength); pt++ ) {
-        if(( pt < edge ) || (pt >= ( endPt + edge ))) {
+    int totalPadLength = padLength*2;
+    double paddedArray[endPt + totalPadLength ];
+    for ( int pt = 0; pt < (endPt + totalPadLength); pt++ ) {
+        if((pt < padLength) || (pt >= ( endPt + padLength))) {
             paddedArray[pt] = 0;
-        }
-        else {
-            paddedArray[pt] = dynamicVoxelPtr[ pt - edge ];
+        } else {
+            paddedArray[pt] = dynamicVoxelPtr[ pt - padLength ];
         }
     }
-
+    
     // Starting from first non-padding point, create neighborhood window
     // and pass to GetMedian()
     int i;
-    for ( int pt = edge; pt < ( endPt + edge ); pt++ ) {
+    for ( int pt = padLength; pt < (endPt + padLength); pt++ ) {
         for (int winPt = 0; winPt < windowSize; winPt++) {
-            window[winPt] = paddedArray[ pt - edge + winPt ];
+            window[winPt] = paddedArray[pt - padLength + winPt];
         }
-        dynamicVoxelPtr[pt] = this->GetMedian(&window);
+        //cout << "window: " << window[0] <<  " " << window[1] <<  " "<< window[2] <<  " "<< window[3] <<  " "<< window[4] <<  " " << endl;
+        dynamicVoxelPtr[pt - padLength] = this->GetMedian(&window);
     }
+
 }
 
 
