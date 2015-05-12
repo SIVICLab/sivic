@@ -40,7 +40,7 @@
  */
 
 
-#include <svkLCModelCSVReader.h>
+#include <svkLCModelCoordReader.h>
 #include <svkImageReaderFactory.h>
 #include <svkString.h>
 #include <svkTypeUtils.h>
@@ -57,19 +57,19 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkLCModelCSVReader, "$Rev$");
-vtkStandardNewMacro(svkLCModelCSVReader);
+vtkCxxRevisionMacro(svkLCModelCoordReader, "$Rev$");
+vtkStandardNewMacro(svkLCModelCoordReader);
 
 
 /*!
  *  
  */
-svkLCModelCSVReader::svkLCModelCSVReader()
+svkLCModelCoordReader::svkLCModelCoordReader()
 {
 
 #if VTK_DEBUG_ON
     this->DebugOn();
-    vtkDebugLeaks::ConstructClass("svkLCModelCSVReader");
+    vtkDebugLeaks::ConstructClass("svkLCModelCoordReader");
 #endif
 
     vtkDebugMacro( << this->GetClassName() << "::" << this->GetClassName() << "()" );
@@ -83,7 +83,7 @@ svkLCModelCSVReader::svkLCModelCSVReader()
 /*!
  *
  */
-svkLCModelCSVReader::~svkLCModelCSVReader()
+svkLCModelCoordReader::~svkLCModelCoordReader()
 {
     vtkDebugMacro( << this->GetClassName() << "::~" << this->GetClassName() << "()" );
 }
@@ -95,7 +95,7 @@ svkLCModelCSVReader::~svkLCModelCSVReader()
  *  to open the file for reading.  If that works, then return a success code. 
  *  Return Values: 1 if can read the file, 0 otherwise.
  */
-int svkLCModelCSVReader::CanReadFile(const char* fname)
+int svkLCModelCoordReader::CanReadFile(const char* fname)
 {
 
     vtkstd::string fileToCheck(fname);
@@ -104,16 +104,16 @@ int svkLCModelCSVReader::CanReadFile(const char* fname)
 
         // Also see "vtkImageReader2::GetFileExtensions method" 
         if ( 
-            fileToCheck.substr( fileToCheck.size() - 4 ) == ".csv"  
+            fileToCheck.substr( fileToCheck.size() - 6 ) == ".coord"  
         )  {
             FILE* fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
-                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's an LCModel CSV File: " << fileToCheck);
+                vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's an LCModel Coord File: " << fileToCheck);
                 return 1;
             }
         } else {
-            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a LCModel CSV File: " << fileToCheck);
+            vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's NOT a LCModel Coord File: " << fileToCheck);
             return 0;
         }
     } else {
@@ -128,35 +128,17 @@ int svkLCModelCSVReader::CanReadFile(const char* fname)
  *  Side effect of Update() method.  Used to load pixel data and initialize vtkImageData
  *  Called after ExecuteInformation()
  */
-void svkLCModelCSVReader::ExecuteData(vtkDataObject* output)
+void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 {
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
     svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
 
-    //  Create the template data object by  
-    //  extractng an svkMriImageData from the input svkMrsImageData object
-    //  Use an arbitrary point for initialization of scalars.  Actual data 
-    //  will be overwritten by algorithm. 
-    svkMriImageData::SafeDownCast( this->GetOutput() ); 
-    this->GetImageDataInput(0); 
-    
-    svkMrsImageData::SafeDownCast( this->GetImageDataInput(0) )->GetImage(
-                svkMriImageData::SafeDownCast( this->GetOutput() ),
-                0,
-                0,
-                0,
-                0,
-                this->GetSeriesDescription(),
-                VTK_DOUBLE
-    );
+    //  Create the template data object for fitted spectra to be written to
+    this->GetOutput()->DeepCopy( this->GetImageDataInput(0) );     
 
-    //  Now map the csv info into the pixel data and done.
-    //this->GetOutput()->GetDcmHeader()->PrintDcmHeader();  
-    
-    this->ParseCSVFiles(); 
-
+    this->ParseCoordFiles(); 
 }
 
 
@@ -164,7 +146,7 @@ void svkLCModelCSVReader::ExecuteData(vtkDataObject* output)
  *  Read IDF header fields into a string STL map for use during initialization 
  *  of DICOM header by Init*Module methods. 
  */
-void svkLCModelCSVReader::ParseCSVFiles()
+void svkLCModelCoordReader::ParseCoordFiles()
 {
    
     this->GlobFileNames();
@@ -188,7 +170,7 @@ void svkLCModelCSVReader::ParseCSVFiles()
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         string csvFileName = this->GetFileNames()->GetValue( fileIndex );
-        cout << "CSV NAME: " << csvFileName << endl;
+        cout << "Coord NAME: " << csvFileName << endl;
 
         // ==========================================
         // Parse the col, row and slice from the file name: 
@@ -308,11 +290,11 @@ void svkLCModelCSVReader::ParseCSVFiles()
 
 
 /*!
- *
+ *  Output is fitted spectra
  */
-int svkLCModelCSVReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
+int svkLCModelCoordReader::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
 {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "svkMrsImageData");
     return 1;
 }
 

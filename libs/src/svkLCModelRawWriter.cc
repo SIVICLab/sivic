@@ -640,7 +640,7 @@ void svkLCModelRawWriter::InitControlHeader(ofstream* out, string fileRootName, 
     //  ===========================================================
     string filePS  = "'" + fileRootName + indexSuffix + ".ps'";  
     string fileCSV = "'" + fileRootName + indexSuffix + ".csv'";  
-    string fileCOO = "'" + fileRootName + indexSuffix + "_coord'";  
+    string fileCOO = "'" + fileRootName + indexSuffix + ".coord'";  
     string fileTAB = "'" + fileRootName + indexSuffix + ".table'";  
 
     //  ===========================================================

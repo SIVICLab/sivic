@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_LCMODEL_CSV_READER_H
-#define SVK_LCMODEL_CSV_READER_H
+#ifndef SVK_LCMODEL_COORD_READER_H
+#define SVK_LCMODEL_COORD_READER_H
 
 #include <vtkInformation.h>
 #include <vtkstd/map>
@@ -58,21 +58,21 @@ namespace svk {
 /*! 
  *  
  */
-class svkLCModelCSVReader : public svkLCModelReader
+class svkLCModelCoordReader : public svkLCModelReader
 {
 
     public:
 
-        static svkLCModelCSVReader* New();
-        vtkTypeRevisionMacro( svkLCModelCSVReader, svkLCModelReader );
+        static svkLCModelCoordReader* New();
+        vtkTypeRevisionMacro( svkLCModelCoordReader, svkLCModelReader );
 
         //  Methods:
         virtual int             CanReadFile( const char* fname );
 
     protected:
 
-        svkLCModelCSVReader();
-        ~svkLCModelCSVReader();
+        svkLCModelCoordReader();
+        ~svkLCModelCoordReader();
 
         virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
         virtual void                             ExecuteData(vtkDataObject *output);
@@ -81,7 +81,7 @@ class svkLCModelCSVReader : public svkLCModelReader
     private:
 
         //  Methods:
-        void            ParseCSVFiles();
+        void            ParseCoordFiles();
 
         //  Members:
         void*                                   pixelData; 
@@ -95,5 +95,5 @@ class svkLCModelCSVReader : public svkLCModelReader
 }   //svk
 
 
-#endif //SVK_LCMODEL_CSV_READER_H
+#endif //SVK_LCMODEL_COORD_READER_H
 

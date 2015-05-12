@@ -40,16 +40,15 @@
  */
 
 
-#ifndef SVK_LCMODEL_CSV_READER_H
-#define SVK_LCMODEL_CSV_READER_H
+#ifndef SVK_LCMODEL_READER_H
+#define SVK_LCMODEL_READER_H
 
 #include <vtkInformation.h>
 #include <vtkstd/map>
 #include <vtkStringArray.h>
 #include <vtkstd/string>
 
-#include <svkUtils.h>
-#include <svkLCModelReader.h>
+#include <svkImageReader2.h>
 
 
 namespace svk {
@@ -58,36 +57,46 @@ namespace svk {
 /*! 
  *  
  */
-class svkLCModelCSVReader : public svkLCModelReader
+class svkLCModelReader : public svkImageReader2 
 {
 
     public:
 
-        static svkLCModelCSVReader* New();
-        vtkTypeRevisionMacro( svkLCModelCSVReader, svkLCModelReader );
+        static svkLCModelReader* New();
+        vtkTypeRevisionMacro( svkLCModelReader, svkImageReader2);
+
+        // Description: 
+        // A descriptive name for this format
+        virtual const char* GetDescriptiveName() {
+            return "LCModel Reader";
+        }
 
         //  Methods:
-        virtual int             CanReadFile( const char* fname );
+        void                    SetMRSFileName( string mrsFileName );
+        void                    SetMetName( string metName );
 
     protected:
 
-        svkLCModelCSVReader();
-        ~svkLCModelCSVReader();
+        svkLCModelReader();
+        ~svkLCModelReader();
 
-        virtual int                              FillOutputPortInformation(int port, vtkInformation* info);
-        virtual void                             ExecuteData(vtkDataObject *output);
+        virtual int                                 FillInputPortInformation( int port, vtkInformation* info ); 
+        virtual void                                ExecuteInformation();
+        virtual svkDcmHeader::DcmPixelDataFormat    GetFileType();
+        string                                      GetSeriesDescription();
+        void                                        GetVoxelIndexFromFileName(string lcmodelFileName, int* col, int* row, int* slice); 
+        string                                      metName;
 
 
     private:
 
         //  Methods:
-        void            ParseCSVFiles();
+        virtual void    InitDcmHeader();
+
 
         //  Members:
-        void*                                   pixelData; 
-        vtkDoubleArray*                         csvPixelValues; 
-        vtkIntArray*                            csvColIndex; 
-        vtkIntArray*                            csvRowIndex; 
+        vtkStringArray*                         tmpFileNames;
+        string                                  mrsFileName;
 
 };
 
@@ -95,5 +104,5 @@ class svkLCModelCSVReader : public svkLCModelReader
 }   //svk
 
 
-#endif //SVK_LCMODEL_CSV_READER_H
+#endif //SVK_LCMODEL_READER_H
 

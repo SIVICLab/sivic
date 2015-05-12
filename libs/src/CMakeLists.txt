@@ -158,7 +158,9 @@ ADD_LIBRARY(
     svkDICOMMRIWriter.cc
     svkDICOMRawDataWriter.cc
     svkLCModelRawWriter.cc
+    svkLCModelReader.cc
     svkLCModelCSVReader.cc
+    svkLCModelCoordReader.cc
     svkImageWriterFactory.cc
     svkImageReaderFactory.cc
     svkImageReader2.cc
