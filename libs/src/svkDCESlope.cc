@@ -29,10 +29,10 @@
 
 
 /*
- *  $URL: svn+ssh://hawk-sf@svn.code.sf.net/p/sivic/code/trunk/libs/src/svkDCESlope.cc $
- *  $Rev: 2188 $
- *  $Author: jccrane $
- *  $Date: 2015-04-24 13:01:59 -0700 (Fri, 24 Apr 2015) $
+ *  $URL$
+ *  $Rev$
+ *  $Author$
+ *  $Date$
  *
  *  Authors:
  *      Jason C. Crane, Ph.D.
@@ -50,7 +50,7 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDCESlope, "$Rev: 2188 $");
+vtkCxxRevisionMacro(svkDCESlope, "$Rev$");
 vtkStandardNewMacro(svkDCESlope);
 
 

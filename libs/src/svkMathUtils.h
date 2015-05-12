@@ -40,8 +40,8 @@
  */
 
 
-#ifndef SVK_DCE_PEAK_HEIGHT_H
-#define SVK_DCE_PEAK_HEIGHT_H
+#ifndef SVK_MATH_UTILS_H
+#define SVK_MATH_UTILS_H
 
 
 #include <vtkObject.h>
@@ -64,43 +64,26 @@ using namespace std;
 /*! 
  *  Class to derive peak height from a DCE image 
  */
-class svkDCEWashout: public svkDynamicImageMap
+class svkMathUtils: public vtkObject
 {
 
     public:
 
-        static svkDCEWashout *New();
-        vtkTypeRevisionMacro( svkDCEWashout, svkDynamicImageMap);
+        static svkMathUtils *New();
+        vtkTypeRevisionMacro( svkMathUtils, vtkObject);
 
+        static double       GetMedian(  std::vector<double> *signalWindow );
+        static void         MedianFilter1D( float* dynamicVoxelPtr, int arrayLength, int windowSize );
 
     protected:
 
-        svkDCEWashout();
-        ~svkDCEWashout();
+        svkMathUtils();
+        ~svkMathUtils();
 
-
-    private:
-
-        //  Methods:
-        virtual void            GenerateMaps(); 
-        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
-        double                  GetWashoutParams( float* dynamicVoxelPtr, double* voxelWashout ); 
-        void                    InitializeBaseline();
-        int                     GetInjectionPoint( float* baselineArray );
-        double                  GetTimePointMean(int timePoint ); 
-        double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
-        void                    InitializeInjectionPoint();
-        double                  GetMedian( double signalWindow[], int size );
-        void                    MedianFilter1D( float* dynamicVoxelPtr, int windowSize );
-
-        double                  baselineMean;
-        double                  baselineStdDeviation; 
-        int                     injectionPoint; 
 };
-
 
 }   //svk
 
 
-#endif //SVK_DCE_PEAK_HEIGHT_H
+#endif //SVK_MATH_UTILS_H
 

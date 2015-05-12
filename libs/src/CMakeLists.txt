@@ -252,6 +252,7 @@ ADD_LIBRARY(
     svkSpecUtils.cc
     svkUCSFUtils.cc
     svkUtils.cc
+    svkMathUtils.cc
     svkVoxelTaggingUtils.cc
     #svkImageFFT.cc
     #svkImageRFFT.cc

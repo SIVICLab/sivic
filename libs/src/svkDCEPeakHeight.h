@@ -90,9 +90,6 @@ class svkDCEPeakHeight: public svkDynamicImageMap
         double                  GetTimePointMean(int timePoint ); 
         double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
         void                    InitializeInjectionPoint();
-        double                  GetMedian(  std::vector<double> *signalWindow );
-        // double                  GetMedian( double signalWindow[], int size );
-        void                    MedianFilter1D( float* dynamicVoxelPtr, int windowSize );
 
         double                  baselineMean;
         double                  baselineStdDeviation; 

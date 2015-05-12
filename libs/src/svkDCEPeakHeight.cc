@@ -44,7 +44,7 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkDCEPeakHeight.h>
-#include <svkMRSNoise.h>
+#include <svkMathUtils.h>
 
 #include <cmath>
 #include <algorithm>
@@ -147,7 +147,9 @@ void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int 
     double voxelPeakHt; 
     double voxelPeakTime;
     int    filterWindow = 5;
-    this->MedianFilter1D( dynamicVoxelPtr,  filterWindow);
+    int    arrayLength = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
     this->GetPeakParams( dynamicVoxelPtr, &voxelPeakHt, &voxelPeakTime); 
 
     //  Get the data array to initialize.  
@@ -260,80 +262,6 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
         if (nextBaseline > basefactor) {
             this->injectionPoint = timePt;
         }
-    }
-
-}
-
-/*!
- *  Computes median value of an array. 
- */
-double svkDCEPeakHeight::GetMedian( vector<double>* signalWindow) 
-{
-
-    nth_element(signalWindow->begin(), signalWindow->begin() + signalWindow->size()/2, signalWindow->end());
-    //cout << "The median is " << signalWindow[signalWindow.size()/2] << '\n';
-    //cout << "vector: ";
-    //for(int i=0;i<signalWindow.size();i++ ) {
-    //    cout << signalWindow[i] << " ";
-    //}
-    //cout << endl;
-    return (*signalWindow)[ signalWindow->size() / 2 ];
-
-    // // Create sorted signal array
-    // double sortedWindow[size];
-    // for (int pt = 0; pt < size; ++pt) {
-    //     sortedWindow[pt] = signalWindow[pt];
-    // }
-    // for (int i = iSize - 1; i > 0; --i) {
-    //     for (int j = 0; j < i; ++j) {
-    //         if (sortedWindow[j] > sortedWindow[j+1]) {
-    //             double sortTemp   = sortedWindow[j];
-    //             sortedWindow[j]   = sortedWindow[j+1];
-    //             sortedWindow[j+1] = sortTemp;
-    //         }
-    //     }
-    // }
-
-    // // Middle or average of middle values in the sorted array
-    // double median = 0.0;
-    // if ((size % 2) == 0) {
-    //     median = (sortedWindow[size/2] + sortedWindow[(size/2) - 1])/2.0;
-    // } else {
-    //     median = sortedWindow[size/2];
-    // }
-
-    // return median;
-}
-
-/*!
- *  Median filters an array, using a neighborhood window of windowSize
- */
-void svkDCEPeakHeight::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
-{
-
-    // Create zero-padded array from timeseries data
-    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int    padLength     = (int)(windowSize / 2);
-    vector<double> window(windowSize);
-    int totalPadLength = padLength*2;
-    double paddedArray[endPt + totalPadLength ];
-    for ( int pt = 0; pt < (endPt + totalPadLength); pt++ ) {
-        if((pt < padLength) || (pt >= ( endPt + padLength))) {
-            paddedArray[pt] = 0;
-        } else {
-            paddedArray[pt] = dynamicVoxelPtr[ pt - padLength ];
-        }
-    }
-    
-    // Starting from first non-padding point, create neighborhood window
-    // and pass to GetMedian()
-    int i;
-    for ( int pt = padLength; pt < (endPt + padLength); pt++ ) {
-        for (int winPt = 0; winPt < windowSize; winPt++) {
-            window[winPt] = paddedArray[pt - padLength + winPt];
-        }
-        //cout << "window: " << window[0] <<  " " << window[1] <<  " "<< window[2] <<  " "<< window[3] <<  " "<< window[4] <<  " " << endl;
-        dynamicVoxelPtr[pt - padLength] = this->GetMedian(&window);
     }
 
 }
