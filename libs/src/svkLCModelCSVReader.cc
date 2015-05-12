@@ -110,7 +110,7 @@ int svkLCModelCSVReader::CanReadFile(const char* fname)
         if ( 
             fileToCheck.substr( fileToCheck.size() - 4 ) == ".csv"  
         )  {
-            FILE *fp = fopen(fname, "rb");
+            FILE* fp = fopen(fname, "rb");
             if (fp) {
                 fclose(fp);
                 vtkDebugMacro(<< this->GetClassName() << "::CanReadFile(): It's an LCModel CSV File: " << fileToCheck);

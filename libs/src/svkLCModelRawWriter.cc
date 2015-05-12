@@ -72,7 +72,13 @@ svkLCModelRawWriter::svkLCModelRawWriter()
     this->basisFileName = ""; 
     this->quantificationMask = NULL;
     this->singleRawFile = true;
+
+    this->gridTaskIDCounter = 0;
+    this->gridTasks = ""; 
+    this->gridArch = "lx24-amd64"; 
+    this->gridQueue = "ms_hp.q@fisher"; 
 }
+
 
 
 /*!
@@ -217,7 +223,7 @@ void svkLCModelRawWriter::WriteFiles()
             string cellIDString = svkTypeUtils::IntToString( cellIDInt ); 
             string fileRootCell = fileRoot + "_" + cellIDString; 
             string controlFileName = fileRootCell + controlExtension; 
-            cout << "lcmodel < " << controlFileName << endl; 
+            this->CreateGridTask( controlFileName ); 
 
             controlOut.open( ( fileRootCell + controlExtension ).c_str() );
             if( !controlOut ) {
@@ -233,7 +239,53 @@ void svkLCModelRawWriter::WriteFiles()
        }
     }
 
+    this->WriteGridSubmissionFile( fileRoot ); 
+}
 
+
+/*!
+ *  Initializes and creates the grid submission file. 
+ *  This should get reimplemented in DRMAA
+ */
+void svkLCModelRawWriter::WriteGridSubmissionFile( string fileRoot ) 
+{
+
+    string submitScriptName = fileRoot + ".grid"; 
+    if( this->submitScript.is_open() == false) {
+        cout << this->submitScript << endl;
+        this->submitScript.open( submitScriptName.c_str() );
+    }
+
+    if( this->submitScript.is_open() ) {
+
+        this->submitScript << "#!/bin/csh" << endl;
+        this->submitScript << "" << endl;
+        this->submitScript << "#$ -sync yes " << endl;
+        this->submitScript << "#$ -N lcmodel_batch" << endl; 
+        this->submitScript << "#$ -l arch=" << this->gridArch << endl;
+        this->submitScript << "#$ -q " << this->gridQueue << endl;
+        this->submitScript << "#$ -t 1-" << this->gridTaskIDCounter << endl;
+        this->submitScript << "#$ -cwd " << endl;
+        this->submitScript << "" << endl;
+        this->submitScript << this->gridTasks << endl;
+        this->submitScript.close(); 
+
+    } else {
+        cout << "ERROR: could not open LCModel grid script: " << submitScriptName << endl;
+        exit(1); 
+    }
+}
+
+
+/*!
+ * Adds a task to the grid file: 
+ */
+void svkLCModelRawWriter::CreateGridTask( string controlFileName ) 
+{
+    this->gridTaskIDCounter++; 
+    this->gridTasks.append("if ($SGE_TASK_ID == " + svkTypeUtils::IntToString( this->gridTaskIDCounter ) + " ) then \n"); 
+    this->gridTasks.append("    lcmodel < " +  controlFileName + "\n"); 
+    this->gridTasks.append("endif \n\n"); 
 }
 
 

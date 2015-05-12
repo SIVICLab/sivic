@@ -97,9 +97,18 @@ class svkLCModelRawWriter : public svkImageWriter
         void            InitRawHeader(ofstream* out, string fileName);
         void            InitControlHeader(ofstream* out, string fileRootName, string rawRoot, int cellID); 
 
+        void            CreateGridTask( string controlFileName ); 
+        void            WriteGridSubmissionFile( string fileRoot); 
+
+
         short*          quantificationMask;
         bool            singleRawFile;
 
+        int             gridTaskIDCounter; 
+        ofstream        submitScript;
+        string          gridTasks; 
+        string          gridQueue; 
+        string          gridArch; 
 
 };
 
