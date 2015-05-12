@@ -72,13 +72,15 @@ class svkMathUtils: public vtkObject
         static svkMathUtils *New();
         vtkTypeRevisionMacro( svkMathUtils, vtkObject);
 
-        static double       GetMedian(  std::vector<double> *signalWindow );
         static void         MedianFilter1D( float* dynamicVoxelPtr, int arrayLength, int windowSize );
 
     protected:
 
         svkMathUtils();
         ~svkMathUtils();
+
+    private: 
+        static double       GetMedian(  std::vector<double> *signalWindow );
 
 };
 
