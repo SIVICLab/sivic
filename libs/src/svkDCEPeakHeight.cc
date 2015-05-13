@@ -292,37 +292,52 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     //}
 
     //  get total point range to check:    
-    int startPt     = injectionPoint; 
-    int endPt       = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int startPt = injectionPoint; 
+    int endPt   = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
 
     // find peak height and peak diff
     double peakHt   = dynamicVoxelPtr[ startPt ];
-    double peakDiff = 0.0;
-    double diff     = 0.0;
-    for ( int pt = startPt; pt < endPt; pt ++ ) {
+    for ( int pt = 0; pt < endPt/2; pt ++ ) {
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
             peakHt = dynamicVoxelPtr[ pt ];
         }
-        if ( pt > 0 ) {
-            diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
-            if ( diff > peakDiff ) {
-                peakDiff = diff;
-            }
-        }
+//        if ( pt > 0 ) {
+//          diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
+//            if ( diff > peakDiff ) {
+//                peakDiff = diff;
+//            }
+//        }
     }
 
     // find peak time point
-    double peakTime = dynamicVoxelPtr[ startPt ];
-    double height   = dynamicVoxelPtr[ startPt ];
-    int pt          = injectionPoint;
-    while ( height <= 0.9 * peakHt) {
-        height   = dynamicVoxelPtr[ pt ];
+    int    pt       = 1; //injectionPoint;
+    double peakTime = 1.0;
+    double height   = dynamicVoxelPtr[ pt - 1 ]; //dynamicVoxelPtr[ startPt ];
+    while ( (int)height < (0.9 * (int)peakHt)) {
+        height   = dynamicVoxelPtr[ pt - 1 ];
         peakTime = pt;
         pt++;
     }
     
-    //calculate peak time
-    int numVoxels[3]; 
+    // calculate slope/peakdiff
+    double diff     = 0.0;
+    double peakDiff = 0.0;
+    if (peakTime < 6) {
+        peakDiff = 0.0;
+    }
+    else {
+        for ( int pt = 0; pt < peakTime; pt ++ ) {
+            if ( pt > 0 ) {
+                diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
+                if ( diff > peakDiff ) {
+                    peakDiff = diff;
+                }
+            }
+        }
+    }
+
+   // calculate peak time 
+    int numVoxels[3];
     this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
     int numberOfSlices = numVoxels[2]; 
     float imageRate;
@@ -344,13 +359,13 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
     //peakTime = (peakTime - injectionPoint) * imageRate * numberOfSlices;
     double timeMin = 0.0;
     double timeMax = 2500.0;
-    peakTime = (peakTime - injectionPoint) * imageRate * 10;
+//    peakTime = (peakTime - injectionPoint) * imageRate * 10;
     if (peakTime < timeMin) {
         peakTime = timeMin;
     }
-//    if (peakTime > timeMax) {
-//        peakTime = timeMax;
-//    }
+    if (peakTime > timeMax) {
+        peakTime = timeMax;
+    }
 
     // scale peak height
     double peakMin = 0.0;
@@ -359,17 +374,16 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
         peakHt = 0.0;
     }
     else {
-        peakHt = 1000 * peakHt / baselineVal;
+        peakHt = 10 * peakHt / baselineVal * 100;
     }
     if ( peakHt < peakMin  ) {
-        peakHt = peakMax;
+        peakHt = peakMin;
     }
     if ( peakHt > peakMax ) {
         peakHt = peakMax;
     }
 
     // set peak height and peak time values
-    //*voxelPeakHt   = baselineVal; 
     *voxelPeakHt   = peakHt;
     *voxelPeakTime = peakTime; 
 }
