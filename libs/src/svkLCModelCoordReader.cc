@@ -50,6 +50,7 @@
 #include <vtkDelimitedTextReader.h>
 #include <vtkTable.h>
 #include <vtkStringToNumeric.h>
+#include <vtkVariantArray.h>
 
 #include <sys/stat.h>
 
@@ -133,13 +134,33 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 
     vtkDebugMacro( << this->GetClassName() << "::ExecuteData()" );
 
-    svkImageData* data = svkImageData::SafeDownCast( this->AllocateOutputData(output) );
+    svkImageData* data = svkMrsImageData::SafeDownCast( this->AllocateOutputData(output) );
+
 
     //  Create the template data object for fitted spectra to be written to
     this->GetOutput()->DeepCopy( this->GetImageDataInput(0) );     
 
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
+
+    //  initialize all arrays to zero: 
+    svkDcmHeader::DimensionVector dimVec = this->GetOutput()->GetDcmHeader()->GetDimensionIndexVector();
+    int numCells = svkDcmHeader::GetNumberOfCells( &dimVec );
+    svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+    double zeroTuple[2];
+    zeroTuple[0] = 0; 
+    zeroTuple[1] = 0; 
+
+    for (int cellID = 0; cellID < numCells; cellID++ ) {
+        vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
+        for (int i = 0; i < numTimePoints; i++ ) {
+            spectrumOut->SetTuple(i, zeroTuple);
+        }
+    }
+
     this->ParseCoordFiles(); 
 }
+
 
 
 /*
@@ -152,25 +173,17 @@ void svkLCModelCoordReader::ParseCoordFiles()
     this->GlobFileNames();
 
     vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
-    //cout << "MMA: " << metMapArray << endl;
-    //cout << "MMA: " << *metMapArray << endl;
-    //cout << "this OUTPUT" << *(this->GetOutput()) << endl;
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
     svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
     int voxels[3];  
     hdr->GetSpatialDimensions( &dimVector, voxels ); 
-    //cout << "NV: " << voxels[0] << " " << voxels[1] << " " << voxels[2] << endl;
     int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
-    for (int i = 0; i < numVoxels; i++ ) {
-        metMapArray->SetTuple1(i, 0);
-    }
-
 
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
-        string csvFileName = this->GetFileNames()->GetValue( fileIndex );
-        cout << "Coord NAME: " << csvFileName << endl;
+        string coordFileName = this->GetFileNames()->GetValue( fileIndex );
+        cout << "Coord NAME: " << coordFileName << endl;
 
         // ==========================================
         // Parse the col, row and slice from the file name: 
@@ -179,113 +192,99 @@ void svkLCModelCoordReader::ParseCoordFiles()
         //
         // test_1377_c9_r11_s4.csv
         // ==========================================
-        vtkDebugMacro( << this->GetClassName() << " FileName: " << csvFileName );
-
         int col; 
         int row; 
         int slice; 
-        this->GetVoxelIndexFromFileName(csvFileName, &col, &row, &slice); 
+        this->GetVoxelIndexFromFileName(coordFileName, &col, &row, &slice); 
+
+        cout << "col " << col << " row " << row << " slice " << slice << endl;
  
         struct stat fs;
-        if ( stat( csvFileName.c_str(), &fs) ) {
-            vtkErrorMacro("Unable to open file " << csvFileName );
+        if ( stat( coordFileName.c_str(), &fs) ) {
+            vtkErrorMacro("Unable to open file " << coordFileName );
             return;
         }
+        vtkDelimitedTextReader* coordReader = vtkDelimitedTextReader::New();
+        coordReader->SetFieldDelimiterCharacters("  ");
+        coordReader->SetStringDelimiter(' ');
+        coordReader->SetMergeConsecutiveDelimiters(true); 
+        coordReader->SetHaveHeaders(true);
+        coordReader->SetFileName( coordFileName.c_str() ); 
+        coordReader->Update();
 
-        vtkDelimitedTextReader* csvReader = vtkDelimitedTextReader::New();
-        csvReader->SetFieldDelimiterCharacters(", ");
-        csvReader->SetStringDelimiter(' ');
-        csvReader->SetMergeConsecutiveDelimiters(true); 
-        csvReader->SetHaveHeaders(true);
-        //csvReader->DetectNumericColumnsOn();
-        csvReader->SetFileName( csvFileName.c_str() ); 
-        csvReader->Update();
 
-        vtkStringToNumeric* numeric = vtkStringToNumeric::New();
-        numeric->SetInputConnection ( csvReader->GetOutputPort());
-        numeric->Update();
-        vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
-        //vtkTable* table = csvReader->GetOutput();
-        //cout << *table << endl;
-        
-        //cout << "==========================================" << endl;
-        //table->Dump();
-        //cout << "==========================================" << endl;
+        //vtkStringToNumeric* numeric = vtkStringToNumeric::New();
+        //numeric->SetInputConnection ( coordReader->GetOutputPort());
+        //numeric->Update();
+        //vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
+
+        vtkTable* table = coordReader->GetOutput();
+        cout << *table << endl;
+        cout << "==========================================" << endl;
+        table->Dump();
+        cout << "==========================================" << endl;
+
         int numCols = table->GetNumberOfColumns() ; 
         int numRows = table->GetNumberOfRows() ; 
 
-        //cout << "NC: " << numCols  << endl; 
-        //cout << "NR: " << numRows  << endl; 
-        //for ( int i = 0; i < numCols; i++ ) {
-            ////cout << "COL NAME: |" << table->GetColumnName(i) << "|" << endl;
-        //}
+        //  parse through the rows to find specific pieces of data; 
+        for ( int rowID = 0; rowID < numRows; rowID++ ) {
 
-        //  =============================
-        //  initialize the row vals 
-        //  =============================
-        if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )) ) {
-            cout << "Warning: no column Row" <<  endl;
-            //exit(1); 
-            continue; 
-        } else {
-            this->csvRowIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Row"  )); 
+            //  Get a row: 
+            string rowString = ""; 
+            int numValuesInRow = table->GetRow(rowID)->GetNumberOfValues();
+            for ( int word = 0; word < numValuesInRow; word++ ) {
+                rowString += table->GetRow(rowID)->GetValue(word).ToString() + " ";
+            }
+
+            //  First, find the number of frequency points in fitted spectra: 
+            string pointsDelimiter = "points on ppm-axis"; 
+            size_t foundPtsPos = rowString.find( pointsDelimiter ); 
+            if ( foundPtsPos != string::npos) {
+                //  num points is the first word on this line: 
+                int numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
+                cout << "ROW: " << rowString << endl;
+                cout << "POINTS: " << numFreqPoints << endl;
+            }
+        
+            //  Now read on until the start of the intensity values to parse: 
+            string dataFitDelimiter = "fit to the data follow"; 
+            size_t foundDataPos = rowString.find( dataFitDelimiter ); 
+            if ( foundDataPos != string::npos) {
+                break; 
+            }
         }
 
-        //  =============================
-        //  initialize the col vals
-        //  =============================
-        if (!vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )) ) {
-            cout << "Warning:  no column: Col" <<  endl;
-            //exit(1); 
-            continue; 
-        } else {
-            this->csvColIndex = vtkIntArray::SafeDownCast(table->GetColumnByName( "Col"  )); 
-        }
+        for ( int rowIDData = rowID; rowIDData < numRows; rowIDData++ ) {
 
+            cout << "ROW: " << rowString << endl;
 
-        //  =============================
-        //  initialize the pixel values
-        //  =============================
-        string colName = this->metName; 
-        if (!vtkDoubleArray::SafeDownCast(table->GetColumnByName(colName.c_str() )) ) {
-            cout << "Warning:  no column " << colName << endl;
-            //exit(1); 
-            continue; 
-        } else {
-            this->csvPixelValues = vtkDoubleArray::SafeDownCast( table->GetColumnByName(colName.c_str() )) ; 
-        }
-
-        //  =============================
-        //  initialize a slice index from 
-        //  the csv file name: 
-        //  =============================
-        int sliceIndex = slice;  
-        //cout << "NUM TUPS: " << this->csvPixelValues->GetNumberOfTuples() << endl;; 
-        //for ( int i = 0; i < numRows; i++ ) {
-            //cout << "Row val: " << this->csvPixelValues->GetTuple1(i) << endl;
-        //}
-
-        //  =============================
-
-        //  create an index dimVector and set the values of slice, row, and col from the values in teh csv
-        //  once these are set, then determine the voxel index for those values and set the value of 
-        //  the metMapArray for that index.  
-
-
-        svkDcmHeader::DimensionVector indexVector = dimVector; 
-        for (int i = 0; i < numRows; i++ ) {
-            int rowIndex     = this->csvRowIndex->GetTuple1(i) - 1;
-            int colIndex     = this->csvColIndex->GetTuple1(i) - 1;
-            float voxelValue =  this->csvPixelValues->GetTuple1(i) ;
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, colIndex);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, rowIndex);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, sliceIndex);
+            //  Now the intensity values follow and are delimited by a string that ends in "follow", e.g. 
+            //
+            //  NY points of the fit to the data follow  
+            //  -1.58078E+08 -1.63007E+08 -1.68433E+08 -1.70633E+08 -1.71649E+08 -1.72759E+08 
+            //  -2.08652E+08 -2.15280E+08 -2.18571E+08 -2.16981E+08 -2.11360E+08 -2.04654E+08 
+            //  -1.85580E+08
+            //  NY phased data points follow
+            
+            //  =============================
+            //  Now set these intensity values into the spectrum for this fitted voxel (cellID) 
+            //  create an index dimVector and set the values of slice, row, and col from the values in the coord 
+            //  once these are set, then determine the voxel index for those values and set the values of 
+            //  the spectrum for that CellIndex.  
+            //  =============================
+            svkDcmHeader::DimensionVector indexVector = dimVector; 
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row);
+            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice);
             int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
             //cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
-            metMapArray->SetTuple1(cellID, voxelValue);
+            vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
+            for (int i = 0; i < numTimePoints; i++ ) {
+                spectrumOut->SetTuple(i, 0.);
+            }
         }
-
-    }
+    } 
 }
 
 

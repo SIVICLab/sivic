@@ -91,12 +91,10 @@ class svkLCModelReader : public svkImageReader2
     private:
 
         //  Methods:
-        virtual void    InitDcmHeader();
-
+        virtual void                                InitDcmHeader();
 
         //  Members:
-        vtkStringArray*                         tmpFileNames;
-        string                                  mrsFileName;
+        string                                      mrsFileName;
 
 };
 

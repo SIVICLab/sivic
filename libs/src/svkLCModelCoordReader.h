@@ -85,9 +85,9 @@ class svkLCModelCoordReader : public svkLCModelReader
 
         //  Members:
         void*                                   pixelData; 
-        vtkDoubleArray*                         csvPixelValues; 
-        vtkIntArray*                            csvColIndex; 
-        vtkIntArray*                            csvRowIndex; 
+        vtkDoubleArray*                         coordPixelValues; 
+        vtkIntArray*                            coordColIndex; 
+        vtkIntArray*                            coordRowIndex; 
 
 };
 

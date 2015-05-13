@@ -190,6 +190,14 @@ void svkLCModelReader::SetMRSFileName( string mrsFileName )
 /*!
  *
  */
+void svkLCModelReader::InitDcmHeader( )
+{
+}
+
+
+/*!
+ *
+ */
 void svkLCModelReader::SetMetName( string metName )
 {
     this->metName = metName; 
