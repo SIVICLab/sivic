@@ -138,8 +138,6 @@ vtkFloatArray* svkStatistics::GetHistogram( vtkDataArray* data, double binSize, 
                 if( bin >= 0 && bin < histogram->GetNumberOfTuples()) {
                     //Increment this bin
                     histogram->SetTuple1(bin, histogram->GetTuple1(bin) + 1 );
-                } else {
-                    cout << "ERROR: bin " << bin << " Is outside of range: " << numBins << " or " << histogram->GetNumberOfTuples() << endl;
                 }
             }
         }
