@@ -172,9 +172,13 @@ void svkLCModelCoordReader::ParseCoordFiles()
    
     this->GlobFileNames();
 
+    svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
     vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
+
+    int numTimePoints = hdr->GetIntValue( "DataPointColumns" );
+
     svkDcmHeader::DimensionVector dimVector = hdr->GetDimensionIndexVector(); 
     int voxels[3];  
     hdr->GetSpatialDimensions( &dimVector, voxels ); 
@@ -228,10 +232,12 @@ void svkLCModelCoordReader::ParseCoordFiles()
         int numRows = table->GetNumberOfRows() ; 
 
         //  parse through the rows to find specific pieces of data; 
-        for ( int rowID = 0; rowID < numRows; rowID++ ) {
+        int rowID;  
+        string rowString = ""; 
+        for ( rowID = 0; rowID < numRows; rowID++ ) {
 
             //  Get a row: 
-            string rowString = ""; 
+            rowString = ""; 
             int numValuesInRow = table->GetRow(rowID)->GetNumberOfValues();
             for ( int word = 0; word < numValuesInRow; word++ ) {
                 rowString += table->GetRow(rowID)->GetValue(word).ToString() + " ";
@@ -281,7 +287,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
             vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
             for (int i = 0; i < numTimePoints; i++ ) {
-                spectrumOut->SetTuple(i, 0.);
+                spectrumOut->SetTuple1(i, 0.);
             }
         }
     } 
