@@ -44,8 +44,10 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkDCESlope.h>
+#include <svkMathUtils.h>
 
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 
 using namespace svk;
 
@@ -64,10 +66,12 @@ svkDCESlope::svkDCESlope()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    //  Output Port 0 = slope map 
     this->SetNumberOfOutputPorts(1); 
 
-    this->baselineMean         = 0.;
-    this->baselineStdDeviation = 0.;
+    this->normalize = false; 
+    this->baselineMean = 0.;
+    this->baselineStdDeviation = 0.; 
 }
 
 
@@ -85,20 +89,23 @@ svkDCESlope::~svkDCESlope()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDCESlope::GenerateMap()
+void svkDCESlope::GenerateMaps()
 {
+
+    this->InitializeInjectionPoint();
+    this->InitializeBaseline(); 
+
     int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //  Get the data array to initialize.  
-    vtkDataArray* dceMapArray;
-    dceMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
+    vtkDataArray* dceMapSlopeArray;
+    dceMapSlopeArray = this->GetOutput(0)->GetPointData()->GetArray(0); 
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameString("pixels");
-
-    dceMapArray->SetName( arrayNameString.c_str() );
+    string arrayNameString("pixels");
+    dceMapSlopeArray->SetName( arrayNameString.c_str() );
 
     double voxelValue;
     for (int i = 0; i < totalVoxels; i++ ) {
@@ -108,23 +115,23 @@ void svkDCESlope::GenerateMap()
         ); 
         float* dynamicVoxelPtr = perfusionDynamics->GetPointer(0);
 
-        voxelValue = this->GetMapVoxelValue( dynamicVoxelPtr ); 
+        this->InitializeOutputVoxelValues( dynamicVoxelPtr, i ); 
 
-        dceMapArray->SetTuple1(i, voxelValue);
     }
 
     if ( this->normalize ) {
 
         double nawmValue = this->GetNormalizationFactor(); 
         for (int i = 0; i < totalVoxels; i++ ) {
-            voxelValue  = dceMapArray->GetTuple1( i );
+            voxelValue = dceMapSlopeArray->GetTuple1( i );
             voxelValue /= nawmValue; 
-            dceMapArray->SetTuple1(i, voxelValue);
+            dceMapSlopeArray->SetTuple1(i, voxelValue);
         }
 
     }
 
 }
+
 
 /*!  
  *  For multi-volume data modifies header's per frame functional group sequence:
@@ -132,16 +139,19 @@ void svkDCESlope::GenerateMap()
 void svkDCESlope::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
 {
 
-    double voxelSlope;
-    this->GetSlopeParams( dynamicVoxelPtr, &voxelSlope); 
+    double voxelSlope; 
+    int    filterWindow = 5;
+    int    arrayLength = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
+    this->GetSlopeParams( dynamicVoxelPtr, &voxelSlope,); 
 
     //  Get the data array to initialize.  
     vtkDataArray* dceMapSlopeArray;
     dceMapSlopeArray = this->GetOutput(0)->GetPointData()->GetArray(0); 
-
     dceMapSlopeArray->SetTuple1(  voxelIndex, voxelSlope );
-
 }
+
 
 
 /*!
@@ -154,9 +164,10 @@ void svkDCESlope::InitializeBaseline()
     this->baselineMean = this->GetTimePointMean(0); 
 
     vtkDataArray* timePoint0Pixels = this->GetOutput(0)->GetPointData()->GetArray( 0 ); 
-    int numSpatialPixels           = timePoint0Pixels->GetNumberOfTuples(); 
-    this->baselineStdDeviation     = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
+    int numSpatialPixels = timePoint0Pixels->GetNumberOfTuples(); 
+    this->baselineStdDeviation = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
 }
+
 
 /*
  * Compute the stdandard deviation of the array up to the specified endPt. 
@@ -170,17 +181,17 @@ double svkDCESlope::GetStandardDeviation( vtkDataArray* array, float mean, int e
     }
     
     double variance = sumOfSquareDiffs / endPt;
-    return math::sqrt(variance);
+    return sqrt(variance);
 }
 
 
 /*!
  *  Compute the mean value over all spatial locations for the specified time point. 
  */
-double svkDCESlope::GetTimePointMean(int timePoint )
+double svkDCESlope::GetTimePointMean( int timePoint )
 {
 
-    vtkDataArray* timePointPixels = this->GetOutput(0)->GetPointData()->GetArray( timePoint ); 
+    vtkDataArray* timePointPixels = this->GetImageDataInput(0)->GetPointData()->GetArray( timePoint ); 
 
     double sum = 0.; 
 
@@ -200,7 +211,7 @@ double svkDCESlope::GetTimePointMean(int timePoint )
 void svkDCESlope::InitializeInjectionPoint()
 {
 
-    svkDcmHeader* hdr      = this->GetImageDataInput(0)->GetDcmHeader();
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
     int numberOfTimePoints = hdr->GetNumberOfTimePoints();
 
     //  Create a vtkDataArray to hold the average time kinetic 
@@ -243,100 +254,83 @@ void svkDCESlope::InitializeInjectionPoint()
 
 }
 
-/*!
- *  Computes median value of an array. 
+
+/*!  
+ *      Slope map is calculated, relative to the baseline value (pre uptake) 
  */
-double svkDCESlope::GetMedian( double* signalWindow, int size ) 
+void svkDCESlope::GetSlopeParams( float* dynamicVoxelPtr, double* voxelSlope )
 {
-    // Create sorted signal array
-    double sortedWindow[size];
-    for (int pt = 0; pt < size; ++pt) {
-        sortedWindow[pt] = signalWindow[pt];
+    // get base value
+    int   injectionPoint = this->injectionPoint; 
+    float baselineVal    = 0;
+    for ( int pt = 1; pt < 5; pt++) {
+    //for ( int pt = 3; pt < injectionPoint; pt++) {
+        baselineVal += dynamicVoxelPtr[ pt ];
     }
-    for (int i = iSize - 1; i > 0; --i) {
-        for (int j = 0; j < i; ++j) {
-            if (sortedWindow[j] > sortedWindow[j+1]) {
-                double sortTemp   = sortedWindow[j];
-                sortedWindow[j]   = sortedWindow[j+1];
-                sortedWindow[j+1] = sortTemp;
+    baselineVal = baselineVal / 4;
+    //if ( injectionPoint > 1 ) {
+    //    baselineVal = baselineVal / ( injectionPoint - 1 );
+    //}
+
+    //  get total point range to check:    
+    int startPt = injectionPoint; 
+    int endPt   = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    // find peak height 
+    double peakHt   = dynamicVoxelPtr[ startPt ];
+    for ( int pt = 0; pt < endPt/2; pt ++ ) {
+        if ( dynamicVoxelPtr[ pt ] > peakHt ) {
+            peakHt = dynamicVoxelPtr[ pt ];
+        }
+    }
+
+    // find peak time point
+    int    pt       = 1; //injectionPoint;
+    double peakTime = 1.0;
+    double height   = dynamicVoxelPtr[ pt - 1 ]; //dynamicVoxelPtr[ startPt ];
+    while ( height < (0.9 * peakHt)) {
+        height   = dynamicVoxelPtr[ pt - 1 ];
+        peakTime = pt;
+        pt++;
+    }
+    
+    // calculate peakdiff
+    double diff     = 0.0;
+    double peakDiff = 0.0;
+    if (peakTime < 6) {
+        peakDiff = 0.0;
+    }
+    else {
+        for ( int pt = 0; pt < peakTime; pt ++ ) {
+            if ( pt > 0 ) {
+                diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
+                if ( diff > peakDiff ) {
+                    peakDiff = diff;
+                }
             }
         }
     }
 
-    // Middle or average of middle values in the sorted array
-    double median = 0.0;
-    if ((size % 2) == 0) {
-        median = (sortedWindow[size/2] + sortedWindow[(size/2) - 1])/2.0;
-    } else {
-        median = sortedWindow[size/2];
+    // slope from triggertime
+    int numVoxels[3];
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
+    int numberOfSlices = numVoxels[2]; 
+    float imageRate;
+    switch ( numberOfSlices ) {
+        case 12:
+            imageRate = 6.56;
+        case 14:
+            imageRate = 7.36;
+        case 16:
+            imageRate = 8.16;
+        case 20:
+            imageRate = 10.42;
+        case 28:
+            imageRate = 12.96;
+        default:
+            imageRate = numberOfSlices * 0.052;
     }
 
-    return median;
-}
-
-/*!
- *  Median filters an array, using a neighborhood window of windowSize
- */
-void svkDCESlope::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
-{
-    // Create zero-padded array from timeseries data
-    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int    edge     = windowSize % 2;
-    double window[windowSize];
-    double paddedArray[endPt + edge * 2];
-    for ( int pt = 0; pt < (endPt + edge * 2); pt++ ) {
-        if((pt < edge) || (pt >= endPt)) {
-            paddedArray[pt] = 0;
-        }
-        else{
-            paddedArray[pt] = dynamicVoxelPtr[pt];
-        }
-    }
-
-    // Starting from first non-padding point, create neighborhood window
-    // and pass to GetMedian() 
-    for ( int x = edge; x < (endPt - edge); x++ ) {
-        i = 0;
-        for (int fx = 0; fx < windowSize; fx++) {
-            window[i] = paddedArray[x + fx - edge];
-        }
-        i++;
-        paddedArray[x] = this->GetMedian(window, windowSize)
-    }
-
-    // Put median values back into timeseries data 
-    for ( int pt = edge; pt < endPt; pt++ ) {
-        dynamicVoxelPtr[pt] = paddedArray[pt];
-    }
-}
-
-/*!  
- *  Gets baseline height of DCE curve for the current voxel, before injection point.  
- */
-double svkDCESlope::GetSlopeParams( float* dynamicVoxelPtr, double* voxelSlope)
-{
-    // get base value
-    this->InitializeInjectionPoint();
-    int   injectionPoint = this->injectionPoint; 
-    float baselineVal    = 0;
-    float imageRate      = 0.65106;
-    for ( int pt = 3; pt < injectionPoint; pt++) {
-        baselineVal += dynamicVoxelPtr[ pt ];
-    }
-    baselineVal = baselineVal / ( injectionPoint - 1 );
-
-    //  get total point range to check:    
-    int   startPt  = injectionPoint; 
-    int   endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    float maxslope = 0.0;
-    float slope    = 0.0;
-    for ( int pt = startPt; pt < endPt; pt ++ ) {
-        slope = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[pt-1];
-        if ( slope > maxslope ) {
-            maxslope = slope;
-        }
-    }
-
-    *voxelSlope = maxslope;
-
+    double slope  = 10 * peakDiff / baselineVal / imageRate * 60 * 100; 
+    *voxelSlope   = slope;
 }

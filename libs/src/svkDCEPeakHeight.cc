@@ -301,19 +301,13 @@ void svkDCEPeakHeight::GetPeakParams( float* dynamicVoxelPtr, double* voxelPeakH
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
             peakHt = dynamicVoxelPtr[ pt ];
         }
-//        if ( pt > 0 ) {
-//          diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
-//            if ( diff > peakDiff ) {
-//                peakDiff = diff;
-//            }
-//        }
     }
 
     // find peak time point
     int    pt       = 1; //injectionPoint;
     double peakTime = 1.0;
     double height   = dynamicVoxelPtr[ pt - 1 ]; //dynamicVoxelPtr[ startPt ];
-    while ( (int)height < (0.9 * (int)peakHt)) {
+    while ( height < (0.9 * peakHt)) {
         height   = dynamicVoxelPtr[ pt - 1 ];
         peakTime = pt;
         pt++;

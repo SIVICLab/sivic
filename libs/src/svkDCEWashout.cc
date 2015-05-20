@@ -44,8 +44,10 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 #include <svkDCEWashout.h>
+#include <svkMathUtils.h>
 
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 
 using namespace svk;
 
@@ -64,10 +66,12 @@ svkDCEWashout::svkDCEWashout()
 #endif
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
+    //  Output Port 0 = washout map 
     this->SetNumberOfOutputPorts(1); 
 
-    this->baselineMean         = 0.;
-    this->baselineStdDeviation = 0.;
+    this->normalize = false; 
+    this->baselineMean = 0.;
+    this->baselineStdDeviation = 0.; 
 }
 
 
@@ -85,20 +89,23 @@ svkDCEWashout::~svkDCEWashout()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDCEWashout::GenerateMap()
+void svkDCEWashout::GenerateMaps()
 {
+
+    this->InitializeInjectionPoint();
+    this->InitializeBaseline(); 
+
     int numVoxels[3]; 
-    this->GetOutput()->GetNumberOfVoxels(numVoxels);
+    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
     int totalVoxels = numVoxels[0] * numVoxels[1] * numVoxels[2]; 
 
     //  Get the data array to initialize.  
-    vtkDataArray* dceMapArray;
-    dceMapArray = this->GetOutput()->GetPointData()->GetArray(0); 
+    vtkDataArray* dceMapWashoutArray;
+    dceMapWashoutArray = this->GetOutput(0)->GetPointData()->GetArray(0); 
 
     //  Add the output volume array to the correct array in the svkMriImageData object
-    vtkstd::string arrayNameString("pixels");
-
-    dceMapArray->SetName( arrayNameString.c_str() );
+    string arrayNameString("pixels");
+    dceMapWashoutArray->SetName( arrayNameString.c_str() );
 
     double voxelValue;
     for (int i = 0; i < totalVoxels; i++ ) {
@@ -108,18 +115,17 @@ void svkDCEWashout::GenerateMap()
         ); 
         float* dynamicVoxelPtr = perfusionDynamics->GetPointer(0);
 
-        voxelValue = this->GetMapVoxelValue( dynamicVoxelPtr ); 
+        this->InitializeOutputVoxelValues( dynamicVoxelPtr, i ); 
 
-        dceMapArray->SetTuple1(i, voxelValue);
     }
 
     if ( this->normalize ) {
 
         double nawmValue = this->GetNormalizationFactor(); 
         for (int i = 0; i < totalVoxels; i++ ) {
-            voxelValue = dceMapArray->GetTuple1( i );
+            voxelValue = dceMapWashoutArray->GetTuple1( i );
             voxelValue /= nawmValue; 
-            dceMapArray->SetTuple1(i, voxelValue);
+            dceMapWashoutArray->SetTuple1(i, voxelValue);
         }
 
     }
@@ -133,16 +139,20 @@ void svkDCEWashout::GenerateMap()
 void svkDCEWashout::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
 {
 
-    double voxelWashout;
-    this->GetWashoutParams( dynamicVoxelPtr, &voxelWashout); 
+    double voxelWashout; 
+    int    filterWindow = 5;
+    int    arrayLength = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
+    this->GetWashoutParams( dynamicVoxelPtr, &voxelWashout,); 
 
     //  Get the data array to initialize.  
     vtkDataArray* dceMapWashoutArray;
     dceMapWashoutArray = this->GetOutput(0)->GetPointData()->GetArray(0); 
-
     dceMapWashoutArray->SetTuple1(  voxelIndex, voxelWashout );
-
 }
+
+
 
 /*!
  *  Compute the mean baseline and std dev as the mean of the first 
@@ -154,9 +164,10 @@ void svkDCEWashout::InitializeBaseline()
     this->baselineMean = this->GetTimePointMean(0); 
 
     vtkDataArray* timePoint0Pixels = this->GetOutput(0)->GetPointData()->GetArray( 0 ); 
-    int numSpatialPixels           = timePoint0Pixels->GetNumberOfTuples(); 
-    this->baselineStdDeviation     = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
+    int numSpatialPixels = timePoint0Pixels->GetNumberOfTuples(); 
+    this->baselineStdDeviation = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
 }
+
 
 /*
  * Compute the stdandard deviation of the array up to the specified endPt. 
@@ -170,17 +181,17 @@ double svkDCEWashout::GetStandardDeviation( vtkDataArray* array, float mean, int
     }
     
     double variance = sumOfSquareDiffs / endPt;
-    return math::sqrt(variance);
+    return sqrt(variance);
 }
 
 
 /*!
  *  Compute the mean value over all spatial locations for the specified time point. 
  */
-double svkDCEWashout::GetTimePointMean(int timePoint )
+double svkDCEWashout::GetTimePointMean( int timePoint )
 {
 
-    vtkDataArray* timePointPixels = this->GetOutput(0)->GetPointData()->GetArray( timePoint ); 
+    vtkDataArray* timePointPixels = this->GetImageDataInput(0)->GetPointData()->GetArray( timePoint ); 
 
     double sum = 0.; 
 
@@ -200,7 +211,7 @@ double svkDCEWashout::GetTimePointMean(int timePoint )
 void svkDCEWashout::InitializeInjectionPoint()
 {
 
-    svkDcmHeader* hdr      = this->GetImageDataInput(0)->GetDcmHeader();
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
     int numberOfTimePoints = hdr->GetNumberOfTimePoints();
 
     //  Create a vtkDataArray to hold the average time kinetic 
@@ -243,107 +254,84 @@ void svkDCEWashout::InitializeInjectionPoint()
 
 }
 
-/*!
- *  Computes median value of an array. 
+
+/*!  
+ *      Washout map is calculated, relative to the baseline value (pre uptake) 
  */
-double svkDCEWashout::GetMedian( double* signalWindow, int size ) 
+void svkDCEWashout::GetWashoutParams( float* dynamicVoxelPtr, double* voxelWashout )
 {
-    // Create sorted signal array
-    double sortedWindow[size];
-    for (int pt = 0; pt < size; ++pt) {
-        sortedWindow[pt] = signalWindow[pt];
+    // get base value
+    int   injectionPoint = this->injectionPoint; 
+    float baselineVal    = 0;
+    for ( int pt = 1; pt < 5; pt++) {
+    //for ( int pt = 3; pt < injectionPoint; pt++) {
+        baselineVal += dynamicVoxelPtr[ pt ];
     }
-    for (int i = iSize - 1; i > 0; --i) {
-        for (int j = 0; j < i; ++j) {
-            if (sortedWindow[j] > sortedWindow[j+1]) {
-                double sortTemp   = sortedWindow[j];
-                sortedWindow[j]   = sortedWindow[j+1];
-                sortedWindow[j+1] = sortTemp;
+    baselineVal = baselineVal / 4;
+    //if ( injectionPoint > 1 ) {
+    //    baselineVal = baselineVal / ( injectionPoint - 1 );
+    //}
+
+    //  get total point range to check:    
+    int startPt = injectionPoint; 
+    int endPt   = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+
+    // find peak height 
+    double peakHt   = dynamicVoxelPtr[ startPt ];
+    for ( int pt = 0; pt < endPt/2; pt ++ ) {
+        if ( dynamicVoxelPtr[ pt ] > peakHt ) {
+            peakHt = dynamicVoxelPtr[ pt ];
+        }
+    }
+
+    // find peak time point
+    int    pt       = 1; //injectionPoint;
+    double peakTime = 1.0;
+    double height   = dynamicVoxelPtr[ pt - 1 ]; //dynamicVoxelPtr[ startPt ];
+    while ( height < (0.9 * peakHt)) {
+        height   = dynamicVoxelPtr[ pt - 1 ];
+        peakTime = pt;
+        pt++;
+    }
+    
+    // calculate peakdiff
+    double diff     = 0.0;
+    double peakDiff = 0.0;
+    if (peakTime < 6) {
+        peakDiff = 0.0;
+    }
+    else {
+        for ( int pt = 0; pt < peakTime; pt ++ ) {
+            if ( pt > 0 ) {
+                diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1];
+                if ( diff > peakDiff ) {
+                    peakDiff = diff;
+                }
             }
         }
     }
 
-    // Middle or average of middle values in the sorted array
-    double median = 0.0;
-    if ((size % 2) == 0) {
-        median = (sortedWindow[size/2] + sortedWindow[(size/2) - 1])/2.0;
-    } else {
-        median = sortedWindow[size/2];
-    }
-
-    return median;
-}
-
-/*!
- *  Median filters an array, using a neighborhood window of windowSize
- */
-void svkDCEWashout::MedianFilter1D( float* dynamicVoxelPtr, int windowSize=3 )
-{
-    // Create zero-padded array from timeseries data
-    int    endPt    = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int    edge     = windowSize % 2;
-    double window[windowSize];
-    double paddedArray[endPt + edge * 2];
-    for ( int pt = 0; pt < (endPt + edge * 2); pt++ ) {
-        if((pt < edge) || (pt >= endPt)) {
-            paddedArray[pt] = 0;
-        }
-        else{
-            paddedArray[pt] = dynamicVoxelPtr[pt];
-        }
-    }
-
-    // Starting from first non-padding point, create neighborhood window
-    // and pass to GetMedian() 
-    for ( int x = edge; x < (endPt - edge); x++ ) {
-        i = 0;
-        for (int fx = 0; fx < windowSize; fx++) {
-            window[i] = paddedArray[x + fx - edge];
-        }
-        i++;
-        paddedArray[x] = this->GetMedian(window, windowSize)
-    }
-
-    // Put median values back into timeseries data 
-    for ( int pt = edge; pt < endPt; pt++ ) {
-        dynamicVoxelPtr[pt] = paddedArray[pt];
-    }
-}
-
-/*!  
- *  Calculates washout from DCE curve
- */
-double svkDCEWashout::GetWashoutParams( float* dynamicVoxelPtr, double* voxelWashout )
-{
-    this->InitializeInjectionPoint();
-    int injectionPoint   = this->injectionPoint;
-    float imageRate      = 0.65106;
-    int washoutStartTime = 170;
-    int washoutEndTime   = 240;
-    int endPt            = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    int washoutStartSlice;
-    int washoutEndSlice;
-    int numVoxels[3]; 
+    // slope from triggertime
+    int numVoxels[3];
     this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
     int numberOfSlices = numVoxels[2]; 
-    float timeForPoint = imageRate * numberSlices;
-    washoutStartSlice  = washoutStartTime / (timeForPoint + injectionPoint);
-    washoutEndSlice    = washoutEndTime / (timeForPoint + injectionPoint);
-    if (washoutEndSlice >= endPt) {
-        washoutEndSlice = endPt - 1;
-    }
-    if (washoutEndSlice <= washoutStartSlice) {
-        washoutStartSlice = washoutEndSlice - 1;
+    float imageRate;
+    switch ( numberOfSlices ) {
+        case 12:
+            imageRate = 6.56;
+        case 14:
+            imageRate = 7.36;
+        case 16:
+            imageRate = 8.16;
+        case 20:
+            imageRate = 10.42;
+        case 28:
+            imageRate = 12.96;
+        default:
+            imageRate = numberOfSlices * 0.052;
     }
 
-    // get base value
-    float baseval = 0;
-    for ( int pt = 3; pt < injectionPoint; pt++) {
-        baseval += dynamicVoxelPtr[ pt ];
-    }
-    baseval = baseval / ( injectionPoint - 1 );
+    double washout;
 
-    double washout = (dynamicVoxelPtr[washoutEndSlice] - dynamicVoxelPtr[washoutStartSlice]) * 1000 / baseval * 60 / ((washoutEndSlice - washoutStartSlice) * imageRate)
-
-    *voxelWashout = washout;
+    *voxelWashout   = washout;
 }
