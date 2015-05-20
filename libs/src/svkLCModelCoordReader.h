@@ -44,9 +44,8 @@
 #define SVK_LCMODEL_COORD_READER_H
 
 #include <vtkInformation.h>
-#include <vtkstd/map>
 #include <vtkStringArray.h>
-#include <vtkstd/string>
+#include <vtkTable.h>
 
 #include <svkUtils.h>
 #include <svkLCModelReader.h>
@@ -82,6 +81,8 @@ class svkLCModelCoordReader : public svkLCModelReader
 
         //  Methods:
         void            ParseCoordFiles();
+        void            GetDataRow(vtkTable* table, int rowID, string* rowString); 
+
 
         //  Members:
         void*                                   pixelData; 

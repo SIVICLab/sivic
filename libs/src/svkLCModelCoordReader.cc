@@ -48,7 +48,6 @@
 #include <vtkByteSwap.h>
 #include <vtkSmartPointer.h>
 #include <vtkDelimitedTextReader.h>
-#include <vtkTable.h>
 #include <vtkStringToNumeric.h>
 #include <vtkVariantArray.h>
 
@@ -164,8 +163,7 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 
 
 /*
- *  Read IDF header fields into a string STL map for use during initialization 
- *  of DICOM header by Init*Module methods. 
+ *  Parse LCModel coord file 
  */
 void svkLCModelCoordReader::ParseCoordFiles()
 {
@@ -234,21 +232,20 @@ void svkLCModelCoordReader::ParseCoordFiles()
         //  parse through the rows to find specific pieces of data; 
         int rowID;  
         string rowString = ""; 
+        int numFreqPoints;
         for ( rowID = 0; rowID < numRows; rowID++ ) {
 
             //  Get a row: 
-            rowString = ""; 
-            int numValuesInRow = table->GetRow(rowID)->GetNumberOfValues();
-            for ( int word = 0; word < numValuesInRow; word++ ) {
-                rowString += table->GetRow(rowID)->GetValue(word).ToString() + " ";
-            }
+            this->GetDataRow(table, rowID, &rowString);  
+
+            cout << "ROW: " << rowString << endl;
 
             //  First, find the number of frequency points in fitted spectra: 
             string pointsDelimiter = "points on ppm-axis"; 
             size_t foundPtsPos = rowString.find( pointsDelimiter ); 
             if ( foundPtsPos != string::npos) {
                 //  num points is the first word on this line: 
-                int numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
+                numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
                 cout << "ROW: " << rowString << endl;
                 cout << "POINTS: " << numFreqPoints << endl;
             }
@@ -260,37 +257,79 @@ void svkLCModelCoordReader::ParseCoordFiles()
                 break; 
             }
         }
+        cout << "ROW: " << rowString << endl;
 
-        for ( int rowIDData = rowID; rowIDData < numRows; rowIDData++ ) {
+        //  
+        //  Create an array for the intensity values: 
+        //  The intensity values follow and are delimited by a string that ends in "follow", e.g. 
+        //
+        //  NY points of the fit to the data follow  
+        //  -1.58078E+08 -1.63007E+08 -1.68433E+08 -1.70633E+08 -1.71649E+08 -1.72759E+08 
+        //  -2.08652E+08 -2.15280E+08 -2.18571E+08 -2.16981E+08 -2.11360E+08 -2.04654E+08 
+        //  -1.85580E+08
+        //  NY phased data points follow
+        //
+        float* coordIntensities = new float[numFreqPoints];     
+        int freqIndex = 0;  // total of numFreqPoints values
+        for ( int rowIDData = rowID+1; rowIDData < numRows; rowIDData++ ) {
+            cout << "rowID: " << rowIDData << endl;
 
+            this->GetDataRow(table, rowIDData, &rowString);  
             cout << "ROW: " << rowString << endl;
 
-            //  Now the intensity values follow and are delimited by a string that ends in "follow", e.g. 
-            //
-            //  NY points of the fit to the data follow  
-            //  -1.58078E+08 -1.63007E+08 -1.68433E+08 -1.70633E+08 -1.71649E+08 -1.72759E+08 
-            //  -2.08652E+08 -2.15280E+08 -2.18571E+08 -2.16981E+08 -2.11360E+08 -2.04654E+08 
-            //  -1.85580E+08
-            //  NY phased data points follow
-            
+            int numValuesInRow = table->GetRow(rowIDData)->GetNumberOfValues();
+            cout << "DEREF: " << *table->GetRow(rowIDData) << endl;
+            bool isValid; 
+            for ( int word = 0; word < numValuesInRow; word++ ) {
+                float intensity = table->GetRow(rowIDData)->GetValue(word).ToFloat(&isValid); 
+                if ( isValid ) {
+                    coordIntensities[freqIndex] = table->GetRow(rowIDData)->GetValue(word).ToFloat(); 
+                    cout << "word: " << word << " " << coordIntensities[freqIndex] << endl;
+                    freqIndex++; 
+                } else {
+                    break; 
+                }
+            }
+            if ( freqIndex >= numFreqPoints ) {
+                break; 
+            }
+            cout << "freqIndex: " << freqIndex << endl;
+        }
+
+        //  Set the values back into the output data cell: 
+        svkDcmHeader::DimensionVector indexVector = dimVector; 
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col);
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row);
+        svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice);
+        int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
+        vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
+        for ( int freqIndex = 0; freqIndex < numFreqPoints; freqIndex++ ) {
+
             //  =============================
             //  Now set these intensity values into the spectrum for this fitted voxel (cellID) 
             //  create an index dimVector and set the values of slice, row, and col from the values in the coord 
             //  once these are set, then determine the voxel index for those values and set the values of 
             //  the spectrum for that CellIndex.  
             //  =============================
-            svkDcmHeader::DimensionVector indexVector = dimVector; 
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::COL_INDEX, col);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::ROW_INDEX, row);
-            svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice);
-            int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
-            //cout << "VV: " << cellID << " " << colIndex << " " << rowIndex << " " << " " << sliceIndex << " " << voxelValue  << endl;
-            vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
-            for (int i = 0; i < numTimePoints; i++ ) {
-                spectrumOut->SetTuple1(i, 0.);
-            }
+            cout << "FI: " << freqIndex << endl; 
+            spectrumOut->SetTuple1( freqIndex, coordIntensities[freqIndex] );
         }
+        delete [] coordIntensities; 
     } 
+}
+
+
+/*
+ *
+ */
+void svkLCModelCoordReader::GetDataRow(vtkTable* table, int rowID, string* rowString)
+{
+    *rowString = ""; 
+    int numValuesInRow = table->GetRow(rowID)->GetNumberOfValues();
+cout << " NVIR: " << numValuesInRow << endl;
+    for ( int word = 0; word < numValuesInRow; word++ ) {
+        *rowString += table->GetRow(rowID)->GetValue(word).ToString() + " ";
+    }
 }
 
 
