@@ -3750,6 +3750,9 @@ void vtkSivicController::GetMRSDefaultPPMRange( svkImageData* mrsData, float& pp
     if ( nucleus.find("13C") !=string::npos ) {
         ppmMin = PPM_13C_DEFAULT_MIN; 
         ppmMax = PPM_13C_DEFAULT_MAX;
+    } else if ( this->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) { 
+        ppmMin = PPM_1H_PROSE_DEFAULT_MIN; 
+        ppmMax = PPM_1H_PROSE_DEFAULT_MAX;
     } else {
         ppmMin = PPM_1H_DEFAULT_MIN; 
         ppmMax = PPM_1H_DEFAULT_MAX;

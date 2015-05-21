@@ -132,6 +132,7 @@ class sivicApp
         char**  ParseCommandLineArgs( int* argc, char* argv[] ); 
         
         vector< string >    inputFiles; 
+        vector< bool >      inputFilesOnlyLoadOne; 
 
         
 };

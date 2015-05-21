@@ -330,8 +330,10 @@ void sivicSpectraRangeWidget::ResetFrequencyRange( bool useFullRange )
                 float ppmMax;  
                 //  The default range must be within the actual range of the data. If not, use full range: 
                 this->sivicController->GetMRSDefaultPPMRange( data, ppmMin, ppmMax ); 
-                if ( ppmMin > min || ppmMax < max ) { 
+                if ( ppmMin > min ) { 
                     ppmMin = min; 
+                }
+                if ( ppmMax < max ) { 
                     ppmMax = max; 
                 } 
                         

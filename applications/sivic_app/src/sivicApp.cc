@@ -878,10 +878,12 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     usemsg += "     -a anatomy      Anatomy preferences                     \n";
     usemsg += "                         brain (default)                     \n";
     usemsg += "                         prostate                            \n";
-    usemsg += "     -i fileName     input file name, may specify multiple,  \n";
+    usemsg += "     -i fileName     Input file name, may specify multiple,  \n";
     usemsg += "                     instances of -i, e.g MRS, MRI (ref and  \n";
     usemsg += "                     overlay). For series, only specify one  \n"; 
     usemsg += "                     image from the series.                  \n"; 
+    usemsg += "     -is fileName    Only load the single explicit file name,\n";  
+    usemsg += "                     no globbing of associated files names.  \n";
     usemsg += "     -h              Print help mesage.                      \n";
     usemsg += "                                                             \n";
     usemsg += "SIVIC GUI.                                                   \n";
@@ -894,11 +896,13 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     int anatomyType = svkTypes::ANATOMY_BRAIN;
 
     enum FLAG_NAME {
+        FLAG_SINGLE_FILE_LOAD = 0
     };
 
 
     static struct option long_options[] =
     {
+        {"is",                required_argument, NULL,  FLAG_SINGLE_FILE_LOAD},
         {0, 0, 0, 0}
     };
 
@@ -919,6 +923,11 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
                 break;
             case 'i':
                 this->inputFiles.push_back( optarg );
+                this->inputFilesOnlyLoadOne.push_back( false);
+                break;
+            case FLAG_SINGLE_FILE_LOAD:
+                this->inputFiles.push_back( optarg );
+                this->inputFilesOnlyLoadOne.push_back( true );
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -1041,18 +1050,18 @@ int sivicApp::Start( int argc, char* argv[] )
             SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
         reader->Delete();
-
+cout << " LOAD ONE? " << this->inputFilesOnlyLoadOne[i] << endl;
         //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
             if ( loadOrder[i] == refImageIndex ) {
-                this->GetView()->OpenFile("command_line_image", this->inputFiles[ loadOrder[i] ].c_str() ); 
+                this->GetView()->OpenFile("command_line_image", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i]); 
             } else {
-                this->GetView()->OpenFile("command_line_overlay", this->inputFiles[ loadOrder[i] ].c_str() ); 
+                this->GetView()->OpenFile("command_line_overlay", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i] ); 
             }
 
         } else if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {
-            this->GetView()->OpenFile("command_line_spectra", this->inputFiles[ loadOrder[i] ].c_str() ); 
+            this->GetView()->OpenFile("command_line_spectra", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i] ); 
         }
     }
     
