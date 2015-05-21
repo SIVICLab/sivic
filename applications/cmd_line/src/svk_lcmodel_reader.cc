@@ -50,6 +50,7 @@
 #include <svkImageWriterFactory.h>
 #include <svkImageWriter.h>
 #include <svkLCModelCSVReader.h>
+#include <svkLCModelCoordReader.h>
 #include <svkDICOMMRSWriter.h>
 #include <svkDdfVolumeWriter.h>
 #include <svkDcmHeader.h>
@@ -73,13 +74,17 @@ int main (int argc, char** argv)
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
     usemsg += "svk_lcmodel_reader -i input_file_name -o output_file_root                            \n"; 
-    usemsg += "                   --csv csv_file_name --met met_name                                \n"; 
+    usemsg += "                   --csv csv_file_name --coord coord_file_name --met met_name        \n"; 
+    usemsg += "                   --met met_name                                                    \n"; 
     usemsg += "                   [ -bh ]                                                           \n";
     usemsg += "                                                                                     \n";  
     usemsg += "   -i        name        Name of template MRS file.                                  \n"; 
     usemsg += "   -o        name        Root name of outputfile.                                    \n";
     usemsg += "   --csv     name        Name of csv file to convert.                                \n";
-    usemsg += "   --met     met_name    Name of met to convert.                                     \n";
+    usemsg += "                         (specify 1 and all will be read.)                           \n";
+    usemsg += "   --coord   name        Name of coord file to convert                               \n";
+    usemsg += "                         (specify 1 and all will be read.)                           \n";
+    usemsg += "   --met     met_name    Name of met to convert (specify 1 and all will be read.)    \n";
     usemsg += "   -b                    Set up for selection box analysis only.                     \n";
     usemsg += "   -h                    Print this help mesage.                                     \n";  
     usemsg += "                                                                                     \n";  
@@ -89,12 +94,14 @@ int main (int argc, char** argv)
     string  inputFileName; 
     string  outputFileName;
     string  csvFileName;
+    string  coordFileName;
     string  metName;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
     enum FLAG_NAME {
         FLAG_CSV_FILE, 
+        FLAG_COORD_FILE, 
         FLAG_MET_NAME, 
     }; 
 
@@ -102,6 +109,7 @@ int main (int argc, char** argv)
     {
         /* This option sets a flag. */
         {"csv",         required_argument, NULL,  FLAG_CSV_FILE}, 
+        {"coord",       required_argument, NULL,  FLAG_COORD_FILE}, 
         {"met",         required_argument, NULL,  FLAG_MET_NAME}, 
         {0, 0, 0, 0}
     };
@@ -122,6 +130,9 @@ int main (int argc, char** argv)
             case FLAG_CSV_FILE:
                 csvFileName.assign( optarg );
                 break;
+            case FLAG_COORD_FILE:
+                coordFileName.assign( optarg );
+                break;
             case FLAG_MET_NAME:
                 metName.assign( optarg );
                 break;
@@ -140,7 +151,7 @@ int main (int argc, char** argv)
     if ( 
         argc != 0 ||  inputFileName.length() == 0  
         || outputFileName.length() == 0 
-        || csvFileName.length() == 0 
+        || ( csvFileName.length() == 0 && coordFileName.length() == 0 ) 
         || metName.length() == 0 
     ) {
         cout << usemsg << endl;
@@ -152,57 +163,111 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
-    if( ! svkUtils::FilePathExists( csvFileName.c_str() ) ) {
-        cerr << "Input file can not be loaded (may not exist) " << csvFileName << endl; 
-        exit(1); 
+    if ( csvFileName.length() != 0 ) {
+        if( ! svkUtils::FilePathExists( csvFileName.c_str() ) ) {
+            cerr << "Input file can not be loaded (may not exist) " << csvFileName << endl; 
+            exit(1); 
+        }
+        cout << "file name: " << inputFileName << endl;
+        cout << "csv file name: " << inputFileName << endl;
+
+        // ===============================================  
+        // ===============================================  
+        svkLCModelCSVReader* csvReader = svkLCModelCSVReader::New(); 
+        csvReader->SetMetName( metName ); 
+        csvReader->SetFileName(csvFileName.c_str() ); 
+        csvReader->SetMRSFileName(inputFileName.c_str() ); 
+        csvReader->Update(); 
+    
+        svkImageData* currentImage = svkMriImageData::SafeDownCast( csvReader->GetOutput() ); 
+
+        // ===============================================  
+        //  Write the data out to the specified file type.  
+        //  Use an svkImageWriterFactory to obtain the
+        //  correct writer type. 
+        // ===============================================  
+        vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+        svkImageWriter* mapWriter = static_cast<svkImageWriter*>( 
+            writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI) ); 
+
+        if ( mapWriter == NULL ) {
+            cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
+            exit(1);
+        }
+
+        mapWriter->SetFileName( outputFileName.c_str() );
+        mapWriter->SetInput(  currentImage  );
+
+        // ===============================================  
+        //  Set the input command line into the data set 
+        //  provenance: 
+        // ===============================================  
+        csvReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
+        // ===============================================  
+        //  Write data to file: 
+        // ===============================================  
+        mapWriter->Write();
+
+        // ===============================================  
+        //  Clean up: 
+        // ===============================================  
+        mapWriter->Delete();
+        csvReader->Delete();
     }
-    cout << "file name: " << inputFileName << endl;
-    cout << "csv file name: " << inputFileName << endl;
 
 
-    // ===============================================  
-    // ===============================================  
-    svkLCModelCSVReader* csvReader = svkLCModelCSVReader::New(); 
-    csvReader->SetMetName( metName ); 
-    csvReader->SetFileName(csvFileName.c_str() ); 
-    csvReader->SetMRSFileName(inputFileName.c_str() ); 
-    csvReader->Update(); 
+    if ( coordFileName.length() != 0 ) {
+        if( ! svkUtils::FilePathExists( coordFileName.c_str() ) ) {
+            cerr << "Input file can not be loaded (may not exist) " << coordFileName << endl; 
+            exit(1); 
+        }
+        cout << "coord file name: " << coordFileName << endl;
 
-    svkImageData* currentImage = svkMriImageData::SafeDownCast( csvReader->GetOutput() ); 
+        // ===============================================  
+        // ===============================================  
+        svkLCModelCoordReader* coordReader = svkLCModelCoordReader::New(); 
+        coordReader->SetMetName( metName ); 
+        coordReader->SetFileName(coordFileName.c_str() ); 
+        coordReader->SetMRSFileName(inputFileName.c_str() ); 
+        coordReader->Update(); 
 
-    // ===============================================  
-    //  Write the data out to the specified file type.  
-    //  Use an svkImageWriterFactory to obtain the
-    //  correct writer type. 
-    // ===============================================  
-    vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-    svkImageWriter* writer = static_cast<svkImageWriter*>( 
-        writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_ENHANCED_MRI) ); 
 
-    if ( writer == NULL ) {
-        cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_ENHANCED_MRI << endl;
-        exit(1);
+        // ===============================================  
+        //  Write the data out to the specified file type.  
+        //  Use an svkImageWriterFactory to obtain the
+        //  correct writer type. 
+        // ===============================================  
+        vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+        svkImageWriter* mrsWriter = static_cast<svkImageWriter*>( 
+            writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRS) ); 
+
+        if ( mrsWriter == NULL ) {
+            cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_MRS << endl;
+            exit(1);
+        }
+
+        mrsWriter->SetFileName( outputFileName.c_str() );
+        mrsWriter->SetInput(  coordReader->GetOutput() );
+
+        // ===============================================  
+        //  Set the input command line into the data set 
+        //  provenance: 
+        // ===============================================  
+        coordReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
+        // ===============================================  
+        //  Write data to file: 
+        // ===============================================  
+        mrsWriter->Write();
+
+        // ===============================================  
+        //  Clean up: 
+        // ===============================================  
+        mrsWriter->Delete();
+        coordReader->Delete();
     }
 
-    writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput(  currentImage  );
-
-    // ===============================================  
-    //  Set the input command line into the data set 
-    //  provenance: 
-    // ===============================================  
-    csvReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
-
-    // ===============================================  
-    //  Write data to file: 
-    // ===============================================  
-    writer->Write();
-
-    // ===============================================  
-    //  Clean up: 
-    // ===============================================  
-    writer->Delete();
-    csvReader->Delete();
 
     return 0; 
 }
