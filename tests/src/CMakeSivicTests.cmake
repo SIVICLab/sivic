@@ -1483,5 +1483,5 @@ SET( TEST_CASE_ROOT ${SVK_TEST_ROOT}/svk_dce_quantify )
 ADD_TEST(${TEST_NAME}  ${TEST_BIN_PATH_CMD_LINE}/svk_dce_quantify -i ${TEST_CASE_ROOT}/input/dce_dcm/E3129S1009I100.DCM -o ${TEST_RESULTS_PATH}/dce_quantify_out -t3 )
 
 SET( TEST_NAME TEST_DCE_PK_HT_DIFF)
-ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/dce_quantify_out_peak_ht.idf ${TEST_CASE_ROOT}/output/peak/peak_height.idf )
+ADD_TEST(${TEST_NAME}  ${DIFF_COMMAND} ${DIFF_OPT} -r ${TEST_RESULTS_PATH}/dce_quantify_out_dce_peak_ht.idf ${TEST_CASE_ROOT}/output/peak/peak_height.idf )
 SET_TESTS_PROPERTIES(TEST_DCE_PK_HT_DIFF PROPERTIES DEPENDS TEST_MCHK_DCE_PK_HT)
