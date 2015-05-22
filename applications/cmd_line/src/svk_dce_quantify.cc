@@ -202,44 +202,58 @@ int main (int argc, char** argv)
     //  output file format. 
     // ===============================================  
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
+    svkImageWriter* baseHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) );
     svkImageWriter* peakHtWriter   = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
     svkImageWriter* peakTimeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
-    svkImageWriter* maxSlopeWriter    = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* maxSlopeWriter = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) ); 
+    svkImageWriter* washoutWriter  = static_cast<svkImageWriter*>( writerFactory->CreateImageWriter( dataTypeOut ) );
     writerFactory->Delete();
     
     if ( peakHtWriter == NULL || peakTimeWriter == NULL || maxSlopeWriter == NULL ) { 
         cerr << "Can not create writer of type: " << dataTypeOut << endl;
         exit(1);
     }
-  
+    
+    string baseHtFile   = outputFileName;
     string peakHtFile   = outputFileName;  
     string peakTimeFile = outputFileName;  
     string maxSlopeFile = outputFileName;  
+    string washoutFile  = outputFileName;
 
+    baseHtFile.append("_dce_base_ht");
     peakHtFile.append("_dce_peak_ht");  
     peakTimeFile.append("_dce_peak_time");  
-    maxSlopeFile.append("_dce_max_slpe");  
+    maxSlopeFile.append("_dce_up_slope");  
+    washoutFile.append("_dce_washout");
 
+    baseHtWriter->SetFileName(   baseHtFile.c_str() );
     peakHtWriter->SetFileName(   peakHtFile.c_str() );
     peakTimeWriter->SetFileName( peakTimeFile.c_str() );
     maxSlopeWriter->SetFileName( maxSlopeFile.c_str() );
+    washoutWriter->SetFileName(  washoutFile.c_str() );
 
-    peakHtWriter->SetInput(   dceQuant->GetOutput(0) );      // port 0 is peakHt map 
-    peakTimeWriter->SetInput( dceQuant->GetOutput(1) );      // port 1 is peakTimet map 
-    //maxSlopeWriter->SetInput( dceQuant->GetOutput(2) );      // port 2 is max slope map  
+    baseHtWriter->SetInput(   dceQuant->GetOutput(0) );      // port 0 is baseline map
+    peakHtWriter->SetInput(   dceQuant->GetOutput(1) );      // port 1 is peakHt map 
+    peakTimeWriter->SetInput( dceQuant->GetOutput(2) );      // port 2 is peakTimet map 
+    maxSlopeWriter->SetInput( dceQuant->GetOutput(3) );      // port 3 is max slope map  
+    washoutWriter->SetInput(  dceQuant->GetOutput(4) );       // port 4 is washout map
 
+    baseHtWriter->Write();
     peakHtWriter->Write();
     peakTimeWriter->Write();
-    //maxSlopeWriter->Write();
+    maxSlopeWriter->Write();
+    washoutWriter->Write();
 
     // ===============================================  
 
 
     //  clean up:
     dceQuant->Delete(); 
+    baseHtWriter->Delete();
     peakHtWriter->Delete();
     peakTimeWriter->Delete();
     maxSlopeWriter->Delete();
+    washoutWriter->Delete();
 
     reader->Delete();
 

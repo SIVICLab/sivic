@@ -71,10 +71,12 @@ svkDCEQuantify::svkDCEQuantify()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
     this->SetNumberOfInputPorts(1);
-    //  Outputports:  0 for peak ht map
-    //  Outputports:  1 for peak time map 
-    //  Outputports:  2 for max slope map 
-    this->SetNumberOfOutputPorts(3);
+    //  Outputports:  0 for base ht map
+    //  Outputports:  1 for peak ht map
+    //  Outputports:  2 for peak time map 
+    //  Outputports:  3 for up slope map 
+    //  Outputports:  4 for washout slope map
+    this->SetNumberOfOutputPorts(5);
     
 }
 
@@ -107,13 +109,16 @@ void svkDCEQuantify::Quantify()
 void svkDCEQuantify::GenerateDCEMaps()
 {
 
-    //  Calculate DCE Peak Height and Peak time maps:
+    //  Calculate DCE maps:
     svkDCEPeakHeight* dcePkHt = svkDCEPeakHeight::New();
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
     dcePkHt->SetSeriesDescription( "Peak Params" );
     dcePkHt->Update();
     this->GetOutput(0)->DeepCopy( dcePkHt->GetOutput(0) );
     this->GetOutput(1)->DeepCopy( dcePkHt->GetOutput(1) );
+    this->GetOutput(2)->DeepCopy( dcePkHt->GetOutput(2) );
+    this->GetOutput(3)->DeepCopy( dcePkHt->GetOutput(3) );
+    this->GetOutput(4)->DeepCopy( dcePkHt->GetOutput(4) );
 
     dcePkHt->Delete();
 
