@@ -67,6 +67,7 @@ class svkLCModelCoordReader : public svkLCModelReader
 
         //  Methods:
         virtual int             CanReadFile( const char* fname );
+        void                    SetDataStartDelimiter( string delimiterString ); 
 
     protected:
 
@@ -89,6 +90,7 @@ class svkLCModelCoordReader : public svkLCModelReader
         vtkDoubleArray*                         coordPixelValues; 
         vtkIntArray*                            coordColIndex; 
         vtkIntArray*                            coordRowIndex; 
+        string                                  dataStartDelimiter; 
 
 };
 

@@ -77,6 +77,7 @@ svkLCModelCoordReader::svkLCModelCoordReader()
     //  3 required input ports: 
     this->SetNumberOfInputPorts(1);
 
+    this->dataStartDelimiter = "fit to the data follow"; 
 }
 
 
@@ -251,7 +252,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             }
         
             //  Now read on until the start of the intensity values to parse: 
-            string dataFitDelimiter = "fit to the data follow"; 
+            string dataFitDelimiter = this->dataStartDelimiter;
             size_t foundDataPos = rowString.find( dataFitDelimiter ); 
             if ( foundDataPos != string::npos) {
                 break; 
@@ -316,6 +317,18 @@ void svkLCModelCoordReader::ParseCoordFiles()
         }
         delete [] coordIntensities; 
     } 
+}
+
+
+/*!
+ *  Set the string to search for within the output "coord" files. The data to load will follow the 
+ *  specfied string, e.g. 
+ *       "phased data points follow"
+ *       "fit to the data follow"
+ */
+void svkLCModelCoordReader::SetDataStartDelimiter( string delimiterString )
+{
+    this->dataStartDelimiter = delimiterString; 
 }
 
 
