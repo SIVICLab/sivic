@@ -88,7 +88,9 @@ int main (int argc, char** argv)
     usemsg += "   -b                    Set up for selection box analysis only.                     \n";
     usemsg += "   -h                    Print this help mesage.                                     \n";  
     usemsg += "                                                                                     \n";  
-    usemsg += "Reads LCModel output and converts to DICOM metabolite maps.                          \n";  
+    usemsg += "Reads LCModel .csv output and converts to DICOM metabolite maps, and/or reads in     \n"; 
+    usemsg += "LCModel .coord files and converts the fitted spectra and phased data into MRS DCM    \n";  
+    usemsg += "output files.                                                                        \n";  
     usemsg += "                                                                                     \n";  
 
     string  inputFileName; 
