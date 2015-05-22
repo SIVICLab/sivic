@@ -224,48 +224,60 @@ int main (int argc, char** argv)
         }
         cout << "coord file name: " << coordFileName << endl;
 
-        // ===============================================  
-        // ===============================================  
-        svkLCModelCoordReader* coordReader = svkLCModelCoordReader::New(); 
-        coordReader->SetMetName( metName ); 
-        coordReader->SetFileName(coordFileName.c_str() ); 
-        coordReader->SetMRSFileName(inputFileName.c_str() ); 
-        coordReader->Update(); 
-
 
         // ===============================================  
-        //  Write the data out to the specified file type.  
-        //  Use an svkImageWriterFactory to obtain the
-        //  correct writer type. 
+        //  Write out the phased input data, fitted data, and residual: 
         // ===============================================  
-        vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
-        svkImageWriter* mrsWriter = static_cast<svkImageWriter*>( 
-            writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRS) ); 
+        vector<string> coordStrings;  
+        coordStrings.push_back("phased data points follow"); 
+        coordStrings.push_back("fit to the data follow"); 
+        vector<string> suffixStrings;  
+        suffixStrings.push_back("_LCM_phased"); 
+        suffixStrings.push_back("_LCM_fit"); 
+        for ( int i = 0; i < coordStrings.size(); i++ ) {
 
-        if ( mrsWriter == NULL ) {
-            cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_MRS << endl;
-            exit(1);
+            svkLCModelCoordReader* coordReader = svkLCModelCoordReader::New(); 
+            coordReader->SetFileName(coordFileName.c_str() ); 
+            coordReader->SetMRSFileName(inputFileName.c_str() ); 
+            coordReader->SetDataStartDelimiter( coordStrings[i] );
+            coordReader->Update(); 
+
+            // ===============================================  
+            //  Write the data out to the specified file type.  
+            //  Use an svkImageWriterFactory to obtain the
+            //  correct writer type. 
+            // ===============================================  
+            vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New(); 
+            svkImageWriter* mrsWriter = static_cast<svkImageWriter*>( 
+                writerFactory->CreateImageWriter( svkImageWriterFactory::DICOM_MRS) ); 
+    
+            if ( mrsWriter == NULL ) {
+                cerr << "Can not create writer of type: " << svkImageWriterFactory::DICOM_MRS << endl;
+                exit(1);
+            }
+
+            string fn = outputFileName + suffixStrings[i]; 
+            mrsWriter->SetFileName( fn.c_str()  );
+            mrsWriter->SetInput(  coordReader->GetOutput() );
+
+            // ===============================================  
+            //  Set the input command line into the data set 
+            //  provenance: 
+            // ===============================================  
+            coordReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+
+            // ===============================================  
+            //  Write data to file: 
+            // ===============================================  
+            mrsWriter->Write();
+
+            // ===============================================  
+            //  Clean up: 
+            // ===============================================  
+            mrsWriter->Delete();
+            coordReader->Delete();
         }
 
-        mrsWriter->SetFileName( outputFileName.c_str() );
-        mrsWriter->SetInput(  coordReader->GetOutput() );
-
-        // ===============================================  
-        //  Set the input command line into the data set 
-        //  provenance: 
-        // ===============================================  
-        coordReader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
-
-        // ===============================================  
-        //  Write data to file: 
-        // ===============================================  
-        mrsWriter->Write();
-
-        // ===============================================  
-        //  Clean up: 
-        // ===============================================  
-        mrsWriter->Delete();
-        coordReader->Delete();
     }
 
 
