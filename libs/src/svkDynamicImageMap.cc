@@ -276,6 +276,8 @@ double svkDynamicImageMap::GetNormalizationFactor()
 
 /*!
  *  Calculates ordinary linear regression )for specified point range
+ *      Ref: "FORTRAN 77 an introduction to structured problem solving",  V.A.Dyck, J.D.Lawson, J.A.Smith
+ *      page381, equation 14.20.
  */
 void svkDynamicImageMap::GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept) 
 {
