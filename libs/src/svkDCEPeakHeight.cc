@@ -364,7 +364,7 @@ void svkDCEPeakHeight::GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime,
         peakDiff = 0.0;
     }
     else {
-        for ( int pt = 0; pt < voxelPeakTime; pt ++ ) {
+        for ( int pt = 0; pt < 6; pt ++ ) {
             if ( pt > 0 ) {
                 diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1 ];
                 if ( diff > peakDiff ) {
@@ -413,15 +413,15 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     float imageRate;
     switch ( numberOfSlices ) {
         case 12:
-            imageRate = 6.56;
+            imageRate = 65.6;
         case 14:
-            imageRate = 7.36;
+            imageRate = 73.6;
         case 16:
-            imageRate = 8.16;
+            imageRate = 81.6;
         case 20:
-            imageRate = 10.42;
+            imageRate = 114.417; //10.42;
         case 28:
-            imageRate = 12.96;
+            imageRate = 129.6;
         default:
             imageRate = numberOfSlices * 0.052;
     }
@@ -430,7 +430,7 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     double timeMax        = 2500.0;
     // double *voxelPeakTime = (voxelPeakTime - injectionPoint) * imageRate * 10; 
     // matlab doesn't account for injectinon point
-    double peakTime = *voxelPeakTime * imageRate * 10;
+    double peakTime = *voxelPeakTime; // * imageRate * 10;
     if (peakTime < timeMin) {
         peakTime = timeMin;
     }
@@ -454,7 +454,7 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     }
     else {
         peakHt  = 10 * peakHt / voxelBaseHt * 100;
-        slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
+        // slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
         washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
     }
 
