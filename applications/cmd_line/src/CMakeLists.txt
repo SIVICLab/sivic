@@ -593,6 +593,15 @@ TARGET_LINK_LIBRARIES(
     vtkInfovis
 )
 
+ADD_EXECUTABLE(
+    svk_transform
+    svk_transform.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_transform
+	${SVK_LIBS}
+)
+
 if ( BUILD_ITK )
 
     ADD_EXECUTABLE(
@@ -680,6 +689,7 @@ SET(APPS
     svk_integrate_dynamic 
     svk_quantify 
     svk_reslice 
+    svk_transform
     svk_dcmdump 
     #svk_surface_area 
     svk_point_selector 
