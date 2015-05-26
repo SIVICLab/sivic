@@ -58,19 +58,20 @@ int main (int argc, char** argv)
 {
 
     string usemsg("\n") ;
-    usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";
-    usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name -t output_data_type [-h] \n";
-    usemsg += "\n";
-    usemsg += "   -i input_file_name            name of file to resample. \n";
-    usemsg += "   --target  target_file_name    file to resample input to. \n";
-    usemsg += "   -o output_file_name           name of outputfile. \n";
-    usemsg += "   -t output_data_type           target data type: \n";
-    usemsg += "                                     3 = UCSF IDF               \n";
-    usemsg += "                                     5 = DICOM_MRI              \n";
-    usemsg += "                                     6 = DICOM_Enhanced MRI     \n";
-    usemsg += "   -h                            print help mesage. \n";
-    usemsg += " \n";
-    usemsg += "Resamples the input file to the orientation params specified in the target file.\n";
+    usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";
+    usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name\n"; 
+    usemsg += "              -t output_data_type [-h]                                           \n";
+    usemsg += "                                                                                 \n";
+    usemsg += "   -i        input_file_name     Name of file to resample.                       \n";
+    usemsg += "   --target  target_file_name    File to resample input to.                      \n";
+    usemsg += "   -o        output_file_root    Root name of outputfile.                        \n";
+    usemsg += "   -t        output_data_type    Output data type:                               \n";
+    usemsg += "                                     3 = UCSF IDF                                \n";
+    usemsg += "                                     5 = DICOM_MRI                               \n";
+    usemsg += "                                     6 = DICOM_Enhanced MRI                      \n";
+    usemsg += "   -h                            print help mesage.                              \n";
+    usemsg += "                                                                                 \n";
+    usemsg += "Resamples the input file to the orientation params specified in the target file. \n";
     usemsg += "\n";
 
     string inputFileName;
@@ -170,7 +171,7 @@ int main (int argc, char** argv)
     reslicer->Update();
 
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
-    svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( svkImageWriterFactory::IDF ));
+    svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ));
     writer->SetFileName( outputFileName.c_str() );
 
     writer->SetInput( reslicer->GetOutput() );
