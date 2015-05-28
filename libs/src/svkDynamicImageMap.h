@@ -73,6 +73,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
 
         void                    SetSeriesDescription(vtkstd::string newSeriesDescription);
         void                    SetOutputDataType(svkDcmHeader::DcmPixelDataFormat dataType);
+        // TODO: Make private API
         void                    SetZeroCopy(bool zeroCopy); 
         void                    SetNormalize();     
 
@@ -102,6 +103,7 @@ class svkDynamicImageMap: public svkImageAlgorithm
         virtual void            GenerateMaps() = 0; 
         virtual double          GetNoise( float* imgPtr ); 
         double                  GetNormalizationFactor();
+        // TODO: Refactor into svkMathUtils
         void                    GetRegression(int voxelID, int startPt, int endPt, double& slope, double& intercept); 
 
 
