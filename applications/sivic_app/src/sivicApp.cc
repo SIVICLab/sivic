@@ -873,7 +873,7 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                   "\n";
     usemsg += "                                                             \n";
-    usemsg += "sivic [-a anatomy [-h]                                       \n";
+    usemsg += "sivic [-a anatomy] [-h]                                      \n";
     usemsg += "                                                             \n";
     usemsg += "     -a anatomy      Anatomy preferences                     \n";
     usemsg += "                         brain (default)                     \n";
