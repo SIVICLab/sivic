@@ -683,6 +683,7 @@ SET(APPS
     svk_quick_view
     svk_multi_view
     svk_gepfile_reader 
+    svk_gepfile_anon
     svk_lcmodel_reader
     svk_lcmodel_writer
     svk_spec_diff 
@@ -691,7 +692,6 @@ SET(APPS
     svk_reslice 
     svk_transform
     svk_dcmdump 
-    #svk_surface_area 
     svk_point_selector 
     svk_phase_spec 
     svk_fft
