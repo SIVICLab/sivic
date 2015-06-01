@@ -26,6 +26,15 @@
  *  OF SUCH DAMAGE.
  */
 
+/*
+ *  Adapted from uptake.c and DCEmaps_12.m/calc_dce_mat_maps_12.m, written by Sue Noworolski
+ *  and Olga Starobinets at the University of California San Francisco Dept. of Radiology
+ *  and Biomedical Imaging.
+ *
+ *  References:
+ *      - 
+ *      -
+ */
 
 
 /*
@@ -43,7 +52,7 @@
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
-#include <svkDCEPeakHeight.h>
+#include <svkDCEBasicFit.h>
 #include <svkMathUtils.h>
 
 #include <cmath>
@@ -52,14 +61,14 @@
 using namespace svk;
 
 
-vtkCxxRevisionMacro(svkDCEPeakHeight, "$Rev$");
-vtkStandardNewMacro(svkDCEPeakHeight);
+vtkCxxRevisionMacro(svkDCEBasicFit, "$Rev$");
+vtkStandardNewMacro(svkDCEBasicFit);
 
 
 /*!
  *
  */
-svkDCEPeakHeight::svkDCEPeakHeight()
+svkDCEBasicFit::svkDCEBasicFit()
 {
 #if VTK_DEBUG_ON
     this->DebugOn();
@@ -81,7 +90,7 @@ svkDCEPeakHeight::svkDCEPeakHeight()
 /*!
  *
  */
-svkDCEPeakHeight::~svkDCEPeakHeight()
+svkDCEBasicFit::~svkDCEBasicFit()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::~"<<this->GetClassName());
 }
@@ -89,7 +98,7 @@ svkDCEPeakHeight::~svkDCEPeakHeight()
 /*! 
  *  Integrate real spectra over specified limits. 
  */
-void svkDCEPeakHeight::GenerateMaps()
+void svkDCEBasicFit::GenerateMaps()
 {
 
     this->InitializeInjectionPoint();
@@ -147,7 +156,7 @@ void svkDCEPeakHeight::GenerateMaps()
 /*!  
  *  For multi-volume data modifies header's per frame functional group sequence:
  */
-void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
+void svkDCEBasicFit::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
 {
 
     double voxelBaseHt;
@@ -157,12 +166,13 @@ void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int 
     double voxelWashout;
     int    filterWindow = 5;
     int    arrayLength  = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    float  unfilteredDynamicVoxelPtr = dynamicVoxelPtr;
 
     svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
     this->GetBaseHt( dynamicVoxelPtr, &voxelBaseHt );
     this->GetPeakHt( dynamicVoxelPtr, &voxelPeakHt ); 
     this->GetPeakTm( dynamicVoxelPtr, voxelPeakHt, &voxelPeakTime );
-    this->GetUpSlope( dynamicVoxelPtr, voxelPeakTime, &voxelUpSlope );
+    this->GetUpSlope( unfilteredDynamicVoxelPtr, voxelPeakTime, &voxelUpSlope );
     this->GetWashout( dynamicVoxelPtr, filterWindow, voxelIndex, &voxelWashout );
     this->ScaleParams( voxelBaseHt, &voxelPeakHt, &voxelPeakTime, &voxelUpSlope, &voxelWashout );
 
@@ -194,22 +204,23 @@ void svkDCEPeakHeight::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int 
  *  Compute the mean baseline and std dev as the mean of the first 
  *  time point over all spatial points in the volume 
  */
-void svkDCEPeakHeight::InitializeBaseline()
+void svkDCEBasicFit::InitializeBaseline()
 {
 
-    this->baselineMean = this->GetTimePointMean(0); 
-
+    this->baselineMean             = this->GetTimePointMean(0); 
     vtkDataArray* timePoint0Pixels = this->GetOutput(0)->GetPointData()->GetArray( 0 ); 
     int numSpatialPixels           = timePoint0Pixels->GetNumberOfTuples(); 
     this->baselineStdDeviation     = this->GetStandardDeviation( timePoint0Pixels, this->baselineMean, numSpatialPixels); 
+
 }
 
 
 /*
  * Compute the stdandard deviation of the array up to the specified endPt. 
  */
-double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, int endPt) 
+double svkDCEBasicFit::GetStandardDeviation( vtkDataArray* array, float mean, int endPt) 
 {
+
     double sumOfSquareDiffs = 0.; 
     for ( int i = 0; i < endPt; i++ ) {
         double diff       = ( array->GetTuple1(i) - mean ); 
@@ -217,13 +228,15 @@ double svkDCEPeakHeight::GetStandardDeviation( vtkDataArray* array, float mean, 
     }
     
     double variance = sumOfSquareDiffs / endPt;
+
     return sqrt(variance);
+
 }
 
 /*!
  *  Compute the mean value over all spatial locations for the specified time point. 
  */
-double svkDCEPeakHeight::GetTimePointMean( int timePoint )
+double svkDCEBasicFit::GetTimePointMean( int timePoint )
 {
 
     vtkDataArray* timePointPixels = this->GetImageDataInput(0)->GetPointData()->GetArray( timePoint ); 
@@ -236,14 +249,15 @@ double svkDCEPeakHeight::GetTimePointMean( int timePoint )
     }
     double mean = sum / numSpatialPixels; 
 
-    return mean;     
+    return mean; 
+
 }
 
 /*!
  *  Compute the mean baseline and std dev as the mean of the first 
  *  time point over all spatial points in the volume 
  */
-void svkDCEPeakHeight::InitializeInjectionPoint()
+void svkDCEBasicFit::InitializeInjectionPoint()
 {
 
     svkDcmHeader* hdr      = this->GetImageDataInput(0)->GetDcmHeader();
@@ -291,7 +305,7 @@ void svkDCEPeakHeight::InitializeInjectionPoint()
 /*!  
  *  Gets base height of DCE curve for the current voxel
  */
-void svkDCEPeakHeight::GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt )
+void svkDCEBasicFit::GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt )
 {
     //  get total point range to check: 
     int    injectionPoint = this->injectionPoint; 
@@ -313,14 +327,11 @@ void svkDCEPeakHeight::GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt )
 /*!  
  *  Gets max peak height of DCE curve for the current voxel
  */
-void svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt )
+void svkDCEBasicFit::GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt )
 {
 
-    //  get total point range to check:    
-    int startPt = this->injectionPoint; 
-    int endPt   = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-
-    // find peak height and peak diff
+    int startPt   = this->injectionPoint; 
+    int endPt     = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     double peakHt = dynamicVoxelPtr[ startPt ];
     for ( int pt = 0; pt < endPt/2; pt ++ ) {
         if ( dynamicVoxelPtr[ pt ] > peakHt ) {
@@ -336,7 +347,7 @@ void svkDCEPeakHeight::GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt )
  *  Gets time point at 90% peak height of DCE curve for the current voxel:
  *      Returns the POINT, not unit of time
  */
-void svkDCEPeakHeight::GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime)
+void svkDCEBasicFit::GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime)
 {
 
     int    pt       = 1; //this->injectionPoint;
@@ -355,7 +366,7 @@ void svkDCEPeakHeight::GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, do
 /*!  
  *  Gets peak difference of the DCE curve's upslope, to 90% peak, for the current voxel
  */
-void svkDCEPeakHeight::GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope )
+void svkDCEBasicFit::GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope )
 {
 
     double diff     = 0.0;
@@ -364,12 +375,10 @@ void svkDCEPeakHeight::GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime,
         peakDiff = 0.0;
     }
     else {
-        for ( int pt = 0; pt < 6; pt ++ ) {
-            if ( pt > 0 ) {
-                diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1 ];
-                if ( diff > peakDiff ) {
-                    peakDiff = diff;
-                }
+        for ( int pt = 1; pt <= voxelPeakTime; pt++ ) {
+            diff = dynamicVoxelPtr[ pt ] - dynamicVoxelPtr[ pt - 1 ];
+            if ( diff > peakDiff ) {
+                peakDiff = diff;
             }
         }
     }
@@ -381,8 +390,9 @@ void svkDCEPeakHeight::GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime,
 /*!  
  *  Gets the washout slope, via Linear Regression
  */
-void svkDCEPeakHeight::GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout )
+void svkDCEBasicFit::GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout )
 {
+
     int offset     = (filterWindow - 1) / 2;
     int range      = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
     int numWashPts = range / 2 - offset;
@@ -402,8 +412,9 @@ void svkDCEPeakHeight::GetWashout( float* dynamicVoxelPtr, int filterWindow, int
  *      Peak Height - Divides by Baseline and multiplies by 1000
  *      Peak Time   - Multiplies by image rate (trigger time) * 10
  *      Up Slope    - Divides by Baseline, then image rate, then * 60,000
+ *      Washout     - Divides by Baseline, then image rate, then * 60,000
  */
-void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout )
+void svkDCEBasicFit::ScaleParams( double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout )
 {
 
     // calculate peak time 
@@ -413,24 +424,22 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     float imageRate;
     switch ( numberOfSlices ) {
         case 12:
-            imageRate = 65.6;
+            imageRate = 656.0;
         case 14:
-            imageRate = 73.6;
+            imageRate = 736.0;
         case 16:
-            imageRate = 81.6;
+            imageRate = 816.0;
         case 20:
             imageRate = 114.417; //10.42;
         case 28:
             imageRate = 129.6;
         default:
-            imageRate = numberOfSlices * 0.052;
+            imageRate = numberOfSlices * 0.52;
     }
 
-    double timeMin        = 0.0;
-    double timeMax        = 2500.0;
-    // double *voxelPeakTime = (voxelPeakTime - injectionPoint) * imageRate * 10; 
-    // matlab doesn't account for injectinon point
-    double peakTime = *voxelPeakTime; // * imageRate * 10;
+    double timeMin  = 0.0;
+    double timeMax  = 2500.0;
+    double peakTime = *voxelPeakTime * imageRate * 10;
     if (peakTime < timeMin) {
         peakTime = timeMin;
     }
@@ -454,7 +463,7 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     }
     else {
         peakHt  = 10 * peakHt / voxelBaseHt * 100;
-        // slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
+        slope   = 10 * (slope / voxelBaseHt) / imageRate * 60 * 100;
         washout = 10 * (washout / voxelBaseHt) / imageRate * 60 * 100;
     }
 
@@ -476,4 +485,5 @@ void svkDCEPeakHeight::ScaleParams( double voxelBaseHt, double* voxelPeakHt, dou
     *voxelPeakHt   = peakHt;
     *voxelUpSlope  = slope;
     *voxelWashout  = washout;
+
 }

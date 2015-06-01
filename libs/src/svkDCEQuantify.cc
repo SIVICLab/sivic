@@ -46,7 +46,7 @@
 #include <svkImageMathematics.h>
 
 #include <svkDCEQuantify.h>
-#include <svkDCEPeakHeight.h>
+#include <svkDCEBasicFit.h>
 #include <svkImageCopy.h>
 
 #include <time.h>
@@ -110,7 +110,7 @@ void svkDCEQuantify::GenerateDCEMaps()
 {
 
     //  Calculate DCE maps:
-    svkDCEPeakHeight* dcePkHt = svkDCEPeakHeight::New();
+    svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
     dcePkHt->SetSeriesDescription( "Peak Params" );
     dcePkHt->Update();
@@ -134,7 +134,7 @@ void svkDCEQuantify::GenerateNormalizedMaps()
 {
 
     //  Calculate DCE Peak Ht map:
-    svkDCEPeakHeight* dcePkHt = svkDCEPeakHeight::New();
+    svkDCEBasicFit* dcePkHt = svkDCEBasicFit::New();
     dcePkHt->SetInput( this->GetImageDataInput(0) ); 
     dcePkHt->SetSeriesDescription( "normalized Peak Height" );
     dcePkHt->SetNormalize();

@@ -40,8 +40,8 @@
  */
 
 
-ifndef SVK_DCE_SLOPE_H
-#define SVK_DCE_SLOPE_H
+#ifndef SVK_DCE_BASIC_FIT_H
+#define SVK_DCE_BASIC_FIT_H
 
 
 #include <vtkObject.h>
@@ -64,19 +64,19 @@ using namespace std;
 /*! 
  *  Class to derive peak height from a DCE image 
  */
-class svkDCESlope: public svkDynamicImageMap
+class svkDCEBasicFit: public svkDynamicImageMap
 {
 
     public:
 
-        static svkDCESlope *New();
-        vtkTypeRevisionMacro( svkDCESlope, svkDynamicImageMap);
+        static svkDCEBasicFit *New();
+        vtkTypeRevisionMacro( svkDCEBasicFit, svkDynamicImageMap);
 
 
     protected:
 
-        svkDCESlope();
-        ~svkDCESlope();
+        svkDCEBasicFit();
+        ~svkDCEBasicFit();
 
 
     private:
@@ -84,12 +84,17 @@ class svkDCESlope: public svkDynamicImageMap
         //  Methods:
         virtual void            GenerateMaps(); 
         void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
-        void                    GetSlopeParams( float* dynamicVoxelPtr, double* voxelSlope ); 
         void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
         double                  GetTimePointMean(int timePoint ); 
         double                  GetStandardDeviation( vtkDataArray* array, float mean, int endPt); 
         void                    InitializeInjectionPoint();
+        void                    GetBaseHt( float* dynamicVoxelPtr, double* voxelBaseHt );
+        void                    GetPeakHt( float* dynamicVoxelPtr, double* voxelPeakHt );
+        void                    GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime);
+        void                    GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope );
+        void                    GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout );
+        void                    ScaleParams( double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
 
         double                  baselineMean;
         double                  baselineStdDeviation; 
@@ -100,5 +105,5 @@ class svkDCESlope: public svkDynamicImageMap
 }   //svk
 
 
-#endif //SVK_DCE_SLOPE_H
+#endif //SVK_DCE_BASIC_FIT_H
 
