@@ -232,7 +232,7 @@ ADD_LIBRARY(
     svkMetaboliteMap.cc
     svkDynamicImageMap.cc
     svkDSCPeakHeight.cc
-    svkDCEPeakHeight.cc
+    svkDCEBasicFit.cc
     svkDSCRecovery.cc
     svkMetaboliteRatioZScores.cc
     svkImageClip.cc
