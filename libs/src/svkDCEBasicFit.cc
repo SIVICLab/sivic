@@ -166,7 +166,7 @@ void svkDCEBasicFit::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int vo
     double voxelWashout;
     int    filterWindow = 5;
     int    arrayLength  = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
-    float  unfilteredDynamicVoxelPtr = dynamicVoxelPtr;
+    float* unfilteredDynamicVoxelPtr = dynamicVoxelPtr;
 
     svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
     this->GetBaseHt( dynamicVoxelPtr, &voxelBaseHt );
@@ -424,22 +424,23 @@ void svkDCEBasicFit::ScaleParams( double voxelBaseHt, double* voxelPeakHt, doubl
     float imageRate;
     switch ( numberOfSlices ) {
         case 12:
-            imageRate = 656.0;
+            imageRate = 6.560;
         case 14:
-            imageRate = 736.0;
+            imageRate = 7.360;
         case 16:
-            imageRate = 816.0;
+            imageRate = 8.160;
         case 20:
-            imageRate = 114.417; //10.42;
+            imageRate = 12.713; //10.42;
         case 28:
-            imageRate = 129.6;
+            imageRate = 12.96;
         default:
-            imageRate = numberOfSlices * 0.52;
+            imageRate = numberOfSlices * 0.63565; //0.572;
     }
 
-    double timeMin  = 0.0;
-    double timeMax  = 2500.0;
-    double peakTime = *voxelPeakTime * imageRate * 10;
+    double timeMin    = 0.0;
+    double timeMax    = 2500.0;
+    double peakTimePt = *voxelPeakTime;
+    double peakTime   = peakTimePt * imageRate * 10;
     if (peakTime < timeMin) {
         peakTime = timeMin;
     }
