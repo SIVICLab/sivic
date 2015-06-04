@@ -65,6 +65,11 @@ int main (int argc, char** argv)
     usemsg += "   -i        input_file_name     Name of file to resample.                       \n";
     usemsg += "   --target  target_file_name    File to resample input to.                      \n";
     usemsg += "   -o        output_file_root    Root name of outputfile.                        \n";
+    usemsg += "   --mx      magnificationX      Magnification factor for image columns:         \n";
+    usemsg += "                                 >1 downsamples (larger voxel size)              \n";
+    usemsg += "                                 <1 upsamples (smaller voxel size)               \n";
+    usemsg += "   --my      magnificationY      Magnification factor for image rows             \n";
+    usemsg += "   --mz      magnificationZ      Magnification factor for image slices           \n";
     usemsg += "   -t        output_data_type    Output data type:                               \n";
     usemsg += "                                     3 = UCSF IDF                                \n";
     usemsg += "                                     5 = DICOM_MRI                               \n";
@@ -72,25 +77,36 @@ int main (int argc, char** argv)
     usemsg += "   -h                            print help mesage.                              \n";
     usemsg += "                                                                                 \n";
     usemsg += "Resamples the input file to the orientation params specified in the target file. \n";
+    usemsg += "To up/downsample it is possible to use the same input(-i) and target(--target)   \n"; 
+    usemsg += "and just specify the resample magnification factors.                             \n"; 
     usemsg += "\n";
 
     string inputFileName;
     string targetFileName;
     string outputFileName;
+    float magX = 1; 
+    float magY = 1; 
+    float magZ = 1; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
 
     enum FLAG_NAME {
-        FLAG_TARGET_FILE_NAME = 0 
+        FLAG_TARGET_FILE_NAME = 0, 
+        FLAG_MAG_COLS, 
+        FLAG_MAG_ROWS, 
+        FLAG_MAG_SLICES
     }; 
     
     
     static struct option long_options[] =
     {
         /* This option sets a flag. */
-        {"target",        required_argument, NULL,  FLAG_TARGET_FILE_NAME},
+        {"target",      required_argument, NULL,  FLAG_TARGET_FILE_NAME},
+        {"mx",          required_argument, NULL,  FLAG_MAG_COLS},
+        {"my",          required_argument, NULL,  FLAG_MAG_ROWS},
+        {"mz",          required_argument, NULL,  FLAG_MAG_SLICES},
         {0, 0, 0, 0}
     };
     
@@ -112,6 +128,15 @@ int main (int argc, char** argv)
                 break;
             case FLAG_TARGET_FILE_NAME:
                 targetFileName.assign( optarg );
+                break;
+            case FLAG_MAG_COLS:
+                magX = atof( optarg );
+                break;
+            case FLAG_MAG_ROWS:
+                magY = atof( optarg );
+                break;
+            case FLAG_MAG_SLICES:
+                magZ = atof( optarg );
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -168,6 +193,10 @@ int main (int argc, char** argv)
     targetReader->SetFileName( targetFileName.c_str() );
     targetReader->Update(); 
     reslicer->SetTargetDcosFromImage( targetReader->GetOutput() ); 
+
+    if ( magX != 1 || magY != 1 || magZ !=1 ) {
+        reslicer->SetMagnificationFactors( magX, magY, magZ);
+    }
     reslicer->Update();
 
     vtkSmartPointer< svkImageWriterFactory > writerFactory = vtkSmartPointer< svkImageWriterFactory >::New();
