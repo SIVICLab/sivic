@@ -1559,6 +1559,10 @@ void svkPlotGridView::ShowView()
                                            this->GetProp(svkPlotGridView::OVERLAY_IMAGE));
         this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
                                            this->GetProp(svkPlotGridView::OVERLAY_TEXT));
+    } else {
+        this->GetRenderer(svkPlotGridView::PRIMARY)->AddActor(
+                                           this->GetProp(svkPlotGridView::DETAILED_PLOT));
+
     }
 
 }

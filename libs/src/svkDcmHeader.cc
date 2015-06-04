@@ -2749,11 +2749,15 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
     //  These fields are not removed from PHI_LIMITED data sets 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
             string emptyString = "";
-            this->ModifyValueRecursive( "StudyDate",                     emptyString); 
-            this->ModifyValueRecursive( "SeriesDate",                    emptyString); 
-            this->ModifyValueRecursive( "AcquisitionDate",               emptyString); 
-            this->ModifyValueRecursive( "ContentDate",                   emptyString); 
-            this->SetValue( "PatientBirthDate",                          emptyString); 
+            this->ModifyValueRecursive( "StudyDate",                       emptyString);
+            this->ModifyValueRecursive( "SeriesDate",                      emptyString);
+            this->ModifyValueRecursive( "AcquisitionDate",                 emptyString);
+            this->ModifyValueRecursive( "ContentDate",                     emptyString);
+            this->ModifyValueRecursive( "InstanceCreationDate",            emptyString);
+            this->ModifyValueRecursive( "PerformedProcedureStepStartDate", emptyString);
+            this->ModifyValueRecursive( "PerformedProcedureStepEndDate",   emptyString);
+            this->ModifyValueRecursive( "AttributeModificationDateTime",   emptyString);
+            this->SetValue( "PatientBirthDate",                            emptyString);
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
