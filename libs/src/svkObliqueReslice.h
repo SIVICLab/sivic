@@ -75,7 +75,7 @@ class svkObliqueReslice : public svkImageAlgorithm
         //  Set the target orientation from a target image or the dcos explicitily:
         void                    SetTargetDcosFromImage(svkImageData* image);
         void                    SetTargetDcos(double dcos[3][3]);   //fillinputportinfo
-
+        void                    SetMagnificationFactors( float x, float y, float z); 
 
     protected:
 
@@ -107,6 +107,10 @@ class svkObliqueReslice : public svkImageAlgorithm
         void                SetRotationMatrix( );
         void                RotateAxes(double axesIn[3][3], double rotatedAxes[3][3]);
         void                Print3x3(double matrix[3][3], string name);
+        bool                IsDcosInitialized(); 
+        bool                magnify(); 
+
+
 
         //  Members:
         vtkImageReslice*    reslicer;
@@ -115,6 +119,7 @@ class svkObliqueReslice : public svkImageAlgorithm
         double              rotation[3][3]; 
         double              newSpacing[3]; 
         int                 newNumVoxels[3]; 
+        float               magnification[3]; 
 
 };
 

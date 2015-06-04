@@ -237,6 +237,7 @@ ADD_LIBRARY(
     svkMetaboliteRatioZScores.cc
     svkImageClip.cc
     svkObliqueReslice.cc
+    svkTransform.cc
     svkIOD.cc
     svkSCIOD.cc
     svkMRSIOD.cc

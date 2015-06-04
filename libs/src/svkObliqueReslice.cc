@@ -68,7 +68,23 @@ svkObliqueReslice::svkObliqueReslice()
     this->reslicer      = vtkImageReslice::New(); 
     this->reslicer->SetInterpolationModeToCubic();
     this->reslicedImage = NULL;  
+
+    this->targetDcos[0][0] = 0.; 
+    this->targetDcos[0][1] = 0.; 
+    this->targetDcos[0][2] = 0.; 
+    this->targetDcos[1][0] = 0.; 
+    this->targetDcos[1][1] = 0.; 
+    this->targetDcos[1][2] = 0.; 
+    this->targetDcos[2][0] = 0.; 
+    this->targetDcos[2][1] = 0.; 
+    this->targetDcos[2][2] = 0.; 
+
+    this->magnification[0] = 1; 
+    this->magnification[1] = 1; 
+    this->magnification[2] = 1; 
+
 }
+
 
 
 /*!
@@ -82,7 +98,22 @@ svkObliqueReslice::~svkObliqueReslice()
         this->reslicer->Delete();
         this->reslicer = NULL; 
     }
+}
 
+
+/*
+ *  Check if any of the magnification factors rquire the data to be 
+ *  up or down sampled. 
+ */
+bool svkObliqueReslice::magnify()
+{
+    bool magnify = false; 
+    for ( int i = 0; i < 3; i++ ) {
+        if ( this->magnification[i] != 1 ) { 
+            magnify = true; 
+        }
+    }
+    return magnify; 
 }
 
 
@@ -114,12 +145,35 @@ void svkObliqueReslice::SetTargetDcos(double dcos[3][3])
 
 
 /*!
+ *  Check to see if targetDcos has been initialized
+ */
+bool svkObliqueReslice::IsDcosInitialized()
+{
+
+    bool initialized = false; 
+    for (int i = 0; i < 3; i++ ) {
+        for (int j = 0; j < 3; j++ ) {
+            if ( this->targetDcos[i][j] ) {
+                initialized = true; 
+                break; 
+            }
+        }
+    }
+    return initialized; 
+}
+
+/*!
  *
  */
 int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
 
     this->reslicer->SetInput( this->GetImageDataInput(0) ); 
+
+    //  If target dcos isn't initialized, set it from the output image. 
+    if ( ! this->IsDcosInitialized() ) {
+        this->SetTargetDcosFromImage( this->GetOutput() ); 
+    }
 
     double rotation[3][3];   
     this->SetRotationMatrix(); 
@@ -135,7 +189,42 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
         this->rotation[2][1],
         this->rotation[2][2]
     );
-    
+
+    if ( this->magnify() == true ) { 
+        //  get the and modify the input extent 
+        if (this->GetDebug() ) {
+            cout << this->GetClassName() << "::RequestInformation() Resample factors: " 
+                << this->magnification[0] << " " << this->magnification[1] << " " << this->magnification[2] << endl;
+        }
+        int extent[6]; 
+        this->GetImageDataInput(0)->GetExtent( extent ); 
+        if ( this->GetDebug() ) {
+            cout << "INPUT EXTENT: " << extent[1] << " " << extent[3] << " " << extent[5] << endl;
+        }
+        for ( int i = 0; i < 3; i++ ) {
+            extent[i*2]     /= this->magnification[i]; 
+            extent[i*2 + 1] /= this->magnification[i]; 
+        }
+        if ( this->GetDebug() ) {
+            cout << "OUTPUT EXTENT: " << extent[1] << " " << extent[3] << " " << extent[5] << endl;
+        }
+        this->reslicer->SetOutputExtent( extent ); 
+
+        //  get the and modify the input spacing 
+        double spacing[3]; 
+        this->GetImageDataInput(0)->GetSpacing( spacing ); 
+        if ( this->GetDebug() ) {
+            cout << "INPUT SPACING: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << endl;
+        }
+        for ( int i = 0; i < 3; i++ ) {
+            spacing[i] *= this->magnification[i]; 
+        }
+        if ( this->GetDebug() ) {
+            cout << "OUTPUT SPACING: " << spacing[0] << " " << spacing[1] << " " << spacing[2] << endl;
+        }
+        this->reslicer->SetOutputSpacing( spacing ); 
+    }
+
     reslicer->Update();
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
@@ -146,6 +235,24 @@ int svkObliqueReslice::RequestInformation( vtkInformation* request, vtkInformati
     return 1;
 
 }
+
+
+/*!
+ *  This is the ratio of the input and output spacing
+ *      Spacing is multiplied by the mag factor
+ *      extent is is divided by the mag factor.  
+ *
+ *      A mag factor > 1 downsamples the data (smaller extent, larger spacing)
+ *      A mag factor < 1 upsamples the data (larger extent, smaller spacing)
+ *  
+ */
+void svkObliqueReslice::SetMagnificationFactors( float x, float y, float z)
+{
+    this->magnification[0] = x; 
+    this->magnification[1] = y; 
+    this->magnification[2] = z; 
+}
+
 
 
 /*!
@@ -191,8 +298,6 @@ int svkObliqueReslice::RequestData( vtkInformation* request, vtkInformationVecto
 		this->GetOutput()->GetPointData()->GetArray(i)->SetName(currentScalarName.c_str());
     }
 	this->GetImageDataInput(0)->GetPointData()->SetActiveScalars( activeScalarName.c_str() );
-
-
 
     this->UpdateHeader(); 
     outputVector->GetInformationObject(0)->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->GetOutput()->GetExtent(), 6);
