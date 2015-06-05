@@ -74,7 +74,7 @@ int main (int argc, char** argv)
 
     string usemsg("\n") ; 
     usemsg += "Version " + string(SVK_RELEASE_VERSION) + "\n";   
-    usemsg += "svk_gepfile_reader -t test_file_name -r ref_file_name -o output_file_name  \n"; 
+    usemsg += "svk_spec_diff -t test_file_name -r ref_file_name -o output_file_name  \n"; 
     usemsg += "                   [ -v ] \n";
     usemsg += "                   [ -h ] \n";
     usemsg += "\n";  
