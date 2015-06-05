@@ -60,7 +60,7 @@ int main (int argc, char** argv)
     string usemsg("\n") ;
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";
     usemsg += "svk_reslice -i input_to_resample --target file_to_resample_to -o output_file_name\n"; 
-    usemsg += "              -t output_data_type [-h]                                           \n";
+    usemsg += "            -t output_data_type [ --mx magX  --my magY --mz magZ ] [-h]          \n";
     usemsg += "                                                                                 \n";
     usemsg += "   -i        input_file_name     Name of file to resample.                       \n";
     usemsg += "   --target  target_file_name    File to resample input to.                      \n";
