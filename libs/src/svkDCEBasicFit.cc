@@ -132,6 +132,30 @@ void svkDCEBasicFit::GenerateMaps()
     dceMapUpSlopeArray->SetName( arrayNameString.c_str() );
     dceMapWashoutArray->SetName( arrayNameString.c_str() );
 
+    // Initialize imageRate
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
+    float imageRate;
+    if ( hdr->ElementExists( "TemporalResolution" ) ) {
+        imageRate = hdr->GetFloatValue("TemporalResolution");
+        imageRate = imageRate / 1000;
+    } else {
+        int numberOfSlices = hdr->GetNumberOfSlices();
+        switch ( numberOfSlices ) {
+            case 12:
+                imageRate = 6.560;
+            case 14:
+                imageRate = 7.360;
+            case 16:
+                imageRate = 8.160;
+            case 20:
+                imageRate = 10.42; //12.713;
+            case 28:
+                imageRate = 12.96;
+            default:
+                imageRate = numberOfSlices * 0.572; // 0.63565;
+        }
+    }
+
     double voxelValue;
     for (int i = 0; i < totalVoxels; i++ ) {
         vtkFloatArray* perfusionDynamics = vtkFloatArray::SafeDownCast( 
@@ -139,7 +163,7 @@ void svkDCEBasicFit::GenerateMaps()
         ); 
         float* dynamicVoxelPtr = perfusionDynamics->GetPointer(0);
 
-        this->InitializeOutputVoxelValues( dynamicVoxelPtr, i ); 
+        this->InitializeOutputVoxelValues( dynamicVoxelPtr, i, imageRate ); 
     }
 
     if ( this->normalize ) {
@@ -156,16 +180,19 @@ void svkDCEBasicFit::GenerateMaps()
 /*!  
  *  For multi-volume data modifies header's per frame functional group sequence:
  */
-void svkDCEBasicFit::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex ) 
+void svkDCEBasicFit::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex, float imageRate ) 
 {
+
+    svkDcmHeader* hdr = this->GetImageDataInput(0)->GetDcmHeader();
 
     double voxelBaseHt;
     double voxelPeakHt; 
     double voxelPeakTime;
     double voxelUpSlope;
     double voxelWashout;
+    
     int    filterWindow = 5;
-    int    arrayLength  = this->GetImageDataInput(0)->GetDcmHeader()->GetNumberOfTimePoints();
+    int    arrayLength  = hdr->GetNumberOfTimePoints();
     float* unfilteredDynamicVoxelPtr = dynamicVoxelPtr;
 
     svkMathUtils::MedianFilter1D( dynamicVoxelPtr, arrayLength, filterWindow);
@@ -174,7 +201,7 @@ void svkDCEBasicFit::InitializeOutputVoxelValues( float* dynamicVoxelPtr, int vo
     this->GetPeakTm( dynamicVoxelPtr, voxelPeakHt, &voxelPeakTime );
     this->GetUpSlope( unfilteredDynamicVoxelPtr, voxelPeakTime, &voxelUpSlope );
     this->GetWashout( dynamicVoxelPtr, filterWindow, voxelIndex, &voxelWashout );
-    this->ScaleParams( voxelBaseHt, &voxelPeakHt, &voxelPeakTime, &voxelUpSlope, &voxelWashout );
+    this->ScaleParams( imageRate, voxelBaseHt, &voxelPeakHt, &voxelPeakTime, &voxelUpSlope, &voxelWashout );
 
     //  Get the data array to initialize.
     vtkDataArray* dceMapBaseHtArray;
@@ -414,29 +441,10 @@ void svkDCEBasicFit::GetWashout( float* dynamicVoxelPtr, int filterWindow, int v
  *      Up Slope    - Divides by Baseline, then image rate, then * 60,000
  *      Washout     - Divides by Baseline, then image rate, then * 60,000
  */
-void svkDCEBasicFit::ScaleParams( double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout )
+void svkDCEBasicFit::ScaleParams(float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout )
 {
 
-    // calculate peak time 
-    int numVoxels[3];
-    this->GetOutput(0)->GetNumberOfVoxels(numVoxels);
-    int   numberOfSlices = numVoxels[2]; 
-    float imageRate;
-    switch ( numberOfSlices ) {
-        case 12:
-            imageRate = 6.560;
-        case 14:
-            imageRate = 7.360;
-        case 16:
-            imageRate = 8.160;
-        case 20:
-            imageRate = 12.713; //10.42;
-        case 28:
-            imageRate = 12.96;
-        default:
-            imageRate = numberOfSlices * 0.63565; //0.572;
-    }
-
+    // calculate peak time
     double timeMin    = 0.0;
     double timeMax    = 2500.0;
     double peakTimePt = *voxelPeakTime;
@@ -448,7 +456,7 @@ void svkDCEBasicFit::ScaleParams( double voxelBaseHt, double* voxelPeakHt, doubl
         peakTime = timeMax;
     }
 
-    // scale peak height and slope
+    // scale remaining parameters
     double peakMin  = 0.0;
     double peakMax  = 5000.0;
     double slopeMin = 0.0;

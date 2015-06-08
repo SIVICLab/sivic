@@ -83,7 +83,7 @@ class svkDCEBasicFit: public svkDynamicImageMap
 
         //  Methods:
         virtual void            GenerateMaps(); 
-        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex );
+        void                    InitializeOutputVoxelValues( float* dynamicVoxelPtr, int voxelIndex, float imageRate );
         void                    InitializeBaseline();
         int                     GetInjectionPoint( float* baselineArray );
         double                  GetTimePointMean(int timePoint ); 
@@ -94,7 +94,7 @@ class svkDCEBasicFit: public svkDynamicImageMap
         void                    GetPeakTm( float* dynamicVoxelPtr, double voxelPeakHt, double* voxelPeakTime);
         void                    GetUpSlope( float* dynamicVoxelPtr, double voxelPeakTime, double* voxelUpSlope );
         void                    GetWashout( float* dynamicVoxelPtr, int filterWindow, int voxelIndex, double* voxelWashout );
-        void                    ScaleParams( double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
+        void                    ScaleParams( float imageRate, double voxelBaseHt, double* voxelPeakHt, double* voxelPeakTime, double* voxelUpSlope, double* voxelWashout );
 
         double                  baselineMean;
         double                  baselineStdDeviation; 
