@@ -52,12 +52,13 @@
 #include <vtkInformationVector.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
-
+#include <sys/time.h>
 using namespace svk;
 
 
 vtkCxxRevisionMacro(svkHSVD, "$Rev$");
 vtkStandardNewMacro(svkHSVD);
+
 
 int* svkHSVD::progress; //  static pointer 
 
@@ -78,7 +79,8 @@ svkHSVD::svkHSVD()
     this->numTimePoints = -1;     
     //this->SetNumberOfThreads(1);
     svkHSVD::progress = NULL; 
-
+    this->errorHandlingFlag = svkHSVD::SET_SIGNAL_TO_ZERO;
+    this->threshModelDifferencePercent = 0.35;
 
 }
 
@@ -92,7 +94,6 @@ svkHSVD::~svkHSVD()
         this->filterImage->Delete();
         this->filterImage = NULL;
     }
-
 }
 
 
@@ -140,6 +141,29 @@ int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector**
 {
     return 1;
 }
+
+
+void svkHSVD::SetErrorHandlingBehavior(HSVDBehaviorOnError errBeh){ 
+    this->errorHandlingFlag = errBeh;
+}
+
+void svkHSVD::SetSignalToZeroOn(){ 
+    this->errorHandlingFlag = svkHSVD::SET_SIGNAL_TO_ZERO;
+}	
+
+void svkHSVD::SetFilterToZeroOn(){ 
+    this->errorHandlingFlag = svkHSVD::SET_FILTER_TO_ZERO;
+}
+
+void svkHSVD::SetIgnoreError(){
+    this->errorHandlingFlag = svkHSVD::IGNORE_ERROR;
+}       
+
+void svkHSVD::SetThreshModelDifference(float val){
+    this->threshModelDifferencePercent = val;
+}
+
+
 
 
 /*! 
@@ -193,9 +217,9 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     //  This will call HSVDFitCellSpectrum foreach cell within the 
     //  sub-extent within each thread.
     this->Superclass::RequestData(
-        request,
-        inputVector,
-        outputVector
+	 request,
+	 inputVector,
+	 outputVector
     );
 
     if ( svkHSVD::progress != NULL ) {
@@ -230,7 +254,7 @@ void svkHSVD::HSVDFitCellSpectrum( int cellID )
     //cout << "HSVD Cell: " << cellID << endl;
     vector< vector< double > >  hsvdModel;    
 
-    this->HSVD(cellID, &hsvdModel); 
+    bool bCellCorrupt = this->HSVD(cellID, &hsvdModel); 
    
     if ( this->GetDebug() ) {
         for ( int pole = 0; pole < hsvdModel.size(); pole++) {
@@ -246,8 +270,9 @@ void svkHSVD::HSVDFitCellSpectrum( int cellID )
             }
         }
     }
-
-    this->GenerateHSVDFilterModel( cellID, &hsvdModel ); 
+    // Only if HSVD succefully generated the fit parameter, a model should be generated
+    this->GenerateHSVDFilterModel( cellID, &hsvdModel, bCellCorrupt);   
+   
 }
 
 
@@ -262,7 +287,6 @@ int svkHSVD::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* inf
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
     return 1;
 }
-
 
 /*!
  *  Make sure input data are transformed to time domain 
@@ -355,8 +379,9 @@ void svkHSVD::CheckOutputSpectralDomain()
 /*!
  *
  */
-void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel) 
+bool svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel) 
 {
+    bool bResult = true; // cell ok
 
     //cout << "FIT HSVD Cell: " << cellID << endl;
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
@@ -426,24 +451,25 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     //  if signal is entirely zero, then do not fit this voxel
     if ( ! this->CanFitSignal( signal,  numTimePointsLong ) ) {
 
-        vector < double > poleParams; 
-        double zero_val = 0.;
+      bResult = false; // cell not ok.
+      vector < double > poleParams; 
+      double zero_val = 0.;
 
-        //  amplitude
-        poleParams.push_back(zero_val);
+      //  amplitude
+      poleParams.push_back(zero_val);
 
-        //  phase
-        poleParams.push_back(zero_val);
+      //  phase
+      poleParams.push_back(zero_val);
 
-        //  frequency    
-        poleParams.push_back(zero_val);
+      //  frequency    
+      poleParams.push_back(zero_val);
                   
-        //  damping
-        poleParams.push_back(zero_val);         
+      //  damping
+      poleParams.push_back(zero_val);         
 
-        hsvdModel->push_back(poleParams); 
+      hsvdModel->push_back(poleParams); 
 
-        return; 
+      return bResult ; 
     }
 
 
@@ -455,10 +481,13 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     const int length_multiplications = l * ( m + numTimePointsLong )/2;
     doublecomplex *multiplications = new doublecomplex[length_multiplications];
     int idx = 0;
+    // ??? useless part
     for( idx = 0; idx < numTimePointsLong; idx++ ){
         multiplications[idx].r = signal[idx].r * signal[idx].r + signal[idx].i * signal[idx].i;
         multiplications[idx].i = 0.;
     }
+
+    // prepare multiplication matrix with conj complex multiplications
     for( int i = 1; i < l; ++i ){
         int length = numTimePointsLong - i;
         for( int j = 0; j < length; ++j ){
@@ -470,6 +499,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
             idx++;
         }
     }
+    // generate hankel matrix
     doublecomplex *hankel2 = new doublecomplex[l2];
     const int step = l+1;
     int mult_elem = 0;
@@ -492,6 +522,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     }
     delete[] multiplications;
 
+    // Not quite sure what this part does
     // ----------------------------------------          
     char flag1 = 'V';    
     char flag2 = 'U';    
@@ -514,6 +545,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     delete[] workspace2;
     delete[] workspace3;
 
+
     // ----------------------------------------
     //  PeakNumber is the number of basis functions 
     //  in the model.. number of polesused to model 
@@ -521,6 +553,7 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     // ----------------------------------------
     int peakNumber = this->modelOrder;
 
+    // Extract the u, ut and ub matrices from the hankel2 matrix.
     integer k = peakNumber;
     doublecomplex *u = new doublecomplex[ l * k ];
     idx = 0;
@@ -548,11 +581,16 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     }
     delete[] u;
     // ub_ub = ub^H * ub
+    memset(ub_ub, 0, sizeof(doublecomplex)*k*k);
     this->MatSq(ub, k, l-1, ub_ub);
     // ub_ut = ub^H * ut
     this->MatMat(ub,ut,k,l-1,ub_ut);
     delete[] ub;
     delete[] ut;
+
+
+
+
 
     // ----------------------------------------
     integer* pivot = new integer[k];  
@@ -560,60 +598,62 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     integer workspace4_size = 2*k;
     doublecomplex *workspace4 = new doublecomplex[workspace4_size];
     doublereal *workspace5 = new doublereal[2*k];
-    for( int i = 0; i < k; ++i ){
-        pivot[i] = 0;
-        scal_refl[i].r = scal_refl[i].i = 0.;
-    }
-    for( int i = 0; i < workspace4_size; ++i )
-        workspace4[i].r = workspace4[i].i = 0.;
-    for( int i = 0; i < 2*k; ++i )
-        workspace5[i] = 0.;
+
+    memset(pivot, 0, sizeof(integer)*k);
+    memset(scal_refl, 0, sizeof(doublecomplex)*k);
+    memset(workspace4, 0, sizeof(doublecomplex)*workspace4_size);
+    memset(workspace5, 0, sizeof(doublereal)*2*k);
 
     //  Reference to zgeqp3 from lapack: 
     //  http://www.netlib.org/lapack/complex16/zgeqp3.f
+    // QR Factorization with column pivoting of a complex k*k matrix
     zgeqp3_(&k,&k,ub_ub,&k,pivot,scal_refl,workspace4,&workspace4_size,workspace5,&info);
     //cout << "INFO(" << cellID << "): 2 " << info << endl; 
     delete[] workspace4;
     delete[] workspace5;
 
+
+    // Obtain the Q matrix from the factorization
     // ----------------------------------------
     integer workspace6_size = 2*k;
     doublecomplex *workspace6 = new doublecomplex[workspace6_size];
     doublecomplex *q = new doublecomplex[k*k];
-    for( int i = 0; i < workspace6_size; ++i )
-        workspace6[i].r = workspace6[i].i = 0.;
+    memset(workspace6, 0, sizeof(doublecomplex)*workspace6_size);
+
     for( int i = 0; i < k*k; ++i ){
         q[i].r = ub_ub[i].r;
         q[i].i = ub_ub[i].i;
     }
     zungqr_(&k,&k,&k,q,&k,scal_refl,workspace6,&workspace6_size,&info);
     //cout << "INFO(" << cellID << "): 3 " << info << endl; 
-
     delete[] workspace6;
 
+    // Complex matrix multiplication
     // ----------------------------------------
     doublecomplex *q_ub_ut = new doublecomplex[k*k];
-    for( int i = 0; i < k*k; ++i )
-        q_ub_ut[i].r = q_ub_ut[i].i = 0.;
+    memset(q_ub_ut, 0, sizeof(doublecomplex)*k*k);
     this->MatMat(q,ub_ut,k,k,q_ub_ut);
     delete[] ub_ut;
 
+
+    // Solves the system of equations A*X = B
+    // A = ub_ub and B = q_ub_ut. The solution is saved in q_ub_ut
     // ----------------------------------------
     flag2 = 'U';                    // only use the upper triangular part of ub_ub
-   	char flag3 = 'N';               // R is not transposed
+    char flag3 = 'N';               // R is not transposed
     char flag4 = 'N';               // diagonals are not 1
     ztrtrs_(&flag2,&flag3,&flag4,&k,&k,ub_ub,&k,q_ub_ut,&k,&info);
     //cout << "INFO(" << cellID << "): 4 " << info << endl; 
     delete[] ub_ub;
 
     doublecomplex *pivot_permutation = new doublecomplex[k*k];
-    for( int i = 0; i < k*k; ++i)
-        pivot_permutation[i].r = pivot_permutation[i].i = 0.;
+    memset(pivot_permutation, 0, sizeof(doublecomplex)*k*k);
     for( int i = 0; i < k; ++i)             
         pivot_permutation[ (pivot[i]-1)*k+i ].r = 1.;
     doublecomplex *least_sq_solve = new doublecomplex[k*k];
     this->MatMat(pivot_permutation,q_ub_ut,k,k,least_sq_solve);
     delete[] q_ub_ut; 
+
 
     // ----------------------------------------
     char flag5 = 'V';  
@@ -626,12 +666,10 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     doublecomplex *right_eigenvec = new doublecomplex[right_eigenvec_size*k];
     doublecomplex *workspace7 = new doublecomplex[workspace7_size];
     doublereal *workspace8 = new doublereal[2*k];
-    for( int i = 0; i < workspace7_size; ++i )
-        workspace7[i].r = workspace7[i].i = 0.;
-    for( int i = 0; i < 2*k; ++i )
-        workspace8[i] = 0.;
-
-
+    memset(workspace7, 0, sizeof(doublecomplex)*workspace7_size);
+    memset(workspace8, 0, sizeof(doublereal)*2*k);
+    // Computes the eigenvalues of the matrix least_sq_solve (basically Q)
+    // the eigenvalues represent the signal pole estimates -> freq and damping factor
     zgeev_(&flag5,&flag6,&k,least_sq_solve,&k,freq_damp,left_eigenvec,&left_eigenvec_size,right_eigenvec,&right_eigenvec_size, workspace7,&workspace7_size,workspace8,&info);
     //cout << "INFO(" << cellID << "): 5 " << info << endl; 
 
@@ -648,6 +686,8 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     }
     delete[] freq_damp;
 
+    // The frequencies and the damping factors are immediatelz available. Next step is to obtain the amplitudes.
+    // For this purpose the data is fitted with f and damping kept fixed.
     // ----------------------------------------
     doublecomplex *vandermonde = new doublecomplex[numTimePointsLong * k];
     idx = 0;
@@ -661,22 +701,23 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
 
     // ----------------------------------------
     doublecomplex *vandermonde_signal = new doublecomplex[k];
+
     this->MatVec(vandermonde, signal, k, numTimePointsLong, vandermonde_signal);
     delete[] signal;
     doublecomplex *vandermonde2 = new doublecomplex[k*k];
+    memset(vandermonde2, 0, sizeof(doublecomplex)*k*k);
+
     this->MatSq(vandermonde, k, numTimePointsLong, vandermonde2);
     delete[] vandermonde;
-    for( int i = 0; i < k; ++i ){
-        pivot[i] = 0;
-        scal_refl[i].r = scal_refl[i].i = 0.;
-    }
+    memset(pivot, 0, sizeof(integer)*k);
+    memset(scal_refl, 0, sizeof(doublecomplex)*k);
+
     integer workspace9_size = 2*k;
     doublecomplex *workspace9 = new doublecomplex[workspace9_size];
     doublereal *workspace10 = new doublereal[2*k];
-    for( int i = 0; i < workspace9_size; ++i )
-        workspace9[i].r = workspace9[i].i = 0.;
-    for ( int i = 0; i < 2*k; ++i )
-        workspace10[i] = 0.;
+    memset(workspace9, 0, sizeof(doublecomplex)*workspace9_size);
+    memset(workspace10,0, sizeof(doublereal)*2*k);
+
     zgeqp3_(&k, &k, vandermonde2, &k, pivot, scal_refl, workspace9, &workspace9_size, workspace10, &info);
     //cout << "INFO(" << cellID << "): 6 " << info << endl; 
     delete[] workspace9;
@@ -685,8 +726,8 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     // ----------------------------------------
     integer workspace11_size = k;
     doublecomplex *workspace11 = new doublecomplex[workspace11_size];
-    for( int i = 0; i < workspace11_size; ++i )
-        workspace11[i].r = workspace11[i].i = 0.;
+    memset(workspace11, 0, sizeof(doublecomplex)*workspace11_size);
+
     for( int i = 0; i < k*k; ++i ){
         q[i].r = vandermonde2[i].r;
         q[i].i = vandermonde2[i].i;
@@ -697,8 +738,8 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     delete[] scal_refl;
     // ----------------------------------------
     doublecomplex *q_vandermonde_signal = new doublecomplex[k];
-    for( int i = 0; i < k; ++i )
-        q_vandermonde_signal[i].r = q_vandermonde_signal[i].i = 0.;
+    memset(q_vandermonde_signal, 0, sizeof(doublecomplex)*k);
+
     this->MatVec(q,vandermonde_signal,k,k,q_vandermonde_signal);
     delete[] q;
     delete[] vandermonde_signal;
@@ -713,8 +754,9 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     delete[] vandermonde2;
 
     doublecomplex* complex_amplitude = new doublecomplex[k];
-    for( int i = 0; i < k * k; ++i)
-        pivot_permutation[i].r = pivot_permutation[i].i = 0.;
+    memset(complex_amplitude, 0, sizeof(doublecomplex)*k);
+    memset(pivot_permutation, 0, sizeof(doublecomplex)*k*k);
+
     for( int i = 0; i < k; ++i)
         pivot_permutation[ (pivot[i]-1)*k+i ].r = 1.;
     delete[] pivot;
@@ -736,12 +778,13 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     //=====================================================
 
     double val = 0;
+    double Deviation;
 
-    //cout << "NUM POLES: " << k << endl;
+    bResult = this->checkQualityOfFit(complex_amplitude, log_freq_damp, k, spectrum, &Deviation);
+
     for( int i = 0; i < k; ++i ){  // loop over poles                    
-        vector < double > poleParams; 
         //cout << "POLE: " << i << endl;
-
+        vector < double > poleParams;
         //  amplitude
         val = (double)sqrt(
                         complex_amplitude[i].r * complex_amplitude[i].r +
@@ -762,10 +805,60 @@ void svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
         poleParams.push_back(val);         
 
         hsvdModel->push_back(poleParams); 
-    }      
+    }
+    return bResult;      
        
 }
 
+/*!
+ *  Check the quality the fit by evaluating the amplitude of the first time point of the FID signal and comparing it to
+ *  the first point calculated by the fit. If the difference is higher than this->threshModelDifferencePercent return false.
+ *  The function returns the calculated deviation between the signals in the supplied pointer to double (1 meaning 100% deviation).
+ */
+bool svkHSVD::checkQualityOfFit(doublecomplex* fitAmplitude, doublecomplex* fitFreq, int k, vtkFloatArray* signal, double* pDeviation){
+    bool bResult = false; // bad quality
+    //double qParam1;
+    float tuple[2], modelTuple[2];
+
+    memset(modelTuple, 0, sizeof(float)*2);
+    signal->GetTupleValue(0, tuple); // get first amplitude of the time signal
+ 
+    // Calculate the amplitudee of the first point in the modelled signal
+    for (int i=0; i<k; i++){
+    //  amplitude
+	double amp  = (double)sqrt(
+			    fitAmplitude[i].r * fitAmplitude[i].r +
+			    fitAmplitude[i].i * fitAmplitude[i].i
+			    );
+    //  phase
+	double phi   = (double) atan2(fitAmplitude[i].i, fitAmplitude[i].r);
+
+    //  get angular frequency argument
+	double omegaT  = 0.; //fitFreq[i].i*nrPoint;
+
+    //  damping term
+	double damping = 1.; //exp( fitFreq[i].r * nrPoint);
+
+	modelTuple[0] += (amp * cos( phi + omegaT ) * damping);
+	modelTuple[1] += (amp * sin( phi + omegaT ) * damping);
+    }
+
+    // Check for plausibility. Amplitude of Signal(t=0)~ModelledSignal(t=0)
+
+    if (pDeviation!=NULL)
+	*pDeviation = fmin(abs(( tuple[0]-modelTuple[0])/tuple[0]), 1.); // 0= 0% = perfect fit, 1 = 100% bad fit
+
+    if (isnan(modelTuple[0])){
+	bResult = false;   
+	if (pDeviation!=NULL)
+	    *pDeviation = 1.;
+
+    }	
+    else if (abs(modelTuple[0]- tuple[0]) < abs(this->threshModelDifferencePercent*tuple[0]))
+	bResult = true;
+
+    return bResult;
+}
 
 /*
  *  If the signal is identically zero everywhere, it can't be fit. 
@@ -784,13 +877,12 @@ bool svkHSVD::CanFitSignal( const doublecomplex* signal, int numPts )
 }
 
 
-
 /*!
  *  Use components from the fitted HSVD model to construct a filter for the specified 
  *  frequency range, amplitude, damping, etc.   The filter Spectrum should be the same dimension
  *  as the input spectrum.         
  */
-void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel )
+void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool bCellOK )
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
@@ -803,9 +895,10 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
     bool    addSVDComponent;
 
     vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
-
-    //  loop over each time point in FID: 
-    for ( int i = 0; i < numTimePoints; i++ ) {
+    if (bCellOK || this->errorHandlingFlag == svkHSVD::IGNORE_ERROR){
+      
+      //  loop over each time point in FID: 
+      for ( int i = 0; i < numTimePoints; i++ ) {
 
         //cout << "TIME POINT: " << i << endl;
 
@@ -816,7 +909,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
 
         //  loop over poles (peakNumber): 
         //cout << endl;
-        for ( int pole = 0; pole < hsvdModel->size(); pole++) {
+	  for ( int pole = 0; pole < hsvdModel->size(); pole++) {
 
             //      0       amplitude
             //      1       phase
@@ -826,9 +919,9 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
             double phase = (*hsvdModel)[pole][1]; 
             double freq  = (*hsvdModel)[pole][2]; 
             double damp  = (*hsvdModel)[pole][3]; 
-
+	 
             if ( this->GetDebug() && i == 0) {
-                //cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
+	      //cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
             }
 
             
@@ -839,52 +932,75 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
             //  water and fat, etc.
             
             for (int filterRule = 0; filterRule < this->filterRules.size(); filterRule++) {
-                if (
-                    //( sweepWidth * freq >= this->filterRules[filterRule][0] 
-                        //&& sweepWidth * freq <= this->filterRules[filterRule][1] ) 
-                    ( -1 * freq >= this->filterRules[filterRule][0] 
-                        && -1 * freq <= this->filterRules[filterRule][1] ) 
-                    || damp < -1. * this->filterRules[filterRule][2]
-                )  {
-                    addSVDComponent = true;
-                    if ( i == 0 ) {
-                        //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
-                               //<< " to " << this->filterRules[filterRule][1] << endl;
-                        //cout << "   AMP: " << amp << " FREQ " << freq << endl ;
-                    }
-                }
+	      if (
+		  //( sweepWidth * freq >= this->filterRules[filterRule][0] 
+		  //&& sweepWidth * freq <= this->filterRules[filterRule][1] ) 
+		  ( -1 * freq >= this->filterRules[filterRule][0] 
+		    && -1 * freq <= this->filterRules[filterRule][1] ) 
+		  || damp < -1. * this->filterRules[filterRule][2]
+		  )  {
+		addSVDComponent = true;
+		if ( i == 0 ) {
+		  //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
+		  //<< " to " << this->filterRules[filterRule][1] << endl;
+		  //cout << "   AMP: " << amp << " FREQ " << freq << endl ;
+		}
+	      }
             }
            
 
             if ( addSVDComponent ) {
-            //if ( 0 ) {
+	      //if ( 0 ) {
 
-                double PI      = vtkMath::Pi(); 
-                double dT      =  1./sweepWidth; 
+	      double PI      = vtkMath::Pi(); 
+	      double dT      =  1./sweepWidth; 
 
-                //  get angular frequency argument
-                double omegaT  = 2. * PI * freq * i * dT;
+	      //  get angular frequency argument
+	      double omegaT  = 2. * PI * freq * i * dT;
 
-                //  damping term
-                double damping = exp( -1 * damp * i * dT);
+	      //  damping term
+	      double damping = exp( -1 * damp * i * dT);
 
-                //  phase is in radians
-                double phi     = phase;
+	      //  phase is in radians
+	      double phi     = phase;
 
-                if ( this->GetDebug() ) {
-                    if ( i == 0 ) {
-                    //cout << "       amp frequency phi damping : " <<  amp << " " << omegaT << " "  << phi << " " << damping<< endl;
-                    }
-                }
+	      if ( this->GetDebug() ) {
+		if ( i == 0 ) {
+		  //cout << "       amp frequency phi damping : " <<  amp << " " << omegaT << " "  << phi << " " << damping<< endl;
+		}
+	      }
 
-                filterTuple[0] += (amp * cos( phi + omegaT ) * damping);
-                filterTuple[1] += (amp * sin( phi + omegaT ) * damping);
-                //cout << "                  FT: " << filterTuple[0] << " " << filterTuple[1] << endl;
+	      filterTuple[0] += (amp * cos( phi + omegaT ) * damping);
+	      filterTuple[1] += (amp * sin( phi + omegaT ) * damping);
+	      //cout << "                  FT: " << filterTuple[0] << " " << filterTuple[1] << endl;
             }
 
-        }
+	  }
         filterSpectrum->SetTuple( i, filterTuple );
- 
+      }
+    }
+    else{ // cell was corrupt
+      float tuple[2];
+      switch (this->errorHandlingFlag){
+      case svkHSVD::SET_SIGNAL_TO_ZERO: // Copy Signal Spectrum into Filter Spectrum
+	{	 
+	vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+	for (int i = 0; i < numTimePoints; i++) {
+	  spectrum->GetTupleValue(i,tuple);
+	  filterSpectrum->SetTuple(i, tuple);  // just case the filter spectrum gets output it will contain the input signal
+	}
+	break;
+	}
+      case svkHSVD::SET_FILTER_TO_ZERO: // Set Filter Spectrum to 0
+	{      
+	for (int i = 0; i < numTimePoints; i++) {
+	  tuple[0] = 0.; 
+	  tuple[1] = 0.; 
+	  filterSpectrum->SetTuple(i, tuple); 	
+	}
+	break;
+	}
+      }
     }
 
     return;
@@ -910,36 +1026,18 @@ void svkHSVD::SubtractFilter()
 
     //for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
     for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
+          vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+	  float tuple[2];	    
+	  vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
+	  float filterTuple[2]; 
 
-        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-        vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
-        float tuple[2]; 
-
-
-        float filterTuple[2]; 
-        for (int i = 0; i < numTimePoints; i++) {
-
-            
-            filterSpectrum->GetTupleValue(i, filterTuple);
-
-            //  production
-            
-            spectrum->GetTupleValue(i, tuple);
-            tuple[0] -= filterTuple[0]; 
-            tuple[1] -= filterTuple[1]; 
-             
-
-            //  testing
-            /*         
-            tuple[0] = 0.; 
-            tuple[1] = 0.; 
-            tuple[0] += filterTuple[0]; 
-            tuple[1] += filterTuple[1]; 
-            */ 
-
-            spectrum->SetTuple(i, tuple); 
-            
-        }
+	  for (int i = 0; i < numTimePoints; i++) {
+	    filterSpectrum->GetTupleValue(i, filterTuple);
+	    spectrum->GetTupleValue(i, tuple);
+	    tuple[0] -= filterTuple[0]; 
+	    tuple[1] -= filterTuple[1]; 
+	    spectrum->SetTuple(i, tuple);  
+	  }
     }
 
 }
@@ -1124,44 +1222,37 @@ void svkHSVD::MatVec(const doublecomplex* matrix, const doublecomplex* vector, i
     }
 }
 
-
 /*!
- *
+ * 
+ * This function calculates the product result = matrix^H*matrix, with ^H denoting the Hermitian transpose matrix or conjugate transpose.
  */
 void svkHSVD::MatSq(const doublecomplex* matrix, int m, int n, doublecomplex* result)
 {
-    const int mm1 = m * m - 1;
-    for( int i = 0; i < m; ++i ) {
-        int jmi = i;
-        for( int j = 0; j < i; ++j ){       // subdiagonal elements
-            result[jmi].r = result[i*m+j].r;
-            result[jmi].i = -result[i*m+j].i;
-            jmi += m;
-        }
-        int ink = i * n;
-        double res_r = 0.;
-        double res_i = 0.;
-        for( int jnk = ink; jnk < n * m; ++jnk) {
-            double prod1 = (matrix[ink].r - matrix[ink].i)*(matrix[jnk].r + matrix[jnk].i);
-            double prod2 = matrix[ink].r * matrix[jnk].r;
-            double prod3 = matrix[ink].i * matrix[jnk].i;
-            res_r += (prod2+prod3);
-            res_i += (prod1-prod2+prod3);
-            ink++;
-            if( (jnk+1) % n == 0 ){
-                ink = i * n;
-                result[jmi].r = res_r;
-                result[jmi].i = res_i;
-                jmi += m;
-                if( jmi != mm1 ) {
-                    jmi %= mm1;
-                }
-                res_r = res_i = 0.;
-            }
-        }
-    }
-}
+      doublecomplex a,b;
+	for ( int targetCol = 0; targetCol< m; ++targetCol){
+	  for ( int targetRow = targetCol; targetRow< m; ++targetRow){ // calc only upper diagonal and copy values since symmetric!
+	  double res_r1 = 0.;
+	  double res_i1 = 0.;
+	  double res_r2 = 0.;
+	  double res_i2 = 0.;
+	  for (int sourceIdx = 0; sourceIdx < n; ++ sourceIdx){
+	    a = matrix[targetCol*n+sourceIdx]; 
+	    b = matrix[targetRow*n+sourceIdx];
+	    res_r1 += a.r*b.r+a.i*b.i;
+	    res_i1 += -a.r*b.i+a.i*b.r;
 
+	    //  res_r2 += a.r*b.r+a.i*b.i;
+	    res_i2 += a.r*b.i-a.i*b.r;
+	  }
+	  result[targetCol*m+targetRow].r = res_r1;
+	  result[targetCol*m+targetRow].i = res_i1;
+	  if (targetRow!=targetCol){
+	    result[targetRow*m+targetCol].r = res_r1;//same as real1
+	    result[targetRow*m+targetCol].i = res_i2;
+	  }
+	}
+      }
+}
 
 /*!
  *
@@ -1196,103 +1287,6 @@ void svkHSVD::MatMat(const doublecomplex* matrix1, const doublecomplex* matrix2,
         }
     }
 }
-
-
-/*!
- *
- */
-void matVec(const doublecomplex* matrix, const doublecomplex* vector, int m, int n, doublecomplex* result)
-{
-    for( int i = 0; i < m; ++i ) {
-        double res_r = 0.;
-        double res_i = 0.;
-        int ink = i * n;
-        for(int k = 0; k < n; ++k ) {
-            double prod1 = (matrix[ink].r - matrix[ink].i)*(vector[k].r+vector[k].i);
-            double prod2 = matrix[ink].r*vector[k].r;
-            double prod3 = matrix[ink].i*vector[k].i;
-            res_r += (prod2+prod3);
-            res_i += (prod1-prod2+prod3);
-            ink++;
-        }
-        result[i].r = res_r;
-        result[i].i = res_i;
-    }
-}
-
-
-/*!
- *
- */
-void matSq(const doublecomplex* matrix, int m, int n, doublecomplex* result)
-{
-    const int mm1 = m*m-1;
-    for( int i = 0; i < m; ++i ) {
-        int jmi = i;
-        for( int j = 0; j < i; ++j ){       // subdiagonal elements
-            result[jmi].r = result[i*m+j].r;
-            result[jmi].i = -result[i*m+j].i;
-            jmi += m;
-        }
-        int ink = i*n;
-        double res_r = 0.;
-        double res_i = 0.;
-        for( int jnk = ink; jnk < n*m; ++jnk) {
-            double prod1 = (matrix[ink].r - matrix[ink].i)*(matrix[jnk].r + matrix[jnk].i);
-            double prod2 = matrix[ink].r * matrix[jnk].r;
-            double prod3 = matrix[ink].i * matrix[jnk].i;
-            res_r += (prod2+prod3);
-            res_i += (prod1-prod2+prod3);
-            ink++;
-            if( (jnk+1) % n == 0 ){
-                ink = i*n;
-                result[jmi].r = res_r;
-                result[jmi].i = res_i;
-                jmi += m;
-                if( jmi != mm1 ) {
-                    jmi %= mm1;
-                }
-                res_r = res_i = 0.;
-            }
-        }
-    }
-}
-
-
-/*!
- *
- */
-void matMat(const doublecomplex* matrix1, const doublecomplex* matrix2, int m, int n, doublecomplex* result)
-{
-    const int mm1 = m*m-1;
-    for( int i = 0; i < m; ++i ){
-        int ink = i*n;
-        int jmi = i;
-        double res_r = 0.;
-        double res_i = 0.;
-        for( int jnk = 0; jnk < n*m; ++jnk){
-            // ink = i*n+k, jnk = j*n+k, jmi = j*m+i = (jnk/n)*m+i
-            double prod1 = (matrix1[ink].r - matrix1[ink].i)*(matrix2[jnk].r + matrix2[jnk].i);
-            double prod2 = matrix1[ink].r * matrix2[jnk].r;
-            double prod3 = matrix1[ink].i * matrix2[jnk].i;
-            res_r += (prod2+prod3);
-            res_i += (prod1-prod2+prod3);
-            ink++;
-            if( (jnk+1) % n == 0 ){
-                ink = i*n;
-                result[jmi].r = res_r;
-                result[jmi].i = res_i;
-                jmi += m;
-                // the next two lines should be unnecessary?
-                if( jmi != mm1 ) {
-                    jmi %= mm1;
-                }
-                res_r = res_i = 0.;
-            }
-        }
-    }
-}
- 
 
 /*!
  *  Loop through spectra within the specified sub-extent and apply HSVD to each. 

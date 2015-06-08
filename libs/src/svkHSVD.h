@@ -124,12 +124,18 @@ using namespace std;
  *      Beck Olson
  *  
  */
+    
 class svkHSVD : public svkThreadedImageAlgorithm
 {
 
     public:
-
-        static svkHSVD* New();
+        
+    enum HSVDBehaviorOnError {
+	SET_FILTER_TO_ZERO = 0, // leave input signal unchanged	  
+	SET_SIGNAL_TO_ZERO = 1, 
+	IGNORE_ERROR       = 2 // output filter image on error
+     };
+     static svkHSVD* New();
         vtkTypeRevisionMacro( svkHSVD, svkThreadedImageAlgorithm);
 
         void    RemoveH20On();
@@ -155,6 +161,12 @@ class svkHSVD : public svkThreadedImageAlgorithm
         void                OnlyFitSpectraInVolumeLocalization();
         void                SetModelOrder( int modelOrder );
 
+	void                SetErrorHandlingBehavior(HSVDBehaviorOnError errBeh);
+	void                SetSignalToZeroOn();	
+	void                SetFilterToZeroOn();
+	void                SetIgnoreError();       
+
+	void                SetThreshModelDifference(float val);
 
     protected:
 
@@ -192,58 +204,60 @@ class svkHSVD : public svkThreadedImageAlgorithm
 
 
 
-    private:
+ private:
+
+    typedef std::complex<float>         complexf;
+    typedef std::complex<double>        complexd;
+    typedef std::complex<long double>   complexld;
+
+    void    svkHSVDExecute(int ext[6], int id); 
+    void    HSVDFitCellSpectrum( int cellID );
+    bool    HSVD( int cellID, vector< vector <double> >* hsvdModel );
+    void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool bCellOK);
+    void    SubtractFilter();
+    void    CheckInputSpectralDomain();
+    void    CheckOutputSpectralDomain();
+    bool    CanFitSignal( const doublecomplex* signal, int numPts ); 
+    bool checkQualityOfFit(doublecomplex* fitAmplitude, doublecomplex* fitFreq, int filterOrder,  vtkFloatArray* signalSpectrum, double* pDeviation);
+
+    void    MatMat(
+    const doublecomplex* matrix1,
+    const doublecomplex* matrix2,
+    int m,
+    int n,
+    doublecomplex* result
+    );
+
+    void    MatSq(
+    const doublecomplex* matrix,
+    int m,
+    int n,
+    doublecomplex* result
+    );
+
+    void    MatVec(
+    const doublecomplex* matrix,
+    const doublecomplex* vector,
+    int m,
+    int n,
+    doublecomplex* result
+    );
 
 
+      vector< vector< float > >   filterRules;
+      svkMrsImageData*            filterImage;
+      bool                        isInputInTimeDomain;
+      bool                        exportFilterImage;
+      bool                        onlyFitInVolumeLocalization;
+      int                         modelOrder;
+      short*                      selectionBoxMask;
 
-        typedef std::complex<float>         complexf;
-        typedef std::complex<double>        complexd;
-        typedef std::complex<long double>   complexld;
-
-        void    svkHSVDExecute(int ext[6], int id); 
-        void    HSVDFitCellSpectrum( int cellID );
-        void    HSVD( int cellID, vector< vector <double> >* hsvdModel );
-        void    GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel);
-        void    SubtractFilter();
-        void    CheckInputSpectralDomain();
-        void    CheckOutputSpectralDomain();
-        bool    CanFitSignal( const doublecomplex* signal, int numPts ); 
-
-        void    MatMat(
-                    const doublecomplex* matrix1,
-                    const doublecomplex* matrix2,
-                    int m,
-                    int n,
-                    doublecomplex* result
-        );
-
-        void    MatSq(
-                    const doublecomplex* matrix,
-                    int m,
-                    int n,
-                    doublecomplex* result
-        );
-
-        void    MatVec(
-                    const doublecomplex* matrix,
-                    const doublecomplex* vector,
-                    int m,
-                    int n,
-                    doublecomplex* result
-        );
-
-        vector< vector< float > >   filterRules;
-        svkMrsImageData*            filterImage;
-        bool                        isInputInTimeDomain;
-        bool                        exportFilterImage;
-        bool                        onlyFitInVolumeLocalization;
-        int                         modelOrder;
-        short*                      selectionBoxMask;
-
-        int                         numTimePoints;
-        double                      spectralWidth; 
-        //vtkFloatArray*              apodizationWindow;
-
+      int                         numTimePoints;
+      double                      spectralWidth; 
+      //vtkFloatArray*              apodizationWindow;
+      double                      threshModelDifferencePercent;
+	
+      HSVDBehaviorOnError        errorHandlingFlag;
 
 
 };

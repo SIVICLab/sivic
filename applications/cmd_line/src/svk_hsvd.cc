@@ -73,7 +73,8 @@ int main (int argc, char** argv)
     usemsg += "Version " + string(SVK_RELEASE_VERSION) +                                       "\n";   
     usemsg += "svk_hsvd -i input_file_name -o output_file_root [ -t output_data_type ]          \n"; 
     usemsg += "         [ -fb ] [ -m order ] [ -wl ] [ --single ]                               \n"; 
-    usemsg += "         [ --ppm1 downfield_ppm  --ppm2 upfield_ppm ] [ -h ]                     \n"; 
+    usemsg += "         [ --ppm1 downfield_ppm  --ppm2 upfield_ppm ] [ --error mode ]           \n"; 
+    usemsg += "         [ -h ]                                                                  \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "   -i                name   Name of file to convert.                             \n"; 
     usemsg += "   -o                root   Root name of outputfile.                             \n";
@@ -89,11 +90,16 @@ int main (int argc, char** argv)
     usemsg += "   --single                 Only transform specified file if multiple in series  \n";
     usemsg += "   --ppm1            ppm1   Downfield ppm limit for custom filter range          \n";
     usemsg += "   --ppm2            ppm2   Upfield ppm limit for custom filter range            \n";
-    usemsg += "   -h                       Print this help mesage.                              \n";  
+    usemsg += "   --error           mode   On error set to zero the spectrum of:                \n"; 
+    usemsg += "                                 0 = SET_FILTER_TO_ZERO (input signal unchanged) \n";
+    usemsg += "                                 1 = SET_SIGNAL_TO_ZERO (default)                \n";
+    usemsg += "                                 2 = IGNORE_ERROR                                \n";
+    usemsg += "   -h                       Print this help mesage.                              \n"; 
     usemsg += "                                                                                 \n";  
     usemsg += "HSVD filter to remove baseline components from spectra.                          \n";  
     usemsg += "Default is to remove water by filtering all frequencies downfield                \n"; 
-    usemsg += "4.2 PPM.                                                                         \n"; 
+    usemsg += "4.2 PPM. On error the input signal is set to 0 (default),                        \n"; 
+    usemsg += "left unchanged or filtered.                                                      \n"; 
     usemsg += "\n";  
 
 
@@ -108,13 +114,15 @@ int main (int argc, char** argv)
     vector< vector <float> > customFilter; 
 
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::DICOM_MRS;
-
+    
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
+    svkHSVD::HSVDBehaviorOnError errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
     enum FLAG_NAME {
         FLAG_SINGLE, 
         FLAG_PPM1,
-        FLAG_PPM2
+        FLAG_PPM2,
+	FLAG_ERROR
 
     }; 
 
@@ -125,6 +133,7 @@ int main (int argc, char** argv)
         {"single",    no_argument,       NULL,  FLAG_SINGLE},
         {"ppm1",      required_argument, NULL,  FLAG_PPM1},
         {"ppm2",      required_argument, NULL,  FLAG_PPM2},
+        {"error",     required_argument, NULL,  FLAG_ERROR},
         {0, 0, 0, 0}
     };
 
@@ -171,6 +180,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_PPM2:
                 initCustomFilterVector( &customFilter, atof( optarg ) ); 
+                break;           
+	    case FLAG_ERROR:
+	      errorBehav = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -224,7 +236,12 @@ int main (int argc, char** argv)
     if ( !filterWater && !filterLipid && (customFilter.size() == 0) ) {
         filterWater = true; 
     }
-
+   
+    // check if correct error handling was selected
+    if (errorBehav != svkHSVD::SET_FILTER_TO_ZERO &&  errorBehav != svkHSVD::SET_SIGNAL_TO_ZERO && errorBehav != svkHSVD::IGNORE_ERROR ){
+      errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
+      cout << "Specified error behavior not found. On error the input signal will be set to zero" << endl;
+    }
 
     // ===============================================  
     //  Use a reader factory to get the correct reader  
@@ -272,6 +289,9 @@ int main (int argc, char** argv)
     for ( int k = 0; k < customFilter.size(); k++ ) {
         hsvd->AddPPMFrequencyFilterRule( customFilter[k][0], customFilter[k][1] ); 
     }
+ 
+    hsvd->SetErrorHandlingBehavior(errorBehav);
+
     hsvd->Update();
 
     // ===============================================  
