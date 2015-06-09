@@ -122,8 +122,7 @@ int main (int argc, char** argv)
         FLAG_SINGLE, 
         FLAG_PPM1,
         FLAG_PPM2,
-	FLAG_ERROR
-
+        FLAG_ERROR
     }; 
 
 
@@ -181,8 +180,8 @@ int main (int argc, char** argv)
             case FLAG_PPM2:
                 initCustomFilterVector( &customFilter, atof( optarg ) ); 
                 break;           
-	    case FLAG_ERROR:
-	      errorBehav = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
+            case FLAG_ERROR:
+                errorBehav = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -238,9 +237,11 @@ int main (int argc, char** argv)
     }
    
     // check if correct error handling was selected
-    if (errorBehav != svkHSVD::SET_FILTER_TO_ZERO &&  errorBehav != svkHSVD::SET_SIGNAL_TO_ZERO && errorBehav != svkHSVD::IGNORE_ERROR ){
-      errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
-      cout << "Specified error behavior not found. On error the input signal will be set to zero" << endl;
+    if (errorBehav != svkHSVD::SET_FILTER_TO_ZERO 
+        &&  errorBehav != svkHSVD::SET_SIGNAL_TO_ZERO 
+        && errorBehav != svkHSVD::IGNORE_ERROR ){
+        errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
+        cout << "Specified error behavior not found. On error the input signal will be set to zero" << endl;
     }
 
     // ===============================================  
