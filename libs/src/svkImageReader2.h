@@ -76,6 +76,7 @@ class svkImageReader2 : public vtkImageReader2
         static string          GetFilePath(const char* fname);
         static string          GetFileNameWithoutPath(const char* fname); 
         void                   OnlyReadOneInputFile();
+        void                   OnlyGlobFiles();
         void                   GlobFileNames(); 
         static long            GetFileSize(ifstream* fs); 
 
@@ -116,6 +117,7 @@ class svkImageReader2 : public vtkImageReader2
         //  Members:
         vtkDataArray*                            dataArray;
         bool                                     readOneInputFile;
+        bool                                     onlyGlobFiles;
 
 
     private:

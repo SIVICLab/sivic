@@ -597,6 +597,14 @@ void svkDcmVolumeReader::InitFileNames()
     globFileNames->Delete();
     sortFileNames->Delete();
 
+    if (  this->onlyGlobFiles == true ) {
+        for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) {
+            cout << "FN: " << this->GetFileNames()->GetValue(i) << endl;
+        }
+        cout << "Just Glob Files, exiting now" << endl;
+        exit(0); 
+    }
+
 } 
 
 

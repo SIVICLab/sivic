@@ -74,6 +74,7 @@ svkImageReader2::svkImageReader2()
 
     this->dataArray = NULL;
     this->readOneInputFile = false;
+    this->onlyGlobFiles = false;
 
 }
 
@@ -100,11 +101,21 @@ svkImageReader2::~svkImageReader2()
 
 
 /*!
- *  Only read the one specified input file.  Otherwise the default behavior is to read all the files in the group.
+ *  Only read the one specified input file.  Otherwise the default 
+ *  behavior is to read all the files in the group.
  */
 void svkImageReader2::OnlyReadOneInputFile()
 {
     this->readOneInputFile = true;
+}
+
+
+/*!
+ *  Only list the files in the data set, then exit. 
+ */
+void svkImageReader2::OnlyGlobFiles()
+{
+    this->onlyGlobFiles = true; 
 }
 
 
@@ -613,7 +624,7 @@ void svkImageReader2::GlobFileNames()
         inputFile->Delete();
     }
 
-    if (this->GetDebug()) {
+    if (this->GetDebug() || ( this->onlyGlobFiles == true ) ) {
         for (int i = 0; i < this->GetFileNames()->GetNumberOfValues(); i++) {
             cout << "FN: " << this->GetFileNames()->GetValue(i) << endl;
         }
@@ -621,5 +632,10 @@ void svkImageReader2::GlobFileNames()
 
     globFileNames->Delete(); 
     sortFileNames->Delete(); 
+
+    if ( this->onlyGlobFiles) {
+        cout << "Just Glob Files, exiting now" << endl;
+        exit(0); 
+    }
 }
 
