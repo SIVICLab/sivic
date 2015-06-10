@@ -117,7 +117,7 @@ int main (int argc, char** argv)
     
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv ); 
 
-    svkHSVD::HSVDBehaviorOnError errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
+    svkHSVD::HSVDBehaviorOnError errorBehavior = svkHSVD::SET_SIGNAL_TO_ZERO;
     enum FLAG_NAME {
         FLAG_SINGLE, 
         FLAG_PPM1,
@@ -237,10 +237,10 @@ int main (int argc, char** argv)
     }
    
     // check if correct error handling was selected
-    if (errorBehav != svkHSVD::SET_FILTER_TO_ZERO 
-        &&  errorBehav != svkHSVD::SET_SIGNAL_TO_ZERO 
-        && errorBehav != svkHSVD::IGNORE_ERROR ){
-        errorBehav = svkHSVD::SET_SIGNAL_TO_ZERO;
+    if (errorBehavior != svkHSVD::SET_FILTER_TO_ZERO 
+        &&  errorBehavior != svkHSVD::SET_SIGNAL_TO_ZERO 
+        && errorBehavior != svkHSVD::IGNORE_ERROR ){
+        errorBehavior = svkHSVD::SET_SIGNAL_TO_ZERO;
         cout << "Specified error behavior not found. On error the input signal will be set to zero" << endl;
     }
 
@@ -291,7 +291,7 @@ int main (int argc, char** argv)
         hsvd->AddPPMFrequencyFilterRule( customFilter[k][0], customFilter[k][1] ); 
     }
  
-    hsvd->SetErrorHandlingBehavior(errorBehav);
+    hsvd->SetErrorHandlingBehavior( errorBehavior );
 
     hsvd->Update();
 
