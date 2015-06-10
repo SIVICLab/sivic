@@ -80,7 +80,7 @@ svkHSVD::svkHSVD()
     //this->SetNumberOfThreads(1);
     svkHSVD::progress = NULL; 
     this->errorHandlingFlag = svkHSVD::SET_SIGNAL_TO_ZERO;
-    this->threshModelDifferencePercent = 0.35;
+    this->thresholdModelDifferencePercent = 0.35;
 
 }
 
@@ -143,31 +143,60 @@ int svkHSVD::RequestInformation( vtkInformation* request, vtkInformationVector**
 }
 
 
-void svkHSVD::SetErrorHandlingBehavior(HSVDBehaviorOnError errBeh){ 
-    this->errorHandlingFlag = errBeh;
+/*!
+ *  Set the error handling behvior type
+ */
+void svkHSVD::SetErrorHandlingBehavior( HSVDBehaviorOnError errBehavior )
+{ 
+    this->errorHandlingFlag = errBehavior;
 }
 
-void svkHSVD::SetSignalToZeroOn(){ 
-    this->errorHandlingFlag = svkHSVD::SET_SIGNAL_TO_ZERO;
-}	
 
-void svkHSVD::SetFilterToZeroOn(){ 
+/*!
+ *  Sets the error handling behavior such that if a fitting error is detected, the output spectrum
+ *  for that voxel is set to zero. This is the default error handling behavior. 
+ */
+void svkHSVD::SetErrorHandlingSignalToZeroOn()
+{ 
+    this->errorHandlingFlag = svkHSVD::SET_SIGNAL_TO_ZERO;
+}
+
+
+/*!
+ *  Sets the error handling behavior such that if a fitting error is detected, the filter for that voxel is 
+ *  set to zero and the output spectrum is set to the original input data.  In other words if an error is 
+ *  detected, then no filter is applied to that voxel. 
+ */
+void svkHSVD::SetErrorHandlingFilterToZeroOn()
+{ 
     this->errorHandlingFlag = svkHSVD::SET_FILTER_TO_ZERO;
 }
 
-void svkHSVD::SetIgnoreError(){
+
+/*!
+ *  Sets the error handling behavior such that if a fitting error is detected, the filter is still subtracted even though 
+ *  the quality may be poor.  This may be useuful to study the quality of the filter. 
+ *
+ */
+void svkHSVD::SetErrorHandlngIgnoreError()
+{
     this->errorHandlingFlag = svkHSVD::IGNORE_ERROR;
 }       
 
-void svkHSVD::SetThreshModelDifference(float val){
-    this->threshModelDifferencePercent = val;
+
+/*!
+ *  
+ */
+void svkHSVD::SetThreshModelDifference(float percentDifference )
+{
+    this->thresholdModelDifferencePercent = percentDifference;
 }
 
 
 
 
 /*! 
- *
+ *  vtk algorithm method
  */
 int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector )
 {
@@ -217,9 +246,9 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     //  This will call HSVDFitCellSpectrum foreach cell within the 
     //  sub-extent within each thread.
     this->Superclass::RequestData(
-	 request,
-	 inputVector,
-	 outputVector
+        request,
+        inputVector,
+        outputVector
     );
 
     if ( svkHSVD::progress != NULL ) {
@@ -230,7 +259,6 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
     //  Subtract Filter Spectrum from the input data
     this->SubtractFilter();
 
-
     //  Make sure input spectra are in time domain for HSVD filter. 
     this->CheckOutputSpectralDomain(); 
 
@@ -240,13 +268,12 @@ int svkHSVD::RequestData( vtkInformation* request, vtkInformationVector** inputV
 
     delete [] this->selectionBoxMask; 
 
-
     return 1; 
 } 
 
 
 /*!
- *
+ *  Computes the HSVD fit for the specified spectrum. 
  */
 void svkHSVD::HSVDFitCellSpectrum( int cellID ) 
 {
@@ -254,7 +281,7 @@ void svkHSVD::HSVDFitCellSpectrum( int cellID )
     //cout << "HSVD Cell: " << cellID << endl;
     vector< vector< double > >  hsvdModel;    
 
-    bool bCellCorrupt = this->HSVD(cellID, &hsvdModel); 
+    bool wasCellFit = this->HSVD(cellID, &hsvdModel); 
    
     if ( this->GetDebug() ) {
         for ( int pole = 0; pole < hsvdModel.size(); pole++) {
@@ -270,13 +297,11 @@ void svkHSVD::HSVDFitCellSpectrum( int cellID )
             }
         }
     }
+
     // Only if HSVD succefully generated the fit parameter, a model should be generated
-    this->GenerateHSVDFilterModel( cellID, &hsvdModel, bCellCorrupt);   
+    this->GenerateHSVDFilterModel( cellID, &hsvdModel, wasCellFit );   
    
 }
-
-
-
 
 
 /*!
@@ -287,6 +312,7 @@ int svkHSVD::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* inf
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMrsImageData"); 
     return 1;
 }
+
 
 /*!
  *  Make sure input data are transformed to time domain 
@@ -377,11 +403,12 @@ void svkHSVD::CheckOutputSpectralDomain()
 
 
 /*!
- *
+ *  Returns true if cell was fit, or false if it could not be fit (e.g., no signal) or a fitting 
+ *  error was detected. 
  */
 bool svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel) 
 {
-    bool bResult = true; // cell ok
+    bool wasCellFit = true; // cell ok
 
     //cout << "FIT HSVD Cell: " << cellID << endl;
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
@@ -411,67 +438,36 @@ bool svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     float tupleIn[2];
 
     for( int t = 0; t < numTimePointsLong; t++ ){
-        //complexf val;
+
         spectrum->GetTupleValue(t, tupleIn);
-        //=====================================
-        // apodize tmp
-        //=====================================
-        //float windowTuple[2]; 
-        //this->apodizationWindow->GetTupleValue(t, windowTuple); 
-        //tupleIn[0] *= windowTuple[0] ;
-        //tupleIn[1] *= windowTuple[1] ;
-        // =======================
 
-
-        //signal[t].r = static_cast<doublereal>(std::real(tupleIn[0]));
-        //signal[t].i = static_cast<doublereal>(std::imag(tupleIn[1]));
         signal[t].r = static_cast<doublereal>(tupleIn[0]); 
         signal[t].i = static_cast<doublereal>(tupleIn[1]);
-
-
-        //cout << "SPECTRUM: " << t << " = " << static_cast<doublereal>(tupleIn[0]) << " " << static_cast<doublereal>(tupleIn[1]) << endl;
-/*
-        //simulate simple spectrum: 
-        //  Amp = 1000, 
-        //  phase = 0
-        //  damping = 2Hz 
-        //  frequency = 0 Hz    
-        double amp = 1000.; 
-        double phase = 0.; 
-        //double damping = 2; //Hz
-        //cout << "DT: " << dt << endl; exit(1); 
-        double damping = exp( -1. * 2. * (float)t * dt);
-        cout << "damping init: " << damping << endl;
-        double freq = 0; 
-        signal[t].r = (amp * cos( 0 ) * damping);
-        signal[t].i = (amp * sin( 0 ) * damping);
-*/
     }
 
     //  if signal is entirely zero, then do not fit this voxel
     if ( ! this->CanFitSignal( signal,  numTimePointsLong ) ) {
 
-      bResult = false; // cell not ok.
-      vector < double > poleParams; 
-      double zero_val = 0.;
+        wasCellFit = false;  // No data in cell, so skip
+        vector < double > poleParams; 
+        double zero_val = 0.;
 
-      //  amplitude
-      poleParams.push_back(zero_val);
+        //  amplitude
+        poleParams.push_back(zero_val);
 
-      //  phase
-      poleParams.push_back(zero_val);
+        //  phase
+        poleParams.push_back(zero_val);
 
-      //  frequency    
-      poleParams.push_back(zero_val);
+        //  frequency    
+        poleParams.push_back(zero_val);
                   
-      //  damping
-      poleParams.push_back(zero_val);         
+        //  damping
+        poleParams.push_back(zero_val);         
 
-      hsvdModel->push_back(poleParams); 
+        hsvdModel->push_back(poleParams); 
 
-      return bResult ; 
+        return wasCellFit; 
     }
-
 
 
     //////////////////////////////////////////////////////////////////////
@@ -780,7 +776,7 @@ bool svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
     double val = 0;
     double Deviation;
 
-    bResult = this->checkQualityOfFit(complex_amplitude, log_freq_damp, k, spectrum, &Deviation);
+    bool fitErrorDetected = this->CheckQualityOfFit(complex_amplitude, log_freq_damp, k, spectrum, &Deviation);
 
     for( int i = 0; i < k; ++i ){  // loop over poles                    
         //cout << "POLE: " << i << endl;
@@ -806,59 +802,70 @@ bool svkHSVD::HSVD(int cellID, vector<vector <double > >* hsvdModel)
 
         hsvdModel->push_back(poleParams); 
     }
-    return bResult;      
+
+    return fitErrorDetected;      
        
 }
 
 /*!
- *  Check the quality the fit by evaluating the amplitude of the first time point of the FID signal and comparing it to
- *  the first point calculated by the fit. If the difference is higher than this->threshModelDifferencePercent return false.
- *  The function returns the calculated deviation between the signals in the supplied pointer to double (1 meaning 100% deviation).
+ *  Check the quality the fit by evaluating the amplitude of the first time point of the FID 
+ *  signal and compare it to the first point calculated by the fit. If the difference is 
+ *  higher than this->thresholdModelDifferencePercent return false.
+ *  
+ *  Output: 
+ *          percentDeviation: The function initializes the calculated deviation between the signals 
+ *          in the supplied pointer to double (1 meaning 100% deviation).
+ * 
+ *          returns  bool fitErrorDetected 
  */
-bool svkHSVD::checkQualityOfFit(doublecomplex* fitAmplitude, doublecomplex* fitFreq, int k, vtkFloatArray* signal, double* pDeviation){
-    bool bResult = false; // bad quality
-    //double qParam1;
+bool svkHSVD::CheckQualityOfFit(doublecomplex* fitAmplitude, doublecomplex* fitFreq, int peakNumber, vtkFloatArray* signal, double* percentDeviation)
+{
+    bool fitErrorDetected = false;   // bad quality
+
     float tuple[2], modelTuple[2];
 
     memset(modelTuple, 0, sizeof(float)*2);
     signal->GetTupleValue(0, tuple); // get first amplitude of the time signal
  
     // Calculate the amplitudee of the first point in the modelled signal
-    for (int i=0; i<k; i++){
-    //  amplitude
-	double amp  = (double)sqrt(
-			    fitAmplitude[i].r * fitAmplitude[i].r +
-			    fitAmplitude[i].i * fitAmplitude[i].i
-			    );
-    //  phase
-	double phi   = (double) atan2(fitAmplitude[i].i, fitAmplitude[i].r);
+    for (int i = 0; i < peakNumber; i++) {
 
-    //  get angular frequency argument
-	double omegaT  = 0.; //fitFreq[i].i*nrPoint;
+        //  amplitude
+        double amp  = (double)sqrt(
+                    fitAmplitude[i].r * fitAmplitude[i].r +
+                    fitAmplitude[i].i * fitAmplitude[i].i
+                );
 
-    //  damping term
-	double damping = 1.; //exp( fitFreq[i].r * nrPoint);
+        //  phase
+        double phi   = (double) atan2(fitAmplitude[i].i, fitAmplitude[i].r);
 
-	modelTuple[0] += (amp * cos( phi + omegaT ) * damping);
-	modelTuple[1] += (amp * sin( phi + omegaT ) * damping);
+        //  get angular frequency argument
+        double omegaT  = 0.; 
+
+        //  damping term
+        double damping = 1.; 
+
+        modelTuple[0] += (amp * cos( phi + omegaT ) * damping);
+        modelTuple[1] += (amp * sin( phi + omegaT ) * damping);
     }
 
     // Check for plausibility. Amplitude of Signal(t=0)~ModelledSignal(t=0)
+    if ( percentDeviation != NULL ) {
+        *percentDeviation = fmin(abs(( tuple[0]-modelTuple[0])/tuple[0]), 1.); // 0 = 0% = perfect fit, 1 = 100% bad fit
+    }
 
-    if (pDeviation!=NULL)
-	*pDeviation = fmin(abs(( tuple[0]-modelTuple[0])/tuple[0]), 1.); // 0= 0% = perfect fit, 1 = 100% bad fit
+    if ( isnan(modelTuple[0] ) ) {
+        fitErrorDetected = false;   
+        if ( percentDeviation!=NULL ) {
+            *percentDeviation = 1.;
+        }    
+    } else if ( abs(modelTuple[0] - tuple[0]) < abs( this->thresholdModelDifferencePercent * tuple[0] ) ) {
+        fitErrorDetected = true;
+    }
 
-    if (isnan(modelTuple[0])){
-	bResult = false;   
-	if (pDeviation!=NULL)
-	    *pDeviation = 1.;
-
-    }	
-    else if (abs(modelTuple[0]- tuple[0]) < abs(this->threshModelDifferencePercent*tuple[0]))
-	bResult = true;
-
-    return bResult;
+    return fitErrorDetected; 
 }
+
 
 /*
  *  If the signal is identically zero everywhere, it can't be fit. 
@@ -882,7 +889,7 @@ bool svkHSVD::CanFitSignal( const doublecomplex* signal, int numPts )
  *  frequency range, amplitude, damping, etc.   The filter Spectrum should be the same dimension
  *  as the input spectrum.         
  */
-void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool bCellOK )
+void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsvdModel, bool wasCellFit )
 {
 
     svkMrsImageData* data = svkMrsImageData::SafeDownCast(this->GetImageDataInput(0)); 
@@ -895,112 +902,113 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
     bool    addSVDComponent;
 
     vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
-    if (bCellOK || this->errorHandlingFlag == svkHSVD::IGNORE_ERROR){
+    if ( bCellOK || this->errorHandlingFlag == svkHSVD::IGNORE_ERROR ) {
       
-      //  loop over each time point in FID: 
-      for ( int i = 0; i < numTimePoints; i++ ) {
+        //  loop over each time point in FID: 
+        for ( int i = 0; i < numTimePoints; i++ ) {
 
-        //cout << "TIME POINT: " << i << endl;
+            //cout << "TIME POINT: " << i << endl;
 
-        //  Initialize the filter spectrum to 0
-        float filterTuple[2]; 
-        filterTuple[0] = 0.; 
-        filterTuple[1] = 0.; 
+            //  Initialize the filter spectrum to 0
+            float filterTuple[2]; 
+            filterTuple[0] = 0.; 
+            filterTuple[1] = 0.; 
 
-        //  loop over poles (peakNumber): 
-        //cout << endl;
-	  for ( int pole = 0; pole < hsvdModel->size(); pole++) {
+            //  loop over poles (peakNumber): 
+            //cout << endl;
+            for ( int pole = 0; pole < hsvdModel->size(); pole++) {
 
-            //      0       amplitude
-            //      1       phase
-            //      2       frequency 
-            //      3       damping 
-            double amp   = (*hsvdModel)[pole][0]; 
-            double phase = (*hsvdModel)[pole][1]; 
-            double freq  = (*hsvdModel)[pole][2]; 
-            double damp  = (*hsvdModel)[pole][3]; 
-	 
-            if ( this->GetDebug() && i == 0) {
-	      //cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
-            }
+                //      0       amplitude
+                //      1       phase
+                //      2       frequency 
+                //      3       damping 
+                double amp   = (*hsvdModel)[pole][0]; 
+                double phase = (*hsvdModel)[pole][1]; 
+                double freq  = (*hsvdModel)[pole][2]; 
+                double damp  = (*hsvdModel)[pole][3]; 
 
-            
-            addSVDComponent = false;
+                if ( this->GetDebug() && i == 0 ) {
+                    //cout << "pole: " << pole << " amp, phase, freq, damp: " << amp << " " << phase << " " << freq << " " << damp << endl;
+                }
 
-            //  Check to see if this HSVD components should contribute to the filter 
-            //  spectrum or not.  There may be more than one filter rule, e.g. filter
-            //  water and fat, etc.
-            
-            for (int filterRule = 0; filterRule < this->filterRules.size(); filterRule++) {
-	      if (
-		  //( sweepWidth * freq >= this->filterRules[filterRule][0] 
-		  //&& sweepWidth * freq <= this->filterRules[filterRule][1] ) 
-		  ( -1 * freq >= this->filterRules[filterRule][0] 
-		    && -1 * freq <= this->filterRules[filterRule][1] ) 
-		  || damp < -1. * this->filterRules[filterRule][2]
-		  )  {
-		addSVDComponent = true;
-		if ( i == 0 ) {
-		  //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
-		  //<< " to " << this->filterRules[filterRule][1] << endl;
-		  //cout << "   AMP: " << amp << " FREQ " << freq << endl ;
-		}
-	      }
-            }
+                addSVDComponent = false;
+
+                //  Check to see if this HSVD components should contribute to the filter 
+                //  spectrum or not.  There may be more than one filter rule, e.g. filter
+                //  water and fat, etc.
+                
+                for (int filterRule = 0; filterRule < this->filterRules.size(); filterRule++) {
+                    if (
+                        //( sweepWidth * freq >= this->filterRules[filterRule][0] 
+                        //&& sweepWidth * freq <= this->filterRules[filterRule][1] ) 
+                        ( -1 * freq >= this->filterRules[filterRule][0] 
+                        && -1 * freq <= this->filterRules[filterRule][1] ) 
+                        || damp < -1. * this->filterRules[filterRule][2]
+                    )  {
+                        addSVDComponent = true;
+                        if ( i == 0 ) {
+                            //cout << "FILTER RULE: " << this->filterRules[filterRule][0] 
+                            //<< " to " << this->filterRules[filterRule][1] << endl;
+                            //cout << "   AMP: " << amp << " FREQ " << freq << endl ;
+                        }
+                    }
+                }
            
 
-            if ( addSVDComponent ) {
-	      //if ( 0 ) {
+                if ( addSVDComponent ) {
 
-	      double PI      = vtkMath::Pi(); 
-	      double dT      =  1./sweepWidth; 
+                    double PI      = vtkMath::Pi(); 
+                    double dT      =  1./sweepWidth; 
 
-	      //  get angular frequency argument
-	      double omegaT  = 2. * PI * freq * i * dT;
+                    //  get angular frequency argument
+                    double omegaT  = 2. * PI * freq * i * dT;
 
-	      //  damping term
-	      double damping = exp( -1 * damp * i * dT);
+                    //  damping term
+                    double damping = exp( -1 * damp * i * dT);
 
-	      //  phase is in radians
-	      double phi     = phase;
+                    //  phase is in radians
+                    double phi     = phase;
 
-	      if ( this->GetDebug() ) {
-		if ( i == 0 ) {
-		  //cout << "       amp frequency phi damping : " <<  amp << " " << omegaT << " "  << phi << " " << damping<< endl;
-		}
-	      }
+                    if ( this->GetDebug() ) {
+                        if ( i == 0 ) {
+                            //cout << "       amp frequency phi damping : " <<  amp 
+                            //<< " " << omegaT << " "  << phi << " " << damping<< endl;
+                        }
+                    }
 
-	      filterTuple[0] += (amp * cos( phi + omegaT ) * damping);
-	      filterTuple[1] += (amp * sin( phi + omegaT ) * damping);
-	      //cout << "                  FT: " << filterTuple[0] << " " << filterTuple[1] << endl;
+                    filterTuple[0] += (amp * cos( phi + omegaT ) * damping);
+                    filterTuple[1] += (amp * sin( phi + omegaT ) * damping);
+                    //cout << "                  FT: " << filterTuple[0] << " " << filterTuple[1] << endl;
+                }
+
             }
+            filterSpectrum->SetTuple( i, filterTuple );
+        }
 
-	  }
-        filterSpectrum->SetTuple( i, filterTuple );
-      }
-    }
-    else{ // cell was corrupt
-      float tuple[2];
-      switch (this->errorHandlingFlag){
-      case svkHSVD::SET_SIGNAL_TO_ZERO: // Copy Signal Spectrum into Filter Spectrum
-	{	 
-	vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-	for (int i = 0; i < numTimePoints; i++) {
-	  spectrum->GetTupleValue(i,tuple);
-	  filterSpectrum->SetTuple(i, tuple);  // just case the filter spectrum gets output it will contain the input signal
-	}
-	break;
-	}
-      case svkHSVD::SET_FILTER_TO_ZERO: // Set Filter Spectrum to 0
-	{      
-	for (int i = 0; i < numTimePoints; i++) {
-	  tuple[0] = 0.; 
-	  tuple[1] = 0.; 
-	  filterSpectrum->SetTuple(i, tuple); 	
-	}
-	break;
-	}
-      }
+    } else { 
+        // cell was corrupt
+        float tuple[2];
+        switch ( this->errorHandlingFlag ) {
+
+            case svkHSVD::SET_SIGNAL_TO_ZERO: // Copy Signal Spectrum into Filter Spectrum
+            { 
+                vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+                for (int i = 0; i < numTimePoints; i++) {
+                    spectrum->GetTupleValue(i,tuple);
+                    filterSpectrum->SetTuple(i, tuple);  // just case the filter spectrum gets output it will contain the input signal
+                }
+                break;
+            }
+            case svkHSVD::SET_FILTER_TO_ZERO: // Set Filter Spectrum to 0
+            {      
+                for (int i = 0; i < numTimePoints; i++) {
+                    tuple[0] = 0.; 
+                    tuple[1] = 0.; 
+                    filterSpectrum->SetTuple(i, tuple); 
+                }
+                break;
+            }
+        }
     }
 
     return;
@@ -1019,28 +1027,26 @@ void svkHSVD::SubtractFilter()
     //   for each cell /spectrum: 
     svkDcmHeader::DimensionVector dimensionVector = data->GetDcmHeader()->GetDimensionIndexVector();
     int numCells = svkDcmHeader::GetNumberOfCells( &dimensionVector );
-    //numCells = 1; 
     int firstCell = 0; 
-    //numCells = 1600; 
     int numTimePoints = this->numTimePoints; 
 
     //for ( int cellID = firstCell; cellID < numCells; cellID+=4 ) {
     for ( int cellID = firstCell; cellID < numCells; cellID++ ) {
-          vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
-	  float tuple[2];	    
-	  vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
-	  float filterTuple[2]; 
+        vtkFloatArray* spectrum = static_cast<vtkFloatArray*>( data->GetSpectrum( cellID ) );
+        float tuple[2];  
+        vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
+        float filterTuple[2]; 
 
-	  for (int i = 0; i < numTimePoints; i++) {
-	    filterSpectrum->GetTupleValue(i, filterTuple);
-	    spectrum->GetTupleValue(i, tuple);
-	    tuple[0] -= filterTuple[0]; 
-	    tuple[1] -= filterTuple[1]; 
-	    spectrum->SetTuple(i, tuple);  
-	  }
+        for (int i = 0; i < numTimePoints; i++) {
+            filterSpectrum->GetTupleValue(i, filterTuple);
+            spectrum->GetTupleValue(i, tuple);
+            tuple[0] -= filterTuple[0]; 
+            tuple[1] -= filterTuple[1]; 
+            spectrum->SetTuple(i, tuple);  
+        }
     }
-
 }
+
 
 /*!
  *  Add a filter rule, defined by a frequency range and damping threshold (all frequencies with 
@@ -1222,37 +1228,38 @@ void svkHSVD::MatVec(const doublecomplex* matrix, const doublecomplex* vector, i
     }
 }
 
+
 /*!
- * 
- * This function calculates the product result = matrix^H*matrix, with ^H denoting the Hermitian transpose matrix or conjugate transpose.
+ *  This function calculates the product result = matrix^H*matrix, with ^H denoting the 
+ *  Hermitian transpose matrix or conjugate transpose.
  */
 void svkHSVD::MatSq(const doublecomplex* matrix, int m, int n, doublecomplex* result)
 {
-      doublecomplex a,b;
-	for ( int targetCol = 0; targetCol< m; ++targetCol){
-	  for ( int targetRow = targetCol; targetRow< m; ++targetRow){ // calc only upper diagonal and copy values since symmetric!
-	  double res_r1 = 0.;
-	  double res_i1 = 0.;
-	  double res_r2 = 0.;
-	  double res_i2 = 0.;
-	  for (int sourceIdx = 0; sourceIdx < n; ++ sourceIdx){
-	    a = matrix[targetCol*n+sourceIdx]; 
-	    b = matrix[targetRow*n+sourceIdx];
-	    res_r1 += a.r*b.r+a.i*b.i;
-	    res_i1 += -a.r*b.i+a.i*b.r;
-
-	    //  res_r2 += a.r*b.r+a.i*b.i;
-	    res_i2 += a.r*b.i-a.i*b.r;
-	  }
-	  result[targetCol*m+targetRow].r = res_r1;
-	  result[targetCol*m+targetRow].i = res_i1;
-	  if (targetRow!=targetCol){
-	    result[targetRow*m+targetCol].r = res_r1;//same as real1
-	    result[targetRow*m+targetCol].i = res_i2;
-	  }
-	}
-      }
+    doublecomplex a,b;
+    for ( int targetCol = 0; targetCol< m; ++targetCol){
+        for ( int targetRow = targetCol; targetRow< m; ++targetRow){ // calc only upper diagonal and copy values since symmetric!
+            double res_r1 = 0.;
+            double res_i1 = 0.;
+            double res_r2 = 0.;
+            double res_i2 = 0.;
+            for (int sourceIdx = 0; sourceIdx < n; ++ sourceIdx){
+                a = matrix[targetCol*n+sourceIdx]; 
+                b = matrix[targetRow*n+sourceIdx];
+                res_r1 += a.r*b.r+a.i*b.i;
+                res_i1 += -a.r*b.i+a.i*b.r;
+            
+                res_i2 += a.r*b.i-a.i*b.r;
+            }
+            result[targetCol*m+targetRow].r = res_r1;
+            result[targetCol*m+targetRow].i = res_i1;
+            if ( targetRow != targetCol ) {
+                result[targetRow*m+targetCol].r = res_r1;   //same as real1
+                result[targetRow*m+targetCol].i = res_i2;
+            }
+        }
+    }
 }
+
 
 /*!
  *
@@ -1265,7 +1272,7 @@ void svkHSVD::MatMat(const doublecomplex* matrix1, const doublecomplex* matrix2,
         int jmi = i;
         double res_r = 0.;
         double res_i = 0.;
-        for( int jnk = 0; jnk < n*m; ++jnk){
+        for( int jnk = 0; jnk < n*m; ++jnk) {
             // ink = i*n+k, jnk = j*n+k, jmi = j*m+i = (jnk/n)*m+i
             double prod1 = (matrix1[ink].r - matrix1[ink].i)*(matrix2[jnk].r + matrix2[jnk].i);
             double prod2 = matrix1[ink].r * matrix2[jnk].r;
@@ -1346,7 +1353,6 @@ void svkHSVD::svkHSVDExecute(int ext[6], int id)
 }
 
 
-
 /*! 
  *  This method is passed a input and output Datas, and executes the filter
  *  algorithm to fill the output from the inputs.
@@ -1354,16 +1360,15 @@ void svkHSVD::svkHSVDExecute(int ext[6], int id)
  *  the Datas data types.
  */
 void svkHSVD::ThreadedRequestData(
-  vtkInformation * vtkNotUsed( request ), 
-  vtkInformationVector ** vtkNotUsed( inputVector ), 
-  vtkInformationVector * vtkNotUsed( outputVector ),
-  vtkImageData ***inData, 
-  vtkImageData **outData,
-  int outExt[6], int id)
+    vtkInformation * vtkNotUsed( request ), 
+    vtkInformationVector ** vtkNotUsed( inputVector ), 
+    vtkInformationVector * vtkNotUsed( outputVector ),
+    vtkImageData ***inData, 
+    vtkImageData **outData,
+    int outExt[6], int id)
 {
 
     cout << "THREADED EXECUTE " << id << endl ;
-
     this->svkHSVDExecute(outExt, id);
                           
 }
