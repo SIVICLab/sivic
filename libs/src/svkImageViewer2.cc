@@ -78,6 +78,8 @@ svkImageViewer2::svkImageViewer2()
 
     this->orientation = svkDcmHeader::AXIAL;
 
+    this->cameraZoom = 1.2;     
+
 }
 
 
@@ -565,8 +567,16 @@ void svkImageViewer2::ResetCamera()
                 break;
         }
         GetRenderer()->ResetCamera();
-        GetRenderer()->GetActiveCamera()->Zoom( 1.2 );
+        GetRenderer()->GetActiveCamera()->Zoom( this->cameraZoom );
     } 
+}
+
+/*!
+ *  Set the camera zoom factor
+ */
+void svkImageViewer2::SetCameraZoom( double zoom )
+{
+    this->cameraZoom = zoom; 
 }
 
 

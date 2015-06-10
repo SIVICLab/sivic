@@ -75,30 +75,32 @@ class svkImageViewer2 : public vtkImageViewer2
         // vtk type revision macro
         vtkTypeRevisionMacro( svkImageViewer2, vtkImageViewer2 );
    
-        static svkImageViewer2*       New();  
+        static svkImageViewer2*             New();  
         
-        void SetInput( svkImageData *in );
-        virtual void SetSlice( int slice );
-        virtual void SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation );
-        virtual void SetActiveVolume( int volume );
-        void Render();
-        void ResetCamera();
-        void TurnOrthogonalImagesOn();
-        void TurnOrthogonalImagesOff();
-        int  GetSlice();
-        int  GetSlice( svkDcmHeader::Orientation orientation );
-        virtual void SetColorLevel(double s);
-        virtual void SetColorWindow(double s);
-        virtual void                      SetOrientation( svkDcmHeader::Orientation orientation );
-        virtual svkDcmHeader::Orientation GetOrientation( );
-        virtual svkOrientedImageActor* GetImageActor( svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
-        virtual svkImageData* GetInput();
-        virtual bool          AreOrthogonalImagesOn();
-        void SetInteractorStyle( vtkInteractorStyleImage* style );
+        void                                SetInput( svkImageData *in );
+        virtual void                        SetSlice( int slice );
+        virtual void                        SetSlice( int slice, svkDcmHeader::Orientation sliceOrientation );
+        virtual void                        SetActiveVolume( int volume );
+        void                                Render();
+        void                                ResetCamera();
+        void                                TurnOrthogonalImagesOn();
+        void                                TurnOrthogonalImagesOff();
+        int                                 GetSlice();
+        int                                 GetSlice( svkDcmHeader::Orientation orientation );
+        virtual void                        SetColorLevel(double s);
+        virtual void                        SetColorWindow(double s);
+        virtual void                        SetOrientation( svkDcmHeader::Orientation orientation );
+        virtual svkDcmHeader::Orientation   GetOrientation( );
+        virtual svkOrientedImageActor*      GetImageActor( 
+                                                svkDcmHeader::Orientation actorOrientation = svkDcmHeader::UNKNOWN_ORIENTATION );
+        virtual svkImageData*               GetInput();
+        virtual bool                        AreOrthogonalImagesOn();
+        void                                SetInteractorStyle( vtkInteractorStyleImage* style );
+        void                                SetCameraZoom( double zoom ); 
 
-        int axialSlice;
-        int coronalSlice;
-        int sagittalSlice;
+        int                                 axialSlice;
+        int                                 coronalSlice;
+        int                                 sagittalSlice;
 
     protected:
 
@@ -107,26 +109,28 @@ class svkImageViewer2 : public vtkImageViewer2
 
         svkImageData* data;
 
-        int orthSlice1;
-        int orthSlice2;
+        int                                 orthSlice1;
+        int                                 orthSlice2;
 
-        svkDcmHeader::Orientation orientation;
+        svkDcmHeader::Orientation           orientation;
 
+        void                                InitializeOrthogonalActors();
+        void                                InstallPipeline();
+        svkOrientedImageActor*              axialImageActor;
+        svkOrientedImageActor*              coronalImageActor;
+        svkOrientedImageActor*              sagittalImageActor;
 
-        void InitializeOrthogonalActors();
+        //svkOpenGLOrientedImageActor*      orthImageActor1;
+        //svkOpenGLOrientedImageActor*      orthImageActor2;
+        //svkImageMapToWindowLevelColors*   orthWinLevel1;
+        //svkImageMapToWindowLevelColors*   orthWinLevel2;
+        svkImageMapToWindowLevelColors*     axialWinLevel;
+        svkImageMapToWindowLevelColors*     coronalWinLevel;
+        svkImageMapToWindowLevelColors*     sagittalWinLevel;
 
-        void                  InstallPipeline();
-        svkOrientedImageActor*             axialImageActor;
-        svkOrientedImageActor*             coronalImageActor;
-        svkOrientedImageActor*             sagittalImageActor;
-
-        //svkOpenGLOrientedImageActor*             orthImageActor1;
-        //svkOpenGLOrientedImageActor*             orthImageActor2;
-        //svkImageMapToWindowLevelColors*          orthWinLevel1;
-        //svkImageMapToWindowLevelColors*          orthWinLevel2;
-        svkImageMapToWindowLevelColors*          axialWinLevel;
-        svkImageMapToWindowLevelColors*          coronalWinLevel;
-        svkImageMapToWindowLevelColors*          sagittalWinLevel;
+    private: 
+        double                              cameraZoom;  
+	
 
 };
 
