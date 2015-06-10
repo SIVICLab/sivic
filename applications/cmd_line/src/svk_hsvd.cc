@@ -181,7 +181,7 @@ int main (int argc, char** argv)
                 initCustomFilterVector( &customFilter, atof( optarg ) ); 
                 break;           
             case FLAG_ERROR:
-                errorBehav = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
+                errorBehavior = static_cast<svkHSVD::HSVDBehaviorOnError>(atoi( optarg )); 
                 break;
             case 'h':
                 cout << usemsg << endl;
