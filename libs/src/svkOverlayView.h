@@ -135,6 +135,8 @@ class svkOverlayView : public svkDataView
         double              GetColorOverlayWindow( ); 
         double              GetColorOverlayLevel( );
         bool                CheckDataOrientations();
+        void                SetCameraZoom( double zoom ); 
+
 
         svkLookupTable*     GetLookupTable( );
 

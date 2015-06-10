@@ -2160,6 +2160,14 @@ void svkOverlayView::AlignCamera()
     }
 }
 
+/*!
+ *  Set the camera zoom factor
+ */
+void svkOverlayView::SetCameraZoom( double zoom )
+{
+    this->imageViewer->SetCameraZoom( zoom ); 
+}
+
 
 /*!
  *  Returns true if the current image is within the spectrscopy data set
