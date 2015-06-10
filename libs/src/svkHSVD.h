@@ -262,7 +262,7 @@ class svkHSVD : public svkThreadedImageAlgorithm
         int                         numTimePoints;
         double                      spectralWidth; 
         //vtkFloatArray*              apodizationWindow;
-        double                      threshModelDifferencePercent;
+        double                      thresholdModelDifferencePercent;
     
         HSVDBehaviorOnError         errorHandlingFlag;
 

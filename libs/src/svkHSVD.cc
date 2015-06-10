@@ -178,7 +178,7 @@ void svkHSVD::SetErrorHandlingFilterToZeroOn()
  *  the quality may be poor.  This may be useuful to study the quality of the filter. 
  *
  */
-void svkHSVD::SetErrorHandlngIgnoreError()
+void svkHSVD::SetErrorHandlingIgnoreError()
 {
     this->errorHandlingFlag = svkHSVD::IGNORE_ERROR;
 }       
@@ -187,7 +187,7 @@ void svkHSVD::SetErrorHandlngIgnoreError()
 /*!
  *  
  */
-void svkHSVD::SetThreshModelDifference(float percentDifference )
+void svkHSVD::SetThresholdModelDifference(float percentDifference )
 {
     this->thresholdModelDifferencePercent = percentDifference;
 }
@@ -902,7 +902,7 @@ void svkHSVD::GenerateHSVDFilterModel( int cellID, vector< vector<double> >* hsv
     bool    addSVDComponent;
 
     vtkFloatArray* filterSpectrum = static_cast<vtkFloatArray*>( this->filterImage->GetSpectrum( cellID ) );
-    if ( bCellOK || this->errorHandlingFlag == svkHSVD::IGNORE_ERROR ) {
+    if ( wasCellFit || this->errorHandlingFlag == svkHSVD::IGNORE_ERROR ) {
       
         //  loop over each time point in FID: 
         for ( int i = 0; i < numTimePoints; i++ ) {
