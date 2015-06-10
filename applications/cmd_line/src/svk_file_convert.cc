@@ -93,6 +93,7 @@ int main (int argc, char** argv)
     usemsg += "                                         2 = deidentified                    \n";
     usemsg += "   --deid_id     id                  Replace PHI with this identifier        \n"; 
     usemsg += "   --single                          Only converts specified file if         \n"; 
+    usemsg += "   --list_files                      Only list files comprising the data set.\n"; 
     usemsg += "                                     multiple in series.                     \n";
 #if defined( UCSF_INTERNAL )
     usemsg += "   -b                                Burn UCSF Radiology Research into pixels of each image. \n";  
@@ -112,13 +113,15 @@ int main (int argc, char** argv)
     bool   useCompression = false;  
     bool   verbose = false;
     bool   onlyLoadSingleFile = false;
+    bool   onlyListFiles = false;
 
     string cmdLine = svkProvenance::GetCommandLineString( argc, argv );
 
     enum FLAG_NAME {
         FLAG_DEID_TYPE, 
         FLAG_DEID_STUDY_ID, 
-        FLAG_SINGLE
+        FLAG_SINGLE, 
+        FLAG_LIST_FILES
     };
 
 
@@ -127,6 +130,7 @@ int main (int argc, char** argv)
         {"deid_type",   required_argument, NULL,  FLAG_DEID_TYPE}, 
         {"deid_id",     required_argument, NULL,  FLAG_DEID_STUDY_ID},
         {"single",      no_argument,       NULL,  FLAG_SINGLE},
+        {"list_files",  no_argument,       NULL,  FLAG_LIST_FILES},
         {0, 0, 0, 0}
     };
 
@@ -156,6 +160,9 @@ int main (int argc, char** argv)
                 break;
             case FLAG_SINGLE:
                 onlyLoadSingleFile = true;
+                break;
+            case FLAG_LIST_FILES:
+                onlyListFiles = true;
                 break;
 #if defined( UCSF_INTERNAL )
             case 'b':
@@ -248,6 +255,9 @@ int main (int argc, char** argv)
     reader->SetFileName( inputFileName.c_str() );
     if ( onlyLoadSingleFile == true ) {
         reader->OnlyReadOneInputFile();
+    }
+    if ( onlyListFiles == true ) {
+        reader->OnlyGlobFiles();
     }
     reader->Update(); 
 
