@@ -60,7 +60,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
     this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE, required, repeatable);
     this->GetPortMapper()->InitializeInputPort( AUTO_ADJUST_BIN_SIZE, "AUTO_ADJUST_BIN_SIZE", svkAlgorithmPortMapper::SVK_BOOL, !required);
-    this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE);
+    this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS, "SMOOTH_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_HISTOGRAM, "COMPUTE_HISTOGRAM", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( COMPUTE_MEAN, "COMPUTE_MEAN", svkAlgorithmPortMapper::SVK_BOOL, !required);
@@ -142,14 +142,11 @@ int svkImageStatistics::RequestData( vtkInformation* request,
             }
         }
         double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE, imageIndex )->GetValue();
-        double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
         int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
         svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
-        // Replace < zero with 0
-        for( int i = 0; i < image->GetPointData()->GetScalars()->GetNumberOfTuples(); i++ ) {
-            if( image->GetPointData()->GetScalars()->GetTuple1(i) < 0 ) {
-                image->GetPointData()->GetScalars()->SetTuple1(i,0);
-            }
+        double startBin = image->GetPointData()->GetScalars()->GetRange()[0];
+        if( this->GetPortMapper()->GetDoubleInputPortValue( START_BIN ) != NULL ) {
+            startBin = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
         }
         if( this->GetShouldCompute(AUTO_ADJUST_BIN_SIZE)) {
             binSize = svkStatistics::GetAutoAdjustedBinSize( image, binSize, startBin, numBins );
@@ -256,7 +253,10 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
         accumulator->Update( );
         accumulator->SetIgnoreZero( true );
         int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
-        double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+        double startBin = image->GetPointData()->GetScalars()->GetRange()[0];
+        if( this->GetPortMapper()->GetDoubleInputPortValue( START_BIN ) != NULL ) {
+            startBin = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+        }
         accumulator->SetComponentExtent(0,numBins-1,0,0,0,0 );
         accumulator->SetComponentOrigin(startBin, 0,0 );
         accumulator->SetComponentSpacing(binSize, 0,0);
@@ -272,12 +272,12 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             if( accumulator->GetVoxelCount() > 0 ) {
                 max = *accumulator->GetMax();
             }
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 max /= normalization;
             }
             string maxString = this->DoubleToString( max );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "max", maxString);
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
@@ -288,24 +288,24 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             if( accumulator->GetVoxelCount() > 0 ) {
                 min = *accumulator->GetMin();
             }
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 min /= normalization;
             }
             string minString = this->DoubleToString( min );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "min", minString);
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
 
         if( this->GetShouldCompute(COMPUTE_MEAN)) {
             double mean = *accumulator->GetMean();
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 mean /= normalization;
             }
             string meanString = this->DoubleToString( mean );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mean", meanString);
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
@@ -314,24 +314,24 @@ void svkImageStatistics::ComputeAccumulateStatistics(svkMriImageData* image, svk
             double mean = *accumulator->GetMean();
             double volume = (accumulator->GetVoxelCount()*pixelVolume)/1000.0;
             double sum = mean*volume;
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 sum /= normalization;
             }
             string sumString = this->DoubleToString( sum );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sum", sumString);
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
 
         if( this->GetShouldCompute(COMPUTE_STDEV)) {
             double stdev = *accumulator->GetStandardDeviation();
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 stdev /= normalization;
             }
             string stdevString = this->DoubleToString( stdev );
             vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "sd", stdevString);
-            if( normalization > 0 ) {
+            if( normalization != 0 ) {
                 elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
             }
         }
@@ -549,13 +549,16 @@ void svkImageStatistics::ComputeDescriptiveStatistics(svkMriImageData* image, sv
  */
 void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriImageData* roi, double binSize, vtkDataArray* maskedPixels, vtkXMLDataElement* results, double normalization)
 {
-    double startBin  = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
     int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
     int smoothBins = 0;
     if( this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS ) != NULL ){;
         smoothBins = this->GetPortMapper()->GetIntInputPortValue( SMOOTH_BINS )->GetValue();
     }
     if( image != NULL ) {
+        double startBin = image->GetPointData()->GetScalars()->GetRange()[0];
+        if( this->GetPortMapper()->GetDoubleInputPortValue( START_BIN ) != NULL ) {
+            startBin = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
+        }
         bool useMeanForAll = false;
         vtkDataArray* pixelsInROI = svkStatistics::GetMaskedPixels(image,roi);
         vtkDataArray* histogram = svkStatistics::GetHistogram( pixelsInROI, binSize, startBin, numBins, smoothBins );
@@ -563,7 +566,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
         if( pixelsInROI != NULL && histogram != NULL) {
             int numPixels = 0;
             for( int i= 0; i < pixelsInROI->GetNumberOfTuples(); i++) {
-                if(pixelsInROI->GetTuple1(i) > 0 ) {
+                if(pixelsInROI->GetTuple1(i) != 0 ) {
                     numPixels++;
                 }
             }
@@ -571,7 +574,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 useMeanForAll = true;
                 int pixelsUsed = 0;
                 for( int i = 0; i < pixelsInROI->GetNumberOfTuples(); i++ ) {
-                    if( pixelsInROI->GetTuple1(i) > 0) {
+                    if( pixelsInROI->GetTuple1(i) != 0) {
                         mean += pixelsInROI->GetTuple1(i);
                         pixelsUsed++;
                     }
@@ -587,12 +590,12 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 if( useMeanForAll ) {
                     value = mean;
                 }
-                if( normalization > 0 ) {
+                if( normalization != 0 ) {
                     value /= normalization;
                 }
                 string valueString = this->DoubleToString( value );
                 vtkXMLDataElement* elem = svkUtils::CreateNestedXMLDataElement( results, "mode", valueString);
-                if( normalization > 0 ) {
+                if( normalization != 0 ) {
                     elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
                 }
             }
@@ -654,7 +657,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                 if( useMeanForAll ) {
                     percentile = mean;
                 }
-                if( normalization > 0 ) {
+                if( normalization != 0 ) {
                     percentile /= normalization;
                 }
                 vtkXMLDataElement* elem = NULL;
@@ -679,7 +682,7 @@ void svkImageStatistics::ComputeSmoothStatistics(svkMriImageData* image, svkMriI
                         string valueString = this->DoubleToString( percentile );
                         elem = svkUtils::CreateNestedXMLDataElement( results, "median", valueString);
                 }
-                if( elem != NULL && normalization > 0) {
+                if( elem != NULL && normalization != 0) {
                     elem->SetAttribute( "normalization", this->DoubleToString( normalization ).c_str());
                 }
             }

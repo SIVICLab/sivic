@@ -187,6 +187,14 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
     if(string(tag->GetName()) == "svkAlgorithm:svkImageReader") {
         svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
         vtkXMLDataElement* filenameElement = tag->FindNestedElementWithName("svkArgument:FILENAME");
+        vtkXMLDataElement* readIntAsSignedElement = tag->FindNestedElementWithName("svkArgument:READ_INT_AS_SIGNED");
+        bool readIntAsSigned = false;
+        if( readIntAsSignedElement != NULL ) {
+            string readIntAsSignedString = readIntAsSignedElement->GetCharacterData();
+            if( readIntAsSignedString == "true"){
+                readIntAsSigned = true;
+            }
+        }
         string filename = filenameElement->GetCharacterData();
         bool filePathExists = svkUtils::FilePathExists(filename.c_str());
         if(!filePathExists) {
@@ -196,6 +204,9 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
             if( reader != NULL ) {
                 reader->OnlyReadOneInputFile();
                 reader->SetFileName( filename.c_str() );
+                if(reader->IsA("svkIdfVolumeReader")) {
+                    svkIdfVolumeReader::SafeDownCast(reader)->SetReadIntAsSigned( readIntAsSigned );
+                }
                 this->xmlToAlgoMap[tag] = reader;
                 reader->Register(this);
                 vtkXMLDataElement* outputElement = tag->FindNestedElementWithName("svkArgument:OUTPUT");

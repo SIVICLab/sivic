@@ -95,7 +95,7 @@ double svkStatistics::ComputeModeFromHistogram(vtkDataArray* histogram, double b
     double modeBinHeight = histogram->GetTuple1(modeBin);
     // Find the max for the mode
     for( int i = modeBin + 1; i < numBins - (smoothBins/2 - 1); i++ ) {
-        if( histogram->GetTuple1(i) >= modeBinHeight && histogram->GetTuple1(i) > 0) {
+        if( histogram->GetTuple1(i) >= modeBinHeight && histogram->GetTuple1(i) != 0) {
             modeBin = i;
             modeBinHeight = histogram->GetTuple1(modeBin);
         }

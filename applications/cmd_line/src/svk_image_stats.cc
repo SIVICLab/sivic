@@ -429,6 +429,10 @@ int main (int argc, char** argv)
                             value = svkTypeUtils::StringToFloat(tables[measure][roi][image][1]);
                         }
                         char buffer [50];
+                        // Make sure there is no negative zero.
+                        if( value == 0 ) {
+                            value = 0;
+                        }
                         sprintf (buffer, "%10.2f",value);
                         resultsTab << buffer;
                     }

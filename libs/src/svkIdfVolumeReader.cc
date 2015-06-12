@@ -74,6 +74,8 @@ svkIdfVolumeReader::svkIdfVolumeReader()
     this->numSlices = 1; 
     this->numVolumes = 1; 
     this->onlyReadHeader = false;
+    this->readIntAsSigned = false;
+    
 
     //  If there are multiple volumes, by default treat as separate
     //  channels of data. 
@@ -159,6 +161,16 @@ void svkIdfVolumeReader::OnlyReadHeader(bool onlyReadHeader)
 
 
 /*!
+ *  Set boolean to determine if int2 should be interpreted as signed, or unsigned.
+ */
+void svkIdfVolumeReader::SetReadIntAsSigned(bool readIntAsSigned)
+{
+    this->readIntAsSigned = readIntAsSigned;
+    vtkWarningWithObjectMacro(this, "readIntAsSigned: " << this->readIntAsSigned);
+}
+
+
+/*!
  *  Reads the IDf data file (.byt, .int2, .real)
  */
 void svkIdfVolumeReader::ReadVolumeFile()
@@ -179,6 +191,10 @@ void svkIdfVolumeReader::ReadVolumeFile()
             dataUnitSize = 1;
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
             array = vtkUnsignedShortArray::New();
+            volFileName.append( ".int2" );
+            dataUnitSize = 2;
+        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
+            array = vtkShortArray::New();
             volFileName.append( ".int2" );
             dataUnitSize = 2;
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
@@ -203,7 +219,7 @@ void svkIdfVolumeReader::ReadVolumeFile()
         volumeDataIn->read( (char *)(this->pixelData), numBytesInVol );
 
         if ( this->GetSwapBytes() ) {
-            if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
+            if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 || this->GetFileType() == svkDcmHeader::SIGNED_INT_2) {
                 vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(short));
             } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
                 vtkByteSwap::SwapVoidRange(pixelData, this->GetNumPixelsInVol(), sizeof(float));
@@ -216,6 +232,8 @@ void svkIdfVolumeReader::ReadVolumeFile()
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_CHAR);
         } else if ( this->GetFileType() == svkDcmHeader::UNSIGNED_INT_2 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_UNSIGNED_SHORT);
+        } else if ( this->GetFileType() == svkDcmHeader::SIGNED_INT_2 ) {
+            this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_SHORT);
         } else if ( this->GetFileType() == svkDcmHeader::SIGNED_FLOAT_4 ) {
             this->Superclass::Superclass::GetOutput()->SetScalarType(VTK_FLOAT);
         }
@@ -405,7 +423,11 @@ svkDcmHeader::DcmPixelDataFormat svkIdfVolumeReader::GetFileType()
     if ( fileType == 2 ) { 
         return svkDcmHeader::UNSIGNED_INT_1;
     } else if ( fileType == 3 ) { 
-        return svkDcmHeader::UNSIGNED_INT_2;
+        if( this->readIntAsSigned ) {
+            return svkDcmHeader::SIGNED_INT_2;
+        } else {
+            return svkDcmHeader::UNSIGNED_INT_2;
+        }
     } else if ( fileType == 7 ) { 
         return svkDcmHeader::SIGNED_FLOAT_4;
     }
