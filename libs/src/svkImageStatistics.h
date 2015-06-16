@@ -92,6 +92,7 @@ class svkImageStatistics : public svkGenericAlgorithmWithPortMapper
             NUM_BINS,
             BIN_SIZE,
             AUTO_ADJUST_BIN_SIZE,
+            IGNORE_NEGATIVE_NUMBERS,
             START_BIN,
             SMOOTH_BINS,
             COMPUTE_HISTOGRAM,

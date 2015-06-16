@@ -232,11 +232,17 @@ int main (int argc, char** argv)
         outputTabFile.append(".tab");
         ofstream resultsTab;
         resultsTab.open(outputTabFile.c_str());
-        resultsTab << "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES: " << outputFileName << endl << endl;
+        string heading = "SUMMARY VALUES FROM ANALYSIS OF IMAGE INTENSITIES: ";
+        heading.append(outputFileName);
+        resultsTab.width(126);
+        resultsTab << left << heading << endl << endl;
         resultsTab << "Number of rois, biopsies and parameter maps: ";
-        resultsTab << "     " << defaultROIs.size()-biopsies.size();
-        resultsTab << "     " << biopsies.size();
-        resultsTab << "     " << numMaps << endl<< endl;
+        resultsTab.width(6);
+        resultsTab << right << defaultROIs.size()-biopsies.size();
+        resultsTab.width(6);
+        resultsTab << right << biopsies.size();
+        resultsTab.width(6);
+        resultsTab << right << numMaps << endl<< endl;
         resultsTab << "Number of tables:   " << defaultMeasures.size();
         string nbins = "?";
         string smooth = "?";
@@ -366,35 +372,34 @@ int main (int argc, char** argv)
                 string roi = defaultROIs[roiIndex];
                 // Print column headings
                 if( roiIndex == 0) {
-                    resultsTab.width(9);
-                    resultsTab << left << "roi label";
-                        resultsTab.width(11);
-                        resultsTab << right << "vol(cc)";
+                    resultsTab << "roi label     vol(cc)";
                     // Once for unnormalized
                     for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
-                        resultsTab.width(11);
-                        resultsTab << right << defaultImages[imageIndex];
+                        resultsTab << "    ";
+                        resultsTab.width(6);
+                        resultsTab << left << defaultImages[imageIndex].substr(0,6);
 
                     }
                     // Once for normalized
                     for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                         if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" && defaultImages[imageIndex] != "rf"){
-                            resultsTab.width(11);
                             string normalizedName = "n";
                             normalizedName.append(defaultImages[imageIndex]);
-                            resultsTab << right << normalizedName;
+                            resultsTab << "    ";
+                            resultsTab.width(6);
+                            resultsTab << left << normalizedName.substr(0,6);
                         }
                     }
                     resultsTab << endl;
                 }
-                resultsTab.width(9);
+                resultsTab.width(10);
                 resultsTab << left << roi;
                 // Print values, then normalized values
-                resultsTab.width(11);
-                resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[roi]);
+                resultsTab.width(9);
+                resultsTab << right << setprecision(2) << fixed << svkTypeUtils::StringToDouble(volumes[roi]) << " ";
                 for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
                     string image = defaultImages[imageIndex];
-                    resultsTab.width(11);
+                    resultsTab.width(10);
                     float value = 0.0;
                     if(tables.find(measure) != tables.end() && tables[measure].find(roi) != tables[measure].end() ) {
                         value = svkTypeUtils::StringToFloat(tables[measure][roi][image][0]);
@@ -477,26 +482,43 @@ int main (int argc, char** argv)
         }
         if( !normalMeasure.empty() && !normalROI.empty()) {
             for(int imageIndex = 0; imageIndex < defaultImages.size(); imageIndex++) {
+                string imageString = "  ";
                 string image = defaultImages[imageIndex];
-                resultsTab << "  " << image;
-                resultsTab.width(11);
+                imageString.append(image);
+                imageString.append("  ");
+                resultsTab.width(8);
+                resultsTab << left << imageString.substr(0,8);
                 // There is no scaling yet so this is always 1.000
-                resultsTab << right << "1.000";
-                resultsTab.width(11);
+                double prescaling = 1;
+                double scaling = 1;
+                double normalization = 1;
+                resultsTab.width(8);
+                resultsTab.setf(ios::showpoint);
+                resultsTab.unsetf(ios_base::floatfield);
+                resultsTab << right << setprecision(4) << prescaling;
+                resultsTab << "    ";
+                resultsTab.width(10);
                 if (defaultImages[imageIndex] == "rf"){
-                    resultsTab << right << "0.1000E-01";
+                    scaling = 0.01;
+                    //resultsTab << right << setprecision(3) << scaling;
+                    resultsTab << "    0.1000E-01  ";
+                    resultsTab.width(10);
                 } else if((defaultImages[imageIndex] == "cbv" || defaultImages[imageIndex] == "ph") &&  configFileName.find("nonlin_cbv") != std::string::npos  ){
-                    resultsTab << right << "10.00";
-                } else { 
-                    resultsTab << right << "1.000";
+                    scaling = 10.0;
+                    resultsTab << right << setprecision(4) << scaling;
+                    resultsTab << "  ";
+                    resultsTab.width(14);
+                } else {
+                    resultsTab << right << setprecision(4) << scaling;
+                    resultsTab << "  ";
+                    resultsTab.width(14);
                 }
-                resultsTab.width(11);
                 // This will depend on the config
                 if( defaultImages[imageIndex] != "recov" && defaultImages[imageIndex] != "invrec" &&  defaultImages[imageIndex] != "rf"){
-                    resultsTab << right << svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]) << endl;
-                } else {
-                    resultsTab << right << "1.00" << endl;
+                    normalization =  svkTypeUtils::StringToDouble(tables[normalMeasure][normalROI][image][0]);
                 }
+                resultsTab << right << fixed << setprecision(2) << normalization;
+                resultsTab << endl;
 
             }
         }

@@ -51,7 +51,7 @@ vtkStandardNewMacro(svkImageStatistics);
 //! Constructor
 svkImageStatistics::svkImageStatistics()
 {
-    this->SetNumberOfInputPorts(28);
+    this->SetNumberOfInputPorts(29);
     this->SetNumberOfOutputPorts(1);
     bool required = true;
     bool repeatable = true;
@@ -59,6 +59,7 @@ svkImageStatistics::svkImageStatistics()
     this->GetPortMapper()->InitializeInputPort( INPUT_ROI, "INPUT_ROI", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, repeatable );
     this->GetPortMapper()->InitializeInputPort( NUM_BINS, "NUM_BINS", svkAlgorithmPortMapper::SVK_INT);
     this->GetPortMapper()->InitializeInputPort( BIN_SIZE, "BIN_SIZE", svkAlgorithmPortMapper::SVK_DOUBLE, required, repeatable);
+    this->GetPortMapper()->InitializeInputPort( IGNORE_NEGATIVE_NUMBERS, "IGNORE_NEGATIVE_NUMBERS", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( AUTO_ADJUST_BIN_SIZE, "AUTO_ADJUST_BIN_SIZE", svkAlgorithmPortMapper::SVK_BOOL, !required);
     this->GetPortMapper()->InitializeInputPort( START_BIN, "START_BIN", svkAlgorithmPortMapper::SVK_DOUBLE, !required);
     this->GetPortMapper()->InitializeInputPort( SMOOTH_BINS, "SMOOTH_BINS", svkAlgorithmPortMapper::SVK_INT, !required);
@@ -144,6 +145,13 @@ int svkImageStatistics::RequestData( vtkInformation* request,
         double binSize   = this->GetPortMapper()->GetDoubleInputPortValue( BIN_SIZE, imageIndex )->GetValue();
         int numBins = this->GetPortMapper()->GetIntInputPortValue( NUM_BINS )->GetValue();
         svkMriImageData* image = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_IMAGE, imageIndex);
+        if( this->GetShouldCompute(IGNORE_NEGATIVE_NUMBERS) ) {
+            for( int i = 0; i < image->GetPointData()->GetScalars()->GetNumberOfTuples(); i++ ) {
+                if( image->GetPointData()->GetScalars()->GetTuple1(i) < 0 ) {
+                    image->GetPointData()->GetScalars()->SetTuple1(i,0);
+                }
+            }
+        }
         double startBin = image->GetPointData()->GetScalars()->GetRange()[0];
         if( this->GetPortMapper()->GetDoubleInputPortValue( START_BIN ) != NULL ) {
             startBin = this->GetPortMapper()->GetDoubleInputPortValue( START_BIN )->GetValue();
