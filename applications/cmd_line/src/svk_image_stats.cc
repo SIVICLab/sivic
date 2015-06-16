@@ -501,9 +501,6 @@ int main (int argc, char** argv)
                 if (defaultImages[imageIndex] == "rf"){
                     scaling = 0.01;
                     resultsTab << "    0.1000E-01  ";
-                    char buffer [10];
-                    sprintf (buffer, "%10.2f",value);
-                    resultsTab << buffer;
                     resultsTab.width(10);
                 } else if((defaultImages[imageIndex] == "cbv" || defaultImages[imageIndex] == "ph") &&  configFileName.find("nonlin_cbv") != std::string::npos  ){
                     scaling = 10.0;
