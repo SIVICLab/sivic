@@ -192,6 +192,19 @@ int main (int argc, char** argv)
     }
     mathScaling->Update();
 
+    vtkImageData* output = mathScaling->GetOutput();  
+
+    if ( readerMask!= NULL ) {
+        svkImageMathematics* mathMasking = svkImageMathematics::New();
+        mathMasking->SetInput1( mathScaling->GetOutput() );
+        mathMasking->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
+        //mathScaling->SetInput2( reader->GetOutput() ); 
+        mathMasking->SetOperationToMultiply();   
+        mathMasking->Update();
+        output = mathMasking->GetOutput();  
+    }
+
+
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
     svkImageWriter* writer = static_cast<svkImageWriter*>(writerFactory->CreateImageWriter( dataTypeOut ) );
@@ -203,7 +216,8 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( mathScaling->GetOutput() );
+    writer->SetInput( output );
+    //writer->SetInput( mathScaling->GetOutput() );
     writer->Write();
     writer->Delete();
 
