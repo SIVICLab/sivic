@@ -149,65 +149,56 @@ int main (int argc, char** argv)
     }
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader = readerFactory->CreateImageReader2(inputFileName.c_str());
-    svkImageReader2* readerMask = NULL;
-    if ( maskFileName.size() > 0 ) {
-        readerMask = readerFactory->CreateImageReader2( maskFileName.c_str() );
+    svkImageReader2* reader1 = readerFactory->CreateImageReader2(inputFileName.c_str());
+    svkImageReader2* reader2 = NULL;
+    if ( inputFileName2.size() > 0 ) {
+        reader2 = readerFactory->CreateImageReader2( inputFileName2.c_str() );
     }
 
     //  Get input reader type: 
-    if ( reader->IsA("svkDcmMriVolumeReader") ) {
+    if ( reader1->IsA("svkDcmMriVolumeReader") ) {
         cout << "Input DCM MRI " << endl;
         dataTypeOut = svkImageWriterFactory::DICOM_MRI;
-    } else if ( reader->IsA("svkDcmEnhancedVolumeReader") ) {
+    } else if ( reader1->IsA("svkDcmEnhancedVolumeReader") ) {
         cout << "Input DCM Enhanced MRI " << endl;
         dataTypeOut = svkImageWriterFactory::DICOM_ENHANCED_MRI;
-    } else if ( reader->IsA("svkIdfVolumeReader") ) {
+    } else if ( reader1->IsA("svkIdfVolumeReader") ) {
         cout << "Input IDF " << endl;
         dataTypeOut = svkImageWriterFactory::IDF;
     }
 
     readerFactory->Delete(); 
-    if (reader == NULL) {
-        cerr << "Can not determine appropriate reader for: " << inputFileName << endl;
+    if (reader1 == NULL) {
+        cerr << "Can not determine appropriate reader for: " << inputFileName1 << endl;
         exit(1);
     }
-    reader->SetFileName( inputFileName.c_str() );
-    reader->Update(); 
-    if ( readerMask!= NULL ) {
-        readerMask->SetFileName( maskFileName.c_str() );
-        readerMask->Update();
+    reader1->SetFileName( inputFileName1.c_str() );
+    reader1->Update(); 
+    if ( reader2 != NULL ) {
+        reader2->SetFileName( inputFileName2.c_str() );
+        reader2->Update();
     }
 
-    svkImageData* currentImage =  reader->GetOutput();
 
     //  Set the input command line into the data set provenance:
-    reader->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
+    reader1->GetOutput()->GetProvenance()->SetApplicationCommand( cmdLine );
 
     //  Scale image by constant factor: 
-    svkImageMathematics* mathScaling = svkImageMathematics::New();
-    mathScaling->SetInput1( reader->GetOutput() );
+    svkImageMathematics* math = svkImageMathematics::New();
+    mathScaling->SetInput1( reader1->GetOutput() );
     //  for some reason the binary operations do not work unless a
     //  second input is defined.     
-    mathScaling->SetInput2( reader->GetOutput() ); 
-    mathScaling->SetConstantK( scalingFactor );
-    mathScaling->SetOperationToMultiplyByK();   
-    if ( readerMask!= NULL ) {
-        mathScaling->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
+    mathScaling->SetInput2( reader2->GetOutput() ); 
+    if ( operator == 1 ) {
+        math->SetOperationToAdd();   
+    } else if ( operator == 2 ) {
+        math->SetOperationToSubtract();   
+    } else if ( operator == 3 ) {
+        math->SetOperationToMultiply();   
+    } else if ( operator == 4 ) {
+        math->SetOperationToDivide();   
     }
-    mathScaling->Update();
-
-    vtkImageData* output = mathScaling->GetOutput();  
-
-    if ( readerMask!= NULL ) {
-        svkImageMathematics* mathMasking = svkImageMathematics::New();
-        mathMasking->SetInput1( mathScaling->GetOutput() );
-        mathMasking->SetInputConnection( 1, readerMask->GetOutputPort() ); // input 1 is the mask
-        //mathScaling->SetInput2( reader->GetOutput() ); 
-        mathMasking->SetOperationToMultiply();   
-        mathMasking->Update();
-        output = mathMasking->GetOutput();  
-    }
+    math->Update();
 
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
@@ -221,13 +212,15 @@ int main (int argc, char** argv)
 
     writerFactory->Delete();
     writer->SetFileName( outputFileName.c_str() );
-    writer->SetInput( output );
-    //writer->SetInput( mathScaling->GetOutput() );
+    writer->SetInput( math->GetOutput() );
     writer->Write();
     writer->Delete();
 
-    reader->Delete();
-    mathScaling->Delete();
+    reader1->Delete();
+    if ( reader2 != NULL ) {
+        reader2->Delete();
+    }
+    math->Delete();
 
     return 0; 
 }
