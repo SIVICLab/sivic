@@ -239,6 +239,9 @@ void svkImageAlgorithmPipeline::InitializeAlgorithmForTag( vtkXMLDataElement* ta
         } else if( string(tag->GetName()) == "svkAlgorithm:svkImageMathematics") {
             algorithm = svkImageMathematics::New();
             portMapper = svkImageMathematics::SafeDownCast( algorithm )->GetPortMapper();
+        } else if( string(tag->GetName()) == "svkAlgorithm:svkDCEQuantify") {
+            algorithm = svkDCEQuantify::New();
+            portMapper = svkDCEQuantify::SafeDownCast( algorithm )->GetPortMapper();
         } else {
             cout << "ERROR! Filter: " << tag->GetName() << " is not yet supported!" << endl;
         }

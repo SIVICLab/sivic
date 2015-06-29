@@ -76,7 +76,7 @@ class svkImageThreshold : public svkImageAlgorithmWithPortMapper
 
     public:
 
-        typedef enum {
+        enum {
             INPUT_IMAGE = 0,
             INPUT_ROI,
             EXCLUSIVE_INTEGER_MATCHING,

@@ -52,6 +52,7 @@
 #include <svkMriImageData.h>
 #include <svkMrsImageData.h>
 #include <svkImageAlgorithm.h>
+#include <svkImageAlgorithmWithPortMapper.h>
 #include <svkDcmHeader.h>
 #include <svkEnhancedMRIIOD.h>
 
@@ -67,13 +68,29 @@ using namespace std;
  *  This class uses other algorithms to perform the necessary quantification and outputs an array
  *  of DCE maps (svkMriImageData objects). 
  */
-class svkDCEQuantify: public svkImageAlgorithm
+class svkDCEQuantify: public svkImageAlgorithmWithPortMapper
 {
 
     public:
 
+        enum {
+            INPUT_IMAGE = 0
+        } svkDCEQuantifyInput;
+        //  Outputports:  0 for base ht map
+        //  Outputports:  1 for peak ht map
+        //  Outputports:  2 for peak time map
+        //  Outputports:  3 for up slope map
+        //  Outputports:  4 for washout slope map
+        enum {
+            BASE_HT_MAP = 0,
+            PEAK_HT_MAP,
+            PEAK_TIME_MAP,
+            UP_SLOPE_MAP,
+            WASHOUT_SLOPE_MAP
+        } svkDCEQuantifyOutput;
+
         static svkDCEQuantify* New();
-        vtkTypeRevisionMacro( svkDCEQuantify, svkImageAlgorithm);
+        vtkTypeRevisionMacro( svkDCEQuantify, svkImageAlgorithmWithPortMapper);
         vtkstd::vector< svkMriImageData* >*                 GetDCEMaps();
 
     protected:
@@ -91,10 +108,6 @@ class svkDCEQuantify: public svkImageAlgorithm
                                     vtkInformationVector** inputVector, 
                                     vtkInformationVector* outputVector 
                                 );
-
-
-        virtual int             FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info );
-        virtual int             FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info ); 
 
 
     private:

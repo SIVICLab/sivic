@@ -71,12 +71,21 @@ svkDCEQuantify::svkDCEQuantify()
 
     vtkDebugMacro(<< this->GetClassName() << "::" << this->GetClassName() << "()");
     this->SetNumberOfInputPorts(1);
+    bool repeatable = true;
+    bool required = true;
+    this->GetPortMapper()->InitializeInputPort(INPUT_IMAGE, "INPUT_IMAGE", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA, required, !repeatable);
     //  Outputports:  0 for base ht map
     //  Outputports:  1 for peak ht map
     //  Outputports:  2 for peak time map 
     //  Outputports:  3 for up slope map 
     //  Outputports:  4 for washout slope map
     this->SetNumberOfOutputPorts(5);
+    this->GetPortMapper()->InitializeOutputPort(BASE_HT_MAP, "BASE_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort(PEAK_HT_MAP, "PEAK_HT_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort(PEAK_TIME_MAP, "PEAK_TIME_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort(UP_SLOPE_MAP, "UP_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+    this->GetPortMapper()->InitializeOutputPort(WASHOUT_SLOPE_MAP, "WASHOUT_SLOPE_MAP", svkAlgorithmPortMapper::SVK_MR_IMAGE_DATA);
+
     
 }
 
@@ -172,25 +181,5 @@ int svkDCEQuantify::RequestData( vtkInformation* request, vtkInformationVector**
 void svkDCEQuantify::UpdateProvenance()
 {
     vtkDebugMacro(<<this->GetClassName()<<"::UpdateProvenance()");
-}
-
-
-/*!
- *
- */
-int svkDCEQuantify::FillInputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "svkMriImageData");
-    return 1;
-}
-
-
-/*!
- *  Output from this algo is an svkMriImageData object. 
- */
-int svkDCEQuantify::FillOutputPortInformation( int vtkNotUsed(port), vtkInformation* info )
-{
-    info->Set( vtkDataObject::DATA_TYPE_NAME(), "svkMriImageData"); 
-    return 1;
 }
 

@@ -219,7 +219,7 @@ int svkImageThreshold::RequestData( vtkInformation* request,
     if( this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_FACTOR ) != NULL ) {
         double modeFactor = this->GetPortMapper()->GetDoubleInputPortValue( THRESHOLD_BY_MODE_FACTOR )->GetValue();
         double smoothBins = 21;
-        double numBins = 1000;
+        int numBins = 1000;
         double binSize = 10;
         double startBin = 0;
         svkMriImageData* roi = this->GetPortMapper()->GetMRImageInputPortValue(INPUT_ROI, 0 );
