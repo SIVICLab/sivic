@@ -222,10 +222,10 @@ void svkLCModelCoordReader::ParseCoordFiles()
         //vtkTable* table = vtkTable::SafeDownCast(numeric->GetOutput());
 
         vtkTable* table = coordReader->GetOutput();
-        cout << *table << endl;
-        cout << "==========================================" << endl;
-        table->Dump();
-        cout << "==========================================" << endl;
+        //cout << *table << endl;
+        //cout << "==========================================" << endl;
+        //table->Dump();
+        //cout << "==========================================" << endl;
 
         int numCols = table->GetNumberOfColumns() ; 
         int numRows = table->GetNumberOfRows() ; 
@@ -239,7 +239,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //  Get a row: 
             this->GetDataRow(table, rowID, &rowString);  
 
-            cout << "ROW: " << rowString << endl;
+            //cout << "ROW: " << rowString << endl;
 
             //  First, find the number of frequency points in fitted spectra: 
             string pointsDelimiter = "points on ppm-axis"; 
@@ -247,8 +247,8 @@ void svkLCModelCoordReader::ParseCoordFiles()
             if ( foundPtsPos != string::npos) {
                 //  num points is the first word on this line: 
                 numFreqPoints = table->GetRow(rowID)->GetValue(0).ToInt(); 
-                cout << "ROW: " << rowString << endl;
-                cout << "POINTS: " << numFreqPoints << endl;
+                //cout << "ROW: " << rowString << endl;
+                //cout << "POINTS: " << numFreqPoints << endl;
             }
         
             //  Now read on until the start of the intensity values to parse: 
@@ -258,7 +258,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
                 break; 
             }
         }
-        cout << "ROW: " << rowString << endl;
+        //cout << "ROW: " << rowString << endl;
 
         //  
         //  Create an array for the intensity values: 
@@ -273,19 +273,19 @@ void svkLCModelCoordReader::ParseCoordFiles()
         float* coordIntensities = new float[numFreqPoints];     
         int freqIndex = 0;  // total of numFreqPoints values
         for ( int rowIDData = rowID+1; rowIDData < numRows; rowIDData++ ) {
-            cout << "rowID: " << rowIDData << endl;
+            //cout << "rowID: " << rowIDData << endl;
 
             this->GetDataRow(table, rowIDData, &rowString);  
-            cout << "ROW: " << rowString << endl;
+            //cout << "ROW: " << rowString << endl;
 
             int numValuesInRow = table->GetRow(rowIDData)->GetNumberOfValues();
-            cout << "DEREF: " << *table->GetRow(rowIDData) << endl;
+            //cout << "DEREF: " << *table->GetRow(rowIDData) << endl;
             bool isValid; 
             for ( int word = 0; word < numValuesInRow; word++ ) {
                 float intensity = table->GetRow(rowIDData)->GetValue(word).ToFloat(&isValid); 
                 if ( isValid ) {
                     coordIntensities[freqIndex] = table->GetRow(rowIDData)->GetValue(word).ToFloat(); 
-                    cout << "word: " << word << " " << coordIntensities[freqIndex] << endl;
+                    //cout << "word: " << word << " " << coordIntensities[freqIndex] << endl;
                     freqIndex++; 
                 } else {
                     break; 
@@ -294,7 +294,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             if ( freqIndex >= numFreqPoints ) {
                 break; 
             }
-            cout << "freqIndex: " << freqIndex << endl;
+            //cout << "freqIndex: " << freqIndex << endl;
         }
 
         //  Set the values back into the output data cell: 
@@ -312,7 +312,7 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //  once these are set, then determine the voxel index for those values and set the values of 
             //  the spectrum for that CellIndex.  
             //  =============================
-            cout << "FI: " << freqIndex << endl; 
+            //cout << "FI: " << freqIndex << endl; 
             spectrumOut->SetTuple1( freqIndex, coordIntensities[freqIndex] );
         }
         delete [] coordIntensities; 
@@ -339,7 +339,7 @@ void svkLCModelCoordReader::GetDataRow(vtkTable* table, int rowID, string* rowSt
 {
     *rowString = ""; 
     int numValuesInRow = table->GetRow(rowID)->GetNumberOfValues();
-cout << " NVIR: " << numValuesInRow << endl;
+    //cout << " NVIR: " << numValuesInRow << endl;
     for ( int word = 0; word < numValuesInRow; word++ ) {
         *rowString += table->GetRow(rowID)->GetValue(word).ToString() + " ";
     }

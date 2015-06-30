@@ -134,9 +134,9 @@ void svkLCModelReader::GetVoxelIndexFromFileName(string lcmodelFileName, int* co
 {
     string fileRoot = svkImageReader2::GetFileNameWithoutPath( lcmodelFileName.c_str() );
 
-    size_t posCol   = fileRoot.find( "_c" );
-    size_t posRow   = fileRoot.find( "_r" );
-    size_t posSlice = fileRoot.find( "_s" );
+    size_t posCol   = fileRoot.rfind( "_c" );
+    size_t posRow   = fileRoot.find( "_r", posCol );
+    size_t posSlice = fileRoot.find( "_s", posRow );
     //  find either the dot or for .coord files the location of the _sl# string: 
     size_t posDot   = fileRoot.find( ".csv" );
     size_t posSL    = fileRoot.find( "_sl" );
@@ -151,7 +151,7 @@ void svkLCModelReader::GetVoxelIndexFromFileName(string lcmodelFileName, int* co
         string colStr   = fileRoot.substr(posCol   + 2, posRow   - posCol   - 2);
         string rowStr   = fileRoot.substr(posRow   + 2, posSlice - posRow   - 2);
         string sliceStr = fileRoot.substr(posSlice + 2, posEnd   - posSlice - 2);
-        cout << "VOXEL COLUMN: " << colStr << " " << rowStr << " " << sliceStr << endl;
+        //cout << "VOXEL COLUMN: " << colStr << " " << rowStr << " " << sliceStr << endl;
         *col   = svkTypeUtils::StringToInt(colStr) - 1; 
         *row   = svkTypeUtils::StringToInt(rowStr) - 1; 
         *slice = svkTypeUtils::StringToInt(sliceStr) - 1; 
