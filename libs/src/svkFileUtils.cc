@@ -78,8 +78,8 @@ long svkFileUtils::GetFileSize(ifstream* fs)
 
 
 /*! 
- *  *  Utility function to read a single line from a file stream.
- *   */
+ *  Utility function to read a single line from a file stream.
+ */
 void svkFileUtils::ReadLine(ifstream* fs, istringstream* iss)
 {
     char line[2000];
@@ -90,8 +90,8 @@ void svkFileUtils::ReadLine(ifstream* fs, istringstream* iss)
 
 
 /*!
- *  *  Checks to see if a file, or path exists.
- *   */
+ *  Checks to see if a file, or path exists.
+ */
 bool svkFileUtils::FilePathExists(const char* path)
 {
     bool filePathExists = false;

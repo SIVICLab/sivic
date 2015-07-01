@@ -44,6 +44,8 @@
 #include <svkImageReaderFactory.h>
 #include <svkString.h>
 #include <svkTypeUtils.h>
+#include <svkFileUtils.h>
+#include <svkSpecPoint.h>
 #include <vtkDebugLeaks.h>
 #include <vtkByteSwap.h>
 #include <vtkSmartPointer.h>
@@ -162,6 +164,52 @@ void svkLCModelCoordReader::ExecuteData(vtkDataObject* output)
 }
 
 
+/*
+ *  Parse PPM range from coord file: 
+ */
+void svkLCModelCoordReader::ParsePPMFromFile( string fileName )
+{
+
+    ifstream* input = new ifstream();
+    input->exceptions( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+    input->open( fileName.c_str(), ifstream::in );
+
+    if ( ! input->is_open() ) {
+        throw runtime_error( "Could not open coord file: " + fileName );
+    }
+
+    istringstream* iss = new istringstream();
+    bool keepReading = true; 
+    size_t pos; 
+    while ( keepReading ) {
+
+        try {
+            svkFileUtils::ReadLine(input, iss); 
+            string aLine = iss->str(); 
+
+            if ( aLine.find("PPMEND") != string::npos) { 
+                size_t posVal = aLine.find("="); 
+                if ( posVal != string::npos ) {
+                    //cout << "aLine: found: " << aLine << endl;
+                    //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
+                    this->ppmEnd = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
+                }
+            } else if ( aLine.find("PPMST") != string::npos) { 
+                size_t posVal = aLine.find("="); 
+                if ( posVal != string::npos ) {
+                    //cout << "aLine: found: " << aLine << endl;
+                    //cout << "sub" <<  aLine.substr(posVal+2) << endl; 
+                    this->ppmStart = svkTypeUtils::StringToFloat( aLine.substr(posVal+2) ); 
+                }
+            }
+        } catch (const exception& e) {
+            keepReading = false; 
+        }
+    }
+    input->close(); 
+    cout << "ST: " << this->ppmStart << " - " << this->ppmEnd << endl; 
+}
+
 
 /*
  *  Parse LCModel coord file 
@@ -172,7 +220,6 @@ void svkLCModelCoordReader::ParseCoordFiles()
     this->GlobFileNames();
 
     svkMrsImageData* mrsData = svkMrsImageData::SafeDownCast( this->GetOutput() );
-    vtkDataArray* metMapArray = this->GetOutput()->GetPointData()->GetArray(0);
 
     svkDcmHeader* hdr = this->GetOutput()->GetDcmHeader();
 
@@ -183,10 +230,18 @@ void svkLCModelCoordReader::ParseCoordFiles()
     hdr->GetSpatialDimensions( &dimVector, voxels ); 
     int numVoxels = svkDcmHeader::GetNumSpatialVoxels(&dimVector); 
 
+    this->ParsePPMFromFile( this->GetFileNames()->GetValue(0) ); 
+    svkSpecPoint* point = svkSpecPoint::New();
+    point->SetDcmHeader( svkMrsImageData::SafeDownCast(this->GetImageDataInput(0))->GetDcmHeader() );
+    int startPt = static_cast<int>(point->ConvertPosUnits(this->ppmStart, svkSpecPoint::PPM, svkSpecPoint::PTS));
+    int endPt = static_cast<int>(point->ConvertPosUnits(this->ppmEnd, svkSpecPoint::PPM, svkSpecPoint::PTS));
+    cout << "Start->End " << startPt << " " << endPt << endl;
+    point->Delete();
+
     for (int fileIndex = 0; fileIndex < this->GetFileNames()->GetNumberOfValues(); fileIndex++) {
 
         string coordFileName = this->GetFileNames()->GetValue( fileIndex );
-        cout << "Coord NAME: " << coordFileName << endl;
+        cout << "Coord NAME: " << fileIndex << " " << coordFileName << endl;
 
         // ==========================================
         // Parse the col, row and slice from the file name: 
@@ -271,6 +326,8 @@ void svkLCModelCoordReader::ParseCoordFiles()
         //  NY phased data points follow
         //
         float* coordIntensities = new float[numFreqPoints];     
+        float tuple[2]; 
+        tuple[1] = 0; //imaginary component; 
         int freqIndex = 0;  // total of numFreqPoints values
         for ( int rowIDData = rowID+1; rowIDData < numRows; rowIDData++ ) {
             //cout << "rowID: " << rowIDData << endl;
@@ -304,6 +361,8 @@ void svkLCModelCoordReader::ParseCoordFiles()
         svkDcmHeader::SetDimensionVectorValue(&indexVector, svkDcmHeader::SLICE_INDEX, slice);
         int cellID = svkDcmHeader::GetCellIDFromDimensionVectorIndex( &dimVector, &indexVector);
         vtkFloatArray* spectrumOut  = static_cast<vtkFloatArray*>( mrsData->GetSpectrum( cellID ) );
+
+
         for ( int freqIndex = 0; freqIndex < numFreqPoints; freqIndex++ ) {
 
             //  =============================
@@ -313,7 +372,9 @@ void svkLCModelCoordReader::ParseCoordFiles()
             //  the spectrum for that CellIndex.  
             //  =============================
             //cout << "FI: " << freqIndex << endl; 
-            spectrumOut->SetTuple1( freqIndex, coordIntensities[freqIndex] );
+            tuple[0] = coordIntensities[freqIndex]; //imaginary component; 
+            spectrumOut->SetTuple( freqIndex, tuple );
+            //spectrumOut->SetTuple( (startPt + freqIndex - 1), tuple );
         }
         delete [] coordIntensities; 
     } 

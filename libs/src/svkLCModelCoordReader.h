@@ -83,6 +83,8 @@ class svkLCModelCoordReader : public svkLCModelReader
         //  Methods:
         void            ParseCoordFiles();
         void            GetDataRow(vtkTable* table, int rowID, string* rowString); 
+        void            ParsePPMFromFile( string fileName ); 
+
 
 
         //  Members:
@@ -91,6 +93,8 @@ class svkLCModelCoordReader : public svkLCModelReader
         vtkIntArray*                            coordColIndex; 
         vtkIntArray*                            coordRowIndex; 
         string                                  dataStartDelimiter; 
+        float                                   ppmStart; 
+        float                                   ppmEnd; 
 
 };
 
