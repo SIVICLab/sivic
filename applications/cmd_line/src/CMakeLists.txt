@@ -506,6 +506,16 @@ TARGET_LINK_LIBRARIES(
 	${SVK_LIBS}
 )
 
+ADD_EXECUTABLE(
+    svk_image_mathematics
+    svk_image_mathematics.cc
+)
+TARGET_LINK_LIBRARIES(
+    svk_image_mathematics
+	${SVK_LIBS}
+)
+
+
 
 ADD_EXECUTABLE(
     svk_scale_image

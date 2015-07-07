@@ -70,7 +70,7 @@ int main (int argc, char** argv)
     usemsg += "   --i1          input_file_name     Name of input file 1                    \n"; 
     usemsg += "   --i2          input_file_name     Name of input file 2 (binary operation) \n"; 
     usemsg += "   -o            output_file_root    Root name of output (no extension)      \n";  
-    usemsg += "   -p            operator            Operator:                               \n";  
+    usemsg += "   -p            operation            Operator:                               \n";  
     usemsg += "                                         1 = +                               \n";  
     usemsg += "                                         2 = -                               \n";  
     usemsg += "                                         3 = *                               \n";  
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
     string inputFileName1; 
     string inputFileName2; 
     string outputFileName; 
-    int    operator;  
+    int    operation = 0;  
     bool   verbose = false;
     svkImageWriterFactory::WriterType dataTypeOut = svkImageWriterFactory::UNDEFINED;
 
@@ -107,7 +107,7 @@ int main (int argc, char** argv)
     */
     int i;
     int option_index = 0; 
-    while ((i = getopt_long(argc, argv, "i:o:s:hv", long_options, &option_index)) != EOF) {
+    while ((i = getopt_long(argc, argv, "i:o:s:p:hv", long_options, &option_index)) != EOF) {
         switch (i) {
             case FLAG_FILE_1:
                 inputFileName1.assign( optarg );
@@ -119,7 +119,7 @@ int main (int argc, char** argv)
                 outputFileName.assign(optarg);
                 break;
             case 'p':
-                operator = atoi(optarg);
+                operation = atoi(optarg);
                 break;
             case 'v':
                 verbose = true;
@@ -141,15 +141,20 @@ int main (int argc, char** argv)
         exit(1); 
     }
 
+    if ( operation < 1 || operation > 4 ) {
+        cout << "Invalid operation: " << operation << endl;
+        cout << usemsg << endl;
+        exit(1); 
+    }
 
     if( verbose ) {
         cout << "INPUT:    " << inputFileName1 << endl;
         cout << "OUTPUT:   " << outputFileName << endl;
-        cout << "OPERATOR: " << operator << endl;
+        cout << "OPERATOR: " << operation << endl;
     }
 
     svkImageReaderFactory* readerFactory = svkImageReaderFactory::New();
-    svkImageReader2* reader1 = readerFactory->CreateImageReader2(inputFileName.c_str());
+    svkImageReader2* reader1 = readerFactory->CreateImageReader2(inputFileName1.c_str());
     svkImageReader2* reader2 = NULL;
     if ( inputFileName2.size() > 0 ) {
         reader2 = readerFactory->CreateImageReader2( inputFileName2.c_str() );
@@ -185,21 +190,20 @@ int main (int argc, char** argv)
 
     //  Scale image by constant factor: 
     svkImageMathematics* math = svkImageMathematics::New();
-    mathScaling->SetInput1( reader1->GetOutput() );
-    //  for some reason the binary operations do not work unless a
-    //  second input is defined.     
-    mathScaling->SetInput2( reader2->GetOutput() ); 
-    if ( operator == 1 ) {
+    math->SetInput1( reader1->GetOutput() );
+    if ( reader2 != NULL ) {
+        math->SetInput2( reader2->GetOutput() ); 
+    }
+    if ( operation == 1 ) {
         math->SetOperationToAdd();   
-    } else if ( operator == 2 ) {
+    } else if ( operation == 2 ) {
         math->SetOperationToSubtract();   
-    } else if ( operator == 3 ) {
+    } else if ( operation == 3 ) {
         math->SetOperationToMultiply();   
-    } else if ( operator == 4 ) {
+    } else if ( operation == 4 ) {
         math->SetOperationToDivide();   
     }
     math->Update();
-
 
     // If the type is supported be svkImageWriterFactory then use it, otherwise use the vtkXMLWriter
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
