@@ -255,6 +255,8 @@ int sivicApp::Build( int argc, char* argv[] )
         this->sivicController = NULL;
     }
     this->sivicController = vtkSivicController::New();
+    this->sivicController->registryLevel = 0;
+
 
     if( this->sivicKWApp != NULL ) {
         this->sivicKWApp->Delete();
@@ -268,6 +270,7 @@ int sivicApp::Build( int argc, char* argv[] )
 
     // Create Application
     this->sivicKWApp->SetName("SIVIC");
+
     this->sivicKWApp->SetMajorVersion( SVK_MAJOR_VERSION );
     this->sivicKWApp->SetMinorVersion( SVK_MINOR_VERSION );
     this->sivicKWApp->SetVersionName( SVK_RELEASE_VERSION );
@@ -597,8 +600,12 @@ int sivicApp::Build( int argc, char* argv[] )
     this->sivicWindow->Display();
 
 	string pathName = svkUtils::GetCurrentWorkingDirectory();
-    this->sivicKWApp->SetRegistryValue( 0, "RunTime", "lastPath", pathName.c_str() );
+    this->sivicKWApp->SetRegistryValue( this->sivicController->registryLevel, "RunTime", "lastPath", pathName.c_str() );
 
+
+    //this->sivicKWApp->SetName("SIVIC_prostate");
+    //cout << "REG NAME : " << this->sivicKWApp->GetRegistryVersionName() << endl;
+    //cout << "REG LEVEL: " << this->sivicKWApp->GetRegistryLevel() << endl;
 
     // create default xml config file
     bool updateXML = svkQuantifyMetabolites::ShouldUpgradeXML();
@@ -882,8 +889,9 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     usemsg += "                     instances of -i, e.g MRS, MRI (ref and  \n";
     usemsg += "                     overlay). For series, only specify one  \n"; 
     usemsg += "                     image from the series.                  \n"; 
-    usemsg += "     -is fileName    Only load the single explicit file name,\n";  
+    usemsg += "     --is fileName    Only load the single explicit file name,\n";  
     usemsg += "                     no globbing of associated files names.  \n";
+    usemsg += "     --id fileName    Load as dynamic traces                  \n";  
     usemsg += "     -h              Print help mesage.                      \n";
     usemsg += "                                                             \n";
     usemsg += "SIVIC GUI.                                                   \n";
@@ -896,13 +904,15 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
     int anatomyType = svkTypes::ANATOMY_BRAIN;
 
     enum FLAG_NAME {
-        FLAG_SINGLE_FILE_LOAD = 0
+        FLAG_SINGLE_FILE_LOAD = 0, 
+        FLAG_LOAD_DYNAMIC
     };
 
 
     static struct option long_options[] =
     {
         {"is",                required_argument, NULL,  FLAG_SINGLE_FILE_LOAD},
+        {"id",                required_argument, NULL,  FLAG_LOAD_DYNAMIC},
         {0, 0, 0, 0}
     };
 
@@ -924,10 +934,17 @@ char** sivicApp::ParseCommandLineArgs( int* argc, char* argv[] )
             case 'i':
                 this->inputFiles.push_back( optarg );
                 this->inputFilesOnlyLoadOne.push_back( false);
+                this->inputFilesDynamic.push_back( false);
                 break;
             case FLAG_SINGLE_FILE_LOAD:
                 this->inputFiles.push_back( optarg );
                 this->inputFilesOnlyLoadOne.push_back( true );
+                this->inputFilesDynamic.push_back( false);
+                break;
+            case FLAG_LOAD_DYNAMIC:
+                this->inputFiles.push_back( optarg );
+                this->inputFilesOnlyLoadOne.push_back( false );
+                this->inputFilesDynamic.push_back( true );
                 break;
             case 'h':
                 cout << usemsg << endl;
@@ -994,19 +1011,21 @@ int sivicApp::Start( int argc, char* argv[] )
         //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
-            int rows = tmp->GetDcmHeader()->GetIntValue( "Rows" ) ;
-            int columns = tmp->GetDcmHeader()->GetIntValue( "Columns" ) ;
-            //cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
-            if ( rows > refRows && columns > refColumns) {
-                refRows = rows; 
-                refColumns = columns; 
-                refImageIndex = i; 
-            } 
+            if ( this->inputFilesDynamic[i] == false ) {
+                int rows = tmp->GetDcmHeader()->GetIntValue( "Rows" ) ;
+                int columns = tmp->GetDcmHeader()->GetIntValue( "Columns" ) ;
+                //cout << "check : " << rows << " vs " << refRows << " " << columns << " vs " << refColumns << endl;
+                if ( rows > refRows && columns > refColumns) {
+                    refRows = rows; 
+                    refColumns = columns; 
+                    refImageIndex = i; 
+                } 
 
-            if ( rows < refRows && columns < refColumns) {
-                overlayRows = rows; 
-                overlayColumns = columns; 
-                overlayImageIndex = i; 
+                if ( rows < refRows && columns < refColumns) {
+                    overlayRows = rows; 
+                    overlayColumns = columns; 
+                    overlayImageIndex = i; 
+                }
             }
         }
         reader->Delete();
@@ -1050,19 +1069,51 @@ int sivicApp::Start( int argc, char* argv[] )
             SOPClassUID = "1.2.840.10008.5.1.4.1.1.4.2";
         }
         reader->Delete();
-cout << " LOAD ONE? " << this->inputFilesOnlyLoadOne[i] << endl;
+        //cout << " LOAD ONE? " << this->inputFilesOnlyLoadOne[i] << endl;
         //  Check MRImage Storage and Enhanced MRImage Storage
         if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4" || SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.1" ) {
 
+            if ( this->inputFilesDynamic[i] == true ) {
+
+                //  When loading dynamic data turn off text overlay since this is typically 
+                //  perf data with too much text (voxels)
+                this->GetView()->OverlayTextOff();
+                this->GetView()->OpenFile(
+                            "command_line_load_images_dynamic", 
+                            this->inputFiles[ loadOrder[i] ].c_str(), 
+                            0, 
+                            this->inputFilesOnlyLoadOne[i]
+                        ); 
+
+            }
             if ( loadOrder[i] == refImageIndex ) {
-                this->GetView()->OpenFile("command_line_image", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i]); 
+                this->GetView()->OpenFile(
+                        "command_line_image", 
+                        this->inputFiles[ loadOrder[i] ].c_str(), 
+                        0, 
+                        this->inputFilesOnlyLoadOne[i]
+                ); 
             } else {
-                this->GetView()->OpenFile("command_line_overlay", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i] ); 
+                this->GetView()->OpenFile(
+                            "command_line_overlay", 
+                            this->inputFiles[ loadOrder[i] ].c_str(), 
+                            0, 
+                            this->inputFilesOnlyLoadOne[i] 
+                        ); 
             }
 
         } else if ( SOPClassUID == "1.2.840.10008.5.1.4.1.1.4.2" ) {
-            this->GetView()->OpenFile("command_line_spectra", this->inputFiles[ loadOrder[i] ].c_str(), 0, this->inputFilesOnlyLoadOne[i] ); 
+            this->GetView()->OpenFile(
+                    "command_line_spectra", 
+                    this->inputFiles[ loadOrder[i] ].c_str(), 
+                    0, 
+                    this->inputFilesOnlyLoadOne[i] 
+                    ); 
         }
+    }
+
+    if ( this->sivicController->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) {
+        this->GetView()->SetAnatomyPrefs();
     }
     
     // model is used to manage data that has been loaded 

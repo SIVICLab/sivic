@@ -1275,18 +1275,18 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 		this->DrawOff();
 	}
     char registryValue[100] = "";
-    this->app->GetRegistryValue( 0, "defaults", "sync_volumes", registryValue );
+    this->app->GetRegistryValue( this->registryLevel, "defaults", "sync_volumes", registryValue );
     if( registryValue != NULL && strcmp( registryValue, "OFF" ) == 0 ) {
     	this->synchronizeVolumes = false;
     } else {
     	this->synchronizeVolumes = true;
     }
     char satBandRed[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands", "red", satBandRed );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands", "red", satBandRed );
     char satBandBlue[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands", "blue", satBandBlue );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands", "blue", satBandBlue );
     char satBandGreen[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands", "green", satBandGreen );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands", "green", satBandGreen );
     if( string( satBandRed ) != "" && string(satBandBlue) != "" && string(satBandGreen) != "" ) {
         double rgb[3];
         rgb[0] = atof( satBandRed );
@@ -1303,7 +1303,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 
 
         char satBandOpacity[50]="";
-        this->app->GetRegistryValue( 0, "sat_bands", "opacity", satBandOpacity );
+        this->app->GetRegistryValue( this->registryLevel, "sat_bands", "opacity", satBandOpacity );
         if( string( satBandOpacity ) != "" ) {
             vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS ))
                                    ->GetProperty()->SetOpacity( atof( satBandOpacity ) );
@@ -1327,11 +1327,11 @@ void vtkSivicController::SetPreferencesFromRegistry( )
     }
 
     char satBandOutlineRed[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands_outline", "red", satBandOutlineRed );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands_outline", "red", satBandOutlineRed );
     char satBandOutlineBlue[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands_outline", "blue", satBandOutlineBlue );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands_outline", "blue", satBandOutlineBlue );
     char satBandOutlineGreen[50]="";
-    this->app->GetRegistryValue( 0, "sat_bands_outline", "green", satBandOutlineGreen );
+    this->app->GetRegistryValue( this->registryLevel, "sat_bands_outline", "green", satBandOutlineGreen );
     if( string(satBandOutlineRed) != "" && string(satBandOutlineBlue) != "" && string(satBandOutlineGreen) != "" ) {
         double rgb[3];
         rgb[0] = atof( satBandOutlineRed );
@@ -1353,7 +1353,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
                                    ->GetProp( svkOverlayView::SAT_BANDS_SAGITTAL_OUTLINE ))
                                    ->GetProperty()->SetAmbientColor( rgb );
         char satBandOutlineOpacity[50]="";
-        this->app->GetRegistryValue( 0, "sat_bands_outline", "opacity", satBandOutlineOpacity );
+        this->app->GetRegistryValue( this->registryLevel, "sat_bands_outline", "opacity", satBandOutlineOpacity );
         if( string( satBandOutlineOpacity ) != "" ) {
             vtkActor::SafeDownCast(this->plotController->GetView()->GetProp( svkPlotGridView::SAT_BANDS_OUTLINE ))
                                    ->GetProperty()->SetOpacity( atof( satBandOutlineOpacity ) );
@@ -1388,11 +1388,11 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 
 
     char plotGridRed[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "red", plotGridRed );
+    this->app->GetRegistryValue( this->registryLevel, "plot_grid", "red", plotGridRed );
     char plotGridBlue[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "blue", plotGridBlue );
+    this->app->GetRegistryValue( this->registryLevel, "plot_grid", "blue", plotGridBlue );
     char plotGridGreen[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "green", plotGridGreen );
+    this->app->GetRegistryValue( this->registryLevel, "plot_grid", "green", plotGridGreen );
     if( string(plotGridRed) != "" && string(plotGridBlue) != "" && string(plotGridGreen) != "" ) {
         double rgb[3];
         rgb[0] = atof( plotGridRed );
@@ -1409,7 +1409,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
     }
 
     char plotGridOpacity[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "opacity", plotGridOpacity );
+    this->app->GetRegistryValue( this->registryLevel, "plot_grid", "opacity", plotGridOpacity );
     if( string(plotGridOpacity) != "" ) {
     	double opacity = atof( plotGridOpacity);
         vtkActor::SafeDownCast(this->overlayController->GetView()
@@ -1418,11 +1418,11 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 
     }
     char tracePlotGridRed[50]="";
-    this->app->GetRegistryValue( 0, "trace_plot_grid", "red", tracePlotGridRed );
+    this->app->GetRegistryValue( this->registryLevel, "trace_plot_grid", "red", tracePlotGridRed );
     char tracePlotGridBlue[50]="";
-    this->app->GetRegistryValue( 0, "trace_plot_grid", "blue", tracePlotGridBlue );
+    this->app->GetRegistryValue( this->registryLevel, "trace_plot_grid", "blue", tracePlotGridBlue );
     char tracePlotGridGreen[50]="";
-    this->app->GetRegistryValue( 0, "trace_plot_grid", "green", tracePlotGridGreen );
+    this->app->GetRegistryValue( this->registryLevel, "trace_plot_grid", "green", tracePlotGridGreen );
     if( string(tracePlotGridRed) != "" && string(tracePlotGridGreen) != "" && string(tracePlotGridBlue) != "" ) {
         double rgb[3];
         rgb[0] = atof( tracePlotGridRed );
@@ -1439,14 +1439,14 @@ void vtkSivicController::SetPreferencesFromRegistry( )
     }
 
     char traceLineWidth[50]="";
-    this->app->GetRegistryValue( 0, "trace_lines", "width", traceLineWidth );
+    this->app->GetRegistryValue( this->registryLevel, "trace_lines", "width", traceLineWidth );
     if( string(traceLineWidth) != "" ) {
     	double width = atof( traceLineWidth);
     	svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetPlotLineWidth( width );
     }
 
     char plotGridWidth[50]="";
-    this->app->GetRegistryValue( 0, "plot_grid", "width", plotGridWidth );
+    this->app->GetRegistryValue( this->registryLevel, "plot_grid", "width", plotGridWidth );
     if( string(plotGridWidth) != "" ) {
     	double width = atof( plotGridWidth);
         vtkActor::SafeDownCast(this->overlayController->GetView()
@@ -1460,11 +1460,11 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 							   ->Modified();
 
     char volSelectionRed[50]="";
-    this->app->GetRegistryValue( 0, "vol_selection", "red", volSelectionRed );
+    this->app->GetRegistryValue( this->registryLevel, "vol_selection", "red", volSelectionRed );
     char volSelectionBlue[50]="";
-    this->app->GetRegistryValue( 0, "vol_selection", "blue", volSelectionBlue );
+    this->app->GetRegistryValue( this->registryLevel, "vol_selection", "blue", volSelectionBlue );
     char volSelectionGreen[50]="";
-    this->app->GetRegistryValue( 0, "vol_selection", "green", volSelectionGreen );
+    this->app->GetRegistryValue( this->registryLevel, "vol_selection", "green", volSelectionGreen );
     if(this->overlayController->GetView()->GetProp( svkOverlayView::VOL_SELECTION) != NULL ) {
 		if( string(volSelectionRed) != "" && string(volSelectionBlue) != "" && string(volSelectionGreen) != "" ) {
 			double rgb[3];
@@ -1477,7 +1477,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 		}
 
 		char volSelectionOpacity[50]="";
-		this->app->GetRegistryValue( 0, "vol_selection", "opacity", volSelectionOpacity );
+		this->app->GetRegistryValue( this->registryLevel, "vol_selection", "opacity", volSelectionOpacity );
 		if( string(volSelectionOpacity) != "" ) {
 			double opacity = atof( volSelectionOpacity);
 			vtkActor::SafeDownCast(this->overlayController->GetView()
@@ -1487,7 +1487,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 		}
 
 		char volSelectionWidth[50]="";
-		this->app->GetRegistryValue( 0, "vol_selection", "width", volSelectionWidth );
+		this->app->GetRegistryValue( this->registryLevel, "vol_selection", "width", volSelectionWidth );
 		if( string(volSelectionWidth) != "" ) {
 			double width = atof( volSelectionWidth);
 			vtkActor::SafeDownCast(this->overlayController->GetView()
@@ -1518,7 +1518,7 @@ void vtkSivicController::SetPreferencesFromRegistry( )
 	}
 
     char overlayTextDigits[50]="";
-    this->app->GetRegistryValue( 0, "trace_overlay_text", "digits", overlayTextDigits );
+    this->app->GetRegistryValue( this->registryLevel, "trace_overlay_text", "digits", overlayTextDigits );
     if( string(overlayTextDigits) != "" ) {
         int digits = atoi( overlayTextDigits );
         svkPlotGridView::SafeDownCast(this->plotController->GetView())->SetOverlayTextDigits( digits );
@@ -1567,7 +1567,7 @@ void vtkSivicController::OpenExam( )
 
 	char lastPath[MAXPATHLEN];
     // Lets retrieve the path used to open the image
-    this->app->GetRegistryValue( 0, "RunTime", "lastPath", lastPath ); 
+    this->app->GetRegistryValue( this->registryLevel, "RunTime", "lastPath", lastPath ); 
 
     // And push it into a string for parsing
     string lastPathString( lastPath );
@@ -1633,7 +1633,7 @@ void vtkSivicController::OpenExam( )
 
 
 /*!    Open a file.    */
-int vtkSivicController::OpenFile( char* openType, const char* startPath, bool resetBeforeLoad, bool onlyReadOneInputFile )
+int vtkSivicController::OpenFile( const char* openType, const char* startPath, bool resetBeforeLoad, bool onlyReadOneInputFile )
 {
     this->viewRenderingWidget->viewerWidget->GetRenderWindowInteractor()->Disable();
     this->viewRenderingWidget->specViewerWidget->GetRenderWindowInteractor()->Disable();
@@ -1656,13 +1656,16 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         } else {
             dlg->RetrieveLastPathFromRegistry("lastPath");
             string lastPathString("./");
-            if( this->app->HasRegistryValue (0, "RunTime", "lastPath") ) {
+            if( this->app->HasRegistryValue (this->registryLevel, "RunTime", "lastPath") ) {
                 lastPathString = dlg->GetLastPath();
             } 
             size_t found;
             found = lastPathString.find_last_of("/");
 
-            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
+            if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 
+                || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 
+                || strcmp( openType, "overlay" ) == 0) 
+            {
                 lastPathString = lastPathString.substr(0,found); 
                 lastPathString += "/images";
 				if( svkUtils::FilePathExists(lastPathString.c_str())) {
@@ -1680,12 +1683,15 @@ int vtkSivicController::OpenFile( char* openType, const char* startPath, bool re
         }
     
         // Check to see which extention to filter for.
-        if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 || strcmp( openType, "overlay" ) == 0){
+        if( strcmp( openType, "image" ) == 0 || strcmp( openType, "image_dynamic" ) == 0 
+            || strcmp( openType, "add_image_dynamic" ) == 0 || strcmp( openType, "load_images_dynamic" ) == 0 
+            || strcmp( openType, "overlay" ) == 0)
+        {
             dlg->SetFileTypes("{{Image Files} {.idf .fdf .dcm .DCM .IMA}} {{All files} {.*}}");
         } else if( strcmp( openType,"spectra" ) == 0 || strcmp( openType, "add_spectra") == 0) {
 			char defaultSpectraExtension[100] = "";
 
-			this->app->GetRegistryValue( 0, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
+			this->app->GetRegistryValue( this->registryLevel, "defaults", "spectra_extension_filtering", defaultSpectraExtension );
 			if( defaultSpectraExtension != NULL && strcmp( defaultSpectraExtension, "OFF" ) == 0 ) {
 				dlg->SetFileTypes("{{All files} {.*}} {{MRS Files} {.ddf .shf .rda .dcm .DCM fid}}");
 			} else {
@@ -1965,7 +1971,7 @@ void vtkSivicController::SaveMetMapData( svkImageData* image, char* fileName, in
     );
     if( writer->IsA("svkIdfVolumeWriter") ) {
 		char doubleToFloat[100] = "";
-		this->GetApplication()->GetRegistryValue( 0, "data_writing", "double_to_float", doubleToFloat );
+		this->GetApplication()->GetRegistryValue( this->registryLevel, "data_writing", "double_to_float", doubleToFloat );
     	if(doubleToFloat == NULL || strcmp( doubleToFloat, "" ) == 0 || strcmp( doubleToFloat, "CAST" ) == 0 ) {
 			svkIdfVolumeWriter::SafeDownCast( writer )->SetCastDoubleToFloat( true );
     	}
@@ -2065,7 +2071,7 @@ void vtkSivicController::SaveSecondaryCaptureOsiriX()
 /*! 
  *  Writes a screen capture from a render window to a .dcm file
  */   
-void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType, int outputOption, bool print )
+void vtkSivicController::SaveSecondaryCapture( char* fileName, int seriesNumber, const char* captureType, int outputOption, bool print )
 {
     cout << "PATH: " << fileName << endl;
     svkImageWriterFactory* writerFactory = svkImageWriterFactory::New();
@@ -2429,6 +2435,7 @@ void vtkSivicController::UseWindowLevelStyle()
     this->viewRenderingWidget->viewerWidget->Render();
 }
 
+
 //! Changes to the window leveling mouse interactor.
 void vtkSivicController::UseColorOverlayStyle() 
 {
@@ -2505,9 +2512,7 @@ void vtkSivicController::UseSelectionStyle()
     this->EnableWidgets();
     this->imageViewWidget->orthImagesButton->EnabledOff();
 
-
-
-}
+ }
 
 
 //! Changes to the rotatino mouse interactor.
@@ -2757,7 +2762,7 @@ void vtkSivicController::SetComponentCallback( int targetComponent)
     bool syncComponents = true;
 
     // Lets grab the printer name from the registry
-    this->GetApplication()->GetRegistryValue( 0, "defaults", "sync_components", registryValue );
+    this->GetApplication()->GetRegistryValue( this->registryLevel, "defaults", "sync_components", registryValue );
     if( registryValue != NULL && strcmp( registryValue, "active" ) == 0 ) {
     	syncComponents = false;
     }
@@ -2789,15 +2794,6 @@ void vtkSivicController::SetComponentCallback( int targetComponent)
         this->spectraRangeWidget->componentSelectBox->SetValue( "mag");
 
     }
-    /* Could not determine purpose of this block so it has been removed
-    if( model->DataExists( "SpectroscopicData" ) ) {
-        acquisitionType = model->GetDataObject( "SpectroscopicData" )->
-            GetDcmHeader()->GetStringValue("MRSpectroscopyAcquisitionType");
-        if( acquisitionType == "SINGLE VOXEL" ) {
-            this->ResetRange(1,1);
-        }
-    }
-    */
 }
 
 
@@ -2884,7 +2880,9 @@ void vtkSivicController::Print(char* captureType, int outputOption )
             this->GetActive4DImageData() ,
             &defaultNamePattern
             );
-    this->SaveSecondaryCapture( "tmpImage.ps", seriesNumber, captureType, outputOption, 1 );
+
+    string tmpImagePS = "tmpImage.ps";
+    this->SaveSecondaryCapture( const_cast<char*>(tmpImagePS.c_str()), seriesNumber, captureType, outputOption, 1 );
 }
 
 
@@ -2919,7 +2917,7 @@ string vtkSivicController::GetPrinterName( )
     string printerNameString = "";
 
     // Lets grab the printer name from the registry
-    this->app->GetRegistryValue( 0, "defaults", "printer", registryPrinterName );
+    this->app->GetRegistryValue( this->registryLevel, "defaults", "printer", registryPrinterName );
     if( registryPrinterName != NULL && strcmp( registryPrinterName, "" ) != 0 ) {
 		printerNameString = registryPrinterName;
     } else {
@@ -3018,13 +3016,13 @@ void vtkSivicController::SetOrientation( const char* orientation, bool alignOver
 
 void vtkSivicController::SaveSession( )
 {
-    this->app->SetRegistryValue( 0, "open_files", "image", 
+    this->app->SetRegistryValue( this->registryLevel, "open_files", "image", 
             model->GetDataFileName("AnatomicalData").c_str());
-    this->app->SetRegistryValue( 0, "open_files", "spectra",
+    this->app->SetRegistryValue( this->registryLevel, "open_files", "spectra",
             model->GetDataFileName("SpectroscopicData").c_str());
-    this->app->SetRegistryValue( 0, "open_files", "overlay",
+    this->app->SetRegistryValue( this->registryLevel, "open_files", "overlay",
             model->GetDataFileName("OverlayData").c_str());
-    this->app->SetRegistryValue( 0, "open_files", "metabolite",
+    this->app->SetRegistryValue( this->registryLevel, "open_files", "metabolite",
             model->GetDataFileName("MetaboliteData").c_str());
 
 }
@@ -3037,19 +3035,19 @@ void vtkSivicController::RestoreSession( )
     this->imageViewWidget->loadingLabel->SetText("Restoring Session...");
     this->app->ProcessPendingEvents(); 
     this->imageViewWidget->Focus();
-    this->app->GetRegistryValue( 0, "open_files", "image", fileName );
+    this->app->GetRegistryValue( this->registryLevel, "open_files", "image", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
         this->OpenImage( fileName );
     }
-    this->app->GetRegistryValue( 0, "open_files", "spectra", fileName );
+    this->app->GetRegistryValue( this->registryLevel, "open_files", "spectra", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
         this->Open4DImage( fileName );
     }
-    this->app->GetRegistryValue( 0, "open_files", "metabolite", fileName );
+    this->app->GetRegistryValue( this->registryLevel, "open_files", "metabolite", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
         this->OpenOverlay( fileName );
     }
-    this->app->GetRegistryValue( 0, "open_files", "overlay", fileName );
+    this->app->GetRegistryValue( this->registryLevel, "open_files", "overlay", fileName );
     if( fileName != NULL && strcmp( fileName, "" ) != 0 ) {
         this->OpenOverlay( fileName );
     }
@@ -4021,10 +4019,56 @@ void vtkSivicController::DisplayHeader( char* objectName )
  */
 void vtkSivicController::SetAnatomyType(int anatomyType) 
 {
-
     if ( anatomyType == vtkSivicController::ANATOMY_BRAIN ) { 
         this->anatomyType = vtkSivicController::ANATOMY_BRAIN; 
     } else if ( anatomyType == vtkSivicController::ANATOMY_PROSTATE) { 
         this->anatomyType = vtkSivicController::ANATOMY_PROSTATE; 
     }
 }
+
+
+/*
+ *  Anatomy specific setup 
+ */
+void vtkSivicController::SetAnatomyPrefs() 
+{
+    return; // revisit later
+    if ( this->anatomyType == vtkSivicController::ANATOMY_PROSTATE ) { 
+        //  For prostate: 
+        //  Sync the cameras on the left and right (overlay and plot grid views)
+        //vtkCamera* overlayCamera = this->GetView()->GetOverlayController()
+        //                        ->GetView()->GetRenderer(svkOverlayView::PRIMARY)->GetActiveCamera();
+        //this->GetView()->GetPlotController()->GetView()
+        //    ->GetRenderer(svkPlotGridView::PRIMARY)->SetActiveCamera(overlayCamera);
+        
+        svkOverlayView::SafeDownCast(
+            this->GetOverlayController()->GetView())->SetCameraZoom(3.0);
+        this->GetOverlayController()->GetView()->Refresh();
+        this->GetPlotController()->GetView()->Refresh(); 
+
+        //  select a subset of voxels: 
+        int* tlcBrc = new int[2];
+        memcpy( tlcBrc, this->GetPlotController()->GetTlcBrc(), 2*sizeof(int) );
+        int delta = tlcBrc[1] - tlcBrc[0]; 
+        tlcBrc[0] = tlcBrc[0] + static_cast<int>(delta/3); 
+        tlcBrc[1] = tlcBrc[1] - static_cast<int>(delta/3); 
+        cout << "TLCBRC: " << tlcBrc[0] << " " << tlcBrc[1] << endl;
+        this->GetPlotController()->SetTlcBrc( tlcBrc ); 
+        this->GetOverlayController()->SetTlcBrc( tlcBrc ); 
+        //delete [] tlcBrc; 
+        this->GetOverlayController()->GetView()->GetRenderer( svkOverlayView::PRIMARY )->Modified();
+        this->viewRenderingWidget->specViewerWidget->Render();
+        this->viewRenderingWidget->viewerWidget->Render();
+
+        this->GetOverlayController()->GetView()->Refresh();
+        this->GetPlotController()->GetView()->Refresh(); 
+
+        this->GetOverlayController()->GetView()->GetRenderer(svkOverlayView::PRIMARY)->Render(); 
+
+    }
+}
+
+
+
+
+

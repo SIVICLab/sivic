@@ -133,7 +133,7 @@ class sivicApp
         
         vector< string >    inputFiles; 
         vector< bool >      inputFilesOnlyLoadOne; 
-
+        vector< bool >      inputFilesDynamic; 
         
 };
 

@@ -170,8 +170,13 @@ class vtkSivicController : public vtkObject
         void                       SetImageSlice( int slice, string orientation );
         void                       SetModel( svkDataModel* ); 
         void                       OpenExam( );
-        int                        OpenFile( char* openType, const char* startPath, bool resetBeforeLoad = 0, bool onlyReadOneInputFile = false);
-		void                       OpenImage( svkImageData* data, string stringFilename );
+        int                        OpenFile( 
+                                        const char* openType, 
+                                        const char* startPath, 
+                                        bool resetBeforeLoad = 0, 
+                                        bool onlyReadOneInputFile = false
+                                   );
+        void                       OpenImage( svkImageData* data, string stringFilename );
         void                       OpenImage(   const char* fileName, bool onlyReadOneInputFile = false );
         void                       OpenImageFromModel( const char* modelObjectName );
         void                       UpdateModelForReslicedImage(string modelObjectName);
@@ -198,7 +203,7 @@ class vtkSivicController : public vtkObject
         void                       SaveSecondaryCaptureOsiriX();    
         void                       SaveMetMapDataOsiriX(); 
         void                       SaveDataOsiriX(); 
-        void                       SaveSecondaryCapture( char* fileName, int seriesNumber, char* captureType,
+        void                       SaveSecondaryCapture( char* fileName, int seriesNumber, const char* captureType,
                                                          int outputOption = 0, bool print = 0 );
         void                       WriteCombinedCapture( vtkImageWriter* writer, string fileNameString, 
                                                          int outputOption, svkImageData* outputImage, bool print );
@@ -266,14 +271,18 @@ class vtkSivicController : public vtkObject
         int                        GetDraw();
         void                       DrawOff();
         void					   DrawOn();
-        void					   OverlayTextOn();
-        void					   OverlayTextOff();
-        void					   GenerateTraces( char* sourceImage );
-        void					   DisplayImageDataInfo(int row, int column, int x, int y);
-        void					   DisplayHeader( char* objectName );
+        void                       OverlayTextOn();
+        void                       OverlayTextOff();
+        void                       GenerateTraces( char* sourceImage );
+        void                       DisplayImageDataInfo(int row, int column, int x, int y);
+        void                       DisplayHeader( char* objectName );
         void                       SetAnatomyType(int anatomyType);  
+        void                       SetAnatomyPrefs(); 
+
 
         int                        anatomyType; 
+        int                        registryLevel;
+
 
  
     protected:
