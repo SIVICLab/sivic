@@ -2721,43 +2721,43 @@ void svkDcmHeader::Deidentify( PHIType phiType, string patientId, string studyId
 
     //  These fields are removed from PHI_LIMITED and PHI_DEIDENTIFIED data sets: 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED || phiType == PHI_LIMITED ) {
-            string emptyString = "";
-            this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
-            this->ModifyValueRecursive( "AccessionNumber",               studyId); 
-            this->ModifyValueRecursive( "InstitutionName",               studyId); 
-            this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
-            this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
-            this->ModifyValueRecursive( "PatientName",                   patientId); 
-            this->ModifyValueRecursive( "PatientID",                     patientId); 
-            if( this->ElementExists( "PatientAddress" ) ) {
-                this->ModifyValueRecursive( "PatientAddress",                emptyString); 
-            }
-            if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
-                this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
-            }
-            this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
-            this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
-            this->ModifyValueRecursive( "StudyID",                       studyId); 
-            this->ModifyValueRecursive( "FrameOfReferenceUID",           studyId); 
-            this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
-            this->ModifyValueRecursive( "UID",                           studyId); 
-            this->ModifyValueRecursive( "StorageMediaFileSetUID",        studyId); 
-            this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", studyId); 
-            this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    studyId); 
+        string emptyString = "";
+        this->ModifyValueRecursive( "SOPInstanceUID",                studyId); 
+        this->ModifyValueRecursive( "AccessionNumber",               studyId); 
+        this->ModifyValueRecursive( "InstitutionName",               studyId); 
+        this->ModifyValueRecursive( "ReferringPhysicianName",        studyId); 
+        this->ModifyValueRecursive( "ReferencedSOPInstanceUID",      studyId); 
+        this->ModifyValueRecursive( "PatientName",                   patientId); 
+        this->ModifyValueRecursive( "PatientID",                     patientId); 
+        if( this->ElementExists( "PatientAddress" ) ) {
+            this->ModifyValueRecursive( "PatientAddress",                emptyString); 
+        }
+        if( this->ElementExists( "PatientTelephoneNumbers" ) ) {
+            this->ModifyValueRecursive( "PatientTelephoneNumbers",       emptyString); 
+        }
+        this->ModifyValueRecursive( "StudyInstanceUID",              studyId); 
+        this->ModifyValueRecursive( "SeriesInstanceUID",             studyId); 
+        this->ModifyValueRecursive( "StudyID",                       studyId); 
+        this->ModifyValueRecursive( "FrameOfReferenceUID",           studyId); 
+        this->ModifyValueRecursive( "BurnedInAnnotation",            studyId); 
+        this->ModifyValueRecursive( "UID",                           studyId); 
+        this->ModifyValueRecursive( "StorageMediaFileSetUID",        studyId); 
+        this->ModifyValueRecursive( "ReferencedFrameOfReferenceUID", studyId); 
+        this->ModifyValueRecursive( "RelatedFrameOfReferenceUID",    studyId); 
     }   
 
     //  These fields are not removed from PHI_LIMITED data sets 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
-            string emptyString = "";
-            this->ModifyValueRecursive( "StudyDate",                       emptyString);
-            this->ModifyValueRecursive( "SeriesDate",                      emptyString);
-            this->ModifyValueRecursive( "AcquisitionDate",                 emptyString);
-            this->ModifyValueRecursive( "ContentDate",                     emptyString);
-            this->ModifyValueRecursive( "InstanceCreationDate",            emptyString);
-            this->ModifyValueRecursive( "PerformedProcedureStepStartDate", emptyString);
-            this->ModifyValueRecursive( "PerformedProcedureStepEndDate",   emptyString);
-            this->ModifyValueRecursive( "AttributeModificationDateTime",   emptyString);
-            this->SetValue( "PatientBirthDate",                            emptyString);
+        string emptyString = "";
+        this->ModifyValueRecursive( "StudyDate",                       emptyString);
+        this->ModifyValueRecursive( "SeriesDate",                      emptyString);
+        this->ModifyValueRecursive( "AcquisitionDate",                 emptyString);
+        this->ModifyValueRecursive( "ContentDate",                     emptyString);
+        this->ModifyValueRecursive( "InstanceCreationDate",            emptyString);
+        this->ModifyValueRecursive( "PerformedProcedureStepStartDate", emptyString);
+        this->ModifyValueRecursive( "PerformedProcedureStepEndDate",   emptyString);
+        this->ModifyValueRecursive( "AttributeModificationDateTime",   emptyString);
+        this->SetValue( "PatientBirthDate",                            emptyString);
     }
 
     if ( phiType == svkDcmHeader::PHI_DEIDENTIFIED ) {
