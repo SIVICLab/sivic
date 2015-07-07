@@ -706,6 +706,7 @@ SET(APPS
     svk_phase_spec 
     svk_fft
     svk_scale_image
+    svk_image_mathematics
     svk_average_spec
     svk_noise
     svk_mrs_combine
