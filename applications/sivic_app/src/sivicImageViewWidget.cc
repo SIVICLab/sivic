@@ -373,7 +373,7 @@ void sivicImageViewWidget::CreateWidget()
     this->volumeSlider->SetEntryPositionToRight();
 
     // Let's setup the slice sliders in the set to be the same geometry 
-    int entryWidth = 2;
+    int entryWidth = 3;
     labelWidth = 11;
     vtkKWScaleWithEntry* slider = NULL;
     for (int i = 0; i < sliceSliders->GetNumberOfWidgets(); i++) {
