@@ -114,7 +114,7 @@ class svkOverlayViewController: public svkDataViewController
         enum InteractorStyle { SELECTION, WINDOW_LEVEL, COLOR_OVERLAY, ROTATION };
 
         //! Enum for window level targets
-        typedef enum WindowLevelTarget{
+        enum WindowLevelTarget{
             REFERENCE_IMAGE = 0,
             IMAGE_OVERLAY
         };
