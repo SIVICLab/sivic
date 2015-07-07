@@ -176,14 +176,14 @@ void sivicPreferencesWidget::UpdateSettingsList( )
  */
 void sivicPreferencesWidget::ProcessCallbackCommandEvents( vtkObject *caller, unsigned long event, void *calldata )
 {
+    int level = this->sivicController->registryLevel; 
     for( int i = 0; i < this->settingsTable->GetWidget()->GetNumberOfRows(); i++) {
 
         string subkey = this->settingsTable->GetWidget()->GetCellText(i,0);
         string key = this->settingsTable->GetWidget()->GetCellText(i,1);
         string value = this->settingsTable->GetWidget()->GetCellText(i,2);
 
-		this->GetApplication()->SetRegistryValue( 0, subkey.c_str(), key.c_str(), value.c_str());
-
+        this->GetApplication()->SetRegistryValue( level, subkey.c_str(), key.c_str(), value.c_str());
     }
 
     // Make sure the superclass gets called for render requests
